@@ -804,6 +804,20 @@
 			On desktop platforms, overrides the game's initial window width. See also [member display/window/size/window_height_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window width is the viewport [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and Web.
 		</member>
+		<member name="display/window/size/window_minimum_width" type="int" setter="" getter="" default="64">
+			On desktop platforms, sets the game's minimum window width.
+			[b]Note:[/b] By default, the main window has a minimum width and height of [code]64[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
+		</member>
+		<member name="display/window/size/window_minimum_height" type="int" setter="" getter="" default="64">
+			On desktop platforms, sets the game's minimum window height.
+			[b]Note:[/b] By default, the main window has a minimum width and height of [code]64[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
+		</member>
+		<member name="display/window/size/window_maximum_width" type="int" setter="" getter="" default="0">
+			On desktop platforms, sets the game's maximum window width. If set to [code]0[/code], the setting is ignored.
+		</member>
+		<member name="display/window/size/window_maximum_height" type="int" setter="" getter="" default="0">
+			On desktop platforms, sets the game's maximum window height. If set to [code]0[/code], the setting is ignored.
+		</member>
 		<member name="display/window/stretch/aspect" type="String" setter="" getter="" default="&quot;keep&quot;">
 		</member>
 		<member name="display/window/stretch/mode" type="String" setter="" getter="" default="&quot;disabled&quot;">

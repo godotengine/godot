@@ -158,16 +158,40 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 	int window_placement = EDITOR_GET("run/window_placement/rect");
 	if (screen_rect != Rect2()) {
-		Size2 window_size;
-		window_size.x = GLOBAL_GET("display/window/size/viewport_width");
-		window_size.y = GLOBAL_GET("display/window/size/viewport_height");
+		const int window_width_override = GLOBAL_GET("display/window/size/window_width_override");
+		const int window_height_override = GLOBAL_GET("display/window/size/window_height_override");
 
-		Size2 desired_size;
-		desired_size.x = GLOBAL_GET("display/window/size/window_width_override");
-		desired_size.y = GLOBAL_GET("display/window/size/window_height_override");
-		if (desired_size.x > 0 && desired_size.y > 0) {
-			window_size = desired_size;
+		const int viewport_width = GLOBAL_GET("display/window/size/viewport_width");
+		const int viewport_height = GLOBAL_GET("display/window/size/viewport_height");
+
+		const int window_minimum_width = GLOBAL_GET("display/window/size/window_minimum_width");
+		const int window_minimum_height = GLOBAL_GET("display/window/size/window_minimum_height");
+		const int window_maximum_width = GLOBAL_GET("display/window/size/window_maximum_width");
+		const int window_maximum_height = GLOBAL_GET("display/window/size/window_maximum_height");
+
+		int desired_width = viewport_width;
+		int desired_height = viewport_height;
+
+		if (window_width_override != 0) {
+			desired_width = window_width_override;
 		}
+		if (window_height_override != 0) {
+			desired_height = window_height_override;
+		}
+
+		if (window_maximum_width != 0) {
+			desired_width = MIN(desired_width, window_maximum_width);
+		}
+		if (window_maximum_height != 0) {
+			desired_height = MIN(desired_height, window_maximum_height);
+		}
+
+		desired_width = MAX(desired_width, window_minimum_width);
+		desired_height = MAX(desired_height, window_minimum_height);
+
+		Size2 window_size;
+		window_size.x = desired_width;
+		window_size.y = desired_height;
 
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
 			bool hidpi_proj = GLOBAL_GET("display/window/dpi/allow_hidpi");

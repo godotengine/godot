@@ -1808,20 +1808,39 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (use_custom_res) {
 		if (!force_res) {
-			window_size.width = GLOBAL_GET("display/window/size/viewport_width");
-			window_size.height = GLOBAL_GET("display/window/size/viewport_height");
+			const int window_width_override = GLOBAL_GET("display/window/size/window_width_override");
+			const int window_height_override = GLOBAL_GET("display/window/size/window_height_override");
 
-			if (globals->has_setting("display/window/size/window_width_override") &&
-					globals->has_setting("display/window/size/window_height_override")) {
-				int desired_width = globals->get("display/window/size/window_width_override");
-				if (desired_width > 0) {
-					window_size.width = desired_width;
-				}
-				int desired_height = globals->get("display/window/size/window_height_override");
-				if (desired_height > 0) {
-					window_size.height = desired_height;
-				}
+			const int viewport_width = GLOBAL_GET("display/window/size/viewport_width");
+			const int viewport_height = GLOBAL_GET("display/window/size/viewport_height");
+
+			const int window_minimum_width = GLOBAL_GET("display/window/size/window_minimum_width");
+			const int window_minimum_height = GLOBAL_GET("display/window/size/window_minimum_height");
+			const int window_maximum_width = GLOBAL_GET("display/window/size/window_maximum_width");
+			const int window_maximum_height = GLOBAL_GET("display/window/size/window_maximum_height");
+
+			int desired_width = viewport_width;
+			int desired_height = viewport_height;
+
+			if (window_width_override != 0) {
+				desired_width = window_width_override;
 			}
+			if (window_height_override != 0) {
+				desired_height = window_height_override;
+			}
+
+			if (window_maximum_width != 0) {
+				desired_width = MIN(desired_width, window_maximum_width);
+			}
+			if (window_maximum_height != 0) {
+				desired_height = MIN(desired_height, window_maximum_height);
+			}
+
+			desired_width = MAX(desired_width, window_minimum_width);
+			desired_height = MAX(desired_height, window_minimum_height);
+
+			window_size.width = desired_width;
+			window_size.height = desired_height;
 		}
 
 		if (!bool(GLOBAL_GET("display/window/size/resizable"))) {
