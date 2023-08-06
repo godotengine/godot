@@ -65,6 +65,7 @@ class ExtendGDScriptParser : public GDScriptParser {
 	void update_symbols();
 	void update_document_links(const String &p_code);
 	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol);
+	void parse_enum_value_symbol(const GDScriptParser::EnumNode::Value *p_value, lsp::DocumentSymbol &r_symbol);
 	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol);
 
 	Dictionary dump_function_api(const GDScriptParser::FunctionNode *p_func) const;

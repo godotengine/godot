@@ -234,26 +234,6 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 
 				r_symbol.children.push_back(symbol);
 			} break;
-			case ClassNode::Member::ENUM_VALUE: {
-				lsp::DocumentSymbol symbol;
-
-				symbol.name = m.enum_value.identifier->name;
-				symbol.kind = lsp::SymbolKind::EnumMember;
-				symbol.deprecated = false;
-				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.enum_value.line);
-				symbol.range.start.character = LINE_NUMBER_TO_INDEX(m.enum_value.leftmost_column);
-				symbol.range.end.line = LINE_NUMBER_TO_INDEX(m.enum_value.line);
-				symbol.range.end.character = LINE_NUMBER_TO_INDEX(m.enum_value.rightmost_column);
-				symbol.selectionRange.start.line = LINE_NUMBER_TO_INDEX(m.enum_value.line);
-				symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(m.enum_value.line));
-				symbol.uri = uri;
-				symbol.script_path = path;
-
-				symbol.detail = symbol.name + " = " + itos(m.enum_value.value);
-				symbol.reduced_detail = symbol.detail;
-
-				r_symbol.children.push_back(symbol);
-			} break;
 			case ClassNode::Member::SIGNAL: {
 				lsp::DocumentSymbol symbol;
 				symbol.name = m.signal->identifier->name;
@@ -301,10 +281,20 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					if (j > 0) {
 						symbol.detail += ", ";
 					}
-					symbol.detail += String(m.m_enum->values[j].identifier->name) + " = " + itos(m.m_enum->values[j].value);
+					const EnumNode::Value *enum_value = &m.m_enum->values[j];
+					symbol.detail += String(enum_value->identifier->name) + " = " + itos(enum_value->value);
+
+					lsp::DocumentSymbol ev_symbol;
+					parse_enum_value_symbol(enum_value, ev_symbol);
+					r_symbol.children.push_back(ev_symbol);
 				}
 				symbol.detail += "}";
 				symbol.reduced_detail = "enum " + String(m.m_enum->identifier->name);
+				r_symbol.children.push_back(symbol);
+			} break;
+			case ClassNode::Member::ENUM_VALUE: {
+				lsp::DocumentSymbol symbol;
+				parse_enum_value_symbol(&m.enum_value, symbol);
 				r_symbol.children.push_back(symbol);
 			} break;
 			case ClassNode::Member::FUNCTION: {
@@ -323,6 +313,30 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				break; // Unreachable.
 		}
 	}
+}
+
+void ExtendGDScriptParser::parse_enum_value_symbol(const GDScriptParser::EnumNode::Value *p_value, lsp::DocumentSymbol &r_symbol) {
+	const String uri = get_uri();
+
+	r_symbol.name = p_value->identifier->name;
+	r_symbol.kind = lsp::SymbolKind::EnumMember;
+	r_symbol.deprecated = false;
+	r_symbol.range.start.line = LINE_NUMBER_TO_INDEX(p_value->line);
+	r_symbol.range.start.character = LINE_NUMBER_TO_INDEX(p_value->leftmost_column);
+	r_symbol.range.end.line = LINE_NUMBER_TO_INDEX(p_value->line);
+	r_symbol.range.end.character = LINE_NUMBER_TO_INDEX(p_value->rightmost_column);
+	r_symbol.selectionRange.start.line = LINE_NUMBER_TO_INDEX(p_value->line);
+	r_symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(p_value->line));
+	r_symbol.uri = uri;
+	r_symbol.script_path = path;
+
+	if (p_value->parent_enum != nullptr) {
+		r_symbol.detail = String(p_value->parent_enum->identifier->name) + "." + r_symbol.name + " = " + itos(p_value->value);
+	} else {
+		r_symbol.detail = r_symbol.name + " = " + itos(p_value->value);;
+	}
+
+	r_symbol.reduced_detail = r_symbol.detail;
 }
 
 void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol) {
