@@ -347,5 +347,8 @@ Vector<Ref<Image>> NoiseTexture3D::get_data() const {
 
 Image::Format NoiseTexture3D::get_format() const {
 	ERR_FAIL_COND_V(!texture.is_valid(), Image::FORMAT_L8);
-	return RS::get_singleton()->texture_3d_get(texture)[0]->get_format();
+
+	Vector<Ref<Image>> texture_3d = RS::get_singleton()->texture_3d_get(texture);
+	ERR_FAIL_COND_V(texture_3d.size() == 0, Image::FORMAT_L8);
+	return texture_3d[0]->get_format();
 }
