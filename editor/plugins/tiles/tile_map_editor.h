@@ -203,6 +203,7 @@ private:
 
 	// General
 	void _update_theme();
+	List<BaseButton *> viewport_shortcut_buttons;
 
 	// Update callback
 	virtual void tile_set_changed() override;
@@ -293,6 +294,7 @@ private:
 
 	// Cache.
 	LocalVector<LocalVector<RBSet<TileSet::TerrainsPattern>>> per_terrain_terrains_patterns;
+	List<BaseButton *> viewport_shortcut_buttons;
 
 	// Update functions.
 	void _update_terrains_cache();
