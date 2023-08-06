@@ -1022,12 +1022,12 @@
 			Notification received right after the scene with the node is saved in the editor. This notification is only sent in the Godot editor and will not occur in exported projects.
 		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
-			Notification received from the OS when the mouse enters the game window.
-			Implemented on desktop and web platforms.
+			Notification received when the mouse enters the window.
+			Implemented for embedded windows and on desktop and web platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="1003">
-			Notification received from the OS when the mouse leaves the game window.
-			Implemented on desktop and web platforms.
+			Notification received when the mouse leaves the window.
+			Implemented for embedded windows and on desktop and web platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_IN" value="1004">
 			Notification received when the node's parent [Window] is focused. This may be a change of focus between two windows of the same engine instance, or from the OS desktop or a third-party application to a window of the game (in which case [constant NOTIFICATION_APPLICATION_FOCUS_IN] is also emitted).
