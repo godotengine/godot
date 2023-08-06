@@ -330,7 +330,7 @@ void ExtendGDScriptParser::parse_enum_value_symbol(const GDScriptParser::EnumNod
 	r_symbol.uri = uri;
 	r_symbol.script_path = path;
 
-	if (p_value->parent_enum != nullptr) {
+	if (p_value->parent_enum->identifier != nullptr) {
 		r_symbol.detail = String(p_value->parent_enum->identifier->name) + "." + r_symbol.name + " = " + itos(p_value->value);
 	} else {
 		r_symbol.detail = r_symbol.name + " = " + itos(p_value->value);;
