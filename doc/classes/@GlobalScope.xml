@@ -739,8 +739,7 @@
 			<return type="int" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Returns the nearest equal or larger power of 2 for the integer [param value].
-				In other words, returns the smallest value [code]a[/code] where [code]a = pow(2, n)[/code] such that [code]value &lt;= a[/code] for some non-negative integer [code]n[/code].
+				Returns the smallest integer power of 2 that is greater than or equal to [param value].
 				[codeblock]
 				nearest_po2(3) # Returns 4
 				nearest_po2(4) # Returns 4
@@ -749,7 +748,7 @@
 				nearest_po2(0)  # Returns 0 (this may not be expected)
 				nearest_po2(-1) # Returns 0 (this may not be expected)
 				[/codeblock]
-				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for negative values of [param value] (in reality, 1 is the smallest integer power of 2).
+				[b]Warning:[/b] Due to its implementation, this method returns [code]0[/code] rather than [code]1[/code] for values less than or equal to [code]0[/code], with an exception for [param value] being the smallest negative 64-bit integer ([code]-9223372036854775808[/code]) in which case the [param value] is returned unchanged.
 			</description>
 		</method>
 		<method name="pingpong">
