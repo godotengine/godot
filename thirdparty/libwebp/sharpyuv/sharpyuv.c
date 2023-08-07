@@ -440,6 +440,7 @@ static int DoSharpArgbToYuv(const uint8_t* r_ptr, const uint8_t* g_ptr,
 // By default SharpYuvConvert calls it with SharpYuvGetCPUInfo. If needed,
 // users can declare it as extern and call it with an alternate VP8CPUInfo
 // function.
+extern VP8CPUInfo SharpYuvGetCPUInfo;
 SHARPYUV_EXTERN void SharpYuvInit(VP8CPUInfo cpu_info_func);
 void SharpYuvInit(VP8CPUInfo cpu_info_func) {
   static volatile VP8CPUInfo sharpyuv_last_cpuinfo_used =
