@@ -575,6 +575,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
 			add_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
+			duplicate_anim->set_icon(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
 			delete_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			anim_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
@@ -1020,6 +1021,36 @@ void SpriteFramesEditor::_animation_add() {
 	animations->grab_focus();
 }
 
+void SpriteFramesEditor::_animation_duplicate() {
+	if (updating) {
+		return;
+	}
+
+	if (!frames->has_animation(edited_anim)) {
+		return;
+	}
+
+	int counter = 1;
+	String name = String(edited_anim) + "_" + itos(counter);
+	while (frames->has_animation(name)) {
+		counter++;
+		name = String(edited_anim) + "_" + itos(counter);
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Duplicate Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_method(frames.ptr(), "add_animation", name);
+	undo_redo->add_undo_method(frames.ptr(), "remove_animation", name);
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method(frames.ptr(), "duplicate_animation", edited_anim, name);
+	undo_redo->add_undo_method(frames.ptr(), "remove_animation", name);
+	undo_redo->commit_action();
+
+	_select_animation(name);
+	animations->grab_focus();
+}
+
 void SpriteFramesEditor::_animation_remove() {
 	if (updating) {
 		return;
@@ -1340,6 +1371,7 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	_zoom_reset();
 
 	add_anim->set_disabled(read_only);
+	duplicate_anim->set_disabled(read_only);
 	delete_anim->set_disabled(read_only);
 	anim_speed->set_editable(!read_only);
 	anim_loop->set_disabled(read_only);
@@ -1659,6 +1691,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_animlist->add_child(add_anim);
 	add_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
 
+	duplicate_anim = memnew(Button);
+	duplicate_anim->set_flat(true);
+	hbc_animlist->add_child(duplicate_anim);
+	duplicate_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
+
 	delete_anim = memnew(Button);
 	delete_anim->set_flat(true);
 	hbc_animlist->add_child(delete_anim);
@@ -1711,6 +1748,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	add_anim->set_shortcut_context(animations);
 	add_anim->set_shortcut(ED_SHORTCUT("sprite_frames/new_animation", TTR("Add Animation"), KeyModifierMask::CMD_OR_CTRL | Key::N));
+	duplicate_anim->set_shortcut_context(animations);
+	duplicate_anim->set_shortcut(ED_SHORTCUT("sprite_frames/duplicate_animation", TTR("Duplicate Animation"), KeyModifierMask::CMD_OR_CTRL | Key::D));
 	delete_anim->set_shortcut_context(animations);
 	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTR("Delete Animation"), Key::KEY_DELETE));
 

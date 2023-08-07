@@ -39,6 +39,14 @@
 				Removes all animations. An empty [code]default[/code] animation will be created.
 			</description>
 		</method>
+		<method name="duplicate_animation">
+			<return type="void" />
+			<param index="0" name="anim_from" type="StringName" />
+			<param index="1" name="anim_to" type="StringName" />
+			<description>
+				Duplicate all frames [param anim_from] to the [param anim_to].
+			</description>
+		</method>
 		<method name="get_animation_loop" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="anim" type="StringName" />

@@ -118,6 +118,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	int sel;
 
 	Button *add_anim = nullptr;
+	Button *duplicate_anim = nullptr;
 	Button *delete_anim = nullptr;
 	SpinBox *anim_speed = nullptr;
 	Button *anim_loop = nullptr;
@@ -201,6 +202,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_selected();
 	void _animation_name_edited();
 	void _animation_add();
+	void _animation_duplicate();
 	void _animation_remove();
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
