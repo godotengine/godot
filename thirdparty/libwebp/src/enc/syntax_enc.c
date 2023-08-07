@@ -258,7 +258,10 @@ static int EmitPartitionsSize(const VP8Encoder* const enc,
     buf[3 * p + 1] = (part_size >>  8) & 0xff;
     buf[3 * p + 2] = (part_size >> 16) & 0xff;
   }
-  return p ? pic->writer(buf, 3 * p, pic) : 1;
+  if (p && !pic->writer(buf, 3 * p, pic)) {
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_BAD_WRITE);
+  }
+  return 1;
 }
 
 //------------------------------------------------------------------------------
@@ -381,6 +384,7 @@ int VP8EncWrite(VP8Encoder* const enc) {
 
   enc->coded_size_ = (int)(CHUNK_HEADER_SIZE + riff_size);
   ok = ok && WebPReportProgress(pic, final_percent, &enc->percent_);
+  if (!ok) WebPEncodingSetError(pic, VP8_ENC_ERROR_BAD_WRITE);
   return ok;
 }
 
