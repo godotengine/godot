@@ -4026,7 +4026,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 		// Find top popup to close.
 		while (E) {
 			// Popup window area.
-			Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
+			Rect2i win_rect = Rect2i(window_get_position_with_decorations(E->get()), window_get_size_with_decorations(E->get()));
 			// Area of the parent window, which responsible for opening sub-menu.
 			Rect2i safe_rect = window_get_popup_safe_rect(E->get());
 			if (win_rect.has_point(pos)) {
