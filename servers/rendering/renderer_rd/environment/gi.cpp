@@ -2977,7 +2977,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 						push_constant.cell_offset = mipmaps[i].cell_offset;
 						push_constant.cell_count = mipmaps[i].cell_count;
 
-						int64_t wg_todo = (mipmaps[i].cell_count - 1) / wg_size + 1;
+						int64_t wg_todo = (mipmaps[i].cell_count + wg_size - 1) / wg_size;
 						while (wg_todo) {
 							int64_t wg_count = MIN(wg_todo, wg_limit_x);
 							RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIPushConstant));
@@ -2998,7 +2998,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					push_constant.cell_offset = mipmaps[i].cell_offset;
 					push_constant.cell_count = mipmaps[i].cell_count;
 
-					int64_t wg_todo = (mipmaps[i].cell_count - 1) / wg_size + 1;
+					int64_t wg_todo = (mipmaps[i].cell_count + wg_size - 1) / wg_size;
 					while (wg_todo) {
 						int64_t wg_count = MIN(wg_todo, wg_limit_x);
 						RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIPushConstant));
