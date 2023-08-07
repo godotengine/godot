@@ -1162,15 +1162,6 @@ void GDScriptTokenizer::check_indent() {
 			_advance();
 		}
 
-		if (mixed && !(line_continuation || multiline_mode)) {
-			Token error = make_error("Mixed use of tabs and spaces for indentation.");
-			error.start_line = line;
-			error.start_column = 1;
-			error.leftmost_column = 1;
-			error.rightmost_column = column;
-			push_error(error);
-		}
-
 		if (_is_at_end()) {
 			// Reached the end with an empty line, so just dedent as much as needed.
 			pending_indents -= indent_level();
@@ -1212,6 +1203,15 @@ void GDScriptTokenizer::check_indent() {
 			_advance(); // Consume '\n'.
 			newline(false);
 			continue;
+		}
+
+		if (mixed && !line_continuation && !multiline_mode) {
+			Token error = make_error("Mixed use of tabs and spaces for indentation.");
+			error.start_line = line;
+			error.start_column = 1;
+			error.leftmost_column = 1;
+			error.rightmost_column = column;
+			push_error(error);
 		}
 
 		if (line_continuation || multiline_mode) {
