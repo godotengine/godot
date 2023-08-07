@@ -249,11 +249,9 @@ void SkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineC
 		}
 	}
 
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
-
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &sky_push_constant, sizeof(SkyPushConstant));
 
-	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -941,23 +939,6 @@ void sky() {
 
 		sky_scene_state.fog_only_texture_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_TEXTURES);
 	}
-
-	{ //create index array for copy shaders
-		Vector<uint8_t> pv;
-		pv.resize(6 * 4);
-		{
-			uint8_t *w = pv.ptrw();
-			int *p32 = (int *)w;
-			p32[0] = 0;
-			p32[1] = 1;
-			p32[2] = 2;
-			p32[3] = 0;
-			p32[4] = 2;
-			p32[5] = 3;
-		}
-		index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
-		index_array = RD::get_singleton()->index_array_create(index_buffer, 0, 6);
-	}
 }
 
 void SkyRD::set_texture_format(RD::DataFormat p_texture_format) {
@@ -990,8 +971,6 @@ SkyRD::~SkyRD() {
 	if (RD::get_singleton()->uniform_set_is_valid(sky_scene_state.fog_only_texture_uniform_set)) {
 		RD::get_singleton()->free(sky_scene_state.fog_only_texture_uniform_set);
 	}
-
-	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 }
 
 void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
