@@ -789,10 +789,12 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 
 ResourceImporterTexture *ResourceImporterTexture::singleton = nullptr;
 
-ResourceImporterTexture::ResourceImporterTexture() {
-	if (!singleton) {
+ResourceImporterTexture::ResourceImporterTexture(bool p_singleton) {
+	// This should only be set through the EditorNode.
+	if (p_singleton) {
 		singleton = this;
 	}
+
 	CompressedTexture2D::request_3d_callback = _texture_reimport_3d;
 	CompressedTexture2D::request_roughness_callback = _texture_reimport_roughness;
 	CompressedTexture2D::request_normal_callback = _texture_reimport_normal;
