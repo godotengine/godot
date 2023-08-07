@@ -159,7 +159,7 @@ public:
 	void store_script_properties(Object *p_object);
 	void apply_script_properties(Object *p_object);
 
-	InspectorDock(EditorData &p_editor_data);
+	InspectorDock();
 	~InspectorDock();
 };
 

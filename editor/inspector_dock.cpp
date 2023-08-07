@@ -102,16 +102,16 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case OBJECT_COPY_PARAMS: {
-			editor_data->apply_changes_in_editors();
+			EditorNode::get_editor_data().apply_changes_in_editors();
 			if (current) {
-				editor_data->copy_object_params(current);
+				EditorNode::get_editor_data().copy_object_params(current);
 			}
 		} break;
 
 		case OBJECT_PASTE_PARAMS: {
-			editor_data->apply_changes_in_editors();
+			EditorNode::get_editor_data().apply_changes_in_editors();
 			if (current) {
-				editor_data->paste_object_params(current);
+				EditorNode::get_editor_data().paste_object_params(current);
 			}
 		} break;
 
@@ -157,7 +157,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 					unique_resources_confirmation->popup_centered();
 				}
 			} else {
-				editor_data->apply_changes_in_editors();
+				EditorNode::get_editor_data().apply_changes_in_editors();
 
 				if (current) {
 					List<PropertyInfo> props;
@@ -619,11 +619,9 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 	stored_properties.clear();
 }
 
-InspectorDock::InspectorDock(EditorData &p_editor_data) {
+InspectorDock::InspectorDock() {
 	singleton = this;
 	set_name("Inspector");
-
-	editor_data = &p_editor_data;
 
 	property_name_style = EditorPropertyNameProcessor::get_default_inspector_style();
 

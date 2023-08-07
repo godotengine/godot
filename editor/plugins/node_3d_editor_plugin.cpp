@@ -2721,7 +2721,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			_update_navigation_controls_visibility();
 			_update_freelook(delta);
 
-			Node *scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
+			Node *scene_root = EditorNode::get_editor_data().get_edited_scene_root();
 			if (previewing_cinema && scene_root != nullptr) {
 				Camera3D *cam = scene_root->get_viewport()->get_camera_3d();
 				if (cam != nullptr && cam != previewing) {

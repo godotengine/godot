@@ -378,11 +378,11 @@ bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 }
 
 void EditorPlugin::add_undo_redo_inspector_hook_callback(Callable p_callable) {
-	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(p_callable);
+	EditorNode::get_editor_data().add_undo_redo_inspector_hook_callback(p_callable);
 }
 
 void EditorPlugin::remove_undo_redo_inspector_hook_callback(Callable p_callable) {
-	EditorNode::get_singleton()->get_editor_data().remove_undo_redo_inspector_hook_callback(p_callable);
+	EditorNode::get_editor_data().remove_undo_redo_inspector_hook_callback(p_callable);
 }
 
 void EditorPlugin::add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
