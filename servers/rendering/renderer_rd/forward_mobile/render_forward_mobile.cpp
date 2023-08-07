@@ -722,16 +722,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			using_subpass_post_process = false;
 		}
 
-		// We do this last because our get_color_fbs creates and caches the framebuffer if we need it.
-		RID four_subpasses = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_FOUR_SUBPASSES);
-		if (using_subpass_post_process && four_subpasses.is_null()) {
-			// can't do blit subpass because we don't have all subpasses
-			using_subpass_post_process = false;
-		}
-
 		if (using_subpass_post_process) {
 			// all as subpasses
-			framebuffer = four_subpasses;
+			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_FOUR_SUBPASSES);
 		} else if (using_subpass_transparent) {
 			// our tonemap pass is separate
 			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_THREE_SUBPASSES);
