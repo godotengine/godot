@@ -63,7 +63,7 @@
 			Array of the additional command line arguments passed to the code signing tool.
 		</member>
 		<member name="codesign/entitlements/address_book" type="bool" setter="" getter="">
-			Enable to allow access to contacts in the user's address book, if it's enabled you should also provide usage message in the [code]privacy/address_book_usage_description[/code] option.	See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_addressbook]com.apple.security.personal-information.addressbook[/url].
+			Enable to allow access to contacts in the user's address book, if it's enabled you should also provide usage message in the [code]privacy/address_book_usage_description[/code] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_addressbook]com.apple.security.personal-information.addressbook[/url].
 		</member>
 		<member name="codesign/entitlements/allow_dyld_environment_variables" type="bool" setter="" getter="">
 			Allows app to use dynamic linker environment variables to inject code. If you are using add-ons with dynamic or self-modifying native code, enable them according to the add-on documentation. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-dyld-environment-variables]com.apple.security.cs.allow-dyld-environment-variables[/url].

@@ -289,7 +289,7 @@ private:
 	bool on_state_loss_pending();
 	bool on_state_exiting();
 
-	// convencience
+	// convenience
 	void copy_string_to_char_buffer(const String p_string, char *p_buffer, int p_buffer_len);
 
 public:
