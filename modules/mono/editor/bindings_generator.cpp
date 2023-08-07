@@ -3821,7 +3821,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	builtin_types.insert(itype.cname, itype);
 
 	// Array_@generic
-	// Re-use Array's itype
+	// Reuse Array's itype
 	itype.name = "Array_@generic";
 	itype.cname = itype.name;
 	itype.cs_out = "%5return new %2(%0(%1));";
@@ -3848,7 +3848,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	builtin_types.insert(itype.cname, itype);
 
 	// Dictionary_@generic
-	// Re-use Dictionary's itype
+	// Reuse Dictionary's itype
 	itype.name = "Dictionary_@generic";
 	itype.cname = itype.name;
 	itype.cs_out = "%5return new %2(%0(%1));";

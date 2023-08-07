@@ -88,7 +88,7 @@ const GodotAudio = {
 					GodotAudio.input = GodotAudio.ctx.createMediaStreamSource(stream);
 					callback(GodotAudio.input);
 				} catch (e) {
-					GodotRuntime.error('Failed creaating input.', e);
+					GodotRuntime.error('Failed creating input.', e);
 				}
 			}
 			if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {

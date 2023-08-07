@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This object manages all 3D rendering buffers for the rendering device based renderers. An instance of this object is created for every viewport that has 3D rendering enabled.
-		All buffers are organised in [b]contexts[/b]. The default context is called [b]render_buffers[/b] and can contain amongst others the color buffer, depth buffer, velocity buffers, VRS density map and MSAA variants of these buffers.
+		All buffers are organized in [b]contexts[/b]. The default context is called [b]render_buffers[/b] and can contain amongst others the color buffer, depth buffer, velocity buffers, VRS density map and MSAA variants of these buffers.
 		Buffers are only guaranteed to exist during rendering of the viewport.
 		[b]Note:[/b] this is an internal rendering server object only exposed for GDExtension plugins.
 	</description>

@@ -538,15 +538,15 @@ Error RenderingDevice::_reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spir
 							if (r_reflection_data.uniforms[set][k].binding == (uint32_t)info.binding) {
 								// Already exists, verify that it's the same type.
 								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].type != info.type, FAILED,
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform type.");
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform type.");
 
 								// Also, verify that it's the same size.
 								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].length != info.length, FAILED,
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
 
 								// Also, verify that it has the same writability.
 								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].writable != info.writable, FAILED,
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
 
 								// Just append stage mask and return.
 								r_reflection_data.uniforms.write[set].write[k].stages_mask.set_flag(stage_flag);

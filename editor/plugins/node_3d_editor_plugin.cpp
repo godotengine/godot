@@ -4915,7 +4915,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 	}
 }
 
-// Perform cleanup after a transform operation is committed or cancelled.
+// Perform cleanup after a transform operation is committed or canceled.
 void Node3DEditorViewport::finish_transform() {
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	_edit.mode = TRANSFORM_NONE;
@@ -8126,7 +8126,7 @@ Node3DEditor::Node3DEditor() {
 
 	String sct;
 
-	// Add some margin to the left for better aesthetics.
+	// Add some margin to the left for better esthetics.
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
 	// which looks ugly.
 	Control *margin_left = memnew(Control);
