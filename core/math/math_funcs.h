@@ -198,6 +198,22 @@ public:
 #endif
 	}
 
+	// These methods assume (p_num + p_den) doesn't overflow.
+	static _ALWAYS_INLINE_ int32_t division_round_up(int32_t p_num, int32_t p_den) {
+		int32_t offset = (p_num < 0 && p_den < 0) ? 1 : -1;
+		return (p_num + p_den + offset) / p_den;
+	}
+	static _ALWAYS_INLINE_ uint32_t division_round_up(uint32_t p_num, uint32_t p_den) {
+		return (p_num + p_den - 1) / p_den;
+	}
+	static _ALWAYS_INLINE_ int64_t division_round_up(int64_t p_num, int64_t p_den) {
+		int32_t offset = (p_num < 0 && p_den < 0) ? 1 : -1;
+		return (p_num + p_den + offset) / p_den;
+	}
+	static _ALWAYS_INLINE_ uint64_t division_round_up(uint64_t p_num, uint64_t p_den) {
+		return (p_num + p_den - 1) / p_den;
+	}
+
 	static _ALWAYS_INLINE_ bool is_finite(double p_val) { return isfinite(p_val); }
 	static _ALWAYS_INLINE_ bool is_finite(float p_val) { return isfinite(p_val); }
 
