@@ -93,8 +93,8 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_notification(int p_what) {
 			}
 
 			String text;
-			text += vformat(TTR("Subdivisions: %s"), vformat(String::utf8("%d × %d × %d"), size.x, size.y, size.z)) + "\n";
-			text += vformat(TTR("Cell size: %s"), vformat(String::utf8("%.3f × %.3f × %.3f"), extents.x / size.x, extents.y / size.y, extents.z / size.z)) + "\n";
+			text += vformat(TTR("Subdivisions: %s"), vformat(U"%d × %d × %d", size.x, size.y, size.z)) + "\n";
+			text += vformat(TTR("Cell size: %s"), vformat(U"%.3f × %.3f × %.3f", extents.x / size.x, extents.y / size.y, extents.z / size.z)) + "\n";
 			text += vformat(TTR("Video RAM size: %s MB (%s)"), String::num(size_mb, 2), size_quality);
 
 			// Only update the tooltip when needed to avoid constant redrawing.

@@ -348,7 +348,7 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 		}
 	}
 	// Update template label information.
-	String template_info = String::utf8("•  ");
+	String template_info = U"•  ";
 	template_info += TTR("Template:");
 	template_info += " " + sinfo.name;
 	if (!sinfo.description.is_empty()) {

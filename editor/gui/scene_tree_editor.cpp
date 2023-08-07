@@ -294,7 +294,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			}
 
 			// Improve looks on tooltip, extra spacing on non-bullet point newlines.
-			const String bullet_point = String::utf8("•  ");
+			const String bullet_point = U"•  ";
 			int next_newline = 0;
 			while (next_newline != -1) {
 				next_newline = conf_warning.find("\n", next_newline + 2);

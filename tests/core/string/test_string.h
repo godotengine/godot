@@ -1372,8 +1372,8 @@ TEST_CASE("[String] Ensuring empty string into parse_utf8 passes empty string") 
 }
 
 TEST_CASE("[String] Cyrillic to_lower()") {
-	String upper = String::utf8("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ");
-	String lower = String::utf8("абвгдеёжзийклмнопрстуфхцчшщъыьэюя");
+	String upper = U"АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+	String lower = U"абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
 
 	String test = upper.to_lower();
 
@@ -1700,7 +1700,7 @@ TEST_CASE("[String] validate_identifier") {
 	String name_with_spaces = "Name with spaces";
 	CHECK(name_with_spaces.validate_identifier() == "Name_with_spaces");
 
-	String name_with_invalid_chars = String::utf8("Invalid characters:@*#&世界");
+	String name_with_invalid_chars = U"Invalid characters:@*#&世界";
 	CHECK(name_with_invalid_chars.validate_identifier() == "Invalid_characters_______");
 }
 
