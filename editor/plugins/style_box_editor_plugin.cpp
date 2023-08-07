@@ -110,14 +110,11 @@ StyleBoxPreview::StyleBoxPreview() {
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
 	grid_preview = memnew(Button);
+	// This theme variation works better than the normal theme because there's no focus highlight.
+	grid_preview->set_theme_type_variation("PreviewLightButton");
 	grid_preview->set_toggle_mode(true);
 	grid_preview->connect("toggled", callable_mp(this, &StyleBoxPreview::_grid_preview_toggled));
 	grid_preview->set_pressed(grid_preview_enabled);
-	grid_preview->set_flat(true);
-	grid_preview->add_theme_style_override("normal", memnew(StyleBoxEmpty));
-	grid_preview->add_theme_style_override("hover", memnew(StyleBoxEmpty));
-	grid_preview->add_theme_style_override("focus", memnew(StyleBoxEmpty));
-	grid_preview->add_theme_style_override("pressed", memnew(StyleBoxEmpty));
 	add_child(grid_preview);
 }
 
