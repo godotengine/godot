@@ -193,6 +193,9 @@ SceneStringNames::SceneStringNames() {
 
 	path_pp = NodePath("..");
 
+	// Audio bus name.
+	Master = StaticCString::create("Master");
+
 	_default = StaticCString::create("default");
 
 	_window_group = StaticCString::create("_window_group");

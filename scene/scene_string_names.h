@@ -204,6 +204,8 @@ public:
 
 	StringName output;
 
+	StringName Master;
+
 	StringName parameters_base_path;
 
 	StringName _window_group;

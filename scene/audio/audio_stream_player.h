@@ -33,6 +33,7 @@
 
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
+#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamPlayer : public Node {
@@ -54,7 +55,7 @@ private:
 	float pitch_scale = 1.0;
 	float volume_db = 0.0;
 	bool autoplay = false;
-	StringName bus = SNAME("Master");
+	StringName bus = SceneStringNames::get_singleton()->Master;
 	int max_polyphony = 1;
 
 	MixTarget mix_target = MIX_TARGET_STEREO;
