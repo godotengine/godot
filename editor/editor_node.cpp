@@ -5006,10 +5006,15 @@ void EditorNode::_load_editor_layout() {
 	config.instantiate();
 	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
 	if (err != OK) { // No config.
-		// If config is not found, expand the res:// folder by default.
+		// If config is not found, expand the res:// folder and favorites by default.
 		TreeItem *root = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata("res://", 0);
 		if (root) {
 			root->set_collapsed(false);
+		}
+
+		TreeItem *favorites = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata("Favorites", 0);
+		if (favorites) {
+			favorites->set_collapsed(false);
 		}
 
 		if (overridden_default_layout >= 0) {
