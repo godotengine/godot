@@ -422,7 +422,7 @@ to solve some MSVC warnings. See the patches in the `patches` directory.
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
-- Version: 2.2.4 (7d1d8bc3868b08ad003bad235eee57562b95b76d, 2022)
+- Version: 2.2.5 (58837ef586278d18cbebee50be758835ed4be79a, 2023)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
