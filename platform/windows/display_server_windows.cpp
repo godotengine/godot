@@ -278,7 +278,12 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		pfd->SetFileTypes(filters.size(), filters.ptr());
 		pfd->SetFileTypeIndex(0);
 
-		hr = pfd->Show(nullptr);
+		WindowID window_id = _get_focused_window_or_popup();
+		if (!windows.has(window_id)) {
+			window_id = MAIN_WINDOW_ID;
+		}
+
+		hr = pfd->Show(windows[window_id].hWnd);
 		if (SUCCEEDED(hr)) {
 			Vector<String> file_names;
 
