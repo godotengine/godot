@@ -125,6 +125,24 @@ void CopyEffects::copy_to_rect(const Rect2 &p_rect) {
 	draw_screen_quad();
 }
 
+void CopyEffects::copy_to_rect_3d(const Rect2 &p_rect, float p_layer, int p_type, float p_lod) {
+	ERR_FAIL_COND(p_type != Texture::TYPE_LAYERED && p_type != Texture::TYPE_3D);
+
+	CopyShaderGLES3::ShaderVariant variant = p_type == Texture::TYPE_LAYERED
+			? CopyShaderGLES3::MODE_COPY_SECTION_2D_ARRAY
+			: CopyShaderGLES3::MODE_COPY_SECTION_3D;
+
+	bool success = copy.shader.version_bind_shader(copy.shader_version, variant);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, variant);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LAYER, p_layer, copy.shader_version, variant);
+	copy.shader.version_set_uniform(CopyShaderGLES3::LOD, p_lod, copy.shader_version, variant);
+	draw_screen_quad();
+}
+
 void CopyEffects::copy_to_and_from_rect(const Rect2 &p_rect) {
 	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION_SOURCE);
 	if (!success) {

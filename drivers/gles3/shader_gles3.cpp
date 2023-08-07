@@ -213,6 +213,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 		builder.append("precision highp sampler2D;\n");
 		builder.append("precision highp samplerCube;\n");
 		builder.append("precision highp sampler2DArray;\n");
+		builder.append("precision highp sampler3D;\n");
 	}
 
 	const StageTemplate &stage_template = stage_templates[p_stage_type];
