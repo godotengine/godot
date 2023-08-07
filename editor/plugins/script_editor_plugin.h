@@ -120,24 +120,6 @@ public:
 	EditorJSONSyntaxHighlighter() { highlighter.instantiate(); }
 };
 
-class EditorGettextSyntaxHighlighter : public EditorSyntaxHighlighter {
-	GDCLASS(EditorGettextSyntaxHighlighter, EditorSyntaxHighlighter)
-
-private:
-	Ref<CodeHighlighter> highlighter;
-
-public:
-	virtual void _update_cache() override;
-	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
-
-	virtual PackedStringArray _get_supported_languages() const override { return PackedStringArray{ "po", "pot" }; }
-	virtual String _get_name() const override { return TTR("Gettext (PO/POT)"); }
-
-	virtual Ref<EditorSyntaxHighlighter> _create() const override;
-
-	EditorGettextSyntaxHighlighter() { highlighter.instantiate(); }
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
