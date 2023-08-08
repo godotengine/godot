@@ -451,7 +451,7 @@ StringName VideoStreamPlayer::get_bus() const {
 			return bus;
 		}
 	}
-	return "Master";
+	return SceneStringNames::get_singleton()->Master;
 }
 
 void VideoStreamPlayer::_validate_property(PropertyInfo &p_property) const {
