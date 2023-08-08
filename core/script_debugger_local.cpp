@@ -56,7 +56,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 		// Cache options
 		String variable_prefix = options["variable_prefix"];
 
-		if (line == "") {
+		if (line.empty() && !feof(stdin)) {
 			print_line("\nDebugger Break, Reason: '" + p_script->debug_get_error() + "'");
 			print_line("*Frame " + itos(current_frame) + " - " + p_script->debug_get_stack_level_source(current_frame) + ":" + itos(p_script->debug_get_stack_level_line(current_frame)) + " in function '" + p_script->debug_get_stack_level_function(current_frame) + "'");
 			print_line("Enter \"help\" for assistance.");
@@ -185,7 +185,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 				print_line("Added breakpoint at " + source + ":" + itos(linenr));
 			}
 
-		} else if (line == "q" || line == "quit") {
+		} else if (line == "q" || line == "quit" || (line.empty() && feof(stdin))) {
 			// Do not stop again on quit
 			clear_breakpoints();
 			ScriptDebugger::get_singleton()->set_depth(-1);
