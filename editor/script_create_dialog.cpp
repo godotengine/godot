@@ -41,6 +41,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_validation_panel.h"
 
 static String _get_parent_class_of_script(String p_path) {
 	if (!ResourceLoader::exists(p_path, "Script")) {
@@ -136,7 +137,6 @@ void ScriptCreateDialog::_notification(int p_what) {
 			path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 			parent_browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 			parent_search_button->set_icon(get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
-			status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 		} break;
 	}
 }
@@ -295,13 +295,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	}
 
 	// Let ScriptLanguage do custom validation.
-	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
-	if (!path_error.is_empty()) {
-		return path_error;
-	}
-
-	// All checks passed.
-	return "";
+	return ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
 }
 
 String ScriptCreateDialog::_get_class_name() const {
@@ -314,12 +308,12 @@ String ScriptCreateDialog::_get_class_name() const {
 
 void ScriptCreateDialog::_class_name_changed(const String &p_name) {
 	is_class_name_valid = _validate_class(class_name->get_text());
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ScriptCreateDialog::_parent_name_changed(const String &p_parent) {
 	is_parent_name_valid = _validate_parent(parent_name->get_text());
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ScriptCreateDialog::_template_changed(int p_template) {
@@ -347,6 +341,7 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 			}
 		}
 	}
+
 	// Update template label information.
 	String template_info = U"•  ";
 	template_info += TTR("Template:");
@@ -354,8 +349,7 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 	if (!sinfo.description.is_empty()) {
 		template_info += " - " + sinfo.description;
 	}
-	template_info_label->set_text(template_info);
-	template_info_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
+	validation_panel->set_message(MSG_ID_TEMPLATE, template_info, EditorValidationPanel::MSG_INFO, false);
 }
 
 void ScriptCreateDialog::ok_pressed() {
@@ -367,7 +361,7 @@ void ScriptCreateDialog::ok_pressed() {
 
 	EditorSettings::get_singleton()->save();
 	is_new_script_created = true;
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ScriptCreateDialog::_create_new() {
@@ -471,7 +465,7 @@ void ScriptCreateDialog::_language_changed(int l) {
 	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language_menu->get_item_text(language_menu->get_selected()));
 
 	_parent_name_changed(parent_name->get_text());
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ScriptCreateDialog::_built_in_pressed() {
@@ -482,13 +476,13 @@ void ScriptCreateDialog::_built_in_pressed() {
 		is_built_in = false;
 		_path_changed(file_path->get_text());
 	}
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ScriptCreateDialog::_use_template_pressed() {
 	is_using_templates = use_templates->is_pressed();
 	EditorSettings::get_singleton()->set_meta("script_setup_use_script_templates", is_using_templates);
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
@@ -555,10 +549,9 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	is_path_valid = false;
 	is_new_script_created = true;
 
-	String path_error = _validate_path(p_path, false);
+	path_error = _validate_path(p_path, false);
 	if (!path_error.is_empty()) {
-		_msg_path_valid(false, path_error);
-		_update_dialog();
+		validation_panel->update();
 		return;
 	}
 
@@ -567,32 +560,15 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
 	if (da->file_exists(p)) {
 		is_new_script_created = false;
-		_msg_path_valid(true, TTR("File exists, it will be reused."));
 	}
 
 	is_path_valid = true;
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ScriptCreateDialog::_path_submitted(const String &p_path) {
-	ok_pressed();
-}
-
-void ScriptCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
-	error_label->set_text(String::utf8("•  ") + p_msg);
-	if (valid) {
-		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
-	} else {
-		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-	}
-}
-
-void ScriptCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
-	path_error_label->set_text(String::utf8("•  ") + p_msg);
-	if (valid) {
-		path_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
-	} else {
-		path_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	if (!get_ok_button()->is_disabled()) {
+		ok_pressed();
 	}
 }
 
@@ -688,25 +664,25 @@ void ScriptCreateDialog::_update_template_menu() {
 void ScriptCreateDialog::_update_dialog() {
 	// "Add Script Dialog" GUI logic and script checks.
 	_update_template_menu();
-	bool script_ok = true;
 
 	// Is script path/name valid (order from top to bottom)?
 
 	if (!is_built_in && !is_path_valid) {
-		_msg_script_valid(false, TTR("Invalid path."));
-		script_ok = false;
+		validation_panel->set_message(MSG_ID_SCRIPT, TTR("Invalid path."), EditorValidationPanel::MSG_ERROR);
 	}
 	if (has_named_classes && (is_new_script_created && !is_class_name_valid)) {
-		_msg_script_valid(false, TTR("Invalid class name."));
-		script_ok = false;
+		validation_panel->set_message(MSG_ID_SCRIPT, TTR("Invalid class name."), EditorValidationPanel::MSG_ERROR);
 	}
 	if (!is_parent_name_valid && is_new_script_created) {
-		_msg_script_valid(false, TTR("Invalid inherited parent name or path."));
-		script_ok = false;
+		validation_panel->set_message(MSG_ID_SCRIPT, TTR("Invalid inherited parent name or path."), EditorValidationPanel::MSG_ERROR);
 	}
 
-	if (script_ok) {
-		_msg_script_valid(true, TTR("Script path/name is valid."));
+	if (validation_panel->is_valid() && !is_new_script_created) {
+		validation_panel->set_message(MSG_ID_SCRIPT, TTR("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
+	}
+
+	if (!path_error.is_empty()) {
+		validation_panel->set_message(MSG_ID_PATH, path_error, EditorValidationPanel::MSG_ERROR);
 	}
 
 	// Does script have named classes?
@@ -752,7 +728,11 @@ void ScriptCreateDialog::_update_dialog() {
 
 	// Is Script created or loaded from existing file?
 
-	builtin_warning_label->set_visible(is_built_in);
+	if (is_built_in) {
+		validation_panel->set_message(MSG_ID_BUILT_IN, TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."), EditorValidationPanel::MSG_INFO, false);
+	} else if (_get_class_name() == parent_name->get_text()) {
+		validation_panel->set_message(MSG_ID_BUILT_IN, TTR("Warning: Having the script name be the same as a built-in type is usually not desired."), EditorValidationPanel::MSG_WARNING, false);
+	}
 
 	path_controls[0]->set_visible(!is_built_in);
 	path_controls[1]->set_visible(!is_built_in);
@@ -761,7 +741,6 @@ void ScriptCreateDialog::_update_dialog() {
 
 	// Check if the script name is the same as the parent class.
 	// This warning isn't relevant if the script is built-in.
-	script_name_warning_label->set_visible(!is_built_in && _get_class_name() == parent_name->get_text());
 
 	bool is_new_file = is_built_in || is_new_script_created;
 
@@ -774,21 +753,16 @@ void ScriptCreateDialog::_update_dialog() {
 
 	if (is_new_file) {
 		if (is_built_in) {
-			_msg_path_valid(true, TTR("Built-in script (into scene file)."));
-		}
-		if (is_new_script_created && is_path_valid) {
-			_msg_path_valid(true, TTR("Will create a new script file."));
+			validation_panel->set_message(MSG_ID_PATH, TTR("Built-in script (into scene file)."), EditorValidationPanel::MSG_OK);
 		}
 	} else {
+		template_inactive_message = TTR("Using existing script file.");
 		if (load_enabled) {
-			template_inactive_message = TTR("Using existing script file.");
 			if (is_path_valid) {
-				_msg_path_valid(true, TTR("Will load an existing script file."));
+				validation_panel->set_message(MSG_ID_PATH, TTR("Will load an existing script file."), EditorValidationPanel::MSG_OK);
 			}
 		} else {
-			template_inactive_message = TTR("Using existing script file.");
-			_msg_path_valid(false, TTR("Script file already exists."));
-			script_ok = false;
+			validation_panel->set_message(MSG_ID_PATH, TTR("Script file already exists."), EditorValidationPanel::MSG_ERROR);
 		}
 	}
 
@@ -806,18 +780,7 @@ void ScriptCreateDialog::_update_dialog() {
 		template_menu->set_disabled(true);
 		template_menu->clear();
 		template_menu->add_item(template_inactive_message);
-	}
-	template_info_label->set_visible(!template_menu->is_disabled());
-
-	get_ok_button()->set_disabled(!script_ok);
-
-	Callable entered_call = callable_mp(this, &ScriptCreateDialog::_path_submitted);
-	if (script_ok) {
-		if (!file_path->is_connected("text_submitted", entered_call)) {
-			file_path->connect("text_submitted", entered_call);
-		}
-	} else if (file_path->is_connected("text_submitted", entered_call)) {
-		file_path->disconnect("text_submitted", entered_call);
+		validation_panel->set_message(MSG_ID_TEMPLATE, "", EditorValidationPanel::MSG_INFO);
 	}
 }
 
@@ -967,47 +930,23 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	/* Information Messages Field */
 
-	VBoxContainer *vb = memnew(VBoxContainer);
-
-	error_label = memnew(Label);
-	vb->add_child(error_label);
-
-	path_error_label = memnew(Label);
-	vb->add_child(path_error_label);
-
-	builtin_warning_label = memnew(Label);
-	builtin_warning_label->set_text(
-			TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."));
-	vb->add_child(builtin_warning_label);
-	builtin_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	builtin_warning_label->hide();
-
-	script_name_warning_label = memnew(Label);
-	script_name_warning_label->set_text(
-			TTR("Warning: Having the script name be the same as a built-in type is usually not desired."));
-	vb->add_child(script_name_warning_label);
-	script_name_warning_label->add_theme_color_override("font_color", Color(1, 0.85, 0.4));
-	script_name_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	script_name_warning_label->hide();
-
-	template_info_label = memnew(Label);
-	vb->add_child(template_info_label);
-	template_info_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-
-	status_panel = memnew(PanelContainer);
-	status_panel->set_h_size_flags(Control::SIZE_FILL);
-	status_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	status_panel->add_child(vb);
+	validation_panel = memnew(EditorValidationPanel);
+	validation_panel->add_line(MSG_ID_SCRIPT, TTR("Script path/name is valid."));
+	validation_panel->add_line(MSG_ID_PATH, TTR("Will create a new script file."));
+	validation_panel->add_line(MSG_ID_BUILT_IN);
+	validation_panel->add_line(MSG_ID_TEMPLATE);
+	validation_panel->set_update_callback(callable_mp(this, &ScriptCreateDialog::_update_dialog));
+	validation_panel->set_accept_button(get_ok_button());
 
 	/* Spacing */
 
 	Control *spacing = memnew(Control);
 	spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
 
-	vb = memnew(VBoxContainer);
+	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->add_child(gc);
 	vb->add_child(spacing);
-	vb->add_child(status_panel);
+	vb->add_child(validation_panel);
 	add_child(vb);
 
 	/* Language */

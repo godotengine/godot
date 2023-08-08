@@ -38,6 +38,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "multi_node_edit.h"
@@ -3927,12 +3928,6 @@ void EditorInspector::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_THEME_CHANGED: {
-			if (add_meta_error_panel) {
-				add_meta_error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-			}
-		} break;
-
 		case NOTIFICATION_PREDELETE: {
 			edit(nullptr); //just in case
 		} break;
@@ -4083,27 +4078,17 @@ void EditorInspector::_add_meta_confirm() {
 	undo_redo->commit_action();
 }
 
-void EditorInspector::_check_meta_name(const String &p_name) {
-	String error;
+void EditorInspector::_check_meta_name() {
+	const String meta_name = add_meta_name->get_text();
 
-	if (p_name == "") {
-		error = TTR("Metadata name can't be empty.");
-	} else if (!p_name.is_valid_identifier()) {
-		error = TTR("Metadata name must be a valid identifier.");
-	} else if (object->has_meta(p_name)) {
-		error = vformat(TTR("Metadata with name \"%s\" already exists."), p_name);
-	} else if (p_name[0] == '_') {
-		error = TTR("Names starting with _ are reserved for editor-only metadata.");
-	}
-
-	if (error != "") {
-		add_meta_error->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-		add_meta_error->set_text(error);
-		add_meta_dialog->get_ok_button()->set_disabled(true);
-	} else {
-		add_meta_error->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
-		add_meta_error->set_text(TTR("Metadata name is valid."));
-		add_meta_dialog->get_ok_button()->set_disabled(false);
+	if (meta_name.is_empty()) {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name can't be empty."), EditorValidationPanel::MSG_ERROR);
+	} else if (!meta_name.is_valid_identifier()) {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name must be a valid identifier."), EditorValidationPanel::MSG_ERROR);
+	} else if (object->has_meta(meta_name)) {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, vformat(TTR("Metadata with name \"%s\" already exists."), meta_name), EditorValidationPanel::MSG_ERROR);
+	} else if (meta_name[0] == '_') {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Names starting with _ are reserved for editor-only metadata."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -4143,16 +4128,13 @@ void EditorInspector::_show_add_meta_dialog() {
 		add_meta_dialog->register_text_enter(add_meta_name);
 		add_meta_dialog->connect("confirmed", callable_mp(this, &EditorInspector::_add_meta_confirm));
 
-		add_meta_error_panel = memnew(PanelContainer);
-		vbc->add_child(add_meta_error_panel);
-		if (is_inside_tree()) {
-			add_meta_error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-		}
+		validation_panel = memnew(EditorValidationPanel);
+		vbc->add_child(validation_panel);
+		validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name is valid."));
+		validation_panel->set_update_callback(callable_mp(this, &EditorInspector::_check_meta_name));
+		validation_panel->set_accept_button(add_meta_dialog->get_ok_button());
 
-		add_meta_error = memnew(Label);
-		add_meta_error_panel->add_child(add_meta_error);
-
-		add_meta_name->connect("text_changed", callable_mp(this, &EditorInspector::_check_meta_name));
+		add_meta_name->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 	}
 
 	Node *node = Object::cast_to<Node>(object);
@@ -4164,9 +4146,9 @@ void EditorInspector::_show_add_meta_dialog() {
 	}
 
 	add_meta_dialog->popup_centered();
-	add_meta_name->set_text("");
-	_check_meta_name("");
 	add_meta_name->grab_focus();
+	add_meta_name->set_text("");
+	validation_panel->update();
 }
 
 void EditorInspector::_bind_methods() {
