@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,28 @@
  * SOFTWARE.
  */
 
-// jpgd.h - C++ class for JPEG decompression.
-// Public domain, Rich Geldreich <richgel99@gmail.com>
-#ifndef _TVG_JPGD_H_
-#define _TVG_JPGD_H_
+#ifndef _TVG_FRAME_MODULE_H_
+#define _TVG_FRAME_MODULE_H_
 
-class jpeg_decoder;
+#include "tvgLoadModule.h"
 
-jpeg_decoder* jpgdHeader(const char* data, int size, int* width, int* height);
-jpeg_decoder* jpgdHeader(const char* filename, int* width, int* height);
-unsigned char* jpgdDecompress(jpeg_decoder* decoder);
-void jpgdDelete(jpeg_decoder* decoder);
+namespace tvg
+{
 
-#endif //_TVG_JPGD_H_
+class FrameModule: public LoadModule
+{
+public:
+    virtual ~FrameModule() {}
+
+    virtual bool frame(uint32_t frameNo) = 0;   //set the current frame number
+
+    virtual uint32_t totalFrame() = 0;      //return the total frame count
+    virtual uint32_t curFrame() = 0;        //return the current frame number
+    virtual float duration() = 0;           //return the animation duration in seconds
+
+    virtual bool animatable() override { return true; }
+};
+
+}
+
+#endif //_TVG_FRAME_MODULE_H_

@@ -1,31 +1,47 @@
-VERSION=0.9.0
-rm -rf AUTHORS inc LICENSE src *.zip
-curl -L -O https://github.com/thorvg/thorvg/archive/v$VERSION.zip
-bsdtar --strip-components=1 -xvf *.zip
-rm *.zip
-rm -rf .github docs pc res test tools tvgcompat .git* *.md *.txt wasm_build.sh CODEOWNERS
+#!/bin/bash -e
+
+VERSION=0.10.0
+
+rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/
+
+mkdir tmp/ && pushd tmp/
+
+curl -L -O https://github.com/thorvg/thorvg/archive/v$VERSION.tar.gz
+tar --strip-components=1 -xvf *.tar.gz
+rm *.tar.gz
 find . -type f -name 'meson.build' -delete
-rm -rf src/bin src/bindings src/examples src/wasm
-rm -rf src/lib/gl_engine src/loaders/external_jpg src/loaders/png
-cat << EOF > inc/config.h
+
+# Fix newline at end of file.
+for source in $(find ./ -type f \( -iname \*.h -o -iname \*.cpp \)); do
+    sed -i -e '$a\' $source
+done
+
+cp -v AUTHORS LICENSE ..
+cp -rv inc ../
+
+cat << EOF > ../inc/config.h
 #ifndef THORVG_CONFIG_H
 #define THORVG_CONFIG_H
 
-#define THORVG_SW_RASTER_SUPPORT 1
+#define THORVG_SW_RASTER_SUPPORT
 
-#define THORVG_SVG_LOADER_SUPPORT 1
-
-#define THORVG_PNG_LOADER_SUPPORT 1
-
-#define THORVG_TVG_LOADER_SUPPORT 1
-
-#define THORVG_TVG_SAVER_SUPPORT 1
-
-#define THORVG_JPG_LOADER_SUPPORT 1
+#define THORVG_SVG_LOADER_SUPPORT
 
 #define THORVG_VERSION_STRING "$VERSION"
 #endif
 EOF
-for source in $(find ./ -type f \( -iname \*.h -o -iname \*.cpp \)); do
-    sed -i -e '$a\' $source
-done
+
+mkdir ../src
+cp -rv src/lib ../src/
+# Only sw_engine is enabled.
+rm -rfv ../src/lib/gl_engine
+
+# Only svg loader is enabled.
+mkdir ../src/loaders
+cp -rv src/loaders/svg src/loaders/raw  ../src/loaders/
+
+# Future versions
+# cp -rv src/utils ../src
+
+popd
+rm -rf tmp/

@@ -67,7 +67,7 @@ Result SwCanvas::mempool(MempoolPolicy policy) noexcept
     if (!renderer) return Result::MemoryCorruption;
 
     //It can't change the policy during the running.
-    if (Canvas::pImpl->paints.count > 0) return Result::InsufficientCondition;
+    if (!Canvas::pImpl->paints.empty()) return Result::InsufficientCondition;
 
     if (policy == MempoolPolicy::Individual) renderer->mempool(false);
     else renderer->mempool(true);

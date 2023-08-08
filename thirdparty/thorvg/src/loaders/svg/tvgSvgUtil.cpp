@@ -275,3 +275,16 @@ string svgUtilBase64Decode(const char *src)
     }
     return decoded;
 }
+
+
+char* svgUtilStrndup(const char* str, size_t n)
+{
+    auto len = strlen(str);
+    if (len < n) n = len;
+
+    auto ret = (char*)malloc(n + 1);
+    if (!ret) return nullptr;
+    ret[n] = '\0';
+
+    return (char*)memcpy(ret, str, n);
+}

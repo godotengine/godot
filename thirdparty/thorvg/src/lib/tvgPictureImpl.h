@@ -67,11 +67,18 @@ struct Picture::Impl
     RenderData rd = nullptr;          //engine data
     float w = 0, h = 0;
     RenderMesh rm;                    //mesh data
+    Picture* picture = nullptr;
     bool resizing = false;
+    bool needComp = false;            //need composition
+    bool animated = false;            //picture is belonged to Animation
+
+    Impl(Picture* p) : picture(p)
+    {
+    }
 
     ~Impl()
     {
-        if (paint) delete(paint);
+        delete(paint);
         delete(surface);
     }
 
@@ -85,7 +92,7 @@ struct Picture::Impl
         return ret;
     }
 
-    uint32_t load()
+    RenderUpdateFlag load()
     {
         if (loader) {
             if (!paint) {
@@ -102,7 +109,8 @@ struct Picture::Impl
                     }
                     if (paint) return RenderUpdateFlag::None;
                 }
-            }
+            } else loader->sync();
+
             if (!surface) {
                 if ((surface = loader->bitmap().release())) {
                     loader->close();
@@ -127,38 +135,52 @@ struct Picture::Impl
         else return RenderTransform(pTransform, &tmp);
     }
 
-    RenderData update(RenderMethod &renderer, const RenderTransform* pTransform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag pFlag, bool clipper)
+    bool needComposition(uint8_t opacity)
+    {
+        //In this case, paint(scene) would try composition itself.
+        if (opacity < 255) return false;
+
+        //Composition test
+        const Paint* target;
+        auto method = picture->composite(&target);
+        if (!target || method == tvg::CompositeMethod::ClipPath) return false;
+        if (target->pImpl->opacity == 255 || target->pImpl->opacity == 0) return false;
+
+        return true;
+    }
+
+    RenderData update(RenderMethod &renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
     {
         auto flag = load();
 
         if (surface) {
             auto transform = resizeTransform(pTransform);
-            rd = renderer.prepare(surface, &rm, rd, &transform, opacity, clips, static_cast<RenderUpdateFlag>(pFlag | flag));
+            rd = renderer.prepare(surface, &rm, rd, &transform, clips, opacity, static_cast<RenderUpdateFlag>(pFlag | flag));
         } else if (paint) {
             if (resizing) {
                 loader->resize(paint, w, h);
                 resizing = false;
             }
-            rd = paint->pImpl->update(renderer, pTransform, opacity, clips, static_cast<RenderUpdateFlag>(pFlag | flag), clipper);
+            needComp = needComposition(opacity) ? true : false;
+            rd = paint->pImpl->update(renderer, pTransform, clips, opacity, static_cast<RenderUpdateFlag>(pFlag | flag), clipper);
         }
         return rd;
     }
 
     bool render(RenderMethod &renderer)
     {
+        bool ret = false;
         if (surface) return renderer.renderImage(rd);
-        else if (paint) return paint->pImpl->render(renderer);
-        return false;
-    }
-
-    bool viewbox(float* x, float* y, float* w, float* h)
-    {
-        if (!loader) return false;
-        if (x) *x = loader->vx;
-        if (y) *y = loader->vy;
-        if (w) *w = loader->vw;
-        if (h) *h = loader->vh;
-        return true;
+        else if (paint) {
+            Compositor* cmp = nullptr;
+            if (needComp) {
+                cmp = renderer.target(bounds(renderer), renderer.colorSpace());
+                renderer.beginComposite(cmp, CompositeMethod::None, 255);
+            }
+            ret = paint->pImpl->render(renderer);
+            if (cmp) renderer.endComposite(cmp);
+        }
+        return ret;
     }
 
     bool size(float w, float h)

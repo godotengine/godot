@@ -20,9 +20,10 @@
  * SOFTWARE.
  */
 
-#include <float.h>
-#include <math.h>
+#include "tvgMath.h"
 #include "tvgBezier.h"
+
+#define BEZIER_EPSILON 1e-4f
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -107,29 +108,25 @@ void bezSplitLeft(Bezier& cur, float at, Bezier& left)
 }
 
 
-float bezAt(const Bezier& bz, float at)
+float bezAt(const Bezier& bz, float at, float length)
 {
-    auto len = bezLength(bz);
     auto biggest = 1.0f;
     auto smallest = 0.0f;
     auto t = 0.5f;
 
     //just in case to prevent an infinite loop
     if (at <= 0) return 0.0f;
-
-    if (at >= len) return 1.0f;
+    if (at >= length) return length;
 
     while (true) {
         auto right = bz;
         Bezier left;
         bezSplitLeft(right, t, left);
-        len = bezLength(left);
-
-        if (fabsf(len - at) < BEZIER_EPSILON || fabsf(smallest - biggest) < BEZIER_EPSILON) {
+        length = bezLength(left);
+        if (fabsf(length - at) < BEZIER_EPSILON || fabsf(smallest - biggest) < BEZIER_EPSILON) {
             break;
         }
-
-        if (len < at) {
+        if (length < at) {
             smallest = t;
             t = (t + biggest) * 0.5f;
         } else {
@@ -144,8 +141,53 @@ float bezAt(const Bezier& bz, float at)
 void bezSplitAt(const Bezier& cur, float at, Bezier& left, Bezier& right)
 {
     right = cur;
-    auto t = bezAt(right, at);
+    auto t = bezAt(right, at, bezLength(right));
     bezSplitLeft(right, t, left);
 }
+
+
+Point bezPointAt(const Bezier& bz, float t)
+{
+    Point cur;
+    auto it = 1.0f - t;
+
+    auto ax = bz.start.x * it + bz.ctrl1.x * t;
+    auto bx = bz.ctrl1.x * it + bz.ctrl2.x * t;
+    auto cx = bz.ctrl2.x * it + bz.end.x * t;
+    ax = ax * it + bx * t;
+    bx = bx * it + cx * t;
+    cur.x = ax * it + bx * t;
+
+    float ay = bz.start.y * it + bz.ctrl1.y * t;
+    float by = bz.ctrl1.y * it + bz.ctrl2.y * t;
+    float cy = bz.ctrl2.y * it + bz.end.y * t;
+    ay = ay * it + by * t;
+    by = by * it + cy * t;
+    cur.y = ay * it + by * t;
+
+    return cur;
+}
+
+
+float bezAngleAt(const Bezier& bz, float t)
+{
+    if (t < 0 || t > 1) return 0;
+
+    //derivate
+    // p'(t) = 3 * (-(1-2t+t^2) * p0 + (1 - 4 * t + 3 * t^2) * p1 + (2 * t - 3 *
+    // t^2) * p2 + t^2 * p3)
+    float mt = 1.0f - t;
+    float d = t * t;
+    float a = -mt * mt;
+    float b = 1 - 4 * t + 3 * d;
+    float c = 2 * t - 3 * d;
+
+    Point pt ={a * bz.start.x + b * bz.ctrl1.x + c * bz.ctrl2.x + d * bz.end.x, a * bz.start.y + b * bz.ctrl1.y + c * bz.ctrl2.y + d * bz.end.y};
+    pt.x *= 3;
+    pt.y *= 3;
+
+    return atan2(pt.x, pt.y) * 180.0f / 3.141592f;
+}
+
 
 }

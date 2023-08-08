@@ -129,7 +129,6 @@ static void _borderCubicTo(SwStrokeBorder* border, const SwPoint& ctrl1, const S
     tag[2] = SW_STROKE_TAG_POINT;
 
     border->ptsCnt += 3;
-
     border->movable = false;
 }
 
@@ -193,7 +192,6 @@ static void _borderLineTo(SwStrokeBorder* border, const SwPoint& to, bool movabl
         //move last point
         border->pts[border->ptsCnt - 1] = to;
     } else {
-
         //don't add zero-length line_to
         if (border->ptsCnt > 0 && (border->pts[border->ptsCnt - 1] - to).small()) return;
 
@@ -233,8 +231,6 @@ static void _arcTo(SwStroke& stroke, int32_t side)
 
 static void _outside(SwStroke& stroke, int32_t side, SwFixed lineLength)
 {
-    constexpr SwFixed MITER_LIMIT = 4 * (1 << 16);
-
     auto border = stroke.borders + side;
 
     if (stroke.join == StrokeJoin::Round) {
@@ -257,7 +253,7 @@ static void _outside(SwStroke& stroke, int32_t side, SwFixed lineLength)
             }
 
             thcos = mathCos(theta);
-            auto sigma = mathMultiply(MITER_LIMIT, thcos);
+            auto sigma = mathMultiply(stroke.miterlimit, thcos);
 
             //is miter limit exceeded?
             if (sigma < 0x10000L) bevel = true;
@@ -432,8 +428,7 @@ static void _lineTo(SwStroke& stroke, const SwPoint& to)
 
 static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl2, const SwPoint& to)
 {
-    /* if all control points are coincident, this is a no-op;
-       avoid creating a spurious corner */
+    //if all control points are coincident, this is a no-op; avoid creating a spurious corner
     if ((stroke.center - ctrl1).small() && (ctrl1 - ctrl2).small() && (ctrl2 - to).small()) {
         stroke.center = to;
         return;
@@ -499,8 +494,7 @@ static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl
         auto border = stroke.borders;
         int32_t side = 0;
 
-        while (side <= 1)
-        {
+        while (side < 2) {
             auto rotate = SIDE_TO_ROTATE(side);
 
             //compute control points
@@ -521,7 +515,6 @@ static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl
             _end += arc[0];
 
             if (stroke.handleWideStrokes) {
-
                 /* determine whether the border radius is greater than the radius of
                    curvature of the original arc */
                 auto _start = border->pts[border->ptsCnt - 1];
@@ -556,8 +549,6 @@ static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl
                     ++border;
                     continue;
                 }
-
-            //else fall through
             }
             _borderCubicTo(border, _ctrl1, _ctrl2, _end);
             ++side;
@@ -653,7 +644,6 @@ static void _addReverseLeft(SwStroke& stroke, bool opened)
             if (ttag == SW_STROKE_TAG_BEGIN || ttag == SW_STROKE_TAG_END)
               dstTag[0] ^= (SW_STROKE_TAG_BEGIN | SW_STROKE_TAG_END);
         }
-
         --srcPt;
         --srcTag;
         ++dstPt;
@@ -779,36 +769,27 @@ fail:
 static void _exportBorderOutline(const SwStroke& stroke, SwOutline* outline, uint32_t side)
 {
     auto border = stroke.borders + side;
+    if (border->ptsCnt == 0) return;
 
-    if (border->ptsCnt == 0) return;  //invalid border
-
-    memcpy(outline->pts + outline->ptsCnt, border->pts, border->ptsCnt * sizeof(SwPoint));
+    memcpy(outline->pts.data + outline->pts.count, border->pts, border->ptsCnt * sizeof(SwPoint));
 
     auto cnt = border->ptsCnt;
     auto src = border->tags;
-    auto tags = outline->types + outline->ptsCnt;
-    auto cntrs = outline->cntrs + outline->cntrsCnt;
-    auto idx = outline->ptsCnt;
+    auto tags = outline->types.data + outline->types.count;
+    auto idx = outline->pts.count;
 
     while (cnt > 0) {
-
         if (*src & SW_STROKE_TAG_POINT) *tags = SW_CURVE_TYPE_POINT;
         else if (*src & SW_STROKE_TAG_CUBIC) *tags = SW_CURVE_TYPE_CUBIC;
-        else {
-            //LOG: What type of stroke outline??
-        }
-
-        if (*src & SW_STROKE_TAG_END) {
-            *cntrs = idx;
-            ++cntrs;
-            ++outline->cntrsCnt;
-        }
+        else TVGERR("SW_ENGINE", "Invalid stroke tag was given! = %d", *src);
+        if (*src & SW_STROKE_TAG_END) outline->cntrs.push(idx);
         ++src;
         ++tags;
         ++idx;
         --cnt;
     }
-    outline->ptsCnt = outline->ptsCnt + border->ptsCnt;
+    outline->pts.count += border->ptsCnt;
+    outline->types.count += border->ptsCnt;
 }
 
 
@@ -844,6 +825,7 @@ void strokeReset(SwStroke* stroke, const RenderShape* rshape, const Matrix* tran
 
     stroke->width = HALF_STROKE(rshape->strokeWidth());
     stroke->cap = rshape->strokeCap();
+    stroke->miterlimit = static_cast<SwFixed>(rshape->strokeMiterlimit()) << 16;
 
     //Save line join: it can be temporarily changed when stroking curves...
     stroke->joinSaved = stroke->join = rshape->strokeJoin();
@@ -858,10 +840,11 @@ void strokeReset(SwStroke* stroke, const RenderShape* rshape, const Matrix* tran
 bool strokeParseOutline(SwStroke* stroke, const SwOutline& outline)
 {
     uint32_t first = 0;
+    uint32_t i = 0;
 
-    for (uint32_t i = 0; i < outline.cntrsCnt; ++i) {
-        auto last = outline.cntrs[i];  //index of last point in contour
-        auto limit = outline.pts + last;
+    for (auto cntr = outline.cntrs.data; cntr < outline.cntrs.end(); ++cntr, ++i) {
+        auto last = *cntr;           //index of last point in contour
+        auto limit = outline.pts.data + last;
 
         //Skip empty points
         if (last <= first) {
@@ -869,15 +852,15 @@ bool strokeParseOutline(SwStroke* stroke, const SwOutline& outline)
             continue;
         }
 
-        auto start = outline.pts[first];
-        auto pt = outline.pts + first;
-        auto types = outline.types + first;
+        auto start = outline.pts.data[first];
+        auto pt = outline.pts.data + first;
+        auto types = outline.types.data + first;
         auto type = types[0];
 
         //A contour cannot start with a cubic control point
         if (type == SW_CURVE_TYPE_CUBIC) return false;
 
-        auto closed =  outline.closed ? outline.closed[i]: false;
+        auto closed =  outline.closed.data ? outline.closed.data[i]: false;
 
         _beginSubPath(*stroke, start, closed);
 
@@ -903,7 +886,6 @@ bool strokeParseOutline(SwStroke* stroke, const SwOutline& outline)
                 goto close;
             }
         }
-
     close:
         if (!stroke->firstPt) _endSubPath(*stroke);
         first = last + 1;
@@ -923,15 +905,9 @@ SwOutline* strokeExportOutline(SwStroke* stroke, SwMpool* mpool, unsigned tid)
     auto cntrsCnt = count2 + count4;
 
     auto outline = mpoolReqStrokeOutline(mpool, tid);
-    if (outline->reservedPtsCnt < ptsCnt) {
-        outline->pts = static_cast<SwPoint*>(realloc(outline->pts, sizeof(SwPoint) * ptsCnt));
-        outline->types = static_cast<uint8_t*>(realloc(outline->types, sizeof(uint8_t) * ptsCnt));
-        outline->reservedPtsCnt = ptsCnt;
-    }
-    if (outline->reservedCntrsCnt < cntrsCnt) {
-        outline->cntrs = static_cast<uint32_t*>(realloc(outline->cntrs, sizeof(uint32_t) * cntrsCnt));
-        outline->reservedCntrsCnt = cntrsCnt;
-    }
+    outline->pts.reserve(ptsCnt);
+    outline->types.reserve(ptsCnt);
+    outline->cntrs.reserve(cntrsCnt);
 
     _exportBorderOutline(*stroke, outline, 0);  //left
     _exportBorderOutline(*stroke, outline, 1);  //right

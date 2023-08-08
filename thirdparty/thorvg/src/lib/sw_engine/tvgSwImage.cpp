@@ -39,18 +39,10 @@ static bool _genOutline(SwImage* image, const RenderMesh* mesh, const Matrix* tr
     image->outline = mpoolReqOutline(mpool, tid);
     auto outline = image->outline;
 
-     if (outline->reservedPtsCnt < 5) {
-        outline->reservedPtsCnt = 5;
-        outline->pts = static_cast<SwPoint*>(realloc(outline->pts, outline->reservedPtsCnt * sizeof(SwPoint)));
-        outline->types = static_cast<uint8_t*>(realloc(outline->types, outline->reservedPtsCnt * sizeof(uint8_t)));
-     }
-
-    if (outline->reservedCntrsCnt < 1) {
-        outline->reservedCntrsCnt = 1;
-        outline->cntrs = static_cast<uint32_t*>(realloc(outline->cntrs, outline->reservedCntrsCnt * sizeof(uint32_t)));
-        outline->closed = static_cast<bool*>(realloc(outline->closed, outline->reservedCntrsCnt * sizeof(bool)));
-        outline->closed[0] = true;
-    }
+    outline->pts.reserve(5);
+    outline->types.reserve(5);
+    outline->cntrs.reserve(1);
+    outline->closed.reserve(1);
 
     Point to[4];
     if (mesh->triangleCnt > 0) {
@@ -97,17 +89,14 @@ static bool _genOutline(SwImage* image, const RenderMesh* mesh, const Matrix* tr
     }
 
     for (int i = 0; i < 4; i++) {
-        outline->pts[outline->ptsCnt] = mathTransform(&to[i], transform);
-        outline->types[outline->ptsCnt] = SW_CURVE_TYPE_POINT;
-        ++outline->ptsCnt;
+        outline->pts.push(mathTransform(&to[i], transform));
+        outline->types.push(SW_CURVE_TYPE_POINT);
     }
 
-    outline->pts[outline->ptsCnt] = outline->pts[0];
-    outline->types[outline->ptsCnt] = SW_CURVE_TYPE_POINT;
-    ++outline->ptsCnt;
-
-    outline->cntrs[outline->cntrsCnt] = outline->ptsCnt - 1;
-    ++outline->cntrsCnt;
+    outline->pts.push(outline->pts.data[0]);
+    outline->types.push(SW_CURVE_TYPE_POINT);
+    outline->cntrs.push(outline->pts.count - 1);
+    outline->closed.push(true);
 
     image->outline = outline;
 
