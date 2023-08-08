@@ -1006,6 +1006,7 @@ public:
 		bool light_masked : 1;
 		bool on_interpolate_transform_list : 1;
 		bool interpolated : 1;
+		bool ignore_parent_xform : 1;
 		mutable bool custom_rect : 1;
 		mutable bool rect_dirty : 1;
 		mutable bool bound_dirty : 1;
@@ -1261,6 +1262,7 @@ public:
 			update_when_visible = false;
 			on_interpolate_transform_list = false;
 			interpolated = true;
+			ignore_parent_xform = false;
 			local_bound_last_update_tick = 0;
 		}
 		virtual ~Item() {

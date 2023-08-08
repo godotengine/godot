@@ -237,6 +237,7 @@ protected:
 	}
 
 	void item_rect_changed(bool p_size_changed = true);
+	void set_canvas_item_use_identity_transform(bool p_enable);
 
 	void _notification(int p_what);
 	static void _bind_methods();

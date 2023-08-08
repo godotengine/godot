@@ -35,6 +35,8 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
 
+#define GODOT_CPU_PARTICLES_2D_LEGACY_COMPATIBILITY
+
 class CPUParticles2D : public Node2D {
 private:
 	GDCLASS(CPUParticles2D, Node2D);
@@ -81,12 +83,25 @@ public:
 private:
 	bool emitting;
 
-	// warning - beware of adding non-trivial types
-	// to this structure as it is zeroed to initialize in set_amount()
-	struct Particle {
+	struct ParticleBase {
+		void blank() {
+			for (int n = 0; n < 4; n++) {
+				custom[n] = 0.0f;
+			}
+		}
 		Transform2D transform;
 		Color color;
 		float custom[4];
+	};
+
+	// Warning - beware of adding non-trivial types
+	// to this structure as it is zeroed to initialize in set_amount().
+	struct Particle : public ParticleBase {
+		void copy_to(ParticleBase &r_o) {
+			r_o.transform = transform;
+			r_o.color = color;
+			memcpy(r_o.custom, custom, sizeof(custom));
+		}
 		float rotation;
 		Vector2 velocity;
 		bool active;
@@ -112,7 +127,9 @@ private:
 	RID multimesh;
 
 	PoolVector<Particle> particles;
+	LocalVector<ParticleBase> particles_prev;
 	PoolVector<float> particle_data;
+	PoolVector<float> particle_data_prev;
 	PoolVector<int> particle_order;
 
 	struct SortLifetime {
@@ -177,11 +194,13 @@ private:
 
 	Vector2 gravity;
 
-	void _update_internal();
+	void _update_internal(bool p_on_physics_tick);
 	void _particles_process(float p_delta);
+	void _particle_process(Particle &r_p, const Transform2D &p_emission_xform, float p_local_delta, float &r_tv);
 	void _update_particle_data_buffer();
 
 	Mutex update_mutex;
+	bool _interpolated = false;
 
 	void _update_render_thread();
 
@@ -190,6 +209,46 @@ private:
 	void _set_redraw(bool p_redraw);
 
 	void _texture_changed();
+	void _refresh_interpolation_state();
+
+	template <bool TRANSFORM_PARTICLE>
+	void _fill_particle_data(const ParticleBase &p_source, float *r_dest, bool p_active) const {
+		if (p_active) {
+#ifdef GODOT_CPU_PARTICLES_2D_LEGACY_COMPATIBILITY
+			Transform2D t = p_source.transform;
+
+			if (TRANSFORM_PARTICLE) {
+				t = inv_emission_transform * t;
+			}
+#else
+			const Transform2D &t = p_source.transform;
+#endif
+
+			r_dest[0] = t.elements[0][0];
+			r_dest[1] = t.elements[1][0];
+			r_dest[2] = 0;
+			r_dest[3] = t.elements[2][0];
+			r_dest[4] = t.elements[0][1];
+			r_dest[5] = t.elements[1][1];
+			r_dest[6] = 0;
+			r_dest[7] = t.elements[2][1];
+
+			Color c = p_source.color;
+			uint8_t *data8 = (uint8_t *)&r_dest[8];
+			data8[0] = CLAMP(c.r * 255.0, 0, 255);
+			data8[1] = CLAMP(c.g * 255.0, 0, 255);
+			data8[2] = CLAMP(c.b * 255.0, 0, 255);
+			data8[3] = CLAMP(c.a * 255.0, 0, 255);
+
+			r_dest[9] = p_source.custom[0];
+			r_dest[10] = p_source.custom[1];
+			r_dest[11] = p_source.custom[2];
+			r_dest[12] = p_source.custom[3];
+
+		} else {
+			memset(r_dest, 0, sizeof(float) * 13);
+		}
+	}
 
 protected:
 	static void _bind_methods();
