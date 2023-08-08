@@ -198,6 +198,8 @@ public:
 	int total_vertices_drawn = 0;
 	int total_draw_calls_used = 0;
 
+	int num_viewports_with_motion_vectors = 0;
+
 private:
 	Vector<Viewport *> _sort_active_viewports();
 	void _viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count);
@@ -302,6 +304,7 @@ public:
 	int get_total_objects_drawn() const;
 	int get_total_primitives_drawn() const;
 	int get_total_draw_calls_used() const;
+	int get_num_viewports_with_motion_vectors() const;
 
 	// Workaround for setting this on thread.
 	void call_set_vsync_mode(DisplayServer::VSyncMode p_mode, DisplayServer::WindowID p_window);
