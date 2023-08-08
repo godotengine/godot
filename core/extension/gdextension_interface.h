@@ -2126,6 +2126,19 @@ typedef void (*GDExtensionInterfaceRefSetObject)(GDExtensionRefPtr p_ref, GDExte
  */
 typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate)(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data);
 
+/**
+ * @name object_get_script_instance
+ * @since 4.2
+ *
+ * Get the script instance data attached to this object.
+ *
+ * @param p_object A pointer to the Object.
+ * @param p_language A pointer to the language expected for this script instance.
+ *
+ * @return A GDExtensionScriptInstanceDataPtr that was attached to this object as part of script_instance_create.
+ */
+typedef GDExtensionScriptInstanceDataPtr (*GDExtensionInterfaceObjectGetScriptInstance)(GDExtensionConstObjectPtr p_object, GDExtensionObjectPtr p_language);
+
 /* INTERFACE: ClassDB */
 
 /**

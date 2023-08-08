@@ -1048,6 +1048,25 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
 }
 
+static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExtensionConstObjectPtr p_object, GDExtensionConstObjectPtr p_language) {
+	if (!p_object || !p_language) {
+		return nullptr;
+	}
+
+	const Object *o = (const Object *)p_object;
+	ScriptInstanceExtension *script_instance_extension = reinterpret_cast<ScriptInstanceExtension *>(o->get_script_instance());
+	if (!script_instance_extension) {
+		return nullptr;
+	}
+
+	const ScriptLanguage *language = script_instance_extension->get_language();
+	if (language != p_language) {
+		return nullptr;
+	}
+
+	return script_instance_extension->instance;
+}
+
 static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
@@ -1216,6 +1235,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(ref_get_object);
 	REGISTER_INTERFACE_FUNC(ref_set_object);
 	REGISTER_INTERFACE_FUNC(script_instance_create);
+	REGISTER_INTERFACE_FUNC(object_get_script_instance);
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
 	REGISTER_INTERFACE_FUNC(classdb_get_class_tag);
