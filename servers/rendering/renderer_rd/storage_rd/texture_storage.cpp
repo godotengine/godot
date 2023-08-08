@@ -46,9 +46,11 @@ void TextureStorage::CanvasTexture::clear_sets() {
 	}
 	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
 		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
-			if (RD::get_singleton()->uniform_set_is_valid(uniform_sets[i][j])) {
-				RD::get_singleton()->free(uniform_sets[i][j]);
-				uniform_sets[i][j] = RID();
+			for (int k = 0; k < 2; k++) {
+				if (RD::get_singleton()->uniform_set_is_valid(uniform_sets[i][j][k])) {
+					RD::get_singleton()->free(uniform_sets[i][j][k]);
+					uniform_sets[i][j][k] = RID();
+				}
 			}
 		}
 	}
@@ -641,7 +643,7 @@ void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS:
 	ct->clear_sets();
 }
 
-bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular) {
+bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, bool p_use_srgb, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular) {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
 	CanvasTexture *ct = nullptr;
@@ -674,7 +676,7 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 	RS::CanvasItemTextureRepeat repeat = ct->texture_repeat != RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? ct->texture_repeat : p_base_repeat;
 	ERR_FAIL_COND_V(repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, false);
 
-	RID uniform_set = ct->uniform_sets[filter][repeat];
+	RID uniform_set = ct->uniform_sets[filter][repeat][int(p_use_srgb)];
 	if (!RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 		//create and update
 		Vector<RD::Uniform> uniforms;
@@ -688,7 +690,7 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
 				ct->size_cache = Size2i(1, 1);
 			} else {
-				u.append_id(t->rd_texture);
+				u.append_id(t->rd_texture_srgb.is_valid() && (p_use_srgb) ? t->rd_texture_srgb : t->rd_texture);
 				ct->size_cache = Size2i(t->width_2d, t->height_2d);
 				if (t->render_target) {
 					t->render_target->was_used = true;
@@ -741,7 +743,7 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 		}
 
 		uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_base_shader, p_base_set);
-		ct->uniform_sets[filter][repeat] = uniform_set;
+		ct->uniform_sets[filter][repeat][int(p_use_srgb)] = uniform_set;
 		ct->cleared_cache = false;
 	}
 
@@ -1268,7 +1270,35 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 #endif
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	Ref<Image> image;
+
+	// Expand RGB10_A2 into RGBAH. This is needed for capturing viewport data
+	// when using the mobile renderer with HDR mode on.
+	if (tex->rd_format == RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32) {
+		Vector<uint8_t> new_data;
+		new_data.resize(data.size() * 2);
+		uint16_t *ndp = (uint16_t *)new_data.ptr();
+
+		uint32_t *ptr = (uint32_t *)data.ptr();
+		uint32_t num_pixels = data.size() / 4;
+
+		for (uint32_t ofs = 0; ofs < num_pixels; ofs++) {
+			uint32_t px = ptr[ofs];
+			uint32_t r = (px & 0x3FF);
+			uint32_t g = ((px >> 10) & 0x3FF);
+			uint32_t b = ((px >> 20) & 0x3FF);
+			uint32_t a = ((px >> 30) & 0x3);
+
+			ndp[ofs * 4 + 0] = Math::make_half_float(float(r) / 1023.0);
+			ndp[ofs * 4 + 1] = Math::make_half_float(float(g) / 1023.0);
+			ndp[ofs * 4 + 2] = Math::make_half_float(float(b) / 1023.0);
+			ndp[ofs * 4 + 3] = Math::make_half_float(float(a) / 3.0);
+		}
+		image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, new_data);
+	} else {
+		image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	}
+
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (tex->format != tex->validated_format) {
 		image->convert(tex->format);
@@ -3020,10 +3050,15 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	if (rt->size.width == 0 || rt->size.height == 0) {
 		return;
 	}
-	//until we implement support for HDR monitors (and render target is attached to screen), this is enough.
-	rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-	rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-	rt->image_format = rt->is_transparent ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
+	if (rt->use_hdr) {
+		rt->color_format = RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format();
+		rt->color_format_srgb = rt->color_format;
+		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBAH : Image::FORMAT_RGBH;
+	} else {
+		rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
+	}
 
 	RD::TextureFormat rd_color_attachment_format;
 	RD::TextureView rd_view;
@@ -3106,6 +3141,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		tex->rd_format = rt->color_format;
 		tex->rd_format_srgb = rt->color_format_srgb;
 		tex->format = rt->image_format;
+		tex->validated_format = rt->use_hdr ? Image::FORMAT_RGBAH : Image::FORMAT_RGBA8;
 
 		Vector<RID> proxies = tex->proxies; //make a copy, since update may change it
 		for (int i = 0; i < proxies.size(); i++) {
@@ -3328,6 +3364,25 @@ RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) con
 	return rt->msaa;
 }
 
+void TextureStorage::render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (p_use_hdr == rt->use_hdr) {
+		return;
+	}
+
+	rt->use_hdr = p_use_hdr;
+	_update_render_target(rt);
+}
+
+bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+
+	return rt->use_hdr;
+}
+
 RID TextureStorage::render_target_get_rd_framebuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
@@ -3404,7 +3459,7 @@ bool TextureStorage::render_target_is_clear_requested(RID p_render_target) {
 Color TextureStorage::render_target_get_clear_request_color(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, Color());
-	return rt->clear_color;
+	return rt->use_hdr ? rt->clear_color.srgb_to_linear() : rt->clear_color;
 }
 
 void TextureStorage::render_target_disable_clear_request(RID p_render_target) {
@@ -3420,7 +3475,7 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 		return;
 	}
 	Vector<Color> clear_colors;
-	clear_colors.push_back(rt->clear_color);
+	clear_colors.push_back(rt->use_hdr ? rt->clear_color.srgb_to_linear() : rt->clear_color);
 	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
 	RD::get_singleton()->draw_list_end();
 	rt->clear_requested = false;
@@ -3735,7 +3790,7 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	// TODO figure out stereo support here
 
 	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-		copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+		copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, !rt->use_hdr, true);
 	} else {
 		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, true);
 	}
@@ -3759,7 +3814,7 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, true);
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, !rt->use_hdr);
 		} else {
 			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
 		}
@@ -3789,9 +3844,9 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 		}
 	}
 
-	//single texture copy for backbuffer
+	// Single texture copy for backbuffer.
 	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, !rt->use_hdr);
 	} else {
 		copy_effects->set_color_raster(rt->backbuffer_mipmap0, p_color, region);
 	}
@@ -3833,7 +3888,7 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 
 		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, true);
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, !rt->use_hdr);
 		} else {
 			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
 		}

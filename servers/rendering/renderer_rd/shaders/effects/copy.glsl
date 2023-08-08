@@ -57,7 +57,7 @@ layout(r32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffe
 #elif defined(DST_IMAGE_8BIT)
 layout(rgba8, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
 #else
-layout(rgba32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
+layout(rgba16f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
 #endif
 
 #ifdef MODE_GAUSSIAN_BLUR
