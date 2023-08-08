@@ -1421,10 +1421,17 @@ void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p
 	mm->multimesh = p_mesh;
 	mm->texture = p_texture;
 	mm->normal_map = p_normal_map;
+	mm->canvas_item = p_item;
 
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(mm);
 	_make_bound_dirty(canvas_item);
+
+	// Attach to multimesh a backlink to enable updating
+	// the canvas item local bound when the multimesh changes.
+	if (p_mesh.is_valid()) {
+		VSG::storage->multimesh_attach_canvas_item(p_mesh, p_item, true);
+	}
 }
 
 void VisualServerCanvas::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) {
@@ -1588,7 +1595,16 @@ void VisualServerCanvas::canvas_item_attach_skeleton(RID p_item, RID p_skeleton)
 	}
 }
 
-void VisualServerCanvas::_canvas_item_skeleton_moved(RID p_item) {
+// Canvas items may contain references to other resources (such as MultiMesh).
+// If the resources are deleted first, and the canvas_item retains references, it
+// will crash / error when it tries to access these.
+void VisualServerCanvas::_canvas_item_remove_references(RID p_item, RID p_rid) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->remove_references(p_rid);
+}
+
+void VisualServerCanvas::_canvas_item_invalidate_local_bound(RID p_item) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 	_make_bound_dirty(canvas_item);

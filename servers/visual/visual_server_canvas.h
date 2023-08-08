@@ -256,7 +256,6 @@ public:
 	void canvas_item_set_use_parent_material(RID p_item, bool p_enable);
 
 	void canvas_item_attach_skeleton(RID p_item, RID p_skeleton);
-	void _canvas_item_skeleton_moved(RID p_item);
 	void canvas_item_set_skeleton_relative_xform(RID p_item, Transform2D p_relative_xform);
 	Rect2 _debug_canvas_item_get_rect(RID p_item);
 	Rect2 _debug_canvas_item_get_local_bound(RID p_item);
@@ -264,6 +263,9 @@ public:
 	void canvas_item_set_interpolated(RID p_item, bool p_interpolated);
 	void canvas_item_reset_physics_interpolation(RID p_item);
 	void canvas_item_transform_physics_interpolation(RID p_item, Transform2D p_transform);
+
+	void _canvas_item_invalidate_local_bound(RID p_item);
+	void _canvas_item_remove_references(RID p_item, RID p_rid);
 
 	RID canvas_light_create();
 	void canvas_light_attach_to_canvas(RID p_light, RID p_canvas);
