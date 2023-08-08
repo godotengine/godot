@@ -390,6 +390,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) const { return Size2i(); }
 
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
 

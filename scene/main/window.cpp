@@ -270,20 +270,21 @@ void Window::set_title(const String &p_title) {
 	ERR_MAIN_THREAD_GUARD;
 
 	title = p_title;
+	tr_title = atr(p_title);
+#ifdef DEBUG_ENABLED
+	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+		// Append a suffix to the window title to denote that the project is running
+		// from a debug build (including the editor). Since this results in lower performance,
+		// this should be clearly presented to the user.
+		tr_title = vformat("%s (DEBUG)", tr_title);
+	}
+#endif
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		String tr_title = atr(p_title);
-#ifdef DEBUG_ENABLED
-		if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-			// Append a suffix to the window title to denote that the project is running
-			// from a debug build (including the editor). Since this results in lower performance,
-			// this should be clearly presented to the user.
-			tr_title = vformat("%s (DEBUG)", tr_title);
-		}
-#endif
 		DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
+		_update_window_size();
 	}
 }
 
@@ -586,15 +587,6 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
-	String tr_title = atr(title);
-#ifdef DEBUG_ENABLED
-	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-		// Append a suffix to the window title to denote that the project is running
-		// from a debug build (including the editor). Since this results in lower performance,
-		// this should be clearly presented to the user.
-		tr_title = vformat("%s (DEBUG)", tr_title);
-	}
-#endif
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
@@ -994,6 +986,12 @@ void Window::_update_window_size() {
 		}
 
 		DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
+
+		if (keep_title_visible) {
+			Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
+			size_limit = size_limit.max(title_size);
+		}
+
 		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
 		DisplayServer::get_singleton()->window_set_size(size, window_id);
 	}
@@ -1281,17 +1279,19 @@ void Window::_notification(int p_what) {
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
 
-			if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
-				String tr_title = atr(title);
+			tr_title = atr(title);
 #ifdef DEBUG_ENABLED
-				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-					// Append a suffix to the window title to denote that the project is running
-					// from a debug build (including the editor). Since this results in lower performance,
-					// this should be clearly presented to the user.
-					tr_title = vformat("%s (DEBUG)", tr_title);
-				}
+			if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+				// Append a suffix to the window title to denote that the project is running
+				// from a debug build (including the editor). Since this results in lower performance,
+				// this should be clearly presented to the user.
+				tr_title = vformat("%s (DEBUG)", tr_title);
+			}
 #endif
+
+			if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
 				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
+				_update_window_size();
 			}
 		} break;
 
@@ -1382,6 +1382,20 @@ void Window::set_content_scale_stretch(ContentScaleStretch p_stretch) {
 
 Window::ContentScaleStretch Window::get_content_scale_stretch() const {
 	return content_scale_stretch;
+}
+
+void Window::set_keep_title_visible(bool p_title_visible) {
+	if (keep_title_visible == p_title_visible) {
+		return;
+	}
+	keep_title_visible = p_title_visible;
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		_update_window_size();
+	}
+}
+
+bool Window::get_keep_title_visible() const {
+	return keep_title_visible;
 }
 
 void Window::set_content_scale_factor(real_t p_factor) {
@@ -2713,6 +2727,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_content_scale_stretch", "stretch"), &Window::set_content_scale_stretch);
 	ClassDB::bind_method(D_METHOD("get_content_scale_stretch"), &Window::get_content_scale_stretch);
 
+	ClassDB::bind_method(D_METHOD("set_keep_title_visible", "title_visible"), &Window::set_keep_title_visible);
+	ClassDB::bind_method(D_METHOD("get_keep_title_visible"), &Window::get_keep_title_visible);
+
 	ClassDB::bind_method(D_METHOD("set_content_scale_factor", "factor"), &Window::set_content_scale_factor);
 	ClassDB::bind_method(D_METHOD("get_content_scale_factor"), &Window::get_content_scale_factor);
 
@@ -2826,6 +2843,7 @@ void Window::_bind_methods() {
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size", PROPERTY_HINT_NONE, "suffix:px"), "set_max_size", "get_max_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_title_visible"), "set_keep_title_visible", "get_keep_title_visible");
 
 	ADD_GROUP("Content Scale", "content_scale_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");

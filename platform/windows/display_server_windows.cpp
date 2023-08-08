@@ -1191,6 +1191,51 @@ void DisplayServerWindows::window_set_title(const String &p_title, WindowID p_wi
 	SetWindowTextW(windows[p_window].hWnd, (LPCWSTR)(p_title.utf16().get_data()));
 }
 
+Size2i DisplayServerWindows::window_get_title_size(const String &p_title, WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	Size2i size;
+	ERR_FAIL_COND_V(!windows.has(p_window), size);
+
+	const WindowData &wd = windows[p_window];
+	if (wd.fullscreen || wd.minimized || wd.borderless) {
+		return size;
+	}
+
+	HDC hdc = GetDCEx(wd.hWnd, NULL, DCX_WINDOW);
+	if (hdc) {
+		Char16String s = p_title.utf16();
+		SIZE text_size;
+		if (GetTextExtentPoint32W(hdc, (LPCWSTR)(s.get_data()), s.length(), &text_size)) {
+			size.x = text_size.cx;
+			size.y = text_size.cy;
+		}
+
+		ReleaseDC(wd.hWnd, hdc);
+	}
+	RECT rect;
+	if (DwmGetWindowAttribute(wd.hWnd, DWMWA_CAPTION_BUTTON_BOUNDS, &rect, sizeof(RECT)) == S_OK) {
+		if (rect.right - rect.left > 0) {
+			ClientToScreen(wd.hWnd, (POINT *)&rect.left);
+			ClientToScreen(wd.hWnd, (POINT *)&rect.right);
+
+			if (win81p_PhysicalToLogicalPointForPerMonitorDPI) {
+				win81p_PhysicalToLogicalPointForPerMonitorDPI(0, (POINT *)&rect.left);
+				win81p_PhysicalToLogicalPointForPerMonitorDPI(0, (POINT *)&rect.right);
+			}
+
+			size.x += (rect.right - rect.left);
+			size.y = MAX(size.y, rect.bottom - rect.top);
+		}
+	}
+	if (icon.is_valid()) {
+		size.x += 32;
+	} else {
+		size.x += 16;
+	}
+	return size;
+}
+
 void DisplayServerWindows::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -4385,6 +4430,7 @@ bool DisplayServerWindows::winink_available = false;
 GetPointerTypePtr DisplayServerWindows::win8p_GetPointerType = nullptr;
 GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
 LogicalToPhysicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_LogicalToPhysicalPointForPerMonitorDPI = nullptr;
+PhysicalToLogicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_PhysicalToLogicalPointForPerMonitorDPI = nullptr;
 
 typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_DPI_UNAWARE = 0,
@@ -4522,6 +4568,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
 		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
 		win81p_LogicalToPhysicalPointForPerMonitorDPI = (LogicalToPhysicalPointForPerMonitorDPIPtr)GetProcAddress(user32_lib, "LogicalToPhysicalPointForPerMonitorDPI");
+		win81p_PhysicalToLogicalPointForPerMonitorDPI = (PhysicalToLogicalPointForPerMonitorDPIPtr)GetProcAddress(user32_lib, "PhysicalToLogicalPointForPerMonitorDPI");
 
 		winink_available = win8p_GetPointerType && win8p_GetPointerPenInfo;
 	}

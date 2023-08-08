@@ -2626,6 +2626,47 @@ void DisplayServerMacOS::window_set_title(const String &p_title, WindowID p_wind
 	[wd.window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
 }
 
+Size2i DisplayServerMacOS::window_get_title_size(const String &p_title, WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	Size2i size;
+	ERR_FAIL_COND_V(!windows.has(p_window), size);
+
+	const WindowData &wd = windows[p_window];
+	if (wd.fullscreen || wd.borderless) {
+		return size;
+	}
+	if ([wd.window_object respondsToSelector:@selector(isMiniaturized)]) {
+		if ([wd.window_object isMiniaturized]) {
+			return size;
+		}
+	}
+
+	float scale = screen_get_max_scale();
+
+	if (wd.window_button_view) {
+		size.x = ([wd.window_button_view getOffset].x + [wd.window_button_view frame].size.width);
+		size.y = ([wd.window_button_view getOffset].y + [wd.window_button_view frame].size.height);
+	} else {
+		NSButton *cb = [wd.window_object standardWindowButton:NSWindowCloseButton];
+		NSButton *mb = [wd.window_object standardWindowButton:NSWindowMiniaturizeButton];
+		float cb_frame = NSMinX([cb frame]);
+		float mb_frame = NSMinX([mb frame]);
+		bool is_rtl = ([wd.window_object windowTitlebarLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft);
+
+		float window_buttons_spacing = (is_rtl) ? (cb_frame - mb_frame) : (mb_frame - cb_frame);
+		size.x = window_buttons_spacing * 4;
+		size.y = [cb frame].origin.y + [cb frame].size.height;
+	}
+
+	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont titleBarFontOfSize:0], NSFontAttributeName, nil];
+	NSSize text_size = [[[NSAttributedString alloc] initWithString:[NSString stringWithUTF8String:p_title.utf8().get_data()] attributes:attributes] size];
+	size.x += text_size.width;
+	size.y = MAX(size.y, text_size.height);
+
+	return size * scale;
+}
+
 void DisplayServerMacOS::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 

@@ -1291,6 +1291,15 @@
 				Returns the size of the window specified by [param window_id] (in pixels), including the borders drawn by the operating system. See also [method window_get_size].
 			</description>
 		</method>
+		<method name="window_get_title_size" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Returns the estimated window title bar size (including text and window buttons) for the window specified by [param window_id] (in pixels). This method does not change the window title.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="window_get_vsync_mode" qualifiers="const">
 			<return type="int" enum="DisplayServer.VSyncMode" />
 			<param index="0" name="window_id" type="int" default="0" />
