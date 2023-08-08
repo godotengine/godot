@@ -43,6 +43,7 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/height_map_shape_3d.h"
+#include "scene/resources/navigation_mesh.h"
 #include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/shape_3d.h"
