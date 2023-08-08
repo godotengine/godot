@@ -60,6 +60,8 @@ private:
 	Ref<Gradient> color_ramp;
 	Ref<Noise> noise;
 
+	Image::Format format = Image::FORMAT_L8;
+
 	void _thread_done(const TypedArray<Image> &p_data);
 	static void _thread_function(void *p_ud);
 
