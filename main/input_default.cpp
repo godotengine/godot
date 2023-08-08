@@ -282,8 +282,9 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 	};
 	joy_names[p_idx] = js;
 
-	emit_signal("joy_connection_changed", p_idx, p_connected);
-};
+	// Ensure this signal is emitted on the main thread, as some platforms (e.g. Linux) call this from a different thread.
+	call_deferred("emit_signal", "joy_connection_changed", p_idx, p_connected);
+}
 
 Vector3 InputDefault::get_gravity() const {
 	_THREAD_SAFE_METHOD_
