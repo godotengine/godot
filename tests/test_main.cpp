@@ -115,6 +115,7 @@
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_viewport.h"
 #include "tests/scene/test_visual_shader.h"
+#include "tests/servers/rendering/test_shader_preprocessor.h"
 #include "tests/servers/test_navigation_server_2d.h"
 #include "tests/servers/test_navigation_server_3d.h"
 #include "tests/servers/test_text_server.h"
