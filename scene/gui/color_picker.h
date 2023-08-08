@@ -130,6 +130,7 @@ private:
 	Ref<StyleBoxFlat> picker_preview_style_box;
 	Color picker_color;
 
+	MarginContainer *internal_margin = nullptr;
 	Control *uv_edit = nullptr;
 	Control *w_edit = nullptr;
 	AspectRatioContainer *wheel_edit = nullptr;
