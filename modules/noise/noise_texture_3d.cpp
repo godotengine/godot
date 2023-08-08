@@ -110,6 +110,7 @@ void NoiseTexture3D::_set_texture_data(const TypedArray<Image> &p_data) {
 		} else {
 			texture = RS::get_singleton()->texture_3d_create(data[0]->get_format(), data[0]->get_width(), data[0]->get_height(), data.size(), false, data);
 		}
+		format = data[0]->get_format();
 	}
 	emit_changed();
 }
@@ -346,6 +347,5 @@ Vector<Ref<Image>> NoiseTexture3D::get_data() const {
 }
 
 Image::Format NoiseTexture3D::get_format() const {
-	ERR_FAIL_COND_V(!texture.is_valid(), Image::FORMAT_L8);
-	return RS::get_singleton()->texture_3d_get(texture)[0]->get_format();
+	return format;
 }
