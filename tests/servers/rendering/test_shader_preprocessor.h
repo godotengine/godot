@@ -52,8 +52,7 @@ bool is_variable_char(unsigned char c) {
 }
 
 bool is_operator_char(unsigned char c) {
-	static const std::string operators = "<>=+-*/";
-	return operators.find(c) != std::string::npos;
+	return (c == '*') || (c == '+') || (c == '-') || (c == '/') || ((c >= '<') && (c <= '>'));
 }
 
 // Remove unnecessary spaces from a line.
