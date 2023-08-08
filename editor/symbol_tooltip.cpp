@@ -39,14 +39,20 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 		code_editor(code_editor) {
 	// Initialize the tooltip components.
 
+	Ref<GDScriptSyntaxHighlighter> highlighter;
+	highlighter.instantiate();
+
 	// Set the tooltip's theme (PanelContainer's theme)
 	//set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
 
+	//set_min_size(Vector2(100, 50));
 	set_transient(true);
 	set_flag(Window::FLAG_NO_FOCUS, true);
 	set_flag(Window::FLAG_POPUP, false);
 	set_flag(Window::FLAG_MOUSE_PASSTHROUGH, false);
 	set_theme(_create_popup_panel_theme());
+
+	// Create PanelContainer for styling the tooltip.
 	panel_container = memnew(PanelContainer);
 	panel_container->set_theme(_create_panel_theme());
 	add_child(panel_container);
@@ -57,16 +63,16 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 
 	// Create RichTextLabel for the tooltip's header.
 	header_label = memnew(TextEdit);
-	//header_label->set_readonly(true);
+	//header_label->set_editable(false); // WARNING!! - Enabling this will mess with the theme.
+	header_label->set_focus_mode(Control::FOCUS_ALL);
 	header_label->set_context_menu_enabled(false);
 	header_label->set_h_scroll_visibility(false);
 	header_label->set_v_scroll_visibility(false);
-	Ref<GDScriptSyntaxHighlighter> highlighter;
-	highlighter.instantiate();
 	header_label->set_syntax_highlighter(highlighter);
 	//header_label->set_selection_enabled(true);
-	header_label->set_custom_minimum_size(Size2(0, 50));
-	header_label->set_focus_mode(Control::FOCUS_ALL);
+	header_label->set_custom_minimum_size(Size2(50, 45));
+	//header_label->set_line_wrapping_mode(TextEdit::LINE_WRAPPING_BOUNDARY);
+	//header_label->set_fit_content_height_enabled(true);
 	header_label->set_theme(_create_header_label_theme());
 	layout_container->add_child(header_label);
 
@@ -74,6 +80,7 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 	body_label = memnew(RichTextLabel);
 	body_label->set_use_bbcode(true);
 	body_label->set_selection_enabled(true);
+	body_label->set_custom_minimum_size(Size2(400, 100));
 	body_label->set_focus_mode(Control::FOCUS_ALL);
 	body_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	body_label->set_theme(_create_body_label_theme());
@@ -127,8 +134,6 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 		return;
 	}
 
-	_update_tooltip_size();
-
 	// Get the documentation of the word under the mouse cursor.
 	String official_documentation = _get_doc_of_word(symbol_word);
 	String comment_documentation = member_symbol->documentation;
@@ -137,6 +142,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 	String header_content = member_symbol->reduced_detail.is_empty() ? symbol_word : member_symbol->reduced_detail;
 	String body_content = comment_documentation.replace("\n ", " ");
 	_update_tooltip_content(header_content, body_content);
+	_update_tooltip_size();
 
 	Rect2 tooltip_rect = Rect2(get_position(), get_size());
 	bool mouse_over_tooltip = tooltip_rect.has_point(mouse_position);
@@ -181,7 +187,26 @@ Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, co
 
 void SymbolTooltip::_update_tooltip_size() {
 	// Calculate and set the tooltip's size.
-	set_size(Vector2(600, 300));
+	Ref<Theme> header_theme = header_label->get_theme();
+	Ref<StyleBox> header_style_box = header_theme->get_stylebox("normal", "TextEdit");
+	String header_text = header_label->get_text();
+
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Editor"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
+	Size2 header_content_size = font->get_string_size(header_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+
+	real_t h_padding = header_style_box->get_content_margin(SIDE_LEFT) + header_style_box->get_content_margin(SIDE_RIGHT) + 2;
+	real_t v_padding = header_style_box->get_content_margin(SIDE_TOP) + header_style_box->get_content_margin(SIDE_BOTTOM) + 1 + 2;
+	real_t height = header_content_size.height;
+
+	Vector2 body_size = body_label->get_size();
+	if (body_label->is_visible()) {
+		height += body_size.height;
+	}
+
+	real_t tooltip_width = MAX(header_content_size.width + h_padding, body_label->is_visible() ? body_size.width : 0 );
+	real_t tooltip_height = height + v_padding;
+	set_size(Vector2(tooltip_width, tooltip_height));
 }
 
 void SymbolTooltip::_update_tooltip_content(const String &header_content, const String &body_content) {
@@ -198,8 +223,13 @@ void SymbolTooltip::_update_header_label(const String &header_content) {
 
 void SymbolTooltip::_update_body_label(const String &body_content) {
 	// Set the tooltip's body text.
+	if (body_content.is_empty()) {
+		body_label->hide();
+		return;
+	}
 	body_label->clear();
 	_add_text_to_rt(body_content, body_label, layout_container);
+	body_label->show();
 }
 
 String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
@@ -238,7 +268,7 @@ Ref<Theme> SymbolTooltip::_create_popup_panel_theme() {
 	Ref<Theme> theme = memnew(Theme);
 
 	Ref<StyleBoxFlat> style_box = memnew(StyleBoxFlat);
-	style_box->set_bg_color(Color(0, 0, 0, 0)); // Set the background color (RGBA).
+	style_box->set_draw_center(false);
 	theme->set_stylebox("panel", "PopupPanel", style_box);
 
 	return theme;
@@ -270,7 +300,7 @@ Ref<Theme> SymbolTooltip::_create_header_label_theme() {
 	// Set the style boxes for the TextEdit
 	theme->set_stylebox("normal", "TextEdit", style_box);
 	theme->set_stylebox("focus", "TextEdit", style_box);
-	theme->set_stylebox("hover", "TextEdit", style_box);
+	theme->set_stylebox("readonly", "TextEdit", style_box);
 
 	// Set the font color.
 	theme->set_color("font_color", "TextEdit", Color(1, 1, 1));
