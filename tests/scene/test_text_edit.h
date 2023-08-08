@@ -407,7 +407,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selection_to_line() == 1);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
-			// insert before should move caret and selecion, and works when not editable.
+			// Insert before should move caret and selection, and works when not editable.
 			text_edit->set_editable(false);
 			lines_edited_args.remove_at(0);
 			text_edit->insert_line_at(0, "new");
@@ -424,7 +424,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("text_set");
 			text_edit->set_editable(true);
 
-			// can undo/redo as single action
+			// Can undo/redo as single action.
 			((Array)lines_edited_args[0])[0] = 1;
 			((Array)lines_edited_args[0])[1] = 0;
 			text_edit->undo();

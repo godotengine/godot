@@ -32,12 +32,11 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "../navigation_mesh_generator.h"
-
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -99,18 +98,16 @@ void NavigationMeshEditor::_bake_pressed() {
 		}
 	}
 
-	NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
-	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
-	source_geometry_data.instantiate();
-	NavigationMeshGenerator::get_singleton()->parse_source_geometry_data(node->get_navigation_mesh(), source_geometry_data, node);
-	NavigationMeshGenerator::get_singleton()->bake_from_source_geometry_data(node->get_navigation_mesh(), source_geometry_data);
+	node->bake_navigation_mesh(false);
 
 	node->update_gizmos();
 }
 
 void NavigationMeshEditor::_clear_pressed() {
 	if (node) {
-		NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
+		if (node->get_navigation_mesh().is_valid()) {
+			node->get_navigation_mesh()->clear();
+		}
 	}
 
 	button_bake->set_pressed(false);
@@ -139,14 +136,15 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	button_bake->set_flat(true);
 	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
-	button_bake->set_text(TTR("Bake NavMesh"));
+	button_bake->set_text(TTR("Bake NavigationMesh"));
+	button_bake->set_tooltip_text(TTR("Bakes the NavigationMesh by first parsing the scene for source geometry and then creating the navigation mesh vertices and polygons."));
 	button_bake->connect("pressed", callable_mp(this, &NavigationMeshEditor::_bake_pressed));
 
 	button_reset = memnew(Button);
 	button_reset->set_flat(true);
 	bake_hbox->add_child(button_reset);
-	// No button text, we only use a revert icon which is set when entering the tree.
-	button_reset->set_tooltip_text(TTR("Clear the navigation mesh."));
+	button_reset->set_text(TTR("Clear NavigationMesh"));
+	button_reset->set_tooltip_text(TTR("Clears the internal NavigationMesh vertices and polygons."));
 	button_reset->connect("pressed", callable_mp(this, &NavigationMeshEditor::_clear_pressed));
 
 	bake_info = memnew(Label);

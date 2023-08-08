@@ -744,7 +744,7 @@ int DisplayServerX11::get_screen_count() const {
 
 	// Using Xinerama Extension
 	int event_base, error_base;
-	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
 		XFree(xsi);
 	} else {
@@ -756,7 +756,7 @@ int DisplayServerX11::get_screen_count() const {
 
 int DisplayServerX11::get_primary_screen() const {
 	int event_base, error_base;
-	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		return 0;
 	} else {
 		return XDefaultScreen(x11_display);
@@ -809,7 +809,7 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 
 	// Using Xinerama Extension.
 	int event_base, error_base;
-	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		int count;
 		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
 
@@ -1244,7 +1244,7 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 	XImage *image = nullptr;
 
 	int event_base, error_base;
-	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		int xin_count;
 		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &xin_count);
 		if (p_screen < xin_count) {
@@ -1586,6 +1586,7 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 
 void DisplayServerX11::_update_window_mouse_passthrough(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
+	ERR_FAIL_COND(!xshaped_ext_ok);
 
 	const Vector<Vector2> region_path = windows[p_window].mpath;
 
@@ -3957,7 +3958,7 @@ bool DisplayServerX11::mouse_process_popups() {
 					// Find top popup to close.
 					while (E) {
 						// Popup window area.
-						Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
+						Rect2i win_rect = Rect2i(window_get_position_with_decorations(E->get()), window_get_size_with_decorations(E->get()));
 						// Area of the parent window, which responsible for opening sub-menu.
 						Rect2i safe_rect = window_get_popup_safe_rect(E->get());
 						if (win_rect.has_point(pos)) {
@@ -5461,13 +5462,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 
 	if (initialize_xinerama(dylibloader_verbose) != 0) {
-		r_error = ERR_UNAVAILABLE;
-		ERR_FAIL_MSG("Can't load Xinerama dynamically.");
+		xinerama_ext_ok = false;
 	}
 
 	if (initialize_xrandr(dylibloader_verbose) != 0) {
-		r_error = ERR_UNAVAILABLE;
-		ERR_FAIL_MSG("Can't load Xrandr dynamically.");
+		xrandr_ext_ok = false;
 	}
 
 	if (initialize_xrender(dylibloader_verbose) != 0) {
@@ -5537,42 +5536,36 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		return;
 	}
 
-	{
+	if (xshaped_ext_ok) {
 		int version_major = 0;
 		int version_minor = 0;
 		int rc = XShapeQueryVersion(x11_display, &version_major, &version_minor);
 		print_verbose(vformat("Xshape %d.%d detected.", version_major, version_minor));
 		if (rc != 1 || version_major < 1) {
-			ERR_PRINT("Unsupported Xshape library version.");
-			r_error = ERR_UNAVAILABLE;
-			XCloseDisplay(x11_display);
-			return;
+			xshaped_ext_ok = false;
+			print_verbose("Unsupported Xshape library version.");
 		}
 	}
 
-	{
+	if (xinerama_ext_ok) {
 		int version_major = 0;
 		int version_minor = 0;
 		int rc = XineramaQueryVersion(x11_display, &version_major, &version_minor);
 		print_verbose(vformat("Xinerama %d.%d detected.", version_major, version_minor));
 		if (rc != 1 || version_major < 1) {
-			ERR_PRINT("Unsupported Xinerama library version.");
-			r_error = ERR_UNAVAILABLE;
-			XCloseDisplay(x11_display);
-			return;
+			xinerama_ext_ok = false;
+			print_verbose("Unsupported Xinerama library version.");
 		}
 	}
 
-	{
+	if (xrandr_ext_ok) {
 		int version_major = 0;
 		int version_minor = 0;
 		int rc = XRRQueryVersion(x11_display, &version_major, &version_minor);
 		print_verbose(vformat("Xrandr %d.%d detected.", version_major, version_minor));
 		if (rc != 1 || (version_major == 1 && version_minor < 3) || (version_major < 1)) {
-			ERR_PRINT("Unsupported Xrandr library version.");
-			r_error = ERR_UNAVAILABLE;
-			XCloseDisplay(x11_display);
-			return;
+			xrandr_ext_ok = false;
+			print_verbose("Unsupported Xrandr library version.");
 		}
 	}
 
@@ -5638,7 +5631,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		if (!xrandr_handle) {
 			fprintf(stderr, "could not load libXrandr.so.2, Error: %s\n", err);
 		}
-	} else {
+	}
+
+	if (xrandr_handle) {
 		XRRQueryVersion(x11_display, &xrandr_major, &xrandr_minor);
 		if (((xrandr_major << 8) | xrandr_minor) >= 0x0105) {
 			xrr_get_monitors = (xrr_get_monitors_t)dlsym(xrandr_handle, "XRRGetMonitors");

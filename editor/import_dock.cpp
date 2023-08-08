@@ -324,6 +324,21 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	}
 }
 
+void ImportDock::reimport_resources(const Vector<String> &p_paths) {
+	switch (p_paths.size()) {
+		case 0:
+			ERR_FAIL_MSG("You need to select files to reimport them.");
+		case 1:
+			set_edit_path(p_paths[0]);
+			break;
+		default:
+			set_edit_multiple_paths(p_paths);
+			break;
+	}
+
+	_reimport_attempt();
+}
+
 void ImportDock::_update_preset_menu() {
 	preset->get_popup()->clear();
 

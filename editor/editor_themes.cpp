@@ -176,12 +176,6 @@ void EditorColorMap::create() {
 	add_conversion_exception("Sky");
 	add_conversion_exception("EditorControlAnchor");
 	add_conversion_exception("DefaultProjectIcon");
-	add_conversion_exception("GuiChecked");
-	add_conversion_exception("GuiRadioChecked");
-	add_conversion_exception("GuiIndeterminate");
-	add_conversion_exception("GuiCloseCustomizable");
-	add_conversion_exception("GuiGraphNodePort");
-	add_conversion_exception("GuiResizer");
 	add_conversion_exception("ZoomMore");
 	add_conversion_exception("ZoomLess");
 	add_conversion_exception("ZoomReset");
@@ -191,6 +185,18 @@ void EditorColorMap::create() {
 	add_conversion_exception("StatusSuccess");
 	add_conversion_exception("StatusWarning");
 	add_conversion_exception("OverbrightIndicator");
+	add_conversion_exception("MaterialPreviewCube");
+	add_conversion_exception("MaterialPreviewSphere");
+	add_conversion_exception("MaterialPreviewLight1");
+	add_conversion_exception("MaterialPreviewLight2");
+
+	// GUI
+	add_conversion_exception("GuiChecked");
+	add_conversion_exception("GuiRadioChecked");
+	add_conversion_exception("GuiIndeterminate");
+	add_conversion_exception("GuiCloseCustomizable");
+	add_conversion_exception("GuiGraphNodePort");
+	add_conversion_exception("GuiResizer");
 	add_conversion_exception("GuiMiniCheckerboard");
 
 	/// Code Editor.
@@ -943,6 +949,25 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	editor_log_button_pressed->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
 	editor_log_button_pressed->set_border_color(accent_color);
 	theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
+
+	// Buttons in material previews
+	const Color dim_light_color = icon_normal_color.darkened(0.24);
+	const Color dim_light_highlighted_color = icon_normal_color.darkened(0.18);
+	Ref<StyleBox> sb_empty_borderless = make_empty_stylebox();
+
+	theme->set_type_variation("PreviewLightButton", "Button");
+	// When pressed, don't use the accent color tint. When unpressed, dim the icon.
+	theme->set_color("icon_normal_color", "PreviewLightButton", dim_light_color);
+	theme->set_color("icon_focus_color", "PreviewLightButton", dim_light_color);
+	theme->set_color("icon_pressed_color", "PreviewLightButton", icon_normal_color);
+	theme->set_color("icon_hover_pressed_color", "PreviewLightButton", icon_normal_color);
+	// Unpressed icon is dim, so use a dim highlight.
+	theme->set_color("icon_hover_color", "PreviewLightButton", dim_light_highlighted_color);
+
+	theme->set_stylebox("normal", "PreviewLightButton", sb_empty_borderless);
+	theme->set_stylebox("hover", "PreviewLightButton", sb_empty_borderless);
+	theme->set_stylebox("focus", "PreviewLightButton", sb_empty_borderless);
+	theme->set_stylebox("pressed", "PreviewLightButton", sb_empty_borderless);
 
 	// ProjectTag
 	{
