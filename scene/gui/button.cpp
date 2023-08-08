@@ -118,6 +118,7 @@ void Button::_notification(int p_what) {
 
 			Ref<StyleBox> style = theme_cache.normal;
 			bool rtl = is_layout_rtl();
+			const bool is_clipped = clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING;
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
@@ -283,7 +284,7 @@ void Button::_notification(int p_what) {
 					Size2 _size = get_size() - style->get_offset() * 2;
 					int icon_text_separation = text.is_empty() ? 0 : theme_cache.h_separation;
 					_size.width -= icon_text_separation + icon_ofs_region;
-					if (!clip_text && icon_align_rtl_checked != HORIZONTAL_ALIGNMENT_CENTER) {
+					if (!is_clipped && icon_align_rtl_checked != HORIZONTAL_ALIGNMENT_CENTER) {
 						_size.width -= text_buf->get_size().width;
 					}
 					if (vertical_icon_alignment != VERTICAL_ALIGNMENT_CENTER) {
@@ -335,9 +336,9 @@ void Button::_notification(int p_what) {
 				text_clip -= _internal_margin[SIDE_RIGHT] + theme_cache.h_separation;
 			}
 
-			text_buf->set_width((clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? text_clip : -1);
+			text_buf->set_width(is_clipped ? text_clip : -1);
 
-			int text_width = MAX(1, (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
+			int text_width = MAX(1, is_clipped ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
 
