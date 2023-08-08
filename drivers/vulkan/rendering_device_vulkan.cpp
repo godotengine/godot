@@ -5905,6 +5905,64 @@ void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_
 	us->invalidated_callback_userdata = p_userdata;
 }
 
+Error RenderingDeviceVulkan::buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
+			"Copying buffers is forbidden during creation of a draw list");
+	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
+			"Copying buffers is forbidden during creation of a compute list");
+
+	// This method assumes the barriers have been pushed prior to being called, therefore no barriers are pushed
+	// for the source or destination buffers before performing the copy. These masks are effectively ignored.
+	VkPipelineShaderStageCreateFlags src_stage_mask = 0;
+	VkAccessFlags src_access_mask = 0;
+	Buffer *src_buffer = _get_buffer_from_owner(p_src_buffer, src_stage_mask, src_access_mask, BARRIER_MASK_NO_BARRIER);
+	if (!src_buffer) {
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Source buffer argument is not a valid buffer of any type.");
+	}
+
+	VkPipelineStageFlags dst_stage_mask = 0;
+	VkAccessFlags dst_access = 0;
+	if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
+		// If the post barrier mask defines it, we indicate the destination buffer will require a barrier with these flags set
+		// after the copy command is queued.
+		dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
+	}
+
+	Buffer *dst_buffer = _get_buffer_from_owner(p_dst_buffer, dst_stage_mask, dst_access, p_post_barrier);
+	if (!dst_buffer) {
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Destination buffer argument is not a valid buffer of any type.");
+	}
+
+	// Validate the copy's dimensions for both buffers.
+	ERR_FAIL_COND_V_MSG((p_size + p_src_offset) > src_buffer->size, ERR_INVALID_PARAMETER, "Size is larger than the source buffer.");
+	ERR_FAIL_COND_V_MSG((p_size + p_dst_offset) > dst_buffer->size, ERR_INVALID_PARAMETER, "Size is larger than the destination buffer.");
+
+	// Perform the copy.
+	VkBufferCopy region;
+	region.srcOffset = p_src_offset;
+	region.dstOffset = p_dst_offset;
+	region.size = p_size;
+	vkCmdCopyBuffer(frames[frame].draw_command_buffer, src_buffer->buffer, dst_buffer->buffer, 1, &region);
+
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(true);
+#else
+	if (dst_stage_mask == 0) {
+		dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	}
+
+	// As indicated by the post barrier mask, push a new barrier.
+	if (p_post_barrier != RD::BARRIER_MASK_NO_BARRIER) {
+		_buffer_memory_barrier(dst_buffer->buffer, p_dst_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, true);
+	}
+#endif
+
+	return OK;
+}
+
 Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
