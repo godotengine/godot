@@ -1048,6 +1048,41 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
 }
 
+static GDExtensionScriptInstancePtr gdextension_placeholder_script_instance_create(GDExtensionObjectPtr p_language, GDExtensionObjectPtr p_script, GDExtensionObjectPtr p_owner) {
+	ScriptLanguage *language = (ScriptLanguage *)p_language;
+	Ref<Script> script;
+	script.reference_ptr((Script *)p_script);
+	Object *owner = (Object *)p_owner;
+
+	PlaceHolderScriptInstance *placeholder = memnew(PlaceHolderScriptInstance(language, script, owner));
+	return reinterpret_cast<GDExtensionScriptInstancePtr>(placeholder);
+}
+
+static void gdextension_placeholder_script_instance_update(GDExtensionScriptInstancePtr p_placeholder, GDExtensionConstTypePtr p_properties, GDExtensionConstTypePtr p_values) {
+	PlaceHolderScriptInstance *placeholder = dynamic_cast<PlaceHolderScriptInstance *>(reinterpret_cast<ScriptInstance *>(p_placeholder));
+	ERR_FAIL_COND_MSG(!placeholder, "Unable to update placeholder, expected a PlaceHolderScriptInstance but received an invalid type.");
+
+	const Array &properties = *reinterpret_cast<const Array *>(p_properties);
+	const Dictionary &values = *reinterpret_cast<const Dictionary *>(p_values);
+
+	List<PropertyInfo> properties_list;
+	HashMap<StringName, Variant> values_map;
+
+	for (int i = 0; i < properties.size(); i++) {
+		Dictionary d = properties[i];
+		properties_list.push_back(PropertyInfo::from_dict(d));
+	}
+
+	List<Variant> keys;
+	values.get_key_list(&keys);
+
+	for (const Variant &E : keys) {
+		values_map.insert(E, values[E]);
+	}
+
+	placeholder->update(properties_list, values_map);
+}
+
 static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExtensionConstObjectPtr p_object, GDExtensionConstObjectPtr p_language) {
 	if (!p_object || !p_language) {
 		return nullptr;
@@ -1235,6 +1270,8 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(ref_get_object);
 	REGISTER_INTERFACE_FUNC(ref_set_object);
 	REGISTER_INTERFACE_FUNC(script_instance_create);
+	REGISTER_INTERFACE_FUNC(placeholder_script_instance_create);
+	REGISTER_INTERFACE_FUNC(placeholder_script_instance_update);
 	REGISTER_INTERFACE_FUNC(object_get_script_instance);
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);

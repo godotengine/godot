@@ -2127,6 +2127,37 @@ typedef void (*GDExtensionInterfaceRefSetObject)(GDExtensionRefPtr p_ref, GDExte
 typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate)(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data);
 
 /**
+ * @name placeholder_script_instance_create
+ * @since 4.2
+ *
+ * Creates a placeholder script instance for a given script and instance.
+ *
+ * This interface is optional as a custom placeholder could also be created with script_instance_create().
+ *
+ * @param p_language A pointer to a ScriptLanguage.
+ * @param p_script A pointer to a Script.
+ * @param p_owner A pointer to an Object.
+ *
+ * @return A pointer to a PlaceHolderScriptInstance object.
+ */
+typedef GDExtensionScriptInstancePtr (*GDExtensionInterfacePlaceHolderScriptInstanceCreate)(GDExtensionObjectPtr p_language, GDExtensionObjectPtr p_script, GDExtensionObjectPtr p_owner);
+
+/**
+ * @name placeholder_script_instance_update
+ * @since 4.2
+ *
+ * Updates a placeholder script instance with the given properties and values.
+ *
+ * The passed in placeholder must be an instance of PlaceHolderScriptInstance
+ * such as the one returned by placeholder_script_instance_create().
+ *
+ * @param p_placeholder A pointer to a PlaceHolderScriptInstance.
+ * @param p_properties A pointer to an Array of Dictionary representing PropertyInfo.
+ * @param p_values A pointer to a Dictionary mapping StringName to Variant values.
+ */
+typedef void (*GDExtensionInterfacePlaceHolderScriptInstanceUpdate)(GDExtensionScriptInstancePtr p_placeholder, GDExtensionConstTypePtr p_properties, GDExtensionConstTypePtr p_values);
+
+/**
  * @name object_get_script_instance
  * @since 4.2
  *
