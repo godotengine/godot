@@ -234,6 +234,7 @@ private:
 	MultiMesh *multimesh_dirty_list = nullptr;
 
 	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
+	_FORCE_INLINE_ void _multimesh_enable_motion_vectors(MultiMesh *multimesh);
 	_FORCE_INLINE_ void _multimesh_update_motion_vectors_data_cache(MultiMesh *multimesh);
 	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
@@ -593,7 +594,6 @@ public:
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const override;
 
 	void _update_dirty_multimeshes();
-	bool _multimesh_enable_motion_vectors(RID p_multimesh);
 	void _multimesh_get_motion_vectors_offsets(RID p_multimesh, uint32_t &r_current_offset, uint32_t &r_prev_offset);
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {

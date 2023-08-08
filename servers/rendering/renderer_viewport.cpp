@@ -1171,6 +1171,7 @@ void RendererViewport::viewport_set_use_taa(RID p_viewport, bool p_use_taa) {
 		return;
 	}
 	viewport->use_taa = p_use_taa;
+	num_viewports_with_motion_vectors += p_use_taa ? 1 : -1;
 	_configure_3d_render_buffers(viewport);
 }
 
@@ -1355,6 +1356,10 @@ bool RendererViewport::free(RID p_rid) {
 			RendererSceneOcclusionCull::get_singleton()->remove_buffer(p_rid);
 		}
 
+		if (viewport->use_taa) {
+			num_viewports_with_motion_vectors--;
+		}
+
 		viewport_owner.free(p_rid);
 
 		return true;
@@ -1408,6 +1413,10 @@ int RendererViewport::get_total_primitives_drawn() const {
 }
 int RendererViewport::get_total_draw_calls_used() const {
 	return total_draw_calls_used;
+}
+
+int RendererViewport::get_num_viewports_with_motion_vectors() const {
+	return num_viewports_with_motion_vectors;
 }
 
 RendererViewport::RendererViewport() {
