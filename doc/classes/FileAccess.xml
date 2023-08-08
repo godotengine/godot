@@ -170,6 +170,14 @@
 				Returns the next 32 bits from the file as a floating-point number.
 			</description>
 		</method>
+		<method name="get_hidden_attribute" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns [code]true[/code], if file [code]hidden[/code] attribute is set.
+				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
+			</description>
+		</method>
 		<method name="get_length" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -228,6 +236,14 @@
 				Returns the file cursor's position.
 			</description>
 		</method>
+		<method name="get_read_only_attribute" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns [code]true[/code], if file [code]read only[/code] attribute is set.
+				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
+			</description>
+		</method>
 		<method name="get_real" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -239,6 +255,14 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns a SHA-256 [String] representing the file at the given path or an empty [String] on failure.
+			</description>
+		</method>
+		<method name="get_unix_permissions" qualifiers="static">
+			<return type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns file UNIX permissions.
+				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
 		<method name="get_var" qualifiers="const">
@@ -310,6 +334,33 @@
 			<description>
 				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file).
 				[b]Note:[/b] This is an offset, so you should use negative numbers or the cursor will be at the end of the file.
+			</description>
+		</method>
+		<method name="set_hidden_attribute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="hidden" type="bool" />
+			<description>
+				Sets file [code]hidden[/code] attribute.
+				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
+			</description>
+		</method>
+		<method name="set_read_only_attribute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="ro" type="bool" />
+			<description>
+				Sets file [code]read only[/code] attribute.
+				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
+			</description>
+		</method>
+		<method name="set_unix_permissions" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
+			<description>
+				Sets file UNIX permissions.
+				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
 		<method name="store_8">
@@ -484,6 +535,42 @@
 		</constant>
 		<constant name="COMPRESSION_BROTLI" value="4" enum="CompressionMode">
 			Uses the [url=https://github.com/google/brotli]brotli[/url] compression method (only decompression is supported).
+		</constant>
+		<constant name="UNIX_READ_OWNER" value="256" enum="UnixPermissionFlags" is_bitfield="true">
+			Read for owner bit.
+		</constant>
+		<constant name="UNIX_WRITE_OWNER" value="128" enum="UnixPermissionFlags" is_bitfield="true">
+			Write for owner bit.
+		</constant>
+		<constant name="UNIX_EXECUTE_OWNER" value="64" enum="UnixPermissionFlags" is_bitfield="true">
+			Execute for owner bit.
+		</constant>
+		<constant name="UNIX_READ_GROUP" value="32" enum="UnixPermissionFlags" is_bitfield="true">
+			Read for group bit.
+		</constant>
+		<constant name="UNIX_WRITE_GROUP" value="16" enum="UnixPermissionFlags" is_bitfield="true">
+			Write for group bit.
+		</constant>
+		<constant name="UNIX_EXECUTE_GROUP" value="8" enum="UnixPermissionFlags" is_bitfield="true">
+			Execute for group bit.
+		</constant>
+		<constant name="UNIX_READ_OTHER" value="4" enum="UnixPermissionFlags" is_bitfield="true">
+			Read for other bit.
+		</constant>
+		<constant name="UNIX_WRITE_OTHER" value="2" enum="UnixPermissionFlags" is_bitfield="true">
+			Write for other bit.
+		</constant>
+		<constant name="UNIX_EXECUTE_OTHER" value="1" enum="UnixPermissionFlags" is_bitfield="true">
+			Execute for other bit.
+		</constant>
+		<constant name="UNIX_SET_USER_ID" value="2048" enum="UnixPermissionFlags" is_bitfield="true">
+			Set user id on execution bit.
+		</constant>
+		<constant name="UNIX_SET_GROUP_ID" value="1024" enum="UnixPermissionFlags" is_bitfield="true">
+			Set group id on execution bit.
+		</constant>
+		<constant name="UNIX_RESTRICTED_DELETE" value="512" enum="UnixPermissionFlags" is_bitfield="true">
+			Restricted deletion (sticky) bit.
 		</constant>
 	</constants>
 </class>

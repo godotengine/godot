@@ -313,19 +313,19 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	}
 }
 
-uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
+BitField<FileAccess::UnixPermissionFlags> FileAccessUnix::_get_unix_permissions(const String &p_file) {
 	String file = fix_path(p_file);
 	struct stat status = {};
 	int err = stat(file.utf8().get_data(), &status);
 
 	if (!err) {
-		return status.st_mode & 0x7FF; //only permissions
+		return status.st_mode & 0xFFF; //only permissions
 	} else {
 		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
 	}
 }
 
-Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+Error FileAccessUnix::_set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
 	String file = fix_path(p_file);
 
 	int err = chmod(file.utf8().get_data(), p_permissions);
@@ -334,6 +334,74 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_per
 	}
 
 	return FAILED;
+}
+
+bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+	String file = fix_path(p_file);
+
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+	ERR_FAIL_COND_V_MSG(err, false, "Failed to get attributes for: " + p_file);
+
+	return (st.st_flags & UF_HIDDEN);
+#else
+	return false;
+#endif
+}
+
+Error FileAccessUnix::_set_hidden_attribute(const String &p_file, bool p_hidden) {
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+	String file = fix_path(p_file);
+
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to get attributes for: " + p_file);
+
+	if (p_hidden) {
+		err = chflags(file.utf8().get_data(), st.st_flags | UF_HIDDEN);
+	} else {
+		err = chflags(file.utf8().get_data(), st.st_flags & ~UF_HIDDEN);
+	}
+	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to set attributes for: " + p_file);
+	return OK;
+#else
+	return ERR_UNAVAILABLE;
+#endif
+}
+
+bool FileAccessUnix::_get_read_only_attribute(const String &p_file) {
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+	String file = fix_path(p_file);
+
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+	ERR_FAIL_COND_V_MSG(err, false, "Failed to get attributes for: " + p_file);
+
+	return st.st_flags & UF_IMMUTABLE;
+#else
+	return false;
+#endif
+}
+
+Error FileAccessUnix::_set_read_only_attribute(const String &p_file, bool p_ro) {
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+	String file = fix_path(p_file);
+
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to get attributes for: " + p_file);
+
+	if (p_ro) {
+		err = chflags(file.utf8().get_data(), st.st_flags | UF_IMMUTABLE);
+	} else {
+		err = chflags(file.utf8().get_data(), st.st_flags & ~UF_IMMUTABLE);
+	}
+	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to set attributes for: " + p_file);
+	return OK;
+#else
+	return ERR_UNAVAILABLE;
+#endif
 }
 
 void FileAccessUnix::close() {

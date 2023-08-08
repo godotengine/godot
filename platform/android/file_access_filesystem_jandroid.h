@@ -91,8 +91,13 @@ public:
 	static void setup(jobject p_file_access_handler);
 
 	virtual uint64_t _get_modified_time(const String &p_file) override;
-	virtual uint32_t _get_unix_permissions(const String &p_file) override { return 0; }
-	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override { return FAILED; }
+	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
+
+	virtual bool _get_hidden_attribute(const String &p_file) override { return false; }
+	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override { return ERR_UNAVAILABLE; }
+	virtual bool _get_read_only_attribute(const String &p_file) override { return false; }
+	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override { return ERR_UNAVAILABLE; }
 
 	virtual void close() override;
 
