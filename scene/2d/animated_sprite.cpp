@@ -274,6 +274,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		}
 
 		animations[d["name"]] = anim;
+		animations[d["name"]].normal_name = String(d["name"]) + NORMAL_SUFFIX;
 	}
 }
 
