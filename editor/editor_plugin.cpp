@@ -527,19 +527,24 @@ void EditorPlugin::remove_resource_conversion_plugin(const Ref<EditorResourceCon
 	EditorNode::get_singleton()->remove_resource_conversion_plugin(p_plugin);
 }
 
+#ifndef DISABLE_DEPRECATED
 void EditorPlugin::_editor_project_settings_changed() {
 	emit_signal(SNAME("project_settings_changed"));
 }
+#endif
+
 void EditorPlugin::_notification(int p_what) {
+#ifndef DISABLE_DEPRECATED
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			EditorNode::get_singleton()->disconnect("project_settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+			ProjectSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
 		} break;
 	}
+#endif
 }
 
 void EditorPlugin::_bind_methods() {

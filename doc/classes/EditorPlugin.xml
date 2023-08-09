@@ -749,9 +749,10 @@
 				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
-		<signal name="project_settings_changed">
+		<signal name="project_settings_changed" is_deprecated="true">
 			<description>
 				Emitted when any project setting has changed.
+				[i]Deprecated.[/i] Use [signal ProjectSettings.settings_changed] instead.
 			</description>
 		</signal>
 		<signal name="resource_saved">
