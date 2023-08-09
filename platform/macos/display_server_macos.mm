@@ -366,6 +366,25 @@ DisplayServer::WindowID DisplayServerMacOS::_get_focused_window_or_popup() const
 	return last_focused_window;
 }
 
+void DisplayServerMacOS::mouse_enter_window(WindowID p_window) {
+	if (window_mouseover_id != p_window) {
+		if (window_mouseover_id != INVALID_WINDOW_ID) {
+			send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+		}
+		window_mouseover_id = p_window;
+		if (p_window != INVALID_WINDOW_ID) {
+			send_window_event(windows[p_window], WINDOW_EVENT_MOUSE_ENTER);
+		}
+	}
+}
+
+void DisplayServerMacOS::mouse_exit_window(WindowID p_window) {
+	if (window_mouseover_id == p_window && p_window != INVALID_WINDOW_ID) {
+		send_window_event(windows[p_window], WINDOW_EVENT_MOUSE_EXIT);
+	}
+	window_mouseover_id = INVALID_WINDOW_ID;
+}
+
 void DisplayServerMacOS::_dispatch_input_events(const Ref<InputEvent> &p_event) {
 	((DisplayServerMacOS *)(get_singleton()))->_dispatch_input_event(p_event);
 }
@@ -2069,9 +2088,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 
 	if (show_cursor && !previously_shown) {
 		window_id = get_window_at_screen_position(mouse_get_position());
-		if (window_id != INVALID_WINDOW_ID) {
-			send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
-		}
+		mouse_enter_window(window_id);
 	}
 
 	if (p_mode == MOUSE_MODE_CAPTURED) {

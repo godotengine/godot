@@ -67,6 +67,7 @@
 		ds->window_set_transient(window_id, DisplayServerMacOS::INVALID_WINDOW_ID);
 	}
 
+	ds->mouse_exit_window(window_id);
 	ds->window_destroy(window_id);
 }
 
