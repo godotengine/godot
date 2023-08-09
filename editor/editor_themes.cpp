@@ -914,7 +914,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
 	theme->set_color("icon_disabled_color", "Button", icon_disabled_color);
 
-	theme->set_constant("h_separation", "Button", 2 * EDSCALE);
+	theme->set_constant("h_separation", "Button", 4 * EDSCALE);
 	theme->set_constant("outline_size", "Button", 0);
 
 	const float ACTION_BUTTON_EXTRA_MARGIN = 32 * EDSCALE;
@@ -1479,9 +1479,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
 	// Bottom panel.
-	theme->set_type_variation("BottomPanelButton", "Button");
-	// Add separation for the warning/error icon.
-	theme->set_constant("h_separation", "BottomPanelButton", 6 * EDSCALE);
 	Ref<StyleBoxFlat> style_bottom_panel = style_content_panel->duplicate();
 	style_bottom_panel->set_corner_radius_all(corner_radius * EDSCALE);
 	theme->set_stylebox("BottomPanel", "EditorStyles", style_bottom_panel);
