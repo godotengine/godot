@@ -2607,13 +2607,26 @@ void ResourceImporterScene::ResourceImporterScene::show_advanced_options(const S
 	SceneImportSettings::get_singleton()->open_settings(p_path, animation_importer);
 }
 
-ResourceImporterScene::ResourceImporterScene(bool p_animation_import) {
-	if (p_animation_import) {
-		animation_singleton = this;
-	} else {
-		scene_singleton = this;
+ResourceImporterScene::ResourceImporterScene(bool p_animation_import, bool p_singleton) {
+	// This should only be set through the EditorNode.
+	if (p_singleton) {
+		if (p_animation_import) {
+			animation_singleton = this;
+		} else {
+			scene_singleton = this;
+		}
 	}
+
 	animation_importer = p_animation_import;
+}
+
+ResourceImporterScene::~ResourceImporterScene() {
+	if (animation_singleton == this) {
+		animation_singleton = nullptr;
+	}
+	if (scene_singleton == this) {
+		scene_singleton = nullptr;
+	}
 }
 
 void ResourceImporterScene::add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority) {
