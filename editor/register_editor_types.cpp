@@ -275,6 +275,7 @@ void register_editor_types() {
 	GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
 
 	EditorInterface::create();
+	Engine::get_singleton()->add_singleton(Engine::Singleton("EditorInterface", EditorInterface::get_singleton()));
 
 	OS::get_singleton()->benchmark_end_measure("register_editor_types");
 }

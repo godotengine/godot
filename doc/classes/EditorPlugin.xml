@@ -245,7 +245,7 @@
 				    # You can use a custom icon:
 				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
 				    # Or use a built-in icon:
-				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_base_control().get_theme_icon("Node", "EditorIcons")
 				[/gdscript]
 				[csharp]
 				public override Texture2D _GetPluginIcon()
@@ -253,7 +253,7 @@
 				    // You can use a custom icon:
 				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
 				    // Or use a built-in icon:
-				    return GetEditorInterface().GetBaseControl().GetThemeIcon("Node", "EditorIcons");
+				    return EditorInterface.Singleton.GetBaseControl().GetThemeIcon("Node", "EditorIcons");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -340,7 +340,7 @@
 
 				func _enter_tree():
 				    plugin_control = preload("my_plugin_control.tscn").instantiate()
-				    get_editor_interface().get_editor_main_screen().add_child(plugin_control)
+				    EditorInterface.get_editor_main_screen().add_child(plugin_control)
 				    plugin_control.hide()
 
 				func _has_main_screen():
@@ -353,7 +353,7 @@
 				    return "My Super Cool Plugin 3000"
 
 				func _get_plugin_icon():
-				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_base_control().get_theme_icon("Node", "EditorIcons")
 				[/codeblock]
 			</description>
 		</method>
@@ -558,10 +558,11 @@
 				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [UndoRedo] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
 			</description>
 		</method>
-		<method name="get_editor_interface">
+		<method name="get_editor_interface" is_deprecated="true">
 			<return type="EditorInterface" />
 			<description>
-				Returns the [EditorInterface] singleton. It provides access to some parts of the editor GUI as well as various inner states and tools.
+				Returns the [EditorInterface] singleton instance.
+				[i]Deprecated.[/i] [EditorInterface] is a global singleton and can be accessed directly by its name.
 			</description>
 		</method>
 		<method name="get_export_as_menu">
