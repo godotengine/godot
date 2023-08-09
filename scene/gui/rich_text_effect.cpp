@@ -66,9 +66,15 @@ RichTextEffect::RichTextEffect() {
 void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_range"), &CharFXTransform::get_range);
 	ClassDB::bind_method(D_METHOD("set_range", "range"), &CharFXTransform::set_range);
+	
+	ClassDB::bind_method(D_METHOD("get_global_elapsed_time"), &CharFXTransform::get_global_elapsed_time);
+	ClassDB::bind_method(D_METHOD("set_global_elapsed_time"), &CharFXTransform::set_global_elapsed_time);
 
 	ClassDB::bind_method(D_METHOD("get_elapsed_time"), &CharFXTransform::get_elapsed_time);
 	ClassDB::bind_method(D_METHOD("set_elapsed_time", "time"), &CharFXTransform::set_elapsed_time);
+
+	ClassDB::bind_method(D_METHOD("get_visible_time"), &CharFXTransform::get_visible_time);
+	ClassDB::bind_method(D_METHOD("set_visible_time", "visible_time"), &CharFXTransform::set_visible_time);
 
 	ClassDB::bind_method(D_METHOD("is_visible"), &CharFXTransform::is_visible);
 	ClassDB::bind_method(D_METHOD("set_visibility", "visibility"), &CharFXTransform::set_visibility);
@@ -101,7 +107,9 @@ void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &CharFXTransform::set_font);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "range"), "set_range", "get_range");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_elapsed_time"), "set_global_elapsed_time", "get_global_elapsed_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "elapsed_time"), "set_elapsed_time", "get_elapsed_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visible_time"), "set_visible_time", "get_visible_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visibility", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "outline"), "set_outline", "is_outline");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");

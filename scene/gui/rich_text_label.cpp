@@ -1042,7 +1042,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					Ref<RichTextEffect> custom_effect = item_custom->custom_effect;
 
 					if (!custom_effect.is_null()) {
+						charfx->global_elapsed_time = global_elapsed_time;
 						charfx->elapsed_time = item_custom->elapsed_time;
+						charfx->visible_time = visible_times[l.char_offset + i];
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
 						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
 						charfx->visibility = txt_visible;
@@ -1265,7 +1267,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					Ref<RichTextEffect> custom_effect = item_custom->custom_effect;
 
 					if (!custom_effect.is_null()) {
+						charfx->global_elapsed_time = global_elapsed_time;
 						charfx->elapsed_time = item_custom->elapsed_time;
+						charfx->visible_time = visible_times[l.char_offset + i];
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
 						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
 						charfx->visibility = txt_visible;
@@ -1890,11 +1894,12 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
+			double dt = get_process_delta_time();
+			global_elapsed_time += dt;
 			if (is_visible_in_tree()) {
 				if (!is_ready()) {
 					return;
 				}
-				double dt = get_process_delta_time();
 				_update_fx(main, dt);
 				queue_redraw();
 			}
@@ -3024,6 +3029,7 @@ void RichTextLabel::add_text(const String &p_text) {
 
 		pos = end + 1;
 	}
+	visible_times.resize(text.length());
 	queue_redraw();
 }
 
@@ -5339,6 +5345,7 @@ void RichTextLabel::set_text(const String &p_bbcode) {
 	}
 	text = p_bbcode;
 	_apply_translation();
+	visible_times.resize(text.length());
 }
 
 void RichTextLabel::_apply_translation() {
@@ -5470,15 +5477,31 @@ TextServer::AutowrapMode RichTextLabel::get_autowrap_mode() const {
 void RichTextLabel::set_visible_ratio(float p_ratio) {
 	if (visible_ratio != p_ratio) {
 		_stop_thread();
+		int total_char_count = get_total_character_count();
 
 		if (p_ratio >= 1.0) {
+			for (int i = visible_characters; i < total_char_count; i++) {
+				visible_times[i] = global_elapsed_time;
+			}
 			visible_characters = -1;
 			visible_ratio = 1.0;
 		} else if (p_ratio < 0.0) {
+			for (int i = 0; i < visible_characters; i++) {
+				visible_times[i] = 0.0;
+			}
 			visible_characters = 0;
 			visible_ratio = 0.0;
 		} else {
-			visible_characters = get_total_character_count() * p_ratio;
+			if (visible_ratio < p_ratio) {
+				for (int i = total_char_count * visible_ratio; i < total_char_count * p_ratio; i++) {
+					visible_times[i] = global_elapsed_time;
+				}
+			} else {
+				for (int i = total_char_count * p_ratio; i < total_char_count * visible_ratio; i++) {
+					visible_times[i] = 0.0;
+				}
+			}
+			visible_characters = total_char_count * p_ratio;
 			visible_ratio = p_ratio;
 		}
 
@@ -5783,12 +5806,35 @@ void RichTextLabel::set_visible_characters_behavior(TextServer::VisibleCharacter
 void RichTextLabel::set_visible_characters(int p_visible) {
 	if (visible_characters != p_visible) {
 		_stop_thread();
+		int total_char_count = get_total_character_count();
 
+		if (p_visible < text.length() && p_visible >= 0) {
+			int max_char_count = (visible_characters < total_char_count) ? visible_characters : total_char_count;
+			max_char_count = (visible_characters >= 0) ? max_char_count : 0;
+			if (max_char_count > p_visible) {
+				for (int i = p_visible; i < max_char_count - 1; i++) {
+					visible_times[i] = 0.0;
+				}
+			} else {
+				for (int i = max_char_count; i < p_visible; i++) {
+					visible_times[i] = global_elapsed_time;
+				}
+			}
+		} else if (visible_characters != -1) {
+			for (int i = visible_characters; i < total_char_count; i++) {
+				visible_times[i] = global_elapsed_time;
+			}
+		} else {
+			for (int i = 0; i < total_char_count; i++) {
+				visible_times[i] = global_elapsed_time;
+			}
+		}
 		visible_characters = p_visible;
+
+
 		if (p_visible == -1) {
 			visible_ratio = 1;
 		} else {
-			int total_char_count = get_total_character_count();
 			if (total_char_count > 0) {
 				visible_ratio = (float)p_visible / (float)total_char_count;
 			}

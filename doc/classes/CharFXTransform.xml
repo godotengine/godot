@@ -15,7 +15,7 @@
 			The color the character will be drawn with.
 		</member>
 		<member name="elapsed_time" type="float" setter="set_elapsed_time" getter="get_elapsed_time" default="0.0">
-			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the [RichTextLabel] is paused (see [member Node.process_mode]). Resets when the text in the [RichTextLabel] is changed.
+			The time elapsed since the [RichTextEffect] was added to the [RichTextLabel] (in seconds). Time stops when the [RichTextLabel] is paused (see [member Node.process_mode]). Resets when the text in the [RichTextLabel] is changed.
 			[b]Note:[/b] Time still passes while the [RichTextLabel] is hidden.
 		</member>
 		<member name="env" type="Dictionary" setter="set_environment" getter="get_environment" default="{}">
@@ -24,6 +24,11 @@
 			[codeblock]
 			{"foo": "hello", "bar": true, "baz": 42, "color": Color(1, 1, 1, 1)}
 			[/codeblock]
+		</member>
+		<member name="global_elapsed_time" type="float" setter="set_global_elapsed_time" getter="get_global_elapsed_time" default="0">
+			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the [RichTextLabel] is paused (see [member Node.process_mode]).
+
+			[b]Note:[/b] Time still passes while the [RichTextLabel] is hidden.
 		</member>
 		<member name="font" type="RID" setter="set_font" getter="get_font" default="RID()">
 			Font resource used to render glyph.
@@ -51,6 +56,9 @@
 		</member>
 		<member name="visible" type="bool" setter="set_visibility" getter="is_visible" default="true">
 			If [code]true[/code], the character will be drawn. If [code]false[/code], the character will be hidden. Characters around hidden characters will reflow to take the space of hidden characters. If this is not desired, set their [member color] to [code]Color(1, 1, 1, 0)[/code] instead.
+		</member>
+		<member name="visible_time" type="float" setter="set_visible_time" getter="get_visible_time" default="0">
+			The timestamp that the character became visible at. Based on [code]global_elapsed_time[/code].
 		</member>
 	</members>
 </class>

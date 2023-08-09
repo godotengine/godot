@@ -47,7 +47,9 @@ public:
 	bool outline = false;
 	Point2 offset;
 	Color color;
+	double global_elapsed_time = 0.0f;
 	double elapsed_time = 0.0f;
+	double visible_time = 0.0f;
 	Dictionary environment;
 	uint32_t glyph_index = 0;
 	uint16_t glyph_flags = 0;
@@ -61,11 +63,18 @@ public:
 	Vector2i get_range() { return range; }
 	void set_range(const Vector2i &p_range) { range = p_range; }
 
+	double get_global_elapsed_time() { return global_elapsed_time; }
+	void set_global_elapsed_time(double p_global_elapsed_time) { global_elapsed_time = p_global_elapsed_time; }
+
 	double get_elapsed_time() { return elapsed_time; }
 	void set_elapsed_time(double p_elapsed_time) { elapsed_time = p_elapsed_time; }
 
+	double get_visible_time() { return visible_time; }
+	void set_visible_time(double p_visible_time) { visible_time = p_visible_time; }
+
 	bool is_visible() { return visibility; }
 	void set_visibility(bool p_visibility) { visibility = p_visibility; }
+
 
 	bool is_outline() { return outline; }
 	void set_outline(bool p_outline) { outline = p_outline; }
