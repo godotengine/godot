@@ -84,6 +84,7 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 	body_label->set_focus_mode(Control::FOCUS_ALL);
 	body_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	body_label->set_theme(_create_body_label_theme());
+	body_label->hide();
 	layout_container->add_child(body_label);
 
 	float tooltip_delay_time = ProjectSettings::get_singleton()->get("gui/timers/tooltip_delay_sec");
@@ -187,6 +188,7 @@ Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, co
 
 void SymbolTooltip::_update_tooltip_size() {
 	// Calculate and set the tooltip's size.
+	int max_width = 800;
 	Ref<Theme> header_theme = header_label->get_theme();
 	Ref<StyleBox> header_style_box = header_theme->get_stylebox("normal", "TextEdit");
 	String header_text = header_label->get_text();
@@ -195,16 +197,29 @@ void SymbolTooltip::_update_tooltip_size() {
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
 	Size2 header_content_size = font->get_string_size(header_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 
+	bool need_to_wrap = header_content_size.width > max_width;
+	TextEdit::LineWrappingMode line_wrapping_mode = need_to_wrap ? TextEdit::LINE_WRAPPING_BOUNDARY : TextEdit::LINE_WRAPPING_NONE;
+	if (header_label->get_line_wrapping_mode() != line_wrapping_mode) {
+		header_label->set_line_wrapping_mode(line_wrapping_mode);
+		header_label->set_fit_content_height_enabled(need_to_wrap); // TODO: Fix issue where the tooltip height renders incorrectly when this is enabled and line wrapping is occurring.
+	}
+
+	real_t lines_after_wrapping = header_content_size.width / max_width;
+	real_t line_height = font->get_height(font_size);
+	real_t wrapped_height = line_height * lines_after_wrapping;
+
 	real_t h_padding = header_style_box->get_content_margin(SIDE_LEFT) + header_style_box->get_content_margin(SIDE_RIGHT) + 2;
-	real_t v_padding = header_style_box->get_content_margin(SIDE_TOP) + header_style_box->get_content_margin(SIDE_BOTTOM) + 1 + 2;
-	real_t height = header_content_size.height;
+	real_t v_padding = header_style_box->get_content_margin(SIDE_TOP) + header_style_box->get_content_margin(SIDE_BOTTOM) + 2;
+	real_t header_height = need_to_wrap ? wrapped_height : header_content_size.height;
+	real_t height = header_height;
 
 	Vector2 body_size = body_label->get_size();
 	if (body_label->is_visible()) {
 		height += body_size.height;
+		v_padding += 1;
 	}
 
-	real_t tooltip_width = MAX(header_content_size.width + h_padding, body_label->is_visible() ? body_size.width : 0 );
+	real_t tooltip_width = MAX(MIN(max_width, header_content_size.width + h_padding), body_label->is_visible() ? body_size.width : 0 );
 	real_t tooltip_height = height + v_padding;
 	set_size(Vector2(tooltip_width, tooltip_height));
 }
@@ -224,12 +239,16 @@ void SymbolTooltip::_update_header_label(const String &header_content) {
 void SymbolTooltip::_update_body_label(const String &body_content) {
 	// Set the tooltip's body text.
 	if (body_content.is_empty()) {
-		body_label->hide();
+		if (body_label->is_visible()) {
+			body_label->hide();
+		}
 		return;
 	}
 	body_label->clear();
 	_add_text_to_rt(body_content, body_label, layout_container);
-	body_label->show();
+	if (!body_label->is_visible()) {
+		body_label->show();
+	}
 }
 
 String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
@@ -293,9 +312,9 @@ Ref<Theme> SymbolTooltip::_create_header_label_theme() {
 
 	Ref<StyleBoxFlat> style_box = memnew(StyleBoxFlat);
 	style_box->set_draw_center(false);
-	style_box->set_border_color(Color(0.8, 0.81, 0.82, 0.27)); // Set the border color (RGBA).
-	style_box->set_border_width(SIDE_BOTTOM, 1);
 	style_box->set_content_margin_individual(15, 10, 15, 10);
+	// TODO: The horizontal scrollbar may still be taking up space even when invisible??  Something is adding unwanted bottom margin.
+	// TODO: Besides the small bottom unwanted margin, there is still a large unwanted margin that doesn't appear to come from the header.
 
 	// Set the style boxes for the TextEdit
 	theme->set_stylebox("normal", "TextEdit", style_box);
@@ -313,6 +332,8 @@ Ref<Theme> SymbolTooltip::_create_body_label_theme() {
 
 	Ref<StyleBoxFlat> style_box = memnew(StyleBoxFlat);
 	style_box->set_draw_center(false);
+	style_box->set_border_width(SIDE_TOP, 1);
+	style_box->set_border_color(Color(0.8, 0.81, 0.82, 0.27)); // Set the border color (RGBA).
 	style_box->set_content_margin_individual(15, 10, 15, 10);
 	theme->set_stylebox("normal", "RichTextLabel", style_box);
 
