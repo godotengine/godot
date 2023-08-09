@@ -379,7 +379,11 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 
 	if (show_cursor && !previously_shown) {
 		WindowID window_id = get_window_at_screen_position(mouse_get_position());
-		if (window_id != INVALID_WINDOW_ID) {
+		if (window_id != INVALID_WINDOW_ID && window_mouseover_id != window_id) {
+			if (window_mouseover_id != INVALID_WINDOW_ID) {
+				_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+			}
+			window_mouseover_id = window_id;
 			_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
 		}
 	}
@@ -1448,6 +1452,11 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
 	DEBUG_LOG_X11("delete_sub_window: %lu (%u) \n", wd.x11_window, p_id);
+
+	if (window_mouseover_id == p_id) {
+		window_mouseover_id = INVALID_WINDOW_ID;
+		_send_window_event(windows[p_id], WINDOW_EVENT_MOUSE_EXIT);
+	}
 
 	window_set_rect_changed_callback(Callable(), p_id);
 	window_set_window_event_callback(Callable(), p_id);
@@ -4292,7 +4301,8 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 
-				if (!mouse_mode_grab) {
+				if (!mouse_mode_grab && window_mouseover_id == window_id) {
+					window_mouseover_id = INVALID_WINDOW_ID;
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
 				}
 
@@ -4304,7 +4314,11 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 
-				if (!mouse_mode_grab) {
+				if (!mouse_mode_grab && window_mouseover_id != window_id) {
+					if (window_mouseover_id != INVALID_WINDOW_ID) {
+						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+					}
+					window_mouseover_id = window_id;
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
 				}
 			} break;

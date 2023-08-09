@@ -225,6 +225,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	List<WindowID> popup_list;
 
+	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
