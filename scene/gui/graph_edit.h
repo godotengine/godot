@@ -195,7 +195,7 @@ private:
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;
-	List<GraphNode *> prev_selected;
+	List<GraphElement *> prev_selected;
 
 	bool setting_scroll_offset = false;
 	bool right_disconnects = false;
@@ -229,12 +229,12 @@ private:
 
 	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom);
 
-	void _graph_node_selected(Node *p_gn);
-	void _graph_node_deselected(Node *p_gn);
-	void _graph_node_moved_to_front(Node *p_gn);
-	void _graph_node_resized(Vector2 p_new_minsize, Node *p_gn);
-	void _graph_node_moved(Node *p_gn);
-	void _graph_node_slot_updated(int p_index, Node *p_gn);
+	void _graph_element_selected(Node *p_node);
+	void _graph_element_deselected(Node *p_node);
+	void _graph_element_moved_to_front(Node *p_node);
+	void _graph_element_resized(Vector2 p_new_minsize, Node *p_node);
+	void _graph_element_moved(Node *p_node);
+	void _graph_node_slot_updated(int p_index, Node *p_node);
 
 	void _update_scroll();
 	void _update_scroll_offset();
@@ -269,8 +269,8 @@ protected:
 
 	void _notification(int p_what);
 
-	virtual bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
-	virtual bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	virtual bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	virtual bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
 
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
 	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
