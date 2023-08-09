@@ -31,6 +31,7 @@
 #ifndef RASTERIZER_STORAGE_GLES2_H
 #define RASTERIZER_STORAGE_GLES2_H
 
+#include "core/bitfield_dynamic.h"
 #include "core/pool_vector.h"
 #include "core/self_list.h"
 #include "drivers/gles_common/rasterizer_asserts.h"
@@ -44,6 +45,8 @@
 
 class RasterizerCanvasGLES2;
 class RasterizerSceneGLES2;
+
+#define WRAPPED_GL_ACTIVE_TEXTURE storage->gl_wrapper.gl_active_texture
 
 class RasterizerStorageGLES2 : public RasterizerStorage {
 public:
@@ -1346,6 +1349,27 @@ public:
 		uint64_t count;
 
 	} frame;
+
+	struct GLWrapper {
+		mutable BitFieldDynamic texture_unit_table;
+		mutable LocalVector<uint32_t> texture_units_bound;
+
+		void gl_active_texture(GLenum p_texture) const {
+			::glActiveTexture(p_texture);
+
+			p_texture -= GL_TEXTURE0;
+
+			// Check for below zero and above max in one check.
+			ERR_FAIL_COND((unsigned int)p_texture >= texture_unit_table.get_num_bits());
+
+			// Set if the first occurrence in the table.
+			if (texture_unit_table.check_and_set(p_texture)) {
+				texture_units_bound.push_back(p_texture);
+			}
+		}
+		void initialize(int p_max_texture_image_units);
+		void reset();
+	} gl_wrapper;
 
 	void initialize();
 	void finalize();

@@ -134,7 +134,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 		}
 
 		if (skeleton) {
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
 			glBindTexture(GL_TEXTURE_2D, skeleton->texture);
 			state.using_skeleton = true;
 		} else {
@@ -186,7 +186,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 			ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = shader_ptr->texture_hints.ptrw();
 
 			for (int i = 0; i < tc; i++) {
-				glActiveTexture(GL_TEXTURE2 + i);
+				WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE2 + i);
 
 				RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull(textures[i]);
 				if (!t) {
@@ -403,7 +403,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 
 				if (has_shadow) {
 					RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
-					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
+					WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 					glBindTexture(GL_TEXTURE_2D, cls->distance);
 
 					/*canvas_shader.set_uniform(CanvasShaderGLES3::SHADOW_MATRIX,light->shadow_matrix_cache);
@@ -411,7 +411,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 					canvas_shader.set_uniform(CanvasShaderGLES3::LIGHT_SHADOW_COLOR,light->shadow_color);*/
 				}
 
-				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
+				WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 				RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull(light->texture);
 				if (!t) {
 					glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
@@ -421,7 +421,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 					glBindTexture(t->target, t->tex_id);
 				}
 
-				glActiveTexture(GL_TEXTURE0);
+				WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 				_legacy_canvas_item_render_commands(p_ci, r_ris.current_clip, reclip, nullptr); //redraw using light
 			}
 
@@ -1220,7 +1220,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 		}
 
 		if (skeleton) {
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
 			glBindTexture(GL_TEXTURE_2D, skeleton->texture);
 			state.using_skeleton = true;
 		} else {
@@ -1273,7 +1273,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 			ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = shader_ptr->texture_hints.ptrw();
 
 			for (int i = 0; i < tc; i++) {
-				glActiveTexture(GL_TEXTURE2 + i);
+				WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE2 + i);
 
 				RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull(textures[i]);
 				if (!t) {
@@ -1514,7 +1514,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 
 				if (has_shadow) {
 					RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
-					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
+					WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 					glBindTexture(GL_TEXTURE_2D, cls->distance);
 
 					/*canvas_shader.set_uniform(CanvasShaderGLES3::SHADOW_MATRIX,light->shadow_matrix_cache);
@@ -1522,7 +1522,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 					canvas_shader.set_uniform(CanvasShaderGLES3::LIGHT_SHADOW_COLOR,light->shadow_color);*/
 				}
 
-				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
+				WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 				RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull(light->texture);
 				if (!t) {
 					glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
@@ -1532,7 +1532,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 					glBindTexture(t->target, t->tex_id);
 				}
 
-				glActiveTexture(GL_TEXTURE0);
+				WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 
 				// redraw using light.
 				// if there is no clip item, we can consider scissoring to the intersection area between the light and the item
@@ -1903,7 +1903,7 @@ void RasterizerCanvasGLES3::canvas_render_items_implementation(Item *p_item_list
 	state.current_tex = RID();
 	state.current_tex_ptr = nullptr;
 	state.current_normal = RID();
-	glActiveTexture(GL_TEXTURE0);
+	WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 	//	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_SKELETON, false);
@@ -1911,7 +1911,7 @@ void RasterizerCanvasGLES3::canvas_render_items_implementation(Item *p_item_list
 	//	state.current_tex_ptr = NULL;
 	//	state.current_normal = RID();
 	//	state.canvas_texscreen_used = false;
-	//	glActiveTexture(GL_TEXTURE0);
+	//	WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 	//	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 	if (bdata.settings_use_batching) {

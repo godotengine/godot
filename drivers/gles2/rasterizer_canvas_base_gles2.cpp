@@ -99,7 +99,7 @@ void RasterizerCanvasBaseGLES2::canvas_begin() {
 
 	reset_canvas();
 
-	glActiveTexture(GL_TEXTURE0);
+	WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 	glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
@@ -191,7 +191,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 			state.current_tex = RID();
 			state.current_tex_ptr = nullptr;
 
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 			glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 		} else {
@@ -205,7 +205,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 				texture->render_target->used_in_frame = true;
 			}
 
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 			glBindTexture(GL_TEXTURE_2D, texture->tex_id);
 
 			state.current_tex = p_texture;
@@ -217,7 +217,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 		state.current_tex = RID();
 		state.current_tex_ptr = nullptr;
 
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 	}
 
@@ -230,7 +230,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 
 		if (!normal_map) {
 			state.current_normal = RID();
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 			glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::USE_DEFAULT_NORMAL, false);
 
@@ -241,7 +241,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 
 			normal_map = normal_map->get_ptr();
 
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 			glBindTexture(GL_TEXTURE_2D, normal_map->tex_id);
 			state.current_normal = p_normal_map;
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::USE_DEFAULT_NORMAL, true);
@@ -249,7 +249,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 
 	} else {
 		state.current_normal = RID();
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
 		state.canvas_shader.set_uniform(CanvasShaderGLES2::USE_DEFAULT_NORMAL, false);
 	}
@@ -272,7 +272,7 @@ void RasterizerCanvasBaseGLES2::draw_window_margins(int *black_margin, RID *blac
 		draw_generic_textured_rect(Rect2(0, 0, black_margin[MARGIN_LEFT], window_h),
 				Rect2(0, 0, (float)black_margin[MARGIN_LEFT] / sz.x, (float)(window_h) / sz.y));
 	} else if (black_margin[MARGIN_LEFT]) {
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 
 		draw_generic_textured_rect(Rect2(0, 0, black_margin[MARGIN_LEFT], window_h), Rect2(0, 0, 1, 1));
@@ -284,7 +284,7 @@ void RasterizerCanvasBaseGLES2::draw_window_margins(int *black_margin, RID *blac
 		draw_generic_textured_rect(Rect2(window_w - black_margin[MARGIN_RIGHT], 0, black_margin[MARGIN_RIGHT], window_h),
 				Rect2(0, 0, (float)black_margin[MARGIN_RIGHT] / sz.x, (float)window_h / sz.y));
 	} else if (black_margin[MARGIN_RIGHT]) {
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 
 		draw_generic_textured_rect(Rect2(window_w - black_margin[MARGIN_RIGHT], 0, black_margin[MARGIN_RIGHT], window_h), Rect2(0, 0, 1, 1));
@@ -298,7 +298,7 @@ void RasterizerCanvasBaseGLES2::draw_window_margins(int *black_margin, RID *blac
 				Rect2(0, 0, (float)window_w / sz.x, (float)black_margin[MARGIN_TOP] / sz.y));
 
 	} else if (black_margin[MARGIN_TOP]) {
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 
 		draw_generic_textured_rect(Rect2(0, 0, window_w, black_margin[MARGIN_TOP]), Rect2(0, 0, 1, 1));
@@ -312,7 +312,7 @@ void RasterizerCanvasBaseGLES2::draw_window_margins(int *black_margin, RID *blac
 				Rect2(0, 0, (float)window_w / sz.x, (float)black_margin[MARGIN_BOTTOM] / sz.y));
 
 	} else if (black_margin[MARGIN_BOTTOM]) {
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 
 		draw_generic_textured_rect(Rect2(0, window_h - black_margin[MARGIN_BOTTOM], window_w, black_margin[MARGIN_BOTTOM]), Rect2(0, 0, 1, 1));
@@ -364,7 +364,7 @@ void RasterizerCanvasBaseGLES2::_set_uniforms() {
 
 		if (state.using_shadow) {
 			RasterizerStorageGLES2::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 5);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 5);
 			glBindTexture(GL_TEXTURE_2D, cls->distance);
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_MATRIX, light->shadow_matrix_cache);
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_SHADOW_COLOR, light->shadow_color);
@@ -723,7 +723,7 @@ void RasterizerCanvasBaseGLES2::_copy_screen(const Rect2 &p_rect) {
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_NO_ALPHA, !state.using_transparent_rt);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->copy_screen_effect.fbo);
-	glActiveTexture(GL_TEXTURE0);
+	WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
 
 	storage->shaders.copy.bind();

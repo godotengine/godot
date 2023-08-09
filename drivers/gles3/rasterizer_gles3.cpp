@@ -248,6 +248,9 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 		glViewport(0, 0, OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 	}
+
+	// Unbind texture slots.
+	storage->gl_wrapper.reset();
 }
 
 void RasterizerGLES3::restore_render_target(bool p_3d_was_drawn) {
@@ -316,7 +319,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	}
 
 	RasterizerStorageGLES3::Texture *t = storage->texture_owner.get(texture);
-	glActiveTexture(GL_TEXTURE0);
+	WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	canvas->draw_generic_textured_rect(screenrect, Rect2(0, 0, 1, 1));
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -354,7 +357,7 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 
 		// output our texture
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		if (rt->external.fbo != 0) {
 			glBindTexture(GL_TEXTURE_2D, rt->external.color);
 		} else {
@@ -394,7 +397,7 @@ void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 
 	// output our texture
-	glActiveTexture(GL_TEXTURE0);
+	WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, rt->color);
 
 	canvas->draw_lens_distortion_rect(p_screen_rect, p_k1, p_k2, p_eye_center, p_oversample);

@@ -221,7 +221,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture
 		if (!texture) {
 			state.current_tex = RID();
 			state.current_tex_ptr = nullptr;
-			glActiveTexture(GL_TEXTURE0);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 		} else {
@@ -235,7 +235,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture
 				texture->render_target->used_in_frame = true;
 			}
 
-			glActiveTexture(GL_TEXTURE0);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, texture->tex_id);
 			state.current_tex = p_texture;
 			state.current_tex_ptr = texture;
@@ -244,7 +244,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture
 		}
 
 	} else {
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 		state.current_tex = RID();
 		state.current_tex_ptr = nullptr;
@@ -259,7 +259,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture
 
 		if (!normal_map) {
 			state.current_normal = RID();
-			glActiveTexture(GL_TEXTURE1);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
 			state.canvas_shader.set_uniform(CanvasShaderGLES3::USE_DEFAULT_NORMAL, false);
 
@@ -270,7 +270,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture
 
 			normal_map = normal_map->get_ptr();
 
-			glActiveTexture(GL_TEXTURE1);
+			WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, normal_map->tex_id);
 			state.current_normal = p_normal_map;
 			state.canvas_shader.set_uniform(CanvasShaderGLES3::USE_DEFAULT_NORMAL, true);
@@ -278,7 +278,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasBaseGLES3::_bind_canvas_texture
 
 	} else {
 		state.current_normal = RID();
-		glActiveTexture(GL_TEXTURE1);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::USE_DEFAULT_NORMAL, false);
 	}
@@ -734,7 +734,7 @@ void RasterizerCanvasBaseGLES3::_copy_texscreen(const Rect2 &p_rect) {
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo);
-	glActiveTexture(GL_TEXTURE0);
+	WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
 
 	storage->shaders.copy.bind();
@@ -752,7 +752,7 @@ void RasterizerCanvasBaseGLES3::_copy_texscreen(const Rect2 &p_rect) {
 		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
 		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD, float(i));
 		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::BLUR_SECTION, blur_section);
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color); //previous level, since mipmaps[0] starts one level bigger
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[1].sizes[i].fbo);
 
@@ -766,7 +766,7 @@ void RasterizerCanvasBaseGLES3::_copy_texscreen(const Rect2 &p_rect) {
 		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
 		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD, float(i));
 		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::BLUR_SECTION, blur_section);
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[1].color);
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[i + 1].fbo); //next level, since mipmaps[0] starts one level bigger
 
@@ -954,11 +954,11 @@ void RasterizerCanvasBaseGLES3::reset_canvas() {
 
 	//use for reading from screen
 	if (storage->frame.current_rt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_SAMPLING]) {
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 3);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0 + storage->config.max_texture_image_units - 3);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);
 	}
 
-	glActiveTexture(GL_TEXTURE0);
+	WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 	glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
@@ -1047,7 +1047,7 @@ void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *blac
 		draw_generic_textured_rect(Rect2(0, 0, black_margin[MARGIN_LEFT], window_h),
 				Rect2(0, 0, (float)black_margin[MARGIN_LEFT] / sz.x, (float)(window_h) / sz.y));
 	} else if (black_margin[MARGIN_LEFT]) {
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 
 		draw_generic_textured_rect(Rect2(0, 0, black_margin[MARGIN_LEFT], window_h), Rect2(0, 0, 1, 1));
@@ -1059,7 +1059,7 @@ void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *blac
 		draw_generic_textured_rect(Rect2(window_w - black_margin[MARGIN_RIGHT], 0, black_margin[MARGIN_RIGHT], window_h),
 				Rect2(0, 0, (float)black_margin[MARGIN_RIGHT] / sz.x, (float)window_h / sz.y));
 	} else if (black_margin[MARGIN_RIGHT]) {
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 
 		draw_generic_textured_rect(Rect2(window_w - black_margin[MARGIN_RIGHT], 0, black_margin[MARGIN_RIGHT], window_h), Rect2(0, 0, 1, 1));
@@ -1073,7 +1073,7 @@ void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *blac
 				Rect2(0, 0, (float)window_w / sz.x, (float)black_margin[MARGIN_TOP] / sz.y));
 
 	} else if (black_margin[MARGIN_TOP]) {
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 
 		draw_generic_textured_rect(Rect2(0, 0, window_w, black_margin[MARGIN_TOP]), Rect2(0, 0, 1, 1));
@@ -1087,7 +1087,7 @@ void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *blac
 				Rect2(0, 0, (float)window_w / sz.x, (float)black_margin[MARGIN_BOTTOM] / sz.y));
 
 	} else if (black_margin[MARGIN_BOTTOM]) {
-		glActiveTexture(GL_TEXTURE0);
+		WRAPPED_GL_ACTIVE_TEXTURE(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 
 		draw_generic_textured_rect(Rect2(0, window_h - black_margin[MARGIN_BOTTOM], window_w, black_margin[MARGIN_BOTTOM]), Rect2(0, 0, 1, 1));

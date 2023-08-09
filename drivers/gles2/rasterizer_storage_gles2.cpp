@@ -120,6 +120,20 @@ PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT
 #define GL_MAX_SAMPLES 0x8D57
 #endif //!GLES_OVER_GL
 
+void RasterizerStorageGLES2::GLWrapper::initialize(int p_max_texture_image_units) {
+	texture_unit_table.create(p_max_texture_image_units);
+}
+
+void RasterizerStorageGLES2::GLWrapper::reset() {
+	for (uint32_t i = 0; i < texture_units_bound.size(); i++) {
+		::glActiveTexture(GL_TEXTURE0 + texture_units_bound[i]);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
+	texture_units_bound.clear();
+	texture_unit_table.blank();
+}
+
 void RasterizerStorageGLES2::bind_quad_array() const {
 	glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
@@ -599,7 +613,7 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 		texture->compressed = compressed;
 	}
 
-	glActiveTexture(GL_TEXTURE0);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
 	if (p_type == VS::TEXTURE_TYPE_EXTERNAL) {
@@ -669,7 +683,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	PoolVector<uint8_t>::Read read = img->get_data().read();
 	ERR_FAIL_COND(!read.ptr());
 
-	glActiveTexture(GL_TEXTURE0);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
 	texture->ignore_mipmaps = compressed && !img->has_mipmaps();
@@ -798,7 +812,7 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
 	PoolVector<uint8_t>::Write wb = data.write();
 
-	glActiveTexture(GL_TEXTURE0);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0);
 
 	glBindTexture(texture->target, texture->tex_id);
 
@@ -860,7 +874,7 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 	glDisable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
 	glColorMask(1, 1, 1, 1);
-	glActiveTexture(GL_TEXTURE0);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture->tex_id);
 
 	glViewport(0, 0, texture->alloc_width, texture->alloc_height);
@@ -902,7 +916,7 @@ void RasterizerStorageGLES2::texture_set_flags(RID p_texture, uint32_t p_flags) 
 
 	texture->flags = p_flags;
 
-	glActiveTexture(GL_TEXTURE0);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
 	if (((texture->flags & VS::TEXTURE_FLAG_REPEAT) || (texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT)) && texture->target != GL_TEXTURE_CUBE_MAP) {
@@ -990,7 +1004,7 @@ void RasterizerStorageGLES2::texture_bind(RID p_texture, uint32_t p_texture_no) 
 
 	ERR_FAIL_COND(!texture);
 
-	glActiveTexture(GL_TEXTURE0 + p_texture_no);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0 + p_texture_no);
 	glBindTexture(texture->target, texture->tex_id);
 }
 
@@ -1180,7 +1194,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		}
 	}
 
-	glActiveTexture(GL_TEXTURE0);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1188,7 +1202,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //need this for proper sampling
 
-	glActiveTexture(GL_TEXTURE1);
+	gl_wrapper.gl_active_texture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, resources.radical_inverse_vdc_cache_tex);
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1197,7 +1211,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// New cubemap that will hold the mipmaps with different roughness values
-	glActiveTexture(GL_TEXTURE2);
+	gl_wrapper.gl_active_texture(GL_TEXTURE2);
 	glGenTextures(1, &sky->radiance);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, sky->radiance);
 
@@ -1237,7 +1251,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	// third, render to the framebuffer using separate textures, then copy to mipmaps
 	while (size >= 1) {
 		//make framebuffer size the texture size, need to use a separate texture for compatibility
-		glActiveTexture(GL_TEXTURE3);
+		gl_wrapper.gl_active_texture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, resources.mipmap_blur_color);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size, size, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resources.mipmap_blur_color, 0);
@@ -1251,7 +1265,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		glViewport(0, 0, size, size);
 		bind_quad_array();
 
-		glActiveTexture(GL_TEXTURE2); //back to panorama
+		gl_wrapper.gl_active_texture(GL_TEXTURE2); //back to panorama
 
 		for (int i = 0; i < 6; i++) {
 			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES2::FACE_ID, i);
@@ -1277,7 +1291,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES2::USE_DIRECT_WRITE, false);
 
 	// restore ranges
-	glActiveTexture(GL_TEXTURE2); //back to panorama
+	gl_wrapper.gl_active_texture(GL_TEXTURE2); //back to panorama
 
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1285,18 +1299,18 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glActiveTexture(GL_TEXTURE3); //back to panorama
+	gl_wrapper.gl_active_texture(GL_TEXTURE3); //back to panorama
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glActiveTexture(GL_TEXTURE1);
+	gl_wrapper.gl_active_texture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glActiveTexture(GL_TEXTURE0);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	//reset flags on Sky Texture that may have changed
 	texture_set_flags(sky->panorama, texture->flags);
 
 	// Framebuffer did its job. thank mr framebuffer
-	glActiveTexture(GL_TEXTURE0); //back to panorama
+	gl_wrapper.gl_active_texture(GL_TEXTURE0); //back to panorama
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
 }
 
@@ -3653,7 +3667,7 @@ void RasterizerStorageGLES2::skeleton_allocate(RID p_skeleton, int p_bones, bool
 	skeleton->use_2d = p_2d_skeleton;
 
 	if (!config.use_skeleton_software) {
-		glActiveTexture(GL_TEXTURE0);
+		gl_wrapper.gl_active_texture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, skeleton->tex_id);
 
 #ifdef GLES_OVER_GL
@@ -4164,7 +4178,7 @@ void RasterizerStorageGLES2::update_dirty_skeletons() {
 		return;
 	}
 
-	glActiveTexture(GL_TEXTURE0);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0);
 
 	while (skeleton_update_list.first()) {
 		Skeleton *skeleton = skeleton_update_list.first()->self();
@@ -5786,7 +5800,7 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 	cls->size = p_width;
 	cls->height = 16;
 
-	glActiveTexture(GL_TEXTURE0);
+	gl_wrapper.gl_active_texture(GL_TEXTURE0);
 
 	glGenFramebuffers(1, &cls->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, cls->fbo);
@@ -6486,6 +6500,7 @@ void RasterizerStorageGLES2::initialize() {
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &config.max_vertex_texture_image_units);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
+	gl_wrapper.initialize(config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &config.max_cubemap_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, config.max_viewport_dimensions);
@@ -6539,7 +6554,7 @@ void RasterizerStorageGLES2::initialize() {
 		for (int i = 0; i < 8 * 8 * 3; i++) {
 			whitetexdata[i] = 255;
 		}
-		glActiveTexture(GL_TEXTURE0);
+		gl_wrapper.gl_active_texture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.white_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, whitetexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -6551,7 +6566,7 @@ void RasterizerStorageGLES2::initialize() {
 		for (int i = 0; i < 8 * 8 * 3; i++) {
 			blacktexdata[i] = 0;
 		}
-		glActiveTexture(GL_TEXTURE0);
+		gl_wrapper.gl_active_texture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.black_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, blacktexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -6563,7 +6578,7 @@ void RasterizerStorageGLES2::initialize() {
 		for (int i = 0; i < 8 * 8 * 4; i++) {
 			transparenttexdata[i] = 0;
 		}
-		glActiveTexture(GL_TEXTURE0);
+		gl_wrapper.gl_active_texture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.transparent_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, transparenttexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -6577,7 +6592,7 @@ void RasterizerStorageGLES2::initialize() {
 			normaltexdata[i + 1] = 128;
 			normaltexdata[i + 2] = 255;
 		}
-		glActiveTexture(GL_TEXTURE0);
+		gl_wrapper.gl_active_texture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.normal_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, normaltexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -6591,7 +6606,7 @@ void RasterizerStorageGLES2::initialize() {
 			anisotexdata[i + 1] = 128;
 			anisotexdata[i + 2] = 0;
 		}
-		glActiveTexture(GL_TEXTURE0);
+		gl_wrapper.gl_active_texture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.aniso_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, anisotexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -6614,7 +6629,7 @@ void RasterizerStorageGLES2::initialize() {
 	if (true /*||config.float_texture_supported*/) { //uint8 is similar and works everywhere
 		glGenTextures(1, &resources.radical_inverse_vdc_cache_tex);
 
-		glActiveTexture(GL_TEXTURE0);
+		gl_wrapper.gl_active_texture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.radical_inverse_vdc_cache_tex);
 
 		uint8_t radical_inverse[512];
