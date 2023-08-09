@@ -31,6 +31,7 @@
 #ifndef MESH_STORAGE_RD_H
 #define MESH_STORAGE_RD_H
 
+#include "../../rendering_server_globals.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -90,6 +91,9 @@ private:
 
 			struct Version {
 				uint32_t input_mask = 0;
+				uint32_t current_buffer = 0;
+				uint32_t previous_buffer = 0;
+				bool input_motion_vectors = false;
 				RD::VertexFormatID vertex_format = 0;
 				RID vertex_array;
 			};
@@ -162,8 +166,11 @@ private:
 		Mesh *mesh = nullptr;
 		RID skeleton;
 		struct Surface {
-			RID vertex_buffer;
-			RID uniform_set;
+			RID vertex_buffer[2];
+			RID uniform_set[2];
+			uint32_t current_buffer = 0;
+			uint32_t previous_buffer = 0;
+			uint64_t last_change = 0;
 
 			Mesh::Surface::Version *versions = nullptr; //allocated on demand
 			uint32_t version_count = 0;
@@ -183,10 +190,11 @@ private:
 				weight_update_list(this), array_update_list(this) {}
 	};
 
-	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, MeshInstance::Surface *mis = nullptr);
+	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, bool p_input_motion_vectors, MeshInstance::Surface *mis = nullptr);
 
 	void _mesh_instance_clear(MeshInstance *mi);
 	void _mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface);
+	void _mesh_instance_add_surface_buffer(MeshInstance *mi, Mesh *mesh, MeshInstance::Surface *s, uint32_t p_surface, uint32_t p_buffer_index);
 
 	mutable RID_Owner<MeshInstance> mesh_instance_owner;
 
@@ -310,6 +318,12 @@ private:
 	_FORCE_INLINE_ void _skeleton_make_dirty(Skeleton *skeleton);
 
 	Skeleton *skeleton_dirty_list = nullptr;
+
+	enum AttributeLocation {
+		ATTRIBUTE_LOCATION_PREV_VERTEX = 12,
+		ATTRIBUTE_LOCATION_PREV_NORMAL = 13,
+		ATTRIBUTE_LOCATION_PREV_TANGENT = 14
+	};
 
 public:
 	static MeshStorage *get_singleton();
@@ -437,7 +451,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint32_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		s->version_lock.lock();
@@ -445,9 +459,11 @@ public:
 		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
 
 		for (uint32_t i = 0; i < s->version_count; i++) {
-			if (s->versions[i].input_mask != p_input_mask) {
+			if (s->versions[i].input_mask != p_input_mask || s->versions[i].input_motion_vectors != p_input_motion_vectors) {
+				// Find the version that matches the inputs required.
 				continue;
 			}
+
 			//we have this version, hooray
 			r_vertex_format = s->versions[i].vertex_format;
 			r_vertex_array_rd = s->versions[i].vertex_array;
@@ -459,7 +475,7 @@ public:
 		s->version_count++;
 		s->versions = (Mesh::Surface::Version *)memrealloc(s->versions, sizeof(Mesh::Surface::Version) * s->version_count);
 
-		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask);
+		_mesh_surface_generate_version_for_input_mask(s->versions[version], s, p_input_mask, p_input_motion_vectors);
 
 		r_vertex_format = s->versions[version].vertex_format;
 		r_vertex_array_rd = s->versions[version].vertex_array;
@@ -467,7 +483,7 @@ public:
 		s->version_lock.unlock();
 	}
 
-	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 		ERR_FAIL_COND(!mi);
 		Mesh *mesh = mi->mesh;
@@ -475,15 +491,26 @@ public:
 
 		MeshInstance::Surface *mis = &mi->surfaces[p_surface_index];
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
+		uint32_t current_buffer = mis->current_buffer;
+
+		// Using the previous buffer is only allowed if the surface was updated this frame and motion vectors are required.
+		uint32_t previous_buffer = p_input_motion_vectors && (RSG::rasterizer->get_frame_number() == mis->last_change) ? mis->previous_buffer : current_buffer;
 
 		s->version_lock.lock();
 
 		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
 
 		for (uint32_t i = 0; i < mis->version_count; i++) {
-			if (mis->versions[i].input_mask != p_input_mask) {
+			if (mis->versions[i].input_mask != p_input_mask || mis->versions[i].input_motion_vectors != p_input_motion_vectors) {
+				// Find the version that matches the inputs required.
 				continue;
 			}
+
+			if (mis->versions[i].current_buffer != current_buffer || mis->versions[i].previous_buffer != previous_buffer) {
+				// Find the version that corresponds to the correct buffers that should be used.
+				continue;
+			}
+
 			//we have this version, hooray
 			r_vertex_format = mis->versions[i].vertex_format;
 			r_vertex_array_rd = mis->versions[i].vertex_array;
@@ -495,7 +522,7 @@ public:
 		mis->version_count++;
 		mis->versions = (Mesh::Surface::Version *)memrealloc(mis->versions, sizeof(Mesh::Surface::Version) * mis->version_count);
 
-		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, mis);
+		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, p_input_motion_vectors, mis);
 
 		r_vertex_format = mis->versions[version].vertex_format;
 		r_vertex_array_rd = mis->versions[version].vertex_array;

@@ -18,7 +18,11 @@ layout(location = 0) in vec3 vertex_attrib;
 layout(location = 1) in vec2 normal_attrib;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
+#define TANGENT_USED
+#endif
+
+#ifdef TANGENT_USED
 layout(location = 2) in vec2 tangent_attrib;
 #endif
 
@@ -58,6 +62,18 @@ layout(location = 10) in uvec4 bone_attrib;
 layout(location = 11) in vec4 weight_attrib;
 #endif
 
+#ifdef MOTION_VECTORS
+layout(location = 12) in vec3 previous_vertex_attrib;
+
+#ifdef NORMAL_USED
+layout(location = 13) in vec2 previous_normal_attrib;
+#endif
+
+#ifdef TANGENT_USED
+layout(location = 14) in vec2 previous_tangent_attrib;
+#endif
+#endif // MOTION_VECTORS
+
 vec3 oct_to_vec3(vec2 e) {
 	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
 	float t = max(-v.z, 0.0);
@@ -85,7 +101,7 @@ layout(location = 3) out vec2 uv_interp;
 layout(location = 4) out vec2 uv2_interp;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 layout(location = 5) out vec3 tangent_interp;
 layout(location = 6) out vec3 binormal_interp;
 #endif
@@ -161,7 +177,14 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 }
 #endif
 
-void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
+void vertex_shader(vec3 vertex_input,
+#ifdef NORMAL_USED
+		in vec2 normal_input,
+#endif
+#ifdef TANGENT_USED
+		in vec2 tangent_input,
+#endif
+		in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
@@ -289,15 +312,15 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 		model_normal_matrix = model_normal_matrix * mat3(matrix);
 	}
 
-	vec3 vertex = vertex_attrib;
+	vec3 vertex = vertex_input;
 #ifdef NORMAL_USED
-	vec3 normal = oct_to_vec3(normal_attrib * 2.0 - 1.0);
+	vec3 normal = oct_to_vec3(normal_input * 2.0 - 1.0);
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec2 signed_tangent_attrib = tangent_attrib * 2.0 - 1.0;
-	vec3 tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
-	float binormalf = sign(signed_tangent_attrib.y);
+#ifdef TANGENT_USED
+	vec2 signed_tangent_input = tangent_input * 2.0 - 1.0;
+	vec3 tangent = oct_to_vec3(vec2(signed_tangent_input.x, abs(signed_tangent_input.y) * 2.0 - 1.0));
+	float binormalf = sign(signed_tangent_input.y);
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
@@ -333,7 +356,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 	normal = model_normal_matrix * normal;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 
 	tangent = model_normal_matrix * tangent;
 	binormal = model_normal_matrix * binormal;
@@ -377,7 +400,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 
 	binormal = modelview_normal * binormal;
 	tangent = modelview_normal * tangent;
@@ -391,7 +414,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 	normal = (scene_data.view_matrix * vec4(normal, 0.0)).xyz;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 	binormal = (scene_data.view_matrix * vec4(binormal, 0.0)).xyz;
 	tangent = (scene_data.view_matrix * vec4(tangent, 0.0)).xyz;
 #endif
@@ -403,7 +426,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 	normal_interp = normal;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 	tangent_interp = tangent;
 	binormal_interp = binormal;
 #endif
@@ -472,16 +495,33 @@ void main() {
 	instance_index_interp = instance_index;
 
 	mat4 model_matrix = instances.data[instance_index].transform;
-#if defined(MOTION_VECTORS)
+
+#ifdef MOTION_VECTORS
+	// Previous vertex.
 	global_time = scene_data_block.prev_data.time;
-	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
-	global_time = scene_data_block.data.time;
-	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
-#else
-	global_time = scene_data_block.data.time;
-	vec4 screen_position;
-	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
+	vertex_shader(previous_vertex_attrib,
+#ifdef NORMAL_USED
+			previous_normal_attrib,
 #endif
+#ifdef TANGENT_USED
+			previous_tangent_attrib,
+#endif
+			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+#else
+	// Unused output.
+	vec4 screen_position;
+#endif
+
+	// Current vertex.
+	global_time = scene_data_block.data.time;
+	vertex_shader(vertex_attrib,
+#ifdef NORMAL_USED
+			normal_attrib,
+#endif
+#ifdef TANGENT_USED
+			tangent_attrib,
+#endif
+			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
 }
 
 #[fragment]
@@ -535,7 +575,11 @@ layout(location = 3) in vec2 uv_interp;
 layout(location = 4) in vec2 uv2_interp;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
+#define TANGENT_USED
+#endif
+
+#ifdef TANGENT_USED
 layout(location = 5) in vec3 tangent_interp;
 layout(location = 6) in vec3 binormal_interp;
 #endif
@@ -771,7 +815,7 @@ void fragment_shader(in SceneData scene_data) {
 
 	float alpha = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#ifdef TANGENT_USED
 	vec3 binormal = normalize(binormal_interp);
 	vec3 tangent = normalize(tangent_interp);
 #else
