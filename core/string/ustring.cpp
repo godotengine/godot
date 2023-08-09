@@ -1750,7 +1750,7 @@ Vector<uint8_t> String::hex_decode() const {
 
 void String::print_unicode_error(const String &p_message, bool p_critical) const {
 	if (p_critical) {
-		print_error(vformat("Unicode parsing error, some characters were replaced with � (U+FFFD): %s", p_message));
+		print_error(vformat(U"Unicode parsing error, some characters were replaced with � (U+FFFD): %s", p_message));
 	} else {
 		print_error(vformat("Unicode parsing error: %s", p_message));
 	}
