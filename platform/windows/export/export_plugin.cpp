@@ -168,10 +168,10 @@ Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPres
 
 Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	if (p_preset->get("application/modify_resources")) {
-		_rcedit_add_data(p_preset, p_path, true);
+		_rcedit_add_data(p_preset, p_path, false);
 		String wrapper_path = p_path.get_basename() + ".console.exe";
 		if (FileAccess::exists(wrapper_path)) {
-			_rcedit_add_data(p_preset, wrapper_path, false);
+			_rcedit_add_data(p_preset, wrapper_path, true);
 		}
 	}
 	return OK;
