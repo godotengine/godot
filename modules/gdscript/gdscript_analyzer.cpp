@@ -1615,7 +1615,8 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		StringName native_base;
 		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
-			valid = valid && parent_return_type == p_function->get_datatype();
+			// Verify that return type of function is either equal or a subtype of the return type of the parent.
+			valid = valid && (parent_return_type == p_function->get_datatype() || (!is_type_compatible(p_function->get_datatype(), parent_return_type, true) && is_type_compatible(parent_return_type, p_function->get_datatype())));
 
 			int par_count_diff = p_function->parameters.size() - parameters_types.size();
 			valid = valid && par_count_diff >= 0;
