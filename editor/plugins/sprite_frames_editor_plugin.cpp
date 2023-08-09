@@ -53,15 +53,22 @@ static void _draw_shadowed_line(Control *p_control, const Point2 &p_from, const 
 	p_control->draw_line(p_from + p_shadow_offset, p_from + p_size + p_shadow_offset, p_shadow_color);
 }
 
-void SpriteFramesEditor::_open_sprite_sheet() {
-	file_split_sheet->clear_filters();
-	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
-	for (int i = 0; i < extensions.size(); i++) {
-		file_split_sheet->add_filter("*." + extensions[i]);
-	}
+void SpriteFramesEditor::_open_sprite_sheet(bool p_force_open) {
+	// If there's no texture registered then open the popup.
+	if (p_force_open || Input::get_singleton()->is_key_pressed(Key::SHIFT) || EditorSettings::get_singleton()->get_project_metadata("sprite_frames", "last_texture", "") == "") {
+		file_split_sheet->clear_filters();
+		List<String> extensions;
+		ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
+		for (int i = 0; i < extensions.size(); i++) {
+			file_split_sheet->add_filter("*." + extensions[i]);
+		}
 
-	file_split_sheet->popup_file_dialog();
+		file_split_sheet->popup_file_dialog();
+	} else {
+		// If there's a path to a texture goto the editor directly!
+		String path = EditorSettings::get_singleton()->get_project_metadata("sprite_frames", "last_texture", "");
+		_prepare_sprite_sheet(path);
+	}
 }
 
 int SpriteFramesEditor::_sheet_preview_position_to_frame_index(const Point2 &p_position) {
@@ -304,6 +311,11 @@ void SpriteFramesEditor::_sheet_add_frames() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_sheet_change_sprite() {
+	split_sheet_dialog->hide();
+	_open_sprite_sheet(true);
+}
+
 void SpriteFramesEditor::_sheet_zoom_on_position(float p_zoom, const Vector2 &p_position) {
 	const float old_zoom = sheet_zoom;
 	sheet_zoom = CLAMP(sheet_zoom * p_zoom, min_sheet_zoom, max_sheet_zoom);
@@ -429,7 +441,7 @@ void SpriteFramesEditor::_sheet_sort_frames() {
 	frames_ordered.sort_custom<PairSort<int, int>>();
 }
 
-void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_param) {
+void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_param, const String &p_key) {
 	if (updating_split_settings) {
 		return;
 	}
@@ -437,6 +449,7 @@ void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_para
 
 	if (p_dominant_param != PARAM_USE_CURRENT) {
 		dominant_param = p_dominant_param;
+		EditorSettings::get_singleton()->set_project_metadata("sprite_frames", "dominant_param", dominant_param);
 	}
 
 	const Size2i texture_size = split_sheet_preview->get_texture()->get_size();
@@ -458,6 +471,9 @@ void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_para
 			const Size2i count = (size + separation) / (frame_size + separation);
 			split_sheet_h->set_value(count.x);
 			split_sheet_v->set_value(count.y);
+
+			split_data["dom_x"] = int(split_sheet_h->get_value());
+			split_data["dom_y"] = int(split_sheet_v->get_value());
 		} break;
 
 		case PARAM_FRAME_COUNT: {
@@ -475,8 +491,18 @@ void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_para
 			const Size2i frame_size = (size - separation * gap_count) / count;
 			split_sheet_size_x->set_value(frame_size.x);
 			split_sheet_size_y->set_value(frame_size.y);
+
+			split_data["dom_x"] = int(split_sheet_size_x->get_value());
+			split_data["dom_y"] = int(split_sheet_size_y->get_value());
 		} break;
 	}
+
+	// Save relevant data
+	split_data["sep_x"] = int(split_sheet_sep_x->get_value());
+	split_data["sep_y"] = int(split_sheet_sep_y->get_value());
+	split_data["off_x"] = int(split_sheet_offset_x->get_value());
+	split_data["off_y"] = int(split_sheet_offset_y->get_value());
+	EditorSettings::get_singleton()->set_project_metadata("sprite_frames", "split_data", split_data);
 
 	updating_split_settings = false;
 
@@ -488,7 +514,6 @@ void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_para
 
 void SpriteFramesEditor::_toggle_show_settings() {
 	split_sheet_settings_vb->set_visible(!split_sheet_settings_vb->is_visible());
-
 	_update_show_settings();
 }
 
@@ -506,25 +531,30 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 		EditorNode::get_singleton()->show_warning(TTR("Unable to load images"));
 		ERR_FAIL_COND(texture.is_null());
 	}
+
 	frames_selected.clear();
 	selected_count = 0;
 	last_frame_selected = -1;
 
-	bool new_texture = texture != split_sheet_preview->get_texture();
-	split_sheet_preview->set_texture(texture);
-	if (new_texture) {
-		// Reset spin max.
-		const Size2i size = texture->get_size();
-		split_sheet_size_x->set_max(size.x);
-		split_sheet_size_y->set_max(size.y);
-		split_sheet_sep_x->set_max(size.x);
-		split_sheet_sep_y->set_max(size.y);
-		split_sheet_offset_x->set_max(size.x);
-		split_sheet_offset_y->set_max(size.y);
+	split_data = EditorSettings::get_singleton()->get_project_metadata("sprite_frames", "split_data", Dictionary());
+	String last_texture = EditorSettings::get_singleton()->get_project_metadata("sprite_frames", "last_texture", "");
+	bool has_valid_data = (split_data != Dictionary() && last_texture != "");
+	bool new_texture = (p_file != last_texture);
 
-		// Different texture, reset to 4x4.
+	split_sheet_preview->set_texture(texture);
+
+	const Size2i size = texture->get_size();
+	split_sheet_size_x->set_max(size.x);
+	split_sheet_size_y->set_max(size.y);
+	split_sheet_sep_x->set_max(size.x);
+	split_sheet_sep_y->set_max(size.y);
+	split_sheet_offset_x->set_max(size.x);
+	split_sheet_offset_y->set_max(size.y);
+
+	updating_split_settings = true;
+
+	if (has_valid_data == false || new_texture) {
 		dominant_param = PARAM_FRAME_COUNT;
-		updating_split_settings = true;
 		split_sheet_h->set_value(4);
 		split_sheet_v->set_value(4);
 		split_sheet_size_x->set_value(size.x / 4);
@@ -533,12 +563,28 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 		split_sheet_sep_y->set_value(0);
 		split_sheet_offset_x->set_value(0);
 		split_sheet_offset_y->set_value(0);
-		updating_split_settings = false;
+	} else {
+		dominant_param = int(EditorSettings::get_singleton()->get_project_metadata("sprite_frames", "dominant_param", -1));
+		if (dominant_param == PARAM_FRAME_COUNT) {
+			split_sheet_size_x->set_value(split_data["dom_x"]);
+			split_sheet_size_y->set_value(split_data["dom_y"]);
+		} else {
+			split_sheet_h->set_value(split_data["dom_x"]);
+			split_sheet_v->set_value(split_data["dom_y"]);
+		}
 
-		// Reset zoom.
-		_sheet_zoom_reset();
+		split_sheet_sep_x->set_value(split_data["sep_x"]);
+		split_sheet_sep_y->set_value(split_data["sep_y"]);
+		split_sheet_offset_x->set_value(split_data["off_x"]);
+		split_sheet_offset_y->set_value(split_data["off_y"]);
 	}
 
+	updating_split_settings = false;
+
+	// Reset zoom.
+	_sheet_zoom_reset();
+
+	EditorSettings::get_singleton()->set_project_metadata("sprite_frames", "last_texture", p_file);
 	split_sheet_dialog->popup_centered_ratio(0.65);
 }
 
@@ -1884,7 +1930,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_child(dialog);
 
 	load->connect("pressed", callable_mp(this, &SpriteFramesEditor::_load_pressed));
-	load_sheet->connect("pressed", callable_mp(this, &SpriteFramesEditor::_open_sprite_sheet));
+	load_sheet->connect("pressed", callable_mp(this, &SpriteFramesEditor::_open_sprite_sheet).bind(false));
 	delete_frame->connect("pressed", callable_mp(this, &SpriteFramesEditor::_delete_pressed));
 	copy->connect("pressed", callable_mp(this, &SpriteFramesEditor::_copy_pressed));
 	paste->connect("pressed", callable_mp(this, &SpriteFramesEditor::_paste_pressed));
@@ -1896,7 +1942,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	load->set_shortcut_context(frame_list);
 	load->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_file", TTR("Add frame from file"), KeyModifierMask::CMD_OR_CTRL | Key::O));
 	load_sheet->set_shortcut_context(frame_list);
-	load_sheet->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_sheet", TTR("Add frames from sprite sheet"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O));
+	load_sheet->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_sheet", TTR("Add frames from sprite sheet | (Shift + Click) to load new texture"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O));
 	delete_frame->set_shortcut_context(frame_list);
 	delete_frame->set_shortcut(ED_SHORTCUT("sprite_frames/delete", TTR("Delete Frame"), Key::KEY_DELETE));
 	copy->set_shortcut_context(frame_list);
@@ -1976,6 +2022,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	clear_all->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_clear_all_frames));
 	split_sheet_menu_hb->add_child(clear_all);
 
+	split_sheet_change_spr = memnew(Button);
+	split_sheet_change_spr->set_text(TTR("Change Spritesheet"));
+	split_sheet_change_spr->set_focus_mode(FOCUS_NONE);
+	split_sheet_change_spr->set_tooltip_text(TTR("Change the current spritesheet"));
+	split_sheet_change_spr->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_change_sprite));
+	split_sheet_menu_hb->add_child(split_sheet_change_spr);
+
 	split_sheet_menu_hb->add_spacer();
 
 	toggle_settings_button = memnew(Button);
@@ -2054,7 +2107,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_h->set_max(128);
 	split_sheet_h->set_step(1);
 	split_sheet_h_hb->add_child(split_sheet_h);
-	split_sheet_h->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT));
+	split_sheet_h->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT, "hor"));
 	split_sheet_settings_vb->add_child(split_sheet_h_hb);
 
 	HBoxContainer *split_sheet_v_hb = memnew(HBoxContainer);
@@ -2070,7 +2123,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_v->set_max(128);
 	split_sheet_v->set_step(1);
 	split_sheet_v_hb->add_child(split_sheet_v);
-	split_sheet_v->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT));
+	split_sheet_v->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_FRAME_COUNT, "vert"));
 	split_sheet_settings_vb->add_child(split_sheet_v_hb);
 
 	HBoxContainer *split_sheet_size_hb = memnew(HBoxContainer);
@@ -2088,14 +2141,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_size_x->set_min(1);
 	split_sheet_size_x->set_step(1);
 	split_sheet_size_x->set_suffix("px");
-	split_sheet_size_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
+	split_sheet_size_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE, "size_x"));
 	split_sheet_size_vb->add_child(split_sheet_size_x);
 	split_sheet_size_y = memnew(SpinBox);
 	split_sheet_size_y->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_size_y->set_min(1);
 	split_sheet_size_y->set_step(1);
 	split_sheet_size_y->set_suffix("px");
-	split_sheet_size_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
+	split_sheet_size_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE, "size_y"));
 	split_sheet_size_vb->add_child(split_sheet_size_y);
 	split_sheet_size_hb->add_child(split_sheet_size_vb);
 	split_sheet_settings_vb->add_child(split_sheet_size_hb);
@@ -2114,13 +2167,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_sep_x->set_min(0);
 	split_sheet_sep_x->set_step(1);
 	split_sheet_sep_x->set_suffix("px");
-	split_sheet_sep_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
+	split_sheet_sep_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT, "sep_x"));
 	split_sheet_sep_vb->add_child(split_sheet_sep_x);
 	split_sheet_sep_y = memnew(SpinBox);
 	split_sheet_sep_y->set_min(0);
 	split_sheet_sep_y->set_step(1);
 	split_sheet_sep_y->set_suffix("px");
-	split_sheet_sep_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
+	split_sheet_sep_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT, "sep_y"));
 	split_sheet_sep_vb->add_child(split_sheet_sep_y);
 	split_sheet_sep_hb->add_child(split_sheet_sep_vb);
 	split_sheet_settings_vb->add_child(split_sheet_sep_hb);
@@ -2139,13 +2192,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_offset_x->set_min(0);
 	split_sheet_offset_x->set_step(1);
 	split_sheet_offset_x->set_suffix("px");
-	split_sheet_offset_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
+	split_sheet_offset_x->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT, "off_x"));
 	split_sheet_offset_vb->add_child(split_sheet_offset_x);
 	split_sheet_offset_y = memnew(SpinBox);
 	split_sheet_offset_y->set_min(0);
 	split_sheet_offset_y->set_step(1);
 	split_sheet_offset_y->set_suffix("px");
-	split_sheet_offset_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
+	split_sheet_offset_y->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT, "off_y"));
 	split_sheet_offset_vb->add_child(split_sheet_offset_y);
 	split_sheet_offset_hb->add_child(split_sheet_offset_vb);
 	split_sheet_settings_vb->add_child(split_sheet_offset_hb);

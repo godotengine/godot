@@ -151,6 +151,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	SpinBox *split_sheet_sep_y = nullptr;
 	SpinBox *split_sheet_offset_x = nullptr;
 	SpinBox *split_sheet_offset_y = nullptr;
+	Button *split_sheet_change_spr = nullptr;
 	Button *split_sheet_zoom_out = nullptr;
 	Button *split_sheet_zoom_reset = nullptr;
 	Button *split_sheet_zoom_in = nullptr;
@@ -172,6 +173,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	float sheet_zoom;
 	float max_sheet_zoom;
 	float min_sheet_zoom;
+
+	Dictionary split_data;
 
 	Size2i _get_frame_count() const;
 	Size2i _get_frame_size() const;
@@ -221,14 +224,15 @@ class SpriteFramesEditor : public HSplitContainer {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	void _open_sprite_sheet();
+	void _open_sprite_sheet(bool p_force_open = false);
 	void _prepare_sprite_sheet(const String &p_file);
 	int _sheet_preview_position_to_frame_index(const Vector2 &p_position);
 	void _sheet_preview_draw();
-	void _sheet_spin_changed(double p_value, int p_dominant_param);
+	void _sheet_spin_changed(double p_value, int p_dominant_param, const String &p_key);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_scroll_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
+	void _sheet_change_sprite();
 	void _sheet_zoom_on_position(float p_zoom, const Vector2 &p_position);
 	void _sheet_zoom_in();
 	void _sheet_zoom_out();
