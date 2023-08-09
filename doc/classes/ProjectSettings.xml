@@ -201,6 +201,12 @@
 				Sets the specified setting's initial value. This is the value the setting reverts to.
 			</description>
 		</method>
+		<method name="set_load_pack_enabled">
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="set_order">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
