@@ -38,7 +38,7 @@
 				[codeblocks]
 				[gdscript]
 				func _get(property):
-				    if (property == "fake_property"):
+				    if property == "fake_property":
 				        print("Getting my property!")
 				        return 4
 
@@ -212,9 +212,13 @@
 				Combined with [method _get] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins. Note that a property [i]must[/i] be present in [method get_property_list], otherwise this method will not be called.
 				[codeblocks]
 				[gdscript]
+				var internal_data = {}
+
 				func _set(property, value):
-				    if (property == "fake_property"):
-				        print("Setting my property to ", value)
+				    if property == "fake_property":
+				        # Storing the value in the fake property.
+				        internal_data["fake_property"] = value
+				        return true
 
 				func _get_property_list():
 				    return [
@@ -222,11 +226,14 @@
 				    ]
 				[/gdscript]
 				[csharp]
+				private Godot.Collections.Dictionary _internalData = new Godot.Collections.Dictionary();
+
 				public override void _Set(StringName property, Variant value)
 				{
 				    if (property == "FakeProperty")
 				    {
-				        GD.Print($"Setting my property to {value}");
+				        // Storing the value in the fake property.
+				        _internalData["FakeProperty"] = value;
 				        return true;
 				    }
 
