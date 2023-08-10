@@ -212,7 +212,7 @@ void EditorLog::clear() {
 	_clear_request();
 }
 
-void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
+void EditorLog::_process_message(const String &p_msg, MessageType p_type, bool p_clear) {
 	if (messages.size() > 0 && messages[messages.size() - 1].text == p_msg && messages[messages.size() - 1].type == p_type) {
 		// If previous message is the same as the new one, increase previous count rather than adding another
 		// instance to the messages list.
@@ -222,7 +222,7 @@ void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
 		_add_log_line(previous, collapse);
 	} else {
 		// Different message to the previous one received.
-		LogMessage message(p_msg, p_type);
+		LogMessage message(p_msg, p_type, p_clear);
 		_add_log_line(message);
 		messages.push_back(message);
 	}
@@ -237,9 +237,10 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	// search functionality (see the comments on the PR above for more details). This behavior
 	// also matches that of other IDE's.
 	Vector<String> lines = p_msg.split("\n", true);
+	int line_count = lines.size();
 
-	for (int i = 0; i < lines.size(); i++) {
-		_process_message(lines[i], p_type);
+	for (int i = 0; i < line_count; i++) {
+		_process_message(lines[i], p_type, i == line_count - 1);
 	}
 }
 
@@ -338,7 +339,9 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	} else {
 		log->add_text(p_message.text);
 	}
-	log->pop_all(); // Pop all unclosed tags.
+	if (p_message.clear || p_message.type != MSG_TYPE_STD_RICH) {
+		log->pop_all(); // Pop all unclosed tags.
+	}
 	log->add_newline();
 
 	if (p_replace_previous) {
