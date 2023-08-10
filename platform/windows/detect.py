@@ -214,6 +214,9 @@ def configure_msvc(env, manual_msvc_config):
     else:
         env.AppendUnique(CCFLAGS=["/MD"])
 
+    # MSVC incremental linking is broken and _increases_ link time (GH-77968).
+    env.Append(LINKFLAGS=["/INCREMENTAL:NO"])
+
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
     env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
