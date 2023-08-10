@@ -475,6 +475,14 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			if (new_index_count == 0 || (new_index_count >= (index_count * 0.75f))) {
 				break;
 			}
+			if (new_index_count > 5000000) {
+				// This limit theoretically shouldn't be needed, but it's here
+				// as an ad-hoc fix to prevent a crash with complex meshes.
+				// The crash still happens with limit of 6000000, but 5000000 works.
+				// In the future, identify what's causing that crash and fix it.
+				WARN_PRINT("Mesh LOD generation failed for mesh " + get_name() + " surface " + itos(i) + ", mesh is too complex. Some automatic LODs were not generated.");
+				break;
+			}
 
 			new_indices.resize(new_index_count);
 
