@@ -543,7 +543,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GPUParticlesAttractorSphere3D);
 	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
 	GDREGISTER_CLASS(CPUParticles3D);
-	GDREGISTER_CLASS(CPUParticle3D);
 	GDREGISTER_CLASS(Marker3D);
 
 	GDREGISTER_CLASS(RootMotionView);
