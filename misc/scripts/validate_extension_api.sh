@@ -1,5 +1,5 @@
 #!/bin/bash
-set -uo pipefail
+set -o pipefail
 
 if [ ! -f "version.py" ]; then
   echo "Warning: This script is intended to be run from the root of the Godot repository."
@@ -18,7 +18,7 @@ make_annotation()
   local body=$2
   local type=$3
   local file=$4
-  if [ ! -v GITHUB_OUTPUT ]; then
+  if [[ "$GITHUB_OUTPUT" == "" ]]; then
     echo "$title"
     echo "$body"
   else
@@ -43,8 +43,8 @@ while read -r file; do
     awk '/^Validate extension JSON:/' - < "$file" | sort > "$allowed_errors"
 
     # Differences between the expected and actual errors
-    new_validation_error="$(comm "$validation_output" "$allowed_errors" -23)"
-    obsolete_validation_error="$(comm "$validation_output" "$allowed_errors" -13)"
+    new_validation_error="$(comm -23 "$validation_output" "$allowed_errors")"
+    obsolete_validation_error="$(comm -13 "$validation_output" "$allowed_errors")"
 
     if [ -n "$obsolete_validation_error" ]; then
         make_annotation "The following validation errors no longer occur (compared to $reference_tag):" "$obsolete_validation_error" warning "$file"
