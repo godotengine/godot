@@ -2710,4 +2710,11 @@
 			If [code]true[/code], Godot will compile shaders required for XR.
 		</member>
 	</members>
+	<signals>
+		<signal name="settings_changed">
+			<description>
+				Emitted when any setting is changed, up to once per process frame.
+			</description>
+		</signal>
+	</signals>
 </class>
