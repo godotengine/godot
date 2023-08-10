@@ -4014,7 +4014,7 @@ void BindingsGenerator::_initialize_blacklisted_methods() {
 }
 
 void BindingsGenerator::_initialize_compat_singletons() {
-	// No compat singletons yet.
+	compat_singletons.insert("EditorInterface");
 }
 
 void BindingsGenerator::_log(const char *p_format, ...) {

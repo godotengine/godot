@@ -1463,6 +1463,10 @@
 		<member name="DisplayServer" type="DisplayServer" setter="" getter="">
 			The [DisplayServer] singleton.
 		</member>
+		<member name="EditorInterface" type="EditorInterface" setter="" getter="">
+			The [EditorInterface] singleton.
+			[b]Note:[/b] Only available in editor builds.
+		</member>
 		<member name="Engine" type="Engine" setter="" getter="">
 			The [Engine] singleton.
 		</member>
