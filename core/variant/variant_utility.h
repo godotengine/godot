@@ -139,6 +139,7 @@ struct VariantUtilityFunctions {
 	static Variant str_to_var(const String &p_var);
 	static PackedByteArray var_to_bytes(const Variant &p_var);
 	static PackedByteArray var_to_bytes_with_objects(const Variant &p_var);
+	static PackedByteArray to_raw_bytes(const Variant &p_var);
 	static Variant bytes_to_var(const PackedByteArray &p_arr);
 	static Variant bytes_to_var_with_objects(const PackedByteArray &p_arr);
 	static int64_t hash(const Variant &p_arr);

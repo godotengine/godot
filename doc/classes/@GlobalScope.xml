@@ -1325,6 +1325,30 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="to_raw_bytes">
+			<return type="PackedByteArray" />
+			<param index="0" name="variable" type="Variant" />
+			<description>
+				Endodes a limited amount of [Variant] sub-types to a raw byte array ([PackedByteArray] without type information)
+				[b]Note:[/b] No deserialization is possible. Using [method bytes_to_var] on resulting [PackedByteArray] will return garbage or may crash the engine.
+				Following [Variant] sub-types are supported: [float], [int], [bool], [Vector2], [Vector3], [Vector4], [Vector2i], [Vector3i], [Vector4i], [Array].
+				Usage scenario: Convert values from [Array] to a raw bytes PackedByteArray, to use with [method RenderingDevice.compute_list_set_push_constant] or with Shader Storage Buffer Object of the compute shaders ([method RenderingDevice.buffer_update]).
+				[codeblock]
+				# Vectors are aligned to 16 bytes, so we need to pad vectors with some other 4 byte value like float, int or bool
+				var array = [
+				    Vector3(camera_pos.x,camera_pos.y,camera_pos.z),
+				    float(seed),                                                    # padded for 16 byte alignment of the camera_position above
+				    Vector3(light_direction.x,light_direction.y,light_direction.z),
+				    float(scale),                                                   # padded for 16 byte alignment of the light_direction above
+				    [ 0, 1, true, 33.17, Vector3(0.1,0.2,0.3), false ]              # some other array values, Vector3 is padded for 16 byte alignment
+				                                                                    # by bool value, and before Vector3 there are 4 four-byte values
+				]
+
+				var bytes:PackedByteArray = to_raw_bytes(array)                     # convert to raw bytes
+				_rd.buffer_update(_buffer_rid, 0, bytes.size(), bytes)              # update existing SSBO
+				[/codeblock]
+			</description>
+		</method>
 		<method name="typeof">
 			<return type="int" />
 			<param index="0" name="variable" type="Variant" />

@@ -36,6 +36,8 @@
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
+#include <vector>
+
 // uintr_t is only for pairing with real_t, and we only need it in here.
 #ifdef REAL_T_IS_DOUBLE
 typedef uint64_t uintr_t;
@@ -214,6 +216,8 @@ public:
 
 Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len = nullptr, bool p_allow_objects = false, int p_depth = 0);
 Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_full_objects = false, int p_depth = 0);
+
+Error to_raw_bytes(const Variant &p_variant, PackedByteArray &out_sink);
 
 Vector<float> vector3_to_float32_array(const Vector3 *vecs, size_t count);
 

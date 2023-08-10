@@ -962,6 +962,15 @@ PackedByteArray VariantUtilityFunctions::var_to_bytes(const Variant &p_var) {
 	return barr;
 }
 
+PackedByteArray VariantUtilityFunctions::to_raw_bytes(const Variant &p_variant) {
+	PackedByteArray packed;
+	Error err = ::to_raw_bytes(p_variant, packed);
+	if (err != OK) {
+		ERR_FAIL_V_MSG(packed, "to_raw_bytes(), an attempt to convert unsupported type");
+	}
+	return packed;
+}
+
 PackedByteArray VariantUtilityFunctions::var_to_bytes_with_objects(const Variant &p_var) {
 	int len;
 	Error err = encode_variant(p_var, nullptr, len, true);
@@ -1616,6 +1625,8 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(var_to_bytes, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(bytes_to_var, sarray("bytes"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+
+	FUNCBINDR(to_raw_bytes, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
 	FUNCBINDR(var_to_bytes_with_objects, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(bytes_to_var_with_objects, sarray("bytes"), Variant::UTILITY_FUNC_TYPE_GENERAL);
