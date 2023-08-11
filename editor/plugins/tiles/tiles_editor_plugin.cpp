@@ -362,6 +362,13 @@ void TileMapEditorPlugin::edit(Object *p_object) {
 			tile_set_plugin_singleton->make_visible(true);
 			edited_tileset = tile_map->get_tileset()->get_instance_id();
 		}
+	} else if (edited_tileset.is_valid()) {
+		// Hide the TileSet editor, unless another TileSet is being edited.
+		if (tile_set_plugin_singleton->get_edited_tileset() == edited_tileset) {
+			tile_set_plugin_singleton->edit(nullptr);
+			tile_set_plugin_singleton->make_visible(false);
+		}
+		edited_tileset = ObjectID();
 	}
 }
 
@@ -419,6 +426,11 @@ TileMapEditorPlugin::~TileMapEditorPlugin() {
 
 void TileSetEditorPlugin::edit(Object *p_object) {
 	editor->edit(Ref<TileSet>(p_object));
+	if (p_object) {
+		edited_tileset = p_object->get_instance_id();
+	} else {
+		edited_tileset = ObjectID();
+	}
 }
 
 bool TileSetEditorPlugin::handles(Object *p_object) const {
@@ -437,6 +449,10 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 	}
+}
+
+ObjectID TileSetEditorPlugin::get_edited_tileset() const {
+	return edited_tileset;
 }
 
 TileSetEditorPlugin::TileSetEditorPlugin() {
