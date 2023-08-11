@@ -60,6 +60,7 @@ class BindingsGenerator {
 
 	struct EnumInterface {
 		StringName cname;
+		String proxy_name;
 		List<ConstantInterface> constants;
 		bool is_flags = false;
 
@@ -69,8 +70,10 @@ class BindingsGenerator {
 
 		EnumInterface() {}
 
-		EnumInterface(const StringName &p_cname) {
+		EnumInterface(const StringName &p_cname, const String &p_proxy_name, bool p_is_flags) {
 			cname = p_cname;
+			proxy_name = p_proxy_name;
+			is_flags = p_is_flags;
 		}
 	};
 
