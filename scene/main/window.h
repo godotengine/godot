@@ -78,6 +78,11 @@ public:
 		CONTENT_SCALE_ASPECT_EXPAND,
 	};
 
+	enum ContentScaleStretch {
+		CONTENT_SCALE_STRETCH_FRACTIONAL,
+		CONTENT_SCALE_STRETCH_INTEGER,
+	};
+
 	enum LayoutDirection {
 		LAYOUT_DIRECTION_INHERITED,
 		LAYOUT_DIRECTION_LOCALE,
@@ -135,6 +140,7 @@ private:
 	Size2i content_scale_size;
 	ContentScaleMode content_scale_mode = CONTENT_SCALE_MODE_DISABLED;
 	ContentScaleAspect content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
+	ContentScaleStretch content_scale_stretch = CONTENT_SCALE_STRETCH_FRACTIONAL;
 	real_t content_scale_factor = 1.0;
 
 	void _make_window();
@@ -299,6 +305,9 @@ public:
 	void set_content_scale_aspect(ContentScaleAspect p_aspect);
 	ContentScaleAspect get_content_scale_aspect() const;
 
+	void set_content_scale_stretch(ContentScaleStretch p_stretch);
+	ContentScaleStretch get_content_scale_stretch() const;
+
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;
 
@@ -420,6 +429,7 @@ VARIANT_ENUM_CAST(Window::Mode);
 VARIANT_ENUM_CAST(Window::Flags);
 VARIANT_ENUM_CAST(Window::ContentScaleMode);
 VARIANT_ENUM_CAST(Window::ContentScaleAspect);
+VARIANT_ENUM_CAST(Window::ContentScaleStretch);
 VARIANT_ENUM_CAST(Window::LayoutDirection);
 VARIANT_ENUM_CAST(Window::WindowInitialPosition);
 

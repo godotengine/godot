@@ -813,6 +813,10 @@
 			[b]"viewport"[/b]: The size of the root [Viewport] is set precisely to the base size specified in the Project Settings' Display section. The scene is rendered to this viewport first. Finally, this viewport is scaled to fit the screen (taking [member display/window/stretch/aspect] into account). Recommended for games that use a pixel art esthetic.
 		</member>
 		<member name="display/window/stretch/scale" type="float" setter="" getter="" default="1.0">
+			The scale factor multiplier to use for 2D elements. This multiplies the final scale factor determined by [member display/window/stretch/mode]. If using the [b]Disabled[/b] stretch mode, this scale factor is applied as-is. This can be adjusted to make the UI easier to read on certain displays.
+		</member>
+		<member name="display/window/stretch/scale_mode" type="String" setter="" getter="" default="&quot;fractional&quot;">
+			The policy to use to determine the final scale factor for 2D elements. This affects how [member display/window/stretch/scale] is applied, in addition to the automatic scale factor determined by [member display/window/stretch/mode].
 		</member>
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
 			If [code]true[/code] subwindows are embedded in the main window.
