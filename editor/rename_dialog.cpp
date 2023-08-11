@@ -444,11 +444,11 @@ String RenameDialog::_substitute(const String &subject, const Node *node, int co
 		result = result.replace("${TYPE}", node->get_class());
 	}
 
-	int current = EditorNode::get_singleton()->get_editor_data().get_edited_scene();
+	int current = EditorNode::get_editor_data().get_edited_scene();
 	// Always request the scene title with the extension stripped.
 	// Otherwise, the result could vary depending on whether a scene with the same name
 	// (but different extension) is currently open.
-	result = result.replace("${SCENE}", EditorNode::get_singleton()->get_editor_data().get_scene_title(current, true));
+	result = result.replace("${SCENE}", EditorNode::get_editor_data().get_scene_title(current, true));
 
 	Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
 	if (root_node) {
