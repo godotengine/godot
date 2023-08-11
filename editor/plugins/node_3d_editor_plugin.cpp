@@ -1675,6 +1675,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (_edit.mode != TRANSFORM_NONE && b->is_pressed()) {
 					cancel_transform();
+					break;
 				}
 
 				if (b->is_pressed()) {
@@ -2007,7 +2008,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.mode = TRANSFORM_TRANSLATE;
 				}
 
-				if (_edit.mode == TRANSFORM_NONE) {
+				if (_edit.mode == TRANSFORM_NONE || _edit.numeric_input != 0 || _edit.numeric_next_decimal != 0) {
 					return;
 				}
 
@@ -2145,6 +2146,43 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
+		if (_edit.instant) {
+			// In a Blender-style transform, numbers set the magnitude of the transform.
+			// E.g. pressing g4.5x means "translate 4.5 units along the X axis".
+			// Use the Unicode value because we care about the text, not the actual keycode.
+			// This ensures numbers work consistently across different keyboard language layouts.
+			bool processed = true;
+			Key key = k->get_physical_keycode();
+			char32_t unicode = k->get_unicode();
+			if (unicode >= '0' && unicode <= '9') {
+				uint32_t value = uint32_t(unicode - Key::KEY_0);
+				if (_edit.numeric_next_decimal < 0) {
+					_edit.numeric_input = _edit.numeric_input + value * Math::pow(10.0, _edit.numeric_next_decimal--);
+				} else {
+					_edit.numeric_input = _edit.numeric_input * 10 + value;
+				}
+				update_transform_numeric();
+			} else if (unicode == '-') {
+				_edit.numeric_negate = !_edit.numeric_negate;
+				update_transform_numeric();
+			} else if (unicode == '.') {
+				if (_edit.numeric_next_decimal == 0) {
+					_edit.numeric_next_decimal = -1;
+				}
+			} else if (key == Key::ENTER || key == Key::KP_ENTER || key == Key::SPACE) {
+				commit_transform();
+			} else {
+				processed = false;
+			}
+
+			if (processed) {
+				// Ignore mouse inputs once we receive a numeric input.
+				set_process_input(false);
+				accept_event();
+				return;
+			}
+		}
+
 		if (EDITOR_GET("editors/3d/navigation/emulate_numpad")) {
 			const Key code = k->get_physical_keycode();
 			if (code >= Key::KEY_0 && code <= Key::KEY_9) {
@@ -2165,26 +2203,19 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		} else {
 			// We're actively transforming, handle keys specially
 			TransformPlane new_plane = TRANSFORM_VIEW;
-			String new_message;
 			if (ED_IS_SHORTCUT("spatial_editor/lock_transform_x", p_event)) {
 				new_plane = TRANSFORM_X_AXIS;
-				new_message = TTR("X-Axis Transform.");
 			} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_y", p_event)) {
 				new_plane = TRANSFORM_Y_AXIS;
-				new_message = TTR("Y-Axis Transform.");
 			} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_z", p_event)) {
 				new_plane = TRANSFORM_Z_AXIS;
-				new_message = TTR("Z-Axis Transform.");
 			} else if (_edit.mode != TRANSFORM_ROTATE) { // rotating on a plane doesn't make sense
 				if (ED_IS_SHORTCUT("spatial_editor/lock_transform_yz", p_event)) {
 					new_plane = TRANSFORM_YZ;
-					new_message = TTR("YZ-Plane Transform.");
 				} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_xz", p_event)) {
 					new_plane = TRANSFORM_XZ;
-					new_message = TTR("XZ-Plane Transform.");
 				} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_xy", p_event)) {
 					new_plane = TRANSFORM_XY;
-					new_message = TTR("XY-Plane Transform.");
 				}
 			}
 
@@ -2201,8 +2232,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.plane = TRANSFORM_VIEW;
 					spatial_editor->set_local_coords_enabled(false);
 				}
-				update_transform(Input::get_singleton()->is_key_pressed(Key::SHIFT));
-				set_message(new_message, 2);
+				if (_edit.numeric_input != 0 || _edit.numeric_next_decimal != 0) {
+					update_transform_numeric();
+				} else {
+					update_transform(Input::get_singleton()->is_key_pressed(Key::SHIFT));
+				}
 				accept_event();
 				return;
 			}
@@ -4575,6 +4609,43 @@ void Node3DEditorViewport::commit_transform() {
 	set_message("");
 }
 
+void Node3DEditorViewport::apply_transform(Vector3 p_motion, double p_snap) {
+	bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW);
+	List<Node *> &selection = editor_selection->get_selected_node_list();
+	for (Node *E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
+		if (!sp) {
+			continue;
+		}
+
+		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+		if (!se) {
+			continue;
+		}
+
+		if (sp->has_meta("_edit_lock_")) {
+			continue;
+		}
+
+		if (se->gizmo.is_valid()) {
+			for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+				Transform3D xform = GE.value;
+				Transform3D new_xform = _compute_transform(_edit.mode, se->original * xform, xform, p_motion, p_snap, local_coords, _edit.plane != TRANSFORM_VIEW); // Force orthogonal with subgizmo.
+				if (!local_coords) {
+					new_xform = se->original.affine_inverse() * new_xform;
+				}
+				se->gizmo->set_subgizmo_transform(GE.key, new_xform);
+			}
+		} else {
+			Transform3D new_xform = _compute_transform(_edit.mode, se->original, se->original_local, p_motion, p_snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS && _edit.plane != TRANSFORM_VIEW);
+			_transform_gizmo_apply(se->sp, new_xform, local_coords);
+		}
+	}
+
+	spatial_editor->update_transform_gizmo();
+	surface->queue_redraw();
+}
+
 // Update the current transform operation in response to an input.
 void Node3DEditorViewport::update_transform(bool p_shift) {
 	Vector3 ray_pos = _get_ray_pos(_edit.mouse_pos);
@@ -4670,43 +4741,11 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			set_message(TTR("Scaling:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 			if (local_coords) {
+				// TODO: needed?
 				motion = _edit.original.basis.inverse().xform(motion);
 			}
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
-			for (Node *E : selection) {
-				Node3D *sp = Object::cast_to<Node3D>(E);
-				if (!sp) {
-					continue;
-				}
-
-				Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-				if (!se) {
-					continue;
-				}
-
-				if (sp->has_meta("_edit_lock_")) {
-					continue;
-				}
-
-				if (se->gizmo.is_valid()) {
-					for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
-						Transform3D xform = GE.value;
-						Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords, _edit.plane != TRANSFORM_VIEW); // Force orthogonal with subgizmo.
-						if (!local_coords) {
-							new_xform = se->original.affine_inverse() * new_xform;
-						}
-						se->gizmo->set_subgizmo_transform(GE.key, new_xform);
-					}
-				} else {
-					Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original, se->original_local, motion, snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS && _edit.plane != TRANSFORM_VIEW);
-					_transform_gizmo_apply(se->sp, new_xform, local_coords);
-				}
-			}
-
-			spatial_editor->update_transform_gizmo();
-			surface->queue_redraw();
-
+			apply_transform(motion, snap);
 		} break;
 
 		case TRANSFORM_TRANSLATE: {
@@ -4776,38 +4815,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				motion = spatial_editor->get_gizmo_transform().basis.inverse().xform(motion);
 			}
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
-			for (Node *E : selection) {
-				Node3D *sp = Object::cast_to<Node3D>(E);
-				if (!sp) {
-					continue;
-				}
-
-				Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-				if (!se) {
-					continue;
-				}
-
-				if (sp->has_meta("_edit_lock_")) {
-					continue;
-				}
-
-				if (se->gizmo.is_valid()) {
-					for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
-						Transform3D xform = GE.value;
-						Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original * xform, xform, motion, snap, local_coords, true); // Force orthogonal with subgizmo.
-						new_xform = se->original.affine_inverse() * new_xform;
-						se->gizmo->set_subgizmo_transform(GE.key, new_xform);
-					}
-				} else {
-					Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original, se->original_local, motion, snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
-					_transform_gizmo_apply(se->sp, new_xform, false);
-				}
-			}
-
-			spatial_editor->update_transform_gizmo();
-			surface->queue_redraw();
-
+			apply_transform(motion, snap);
 		} break;
 
 		case TRANSFORM_ROTATE: {
@@ -4876,53 +4884,85 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 
 			bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
 
-			List<Node *> &selection = editor_selection->get_selected_node_list();
-			for (Node *E : selection) {
-				Node3D *sp = Object::cast_to<Node3D>(E);
-				if (!sp) {
-					continue;
-				}
-
-				Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-				if (!se) {
-					continue;
-				}
-
-				if (sp->has_meta("_edit_lock_")) {
-					continue;
-				}
-
-				Vector3 compute_axis = local_coords ? local_axis : global_axis;
-				if (se->gizmo.is_valid()) {
-					for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
-						Transform3D xform = GE.value;
-
-						Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original * xform, xform, compute_axis, angle, local_coords, true); // Force orthogonal with subgizmo.
-						if (!local_coords) {
-							new_xform = se->original.affine_inverse() * new_xform;
-						}
-						se->gizmo->set_subgizmo_transform(GE.key, new_xform);
-					}
-				} else {
-					Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original, se->original_local, compute_axis, angle, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
-					_transform_gizmo_apply(se->sp, new_xform, local_coords);
-				}
-			}
-
-			spatial_editor->update_transform_gizmo();
-			surface->queue_redraw();
-
+			Vector3 compute_axis = local_coords ? local_axis : global_axis;
+			apply_transform(compute_axis, angle);
 		} break;
 		default: {
 		}
 	}
 }
 
-// Perform cleanup after a transform operation is committed or canceled.
+void Node3DEditorViewport::update_transform_numeric() {
+	Vector3 motion;
+	switch (_edit.plane) {
+		case TRANSFORM_VIEW: {
+			switch (_edit.mode) {
+				case TRANSFORM_TRANSLATE:
+					motion = Vector3(1, 0, 0);
+					break;
+				case TRANSFORM_ROTATE:
+					motion = spatial_editor->get_gizmo_transform().basis.xform_inv(_get_camera_normal()).normalized();
+					break;
+				case TRANSFORM_SCALE:
+					motion = Vector3(1, 1, 1);
+					break;
+				case TRANSFORM_NONE:
+					ERR_FAIL_MSG("_edit.mode cannot be TRANSFORM_NONE in update_transform_numeric.");
+			}
+			break;
+		}
+		case TRANSFORM_X_AXIS:
+			motion = Vector3(1, 0, 0);
+			break;
+		case TRANSFORM_Y_AXIS:
+			motion = Vector3(0, 1, 0);
+			break;
+		case TRANSFORM_Z_AXIS:
+			motion = Vector3(0, 0, 1);
+			break;
+		case TRANSFORM_XY:
+			motion = Vector3(1, 1, 0);
+			break;
+		case TRANSFORM_XZ:
+			motion = Vector3(1, 0, 1);
+			break;
+		case TRANSFORM_YZ:
+			motion = Vector3(0, 1, 1);
+			break;
+	}
+
+	double value = _edit.numeric_input * (_edit.numeric_negate ? -1 : 1);
+	double extra = 0.0;
+	switch (_edit.mode) {
+		case TRANSFORM_TRANSLATE:
+			motion *= value;
+			set_message(vformat(TTR("Translating %s."), motion));
+			break;
+		case TRANSFORM_ROTATE:
+			extra = Math::deg_to_rad(value);
+			set_message(vformat(TTR("Rotating %f degrees."), value));
+			break;
+		case TRANSFORM_SCALE:
+			// To halve the size of an object in Blender, you scale it by 0.5.
+			// Doing the same in Godot is considered scaling it by -0.5.
+			motion *= (value - 1.0);
+			set_message(vformat(TTR("Scaling %s."), motion));
+			break;
+		case TRANSFORM_NONE:
+			ERR_FAIL_MSG("_edit.mode cannot be TRANSFORM_NONE in update_transform_numeric.");
+	}
+
+	apply_transform(motion, extra);
+}
+
+// Perform cleanup after a transform operation is committed or cancelled.
 void Node3DEditorViewport::finish_transform() {
-	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	_edit.mode = TRANSFORM_NONE;
 	_edit.instant = false;
+	_edit.numeric_input = 0;
+	_edit.numeric_next_decimal = 0;
+	_edit.numeric_negate = false;
+	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
 	set_process_input(false);
