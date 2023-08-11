@@ -776,7 +776,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	undo_redo->commit_action();
 }
 
-bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path) {
+bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path, const bool &p_singleton) {
 	String name = p_name;
 
 	String error;
@@ -801,7 +801,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	undo_redo->create_action(TTR("Add Autoload"));
 	// Singleton autoloads are represented with a leading "*" in their path.
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + p_path);
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, (p_singleton ? "*" : "") + p_path);
 
 	if (ProjectSettings::get_singleton()->has_setting(name)) {
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));

@@ -397,8 +397,9 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="path" type="String" />
+			<param index="2" name="global" type="bool" default="true" />
 			<description>
-				Adds a script at [param path] to the Autoload list as [param name].
+				Adds a script at [param path] to the Autoload list as [param name]. If [param global] is [code]true[/code], the Autoload will be globally accessible by its name.
 			</description>
 		</method>
 		<method name="add_context_menu_plugin">
