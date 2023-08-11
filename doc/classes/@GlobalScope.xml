@@ -1332,7 +1332,7 @@
 				Endodes a limited amount of [Variant] sub-types to a raw byte array ([PackedByteArray] without type information)
 				[b]Note:[/b] No deserialization is possible. Using [method bytes_to_var] on resulting [PackedByteArray] will return garbage or may crash the engine.
 				Following [Variant] sub-types are supported: [float], [int], [bool], [Vector2], [Vector3], [Vector4], [Vector2i], [Vector3i], [Vector4i], [Array].
-				[b]Note:[/b] int will be semantically converted into 32 bit signed integer, even if the value is in the range of 64 bit signed integer.
+				[b]Note:[/b] int and float will be semantically converted into 32 bit signed integer and 32 bit float, even if the value is out of range and at the cost of precision for GDScript float values.
 
 				Usage scenario: Convert values from [Array] to a raw bytes PackedByteArray, to use with [method RenderingDevice.compute_list_set_push_constant] or with Shader Storage Buffer Object of the compute shaders ([method RenderingDevice.buffer_update]).
 				[codeblock]
