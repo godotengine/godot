@@ -1818,15 +1818,15 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 	switch (p_variant.get_type()) {
 		case Variant::INT: {
 			int32_t v = p_variant;
-			size_t offset = out.size();
-			out.resize(out.size() + sizeof(v));
-			memcpy(out.ptrw() + offset, &v, sizeof(v));
+			size_t offset = r_out_sink.size();
+			r_out_sink.resize(r_out_sink.size() + sizeof(v));
+			memcpy(r_out_sink.ptrw() + offset, &v, sizeof(v));
 		} break;
 		case Variant::BOOL: {
 			bool v = p_variant;
-			size_t offset = out.size();
-			out.resize(out.size() + sizeof(v));
-			memcpy(out.ptrw() + offset, &v, sizeof(v));
+			size_t offset = r_out_sink.size();
+			r_out_sink.resize(r_out_sink.size() + sizeof(v));
+			memcpy(r_out_sink.ptrw() + offset, &v, sizeof(v));
 		} break;
 		case Variant::FLOAT: {
 			// always convert to float at a cost of precision
@@ -1834,14 +1834,14 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 			// and there is no easy way to know what precision
 			// a programmer needs in GDScript.
 			float v = p_variant;
-			size_t offset = out.size();
-			out.resize(out.size() + sizeof(v));
-			memcpy(out.ptrw() + offset, &v, sizeof(v));
+			size_t offset = r_out_sink.size();
+			r_out_sink.resize(r_out_sink.size() + sizeof(v));
+			memcpy(r_out_sink.ptrw() + offset, &v, sizeof(v));
 		} break;
 		case Variant::VECTOR2: {
 			Vector2 v = p_variant;
 			for (size_t elements = 0; elements < 2; elements++) {
-				Error err = to_raw_bytes(v[elements], out);
+				Error err = to_raw_bytes(v[elements], r_out_sink);
 				if (err != OK) {
 					return err;
 				}
@@ -1850,7 +1850,7 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 		case Variant::VECTOR3: {
 			Vector3 v = p_variant;
 			for (size_t elements = 0; elements < 3; elements++) {
-				Error err = to_raw_bytes(v[elements], out);
+				Error err = to_raw_bytes(v[elements], r_out_sink);
 				if (err != OK) {
 					return err;
 				}
@@ -1859,7 +1859,7 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 		case Variant::VECTOR4: {
 			Vector4 v = p_variant;
 			for (size_t elements = 0; elements < 4; elements++) {
-				Error err = to_raw_bytes(v[elements], out);
+				Error err = to_raw_bytes(v[elements], r_out_sink);
 				if (err != OK) {
 					return err;
 				}
@@ -1868,7 +1868,7 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 		case Variant::VECTOR2I: {
 			Vector2i v = p_variant;
 			for (size_t elements = 0; elements < 2; elements++) {
-				Error err = to_raw_bytes(v[elements], out);
+				Error err = to_raw_bytes(v[elements], r_out_sink);
 				if (err != OK) {
 					return err;
 				}
@@ -1877,7 +1877,7 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 		case Variant::VECTOR3I: {
 			Vector3i v = p_variant;
 			for (size_t elements = 0; elements < 3; elements++) {
-				Error err = to_raw_bytes(v[elements], out);
+				Error err = to_raw_bytes(v[elements], r_out_sink);
 				if (err != OK) {
 					return err;
 				}
@@ -1886,7 +1886,7 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 		case Variant::VECTOR4I: {
 			Vector4i v = p_variant;
 			for (size_t elements = 0; elements < 4; elements++) {
-				Error err = to_raw_bytes(v[elements], out);
+				Error err = to_raw_bytes(v[elements], r_out_sink);
 				if (err != OK) {
 					return err;
 				}
@@ -1895,7 +1895,7 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 		case Variant::ARRAY: {
 			Array v = p_variant;
 			for (int i = 0; i < v.size(); i++) {
-				Error err = to_raw_bytes(v[i], out);
+				Error err = to_raw_bytes(v[i], r_out_sink);
 				if (err != OK) {
 					return err;
 				}
