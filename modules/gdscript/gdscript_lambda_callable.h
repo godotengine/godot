@@ -56,6 +56,7 @@ public:
 	CompareEqualFunc get_compare_equal_func() const override;
 	CompareLessFunc get_compare_less_func() const override;
 	ObjectID get_object() const override;
+	StringName get_method() const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
 	GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures);
