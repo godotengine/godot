@@ -901,9 +901,35 @@ void TileMapLayer::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::Li
 			if (tile_set->has_source(c.source_id)) {
 				source = *tile_set->get_source(c.source_id);
 
-				if (!source->has_tile(c.get_atlas_coords()) || !source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
-					continue;
-				}
+	HashMap<Vector2i, TileMapQuadrant>::Iterator Q = layers[p_layer].quadrant_map.find(qk);
+
+	if (source_id == TileSet::INVALID_SOURCE) {
+		// Erase existing cell in the tile map.
+		tile_map.erase(pk);
+
+		// Erase existing cell in the quadrant.
+		ERR_FAIL_COND(!Q);
+		TileMapQuadrant &q = Q->value;
+
+		// Find node in scenes and remove it.
+		HashMap<Vector2i, String>::Iterator entry = q.scenes.find(pk);
+		if (entry != q.scenes.end()) {
+			String scene_name = entry->value;
+			Node *scene = get_node_or_null(scene_name);
+			if (scene) {
+				scene->queue_free();
+				instantiated_scenes.erase(Vector3i(p_layer, pk.x, pk.y));
+			}
+		}
+
+		q.cells.erase(pk);
+
+		// Remove or make the quadrant dirty.
+		if (q.cells.size() == 0) {
+			_erase_quadrant(Q);
+		} else {
+			_make_quadrant_dirty(Q);
+		}
 
 				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 				if (atlas_source) {
