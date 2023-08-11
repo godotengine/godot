@@ -3538,11 +3538,12 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			}
 			if (gltf_texture_index != -1) {
 				bct["index"] = gltf_texture_index;
-				Dictionary extensions = _serialize_texture_transform_uv1(material);
+				Dictionary extensions = _serialize_texture_transform(base_material->get_texture_uv(BaseMaterial3D::TEXTURE_ALBEDO), material);
 				if (!extensions.is_empty()) {
 					bct["extensions"] = extensions;
 					p_state->use_khr_texture_transform = true;
 				}
+				bct["texCoord"] = base_material->get_texture_uv(BaseMaterial3D::TEXTURE_ALBEDO);
 				mr["baseColorTexture"] = bct;
 			}
 		}
@@ -3669,15 +3670,17 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			if (has_ao) {
 				Dictionary occt;
 				occt["index"] = orm_texture_index;
+				occt["texCoord"] = base_material->get_texture_uv(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION),
 				d["occlusionTexture"] = occt;
 			}
 			if (has_roughness || has_metalness) {
 				mrt["index"] = orm_texture_index;
-				Dictionary extensions = _serialize_texture_transform_uv1(material);
+				Dictionary extensions = _serialize_texture_transform(base_material->get_texture_uv(BaseMaterial3D::TEXTURE_METALLIC), material);
 				if (!extensions.is_empty()) {
 					mrt["extensions"] = extensions;
 					p_state->use_khr_texture_transform = true;
 				}
+				mrt["texCoord"] = base_material->get_texture_uv(BaseMaterial3D::TEXTURE_METALLIC);
 				mr["metallicRoughnessTexture"] = mrt;
 			}
 		}
@@ -3723,6 +3726,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			nt["scale"] = base_material->get_normal_scale();
 			if (gltf_texture_index != -1) {
 				nt["index"] = gltf_texture_index;
+				nt["texCoord"] = base_material->get_texture_uv(BaseMaterial3D::TEXTURE_NORMAL);
 				d["normalTexture"] = nt;
 			}
 		}
@@ -3747,6 +3751,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 
 			if (gltf_texture_index != -1) {
 				et["index"] = gltf_texture_index;
+				et["texCoord"] = base_material->get_texture_uv(BaseMaterial3D::TEXTURE_EMISSION);
 				d["emissiveTexture"] = et;
 			}
 		}
@@ -3878,7 +3883,11 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
 				}
-				_set_texture_transform_uv1(bct, material);
+				if (bct.has("texCoord")) {
+					material->set_texture_uv(BaseMaterial3D::TEXTURE_ALBEDO, (BaseMaterial3D::TextureUV)(int)bct["texCoord"]);
+				}
+
+				_set_texture_transform(material->get_texture_uv(BaseMaterial3D::TEXTURE_ALBEDO), bct, material);
 			}
 
 			if (mr.has("metallicFactor")) {
@@ -3894,9 +3903,9 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 
 			if (mr.has("metallicRoughnessTexture")) {
-				const Dictionary &bct = mr["metallicRoughnessTexture"];
-				if (bct.has("index")) {
-					const Ref<Texture2D> t = _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC);
+				const Dictionary &mrt = mr["metallicRoughnessTexture"];
+				if (mrt.has("index")) {
+					const Ref<Texture2D> t = _get_texture(p_state, mrt["index"], TEXTURE_TYPE_GENERIC);
 					material->set_texture(BaseMaterial3D::TEXTURE_METALLIC, t);
 					material->set_metallic_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
 					material->set_texture(BaseMaterial3D::TEXTURE_ROUGHNESS, t);
@@ -3908,25 +3917,35 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 						material->set_roughness(1);
 					}
 				}
+				if (mrt.has("texCoord")) {
+					material->set_texture_uv(BaseMaterial3D::TEXTURE_METALLIC, (BaseMaterial3D::TextureUV)(int)mrt["texCoord"]);
+					material->set_texture_uv(BaseMaterial3D::TEXTURE_ROUGHNESS, (BaseMaterial3D::TextureUV)(int)mrt["texCoord"]);
+				}
 			}
 		}
 
 		if (d.has("normalTexture")) {
-			const Dictionary &bct = d["normalTexture"];
-			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, bct["index"], TEXTURE_TYPE_NORMAL));
+			const Dictionary &nt = d["normalTexture"];
+			if (nt.has("index")) {
+				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, nt["index"], TEXTURE_TYPE_NORMAL));
 				material->set_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING, true);
 			}
-			if (bct.has("scale")) {
-				material->set_normal_scale(bct["scale"]);
+			if (nt.has("texCoord")) {
+				material->set_texture_uv(BaseMaterial3D::TEXTURE_NORMAL, (BaseMaterial3D::TextureUV)(int)nt["texCoord"]);
+			}
+			if (nt.has("scale")) {
+				material->set_normal_scale(nt["scale"]);
 			}
 		}
 		if (d.has("occlusionTexture")) {
-			const Dictionary &bct = d["occlusionTexture"];
-			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
+			const Dictionary &ot = d["occlusionTexture"];
+			if (ot.has("index")) {
+				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, ot["index"], TEXTURE_TYPE_GENERIC));
 				material->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
 				material->set_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
+			}
+			if (ot.has("texCoord")) {
+				material->set_texture_uv(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, (BaseMaterial3D::TextureUV)(int)ot["texCoord"]);
 			}
 		}
 
@@ -3940,11 +3959,14 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		}
 
 		if (d.has("emissiveTexture")) {
-			const Dictionary &bct = d["emissiveTexture"];
-			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
+			const Dictionary &et = d["emissiveTexture"];
+			if (et.has("index")) {
+				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, et["index"], TEXTURE_TYPE_GENERIC));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
 				material->set_emission(Color(0, 0, 0));
+			}
+			if (et.has("texCoord")) {
+				material->set_texture_uv(BaseMaterial3D::TEXTURE_EMISSION, (BaseMaterial3D::TextureUV)(int)et["texCoord"]);
 			}
 		}
 
@@ -3975,7 +3997,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-void GLTFDocument::_set_texture_transform_uv1(const Dictionary &p_dict, Ref<BaseMaterial3D> p_material) {
+void GLTFDocument::_set_texture_transform(BaseMaterial3D::TextureUV p_param, const Dictionary &p_dict, Ref<BaseMaterial3D> p_material) {
 	if (p_dict.has("extensions")) {
 		const Dictionary &extensions = p_dict["extensions"];
 		if (extensions.has("KHR_texture_transform")) {
@@ -3984,13 +4006,13 @@ void GLTFDocument::_set_texture_transform_uv1(const Dictionary &p_dict, Ref<Base
 				const Array &offset_arr = texture_transform["offset"];
 				if (offset_arr.size() == 2) {
 					const Vector3 offset_vector3 = Vector3(offset_arr[0], offset_arr[1], 0.0f);
-					p_material->set_uv1_offset(offset_vector3);
+					p_material->set_uv_offset(p_param, offset_vector3);
 				}
 
 				const Array &scale_arr = texture_transform["scale"];
 				if (scale_arr.size() == 2) {
 					const Vector3 scale_vector3 = Vector3(scale_arr[0], scale_arr[1], 1.0f);
-					p_material->set_uv1_scale(scale_vector3);
+					p_material->set_uv_scale(p_param, scale_vector3);
 				}
 			}
 		}
@@ -7014,44 +7036,35 @@ Error GLTFDocument::_parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess
 	return OK;
 }
 
-Dictionary _serialize_texture_transform_uv(Vector2 p_offset, Vector2 p_scale) {
+Dictionary GLTFDocument::_serialize_texture_transform(BaseMaterial3D::TextureUV p_param, Ref<BaseMaterial3D> p_material) {
+	ERR_FAIL_NULL_V(p_material, Dictionary());
+	Vector3 _offset = p_material->get_uv_offset(p_param);
+	Vector3 _scale = p_material->get_uv_scale(p_param);
 	Dictionary texture_transform;
-	bool is_offset = p_offset != Vector2(0.0, 0.0);
+	Vector2 offset(_offset.x, _offset.y);
+	Vector2 scale(_scale.x, _scale.y);
+	bool is_offset = offset != Vector2(0.0, 0.0);
 	if (is_offset) {
-		Array offset;
-		offset.resize(2);
-		offset[0] = p_offset.x;
-		offset[1] = p_offset.y;
-		texture_transform["offset"] = offset;
+		Array arr_offset;
+		arr_offset.resize(2);
+		arr_offset[0] = offset.x;
+		arr_offset[1] = offset.y;
+		texture_transform["offset"] = arr_offset;
 	}
-	bool is_scaled = p_scale != Vector2(1.0, 1.0);
+	bool is_scaled = scale != Vector2(1.0, 1.0);
 	if (is_scaled) {
-		Array scale;
-		scale.resize(2);
-		scale[0] = p_scale.x;
-		scale[1] = p_scale.y;
-		texture_transform["scale"] = scale;
+		Array arr_scale;
+		arr_scale.resize(2);
+		arr_scale[0] = scale.x;
+		arr_scale[1] = scale.y;
+		texture_transform["scale"] = arr_scale;
 	}
 	Dictionary extension;
-	// Note: Godot doesn't support texture rotation.
+	// Note: Godot doesn't support texture rotation as it is not widely adopted yet.
 	if (is_offset || is_scaled) {
 		extension["KHR_texture_transform"] = texture_transform;
 	}
 	return extension;
-}
-
-Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material) {
-	ERR_FAIL_NULL_V(p_material, Dictionary());
-	Vector3 offset = p_material->get_uv1_offset();
-	Vector3 scale = p_material->get_uv1_scale();
-	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
-}
-
-Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material) {
-	ERR_FAIL_NULL_V(p_material, Dictionary());
-	Vector3 offset = p_material->get_uv2_offset();
-	Vector3 scale = p_material->get_uv2_scale();
-	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 }
 
 Error GLTFDocument::_serialize_version(Ref<GLTFState> p_state) {

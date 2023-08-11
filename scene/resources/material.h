@@ -154,7 +154,6 @@ public:
 		TEXTURE_DETAIL_NORMAL,
 		TEXTURE_ORM,
 		TEXTURE_MAX
-
 	};
 
 	enum TextureFilter {
@@ -165,12 +164,6 @@ public:
 		TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC,
 		TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC,
 		TEXTURE_FILTER_MAX
-	};
-
-	enum DetailUV {
-		DETAIL_UV_1,
-		DETAIL_UV_2,
-		DETAIL_UV_MAX
 	};
 
 	enum Transparency {
@@ -245,8 +238,8 @@ public:
 		FLAG_UV2_USE_TRIPLANAR,
 		FLAG_UV1_USE_WORLD_TRIPLANAR,
 		FLAG_UV2_USE_WORLD_TRIPLANAR,
-		FLAG_AO_ON_UV2,
-		FLAG_EMISSION_ON_UV2,
+		_RESERVED_0,
+		_RESERVED_1,
 		FLAG_ALBEDO_TEXTURE_FORCE_SRGB,
 		FLAG_DONT_RECEIVE_SHADOWS,
 		FLAG_DISABLE_AMBIENT_LIGHT,
@@ -305,11 +298,22 @@ public:
 		DISTANCE_FADE_MAX
 	};
 
+	enum TextureUV {
+		TEXTURE_UV_1,
+		TEXTURE_UV_2,
+		TEXTURE_UV_3,
+		TEXTURE_UV_4,
+		TEXTURE_UV_5,
+		TEXTURE_UV_6,
+		TEXTURE_UV_7,
+		TEXTURE_UV_8,
+		TEXTURE_UV_MAX
+	};
+
 private:
 	struct MaterialKey {
 		// enum values
 		uint64_t texture_filter : get_num_bits(TEXTURE_FILTER_MAX - 1);
-		uint64_t detail_uv : get_num_bits(DETAIL_UV_MAX - 1);
 		uint64_t transparency : get_num_bits(TRANSPARENCY_MAX - 1);
 		uint64_t alpha_antialiasing_mode : get_num_bits(ALPHA_ANTIALIASING_MAX - 1);
 		uint64_t shading_mode : get_num_bits(SHADING_MODE_MAX - 1);
@@ -323,6 +327,13 @@ private:
 		uint64_t roughness_channel : get_num_bits(TEXTURE_CHANNEL_MAX - 1);
 		uint64_t emission_op : get_num_bits(EMISSION_OP_MAX - 1);
 		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
+		uint64_t detail_uv : get_num_bits(TEXTURE_UV_MAX - 1);
+		uint64_t albedo_uv : get_num_bits(TEXTURE_UV_MAX - 1);
+		uint64_t metallic_uv : get_num_bits(TEXTURE_UV_MAX - 1);
+		uint64_t roughness_uv : get_num_bits(TEXTURE_UV_MAX - 1);
+		uint64_t normal_uv : get_num_bits(TEXTURE_UV_MAX - 1);
+		uint64_t ambient_occlusion_uv : get_num_bits(TEXTURE_UV_MAX - 1);
+		uint64_t emissive_uv : get_num_bits(TEXTURE_UV_MAX - 1);
 		// booleans
 		uint64_t deep_parallax : 1;
 		uint64_t grow : 1;
@@ -361,7 +372,6 @@ private:
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 		MaterialKey mk;
 
-		mk.detail_uv = detail_uv;
 		mk.blend_mode = blend_mode;
 		mk.depth_draw_mode = depth_draw_mode;
 		mk.cull_mode = cull_mode;
@@ -377,6 +387,13 @@ private:
 		mk.grow = grow_enabled;
 		mk.proximity_fade = proximity_fade_enabled;
 		mk.distance_fade = distance_fade;
+		mk.detail_uv = texture_uvs[TEXTURE_DETAIL_ALBEDO];
+		mk.albedo_uv = texture_uvs[TEXTURE_ALBEDO];
+		mk.metallic_uv = texture_uvs[TEXTURE_METALLIC];
+		mk.roughness_uv = texture_uvs[TEXTURE_ROUGHNESS];
+		mk.normal_uv = texture_uvs[TEXTURE_NORMAL];
+		mk.ambient_occlusion_uv = texture_uvs[TEXTURE_AMBIENT_OCCLUSION];
+		mk.emissive_uv = texture_uvs[TEXTURE_EMISSION];
 		mk.emission_op = emission_op;
 		mk.alpha_antialiasing_mode = alpha_antialiasing_mode;
 		mk.orm = orm;
@@ -417,10 +434,8 @@ private:
 		StringName backlight;
 		StringName refraction;
 		StringName point_size;
-		StringName uv1_scale;
-		StringName uv1_offset;
-		StringName uv2_scale;
-		StringName uv2_offset;
+		StringName uv_scales[TEXTURE_UV_MAX];
+		StringName uv_offsets[TEXTURE_UV_MAX];
 		StringName particles_anim_h_frames;
 		StringName particles_anim_v_frames;
 		StringName particles_anim_loop;
@@ -502,15 +517,11 @@ private:
 
 	TextureFilter texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 
-	Vector3 uv1_scale;
-	Vector3 uv1_offset;
+	Vector3 uv_scales[TEXTURE_UV_MAX];
+	Vector3 uv_offsets[TEXTURE_UV_MAX];
+
 	float uv1_triplanar_sharpness = 0.0f;
-
-	Vector3 uv2_scale;
-	Vector3 uv2_offset;
 	float uv2_triplanar_sharpness = 0.0f;
-
-	DetailUV detail_uv = DETAIL_UV_1;
 
 	bool deep_parallax = false;
 	int deep_parallax_min_layers = 0;
@@ -548,6 +559,7 @@ private:
 	bool features[FEATURE_MAX] = {};
 
 	Ref<Texture2D> textures[TEXTURE_MAX];
+	TextureUV texture_uvs[TEXTURE_MAX];
 
 	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
 
@@ -562,6 +574,9 @@ protected:
 public:
 	void set_albedo(const Color &p_albedo);
 	Color get_albedo() const;
+
+	void set_texture_uv(TextureParam p_param, TextureUV p_texture_uv);
+	TextureUV get_texture_uv(TextureParam p_param) const;
 
 	void set_specular(float p_specular);
 	float get_specular() const;
@@ -653,9 +668,6 @@ public:
 	void set_shading_mode(ShadingMode p_shading_mode);
 	ShadingMode get_shading_mode() const;
 
-	void set_detail_uv(DetailUV p_detail_uv);
-	DetailUV get_detail_uv() const;
-
 	void set_blend_mode(BlendMode p_mode);
 	BlendMode get_blend_mode() const;
 
@@ -688,20 +700,14 @@ public:
 	void set_feature(Feature p_feature, bool p_enabled);
 	bool get_feature(Feature p_feature) const;
 
-	void set_uv1_scale(const Vector3 &p_scale);
-	Vector3 get_uv1_scale() const;
+	void set_uv_scale(TextureUV p_param, const Vector3 &p_scale);
+	Vector3 get_uv_scale(TextureUV p_param) const;
 
-	void set_uv1_offset(const Vector3 &p_offset);
-	Vector3 get_uv1_offset() const;
+	void set_uv_offset(TextureUV p_param, const Vector3 &p_offset);
+	Vector3 get_uv_offset(TextureUV p_param) const;
 
 	void set_uv1_triplanar_blend_sharpness(float p_sharpness);
 	float get_uv1_triplanar_blend_sharpness() const;
-
-	void set_uv2_scale(const Vector3 &p_scale);
-	Vector3 get_uv2_scale() const;
-
-	void set_uv2_offset(const Vector3 &p_offset);
-	Vector3 get_uv2_offset() const;
 
 	void set_uv2_triplanar_blend_sharpness(float p_sharpness);
 	float get_uv2_triplanar_blend_sharpness() const;
@@ -783,7 +789,6 @@ VARIANT_ENUM_CAST(BaseMaterial3D::TextureFilter)
 VARIANT_ENUM_CAST(BaseMaterial3D::ShadingMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::Transparency)
 VARIANT_ENUM_CAST(BaseMaterial3D::AlphaAntiAliasing)
-VARIANT_ENUM_CAST(BaseMaterial3D::DetailUV)
 VARIANT_ENUM_CAST(BaseMaterial3D::Feature)
 VARIANT_ENUM_CAST(BaseMaterial3D::BlendMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::DepthDrawMode)
@@ -795,6 +800,7 @@ VARIANT_ENUM_CAST(BaseMaterial3D::BillboardMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::TextureChannel)
 VARIANT_ENUM_CAST(BaseMaterial3D::EmissionOperator)
 VARIANT_ENUM_CAST(BaseMaterial3D::DistanceFadeMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::TextureUV)
 
 class StandardMaterial3D : public BaseMaterial3D {
 	GDCLASS(StandardMaterial3D, BaseMaterial3D)

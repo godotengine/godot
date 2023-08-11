@@ -157,7 +157,7 @@ private:
 	Error _parse_textures(Ref<GLTFState> p_state);
 	Error _parse_texture_samplers(Ref<GLTFState> p_state);
 	Error _parse_materials(Ref<GLTFState> p_state);
-	void _set_texture_transform_uv1(const Dictionary &d, Ref<BaseMaterial3D> p_material);
+	void _set_texture_transform(BaseMaterial3D::TextureUV p_param, const Dictionary &d, Ref<BaseMaterial3D> p_material);
 	void spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss,
 			Ref<BaseMaterial3D> p_material);
 	static void spec_gloss_to_metal_base_color(const Color &p_specular_factor,
@@ -270,8 +270,7 @@ private:
 	Error _encode_buffer_bins(Ref<GLTFState> p_state, const String &p_path);
 	Error _encode_buffer_glb(Ref<GLTFState> p_state, const String &p_path);
 	PackedByteArray _serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err);
-	Dictionary _serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material);
-	Dictionary _serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material);
+	Dictionary _serialize_texture_transform(BaseMaterial3D::TextureUV p_param, Ref<BaseMaterial3D> p_material);
 	Error _serialize_version(Ref<GLTFState> p_state);
 	Error _serialize_file(Ref<GLTFState> p_state, const String p_path);
 	Error _serialize_gltf_extensions(Ref<GLTFState> p_state) const;
