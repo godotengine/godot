@@ -1745,7 +1745,6 @@ void FileSystemDock::_rename_operation_confirm() {
 	_rescan();
 
 	print_verbose("FileSystem: saving moved scenes.");
-	_save_scenes_after_move(file_renames);
 
 	current_path = new_path;
 	current_path_line_edit->set_text(current_path);
