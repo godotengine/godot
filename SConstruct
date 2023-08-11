@@ -713,7 +713,7 @@ if selected_platform in platform_list:
     # Configure compiler warnings
     if env.msvc:  # MSVC
         if env["warnings"] == "no":
-            env.Append(CCFLAGS=["/w"])
+            env.Append(CCFLAGS=["/w", "/wd4530"])  # Silence "C++ exception handler used without unwind semantics".
         else:
             if env["warnings"] == "extra":
                 env.Append(CCFLAGS=["/W4"])
@@ -734,13 +734,11 @@ if selected_platform in platform_list:
                     "/wd4267",
                     "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
                     "/wd4514",  # C4514 (unreferenced inline function has been removed)
+                    "/wd4530",  # C4530 (C++ exception handler used without unwind semantics)
                     "/wd4714",  # C4714 (function marked as __forceinline not inlined)
                     "/wd4820",  # C4820 (padding added after construct)
                 ]
             )
-
-        # Set exception handling model to avoid warnings caused by Windows system headers.
-        env.Append(CCFLAGS=["/EHsc"])
 
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
