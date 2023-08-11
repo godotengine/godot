@@ -1829,17 +1829,14 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 			memcpy(out.ptrw() + offset, &v, sizeof(v));
 		} break;
 		case Variant::FLOAT: {
-#ifdef REAL_T_IS_DOUBLE
-			double v = p_variant;
-			size_t offset = out.size();
-			out.resize(out.size() + sizeof(v));
-			memcpy(out.ptrw() + offset, &v, sizeof(v));
-#else
+			// always convert to float at a cost of precision
+			// while 64 bit values are inpractical in shaders
+			// and there is no easy way to know what precision
+			// a programmer needs in GDScript.
 			float v = p_variant;
 			size_t offset = out.size();
 			out.resize(out.size() + sizeof(v));
 			memcpy(out.ptrw() + offset, &v, sizeof(v));
-#endif
 		} break;
 		case Variant::VECTOR2: {
 			Vector2 v = p_variant;
