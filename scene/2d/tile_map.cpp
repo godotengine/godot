@@ -2025,10 +2025,10 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 		TileMapQuadrant &q = Q->value;
 
 		// Find node in scenes and remove it.
-		auto entry = q.scenes.find(pk);
+		HashMap<Vector2i, String>::Iterator entry = q.scenes.find(pk);
 		if (entry != q.scenes.end()) {
-			String name = entry->value;
-			Node *scene = get_node_or_null(name);
+			String scene_name = entry->value;
+			Node *scene = get_node_or_null(scene_name);
 			if (scene) {
 				scene->queue_free();
 				instantiated_scenes.erase(Vector3i(p_layer, pk.x, pk.y));
