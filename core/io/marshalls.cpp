@@ -1830,7 +1830,7 @@ Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 		} break;
 		case Variant::FLOAT: {
 			// always convert to float at a cost of precision
-			// while 64 bit values are inpractical in shaders
+			// while 64 bit values are impractical in shaders
 			// and there is no easy way to know what precision
 			// a programmer needs in GDScript.
 			float v = p_variant;
