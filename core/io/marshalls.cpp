@@ -1814,7 +1814,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 	return OK;
 }
 
-Error to_raw_bytes(const Variant &p_variant, PackedByteArray &out) {
+Error to_raw_bytes(const Variant &p_variant, PackedByteArray &r_out_sink) {
 	switch (p_variant.get_type()) {
 		case Variant::INT: {
 			int32_t v = p_variant;
