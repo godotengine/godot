@@ -202,62 +202,55 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !is_read_only()) {
-		double step = get_step();
-		double real_step = step;
-		if (step < 1) {
-			double divisor = 1.0 / get_step();
+		Key code = k->get_keycode();
 
-			if (trunc(divisor) == divisor) {
-				step = 1.0;
+		if (code == Key::ESCAPE) {
+			value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
+			if (value_input_popup) {
+				value_input_popup->hide();
 			}
 		}
 
-		if (k->is_ctrl_pressed()) {
-			step *= 100.0;
-		} else if (k->is_shift_pressed()) {
-			step *= 10.0;
-		} else if (k->is_alt_pressed()) {
-			step *= 0.1;
-		}
+		if (code == Key::UP || code == Key::DOWN) {
+			// If the step is smaller than 1 but can be expressed as a 1/int fraction, then set the change to 1.
+			// For example, 0.001 is 1/1000, so then the change will be 1.
+			// Otherwise, for example if the step is 0.4, use that step directly.
+			double step = get_step();
+			double real_step = step;
+			if (step < 1.0) {
+				double divisor = 1.0 / step;
 
-		Key code = k->get_keycode();
-		switch (code) {
-			case Key::UP: {
-				_evaluate_input_text();
-
-				double last_value = get_value();
-				set_value(last_value + step);
-				double new_value = get_value();
-
-				if (new_value < CLAMP(last_value + step, get_min(), get_max())) {
-					set_value(last_value + real_step);
+				if (trunc(divisor) == divisor) {
+					step = 1.0;
 				}
+			}
 
-				value_input_dirty = true;
-				set_process_internal(true);
-			} break;
-			case Key::DOWN: {
-				_evaluate_input_text();
+			if (code == Key::DOWN) {
+				step *= -1.0;
+				real_step *= -1.0;
+			}
 
-				double last_value = get_value();
-				set_value(last_value - step);
-				double new_value = get_value();
+			// Modifiers based on web browsers' DevTools.
+			if (k->is_ctrl_pressed()) {
+				step *= 100.0;
+			} else if (k->is_shift_pressed()) {
+				step *= 10.0;
+			} else if (k->is_alt_pressed()) {
+				step *= 0.1;
+			}
 
-				if (new_value > CLAMP(last_value - step, get_min(), get_max())) {
-					set_value(last_value - real_step);
-				}
+			_evaluate_input_text();
 
-				value_input_dirty = true;
-				set_process_internal(true);
-			} break;
-			case Key::ESCAPE: {
-				value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
-				if (value_input_popup) {
-					value_input_popup->hide();
-				}
-			} break;
-			default:
-				break;
+			double old_value = get_value();
+			set_value(old_value + step);
+			double new_value = get_value();
+
+			if (old_value == new_value && new_value != get_min() && new_value != get_max()) {
+				set_value(old_value + real_step);
+			}
+
+			value_input_dirty = true;
+			set_process_internal(true);
 		}
 	}
 }
