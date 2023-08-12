@@ -126,55 +126,99 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 		}                                                                           \
 	}
 
-#define PARSE_ISO8601_STRING(ret)                                                             \
-	int64_t year = UNIX_EPOCH_YEAR_AD;                                                        \
-	Month month = MONTH_JANUARY;                                                              \
-	int day = 1;                                                                              \
-	int hour = 0;                                                                             \
-	int minute = 0;                                                                           \
-	int second = 0;                                                                           \
-	{                                                                                         \
-		bool has_date = false, has_time = false;                                              \
-		String date, time;                                                                    \
-		if (p_datetime.find_char('T') > 0) {                                                  \
-			has_date = has_time = true;                                                       \
-			PackedStringArray array = p_datetime.split("T");                                  \
-			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
-			date = array[0];                                                                  \
-			time = array[1];                                                                  \
-		} else if (p_datetime.find_char(' ') > 0) {                                           \
-			has_date = has_time = true;                                                       \
-			PackedStringArray array = p_datetime.split(" ");                                  \
-			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
-			date = array[0];                                                                  \
-			time = array[1];                                                                  \
-		} else if (p_datetime.find_char('-', 1) > 0) {                                        \
-			has_date = true;                                                                  \
-			date = p_datetime;                                                                \
-		} else if (p_datetime.find_char(':') > 0) {                                           \
-			has_time = true;                                                                  \
-			time = p_datetime;                                                                \
-		}                                                                                     \
-		/* Set the variables from the contents of the string. */                              \
-		if (has_date) {                                                                       \
-			PackedInt32Array array = date.split_ints("-", false);                             \
-			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 date string.");      \
-			year = array[0];                                                                  \
-			month = (Month)array[1];                                                          \
-			day = array[2];                                                                   \
-			/* Handle negative years. */                                                      \
-			if (p_datetime.find_char('-') == 0) {                                             \
-				year *= -1;                                                                   \
-			}                                                                                 \
-		}                                                                                     \
-		if (has_time) {                                                                       \
-			PackedInt32Array array = time.split_ints(":", false);                             \
-			ERR_FAIL_COND_V_MSG(array.size() < 3, ret, "Invalid ISO 8601 time string.");      \
-			hour = array[0];                                                                  \
-			minute = array[1];                                                                \
-			second = array[2];                                                                \
-		}                                                                                     \
-	}
+#define PARSE_ISO8601_STRING(ret)                                                                                                            \
+	int64_t year = UNIX_EPOCH_YEAR_AD;                                                                                                       \
+	Month month = MONTH_JANUARY;                                                                                                             \
+	int day = 1;                                                                                                                             \
+	int hour = 0;                                                                                                                            \
+	int minute = 0;                                                                                                                          \
+	int second = 0;                                                                                                                          \
+	{                                                                                                                                        \
+		String date, time;                                                                                                                   \
+		int key;                                                                                                                             \
+		Vector<String> datetime_delimiters;                                                                                                  \
+		datetime_delimiters.push_back("T");                                                                                                  \
+		datetime_delimiters.push_back(" ");                                                                                                  \
+		if (p_datetime.findmk(datetime_delimiters, 0, &key) != -1) {                                                                         \
+			PackedStringArray array = p_datetime.split(datetime_delimiters[key]);                                                            \
+			ERR_FAIL_COND_V_MSG(array.size() != 2, ret, "Invalid ISO 8601 date/time string.");                                               \
+			date = array[0];                                                                                                                 \
+			time = array[1];                                                                                                                 \
+		} else if (p_datetime.find_char('-') != -1) {                                                                                        \
+			date = p_datetime;                                                                                                               \
+		} else if (p_datetime.find_char(':') != -1) {                                                                                        \
+			time = p_datetime;                                                                                                               \
+		} else {                                                                                                                             \
+			int datetime_length = p_datetime.length();                                                                                       \
+			if (datetime_length >= 8) {                                                                                                      \
+				date = p_datetime;                                                                                                           \
+			} else if (datetime_length == 6 || datetime_length == 4 || datetime_length == 2) {                                               \
+				time = p_datetime;                                                                                                           \
+			} else {                                                                                                                         \
+				ERR_FAIL_V_MSG(ret, "Invalid ISO 8601 date/time string.");                                                                   \
+			}                                                                                                                                \
+		}                                                                                                                                    \
+                                                                                                                                             \
+		if (!date.is_empty()) {                                                                                                              \
+			PackedStringArray array;                                                                                                         \
+			bool is_year_plus = !date.begins_with("-");                                                                                      \
+                                                                                                                                             \
+			date = date.trim_prefix("-");                                                                                                    \
+			if (date.find_char('-') != -1) {                                                                                                 \
+				array = date.split("-");                                                                                                     \
+				int array_size = array.size();                                                                                               \
+				ERR_FAIL_COND_V_MSG(!(array_size == 2 || array_size == 3), ret, "Invalid ISO 8601 date/time string.");                       \
+			} else {                                                                                                                         \
+				int date_length = date.length();                                                                                             \
+				ERR_FAIL_COND_V_MSG(!(date_length >= 8), ret, "Invalid ISO 8601 date/time string.");                                         \
+				array.append(date.substr(0, date_length - 4));                                                                               \
+				array.append(date.substr(date_length - 4, 2));                                                                               \
+				array.append(date.substr(date_length - 2, 2));                                                                               \
+			}                                                                                                                                \
+                                                                                                                                             \
+			ERR_FAIL_COND_V_MSG(!(array[0].is_valid_int() && array[0].length() >= 4), ret, "Invalid ISO 8601 date/time string.");            \
+			year = (is_year_plus) ? (array[0].to_int()) : (-1 * array[0].to_int());                                                          \
+			ERR_FAIL_COND_V_MSG(!(array[1].is_valid_int() && array[1].length() == 2), ret, "Invalid ISO 8601 date/time string.");            \
+			month = (Month)array[1].to_int();                                                                                                \
+                                                                                                                                             \
+			if (array.size() > 2) {                                                                                                          \
+				ERR_FAIL_COND_V_MSG(!(array[2].is_valid_int() && array[2].length() == 2), ret, "Invalid ISO 8601 date/time string.");        \
+				day = array[2].to_int();                                                                                                     \
+			}                                                                                                                                \
+		}                                                                                                                                    \
+		if (!time.is_empty()) {                                                                                                              \
+			PackedStringArray array;                                                                                                         \
+                                                                                                                                             \
+			if (time.find_char(':') != -1) {                                                                                                 \
+				array = time.split(":");                                                                                                     \
+				int array_size = array.size();                                                                                               \
+				ERR_FAIL_COND_V_MSG(!(array_size == 1 || array_size == 2 || array_size == 3), ret, "Invalid ISO 8601 date/time string.");    \
+			} else {                                                                                                                         \
+				int time_length = time.length();                                                                                             \
+				ERR_FAIL_COND_V_MSG(!(time_length == 2 || time_length == 4 || time_length == 6), ret, "Invalid ISO 8601 date/time string."); \
+				array.append(time.substr(0, 2));                                                                                             \
+				if (time_length >= 4) {                                                                                                      \
+					array.append(time.substr(2, 2));                                                                                         \
+				}                                                                                                                            \
+				if (time_length >= 6) {                                                                                                      \
+					array.append(time.substr(4, 2));                                                                                         \
+				}                                                                                                                            \
+			}                                                                                                                                \
+                                                                                                                                             \
+			ERR_FAIL_COND_V_MSG(!(array[0].is_valid_int() && array[0].length() == 2), ret, "Invalid ISO 8601 date/time string.");            \
+			hour = array[0].to_int();                                                                                                        \
+                                                                                                                                             \
+			if (array.size() > 1) {                                                                                                          \
+				ERR_FAIL_COND_V_MSG(!(array[1].is_valid_int() && array[1].length() == 2), ret, "Invalid ISO 8601 date/time string.");        \
+				minute = array[1].to_int();                                                                                                  \
+			}                                                                                                                                \
+			if (array.size() > 2) {                                                                                                          \
+				ERR_FAIL_COND_V_MSG(!(array[2].is_valid_int() && array[2].length() == 2), ret, "Invalid ISO 8601 date/time string.");        \
+				second = array[2].to_int();                                                                                                  \
+			}                                                                                                                                \
+		}                                                                                                                                    \
+	}                                                                                                                                        \
+	VALIDATE_YMDHMS(ret)
 
 #define EXTRACT_FROM_DICTIONARY                                                                   \
 	/* Get all time values from the dictionary. If it doesn't exist, set the */                   \
@@ -299,8 +343,7 @@ int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) cons
 }
 
 int64_t Time::get_unix_time_from_datetime_string(String p_datetime) const {
-	PARSE_ISO8601_STRING(-1)
-	VALIDATE_YMDHMS(0)
+	PARSE_ISO8601_STRING(0)
 	YMD_TO_DAY_NUMBER
 	return day_number * SECONDS_PER_DAY + hour * 3600 + minute * 60 + second;
 }
