@@ -3014,6 +3014,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			if (wParam != WA_INACTIVE) {
 				track_mouse_leave_event(hWnd);
+
+				if (!IsIconic(hWnd)) {
+					SetFocus(hWnd);
+				}
 			}
 			return 0; // Return to the message loop.
 		} break;
