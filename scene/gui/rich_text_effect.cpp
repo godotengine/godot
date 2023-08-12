@@ -66,6 +66,7 @@ RichTextEffect::RichTextEffect() {
 void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_range"), &CharFXTransform::get_range);
 	ClassDB::bind_method(D_METHOD("set_range", "range"), &CharFXTransform::set_range);
+
 	ClassDB::bind_method(D_METHOD("get_global_elapsed_time"), &CharFXTransform::get_global_elapsed_time);
 	ClassDB::bind_method(D_METHOD("set_global_elapsed_time", "global_elapsed_time"), &CharFXTransform::set_global_elapsed_time);
 
