@@ -554,7 +554,6 @@ private:
 
 	bool fit_content = false;
 
-
 	LocalVector<double> visible_times;
 	double global_elapsed_time;
 
