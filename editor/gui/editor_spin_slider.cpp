@@ -537,15 +537,42 @@ String EditorSpinSlider::get_suffix() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
-	// Replace comma with dot to support it as decimal separator (GH-6028).
-	// This prevents using functions like `pow()`, but using functions
-	// in EditorSpinSlider is a barely known (and barely used) feature.
-	// Instead, we'd rather support German/French keyboard layouts out of the box.
-	const String text = TS->parse_number(value_input->get_text().replace(",", "."));
+	// Replace comma with dot if it's not inside a function. This allows to support
+	// decimal commas inside mathematical expressions (e.g. 3,14 * (3 - 2,71)),
+	// and also commas inside functions, where you're making a programmatic expression,
+	// so you wouldn't be expecting a decimal comma to work (e.g. randi_range(1,100)).
+	String output_string = String("");
+	bool in_func_name = false;
+	int in_funcs = 0;
 
+	const String input_string = value_input->get_text();
+	int input_string_len = input_string.length();
+	const char32_t *input_string_data = input_string.get_data();
+
+	for (int i = 0; i < input_string_len; i++) {
+		const char32_t chr = input_string_data[i];
+		if (chr == ',' && in_funcs == 0) {
+			output_string += ".";
+		} else {
+			output_string += chr;
+
+			if (is_unicode_identifier_start(chr) && (i == 0 || input_string_data[i] == ' ')) {
+				in_func_name = true;
+			} else if (chr == '(' && in_func_name) {
+				in_funcs++;
+				in_func_name = false;
+			} else if (chr == ')' && in_funcs > 0) {
+				in_funcs--;
+			}
+		}
+	}
+
+	output_string = TS->parse_number(output_string);
+
+	// Parse the expression.
 	Ref<Expression> expr;
 	expr.instantiate();
-	Error err = expr->parse(text);
+	Error err = expr->parse(output_string);
 	if (err != OK) {
 		return;
 	}
@@ -557,7 +584,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 	set_value(v);
 }
 
-//text_submitted signal
+// On text_submitted
 void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 	if (value_input_popup) {
@@ -565,15 +592,15 @@ void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 	}
 }
 
-//modal_closed signal
+// On modal_closed
 void EditorSpinSlider::_value_input_closed() {
 	_evaluate_input_text();
 	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 }
 
-//focus_exited signal
+// On focus_exited
 void EditorSpinSlider::_value_focus_exited() {
-	// discontinue because the focus_exit was caused by right-click context menu
+	// Discontinue because the focus_exit was caused by right-click context menu.
 	if (value_input->is_menu_visible()) {
 		return;
 	}
