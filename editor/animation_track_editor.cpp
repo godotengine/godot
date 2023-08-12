@@ -1847,7 +1847,9 @@ void AnimationTrackEdit::_notification(int p_what) {
 		if (animation.is_null()) {
 			return;
 		}
-		ERR_FAIL_INDEX(track, animation->get_track_count());
+		if (track >= animation->get_track_count()) {
+			return;
+		}
 
 		type_icon = _get_key_type_icon();
 		selected_icon = get_icon("KeySelected", "EditorIcons");
