@@ -75,7 +75,6 @@ public:
 	bool is_visible() { return visibility; }
 	void set_visibility(bool p_visibility) { visibility = p_visibility; }
 
-
 	bool is_outline() { return outline; }
 	void set_outline(bool p_outline) { outline = p_outline; }
 
