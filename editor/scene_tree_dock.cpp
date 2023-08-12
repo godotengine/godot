@@ -436,6 +436,22 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 
 	instantiated_scene->set_unique_name_in_owner(base->is_unique_name_in_owner());
 
+	Node2D *copy_2d = Object::cast_to<Node2D>(instantiated_scene);
+	Node2D *base_2d = Object::cast_to<Node2D>(base);
+	if (copy_2d && base_2d) {
+		copy_2d->set_position(base_2d->get_position());
+		copy_2d->set_rotation(base_2d->get_rotation());
+		copy_2d->set_scale(base_2d->get_scale());
+	}
+
+	Node3D *copy_3d = Object::cast_to<Node3D>(instantiated_scene);
+	Node3D *base_3d = Object::cast_to<Node3D>(base);
+	if (copy_3d && base_3d) {
+		copy_3d->set_position(base_3d->get_position());
+		copy_3d->set_rotation(base_3d->get_rotation());
+		copy_3d->set_scale(base_3d->get_scale());
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Replace with Branch Scene"));
 
@@ -3259,6 +3275,36 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 		// Root node cannot ever be unique name in its own Scene!
 		copy->set_unique_name_in_owner(false);
 
+		const Dictionary dict = new_scene_from_dialog->get_selected_options();
+		bool reset_position = dict.get(TTR("Reset Position"), true);
+		bool reset_scale = dict.get(TTR("Reset Scale"), false);
+		bool reset_rotation = dict.get(TTR("Reset Rotation"), false);
+
+		Node2D *copy_2d = Object::cast_to<Node2D>(copy);
+		if (copy_2d != nullptr) {
+			if (reset_position) {
+				copy_2d->set_position(Vector2(0, 0));
+			}
+			if (reset_rotation) {
+				copy_2d->set_rotation(0);
+			}
+			if (reset_scale) {
+				copy_2d->set_scale(Size2(1, 1));
+			}
+		}
+		Node3D *copy_3d = Object::cast_to<Node3D>(copy);
+		if (copy_3d != nullptr) {
+			if (reset_position) {
+				copy_3d->set_position(Vector3(0, 0, 0));
+			}
+			if (reset_rotation) {
+				copy_3d->set_rotation(Vector3(0, 0, 0));
+			}
+			if (reset_scale) {
+				copy_3d->set_scale(Vector3(0, 0, 0));
+			}
+		}
+
 		Ref<PackedScene> sdata = memnew(PackedScene);
 		Error err = sdata->pack(copy);
 		memdelete(copy);
@@ -4668,6 +4714,9 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	new_scene_from_dialog = memnew(EditorFileDialog);
 	new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	new_scene_from_dialog->add_option(TTR("Reset Position"), Vector<String>(), true);
+	new_scene_from_dialog->add_option(TTR("Reset Rotation"), Vector<String>(), false);
+	new_scene_from_dialog->add_option(TTR("Reset Scale"), Vector<String>(), false);
 	add_child(new_scene_from_dialog);
 	new_scene_from_dialog->connect("file_selected", callable_mp(this, &SceneTreeDock::_new_scene_from));
 
