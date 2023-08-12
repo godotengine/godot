@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFDocument" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Class for importing and exporting glTF files in and out of Godot.
 	</brief_description>
 	<description>
-		Append a glTF2 3d format from a file, buffer or scene and then write to the filesystem, buffer or scene.
+		GLTFDocument supports reading data from a glTF file, buffer, or Godot scene. This data can then be written to the filesystem, buffer, or used to create a Godot scene.
+		All of the data in a GLTF scene is stored in the [GLTFState] class. GLTFDocument processes state objects, but does not contain any scene data itself.
+		GLTFDocument can be extended with arbitrary functionality by extending the [GLTFDocumentExtension] class and registering it with GLTFDocument via [method register_gltf_document_extension]. This allows for custom data to be imported and exported.
 	</description>
 	<tutorials>
+		<link title="glTF 'What the duck?' guide">https://www.khronos.org/files/gltf20-reference-guide.pdf</link>
+		<link title="Khronos glTF specification">https://registry.khronos.org/glTF/</link>
 	</tutorials>
 	<methods>
 		<method name="append_from_buffer">

@@ -115,6 +115,16 @@ TEST_CASE("[Image] Saving and loading") {
 			image_bmp->load_bmp_from_buffer(data_bmp) == OK,
 			"The BMP image should load successfully.");
 
+	// Load DDS
+	Ref<Image> image_dds = memnew(Image());
+	Ref<FileAccess> f_dds = FileAccess::open(TestUtils::get_data_path("images/icon.dds"), FileAccess::READ, &err);
+	PackedByteArray data_dds;
+	data_dds.resize(f_dds->get_length() + 1);
+	f_dds->get_buffer(data_dds.ptrw(), f_dds->get_length());
+	CHECK_MESSAGE(
+			image_dds->load_dds_from_buffer(data_dds) == OK,
+			"The DDS image should load successfully.");
+
 	// Load JPG
 	Ref<Image> image_jpg = memnew(Image());
 	Ref<FileAccess> f_jpg = FileAccess::open(TestUtils::get_data_path("images/icon.jpg"), FileAccess::READ, &err);

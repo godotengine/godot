@@ -162,6 +162,15 @@ void NavigationPolygon::clear_polygons() {
 	}
 }
 
+void NavigationPolygon::clear() {
+	polygons.clear();
+	vertices.clear();
+	{
+		MutexLock lock(navigation_mesh_generation);
+		navigation_mesh.unref();
+	}
+}
+
 Ref<NavigationMesh> NavigationPolygon::get_navigation_mesh() {
 	MutexLock lock(navigation_mesh_generation);
 
@@ -359,6 +368,8 @@ void NavigationPolygon::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &NavigationPolygon::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &NavigationPolygon::get_cell_size);
+
+	ClassDB::bind_method(D_METHOD("clear"), &NavigationPolygon::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");

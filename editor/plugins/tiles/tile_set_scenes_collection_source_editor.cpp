@@ -36,6 +36,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/plugins/tiles/tile_set_editor.h"
 
 #include "scene/gui/button.h"
 #include "scene/gui/item_list.h"
@@ -384,7 +385,7 @@ void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetS
 
 	// Remove listener for old objects.
 	if (tile_set_scenes_collection_source) {
-		tile_set_scenes_collection_source->disconnect("changed", callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
+		tile_set_scenes_collection_source->disconnect_changed(callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
 	}
 
 	// Change the edited object.
@@ -404,7 +405,7 @@ void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetS
 
 	// Add the listener again.
 	if (tile_set_scenes_collection_source) {
-		tile_set_scenes_collection_source->connect("changed", callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
+		tile_set_scenes_collection_source->connect_changed(callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
 	}
 
 	// Update everything.
@@ -504,6 +505,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 
 	scenes_collection_source_inspector = memnew(EditorInspector);
 	scenes_collection_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	scenes_collection_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 	scenes_collection_source_inspector->edit(scenes_collection_source_proxy_object);
 	middle_vbox_container->add_child(scenes_collection_source_inspector);
 

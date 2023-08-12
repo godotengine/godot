@@ -2200,13 +2200,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_REIMPORT: {
-			// Reimport all selected files.
-			Vector<String> reimport;
-			for (int i = 0; i < p_selected.size(); i++) {
-				reimport.push_back(p_selected[i]);
-			}
-
-			ERR_FAIL_COND_MSG(reimport.size() == 0, "You need to select files to reimport them.");
+			ImportDock::get_singleton()->reimport_resources(p_selected);
 		} break;
 
 		case FILE_NEW_FOLDER: {
@@ -2829,6 +2823,37 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		}
 		if (!all_not_favorites) {
 			p_popup->add_icon_item(get_theme_icon(SNAME("NonFavorite"), SNAME("EditorIcons")), TTR("Remove from Favorites"), FILE_REMOVE_FAVORITE);
+		}
+
+		{
+			List<String> resource_extensions;
+			ResourceFormatImporter::get_singleton()->get_recognized_extensions_for_type("Resource", &resource_extensions);
+			HashSet<String> extension_list;
+			for (const String &extension : resource_extensions) {
+				extension_list.insert(extension);
+			}
+
+			bool resource_valid = true;
+			String main_extension;
+
+			for (int i = 0; i != p_paths.size(); ++i) {
+				String extension = p_paths[i].get_extension();
+				if (extension_list.has(extension)) {
+					if (main_extension.is_empty()) {
+						main_extension = extension;
+					} else if (extension != main_extension) {
+						resource_valid = false;
+						break;
+					}
+				} else {
+					resource_valid = false;
+					break;
+				}
+			}
+
+			if (resource_valid) {
+				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Reimport"), FILE_REIMPORT);
+			}
 		}
 	}
 

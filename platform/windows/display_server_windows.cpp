@@ -32,7 +32,9 @@
 
 #include "os_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/atlas_texture.h"
 
@@ -42,6 +44,8 @@
 
 #include <avrt.h>
 #include <dwmapi.h>
+#include <shlwapi.h>
+#include <shobjidl.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -87,6 +91,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_HIDPI:
 		case FEATURE_ICON:
 		case FEATURE_NATIVE_ICON:
+		case FEATURE_NATIVE_DIALOG:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_TEXT_TO_SPEECH:
@@ -211,6 +216,134 @@ void DisplayServerWindows::tts_resume() {
 void DisplayServerWindows::tts_stop() {
 	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->stop();
+}
+
+Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	_THREAD_SAFE_METHOD_
+
+	Vector<Char16String> filter_names;
+	Vector<Char16String> filter_exts;
+	for (const String &E : p_filters) {
+		Vector<String> tokens = E.split(";");
+		if (tokens.size() == 2) {
+			filter_exts.push_back(tokens[0].strip_edges().utf16());
+			filter_names.push_back(tokens[1].strip_edges().utf16());
+		} else if (tokens.size() == 1) {
+			filter_exts.push_back(tokens[0].strip_edges().utf16());
+			filter_names.push_back(tokens[0].strip_edges().utf16());
+		}
+	}
+
+	Vector<COMDLG_FILTERSPEC> filters;
+	for (int i = 0; i < filter_names.size(); i++) {
+		filters.push_back({ (LPCWSTR)filter_names[i].ptr(), (LPCWSTR)filter_exts[i].ptr() });
+	}
+
+	HRESULT hr = S_OK;
+	IFileDialog *pfd = nullptr;
+	if (p_mode == FILE_DIALOG_MODE_SAVE_FILE) {
+		hr = CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileSaveDialog, (void **)&pfd);
+	} else {
+		hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, (void **)&pfd);
+	}
+	if (SUCCEEDED(hr)) {
+		DWORD flags;
+		pfd->GetOptions(&flags);
+		if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
+			flags |= FOS_ALLOWMULTISELECT;
+		}
+		if (p_mode == FILE_DIALOG_MODE_OPEN_DIR) {
+			flags |= FOS_PICKFOLDERS;
+		}
+		if (p_show_hidden) {
+			flags |= FOS_FORCESHOWHIDDEN;
+		}
+		pfd->SetOptions(flags | FOS_FORCEFILESYSTEM);
+		pfd->SetTitle((LPCWSTR)p_title.utf16().ptr());
+
+		String dir = ProjectSettings::get_singleton()->globalize_path(p_current_directory);
+		if (dir == ".") {
+			dir = OS::get_singleton()->get_executable_path().get_base_dir();
+		}
+		dir = dir.replace("/", "\\");
+
+		IShellItem *shellitem = nullptr;
+		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);
+		if (SUCCEEDED(hr)) {
+			pfd->SetDefaultFolder(shellitem);
+			pfd->SetFolder(shellitem);
+		}
+
+		pfd->SetFileName((LPCWSTR)p_filename.utf16().ptr());
+		pfd->SetFileTypes(filters.size(), filters.ptr());
+		pfd->SetFileTypeIndex(0);
+
+		WindowID window_id = _get_focused_window_or_popup();
+		if (!windows.has(window_id)) {
+			window_id = MAIN_WINDOW_ID;
+		}
+
+		hr = pfd->Show(windows[window_id].hWnd);
+		if (SUCCEEDED(hr)) {
+			Vector<String> file_names;
+
+			if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
+				IShellItemArray *results;
+				hr = static_cast<IFileOpenDialog *>(pfd)->GetResults(&results);
+				if (SUCCEEDED(hr)) {
+					DWORD count = 0;
+					results->GetCount(&count);
+					for (DWORD i = 0; i < count; i++) {
+						IShellItem *result;
+						results->GetItemAt(i, &result);
+
+						PWSTR file_path = nullptr;
+						hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
+						if (SUCCEEDED(hr)) {
+							file_names.push_back(String::utf16((const char16_t *)file_path));
+							CoTaskMemFree(file_path);
+						}
+						result->Release();
+					}
+					results->Release();
+				}
+			} else {
+				IShellItem *result;
+				hr = pfd->GetResult(&result);
+				if (SUCCEEDED(hr)) {
+					PWSTR file_path = nullptr;
+					hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
+					if (SUCCEEDED(hr)) {
+						file_names.push_back(String::utf16((const char16_t *)file_path));
+						CoTaskMemFree(file_path);
+					}
+					result->Release();
+				}
+			}
+			if (!p_callback.is_null()) {
+				Variant v_status = true;
+				Variant v_files = file_names;
+				Variant *v_args[2] = { &v_status, &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+			}
+		} else {
+			if (!p_callback.is_null()) {
+				Variant v_status = false;
+				Variant v_files = Vector<String>();
+				Variant *v_args[2] = { &v_status, &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+			}
+		}
+		pfd->Release();
+
+		return OK;
+	} else {
+		return ERR_CANT_OPEN;
+	}
 }
 
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
@@ -339,6 +472,68 @@ String DisplayServerWindows::clipboard_get() const {
 	CloseClipboard();
 
 	return ret;
+}
+
+Ref<Image> DisplayServerWindows::clipboard_get_image() const {
+	Ref<Image> image;
+	if (!windows.has(last_focused_window)) {
+		return image; // No focused window?
+	}
+	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
+		ERR_FAIL_V_MSG(image, "Unable to open clipboard.");
+	}
+	UINT png_format = RegisterClipboardFormatA("PNG");
+	if (png_format && IsClipboardFormatAvailable(png_format)) {
+		HANDLE png_handle = GetClipboardData(png_format);
+		if (png_handle) {
+			size_t png_size = GlobalSize(png_handle);
+			uint8_t *png_data = (uint8_t *)GlobalLock(png_handle);
+			image.instantiate();
+
+			PNGDriverCommon::png_to_image(png_data, png_size, false, image);
+
+			GlobalUnlock(png_handle);
+		}
+	} else if (IsClipboardFormatAvailable(CF_DIB)) {
+		HGLOBAL mem = GetClipboardData(CF_DIB);
+		if (mem != NULL) {
+			BITMAPINFO *ptr = static_cast<BITMAPINFO *>(GlobalLock(mem));
+
+			if (ptr != NULL) {
+				BITMAPINFOHEADER *info = &ptr->bmiHeader;
+				PackedByteArray pba;
+
+				for (LONG y = info->biHeight - 1; y > -1; y--) {
+					for (LONG x = 0; x < info->biWidth; x++) {
+						tagRGBQUAD *rgbquad = ptr->bmiColors + (info->biWidth * y) + x;
+						pba.append(rgbquad->rgbRed);
+						pba.append(rgbquad->rgbGreen);
+						pba.append(rgbquad->rgbBlue);
+						pba.append(rgbquad->rgbReserved);
+					}
+				}
+				image.instantiate();
+				image->create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
+
+				GlobalUnlock(mem);
+			}
+		}
+	}
+
+	CloseClipboard();
+
+	return image;
+}
+
+bool DisplayServerWindows::clipboard_has() const {
+	return (IsClipboardFormatAvailable(CF_TEXT) ||
+			IsClipboardFormatAvailable(CF_UNICODETEXT) ||
+			IsClipboardFormatAvailable(CF_OEMTEXT));
+}
+
+bool DisplayServerWindows::clipboard_has_image() const {
+	UINT png_format = RegisterClipboardFormatA("PNG");
+	return ((png_format && IsClipboardFormatAvailable(png_format)) || IsClipboardFormatAvailable(CF_DIB));
 }
 
 typedef struct {
@@ -618,7 +813,7 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 		COLORREF col = GetPixel(dc, p.x, p.y);
 		if (col != CLR_INVALID) {
 			ReleaseDC(NULL, dc);
-			return Color(float(col & 0x000000FF) / 256.0, float((col & 0x0000FF00) >> 8) / 256.0, float((col & 0x00FF0000) >> 16) / 256.0, 1.0);
+			return Color(float(col & 0x000000FF) / 255.0f, float((col & 0x0000FF00) >> 8) / 255.0f, float((col & 0x00FF0000) >> 16) / 255.0f, 1.0f);
 		}
 		ReleaseDC(NULL, dc);
 	}
@@ -997,7 +1192,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
 	if (windows[p_window].mpass || windows[p_window].mpath.size() == 0) {
-		SetWindowRgn(windows[p_window].hWnd, nullptr, TRUE);
+		SetWindowRgn(windows[p_window].hWnd, nullptr, FALSE);
 	} else {
 		POINT *points = (POINT *)memalloc(sizeof(POINT) * windows[p_window].mpath.size());
 		for (int i = 0; i < windows[p_window].mpath.size(); i++) {
@@ -1011,8 +1206,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 		}
 
 		HRGN region = CreatePolygonRgn(points, windows[p_window].mpath.size(), ALTERNATE);
-		SetWindowRgn(windows[p_window].hWnd, region, TRUE);
-		DeleteObject(region);
+		SetWindowRgn(windows[p_window].hWnd, region, FALSE);
 		memfree(points);
 	}
 }
@@ -2282,8 +2476,8 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
 	} else {
 		icon = Ref<Image>();
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, NULL);
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, NULL);
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, 0);
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, 0);
 	}
 }
 
@@ -2546,7 +2740,7 @@ LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) 
 				// Find top popup to close.
 				while (E) {
 					// Popup window area.
-					Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
+					Rect2i win_rect = Rect2i(window_get_position_with_decorations(E->get()), window_get_size_with_decorations(E->get()));
 					// Area of the parent window, which responsible for opening sub-menu.
 					Rect2i safe_rect = window_get_popup_safe_rect(E->get());
 					if (win_rect.has_point(pos)) {
@@ -3648,6 +3842,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_DESTROY: {
 			Input::get_singleton()->flush_buffered_events();
+			if (window_mouseover_id == window_id) {
+				window_mouseover_id = INVALID_WINDOW_ID;
+				_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+			}
 		} break;
 		case WM_SETCURSOR: {
 			if (LOWORD(lParam) == HTCLIENT) {

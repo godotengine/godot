@@ -30,6 +30,7 @@
 
 #include "openxr_api.h"
 
+#include "extensions/openxr_extension_wrapper_extension.h"
 #include "openxr_interface.h"
 #include "openxr_util.h"
 
@@ -47,7 +48,7 @@
 #ifdef VULKAN_ENABLED
 #define XR_USE_GRAPHICS_API_VULKAN
 #endif
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 #ifdef ANDROID_ENABLED
 #define XR_USE_GRAPHICS_API_OPENGL_ES
 #include <EGL/egl.h>
@@ -72,7 +73,7 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 #include "extensions/openxr_opengl_extension.h"
 #endif
 
@@ -794,7 +795,7 @@ bool OpenXRAPI::create_swapchains() {
 
 		Also Godot only creates a swapchain for the main output.
 		OpenXR will require us to create swapchains as the render target for additional viewports if we want to use the layer system
-		to optimize text rendering and background rendering as OpenXR may choose to re-use the results for reprojection while we're
+		to optimize text rendering and background rendering as OpenXR may choose to reuse the results for reprojection while we're
 		already rendering the next frame.
 
 		Finally an area we need to expand upon is that Foveated rendering is only enabled for the swap chain we create,
@@ -1306,7 +1307,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		ERR_FAIL_V(false);
 #endif
 	} else if (p_rendering_driver == "opengl3") {
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 		graphics_extension = memnew(OpenXROpenGLExtension);
 		register_extension_wrapper(graphics_extension);
 #else
@@ -1667,7 +1668,7 @@ bool OpenXRAPI::process() {
 }
 
 bool OpenXRAPI::acquire_image(OpenXRSwapChainInfo &p_swapchain) {
-	ERR_FAIL_COND_V(p_swapchain.image_acquired, true); // this was not released when it should be, error out and re-use...
+	ERR_FAIL_COND_V(p_swapchain.image_acquired, true); // This was not released when it should be, error out and reuse...
 
 	XrResult result;
 	XrSwapchainImageAcquireInfo swapchain_image_acquire_info = {

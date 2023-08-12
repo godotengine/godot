@@ -230,8 +230,8 @@ public:
 	String get_cache_dir() const;
 
 	Error set_thread_name(const String &p_name);
-	Thread::ID get_thread_caller_id() const;
-	Thread::ID get_main_thread_id() const;
+	::Thread::ID get_thread_caller_id() const;
+	::Thread::ID get_main_thread_id() const;
 
 	bool has_feature(const String &p_feature) const;
 	bool is_sandboxed() const;
@@ -326,6 +326,7 @@ public:
 	Vector<Vector3> get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2);
 	Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
 	Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
+	Vector3 get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
 	Variant ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
 	Variant segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
 

@@ -30,11 +30,13 @@
 
 package org.godotengine.godot;
 
+import android.app.Activity;
+
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Denotate a component (e.g: Activity, Fragment) that hosts the {@link Godot} fragment.
+ * Denotate a component (e.g: Activity, Fragment) that hosts the {@link Godot} engine.
  */
 public interface GodotHost {
 	/**
@@ -86,4 +88,9 @@ public interface GodotHost {
 	default int onNewGodotInstanceRequested(String[] args) {
 		return 0;
 	}
+
+	/**
+	 * Provide access to the Activity hosting the Godot engine.
+	 */
+	Activity getActivity();
 }

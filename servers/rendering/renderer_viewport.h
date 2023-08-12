@@ -116,6 +116,7 @@ public:
 		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 		bool transparent_bg = false;
+		bool use_hdr_2d = false;
 
 		uint32_t canvas_cull_mask = 0xffffffff;
 
@@ -157,6 +158,7 @@ public:
 			update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
 			clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
 			transparent_bg = false;
+			use_hdr_2d = false;
 
 			viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
 			shadow_atlas_size = 0;
@@ -195,6 +197,8 @@ public:
 	int total_objects_drawn = 0;
 	int total_vertices_drawn = 0;
 	int total_draw_calls_used = 0;
+
+	int num_viewports_with_motion_vectors = 0;
 
 private:
 	Vector<Viewport *> _sort_active_viewports();
@@ -250,6 +254,7 @@ public:
 	void viewport_remove_canvas(RID p_viewport, RID p_canvas);
 	void viewport_set_canvas_transform(RID p_viewport, RID p_canvas, const Transform2D &p_offset);
 	void viewport_set_transparent_background(RID p_viewport, bool p_enabled);
+	void viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr_2d);
 
 	void viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform);
 	void viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer);
@@ -299,6 +304,7 @@ public:
 	int get_total_objects_drawn() const;
 	int get_total_primitives_drawn() const;
 	int get_total_draw_calls_used() const;
+	int get_num_viewports_with_motion_vectors() const;
 
 	// Workaround for setting this on thread.
 	void call_set_vsync_mode(DisplayServer::VSyncMode p_mode, DisplayServer::WindowID p_window);

@@ -32,6 +32,7 @@
 
 #include "editor/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/resources/style_box_texture.h"
 
 bool StyleBoxPreview::grid_preview_enabled = true;
 
@@ -42,11 +43,11 @@ void StyleBoxPreview::_grid_preview_toggled(bool p_active) {
 
 void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 	if (stylebox.is_valid()) {
-		stylebox->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		stylebox->disconnect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	stylebox = p_stylebox;
 	if (stylebox.is_valid()) {
-		stylebox->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		stylebox->connect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	Ref<StyleBoxTexture> sbt = stylebox;
 	grid_preview->set_visible(sbt.is_valid());
@@ -109,14 +110,11 @@ StyleBoxPreview::StyleBoxPreview() {
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
 	grid_preview = memnew(Button);
+	// This theme variation works better than the normal theme because there's no focus highlight.
+	grid_preview->set_theme_type_variation("PreviewLightButton");
 	grid_preview->set_toggle_mode(true);
 	grid_preview->connect("toggled", callable_mp(this, &StyleBoxPreview::_grid_preview_toggled));
 	grid_preview->set_pressed(grid_preview_enabled);
-	grid_preview->set_flat(true);
-	grid_preview->add_theme_style_override("normal", memnew(StyleBoxEmpty));
-	grid_preview->add_theme_style_override("hover", memnew(StyleBoxEmpty));
-	grid_preview->add_theme_style_override("focus", memnew(StyleBoxEmpty));
-	grid_preview->add_theme_style_override("pressed", memnew(StyleBoxEmpty));
 	add_child(grid_preview);
 }
 

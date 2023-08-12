@@ -53,7 +53,7 @@ MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint3
 #endif
 
 ClassDB::APIType ClassDB::current_api = API_CORE;
-HashMap<ClassDB::APIType, uint64_t> ClassDB::api_hashes_cache;
+HashMap<ClassDB::APIType, uint32_t> ClassDB::api_hashes_cache;
 
 void ClassDB::set_current_api(APIType p_api) {
 	DEV_ASSERT(!api_hashes_cache.has(p_api)); // This API type may not be suitable for caching of hash if it can change later.
@@ -163,7 +163,7 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 	return ti->api;
 }
 
-uint64_t ClassDB::get_api_hash(APIType p_api) {
+uint32_t ClassDB::get_api_hash(APIType p_api) {
 	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
 

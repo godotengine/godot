@@ -144,13 +144,13 @@ void Path3D::_curve_changed() {
 
 void Path3D::set_curve(const Ref<Curve3D> &p_curve) {
 	if (curve.is_valid()) {
-		curve->disconnect("changed", callable_mp(this, &Path3D::_curve_changed));
+		curve->disconnect_changed(callable_mp(this, &Path3D::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect("changed", callable_mp(this, &Path3D::_curve_changed));
+		curve->connect_changed(callable_mp(this, &Path3D::_curve_changed));
 	}
 	_curve_changed();
 }

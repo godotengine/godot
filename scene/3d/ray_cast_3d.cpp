@@ -104,6 +104,10 @@ Vector3 RayCast3D::get_collision_normal() const {
 	return collision_normal;
 }
 
+int RayCast3D::get_collision_face_index() const {
+	return collision_face_index;
+}
+
 void RayCast3D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
 	update_gizmos();
@@ -232,6 +236,7 @@ void RayCast3D::_update_raycast_state() {
 		against_rid = rr.rid;
 		collision_point = rr.position;
 		collision_normal = rr.normal;
+		collision_face_index = rr.face_index;
 		against_shape = rr.shape;
 	} else {
 		collided = false;
@@ -321,6 +326,7 @@ void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &RayCast3D::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collision_point"), &RayCast3D::get_collision_point);
 	ClassDB::bind_method(D_METHOD("get_collision_normal"), &RayCast3D::get_collision_normal);
+	ClassDB::bind_method(D_METHOD("get_collision_face_index"), &RayCast3D::get_collision_face_index);
 
 	ClassDB::bind_method(D_METHOD("add_exception_rid", "rid"), &RayCast3D::add_exception_rid);
 	ClassDB::bind_method(D_METHOD("add_exception", "node"), &RayCast3D::add_exception);

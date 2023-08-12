@@ -990,7 +990,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	struct SortByName {
 		bool operator()(const Ref<EditorExportPlugin> &left, const Ref<EditorExportPlugin> &right) const {
-			return left->_get_name() < right->_get_name();
+			return left->get_name() < right->get_name();
 		}
 	};
 
@@ -1033,14 +1033,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		if (export_plugins.write[i]->_begin_customize_resources(Ref<EditorExportPlatform>(this), features_psa)) {
 			customize_resources_plugins.push_back(export_plugins[i]);
 
-			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->_get_name().hash64(), custom_resources_hash);
+			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->get_name().hash64(), custom_resources_hash);
 			uint64_t hash = export_plugins[i]->_get_customization_configuration_hash();
 			custom_resources_hash = hash_murmur3_one_64(hash, custom_resources_hash);
 		}
 		if (export_plugins.write[i]->_begin_customize_scenes(Ref<EditorExportPlatform>(this), features_psa)) {
 			customize_scenes_plugins.push_back(export_plugins[i]);
 
-			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->_get_name().hash64(), custom_resources_hash);
+			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->get_name().hash64(), custom_resources_hash);
 			uint64_t hash = export_plugins[i]->_get_customization_configuration_hash();
 			custom_scene_hash = hash_murmur3_one_64(hash, custom_scene_hash);
 		}
@@ -1799,6 +1799,24 @@ bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, S
 
 	if (!templates_error.is_empty()) {
 		r_error += templates_error;
+	}
+
+	String export_plugins_warning;
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		Ref<EditorExportPlatform> export_platform = Ref<EditorExportPlatform>(this);
+		if (!export_plugins[i]->supports_platform(export_platform)) {
+			continue;
+		}
+
+		String plugin_warning = export_plugins.write[i]->_has_valid_export_configuration(export_platform, p_preset);
+		if (!plugin_warning.is_empty()) {
+			export_plugins_warning += plugin_warning;
+		}
+	}
+
+	if (!export_plugins_warning.is_empty()) {
+		r_error += export_plugins_warning;
 	}
 #endif
 

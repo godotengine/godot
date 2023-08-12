@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace Godot
 {
@@ -595,7 +596,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this basis is finite, by calling
-        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
         /// </summary>
         /// <returns>Whether this vector is finite or not.</returns>
         public readonly bool IsFinite()
@@ -623,21 +624,31 @@ namespace Godot
         /// </summary>
         /// <param name="target">The position to look at.</param>
         /// <param name="up">The relative up direction.</param>
+        /// <param name="useModelFront">
+        /// If true, then the model is oriented in reverse,
+        /// towards the model front axis (+Z, Vector3.ModelFront),
+        /// which is more useful for orienting 3D models.
+        /// </param>
         /// <returns>The resulting basis matrix.</returns>
-        public static Basis LookingAt(Vector3 target, Vector3 up)
+        public static Basis LookingAt(Vector3 target, Vector3? up = null, bool useModelFront = false)
         {
+            up ??= Vector3.Up;
 #if DEBUG
             if (target.IsZeroApprox())
             {
                 throw new ArgumentException("The vector can't be zero.", nameof(target));
             }
-            if (up.IsZeroApprox())
+            if (up.Value.IsZeroApprox())
             {
                 throw new ArgumentException("The vector can't be zero.", nameof(up));
             }
 #endif
-            Vector3 column2 = -target.Normalized();
-            Vector3 column0 = up.Cross(column2);
+            Vector3 column2 = target.Normalized();
+            if (!useModelFront)
+            {
+                column2 = -column2;
+            }
+            Vector3 column0 = up.Value.Cross(column2);
 #if DEBUG
             if (column0.IsZeroApprox())
             {
@@ -647,6 +658,13 @@ namespace Godot
             column0.Normalize();
             Vector3 column1 = column2.Cross(column0);
             return new Basis(column0, column1, column2);
+        }
+
+        /// <inheritdoc cref="LookingAt(Vector3, Nullable{Vector3}, bool)"/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static Basis LookingAt(Vector3 target, Vector3 up)
+        {
+            return LookingAt(target, up, false);
         }
 
         /// <summary>
@@ -1065,7 +1083,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the <see cref="Basis"/> is
-        /// exactly equal to the given object (<see paramref="obj"/>).
+        /// exactly equal to the given object (<paramref name="obj"/>).
         /// Note: Due to floating-point precision errors, consider using
         /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>

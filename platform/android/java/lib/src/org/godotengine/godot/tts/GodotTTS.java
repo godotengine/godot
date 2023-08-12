@@ -33,6 +33,7 @@ package org.godotengine.godot.tts;
 import org.godotengine.godot.GodotLib;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
@@ -62,7 +63,7 @@ public class GodotTTS extends UtteranceProgressListener {
 	final private static int EVENT_CANCEL = 2;
 	final private static int EVENT_BOUNDARY = 3;
 
-	final private Activity activity;
+	private final Context context;
 	private TextToSpeech synth;
 	private LinkedList<GodotUtterance> queue;
 	final private Object lock = new Object();
@@ -71,8 +72,8 @@ public class GodotTTS extends UtteranceProgressListener {
 	private boolean speaking;
 	private boolean paused;
 
-	public GodotTTS(Activity p_activity) {
-		activity = p_activity;
+	public GodotTTS(Context context) {
+		this.context = context;
 	}
 
 	private void updateTTS() {
@@ -188,7 +189,7 @@ public class GodotTTS extends UtteranceProgressListener {
 	 * Initialize synth and query.
 	 */
 	public void init() {
-		synth = new TextToSpeech(activity, null);
+		synth = new TextToSpeech(context, null);
 		queue = new LinkedList<GodotUtterance>();
 
 		synth.setOnUtteranceProgressListener(this);

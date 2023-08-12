@@ -264,6 +264,7 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 						pending_action.action_name == prev_action.action_name && pending_action.action_name == pre_prev_action.action_name) {
 					pending_action = Action();
 					is_committing = false;
+					emit_signal(SNAME("history_changed"));
 					return;
 				}
 			} break;
@@ -272,6 +273,7 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 				if (pending_action.merge_mode == prev_action.merge_mode && pending_action.action_name == prev_action.action_name) {
 					pending_action = Action();
 					is_committing = false;
+					emit_signal(SNAME("history_changed"));
 					return;
 				}
 			} break;

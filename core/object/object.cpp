@@ -486,19 +486,21 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		const ObjectGDExtension *current_extension = _extension;
 		while (current_extension) {
 			p_list->push_back(PropertyInfo(Variant::NIL, current_extension->class_name, PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
-			ClassDB::get_property_list(current_extension->class_name, p_list, true, this);
-			current_extension = current_extension->parent;
-		}
-	}
 
-	if (_extension && _extension->get_property_list) {
-		uint32_t pcount;
-		const GDExtensionPropertyInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
-		for (uint32_t i = 0; i < pcount; i++) {
-			p_list->push_back(PropertyInfo(pinfo[i]));
-		}
-		if (_extension->free_property_list) {
-			_extension->free_property_list(_extension_instance, pinfo);
+			ClassDB::get_property_list(current_extension->class_name, p_list, true, this);
+
+			if (current_extension->get_property_list) {
+				uint32_t pcount;
+				const GDExtensionPropertyInfo *pinfo = current_extension->get_property_list(_extension_instance, &pcount);
+				for (uint32_t i = 0; i < pcount; i++) {
+					p_list->push_back(PropertyInfo(pinfo[i]));
+				}
+				if (current_extension->free_property_list) {
+					current_extension->free_property_list(_extension_instance, pinfo);
+				}
+			}
+
+			current_extension = current_extension->parent;
 		}
 	}
 

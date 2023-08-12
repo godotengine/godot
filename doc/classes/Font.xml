@@ -149,12 +149,6 @@
 				Returns number of faces in the TrueType / OpenType collection.
 			</description>
 		</method>
-		<method name="get_fallbacks" qualifiers="const">
-			<return type="Font[]" />
-			<description>
-				Returns array of fallback [Font]s.
-			</description>
-		</method>
 		<method name="get_font_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -335,12 +329,11 @@
 				Sets LRU cache capacity for [code]draw_*[/code] methods.
 			</description>
 		</method>
-		<method name="set_fallbacks">
-			<return type="void" />
-			<param index="0" name="fallbacks" type="Font[]" />
-			<description>
-				Sets array of fallback [Font]s.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
+			Array of fallback [Font]s to use as a substitute if a glyph is not found in this current [Font].
+			If this array is empty in a [FontVariation], the [member FontVariation.base_font]'s fallbacks are used instead.
+		</member>
+	</members>
 </class>

@@ -512,6 +512,7 @@ public:
 
 	void get_breakpoints(List<String> *p_breakpoints);
 
+	PackedStringArray get_unsaved_scripts() const;
 	void save_current_script();
 	void save_all_scripts();
 
@@ -572,6 +573,7 @@ public:
 	virtual void make_visible(bool p_visible) override;
 	virtual void selected_notify() override;
 
+	virtual String get_unsaved_status(const String &p_for_scene) const override;
 	virtual void save_external_data() override;
 	virtual void apply_changes() override;
 

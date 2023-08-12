@@ -4,7 +4,20 @@ This file contains the expected output of --validate-extension-api when run agai
 Only lines that start with "Validate extension JSON:" matter, everything else is considered a comment and ignored. They
 should instead be used to justify these changes and describe how users should work around these changes.
 
+Add new entries at the end of the file.
+
 ========================================================================================================================
+
+Misc
+----
+Validate extension JSON: API was removed: classes/FramebufferCacheRD
+Validate extension JSON: API was removed: classes/UniformSetCacheRD
+
+FIXME: These aren't written when dumping the interface with a headless build
+(since there's no RD backend in use). We need to fix this inconsistency somehow.
+
+
+## Changes between 4.0-stable and 4.1-stable
 
 GH-78517
 --------
@@ -36,9 +49,11 @@ Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances
 
 The previous argument was a serialization bug, there's no actual API change.
 
+
 GH-78237
 --------
 Validate extension JSON: Error: Field 'classes/WebRTCPeerConnectionExtension/methods/_create_data_channel/return_value': type changed value in new API, from "Object" to "WebRTCDataChannel".
+
 
 GH-77757
 --------
@@ -135,13 +150,6 @@ Validate extension JSON: API was removed: classes/NavigationServer3D/methods/age
 Navigation avoidance was reworked entirely.
 Migration: TODO
 
-
-GH-?????
---------
-Validate extension JSON: API was removed: classes/FramebufferCacheRD
-Validate extension JSON: API was removed: classes/UniformSetCacheRD
-
-Unsure where these come from; when dumping the interface, these do actually still exist
 
 GH-76176
 --------
@@ -260,7 +268,6 @@ Validate extension JSON: Error: Field 'classes/SyntaxHighlighter/methods/get_tex
 Function was made `const`. No adjustments should be necessary.
 
 
-
 GH-75250 & GH-76401
 -------------------
 Validate extension JSON: Error: Hash changed for 'classes/RichTextLabel/methods/push_paragraph', from 3DD1D1C2 to BFDC71FE. This means that the function has changed and no compatibility function was provided.
@@ -358,3 +365,81 @@ Validate extension JSON: Error: Hash changed for 'classes/EditorUndoRedoManager/
 Validate extension JSON: Error: Hash changed for 'classes/UndoRedo/methods/create_action', from 0AEC1BFC to E87757EB. This means that the function has changed and no compatibility function was provided.
 
 Added a optional parameters with default values. No adjustments should be necessary.
+
+
+## Changes between 4.1-stable and 4.2-stable
+
+GH-79911
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/BarrierMask/values/BARRIER_MASK_RASTER': value changed value in new API, from 1.0 to 9.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/BarrierMask/values/BARRIER_MASK_ALL_BARRIERS': value changed value in new API, from 7.0 to 32767.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/BarrierMask/values/BARRIER_MASK_NO_BARRIER': value changed value in new API, from 8.0 to 32768.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_update/arguments/3': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_copy/arguments/9': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_clear/arguments/6': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_resolve_multisample/arguments/2': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_update/arguments/4': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_clear/arguments/3': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_end/arguments/0': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Hash changed for 'classes/RenderingDevice/methods/draw_list_end', from 19365687 to E9B4FA8E. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/compute_list_end/arguments/0': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Hash changed for 'classes/RenderingDevice/methods/compute_list_end', from 19365687 to E9B4FA8E. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/barrier/arguments/0': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/barrier/arguments/1': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Hash changed for 'classes/RenderingDevice/methods/barrier', from 0FE50041 to DD9E8DAB. This means that the function has changed and no compatibility function was provided.
+
+Raster barrier was split into vertex and fragment barriers for use in mobile renderer.
+
+
+GH-79308
+--------
+Validate extension JSON: API was removed: classes/GraphEdit/methods/get_scroll_ofs
+Validate extension JSON: API was removed: classes/GraphEdit/methods/get_snap
+Validate extension JSON: API was removed: classes/GraphEdit/methods/get_zoom_hbox
+Validate extension JSON: API was removed: classes/GraphEdit/methods/is_using_snap
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_scroll_ofs
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_snap
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_use_snap
+Validate extension JSON: API was removed: classes/GraphEdit/properties/snap_distance
+Validate extension JSON: API was removed: classes/GraphEdit/properties/use_snap
+Validate extension JSON: API was removed: classes/GraphNode/methods/is_comment
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_comment
+Validate extension JSON: API was removed: classes/GraphNode/properties/comment
+Validate extension JSON: Error: Field 'classes/GraphEdit/properties/scroll_offset': getter changed value in new API, from "get_scroll_ofs" to &"get_scroll_offset".
+Validate extension JSON: Error: Field 'classes/GraphEdit/properties/scroll_offset': setter changed value in new API, from "set_scroll_ofs" to &"set_scroll_offset".
+
+Intentional compatibility breakage during refactoring of API marked as experimental.
+
+FIXME: Still a WIP, review this list once the work is completed, especially if compatibility
+code is added.
+
+
+GH-73196
+--------
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/get_text_for_symbol_lookup': is_const changed value in new API, from false to true.
+
+Function was made `const`. No adjustments should be necessary.
+
+
+GH-78328
+--------
+Validate extension JSON: Error: Field 'classes/TileMap/methods/get_used_rect': is_const changed value in new API, from false to true.
+
+Function was made `const`. No adjustments should be necessary.
+
+
+GH-79606
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/shader_create_from_bytecode/arguments': size changed value in new API, from 1 to 2.
+
+Added optional argument. Compatibility method registered.
+
+
+GH-78266
+--------
+Validate extension JSON: API was removed: classes/FontFile/properties/fallbacks
+Validate extension JSON: API was removed: classes/FontVariation/properties/fallbacks
+Validate extension JSON: API was removed: classes/SystemFont/properties/fallbacks
+
+The property was moved to their common base class Font.
+The setters and getters were already in Font, so this shouldn't affect compatibility.

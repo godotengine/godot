@@ -1039,17 +1039,16 @@ void main() {
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
-#endif // ALPHA_SCISSOR_USED
-
+#else
+#ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
-#if !defined(ALPHA_SCISSOR_USED)
 
 	if (alpha < opaque_prepass_threshold) {
 		discard;
 	}
-
-#endif // not ALPHA_SCISSOR_USED
 #endif // USE_OPAQUE_PREPASS
+#endif // MODE_RENDER_DEPTH
+#endif // !ALPHA_SCISSOR_USED
 
 #endif // !USE_SHADOW_TO_OPACITY
 
@@ -1270,17 +1269,16 @@ void main() {
 	if (alpha < alpha_scissor) {
 		discard;
 	}
-#endif // ALPHA_SCISSOR_USED
-
+#else
+#ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
-#if !defined(ALPHA_SCISSOR_USED)
 
 	if (alpha < opaque_prepass_threshold) {
 		discard;
 	}
-
-#endif // not ALPHA_SCISSOR_USED
 #endif // USE_OPAQUE_PREPASS
+#endif // MODE_RENDER_DEPTH
+#endif // !ALPHA_SCISSOR_USED
 
 #endif // USE_SHADOW_TO_OPACITY
 

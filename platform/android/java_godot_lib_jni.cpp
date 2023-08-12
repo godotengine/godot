@@ -135,7 +135,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 
 	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
 
-	return godot_java->on_video_init(env);
+	return true;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env, jclass clazz) {

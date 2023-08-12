@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_toaster.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 
@@ -282,6 +283,22 @@ void ScriptTextEditor::_error_clicked(Variant p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		code_editor->get_text_editor()->remove_secondary_carets();
 		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
+	} else if (p_line.get_type() == Variant::DICTIONARY) {
+		Dictionary meta = p_line.operator Dictionary();
+		const String path = meta["path"].operator String();
+		const int line = meta["line"].operator int64_t();
+		const int column = meta["column"].operator int64_t();
+		if (path.is_empty()) {
+			code_editor->get_text_editor()->remove_secondary_carets();
+			code_editor->get_text_editor()->set_caret_line(line);
+		} else {
+			Ref<Resource> scr = ResourceLoader::load(path);
+			if (!scr.is_valid()) {
+				EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
+			} else {
+				ScriptEditor::get_singleton()->edit(scr, line, column);
+			}
+		}
 	}
 }
 
@@ -458,9 +475,17 @@ void ScriptTextEditor::_validate_script() {
 
 	warnings.clear();
 	errors.clear();
+	depended_errors.clear();
 	safe_lines.clear();
 
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
+		for (List<ScriptLanguage::ScriptError>::Element *E = errors.front(); E; E = E->next()) {
+			if (E->get().path.is_empty() || E->get().path != script->get_path()) {
+				depended_errors[E->get().path].push_back(E->get());
+				E->erase();
+			}
+		}
+
 		// TRANSLATORS: Script error pointing to a line and column number.
 		String error_text = vformat(TTR("Error at (%d, %d):"), errors[0].line, errors[0].column) + " " + errors[0].message;
 		code_editor->set_error(error_text);
@@ -560,6 +585,10 @@ void ScriptTextEditor::_update_errors() {
 	errors_panel->clear();
 	errors_panel->push_table(2);
 	for (const ScriptLanguage::ScriptError &err : errors) {
+		Dictionary click_meta;
+		click_meta["line"] = err.line;
+		click_meta["column"] = err.column;
+
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), SNAME("Editor")));
@@ -574,6 +603,41 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->pop(); // Cell.
 	}
 	errors_panel->pop(); // Table
+
+	for (const KeyValue<String, List<ScriptLanguage::ScriptError>> &KV : depended_errors) {
+		Dictionary click_meta;
+		click_meta["path"] = KV.key;
+		click_meta["line"] = 1;
+
+		errors_panel->add_newline();
+		errors_panel->add_newline();
+		errors_panel->push_meta(click_meta);
+		errors_panel->add_text(vformat(R"(%s:)", KV.key));
+		errors_panel->pop(); // Meta goto.
+		errors_panel->add_newline();
+
+		errors_panel->push_indent(1);
+		errors_panel->push_table(2);
+		String filename = KV.key.get_file();
+		for (const ScriptLanguage::ScriptError &err : KV.value) {
+			click_meta["line"] = err.line;
+			click_meta["column"] = err.column;
+
+			errors_panel->push_cell();
+			errors_panel->push_meta(click_meta);
+			errors_panel->push_color(errors_panel->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
+			errors_panel->pop(); // Color.
+			errors_panel->pop(); // Meta goto.
+			errors_panel->pop(); // Cell.
+
+			errors_panel->push_cell();
+			errors_panel->add_text(err.message);
+			errors_panel->pop(); // Cell.
+		}
+		errors_panel->pop(); // Table
+		errors_panel->pop(); // Indent.
+	}
 
 	CodeEdit *te = code_editor->get_text_editor();
 	bool highlight_safe = EDITOR_GET("text_editor/appearance/gutters/highlight_type_safe_lines");
@@ -811,6 +875,8 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	}
 
 	ScriptLanguage::LookupResult result;
+	String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(p_row, p_column);
+	Error lc_error = script->get_language()->lookup_code(code_text, p_symbol, script->get_path(), base, result);
 	if (ScriptServer::is_global_class(p_symbol)) {
 		EditorNode::get_singleton()->load_resource(ScriptServer::get_global_class_path(p_symbol));
 	} else if (p_symbol.is_resource_file()) {
@@ -823,7 +889,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_resource(p_symbol);
 		}
 
-	} else if (script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), p_symbol, script->get_path(), base, result) == OK) {
+	} else if (lc_error == OK) {
 		_goto_line(p_row);
 
 		switch (result.type) {
@@ -944,7 +1010,10 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	}
 
 	ScriptLanguage::LookupResult result;
-	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), p_symbol, script->get_path(), base, result) == OK || (ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton)) {
+	String lc_text = code_editor->get_text_editor()->get_text_for_symbol_lookup();
+	Error lc_error = script->get_language()->lookup_code(lc_text, p_symbol, script->get_path(), base, result);
+	bool is_singleton = ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton;
+	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || lc_error == OK || is_singleton) {
 		text_edit->set_symbol_lookup_word_as_valid(true);
 	} else if (p_symbol.is_relative_path()) {
 		String path = _get_absolute_path(p_symbol);
@@ -1691,10 +1760,14 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
+		if (!ClassDB::is_parent_class(script->get_instance_base_type(), "Node")) {
+			EditorToaster::get_singleton()->popup_str(vformat(TTR("Can't drop nodes because script '%s' does not inherit Node."), get_name()), EditorToaster::SEVERITY_WARNING);
+			return;
+		}
+
 		Node *sn = _find_script_node(scene_root, scene_root, script);
 		if (!sn) {
-			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop nodes because script '%s' is not used in this scene."), get_name()));
-			return;
+			sn = scene_root;
 		}
 
 		Array nodes = d["nodes"];
@@ -1849,7 +1922,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		bool open_docs = false;
 		bool goto_definition = false;
 
-		if (word_at_pos.is_resource_file()) {
+		if (ScriptServer::is_global_class(word_at_pos) || word_at_pos.is_resource_file()) {
 			open_docs = true;
 		} else {
 			Node *base = get_tree()->get_edited_scene_root();
@@ -2293,7 +2366,7 @@ void ScriptTextEditor::register_editor() {
 
 	ED_SHORTCUT("script_text_editor/indent", TTR("Indent"), Key::NONE);
 	ED_SHORTCUT("script_text_editor/unindent", TTR("Unindent"), KeyModifierMask::SHIFT | Key::TAB);
-	ED_SHORTCUT("script_text_editor/toggle_comment", TTR("Toggle Comment"), KeyModifierMask::CMD_OR_CTRL | Key::K);
+	ED_SHORTCUT_ARRAY("script_text_editor/toggle_comment", TTR("Toggle Comment"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::K), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::SLASH) });
 	ED_SHORTCUT("script_text_editor/toggle_fold_line", TTR("Fold/Unfold Line"), KeyModifierMask::ALT | Key::F);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_fold_line", "macos", KeyModifierMask::CTRL | KeyModifierMask::META | Key::F);
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), Key::NONE);

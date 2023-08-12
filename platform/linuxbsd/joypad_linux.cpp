@@ -56,6 +56,14 @@
 static const char *ignore_str = "/dev/input/js";
 #endif
 
+// On Linux with Steam Input Xbox 360 devices have an index appended to their device name, this index is
+// the Steam Input gamepad index
+#define VALVE_GAMEPAD_NAME_PREFIX "Microsoft X-Box 360 pad "
+// IDs used by Steam Input virtual controllers.
+// See https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices
+#define VALVE_GAMEPAD_VID 0x28DE
+#define VALVE_GAMEPAD_PID 0x11FF
+
 JoypadLinux::Joypad::~Joypad() {
 	for (int i = 0; i < MAX_ABS; i++) {
 		if (abs_info[i]) {
@@ -411,8 +419,23 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		setup_joypad_properties(joypad);
 		sprintf(uid, "%04x%04x", BSWAP16(inpid.bustype), 0);
 		if (inpid.vendor && inpid.product && inpid.version) {
+			Dictionary joypad_info;
+			joypad_info["vendor_id"] = inpid.vendor;
+			joypad_info["product_id"] = inpid.product;
+			joypad_info["raw_name"] = name;
+
 			sprintf(uid + String(uid).length(), "%04x%04x%04x%04x%04x%04x", vendor, 0, product, 0, version, 0);
-			input->joy_connection_changed(joy_num, true, name, uid);
+
+			if (inpid.vendor == VALVE_GAMEPAD_VID && inpid.product == VALVE_GAMEPAD_PID) {
+				if (name.begins_with(VALVE_GAMEPAD_NAME_PREFIX)) {
+					String idx_str = name.substr(strlen(VALVE_GAMEPAD_NAME_PREFIX));
+					if (idx_str.is_valid_int()) {
+						joypad_info["steam_input_index"] = idx_str.to_int();
+					}
+				}
+			}
+
+			input->joy_connection_changed(joy_num, true, name, uid, joypad_info);
 		} else {
 			String uidname = uid;
 			int uidlen = MIN(name.length(), 11);

@@ -72,7 +72,7 @@
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
-const Vector<String> ignored_types = { "PhysicsServer2DExtension", "PhysicsServer3DExtension" };
+const Vector<String> ignored_types = {};
 
 #ifdef TOOLS_ENABLED
 static bool _create_project_solution_if_needed() {
@@ -1197,8 +1197,6 @@ void CSharpLanguage::_editor_init_callback() {
 
 	// Add plugin to EditorNode and enable it
 	EditorNode::add_editor_plugin(godotsharp_editor);
-	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KeyModifierMask::ALT | Key::B);
-	ED_SHORTCUT_OVERRIDE("mono/build_solution", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::B);
 	godotsharp_editor->enable_plugin();
 
 	get_singleton()->godotsharp_editor = godotsharp_editor;

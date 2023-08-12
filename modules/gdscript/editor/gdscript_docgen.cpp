@@ -101,14 +101,16 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 		doc.inherits = p_script->native->get_name();
 	}
 
-	doc.brief_description = p_class->doc_brief_description;
-	doc.description = p_class->doc_description;
-	for (const Pair<String, String> &p : p_class->doc_tutorials) {
+	doc.brief_description = p_class->doc_data.brief;
+	doc.description = p_class->doc_data.description;
+	for (const Pair<String, String> &p : p_class->doc_data.tutorials) {
 		DocData::TutorialDoc td;
 		td.title = p.first;
 		td.link = p.second;
 		doc.tutorials.append(td);
 	}
+	doc.is_deprecated = p_class->doc_data.is_deprecated;
+	doc.is_experimental = p_class->doc_data.is_experimental;
 
 	for (const GDP::ClassNode::Member &member : p_class->members) {
 		switch (member.type) {
@@ -130,7 +132,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				p_script->member_lines[const_name] = m_const->start_line;
 
 				DocData::ConstantDoc const_doc;
-				DocData::constant_doc_from_variant(const_doc, const_name, m_const->initializer->reduced_value, m_const->doc_description);
+				DocData::constant_doc_from_variant(const_doc, const_name, m_const->initializer->reduced_value, m_const->doc_data.description);
+				const_doc.is_deprecated = m_const->doc_data.is_deprecated;
+				const_doc.is_experimental = m_const->doc_data.is_experimental;
 				doc.constants.push_back(const_doc);
 			} break;
 
@@ -153,7 +157,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				}
 
 				DocData::MethodDoc method_doc;
-				DocData::method_doc_from_methodinfo(method_doc, mi, m_func->doc_description);
+				DocData::method_doc_from_methodinfo(method_doc, mi, m_func->doc_data.description);
+				method_doc.is_deprecated = m_func->doc_data.is_deprecated;
+				method_doc.is_experimental = m_func->doc_data.is_experimental;
 				doc.methods.push_back(method_doc);
 			} break;
 
@@ -172,7 +178,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				}
 
 				DocData::MethodDoc signal_doc;
-				DocData::signal_doc_from_methodinfo(signal_doc, mi, m_signal->doc_description);
+				DocData::signal_doc_from_methodinfo(signal_doc, mi, m_signal->doc_data.description);
+				signal_doc.is_deprecated = m_signal->doc_data.is_deprecated;
+				signal_doc.is_experimental = m_signal->doc_data.is_experimental;
 				doc.signals.push_back(signal_doc);
 			} break;
 
@@ -185,7 +193,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				DocData::PropertyDoc prop_doc;
 
 				prop_doc.name = var_name;
-				prop_doc.description = m_var->doc_description;
+				prop_doc.description = m_var->doc_data.description;
+				prop_doc.is_deprecated = m_var->doc_data.is_deprecated;
+				prop_doc.is_experimental = m_var->doc_data.is_experimental;
 
 				GDType dt = m_var->get_datatype();
 				switch (dt.kind) {
@@ -236,15 +246,21 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				p_script->member_lines[name] = m_enum->start_line;
 
-				doc.enums[name] = m_enum->doc_description;
+				DocData::EnumDoc enum_doc;
+				enum_doc.description = m_enum->doc_data.description;
+				enum_doc.is_deprecated = m_enum->doc_data.is_deprecated;
+				enum_doc.is_experimental = m_enum->doc_data.is_experimental;
+				doc.enums[name] = enum_doc;
 
 				for (const GDP::EnumNode::Value &val : m_enum->values) {
 					DocData::ConstantDoc const_doc;
 					const_doc.name = val.identifier->name;
 					const_doc.value = String(Variant(val.value));
 					const_doc.is_value_valid = true;
-					const_doc.description = val.doc_description;
 					const_doc.enumeration = name;
+					const_doc.description = val.doc_data.description;
+					const_doc.is_deprecated = val.doc_data.is_deprecated;
+					const_doc.is_experimental = val.doc_data.is_experimental;
 
 					doc.constants.push_back(const_doc);
 				}
@@ -257,10 +273,12 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				p_script->member_lines[name] = m_enum_val.identifier->start_line;
 
-				DocData::ConstantDoc constant_doc;
-				constant_doc.enumeration = "@unnamed_enums";
-				DocData::constant_doc_from_variant(constant_doc, name, m_enum_val.value, m_enum_val.doc_description);
-				doc.constants.push_back(constant_doc);
+				DocData::ConstantDoc const_doc;
+				DocData::constant_doc_from_variant(const_doc, name, m_enum_val.value, m_enum_val.doc_data.description);
+				const_doc.enumeration = "@unnamed_enums";
+				const_doc.is_deprecated = m_enum_val.doc_data.is_deprecated;
+				const_doc.is_experimental = m_enum_val.doc_data.is_experimental;
+				doc.constants.push_back(const_doc);
 			} break;
 			case GDP::ClassNode::Member::GROUP:
 			case GDP::ClassNode::Member::UNDEFINED:

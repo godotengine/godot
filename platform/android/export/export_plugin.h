@@ -31,7 +31,9 @@
 #ifndef ANDROID_EXPORT_PLUGIN_H
 #define ANDROID_EXPORT_PLUGIN_H
 
+#ifndef DISABLE_DEPRECATED
 #include "godot_plugin_config.h"
+#endif // DISABLE_DEPRECATED
 
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
@@ -81,11 +83,14 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorProgress *ep = nullptr;
 	};
 
-	mutable Vector<PluginConfigAndroid> plugins;
+#ifndef DISABLE_DEPRECATED
+	mutable Vector<PluginConfigAndroid> android_plugins;
+	mutable SafeFlag android_plugins_changed;
+	Mutex android_plugins_lock;
+#endif // DISABLE_DEPRECATED
 	String last_plugin_names;
 	uint64_t last_gradle_build_time = 0;
-	mutable SafeFlag plugins_changed;
-	Mutex plugins_lock;
+
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
@@ -128,12 +133,14 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Vector<ABI> get_abis();
 
+#ifndef DISABLE_DEPRECATED
 	/// List the gdap files in the directory specified by the p_path parameter.
 	static Vector<String> list_gdap_files(const String &p_path);
 
 	static Vector<PluginConfigAndroid> get_plugins();
 
 	static Vector<PluginConfigAndroid> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets);
+#endif // DISABLE_DEPRECATED
 
 	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED);
 
@@ -224,28 +231,11 @@ public:
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 
-	inline bool is_clean_build_required(Vector<PluginConfigAndroid> enabled_plugins) {
-		String plugin_names = PluginConfigAndroid::get_plugins_names(enabled_plugins);
-		bool first_build = last_gradle_build_time == 0;
-		bool have_plugins_changed = false;
+	String _get_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
 
-		if (!first_build) {
-			have_plugins_changed = plugin_names != last_plugin_names;
-			if (!have_plugins_changed) {
-				for (int i = 0; i < enabled_plugins.size(); i++) {
-					if (enabled_plugins.get(i).last_updated > last_gradle_build_time) {
-						have_plugins_changed = true;
-						break;
-					}
-				}
-			}
-		}
+	String _resolve_export_plugin_android_library_path(const String &p_android_library_path) const;
 
-		last_gradle_build_time = OS::get_singleton()->get_unix_time();
-		last_plugin_names = plugin_names;
-
-		return have_plugins_changed || first_build;
-	}
+	bool _is_clean_build_required(const Ref<EditorExportPreset> &p_preset);
 
 	String get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 

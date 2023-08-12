@@ -220,6 +220,7 @@ opts.Add(
 )
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
+opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -551,7 +552,16 @@ if selected_platform in platform_list:
 
     # Run SCU file generation script if in a SCU build.
     if env["scu_build"]:
-        methods.set_scu_folders(scu_builders.generate_scu_files(env["verbose"], env_base.dev_build == False))
+        max_includes_per_scu = 8
+        if env_base.dev_build == True:
+            max_includes_per_scu = 1024
+
+        read_scu_limit = int(env["scu_limit"])
+        read_scu_limit = max(0, min(read_scu_limit, 1024))
+        if read_scu_limit != 0:
+            max_includes_per_scu = read_scu_limit
+
+        methods.set_scu_folders(scu_builders.generate_scu_files(env["verbose"], max_includes_per_scu))
 
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.

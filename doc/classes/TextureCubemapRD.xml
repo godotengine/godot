@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureCubemapRD" inherits="TextureLayeredRD" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Texture for Cubemap that is bound to a texture created on the [RenderingDevice].
+	</brief_description>
+	<description>
+		This texture class allows you to use a cubemap texture created directly on the [RenderingDevice] as a texture for materials, meshes, etc.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

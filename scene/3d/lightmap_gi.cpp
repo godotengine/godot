@@ -552,7 +552,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 		// Luckily, because we are using tetrahedrons, we can resort to
 		// less precise but still working ways to generate the separating plane
 		// this will most likely look bad when interpolating, but at least it will not crash.
-		// and the arctifact will most likely also be very small, so too difficult to notice.
+		// and the artifact will most likely also be very small, so too difficult to notice.
 
 		//find the longest axis
 

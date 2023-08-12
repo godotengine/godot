@@ -1108,6 +1108,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				}
 			}
 
+			if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+				fx_offset = fx_offset.round();
+			}
+
 			// Draw glyph outlines.
 			const Color modulated_outline_color = font_outline_color * Color(1, 1, 1, font_color.a);
 			const Color modulated_shadow_color = font_shadow_color * Color(1, 1, 1, font_color.a);
@@ -1331,6 +1335,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
 					font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
 				}
+			}
+
+			if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+				fx_offset = fx_offset.round();
 			}
 
 			if (selected && use_selected_font_color) {
@@ -1959,7 +1967,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 						// Erase previous selection.
 						if (selection.active) {
-							if (_is_click_inside_selection()) {
+							if (drag_and_drop_selection_enabled && _is_click_inside_selection()) {
 								selection.drag_attempt = true;
 								selection.click_item = nullptr;
 							} else {
@@ -5323,6 +5331,14 @@ bool RichTextLabel::is_deselect_on_focus_loss_enabled() const {
 	return deselect_on_focus_loss_enabled;
 }
 
+void RichTextLabel::set_drag_and_drop_selection_enabled(const bool p_enabled) {
+	drag_and_drop_selection_enabled = p_enabled;
+}
+
+bool RichTextLabel::is_drag_and_drop_selection_enabled() const {
+	return drag_and_drop_selection_enabled;
+}
+
 int RichTextLabel::get_selection_from() const {
 	if (!selection.active || !selection.enabled) {
 		return -1;
@@ -5670,6 +5686,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &RichTextLabel::set_deselect_on_focus_loss_enabled);
 	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &RichTextLabel::is_deselect_on_focus_loss_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_drag_and_drop_selection_enabled", "enable"), &RichTextLabel::set_drag_and_drop_selection_enabled);
+	ClassDB::bind_method(D_METHOD("is_drag_and_drop_selection_enabled"), &RichTextLabel::is_drag_and_drop_selection_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_selection_from"), &RichTextLabel::get_selection_from);
 	ClassDB::bind_method(D_METHOD("get_selection_to"), &RichTextLabel::get_selection_to);
 
@@ -5759,6 +5778,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_GROUP("Text Selection", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selection_enabled"), "set_selection_enabled", "is_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
 
 	ADD_GROUP("Displayed Text", "");
 	// Note: "visible_characters" and "visible_ratio" should be set after "text" to be correctly applied.
@@ -5858,10 +5878,12 @@ int RichTextLabel::get_character_line(int p_char) {
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
 		MutexLock lock(main->lines[i].text_buf->get_mutex());
-		if (main->lines[i].char_offset < p_char && p_char <= main->lines[i].char_offset + main->lines[i].char_count) {
+		int char_offset = main->lines[i].char_offset;
+		int char_count = main->lines[i].char_count;
+		if (char_offset <= p_char && p_char < char_offset + char_count) {
 			for (int j = 0; j < main->lines[i].text_buf->get_line_count(); j++) {
 				Vector2i range = main->lines[i].text_buf->get_line_range(j);
-				if (main->lines[i].char_offset + range.x < p_char && p_char <= main->lines[i].char_offset + range.y) {
+				if (char_offset + range.x <= p_char && p_char <= char_offset + range.y) {
 					return line_count;
 				}
 				line_count++;
@@ -5876,13 +5898,11 @@ int RichTextLabel::get_character_line(int p_char) {
 int RichTextLabel::get_character_paragraph(int p_char) {
 	_validate_line_caches();
 
-	int para_count = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
-		if (main->lines[i].char_offset < p_char && p_char <= main->lines[i].char_offset + main->lines[i].char_count) {
-			return para_count;
-		} else {
-			para_count++;
+		int char_offset = main->lines[i].char_offset;
+		if (char_offset <= p_char && p_char < char_offset + main->lines[i].char_count) {
+			return i;
 		}
 	}
 	return -1;

@@ -142,7 +142,7 @@ ENetConnection::EventType ENetConnection::_parse_event(const ENetEvent &p_event,
 			return EVENT_ERROR;
 		} break;
 		case ENET_EVENT_TYPE_RECEIVE: {
-			// Packet reveived.
+			// Packet received.
 			if (p_event.peer->data != nullptr) {
 				Ref<ENetPacketPeer> pp = Ref<ENetPacketPeer>((ENetPacketPeer *)p_event.peer->data);
 				r_event.peer = Ref<ENetPacketPeer>((ENetPacketPeer *)p_event.peer->data);

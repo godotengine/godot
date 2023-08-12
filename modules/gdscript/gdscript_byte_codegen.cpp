@@ -226,7 +226,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 
 	if (opcodes.size()) {
 		function->code = opcodes;
-		function->_code_ptr = &function->code[0];
+		function->_code_ptr = &function->code.write[0];
 		function->_code_size = opcodes.size();
 
 	} else {
@@ -577,6 +577,12 @@ void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Va
 	append(Address());
 	append(p_target);
 	append(p_operator);
+	append(0); // Signature storage.
+	append(0); // Return type storage.
+	constexpr int _pointer_size = sizeof(Variant::ValidatedOperatorEvaluator) / sizeof(*(opcodes.ptr()));
+	for (int i = 0; i < _pointer_size; i++) {
+		append(0); // Space for function pointer.
+	}
 }
 
 void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) {
@@ -610,6 +616,12 @@ void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, V
 	append(p_right_operand);
 	append(p_target);
 	append(p_operator);
+	append(0); // Signature storage.
+	append(0); // Return type storage.
+	constexpr int _pointer_size = sizeof(Variant::ValidatedOperatorEvaluator) / sizeof(*(opcodes.ptr()));
+	for (int i = 0; i < _pointer_size; i++) {
+		append(0); // Space for function pointer.
+	}
 }
 
 void GDScriptByteCodeGenerator::write_type_test(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) {

@@ -381,12 +381,60 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	}
 }
 
-uint32_t FileAccessWindows::_get_unix_permissions(const String &p_file) {
+BitField<FileAccess::UnixPermissionFlags> FileAccessWindows::_get_unix_permissions(const String &p_file) {
 	return 0;
 }
 
-Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+Error FileAccessWindows::_set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
 	return ERR_UNAVAILABLE;
+}
+
+bool FileAccessWindows::_get_hidden_attribute(const String &p_file) {
+	String file = fix_path(p_file);
+
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, false, "Failed to get attributes for: " + p_file);
+	return (attrib & FILE_ATTRIBUTE_HIDDEN);
+}
+
+Error FileAccessWindows::_set_hidden_attribute(const String &p_file, bool p_hidden) {
+	String file = fix_path(p_file);
+
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, "Failed to get attributes for: " + p_file);
+	BOOL ok;
+	if (p_hidden) {
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib | FILE_ATTRIBUTE_HIDDEN);
+	} else {
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib & ~FILE_ATTRIBUTE_HIDDEN);
+	}
+	ERR_FAIL_COND_V_MSG(!ok, FAILED, "Failed to set attributes for: " + p_file);
+
+	return OK;
+}
+
+bool FileAccessWindows::_get_read_only_attribute(const String &p_file) {
+	String file = fix_path(p_file);
+
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, false, "Failed to get attributes for: " + p_file);
+	return (attrib & FILE_ATTRIBUTE_READONLY);
+}
+
+Error FileAccessWindows::_set_read_only_attribute(const String &p_file, bool p_ro) {
+	String file = fix_path(p_file);
+
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, "Failed to get attributes for: " + p_file);
+	BOOL ok;
+	if (p_ro) {
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib | FILE_ATTRIBUTE_READONLY);
+	} else {
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib & ~FILE_ATTRIBUTE_READONLY);
+	}
+	ERR_FAIL_COND_V_MSG(!ok, FAILED, "Failed to set attributes for: " + p_file);
+
+	return OK;
 }
 
 void FileAccessWindows::close() {

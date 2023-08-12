@@ -349,7 +349,7 @@ class ProjectManager : public Control {
 	Button *erase_missing_btn = nullptr;
 	Button *about_btn = nullptr;
 
-	HBoxContainer *local_projects_hb = nullptr;
+	VBoxContainer *local_projects_vb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
 
 	Ref<StyleBox> tag_stylebox;

@@ -32,7 +32,7 @@
 		<method name="emit_changed">
 			<return type="void" />
 			<description>
-				Emits the [signal changed] signal. This method is called automatically for built-in resources.
+				Emits the [signal changed] signal. This method is called automatically for some built-in resources.
 				[b]Note:[/b] For custom resources, it's recommended to call this method whenever a meaningful change occurs, such as a modified property. This ensures that custom [Object]s depending on the resource are properly updated.
 				[codeblock]
 				var damage:

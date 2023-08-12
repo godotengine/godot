@@ -39,6 +39,11 @@ public interface GodotRenderView {
 
 	void initInputDevices();
 
+	/**
+	 * Starts the thread that will drive Godot's rendering.
+	 */
+	void startRenderer();
+
 	void queueOnRenderThread(Runnable event);
 
 	void onActivityPaused();
