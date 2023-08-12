@@ -1044,7 +1044,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!custom_effect.is_null()) {
 						charfx->global_elapsed_time = global_elapsed_time;
 						charfx->elapsed_time = item_custom->elapsed_time;
-						charfx->visible_time = visible_times[l.char_offset + i];
+						charfx->visible_time = visible_times[glyphs[i].start];
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
 						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
 						charfx->visibility = txt_visible;
@@ -1273,7 +1273,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!custom_effect.is_null()) {
 						charfx->global_elapsed_time = global_elapsed_time;
 						charfx->elapsed_time = item_custom->elapsed_time;
-						charfx->visible_time = visible_times[l.char_offset + i];
+						charfx->visible_time = visible_times[glyphs[i].start];
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
 						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
 						charfx->visibility = txt_visible;
