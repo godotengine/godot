@@ -868,6 +868,9 @@ def generate_vs_project(env, num_jobs, project_name="godot"):
                 if env["custom_modules"]:
                     common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
 
+                if env["windows_subsystem"] == "console":
+                    common_build_postfix.append("windows_subsystem=console")
+
                 if env["precision"] == "double":
                     common_build_postfix.append("precision=double")
 
