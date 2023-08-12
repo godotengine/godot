@@ -110,6 +110,10 @@
 		<member name="package/show_in_android_tv" type="bool" setter="" getter="">
 			If [code]true[/code], this app will show in Android TV launcher UI.
 		</member>
+		<member name="package/show_in_app_library" type="bool" setter="" getter="">
+			If [code]true[/code], this app will show in the device's app library.
+			[b]Note:[/b] This is [code]true[/code] by default.
+		</member>
 		<member name="package/signed" type="bool" setter="" getter="">
 			If [code]true[/code], package signing is enabled.
 		</member>
