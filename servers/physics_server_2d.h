@@ -583,6 +583,7 @@ public:
 	virtual void set_active(bool p_active) = 0;
 	virtual void init() = 0;
 	virtual void step(real_t p_step) = 0;
+	virtual void step_second_pass() = 0;
 	virtual void sync() = 0;
 	virtual void flush_queries() = 0;
 	virtual void end_sync() = 0;

@@ -53,6 +53,7 @@ class GodotStep2D {
 
 public:
 	void step(GodotSpace2D *p_space, real_t p_delta);
+	void step_second_pass(GodotSpace2D *p_space);
 	GodotStep2D();
 	~GodotStep2D();
 };

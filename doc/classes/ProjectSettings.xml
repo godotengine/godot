@@ -2063,6 +2063,9 @@
 		<member name="physics/2d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 2D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 2D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
+		<member name="physics/2d/step_second_pass" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 2D physics server runs a second pass after updating body transforms to detect colisions and contacts. If [code]false[/code], performance improves but data such as RigidBody contacts are delayed by a frame.
+		</member>
 		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
@@ -2134,6 +2137,9 @@
 		</member>
 		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
+		</member>
+		<member name="physics/3d/step_second_pass" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 3D physics server runs a second pass after updating body transforms to detect colisions and contacts. If [code]false[/code], performance improves but data such as RigidBody contacts are delayed by a frame.
 		</member>
 		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].

@@ -385,6 +385,7 @@ public:
 
 	virtual void init() override;
 	virtual void step(real_t p_step) override;
+	virtual void step_second_pass() override;
 	virtual void sync() override;
 	virtual void end_sync() override;
 	virtual void flush_queries() override;

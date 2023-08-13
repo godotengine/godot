@@ -439,6 +439,7 @@ public:
 
 	EXBIND0(init)
 	EXBIND1(step, real_t)
+	EXBIND0(step_second_pass)
 	EXBIND0(sync)
 	EXBIND0(flush_queries)
 	EXBIND0(end_sync)

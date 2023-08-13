@@ -415,6 +415,7 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_init);
 	GDVIRTUAL_BIND(_step, "step");
+	GDVIRTUAL_BIND(_step_second_pass);
 	GDVIRTUAL_BIND(_sync);
 	GDVIRTUAL_BIND(_flush_queries);
 	GDVIRTUAL_BIND(_end_sync);

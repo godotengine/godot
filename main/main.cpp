@@ -148,6 +148,8 @@ static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
 static ThemeDB *theme_db = nullptr;
+static bool physics_2d_step_second_pass = false;
+static bool physics_3d_step_second_pass = false;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -299,6 +301,9 @@ void initialize_physics() {
 	}
 	ERR_FAIL_COND(!physics_server_2d);
 	physics_server_2d->init();
+
+	physics_2d_step_second_pass = GLOBAL_GET("physics/2d/step_second_pass");
+	physics_3d_step_second_pass = GLOBAL_GET("physics/3d/step_second_pass");
 }
 
 void finalize_physics() {
@@ -3122,7 +3127,6 @@ bool Main::start() {
 			Size2i stretch_size = Size2i(GLOBAL_GET("display/window/size/viewport_width"),
 					GLOBAL_GET("display/window/size/viewport_height"));
 			real_t stretch_scale = GLOBAL_GET("display/window/stretch/scale");
-			String stretch_scale_mode = GLOBAL_GET("display/window/stretch/scale_mode");
 
 			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;
 			if (stretch_mode == "canvas_items") {
@@ -3142,14 +3146,8 @@ bool Main::start() {
 				cs_aspect = Window::CONTENT_SCALE_ASPECT_EXPAND;
 			}
 
-			Window::ContentScaleStretch cs_stretch = Window::CONTENT_SCALE_STRETCH_FRACTIONAL;
-			if (stretch_scale_mode == "integer") {
-				cs_stretch = Window::CONTENT_SCALE_STRETCH_INTEGER;
-			}
-
 			sml->get_root()->set_content_scale_mode(cs_sm);
 			sml->get_root()->set_content_scale_aspect(cs_aspect);
-			sml->get_root()->set_content_scale_stretch(cs_stretch);
 			sml->get_root()->set_content_scale_size(stretch_size);
 			sml->get_root()->set_content_scale_factor(stretch_scale);
 
@@ -3437,9 +3435,15 @@ bool Main::iteration() {
 
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
+		if (physics_3d_step_second_pass) {
+			PhysicsServer3D::get_singleton()->step_second_pass();
+		}
 
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+		if (physics_2d_step_second_pass) {
+			PhysicsServer2D::get_singleton()->step_second_pass();
+		}
 
 		message_queue->flush();
 

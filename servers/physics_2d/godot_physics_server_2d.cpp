@@ -1287,6 +1287,24 @@ void GodotPhysicsServer2D::step(real_t p_step) {
 	}
 }
 
+void GodotPhysicsServer2D::step_second_pass() {
+	if (!active) {
+		return;
+	}
+
+	_update_shapes();
+
+	island_count = 0;
+	active_objects = 0;
+	collision_pairs = 0;
+	for (const GodotSpace2D *E : active_spaces) {
+		stepper->step_second_pass(const_cast<GodotSpace2D *>(E));
+		island_count += E->get_island_count();
+		active_objects += E->get_active_objects();
+		collision_pairs += E->get_collision_pairs();
+	}
+}
+
 void GodotPhysicsServer2D::sync() {
 	doing_sync = true;
 }

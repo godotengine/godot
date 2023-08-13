@@ -476,12 +476,14 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 
 #ifdef ACCUMULATE_IMPULSES
 		{
-			// Apply normal + friction impulse
-			if (collide_A) {
-				A->apply_impulse(-P, c.rA + A->get_center_of_mass());
-			}
-			if (collide_B) {
-				B->apply_impulse(P, c.rB + B->get_center_of_mass());
+			if (p_step > 0.0) {
+				// Apply normal + friction impulse
+				if (collide_A) {
+					A->apply_impulse(-P, c.rA + A->get_center_of_mass());
+				}
+				if (collide_B) {
+					B->apply_impulse(P, c.rB + B->get_center_of_mass());
+				}
 			}
 		}
 #endif

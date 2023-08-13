@@ -289,6 +289,7 @@ public:
 	virtual void set_active(bool p_active) override;
 	virtual void init() override;
 	virtual void step(real_t p_step) override;
+	virtual void step_second_pass() override;
 	virtual void sync() override;
 	virtual void flush_queries() override;
 	virtual void end_sync() override;
