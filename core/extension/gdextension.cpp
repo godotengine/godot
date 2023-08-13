@@ -607,12 +607,13 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 	}
 
 	bool compatible = true;
-	if (VERSION_MAJOR < compatibility_minimum[0]) {
-		compatible = false;
-	} else if (VERSION_MINOR < compatibility_minimum[1]) {
-		compatible = false;
-	} else if (VERSION_PATCH < compatibility_minimum[2]) {
-		compatible = false;
+	// Check version lexicographically.
+	if (VERSION_MAJOR != compatibility_minimum[0]) {
+		compatible = VERSION_MAJOR > compatibility_minimum[0];
+	} else if (VERSION_MINOR != compatibility_minimum[1]) {
+		compatible = VERSION_MINOR > compatibility_minimum[1];
+	} else {
+		compatible = VERSION_PATCH >= compatibility_minimum[2];
 	}
 	if (!compatible) {
 		if (r_error) {
