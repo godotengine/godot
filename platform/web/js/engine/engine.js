@@ -227,6 +227,18 @@ const Engine = (function () {
 			},
 
 			/**
+			 * Get a buffer from the instance's file system at the specified ``path``
+			 * @param {string} path The location where the file is got
+			 * @returns {ArrayBuffer | null} The content of the file, or `null` if no file were found
+			 */
+			getFromFS: function (path) {
+				if (this.rtenv == null) {
+					throw new Error('Engine must be inited before getting files');
+				}
+				return this.rtenv['getFromFS'](path);
+			},
+
+			/**
 			 * Request that the current instance quit.
 			 *
 			 * This is akin the user pressing the close button in the window manager, and will
@@ -247,6 +259,7 @@ const Engine = (function () {
 		Engine.prototype['start'] = Engine.prototype.start;
 		Engine.prototype['startGame'] = Engine.prototype.startGame;
 		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
+		Engine.prototype['getFromFS'] = Engine.prototype.getFromFS;
 		Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
 		// Also expose static methods as instance methods
 		Engine.prototype['load'] = Engine.load;
