@@ -43,6 +43,7 @@ class SymbolTooltip : public PopupPanel {
 
 	Ref<Script> script = nullptr;
 	CodeTextEditor *code_editor = nullptr;
+	CodeEdit *text_editor = nullptr;
 	PanelContainer *panel_container = nullptr;
 	VBoxContainer *layout_container = nullptr;
 	TextEdit *header_label = nullptr;
@@ -62,7 +63,7 @@ class SymbolTooltip : public PopupPanel {
 public:
 	void _on_tooltip_delay_timeout();
 	void update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script);
-	String _get_symbol_word(CodeEdit *text_editor, const Vector2 &mouse_position);
+	String _get_symbol_word(const Vector2 &mouse_position);
 	Vector2 _calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position);
 	void _update_tooltip_size();
 	void _update_tooltip_content(const String &header_content, const String &body_content);

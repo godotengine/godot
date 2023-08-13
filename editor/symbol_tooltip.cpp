@@ -38,6 +38,7 @@
 SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 		code_editor(code_editor) {
 	// Initialize the tooltip components.
+	text_editor = code_editor->get_text_editor();
 
 	Ref<GDScriptSyntaxHighlighter> highlighter;
 	highlighter.instantiate();
@@ -108,8 +109,7 @@ void SymbolTooltip::_on_tooltip_delay_timeout() {
 }
 
 void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script) {
-	CodeEdit *text_editor = code_editor->get_text_editor();
-	String symbol_word = _get_symbol_word(text_editor, mouse_position);
+	String symbol_word = _get_symbol_word(mouse_position);
 	if (symbol_word.is_empty()) {
 		tooltip_delay->stop();
 		last_symbol_word = "";
@@ -117,7 +117,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 		return;
 	}
 
-	if (symbol_word == last_symbol_word && is_visible()) {
+	if (symbol_word == last_symbol_word && is_visible()) { // Symbol has not changed.
 		return;
 	} else {
 		// Symbol has changed, reset the timer.
@@ -129,7 +129,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
 	const lsp::DocumentSymbol *member_symbol = get_member_symbol(members, symbol_word);
 
-	if (member_symbol == nullptr) {
+	if (member_symbol == nullptr) { // Symbol is not a member of the script.
 		tooltip_delay->stop();
 		hide();
 		return;
@@ -149,7 +149,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 	bool mouse_over_tooltip = tooltip_rect.has_point(mouse_position);
 	if (!mouse_over_tooltip) {
 		Vector2 tooltip_position = _calculate_tooltip_position(symbol_word, mouse_position);
-		if (tooltip_position == Vector2(-1, -1)) { // If invalid position
+		if (tooltip_position == Vector2(-1, -1)) { // If position is invalid.
 			tooltip_delay->stop();
 			hide();
 			return;
@@ -164,13 +164,12 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 	tooltip_delay->start();
 }
 
-String SymbolTooltip::_get_symbol_word(CodeEdit *text_editor, const Vector2 &mouse_position) {
+String SymbolTooltip::_get_symbol_word(const Vector2 &mouse_position) {
 	// Get the word under the mouse cursor.
 	return text_editor->get_word_at_pos(mouse_position);
 }
 
 Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position) {
-	CodeEdit *text_editor = code_editor->get_text_editor();
 	Vector2 line_col = text_editor->get_line_column_at_pos(mouse_position);
 	int row = line_col.y;
 	int col = line_col.x;
@@ -219,7 +218,8 @@ void SymbolTooltip::_update_tooltip_size() {
 		v_padding += 1;
 	}
 
-	real_t tooltip_width = MAX(MIN(max_width, header_content_size.width + h_padding), body_label->is_visible() ? body_size.width : 0 );
+	real_t header_width = header_content_size.width + h_padding;
+	real_t tooltip_width = MAX(MIN(max_width, header_width), MIN(body_label->is_visible() ? body_size.width : 0, header_width) );
 	real_t tooltip_height = height + v_padding;
 	set_size(Vector2(tooltip_width, tooltip_height));
 }
