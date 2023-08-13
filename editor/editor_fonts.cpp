@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/resources/font.h"
 
 Ref<FontFile> load_external_font(const String &p_path, TextServer::Hinting p_hinting, TextServer::FontAntialiasing p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_msdf = false, TypedArray<Font> *r_fallbacks = nullptr) {
@@ -377,21 +378,21 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	// Main font.
 
-	p_theme->set_font("main", "EditorFonts", default_fc);
-	p_theme->set_font("main_msdf", "EditorFonts", default_fc_msdf);
-	p_theme->set_font_size("main_size", "EditorFonts", default_font_size);
+	p_theme->set_font("main", EditorStringName(EditorFonts), default_fc);
+	p_theme->set_font("main_msdf", EditorStringName(EditorFonts), default_fc_msdf);
+	p_theme->set_font_size("main_size", EditorStringName(EditorFonts), default_font_size);
 
-	p_theme->set_font("bold", "EditorFonts", bold_fc);
-	p_theme->set_font("main_bold_msdf", "EditorFonts", bold_fc_msdf);
-	p_theme->set_font_size("bold_size", "EditorFonts", default_font_size);
+	p_theme->set_font("bold", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font("main_bold_msdf", EditorStringName(EditorFonts), bold_fc_msdf);
+	p_theme->set_font_size("bold_size", EditorStringName(EditorFonts), default_font_size);
 
 	// Title font.
 
-	p_theme->set_font("title", "EditorFonts", bold_fc);
-	p_theme->set_font_size("title_size", "EditorFonts", default_font_size + 1 * EDSCALE);
+	p_theme->set_font("title", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font_size("title_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
 
-	p_theme->set_font("main_button_font", "EditorFonts", bold_fc);
-	p_theme->set_font_size("main_button_font_size", "EditorFonts", default_font_size + 1 * EDSCALE);
+	p_theme->set_font("main_button_font", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font_size("main_button_font_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
 
 	p_theme->set_font("font", "Label", default_fc);
 
@@ -408,41 +409,41 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font_size("font_size", "HeaderLarge", default_font_size + 3 * EDSCALE);
 
 	// Documentation fonts
-	p_theme->set_font_size("doc_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
-	p_theme->set_font("doc", "EditorFonts", default_fc);
-	p_theme->set_font("doc_bold", "EditorFonts", bold_fc);
-	p_theme->set_font("doc_italic", "EditorFonts", italic_fc);
-	p_theme->set_font_size("doc_title_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
-	p_theme->set_font("doc_title", "EditorFonts", bold_fc);
-	p_theme->set_font_size("doc_source_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
-	p_theme->set_font("doc_source", "EditorFonts", mono_fc);
-	p_theme->set_font_size("doc_keyboard_size", "EditorFonts", (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
-	p_theme->set_font("doc_keyboard", "EditorFonts", mono_fc);
+	p_theme->set_font_size("doc_size", EditorStringName(EditorFonts), int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
+	p_theme->set_font("doc", EditorStringName(EditorFonts), default_fc);
+	p_theme->set_font("doc_bold", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font("doc_italic", EditorStringName(EditorFonts), italic_fc);
+	p_theme->set_font_size("doc_title_size", EditorStringName(EditorFonts), int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
+	p_theme->set_font("doc_title", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font_size("doc_source_size", EditorStringName(EditorFonts), int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
+	p_theme->set_font("doc_source", EditorStringName(EditorFonts), mono_fc);
+	p_theme->set_font_size("doc_keyboard_size", EditorStringName(EditorFonts), (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
+	p_theme->set_font("doc_keyboard", EditorStringName(EditorFonts), mono_fc);
 
 	// Ruler font
-	p_theme->set_font_size("rulers_size", "EditorFonts", 8 * EDSCALE);
-	p_theme->set_font("rulers", "EditorFonts", default_fc);
+	p_theme->set_font_size("rulers_size", EditorStringName(EditorFonts), 8 * EDSCALE);
+	p_theme->set_font("rulers", EditorStringName(EditorFonts), default_fc);
 
 	// Rotation widget font
-	p_theme->set_font_size("rotation_control_size", "EditorFonts", 14 * EDSCALE);
-	p_theme->set_font("rotation_control", "EditorFonts", default_fc);
+	p_theme->set_font_size("rotation_control_size", EditorStringName(EditorFonts), 14 * EDSCALE);
+	p_theme->set_font("rotation_control", EditorStringName(EditorFonts), default_fc);
 
 	// Code font
-	p_theme->set_font_size("source_size", "EditorFonts", int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
-	p_theme->set_font("source", "EditorFonts", mono_fc);
+	p_theme->set_font_size("source_size", EditorStringName(EditorFonts), int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
+	p_theme->set_font("source", EditorStringName(EditorFonts), mono_fc);
 
-	p_theme->set_font_size("expression_size", "EditorFonts", (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
-	p_theme->set_font("expression", "EditorFonts", mono_other_fc);
+	p_theme->set_font_size("expression_size", EditorStringName(EditorFonts), (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
+	p_theme->set_font("expression", EditorStringName(EditorFonts), mono_other_fc);
 
-	p_theme->set_font_size("output_source_size", "EditorFonts", int(EDITOR_GET("run/output/font_size")) * EDSCALE);
-	p_theme->set_font("output_source", "EditorFonts", mono_other_fc);
-	p_theme->set_font("output_source_bold", "EditorFonts", mono_other_fc_bold);
-	p_theme->set_font("output_source_italic", "EditorFonts", mono_other_fc_italic);
-	p_theme->set_font("output_source_bold_italic", "EditorFonts", mono_other_fc_bold_italic);
-	p_theme->set_font("output_source_mono", "EditorFonts", mono_other_fc_mono);
+	p_theme->set_font_size("output_source_size", EditorStringName(EditorFonts), int(EDITOR_GET("run/output/font_size")) * EDSCALE);
+	p_theme->set_font("output_source", EditorStringName(EditorFonts), mono_other_fc);
+	p_theme->set_font("output_source_bold", EditorStringName(EditorFonts), mono_other_fc_bold);
+	p_theme->set_font("output_source_italic", EditorStringName(EditorFonts), mono_other_fc_italic);
+	p_theme->set_font("output_source_bold_italic", EditorStringName(EditorFonts), mono_other_fc_bold_italic);
+	p_theme->set_font("output_source_mono", EditorStringName(EditorFonts), mono_other_fc_mono);
 
-	p_theme->set_font_size("status_source_size", "EditorFonts", default_font_size);
-	p_theme->set_font("status_source", "EditorFonts", mono_other_fc);
+	p_theme->set_font_size("status_source_size", EditorStringName(EditorFonts), default_font_size);
+	p_theme->set_font("status_source", EditorStringName(EditorFonts), mono_other_fc);
 
 	OS::get_singleton()->benchmark_end_measure("editor_register_fonts");
 }

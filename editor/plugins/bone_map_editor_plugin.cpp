@@ -42,9 +42,9 @@
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {
-		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
+		set_texture_normal(get_editor_theme_icon(SNAME("BoneMapperHandleSelected")));
 	} else {
-		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
+		set_texture_normal(get_editor_theme_icon(SNAME("BoneMapperHandle")));
 	}
 	set_offset(SIDE_LEFT, 0);
 	set_offset(SIDE_RIGHT, 0);
@@ -55,7 +55,7 @@ void BoneMapperButton::fetch_textures() {
 	set_modulate(EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25));
 
 	circle = memnew(TextureRect);
-	circle->set_texture(get_theme_icon(SNAME("BoneMapperHandleCircle"), SNAME("EditorIcons")));
+	circle->set_texture(get_editor_theme_icon(SNAME("BoneMapperHandleCircle")));
 	add_child(circle);
 	set_state(BONE_MAP_STATE_UNSET);
 }
@@ -118,7 +118,7 @@ void BoneMapperItem::create_editor() {
 	hbox->add_child(skeleton_bone_selector);
 
 	picker_button = memnew(Button);
-	picker_button->set_icon(get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
+	picker_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
 	picker_button->connect("pressed", callable_mp(this, &BoneMapperItem::_open_picker));
 	hbox->add_child(picker_button);
 
@@ -194,7 +194,7 @@ void BonePicker::create_bones_tree(Skeleton3D *p_skeleton) {
 
 	items.insert(-1, root);
 
-	Ref<Texture> bone_icon = get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons"));
+	Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("BoneAttachment3D"));
 
 	Vector<int> bones_to_process = p_skeleton->get_parentless_bones();
 	bool is_first = true;
@@ -297,7 +297,7 @@ void BoneMapper::create_editor() {
 	group_hbox->add_child(profile_group_selector);
 
 	clear_mapping_button = memnew(Button);
-	clear_mapping_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+	clear_mapping_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
 	clear_mapping_button->set_tooltip_text(TTR("Clear mappings in current group."));
 	clear_mapping_button->connect("pressed", callable_mp(this, &BoneMapper::_clear_mapping_current_group));
 	group_hbox->add_child(clear_mapping_button);
@@ -398,13 +398,13 @@ void BoneMapper::recreate_editor() {
 		if (hmn) {
 			StringName hmn_group_name = profile->get_group_name(current_group_idx);
 			if (hmn_group_name == "Body") {
-				profile_texture->set_texture(get_theme_icon(SNAME("BoneMapHumanBody"), SNAME("EditorIcons")));
+				profile_texture->set_texture(get_editor_theme_icon(SNAME("BoneMapHumanBody")));
 			} else if (hmn_group_name == "Face") {
-				profile_texture->set_texture(get_theme_icon(SNAME("BoneMapHumanFace"), SNAME("EditorIcons")));
+				profile_texture->set_texture(get_editor_theme_icon(SNAME("BoneMapHumanFace")));
 			} else if (hmn_group_name == "LeftHand") {
-				profile_texture->set_texture(get_theme_icon(SNAME("BoneMapHumanLeftHand"), SNAME("EditorIcons")));
+				profile_texture->set_texture(get_editor_theme_icon(SNAME("BoneMapHumanLeftHand")));
 			} else if (hmn_group_name == "RightHand") {
-				profile_texture->set_texture(get_theme_icon(SNAME("BoneMapHumanRightHand"), SNAME("EditorIcons")));
+				profile_texture->set_texture(get_editor_theme_icon(SNAME("BoneMapHumanRightHand")));
 			}
 		} else {
 			profile_texture->set_texture(profile->get_texture(current_group_idx));

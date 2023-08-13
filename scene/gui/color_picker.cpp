@@ -654,7 +654,9 @@ void ColorPicker::_text_type_toggled() {
 	text_is_constructor = !text_is_constructor;
 	if (text_is_constructor) {
 		text_type->set_text("");
-		text_type->set_icon(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
+#ifdef TOOLS_ENABLED
+		text_type->set_icon(get_editor_theme_icon(SNAME("Script")));
+#endif
 
 		c_text->set_editable(false);
 		c_text->set_tooltip_text(RTR("Copy this constructor in a script."));

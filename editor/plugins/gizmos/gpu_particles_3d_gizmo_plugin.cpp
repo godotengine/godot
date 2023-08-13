@@ -40,7 +40,7 @@ GPUParticles3DGizmoPlugin::GPUParticles3DGizmoPlugin() {
 	create_material("particles_material", gizmo_color);
 	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("particles_solid_material", gizmo_color);
-	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoGPUParticles3D"), SNAME("EditorIcons")));
+	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoGPUParticles3D")));
 	create_handle_material("handles");
 }
 

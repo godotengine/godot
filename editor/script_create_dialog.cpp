@@ -40,6 +40,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
 
@@ -111,7 +112,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				Ref<Texture2D> language_icon = get_theme_icon(ScriptServer::get_language(i)->get_type(), SNAME("EditorIcons"));
+				Ref<Texture2D> language_icon = get_editor_theme_icon(ScriptServer::get_language(i)->get_type());
 				if (language_icon.is_valid()) {
 					language_menu->set_item_icon(i, language_icon);
 				}
@@ -134,9 +135,9 @@ void ScriptCreateDialog::_notification(int p_what) {
 				use_templates->set_pressed(is_using_templates);
 			}
 
-			path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-			parent_browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-			parent_search_button->set_icon(get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
+			path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
+			parent_browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
+			parent_search_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
 		} break;
 	}
 }
@@ -644,8 +645,8 @@ void ScriptCreateDialog::_update_template_menu() {
 						}
 						t.id = id;
 						template_list.push_back(t);
-						String icon = has_theme_icon(t.inherit, SNAME("EditorIcons")) ? t.inherit : "Object";
-						template_menu->set_item_icon(id, get_theme_icon(icon, SNAME("EditorIcons")));
+						String icon = has_theme_icon(t.inherit, EditorStringName(EditorIcons)) ? t.inherit : "Object";
+						template_menu->set_item_icon(id, get_editor_theme_icon(icon));
 					}
 				}
 				ancestor_level++;

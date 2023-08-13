@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/node_dock.h"
@@ -323,7 +324,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 void ConnectDialog::_update_method_tree() {
 	method_tree->clear();
 
-	Color disabled_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")) * 0.7;
+	Color disabled_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * 0.7;
 	String search_string = method_search->get_text();
 	Node *target = tree->get_selected();
 	if (!target) {
@@ -359,7 +360,7 @@ void ConnectDialog::_update_method_tree() {
 		if (!methods.is_empty()) {
 			TreeItem *si_item = method_tree->create_item(root_item);
 			si_item->set_text(0, TTR("Attached Script"));
-			si_item->set_icon(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
+			si_item->set_icon(0, get_editor_theme_icon(SNAME("Script")));
 			si_item->set_selectable(0, false);
 
 			_create_method_tree_items(methods, si_item);
@@ -376,9 +377,9 @@ void ConnectDialog::_update_method_tree() {
 	do {
 		TreeItem *class_item = method_tree->create_item(root_item);
 		class_item->set_text(0, current_class);
-		Ref<Texture2D> icon = get_theme_icon(SNAME("Node"), SNAME("EditorIcons"));
-		if (has_theme_icon(current_class, SNAME("EditorIcons"))) {
-			icon = get_theme_icon(current_class, SNAME("EditorIcons"));
+		Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Node"));
+		if (has_theme_icon(current_class, EditorStringName(EditorIcons))) {
+			icon = get_editor_theme_icon(current_class);
 		}
 		class_item->set_icon(0, icon);
 		class_item->set_selectable(0, false);
@@ -443,7 +444,7 @@ void ConnectDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < type_list->get_item_count(); i++) {
 				String type_name = Variant::get_type_name((Variant::Type)type_list->get_item_id(i));
-				type_list->set_item_icon(i, get_theme_icon(type_name, SNAME("EditorIcons")));
+				type_list->set_item_icon(i, get_editor_theme_icon(type_name));
 			}
 
 			Ref<StyleBox> style = get_theme_stylebox("normal", "LineEdit")->duplicate();
@@ -451,8 +452,8 @@ void ConnectDialog::_notification(int p_what) {
 				style->set_content_margin(SIDE_TOP, style->get_content_margin(SIDE_TOP) + 1.0);
 				from_signal->add_theme_style_override("normal", style);
 			}
-			method_search->set_right_icon(get_theme_icon("Search", "EditorIcons"));
-			open_method_tree->set_icon(get_theme_icon("Edit", "EditorIcons"));
+			method_search->set_right_icon(get_editor_theme_icon("Search"));
+			open_method_tree->set_icon(get_editor_theme_icon("Edit"));
 		} break;
 	}
 }
@@ -592,7 +593,7 @@ void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_
 
 void ConnectDialog::popup_dialog(const String p_for_signal) {
 	from_signal->set_text(p_for_signal);
-	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	filter_nodes->clear();
 
 	if (!advanced->is_pressed()) {
@@ -995,15 +996,15 @@ void ConnectionsDock::_tree_item_selected() {
 	TreeItem *item = tree->get_selected();
 	if (item && _get_item_type(*item) == TREE_ITEM_TYPE_SIGNAL) {
 		connect_button->set_text(TTR("Connect..."));
-		connect_button->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+		connect_button->set_icon(get_editor_theme_icon(SNAME("Instance")));
 		connect_button->set_disabled(false);
 	} else if (item && _get_item_type(*item) == TREE_ITEM_TYPE_CONNECTION) {
 		connect_button->set_text(TTR("Disconnect"));
-		connect_button->set_icon(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+		connect_button->set_icon(get_editor_theme_icon(SNAME("Unlinked")));
 		connect_button->set_disabled(false);
 	} else {
 		connect_button->set_text(TTR("Connect..."));
-		connect_button->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+		connect_button->set_icon(get_editor_theme_icon(SNAME("Instance")));
 		connect_button->set_disabled(true);
 	}
 }
@@ -1261,18 +1262,18 @@ void ConnectionsDock::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			class_menu->set_item_icon(class_menu->get_item_index(CLASS_MENU_OPEN_DOCS), get_theme_icon(SNAME("Help"), SNAME("EditorIcons")));
+			class_menu->set_item_icon(class_menu->get_item_index(CLASS_MENU_OPEN_DOCS), get_editor_theme_icon(SNAME("Help")));
 
-			signal_menu->set_item_icon(signal_menu->get_item_index(SIGNAL_MENU_CONNECT), get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
-			signal_menu->set_item_icon(signal_menu->get_item_index(SIGNAL_MENU_DISCONNECT_ALL), get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			signal_menu->set_item_icon(signal_menu->get_item_index(SIGNAL_MENU_COPY_NAME), get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-			signal_menu->set_item_icon(signal_menu->get_item_index(SIGNAL_MENU_OPEN_DOCS), get_theme_icon(SNAME("Help"), SNAME("EditorIcons")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(SIGNAL_MENU_CONNECT), get_editor_theme_icon(SNAME("Instance")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(SIGNAL_MENU_DISCONNECT_ALL), get_editor_theme_icon(SNAME("Unlinked")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(SIGNAL_MENU_COPY_NAME), get_editor_theme_icon(SNAME("ActionCopy")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(SIGNAL_MENU_OPEN_DOCS), get_editor_theme_icon(SNAME("Help")));
 
-			slot_menu->set_item_icon(slot_menu->get_item_index(SLOT_MENU_EDIT), get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-			slot_menu->set_item_icon(slot_menu->get_item_index(SLOT_MENU_GO_TO_METHOD), get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons")));
-			slot_menu->set_item_icon(slot_menu->get_item_index(SLOT_MENU_DISCONNECT), get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			slot_menu->set_item_icon(slot_menu->get_item_index(SLOT_MENU_EDIT), get_editor_theme_icon(SNAME("Edit")));
+			slot_menu->set_item_icon(slot_menu->get_item_index(SLOT_MENU_GO_TO_METHOD), get_editor_theme_icon(SNAME("ArrowRight")));
+			slot_menu->set_item_icon(slot_menu->get_item_index(SLOT_MENU_DISCONNECT), get_editor_theme_icon(SNAME("Unlinked")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1342,8 +1343,8 @@ void ConnectionsDock::update_tree() {
 			}
 
 			class_icon = editor_data.get_script_icon(script_base);
-			if (class_icon.is_null() && has_theme_icon(native_base, SNAME("EditorIcons"))) {
-				class_icon = get_theme_icon(native_base, SNAME("EditorIcons"));
+			if (class_icon.is_null() && has_theme_icon(native_base, EditorStringName(EditorIcons))) {
+				class_icon = get_editor_theme_icon(native_base);
 			}
 
 			script_base->get_script_signal_list(&class_signals);
@@ -1382,8 +1383,8 @@ void ConnectionsDock::update_tree() {
 				doc_class_name = String();
 			}
 
-			if (has_theme_icon(native_base, SNAME("EditorIcons"))) {
-				class_icon = get_theme_icon(native_base, SNAME("EditorIcons"));
+			if (has_theme_icon(native_base, EditorStringName(EditorIcons))) {
+				class_icon = get_editor_theme_icon(native_base);
 			}
 
 			ClassDB::get_signal_list(native_base, &class_signals, true);
@@ -1392,7 +1393,7 @@ void ConnectionsDock::update_tree() {
 		}
 
 		if (class_icon.is_null()) {
-			class_icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+			class_icon = get_editor_theme_icon(SNAME("Object"));
 		}
 
 		TreeItem *section_item = nullptr;
@@ -1408,7 +1409,7 @@ void ConnectionsDock::update_tree() {
 			section_item->set_icon(0, class_icon);
 			section_item->set_selectable(0, false);
 			section_item->set_editable(0, false);
-			section_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+			section_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 			section_item->set_metadata(0, doc_class_name);
 		}
 
@@ -1434,7 +1435,7 @@ void ConnectionsDock::update_tree() {
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
 			signal_item->set_metadata(0, sinfo);
-			signal_item->set_icon(0, get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")));
+			signal_item->set_icon(0, get_editor_theme_icon(SNAME("Signal")));
 
 			// Set tooltip with the signal's documentation.
 			{
@@ -1491,11 +1492,11 @@ void ConnectionsDock::update_tree() {
 				TreeItem *connection_item = tree->create_item(signal_item);
 				connection_item->set_text(0, path);
 				connection_item->set_metadata(0, connection);
-				connection_item->set_icon(0, get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
+				connection_item->set_icon(0, get_editor_theme_icon(SNAME("Slot")));
 
 				if (_is_connection_inherited(connection)) {
 					// The scene inherits this connection.
-					connection_item->set_custom_color(0, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+					connection_item->set_custom_color(0, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 					connection_item->set_meta("_inherited_connection", true);
 				}
 			}
@@ -1503,7 +1504,7 @@ void ConnectionsDock::update_tree() {
 	}
 
 	connect_button->set_text(TTR("Connect..."));
-	connect_button->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+	connect_button->set_icon(get_editor_theme_icon(SNAME("Instance")));
 	connect_button->set_disabled(true);
 }
 

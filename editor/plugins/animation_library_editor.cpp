@@ -32,6 +32,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 
@@ -73,7 +74,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 	}
 
 	if (error != "") {
-		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		add_library_validate->set_text(error);
 		add_library_dialog->get_ok_button()->set_disabled(true);
 	} else {
@@ -86,7 +87,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 				add_library_validate->set_text(TTR("Library name is valid."));
 			}
 		}
-		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
+		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		add_library_dialog->get_ok_button()->set_disabled(false);
 	}
 }
@@ -622,7 +623,7 @@ void AnimationLibraryEditor::update_tree() {
 	tree->clear();
 	ERR_FAIL_COND(!player);
 
-	Color ss_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
+	Color ss_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 
 	TreeItem *root = tree->create_item();
 	TypedArray<StringName> libs = player->call("get_animation_library_list");
@@ -669,14 +670,14 @@ void AnimationLibraryEditor::update_tree() {
 
 		libitem->set_editable(0, !animation_library_is_foreign);
 		libitem->set_metadata(0, K);
-		libitem->set_icon(0, get_theme_icon("AnimationLibrary", "EditorIcons"));
+		libitem->set_icon(0, get_editor_theme_icon("AnimationLibrary"));
 
-		libitem->add_button(0, get_theme_icon("Add", "EditorIcons"), LIB_BUTTON_ADD, animation_library_is_foreign, TTR("Add Animation to Library"));
-		libitem->add_button(0, get_theme_icon("Load", "EditorIcons"), LIB_BUTTON_LOAD, animation_library_is_foreign, TTR("Load animation from file and add to library"));
-		libitem->add_button(0, get_theme_icon("ActionPaste", "EditorIcons"), LIB_BUTTON_PASTE, animation_library_is_foreign, TTR("Paste Animation to Library from clipboard"));
+		libitem->add_button(0, get_editor_theme_icon("Add"), LIB_BUTTON_ADD, animation_library_is_foreign, TTR("Add Animation to Library"));
+		libitem->add_button(0, get_editor_theme_icon("Load"), LIB_BUTTON_LOAD, animation_library_is_foreign, TTR("Load animation from file and add to library"));
+		libitem->add_button(0, get_editor_theme_icon("ActionPaste"), LIB_BUTTON_PASTE, animation_library_is_foreign, TTR("Paste Animation to Library from clipboard"));
 
-		libitem->add_button(1, get_theme_icon("Save", "EditorIcons"), LIB_BUTTON_FILE, false, TTR("Save animation library to resource on disk"));
-		libitem->add_button(1, get_theme_icon("Remove", "EditorIcons"), LIB_BUTTON_DELETE, false, TTR("Remove animation library"));
+		libitem->add_button(1, get_editor_theme_icon("Save"), LIB_BUTTON_FILE, false, TTR("Save animation library to resource on disk"));
+		libitem->add_button(1, get_editor_theme_icon("Remove"), LIB_BUTTON_DELETE, false, TTR("Remove animation library"));
 
 		libitem->set_custom_bg_color(0, ss_color);
 
@@ -687,8 +688,8 @@ void AnimationLibraryEditor::update_tree() {
 			anitem->set_text(0, L);
 			anitem->set_editable(0, !animation_library_is_foreign);
 			anitem->set_metadata(0, L);
-			anitem->set_icon(0, get_theme_icon("Animation", "EditorIcons"));
-			anitem->add_button(0, get_theme_icon("ActionCopy", "EditorIcons"), ANIM_BUTTON_COPY, animation_library_is_foreign, TTR("Copy animation to clipboard"));
+			anitem->set_icon(0, get_editor_theme_icon("Animation"));
+			anitem->add_button(0, get_editor_theme_icon("ActionCopy"), ANIM_BUTTON_COPY, animation_library_is_foreign, TTR("Copy animation to clipboard"));
 
 			Ref<Animation> anim = al->get_animation(L);
 			String anim_path = anim->get_path();
@@ -715,8 +716,8 @@ void AnimationLibraryEditor::update_tree() {
 					anitem->set_text(1, anim_path.get_file());
 				}
 			}
-			anitem->add_button(1, get_theme_icon("Save", "EditorIcons"), ANIM_BUTTON_FILE, animation_library_is_foreign, TTR("Save animation to resource on disk"));
-			anitem->add_button(1, get_theme_icon("Remove", "EditorIcons"), ANIM_BUTTON_DELETE, animation_library_is_foreign, TTR("Remove animation from Library"));
+			anitem->add_button(1, get_editor_theme_icon("Save"), ANIM_BUTTON_FILE, animation_library_is_foreign, TTR("Save animation to resource on disk"));
+			anitem->add_button(1, get_editor_theme_icon("Remove"), ANIM_BUTTON_DELETE, animation_library_is_foreign, TTR("Remove animation from Library"));
 		}
 	}
 }

@@ -190,7 +190,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		// Scene collection source.
 		TileSetScenesCollectionSource *scene_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 		if (scene_collection_source) {
-			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+			texture = get_editor_theme_icon(SNAME("PackedScene"));
 			if (item_text.is_empty()) {
 				if (scene_collection_source->get_scene_tiles_count() > 0) {
 					item_text = vformat(TTR("Scene Collection Source (ID: %d)"), source_id);
@@ -364,11 +364,11 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			sources_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-			sources_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			source_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
-			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
+			sources_delete_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			sources_add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			source_sort_button->set_icon(get_editor_theme_icon(SNAME("Sort")));
+			sources_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			missing_texture_texture = get_editor_theme_icon(SNAME("TileSet"));
 			expanded_area->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
 			_update_sources_list();
 		} break;

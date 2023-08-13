@@ -41,6 +41,7 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_script.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export_platform.h"
@@ -132,6 +133,8 @@ void register_editor_types() {
 
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
+
+	EditorStringNames::create();
 
 	GDREGISTER_CLASS(EditorPaths);
 	GDREGISTER_CLASS(EditorPlugin);
@@ -289,6 +292,7 @@ void unregister_editor_types() {
 	if (EditorPaths::get_singleton()) {
 		EditorPaths::free();
 	}
+	EditorStringNames::free();
 
 	OS::get_singleton()->benchmark_end_measure("unregister_editor_types");
 }

@@ -36,6 +36,7 @@
 #include "editor/editor_icons.gen.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
@@ -313,9 +314,9 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 		}
 	}
 	// These colors should be converted even if we are using a dark theme.
-	const Color error_color = p_theme->get_color(SNAME("error_color"), SNAME("Editor"));
-	const Color success_color = p_theme->get_color(SNAME("success_color"), SNAME("Editor"));
-	const Color warning_color = p_theme->get_color(SNAME("warning_color"), SNAME("Editor"));
+	const Color error_color = p_theme->get_color(SNAME("error_color"), EditorStringName(Editor));
+	const Color success_color = p_theme->get_color(SNAME("success_color"), EditorStringName(Editor));
+	const Color warning_color = p_theme->get_color(SNAME("warning_color"), EditorStringName(Editor));
 	color_conversion_map[Color::html("#ff5f5f")] = error_color;
 	color_conversion_map[Color::html("#5fff97")] = success_color;
 	color_conversion_map[Color::html("#ffdd65")] = warning_color;
@@ -335,7 +336,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 	HashMap<Color, Color> accent_color_map;
 	HashSet<StringName> accent_color_icons;
 
-	const Color accent_color = p_theme->get_color(SNAME("accent_color"), SNAME("Editor"));
+	const Color accent_color = p_theme->get_color(SNAME("accent_color"), EditorStringName(Editor));
 	accent_color_map[Color::html("699ce8")] = accent_color;
 	if (accent_color.get_luminance() > 0.75) {
 		accent_color_map[Color::html("ffffff")] = Color(0.2, 0.2, 0.2);
@@ -369,7 +370,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 				}
 			}
 
-			p_theme->set_icon(editor_icon_name, SNAME("EditorIcons"), icon);
+			p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), icon);
 		}
 	}
 
@@ -396,7 +397,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 				}
 			}
 
-			p_theme->set_icon(editor_icons_names[index], SNAME("EditorIcons"), icon);
+			p_theme->set_icon(editor_icons_names[index], EditorStringName(EditorIcons), icon);
 		}
 	} else {
 		const float scale = (float)p_thumb_size / 32.0 * EDSCALE;
@@ -419,7 +420,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 				}
 			}
 
-			p_theme->set_icon(editor_icons_names[index], SNAME("EditorIcons"), icon);
+			p_theme->set_icon(editor_icons_names[index], EditorStringName(EditorIcons), icon);
 		}
 	}
 	OS::get_singleton()->benchmark_end_measure("editor_register_and_generate_icons_" + String((p_only_thumbs ? "with_only_thumbs" : "all")));
@@ -572,38 +573,38 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color disabled_highlight_color = highlight_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
 
 	// Can't save single float in theme, so using Color.
-	theme->set_color("icon_saturation", "Editor", Color(icon_saturation, icon_saturation, icon_saturation));
-	theme->set_color("accent_color", "Editor", accent_color);
-	theme->set_color("highlight_color", "Editor", highlight_color);
-	theme->set_color("disabled_highlight_color", "Editor", disabled_highlight_color);
-	theme->set_color("base_color", "Editor", base_color);
-	theme->set_color("dark_color_1", "Editor", dark_color_1);
-	theme->set_color("dark_color_2", "Editor", dark_color_2);
-	theme->set_color("dark_color_3", "Editor", dark_color_3);
-	theme->set_color("contrast_color_1", "Editor", contrast_color_1);
-	theme->set_color("contrast_color_2", "Editor", contrast_color_2);
-	theme->set_color("box_selection_fill_color", "Editor", accent_color * Color(1, 1, 1, 0.3));
-	theme->set_color("box_selection_stroke_color", "Editor", accent_color * Color(1, 1, 1, 0.8));
+	theme->set_color("icon_saturation", EditorStringName(Editor), Color(icon_saturation, icon_saturation, icon_saturation));
+	theme->set_color("accent_color", EditorStringName(Editor), accent_color);
+	theme->set_color("highlight_color", EditorStringName(Editor), highlight_color);
+	theme->set_color("disabled_highlight_color", EditorStringName(Editor), disabled_highlight_color);
+	theme->set_color("base_color", EditorStringName(Editor), base_color);
+	theme->set_color("dark_color_1", EditorStringName(Editor), dark_color_1);
+	theme->set_color("dark_color_2", EditorStringName(Editor), dark_color_2);
+	theme->set_color("dark_color_3", EditorStringName(Editor), dark_color_3);
+	theme->set_color("contrast_color_1", EditorStringName(Editor), contrast_color_1);
+	theme->set_color("contrast_color_2", EditorStringName(Editor), contrast_color_2);
+	theme->set_color("box_selection_fill_color", EditorStringName(Editor), accent_color * Color(1, 1, 1, 0.3));
+	theme->set_color("box_selection_stroke_color", EditorStringName(Editor), accent_color * Color(1, 1, 1, 0.8));
 
-	theme->set_color("axis_x_color", "Editor", Color(0.96, 0.20, 0.32));
-	theme->set_color("axis_y_color", "Editor", Color(0.53, 0.84, 0.01));
-	theme->set_color("axis_z_color", "Editor", Color(0.16, 0.55, 0.96));
-	theme->set_color("axis_w_color", "Editor", Color(0.55, 0.55, 0.55));
+	theme->set_color("axis_x_color", EditorStringName(Editor), Color(0.96, 0.20, 0.32));
+	theme->set_color("axis_y_color", EditorStringName(Editor), Color(0.53, 0.84, 0.01));
+	theme->set_color("axis_z_color", EditorStringName(Editor), Color(0.16, 0.55, 0.96));
+	theme->set_color("axis_w_color", EditorStringName(Editor), Color(0.55, 0.55, 0.55));
 
 	const float prop_color_saturation = accent_color.get_s() * 0.75;
 	const float prop_color_value = accent_color.get_v();
 
-	theme->set_color("property_color_x", "Editor", Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-	theme->set_color("property_color_y", "Editor", Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-	theme->set_color("property_color_z", "Editor", Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-	theme->set_color("property_color_w", "Editor", Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_x", EditorStringName(Editor), Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_y", EditorStringName(Editor), Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_z", EditorStringName(Editor), Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_w", EditorStringName(Editor), Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 
-	theme->set_color("font_color", "Editor", font_color);
-	theme->set_color("highlighted_font_color", "Editor", font_hover_color);
-	theme->set_color("disabled_font_color", "Editor", font_disabled_color);
-	theme->set_color("readonly_font_color", "Editor", font_readonly_color);
+	theme->set_color("font_color", EditorStringName(Editor), font_color);
+	theme->set_color("highlighted_font_color", EditorStringName(Editor), font_hover_color);
+	theme->set_color("disabled_font_color", EditorStringName(Editor), font_disabled_color);
+	theme->set_color("readonly_font_color", EditorStringName(Editor), font_readonly_color);
 
-	theme->set_color("mono_color", "Editor", mono_color);
+	theme->set_color("mono_color", EditorStringName(Editor), mono_color);
 
 	Color success_color = Color(0.45, 0.95, 0.5);
 	Color warning_color = Color(1, 0.87, 0.4);
@@ -619,27 +620,27 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		error_color = error_color.lerp(mono_color, 0.25);
 	}
 
-	theme->set_color("success_color", "Editor", success_color);
-	theme->set_color("warning_color", "Editor", warning_color);
-	theme->set_color("error_color", "Editor", error_color);
-	theme->set_color("property_color", "Editor", property_color);
-	theme->set_color("readonly_color", "Editor", readonly_color);
+	theme->set_color("success_color", EditorStringName(Editor), success_color);
+	theme->set_color("warning_color", EditorStringName(Editor), warning_color);
+	theme->set_color("error_color", EditorStringName(Editor), error_color);
+	theme->set_color("property_color", EditorStringName(Editor), property_color);
+	theme->set_color("readonly_color", EditorStringName(Editor), readonly_color);
 
 	if (!dark_theme) {
-		theme->set_color("highend_color", "Editor", Color::hex(0xad1128ff));
+		theme->set_color("highend_color", EditorStringName(Editor), Color::hex(0xad1128ff));
 	} else {
-		theme->set_color("highend_color", "Editor", Color(1.0, 0.0, 0.0));
+		theme->set_color("highend_color", EditorStringName(Editor), Color(1.0, 0.0, 0.0));
 	}
 
 	const int thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
-	theme->set_constant("scale", "Editor", EDSCALE);
-	theme->set_constant("thumb_size", "Editor", thumb_size);
-	theme->set_constant("class_icon_size", "Editor", 16 * EDSCALE);
-	theme->set_constant("dark_theme", "Editor", dark_theme);
-	theme->set_constant("color_picker_button_height", "Editor", 28 * EDSCALE);
-	theme->set_constant("gizmo_handle_scale", "Editor", gizmo_handle_scale);
-	theme->set_constant("window_border_margin", "Editor", 8);
-	theme->set_constant("top_bar_separation", "Editor", 8 * EDSCALE);
+	theme->set_constant("scale", EditorStringName(Editor), EDSCALE);
+	theme->set_constant("thumb_size", EditorStringName(Editor), thumb_size);
+	theme->set_constant("class_icon_size", EditorStringName(Editor), 16 * EDSCALE);
+	theme->set_constant("dark_theme", EditorStringName(Editor), dark_theme);
+	theme->set_constant("color_picker_button_height", EditorStringName(Editor), 28 * EDSCALE);
+	theme->set_constant("gizmo_handle_scale", EditorStringName(Editor), gizmo_handle_scale);
+	theme->set_constant("window_border_margin", EditorStringName(Editor), 8);
+	theme->set_constant("top_bar_separation", EditorStringName(Editor), 8 * EDSCALE);
 
 	// Register editor icons.
 	// If the settings are comparable to the old theme, then just copy them over.
@@ -651,11 +652,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 		// That doesn't really work as expected, since theme constants are integers, and scales are floats.
 		// So this check will never work when changing between 100-199% values.
-		const float prev_scale = (float)p_theme->get_constant(SNAME("scale"), SNAME("Editor"));
-		const bool prev_dark_theme = (bool)p_theme->get_constant(SNAME("dark_theme"), SNAME("Editor"));
-		const Color prev_accent_color = p_theme->get_color(SNAME("accent_color"), SNAME("Editor"));
-		const float prev_icon_saturation = p_theme->get_color(SNAME("icon_saturation"), SNAME("Editor")).r;
-		const float prev_gizmo_handle_scale = (float)p_theme->get_constant(SNAME("gizmo_handle_scale"), SNAME("Editor"));
+		const float prev_scale = (float)p_theme->get_constant(SNAME("scale"), EditorStringName(Editor));
+		const bool prev_dark_theme = (bool)p_theme->get_constant(SNAME("dark_theme"), EditorStringName(Editor));
+		const Color prev_accent_color = p_theme->get_color(SNAME("accent_color"), EditorStringName(Editor));
+		const float prev_icon_saturation = p_theme->get_color(SNAME("icon_saturation"), EditorStringName(Editor)).r;
+		const float prev_gizmo_handle_scale = (float)p_theme->get_constant(SNAME("gizmo_handle_scale"), EditorStringName(Editor));
 
 		keep_old_icons = (Math::is_equal_approx(prev_scale, EDSCALE) &&
 				Math::is_equal_approx(prev_gizmo_handle_scale, gizmo_handle_scale) &&
@@ -663,7 +664,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 				prev_accent_color == accent_color &&
 				prev_icon_saturation == icon_saturation);
 
-		const double prev_thumb_size = (double)p_theme->get_constant(SNAME("thumb_size"), SNAME("Editor"));
+		const double prev_thumb_size = (double)p_theme->get_constant(SNAME("thumb_size"), EditorStringName(Editor));
 
 		regenerate_thumb_icons = !Math::is_equal_approx(prev_thumb_size, thumb_size);
 	}
@@ -674,7 +675,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	if (keep_old_icons) {
 		for (int i = 0; i < editor_icons_count; i++) {
-			theme->set_icon(editor_icons_names[i], SNAME("EditorIcons"), p_theme->get_icon(editor_icons_names[i], SNAME("EditorIcons")));
+			theme->set_icon(editor_icons_names[i], EditorStringName(EditorIcons), p_theme->get_icon(editor_icons_names[i], EditorStringName(EditorIcons)));
 		}
 	} else {
 		editor_register_and_generate_icons(theme, dark_theme, icon_saturation, thumb_size, false);
@@ -815,27 +816,27 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Editor background
 	Color background_color_opaque = background_color;
 	background_color_opaque.a = 1.0;
-	theme->set_color("background", "Editor", background_color_opaque);
-	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(background_color_opaque, default_margin_size, default_margin_size, default_margin_size, default_margin_size));
+	theme->set_color("background", EditorStringName(Editor), background_color_opaque);
+	theme->set_stylebox("Background", EditorStringName(EditorStyles), make_flat_stylebox(background_color_opaque, default_margin_size, default_margin_size, default_margin_size, default_margin_size));
 
 	// Focus
-	theme->set_stylebox("Focus", "EditorStyles", style_widget_focus);
+	theme->set_stylebox("Focus", EditorStringName(EditorStyles), style_widget_focus);
 	// Use a less opaque color to be less distracting for the 2D and 3D editor viewports.
 	Ref<StyleBoxFlat> style_widget_focus_viewport = style_widget_focus->duplicate();
 	style_widget_focus_viewport->set_border_color(accent_color * Color(1, 1, 1, 0.5));
-	theme->set_stylebox("FocusViewport", "EditorStyles", style_widget_focus_viewport);
+	theme->set_stylebox("FocusViewport", EditorStringName(EditorStyles), style_widget_focus_viewport);
 
 	// Menu
 	Ref<StyleBoxFlat> style_menu = style_widget->duplicate();
 	style_menu->set_draw_center(false);
 	style_menu->set_border_width_all(0);
 	theme->set_stylebox("panel", "PanelContainer", style_menu);
-	theme->set_stylebox("MenuPanel", "EditorStyles", style_menu);
+	theme->set_stylebox("MenuPanel", EditorStringName(EditorStyles), style_menu);
 
 	// CanvasItem Editor
 	Ref<StyleBoxFlat> style_canvas_editor_info = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2));
 	style_canvas_editor_info->set_expand_margin_all(4 * EDSCALE);
-	theme->set_stylebox("CanvasItemInfoOverlay", "EditorStyles", style_canvas_editor_info);
+	theme->set_stylebox("CanvasItemInfoOverlay", EditorStringName(EditorStyles), style_canvas_editor_info);
 
 	// 2D and 3D contextual toolbar.
 	// Use a custom stylebox to make contextual menu items stand out from the rest.
@@ -850,25 +851,25 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	toolbar_stylebox->set_border_color(accent_color);
 	toolbar_stylebox->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
 	toolbar_stylebox->set_content_margin(SIDE_BOTTOM, 0);
-	theme->set_stylebox("ContextualToolbar", "EditorStyles", toolbar_stylebox);
+	theme->set_stylebox("ContextualToolbar", EditorStringName(EditorStyles), toolbar_stylebox);
 
 	// Script Editor
-	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(default_margin_size, 0, default_margin_size, default_margin_size));
-	theme->set_stylebox("ScriptEditorPanelFloating", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("ScriptEditorPanel", EditorStringName(EditorStyles), make_empty_stylebox(default_margin_size, 0, default_margin_size, default_margin_size));
+	theme->set_stylebox("ScriptEditorPanelFloating", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 
-	theme->set_stylebox("ScriptEditor", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 
 	// Launch Pad and Play buttons
 	Ref<StyleBoxFlat> style_launch_pad = make_flat_stylebox(dark_color_1, 2 * EDSCALE, 0, 2 * EDSCALE, 0, corner_width);
 	style_launch_pad->set_corner_radius_all(corner_radius * EDSCALE);
-	theme->set_stylebox("LaunchPadNormal", "EditorStyles", style_launch_pad);
+	theme->set_stylebox("LaunchPadNormal", EditorStringName(EditorStyles), style_launch_pad);
 	Ref<StyleBoxFlat> style_launch_pad_movie = style_launch_pad->duplicate();
 	style_launch_pad_movie->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
 	style_launch_pad_movie->set_border_color(accent_color);
 	style_launch_pad_movie->set_border_width_all(Math::round(2 * EDSCALE));
-	theme->set_stylebox("LaunchPadMovieMode", "EditorStyles", style_launch_pad_movie);
+	theme->set_stylebox("LaunchPadMovieMode", EditorStringName(EditorStyles), style_launch_pad_movie);
 
-	theme->set_stylebox("MovieWriterButtonNormal", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("MovieWriterButtonNormal", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 	Ref<StyleBoxFlat> style_write_movie_button = style_widget_pressed->duplicate();
 	style_write_movie_button->set_bg_color(accent_color);
 	style_write_movie_button->set_corner_radius_all(corner_radius * EDSCALE);
@@ -877,7 +878,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_write_movie_button->set_content_margin(SIDE_LEFT, 0);
 	style_write_movie_button->set_content_margin(SIDE_RIGHT, 0);
 	style_write_movie_button->set_expand_margin(SIDE_RIGHT, 2 * EDSCALE);
-	theme->set_stylebox("MovieWriterButtonPressed", "EditorStyles", style_write_movie_button);
+	theme->set_stylebox("MovieWriterButtonPressed", EditorStringName(EditorStyles), style_write_movie_button);
 
 	// MenuButton
 	theme->set_stylebox("normal", "MenuButton", style_menu);
@@ -894,7 +895,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("outline_size", "MenuButton", 0);
 
-	theme->set_stylebox("MenuHover", "EditorStyles", style_widget_hover);
+	theme->set_stylebox("MenuHover", EditorStringName(EditorStyles), style_widget_hover);
 
 	// Buttons
 	theme->set_stylebox("normal", "Button", style_widget);
@@ -1061,7 +1062,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_pressed_color", "OptionButton", icon_pressed_color);
 	theme->set_color("icon_disabled_color", "OptionButton", icon_disabled_color);
 
-	theme->set_icon("arrow", "OptionButton", theme->get_icon(SNAME("GuiOptionArrow"), SNAME("EditorIcons")));
+	theme->set_icon("arrow", "OptionButton", theme->get_icon(SNAME("GuiOptionArrow"), EditorStringName(EditorIcons)));
 	theme->set_constant("arrow_margin", "OptionButton", widget_default_margin.x - 2 * EDSCALE);
 	theme->set_constant("modulate_arrow", "OptionButton", true);
 	theme->set_constant("h_separation", "OptionButton", 4 * EDSCALE);
@@ -1074,15 +1075,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("hover", "CheckButton", style_menu);
 	theme->set_stylebox("hover_pressed", "CheckButton", style_menu);
 
-	theme->set_icon("checked", "CheckButton", theme->get_icon(SNAME("GuiToggleOn"), SNAME("EditorIcons")));
-	theme->set_icon("checked_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("unchecked", "CheckButton", theme->get_icon(SNAME("GuiToggleOff"), SNAME("EditorIcons")));
-	theme->set_icon("unchecked_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabled"), SNAME("EditorIcons")));
+	theme->set_icon("checked", "CheckButton", theme->get_icon(SNAME("GuiToggleOn"), EditorStringName(EditorIcons)));
+	theme->set_icon("checked_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabled"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked", "CheckButton", theme->get_icon(SNAME("GuiToggleOff"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabled"), EditorStringName(EditorIcons)));
 
-	theme->set_icon("checked_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnMirrored"), SNAME("EditorIcons")));
-	theme->set_icon("checked_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabledMirrored"), SNAME("EditorIcons")));
-	theme->set_icon("unchecked_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffMirrored"), SNAME("EditorIcons")));
-	theme->set_icon("unchecked_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabledMirrored"), SNAME("EditorIcons")));
+	theme->set_icon("checked_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnMirrored"), EditorStringName(EditorIcons)));
+	theme->set_icon("checked_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabledMirrored"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffMirrored"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabledMirrored"), EditorStringName(EditorIcons)));
 
 	theme->set_color("font_color", "CheckButton", font_color);
 	theme->set_color("font_hover_color", "CheckButton", font_hover_color);
@@ -1111,14 +1112,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("disabled", "CheckBox", sb_checkbox);
 	theme->set_stylebox("hover", "CheckBox", sb_checkbox);
 	theme->set_stylebox("hover_pressed", "CheckBox", sb_checkbox);
-	theme->set_icon("checked", "CheckBox", theme->get_icon(SNAME("GuiChecked"), SNAME("EditorIcons")));
-	theme->set_icon("unchecked", "CheckBox", theme->get_icon(SNAME("GuiUnchecked"), SNAME("EditorIcons")));
-	theme->set_icon("radio_checked", "CheckBox", theme->get_icon(SNAME("GuiRadioChecked"), SNAME("EditorIcons")));
-	theme->set_icon("radio_unchecked", "CheckBox", theme->get_icon(SNAME("GuiRadioUnchecked"), SNAME("EditorIcons")));
-	theme->set_icon("checked_disabled", "CheckBox", theme->get_icon(SNAME("GuiCheckedDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("unchecked_disabled", "CheckBox", theme->get_icon(SNAME("GuiUncheckedDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("radio_checked_disabled", "CheckBox", theme->get_icon(SNAME("GuiRadioCheckedDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("radio_unchecked_disabled", "CheckBox", theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), SNAME("EditorIcons")));
+	theme->set_icon("checked", "CheckBox", theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked", "CheckBox", theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("radio_checked", "CheckBox", theme->get_icon(SNAME("GuiRadioChecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("radio_unchecked", "CheckBox", theme->get_icon(SNAME("GuiRadioUnchecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("checked_disabled", "CheckBox", theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked_disabled", "CheckBox", theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
+	theme->set_icon("radio_checked_disabled", "CheckBox", theme->get_icon(SNAME("GuiRadioCheckedDisabled"), EditorStringName(EditorIcons)));
+	theme->set_icon("radio_unchecked_disabled", "CheckBox", theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), EditorStringName(EditorIcons)));
 
 	theme->set_color("font_color", "CheckBox", font_color);
 	theme->set_color("font_hover_color", "CheckBox", font_hover_color);
@@ -1171,19 +1172,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_disabled_color", "PopupMenu", font_disabled_color);
 	theme->set_color("font_separator_color", "PopupMenu", font_disabled_color);
 	theme->set_color("font_outline_color", "PopupMenu", font_outline_color);
-	theme->set_icon("checked", "PopupMenu", theme->get_icon(SNAME("GuiChecked"), SNAME("EditorIcons")));
-	theme->set_icon("unchecked", "PopupMenu", theme->get_icon(SNAME("GuiUnchecked"), SNAME("EditorIcons")));
-	theme->set_icon("radio_checked", "PopupMenu", theme->get_icon(SNAME("GuiRadioChecked"), SNAME("EditorIcons")));
-	theme->set_icon("radio_unchecked", "PopupMenu", theme->get_icon(SNAME("GuiRadioUnchecked"), SNAME("EditorIcons")));
-	theme->set_icon("checked_disabled", "PopupMenu", theme->get_icon(SNAME("GuiCheckedDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("unchecked_disabled", "PopupMenu", theme->get_icon(SNAME("GuiUncheckedDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("radio_checked_disabled", "PopupMenu", theme->get_icon(SNAME("GuiRadioCheckedDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("radio_unchecked_disabled", "PopupMenu", theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("submenu", "PopupMenu", theme->get_icon(SNAME("ArrowRight"), SNAME("EditorIcons")));
-	theme->set_icon("submenu_mirrored", "PopupMenu", theme->get_icon(SNAME("ArrowLeft"), SNAME("EditorIcons")));
-	theme->set_icon("visibility_hidden", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")));
-	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
-	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityXray"), SNAME("EditorIcons")));
+	theme->set_icon("checked", "PopupMenu", theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked", "PopupMenu", theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("radio_checked", "PopupMenu", theme->get_icon(SNAME("GuiRadioChecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("radio_unchecked", "PopupMenu", theme->get_icon(SNAME("GuiRadioUnchecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("checked_disabled", "PopupMenu", theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked_disabled", "PopupMenu", theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
+	theme->set_icon("radio_checked_disabled", "PopupMenu", theme->get_icon(SNAME("GuiRadioCheckedDisabled"), EditorStringName(EditorIcons)));
+	theme->set_icon("radio_unchecked_disabled", "PopupMenu", theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), EditorStringName(EditorIcons)));
+	theme->set_icon("submenu", "PopupMenu", theme->get_icon(SNAME("ArrowRight"), EditorStringName(EditorIcons)));
+	theme->set_icon("submenu_mirrored", "PopupMenu", theme->get_icon(SNAME("ArrowLeft"), EditorStringName(EditorIcons)));
+	theme->set_icon("visibility_hidden", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityHidden"), EditorStringName(EditorIcons)));
+	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityVisible"), EditorStringName(EditorIcons)));
+	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon(SNAME("GuiVisibilityXray"), EditorStringName(EditorIcons)));
 
 	// Force the v_separation to be even so that the spacing on top and bottom is even.
 	// If the vsep is odd and cannot be split into 2 even groups (of pixels), then it will be lopsided.
@@ -1212,7 +1213,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		sub_inspector_bg->set_corner_radius(CORNER_TOP_LEFT, 0);
 		sub_inspector_bg->set_corner_radius(CORNER_TOP_RIGHT, 0);
 
-		theme->set_stylebox("sub_inspector_bg" + itos(i), "Editor", sub_inspector_bg);
+		theme->set_stylebox("sub_inspector_bg" + itos(i), EditorStringName(Editor), sub_inspector_bg);
 
 		// EditorProperty background while it has a sub-inspector open.
 		Ref<StyleBoxFlat> bg_color = make_flat_stylebox(si_base_color * Color(0.7, 0.7, 0.7, 0.8), 0, 0, 0, 0, corner_radius);
@@ -1220,10 +1221,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		bg_color->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 		bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
-		theme->set_stylebox("sub_inspector_property_bg" + itos(i), "Editor", bg_color);
+		theme->set_stylebox("sub_inspector_property_bg" + itos(i), EditorStringName(Editor), bg_color);
 	}
 
-	theme->set_color("sub_inspector_property_color", "Editor", dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1));
+	theme->set_color("sub_inspector_property_color", EditorStringName(Editor), dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1));
 
 	// EditorSpinSlider.
 	theme->set_color("label_color", "EditorSpinSlider", font_color);
@@ -1269,7 +1270,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("indent_box", "EditorInspectorSection", inspector_indent_style);
 	theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
 
-	theme->set_constant("inspector_margin", "Editor", 12 * EDSCALE);
+	theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);
 
 	// Tree & ItemList background
 	Ref<StyleBoxFlat> style_tree_bg = style_default->duplicate();
@@ -1286,14 +1287,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "EditorValidationPanel", style_tree_bg);
 
 	// Tree
-	theme->set_icon("checked", "Tree", theme->get_icon(SNAME("GuiChecked"), SNAME("EditorIcons")));
-	theme->set_icon("indeterminate", "Tree", theme->get_icon(SNAME("GuiIndeterminate"), SNAME("EditorIcons")));
-	theme->set_icon("unchecked", "Tree", theme->get_icon(SNAME("GuiUnchecked"), SNAME("EditorIcons")));
-	theme->set_icon("arrow", "Tree", theme->get_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
-	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
-	theme->set_icon("arrow_collapsed_mirrored", "Tree", theme->get_icon(SNAME("GuiTreeArrowLeft"), SNAME("EditorIcons")));
-	theme->set_icon("updown", "Tree", theme->get_icon(SNAME("GuiTreeUpdown"), SNAME("EditorIcons")));
-	theme->set_icon("select_arrow", "Tree", theme->get_icon(SNAME("GuiDropdown"), SNAME("EditorIcons")));
+	theme->set_icon("checked", "Tree", theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("indeterminate", "Tree", theme->get_icon(SNAME("GuiIndeterminate"), EditorStringName(EditorIcons)));
+	theme->set_icon("unchecked", "Tree", theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
+	theme->set_icon("arrow", "Tree", theme->get_icon(SNAME("GuiTreeArrowDown"), EditorStringName(EditorIcons)));
+	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon(SNAME("GuiTreeArrowRight"), EditorStringName(EditorIcons)));
+	theme->set_icon("arrow_collapsed_mirrored", "Tree", theme->get_icon(SNAME("GuiTreeArrowLeft"), EditorStringName(EditorIcons)));
+	theme->set_icon("updown", "Tree", theme->get_icon(SNAME("GuiTreeUpdown"), EditorStringName(EditorIcons)));
+	theme->set_icon("select_arrow", "Tree", theme->get_icon(SNAME("GuiDropdown"), EditorStringName(EditorIcons)));
 	theme->set_stylebox("focus", "Tree", style_widget_focus);
 	theme->set_stylebox("custom_button", "Tree", make_empty_stylebox());
 	theme->set_stylebox("custom_button_pressed", "Tree", make_empty_stylebox());
@@ -1376,9 +1377,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color prop_category_color = dark_color_1.lerp(mono_color, 0.12);
 	Color prop_section_color = dark_color_1.lerp(mono_color, 0.09);
 	Color prop_subsection_color = dark_color_1.lerp(mono_color, 0.06);
-	theme->set_color("prop_category", "Editor", prop_category_color);
-	theme->set_color("prop_section", "Editor", prop_section_color);
-	theme->set_color("prop_subsection", "Editor", prop_subsection_color);
+	theme->set_color("prop_category", EditorStringName(Editor), prop_category_color);
+	theme->set_color("prop_section", EditorStringName(Editor), prop_section_color);
+	theme->set_color("prop_subsection", EditorStringName(Editor), prop_subsection_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
 
 	// EditorInspectorCategory
@@ -1452,19 +1453,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_outline_color", "TabBar", font_outline_color);
 	theme->set_color("drop_mark_color", "TabContainer", tab_highlight);
 	theme->set_color("drop_mark_color", "TabBar", tab_highlight);
-	theme->set_icon("menu", "TabContainer", theme->get_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
-	theme->set_icon("menu_highlight", "TabContainer", theme->get_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-	theme->set_icon("close", "TabBar", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
-	theme->set_icon("increment", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowRight"), SNAME("EditorIcons")));
-	theme->set_icon("decrement", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeft"), SNAME("EditorIcons")));
-	theme->set_icon("increment", "TabBar", theme->get_icon(SNAME("GuiScrollArrowRight"), SNAME("EditorIcons")));
-	theme->set_icon("decrement", "TabBar", theme->get_icon(SNAME("GuiScrollArrowLeft"), SNAME("EditorIcons")));
-	theme->set_icon("increment_highlight", "TabBar", theme->get_icon(SNAME("GuiScrollArrowRightHl"), SNAME("EditorIcons")));
-	theme->set_icon("decrement_highlight", "TabBar", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
-	theme->set_icon("increment_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowRightHl"), SNAME("EditorIcons")));
-	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
-	theme->set_icon("drop_mark", "TabContainer", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
-	theme->set_icon("drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
+	theme->set_icon("menu", "TabContainer", theme->get_icon(SNAME("GuiTabMenu"), EditorStringName(EditorIcons)));
+	theme->set_icon("menu_highlight", "TabContainer", theme->get_icon(SNAME("GuiTabMenuHl"), EditorStringName(EditorIcons)));
+	theme->set_icon("close", "TabBar", theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
+	theme->set_icon("increment", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowRight"), EditorStringName(EditorIcons)));
+	theme->set_icon("decrement", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeft"), EditorStringName(EditorIcons)));
+	theme->set_icon("increment", "TabBar", theme->get_icon(SNAME("GuiScrollArrowRight"), EditorStringName(EditorIcons)));
+	theme->set_icon("decrement", "TabBar", theme->get_icon(SNAME("GuiScrollArrowLeft"), EditorStringName(EditorIcons)));
+	theme->set_icon("increment_highlight", "TabBar", theme->get_icon(SNAME("GuiScrollArrowRightHl"), EditorStringName(EditorIcons)));
+	theme->set_icon("decrement_highlight", "TabBar", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), EditorStringName(EditorIcons)));
+	theme->set_icon("increment_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowRightHl"), EditorStringName(EditorIcons)));
+	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), EditorStringName(EditorIcons)));
+	theme->set_icon("drop_mark", "TabContainer", theme->get_icon(SNAME("GuiTabDropMark"), EditorStringName(EditorIcons)));
+	theme->set_icon("drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabDropMark"), EditorStringName(EditorIcons)));
 	theme->set_constant("side_margin", "TabContainer", 0);
 	theme->set_constant("outline_size", "TabContainer", 0);
 	theme->set_constant("h_separation", "TabBar", 4 * EDSCALE);
@@ -1484,7 +1485,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Bottom panel.
 	Ref<StyleBoxFlat> style_bottom_panel = style_content_panel->duplicate();
 	style_bottom_panel->set_corner_radius_all(corner_radius * EDSCALE);
-	theme->set_stylebox("BottomPanel", "EditorStyles", style_bottom_panel);
+	theme->set_stylebox("BottomPanel", EditorStringName(EditorStyles), style_bottom_panel);
 
 	// TabContainerOdd can be used on tabs against the base color background (e.g. nested tabs).
 	theme->set_type_variation("TabContainerOdd", "TabContainer");
@@ -1500,20 +1501,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// This stylebox is used in 3d and 2d viewports (no borders).
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
 	style_content_panel_vp->set_content_margin_individual(border_width * 2, default_margin_size * EDSCALE, border_width * 2, border_width * 2);
-	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
+	theme->set_stylebox("Content", EditorStringName(EditorStyles), style_content_panel_vp);
 
 	// This stylebox is used by preview tabs in the Theme Editor.
 	Ref<StyleBoxFlat> style_theme_preview_tab = style_tab_selected_odd->duplicate();
 	style_theme_preview_tab->set_expand_margin(SIDE_BOTTOM, 5 * EDSCALE);
-	theme->set_stylebox("ThemeEditorPreviewFG", "EditorStyles", style_theme_preview_tab);
+	theme->set_stylebox("ThemeEditorPreviewFG", EditorStringName(EditorStyles), style_theme_preview_tab);
 	Ref<StyleBoxFlat> style_theme_preview_bg_tab = style_tab_unselected->duplicate();
 	style_theme_preview_bg_tab->set_expand_margin(SIDE_BOTTOM, 2 * EDSCALE);
-	theme->set_stylebox("ThemeEditorPreviewBG", "EditorStyles", style_theme_preview_bg_tab);
+	theme->set_stylebox("ThemeEditorPreviewBG", EditorStringName(EditorStyles), style_theme_preview_bg_tab);
 
 	Ref<StyleBoxFlat> style_texture_region_bg = style_tree_bg->duplicate();
 	style_texture_region_bg->set_content_margin_all(0);
-	theme->set_stylebox("TextureRegionPreviewBG", "EditorStyles", style_texture_region_bg);
-	theme->set_stylebox("TextureRegionPreviewFG", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("TextureRegionPreviewBG", EditorStringName(EditorStyles), style_texture_region_bg);
+	theme->set_stylebox("TextureRegionPreviewFG", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 
 	// Separators
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, MAX(Math::round(EDSCALE), border_width)));
@@ -1523,13 +1524,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxFlat> style_panel_debugger = style_content_panel->duplicate();
 	style_panel_debugger->set_border_width(SIDE_BOTTOM, 0);
-	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_panel_debugger);
+	theme->set_stylebox("DebuggerPanel", EditorStringName(EditorStyles), style_panel_debugger);
 
 	Ref<StyleBoxFlat> style_panel_invisible_top = style_content_panel->duplicate();
 	int stylebox_offset = theme->get_font(SNAME("tab_selected"), SNAME("TabContainer"))->get_height(theme->get_font_size(SNAME("tab_selected"), SNAME("TabContainer"))) + theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->get_minimum_size().height + theme->get_stylebox(SNAME("panel"), SNAME("TabContainer"))->get_content_margin(SIDE_TOP);
 	style_panel_invisible_top->set_expand_margin(SIDE_TOP, -stylebox_offset);
 	style_panel_invisible_top->set_content_margin(SIDE_TOP, 0);
-	theme->set_stylebox("BottomPanelDebuggerOverride", "EditorStyles", style_panel_invisible_top);
+	theme->set_stylebox("BottomPanelDebuggerOverride", EditorStringName(EditorStyles), style_panel_invisible_top);
 
 	// LineEdit
 
@@ -1559,7 +1560,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "LineEdit", style_line_edit);
 	theme->set_stylebox("focus", "LineEdit", style_widget_focus);
 	theme->set_stylebox("read_only", "LineEdit", style_line_edit_disabled);
-	theme->set_icon("clear", "LineEdit", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
+	theme->set_icon("clear", "LineEdit", theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
 	theme->set_color("font_color", "LineEdit", font_color);
 	theme->set_color("font_selected_color", "LineEdit", mono_color);
 	theme->set_color("font_uneditable_color", "LineEdit", font_readonly_color);
@@ -1578,8 +1579,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "TextEdit", style_line_edit);
 	theme->set_stylebox("focus", "TextEdit", style_widget_focus);
 	theme->set_stylebox("read_only", "TextEdit", style_line_edit_disabled);
-	theme->set_icon("tab", "TextEdit", theme->get_icon(SNAME("GuiTab"), SNAME("EditorIcons")));
-	theme->set_icon("space", "TextEdit", theme->get_icon(SNAME("GuiSpace"), SNAME("EditorIcons")));
+	theme->set_icon("tab", "TextEdit", theme->get_icon(SNAME("GuiTab"), EditorStringName(EditorIcons)));
+	theme->set_icon("space", "TextEdit", theme->get_icon(SNAME("GuiSpace"), EditorStringName(EditorIcons)));
 	theme->set_color("font_color", "TextEdit", font_color);
 	theme->set_color("font_readonly_color", "TextEdit", font_readonly_color);
 	theme->set_color("font_placeholder_color", "TextEdit", font_placeholder_color);
@@ -1592,10 +1593,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("outline_size", "TextEdit", 0);
 	theme->set_constant("caret_width", "TextEdit", 1);
 
-	theme->set_icon("h_grabber", "SplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
-	theme->set_icon("v_grabber", "SplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
-	theme->set_icon("grabber", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
-	theme->set_icon("grabber", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("h_grabber", "SplitContainer", theme->get_icon(SNAME("GuiHsplitter"), EditorStringName(EditorIcons)));
+	theme->set_icon("v_grabber", "SplitContainer", theme->get_icon(SNAME("GuiVsplitter"), EditorStringName(EditorIcons)));
+	theme->set_icon("grabber", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), EditorStringName(EditorIcons)));
+	theme->set_icon("grabber", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), EditorStringName(EditorIcons)));
 
 	theme->set_constant("separation", "SplitContainer", default_margin_size * 2 * EDSCALE);
 	theme->set_constant("separation", "HSplitContainer", default_margin_size * 2 * EDSCALE);
@@ -1646,14 +1647,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("embedded_unfocused_border", "Window", style_window);
 
 	theme->set_color("title_color", "Window", font_color);
-	theme->set_icon("close", "Window", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
-	theme->set_icon("close_pressed", "Window", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
+	theme->set_icon("close", "Window", theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
+	theme->set_icon("close_pressed", "Window", theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
 	theme->set_constant("close_h_offset", "Window", 22 * EDSCALE);
 	theme->set_constant("close_v_offset", "Window", 20 * EDSCALE);
 	theme->set_constant("title_height", "Window", 24 * EDSCALE);
 	theme->set_constant("resize_margin", "Window", 4 * EDSCALE);
-	theme->set_font("title_font", "Window", theme->get_font(SNAME("title"), SNAME("EditorFonts")));
-	theme->set_font_size("title_font_size", "Window", theme->get_font_size(SNAME("title_size"), SNAME("EditorFonts")));
+	theme->set_font("title_font", "Window", theme->get_font(SNAME("title"), EditorStringName(EditorFonts)));
+	theme->set_font_size("title_font_size", "Window", theme->get_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
 
 	// Complex window (currently only Editor Settings and Project Settings)
 	Ref<StyleBoxFlat> style_complex_window = style_window->duplicate();
@@ -1673,12 +1674,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "HScrollBar", make_line_stylebox(separator_color, 50));
 	} else {
-		theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+		theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
 	}
-	theme->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
-	theme->set_stylebox("grabber", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
-	theme->set_stylebox("grabber_highlight", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
-	theme->set_stylebox("grabber_pressed", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_highlight", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_pressed", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
 
 	theme->set_icon("increment", "HScrollBar", empty_icon);
 	theme->set_icon("increment_highlight", "HScrollBar", empty_icon);
@@ -1691,12 +1692,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (increase_scrollbar_touch_area) {
 		theme->set_stylebox("scroll", "VScrollBar", make_line_stylebox(separator_color, 50, 1, 1, true));
 	} else {
-		theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+		theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
 	}
-	theme->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
-	theme->set_stylebox("grabber", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
-	theme->set_stylebox("grabber_highlight", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
-	theme->set_stylebox("grabber_pressed", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_highlight", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_pressed", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
 
 	theme->set_icon("increment", "VScrollBar", empty_icon);
 	theme->set_icon("increment_highlight", "VScrollBar", empty_icon);
@@ -1706,8 +1707,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_pressed", "VScrollBar", empty_icon);
 
 	// HSlider
-	theme->set_icon("grabber_highlight", "HSlider", theme->get_icon(SNAME("GuiSliderGrabberHl"), SNAME("EditorIcons")));
-	theme->set_icon("grabber", "HSlider", theme->get_icon(SNAME("GuiSliderGrabber"), SNAME("EditorIcons")));
+	theme->set_icon("grabber_highlight", "HSlider", theme->get_icon(SNAME("GuiSliderGrabberHl"), EditorStringName(EditorIcons)));
+	theme->set_icon("grabber", "HSlider", theme->get_icon(SNAME("GuiSliderGrabber"), EditorStringName(EditorIcons)));
 	theme->set_stylebox("slider", "HSlider", make_flat_stylebox(dark_color_3, 0, default_margin_size / 2, 0, default_margin_size / 2, corner_width));
 	theme->set_stylebox("grabber_area", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2, corner_width));
 	theme->set_stylebox("grabber_area_highlight", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2));
@@ -1715,8 +1716,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("grabber_offset", "HSlider", 0);
 
 	// VSlider
-	theme->set_icon("grabber", "VSlider", theme->get_icon(SNAME("GuiSliderGrabber"), SNAME("EditorIcons")));
-	theme->set_icon("grabber_highlight", "VSlider", theme->get_icon(SNAME("GuiSliderGrabberHl"), SNAME("EditorIcons")));
+	theme->set_icon("grabber", "VSlider", theme->get_icon(SNAME("GuiSliderGrabber"), EditorStringName(EditorIcons)));
+	theme->set_icon("grabber_highlight", "VSlider", theme->get_icon(SNAME("GuiSliderGrabberHl"), EditorStringName(EditorIcons)));
 	theme->set_stylebox("slider", "VSlider", make_flat_stylebox(dark_color_3, default_margin_size / 2, 0, default_margin_size / 2, 0, corner_width));
 	theme->set_stylebox("grabber_area", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0, corner_width));
 	theme->set_stylebox("grabber_area_highlight", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0));
@@ -1764,7 +1765,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4, corner_width));
-	theme->set_stylebox("PanelForeground", "EditorStyles", style_default);
+	theme->set_stylebox("PanelForeground", EditorStringName(EditorStyles), style_default);
 
 	// Label
 	theme->set_stylebox("normal", "Label", style_empty);
@@ -1816,12 +1817,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_type_variation("ControlEditorPopupPanel", "PopupPanel");
 
 	// SpinBox
-	theme->set_icon("updown", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdown"), SNAME("EditorIcons")));
-	theme->set_icon("updown_disabled", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), SNAME("EditorIcons")));
+	theme->set_icon("updown", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdown"), EditorStringName(EditorIcons)));
+	theme->set_icon("updown_disabled", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), EditorStringName(EditorIcons)));
 
 	// ProgressBar
-	theme->set_stylebox("background", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressBar"), SNAME("EditorIcons")), 4, 4, 4, 4, 0, 0, 0, 0));
-	theme->set_stylebox("fill", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressFill"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 1, 2, 1));
+	theme->set_stylebox("background", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressBar"), EditorStringName(EditorIcons)), 4, 4, 4, 4, 0, 0, 0, 0));
+	theme->set_stylebox("fill", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressFill"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 2, 1, 2, 1));
 	theme->set_color("font_color", "ProgressBar", font_color);
 	theme->set_color("font_outline_color", "ProgressBar", font_outline_color);
 	theme->set_constant("outline_size", "ProgressBar", 0);
@@ -1835,17 +1836,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		theme->set_color("grid_major", "GraphEdit", Color(0.0, 0.0, 0.0, 0.15));
 		theme->set_color("grid_minor", "GraphEdit", Color(0.0, 0.0, 0.0, 0.07));
 	}
-	theme->set_color("selection_fill", "GraphEdit", theme->get_color(SNAME("box_selection_fill_color"), SNAME("Editor")));
-	theme->set_color("selection_stroke", "GraphEdit", theme->get_color(SNAME("box_selection_stroke_color"), SNAME("Editor")));
+	theme->set_color("selection_fill", "GraphEdit", theme->get_color(SNAME("box_selection_fill_color"), EditorStringName(Editor)));
+	theme->set_color("selection_stroke", "GraphEdit", theme->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor)));
 	theme->set_color("activity", "GraphEdit", accent_color);
 
-	theme->set_icon("zoom_out", "GraphEdit", theme->get_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
-	theme->set_icon("zoom_in", "GraphEdit", theme->get_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
-	theme->set_icon("zoom_reset", "GraphEdit", theme->get_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
-	theme->set_icon("grid_toggle", "GraphEdit", theme->get_icon(SNAME("GridToggle"), SNAME("EditorIcons")));
-	theme->set_icon("minimap_toggle", "GraphEdit", theme->get_icon(SNAME("GridMinimap"), SNAME("EditorIcons")));
-	theme->set_icon("snapping_toggle", "GraphEdit", theme->get_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
-	theme->set_icon("layout", "GraphEdit", theme->get_icon(SNAME("GridLayout"), SNAME("EditorIcons")));
+	theme->set_icon("zoom_out", "GraphEdit", theme->get_icon(SNAME("ZoomLess"), EditorStringName(EditorIcons)));
+	theme->set_icon("zoom_in", "GraphEdit", theme->get_icon(SNAME("ZoomMore"), EditorStringName(EditorIcons)));
+	theme->set_icon("zoom_reset", "GraphEdit", theme->get_icon(SNAME("ZoomReset"), EditorStringName(EditorIcons)));
+	theme->set_icon("grid_toggle", "GraphEdit", theme->get_icon(SNAME("GridToggle"), EditorStringName(EditorIcons)));
+	theme->set_icon("minimap_toggle", "GraphEdit", theme->get_icon(SNAME("GridMinimap"), EditorStringName(EditorIcons)));
+	theme->set_icon("snapping_toggle", "GraphEdit", theme->get_icon(SNAME("SnapGrid"), EditorStringName(EditorIcons)));
+	theme->set_icon("layout", "GraphEdit", theme->get_icon(SNAME("GridLayout"), EditorStringName(EditorIcons)));
 
 	// GraphEditMinimap
 	Ref<StyleBoxFlat> style_minimap_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
@@ -1874,7 +1875,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	} else {
 		minimap_resizer_color = Color(0, 0, 0, 0.65);
 	}
-	theme->set_icon("resizer", "GraphEditMinimap", theme->get_icon(SNAME("GuiResizerTopLeft"), SNAME("EditorIcons")));
+	theme->set_icon("resizer", "GraphEditMinimap", theme->get_icon(SNAME("GuiResizerTopLeft"), EditorStringName(EditorIcons)));
 	theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
 
 	// GraphNode
@@ -1950,25 +1951,25 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
 
-	theme->set_icon("close", "GraphNode", theme->get_icon(SNAME("GuiCloseCustomizable"), SNAME("EditorIcons")));
-	theme->set_icon("resizer", "GraphNode", theme->get_icon(SNAME("GuiResizer"), SNAME("EditorIcons")));
-	Ref<ImageTexture> port_icon = theme->get_icon(SNAME("GuiGraphNodePort"), SNAME("EditorIcons"));
+	theme->set_icon("close", "GraphNode", theme->get_icon(SNAME("GuiCloseCustomizable"), EditorStringName(EditorIcons)));
+	theme->set_icon("resizer", "GraphNode", theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons)));
+	Ref<ImageTexture> port_icon = theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
 	// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
 	port_icon->set_size_override(Size2(12, 12));
 	theme->set_icon("port", "GraphNode", port_icon);
 
-	theme->set_font("title_font", "GraphNode", theme->get_font(SNAME("main_bold_msdf"), SNAME("EditorFonts")));
+	theme->set_font("title_font", "GraphNode", theme->get_font(SNAME("main_bold_msdf"), EditorStringName(EditorFonts)));
 
 	// GridContainer
 	theme->set_constant("v_separation", "GridContainer", Math::round(widget_default_margin.y - 2 * EDSCALE));
 
 	// FileDialog
-	theme->set_icon("folder", "FileDialog", theme->get_icon(SNAME("Folder"), SNAME("EditorIcons")));
-	theme->set_icon("parent_folder", "FileDialog", theme->get_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
-	theme->set_icon("back_folder", "FileDialog", theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
-	theme->set_icon("forward_folder", "FileDialog", theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
-	theme->set_icon("reload", "FileDialog", theme->get_icon(SNAME("Reload"), SNAME("EditorIcons")));
-	theme->set_icon("toggle_hidden", "FileDialog", theme->get_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
+	theme->set_icon("folder", "FileDialog", theme->get_icon(SNAME("Folder"), EditorStringName(EditorIcons)));
+	theme->set_icon("parent_folder", "FileDialog", theme->get_icon(SNAME("ArrowUp"), EditorStringName(EditorIcons)));
+	theme->set_icon("back_folder", "FileDialog", theme->get_icon(SNAME("Back"), EditorStringName(EditorIcons)));
+	theme->set_icon("forward_folder", "FileDialog", theme->get_icon(SNAME("Forward"), EditorStringName(EditorIcons)));
+	theme->set_icon("reload", "FileDialog", theme->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
+	theme->set_icon("toggle_hidden", "FileDialog", theme->get_icon(SNAME("GuiVisibilityVisible"), EditorStringName(EditorIcons)));
 	// Use a different color for folder icons to make them easier to distinguish from files.
 	// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
 	theme->set_color("folder_icon_color", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(accent_color, 0.7));
@@ -1981,36 +1982,36 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("h_width", "ColorPicker", 30 * EDSCALE);
 	theme->set_constant("label_width", "ColorPicker", 10 * EDSCALE);
 	theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
-	theme->set_icon("screen_picker", "ColorPicker", theme->get_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
-	theme->set_icon("shape_circle", "ColorPicker", theme->get_icon(SNAME("PickerShapeCircle"), SNAME("EditorIcons")));
-	theme->set_icon("shape_rect", "ColorPicker", theme->get_icon(SNAME("PickerShapeRectangle"), SNAME("EditorIcons")));
-	theme->set_icon("shape_rect_wheel", "ColorPicker", theme->get_icon(SNAME("PickerShapeRectangleWheel"), SNAME("EditorIcons")));
-	theme->set_icon("add_preset", "ColorPicker", theme->get_icon(SNAME("Add"), SNAME("EditorIcons")));
-	theme->set_icon("sample_bg", "ColorPicker", theme->get_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
-	theme->set_icon("overbright_indicator", "ColorPicker", theme->get_icon(SNAME("OverbrightIndicator"), SNAME("EditorIcons")));
-	theme->set_icon("bar_arrow", "ColorPicker", theme->get_icon(SNAME("ColorPickerBarArrow"), SNAME("EditorIcons")));
-	theme->set_icon("picker_cursor", "ColorPicker", theme->get_icon(SNAME("PickerCursor"), SNAME("EditorIcons")));
+	theme->set_icon("screen_picker", "ColorPicker", theme->get_icon(SNAME("ColorPick"), EditorStringName(EditorIcons)));
+	theme->set_icon("shape_circle", "ColorPicker", theme->get_icon(SNAME("PickerShapeCircle"), EditorStringName(EditorIcons)));
+	theme->set_icon("shape_rect", "ColorPicker", theme->get_icon(SNAME("PickerShapeRectangle"), EditorStringName(EditorIcons)));
+	theme->set_icon("shape_rect_wheel", "ColorPicker", theme->get_icon(SNAME("PickerShapeRectangleWheel"), EditorStringName(EditorIcons)));
+	theme->set_icon("add_preset", "ColorPicker", theme->get_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+	theme->set_icon("sample_bg", "ColorPicker", theme->get_icon(SNAME("GuiMiniCheckerboard"), EditorStringName(EditorIcons)));
+	theme->set_icon("overbright_indicator", "ColorPicker", theme->get_icon(SNAME("OverbrightIndicator"), EditorStringName(EditorIcons)));
+	theme->set_icon("bar_arrow", "ColorPicker", theme->get_icon(SNAME("ColorPickerBarArrow"), EditorStringName(EditorIcons)));
+	theme->set_icon("picker_cursor", "ColorPicker", theme->get_icon(SNAME("PickerCursor"), EditorStringName(EditorIcons)));
 
 	// ColorPickerButton
-	theme->set_icon("bg", "ColorPickerButton", theme->get_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
+	theme->set_icon("bg", "ColorPickerButton", theme->get_icon(SNAME("GuiMiniCheckerboard"), EditorStringName(EditorIcons)));
 
 	// ColorPresetButton
 	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2, 2);
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
-	theme->set_icon("preset_bg", "ColorPresetButton", theme->get_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
-	theme->set_icon("overbright_indicator", "ColorPresetButton", theme->get_icon(SNAME("OverbrightIndicator"), SNAME("EditorIcons")));
+	theme->set_icon("preset_bg", "ColorPresetButton", theme->get_icon(SNAME("GuiMiniCheckerboard"), EditorStringName(EditorIcons)));
+	theme->set_icon("overbright_indicator", "ColorPresetButton", theme->get_icon(SNAME("OverbrightIndicator"), EditorStringName(EditorIcons)));
 
 	// Information on 3D viewport
 	Ref<StyleBoxFlat> style_info_3d_viewport = style_default->duplicate();
 	style_info_3d_viewport->set_bg_color(style_info_3d_viewport->get_bg_color() * Color(1, 1, 1, 0.5));
 	style_info_3d_viewport->set_border_width_all(0);
-	theme->set_stylebox("Information3dViewport", "EditorStyles", style_info_3d_viewport);
+	theme->set_stylebox("Information3dViewport", EditorStringName(EditorStyles), style_info_3d_viewport);
 
 	// Asset Library.
 	theme->set_stylebox("bg", "AssetLib", style_empty);
 	theme->set_stylebox("panel", "AssetLib", style_content_panel);
 	theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5));
-	theme->set_icon("dismiss", "AssetLib", theme->get_icon(SNAME("Close"), SNAME("EditorIcons")));
+	theme->set_icon("dismiss", "AssetLib", theme->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 
 	// Theme editor.
 	theme->set_color("preview_picker_overlay_color", "ThemeEditor", Color(0.1, 0.1, 0.1, 0.25));
@@ -2030,7 +2031,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_dictionary_add_item = make_flat_stylebox(prop_subsection_color, 0, 4, 0, 4, corner_radius);
 	style_dictionary_add_item->set_expand_margin(SIDE_LEFT, 4 * EDSCALE);
 	style_dictionary_add_item->set_expand_margin(SIDE_RIGHT, 4 * EDSCALE);
-	theme->set_stylebox("DictionaryAddItem", "EditorStyles", style_dictionary_add_item);
+	theme->set_stylebox("DictionaryAddItem", EditorStringName(EditorStyles), style_dictionary_add_item);
 
 	Ref<StyleBoxEmpty> vshader_label_style = make_empty_stylebox(2, 1, 2, 1);
 	theme->set_stylebox("label_style", "VShaderEditor", vshader_label_style);
@@ -2131,20 +2132,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	}
 
 	// Now theme is loaded, apply it to CodeEdit.
-	theme->set_font("font", "CodeEdit", theme->get_font(SNAME("source"), SNAME("EditorFonts")));
-	theme->set_font_size("font_size", "CodeEdit", theme->get_font_size(SNAME("source_size"), SNAME("EditorFonts")));
+	theme->set_font("font", "CodeEdit", theme->get_font(SNAME("source"), EditorStringName(EditorFonts)));
+	theme->set_font_size("font_size", "CodeEdit", theme->get_font_size(SNAME("source_size"), EditorStringName(EditorFonts)));
 
 	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(EDITOR_GET("text_editor/theme/highlighting/background_color"), widget_default_margin.x, widget_default_margin.y, widget_default_margin.x, widget_default_margin.y, corner_radius);
 	theme->set_stylebox("normal", "CodeEdit", code_edit_stylebox);
 	theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
 	theme->set_stylebox("focus", "CodeEdit", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
 
-	theme->set_icon("tab", "CodeEdit", theme->get_icon(SNAME("GuiTab"), SNAME("EditorIcons")));
-	theme->set_icon("space", "CodeEdit", theme->get_icon(SNAME("GuiSpace"), SNAME("EditorIcons")));
-	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("CodeFoldedRightArrow"), SNAME("EditorIcons")));
-	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("CodeFoldDownArrow"), SNAME("EditorIcons")));
-	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("TextEditorPlay"), SNAME("EditorIcons")));
-	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), SNAME("EditorIcons")));
+	theme->set_icon("tab", "CodeEdit", theme->get_icon(SNAME("GuiTab"), EditorStringName(EditorIcons)));
+	theme->set_icon("space", "CodeEdit", theme->get_icon(SNAME("GuiSpace"), EditorStringName(EditorIcons)));
+	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("CodeFoldedRightArrow"), EditorStringName(EditorIcons)));
+	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("CodeFoldDownArrow"), EditorStringName(EditorIcons)));
+	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("TextEditorPlay"), EditorStringName(EditorIcons)));
+	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), EditorStringName(EditorIcons)));
 
 	theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 

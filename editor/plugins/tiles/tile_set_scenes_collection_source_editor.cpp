@@ -332,7 +332,7 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 			Variant udata = i;
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, this, "_scene_thumbnail_done", udata);
 		} else {
-			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")));
+			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), get_editor_theme_icon(SNAME("PackedScene")));
 		}
 		scene_tiles_list->set_item_metadata(item_index, scene_id);
 
@@ -358,8 +358,8 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			scene_tile_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			scene_tile_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			scene_tile_add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			scene_tile_delete_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
 			_update_scenes_list();
 		} break;
 

@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -2013,11 +2014,11 @@ Ref<ImageTexture> EditorExportPlatformIOS::get_option_icon(int p_index) const {
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
 			if (devices[p_index].simulator) {
-				icon = theme->get_icon("IOSSimulator", "EditorIcons");
+				icon = theme->get_icon("IOSSimulator", EditorStringName(EditorIcons));
 			} else if (devices[p_index].wifi) {
-				icon = theme->get_icon("IOSDeviceWireless", "EditorIcons");
+				icon = theme->get_icon("IOSDeviceWireless", EditorStringName(EditorIcons));
 			} else {
-				icon = theme->get_icon("IOSDeviceWired", "EditorIcons");
+				icon = theme->get_icon("IOSDeviceWired", EditorStringName(EditorIcons));
 			}
 		}
 	}
