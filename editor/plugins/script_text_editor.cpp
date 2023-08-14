@@ -809,6 +809,7 @@ void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, 
 }
 
 void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+	
 	if (color_panel->is_visible()) {
 		return;
 	}
@@ -817,6 +818,9 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		base = _find_node_for_script(base, base, script);
 	}
 	String hint;
+
+
+	
 	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
 
 	if (err == OK) {

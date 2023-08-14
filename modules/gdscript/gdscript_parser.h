@@ -1406,6 +1406,7 @@ private:
 	}
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
+	void push_error(const String &p_message, int line, int column);
 #ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
 	template <typename... Symbols>
@@ -1517,6 +1518,7 @@ private:
 
 public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
+	String read_preprocessors(const String &p_source_code);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
 	ClassNode *find_class(const String &p_qualified_name) const;
