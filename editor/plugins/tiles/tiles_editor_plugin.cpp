@@ -325,6 +325,7 @@ void TileMapEditorPlugin::_tile_map_changed() {
 }
 
 void TileMapEditorPlugin::_update_tile_map() {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map) {
 		Ref<TileSet> tile_set = tile_map->get_tileset();
 		if (tile_set.is_valid() && edited_tileset != tile_set->get_instance_id()) {
@@ -347,11 +348,17 @@ void TileMapEditorPlugin::_notification(int p_notification) {
 }
 
 void TileMapEditorPlugin::edit(Object *p_object) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map) {
 		tile_map->disconnect("changed", callable_mp(this, &TileMapEditorPlugin::_tile_map_changed));
 	}
 
 	tile_map = Object::cast_to<TileMap>(p_object);
+	if (tile_map) {
+		tile_map_id = tile_map->get_instance_id();
+	} else {
+		tile_map_id = ObjectID();
+	}
 
 	editor->edit(tile_map);
 	if (tile_map) {
