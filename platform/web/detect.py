@@ -97,12 +97,9 @@ def configure(env: "Environment"):
     if env["use_assertions"]:
         env.Append(LINKFLAGS=["-s", "ASSERTIONS=1"])
 
-    if env.editor_build:
-        if env["initial_memory"] < 64:
-            print('Note: Forcing "initial_memory=64" as it is required for the web editor.')
-            env["initial_memory"] = 64
-    else:
-        env.Append(CPPFLAGS=["-fno-exceptions"])
+    if env.editor_build and env["initial_memory"] < 64:
+        print('Note: Forcing "initial_memory=64" as it is required for the web editor.')
+        env["initial_memory"] = 64
 
     env.Append(LINKFLAGS=["-s", "INITIAL_MEMORY=%sMB" % env["initial_memory"]])
 
