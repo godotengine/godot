@@ -477,6 +477,22 @@
 		<member name="filesystem/file_dialog/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the editor's file dialogs (in pixels). See also [member docks/filesystem/thumbnail_size].
 		</member>
+		<member name="filesystem/import/blender/blender3_path" type="String" setter="" getter="">
+			The path to the directory containing the Blender executable used for converting the Blender 3D scene files [code].blend[/code] to glTF 2.0 format during import. Blender 3.0 or later is required.
+			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/blender/enabled].
+		</member>
+		<member name="filesystem/import/blender/rpc_port" type="int" setter="" getter="">
+			The port number used for Remote Procedure Call (RPC) communication with Godot's created process of the blender executable.
+			Setting this to 0 effectively disables communication with Godot and the blender process, making performance slower.
+		</member>
+		<member name="filesystem/import/blender/rpc_server_uptime" type="float" setter="" getter="">
+			The maximum idle uptime (in seconds) of the Blender process.
+			This prevents Godot from having to create a new process for each import within the given seconds.
+		</member>
+		<member name="filesystem/import/fbx/fbx2gltf_path" type="String" setter="" getter="">
+			The path to the FBX2glTF executable used for converting Autodesk FBX 3D scene files [code].fbx[/code] to glTF 2.0 format during import.
+			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/fbx/enabled].
+		</member>
 		<member name="filesystem/on_save/compress_binary_resources" type="bool" setter="" getter="">
 			If [code]true[/code], uses lossless compression for binary resources.
 		</member>
