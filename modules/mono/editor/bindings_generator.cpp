@@ -523,7 +523,31 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_imethod->proxy_name);
-				p_xml_output.append("\"/>");
+				p_xml_output.append("(");
+				bool first_key = true;
+				for (const ArgumentInterface &iarg : target_imethod->arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+
+					if (first_key) {
+						first_key = false;
+					} else {
+						p_xml_output.append(", ");
+					}
+					if (!arg_type) {
+						ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
+						p_xml_output.append(iarg.type.cname);
+						continue;
+					}
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("Nullable{");
+					}
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					p_xml_output.append(arg_cs_type.replacen("<", "{").replacen(">", "}").replacen("params ", ""));
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("}");
+					}
+				}
+				p_xml_output.append(")\"/>");
 			} else {
 				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
