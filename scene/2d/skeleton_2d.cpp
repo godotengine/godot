@@ -433,29 +433,23 @@ PackedStringArray Bone2D::get_configuration_warnings() const {
 }
 
 void Bone2D::calculate_length_and_rotation() {
-	// if there is at least a single child Bone2D node, we can calculate
+	// If there is at least a single child Bone2D node, we can calculate
 	// the length and direction. We will always just use the first Bone2D for this.
-	bool calculated = false;
 	int child_count = get_child_count();
-	if (child_count > 0) {
-		for (int i = 0; i < child_count; i++) {
-			Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
-			if (child) {
-				Vector2 child_local_pos = to_local(child->get_global_position());
-				length = child_local_pos.length();
-				bone_angle = child_local_pos.normalized().angle();
-				calculated = true;
-				break;
-			}
+	Transform2D global_inv = get_global_transform().affine_inverse();
+
+	for (int i = 0; i < child_count; i++) {
+		Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
+		if (child) {
+			Vector2 child_local_pos = global_inv.xform(child->get_global_position());
+			length = child_local_pos.length();
+			bone_angle = child_local_pos.angle();
+			return; // Finished!
 		}
 	}
-	if (calculated) {
-		return; // Finished!
-	} else {
-		WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle");
-		bone_angle = get_transform().get_rotation();
-		return;
-	}
+
+	WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle.");
+	bone_angle = get_transform().get_rotation();
 }
 
 void Bone2D::set_autocalculate_length_and_angle(bool p_autocalculate) {
