@@ -148,7 +148,7 @@ static String fix_doc_description(const String &p_bbcode) {
 			.strip_edges();
 }
 
-String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype) {
+String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal) {
 	// Based on the version in EditorHelp
 
 	if (p_bbcode.is_empty()) {
@@ -305,11 +305,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				_append_xml_enum(xml_output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "constant") {
 				_append_xml_constant(xml_output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "param") {
+				_append_xml_param(xml_output, link_target, p_is_signal);
 			} else if (link_tag == "theme_item") {
 				// We do not declare theme_items in any way in C#, so there is nothing to reference
 				_append_xml_undeclared(xml_output, link_target);
-			} else if (link_tag == "param") {
-				_append_xml_undeclared(xml_output, snake_to_camel_case(link_target, false));
 			}
 
 			pos = brk_end + 1;
@@ -733,6 +733,21 @@ void BindingsGenerator::_append_xml_constant_in_global_scope(StringBuilder &p_xm
 			ERR_PRINT("Cannot resolve global constant reference in documentation: '" + p_link_target + "'.");
 			_append_xml_undeclared(p_xml_output, p_link_target);
 		}
+	}
+}
+
+void BindingsGenerator::_append_xml_param(StringBuilder &p_xml_output, const String &p_link_target, bool p_is_signal) {
+	const String link_target = snake_to_camel_case(p_link_target);
+
+	if (!p_is_signal) {
+		p_xml_output.append("<paramref name=\"");
+		p_xml_output.append(link_target);
+		p_xml_output.append("\"/>");
+	} else {
+		// Documentation in C# is added to an event, not the delegate itself;
+		// as such, we treat these parameters as codeblocks instead.
+		// See: https://github.com/godotengine/godot/pull/65529
+		_append_xml_undeclared(p_xml_output, link_target);
 	}
 }
 
@@ -2390,7 +2405,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_isignal.method_doc && p_isignal.method_doc->description.size()) {
-			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype);
+			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype, true);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 			if (summary_lines.size()) {
