@@ -2046,8 +2046,13 @@ void ObjectDB::cleanup() {
 	if (slot_count > 0) {
 		spin_lock.lock();
 
+#ifdef TOOLS_ENABLED
 		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
+#endif
 		if (OS::get_singleton()->is_stdout_verbose()) {
+#ifndef TOOLS_ENABLED
+			WARN_PRINT("ObjectDB instances leaked at exit.");
+#endif
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,
 			// now the scripting languages have already been terminated.
