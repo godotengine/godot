@@ -41,6 +41,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "scene/main/multiplayer_api.h"
+#include "modules/regex/regex.h"
 
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
@@ -153,6 +154,11 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 	} else {
 		errors.push_back({ p_message, p_origin->start_line, p_origin->leftmost_column });
 	}
+}
+
+void GDScriptParser::push_error(const String &p_message, int line, int column) {
+	panic_mode = true;
+	errors.push_back({p_message, line, column});
 }
 
 #ifdef DEBUG_ENABLED
@@ -269,7 +275,14 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion) {
 	clear();
 
-	String source = p_source_code;
+	String source = "";
+	GDScriptPreprocessor::ParserError preprocessor_data = preprocessor.read_source(p_source_code, source);
+	if (preprocessor_data.message != "") {
+		push_error(preprocessor_data.message, preprocessor_data.line, preprocessor_data.column);
+		return ERR_PARSE_ERROR;
+	}
+	if (source == "") source = p_source_code;
+	
 	int cursor_line = -1;
 	int cursor_column = -1;
 	for_completion = p_for_completion;
@@ -283,7 +296,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 
 	if (p_for_completion) {
 		// Remove cursor sentinel char.
-		const Vector<String> lines = p_source_code.split("\n");
+		const Vector<String> lines = source.split("\n");
 		cursor_line = 1;
 		cursor_column = 1;
 		for (int i = 0; i < lines.size(); i++) {

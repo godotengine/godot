@@ -33,6 +33,7 @@
 
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
+#include "gdscript_preprocessor.h"
 
 #ifdef DEBUG_ENABLED
 #include "gdscript_warning.h"
@@ -1315,6 +1316,7 @@ private:
 	HashSet<int> unsafe_lines;
 #endif
 
+	GDScriptPreprocessor preprocessor;
 	GDScriptTokenizer tokenizer;
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
@@ -1516,6 +1518,7 @@ private:
 #endif // TOOLS_ENABLED
 
 public:
+	void push_error(const String &p_message, int line, int column);
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }

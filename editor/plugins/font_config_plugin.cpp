@@ -621,7 +621,7 @@ void EditorPropertyOTFeatures::update_property() {
 
 	Dictionary supported;
 	if (fd.is_valid()) {
-		supported = fd->get_supported_feature_list();
+		supported = fd->get_supported_feature_list_compiled();
 	}
 
 	if (supported.is_empty()) {

@@ -212,6 +212,9 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 				case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
 					item.kind = lsp::CompletionItemKind::Variable;
 					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_PREPROCESSOR:
+					item.kind = lsp::CompletionItemKind::Preprocessor;
+					break;
 				case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
 					item.kind = lsp::CompletionItemKind::File;
 					break;

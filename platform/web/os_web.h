@@ -62,7 +62,7 @@ protected:
 
 	void finalize() override;
 
-	bool _check_internal_feature_support(const String &p_feature) override;
+	void _register_compiled_feature() override;
 
 public:
 	// Override return type to make writing static callbacks less tedious.

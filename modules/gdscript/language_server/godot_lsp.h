@@ -852,6 +852,7 @@ static const int Struct = 22;
 static const int Event = 23;
 static const int Operator = 24;
 static const int TypeParameter = 25;
+static const int Preprocessor = 26;
 }; // namespace CompletionItemKind
 
 // Use namespace instead of enumeration to follow the LSP specifications

@@ -1634,16 +1634,14 @@ String OS_Windows::get_unique_id() const {
 	return String((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
 }
 
-bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
-	if (p_feature == "system_fonts") {
-		return dwrite_init;
-	}
-	if (p_feature == "pc") {
-		return true;
-	}
-
-	return false;
+void OS_Windows::_register_compiled_feature() {
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::PC);
 }
+
+bool OS_Windows::_check_dynamic_feature(const String &p_feature) override {
+	return dwrite_init; // System fonts
+}
+
 
 void OS_Windows::disable_crash_handler() {
 	crash_handler.disable();

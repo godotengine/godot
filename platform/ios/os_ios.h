@@ -123,7 +123,7 @@ public:
 
 	virtual void vibrate_handheld(int p_duration_ms = 500) override;
 
-	virtual bool _check_internal_feature_support(const String &p_feature) override;
+	virtual void _register_compiled_feature() override;
 
 	void on_focus_out();
 	void on_focus_in();

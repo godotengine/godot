@@ -490,30 +490,24 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 	return !err_code ? ok : FAILED;
 }
 
-bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
+bool OS_LinuxBSD::_check_dynamic_feature(const String &p_feature) override {
 #ifdef FONTCONFIG_ENABLED
-	if (p_feature == "system_fonts") {
-		return font_config_initialized;
-	}
+	return font_config_initialized;
 #endif
+	return false;
+}
+
+void OS_LinuxBSD::_register_compiled_feature() {
 
 #ifndef __linux__
 	// `bsd` includes **all** BSD, not only "other BSD" (see `get_name()`).
-	if (p_feature == "bsd") {
-		return true;
-	}
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::BSD);
 #endif
 
-	if (p_feature == "pc") {
-		return true;
-	}
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::PC);
 
 	// Match against the specific OS (`linux`, `freebsd`, `netbsd`, `openbsd`).
-	if (p_feature == get_name().to_lower()) {
-		return true;
-	}
-
-	return false;
+	OS::get_singleton()->register_compile_time_feature(get_name().to_lower());
 }
 
 uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
