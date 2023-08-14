@@ -2655,6 +2655,12 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 TileSetAtlasSourceEditor::~TileSetAtlasSourceEditor() {
 	memdelete(tile_proxy_object);
 	memdelete(atlas_source_proxy_object);
+
+	// Remove listener for old objects, so the TileSet doesn't
+	// try to call the destroyed TileSetAtlasSourceEditor.
+	if (tile_set.is_valid()) {
+		tile_set->disconnect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
+	}
 }
 
 ////// EditorPropertyTilePolygon //////
