@@ -155,21 +155,10 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 		}
 
 		String xml_code_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"" + rtos(min_x) + " " + rtos(min_y) + " " + rtos(new_w) + " " + rtos(new_h) + "\">" + xml_body;
-#ifndef GDEXTENSION
 		gl_state.xml_code = xml_code_str.utf8();
-#else
-		CharString xml_code = xml_code_str.utf8();
-		gl_state.xml_code_length = xml_code.length();
-		gl_state.xml_code = memnew_arr(char, gl_state.xml_code_length);
-		memcpy(gl_state.xml_code, xml_code.get_data(), gl_state.xml_code_length);
-#endif
 
 		picture = tvg::Picture::gen();
-#ifndef GDEXTENSION
 		result = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", false);
-#else
-		result = picture->load(gl_state.xml_code, gl_state.xml_code_length, "svg+xml", false);
-#endif
 		if (result != tvg::Result::Success) {
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (glyph metrics).");
 		}
@@ -257,11 +246,7 @@ FT_Error tvg_svg_in_ot_render(FT_GlyphSlot p_slot, FT_Pointer *p_state) {
 	ERR_FAIL_COND_V_MSG(!gl_state.ready, FT_Err_Invalid_SVG_Document, "SVG glyph not ready.");
 
 	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
-#ifndef GDEXTENSION
 	tvg::Result res = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", false);
-#else
-	tvg::Result res = picture->load(gl_state.xml_code, gl_state.xml_code_length, "svg+xml", false);
-#endif
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (glyph rendering).");
 	}
