@@ -329,8 +329,8 @@ Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const s
 
 	if (Content && !Content->Tokens().empty()) {
 		//this field is omitted when the embedded texture is already loaded, let's ignore if it's not found
-		try {
-			const Token *token = GetRequiredToken(Content, 0);
+		const Token *token = GetRequiredToken(Content, 0);
+		if (token) {
 			const char *data = token->begin();
 			if (!token->IsBinary()) {
 				if (*data != '"') {
@@ -341,6 +341,7 @@ Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const s
 					// First time compute size (it could be large like 64Gb and it is good to allocate it once)
 					for (uint32_t tokenIdx = 0; tokenIdx < numTokens; ++tokenIdx) {
 						const Token *dataToken = GetRequiredToken(Content, tokenIdx);
+						ERR_FAIL_COND(!dataToken);
 						size_t tokenLength = dataToken->end() - dataToken->begin() - 2; // ignore double quotes
 						const char *base64data = dataToken->begin() + 1;
 						const size_t outLength = Util::ComputeDecodedSizeBase64(base64data, tokenLength);
@@ -383,10 +384,6 @@ Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const s
 				content = new uint8_t[len];
 				::memcpy(content, data + 5, len);
 			}
-		} catch (...) {
-			//			//we don't need the content data for contents that has already been loaded
-			//			ASSIMP_LOG_VERBOSE_DEBUG_F("Caught exception in FBXMaterial (likely because content was already loaded): ",
-			//									   runtimeError.what());
 		}
 	}
 

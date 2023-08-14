@@ -34,7 +34,6 @@ def get_opts():
         ),
         ("IPHONESDK", "Path to the iPhone SDK", ""),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),
-        BoolVariable("ios_exceptions", "Enable exceptions", False),
         ("ios_triple", "Triple for ios toolchain", ""),
     ]
 
@@ -156,13 +155,6 @@ def configure(env):
         env.Append(ASFLAGS=["-arch", "arm64"])
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
         env.Append(CPPDEFINES=["LIBYUV_DISABLE_NEON"])
-
-    # Disable exceptions on non-tools (template) builds
-    if not env["tools"]:
-        if env["ios_exceptions"]:
-            env.Append(CCFLAGS=["-fexceptions"])
-        else:
-            env.Append(CCFLAGS=["-fno-exceptions"])
 
     # Temp fix for ABS/MAX/MIN macros in iPhone SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
