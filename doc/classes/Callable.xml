@@ -138,7 +138,7 @@
 		<method name="get_method" qualifiers="const">
 			<return type="StringName" />
 			<description>
-				Returns the name of the method represented by this [Callable]. If the callable is a lambda function, returns the function's name.
+				Returns the name of the method represented by this [Callable]. If the callable is a GDScript lambda function, returns the function's name or [code]"&lt;anonymous lambda&gt;"[/code].
 			</description>
 		</method>
 		<method name="get_object" qualifiers="const">
