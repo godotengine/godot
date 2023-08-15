@@ -9,6 +9,7 @@
 		[b]Note:[/b] [FogVolume]s only have a visible effect if [member Environment.volumetric_fog_enabled] is [code]true[/code]. If you don't want fog to be globally visible (but only within [FogVolume] nodes), set [member Environment.volumetric_fog_density] to [code]0.0[/code].
 	</description>
 	<tutorials>
+		<link title="Volumetric fog and fog volumes">$DOCS_URL/tutorials/3d/volumetric_fog.html</link>
 	</tutorials>
 	<members>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
