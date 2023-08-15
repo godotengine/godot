@@ -898,7 +898,7 @@ void RasterizerSceneGLES3::environment_set_ssr(RID p_env, bool p_enable, int p_m
 	env->ssr_roughness = p_roughness;
 }
 
-void RasterizerSceneGLES3::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VisualServer::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {
+void RasterizerSceneGLES3::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VisualServer::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness, float p_max_obscurance) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -914,6 +914,7 @@ void RasterizerSceneGLES3::environment_set_ssao(RID p_env, bool p_enable, float 
 	env->ssao_filter = p_blur;
 	env->ssao_quality = p_quality;
 	env->ssao_bilateral_sharpness = p_bilateral_sharpness;
+	env->ssao_max_obscurance = p_max_obscurance;
 }
 
 void RasterizerSceneGLES3::environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
@@ -3407,6 +3408,7 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 		state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::SSAO_MERGE, true);
 		state.effect_blur_shader.bind();
 		state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::SSAO_COLOR, env->ssao_color);
+		state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::SSAO_MAX_OBSCURANCE, env->ssao_max_obscurance);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color); //previous level, since mipmaps[0] starts one level bigger
 		glActiveTexture(GL_TEXTURE1);

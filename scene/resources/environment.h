@@ -134,6 +134,7 @@ private:
 	Color ssao_color;
 	SSAOBlur ssao_blur;
 	float ssao_edge_sharpness;
+	float ssao_max_obscurance;
 	SSAOQuality ssao_quality;
 
 	bool glow_enabled;
@@ -303,6 +304,9 @@ public:
 
 	void set_ssao_edge_sharpness(float p_edge_sharpness);
 	float get_ssao_edge_sharpness() const;
+
+	void set_ssao_max_obscurance(float p_max_obscurance);
+	float get_ssao_max_obscurance() const;
 
 	void set_glow_enabled(bool p_enabled);
 	bool is_glow_enabled() const;
