@@ -433,17 +433,44 @@ void main() {
 #else
 	// look up transform from the "pose texture"
 	{
-		for (int i = 0; i < 4; i++) {
-			ivec2 tex_ofs = ivec2(int(bone_ids[i]) * 3, 0);
+		ivec4 bone_indicesi = ivec4(bone_ids); // cast to signed int
 
-			highp mat4 b = mat4(
-					texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(0, 0)),
-					texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(1, 0)),
-					texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(2, 0)),
-					vec4(0.0, 0.0, 0.0, 1.0));
+		ivec2 tex_ofs = ivec2(bone_indicesi.x * 3, 0);
+		bone_transform = mat4(
+								 texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs),
+								 texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(1, 0)),
+								 texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(2, 0)),
+								 vec4(0.0, 0.0, 0.0, 1.0)) *
+				bone_weights.x;
 
-			bone_transform += transpose(b) * bone_weights[i];
-		}
+		tex_ofs = ivec2(bone_indicesi.y * 3, 0);
+
+		bone_transform += mat4(
+								  texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs),
+								  texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(1, 0)),
+								  texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(2, 0)),
+								  vec4(0.0, 0.0, 0.0, 1.0)) *
+				bone_weights.y;
+
+		tex_ofs = ivec2(bone_indicesi.z * 3, 0);
+
+		bone_transform += mat4(
+								  texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs),
+								  texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(1, 0)),
+								  texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(2, 0)),
+								  vec4(0.0, 0.0, 0.0, 1.0)) *
+				bone_weights.z;
+
+		tex_ofs = ivec2(bone_indicesi.w * 3, 0);
+
+		bone_transform += mat4(
+								  texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs),
+								  texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(1, 0)),
+								  texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(2, 0)),
+								  vec4(0.0, 0.0, 0.0, 1.0)) *
+				bone_weights.w;
+
+		bone_transform = transpose(bone_transform);
 	}
 
 #endif
