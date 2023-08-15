@@ -35,8 +35,7 @@
 #include "scene/gui/panel.h"
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
-	Ref<InputEventKey> key = p_event;
-	if (get_flag(FLAG_POPUP) && key.is_valid() && key->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		_close_pressed();
 	}
 }

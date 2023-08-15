@@ -1318,7 +1318,7 @@ void MeshStorage::_multimesh_enable_motion_vectors(MultiMesh *multimesh) {
 		RD::get_singleton()->buffer_update(new_buffer, buffer_size, buffer_size, buffer_data.ptr());
 	} else if (!multimesh->data_cache.is_empty()) {
 		// Simply upload the data cached in the CPU, which should already be doubled in size.
-		ERR_FAIL_COND(multimesh->data_cache.size() != int(new_buffer_size));
+		ERR_FAIL_COND(multimesh->data_cache.size() * sizeof(float) != size_t(new_buffer_size));
 		RD::get_singleton()->buffer_update(new_buffer, 0, new_buffer_size, multimesh->data_cache.ptr());
 	}
 
@@ -1328,6 +1328,9 @@ void MeshStorage::_multimesh_enable_motion_vectors(MultiMesh *multimesh) {
 
 	multimesh->buffer = new_buffer;
 	multimesh->uniform_set_3d = RID(); // Cleared by dependency.
+
+	// Invalidate any references to the buffer that was released and the uniform set that was pointing to it.
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH);
 }
 
 void MeshStorage::_multimesh_get_motion_vectors_offsets(RID p_multimesh, uint32_t &r_current_offset, uint32_t &r_prev_offset) {

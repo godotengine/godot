@@ -298,7 +298,7 @@
 			[b]Note:[/b] Changing this value can help on platforms or with third-party tools where hidden directory patterns are disallowed. Only modify this setting if you know that your environment requires it, as changing the default can impact compatibility with some external tools or plugins which expect the default [code].godot[/code] folder.
 		</member>
 		<member name="application/config/version" type="String" setter="" getter="" default="&quot;&quot;">
-			The project's human-readable version identifier. This should always be set to a non-empty string, as some exporters rely on this value being defined.
+			The project's human-readable version identifier. This is used by exporters if the version identifier isn't overridden there. If [member application/config/version] is an empty string and the version identifier isn't overridden in an exporter, the exporter will use [code]1.0.0[/code] as a version identifier.
 		</member>
 		<member name="application/config/windows_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].

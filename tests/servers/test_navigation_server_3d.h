@@ -423,6 +423,7 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->free(map);
 	}
 
+#ifndef DISABLE_DEPRECATED
 	// This test case uses only public APIs on purpose - other test cases use simplified baking.
 	// FIXME: Remove once deprecated `region_bake_navigation_mesh()` is removed.
 	TEST_CASE("[NavigationServer3D][SceneTree][DEPRECATED] Server should be able to bake map correctly") {
@@ -470,6 +471,7 @@ TEST_SUITE("[Navigation]") {
 		memdelete(mesh_instance);
 		memdelete(node_3d);
 	}
+#endif // DISABLE_DEPRECATED
 
 	// This test case uses only public APIs on purpose - other test cases use simplified baking.
 	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to bake map correctly") {

@@ -3469,6 +3469,9 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 	for (GDScriptParser::ClassNode *script_class : script_classes) {
 		if (p_base == nullptr && script_class->identifier && script_class->identifier->name == name) {
 			reduce_identifier_from_base_set_class(p_identifier, script_class->get_datatype());
+			if (script_class->outer != nullptr) {
+				p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CLASS;
+			}
 			return;
 		}
 
