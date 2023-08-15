@@ -981,6 +981,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shaped_text_closest_character_pos" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_shaped_text_draw" qualifiers="virtual const">
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
@@ -1023,6 +1030,12 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="position" type="int" />
 			<param index="2" name="caret" type="CaretInfo*" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_character_breaks" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="shaped" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -1229,6 +1242,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shaped_text_next_character_pos" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_shaped_text_next_grapheme_pos" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
@@ -1241,6 +1261,13 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
 			<param index="2" name="trim_flags" type="int" enum="TextServer.TextOverrunFlag" is_bitfield="true" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_prev_character_pos" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
 			<description>
 			</description>
 		</method>
@@ -1353,6 +1380,13 @@
 		<method name="_spoof_check" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="string" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_string_get_character_breaks" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" />
 			<description>
 			</description>
 		</method>

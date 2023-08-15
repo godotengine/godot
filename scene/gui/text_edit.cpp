@@ -2374,7 +2374,7 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 				if (caret_mid_grapheme_enabled) {
 					set_caret_column(get_caret_column(i) - 1, i == 0, i);
 				} else {
-					set_caret_column(TS->shaped_text_prev_grapheme_pos(text.get_line_data(get_caret_line(i))->get_rid(), get_caret_column(i)), i == 0, i);
+					set_caret_column(TS->shaped_text_prev_character_pos(text.get_line_data(get_caret_line(i))->get_rid(), get_caret_column(i)), i == 0, i);
 				}
 			}
 		}
@@ -2433,7 +2433,7 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 				if (caret_mid_grapheme_enabled) {
 					set_caret_column(get_caret_column(i) + 1, i == 0, i);
 				} else {
-					set_caret_column(TS->shaped_text_next_grapheme_pos(text.get_line_data(get_caret_line(i))->get_rid(), get_caret_column(i)), i == 0, i);
+					set_caret_column(TS->shaped_text_next_character_pos(text.get_line_data(get_caret_line(i))->get_rid(), get_caret_column(i)), i == 0, i);
 				}
 			}
 		}
@@ -2815,7 +2815,7 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 			if (caret_mid_grapheme_enabled) {
 				next_column = get_caret_column(caret_idx) < curline_len ? (get_caret_column(caret_idx) + 1) : 0;
 			} else {
-				next_column = get_caret_column(caret_idx) < curline_len ? TS->shaped_text_next_grapheme_pos(text.get_line_data(get_caret_line(caret_idx))->get_rid(), (get_caret_column(caret_idx))) : 0;
+				next_column = get_caret_column(caret_idx) < curline_len ? TS->shaped_text_next_character_pos(text.get_line_data(get_caret_line(caret_idx))->get_rid(), (get_caret_column(caret_idx))) : 0;
 			}
 
 			// Remove overlapping carets.
@@ -4331,6 +4331,9 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 		colx = TS->shaped_text_get_size(text_rid).x - colx;
 	}
 	col = TS->shaped_text_hit_test_position(text_rid, colx);
+	if (!caret_mid_grapheme_enabled) {
+		col = TS->shaped_text_closest_character_pos(text_rid, col);
+	}
 
 	return Point2i(col, row);
 }
@@ -7023,7 +7026,11 @@ int TextEdit::_get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) con
 	if (is_layout_rtl()) {
 		p_px = TS->shaped_text_get_size(text_rid).x - p_px;
 	}
-	return TS->shaped_text_hit_test_position(text_rid, p_px);
+	int ofs = TS->shaped_text_hit_test_position(text_rid, p_px);
+	if (!caret_mid_grapheme_enabled) {
+		ofs = TS->shaped_text_closest_character_pos(text_rid, ofs);
+	}
+	return ofs;
 }
 
 /* Caret */

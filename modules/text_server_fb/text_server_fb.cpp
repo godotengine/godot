@@ -4079,6 +4079,20 @@ double TextServerFallback::_shaped_text_get_underline_thickness(const RID &p_sha
 	return sd->uthk;
 }
 
+PackedInt32Array TextServerFallback::_shaped_text_get_character_breaks(const RID &p_shaped) const {
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, PackedInt32Array());
+
+	MutexLock lock(sd->mutex);
+
+	PackedInt32Array ret;
+	ret.resize(sd->end - sd->start);
+	for (int i = sd->start; i < sd->end; i++) {
+		ret.write[i] = i;
+	}
+	return ret;
+}
+
 String TextServerFallback::_string_to_upper(const String &p_string, const String &p_language) const {
 	return p_string.to_upper();
 }

@@ -1585,6 +1585,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 					}
 				} else {
 					char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
+					char_pos = TS->shaped_text_closest_character_pos(rid, char_pos);
 				}
 			}
 			line_clicked = true;

@@ -788,6 +788,8 @@ public:
 	MODBIND1RC(double, shaped_text_get_underline_position, const RID &);
 	MODBIND1RC(double, shaped_text_get_underline_thickness, const RID &);
 
+	MODBIND1RC(PackedInt32Array, shaped_text_get_character_breaks, const RID &);
+
 	MODBIND3RC(PackedInt32Array, string_get_word_breaks, const String &, const String &, int64_t);
 
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
