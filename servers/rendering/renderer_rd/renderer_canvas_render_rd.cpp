@@ -348,7 +348,7 @@ void RendererCanvasRenderRD::free_polygon(PolygonID p_polygon) {
 
 ////////////////////
 
-void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size) {
+void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size, bool p_texture_is_data) {
 	if (p_texture == RID()) {
 		p_texture = default_canvas_texture;
 	}
@@ -363,7 +363,7 @@ void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RI
 	bool use_normal;
 	bool use_specular;
 
-	bool success = RendererRD::TextureStorage::get_singleton()->canvas_texture_get_uniform_set(p_texture, p_base_filter, p_base_repeat, shader.default_version_rd_shader, CANVAS_TEXTURE_UNIFORM_SET, bool(push_constant.flags & FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR), uniform_set, size, specular_shininess, use_normal, use_specular);
+	bool success = RendererRD::TextureStorage::get_singleton()->canvas_texture_get_uniform_set(p_texture, p_base_filter, p_base_repeat, shader.default_version_rd_shader, CANVAS_TEXTURE_UNIFORM_SET, bool(push_constant.flags & FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR), uniform_set, size, specular_shininess, use_normal, use_specular, p_texture_is_data);
 	//something odd happened
 	if (!success) {
 		_bind_canvas_texture(p_draw_list, default_canvas_texture, p_base_filter, p_base_repeat, r_last_texture, push_constant, r_texpixel_size);
@@ -507,7 +507,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 				//bind textures
 
-				_bind_canvas_texture(p_draw_list, rect->texture, current_filter, current_repeat, last_texture, push_constant, texpixel_size);
+				_bind_canvas_texture(p_draw_list, rect->texture, current_filter, current_repeat, last_texture, push_constant, texpixel_size, bool(rect->flags & CANVAS_RECT_MSDF));
 
 				Rect2 src_rect;
 				Rect2 dst_rect;
