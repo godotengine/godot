@@ -903,7 +903,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				if (rb_data.is_valid()) {
 					cc.a = 0; // For transparent viewport backgrounds.
 				}
-				c.push_back(cc); // Our render buffer.
+				c.push_back(cc.darkened(0.5)); // Our render buffer.
 				if (rb_data.is_valid()) {
 					if (p_render_data->render_buffers->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
 						c.push_back(clear_color.srgb_to_linear()); // Our resolve buffer.
