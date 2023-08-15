@@ -3806,6 +3806,13 @@ void RasterizerStorageGLES2::skeleton_attach_canvas_item(RID p_skeleton, RID p_c
 	ERR_FAIL_COND(!p_canvas_item.is_valid());
 
 	if (p_attach) {
+#ifdef DEV_ENABLED
+		// skeleton_attach_canvas_item() is not bound,
+		// and checks in canvas_item_attach_skeleton() should prevent this,
+		// but there isn't much harm in a DEV_ENABLED check here.
+		int64_t found = skeleton->linked_canvas_items.find(p_canvas_item);
+		ERR_FAIL_COND(found != -1);
+#endif
 		skeleton->linked_canvas_items.push_back(p_canvas_item);
 	} else {
 		int64_t found = skeleton->linked_canvas_items.find(p_canvas_item);
