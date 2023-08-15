@@ -132,6 +132,9 @@ func test():
 	var b_passed = (func check_b_passing(basic: Array): return basic[0] != null).call(b_objects)
 	assert(b_passed == true)
 
+	var casting_passed = (func check_casting_passing(p_objects: Array[A]): return p_objects.size()).call(b_objects)
+	assert(casting_passed == 3)
+
 
 	var empty_strings: Array[String] = []
 	var empty_bools: Array[bool] = []

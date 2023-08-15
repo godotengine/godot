@@ -84,7 +84,16 @@ public:
 						Ref<Script> array_script_type_ref = array.get_typed_script();
 
 						if (array_script_type_ref.is_valid()) {
-							valid = (container_element_type->kind == SCRIPT || container_element_type->kind == GDSCRIPT) && container_element_type->script_type == array_script_type_ref.ptr();
+							if (container_element_type->kind == SCRIPT || container_element_type->kind == GDSCRIPT) {
+								valid = false;
+								while (array_script_type_ref.is_valid()) {
+									if (container_element_type->script_type == array_script_type_ref.ptr()) {
+										valid = true;
+										break;
+									}
+									array_script_type_ref = array_script_type_ref->get_base_script();
+								}
+							}
 						} else if (array_native_type != StringName()) {
 							valid = container_element_type->kind == NATIVE && container_element_type->native_type == array_native_type;
 						} else {

@@ -5067,7 +5067,7 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 		if (valid && p_target.builtin_type == Variant::ARRAY && p_source.builtin_type == Variant::ARRAY) {
 			// Check the element type.
 			if (p_target.has_container_element_type() && p_source.has_container_element_type()) {
-				valid = p_target.get_container_element_type() == p_source.get_container_element_type();
+				valid = is_type_compatible(p_target.get_container_element_type(), p_source.get_container_element_type(), false, p_source_node);
 			}
 		}
 		return valid;
