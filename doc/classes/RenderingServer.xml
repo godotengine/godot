@@ -1450,6 +1450,7 @@
 			<description>
 				Returns the name of the video adapter (e.g. "GeForce GTX 1080/PCIe/SSE2").
 				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
+				[b]Note:[/b] On the web platform, some browsers such as Firefox may report a different, fixed GPU name such as "GeForce GTX 980" (regardless of the user's actual GPU model). This is done to make fingerprinting more difficult.
 			</description>
 		</method>
 		<method name="get_video_adapter_type" qualifiers="const">
