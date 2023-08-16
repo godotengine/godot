@@ -708,7 +708,8 @@ void SceneReplicationInterface::_send_delta(int p_peer, const HashSet<ObjectID> 
 	int ofs = 1;
 	for (const ObjectID &oid : p_synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(oid);
-		ERR_CONTINUE(!sync || !sync->get_replication_config().is_valid() || !sync->is_multiplayer_authority());
+		ERR_CONTINUE(!sync || !sync->is_multiplayer_authority());
+		ERR_CONTINUE_MSG(!sync->get_replication_config().is_valid(), "MultiplayerSynchronizer has no replication config.");
 		uint32_t net_id;
 		if (!_verify_synchronizer(p_peer, sync, net_id)) {
 			continue;
@@ -803,7 +804,8 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> p
 	// This is a lazy implementation, we could optimize much more here with by grouping by replication config.
 	for (const ObjectID &oid : p_synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(oid);
-		ERR_CONTINUE(!sync || !sync->get_replication_config().is_valid() || !sync->is_multiplayer_authority());
+		ERR_CONTINUE(!sync || !sync->is_multiplayer_authority());
+		ERR_CONTINUE_MSG(!sync->get_replication_config().is_valid(), "MultiplayerSynchronizer has no replication config.");
 		if (!sync->update_outbound_sync_time(p_usec)) {
 			continue; // nothing to sync.
 		}
