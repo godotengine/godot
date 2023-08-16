@@ -1347,6 +1347,10 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	}
 }
 
+Node::InternalMode Node::get_internal_mode() const {
+	return data.internal_mode;
+}
+
 void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode) {
 	//add a child node quickly, without name validation
 
