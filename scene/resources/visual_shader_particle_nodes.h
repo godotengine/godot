@@ -159,6 +159,7 @@ public:
 	Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
 
 	VisualShaderNodeParticleMeshEmitter();
+	~VisualShaderNodeParticleMeshEmitter();
 };
 
 class VisualShaderNodeParticleMultiplyByAxisAngle : public VisualShaderNode {

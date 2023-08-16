@@ -1802,6 +1802,11 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	set_layout_direction(Control::LAYOUT_DIRECTION_LTR);
 }
 
+AnimationTimelineEdit::~AnimationTimelineEdit() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}
+
 ////////////////////////////////////
 
 void AnimationTrackEdit::_notification(int p_what) {

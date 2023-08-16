@@ -259,3 +259,8 @@ Error PCKPacker::flush(bool p_verbose) {
 
 	return OK;
 }
+
+PCKPacker::~PCKPacker() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}

@@ -292,3 +292,8 @@ SceneCreateDialog::SceneCreateDialog() {
 	set_title(TTR("Create New Scene"));
 	set_min_size(Size2i(400 * EDSCALE, 0));
 }
+
+SceneCreateDialog::~SceneCreateDialog() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}

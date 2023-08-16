@@ -230,6 +230,11 @@ GradientTexture2DEdit::GradientTexture2DEdit() {
 	set_custom_minimum_size(Size2(0, 250 * EDSCALE));
 }
 
+GradientTexture2DEdit::~GradientTexture2DEdit() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}
+
 ///////////////////////
 
 const int GradientTexture2DEditor::DEFAULT_SNAP = 10;
@@ -306,6 +311,11 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	_set_snap_enabled(snap_button->is_pressed());
 	_set_snap_count(snap_count_edit->get_value());
+}
+
+GradientTexture2DEditor::~GradientTexture2DEditor() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
 }
 
 ///////////////////////

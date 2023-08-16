@@ -195,6 +195,7 @@ public:
 	static Ref<Lightmapper> create();
 
 	Lightmapper();
+	~Lightmapper();
 };
 
 #endif // LIGHTMAPPER_H

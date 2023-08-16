@@ -118,6 +118,11 @@ StyleBoxPreview::StyleBoxPreview() {
 	add_child(grid_preview);
 }
 
+StyleBoxPreview::~StyleBoxPreview() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}
+
 bool EditorInspectorPluginStyleBox::can_handle(Object *p_object) {
 	return Object::cast_to<StyleBox>(p_object) != nullptr;
 }

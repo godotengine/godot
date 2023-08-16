@@ -735,6 +735,11 @@ VisualShaderNodeParticleMeshEmitter::VisualShaderNodeParticleMeshEmitter() {
 	simple_decl = false;
 }
 
+VisualShaderNodeParticleMeshEmitter::~VisualShaderNodeParticleMeshEmitter() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}
+
 // VisualShaderNodeParticleMultiplyByAxisAngle
 
 void VisualShaderNodeParticleMultiplyByAxisAngle::_bind_methods() {

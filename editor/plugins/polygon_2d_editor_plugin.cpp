@@ -1495,6 +1495,11 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_edit_draw->set_clip_contents(true);
 }
 
+Polygon2DEditor::~Polygon2DEditor() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}
+
 Polygon2DEditorPlugin::Polygon2DEditorPlugin() :
 		AbstractPolygon2DEditorPlugin(memnew(Polygon2DEditor), "Polygon2D") {
 }

@@ -1689,3 +1689,8 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	add_child(menu);
 	menu->connect("id_pressed", callable_mp(this, &AnimationBezierTrackEdit::_menu_selected));
 }
+
+AnimationBezierTrackEdit::~AnimationBezierTrackEdit() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}

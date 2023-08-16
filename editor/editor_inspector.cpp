@@ -2352,6 +2352,11 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	vbox->connect("visibility_changed", callable_mp(this, &EditorInspectorArray::_vbox_visibility_changed));
 }
 
+EditorInspectorArray::~EditorInspectorArray() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}
+
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 

@@ -78,6 +78,7 @@ public:
 	void set_snap_count(int p_snap_count);
 
 	GradientTexture2DEdit();
+	~GradientTexture2DEdit();
 };
 
 class GradientTexture2DEditor : public VBoxContainer {
@@ -102,6 +103,7 @@ public:
 	void set_texture(Ref<GradientTexture2D> &p_texture);
 
 	GradientTexture2DEditor();
+	~GradientTexture2DEditor();
 };
 
 class EditorInspectorPluginGradientTexture2D : public EditorInspectorPlugin {

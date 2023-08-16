@@ -700,3 +700,8 @@ EditorProfiler::EditorProfiler() {
 	plot_sigs.insert("physics_frame_time");
 	plot_sigs.insert("category_frame_time");
 }
+
+EditorProfiler::~EditorProfiler() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}

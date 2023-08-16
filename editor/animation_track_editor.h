@@ -199,6 +199,7 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	AnimationTimelineEdit();
+	~AnimationTimelineEdit();
 };
 
 class AnimationTrackEdit : public Control {

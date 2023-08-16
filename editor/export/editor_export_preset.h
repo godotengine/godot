@@ -165,6 +165,7 @@ public:
 	const HashMap<StringName, Variant> &get_values() const { return values; }
 
 	EditorExportPreset();
+	~EditorExportPreset();
 };
 
 #endif // EDITOR_EXPORT_PRESET_H

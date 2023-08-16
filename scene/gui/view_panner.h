@@ -90,6 +90,7 @@ public:
 	void release_pan_key();
 
 	ViewPanner();
+	~ViewPanner();
 };
 
 #endif // VIEW_PANNER_H

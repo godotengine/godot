@@ -211,6 +211,8 @@ public:
 	bool plugins_capture(ScriptEditorDebugger *p_debugger, const String &p_message, const Array &p_data);
 	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+
+	~EditorDebuggerNode();
 };
 
 #endif // EDITOR_DEBUGGER_NODE_H

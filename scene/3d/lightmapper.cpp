@@ -74,3 +74,8 @@ Ref<Lightmapper> Lightmapper::create() {
 
 Lightmapper::Lightmapper() {
 }
+
+Lightmapper::~Lightmapper() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}

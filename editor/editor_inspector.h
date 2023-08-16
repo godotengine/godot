@@ -412,6 +412,7 @@ public:
 	VBoxContainer *get_vbox(int p_index);
 
 	EditorInspectorArray(bool p_read_only);
+	~EditorInspectorArray();
 };
 
 class EditorPaginator : public HBoxContainer {

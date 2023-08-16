@@ -1407,6 +1407,11 @@ void VisualShaderNodeTexture2DArray::_bind_methods() {
 VisualShaderNodeTexture2DArray::VisualShaderNodeTexture2DArray() {
 }
 
+VisualShaderNodeTexture2DArray::~VisualShaderNodeTexture2DArray() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}
+
 ////////////// Texture3D
 
 String VisualShaderNodeTexture3D::get_caption() const {
@@ -1666,6 +1671,11 @@ void VisualShaderNodeCubemap::_bind_methods() {
 
 VisualShaderNodeCubemap::VisualShaderNodeCubemap() {
 	simple_decl = false;
+}
+
+VisualShaderNodeCubemap::~VisualShaderNodeCubemap() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
 }
 
 ////////////// Linear Depth

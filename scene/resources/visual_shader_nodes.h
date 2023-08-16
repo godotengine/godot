@@ -572,6 +572,7 @@ public:
 	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeTexture2DArray();
+	~VisualShaderNodeTexture2DArray();
 };
 
 class VisualShaderNodeTexture3D : public VisualShaderNodeSample3D {
@@ -652,6 +653,7 @@ public:
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	VisualShaderNodeCubemap();
+	~VisualShaderNodeCubemap();
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeCubemap::TextureType)

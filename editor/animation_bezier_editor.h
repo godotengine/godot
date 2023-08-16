@@ -208,6 +208,7 @@ public:
 	void _bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
 
 	AnimationBezierTrackEdit();
+	~AnimationBezierTrackEdit();
 };
 
 #endif // ANIMATION_BEZIER_EDITOR_H

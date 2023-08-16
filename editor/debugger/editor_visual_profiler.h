@@ -147,6 +147,7 @@ public:
 	Vector<Vector<String>> get_data_as_csv() const;
 
 	EditorVisualProfiler();
+	~EditorVisualProfiler();
 };
 
 #endif // EDITOR_VISUAL_PROFILER_H

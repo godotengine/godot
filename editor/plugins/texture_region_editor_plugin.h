@@ -143,6 +143,7 @@ public:
 
 	void edit(Object *p_obj);
 	TextureRegionEditor();
+	~TextureRegionEditor();
 };
 
 //

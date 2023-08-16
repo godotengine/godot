@@ -60,6 +60,8 @@ public:
 
 	void set_skeleton_path(const NodePath &p_path);
 	NodePath get_skeleton_path() const;
+
+	~ImporterMeshInstance3D();
 };
 
 #endif // IMPORTER_MESH_INSTANCE_3D_H

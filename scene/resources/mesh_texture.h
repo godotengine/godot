@@ -70,6 +70,7 @@ public:
 	bool is_pixel_opaque(int p_x, int p_y) const override;
 
 	MeshTexture();
+	~MeshTexture();
 };
 
 #endif // MESH_TEXTURE_H

@@ -371,6 +371,7 @@ public:
 	void arrange_nodes();
 
 	GraphEdit();
+	~GraphEdit();
 };
 
 VARIANT_ENUM_CAST(GraphEdit::PanningScheme);

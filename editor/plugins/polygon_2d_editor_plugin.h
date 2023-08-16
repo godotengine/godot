@@ -177,6 +177,7 @@ protected:
 
 public:
 	Polygon2DEditor();
+	~Polygon2DEditor();
 };
 
 class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {

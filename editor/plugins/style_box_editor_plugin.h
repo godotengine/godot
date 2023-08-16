@@ -56,6 +56,7 @@ public:
 	void edit(const Ref<StyleBox> &p_stylebox);
 
 	StyleBoxPreview();
+	~StyleBoxPreview();
 };
 
 class EditorInspectorPluginStyleBox : public EditorInspectorPlugin {

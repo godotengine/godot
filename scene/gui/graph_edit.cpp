@@ -2040,3 +2040,8 @@ GraphEdit::GraphEdit() {
 
 	arranger = Ref<GraphEditArranger>(memnew(GraphEditArranger(this)));
 }
+
+GraphEdit::~GraphEdit() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}

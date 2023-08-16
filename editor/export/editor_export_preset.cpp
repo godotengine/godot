@@ -366,3 +366,8 @@ String EditorExportPreset::get_version(const StringName &p_preset_string, bool p
 }
 
 EditorExportPreset::EditorExportPreset() {}
+
+EditorExportPreset::~EditorExportPreset() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}

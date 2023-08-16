@@ -154,3 +154,8 @@ void MeshTexture::_bind_methods() {
 
 MeshTexture::MeshTexture() {
 }
+
+MeshTexture::~MeshTexture() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}

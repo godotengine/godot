@@ -823,3 +823,8 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	add_child(plot_delay);
 	plot_delay->connect("timeout", callable_mp(this, &EditorVisualProfiler::_update_plot));
 }
+
+EditorVisualProfiler::~EditorVisualProfiler() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}

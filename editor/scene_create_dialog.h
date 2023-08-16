@@ -96,6 +96,7 @@ public:
 	Node *create_scene_root();
 
 	SceneCreateDialog();
+	~SceneCreateDialog();
 };
 
 #endif // SCENE_CREATE_DIALOG_H

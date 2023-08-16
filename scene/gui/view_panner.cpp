@@ -225,3 +225,8 @@ ViewPanner::ViewPanner() {
 	pan_view_shortcut.instantiate();
 	pan_view_shortcut->set_events(inputs);
 }
+
+ViewPanner::~ViewPanner() {
+	// Do not remove, kept to prevent forward declaration issues, see:
+	// https://github.com/godotengine/godot/pull/80330
+}
