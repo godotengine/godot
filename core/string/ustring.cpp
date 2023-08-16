@@ -3635,6 +3635,23 @@ String String::repeat(int p_count) const {
 	return new_string;
 }
 
+String String::reverse() const {
+	int len = length();
+	if (len <= 1) {
+		return *this;
+	}
+	String new_string;
+	new_string.resize(len + 1);
+
+	const char32_t *src = ptr();
+	char32_t *dst = new_string.ptrw();
+	for (int i = 0; i < len; i++) {
+		dst[i] = src[len - i - 1];
+	}
+	dst[len] = _null;
+	return new_string;
+}
+
 String String::left(int p_len) const {
 	if (p_len < 0) {
 		p_len = length() + p_len;
