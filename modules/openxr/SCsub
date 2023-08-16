@@ -52,10 +52,11 @@ if env["builtin_openxr"]:
 
     env_thirdparty = env_openxr.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.AppendUnique(CPPDEFINES=["DISABLE_STD_FILESYSTEM"])
 
-    if "-fno-exceptions" in env_thirdparty["CXXFLAGS"]:
-        env_thirdparty["CXXFLAGS"].remove("-fno-exceptions")
+    env_thirdparty.AppendUnique(CPPDEFINES=["DISABLE_STD_FILESYSTEM"])
+    if env["disable_exceptions"]:
+        env_thirdparty.AppendUnique(CPPDEFINES=["XRLOADER_DISABLE_EXCEPTION_HANDLING", ("JSON_USE_EXCEPTION", 0)])
+
     env_thirdparty.Append(CPPPATH=[thirdparty_dir + "/src/loader"])
 
     # add in external jsoncpp dependency
