@@ -929,6 +929,17 @@ Geometry3D *Geometry3D::get_singleton() {
 	return singleton;
 }
 
+Vector<Vector3> Geometry3D::compute_convex_mesh_points(const TypedArray<Plane> &p_planes) {
+	Vector<Plane> planes_vec;
+	int size = p_planes.size();
+	planes_vec.resize(size);
+	for (int i = 0; i < size; ++i) {
+		planes_vec.set(i, p_planes[i]);
+	}
+	Variant ret = ::Geometry3D::compute_convex_mesh_points(planes_vec.ptr(), size);
+	return ret;
+}
+
 TypedArray<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
 	Variant ret = ::Geometry3D::build_box_planes(p_extents);
 	return ret;
@@ -1029,6 +1040,7 @@ Vector<Vector3> Geometry3D::clip_polygon(const Vector<Vector3> &p_points, const 
 }
 
 void Geometry3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("compute_convex_mesh_points", "planes"), &Geometry3D::compute_convex_mesh_points);
 	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &Geometry3D::build_box_planes);
 	ClassDB::bind_method(D_METHOD("build_cylinder_planes", "radius", "height", "sides", "axis"), &Geometry3D::build_cylinder_planes, DEFVAL(Vector3::AXIS_Z));
 	ClassDB::bind_method(D_METHOD("build_capsule_planes", "radius", "height", "sides", "lats", "axis"), &Geometry3D::build_capsule_planes, DEFVAL(Vector3::AXIS_Z));
