@@ -192,7 +192,7 @@ public:
 		GLuint index_buffer = 0;
 		int count = 0;
 		bool color_disabled = false;
-		Color color;
+		Color color = Color(1.0, 1.0, 1.0, 1.0);
 	};
 
 	struct {

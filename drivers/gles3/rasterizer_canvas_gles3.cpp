@@ -2048,16 +2048,26 @@ void RasterizerCanvasGLES3::occluder_polygon_set_cull_mode(RID p_occluder, RS::C
 void RasterizerCanvasGLES3::set_shadow_texture_size(int p_size) {
 	GLES3::Config *config = GLES3::Config::get_singleton();
 	p_size = nearest_power_of_2_templated(p_size);
-	if (p_size == state.shadow_texture_size) {
-		return;
-	}
 
 	if (p_size > config->max_texture_size) {
 		p_size = config->max_texture_size;
 		WARN_PRINT("Attempting to set CanvasItem shadow atlas size to " + itos(p_size) + " which is beyond limit of " + itos(config->max_texture_size) + "supported by hardware.");
 	}
 
+	if (p_size == state.shadow_texture_size) {
+		return;
+	}
 	state.shadow_texture_size = p_size;
+
+	if (state.shadow_fb != 0) {
+		glDeleteFramebuffers(1, &state.shadow_fb);
+		GLES3::Utilities::get_singleton()->texture_free_data(state.shadow_texture);
+		glDeleteRenderbuffers(1, &state.shadow_depth_buffer);
+		state.shadow_fb = 0;
+		state.shadow_texture = 0;
+		state.shadow_depth_buffer = 0;
+	}
+	_update_shadow_atlas();
 }
 
 bool RasterizerCanvasGLES3::free(RID p_rid) {
@@ -2442,6 +2452,7 @@ RendererCanvasRender::PolygonID RasterizerCanvasGLES3::request_polygon(const Vec
 
 	return id;
 }
+
 void RasterizerCanvasGLES3::free_polygon(PolygonID p_polygon) {
 	PolygonBuffers *pb_ptr = polygon_buffers.polygons.getptr(p_polygon);
 	ERR_FAIL_COND(!pb_ptr);
@@ -2520,6 +2531,8 @@ RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
+
+	glVertexAttrib4f(RS::ARRAY_COLOR, 1.0, 1.0, 1.0, 1.0);
 
 	polygon_buffers.last_id = 1;
 	// quad buffer
@@ -2700,6 +2713,7 @@ RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
 	GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.initialize(global_defines, 1);
 	data.canvas_shader_default_version = GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_create();
 
+	state.shadow_texture_size = GLOBAL_GET("rendering/2d/shadow_atlas/size");
 	shadow_render.shader.initialize();
 	shadow_render.shader_version = shadow_render.shader.version_create();
 
