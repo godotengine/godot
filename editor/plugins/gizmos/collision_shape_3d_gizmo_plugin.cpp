@@ -301,7 +301,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Change Box Shape Size"));
 		ur->add_do_method(ss.ptr(), "set_size", ss->get_size());
-		ur->add_do_method(cs, "set_position", cs->get_global_position());
+		ur->add_do_method(cs, "set_global_position", cs->get_global_position());
 		ur->add_undo_method(ss.ptr(), "set_size", p_restore);
 		ur->add_undo_method(cs, "set_global_position", initial_transform.get_origin());
 		ur->commit_action();
