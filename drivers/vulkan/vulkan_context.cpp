@@ -1704,17 +1704,6 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, Display
 	Error err = _update_swap_chain(&window);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {
-		/*sType*/ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-		/*pNext*/ nullptr,
-		/*flags*/ 0,
-	};
-
-	for (uint32_t i = 0; i < FRAME_LAG; i++) {
-		VkResult vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &window.image_acquired_semaphores[i]);
-		ERR_FAIL_COND_V(vkerr, ERR_CANT_CREATE);
-	}
-
 	windows[p_window_id] = window;
 	return OK;
 }
@@ -1764,9 +1753,6 @@ VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_wi
 void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	_clean_up_swap_chain(&windows[p_window_id]);
-	for (uint32_t i = 0; i < FRAME_LAG; i++) {
-		vkDestroySemaphore(device, windows[p_window_id].image_acquired_semaphores[i], nullptr);
-	}
 
 	vkDestroySurfaceKHR(inst, windows[p_window_id].surface, nullptr);
 	windows.erase(p_window_id);
@@ -1796,6 +1782,17 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 	if (separate_present_queue) {
 		vkDestroyCommandPool(device, window->present_cmd_pool, nullptr);
 	}
+
+	for (uint32_t i = 0; i < FRAME_LAG; i++) {
+		// Destroy the semaphores now (we'll re-create it later if we have to).
+		// We must do this because the semaphore cannot be reused if it's in a signaled state
+		// (which happens if vkAcquireNextImageKHR returned VK_ERROR_OUT_OF_DATE_KHR or VK_SUBOPTIMAL_KHR)
+		// The only way to reset it would be to present the swapchain... the one we just destroyed.
+		// And the API has no way to "unsignal" the semaphore.
+		vkDestroySemaphore(device, window->image_acquired_semaphores[i], nullptr);
+		window->image_acquired_semaphores[i] = 0;
+	}
+
 	return OK;
 }
 
@@ -2178,6 +2175,17 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	// Reset current buffer.
 	window->current_buffer = 0;
+
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {
+		/*sType*/ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+		/*pNext*/ nullptr,
+		/*flags*/ 0,
+	};
+
+	for (uint32_t i = 0; i < FRAME_LAG; i++) {
+		VkResult vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &window->image_acquired_semaphores[i]);
+		ERR_FAIL_COND_V(vkerr, ERR_CANT_CREATE);
+	}
 
 	return OK;
 }
