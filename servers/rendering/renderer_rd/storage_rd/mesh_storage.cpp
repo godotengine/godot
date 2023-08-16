@@ -1309,13 +1309,10 @@ void MeshStorage::_multimesh_enable_motion_vectors(MultiMesh *multimesh) {
 	RID new_buffer = RD::get_singleton()->storage_buffer_create(new_buffer_size);
 
 	if (multimesh->buffer_set && multimesh->data_cache.is_empty()) {
-		// If the buffer was set but there's no data cached in the CPU, we must download it from the GPU and
-		// upload it because RD does not provide a way to copy the buffer directly yet.
+		// If the buffer was set but there's no data cached in the CPU, we copy the buffer directly on the GPU.
 		RD::get_singleton()->barrier();
-		Vector<uint8_t> buffer_data = RD::get_singleton()->buffer_get_data(multimesh->buffer);
-		ERR_FAIL_COND(buffer_data.size() != int(buffer_size));
-		RD::get_singleton()->buffer_update(new_buffer, 0, buffer_size, buffer_data.ptr(), RD::BARRIER_MASK_NO_BARRIER);
-		RD::get_singleton()->buffer_update(new_buffer, buffer_size, buffer_size, buffer_data.ptr());
+		RD::get_singleton()->buffer_copy(multimesh->buffer, new_buffer, 0, 0, buffer_size, RD::BARRIER_MASK_NO_BARRIER);
+		RD::get_singleton()->buffer_copy(multimesh->buffer, new_buffer, 0, buffer_size, buffer_size);
 	} else if (!multimesh->data_cache.is_empty()) {
 		// Simply upload the data cached in the CPU, which should already be doubled in size.
 		ERR_FAIL_COND(multimesh->data_cache.size() * sizeof(float) != size_t(new_buffer_size));
