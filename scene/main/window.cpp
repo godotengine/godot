@@ -679,7 +679,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			}
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
 			root->gui.windowmanager_window_over = this;
-			notification(NOTIFICATION_VP_MOUSE_ENTER);
+			mouse_in_window = true;
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
 				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
 			}
@@ -692,6 +692,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 #endif // DEV_ENABLED
 				return;
 			}
+			mouse_in_window = false;
 			root->gui.windowmanager_window_over->_mouse_leave_viewport();
 			root->gui.windowmanager_window_over = nullptr;
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
@@ -2550,6 +2551,41 @@ bool Window::is_directly_attached_to_screen() const {
 
 bool Window::is_attached_in_viewport() const {
 	return get_embedder();
+}
+
+void Window::_update_mouse_over(Vector2 p_pos) {
+	if (!mouse_in_window) {
+		if (is_embedded()) {
+			mouse_in_window = true;
+			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
+		} else {
+			// Prevent update based on delayed InputEvents from DisplayServer.
+			return;
+		}
+	}
+
+	bool new_in = get_visible_rect().has_point(p_pos);
+	if (new_in == gui.mouse_in_viewport) {
+		if (new_in) {
+			Viewport::_update_mouse_over(p_pos);
+		}
+		return;
+	}
+
+	if (new_in) {
+		notification(NOTIFICATION_VP_MOUSE_ENTER);
+		Viewport::_update_mouse_over(p_pos);
+	} else {
+		Viewport::_mouse_leave_viewport();
+	}
+}
+
+void Window::_mouse_leave_viewport() {
+	Viewport::_mouse_leave_viewport();
+	if (is_embedded()) {
+		mouse_in_window = false;
+		_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
+	}
 }
 
 void Window::_bind_methods() {

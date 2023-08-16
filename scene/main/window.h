@@ -203,6 +203,10 @@ private:
 	void _event_callback(DisplayServer::WindowEvent p_event);
 	virtual bool _can_consume_input_events() const override;
 
+	bool mouse_in_window = false;
+	void _update_mouse_over(Vector2 p_pos) override;
+	void _mouse_leave_viewport() override;
+
 	Ref<Shortcut> debugger_stop_shortcut;
 
 protected:

@@ -2955,7 +2955,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 
 void Viewport::_update_mouse_over() {
 	// Update gui.mouse_over and gui.subwindow_over in all Viewports.
-	// Send necessary mouse_enter/mouse_exit signals and the NOTIFICATION_VP_MOUSE_ENTER/NOTIFICATION_VP_MOUSE_EXIT notifications for every Viewport in the SceneTree.
+	// Send necessary mouse_enter/mouse_exit signals and the MOUSE_ENTER/MOUSE_EXIT notifications for every Viewport in the SceneTree.
 
 	if (is_attached_in_viewport()) {
 		// Execute this function only, when it is processed by a native Window or a SubViewport, that has no SubViewportContainer as parent.
@@ -3009,7 +3009,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 						}
 						gui.subwindow_over = sw;
 						if (!sw->is_input_disabled()) {
-							sw->notification(NOTIFICATION_VP_MOUSE_ENTER);
+							sw->_propagate_window_notification(sw, NOTIFICATION_WM_MOUSE_ENTER);
 						}
 					}
 					if (!sw->is_input_disabled()) {

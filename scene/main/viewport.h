@@ -468,7 +468,8 @@ private:
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
 	void _update_mouse_over();
-	void _update_mouse_over(Vector2 p_pos);
+	virtual void _update_mouse_over(Vector2 p_pos);
+	virtual void _mouse_leave_viewport();
 
 	virtual bool _can_consume_input_events() const { return true; }
 	uint64_t event_count = 0;
@@ -481,8 +482,6 @@ protected:
 	Size2i _get_size() const;
 	Size2i _get_size_2d_override() const;
 	bool _is_size_allocated() const;
-
-	void _mouse_leave_viewport();
 
 	void _notification(int p_what);
 	void _process_picking();
