@@ -2439,6 +2439,7 @@ Window *Viewport::get_base_window() const {
 
 	return w;
 }
+
 void Viewport::_gui_remove_focus_for_window(Node *p_window) {
 	if (get_base_window() == p_window) {
 		gui_release_focus();
@@ -3656,6 +3657,15 @@ bool Viewport::is_embedding_subwindows() const {
 	return gui.embed_subwindows_hint;
 }
 
+TypedArray<Window> Viewport::get_embedded_subwindows() const {
+	TypedArray<Window> windows;
+	for (int i = 0; i < gui.sub_windows.size(); i++) {
+		windows.append(gui.sub_windows[i].window);
+	}
+
+	return windows;
+}
+
 void Viewport::subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect) {
 	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
@@ -4384,6 +4394,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_embedding_subwindows", "enable"), &Viewport::set_embedding_subwindows);
 	ClassDB::bind_method(D_METHOD("is_embedding_subwindows"), &Viewport::is_embedding_subwindows);
+	ClassDB::bind_method(D_METHOD("get_embedded_subwindows"), &Viewport::get_embedded_subwindows);
 
 	ClassDB::bind_method(D_METHOD("set_canvas_cull_mask", "mask"), &Viewport::set_canvas_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_canvas_cull_mask"), &Viewport::get_canvas_cull_mask);

@@ -653,6 +653,7 @@ public:
 
 	void set_embedding_subwindows(bool p_embed);
 	bool is_embedding_subwindows() const;
+	TypedArray<Window> get_embedded_subwindows() const;
 	void subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
 	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
