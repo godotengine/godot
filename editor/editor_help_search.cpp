@@ -317,7 +317,13 @@ bool EditorHelpSearch::Runner::_slice() {
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes_init() {
-	iterator_doc = EditorHelp::get_doc_data()->class_list.begin();
+	iterator_doc = nullptr;
+	iterator_stack.clear();
+	if (search_flags & SEARCH_SHOW_HIERARCHY) {
+		iterator_stack.push_back(EditorHelp::get_doc_data()->inheriting[""].front());
+	} else {
+		iterator_doc = EditorHelp::get_doc_data()->class_list.begin();
+	}
 	matches.clear();
 	matched_item = nullptr;
 	match_highest_score = 0;
@@ -331,81 +337,103 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes() {
-	if (!iterator_doc) {
+	if (!iterator_doc && iterator_stack.is_empty()) {
 		return true;
 	}
 
-	DocData::ClassDoc &class_doc = iterator_doc->value;
-	if (class_doc.name.is_empty()) {
-		++iterator_doc;
-		return false;
+	DocData::ClassDoc *class_doc = nullptr;
+	if (iterator_doc) {
+		class_doc = &iterator_doc->value;
+	} else if (!iterator_stack.is_empty() && iterator_stack[iterator_stack.size() - 1]) {
+		class_doc = EditorHelp::get_doc_data()->class_list.getptr(iterator_stack[iterator_stack.size() - 1]->get());
 	}
 
-	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
+	if (class_doc && class_doc->name.is_empty()) {
+		class_doc = nullptr;
+	}
+
+	if (class_doc && !_is_class_disabled_by_feature_profile(class_doc->name)) {
 		ClassMatch match;
-		match.doc = &class_doc;
+		match.doc = class_doc;
 
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
 			// If the search term is empty, add any classes which are not script docs or which don't start with
 			// a double-quotation. This will ensure that only C++ classes and explicitly named classes will
 			// be added.
-			match.name = (term.is_empty() && (!class_doc.is_script_doc || class_doc.name[0] != '\"')) || _match_string(term, class_doc.name);
+			match.name = (term.is_empty() && (!class_doc->is_script_doc || class_doc->name[0] != '\"')) || _match_string(term, class_doc->name);
 		}
 
 		// Match members only if the term is long enough, to avoid slow performance from building a large tree.
 		// Make an exception for annotations, since there are not that many of them.
 		if (term.length() > 1 || term == "@") {
 			if (search_flags & SEARCH_CONSTRUCTORS) {
-				_match_method_name_and_push_back(class_doc.constructors, &match.constructors);
+				_match_method_name_and_push_back(class_doc->constructors, &match.constructors);
 			}
 			if (search_flags & SEARCH_METHODS) {
-				_match_method_name_and_push_back(class_doc.methods, &match.methods);
+				_match_method_name_and_push_back(class_doc->methods, &match.methods);
 			}
 			if (search_flags & SEARCH_OPERATORS) {
-				_match_method_name_and_push_back(class_doc.operators, &match.operators);
+				_match_method_name_and_push_back(class_doc->operators, &match.operators);
 			}
 			if (search_flags & SEARCH_SIGNALS) {
-				for (int i = 0; i < class_doc.signals.size(); i++) {
-					if (_all_terms_in_name(class_doc.signals[i].name)) {
-						match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc.signals[i]));
+				for (int i = 0; i < class_doc->signals.size(); i++) {
+					if (_all_terms_in_name(class_doc->signals[i].name)) {
+						match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc->signals[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_CONSTANTS) {
-				for (int i = 0; i < class_doc.constants.size(); i++) {
-					if (_all_terms_in_name(class_doc.constants[i].name)) {
-						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc.constants[i]));
+				for (int i = 0; i < class_doc->constants.size(); i++) {
+					if (_all_terms_in_name(class_doc->constants[i].name)) {
+						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc->constants[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_PROPERTIES) {
-				for (int i = 0; i < class_doc.properties.size(); i++) {
-					if (_all_terms_in_name(class_doc.properties[i].name)) {
-						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.properties[i]));
+				for (int i = 0; i < class_doc->properties.size(); i++) {
+					if (_all_terms_in_name(class_doc->properties[i].name)) {
+						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc->properties[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_THEME_ITEMS) {
-				for (int i = 0; i < class_doc.theme_properties.size(); i++) {
-					if (_all_terms_in_name(class_doc.theme_properties[i].name)) {
-						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc.theme_properties[i]));
+				for (int i = 0; i < class_doc->theme_properties.size(); i++) {
+					if (_all_terms_in_name(class_doc->theme_properties[i].name)) {
+						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc->theme_properties[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_ANNOTATIONS) {
-				for (int i = 0; i < class_doc.annotations.size(); i++) {
-					if (_match_string(term, class_doc.annotations[i].name)) {
-						match.annotations.push_back(const_cast<DocData::MethodDoc *>(&class_doc.annotations[i]));
+				for (int i = 0; i < class_doc->annotations.size(); i++) {
+					if (_match_string(term, class_doc->annotations[i].name)) {
+						match.annotations.push_back(const_cast<DocData::MethodDoc *>(&class_doc->annotations[i]));
 					}
 				}
 			}
 		}
-		matches[class_doc.name] = match;
+		matches[class_doc->name] = match;
 	}
 
-	++iterator_doc;
-	return !iterator_doc;
+	if (iterator_doc) {
+		++iterator_doc;
+		return !iterator_doc;
+	}
+
+	if (!iterator_stack.is_empty()) {
+		if (iterator_stack[iterator_stack.size() - 1]) {
+			iterator_stack[iterator_stack.size() - 1] = iterator_stack[iterator_stack.size() - 1]->next();
+		}
+		if (!iterator_stack[iterator_stack.size() - 1]) {
+			iterator_stack.resize(iterator_stack.size() - 1);
+		}
+	}
+
+	if (class_doc && EditorHelp::get_doc_data()->inheriting.has(class_doc->name)) {
+		iterator_stack.push_back(EditorHelp::get_doc_data()->inheriting[class_doc->name].front());
+	}
+
+	return iterator_stack.is_empty();
 }
 
 bool EditorHelpSearch::Runner::_phase_class_items_init() {

@@ -812,35 +812,25 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
-	// Descendents
-	if (cd.is_script_doc || ClassDB::class_exists(cd.name)) {
-		bool found = false;
-		bool prev = false;
-
+	// Descendants
+	if ((cd.is_script_doc || ClassDB::class_exists(cd.name)) && doc->inheriting.has(cd.name)) {
 		_push_normal_font();
-		for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
-			if (E.value.inherits == cd.name) {
-				if (!found) {
-					class_desc->push_color(theme_cache.title_color);
-					class_desc->add_text(TTR("Inherited by:") + " ");
-					found = true;
-				}
+		class_desc->push_color(theme_cache.title_color);
+		class_desc->add_text(TTR("Inherited by:") + " ");
 
-				if (prev) {
-					class_desc->add_text(" , ");
-				}
-				_add_type_icon(E.value.name, theme_cache.doc_font_size, "ArrowRight");
-				class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
-				_add_type(E.value.name);
-				prev = true;
+		for (RBSet<String, NaturalNoCaseComparator>::Element *itr = doc->inheriting[cd.name].front(); itr; itr = itr->next()) {
+			if (itr->prev()) {
+				class_desc->add_text(" , ");
 			}
+
+			_add_type_icon(itr->get(), theme_cache.doc_font_size, "ArrowRight");
+			class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
+			_add_type(itr->get());
 		}
 		_pop_normal_font();
 
-		if (found) {
-			class_desc->pop();
-			class_desc->add_newline();
-		}
+		class_desc->pop();
+		class_desc->add_newline();
 	}
 
 	// Note if deprecated.
