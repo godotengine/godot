@@ -52,6 +52,13 @@
 				Returns an individual bit on the rendering layer mask.
 			</description>
 		</method>
+		<method name="get_embedded_subwindows" qualifiers="const">
+			<return type="Window[]" />
+			<description>
+				Returns a list of the visible embedded [Window]s inside the viewport.
+				[b]Note:[/b] [Window]s inside other viewports will not be listed.
+			</description>
+		</method>
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
