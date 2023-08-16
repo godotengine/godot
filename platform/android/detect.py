@@ -173,11 +173,11 @@ def configure(env):
     env["RANLIB"] = compiler_path + "/llvm-ranlib"
     env["AS"] = compiler_path + "/clang"
 
-    # Disable exceptions and rtti on non-tools (template) builds
+    # Disable rtti on non-tools (template) builds.
     if env["tools"]:
         env.Append(CXXFLAGS=["-frtti"])
     else:
-        env.Append(CXXFLAGS=["-fno-rtti", "-fno-exceptions"])
+        env.Append(CXXFLAGS=["-fno-rtti"])
         # Don't use dynamic_cast, necessary with no-rtti.
         env.Append(CPPDEFINES=["NO_SAFE_CAST"])
 

@@ -73,7 +73,7 @@ static bool _is_built_in_script(Script *p_script) {
 
 class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
 	struct Cache {
-		uint64_t time_loaded;
+		uint64_t time_loaded = 0;
 		RES cache;
 	};
 
