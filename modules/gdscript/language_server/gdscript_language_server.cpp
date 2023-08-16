@@ -73,6 +73,7 @@ void GDScriptLanguageServer::_notification(int p_what) {
 }
 
 void GDScriptLanguageServer::thread_main(void *p_userdata) {
+	set_current_thread_safe_for_nodes(true);
 	GDScriptLanguageServer *self = static_cast<GDScriptLanguageServer *>(p_userdata);
 	while (self->thread_running) {
 		// Poll 20 times per second
