@@ -81,6 +81,7 @@ public:
 
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	void set_temp_library_path(const String &p_path) { temp_lib_path = p_path; }
+	String get_temp_library_path() const { return temp_lib_path; }
 #endif
 
 	enum InitializationLevel {
