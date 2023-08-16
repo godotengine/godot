@@ -168,6 +168,8 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
+	//bind helpers
 
 public:
 	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
