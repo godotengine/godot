@@ -684,7 +684,7 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
-				p_xml_output.append(target_ienum->cname);
+				p_xml_output.append(target_ienum->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_iconst->proxy_name);
 				p_xml_output.append("\"/>");
@@ -725,7 +725,7 @@ void BindingsGenerator::_append_xml_constant_in_global_scope(StringBuilder &p_xm
 
 		if (target_iconst) {
 			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-			p_xml_output.append(target_ienum->cname);
+			p_xml_output.append(target_ienum->proxy_name);
 			p_xml_output.append(".");
 			p_xml_output.append(target_iconst->proxy_name);
 			p_xml_output.append("\"/>");
@@ -981,7 +981,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	for (const EnumInterface &ienum : global_enums) {
 		CRASH_COND(ienum.constants.is_empty());
 
-		String enum_proxy_name = ienum.cname.operator String();
+		String enum_proxy_name = ienum.proxy_name;
 
 		bool enum_in_static_class = false;
 
@@ -995,7 +995,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			_log("Declaring global enum '%s' inside struct '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
 			p_output.append("\npublic partial struct ");
-			p_output.append(pascal_to_pascal_case(enum_class_name));
+			p_output.append(enum_class_name);
 			p_output.append("\n" OPEN_BLOCK);
 		}
 
@@ -1004,7 +1004,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 		}
 
 		p_output.append("\npublic enum ");
-		p_output.append(pascal_to_pascal_case(enum_proxy_name));
+		p_output.append(enum_proxy_name);
 		p_output.append(" : long");
 		p_output.append("\n" OPEN_BLOCK);
 
@@ -1469,7 +1469,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		output.append(MEMBER_BEGIN "public enum ");
-		output.append(pascal_to_pascal_case(ienum.cname.operator String()));
+		output.append(ienum.proxy_name);
 		output.append(" : long");
 		output.append(MEMBER_BEGIN OPEN_BLOCK);
 
@@ -3316,8 +3316,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname);
-			ienum.is_flags = E.value.is_bitfield;
+			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, E.value.is_bitfield);
 			const List<StringName> &enum_constants = E.value.constants;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
@@ -3950,8 +3949,7 @@ void BindingsGenerator::_populate_global_constants() {
 			iconstant.const_doc = const_doc;
 
 			if (enum_name != StringName()) {
-				EnumInterface ienum(enum_name);
-				ienum.is_flags = CoreConstants::is_global_constant_bitfield(i);
+				EnumInterface ienum(enum_name, pascal_to_pascal_case(enum_name.operator String()), CoreConstants::is_global_constant_bitfield(i));
 				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
 				if (enum_match) {
 					enum_match->get().constants.push_back(iconstant);
@@ -3969,7 +3967,7 @@ void BindingsGenerator::_populate_global_constants() {
 			enum_itype.is_enum = true;
 			enum_itype.name = ienum.cname.operator String();
 			enum_itype.cname = ienum.cname;
-			enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
+			enum_itype.proxy_name = ienum.proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
 			enum_types.insert(enum_itype.cname, enum_itype);
 
