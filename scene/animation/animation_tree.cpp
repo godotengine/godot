@@ -60,25 +60,25 @@ bool AnimationNode::is_parameter_read_only(const StringName &p_parameter) const 
 	return ret;
 }
 
-void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_value) {
+void AnimationNode::set_parameter(AnimationTree *p_tree, const StringName &p_name, const Variant &p_value) {
 	if (is_testing) {
 		return;
 	}
-	ERR_FAIL_NULL(state);
-	ERR_FAIL_COND(!state->tree->property_parent_map.has(base_path));
-	ERR_FAIL_COND(!state->tree->property_parent_map[base_path].has(p_name));
-	StringName path = state->tree->property_parent_map[base_path][p_name];
+	ERR_FAIL_COND(!p_tree);
+	ERR_FAIL_COND(!p_tree->property_parent_map.has(base_path));
+	ERR_FAIL_COND(!p_tree->property_parent_map[base_path].has(p_name));
+	StringName path = p_tree->property_parent_map[base_path][p_name];
 
-	state->tree->property_map[path].first = p_value;
+	p_tree->property_map[path].first = p_value;
 }
 
-Variant AnimationNode::get_parameter(const StringName &p_name) const {
-	ERR_FAIL_NULL_V(state, Variant());
-	ERR_FAIL_COND_V(!state->tree->property_parent_map.has(base_path), Variant());
-	ERR_FAIL_COND_V(!state->tree->property_parent_map[base_path].has(p_name), Variant());
+Variant AnimationNode::get_parameter(const AnimationTree *p_tree, const StringName &p_name) const {
+	ERR_FAIL_COND_V(!p_tree, Variant());
+	ERR_FAIL_COND_V(!p_tree->property_parent_map.has(base_path), Variant());
+	ERR_FAIL_COND_V(!p_tree->property_parent_map[base_path].has(p_name), Variant());
+	StringName path = p_tree->property_parent_map[base_path][p_name];
 
-	StringName path = state->tree->property_parent_map[base_path][p_name];
-	return state->tree->property_map[path].first;
+	return p_tree->property_map[path].first;
 }
 
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
@@ -95,26 +95,26 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	}
 }
 
-void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag) {
-	ERR_FAIL_NULL(state);
-	ERR_FAIL_COND(!state->player->has_animation(p_animation));
+void AnimationNode::blend_animation(AnimationTree *p_tree, const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag) {
+	ERR_FAIL_NULL(p_tree);
+	ERR_FAIL_COND(!p_tree->state.player->has_animation(p_animation));
 
-	Ref<Animation> animation = state->player->get_animation(p_animation);
+	Ref<Animation> animation = p_tree->state.player->get_animation(p_animation);
 
 	if (animation.is_null()) {
-		AnimationNodeBlendTree *btree = Object::cast_to<AnimationNodeBlendTree>(parent);
-		if (btree) {
-			String node_name = btree->get_node_name(Ref<AnimationNodeAnimation>(this));
-			make_invalid(vformat(RTR("In node '%s', invalid animation: '%s'."), node_name, p_animation));
+		AnimationNodeBlendTree *blend_tree = Object::cast_to<AnimationNodeBlendTree>(parent);
+		if (blend_tree) {
+			String node_name = blend_tree->get_node_name(Ref<AnimationNodeAnimation>(this));
+			make_invalid(p_tree, vformat(RTR("In node '%s', invalid animation: '%s'."), node_name, p_animation));
 		} else {
-			make_invalid(vformat(RTR("Invalid animation: '%s'."), p_animation));
+			make_invalid(p_tree, vformat(RTR("Invalid animation: '%s'."), p_animation));
 		}
 		return;
 	}
 
 	ERR_FAIL_COND(!animation.is_valid());
 
-	AnimationState anim_state;
+	AnimationTree::AnimationState anim_state;
 	anim_state.blend = p_blend;
 	anim_state.track_blends = blends;
 	anim_state.delta = p_delta;
@@ -124,18 +124,16 @@ void AnimationNode::blend_animation(const StringName &p_animation, double p_time
 	anim_state.looped_flag = p_looped_flag;
 	anim_state.is_external_seeking = p_is_external_seeking;
 
-	state->animation_states.push_back(anim_state);
+	p_tree->state.animation_states.push_back(anim_state);
 }
 
-double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections, bool p_test_only) {
+double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, AnimationTree *p_tree, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections, bool p_test_only) {
 	base_path = p_base_path;
 	parent = p_parent;
 	connections = p_connections;
-	state = p_state;
 
-	double t = process(p_time, p_seek, p_is_external_seeking, p_test_only);
+	double t = process(p_tree, p_time, p_seek, p_is_external_seeking, p_test_only);
 
-	state = nullptr;
 	parent = nullptr;
 	base_path = StringName();
 	connections.clear();
@@ -143,23 +141,20 @@ double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode 
 	return t;
 }
 
-AnimationTree *AnimationNode::get_animation_tree() const {
-	ERR_FAIL_NULL_V(state, nullptr);
-	return state->tree;
-}
-
-void AnimationNode::make_invalid(const String &p_reason) {
-	ERR_FAIL_NULL(state);
-	state->valid = false;
-	if (!state->invalid_reasons.is_empty()) {
-		state->invalid_reasons += "\n";
+void AnimationNode::make_invalid(AnimationTree *p_tree, const String &p_reason) {
+	ERR_FAIL_NULL(p_tree);
+	p_tree->state.valid = false;
+#ifdef TOOLS_ENABLED
+	if (!p_tree->state.invalid_reasons.is_empty()) {
+		p_tree->state.invalid_reasons += "\n";
 	}
-	state->invalid_reasons += String::utf8("•  ") + p_reason;
+	p_tree->state.invalid_reasons += String::utf8("•  ") + p_reason;
+#endif // TOOLS_ENABLED
 }
 
-double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, bool p_test_only) {
+double AnimationNode::blend_input(AnimationTree *p_tree, int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, bool p_test_only) {
+	ERR_FAIL_NULL_V(p_tree, 0);
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
-	ERR_FAIL_NULL_V(state, 0);
 
 	AnimationNodeBlendTree *blend_tree = Object::cast_to<AnimationNodeBlendTree>(parent);
 	ERR_FAIL_NULL_V(blend_tree, 0);
@@ -168,7 +163,8 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 
 	if (!blend_tree->has_node(node_name)) {
 		String node_name2 = blend_tree->get_node_name(Ref<AnimationNode>(this));
-		make_invalid(vformat(RTR("Nothing connected to input '%s' of node '%s'."), get_input_name(p_input), node_name2));
+		make_invalid(p_tree, vformat(RTR("Nothing connected to input '%s' of node '%s'."), get_input_name(p_input), node_name2));
+
 		return 0;
 	}
 
@@ -176,24 +172,23 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 
 	//inputs.write[p_input].last_pass = state->last_pass;
 	real_t activity = 0.0;
-	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, &activity, p_test_only);
+	double ret = _blend_node(p_tree, node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, &activity, p_test_only);
 
-	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
+#ifdef TOOLS_ENABLED
+	ERR_FAIL_NULL_V(p_tree, 0);
+	p_tree->set_connection_activity(base_path, p_input, activity);
+#endif // TOOLS_ENABLED
 
-	if (activity_ptr && p_input < activity_ptr->size()) {
-		activity_ptr->write[p_input].last_pass = state->last_pass;
-		activity_ptr->write[p_input].activity = activity;
-	}
 	return ret;
 }
 
-double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, bool p_test_only) {
-	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, nullptr, p_test_only);
+double AnimationNode::blend_node(AnimationTree *p_tree, const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, bool p_test_only) {
+	return _blend_node(p_tree, p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, nullptr, p_test_only);
 }
 
-double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, real_t *r_max, bool p_test_only) {
+double AnimationNode::_blend_node(AnimationTree *p_tree, const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, real_t *r_max, bool p_test_only) {
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
-	ERR_FAIL_NULL_V(state, 0);
+	ERR_FAIL_NULL_V(p_tree, 0);
 
 	int blend_count = blends.size();
 
@@ -212,10 +207,10 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		}
 
 		for (const KeyValue<NodePath, bool> &E : filter) {
-			if (!state->track_map.has(E.key)) {
+			if (!p_tree->state.track_map.has(E.key)) {
 				continue;
 			}
-			int idx = state->track_map[E.key];
+			int idx = p_tree->state.track_map[E.key];
 			blendw[idx] = 1.0; //filtered goes to one
 		}
 
@@ -301,9 +296,9 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 	// This process, which depends on p_sync is needed to process sync correctly in the case of
 	// that a synced AnimationNodeSync exists under the un-synced AnimationNodeSync.
 	if (!p_seek && !p_sync && !any_valid) {
-		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_is_external_seeking, p_connections, p_test_only);
+		return p_node->_pre_process(new_path, new_parent, p_tree, 0, p_seek, p_is_external_seeking, p_connections, p_test_only);
 	}
-	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_is_external_seeking, p_connections, p_test_only);
+	return p_node->_pre_process(new_path, new_parent, p_tree, p_time, p_seek, p_is_external_seeking, p_connections, p_test_only);
 }
 
 String AnimationNode::get_caption() const {
@@ -357,14 +352,14 @@ int AnimationNode::find_input(const String &p_name) const {
 	return idx;
 }
 
-double AnimationNode::process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
+double AnimationNode::process(AnimationTree *p_tree, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
 	is_testing = p_test_only;
-	return _process(p_time, p_seek, p_is_external_seeking, p_test_only);
+	return _process(p_tree, p_time, p_seek, p_is_external_seeking, p_test_only);
 }
 
-double AnimationNode::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
+double AnimationNode::_process(AnimationTree *p_tree, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
 	double ret = 0;
-	GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, p_test_only, ret);
+	GDVIRTUAL_CALL(_process, p_tree, p_time, p_seek, p_is_external_seeking, p_test_only, ret);
 	return ret;
 }
 
@@ -418,6 +413,11 @@ void AnimationNode::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+AnimationTree::State *AnimationNode::get_state(AnimationTree *p_tree) const {
+	ERR_FAIL_COND_V(!p_tree, nullptr);
+	return &p_tree->state;
+}
+
 Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) const {
 	Ref<AnimationNode> ret;
 	GDVIRTUAL_CALL(_get_child_by_name, p_name, ret);
@@ -453,12 +453,12 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
 
-	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "is_external_seeking", "blend", "looped_flag"), &AnimationNode::blend_animation, DEFVAL(Animation::LOOPED_FLAG_NONE));
-	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("blend_animation", "tree", "animation", "time", "delta", "seeked", "is_external_seeking", "blend", "looped_flag"), &AnimationNode::blend_animation, DEFVAL(Animation::LOOPED_FLAG_NONE));
+	ClassDB::bind_method(D_METHOD("blend_node", "tree", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("blend_input", "tree", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
-	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
+	ClassDB::bind_method(D_METHOD("set_parameter", "tree", "name", "value"), &AnimationNode::set_parameter);
+	ClassDB::bind_method(D_METHOD("get_parameter", "tree", "name"), &AnimationNode::get_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
@@ -468,7 +468,7 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_get_child_by_name, "name");
 	GDVIRTUAL_BIND(_get_parameter_default_value, "parameter");
 	GDVIRTUAL_BIND(_is_parameter_read_only, "parameter");
-	GDVIRTUAL_BIND(_process, "time", "seek", "is_external_seeking", "test_only");
+	GDVIRTUAL_BIND(_process, "tree", "time", "seek", "is_external_seeking", "test_only");
 	GDVIRTUAL_BIND(_get_caption);
 	GDVIRTUAL_BIND(_has_filter);
 
@@ -1017,13 +1017,13 @@ void AnimationTree::_process_graph(double p_delta) {
 	{ //setup
 
 		process_pass++;
-
 		state.valid = true;
+#ifdef TOOLS_ENABLED
 		state.invalid_reasons = "";
+#endif // TOOLS_ENABLED
 		state.animation_states.clear(); //will need to be re-created
 		state.player = player;
 		state.last_pass = process_pass;
-		state.tree = this;
 
 		// root source blends
 
@@ -1039,11 +1039,11 @@ void AnimationTree::_process_graph(double p_delta) {
 	{
 		if (started) {
 			//if started, seek
-			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, 0, true, false, Vector<StringName>());
+			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, this, 0, true, false, Vector<StringName>());
 			started = false;
 		}
 
-		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, p_delta, false, false, Vector<StringName>());
+		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, this, p_delta, false, false, Vector<StringName>());
 	}
 
 	if (!state.valid) {
@@ -1097,7 +1097,7 @@ void AnimationTree::_process_graph(double p_delta) {
 #ifdef TOOLS_ENABLED
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 #endif // TOOLS_ENABLED
-		for (const AnimationNode::AnimationState &as : state.animation_states) {
+		for (const AnimationState &as : state.animation_states) {
 			Ref<Animation> a = as.animation;
 			double time = as.time;
 			double delta = as.delta;
@@ -1977,9 +1977,11 @@ bool AnimationTree::is_state_invalid() const {
 	return !state.valid;
 }
 
+#ifdef TOOLS_ENABLED
 String AnimationTree::get_invalid_state_reason() const {
 	return state.invalid_reasons;
 }
+#endif // TOOLS_ENABLED
 
 uint64_t AnimationTree::get_last_process_pass() const {
 	return process_pass;
@@ -2089,6 +2091,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 		property_reference_map[node->get_instance_id()] = p_base_path;
 	}
 
+#ifdef TOOLS_ENABLED
 	if (node->get_input_count() && !input_activity_map.has(p_base_path)) {
 		Vector<Activity> activity;
 		for (int i = 0; i < node->get_input_count(); i++) {
@@ -2100,6 +2103,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 		input_activity_map[p_base_path] = activity;
 		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = &input_activity_map[p_base_path];
 	}
+#endif // TOOLS_ENABLED
 
 	List<PropertyInfo> plist;
 	node->get_parameter_list(&plist);
@@ -2135,8 +2139,11 @@ void AnimationTree::_update_properties() {
 	properties.clear();
 	property_reference_map.clear();
 	property_parent_map.clear();
+
+#ifdef TOOLS_ENABLED
 	input_activity_map.clear();
 	input_activity_map_get.clear();
+#endif // TOOLS_ENABLED
 
 	if (root.is_valid()) {
 		_update_properties_for_node(SceneStringNames::get_singleton()->parameters_base_path, root);
@@ -2186,6 +2193,16 @@ void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+void AnimationTree::set_connection_activity(const StringName &p_base_path, int p_connection, real_t p_activity) {
+	Vector<AnimationTree::Activity> *activity_ptr = input_activity_map.getptr(p_base_path);
+
+	if (activity_ptr && p_connection < activity_ptr->size()) {
+		activity_ptr->write[p_connection].last_pass = state.last_pass;
+		activity_ptr->write[p_connection].activity = p_activity;
+	}
+}
+
 real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
 	if (!input_activity_map_get.has(p_path)) {
 		return 0;
@@ -2202,6 +2219,7 @@ real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_co
 
 	return (*activity)[p_connection].activity;
 }
+#endif // TOOLS_ENABLED
 
 void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &AnimationTree::set_active);

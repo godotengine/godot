@@ -43,26 +43,21 @@ class AnimationNodeBlendTree;
 class AnimationNodeStartState;
 class AnimationNodeEndState;
 class AnimationPlayer;
-class AnimationTree;
+class AnimationNode;
 
-class AnimationNode : public Resource {
-	GDCLASS(AnimationNode, Resource);
+class AnimationTree : public Node {
+	GDCLASS(AnimationTree, Node);
+
+	void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred);
+
+	friend class AnimationNode;
 
 public:
-	enum FilterAction {
-		FILTER_IGNORE,
-		FILTER_PASS,
-		FILTER_STOP,
-		FILTER_BLEND
+	enum AnimationProcessCallback {
+		ANIMATION_PROCESS_PHYSICS,
+		ANIMATION_PROCESS_IDLE,
+		ANIMATION_PROCESS_MANUAL,
 	};
-
-	struct Input {
-		String name;
-	};
-
-	Vector<Input> inputs;
-
-	friend class AnimationTree;
 
 	struct AnimationState {
 		Ref<Animation> animation;
@@ -74,133 +69,16 @@ public:
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 	};
-
 	struct State {
 		int track_count = 0;
 		HashMap<NodePath, int> track_map;
 		List<AnimationState> animation_states;
-		bool valid = false;
 		AnimationPlayer *player = nullptr;
-		AnimationTree *tree = nullptr;
+		bool valid = false;
+#ifdef TOOLS_ENABLED
 		String invalid_reasons;
+#endif // TOOLS_ENABLED
 		uint64_t last_pass = 0;
-	};
-
-	Vector<real_t> blends;
-	State *state = nullptr;
-
-	bool is_testing = false;
-
-	double _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections, bool p_test_only = false);
-
-	//all this is temporary
-	StringName base_path;
-	Vector<StringName> connections;
-	AnimationNode *parent = nullptr;
-
-	HashMap<NodePath, bool> filter;
-	bool filter_enabled = false;
-
-	Array _get_filters() const;
-	void _set_filters(const Array &p_filters);
-	friend class AnimationNodeBlendTree;
-	double _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, real_t *r_max = nullptr, bool p_test_only = false);
-
-protected:
-	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false);
-	double process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false);
-
-	void blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
-	double blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
-	double blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
-
-	void make_invalid(const String &p_reason);
-	AnimationTree *get_animation_tree() const;
-
-	static void _bind_methods();
-
-	void _validate_property(PropertyInfo &p_property) const;
-
-	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
-	GDVIRTUAL0RC(Array, _get_parameter_list)
-	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
-	GDVIRTUAL1RC(Variant, _get_parameter_default_value, StringName)
-	GDVIRTUAL1RC(bool, _is_parameter_read_only, StringName)
-	GDVIRTUAL4RC(double, _process, double, bool, bool, bool)
-	GDVIRTUAL0RC(String, _get_caption)
-	GDVIRTUAL0RC(bool, _has_filter)
-
-public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
-	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
-	virtual bool is_parameter_read_only(const StringName &p_parameter) const;
-
-	void set_parameter(const StringName &p_name, const Variant &p_value);
-	Variant get_parameter(const StringName &p_name) const;
-
-	struct ChildNode {
-		StringName name;
-		Ref<AnimationNode> node;
-	};
-
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
-
-	virtual String get_caption() const;
-
-	virtual bool add_input(const String &p_name);
-	virtual void remove_input(int p_index);
-	virtual bool set_input_name(int p_input, const String &p_name);
-	virtual String get_input_name(int p_input) const;
-	int get_input_count() const;
-	int find_input(const String &p_name) const;
-
-	void set_filter_path(const NodePath &p_path, bool p_enable);
-	bool is_path_filtered(const NodePath &p_path) const;
-
-	void set_filter_enabled(bool p_enable);
-	bool is_filter_enabled() const;
-
-	virtual bool has_filter() const;
-
-	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const;
-	Ref<AnimationNode> find_node_by_path(const String &p_name) const;
-
-	AnimationNode();
-};
-
-VARIANT_ENUM_CAST(AnimationNode::FilterAction)
-
-//root node does not allow inputs
-class AnimationRootNode : public AnimationNode {
-	GDCLASS(AnimationRootNode, AnimationNode);
-
-protected:
-	virtual void _tree_changed();
-	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
-	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
-
-public:
-	AnimationRootNode() {}
-};
-
-class AnimationNodeStartState : public AnimationRootNode {
-	GDCLASS(AnimationNodeStartState, AnimationRootNode);
-};
-
-class AnimationNodeEndState : public AnimationRootNode {
-	GDCLASS(AnimationNodeEndState, AnimationRootNode);
-};
-
-class AnimationTree : public Node {
-	GDCLASS(AnimationTree, Node);
-
-	void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred);
-
-public:
-	enum AnimationProcessCallback {
-		ANIMATION_PROCESS_PHYSICS,
-		ANIMATION_PROCESS_IDLE,
-		ANIMATION_PROCESS_MANUAL,
 	};
 
 private:
@@ -322,7 +200,7 @@ private:
 	NodePath animation_player;
 	int audio_max_polyphony = 32;
 
-	AnimationNode::State state;
+	State state;
 	bool cache_valid = false;
 	void _node_removed(Node *p_node);
 
@@ -347,7 +225,6 @@ private:
 	Quaternion root_motion_rotation_accumulator = Quaternion(0, 0, 0, 1);
 	Vector3 root_motion_scale_accumulator = Vector3(1, 1, 1);
 
-	friend class AnimationNode;
 	bool properties_dirty = true;
 	void _tree_changed();
 	void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
@@ -358,6 +235,7 @@ private:
 	HashMap<ObjectID, StringName> property_reference_map;
 	HashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
 
+#ifdef TOOLS_ENABLED
 	struct Activity {
 		uint64_t last_pass = 0;
 		real_t activity = 0.0;
@@ -365,6 +243,9 @@ private:
 
 	HashMap<StringName, Vector<Activity>> input_activity_map;
 	HashMap<StringName, Vector<Activity> *> input_activity_map_get;
+
+	void set_connection_activity(const StringName &p_base_path, int p_connection, real_t p_activity);
+#endif // TOOLS_ENABLED
 
 	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node);
 
@@ -404,7 +285,9 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	bool is_state_invalid() const;
+#ifdef TOOLS_ENABLED
 	String get_invalid_state_reason() const;
+#endif // TOOLS_ENABLED
 
 	void set_root_motion_track(const NodePath &p_track);
 	NodePath get_root_motion_track() const;
@@ -417,14 +300,139 @@ public:
 	Quaternion get_root_motion_rotation_accumulator() const;
 	Vector3 get_root_motion_scale_accumulator() const;
 
-	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(double p_time);
 
 	uint64_t get_last_process_pass() const;
+
+#ifdef TOOLS_ENABLED
+	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
+#endif // TOOLS_ENABLED
+
 	AnimationTree();
 	~AnimationTree();
 };
 
 VARIANT_ENUM_CAST(AnimationTree::AnimationProcessCallback)
+
+class AnimationNode : public Resource {
+	GDCLASS(AnimationNode, Resource);
+
+public:
+	enum FilterAction {
+		FILTER_IGNORE,
+		FILTER_PASS,
+		FILTER_STOP,
+		FILTER_BLEND
+	};
+
+	struct Input {
+		String name;
+	};
+
+	Vector<Input> inputs;
+
+	Vector<real_t> blends;
+
+	bool is_testing = false;
+
+	double _pre_process(const StringName &p_base_path, AnimationNode *p_parent, AnimationTree *p_tree, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections, bool p_test_only = false);
+
+	// All these are temporary.
+	StringName base_path;
+	Vector<StringName> connections;
+	AnimationNode *parent = nullptr;
+
+	HashMap<NodePath, bool> filter;
+	bool filter_enabled = false;
+
+	Array _get_filters() const;
+	void _set_filters(const Array &p_filters);
+	double _blend_node(AnimationTree *p_tree, const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, real_t *r_max = nullptr, bool p_test_only = false);
+
+protected:
+	virtual double _process(AnimationTree *p_tree, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false);
+	double process(AnimationTree *p_tree, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false);
+
+	void blend_animation(AnimationTree *p_tree, const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
+	double blend_node(AnimationTree *p_tree, const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+	double blend_input(AnimationTree *p_tree, int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+
+	AnimationTree::State *get_state(AnimationTree *p_tree) const;
+
+	void make_invalid(AnimationTree *p_tree, const String &p_reason);
+
+	static void _bind_methods();
+
+	void _validate_property(PropertyInfo &p_property) const;
+
+	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
+	GDVIRTUAL0RC(Array, _get_parameter_list)
+	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
+	GDVIRTUAL1RC(Variant, _get_parameter_default_value, StringName)
+	GDVIRTUAL1RC(bool, _is_parameter_read_only, StringName)
+	GDVIRTUAL5RC(double, _process, AnimationTree *, double, bool, bool, bool)
+	GDVIRTUAL0RC(String, _get_caption)
+	GDVIRTUAL0RC(bool, _has_filter)
+
+public:
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+	virtual bool is_parameter_read_only(const StringName &p_parameter) const;
+
+	void set_parameter(AnimationTree *p_tree, const StringName &p_name, const Variant &p_value);
+	Variant get_parameter(const AnimationTree *p_tree, const StringName &p_name) const;
+
+	struct ChildNode {
+		StringName name;
+		Ref<AnimationNode> node;
+	};
+
+	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
+
+	virtual String get_caption() const;
+
+	virtual bool add_input(const String &p_name);
+	virtual void remove_input(int p_index);
+	virtual bool set_input_name(int p_input, const String &p_name);
+	virtual String get_input_name(int p_input) const;
+	int get_input_count() const;
+	int find_input(const String &p_name) const;
+
+	void set_filter_path(const NodePath &p_path, bool p_enable);
+	bool is_path_filtered(const NodePath &p_path) const;
+
+	void set_filter_enabled(bool p_enable);
+	bool is_filter_enabled() const;
+
+	virtual bool has_filter() const;
+
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const;
+	Ref<AnimationNode> find_node_by_path(const String &p_name) const;
+
+	AnimationNode();
+};
+
+VARIANT_ENUM_CAST(AnimationNode::FilterAction)
+
+//root node does not allow inputs
+class AnimationRootNode : public AnimationNode {
+	GDCLASS(AnimationRootNode, AnimationNode);
+
+protected:
+	virtual void _tree_changed();
+	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
+	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
+
+public:
+	AnimationRootNode() {}
+};
+
+class AnimationNodeStartState : public AnimationRootNode {
+	GDCLASS(AnimationNodeStartState, AnimationRootNode);
+};
+
+class AnimationNodeEndState : public AnimationRootNode {
+	GDCLASS(AnimationNodeEndState, AnimationRootNode);
+};
 
 #endif // ANIMATION_TREE_H

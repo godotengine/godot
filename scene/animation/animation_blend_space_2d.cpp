@@ -442,12 +442,12 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 	r_weights[2] = w;
 }
 
-double AnimationNodeBlendSpace2D::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
+double AnimationNodeBlendSpace2D::_process(AnimationTree *p_tree, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
 	_update_triangles();
 
-	Vector2 blend_pos = get_parameter(blend_position);
-	int cur_closest = get_parameter(closest);
-	double cur_length_internal = get_parameter(length_internal);
+	Vector2 blend_pos = get_parameter(p_tree, blend_position);
+	int cur_closest = get_parameter(p_tree, closest);
+	double cur_length_internal = get_parameter(p_tree, length_internal);
 	double mind = 0.0; //time of min distance point
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
@@ -512,7 +512,7 @@ double AnimationNodeBlendSpace2D::_process(double p_time, bool p_seek, bool p_is
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
 					//blend with the given weight
-					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, blend_weights[j], FILTER_IGNORE, true, p_test_only);
+					double t = blend_node(p_tree, blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, blend_weights[j], FILTER_IGNORE, true, p_test_only);
 					if (first || t < mind) {
 						mind = t;
 						first = false;
@@ -523,7 +523,7 @@ double AnimationNodeBlendSpace2D::_process(double p_time, bool p_seek, bool p_is
 			}
 
 			if (sync && !found) {
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true, p_test_only);
+				blend_node(p_tree, blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true, p_test_only);
 			}
 		}
 	} else {
@@ -548,29 +548,29 @@ double AnimationNodeBlendSpace2D::_process(double p_time, bool p_seek, bool p_is
 					na_n->set_backward(na_c->is_backward());
 				}
 				//see how much animation remains
-				from = cur_length_internal - blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, false, p_is_external_seeking, 0.0, FILTER_IGNORE, true, p_test_only);
+				from = cur_length_internal - blend_node(p_tree, blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, false, p_is_external_seeking, 0.0, FILTER_IGNORE, true, p_test_only);
 			}
 
-			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
+			mind = blend_node(p_tree, blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
 			cur_length_internal = from + mind;
 
 			cur_closest = new_closest;
 
 		} else {
-			mind = blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
+			mind = blend_node(p_tree, blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
 		}
 
 		if (sync) {
 			for (int i = 0; i < blend_points_used; i++) {
 				if (i != cur_closest) {
-					blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true, p_test_only);
+					blend_node(p_tree, blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true, p_test_only);
 				}
 			}
 		}
 	}
 
-	set_parameter(this->closest, cur_closest);
-	set_parameter(this->length_internal, cur_length_internal);
+	set_parameter(p_tree, this->closest, cur_closest);
+	set_parameter(p_tree, this->length_internal, cur_length_internal);
 	return mind;
 }
 
