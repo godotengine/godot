@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Material" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Abstract base [Resource] for coloring and shading geometry.
+		Abstract base class for applying visual properties to an object, such as color and roughness.
 	</brief_description>
 	<description>
-		Material is a base [Resource] used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance3D] derived nodes carry a Material. A few flags and parameters are shared between all material types and are configured here.
+		[Material] is a base resource used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance3D] derived nodes carry a [Material]. A few flags and parameters are shared between all material types and are configured here.
 	</description>
 	<tutorials>
 		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/123</link>
