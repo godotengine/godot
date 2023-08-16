@@ -137,6 +137,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given group exists.
+				A group exists if any [Node] in the tree belongs to it (see [method Node.add_to_group]). Groups without nodes are removed automatically.
 			</description>
 		</method>
 		<method name="notify_group">
