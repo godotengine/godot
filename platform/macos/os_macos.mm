@@ -139,7 +139,7 @@ void OS_MacOS::finalize() {
 }
 
 void OS_MacOS::initialize_joypads() {
-	joypad_macos = memnew(JoypadMacOS(Input::get_singleton()));
+	joypad_macos = memnew(JoypadMacOS());
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
@@ -769,7 +769,7 @@ void OS_MacOS::run() {
 				if (DisplayServer::get_singleton()) {
 					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
 				}
-				joypad_macos->process_joypads();
+				joypad_macos->start_processing();
 
 				if (Main::iteration()) {
 					quit = true;

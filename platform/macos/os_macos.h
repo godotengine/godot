@@ -32,7 +32,7 @@
 #define OS_MACOS_H
 
 #include "crash_handler_macos.h"
-#include "joypad_macos.h"
+#import "joypad_macos.h"
 
 #include "core/input/input.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
