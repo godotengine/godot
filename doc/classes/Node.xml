@@ -341,6 +341,7 @@
 			<return type="int" />
 			<description>
 				Returns the peer ID of the multiplayer authority for this node. See [method set_multiplayer_authority].
+				[b]Note:[/b] Multiplayer can only be manipulated from the main thread.
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
@@ -577,6 +578,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the local system is the multiplayer authority of this node.
+				[b]Note:[/b] Multiplayer can only be manipulated from the main thread.
 			</description>
 		</method>
 		<method name="is_node_ready" qualifiers="const">
@@ -767,6 +769,7 @@
 				Sends a remote procedure call request for the given [param method] to peers on the network (and locally), sending additional arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same [member name]. Behavior depends on the RPC configuration for the given [param method] (see [method rpc_config] and [annotation @GDScript.@rpc]). By default, methods are not exposed to RPCs.
 				May return [constant OK] if the call is successful, [constant ERR_INVALID_PARAMETER] if the arguments passed in the [param method] do not match, [constant ERR_UNCONFIGURED] if the node's [member multiplayer] cannot be fetched (such as when the node is not inside the tree), [constant ERR_CONNECTION_ERROR] if [member multiplayer]'s connection is not available.
 				[b]Note:[/b] You can only safely use RPCs on clients after you received the [signal MultiplayerAPI.connected_to_server] signal from the [MultiplayerAPI]. You also need to keep track of the connection state, either by the [MultiplayerAPI] signals like [signal MultiplayerAPI.server_disconnected] or by checking ([code]get_multiplayer().peer.get_connection_status() == CONNECTION_CONNECTED[/code]).
+				[b]Note:[/b] Multiplayer can only be manipulated from the main thread.
 			</description>
 		</method>
 		<method name="rpc_config">
@@ -780,6 +783,7 @@
 				- [code]call_local[/code]: if [code]true[/code], the method will also be called locally;
 				- [code]channel[/code]: an [int] representing the channel to send the RPC on.
 				[b]Note:[/b] In GDScript, this method corresponds to the [annotation @GDScript.@rpc] annotation, with various parameters passed ([code]@rpc(any)[/code], [code]@rpc(authority)[/code]...). See also the [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]high-level multiplayer[/url] tutorial.
+				[b]Note:[/b] Multiplayer can only be manipulated from the main thread.
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -789,6 +793,7 @@
 			<description>
 				Sends a [method rpc] to a specific peer identified by [param peer_id] (see [method MultiplayerPeer.set_target_peer]).
 				May return [constant OK] if the call is successful, [constant ERR_INVALID_PARAMETER] if the arguments passed in the [param method] do not match, [constant ERR_UNCONFIGURED] if the node's [member multiplayer] cannot be fetched (such as when the node is not inside the tree), [constant ERR_CONNECTION_ERROR] if [member multiplayer]'s connection is not available.
+				[b]Note:[/b] Multiplayer can only be manipulated from the main thread.
 			</description>
 		</method>
 		<method name="set_deferred_thread_group">
@@ -822,6 +827,7 @@
 				Sets the node's multiplayer authority to the peer with the given peer [param id]. The multiplayer authority is the peer that has authority over the node on the network. Defaults to peer ID 1 (the server). Useful in conjunction with [method rpc_config] and the [MultiplayerAPI].
 				If [param recursive] is [code]true[/code], the given peer is recursively set as the authority for all children of this node.
 				[b]Warning:[/b] This does [b]not[/b] automatically replicate the new authority to other peers. It is the developer's responsibility to do so. You may replicate the new authority's information using [member MultiplayerSpawner.spawn_function], an RPC, or a [MultiplayerSynchronizer]. Furthermore, the parent's authority does [b]not[/b] propagate to newly added children.
+				[b]Note:[/b] Multiplayer can only be manipulated from the main thread.
 			</description>
 		</method>
 		<method name="set_physics_process">
@@ -911,6 +917,7 @@
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. See [method SceneTree.get_multiplayer].
 			[b]Note:[/b] Renaming the node, or moving it in the tree, will not move the [MultiplayerAPI] to the new path, you will have to update this manually.
+			[b]Note:[/b] Multiplayer can only be manipulated from the main thread.
 		</member>
 		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name must be unique among the siblings (other child nodes from the same parent). When set to an existing sibling's name, the node is automatically renamed.
