@@ -1086,22 +1086,20 @@ void GodotNavigationServer::map_force_update(RID p_map) {
 	map->sync();
 }
 
+void GodotNavigationServer::sync() {
+#ifndef _3D_DISABLED
+	if (navmesh_generator_3d) {
+		navmesh_generator_3d->sync();
+	}
+#endif // _3D_DISABLED
+}
+
 void GodotNavigationServer::process(real_t p_delta_time) {
 	flush_queries();
 
 	if (!active) {
 		return;
 	}
-
-#ifndef _3D_DISABLED
-	// Sync finished navmesh bakes before doing NavMap updates.
-	if (navmesh_generator_3d) {
-		navmesh_generator_3d->sync();
-		// Finished bakes emit callbacks and users might have reacted to those.
-		// Flush queue again so users do not have to wait for the next sync.
-		flush_queries();
-	}
-#endif // _3D_DISABLED
 
 	int _new_pm_region_count = 0;
 	int _new_pm_agent_count = 0;
