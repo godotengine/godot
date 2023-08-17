@@ -47,6 +47,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
@@ -2384,10 +2385,8 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		}
 	}
 
-	String etc_error = test_etc2();
-	if (!etc_error.is_empty()) {
+	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 		valid = false;
-		err += etc_error;
 	}
 
 	String min_sdk_str = p_preset->get("gradle_build/min_sdk");

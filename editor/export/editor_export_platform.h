@@ -237,8 +237,6 @@ public:
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) { return OK; }
 	virtual Ref<Texture2D> get_run_icon() const { return get_logo(); }
 
-	String test_etc2() const;
-	String test_bc() const;
 	bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const;
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const = 0;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const = 0;

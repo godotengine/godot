@@ -41,6 +41,7 @@ class EditorFileSystemDirectory;
 class EditorInspector;
 class EditorPropertyPath;
 class ItemList;
+class LinkButton;
 class MenuButton;
 class OptionButton;
 class PopupMenu;
@@ -48,6 +49,23 @@ class RichTextLabel;
 class TabContainer;
 class Tree;
 class TreeItem;
+
+class ProjectExportTextureFormatError : public HBoxContainer {
+	GDCLASS(ProjectExportTextureFormatError, HBoxContainer);
+
+	Label *texture_format_error_label = nullptr;
+	LinkButton *fix_texture_format_button = nullptr;
+	String setting_identifier;
+	void _on_fix_texture_format_pressed();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	void show_for_texture_format(const String &p_friendly_name, const String &p_setting_identifier);
+	ProjectExportTextureFormatError();
+};
 
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);
@@ -86,12 +104,14 @@ private:
 	Button *export_all_button = nullptr;
 	AcceptDialog *export_all_dialog = nullptr;
 
+	RBSet<String> feature_set;
 	LineEdit *custom_features = nullptr;
 	RichTextLabel *custom_feature_display = nullptr;
 
 	LineEdit *script_key = nullptr;
 	Label *script_key_error = nullptr;
 
+	ProjectExportTextureFormatError *export_texture_format_error = nullptr;
 	Label *export_error = nullptr;
 	Label *export_warning = nullptr;
 	HBoxContainer *export_templates_error = nullptr;

@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For mono and svg.
@@ -406,10 +407,8 @@ bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorEx
 	// Validate the project configuration.
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
-		String etc_error = test_etc2();
-		if (!etc_error.is_empty()) {
+		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 			valid = false;
-			err += etc_error;
 		}
 	}
 

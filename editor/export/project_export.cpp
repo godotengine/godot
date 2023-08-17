@@ -39,6 +39,7 @@
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/item_list.h"
@@ -50,6 +51,44 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+
+void ProjectExportTextureFormatError::_on_fix_texture_format_pressed() {
+	ProjectSettings::get_singleton()->set_setting(setting_identifier, true);
+	ProjectSettings::get_singleton()->save();
+	EditorFileSystem::get_singleton()->scan_changes();
+	emit_signal("texture_format_enabled");
+}
+
+void ProjectExportTextureFormatError::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("texture_format_enabled"));
+}
+
+void ProjectExportTextureFormatError::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			texture_format_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		} break;
+	}
+}
+
+void ProjectExportTextureFormatError::show_for_texture_format(const String &p_friendly_name, const String &p_setting_identifier) {
+	texture_format_error_label->set_text(vformat(TTR("Target platform requires '%s' texture compression. Enable 'Import %s' to fix."), p_friendly_name, p_friendly_name.replace("/", " ")));
+	setting_identifier = p_setting_identifier;
+	show();
+}
+
+ProjectExportTextureFormatError::ProjectExportTextureFormatError() {
+	// Set up the label.
+	texture_format_error_label = memnew(Label);
+	add_child(texture_format_error_label);
+	// Set up the fix button.
+	fix_texture_format_button = memnew(LinkButton);
+	fix_texture_format_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	fix_texture_format_button->set_text(TTR("Fix Import"));
+	add_child(fix_texture_format_button);
+	fix_texture_format_button->connect("pressed", callable_mp(this, &ProjectExportTextureFormatError::_on_fix_texture_format_pressed));
+}
 
 void ProjectExportDialog::_theme_changed() {
 	duplicate_preset->set_icon(presets->get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
@@ -300,6 +339,14 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	_update_export_all();
 	child_controls_changed();
 
+	if ((feature_set.has("s3tc") || feature_set.has("bptc")) && !ResourceImporterTextureSettings::should_import_s3tc_bptc()) {
+		export_texture_format_error->show_for_texture_format("S3TC/BPTC", "rendering/textures/vram_compression/import_s3tc_bptc");
+	} else if ((feature_set.has("etc2") || feature_set.has("astc")) && !ResourceImporterTextureSettings::should_import_etc2_astc()) {
+		export_texture_format_error->show_for_texture_format("ETC2/ASTC", "rendering/textures/vram_compression/import_etc2_astc");
+	} else {
+		export_texture_format_error->hide();
+	}
+
 	String enc_in_filters_str = current->get_enc_in_filter();
 	String enc_ex_filters_str = current->get_enc_ex_filter();
 	if (!updating_enc_filters) {
@@ -343,29 +390,29 @@ void ProjectExportDialog::_update_feature_list() {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
-	RBSet<String> fset;
-	List<String> features;
+	List<String> features_list;
 
-	current->get_platform()->get_platform_features(&features);
-	current->get_platform()->get_preset_features(current, &features);
+	current->get_platform()->get_platform_features(&features_list);
+	current->get_platform()->get_preset_features(current, &features_list);
 
 	String custom = current->get_custom_features();
 	Vector<String> custom_list = custom.split(",");
 	for (int i = 0; i < custom_list.size(); i++) {
 		String f = custom_list[i].strip_edges();
 		if (!f.is_empty()) {
-			features.push_back(f);
+			features_list.push_back(f);
 		}
 	}
 
-	for (const String &E : features) {
-		fset.insert(E);
+	feature_set.clear();
+	for (const String &E : features_list) {
+		feature_set.insert(E);
 	}
 
 	custom_feature_display->clear();
 	String text;
 	bool first = true;
-	for (const String &E : fset) {
+	for (const String &E : feature_set) {
 		if (!first) {
 			text += ", ";
 		} else {
@@ -1356,6 +1403,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	add_child(export_pck_zip);
 	export_pck_zip->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_pck_zip_selected));
 
+	// Export warnings and errors bottom section.
+
+	export_texture_format_error = memnew(ProjectExportTextureFormatError);
+	main_vb->add_child(export_texture_format_error);
+	export_texture_format_error->hide();
+	export_texture_format_error->connect("texture_format_enabled", callable_mp(this, &ProjectExportDialog::_update_current_preset));
+
 	export_error = memnew(Label);
 	main_vb->add_child(export_error);
 	export_error->hide();
@@ -1389,6 +1443,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	download_templates->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_templates_error->add_child(download_templates);
 	download_templates->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_export_template_manager));
+
+	// Export project file dialog.
 
 	export_project = memnew(EditorFileDialog);
 	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
