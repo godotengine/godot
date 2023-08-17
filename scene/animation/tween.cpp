@@ -546,8 +546,9 @@ void PropertyTweener::start() {
 		return;
 	}
 
-	if (do_continue) {
+	if (do_continue && Math::is_zero_approx(delay)) {
 		initial_val = target_instance->get_indexed(property);
+		do_continue = false;
 	}
 
 	if (relative) {
@@ -572,6 +573,10 @@ bool PropertyTweener::step(double &r_delta) {
 	if (elapsed_time < delay) {
 		r_delta = 0;
 		return true;
+	} else if (do_continue && !Math::is_zero_approx(delay)) {
+		initial_val = target_instance->get_indexed(property);
+		delta_val = Animation::subtract_variant(final_val, initial_val);
+		do_continue = false;
 	}
 
 	double time = MIN(elapsed_time - delay, duration);
