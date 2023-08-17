@@ -148,6 +148,13 @@
 				Passing [code]-1[/code] as the index deselects any currently selected item.
 			</description>
 		</method>
+		<method name="set_disable_shortcuts">
+			<return type="void" />
+			<param index="0" name="disabled" type="bool" />
+			<description>
+				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
+			</description>
+		</method>
 		<method name="set_item_disabled">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
