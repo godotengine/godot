@@ -9,7 +9,6 @@ from emscripten_helpers import (
     add_js_externs,
     create_template_zip,
 )
-from methods import get_compiler_version
 from SCons.Util import WhereIs
 from typing import TYPE_CHECKING
 
@@ -200,10 +199,8 @@ def configure(env: "Environment"):
     env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
 
     if env["dlink_enabled"]:
-        cc_version = get_compiler_version(env)
-        cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
-        if cc_semver < (3, 1, 14):
-            print("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
+        if env.compiler_version < (3, 1, 14):
+            print("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % env.compiler_version)
             sys.exit(255)
 
         env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])

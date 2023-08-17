@@ -1008,22 +1008,26 @@ def is_vanilla_clang(env):
 
 def get_compiler_version(env):
     """
-    Returns an array of version numbers as ints: [major, minor, patch].
-    The return array should have at least two values (major, minor).
+    Returns an dictionary of version information with the fields:
+      major, minor, patch, metadata1, metadata2, date
+    Or returns None if at least `major` couldn't be matched.
     """
-    if not env.msvc:
-        # Not using -dumpversion as some GCC distros only return major, and
-        # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
-        try:
+    try:
+        if env.msvc:
+            # cl.exe prints version info to stderr.
+            version = subprocess.check_output([env.subst(env["CXX"])], stderr=subprocess.STDOUT).strip().decode("utf-8")
+            first_test = ""
+        else:
+            # Not using -dumpversion as some GCC distros only return major, and
+            # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
             version = subprocess.check_output([env.subst(env["CXX"]), "--version"]).strip().decode("utf-8")
-        except (subprocess.CalledProcessError, OSError):
-            print("Couldn't parse CXX environment variable to infer compiler version.")
-            return None
-    else:  # TODO: Implement for MSVC
+            first_test = "(?:(?<=version )|(?<=\) )|(?<=^))"
+    except (subprocess.CalledProcessError, OSError):
+        print("Couldn't parse CXX environment variable to infer compiler version.")
         return None
+
     match = re.search(
-        "(?:(?<=version )|(?<=\) )|(?<=^))"
-        "(?P<major>\d+)"
+        first_test + "(?P<major>\d+)"
         "(?:\.(?P<minor>\d*))?"
         "(?:\.(?P<patch>\d*))?"
         "(?:-(?P<metadata1>[0-9a-zA-Z-]*))?"

@@ -1,7 +1,7 @@
 import os
 import platform
 import sys
-from methods import get_compiler_version, using_gcc
+from methods import using_gcc
 from platform_methods import detect_arch
 
 from typing import TYPE_CHECKING
@@ -105,9 +105,7 @@ def configure(env: "Environment"):
     if env["linker"] != "default":
         print("Using linker program: " + env["linker"])
         if env["linker"] == "mold" and using_gcc(env):  # GCC < 12.1 doesn't support -fuse-ld=mold.
-            cc_version = get_compiler_version(env)
-            cc_semver = (int(cc_version["major"]), int(cc_version["minor"]))
-            if cc_semver < (12, 1):
+            if env.compiler_version < (12, 1):
                 found_wrapper = False
                 for path in ["/usr/libexec", "/usr/local/libexec", "/usr/lib", "/usr/local/lib"]:
                     if os.path.isfile(path + "/mold/ld"):

@@ -130,6 +130,8 @@ if "TERM" in os.environ:  # Used for colored output.
 env_base.disabled_modules = []
 env_base.module_version_string = ""
 env_base.msvc = False
+# Tuple with (major, minor, patch)
+env_base.compiler_version = (-1, -1, -1)
 
 env_base.__class__.disable_module = methods.disable_module
 
@@ -639,26 +641,24 @@ if selected_platform in platform_list:
 
     # Enforce our minimal compiler version requirements
     cc_version = methods.get_compiler_version(env) or {
-        "major": None,
-        "minor": None,
-        "patch": None,
-        "metadata1": None,
-        "metadata2": None,
-        "date": None,
+        "major": -1,
+        "minor": 0,
+        "patch": 0,
+        "metadata1": "",
+        "metadata2": "",
+        "date": "",
     }
-    cc_version_major = int(cc_version["major"] or -1)
-    cc_version_minor = int(cc_version["minor"] or -1)
-    cc_version_metadata1 = cc_version["metadata1"] or ""
+    env.compiler_version = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
 
     if methods.using_gcc(env):
-        if cc_version_major == -1:
+        if env.compiler_version[0] == -1:
             print(
                 "Couldn't detect compiler version, skipping version checks. "
                 "Build may fail if the compiler doesn't support C++17 fully."
             )
         # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
         # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-        elif cc_version_major == 8 and cc_version_minor < 4:
+        elif env.compiler_version[0] == 8 and env.compiler_version[1] < 4:
             print(
                 "Detected GCC 8 version < 8.4, which is not supported due to a "
                 "regression in its C++17 guaranteed copy elision support. Use a "
@@ -666,7 +666,7 @@ if selected_platform in platform_list:
                 "to the SCons command line."
             )
             Exit(255)
-        elif cc_version_major < 7:
+        elif env.compiler_version[0] < 7:
             print(
                 "Detected GCC version older than 7, which does not fully support "
                 "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
@@ -674,7 +674,7 @@ if selected_platform in platform_list:
                 "SCons command line."
             )
             Exit(255)
-        elif cc_version_metadata1 == "win32":
+        elif cc_version["metadata1"] == "win32":
             print(
                 "Detected mingw version is not using posix threads. Only posix "
                 "version of mingw is supported. "
@@ -683,7 +683,7 @@ if selected_platform in platform_list:
             )
             Exit(255)
     elif methods.using_clang(env):
-        if cc_version_major == -1:
+        if env.compiler_version[0] == -1:
             print(
                 "Couldn't detect compiler version, skipping version checks. "
                 "Build may fail if the compiler doesn't support C++17 fully."
@@ -692,19 +692,19 @@ if selected_platform in platform_list:
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
         elif env["platform"] == "macos" or env["platform"] == "ios":
             vanilla = methods.is_vanilla_clang(env)
-            if vanilla and cc_version_major < 6:
+            if vanilla and env.compiler_version[0] < 6:
                 print(
                     "Detected Clang version older than 6, which does not fully support "
                     "C++17. Supported versions are Clang 6 and later."
                 )
                 Exit(255)
-            elif not vanilla and cc_version_major < 10:
+            elif not vanilla and env.compiler_version[0] < 10:
                 print(
                     "Detected Apple Clang version older than 10, which does not fully "
                     "support C++17. Supported versions are Apple Clang 10 and later."
                 )
                 Exit(255)
-        elif cc_version_major < 6:
+        elif env.compiler_version[0] < 6:
             print(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
@@ -757,13 +757,13 @@ if selected_platform in platform_list:
 
         if methods.using_gcc(env):
             common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
-            if cc_version_major == 7:  # Bogus warning fixed in 8+.
+            if env.compiler_version[0] == 7:  # Bogus warning fixed in 8+.
                 common_warnings += ["-Wno-strict-overflow"]
-            if cc_version_major < 11:
+            if env.compiler_version[0] < 11:
                 # Regression in GCC 9/10, spams so much in our variadic templates
                 # that we need to outright disable it.
                 common_warnings += ["-Wno-type-limits"]
-            if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
+            if env.compiler_version[0] >= 12:  # False positives in our error macros, see GH-58747.
                 common_warnings += ["-Wno-return-type"]
         elif methods.using_clang(env) or methods.using_emcc(env):
             common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
@@ -785,11 +785,11 @@ if selected_platform in platform_list:
                 )
                 env.Append(CXXFLAGS=["-Wplacement-new=1"])
                 # Need to fix a warning with AudioServer lambdas before enabling.
-                # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
+                # if env.compiler_version[0] != 9:  # GCC 9 had a regression (GH-36325).
                 #    env.Append(CXXFLAGS=["-Wnoexcept"])
-                if cc_version_major >= 9:
+                if env.compiler_version[0] >= 9:
                     env.Append(CCFLAGS=["-Wattribute-alias=2"])
-                if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
+                if env.compiler_version[0] >= 11:  # Broke on MethodBind templates before GCC 11.
                     env.Append(CCFLAGS=["-Wlogical-op"])
             elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
