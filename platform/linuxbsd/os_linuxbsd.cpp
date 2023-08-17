@@ -127,6 +127,14 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	}
 }
 
+int OS_LinuxBSD::get_low_processor_usage_mode_sleep_usec() const {
+	if (DisplayServer::get_singleton() == nullptr || DisplayServer::get_singleton()->get_name() != "Wayland" || is_in_low_processor_usage_mode()) {
+		return OS::get_low_processor_usage_mode_sleep_usec();
+	}
+
+	return 500; // Roughly 2000 FPS, improves frame time when emulating VSync.
+}
+
 void OS_LinuxBSD::initialize() {
 	crash_handler.initialize();
 

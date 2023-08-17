@@ -114,6 +114,9 @@ class DisplayServerWayland : public DisplayServer {
 
 	Context context;
 
+	bool frame = false;
+	bool emulate_vsync = false;
+
 #ifdef VULKAN_ENABLED
 	VulkanContextWayland *context_vulkan = nullptr;
 	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;

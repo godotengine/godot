@@ -757,13 +757,11 @@ bool DisplayServerWayland::window_is_focused(WindowID p_window_id) const {
 }
 
 bool DisplayServerWayland::window_can_draw(DisplayServer::WindowID p_window_id) const {
-	// TODO: Implement this. For now a simple return true will work though.
-	return true;
+	return frame;
 }
 
 bool DisplayServerWayland::can_any_window_draw() const {
-	// TODO: Implement this. For now a simple return true will work though.
-	return true;
+	return frame;
 }
 
 void DisplayServerWayland::window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id) {
@@ -786,17 +784,35 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 #ifdef VULKAN_ENABLED
 	if (context_vulkan) {
 		context_vulkan->set_vsync_mode(p_window_id, p_vsync_mode);
+
+		emulate_vsync = (context_vulkan->get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
+
+		if (emulate_vsync) {
+			print_line("VSYNC: manually throttling frames using MAILBOX.");
+			context_vulkan->set_vsync_mode(p_window_id, DisplayServer::VSYNC_MAILBOX);
+		}
 	}
 #endif // VULKAN_ENABLED
 
 #ifdef GLES3_ENABLED
 	if (egl_manager) {
 		egl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+
+		emulate_vsync = egl_manager->is_using_vsync();
+
+		if (emulate_vsync) {
+			print_line("VSYNC: manually throttling frames with swap delay 0.");
+			egl_manager->set_use_vsync(false);
+		}
 	}
 #endif // GLES3_ENABLED
 }
 
 DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServer::WindowID p_window_id) const {
+	if (emulate_vsync) {
+		return DisplayServer::VSYNC_ENABLED;
+	}
+
 #ifdef VULKAN_ENABLED
 	if (context_vulkan) {
 		return context_vulkan->get_vsync_mode(p_window_id);
@@ -808,6 +824,7 @@ DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServ
 		return egl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
 #endif // GLES3_ENABLED
+
 	return DisplayServer::VSYNC_ENABLED;
 }
 
@@ -962,6 +979,8 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 void DisplayServerWayland::process_events() {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
+	frame = false;
+
 	// TODO: Move this stuff in thread?
 	int werror = wl_display_get_error(wayland_thread.get_wl_display());
 
@@ -1024,6 +1043,8 @@ void DisplayServerWayland::process_events() {
 	wayland_thread.keyboard_echo_keys();
 
 	Input::get_singleton()->flush_buffered_events();
+
+	frame = wayland_thread.get_reset_frame();
 }
 
 void DisplayServerWayland::release_rendering_thread() {

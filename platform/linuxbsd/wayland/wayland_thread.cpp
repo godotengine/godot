@@ -755,6 +755,21 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	ws->wayland_thread->push_message(rect_msg);
 }
 
+void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *wl_callback, uint32_t callback_data) {
+	wl_callback_destroy(wl_callback);
+
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+	ERR_FAIL_NULL(ws->wayland_thread);
+	ERR_FAIL_NULL(ws->wl_surface);
+
+	ws->wayland_thread->set_frame();
+
+	ws->frame_callback = wl_surface_frame(ws->wl_surface),
+	wl_callback_add_listener(ws->frame_callback, &frame_wl_callback_listener, ws);
+	wl_surface_commit(ws->wl_surface);
+}
+
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
 }
 
@@ -2514,6 +2529,9 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 		decorated = true;
 	}
 
+	ws.frame_callback = wl_surface_frame(ws.wl_surface);
+	wl_callback_add_listener(ws.frame_callback, &frame_wl_callback_listener, &ws);
+
 	wl_surface_commit(ws.wl_surface);
 
 	// Wait for the surface to be configured before continuing.
@@ -3345,6 +3363,17 @@ String WaylandThread::primary_get_text() const {
 	return _wp_primary_selection_offer_read(wl_display, ss->wp_primary_selection_offer);
 }
 
+void WaylandThread::set_frame() {
+	frame = true;
+}
+
+bool WaylandThread::get_reset_frame() {
+	bool old_frame = frame;
+	frame = false;
+
+	return old_frame;
+}
+
 void WaylandThread::destroy() {
 	if (!initialized) {
 		return;
@@ -3358,6 +3387,10 @@ void WaylandThread::destroy() {
 		wl_display_roundtrip(wl_display);
 
 		events_thread.wait_to_finish();
+	}
+
+	if (main_window.frame_callback) {
+		wl_callback_destroy(main_window.frame_callback);
 	}
 
 	if (main_window.xdg_toplevel) {

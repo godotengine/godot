@@ -177,6 +177,13 @@ public:
 
 		struct wl_output *wl_output = nullptr;
 
+		// NOTE: If for whatever reason this callback is destroyed _while_ the event
+		// thread is still running, it might be a good idea to set its user data to
+		// `nullptr`. From some initial testing of mine, it looks like it might still
+		// be called even after being destroyed, pointing to probably invalid window
+		// data by then and segfaulting hard.
+		struct wl_callback *frame_callback = nullptr;
+
 		struct wl_surface *wl_surface = nullptr;
 		struct xdg_surface *xdg_surface = nullptr;
 		struct xdg_toplevel *xdg_toplevel = nullptr;
@@ -420,6 +427,8 @@ private:
 
 	struct wl_seat *wl_seat_current = nullptr;
 
+	bool frame = true;
+
 	RegistryState registry;
 
 	bool initialized = false;
@@ -437,6 +446,8 @@ private:
 
 	static void _wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
 	static void _wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
+
+	static void _frame_wl_callback_on_done(void *data, struct wl_callback *wl_callback, uint32_t callback_data);
 
 	static void _wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform);
 	static void _wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh);
@@ -544,6 +555,10 @@ private:
 	static constexpr struct wl_surface_listener wl_surface_listener = {
 		.enter = _wl_surface_on_enter,
 		.leave = _wl_surface_on_leave,
+	};
+
+	static constexpr struct wl_callback_listener frame_wl_callback_listener {
+		.done = _frame_wl_callback_on_done,
 	};
 
 	static constexpr struct wl_output_listener wl_output_listener = {
@@ -823,6 +838,9 @@ public:
 	// Optional - require wp_primary_selection_unstable_v1
 	void primary_set_text(String p_text);
 	String primary_get_text() const;
+
+	void set_frame();
+	bool get_reset_frame();
 
 	Error init();
 	void destroy();
