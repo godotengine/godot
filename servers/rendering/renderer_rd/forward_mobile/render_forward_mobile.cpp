@@ -2139,9 +2139,9 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 		//skeleton and blend shape
 		if (surf->owner->mesh_instance.is_valid()) {
-			mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
+			mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, pipeline->get_vertex_input_mask(), false, vertex_array_rd, vertex_format);
 		} else {
-			mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
+			mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, pipeline->get_vertex_input_mask(), false, vertex_array_rd, vertex_format);
 		}
 
 		index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);

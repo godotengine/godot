@@ -900,9 +900,9 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					RD::VertexFormatID vertex_format = RD::INVALID_FORMAT_ID;
 
 					if (mesh_instance.is_valid()) {
-						mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, vertex_array, vertex_format);
+						mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, false, vertex_array, vertex_format);
 					} else {
-						mesh_storage->mesh_surface_get_vertex_arrays_and_format(surface, input_mask, vertex_array, vertex_format);
+						mesh_storage->mesh_surface_get_vertex_arrays_and_format(surface, input_mask, false, vertex_array, vertex_format);
 					}
 
 					RID pipeline = pipeline_variants->variants[light_mode][variant[primitive]].get_render_pipeline(vertex_format, p_framebuffer_format);

@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "mesh_storage.h"
-#include "../../rendering_server_globals.h"
 
 using namespace RendererRD;
 
@@ -854,8 +853,11 @@ void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
 			}
 			memfree(surface.versions);
 		}
-		if (surface.vertex_buffer.is_valid()) {
-			RD::get_singleton()->free(surface.vertex_buffer);
+
+		for (uint32_t i = 0; i < 2; i++) {
+			if (surface.vertex_buffer[i].is_valid()) {
+				RD::get_singleton()->free(surface.vertex_buffer[i]);
+			}
 		}
 	}
 	mi->surfaces.clear();
@@ -881,33 +883,36 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 
 	MeshInstance::Surface s;
 	if ((mesh->blend_shape_count > 0 || (mesh->surfaces[p_surface]->format & RS::ARRAY_FORMAT_BONES)) && mesh->surfaces[p_surface]->vertex_buffer_size > 0) {
-		//surface warrants transform
-		s.vertex_buffer = RD::get_singleton()->vertex_buffer_create(mesh->surfaces[p_surface]->vertex_buffer_size, Vector<uint8_t>(), true);
-
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.binding = 1;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(s.vertex_buffer);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 2;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			if (mi->blend_weights_buffer.is_valid()) {
-				u.append_id(mi->blend_weights_buffer);
-			} else {
-				u.append_id(default_rd_storage_buffer);
-			}
-			uniforms.push_back(u);
-		}
-		s.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_INSTANCE);
+		_mesh_instance_add_surface_buffer(mi, mesh, &s, p_surface, 0);
 	}
 
 	mi->surfaces.push_back(s);
 	mi->dirty = true;
+}
+
+void MeshStorage::_mesh_instance_add_surface_buffer(MeshInstance *mi, Mesh *mesh, MeshInstance::Surface *s, uint32_t p_surface, uint32_t p_buffer_index) {
+	s->vertex_buffer[p_buffer_index] = RD::get_singleton()->vertex_buffer_create(mesh->surfaces[p_surface]->vertex_buffer_size, Vector<uint8_t>(), true);
+
+	Vector<RD::Uniform> uniforms;
+	{
+		RD::Uniform u;
+		u.binding = 1;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.append_id(s->vertex_buffer[p_buffer_index]);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 2;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		if (mi->blend_weights_buffer.is_valid()) {
+			u.append_id(mi->blend_weights_buffer);
+		} else {
+			u.append_id(default_rd_storage_buffer);
+		}
+		uniforms.push_back(u);
+	}
+	s->uniform_set[p_buffer_index] = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_INSTANCE);
 }
 
 void MeshStorage::mesh_instance_check_for_update(RID p_mesh_instance) {
@@ -956,6 +961,8 @@ void MeshStorage::update_mesh_instances() {
 	}
 
 	//process skeletons and blend shapes
+	uint64_t frame = RSG::rasterizer->get_frame_number();
+	bool uses_motion_vectors = (RSG::viewport->get_num_viewports_with_motion_vectors() > 0);
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 	while (dirty_mesh_instance_arrays.first()) {
@@ -964,7 +971,29 @@ void MeshStorage::update_mesh_instances() {
 		Skeleton *sk = skeleton_owner.get_or_null(mi->skeleton);
 
 		for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
-			if (mi->surfaces[i].uniform_set == RID() || mi->mesh->surfaces[i]->uniform_set == RID()) {
+			if (mi->surfaces[i].uniform_set[0].is_null() || mi->mesh->surfaces[i]->uniform_set.is_null()) {
+				// Skip over mesh instances that don't require their own uniform buffers.
+				continue;
+			}
+
+			mi->surfaces[i].previous_buffer = mi->surfaces[i].current_buffer;
+
+			if (uses_motion_vectors && (frame - mi->surfaces[i].last_change) == 1) {
+				// Previous buffer's data can only be one frame old to be able to use motion vectors.
+				uint32_t new_buffer_index = mi->surfaces[i].current_buffer ^ 1;
+
+				if (mi->surfaces[i].uniform_set[new_buffer_index].is_null()) {
+					// Create the new vertex buffer on demand where the result for the current frame will be stored.
+					_mesh_instance_add_surface_buffer(mi, mi->mesh, &mi->surfaces[i], i, new_buffer_index);
+				}
+
+				mi->surfaces[i].current_buffer = new_buffer_index;
+			}
+
+			mi->surfaces[i].last_change = frame;
+
+			RID mi_surface_uniform_set = mi->surfaces[i].uniform_set[mi->surfaces[i].current_buffer];
+			if (mi_surface_uniform_set.is_null()) {
 				continue;
 			}
 
@@ -972,7 +1001,7 @@ void MeshStorage::update_mesh_instances() {
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, skeleton_shader.pipeline[array_is_2d ? SkeletonShader::SHADER_MODE_2D : SkeletonShader::SHADER_MODE_3D]);
 
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mi->surfaces[i].uniform_set, SkeletonShader::UNIFORM_SET_INSTANCE);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mi_surface_uniform_set, SkeletonShader::UNIFORM_SET_INSTANCE);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mi->mesh->surfaces[i]->uniform_set, SkeletonShader::UNIFORM_SET_SURFACE);
 			if (sk && sk->uniform_set_mi.is_valid()) {
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sk->uniform_set_mi, SkeletonShader::UNIFORM_SET_SKELETON);
@@ -1032,7 +1061,7 @@ void MeshStorage::update_mesh_instances() {
 	RD::get_singleton()->compute_list_end();
 }
 
-void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, MeshInstance::Surface *mis) {
+void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, bool p_input_motion_vectors, MeshInstance::Surface *mis) {
 	Vector<RD::VertexAttribute> attributes;
 	Vector<RID> buffers;
 
@@ -1105,7 +1134,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					}
 
 					if (mis) {
-						buffer = mis->vertex_buffer;
+						buffer = mis->vertex_buffer[mis->current_buffer];
 					} else {
 						buffer = s->vertex_buffer;
 					}
@@ -1117,7 +1146,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					stride += sizeof(uint16_t) * 2;
 
 					if (mis) {
-						buffer = mis->vertex_buffer;
+						buffer = mis->vertex_buffer[mis->current_buffer];
 					} else {
 						buffer = s->vertex_buffer;
 					}
@@ -1128,7 +1157,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					stride += sizeof(uint16_t) * 2;
 
 					if (mis) {
-						buffer = mis->vertex_buffer;
+						buffer = mis->vertex_buffer[mis->current_buffer];
 					} else {
 						buffer = s->vertex_buffer;
 					}
@@ -1193,6 +1222,32 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 
 		attributes.push_back(vd);
 		buffers.push_back(buffer);
+
+		if (p_input_motion_vectors) {
+			// Since the previous vertex, normal and tangent can't be part of the vertex format but they are required when motion
+			// vectors are enabled, we opt to push a copy of the vertex attribute with a different location and buffer (if it's
+			// part of an instance that has one).
+			switch (i) {
+				case RS::ARRAY_VERTEX: {
+					vd.location = ATTRIBUTE_LOCATION_PREV_VERTEX;
+				} break;
+				case RS::ARRAY_NORMAL: {
+					vd.location = ATTRIBUTE_LOCATION_PREV_NORMAL;
+				} break;
+				case RS::ARRAY_TANGENT: {
+					vd.location = ATTRIBUTE_LOCATION_PREV_TANGENT;
+				} break;
+			}
+
+			if (int(vd.location) != i) {
+				if (mis && buffer != mesh_default_rd_buffers[i]) {
+					buffer = mis->vertex_buffer[mis->previous_buffer];
+				}
+
+				attributes.push_back(vd);
+				buffers.push_back(buffer);
+			}
+		}
 	}
 
 	//update final stride
@@ -1202,7 +1257,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		}
 		int loc = attributes[i].location;
 
-		if (loc < RS::ARRAY_COLOR) {
+		if ((loc < RS::ARRAY_COLOR) || ((loc >= ATTRIBUTE_LOCATION_PREV_VERTEX) && (loc <= ATTRIBUTE_LOCATION_PREV_TANGENT))) {
 			attributes.write[i].stride = stride;
 		} else if (loc < RS::ARRAY_BONES) {
 			attributes.write[i].stride = attribute_stride;
@@ -1212,6 +1267,9 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	}
 
 	v.input_mask = p_input_mask;
+	v.current_buffer = mis ? mis->current_buffer : 0;
+	v.previous_buffer = mis ? mis->previous_buffer : 0;
+	v.input_motion_vectors = p_input_motion_vectors;
 	v.vertex_format = RD::get_singleton()->vertex_format_create(attributes);
 	v.vertex_array = RD::get_singleton()->vertex_array_create(s->vertex_count, v.vertex_format, buffers);
 }
