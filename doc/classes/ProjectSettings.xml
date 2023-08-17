@@ -1995,6 +1995,12 @@
 		<member name="navigation/avoidance/thread_model/avoidance_use_multiple_threads" type="bool" setter="" getter="" default="true">
 			If enabled the avoidance calculations use multiple threads.
 		</member>
+		<member name="navigation/baking/thread_model/baking_use_high_priority_threads" type="bool" setter="" getter="" default="true">
+			If enabled and async navmesh baking uses multiple threads the threads run with high priority.
+		</member>
+		<member name="navigation/baking/thread_model/baking_use_multiple_threads" type="bool" setter="" getter="" default="true">
+			If enabled the async navmesh baking uses multiple threads.
+		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>

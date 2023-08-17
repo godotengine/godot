@@ -32,6 +32,7 @@
 
 #include "nav_mesh_generator_3d.h"
 
+#include "core/config/project_settings.h"
 #include "core/math/convex_hull.h"
 #include "core/os/thread.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -63,7 +64,12 @@
 
 NavMeshGenerator3D *NavMeshGenerator3D::singleton = nullptr;
 Mutex NavMeshGenerator3D::baking_navmesh_mutex;
+Mutex NavMeshGenerator3D::generator_task_mutex;
+bool NavMeshGenerator3D::use_threads = true;
+bool NavMeshGenerator3D::baking_use_multiple_threads = true;
+bool NavMeshGenerator3D::baking_use_high_priority_threads = true;
 HashSet<Ref<NavigationMesh>> NavMeshGenerator3D::baking_navmeshes;
+HashMap<WorkerThreadPool::TaskID, NavMeshGenerator3D::NavMeshGeneratorTask3D *> NavMeshGenerator3D::generator_tasks;
 
 NavMeshGenerator3D *NavMeshGenerator3D::get_singleton() {
 	return singleton;
@@ -72,15 +78,67 @@ NavMeshGenerator3D *NavMeshGenerator3D::get_singleton() {
 NavMeshGenerator3D::NavMeshGenerator3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
+
+	baking_use_multiple_threads = GLOBAL_GET("navigation/baking/thread_model/baking_use_multiple_threads");
+	baking_use_high_priority_threads = GLOBAL_GET("navigation/baking/thread_model/baking_use_high_priority_threads");
+
+	// Using threads might cause problems on certain exports or with the Editor on certain devices.
+	// This is the main switch to turn threaded navmesh baking off should the need arise.
+	use_threads = baking_use_multiple_threads && !Engine::get_singleton()->is_editor_hint();
 }
 
 NavMeshGenerator3D::~NavMeshGenerator3D() {
 	cleanup();
 }
 
+void NavMeshGenerator3D::sync() {
+	if (generator_tasks.size() == 0) {
+		return;
+	}
+
+	baking_navmesh_mutex.lock();
+	generator_task_mutex.lock();
+
+	LocalVector<WorkerThreadPool::TaskID> finished_task_ids;
+
+	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
+		if (WorkerThreadPool::get_singleton()->is_task_completed(E.key)) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+			finished_task_ids.push_back(E.key);
+
+			NavMeshGeneratorTask3D *generator_task = E.value;
+			DEV_ASSERT(generator_task->status == NavMeshGeneratorTask3D::TaskStatus::BAKING_FINISHED);
+
+			baking_navmeshes.erase(generator_task->navigation_mesh);
+			if (generator_task->callback.is_valid()) {
+				generator_emit_callback(generator_task->callback);
+			}
+			memdelete(generator_task);
+		}
+	}
+
+	for (WorkerThreadPool::TaskID finished_task_id : finished_task_ids) {
+		generator_tasks.erase(finished_task_id);
+	}
+
+	generator_task_mutex.unlock();
+	baking_navmesh_mutex.unlock();
+}
+
 void NavMeshGenerator3D::cleanup() {
 	baking_navmesh_mutex.lock();
+	generator_task_mutex.lock();
+
 	baking_navmeshes.clear();
+
+	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+		NavMeshGeneratorTask3D *generator_task = E.value;
+		memdelete(generator_task);
+	}
+	generator_tasks.clear();
+
+	generator_task_mutex.unlock();
 	baking_navmesh_mutex.unlock();
 }
 
@@ -88,7 +146,7 @@ void NavMeshGenerator3D::finish() {
 	cleanup();
 }
 
-void NavMeshGenerator3D::parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
+void NavMeshGenerator3D::parse_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 	ERR_FAIL_COND(!p_navigation_mesh.is_valid());
 	ERR_FAIL_COND(p_root_node == nullptr);
@@ -102,19 +160,25 @@ void NavMeshGenerator3D::parse_source_geometry_data(const Ref<NavigationMesh> &p
 	}
 }
 
-void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
+void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback) {
 	ERR_FAIL_COND(!p_navigation_mesh.is_valid());
 	ERR_FAIL_COND(!p_source_geometry_data.is_valid());
-	ERR_FAIL_COND(!p_source_geometry_data->has_data());
+
+	if (!p_source_geometry_data->has_data()) {
+		p_navigation_mesh->clear();
+		if (p_callback.is_valid()) {
+			generator_emit_callback(p_callback);
+		}
+		return;
+	}
 
 	baking_navmesh_mutex.lock();
 	if (baking_navmeshes.has(p_navigation_mesh)) {
 		baking_navmesh_mutex.unlock();
 		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
-	} else {
-		baking_navmeshes.insert(p_navigation_mesh);
-		baking_navmesh_mutex.unlock();
 	}
+	baking_navmeshes.insert(p_navigation_mesh);
+	baking_navmesh_mutex.unlock();
 
 	generator_bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data);
 
@@ -125,6 +189,51 @@ void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_na
 	if (p_callback.is_valid()) {
 		generator_emit_callback(p_callback);
 	}
+}
+
+void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback) {
+	ERR_FAIL_COND(!p_navigation_mesh.is_valid());
+	ERR_FAIL_COND(!p_source_geometry_data.is_valid());
+
+	if (!p_source_geometry_data->has_data()) {
+		p_navigation_mesh->clear();
+		if (p_callback.is_valid()) {
+			generator_emit_callback(p_callback);
+		}
+		return;
+	}
+
+	if (!use_threads) {
+		bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_callback);
+		return;
+	}
+
+	baking_navmesh_mutex.lock();
+	if (baking_navmeshes.has(p_navigation_mesh)) {
+		baking_navmesh_mutex.unlock();
+		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
+		return;
+	}
+	baking_navmeshes.insert(p_navigation_mesh);
+	baking_navmesh_mutex.unlock();
+
+	generator_task_mutex.lock();
+	NavMeshGeneratorTask3D *generator_task = memnew(NavMeshGeneratorTask3D);
+	generator_task->navigation_mesh = p_navigation_mesh;
+	generator_task->source_geometry_data = p_source_geometry_data;
+	generator_task->callback = p_callback;
+	generator_task->status = NavMeshGeneratorTask3D::TaskStatus::BAKING_STARTED;
+	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator3D::generator_thread_bake, generator_task, NavMeshGenerator3D::baking_use_high_priority_threads, SNAME("NavMeshGeneratorBake3D"));
+	generator_tasks.insert(generator_task->thread_task_id, generator_task);
+	generator_task_mutex.unlock();
+}
+
+void NavMeshGenerator3D::generator_thread_bake(void *p_arg) {
+	NavMeshGeneratorTask3D *generator_task = static_cast<NavMeshGeneratorTask3D *>(p_arg);
+
+	generator_bake_from_source_geometry_data(generator_task->navigation_mesh, generator_task->source_geometry_data);
+
+	generator_task->status = NavMeshGeneratorTask3D::TaskStatus::BAKING_FINISHED;
 }
 
 void NavMeshGenerator3D::generator_parse_geometry_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node, bool p_recurse_children) {
@@ -504,8 +613,8 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		return;
 	}
 
-	const Vector<float> vertices = p_source_geometry_data->get_vertices();
-	const Vector<int> indices = p_source_geometry_data->get_indices();
+	const Vector<float> &vertices = p_source_geometry_data->get_vertices();
+	const Vector<int> &indices = p_source_geometry_data->get_indices();
 
 	if (vertices.size() < 3 || indices.size() < 3) {
 		return;
