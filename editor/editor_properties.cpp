@@ -809,7 +809,7 @@ EditorPropertyFlags::EditorPropertyFlags() {
 
 void EditorPropertyLayersGrid::_rename_pressed(int p_menu) {
 	// Show rename popup for active layer.
-	if (renamed_layer_index == -1) {
+	if (renamed_layer_index == INT32_MAX) {
 		return;
 	}
 	String name = names[renamed_layer_index];
@@ -902,8 +902,8 @@ void EditorPropertyLayersGrid::_update_hovered(const Vector2 &p_position) {
 	}
 
 	// Remove highlight when no square is hovered.
-	if (hovered_index != -1) {
-		hovered_index = -1;
+	if (hovered_index != INT32_MAX) {
+		hovered_index = INT32_MAX;
 		queue_redraw();
 	}
 }
@@ -913,20 +913,32 @@ void EditorPropertyLayersGrid::_on_hover_exit() {
 		expand_hovered = false;
 		queue_redraw();
 	}
-	if (hovered_index != -1) {
-		hovered_index = -1;
+	if (hovered_index != INT32_MAX) {
+		hovered_index = INT32_MAX;
 		queue_redraw();
 	}
 }
 
-void EditorPropertyLayersGrid::_update_flag() {
-	if (hovered_index >= 0) {
+void EditorPropertyLayersGrid::_update_flag(bool p_replace) {
+	if (hovered_index != INT32_MAX) {
 		// Toggle the flag.
 		// We base our choice on the hovered flag, so that it always matches the hovered flag.
-		if (value & (1 << hovered_index)) {
-			value &= ~(1 << hovered_index);
+		if (p_replace) {
+			// Replace all flags with the hovered flag ("solo mode"),
+			// instead of toggling the hovered flags while preserving other flags' state.
+			if (value == uint32_t(1 << hovered_index)) {
+				// If the flag is already enabled, enable all other items and disable the current flag.
+				// This allows for quicker toggling.
+				value = INT32_MAX - (1 << hovered_index);
+			} else {
+				value = 1 << hovered_index;
+			}
 		} else {
-			value |= (1 << hovered_index);
+			if (value & (1 << hovered_index)) {
+				value &= ~(1 << hovered_index);
+			} else {
+				value |= (1 << hovered_index);
+			}
 		}
 
 		emit_signal(SNAME("flag_changed"), value);
@@ -951,10 +963,10 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 		_update_hovered(mb->get_position());
-		_update_flag();
+		_update_flag(mb->is_command_or_control_pressed());
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-		if (hovered_index >= 0) {
+		if (hovered_index != INT32_MAX) {
 			renamed_layer_index = hovered_index;
 			layer_rename->set_position(get_screen_position() + mb->get_position());
 			layer_rename->reset_size();
@@ -987,7 +999,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 
 			const int vofs = (grid_size.height - h) / 2;
 
-			int layer_index = 0;
+			uint32_t layer_index = 0;
 
 			Point2 arrow_pos;
 
@@ -1242,7 +1254,7 @@ void EditorPropertyLayers::_button_pressed() {
 }
 
 void EditorPropertyLayers::_menu_pressed(int p_menu) {
-	if (p_menu == grid->layer_count) {
+	if (uint32_t(p_menu) == grid->layer_count) {
 		ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
 		ProjectSettingsEditor::get_singleton()->set_general_page(basename);
 	} else {

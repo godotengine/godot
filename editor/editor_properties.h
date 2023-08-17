@@ -264,7 +264,7 @@ private:
 	bool expand_hovered = false;
 	bool expanded = false;
 	int expansion_rows = 0;
-	int hovered_index = -1;
+	uint32_t hovered_index = INT32_MAX; // Nothing is hovered.
 	bool read_only = false;
 	int renamed_layer_index = -1;
 	PopupMenu *layer_rename = nullptr;
@@ -275,7 +275,7 @@ private:
 	void _rename_operation_confirm();
 	void _update_hovered(const Vector2 &p_position);
 	void _on_hover_exit();
-	void _update_flag();
+	void _update_flag(bool p_replace);
 	Size2 get_grid_size() const;
 
 protected:
@@ -285,7 +285,7 @@ protected:
 public:
 	uint32_t value = 0;
 	int layer_group_size = 0;
-	int layer_count = 0;
+	uint32_t layer_count = 0;
 	Vector<String> names;
 	Vector<String> tooltips;
 
