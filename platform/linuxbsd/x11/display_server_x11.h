@@ -225,6 +225,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	List<WindowID> popup_list;
 
+	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
@@ -322,7 +323,9 @@ class DisplayServerX11 : public DisplayServer {
 	xrr_get_monitors_t xrr_get_monitors = nullptr;
 	xrr_free_monitors_t xrr_free_monitors = nullptr;
 	void *xrandr_handle = nullptr;
-	Bool xrandr_ext_ok;
+	bool xrandr_ext_ok = true;
+	bool xinerama_ext_ok = true;
+	bool xshaped_ext_ok = true;
 
 	struct Property {
 		unsigned char *data;

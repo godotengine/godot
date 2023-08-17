@@ -51,6 +51,9 @@ Ref<Image> PlaceholderTexture2D::get_image() const {
 }
 
 RID PlaceholderTexture2D::get_rid() const {
+	if (rid.is_null()) {
+		rid = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+	}
 	return rid;
 }
 
@@ -61,12 +64,13 @@ void PlaceholderTexture2D::_bind_methods() {
 }
 
 PlaceholderTexture2D::PlaceholderTexture2D() {
-	rid = RS::get_singleton()->texture_2d_placeholder_create();
 }
 
 PlaceholderTexture2D::~PlaceholderTexture2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(rid);
+	if (rid.is_valid()) {
+		RS::get_singleton()->free(rid);
+	}
 }
 
 ///////////////////////////////////////////////
@@ -103,6 +107,13 @@ Vector<Ref<Image>> PlaceholderTexture3D::get_data() const {
 	return Vector<Ref<Image>>();
 }
 
+RID PlaceholderTexture3D::get_rid() const {
+	if (rid.is_null()) {
+		rid = RenderingServer::get_singleton()->texture_3d_placeholder_create();
+	}
+	return rid;
+}
+
 void PlaceholderTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTexture3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &PlaceholderTexture3D::get_size);
@@ -110,11 +121,12 @@ void PlaceholderTexture3D::_bind_methods() {
 }
 
 PlaceholderTexture3D::PlaceholderTexture3D() {
-	rid = RS::get_singleton()->texture_3d_placeholder_create();
 }
 PlaceholderTexture3D::~PlaceholderTexture3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(rid);
+	if (rid.is_valid()) {
+		RS::get_singleton()->free(rid);
+	}
 }
 
 /////////////////////////////////////////////////
@@ -159,6 +171,13 @@ Ref<Image> PlaceholderTextureLayered::get_layer_data(int p_layer) const {
 	return Ref<Image>();
 }
 
+RID PlaceholderTextureLayered::get_rid() const {
+	if (rid.is_null()) {
+		rid = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(layered_type));
+	}
+	return rid;
+}
+
 void PlaceholderTextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTextureLayered::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &PlaceholderTextureLayered::get_size);
@@ -169,9 +188,10 @@ void PlaceholderTextureLayered::_bind_methods() {
 
 PlaceholderTextureLayered::PlaceholderTextureLayered(LayeredType p_type) {
 	layered_type = p_type;
-	rid = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(layered_type));
 }
 PlaceholderTextureLayered::~PlaceholderTextureLayered() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(rid);
+	if (rid.is_valid()) {
+		RS::get_singleton()->free(rid);
+	}
 }

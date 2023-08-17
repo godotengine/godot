@@ -41,6 +41,7 @@
 			<description>
 				Returns the response's body length.
 				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
+				[b]Note:[/b] This function always returns [code]-1[/code] on the Web platform due to browsers limitations.
 			</description>
 		</method>
 		<method name="get_response_code" qualifiers="const">

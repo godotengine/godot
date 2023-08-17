@@ -44,6 +44,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
+#include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/image_texture.h"
@@ -363,6 +364,25 @@ DisplayServer::WindowID DisplayServerMacOS::_get_focused_window_or_popup() const
 	}
 
 	return last_focused_window;
+}
+
+void DisplayServerMacOS::mouse_enter_window(WindowID p_window) {
+	if (window_mouseover_id != p_window) {
+		if (window_mouseover_id != INVALID_WINDOW_ID) {
+			send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
+		}
+		window_mouseover_id = p_window;
+		if (p_window != INVALID_WINDOW_ID) {
+			send_window_event(windows[p_window], WINDOW_EVENT_MOUSE_ENTER);
+		}
+	}
+}
+
+void DisplayServerMacOS::mouse_exit_window(WindowID p_window) {
+	if (window_mouseover_id == p_window && p_window != INVALID_WINDOW_ID) {
+		send_window_event(windows[p_window], WINDOW_EVENT_MOUSE_EXIT);
+	}
+	window_mouseover_id = INVALID_WINDOW_ID;
 }
 
 void DisplayServerMacOS::_dispatch_input_events(const Ref<InputEvent> &p_event) {
@@ -2068,9 +2088,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 
 	if (show_cursor && !previously_shown) {
 		window_id = get_window_at_screen_position(mouse_get_position());
-		if (window_id != INVALID_WINDOW_ID) {
-			send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
-		}
+		mouse_enter_window(window_id);
 	}
 
 	if (p_mode == MOUSE_MODE_CAPTURED) {
@@ -2269,6 +2287,37 @@ String DisplayServerMacOS::clipboard_get() const {
 	String ret;
 	ret.parse_utf8([string UTF8String]);
 	return ret;
+}
+
+Ref<Image> DisplayServerMacOS::clipboard_get_image() const {
+	Ref<Image> image;
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	if (!result) {
+		return image;
+	}
+	NSData *data = [pasteboard dataForType:result];
+	if (!data) {
+		return image;
+	}
+	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
+	NSData *pngData = [bitmap representationUsingType:NSPNGFileType properties:@{}];
+	image.instantiate();
+	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
+	return image;
+}
+
+bool DisplayServerMacOS::clipboard_has() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
+	NSDictionary *options = [NSDictionary dictionary];
+	return [pasteboard canReadObjectForClasses:classArray options:options];
+}
+
+bool DisplayServerMacOS::clipboard_has_image() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	return result;
 }
 
 int DisplayServerMacOS::get_screen_count() const {
@@ -3256,14 +3305,14 @@ bool DisplayServerMacOS::window_is_focused(WindowID p_window) const {
 }
 
 bool DisplayServerMacOS::window_can_draw(WindowID p_window) const {
-	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
+	return (window_get_mode(p_window) != WINDOW_MODE_MINIMIZED) && [windows[p_window].window_object isOnActiveSpace];
 }
 
 bool DisplayServerMacOS::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
 	for (const KeyValue<WindowID, WindowData> &E : windows) {
-		if (window_get_mode(E.key) != WINDOW_MODE_MINIMIZED) {
+		if ((window_get_mode(E.key) != WINDOW_MODE_MINIMIZED) && [E.value.window_object isOnActiveSpace]) {
 			return true;
 		}
 	}
@@ -3994,7 +4043,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 		// Find top popup to close.
 		while (E) {
 			// Popup window area.
-			Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
+			Rect2i win_rect = Rect2i(window_get_position_with_decorations(E->get()), window_get_size_with_decorations(E->get()));
 			// Area of the parent window, which responsible for opening sub-menu.
 			Rect2i safe_rect = window_get_popup_safe_rect(E->get());
 			if (win_rect.has_point(pos)) {

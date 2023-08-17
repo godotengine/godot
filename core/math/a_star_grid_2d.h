@@ -177,6 +177,9 @@ public:
 	void set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale);
 	real_t get_point_weight_scale(const Vector2i &p_id) const;
 
+	void fill_solid_region(const Rect2i &p_region, bool p_solid = true);
+	void fill_weight_scale_region(const Rect2i &p_region, real_t p_weight_scale);
+
 	void clear();
 
 	Vector2 get_point_position(const Vector2i &p_id) const;

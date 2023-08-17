@@ -46,9 +46,6 @@
 		<member name="base_font" type="Font" setter="set_base_font" getter="get_base_font">
 			Base font used to create a variation. If not set, default [Theme] font is used.
 		</member>
-		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
-			Array of fallback [Font]s to use as a substitute if a glyph is not found in this [FontVariation]. If not set, [member base_font]'s fallbacks are used instead.
-		</member>
 		<member name="opentype_features" type="Dictionary" setter="set_opentype_features" getter="get_opentype_features" default="{}">
 			A set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 		</member>

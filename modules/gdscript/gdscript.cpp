@@ -787,11 +787,11 @@ Error GDScript::reload(bool p_keep_state) {
 	err = compiler.compile(&parser, this, p_keep_state);
 
 	if (err) {
+		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		if (can_run) {
 			if (EngineDebugger::is_active()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
-			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			reloading = false;
 			return ERR_COMPILATION_FAILED;
 		} else {
@@ -2094,10 +2094,7 @@ String GDScriptLanguage::get_extension() const {
 }
 
 void GDScriptLanguage::finish() {
-	if (_call_stack) {
-		memdelete_arr(_call_stack);
-		_call_stack = nullptr;
-	}
+	_call_stack.free();
 
 	// Clear the cache before parsing the script_list
 	GDScriptCache::clear();
@@ -2140,12 +2137,12 @@ void GDScriptLanguage::profiling_start() {
 
 	SelfList<GDScriptFunction> *elem = function_list.first();
 	while (elem) {
-		elem->self()->profile.call_count = 0;
-		elem->self()->profile.self_time = 0;
-		elem->self()->profile.total_time = 0;
-		elem->self()->profile.frame_call_count = 0;
-		elem->self()->profile.frame_self_time = 0;
-		elem->self()->profile.frame_total_time = 0;
+		elem->self()->profile.call_count.set(0);
+		elem->self()->profile.self_time.set(0);
+		elem->self()->profile.total_time.set(0);
+		elem->self()->profile.frame_call_count.set(0);
+		elem->self()->profile.frame_self_time.set(0);
+		elem->self()->profile.frame_total_time.set(0);
 		elem->self()->profile.last_frame_call_count = 0;
 		elem->self()->profile.last_frame_self_time = 0;
 		elem->self()->profile.last_frame_total_time = 0;
@@ -2175,9 +2172,9 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 		if (current >= p_info_max) {
 			break;
 		}
-		p_info_arr[current].call_count = elem->self()->profile.call_count;
-		p_info_arr[current].self_time = elem->self()->profile.self_time;
-		p_info_arr[current].total_time = elem->self()->profile.total_time;
+		p_info_arr[current].call_count = elem->self()->profile.call_count.get();
+		p_info_arr[current].self_time = elem->self()->profile.self_time.get();
+		p_info_arr[current].total_time = elem->self()->profile.total_time.get();
 		p_info_arr[current].signature = elem->self()->profile.signature;
 		elem = elem->next();
 		current++;
@@ -2395,12 +2392,12 @@ void GDScriptLanguage::frame() {
 
 		SelfList<GDScriptFunction> *elem = function_list.first();
 		while (elem) {
-			elem->self()->profile.last_frame_call_count = elem->self()->profile.frame_call_count;
-			elem->self()->profile.last_frame_self_time = elem->self()->profile.frame_self_time;
-			elem->self()->profile.last_frame_total_time = elem->self()->profile.frame_total_time;
-			elem->self()->profile.frame_call_count = 0;
-			elem->self()->profile.frame_self_time = 0;
-			elem->self()->profile.frame_total_time = 0;
+			elem->self()->profile.last_frame_call_count = elem->self()->profile.frame_call_count.get();
+			elem->self()->profile.last_frame_self_time = elem->self()->profile.frame_self_time.get();
+			elem->self()->profile.last_frame_total_time = elem->self()->profile.frame_total_time.get();
+			elem->self()->profile.frame_call_count.set(0);
+			elem->self()->profile.frame_self_time.set(0);
+			elem->self()->profile.frame_total_time.set(0);
 			elem = elem->next();
 		}
 	}
@@ -2607,6 +2604,8 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	return c->identifier != nullptr ? String(c->identifier->name) : String();
 }
 
+thread_local GDScriptLanguage::CallStack GDScriptLanguage::_call_stack;
+
 GDScriptLanguage::GDScriptLanguage() {
 	calls = 0;
 	ERR_FAIL_COND(singleton);
@@ -2626,18 +2625,14 @@ GDScriptLanguage::GDScriptLanguage() {
 	profiling = false;
 	script_frame_time = 0;
 
-	_debug_call_stack_pos = 0;
 	int dmcs = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "512," + itos(GDScriptFunction::MAX_CALL_DEPTH - 1) + ",1"), 1024);
 
 	if (EngineDebugger::is_active()) {
 		//debugging enabled!
 
 		_debug_max_call_stack = dmcs;
-		_call_stack = memnew_arr(CallLevel, _debug_max_call_stack + 1);
-
 	} else {
 		_debug_max_call_stack = 0;
-		_call_stack = nullptr;
 	}
 
 #ifdef DEBUG_ENABLED
@@ -2699,6 +2694,11 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Error err;
 	Ref<GDScript> scr = GDScriptCache::get_full_script(p_path, err, "", p_cache_mode == CACHE_MODE_IGNORE);
+
+	if (err && scr.is_valid()) {
+		// If !scr.is_valid(), the error was likely from scr->load_source_code(), which already generates an error.
+		ERR_PRINT_ED(vformat(R"(Failed to load script "%s" with error "%s".)", p_path, error_names[err]));
+	}
 
 	if (r_error) {
 		// Don't fail loading because of parsing error.

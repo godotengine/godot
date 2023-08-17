@@ -34,7 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
 
-#include "scene/3d/navigation_region_3d.h"
+#include "scene/resources/navigation_mesh.h"
 #include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
@@ -117,6 +117,9 @@ public:
 	/// Creates a new region.
 	virtual RID region_create() = 0;
 
+	virtual void region_set_enabled(RID p_region, bool p_enabled) = 0;
+	virtual bool region_get_enabled(RID p_region) const = 0;
+
 	virtual void region_set_use_edge_connections(RID p_region, bool p_enabled) = 0;
 	virtual bool region_get_use_edge_connections(RID p_region) const = 0;
 
@@ -164,6 +167,9 @@ public:
 	/// Set the map of this link.
 	virtual void link_set_map(RID p_link, RID p_map) = 0;
 	virtual RID link_get_map(RID p_link) const = 0;
+
+	virtual void link_set_enabled(RID p_link, bool p_enabled) = 0;
+	virtual bool link_get_enabled(RID p_link) const = 0;
 
 	/// Set whether this link travels in both directions.
 	virtual void link_set_bidirectional(RID p_link, bool p_bidirectional) = 0;
@@ -295,6 +301,8 @@ public:
 	/// so this must be called in the main thread.
 	/// Note: This function is not thread safe.
 	virtual void process(real_t delta_time) = 0;
+	virtual void init() = 0;
+	virtual void finish() = 0;
 
 	/// Returns a customized navigation path using a query parameters object
 	virtual void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const;

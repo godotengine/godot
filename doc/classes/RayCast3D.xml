@@ -59,6 +59,12 @@
 				Returns the shape ID of the first object that the ray intersects, or [code]0[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
+		<method name="get_collision_face_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the collision object's face index at the collision point, or [code]-1[/code] if the shape intersecting the ray is not a [ConcavePolygonShape3D].
+			</description>
+		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />

@@ -30,7 +30,6 @@
 
 #include "navigation_region_2d.h"
 
-#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/resources/world_2d.h"
@@ -43,15 +42,7 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
 
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	if (!enabled) {
-		_region_enter_navigation_map();
-	} else {
-		_region_exit_navigation_map();
-	}
+	NavigationServer2D::get_singleton()->region_set_enabled(region, enabled);
 
 #ifdef DEBUG_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_navigation_enabled()) {
@@ -193,14 +184,14 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	}
 
 	if (navigation_polygon.is_valid()) {
-		navigation_polygon->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion2D::_navigation_polygon_changed));
+		navigation_polygon->disconnect_changed(callable_mp(this, &NavigationRegion2D::_navigation_polygon_changed));
 	}
 
 	navigation_polygon = p_navigation_polygon;
 	NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, p_navigation_polygon);
 
 	if (navigation_polygon.is_valid()) {
-		navigation_polygon->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion2D::_navigation_polygon_changed));
+		navigation_polygon->connect_changed(callable_mp(this, &NavigationRegion2D::_navigation_polygon_changed));
 	}
 	_navigation_polygon_changed();
 

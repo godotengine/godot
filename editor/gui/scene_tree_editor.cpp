@@ -41,6 +41,7 @@
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
@@ -293,7 +294,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			}
 
 			// Improve looks on tooltip, extra spacing on non-bullet point newlines.
-			const String bullet_point = String::utf8("•  ");
+			const String bullet_point = U"•  ";
 			int next_newline = 0;
 			while (next_newline != -1) {
 				next_newline = conf_warning.find("\n", next_newline + 2);
@@ -964,26 +965,55 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 	String new_name = p_name.validate_node_name();
 
 	if (new_name != p_name) {
-		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + String::get_invalid_node_name_characters());
-		error->popup_centered();
-
-		if (new_name.is_empty()) {
-			item->set_text(0, p_node->get_name());
-			return;
+		String text = TTR("Invalid node name, the following characters are not allowed:") + "\n" + String::get_invalid_node_name_characters();
+		if (error->is_visible()) {
+			if (!error->get_meta("invalid_character", false)) {
+				error->set_text(error->get_text() + "\n\n" + text);
+				error->set_meta("invalid_character", true);
+			}
+		} else {
+			error->set_text(text);
+			error->set_meta("invalid_character", true);
+			error->set_meta("same_unique_name", false);
+			error->popup_centered();
 		}
+	}
 
-		item->set_text(0, new_name);
+	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
+	new_name = new_name.strip_edges();
+	if (new_name.is_empty()) {
+		// If name is empty, fallback to class name.
+		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+			new_name = Node::adjust_name_casing(p_node->get_class());
+		} else {
+			new_name = p_node->get_class();
+		}
 	}
 
 	if (new_name == p_node->get_name()) {
 		if (item->get_text(0).is_empty()) {
 			item->set_text(0, new_name);
 		}
-
 		return;
 	}
-	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
-	new_name = new_name.strip_edges();
+
+	// We previously made sure name is not the same as current name so that it won't complain about already used unique name when not changing name.
+	if (p_node->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name)) {
+		String text = TTR("Another node already uses this unique name in the scene.");
+		if (error->is_visible()) {
+			if (!error->get_meta("same_unique_name", false)) {
+				error->set_text(error->get_text() + "\n\n" + text);
+				error->set_meta("same_unique_name", true);
+			}
+		} else {
+			error->set_text(text);
+			error->set_meta("same_unique_name", true);
+			error->set_meta("invalid_character", false);
+			error->popup_centered();
+		}
+		item->set_text(0, p_node->get_name());
+		return;
+	}
 
 	if (!is_scene_tree_dock) {
 		p_node->set_name(new_name);
@@ -999,7 +1029,7 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 		undo_redo->add_undo_method(item, "set_metadata", 0, p_node->get_path());
 		undo_redo->add_undo_method(item, "set_text", 0, p_node->get_name());
 
-		p_node->set_name(p_name);
+		p_node->set_name(new_name);
 		undo_redo->add_do_method(p_node, "set_name", new_name);
 		undo_redo->add_do_method(item, "set_metadata", 0, p_node->get_path());
 		undo_redo->add_do_method(item, "set_text", 0, new_name);
@@ -1017,28 +1047,6 @@ void SceneTreeEditor::_renamed() {
 	ERR_FAIL_COND(!n);
 
 	String new_name = which->get_text(0);
-	if (new_name.strip_edges().is_empty()) {
-		// If name is empty, fallback to class name.
-		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
-			new_name = Node::adjust_name_casing(n->get_class());
-		} else {
-			new_name = n->get_class();
-		}
-	}
-
-	if (n->is_unique_name_in_owner()) {
-		Node *existing = get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name);
-		if (existing == n) {
-			which->set_text(0, n->get_name());
-			return;
-		}
-		if (existing != nullptr) {
-			error->set_text(TTR("Another node already uses this unique name in the scene."));
-			error->popup_centered();
-			which->set_text(0, n->get_name());
-			return;
-		}
-	}
 
 	_rename_node(n, new_name);
 }
@@ -1486,8 +1494,51 @@ void SceneTreeDialog::popup_scenetree_dialog() {
 	popup_centered_clamped(Size2(350, 700) * EDSCALE);
 }
 
+void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
+	if (p_valid.is_empty()) {
+		return;
+	}
+
+	tree->set_valid_types(p_valid);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	content->add_child(hbox);
+	content->move_child(hbox, 0);
+
+	{
+		Label *label = memnew(Label);
+		hbox->add_child(label);
+		label->set_text(TTR("Allowed:"));
+	}
+
+	HFlowContainer *hflow = memnew(HFlowContainer);
+	hbox->add_child(hflow);
+	hflow->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	for (const StringName &type : p_valid) {
+		HBoxContainer *hb = memnew(HBoxContainer);
+		hflow->add_child(hb);
+
+		TextureRect *trect = memnew(TextureRect);
+		hb->add_child(trect);
+		trect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+		trect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		trect->set_meta("type", type);
+		valid_type_icons.push_back(trect);
+
+		Label *label = memnew(Label);
+		hb->add_child(label);
+		label->set_text(type);
+		label->set_auto_translate(false);
+	}
+}
+
 void SceneTreeDialog::_update_theme() {
 	filter->set_right_icon(tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	for (TextureRect *trect : valid_type_icons) {
+		trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")), 0));
+		trect->set_texture(EditorNode::get_singleton()->get_class_icon(trect->get_meta("type")));
+	}
 }
 
 void SceneTreeDialog::_notification(int p_what) {
@@ -1544,8 +1595,8 @@ void SceneTreeDialog::_bind_methods() {
 
 SceneTreeDialog::SceneTreeDialog() {
 	set_title(TTR("Select a Node"));
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	add_child(vbc);
+	content = memnew(VBoxContainer);
+	add_child(content);
 
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1553,12 +1604,12 @@ SceneTreeDialog::SceneTreeDialog() {
 	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDialog::_filter_changed));
-	vbc->add_child(filter);
+	content->add_child(filter);
 
 	tree = memnew(SceneTreeEditor(false, false, true));
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &SceneTreeDialog::_select));
-	vbc->add_child(tree);
+	content->add_child(tree);
 
 	// Disable the OK button when no node is selected.
 	get_ok_button()->set_disabled(!tree->get_selected());

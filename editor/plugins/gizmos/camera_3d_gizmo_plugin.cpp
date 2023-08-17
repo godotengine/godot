@@ -41,6 +41,7 @@ Camera3DGizmoPlugin::Camera3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
 
 	create_material("camera_material", gizmo_color);
+	create_icon_material("camera_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoCamera3D", "EditorIcons"));
 	create_handle_material("handles");
 }
 
@@ -159,6 +160,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Vector<Vector3> handles;
 
 	Ref<Material> material = get_material("camera_material", p_gizmo);
+	Ref<Material> icon = get_material("camera_icon", p_gizmo);
 
 	const Size2i viewport_size = _get_viewport_size(camera);
 	const real_t viewport_aspect = viewport_size.x > 0 && viewport_size.y > 0 ? viewport_size.aspect() : 1.0;
@@ -256,6 +258,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 #undef ADD_QUAD
 
 	p_gizmo->add_lines(lines, material);
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
 	p_gizmo->add_collision_segments(lines);
 
 	if (!handles.is_empty()) {

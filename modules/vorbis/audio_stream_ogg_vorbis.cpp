@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/variant/typed_array.h"
 
+#include "modules/vorbis/resource_importer_ogg_vorbis.h"
 #include <ogg/ogg.h>
 
 int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
@@ -520,6 +521,9 @@ bool AudioStreamOggVorbis::is_monophonic() const {
 }
 
 void AudioStreamOggVorbis::_bind_methods() {
+	ClassDB::bind_static_method("AudioStreamOggVorbis", D_METHOD("load_from_buffer", "buffer"), &AudioStreamOggVorbis::load_from_buffer);
+	ClassDB::bind_static_method("AudioStreamOggVorbis", D_METHOD("load_from_file", "path"), &AudioStreamOggVorbis::load_from_file);
+
 	ClassDB::bind_method(D_METHOD("set_packet_sequence", "packet_sequence"), &AudioStreamOggVorbis::set_packet_sequence);
 	ClassDB::bind_method(D_METHOD("get_packet_sequence"), &AudioStreamOggVorbis::get_packet_sequence);
 
@@ -549,3 +553,11 @@ void AudioStreamOggVorbis::_bind_methods() {
 AudioStreamOggVorbis::AudioStreamOggVorbis() {}
 
 AudioStreamOggVorbis::~AudioStreamOggVorbis() {}
+
+Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<uint8_t> &file_data) {
+	return ResourceImporterOggVorbis::load_from_buffer(file_data);
+}
+
+Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_file(const String &p_path) {
+	return ResourceImporterOggVorbis::load_from_file(p_path);
+}

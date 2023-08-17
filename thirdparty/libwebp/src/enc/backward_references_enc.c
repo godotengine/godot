@@ -283,8 +283,7 @@ int VP8LHashChainFill(VP8LHashChain* const p, int quality,
   hash_to_first_index =
       (int32_t*)WebPSafeMalloc(HASH_SIZE, sizeof(*hash_to_first_index));
   if (hash_to_first_index == NULL) {
-    WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
-    return 0;
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
   }
 
   percent_range = remaining_percent / 2;
@@ -1050,8 +1049,7 @@ int VP8LGetBackwardReferences(
     refs_best = GetBackwardReferencesLowEffort(
         width, height, argb, cache_bits_best, hash_chain, refs);
     if (refs_best == NULL) {
-      WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
-      return 0;
+      return WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
     }
     // Set it in first position.
     BackwardRefsSwap(refs_best, &refs[0]);
@@ -1059,8 +1057,7 @@ int VP8LGetBackwardReferences(
     if (!GetBackwardReferences(width, height, argb, quality, lz77_types_to_try,
                                cache_bits_max, do_no_cache, hash_chain, refs,
                                cache_bits_best)) {
-      WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
-      return 0;
+      return WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
     }
   }
 

@@ -120,6 +120,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 
 	bool collided = false;
 	Vector3 res_point, res_normal;
+	int res_face_index = -1;
 	int res_shape = -1;
 	const GodotCollisionObject3D *res_obj = nullptr;
 	real_t min_d = 1e10;
@@ -148,6 +149,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 		const GodotShape3D *shape = col_obj->get_shape(shape_idx);
 
 		Vector3 shape_point, shape_normal;
+		int shape_face_index = -1;
 
 		if (shape->intersect_point(local_from)) {
 			if (p_parameters.hit_from_inside) {
@@ -165,7 +167,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 			}
 		}
 
-		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal, p_parameters.hit_back_faces)) {
+		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal, shape_face_index, p_parameters.hit_back_faces)) {
 			Transform3D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 
@@ -175,6 +177,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 				min_d = ld;
 				res_point = shape_point;
 				res_normal = inv_xform.basis.xform_inv(shape_normal).normalized();
+				res_face_index = shape_face_index;
 				res_shape = shape_idx;
 				res_obj = col_obj;
 				collided = true;
@@ -194,6 +197,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 		r_result.collider = nullptr;
 	}
 	r_result.normal = res_normal;
+	r_result.face_index = res_face_index;
 	r_result.position = res_point;
 	r_result.rid = res_obj->get_self();
 	r_result.shape = res_shape;

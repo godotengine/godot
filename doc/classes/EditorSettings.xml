@@ -232,14 +232,16 @@
 		<member name="editors/2d/bone_outline_color" type="Color" setter="" getter="">
 			The outline color to use for non-selected bones in the 2D skeleton editor. See also [member editors/2d/bone_selected_color].
 		</member>
-		<member name="editors/2d/bone_outline_size" type="int" setter="" getter="">
+		<member name="editors/2d/bone_outline_size" type="float" setter="" getter="">
 			The outline size in the 2D skeleton editor (in pixels). See also [member editors/2d/bone_width].
+			[b]Note:[/b] Changes to this value only apply after modifying a [Bone2D] node in any way, or closing and reopening the scene.
 		</member>
 		<member name="editors/2d/bone_selected_color" type="Color" setter="" getter="">
 			The color to use for selected bones in the 2D skeleton editor. See also [member editors/2d/bone_outline_color].
 		</member>
-		<member name="editors/2d/bone_width" type="int" setter="" getter="">
+		<member name="editors/2d/bone_width" type="float" setter="" getter="">
 			The bone width in the 2D skeleton editor (in pixels). See also [member editors/2d/bone_outline_size].
+			[b]Note:[/b] Changes to this value only apply after modifying a [Bone2D] node in any way, or closing and reopening the scene.
 		</member>
 		<member name="editors/2d/grid_color" type="Color" setter="" getter="">
 			The grid color to use in the 2D editor.
@@ -386,9 +388,6 @@
 		</member>
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
-		</member>
-		<member name="editors/animation/confirm_insert_track" type="bool" setter="" getter="">
-			If [code]true[/code], display a confirmation dialog when adding a new track to an animation by pressing the "key" icon next to a property.
 		</member>
 		<member name="editors/animation/default_create_bezier_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], create a Bezier track instead of a standard track when pressing the "key" icon next to a property. Bezier tracks provide more control over animation curves, but are more difficult to adjust quickly.

@@ -117,6 +117,8 @@ public:
 	virtual void texture_set_path(RID p_texture, const String &p_path) override{};
 	virtual String texture_get_path(RID p_texture) const override { return String(); };
 
+	virtual Image::Format texture_get_format(RID p_texture) const override { return Image::FORMAT_MAX; }
+
 	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override{};
 	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override{};
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) override{};
@@ -127,6 +129,7 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override { return Size2(); };
 
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override{};
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override { return RID(); };
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override { return 0; };
 
@@ -174,6 +177,8 @@ public:
 	virtual void render_target_set_as_unused(RID p_render_target) override {}
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override {}
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override { return RS::VIEWPORT_MSAA_DISABLED; }
+	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override {}
+	virtual bool render_target_is_using_hdr(RID p_render_target) const override { return false; }
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override {}
 	virtual bool render_target_is_clear_requested(RID p_render_target) override { return false; }

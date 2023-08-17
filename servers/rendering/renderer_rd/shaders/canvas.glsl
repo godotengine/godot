@@ -36,6 +36,12 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
 
 #GLOBALS
 
+#ifdef USE_ATTRIBUTES
+vec3 srgb_to_linear(vec3 color) {
+	return mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), lessThan(color.rgb, vec3(0.04045)));
+}
+#endif
+
 void main() {
 	vec4 instance_custom = vec4(0.0);
 #ifdef USE_PRIMITIVE
@@ -65,7 +71,11 @@ void main() {
 #elif defined(USE_ATTRIBUTES)
 
 	vec2 vertex = vertex_attrib;
-	vec4 color = color_attrib * draw_data.modulation;
+	vec4 color = color_attrib;
+	if (bool(draw_data.flags & FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR)) {
+		color.rgb = srgb_to_linear(color.rgb);
+	}
+	color *= draw_data.modulation;
 	vec2 uv = uv_attrib;
 
 	uvec4 bones = bone_attrib;
@@ -563,9 +573,6 @@ void main() {
 	}
 
 	vec4 base_color = color;
-	if (bool(draw_data.flags & FLAGS_USING_LIGHT_MASK)) {
-		color = vec4(0.0); //invisible by default due to using light mask
-	}
 
 #ifdef MODE_LIGHT_ONLY
 	float light_only_alpha = 0.0;

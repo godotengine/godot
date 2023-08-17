@@ -276,8 +276,13 @@ namespace Godot.Bridge
 
             if (wrapperType != null && IsStatic(wrapperType))
             {
-                // A static class means this is a Godot singleton class. If an instance is needed we use GodotObject.
-                return typeof(GodotObject);
+                // A static class means this is a Godot singleton class. Try to get the Instance proxy type.
+                wrapperType = TypeGetProxyClass($"{nativeTypeNameStr}Instance");
+                if (wrapperType == null)
+                {
+                    // Otherwise, fallback to GodotObject.
+                    return typeof(GodotObject);
+                }
             }
 
             return wrapperType;

@@ -204,7 +204,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this plane is finite, by calling
-        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
         /// </summary>
         /// <returns>Whether this vector is finite or not.</returns>
         public readonly bool IsFinite()

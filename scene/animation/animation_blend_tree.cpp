@@ -1010,6 +1010,7 @@ double AnimationNodeTransition::_process(double p_time, bool p_seek, bool p_is_e
 	}
 
 	double rem = 0.0;
+	double abs_time = Math::abs(p_time);
 
 	if (sync) {
 		for (int i = 0; i < get_input_count(); i++) {
@@ -1024,9 +1025,9 @@ double AnimationNodeTransition::_process(double p_time, bool p_seek, bool p_is_e
 		rem = blend_input(cur_current_index, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
 
 		if (p_seek) {
-			cur_time = p_time;
+			cur_time = abs_time;
 		} else {
-			cur_time += p_time;
+			cur_time += abs_time;
 		}
 
 		if (input_data[cur_current_index].auto_advance && rem <= xfade_time) {
@@ -1058,10 +1059,10 @@ double AnimationNodeTransition::_process(double p_time, bool p_seek, bool p_is_e
 
 		blend_input(cur_prev_index, p_time, use_blend && p_seek, p_is_external_seeking, blend, FILTER_IGNORE, true, p_test_only);
 		if (p_seek) {
-			cur_time = p_time;
+			cur_time = abs_time;
 		} else {
-			cur_time += p_time;
-			cur_prev_xfading -= p_time;
+			cur_time += abs_time;
+			cur_prev_xfading -= abs_time;
 			if (cur_prev_xfading < 0) {
 				set_parameter(prev_index, -1);
 			}
@@ -1142,7 +1143,7 @@ void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNod
 	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendTree::_tree_changed), CONNECT_REFERENCE_COUNTED);
 	p_node->connect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendTree::_animation_node_renamed), CONNECT_REFERENCE_COUNTED);
 	p_node->connect("animation_node_removed", callable_mp(this, &AnimationNodeBlendTree::_animation_node_removed), CONNECT_REFERENCE_COUNTED);
-	p_node->connect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed).bind(p_name), CONNECT_REFERENCE_COUNTED);
+	p_node->connect_changed(callable_mp(this, &AnimationNodeBlendTree::_node_changed).bind(p_name), CONNECT_REFERENCE_COUNTED);
 }
 
 Ref<AnimationNode> AnimationNodeBlendTree::get_node(const StringName &p_name) const {
@@ -1178,8 +1179,6 @@ void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
 		ns.push_back(E.key);
 	}
 
-	ns.sort_custom<StringName::AlphCompare>();
-
 	for (int i = 0; i < ns.size(); i++) {
 		ChildNode cn;
 		cn.name = ns[i];
@@ -1206,7 +1205,7 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 		node->disconnect("tree_changed", callable_mp(this, &AnimationNodeBlendTree::_tree_changed));
 		node->disconnect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendTree::_animation_node_renamed));
 		node->disconnect("animation_node_removed", callable_mp(this, &AnimationNodeBlendTree::_animation_node_removed));
-		node->disconnect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed));
+		node->disconnect_changed(callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 	}
 
 	nodes.erase(p_name);
@@ -1231,7 +1230,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output);
 	ERR_FAIL_COND(p_new_name == SceneStringNames::get_singleton()->output);
 
-	nodes[p_name].node->disconnect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed));
+	nodes[p_name].node->disconnect_changed(callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 
 	nodes[p_new_name] = nodes[p_name];
 	nodes.erase(p_name);
@@ -1245,7 +1244,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 		}
 	}
 	// Connection must be done with new name.
-	nodes[p_new_name].node->connect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed).bind(p_new_name), CONNECT_REFERENCE_COUNTED);
+	nodes[p_new_name].node->connect_changed(callable_mp(this, &AnimationNodeBlendTree::_node_changed).bind(p_new_name), CONNECT_REFERENCE_COUNTED);
 
 	emit_signal(SNAME("animation_node_renamed"), get_instance_id(), p_name, p_new_name);
 	emit_signal(SNAME("tree_changed"));
@@ -1435,7 +1434,6 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 	for (const KeyValue<StringName, Node> &E : nodes) {
 		names.push_back(E.key);
 	}
-	names.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &E : names) {
 		String prop_name = E;

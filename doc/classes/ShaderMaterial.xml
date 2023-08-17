@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A material that uses a custom [Shader] program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
+		[b]Note:[/b] For performance reasons the [signal Resource.changed] signal is only emitted when the [member Resource.resource_name] is changed. Only in editor, is also emitted for [member shader] changes.
 	</description>
 	<tutorials>
 		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>

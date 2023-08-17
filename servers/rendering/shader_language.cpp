@@ -3388,12 +3388,14 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	}
 
 	int last_arg_count = 0;
+	bool exists = false;
 	String arg_list = "";
 
 	for (int i = 0; i < shader->functions.size(); i++) {
 		if (name != shader->functions[i].name) {
 			continue;
 		}
+		exists = true;
 
 		if (!shader->functions[i].callable) {
 			_set_error(vformat(RTR("Function '%s' can't be called from source code."), String(name)));
@@ -3494,10 +3496,12 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		}
 	}
 
-	if (last_arg_count > args.size()) {
-		_set_error(vformat(RTR("Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
-	} else if (last_arg_count < args.size()) {
-		_set_error(vformat(RTR("Too many arguments for \"%s(%s)\" call. Expected at most %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
+	if (exists) {
+		if (last_arg_count > args.size()) {
+			_set_error(vformat(RTR("Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
+		} else if (last_arg_count < args.size()) {
+			_set_error(vformat(RTR("Too many arguments for \"%s(%s)\" call. Expected at most %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
+		}
 	}
 
 	return false;
@@ -10549,19 +10553,23 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 			} else if ((int(completion_base) > int(TYPE_MAT4) && int(completion_base) < int(TYPE_STRUCT))) {
 				Vector<String> options;
+				if (current_uniform_filter == FILTER_DEFAULT) {
+					options.push_back("filter_linear");
+					options.push_back("filter_linear_mipmap");
+					options.push_back("filter_linear_mipmap_anisotropic");
+					options.push_back("filter_nearest");
+					options.push_back("filter_nearest_mipmap");
+					options.push_back("filter_nearest_mipmap_anisotropic");
+				}
+				if (current_uniform_repeat == REPEAT_DEFAULT) {
+					options.push_back("repeat_enable");
+					options.push_back("repeat_disable");
+				}
 				if (completion_base_array) {
 					if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
 						options.push_back("source_color");
 					}
 				} else {
-					if (current_uniform_filter == FILTER_DEFAULT) {
-						options.push_back("filter_linear");
-						options.push_back("filter_linear_mipmap");
-						options.push_back("filter_linear_mipmap_anisotropic");
-						options.push_back("filter_nearest");
-						options.push_back("filter_nearest_mipmap");
-						options.push_back("filter_nearest_mipmap_anisotropic");
-					}
 					if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
 						options.push_back("hint_anisotropy");
 						options.push_back("hint_default_black");
@@ -10578,10 +10586,6 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						options.push_back("hint_normal_roughness_texture");
 						options.push_back("hint_depth_texture");
 						options.push_back("source_color");
-					}
-					if (current_uniform_repeat == REPEAT_DEFAULT) {
-						options.push_back("repeat_enable");
-						options.push_back("repeat_disable");
 					}
 				}
 

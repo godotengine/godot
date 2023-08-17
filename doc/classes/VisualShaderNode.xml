@@ -16,6 +16,13 @@
 				Clears the default input ports value.
 			</description>
 		</method>
+		<method name="get_default_input_port" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="type" type="int" enum="VisualShaderNode.PortType" />
+			<description>
+				Returns the input port which should be connected by default when this node is created as a result of dragging a connection from an existing node to the empty space on the graph.
+			</description>
+		</method>
 		<method name="get_default_input_values" qualifiers="const">
 			<return type="Array" />
 			<description>

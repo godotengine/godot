@@ -27,6 +27,13 @@
 				Bakes the material data of the Mesh passed in the [param base] parameter with optional [param material_overrides] to a set of [Image]s of size [param image_size]. Returns an array of [Image]s containing material properties as specified in [enum BakeChannels].
 			</description>
 		</method>
+		<method name="call_on_render_thread">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				As the RenderingServer actual logic may run on an separate thread, accessing its internals from the main (or any other) thread will result in errors. To make it easier to run code that can safely access the rendering internals (such as [RenderingDevice] and similar RD classes), push a callable via this function so it will be executed on the render thread.
+			</description>
+		</method>
 		<method name="camera_attributes_create">
 			<return type="RID" />
 			<description>
@@ -1368,7 +1375,7 @@
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RendeeringServer directly.
+				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RenderingServer directly.
 			</description>
 		</method>
 		<method name="get_default_clear_color">
@@ -3281,6 +3288,13 @@
 				[b]Note:[/b] The [param texture] must have the same width, height, depth and format as the current texture data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height, depth or format, use [method texture_replace] instead.
 			</description>
 		</method>
+		<method name="texture_get_format" qualifiers="const">
+			<return type="int" enum="Image.Format" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Returns the [enum Image.Format] for the texture.
+			</description>
+		</method>
 		<method name="texture_get_native_handle" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="texture" type="RID" />
@@ -3317,6 +3331,14 @@
 			<param index="1" name="proxy_to" type="RID" />
 			<description>
 				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method cannot be used anymore.
+			</description>
+		</method>
+		<method name="texture_rd_create">
+			<return type="RID" />
+			<param index="0" name="rd_texture" type="RID" />
+			<param index="1" name="layer_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
+			<description>
+				Creates a new texture object based on a texture created directly on the [RenderingDevice]. If the texture contains layers, [param layer_type] is used to define the layer type.
 			</description>
 		</method>
 		<method name="texture_replace">
@@ -3732,6 +3754,15 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], enables debanding on the specified viewport. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
+			</description>
+		</method>
+		<method name="viewport_set_use_hdr_2d">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be a [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be a [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
+				[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
 			</description>
 		</method>
 		<method name="viewport_set_use_occlusion_culling">

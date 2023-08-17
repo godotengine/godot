@@ -573,7 +573,7 @@ StringName Area3D::get_audio_bus_name() const {
 			return audio_bus;
 		}
 	}
-	return "Master";
+	return SceneStringNames::get_singleton()->Master;
 }
 
 void Area3D::set_use_reverb_bus(bool p_enable) {
@@ -594,7 +594,7 @@ StringName Area3D::get_reverb_bus_name() const {
 			return reverb_bus;
 		}
 	}
-	return "Master";
+	return SceneStringNames::get_singleton()->Master;
 }
 
 void Area3D::set_reverb_amount(float p_amount) {

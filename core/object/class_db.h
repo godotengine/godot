@@ -155,7 +155,7 @@ public:
 #endif
 
 	static APIType current_api;
-	static HashMap<APIType, uint64_t> api_hashes_cache;
+	static HashMap<APIType, uint32_t> api_hashes_cache;
 
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 
@@ -246,7 +246,7 @@ public:
 
 	static APIType get_api_type(const StringName &p_class);
 
-	static uint64_t get_api_hash(APIType p_api);
+	static uint32_t get_api_hash(APIType p_api);
 
 	template <typename>
 	struct member_function_traits;

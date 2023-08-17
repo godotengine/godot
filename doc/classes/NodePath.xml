@@ -101,12 +101,12 @@
 				Returns all subnames concatenated with a colon character ([code]:[/code]) as separator, i.e. the right side of the first colon in a node path.
 				[codeblocks]
 				[gdscript]
-				var nodepath = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")
-				print(nodepath.get_concatenated_subnames()) # texture:load_path
+				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")
+				print(node_path.get_concatenated_subnames()) # texture:load_path
 				[/gdscript]
 				[csharp]
-				var nodepath = new NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path");
-				GD.Print(nodepath.GetConcatenatedSubnames()); // texture:load_path
+				var nodePath = new NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path");
+				GD.Print(nodePath.GetConcatenatedSubnames()); // texture:load_path
 				[/csharp]
 				[/codeblocks]
 			</description>

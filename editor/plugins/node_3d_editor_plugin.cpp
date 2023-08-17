@@ -1775,6 +1775,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							seg->handles_intersect_ray(camera, _edit.mouse_pos, b->is_shift_pressed(), gizmo_handle, gizmo_secondary);
 							if (gizmo_handle != -1) {
 								_edit.gizmo = seg;
+								seg->begin_handle_action(gizmo_handle, gizmo_secondary);
 								_edit.gizmo_handle = gizmo_handle;
 								_edit.gizmo_handle_secondary = gizmo_secondary;
 								_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle, gizmo_secondary);
@@ -2152,7 +2153,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		if (_edit.mode == TRANSFORM_NONE) {
-			if (_edit.gizmo.is_valid()) {
+			if (_edit.gizmo.is_valid() && (k->get_keycode() == Key::ESCAPE || k->get_keycode() == Key::BACKSPACE)) {
 				// Restore.
 				_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
@@ -2658,6 +2659,9 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const bool transparent_background = GLOBAL_GET("rendering/viewport/transparent_background");
 	viewport->set_transparent_background(transparent_background);
 
+	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
+	viewport->set_use_hdr_2d(use_hdr_2d);
+
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
 
@@ -2821,7 +2825,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 
 			if (show_info) {
-				const String viewport_size = vformat(String::utf8("%d × %d"), viewport->get_size().x, viewport->get_size().y);
+				const String viewport_size = vformat(U"%d × %d", viewport->get_size().x, viewport->get_size().y);
 				String text;
 				text += vformat(TTR("X: %s\n"), rtos(current_camera->get_position().x).pad_decimals(1));
 				text += vformat(TTR("Y: %s\n"), rtos(current_camera->get_position().y).pad_decimals(1));
@@ -4914,7 +4918,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 	}
 }
 
-// Perform cleanup after a transform operation is committed or cancelled.
+// Perform cleanup after a transform operation is committed or canceled.
 void Node3DEditorViewport::finish_transform() {
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	_edit.mode = TRANSFORM_NONE;
@@ -4929,7 +4933,7 @@ void Node3DEditorViewport::register_shortcut_action(const String &p_path, const 
 	Ref<Shortcut> sc = ED_SHORTCUT(p_path, p_name, p_keycode, p_physical);
 	shortcut_changed_callback(sc, p_path);
 	// Connect to the change event on the shortcut so the input binding can be updated.
-	sc->connect("changed", callable_mp(this, &Node3DEditorViewport::shortcut_changed_callback).bind(sc, p_path));
+	sc->connect_changed(callable_mp(this, &Node3DEditorViewport::shortcut_changed_callback).bind(sc, p_path));
 }
 
 // Update the action in the InputMap to the provided shortcut events.
@@ -8125,7 +8129,7 @@ Node3DEditor::Node3DEditor() {
 
 	String sct;
 
-	// Add some margin to the left for better aesthetics.
+	// Add some margin to the left for better esthetics.
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
 	// which looks ugly.
 	Control *margin_left = memnew(Control);

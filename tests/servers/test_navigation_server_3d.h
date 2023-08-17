@@ -31,11 +31,38 @@
 #ifndef TEST_NAVIGATION_SERVER_3D_H
 #define TEST_NAVIGATION_SERVER_3D_H
 
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/resources/primitive_meshes.h"
 #include "servers/navigation_server_3d.h"
 
 #include "tests/test_macros.h"
 
 namespace TestNavigationServer3D {
+
+// TODO: Find a more generic way to create `Callable` mocks.
+class CallableMock : public Object {
+	GDCLASS(CallableMock, Object);
+
+public:
+	void function1(Variant arg0) {
+		function1_calls++;
+		function1_latest_arg0 = arg0;
+	}
+
+	unsigned function1_calls{ 0 };
+	Variant function1_latest_arg0{};
+};
+
+static inline Array build_array() {
+	return Array();
+}
+template <typename... Targs>
+static inline Array build_array(Variant item, Targs... Fargs) {
+	Array a = build_array(Fargs...);
+	a.push_front(item);
+	return a;
+}
+
 TEST_SUITE("[Navigation]") {
 	TEST_CASE("[NavigationServer3D] Server should be empty when initialized") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
@@ -329,6 +356,260 @@ TEST_SUITE("[Navigation]") {
 		}
 
 		navigation_server->free(region);
+	}
+
+	// This test case does not check precise values on purpose - to not be too sensitivte.
+	TEST_CASE("[NavigationServer3D] Server should move agent properly") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		RID map = navigation_server->map_create();
+		RID agent = navigation_server->agent_create();
+
+		navigation_server->map_set_active(map, true);
+		navigation_server->agent_set_map(agent, map);
+		navigation_server->agent_set_avoidance_enabled(agent, true);
+		navigation_server->agent_set_velocity(agent, Vector3(1, 0, 1));
+		CallableMock agent_avoidance_callback_mock;
+		navigation_server->agent_set_avoidance_callback(agent, callable_mp(&agent_avoidance_callback_mock, &CallableMock::function1));
+		CHECK_EQ(agent_avoidance_callback_mock.function1_calls, 0);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+		CHECK_EQ(agent_avoidance_callback_mock.function1_calls, 1);
+		CHECK_NE(agent_avoidance_callback_mock.function1_latest_arg0, Vector3(0, 0, 0));
+
+		navigation_server->free(agent);
+		navigation_server->free(map);
+	}
+
+	// This test case does not check precise values on purpose - to not be too sensitivte.
+	TEST_CASE("[NavigationServer3D] Server should make agents avoid each other when avoidance enabled") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		RID map = navigation_server->map_create();
+		RID agent_1 = navigation_server->agent_create();
+		RID agent_2 = navigation_server->agent_create();
+
+		navigation_server->map_set_active(map, true);
+
+		navigation_server->agent_set_map(agent_1, map);
+		navigation_server->agent_set_avoidance_enabled(agent_1, true);
+		navigation_server->agent_set_position(agent_1, Vector3(0, 0, 0));
+		navigation_server->agent_set_radius(agent_1, 1);
+		navigation_server->agent_set_velocity(agent_1, Vector3(1, 0, 0));
+		CallableMock agent_1_avoidance_callback_mock;
+		navigation_server->agent_set_avoidance_callback(agent_1, callable_mp(&agent_1_avoidance_callback_mock, &CallableMock::function1));
+
+		navigation_server->agent_set_map(agent_2, map);
+		navigation_server->agent_set_avoidance_enabled(agent_2, true);
+		navigation_server->agent_set_position(agent_2, Vector3(2.5, 0, 0.5));
+		navigation_server->agent_set_radius(agent_2, 1);
+		navigation_server->agent_set_velocity(agent_2, Vector3(-1, 0, 0));
+		CallableMock agent_2_avoidance_callback_mock;
+		navigation_server->agent_set_avoidance_callback(agent_2, callable_mp(&agent_2_avoidance_callback_mock, &CallableMock::function1));
+
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 0);
+		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 0);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
+		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 1);
+		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
+		Vector3 agent_2_safe_velocity = agent_2_avoidance_callback_mock.function1_latest_arg0;
+		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "agent 1 should move a bit along desired velocity (+X)");
+		CHECK_MESSAGE(agent_2_safe_velocity.x < 0, "agent 2 should move a bit along desired velocity (-X)");
+		CHECK_MESSAGE(agent_1_safe_velocity.z < 0, "agent 1 should move a bit to the side so that it avoids agent 2");
+		CHECK_MESSAGE(agent_2_safe_velocity.z > 0, "agent 2 should move a bit to the side so that it avoids agent 1");
+
+		navigation_server->free(agent_2);
+		navigation_server->free(agent_1);
+		navigation_server->free(map);
+	}
+
+	// This test case uses only public APIs on purpose - other test cases use simplified baking.
+	// FIXME: Remove once deprecated `region_bake_navigation_mesh()` is removed.
+	TEST_CASE("[NavigationServer3D][SceneTree][DEPRECATED] Server should be able to bake map correctly") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		// Prepare scene tree with simple mesh to serve as an input geometry.
+		Node3D *node_3d = memnew(Node3D);
+		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+		Ref<PlaneMesh> plane_mesh = memnew(PlaneMesh);
+		plane_mesh->set_size(Size2(10.0, 10.0));
+		MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
+		mesh_instance->set_mesh(plane_mesh);
+		node_3d->add_child(mesh_instance);
+
+		// Prepare anything necessary to bake navigation mesh.
+		RID map = navigation_server->map_create();
+		RID region = navigation_server->region_create();
+		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		navigation_server->map_set_active(map, true);
+		navigation_server->region_set_map(region, map);
+		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+
+		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
+		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
+
+		navigation_server->region_bake_navigation_mesh(navigation_mesh, node_3d);
+		// FIXME: The above line should trigger the update (line below) under the hood.
+		navigation_server->region_set_navigation_mesh(region, navigation_mesh); // Force update.
+		CHECK_EQ(navigation_mesh->get_polygon_count(), 2);
+		CHECK_EQ(navigation_mesh->get_vertices().size(), 4);
+
+		SUBCASE("Map should emit signal and take newly baked navigation mesh into account") {
+			SIGNAL_WATCH(navigation_server, "map_changed");
+			SIGNAL_CHECK_FALSE("map_changed");
+			navigation_server->process(0.0); // Give server some cycles to commit.
+			SIGNAL_CHECK("map_changed", build_array(build_array(map)));
+			SIGNAL_UNWATCH(navigation_server, "map_changed");
+			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
+		}
+
+		navigation_server->free(region);
+		navigation_server->free(map);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+		memdelete(mesh_instance);
+		memdelete(node_3d);
+	}
+
+	// This test case uses only public APIs on purpose - other test cases use simplified baking.
+	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to bake map correctly") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		// Prepare scene tree with simple mesh to serve as an input geometry.
+		Node3D *node_3d = memnew(Node3D);
+		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+		Ref<PlaneMesh> plane_mesh = memnew(PlaneMesh);
+		plane_mesh->set_size(Size2(10.0, 10.0));
+		MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
+		mesh_instance->set_mesh(plane_mesh);
+		node_3d->add_child(mesh_instance);
+
+		// Prepare anything necessary to bake navigation mesh.
+		RID map = navigation_server->map_create();
+		RID region = navigation_server->region_create();
+		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		navigation_server->map_set_active(map, true);
+		navigation_server->region_set_map(region, map);
+		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+
+		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
+		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
+
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+		navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, node_3d);
+		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+		// FIXME: The above line should trigger the update (line below) under the hood.
+		navigation_server->region_set_navigation_mesh(region, navigation_mesh); // Force update.
+		CHECK_EQ(navigation_mesh->get_polygon_count(), 2);
+		CHECK_EQ(navigation_mesh->get_vertices().size(), 4);
+
+		SUBCASE("Map should emit signal and take newly baked navigation mesh into account") {
+			SIGNAL_WATCH(navigation_server, "map_changed");
+			SIGNAL_CHECK_FALSE("map_changed");
+			navigation_server->process(0.0); // Give server some cycles to commit.
+			SIGNAL_CHECK("map_changed", build_array(build_array(map)));
+			SIGNAL_UNWATCH(navigation_server, "map_changed");
+			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
+		}
+
+		navigation_server->free(region);
+		navigation_server->free(map);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+		memdelete(mesh_instance);
+		memdelete(node_3d);
+	}
+
+	// This test case does not check precise values on purpose - to not be too sensitivte.
+	TEST_CASE("[NavigationServer3D] Server should respond to queries against valid map properly") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+
+		Array arr;
+		arr.resize(RS::ARRAY_MAX);
+		BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
+		source_geometry->add_mesh_array(arr, Transform3D());
+		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+		CHECK_NE(navigation_mesh->get_polygon_count(), 0);
+		CHECK_NE(navigation_mesh->get_vertices().size(), 0);
+
+		RID map = navigation_server->map_create();
+		RID region = navigation_server->region_create();
+		navigation_server->map_set_active(map, true);
+		navigation_server->region_set_map(region, map);
+		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+
+		SUBCASE("Simple queries should return non-default values") {
+			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
+			CHECK_NE(navigation_server->map_get_closest_point_normal(map, Vector3(0, 0, 0)), Vector3());
+			CHECK(navigation_server->map_get_closest_point_owner(map, Vector3(0, 0, 0)).is_valid());
+			// TODO: Test map_get_closest_point_to_segment() with p_use_collision=true as well.
+			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), false), Vector3());
+			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), true).size(), 0);
+			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), false).size(), 0);
+		}
+
+		SUBCASE("Elaborate query with 'CORRIDORFUNNEL' post-processing should yield non-empty result") {
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(0, 0, 0));
+			query_parameters->set_target_position(Vector3(10, 0, 10));
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_NE(query_result->get_path().size(), 0);
+			CHECK_NE(query_result->get_path_types().size(), 0);
+			CHECK_NE(query_result->get_path_rids().size(), 0);
+			CHECK_NE(query_result->get_path_owner_ids().size(), 0);
+		}
+
+		SUBCASE("Elaborate query with 'EDGECENTERED' post-processing should yield non-empty result") {
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_EDGECENTERED);
+			Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_NE(query_result->get_path().size(), 0);
+			CHECK_NE(query_result->get_path_types().size(), 0);
+			CHECK_NE(query_result->get_path_rids().size(), 0);
+			CHECK_NE(query_result->get_path_owner_ids().size(), 0);
+		}
+
+		SUBCASE("Elaborate query with non-matching navigation layer mask should yield empty result") {
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			query_parameters->set_navigation_layers(2);
+			Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_EQ(query_result->get_path().size(), 0);
+			CHECK_EQ(query_result->get_path_types().size(), 0);
+			CHECK_EQ(query_result->get_path_rids().size(), 0);
+			CHECK_EQ(query_result->get_path_owner_ids().size(), 0);
+		}
+
+		SUBCASE("Elaborate query without metadata flags should yield path only") {
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			query_parameters->set_metadata_flags(0);
+			Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_NE(query_result->get_path().size(), 0);
+			CHECK_EQ(query_result->get_path_types().size(), 0);
+			CHECK_EQ(query_result->get_path_rids().size(), 0);
+			CHECK_EQ(query_result->get_path_owner_ids().size(), 0);
+		}
+
+		navigation_server->free(region);
+		navigation_server->free(map);
+		navigation_server->process(0.0); // Give server some cycles to commit.
 	}
 }
 } //namespace TestNavigationServer3D

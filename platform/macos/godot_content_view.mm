@@ -505,9 +505,8 @@
 		return;
 	}
 
-	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_CAPTURED) {
-		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_MOUSE_EXIT);
+		ds->mouse_exit_window(window_id);
 	}
 }
 
@@ -517,9 +516,8 @@
 		return;
 	}
 
-	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_CAPTURED) {
-		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_MOUSE_ENTER);
+		ds->mouse_enter_window(window_id);
 	}
 
 	ds->cursor_update_shape();

@@ -77,7 +77,7 @@ void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 
 	input_event = p_event;
 	_event_changed();
-	input_event->connect("changed", callable_mp(this, &InputEventConfigContainer::_event_changed));
+	input_event->connect_changed(callable_mp(this, &InputEventConfigContainer::_event_changed));
 }
 
 InputEventConfigContainer::InputEventConfigContainer() {

@@ -37,6 +37,14 @@
 				Defining this method is [b]required[/b].
 			</description>
 		</method>
+		<method name="_get_default_input_port" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="type" type="int" enum="VisualShaderNode.PortType" />
+			<description>
+				Override this method to define the input port which should be connected by default when this node is created as a result of dragging a connection from an existing node to the empty space on the graph.
+				Defining this method is [b]optional[/b]. If not overridden, the connection will be created to the first valid port.
+			</description>
+		</method>
 		<method name="_get_description" qualifiers="virtual const">
 			<return type="String" />
 			<description>

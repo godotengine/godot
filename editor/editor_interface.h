@@ -104,6 +104,9 @@ public:
 	void popup_dialog_centered_ratio(Window *p_dialog, float p_ratio = 0.8);
 	void popup_dialog_centered_clamped(Window *p_dialog, const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
+	String get_current_feature_profile() const;
+	void set_current_feature_profile(const String &p_profile_name);
+
 	// Editor docks.
 
 	FileSystemDock *get_file_system_dock() const;
@@ -130,6 +133,7 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 	void mark_scene_as_unsaved();
+	void save_all_scenes();
 
 	// Scene playback.
 

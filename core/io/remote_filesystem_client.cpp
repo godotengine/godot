@@ -270,7 +270,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 		String file = temp_file_cache[i].path;
 
 		if (temp_file_cache[i].server_modified_time == 0 || server_disconnected) {
-			// File was removed, or server disconnected before tranferring it. Since it's no longer valid, remove anyway.
+			// File was removed, or server disconnected before transferring it. Since it's no longer valid, remove anyway.
 			_remove_file(file);
 			continue;
 		}

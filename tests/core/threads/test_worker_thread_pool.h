@@ -106,32 +106,6 @@ TEST_CASE("[WorkerThreadPool] Process elements using group tasks") {
 	}
 }
 
-TEST_CASE("[WorkerThreadPool] Parallel foreach") {
-	const int count_max = 256;
-
-	for (int midpoint = 0; midpoint < count_max; midpoint++) {
-		LocalVector<int> c;
-		c.resize(count_max);
-
-		for_range(0, count_max, true, String(), [&](int i) {
-			c[i] = 1;
-		});
-		c.sort();
-		CHECK(c[0] == 1);
-		CHECK(c[0] == c[count_max - 1]);
-
-		for_range(0, midpoint, false, String(), [&](int i) {
-			c[i]++;
-		});
-		for_range(midpoint, count_max, true, String(), [&](int i) {
-			c[i]++;
-		});
-		c.sort();
-		CHECK(c[0] == 2);
-		CHECK(c[0] == c[count_max - 1]);
-	}
-}
-
 } // namespace TestWorkerThreadPool
 
 #endif // TEST_WORKER_THREAD_POOL_H

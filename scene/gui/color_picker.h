@@ -46,6 +46,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/style_box_flat.h"
 
 class ColorMode;
 class ColorModeRGB;
@@ -129,6 +130,7 @@ private:
 	Ref<StyleBoxFlat> picker_preview_style_box;
 	Color picker_color;
 
+	MarginContainer *internal_margin = nullptr;
 	Control *uv_edit = nullptr;
 	Control *w_edit = nullptr;
 	AspectRatioContainer *wheel_edit = nullptr;

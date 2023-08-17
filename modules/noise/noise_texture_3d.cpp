@@ -32,8 +32,6 @@
 
 #include "noise.h"
 
-#include "core/core_string_names.h"
-
 NoiseTexture3D::NoiseTexture3D() {
 	noise = Ref<Noise>();
 
@@ -112,6 +110,7 @@ void NoiseTexture3D::_set_texture_data(const TypedArray<Image> &p_data) {
 		} else {
 			texture = RS::get_singleton()->texture_3d_create(data[0]->get_format(), data[0]->get_width(), data[0]->get_height(), data.size(), false, data);
 		}
+		format = data[0]->get_format();
 	}
 	emit_changed();
 }
@@ -214,11 +213,11 @@ void NoiseTexture3D::set_noise(Ref<Noise> p_noise) {
 		return;
 	}
 	if (noise.is_valid()) {
-		noise->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture3D::_queue_update));
+		noise->disconnect_changed(callable_mp(this, &NoiseTexture3D::_queue_update));
 	}
 	noise = p_noise;
 	if (noise.is_valid()) {
-		noise->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture3D::_queue_update));
+		noise->connect_changed(callable_mp(this, &NoiseTexture3D::_queue_update));
 	}
 	_queue_update();
 }
@@ -297,11 +296,11 @@ void NoiseTexture3D::set_color_ramp(const Ref<Gradient> &p_gradient) {
 		return;
 	}
 	if (color_ramp.is_valid()) {
-		color_ramp->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture3D::_queue_update));
+		color_ramp->disconnect_changed(callable_mp(this, &NoiseTexture3D::_queue_update));
 	}
 	color_ramp = p_gradient;
 	if (color_ramp.is_valid()) {
-		color_ramp->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture3D::_queue_update));
+		color_ramp->connect_changed(callable_mp(this, &NoiseTexture3D::_queue_update));
 	}
 	_queue_update();
 }
@@ -348,6 +347,5 @@ Vector<Ref<Image>> NoiseTexture3D::get_data() const {
 }
 
 Image::Format NoiseTexture3D::get_format() const {
-	ERR_FAIL_COND_V(!texture.is_valid(), Image::FORMAT_L8);
-	return RS::get_singleton()->texture_3d_get(texture)[0]->get_format();
+	return format;
 }

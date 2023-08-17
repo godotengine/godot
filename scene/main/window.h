@@ -205,7 +205,6 @@ protected:
 	virtual void _update_theme_item_cache();
 
 	virtual void _post_popup() {}
-	virtual Size2 _get_contents_minimum_size() const;
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -216,6 +215,8 @@ protected:
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+
+	GDVIRTUAL0RC(Vector2, _get_contents_minimum_size)
 
 public:
 	enum {
@@ -404,9 +405,12 @@ public:
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
 	virtual bool is_directly_attached_to_screen() const override;
+	virtual bool is_attached_in_viewport() const override;
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
+
+	virtual Size2 _get_contents_minimum_size() const;
 
 	Window();
 	~Window();

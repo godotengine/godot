@@ -54,21 +54,21 @@ bool Window::_set(const StringName &p_name, const Variant &p_value) {
 		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (theme_icon_override.has(dname)) {
-				theme_icon_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+				theme_icon_override[dname]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 			}
 			theme_icon_override.erase(dname);
 			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (theme_style_override.has(dname)) {
-				theme_style_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+				theme_style_override[dname]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 			}
 			theme_style_override.erase(dname);
 			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (theme_font_override.has(dname)) {
-				theme_font_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+				theme_font_override[dname]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 			}
 			theme_font_override.erase(dname);
 			_notify_theme_override_changed();
@@ -618,12 +618,6 @@ void Window::_clear_window() {
 
 	bool had_focus = has_focus();
 
-	DisplayServer::get_singleton()->window_set_rect_changed_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_window_event_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_input_event_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_input_text_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_drop_files_callback(Callable(), window_id);
-
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
@@ -676,17 +670,31 @@ void Window::_propagate_window_notification(Node *p_node, int p_notification) {
 void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 	switch (p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
+			Window *root = get_tree()->get_root();
+			if (root->gui.windowmanager_window_over) {
+#ifdef DEV_ENABLED
+				WARN_PRINT_ONCE("Entering a window while a window is hovered should never happen in DisplayServer.");
+#endif // DEV_ENABLED
+				root->gui.windowmanager_window_over->_event_callback(DisplayServer::WINDOW_EVENT_MOUSE_EXIT);
+			}
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
-			emit_signal(SNAME("mouse_entered"));
+			root->gui.windowmanager_window_over = this;
 			notification(NOTIFICATION_VP_MOUSE_ENTER);
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
 				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
 			}
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
-			notification(NOTIFICATION_VP_MOUSE_EXIT);
+			Window *root = get_tree()->get_root();
+			if (!root->gui.windowmanager_window_over) {
+#ifdef DEV_ENABLED
+				WARN_PRINT_ONCE("Exiting a window while no window is hovered should never happen in DisplayServer.");
+#endif // DEV_ENABLED
+				return;
+			}
+			root->gui.windowmanager_window_over->_mouse_leave_viewport();
+			root->gui.windowmanager_window_over = nullptr;
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
-			emit_signal(SNAME("mouse_exited"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
@@ -1283,6 +1291,14 @@ void Window::_notification(int p_what) {
 
 			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
 		} break;
+
+		case NOTIFICATION_VP_MOUSE_ENTER: {
+			emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+		} break;
+
+		case NOTIFICATION_VP_MOUSE_EXIT: {
+			emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+		} break;
 	}
 }
 
@@ -1742,6 +1758,10 @@ Rect2i Window::fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) co
 
 Size2 Window::get_contents_minimum_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
+	Vector2 ms;
+	if (GDVIRTUAL_CALL(_get_contents_minimum_size, ms)) {
+		return ms;
+	}
 	return _get_contents_minimum_size();
 }
 
@@ -1823,13 +1843,13 @@ void Window::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	if (theme.is_valid()) {
-		theme->disconnect("changed", callable_mp(this, &Window::_theme_changed));
+		theme->disconnect_changed(callable_mp(this, &Window::_theme_changed));
 	}
 
 	theme = p_theme;
 	if (theme.is_valid()) {
 		theme_owner->propagate_theme_changed(this, this, is_inside_tree(), true);
-		theme->connect("changed", callable_mp(this, &Window::_theme_changed), CONNECT_DEFERRED);
+		theme->connect_changed(callable_mp(this, &Window::_theme_changed), CONNECT_DEFERRED);
 		return;
 	}
 
@@ -2165,11 +2185,11 @@ void Window::add_theme_icon_override(const StringName &p_name, const Ref<Texture
 	ERR_FAIL_COND(!p_icon.is_valid());
 
 	if (theme_icon_override.has(p_name)) {
-		theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_icon_override[p_name] = p_icon;
-	theme_icon_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	theme_icon_override[p_name]->connect_changed(callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
@@ -2178,11 +2198,11 @@ void Window::add_theme_style_override(const StringName &p_name, const Ref<StyleB
 	ERR_FAIL_COND(!p_style.is_valid());
 
 	if (theme_style_override.has(p_name)) {
-		theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_style_override[p_name] = p_style;
-	theme_style_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	theme_style_override[p_name]->connect_changed(callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
@@ -2191,11 +2211,11 @@ void Window::add_theme_font_override(const StringName &p_name, const Ref<Font> &
 	ERR_FAIL_COND(!p_font.is_valid());
 
 	if (theme_font_override.has(p_name)) {
-		theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_font_override[p_name] = p_font;
-	theme_font_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	theme_font_override[p_name]->connect_changed(callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
@@ -2220,7 +2240,7 @@ void Window::add_theme_constant_override(const StringName &p_name, int p_constan
 void Window::remove_theme_icon_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (theme_icon_override.has(p_name)) {
-		theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_icon_override.erase(p_name);
@@ -2230,7 +2250,7 @@ void Window::remove_theme_icon_override(const StringName &p_name) {
 void Window::remove_theme_style_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (theme_style_override.has(p_name)) {
-		theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_style_override.erase(p_name);
@@ -2240,7 +2260,7 @@ void Window::remove_theme_style_override(const StringName &p_name) {
 void Window::remove_theme_font_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (theme_font_override.has(p_name)) {
-		theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_font_override.erase(p_name);
@@ -2493,6 +2513,10 @@ bool Window::is_directly_attached_to_screen() const {
 	}
 	// Distinguish between the case that this is a native Window and not inside the tree.
 	return is_inside_tree();
+}
+
+bool Window::is_attached_in_viewport() const {
+	return get_embedder();
 }
 
 void Window::_bind_methods() {
@@ -2750,6 +2774,8 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN);
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS);
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS);
+
+	GDVIRTUAL_BIND(_get_contents_minimum_size);
 }
 
 Window::Window() {
@@ -2768,13 +2794,13 @@ Window::~Window() {
 
 	// Resources need to be disconnected.
 	for (KeyValue<StringName, Ref<Texture2D>> &E : theme_icon_override) {
-		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		E.value->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 	for (KeyValue<StringName, Ref<StyleBox>> &E : theme_style_override) {
-		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		E.value->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 	for (KeyValue<StringName, Ref<Font>> &E : theme_font_override) {
-		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		E.value->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	// Then override maps can be simply cleared.

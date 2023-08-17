@@ -101,7 +101,7 @@
 		<method name="_get_system_info" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<description>
-				Returns a [Dictionary] with system informationr elated to this interface.
+				Returns a [Dictionary] with system information related to this interface.
 			</description>
 		</method>
 		<method name="_get_tracking_status" qualifiers="virtual const">

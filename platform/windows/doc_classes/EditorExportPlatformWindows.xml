@@ -22,10 +22,10 @@
 			File description to be presented to users. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>
 		<member name="application/file_version" type="String" setter="" getter="">
-			Version number of the file. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
+			Version number of the file. Falls back to [member ProjectSettings.application/config/version] if left empty. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>
 		<member name="application/icon" type="String" setter="" getter="">
-			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/windows_native_icon], and  then to [member ProjectSettings.application/config/icon].
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/windows_native_icon], and then to [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
@@ -37,7 +37,7 @@
 			Name of the application. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>
 		<member name="application/product_version" type="String" setter="" getter="">
-			Application version visible to the user. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
+			Application version visible to the user. Falls back to [member ProjectSettings.application/config/version] if left empty. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>
 		<member name="application/trademarks" type="String" setter="" getter="">
 			Trademarks and registered trademarks that apply to the file. Optional. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].

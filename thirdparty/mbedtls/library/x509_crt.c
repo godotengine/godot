@@ -1944,16 +1944,19 @@ int mbedtls_x509_parse_subject_alt_name(const mbedtls_x509_buf *san_buf,
     return 0;
 }
 
-#define PRINT_ITEM(i)                           \
-    {                                           \
-        ret = mbedtls_snprintf(p, n, "%s" i, sep);    \
-        MBEDTLS_X509_SAFE_SNPRINTF;                        \
-        sep = ", ";                             \
-    }
+#define PRINT_ITEM(i)                              \
+    do {                                           \
+        ret = mbedtls_snprintf(p, n, "%s" i, sep); \
+        MBEDTLS_X509_SAFE_SNPRINTF;                \
+        sep = ", ";                                \
+    } while (0)
 
-#define CERT_TYPE(type, name)                    \
-    if (ns_cert_type & (type))                 \
-    PRINT_ITEM(name);
+#define CERT_TYPE(type, name)                      \
+    do {                                           \
+        if (ns_cert_type & (type)) {               \
+            PRINT_ITEM(name);                      \
+        }                                          \
+    } while (0)
 
 static int x509_info_cert_type(char **buf, size_t *size,
                                unsigned char ns_cert_type)
@@ -1978,9 +1981,12 @@ static int x509_info_cert_type(char **buf, size_t *size,
     return 0;
 }
 
-#define KEY_USAGE(code, name)    \
-    if (key_usage & (code))    \
-    PRINT_ITEM(name);
+#define KEY_USAGE(code, name)                      \
+    do {                                           \
+        if (key_usage & (code)) {                  \
+            PRINT_ITEM(name);                      \
+        }                                          \
+    } while (0)
 
 static int x509_info_key_usage(char **buf, size_t *size,
                                unsigned int key_usage)

@@ -69,6 +69,12 @@
 				Adds a polygon using the indices of the vertices you get when calling [method get_vertices].
 			</description>
 		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the internal arrays for vertices and polygon indices.
+			</description>
+		</method>
 		<method name="clear_outlines">
 			<return type="void" />
 			<description>

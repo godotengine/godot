@@ -115,7 +115,7 @@ void Texture3DEditor::_texture_rect_update_area() {
 
 void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 	if (!texture.is_null()) {
-		texture->disconnect("changed", callable_mp(this, &Texture3DEditor::_texture_changed));
+		texture->disconnect_changed(callable_mp(this, &Texture3DEditor::_texture_changed));
 	}
 
 	texture = p_texture;
@@ -125,7 +125,7 @@ void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 			_make_shaders();
 		}
 
-		texture->connect("changed", callable_mp(this, &Texture3DEditor::_texture_changed));
+		texture->connect_changed(callable_mp(this, &Texture3DEditor::_texture_changed));
 		queue_redraw();
 		texture_rect->set_material(material);
 		setting = true;
@@ -176,7 +176,7 @@ Texture3DEditor::Texture3DEditor() {
 
 Texture3DEditor::~Texture3DEditor() {
 	if (!texture.is_null()) {
-		texture->disconnect("changed", callable_mp(this, &Texture3DEditor::_texture_changed));
+		texture->disconnect_changed(callable_mp(this, &Texture3DEditor::_texture_changed));
 	}
 }
 

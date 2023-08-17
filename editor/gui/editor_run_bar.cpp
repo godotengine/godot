@@ -348,6 +348,10 @@ bool EditorRunBar::is_movie_maker_enabled() const {
 	return write_movie_button->is_pressed();
 }
 
+HBoxContainer *EditorRunBar::get_buttons_container() {
+	return main_hbox;
+}
+
 void EditorRunBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
@@ -359,7 +363,7 @@ EditorRunBar::EditorRunBar() {
 	main_panel = memnew(PanelContainer);
 	add_child(main_panel);
 
-	HBoxContainer *main_hbox = memnew(HBoxContainer);
+	main_hbox = memnew(HBoxContainer);
 	main_panel->add_child(main_hbox);
 
 	play_button = memnew(Button);
