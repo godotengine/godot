@@ -31,11 +31,6 @@ namespace tvg
 class LoadModule
 {
 public:
-    //default view box, if any.
-    float vx = 0;
-    float vy = 0;
-    float vw = 0;
-    float vh = 0;
     float w = 0, h = 0;                             //default image size
     ColorSpace cs = ColorSpace::Unsupported;        //must be clarified at open()
 
@@ -48,8 +43,12 @@ public:
     //Override this if the vector-format has own resizing policy.
     virtual bool resize(Paint* paint, float w, float h) { return false; }
 
+    virtual bool animatable() { return false; }  //true if this loader supports animation.
+    virtual void sync() {};  //finish immediately if any async update jobs.
+
     virtual bool read() = 0;
     virtual bool close() = 0;
+
     virtual unique_ptr<Surface> bitmap() { return nullptr; }
     virtual unique_ptr<Paint> paint() { return nullptr; }
 };

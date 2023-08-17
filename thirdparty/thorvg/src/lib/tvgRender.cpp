@@ -53,7 +53,7 @@ bool RenderTransform::update()
 
     mathIdentity(&m);
 
-    mathScale(&m, scale);
+    mathScale(&m, scale, scale);
 
     if (!mathZero(degree)) mathRotate(&m, degree);
 
