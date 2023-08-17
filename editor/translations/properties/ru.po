@@ -58,7 +58,7 @@
 # Dima Koshel <form.eater@gmail.com>, 2019.
 # Danil Alexeev <danil@alexeev.xyz>, 2019, 2020, 2021, 2022, 2023.
 # Ravager <al.porkhunov@gmail.com>, 2019.
-# Александр <akonn7@mail.ru>, 2019.
+# Александр <akonn7@mail.ru>, 2019, 2023.
 # Rei <clxgamer12@gmail.com>, 2019.
 # Vitaly <arkology11@gmail.com>, 2019.
 # Andy <8ofproject@gmail.com>, 2020.
@@ -143,13 +143,14 @@
 # Don Miguel <mikhail.bratus@gmail.com>, 2023.
 # Mmaxum <max55926@yandex.ru>, 2023.
 # ZIP2020 <folstagking@gmail.com>, 2023.
+# Daniil Ryakhinov <danik.relien@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-05 13:49+0000\n"
-"Last-Translator: ZIP2020 <folstagking@gmail.com>\n"
+"PO-Revision-Date: 2023-08-15 16:33+0000\n"
+"Last-Translator: Daniil Ryakhinov <danik.relien@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -289,6 +290,9 @@ msgstr "Редактор"
 msgid "Script"
 msgstr "Скрипт"
 
+msgid "Search in File Extensions"
+msgstr "Поиск в расширениях файлов"
+
 msgid "Subwindows"
 msgstr "Под-окна"
 
@@ -352,17 +356,35 @@ msgstr "Сообщение"
 msgid "Rendering"
 msgstr "*Рендеринг*"
 
+msgid "BVH Build Quality"
+msgstr "Качество сборки BVH"
+
 msgid "Memory"
 msgstr "Память"
 
 msgid "Limits"
 msgstr "Ограничения"
 
+msgid "Multithreaded Server"
+msgstr "Многопоточный сервер"
+
 msgid "Internationalization"
 msgstr "Интернационализация"
 
+msgid "Force Right to Left Layout Direction"
+msgstr "Принудительно компоновать справа налево"
+
+msgid "Root Node Layout Direction"
+msgstr "Направление компоновки в корневом узле"
+
 msgid "GUI"
 msgstr "GUI (Графический интерфейс пользователя)"
+
+msgid "Timers"
+msgstr "Таймеры"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "Максимальный интервал инкрементного поиска, мс"
 
 msgid "Common"
 msgstr "Общий"
@@ -376,8 +398,26 @@ msgstr "Динамические шрифты"
 msgid "Use Oversampling"
 msgstr "Использовать передискретизацию"
 
+msgid "Rendering Device"
+msgstr "Устройство рендеринга"
+
+msgid "Block Size (KB)"
+msgstr "Размер блока (КБ)"
+
+msgid "Max Size (MB)"
+msgstr "Максимальный размер (МБ)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "Размер области текстуры Px"
+
+msgid "Pipeline Cache"
+msgstr "Кэш конвеера"
+
 msgid "Vulkan"
 msgstr "Vulkan"
+
+msgid "Max Descriptors per Pool"
+msgstr "Макс. дескрипторов на пул"
 
 msgid "Textures"
 msgstr "Текстуры"
@@ -414,6 +454,9 @@ msgstr "Устройство"
 
 msgid "Pressed"
 msgstr "Нажато"
+
+msgid "Keycode"
+msgstr "Код клавиши"
 
 msgid "Unicode"
 msgstr "Unicode"
@@ -543,6 +586,21 @@ msgstr "Состояние"
 
 msgid "Network"
 msgstr "Сеть"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "Максимальный буфер (Уровень 2)"
+
+msgid "TLS"
+msgstr "TLS"
+
+msgid "Worker Pool"
+msgstr "Рабочий пул"
+
+msgid "Use System Threads for Low Priority Tasks"
+msgstr "Использовать потоки системы для низкоприоритеных задач"
+
+msgid "Low Priority Thread Ratio"
+msgstr "Отношение низкоприоритеных задач"
 
 msgid "Locale"
 msgstr "Локаль"
@@ -694,6 +752,12 @@ msgstr "Язык редактора"
 msgid "Display Scale"
 msgstr "Масштаб отображения"
 
+msgid "Enable Pseudolocalization"
+msgstr "Включить псевдолокализацию"
+
+msgid "Use Embedded Menu"
+msgstr "Использовать встроенное меню"
+
 msgid "Custom Display Scale"
 msgstr "Пользовательский масштаб отображения"
 
@@ -702,6 +766,12 @@ msgstr "Размер основного шрифта"
 
 msgid "Code Font Size"
 msgstr "Размер шрифта кода"
+
+msgid "Code Font Contextual Ligatures"
+msgstr "Лигатуры в шрифте кода"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "Настройки OpenType в шрифте кода"
 
 msgid "Font Hinting"
 msgstr "Хинтинг шрифтов"
@@ -730,6 +800,12 @@ msgstr "Автоматически открывать скриншоты"
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "Навигация по истории дополнительными кнопками мыши"
 
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "Показывать внутренние ошибки во всплывающих уведомлениях"
+
+msgid "Show Low Level OpenType Features"
+msgstr "Показать низкоуровневые возможности OpenType"
+
 msgid "Theme"
 msgstr "Тема"
 
@@ -745,6 +821,9 @@ msgstr "Акцентный цвет"
 msgid "Contrast"
 msgstr "Контраст"
 
+msgid "Draw Extra Borders"
+msgstr "Рисовать дополнительные границы"
+
 msgid "Relationship Line Opacity"
 msgstr "Непрозрачность линий отношений"
 
@@ -759,6 +838,15 @@ msgstr "Дополнительное расстояние"
 
 msgid "Custom Theme"
 msgstr "Пользовательская тема"
+
+msgid "Touchscreen"
+msgstr "Сенсорный экран"
+
+msgid "Enable Long Press as Right Click"
+msgstr "Включить долгие нажатия ПКМ"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "Включить касания щипка и увеличения"
 
 msgid "Show Script Button"
 msgstr "Показать кнопку скрипта"
@@ -820,6 +908,9 @@ msgstr "Цветовая тема"
 msgid "Appearance"
 msgstr "Внешний вид"
 
+msgid "Caret"
+msgstr "Курсор"
+
 msgid "Caret Blink"
 msgstr "Мигающий курсор"
 
@@ -874,8 +965,14 @@ msgstr "Рисовать пробелы"
 msgid "Line Spacing"
 msgstr "Межстрочный интервал"
 
+msgid "Behavior"
+msgstr "Поведение"
+
 msgid "Navigation"
 msgstr "Навигация"
+
+msgid "Move Caret on Right Click"
+msgstr "Смещать курсор по нажатию ПКМ"
 
 msgid "Smooth Scrolling"
 msgstr "Плавная прокрутка"
@@ -1393,6 +1490,9 @@ msgstr "Разделитель"
 msgid "Columns"
 msgstr "Колонки"
 
+msgid "Rows"
+msgstr "Строки"
+
 msgid "Lossy Quality"
 msgstr "Качество с потерями"
 
@@ -1690,6 +1790,15 @@ msgstr "Путь к логу"
 msgid "Driver"
 msgstr "Драйвер"
 
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia отключение многопоточной оптимизации"
+
+msgid "Renderer"
+msgstr "Отрисовщик"
+
+msgid "Rendering Method"
+msgstr "Метод рендеринга"
+
 msgid "DPI"
 msgstr "DPI"
 
@@ -1735,8 +1844,14 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Скрыть индикатор «Домой»"
 
+msgid "Hide Status Bar"
+msgstr "Скрыть строку состояния"
+
 msgid "XR"
 msgstr "XR"
+
+msgid "View Configuration"
+msgstr "Просмотр конфигурации"
 
 msgid "Boot Splash"
 msgstr "Загрузочная заставка"
@@ -1764,6 +1879,9 @@ msgstr "Использовать фильтр"
 
 msgid "Icon"
 msgstr "Иконка"
+
+msgid "Windows Native Icon"
+msgstr "Windows нативная иконка"
 
 msgid "Buffering"
 msgstr "Буферизация"
@@ -1894,6 +2012,9 @@ msgstr "Цвет определения функции"
 msgid "Node Path Color"
 msgstr "Цвет пути узла"
 
+msgid "Max Call Stack"
+msgstr "Максимальный стек вызовов"
+
 msgid "Warnings"
 msgstr "Предупреждения"
 
@@ -1992,6 +2113,9 @@ msgstr "Скелеты"
 
 msgid "Animations"
 msgstr "Анимации"
+
+msgid "Blender"
+msgstr "Blender"
 
 msgid "FBX"
 msgstr "FBX"
@@ -2163,6 +2287,9 @@ msgstr "Отклонять новые соединения"
 
 msgid "Server Relay"
 msgstr "Переключение сервера"
+
+msgid "Fractal"
+msgstr "Фрактал"
 
 msgid "Octaves"
 msgstr "Октавы"

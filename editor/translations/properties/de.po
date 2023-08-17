@@ -100,10 +100,10 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-05 13:49+0000\n"
+"PO-Revision-Date: 2023-07-07 16:32+0000\n"
 "Last-Translator: ‎ <artism90@googlemail.com>\n"
-"Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
-"godot-properties/de/>\n"
+"Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
+"properties/de/>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -710,6 +710,9 @@ msgstr "Auswählbar"
 
 msgid "Checked"
 msgstr "Ausgewählt"
+
+msgid "Draw Warning"
+msgstr "Warnung zeichnen"
 
 msgid "Keying"
 msgstr "Schlüsselwerte erzeugen"
@@ -1616,6 +1619,9 @@ msgstr "Erweitert"
 
 msgid "Precision"
 msgstr "Präzision"
+
+msgid "Primitive"
+msgstr "Primitive"
 
 msgid "Height"
 msgstr "Höhe"
@@ -2697,6 +2703,18 @@ msgstr "Spotlight 40 x 40"
 msgid "Spotlight 80 X 80"
 msgstr "Spotlight 80 x 80"
 
+msgid "Settings 58 X 58"
+msgstr "Einstellungen 58 X 58"
+
+msgid "Settings 87 X 87"
+msgstr "Einstellungen 87 X 87"
+
+msgid "Notification 40 X 40"
+msgstr "Benachrichtigung 40 X 40"
+
+msgid "Notification 60 X 60"
+msgstr "Benachrichtigung 60 X 60"
+
 msgid "Landscape Launch Screens"
 msgstr "Startbildschirm im Landscape-Modus"
 
@@ -2760,6 +2778,9 @@ msgstr "Exportmethode Release"
 msgid "Targeted Device Family"
 msgstr "Zielgeräteklasse"
 
+msgid "Bundle Identifier"
+msgstr "Bundle-Bezeichner"
+
 msgid "Signature"
 msgstr "Signatur"
 
@@ -2769,14 +2790,17 @@ msgstr "Kurzversion"
 msgid "Icon Interpolation"
 msgstr "Symbol-Interpolation"
 
+msgid "Launch Screens Interpolation"
+msgstr "Startbildschirm Interpolation"
+
 msgid "Capabilities"
 msgstr "Fähigkeiten"
 
 msgid "Access Wi-Fi"
-msgstr "Zugriff auf WLan"
+msgstr "Zugriff auf WLAN"
 
 msgid "Push Notifications"
-msgstr "Pushnachrichten"
+msgstr "Push-Benachrichtigungen"
 
 msgid "User Data"
 msgstr "Nutzerdaten"
@@ -2791,13 +2815,22 @@ msgid "Privacy"
 msgstr "Privatsphäre"
 
 msgid "Camera Usage Description"
-msgstr "Kameranutzungsrechtfertigung"
+msgstr "Kamera Nutzungsbeschreibung"
+
+msgid "Camera Usage Description Localized"
+msgstr "Kamera Nutzungsbeschreibung Lokalisierung"
 
 msgid "Microphone Usage Description"
-msgstr "Mikrophonnutzungsrechtfertigung"
+msgstr "Mikrofon Nutzungsbeschreibung"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Mikrofon Nutzungsbeschreibung Lokalisierung"
 
 msgid "Photolibrary Usage Description"
-msgstr "Fotobibliotheknutzungsrechtfertigung"
+msgstr "Fotobibliothek Nutzungsbeschreibung"
+
+msgid "Photolibrary Usage Description Localized"
+msgstr "Fotobibliothek Nutzungsbeschreibung Lokalisierung"
 
 msgid "Storyboard"
 msgstr "Storyboard"
@@ -2823,8 +2856,23 @@ msgstr "Eigene Hintergrundfarbe"
 msgid "Architecture"
 msgstr "Architektur"
 
+msgid "Extra Args SSH"
+msgstr "Zusätzliche Parameter SSH"
+
+msgid "Extra Args SCP"
+msgstr "Zusätzliche Parameter SCP"
+
+msgid "Run Script"
+msgstr "Skript ausführen"
+
+msgid "Cleanup Script"
+msgstr "Skript bereinigen"
+
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Distribution Type"
+msgstr "Verteilungstyp"
 
 msgid "Copyright"
 msgstr "Copyright"
@@ -2832,11 +2880,23 @@ msgstr "Copyright"
 msgid "Copyright Localized"
 msgstr "Copyright-Lokalisierung"
 
+msgid "Min macOS Version"
+msgstr "Mindest-macOS-Version"
+
 msgid "High Res"
 msgstr "Hohe Auflösung"
 
+msgid "SDK Version"
+msgstr "SDK-Version"
+
+msgid "SDK Name"
+msgstr "SDK-Name"
+
+msgid "Xcode Version"
+msgstr "Xcode-Version"
+
 msgid "Codesign"
-msgstr "Codesignierung"
+msgstr "Code-Signierung"
 
 msgid "Apple Team ID"
 msgstr "Apple-Team-ID"
@@ -2887,10 +2947,10 @@ msgid "App Sandbox"
 msgstr "Anwendungssandbox"
 
 msgid "Network Server"
-msgstr "Netwerk-Server"
+msgstr "Netzwerk-Server"
 
 msgid "Network Client"
-msgstr "Netzwerkclient"
+msgstr "Netzwerk-Client"
 
 msgid "Device USB"
 msgstr "USB-Gerät"
@@ -2917,22 +2977,40 @@ msgid "Notarization"
 msgstr "Beglaubigung"
 
 msgid "Apple ID Name"
-msgstr "Apple-Id-Name"
+msgstr "Apple-ID-Name"
 
 msgid "Apple ID Password"
 msgstr "Apple-ID-Password"
 
+msgid "API UUID"
+msgstr "API-UUID"
+
+msgid "API Key"
+msgstr "API-Schlüssel"
+
+msgid "API Key ID"
+msgstr "API-Schlüssel-ID"
+
 msgid "Location Usage Description"
-msgstr "Standortberechtigungsrechtfertigung"
+msgstr "Standort Nutzungsbeschreibung"
+
+msgid "Location Usage Description Localized"
+msgstr "Standort Nutzungsbeschreibung Lokalisierung"
 
 msgid "Address Book Usage Description"
-msgstr "Adressbuchberechtigungsrechtfertigung"
+msgstr "Adressbuch Nutzungsbeschreibung"
+
+msgid "Address Book Usage Description Localized"
+msgstr "Adressbuch Nutzungsbeschreibung Lokalisierung"
 
 msgid "Calendar Usage Description"
-msgstr "Kalenderberechtigungsrechtfertigung"
+msgstr "Kalender Nutzungsbeschreibung"
+
+msgid "Calendar Usage Description Localized"
+msgstr "Kalender Nutzungsbeschreibung Lokalisierung"
 
 msgid "Photos Library Usage Description"
-msgstr "Fotobibliotheksberechtigungsrechtfertigung"
+msgstr "Fotobibliothek Nutzungsbeschreibung"
 
 msgid "Desktop Folder Usage Description"
 msgstr "Desktopordnerberechtigungsrechtfertigung"
@@ -2992,7 +3070,7 @@ msgid "Minor"
 msgstr "Neben"
 
 msgid "Build"
-msgstr "Bauart"
+msgstr "Build"
 
 msgid "Revision"
 msgstr "Revision"
@@ -3042,11 +3120,23 @@ msgstr "HTTP Host"
 msgid "HTTP Port"
 msgstr "HTTP-Port"
 
+msgid "Use TLS"
+msgstr "TLS verwenden"
+
+msgid "TLS Key"
+msgstr "TLS-Schlüssel"
+
+msgid "TLS Certificate"
+msgstr "TLS-Zertifikat"
+
 msgid "Variant"
 msgstr "Variante"
 
+msgid "Extensions Support"
+msgstr "Extensions-Support"
+
 msgid "VRAM Texture Compression"
-msgstr "VRAM Texturkompression"
+msgstr "VRAM-Texturkompression"
 
 msgid "For Desktop"
 msgstr "Für Desktop"
@@ -3068,6 +3158,9 @@ msgstr "Kopfzeileneinfügung"
 
 msgid "Canvas Resize Policy"
 msgstr "Canvasgrößenanpassungsrichtlinie"
+
+msgid "Focus Canvas on Start"
+msgstr "Canvas fokussieren beim Start"
 
 msgid "Experimental Virtual Keyboard"
 msgstr "Experimentelle virtuelle Tastatur"
@@ -3121,7 +3214,7 @@ msgid "File Description"
 msgstr "Dateibeschreibung"
 
 msgid "Trademarks"
-msgstr "Handelsmarken"
+msgstr "Trademarks"
 
 msgid "Frame"
 msgstr "Frame"
@@ -3152,6 +3245,12 @@ msgstr "Raum-Überbrückung"
 
 msgid "Point"
 msgstr "Punkt"
+
+msgid "Point Unit Distance"
+msgstr "Punkt Einheitsabstand"
+
+msgid "Point Center"
+msgstr "Punkt Mitte"
 
 msgid "Direction"
 msgstr "Richtung"
@@ -3189,6 +3288,9 @@ msgstr "Max Distanz"
 msgid "Attenuation"
 msgstr "Abklingung"
 
+msgid "Panning Strength"
+msgstr "Panning-Stärke"
+
 msgid "Bus"
 msgstr "Bus"
 
@@ -3200,6 +3302,12 @@ msgstr "Kopiermodus"
 
 msgid "Anchor Mode"
 msgstr "Anker Modus"
+
+msgid "Ignore Rotation"
+msgstr "Rotation ignorieren"
+
+msgid "Process Callback"
+msgstr "Process Callback"
 
 msgid "Left"
 msgstr "Links"
@@ -3216,20 +3324,41 @@ msgstr "Unten"
 msgid "Smoothed"
 msgstr "Geglättet"
 
+msgid "Position Smoothing"
+msgstr "Positionsglättung"
+
+msgid "Rotation Smoothing"
+msgstr "Rotationsglättung"
+
 msgid "Horizontal Enabled"
 msgstr "Horizontal aktiviert"
 
 msgid "Vertical Enabled"
 msgstr "Vertikal Aktiviert"
 
+msgid "Horizontal Offset"
+msgstr "Horizontaler Versatz"
+
+msgid "Vertical Offset"
+msgstr "Vertikaler Versatz"
+
+msgid "Left Margin"
+msgstr "Linker Rand"
+
 msgid "Top Margin"
-msgstr "Obere Begrenzung"
+msgstr "Oberer Rand"
+
+msgid "Right Margin"
+msgstr "Rechter Rand"
+
+msgid "Bottom Margin"
+msgstr "Unterer Rand"
 
 msgid "Draw Screen"
 msgstr "Bildschirm zeichnen"
 
 msgid "Draw Limits"
-msgstr "Render-Limitierungen"
+msgstr "Begrenzungen zeichnen"
 
 msgid "Draw Drag Margin"
 msgstr "Ziehbegrenzungen zeichnen"
@@ -3237,8 +3366,17 @@ msgstr "Ziehbegrenzungen zeichnen"
 msgid "Tweaks"
 msgstr "Kniffe"
 
+msgid "Fit Margin"
+msgstr "Rand einpassen"
+
+msgid "Clear Margin"
+msgstr "Rand entfernen"
+
 msgid "Use Mipmaps"
 msgstr "Mipmaps verwenden"
+
+msgid "Disable Mode"
+msgstr "Inaktivmodus"
 
 msgid "Input"
 msgstr "Eingabe"
@@ -3318,6 +3456,9 @@ msgstr "Normalen"
 msgid "Colors"
 msgstr "Farben"
 
+msgid "Particle Flags"
+msgstr "Partikel-Flags"
+
 msgid "Align Y"
 msgstr "Y Ausrichten"
 
@@ -3327,6 +3468,12 @@ msgstr "Streuung"
 msgid "Initial Velocity"
 msgstr "Anfängliche Geschwindigkeit"
 
+msgid "Velocity Min"
+msgstr "Geschwindigkeit Min"
+
+msgid "Velocity Max"
+msgstr "Geschwindigkeit Max"
+
 msgid "Velocity Curve"
 msgstr "Geschwindigkeitskurve"
 
@@ -3335,6 +3482,12 @@ msgstr "Orbitgeschwindigkeit"
 
 msgid "Linear Accel"
 msgstr "Lineare Beschleunigung"
+
+msgid "Accel Min"
+msgstr "Beschleunigung Min"
+
+msgid "Accel Max"
+msgstr "Beschleunigung Max"
 
 msgid "Accel Curve"
 msgstr "Beschleunigungskurve"
@@ -3347,6 +3500,12 @@ msgstr "Tangentiale Beschleunigung"
 
 msgid "Damping"
 msgstr "Dämpfung"
+
+msgid "Damping Min"
+msgstr "Dämpfung Min"
+
+msgid "Damping Max"
+msgstr "Dämpfung Max"
 
 msgid "Damping Curve"
 msgstr "Dämpfungskurve"
@@ -3384,8 +3543,23 @@ msgstr "Versatzkurve"
 msgid "Process Material"
 msgstr "Materialverarbeitung"
 
+msgid "Interpolate"
+msgstr "Interpolieren"
+
+msgid "Base Size"
+msgstr "Basisgröße"
+
 msgid "Visibility Rect"
 msgstr "Sichtbarkeitsrechteck"
+
+msgid "Trails"
+msgstr "Spuren"
+
+msgid "Sections"
+msgstr "Abschnitte"
+
+msgid "Section Subdivisions"
+msgstr "Abschnitt Unterbereiche"
 
 msgid "Node A"
 msgstr "Node A"
@@ -3415,7 +3589,7 @@ msgid "Stiffness"
 msgstr "Steifheit"
 
 msgid "Editor Only"
-msgstr "Ausschließlich Editor"
+msgstr "Editor-exklusiv"
 
 msgid "Energy"
 msgstr "Energie"
@@ -3453,8 +3627,11 @@ msgstr "Geschlossen"
 msgid "Cull Mode"
 msgstr "Aushöhlungsmodus"
 
+msgid "SDF Collision"
+msgstr "SDF-Kollision"
+
 msgid "Occluder Light Mask"
-msgstr "Verdecker Lichtblende"
+msgstr "Verdecker Lichtmaske"
 
 msgid "Width Curve"
 msgstr "Breitenkurve"
@@ -3516,17 +3693,35 @@ msgstr "Max Pfad-Distanz"
 msgid "Navigation Layers"
 msgstr "Navigationsebenen"
 
+msgid "Pathfinding Algorithm"
+msgstr "Pathfinding-Algorithmus"
+
+msgid "Path Postprocessing"
+msgstr "Pfad-Postprocessing"
+
+msgid "Path Metadata Flags"
+msgstr "Pfad-Metadaten Flags"
+
 msgid "Avoidance"
-msgstr "Vermeiden"
+msgstr "Vermeidung"
 
 msgid "Avoidance Enabled"
-msgstr "Vermeiden aktiviert"
+msgstr "Vermeidung aktiviert"
 
 msgid "Max Neighbors"
 msgstr "Maximale Nachbarn"
 
 msgid "Max Speed"
 msgstr "Max Geschw"
+
+msgid "Avoidance Layers"
+msgstr "Vermeidungsebenen"
+
+msgid "Avoidance Mask"
+msgstr "Vermeidungsmaske"
+
+msgid "Avoidance Priority"
+msgstr "Vermeidungspriorität"
 
 msgid "Path Custom Point Size"
 msgstr "Pfad Benutzerdefinierte Punktgröße"
@@ -4052,6 +4247,9 @@ msgstr "Lichtdaten"
 
 msgid "Surface Material Override"
 msgstr "Oberflächen-Material-Überschreibung"
+
+msgid "Use 3D Avoidance"
+msgstr "3D-Vermeidung verwenden"
 
 msgid "Top Level"
 msgstr "Top-Level"
@@ -6250,7 +6448,7 @@ msgid "Shape RID"
 msgstr "Form RID"
 
 msgid "Default Gravity"
-msgstr "Standard-Gravitation"
+msgstr "Standardgravitation"
 
 msgid "Default Gravity Vector"
 msgstr "Standardgravitationsvektor"

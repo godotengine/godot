@@ -46,13 +46,14 @@
 # EngageIndo <engageindo@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
 # Septian Ganendra Savero Kurniawan <septgsk@outlook.com>, 2023.
+# GID <ghavind12345@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-08 10:53+0000\n"
-"Last-Translator: Septian Ganendra Savero Kurniawan <septgsk@outlook.com>\n"
+"PO-Revision-Date: 2023-07-08 13:52+0000\n"
+"Last-Translator: GID <ghavind12345@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/id/>\n"
 "Language: id\n"
@@ -60,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Application"
 msgstr "Aplikasi"
@@ -546,7 +547,7 @@ msgid "Region"
 msgstr "Wilayah"
 
 msgid "Offset"
-msgstr "Offset"
+msgstr "Pengimbangan"
 
 msgid "Cell Size"
 msgstr "Ukuran Sel"
@@ -1421,6 +1422,9 @@ msgstr "Lapisan Onion Warna Lampau"
 msgid "Onion Layers Future Color"
 msgstr "Lapisan Onion Warna Masa Depan"
 
+msgid "Shader Editor"
+msgstr "Editor Shader"
+
 msgid "Visual Editors"
 msgstr "Editor Visual"
 
@@ -1476,7 +1480,7 @@ msgid "Editor TLS Certificates"
 msgstr "Sertifikat Editor TLS"
 
 msgid "Debugger"
-msgstr "Pengawakutu"
+msgstr "Pendebug"
 
 msgid "Auto Switch to Remote Scene Tree"
 msgstr "Beralih Otomatis Ke Pohon Adegan Remot"
@@ -7817,11 +7821,17 @@ msgstr "Node"
 msgid "Source"
 msgstr "Sumber"
 
+msgid "Tonemap"
+msgstr "Tonemap"
+
 msgid "SSAO"
 msgstr "SSAO"
 
 msgid "SSIL"
 msgstr "SSIL"
+
+msgid "Glow"
+msgstr "Bersinar"
 
 msgid "2"
 msgstr "2"
@@ -7981,6 +7991,9 @@ msgstr "Refleksi"
 
 msgid "Texture Array Reflections"
 msgstr "Refleksi Tekstur Array"
+
+msgid "GI"
+msgstr "GI"
 
 msgid "Overrides"
 msgstr "Menimpa"
