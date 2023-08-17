@@ -49,6 +49,9 @@
 EditorInterface *EditorInterface::singleton = nullptr;
 
 void EditorInterface::restart_editor(bool p_save) {
+	if (!EditorNode::get_singleton()) {
+		return;
+	}
 	if (p_save) {
 		EditorNode::get_singleton()->save_all_scenes();
 	}
