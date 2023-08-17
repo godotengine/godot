@@ -474,7 +474,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_accent_color = Color(0.18, 0.50, 1.00);
 		preset_base_color = Color(0.9, 0.9, 0.9);
 		// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
-		preset_contrast = -0.08;
+		preset_contrast = -0.06;
 	} else if (preset == "Solarized (Dark)") {
 		preset_accent_color = Color(0.15, 0.55, 0.82);
 		preset_base_color = Color(0.04, 0.23, 0.27);
@@ -483,7 +483,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_accent_color = Color(0.15, 0.55, 0.82);
 		preset_base_color = Color(0.89, 0.86, 0.79);
 		// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
-		preset_contrast = -0.08;
+		preset_contrast = -0.06;
 	} else if (preset == "Black (OLED)") {
 		preset_accent_color = Color(0.45, 0.75, 1.0);
 		preset_base_color = Color(0, 0, 0);
