@@ -258,6 +258,10 @@ class Curve3D : public Resource {
 	};
 
 	Vector<Point> points;
+#ifdef TOOLS_ENABLED
+	// For Path3DGizmo.
+	mutable Vector<size_t> points_in_cache;
+#endif
 
 	mutable bool baked_cache_dirty = false;
 	mutable PackedVector3Array baked_point_cache;
@@ -280,6 +284,7 @@ class Curve3D : public Resource {
 	Vector3 _sample_baked(Interval p_interval, bool p_cubic) const;
 	real_t _sample_baked_tilt(Interval p_interval) const;
 	Basis _sample_posture(Interval p_interval, bool p_apply_tilt = false) const;
+	Basis _compose_posture(int p_index) const;
 
 	real_t bake_interval = 0.2;
 	bool up_vector_enabled = true;
@@ -302,6 +307,11 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
+	// For Path3DGizmo.
+	Basis get_point_baked_posture(int p_index, bool p_apply_tilt = false) const;
+#endif
+
 	int get_point_count() const;
 	void set_point_count(int p_count);
 	void add_point(const Vector3 &p_position, const Vector3 &p_in = Vector3(), const Vector3 &p_out = Vector3(), int p_atpos = -1);
