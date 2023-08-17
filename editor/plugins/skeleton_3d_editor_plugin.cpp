@@ -52,10 +52,8 @@
 #include "scene/scene_string_names.h"
 
 void BoneTransformEditor::create_editors() {
-	const Color section_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
-
 	section = memnew(EditorInspectorSection);
-	section->setup("trf_properties", label, this, section_color, true);
+	section->setup("trf_properties", label, this, Color(0.0f, 0.0f, 0.0f), true);
 	section->unfold();
 	add_child(section);
 
@@ -94,7 +92,7 @@ void BoneTransformEditor::create_editors() {
 
 	// Transform/Matrix section.
 	rest_section = memnew(EditorInspectorSection);
-	rest_section->setup("trf_properties_transform", "Rest", this, section_color, true);
+	rest_section->setup("trf_properties_transform", "Rest", this, Color(0.0f, 0.0f, 0.0f), true);
 	section->get_vbox()->add_child(rest_section);
 
 	// Transform/Matrix property.
@@ -107,8 +105,10 @@ void BoneTransformEditor::create_editors() {
 
 void BoneTransformEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			create_editors();
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color section_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
+			section->set_bg_color(section_color);
+			rest_section->set_bg_color(section_color);
 		} break;
 	}
 }
@@ -128,6 +128,7 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 
 BoneTransformEditor::BoneTransformEditor(Skeleton3D *p_skeleton) :
 		skeleton(p_skeleton) {
+	create_editors();
 }
 
 void BoneTransformEditor::set_keyable(const bool p_keyable) {
