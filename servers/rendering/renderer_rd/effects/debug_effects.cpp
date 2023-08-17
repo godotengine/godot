@@ -51,6 +51,17 @@ DebugEffects::DebugEffects() {
 		raster_state.wireframe = true;
 		shadow_frustum.pipelines[SFP_WIREFRAME].setup(shadow_frustum.shader.version_get_shader(shadow_frustum.shader_version, 0), RD::RENDER_PRIMITIVE_LINES, raster_state, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 	}
+
+	{
+		// Motion Vectors debug shader.
+		Vector<String> modes;
+		modes.push_back("");
+
+		motion_vectors.shader.initialize(modes);
+		motion_vectors.shader_version = motion_vectors.shader.version_create();
+
+		motion_vectors.pipeline.setup(motion_vectors.shader.version_get_shader(motion_vectors.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_blend(), 0);
+	}
 }
 
 void DebugEffects::_create_frustum_arrays() {
@@ -163,6 +174,8 @@ DebugEffects::~DebugEffects() {
 	if (frustum.lines_buffer.is_valid()) {
 		RD::get_singleton()->free(frustum.lines_buffer); // Array gets freed as dependency.
 	}
+
+	motion_vectors.shader.version_free(motion_vectors.shader_version);
 }
 
 void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect) {
@@ -325,4 +338,27 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 			RD::get_singleton()->draw_list_end();
 		}
 	}
+}
+
+void DebugEffects::draw_motion_vectors(RID p_velocity, RID p_dest_fb, Size2i p_velocity_size) {
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RD::Uniform u_source_velocity(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_velocity }));
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, motion_vectors.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_fb), false, RD::get_singleton()->draw_list_get_current_pass()));
+
+	motion_vectors.push_constant.velocity_resolution[0] = p_velocity_size.width;
+	motion_vectors.push_constant.velocity_resolution[1] = p_velocity_size.height;
+
+	RID shader = motion_vectors.shader.version_get_shader(motion_vectors.shader_version, 0);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_velocity), 0);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &motion_vectors.push_constant, sizeof(MotionVectorsPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
+	RD::get_singleton()->draw_list_end();
 }
