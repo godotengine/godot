@@ -1250,28 +1250,28 @@ void ConnectionsDock::update_tree() {
 		String doc_class_name;
 		Ref<Texture2D> class_icon;
 		List<MethodInfo> class_signals;
-		const DocData::ClassDoc *class_doc = nullptr;
 
 		if (script_base.is_valid()) {
-			// Try script global name.
 			class_name = script_base->get_global_name();
-			if (!class_name.is_empty()) {
-				HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(class_name);
-				if (F) {
-					class_doc = &F->value;
-					doc_class_name = class_name;
-				}
-			}
-
-			// Try script path.
 			if (class_name.is_empty()) {
 				class_name = script_base->get_path().get_file();
 			}
-			if (!class_doc) {
+
+			doc_class_name = script_base->get_global_name();
+			if (doc_class_name.is_empty()) {
 				doc_class_name = script_base->get_path().trim_prefix("res://").quote();
+			}
+
+			// For a script class, the cache is filled each time.
+			if (!doc_class_name.is_empty()) {
+				if (descr_cache.has(doc_class_name)) {
+					descr_cache[doc_class_name].clear();
+				}
 				HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(doc_class_name);
 				if (F) {
-					class_doc = &F->value;
+					for (int i = 0; i < F->value.signals.size(); i++) {
+						descr_cache[doc_class_name][F->value.signals[i].name] = F->value.signals[i].description;
+					}
 				}
 			}
 
@@ -1301,18 +1301,23 @@ void ConnectionsDock::update_tree() {
 			script_base = base;
 		} else {
 			class_name = native_base;
+			doc_class_name = class_name;
+
+			// For a native class, the cache is filled once.
+			if (!descr_cache.has(doc_class_name)) {
+				HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(doc_class_name);
+				if (F) {
+					for (int i = 0; i < F->value.signals.size(); i++) {
+						descr_cache[doc_class_name][F->value.signals[i].name] = DTR(F->value.signals[i].description);
+					}
+				}
+			}
 
 			if (has_theme_icon(native_base, SNAME("EditorIcons"))) {
 				class_icon = get_theme_icon(native_base, SNAME("EditorIcons"));
 			}
 
 			ClassDB::get_signal_list(native_base, &class_signals, true);
-
-			HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(class_name);
-			if (F) {
-				class_doc = &F->value;
-				doc_class_name = class_name;
-			}
 
 			native_base = ClassDB::get_parent_class(native_base);
 		}
@@ -1361,27 +1366,13 @@ void ConnectionsDock::update_tree() {
 			// Set tooltip with the signal's documentation.
 			{
 				String descr;
-				bool found = false;
 
 				HashMap<StringName, HashMap<StringName, String>>::ConstIterator G = descr_cache.find(doc_class_name);
 				if (G) {
 					HashMap<StringName, String>::ConstIterator F = G->value.find(signal_name);
 					if (F) {
-						found = true;
 						descr = F->value;
 					}
-				}
-
-				if (!found) {
-					if (class_doc) {
-						for (int i = 0; i < class_doc->signals.size(); i++) {
-							if (class_doc->signals[i].name == signal_name.operator String()) {
-								descr = DTR(class_doc->signals[i].description);
-								break;
-							}
-						}
-					}
-					descr_cache[doc_class_name][signal_name] = descr;
 				}
 
 				// "::" separators used in make_custom_tooltip for formatting.
