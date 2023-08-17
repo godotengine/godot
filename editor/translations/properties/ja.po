@@ -49,13 +49,14 @@
 # T K <kidaaam@gmail.com>, 2022, 2023.
 # Usamiki <amarantus0499@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
+# mieotoha <a7b8i06c49@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-24 19:51+0000\n"
-"Last-Translator: Septian Kurniawan <septgsk@outlook.com>\n"
+"PO-Revision-Date: 2023-07-31 18:39+0000\n"
+"Last-Translator: mieotoha <a7b8i06c49@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -63,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Application"
 msgstr "アプリケーション"
@@ -1401,7 +1402,7 @@ msgid "MSDF Pixel Range"
 msgstr "MSDF ピクセル範囲"
 
 msgid "Hinting"
-msgstr "ヒンティング"
+msgstr "微調整"
 
 msgid "Subpixel Positioning"
 msgstr "サブピクセルの配置"
@@ -1992,7 +1993,7 @@ msgid "Parent"
 msgstr "親"
 
 msgid "Skin"
-msgstr "スキン"
+msgstr "皮膚"
 
 msgid "Light"
 msgstr "ライト"
@@ -2242,6 +2243,9 @@ msgstr "コード署名"
 
 msgid "Identity"
 msgstr "識別子"
+
+msgid "Provisioning Profile"
+msgstr "プロビジョニングプロファイル"
 
 msgid "Location"
 msgstr "位置"
@@ -3125,6 +3129,9 @@ msgstr "ローパス"
 msgid "Pre Gain"
 msgstr "プリゲイン"
 
+msgid "Drive"
+msgstr "ドライブ"
+
 msgid "Post Gain"
 msgstr "ポストゲイン"
 
@@ -3202,6 +3209,9 @@ msgstr "頂点シェーディングを強制"
 
 msgid "Depth Prepass"
 msgstr "深度プレパス"
+
+msgid "Decals"
+msgstr "アップリケ"
 
 msgid "Shaders"
 msgstr "シェーダー"

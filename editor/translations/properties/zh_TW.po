@@ -44,7 +44,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-01 13:08+0000\n"
+"PO-Revision-Date: 2023-07-08 13:52+0000\n"
 "Last-Translator: 鄭惟中 <biglionlion06@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hant/>\n"
@@ -2130,6 +2130,9 @@ msgstr "憑證"
 
 msgid "Splash Screen"
 msgstr "啟動畫面"
+
+msgid "Tiles"
+msgstr "圖塊"
 
 msgid "Web"
 msgstr "Web"
