@@ -46,6 +46,7 @@ _complete_godot_options() {
 --remote-fs
 --remote-fs-password
 --audio-driver
+--audio-output-latency
 --display-driver
 --rendering-method
 --rendering-driver

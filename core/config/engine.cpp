@@ -74,6 +74,14 @@ int Engine::get_max_fps() const {
 	return _max_fps;
 }
 
+void Engine::set_audio_output_latency(int p_msec) {
+	_audio_output_latency = p_msec > 1 ? p_msec : 1;
+}
+
+int Engine::get_audio_output_latency() const {
+	return _audio_output_latency;
+}
+
 uint64_t Engine::get_frames_drawn() {
 	return frames_drawn;
 }

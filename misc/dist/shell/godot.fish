@@ -59,6 +59,7 @@ complete -c godot -l render-thread -d "Set the render thread mode" -x -a "unsafe
 complete -c godot -l remote-fs -d "Use a remote filesystem (<host/IP>[:<port>] address)" -x
 complete -c godot -l remote-fs-password -d "Password for remote filesystem" -x
 complete -c godot -l audio-driver -d "Set the audio driver" -x
+complete -c godot -l audio-output-latency -d "Override audio output latency in milliseconds (default is 15 ms)" -x
 complete -c godot -l display-driver -d "Set the display driver" -x
 complete -c godot -l rendering-method -d "Set the renderer" -x -a "(godot_rendering_method_args)"
 complete -c godot -l rendering-driver -d "Set the rendering driver" -x -a "(godot_rendering_driver_args)"
