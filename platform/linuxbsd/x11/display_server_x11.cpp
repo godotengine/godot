@@ -2112,9 +2112,10 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 bool DisplayServerX11::_window_minimize_check(WindowID p_window) const {
 	const WindowData &wd = windows[p_window];
 
-	// Using ICCCM -- Inter-Client Communication Conventions Manual
-	Atom property = XInternAtom(x11_display, "WM_STATE", True);
-	if (property == None) {
+	// Using EWMH instead of ICCCM, might work better for Wayland users.
+	Atom property = XInternAtom(x11_display, "_NET_WM_STATE", True);
+	Atom hidden = XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", True);
+	if (property == None || hidden == None) {
 		return false;
 	}
 
@@ -2122,7 +2123,7 @@ bool DisplayServerX11::_window_minimize_check(WindowID p_window) const {
 	int format;
 	unsigned long len;
 	unsigned long remaining;
-	unsigned char *data = nullptr;
+	Atom *atoms = nullptr;
 
 	int result = XGetWindowProperty(
 			x11_display,
@@ -2131,20 +2132,21 @@ bool DisplayServerX11::_window_minimize_check(WindowID p_window) const {
 			0,
 			32,
 			False,
-			AnyPropertyType,
+			XA_ATOM,
 			&type,
 			&format,
 			&len,
 			&remaining,
-			&data);
+			(unsigned char **)&atoms);
 
-	if (result == Success && data) {
-		long *state = (long *)data;
-		if (state[0] == WM_IconicState) {
-			XFree(data);
-			return true;
+	if (result == Success && atoms) {
+		for (unsigned int i = 0; i < len; i++) {
+			if (atoms[i] == hidden) {
+				XFree(atoms);
+				return true;
+			}
 		}
-		XFree(data);
+		XFree(atoms);
 	}
 
 	return false;
