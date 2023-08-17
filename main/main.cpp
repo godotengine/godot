@@ -210,6 +210,7 @@ static bool debug_paths = false;
 static bool debug_navigation = false;
 static bool debug_avoidance = false;
 #endif
+static int max_fps = -1;
 static int frame_delay = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
@@ -468,7 +469,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --debug-avoidance                 Show navigation avoidance debug visuals when running the scene.\n");
 	OS::get_singleton()->print("  --debug-stringnames               Print all StringName allocations to stdout when the engine quits.\n");
 #endif
-	OS::get_singleton()->print("  --frame-delay <ms>                Simulate high CPU load (delay each frame by <ms> milliseconds).\n");
+	OS::get_singleton()->print("  --max-fps <fps>                   Set a maximum number of frames per second rendered (can be used to limit power usage). A value of 0 results in unlimited framerate.\n");
+	OS::get_singleton()->print("  --frame-delay <ms>                Simulate high CPU load (delay each frame by <ms> milliseconds). Do not use as a FPS limiter; use --max-fps instead.\n");
 	OS::get_singleton()->print("  --time-scale <scale>              Force time scale (higher values are faster, 1.0 is normal speed).\n");
 	OS::get_singleton()->print("  --disable-vsync                   Forces disabling of vertical synchronization, even if enabled in the project settings. Does not override driver-level V-Sync enforcement.\n");
 	OS::get_singleton()->print("  --disable-render-loop             Disable render loop so rendering only occurs when called explicitly from script.\n");
@@ -1350,6 +1352,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
+		} else if (I->get() == "--max-fps") { // set maximum rendered FPS
+
+			if (I->next()) {
+				max_fps = I->next()->get().to_int();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing maximum FPS argument, aborting.\n");
+				goto error;
+			}
+
 		} else if (I->get() == "--frame-delay") { // force frame delay
 
 			if (I->next()) {
@@ -1986,6 +1998,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	OS::get_singleton()->set_environment("MVK_CONFIG_LOG_LEVEL", OS::get_singleton()->_verbose_stdout ? "3" : "1"); // 1 = Errors only, 3 = Info
 #endif
+
+	if (max_fps >= 0) {
+		Engine::get_singleton()->set_max_fps(max_fps);
+	}
 
 	if (frame_delay == 0) {
 		frame_delay = GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/frame_delay_msec", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), 0);

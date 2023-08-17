@@ -348,6 +348,7 @@
 			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
 			If [member display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
 			See also [member physics/common/physics_ticks_per_second].
+			This setting can be overridden using the [code]--max-fps &lt;fps;&gt;[/code] command line argument (including with a value of [code]0[/code] for unlimited framerate).
 			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.max_fps] instead.
 		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">

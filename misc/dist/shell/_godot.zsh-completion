@@ -69,6 +69,7 @@ _arguments \
   '--debug-collisions[show collision shapes when running the scene]' \
   '--debug-navigation[show navigation polygons when running the scene]' \
   '--debug-stringnames[print all StringName allocations to stdout when the engine quits]' \
+  '--frame-delay[set a maximum number of frames per second rendered (can be used to limit power usage), a value of 0 results in unlimited framerate]:maximum frames per seocnd' \
   '--frame-delay[simulate high CPU load (delay each frame by the given number of milliseconds)]:number of milliseconds' \
   '--time-scale[force time scale (higher values are faster, 1.0 is normal speed)]:time scale' \
   '--disable-vsync[disable vertical synchronization even if enabled in the project settings]' \

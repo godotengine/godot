@@ -72,6 +72,7 @@ _complete_godot_options() {
 --debug-collisions
 --debug-navigation
 --debug-stringnames
+--max-fps
 --frame-delay
 --time-scale
 --disable-vsync
