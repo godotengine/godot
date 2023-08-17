@@ -4094,7 +4094,7 @@ TypedArray<Vector2i> TileMap::get_used_cells(int p_layer) const {
 }
 
 TypedArray<Vector2i> TileMap::get_used_cells_by_id(int p_layer, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) const {
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, TypedArray<Vector2i>(), get_used_cells_by_id);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, TypedArray<Vector2i>(), get_used_cells_by_id, p_source_id, p_atlas_coords, p_alternative_tile);
 }
 
 Rect2i TileMap::get_used_rect() const {
