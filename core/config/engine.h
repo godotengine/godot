@@ -49,6 +49,13 @@ public:
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
 	};
 
+	enum MaxFPSMode {
+		MAX_FPS_MODE_UNLIMITED,
+		MAX_FPS_MODE_AUTOMATIC,
+		MAX_FPS_MODE_AUTOMATIC_VRR,
+		MAX_FPS_MODE_CUSTOM,
+	};
+
 private:
 	friend class Main;
 
@@ -60,7 +67,10 @@ private:
 	int ips = 60;
 	double physics_jitter_fix = 0.5;
 	double _fps = 1;
+	int _automatic_max_fps = 0;
+	int _automatic_max_fps_vrr = 0;
 	int _max_fps = 0;
+	MaxFPSMode max_fps_mode = MAX_FPS_MODE_AUTOMATIC;
 	double _time_scale = 1.0;
 	uint64_t _physics_frames = 0;
 	int max_physics_steps_per_frame = 8;
@@ -96,8 +106,19 @@ public:
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
 
-	virtual void set_max_fps(int p_fps);
-	virtual int get_max_fps() const;
+	virtual void set_max_fps_mode(MaxFPSMode p_mode);
+	virtual MaxFPSMode get_max_fps_mode() const;
+
+	virtual void set_max_fps_custom(int p_fps);
+	virtual int get_max_fps_custom() const;
+
+	// Not exposed to scripting, as this is set by the engine on startup only.
+	virtual void set_automatic_max_fps(int p_fps);
+
+	// Not exposed to scripting, as this is set by the engine on startup only.
+	virtual void set_automatic_max_fps_vrr(int p_fps);
+
+	virtual int get_effective_max_fps() const;
 
 	virtual double get_frames_per_second() const { return _fps; }
 
@@ -163,5 +184,7 @@ public:
 	Engine();
 	virtual ~Engine() {}
 };
+
+VARIANT_ENUM_CAST(Engine::MaxFPSMode);
 
 #endif // ENGINE_H

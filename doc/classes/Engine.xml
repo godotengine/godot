@@ -56,6 +56,12 @@
 				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]silver_sponsors[/code], [code]bronze_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
 			</description>
 		</method>
+		<method name="get_effective_max_fps" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the effective maximum number of frames per second that can be rendered. This is different from [member max_fps_custom] as it takes the current [member max_fps_mode] into account.
+			</description>
+		</method>
 		<method name="get_frames_drawn">
 			<return type="int" />
 			<description>
@@ -281,13 +287,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="max_fps" type="int" setter="set_max_fps" getter="get_max_fps" default="0">
+		<member name="max_fps_custom" type="int" setter="set_max_fps_custom" getter="get_max_fps_custom" default="0">
 			The maximum number of frames per second that can be rendered. A value of [code]0[/code] means "no limit". The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project logic and rendering.
 			Limiting the FPS can be useful to reduce system power consumption, which reduces heat and noise emissions (and improves battery life on mobile devices).
 			If [member ProjectSettings.display/window/vsync/vsync_mode] is [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
 			If [member ProjectSettings.display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
 			If [member ProjectSettings.display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
-			See also [member physics_ticks_per_second] and [member ProjectSettings.application/run/max_fps].
+			See also [member physics_ticks_per_second] and [member ProjectSettings.application/run/max_fps_custom].
+			[b]Note:[/b] This value is ignored if [member max_fps_mode] is not [constant MAX_FPS_MODE_CUSTOM].
+		</member>
+		<member name="max_fps_mode" type="int" setter="set_max_fps_mode" getter="get_max_fps_mode" enum="Engine.MaxFPSMode" default="1">
+			The FPS limit mode to use. See [enum MaxFPSMode] descriptions for details.
 		</member>
 		<member name="max_physics_steps_per_frame" type="int" setter="set_max_physics_steps_per_frame" getter="get_max_physics_steps_per_frame" default="8">
 			Controls the maximum number of physics steps that can be simulated each rendered frame. The default value is tuned to avoid "spiral of death" situations where expensive physics simulations trigger more expensive simulations indefinitely. However, the game will appear to slow down if the rendering FPS is less than [code]1 / max_physics_steps_per_frame[/code] of [member physics_ticks_per_second]. This occurs even if [code]delta[/code] is consistently used in physics calculations. To avoid this, increase [member max_physics_steps_per_frame] if you have increased [member physics_ticks_per_second] significantly above its default value.
@@ -297,7 +307,7 @@
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics_jitter_fix] to [code]0[/code].
 		</member>
 		<member name="physics_ticks_per_second" type="int" setter="set_physics_ticks_per_second" getter="get_physics_ticks_per_second" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. This value should generally always be set to [code]60[/code] or above, as Godot doesn't interpolate the physics step. As a result, values lower than [code]60[/code] will look stuttery. This value can be increased to make input more reactive or work around collision tunneling issues, but keep in mind doing so will increase CPU usage. See also [member max_fps] and [member ProjectSettings.physics/common/physics_ticks_per_second].
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. This value should generally always be set to [code]60[/code] or above, as Godot doesn't interpolate the physics step. As a result, values lower than [code]60[/code] will look stuttery. This value can be increased to make input more reactive or work around collision tunneling issues, but keep in mind doing so will increase CPU usage. See also [member max_fps_custom] and [member ProjectSettings.physics/common/physics_ticks_per_second].
 			[b]Note:[/b] Only [member max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member max_physics_steps_per_frame] if increasing [member physics_ticks_per_second] significantly above its default value.
 		</member>
 		<member name="print_error_messages" type="bool" setter="set_print_error_messages" getter="is_printing_error_messages" default="true">
@@ -309,4 +319,18 @@
 			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed. This also affects [Timer] and [SceneTreeTimer] (see [method SceneTree.create_timer] for how to control this).
 		</member>
 	</members>
+	<constants>
+		<constant name="MAX_FPS_MODE_UNLIMITED" value="0" enum="MaxFPSMode">
+			Do not limit the number of frames per second that can be rendered. This leads to the lowest input lag in CPU-bound scenarios, but can increase input lag in GPU-bound scenarios due to render pipeline stalls. Unlimited framerate also results in the highest system power consumption.
+		</constant>
+		<constant name="MAX_FPS_MODE_AUTOMATIC" value="1" enum="MaxFPSMode">
+			Limit the number of rendered frames per second to [code]highest_display_refresh_rate + 1[/code]. This is done to handle multi-monitor setups with different refresh rates while reducing tearing when V-Sync is disabled.
+		</constant>
+		<constant name="MAX_FPS_MODE_AUTOMATIC_VRR" value="2" enum="MaxFPSMode">
+			Limit the number of rendered frames per second to a value slightly lower than the fastest display's maximum refresh rate. The formula used is [code]highest_display_refresh_rate - (int(highest_display_refresh_rate / 60.0) + 1)[/code]. This mode allows [url=https://blurbusters.com/howto-low-lag-vsync-on/]reducing input lag while avoiding tearing[/url] when variable refresh rate is enabled. This mode should only be used when the V-Sync mode is [b]Enabled[/b] and VRR (G-Sync/FreeSync) is enabled by the user.
+		</constant>
+		<constant name="MAX_FPS_MODE_CUSTOM" value="3" enum="MaxFPSMode">
+			Limit the number of rendered frames per second to the value set in [member max_fps_custom].
+		</constant>
+	</constants>
 </class>

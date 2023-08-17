@@ -66,12 +66,42 @@ double Engine::get_physics_jitter_fix() const {
 	return physics_jitter_fix;
 }
 
-void Engine::set_max_fps(int p_fps) {
+void Engine::set_max_fps_mode(MaxFPSMode p_mode) {
+	max_fps_mode = p_mode;
+}
+
+Engine::MaxFPSMode Engine::get_max_fps_mode() const {
+	return max_fps_mode;
+}
+
+void Engine::set_max_fps_custom(int p_fps) {
 	_max_fps = p_fps > 0 ? p_fps : 0;
 }
 
-int Engine::get_max_fps() const {
+int Engine::get_max_fps_custom() const {
 	return _max_fps;
+}
+
+void Engine::set_automatic_max_fps(int p_fps) {
+	_automatic_max_fps = p_fps;
+}
+
+void Engine::set_automatic_max_fps_vrr(int p_fps) {
+	_automatic_max_fps_vrr = p_fps;
+}
+
+int Engine::get_effective_max_fps() const {
+	switch (max_fps_mode) {
+		case MAX_FPS_MODE_UNLIMITED:
+			return 0;
+		case MAX_FPS_MODE_AUTOMATIC:
+			return _automatic_max_fps;
+		case MAX_FPS_MODE_AUTOMATIC_VRR:
+			return _automatic_max_fps_vrr;
+		case MAX_FPS_MODE_CUSTOM:
+		default:
+			return _max_fps;
+	}
 }
 
 uint64_t Engine::get_frames_drawn() {

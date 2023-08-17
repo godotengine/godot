@@ -470,6 +470,13 @@ protected:
 	static Engine *singleton;
 
 public:
+	enum MaxFPSMode {
+		MAX_FPS_MODE_UNLIMITED,
+		MAX_FPS_MODE_AUTOMATIC,
+		MAX_FPS_MODE_AUTOMATIC_VRR,
+		MAX_FPS_MODE_CUSTOM,
+	};
+
 	static Engine *get_singleton() { return singleton; }
 	void set_physics_ticks_per_second(int p_ips);
 	int get_physics_ticks_per_second() const;
@@ -481,8 +488,11 @@ public:
 	double get_physics_jitter_fix() const;
 	double get_physics_interpolation_fraction() const;
 
-	void set_max_fps(int p_fps);
-	int get_max_fps() const;
+	void set_max_fps_mode(MaxFPSMode p_mode);
+	::Engine::MaxFPSMode get_max_fps_mode() const;
+	void set_max_fps_custom(int p_fps);
+	int get_max_fps_custom() const;
+	int get_effective_max_fps() const;
 
 	double get_frames_per_second() const;
 	uint64_t get_physics_frames() const;
@@ -578,5 +588,7 @@ VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyJoinType);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyEndType);
 
 VARIANT_ENUM_CAST(core_bind::Thread::Priority);
+
+VARIANT_ENUM_CAST(core_bind::Engine::MaxFPSMode);
 
 #endif // CORE_BIND_H

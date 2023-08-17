@@ -1578,12 +1578,24 @@ double Engine::get_physics_interpolation_fraction() const {
 	return ::Engine::get_singleton()->get_physics_interpolation_fraction();
 }
 
-void Engine::set_max_fps(int p_fps) {
-	::Engine::get_singleton()->set_max_fps(p_fps);
+void Engine::set_max_fps_mode(MaxFPSMode p_mode) {
+	::Engine::get_singleton()->set_max_fps_mode(::Engine::MaxFPSMode(p_mode));
 }
 
-int Engine::get_max_fps() const {
-	return ::Engine::get_singleton()->get_max_fps();
+::Engine::MaxFPSMode Engine::get_max_fps_mode() const {
+	return ::Engine::get_singleton()->get_max_fps_mode();
+}
+
+void Engine::set_max_fps_custom(int p_fps) {
+	::Engine::get_singleton()->set_max_fps_custom(p_fps);
+}
+
+int Engine::get_max_fps_custom() const {
+	return ::Engine::get_singleton()->get_max_fps_custom();
+}
+
+int Engine::get_effective_max_fps() const {
+	return ::Engine::get_singleton()->get_effective_max_fps();
 }
 
 double Engine::get_frames_per_second() const {
@@ -1726,8 +1738,11 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_jitter_fix", "physics_jitter_fix"), &Engine::set_physics_jitter_fix);
 	ClassDB::bind_method(D_METHOD("get_physics_jitter_fix"), &Engine::get_physics_jitter_fix);
 	ClassDB::bind_method(D_METHOD("get_physics_interpolation_fraction"), &Engine::get_physics_interpolation_fraction);
-	ClassDB::bind_method(D_METHOD("set_max_fps", "max_fps"), &Engine::set_max_fps);
-	ClassDB::bind_method(D_METHOD("get_max_fps"), &Engine::get_max_fps);
+	ClassDB::bind_method(D_METHOD("set_max_fps_mode", "mode"), &Engine::set_max_fps_mode);
+	ClassDB::bind_method(D_METHOD("get_max_fps_mode"), &Engine::get_max_fps_mode);
+	ClassDB::bind_method(D_METHOD("set_max_fps_custom", "max_fps"), &Engine::set_max_fps_custom);
+	ClassDB::bind_method(D_METHOD("get_max_fps_custom"), &Engine::get_max_fps_custom);
+	ClassDB::bind_method(D_METHOD("get_effective_max_fps"), &Engine::get_effective_max_fps);
 
 	ClassDB::bind_method(D_METHOD("set_time_scale", "time_scale"), &Engine::set_time_scale);
 	ClassDB::bind_method(D_METHOD("get_time_scale"), &Engine::get_time_scale);
@@ -1772,9 +1787,15 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_ticks_per_second"), "set_physics_ticks_per_second", "get_physics_ticks_per_second");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_physics_steps_per_frame"), "set_max_physics_steps_per_frame", "get_max_physics_steps_per_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps_mode", PROPERTY_HINT_ENUM, "Unlimited,Automatic (Use Highest Display Refresh Rate),Automatic Variable (Use VRR-Optimized Cap), Custom"), "set_max_fps_mode", "get_max_fps_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps_custom"), "set_max_fps_custom", "get_max_fps_custom");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
+
+	BIND_ENUM_CONSTANT(MAX_FPS_MODE_UNLIMITED);
+	BIND_ENUM_CONSTANT(MAX_FPS_MODE_AUTOMATIC);
+	BIND_ENUM_CONSTANT(MAX_FPS_MODE_AUTOMATIC_VRR);
+	BIND_ENUM_CONSTANT(MAX_FPS_MODE_CUSTOM);
 }
 
 Engine *Engine::singleton = nullptr;

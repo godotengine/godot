@@ -72,7 +72,7 @@ void main_loop_callback() {
 		return; // Skip frame.
 	}
 
-	int max_fps = Engine::get_singleton()->get_max_fps();
+	int max_fps = Engine::get_singleton()->get_effective_max_fps();
 	if (max_fps > 0) {
 		if (current_ticks - target_ticks > 1000000) {
 			// When the window loses focus, we stop getting updates and accumulate delay.

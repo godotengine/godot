@@ -1973,7 +1973,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second", PROPERTY_HINT_RANGE, "1,1000,1"), 60));
 	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
-	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
+	Engine::get_singleton()->set_max_fps_mode(Engine::MaxFPSMode(int(GLOBAL_DEF(
+			PropertyInfo(Variant::INT,
+					"application/run/max_fps_mode",
+					PROPERTY_HINT_ENUM, "Unlimited,Automatic (Use Highest Display Refresh Rate),Automatic Variable (Use VRR-Optimized Cap),Custom"),
+			Engine::MAX_FPS_MODE_AUTOMATIC))));
+	Engine::get_singleton()->set_max_fps_custom(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps_custom", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
@@ -2350,6 +2355,36 @@ Error Main::setup2() {
 #else
 	bool show_logo = true;
 #endif
+
+	int highest_refresh_rate = 0;
+	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
+		highest_refresh_rate = MAX(highest_refresh_rate, Math::ceil(DisplayServer::get_singleton()->screen_get_refresh_rate(i)));
+	}
+	print_verbose(vformat("Detected highest screen refresh rate (rounded up): %d Hz", highest_refresh_rate));
+
+	if (highest_refresh_rate >= 30) {
+		// If at least one refresh rate was successfully detected, limit the rendered framerate
+		// to (roughly) the monitor refresh rate by default. A slightly higher value is used to ensure
+		// the display is always fed with frames if the CPU and GPU can keep up, without introduing too much tearing.
+		//
+		// This is helpful to reduce power consumption, heat and noise emissions
+		// when V-Sync is disabled or fails to kick in.
+		// This can also reduce input lag in GPU-bottlenecked situations by preventing 100% GPU load
+		// (which causes pipeline stalls in most configurations).
+		Engine::get_singleton()->set_automatic_max_fps(highest_refresh_rate + 1);
+
+		// For displays with variable refresh rate enabled, a VRR-optimized framerate cap can optionally be used.
+		// This cap is slightly lower than the display's maximum refresh rate, with a greater safety margin
+		// for high refresh rates due to timing inaccuracies.
+		// This reduces input lag and stuttering on frame drops compared to traditional V-Sync, without introducing tearing.
+		// V-Sync should be set to Enabled and G-Sync/FreeSync must be enabled on the monitor for this to work.
+		// See <https://blurbusters.com/howto-low-lag-vsync-on/> for rationale.
+		Engine::get_singleton()->set_automatic_max_fps_vrr(highest_refresh_rate - (int(highest_refresh_rate / 60.0) + 1));
+	}
+
+	if (init_screen != -1) {
+		DisplayServer::get_singleton()->window_set_current_screen(init_screen);
+	}
 
 	if (init_windowed) {
 		//do none..
