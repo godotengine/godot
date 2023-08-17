@@ -752,6 +752,7 @@ if selected_platform in platform_list:
 
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
+            env.Append(LINKFLAGS=["/WX"])
     else:  # GCC, Clang
         common_warnings = []
 
