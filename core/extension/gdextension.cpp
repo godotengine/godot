@@ -689,6 +689,12 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 	}
 
 	if (err != OK) {
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
+		// If the DLL fails to load, make sure that temporary DLL copies are cleaned up.
+		if (Engine::get_singleton()->is_editor_hint()) {
+			DirAccess::remove_absolute(lib->get_temp_library_path());
+		}
+#endif
 		// Errors already logged in open_library()
 		return Ref<Resource>();
 	}
