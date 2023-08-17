@@ -5681,12 +5681,13 @@ void EditorNode::_scene_tab_exit() {
 }
 
 void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
+	int tab_id = scene_tabs->get_hovered_tab();
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
-		if (scene_tabs->get_hovered_tab() >= 0) {
+		if (tab_id >= 0) {
 			if (mb->get_button_index() == MouseButton::MIDDLE && mb->is_pressed()) {
-				_scene_tab_closed(scene_tabs->get_hovered_tab());
+				_scene_tab_closed(tab_id);
 			}
 		} else if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
 			int tab_buttons = 0;
@@ -5705,12 +5706,12 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			scene_tabs_context_menu->reset_size();
 
 			scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_scene"), FILE_NEW_SCENE);
-			if (scene_tabs->get_hovered_tab() >= 0) {
+			if (tab_id >= 0) {
 				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene"), FILE_SAVE_SCENE);
 				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene_as"), FILE_SAVE_AS_SCENE);
 			}
 			scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_all_scenes"), FILE_SAVE_ALL_SCENES);
-			if (scene_tabs->get_hovered_tab() >= 0) {
+			if (tab_id >= 0) {
 				scene_tabs_context_menu->add_separator();
 				scene_tabs_context_menu->add_item(TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
 				scene_tabs_context_menu->add_item(TTR("Play This Scene"), FILE_RUN_SCENE);
@@ -5724,7 +5725,13 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 					scene_tabs_context_menu->set_item_disabled(scene_tabs_context_menu->get_item_index(FILE_OPEN_PREV), true);
 				}
 				scene_tabs_context_menu->add_item(TTR("Close Other Tabs"), FILE_CLOSE_OTHERS);
+				if (editor_data.get_edited_scene_count() <= 1) {
+					scene_tabs_context_menu->set_item_disabled(file_menu->get_item_index(FILE_CLOSE_OTHERS), true);
+				}
 				scene_tabs_context_menu->add_item(TTR("Close Tabs to the Right"), FILE_CLOSE_RIGHT);
+				if (editor_data.get_edited_scene_count() == tab_id + 1) {
+					scene_tabs_context_menu->set_item_disabled(file_menu->get_item_index(FILE_CLOSE_RIGHT), true);
+				}
 				scene_tabs_context_menu->add_item(TTR("Close All Tabs"), FILE_CLOSE_ALL);
 			}
 			scene_tabs_context_menu->set_position(scene_tabs->get_screen_position() + mb->get_position());
