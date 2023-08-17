@@ -287,3 +287,17 @@ Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/shader_ge
 Validate extension JSON: Error: Field 'classes/SurfaceTool/methods/commit/arguments/1': meta changed value in new API, from "uint32" to "uint64".
 
 Surface format was increased to 64 bits from 32 bits. Compatibility methods registered. 
+
+
+GH-80522
+--------
+Validate extension JSON: API was removed: classes/BaseMaterial3D/enums/DetailUV
+Validate extension JSON: API was removed: classes/BaseMaterial3D/enums/Flags/values/FLAG_AO_ON_UV2
+Validate extension JSON: API was removed: classes/BaseMaterial3D/enums/Flags/values/FLAG_EMISSION_ON_UV2
+Validate extension JSON: API was removed: classes/BaseMaterial3D/methods/get_detail_uv
+Validate extension JSON: API was removed: classes/BaseMaterial3D/methods/set_detail_uv
+Validate extension JSON: API was removed: classes/BaseMaterial3D/properties/ao_on_uv2
+Validate extension JSON: API was removed: classes/BaseMaterial3D/properties/detail_uv_layer
+Validate extension JSON: API was removed: classes/BaseMaterial3D/properties/emission_on_uv2
+
+Replaced with `TextureUV` enum and `get_texture_uv`/`set_texture_uv` functions.
