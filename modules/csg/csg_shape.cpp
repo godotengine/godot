@@ -1933,7 +1933,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				case PATH_ROTATION_PATH:
 					break;
 				case PATH_ROTATION_PATH_FOLLOW:
-					current_up = curve->sample_baked_up_vector(0);
+					current_up = curve->sample_baked_up_vector(0, true);
 					break;
 			}
 
@@ -2020,7 +2020,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						case PATH_ROTATION_PATH:
 							break;
 						case PATH_ROTATION_PATH_FOLLOW:
-							current_up = curve->sample_baked_up_vector(current_offset);
+							current_up = curve->sample_baked_up_vector(current_offset, true);
 							break;
 					}
 
