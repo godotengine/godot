@@ -150,7 +150,7 @@ double AnimationNodeAnimation::_process(double p_time, bool p_seek, bool p_is_ex
 
 		// Emit start & finish signal. Internally, the detections are the same for backward.
 		// We should use call_deferred since the track keys are still being prosessed.
-		if (state->tree) {
+		if (state->tree && !p_test_only) {
 			// AnimationTree uses seek to 0 "internally" to process the first key of the animation, which is used as the start detection.
 			if (p_seek && !p_is_external_seeking && cur_time == 0) {
 				state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation);
