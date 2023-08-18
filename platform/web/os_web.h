@@ -63,6 +63,7 @@ protected:
 	void finalize() override;
 
 	void _register_compiled_feature() override;
+	bool _check_dynamic_feature(const String &p_feature) override;
 
 public:
 	// Override return type to make writing static callbacks less tedious.

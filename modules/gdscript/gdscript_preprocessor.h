@@ -71,7 +71,7 @@ private:
 	bool find_preprocessor_if(const String &p_text, DataIf &p_data);
 	bool find_preprocessor_endif(const String &p_text, DataEndIf &p_data);
 	bool match(const String &p_search, const String &p_target, int p_at_index);
-	bool fast_check(const char &p_first_letter, const String &p_text, int &p_index, int &p_ident_level, char &p_c);
+	bool fast_check(const char32_t &p_first_letter, const String &p_text, int &p_index, int &p_ident_level, char &p_c);
 	bool check(const StringName &p_PREP, int &p_index, const String &p_text, char &p_c);
 	bool is_active_feature(const String &p_feature);
 	ParserError validate();

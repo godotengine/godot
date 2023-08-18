@@ -221,6 +221,7 @@ public:
 	void run();
 
 	virtual void _register_compiled_feature() override;
+	virtual bool _check_dynamic_feature(const String &p_feature) override;
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;

@@ -126,7 +126,7 @@ public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	virtual void _register_compiled_feature() override;
-	virtual bool _check_dynamic_feature(const String &p_feature);
+	virtual bool _check_dynamic_feature(const String &p_feature) override;
 	void run();
 
 	virtual void disable_crash_handler() override;

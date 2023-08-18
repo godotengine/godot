@@ -135,19 +135,23 @@ int OS_Web::get_processor_count() const {
 void OS_Web::_register_compiled_feature() {
 	OS::get_singleton()->register_compile_time_feature(OS::Feature::WEB);
 
-	const OS::Feature web_features = {
-		OS::Feature::WEB_IOS,
-		OS::Feature::WEB_LINUXBSD,
-		OS::Feature::WEB_ANDROID,
-		OS::Feature::WEB_MACOS,
-		OS::Feature::WEB_WINDOWS,
-	}
+	const String web_features[] = {
+		OS::FEATURES[OS::Feature::WEB_IOS],
+		OS::FEATURES[OS::Feature::WEB_LINUXBSD],
+		OS::FEATURES[OS::Feature::WEB_ANDROID],
+		OS::FEATURES[OS::Feature::WEB_MACOS],
+		OS::FEATURES[OS::Feature::WEB_WINDOWS],
+	};
 
 	for (const String &feature : web_features) {
-		if (godot_js_os_has_feature(p_feature.utf8().get_data())) {
+		if (godot_js_os_has_feature(feature.utf8().get_data())) {
 			OS::get_singleton()->register_compile_time_feature(feature);
 		}
 	}
+}
+
+bool OS_Web::_check_dynamic_feature(const String &p_feature) {
+	return false;
 }
 
 String OS_Web::get_executable_path() const {

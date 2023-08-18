@@ -505,22 +505,7 @@ bool OS::has_feature(const String &p_feature) {
 		return _check_dynamic_feature(p_feature);
 	}
 
-	// Check for "custom" features;
-
-	print_line("======");
-	String value = "";
-	for (int i = sizeof(feature_compiled) * 8 - 1; i >= 0; --i) {
-		int v = int((feature_compiled >> i) & 1);
-		value += itos(v);
-		if (v == 1) {
-			print_line("activated feature: " + FEATURES[i]);
-		}
-	}
-	print_line(value);
-	for(const StringName name : FEATURES) {
-		print_line("Feature: " + String(Variant(name)) + " - " + String(Variant(bool(feature_compiled & ( 1 << feature_list_compiled[p_feature])))));
-	}
-	print_line("======");
+	// Check for "custom" features.
 
 	if (has_server_feature_callback && has_server_feature_callback(p_feature)) {
 		return true;

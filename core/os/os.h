@@ -138,7 +138,7 @@ public:
 		WASM64,
 		WASM32,
 		WASM,
-		BSD,
+		_BSD,
 		PC,
 		WEB,
 		WEB_ANDROID,
@@ -161,8 +161,8 @@ public:
 	static const String FEATURES[Feature::FEATURE_MAX];
 	static const String FEATURES_DYNAMIC[FeatureDynamic::FEATURE_DYNAMIC_MAX];
 
-	HashMap<StringName, u_int8_t> feature_list_compiled;
-	HashMap<StringName, u_int8_t> feature_list_dynamic;
+	HashMap<StringName, uint8_t> feature_list_compiled;
+	HashMap<StringName, uint8_t> feature_list_dynamic;
 
 	// u_long_long is being used so we can have 64 features defined
 	unsigned long long feature_compiled = 0;

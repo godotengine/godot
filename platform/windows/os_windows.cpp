@@ -1638,7 +1638,7 @@ void OS_Windows::_register_compiled_feature() {
 	OS::get_singleton()->register_compile_time_feature(OS::Feature::PC);
 }
 
-bool OS_Windows::_check_dynamic_feature(const String &p_feature) override {
+bool OS_Windows::_check_dynamic_feature(const String &p_feature) {
 	return dwrite_init; // System fonts
 }
 

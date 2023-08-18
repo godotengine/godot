@@ -500,7 +500,7 @@ bool OS_LinuxBSD::_check_dynamic_feature(const String &p_feature) {
 void OS_LinuxBSD::_register_compiled_feature() {
 #ifndef __linux__
 	// `bsd` includes **all** BSD, not only "other BSD" (see `get_name()`).
-	OS::get_singleton()->register_compile_time_feature(OS::Feature::BSD);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::_BSD);
 #endif
 
 	OS::get_singleton()->register_compile_time_feature(OS::Feature::PC);

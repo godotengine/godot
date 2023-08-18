@@ -40,7 +40,7 @@ GDScriptPreprocessor::~GDScriptPreprocessor() {
 }
 
 GDScriptPreprocessor::ParserError GDScriptPreprocessor::read_source(const String &p_source_code, String &p_new_source_code) {
-	ParserError error = { .message = "" };
+	ParserError error = { "" };
 
 	Vector<String> lines = p_source_code.split("\n");
 	int line = 1;
@@ -120,7 +120,7 @@ GDScriptPreprocessor::ParserError GDScriptPreprocessor::read_source(const String
 		line++;
 		String text = lines[index] + "\n";
 		bool removed_line = false;
-		for (int j = 0; j < removes.size(); j++) {
+		for (unsigned int j = 0; j < removes.size(); j++) {
 			if (removed_line)
 				continue;
 			const SourceRemove &sr = removes[j];
@@ -165,9 +165,9 @@ GDScriptPreprocessor::ParserError GDScriptPreprocessor::read_source(const String
 }
 
 GDScriptPreprocessor::ParserError GDScriptPreprocessor::validate() {
-	ParserError err = { .message = "", .line = 0, .column = 0 };
+	ParserError err = { "", 0, 0 };
 
-	for (int i = 0; i < data_if.size(); i++) {
+	for (unsigned int i = 0; i < data_if.size(); i++) {
 		DataIf *_if = &data_if[i];
 
 		//Find first endif
@@ -225,7 +225,7 @@ bool GDScriptPreprocessor::match(const String &p_search, const String &p_target,
 	return true;
 }
 
-bool GDScriptPreprocessor::fast_check(const char &p_first_letter, const String &p_text, int &p_index, int &p_ident_level, char &p_c) {
+bool GDScriptPreprocessor::fast_check(const char32_t &p_first_letter, const String &p_text, int &p_index, int &p_ident_level, char &p_c) {
 	bool found = false;
 	// Fast check for "~" keyword.
 	while (p_index < p_text.length()) {
