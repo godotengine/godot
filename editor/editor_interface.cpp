@@ -77,7 +77,7 @@ EditorResourcePreview *EditorInterface::get_resource_previewer() const {
 }
 
 EditorSelection *EditorInterface::get_selection() const {
-	return EditorNode::get_singleton()->get_editor_selection();
+	return EditorNode::get_singleton() ? EditorNode::get_singleton()->get_editor_selection() : nullptr;
 }
 
 Ref<EditorSettings> EditorInterface::get_editor_settings() const {
@@ -190,21 +190,23 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 }
 
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
-	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
+	}
 }
 
 bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
-	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
+	return EditorNode::get_singleton() && EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
 }
 
 // Editor GUI.
 
 Control *EditorInterface::get_base_control() const {
-	return EditorNode::get_singleton()->get_gui_base();
+	return EditorNode::get_singleton() ? EditorNode::get_singleton()->get_gui_base() : nullptr;
 }
 
 VBoxContainer *EditorInterface::get_editor_main_screen() const {
-	return EditorNode::get_singleton()->get_main_screen_control();
+	return EditorNode::get_singleton() ? EditorNode::get_singleton()->get_main_screen_control() : nullptr;
 }
 
 ScriptEditor *EditorInterface::get_script_editor() const {
@@ -212,15 +214,19 @@ ScriptEditor *EditorInterface::get_script_editor() const {
 }
 
 void EditorInterface::set_main_screen_editor(const String &p_name) {
-	EditorNode::get_singleton()->select_editor_by_name(p_name);
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->select_editor_by_name(p_name);
+	}
 }
 
 void EditorInterface::set_distraction_free_mode(bool p_enter) {
-	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
+	}
 }
 
 bool EditorInterface::is_distraction_free_mode_enabled() const {
-	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
+	return EditorNode::get_singleton() && EditorNode::get_singleton()->is_distraction_free_mode_enabled();
 }
 
 float EditorInterface::get_editor_scale() const {
@@ -280,15 +286,21 @@ EditorInspector *EditorInterface::get_inspector() const {
 // Object/Resource/Node editing.
 
 void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property, bool p_inspector_only) {
-	EditorNode::get_singleton()->push_item(p_obj, p_for_property, p_inspector_only);
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->push_item(p_obj, p_for_property, p_inspector_only);
+	}
 }
 
 void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
-	EditorNode::get_singleton()->edit_resource(p_resource);
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->edit_resource(p_resource);
+	}
 }
 
 void EditorInterface::edit_node(Node *p_node) {
-	EditorNode::get_singleton()->edit_node(p_node);
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->edit_node(p_node);
+	}
 }
 
 void EditorInterface::edit_script(const Ref<Script> &p_script, int p_line, int p_col, bool p_grab_focus) {
@@ -296,7 +308,7 @@ void EditorInterface::edit_script(const Ref<Script> &p_script, int p_line, int p
 }
 
 void EditorInterface::open_scene_from_path(const String &scene_path) {
-	if (EditorNode::get_singleton()->is_changing_scene()) {
+	if (!EditorNode::get_singleton() || EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
 
@@ -304,7 +316,7 @@ void EditorInterface::open_scene_from_path(const String &scene_path) {
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
-	if (EditorNode::get_singleton()->is_changing_scene()) {
+	if (!EditorNode::get_singleton() || EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
 
@@ -312,11 +324,16 @@ void EditorInterface::reload_scene_from_path(const String &scene_path) {
 }
 
 Node *EditorInterface::get_edited_scene_root() const {
-	return EditorNode::get_singleton()->get_edited_scene();
+	return EditorNode::get_singleton() ? EditorNode::get_singleton()->get_edited_scene() : nullptr;
 }
 
 PackedStringArray EditorInterface::get_open_scenes() const {
 	PackedStringArray ret;
+
+	if (!EditorNode::get_singleton()) {
+		return ret;
+	}
+
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
 	int scns_amount = scenes.size();
@@ -342,15 +359,21 @@ Error EditorInterface::save_scene() {
 }
 
 void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) {
-	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
+	}
 }
 
 void EditorInterface::mark_scene_as_unsaved() {
-	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+	if (EditorNode::get_singleton()) {
+		EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+	}
 }
 
 void EditorInterface::save_all_scenes() {
-	EditorNode::get_singleton()->save_all_scenes();
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->save_all_scenes();
+	}
 }
 
 // Scene playback.
