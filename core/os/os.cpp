@@ -681,6 +681,7 @@ void OS::benchmark_dump() {
 
 const String OS::FEATURES[OS::Feature::FEATURE_MAX] = {
 	"android",
+	"system_fonts",
 	"linux",
 	"macos",
 	"ios",
@@ -710,7 +711,6 @@ const String OS::FEATURES[OS::Feature::FEATURE_MAX] = {
 	"armv7a",
 	"armv7",
 	"armv7s",
-	"arm",
 	"rv64",
 	"riscv",
 	"ppc64",
@@ -732,7 +732,7 @@ const String OS::FEATURES[OS::Feature::FEATURE_MAX] = {
 	"s3tc"
 };
 
-const String OS::FEATURES_DYNAMIC[OS::FeatureDynamic::FEATURE_MAX] = {
+const String OS::FEATURES_DYNAMIC[OS::FeatureDynamic::FEATURE_DYNAMIC_MAX] = {
 	"movie",
 	"system_fonts"
 };

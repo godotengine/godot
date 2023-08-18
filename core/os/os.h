@@ -100,6 +100,7 @@ public:
 	// Feature system - char is used so we can have 64 features at max.
 	enum Feature {
 		ANDROID,
+		MOBILE_SYSTEM_FONTS,
 		LINUX,
 		MACOS,
 		IOS,
@@ -129,7 +130,6 @@ public:
 		ARMV7A,
 		ARMV7,
 		ARMV7S,
-		ARM,
 		RV64,
 		RISCV,
 		PPC64,
@@ -155,11 +155,11 @@ public:
 	enum FeatureDynamic {
 		MOVIE,
 		SYSTEM_FONTS,
-		FEATURE_MAX
+		FEATURE_DYNAMIC_MAX
 	};
 
 	static const String FEATURES[Feature::FEATURE_MAX];
-	static const String FEATURES_DYNAMIC[FeatureDynamic::FEATURE_MAX];
+	static const String FEATURES_DYNAMIC[FeatureDynamic::FEATURE_DYNAMIC_MAX];
 
 	HashMap<StringName, u_int8_t> feature_list_compiled;
 	HashMap<StringName, u_int8_t> feature_list_dynamic;

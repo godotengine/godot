@@ -584,9 +584,8 @@ void OS_IOS::vibrate_handheld(int p_duration_ms) {
 }
 
 void OS_IOS::_register_compiled_feature() {
-	OS::get_singleton()->register_compile_time_feature(OS::Feature::SYSTEM_FONTS);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::MOBILE_SYSTEM_FONTS);
 	OS::get_singleton()->register_compile_time_feature(OS::Feature::MOBILE);
-	return false;
 }
 
 void OS_IOS::on_focus_out() {

@@ -696,7 +696,7 @@ void OS_Android::benchmark_dump() {
 }
 
 void OS_Android::_register_compiled_feature() {
-	OS::get_singleton()->register_compile_time_feature(OS::Feature::SYSTEM_FONTS);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::MOBILE_SYSTEM_FONTS);
 	OS::get_singleton()->register_compile_time_feature(OS::Feature::MOBILE);
 
 #if defined(__aarch64__)
