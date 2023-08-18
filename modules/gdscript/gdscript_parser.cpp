@@ -157,12 +157,12 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 
 void GDScriptParser::push_error(const String &p_message, int line, int column) {
 	panic_mode = true;
-	errors.push_back({p_message, line, column});
+	errors.push_back({ p_message, line, column });
 }
 
 void GDScriptParser::push_error(const String &p_message, int line, int column) {
 	panic_mode = true;
-	errors.push_back({p_message, line, column});
+	errors.push_back({ p_message, line, column });
 }
 
 #ifdef DEBUG_ENABLED
@@ -293,16 +293,14 @@ String GDScriptParser::read_preprocessors(const String &p_source_code) {
 		int column;
 		int ident_level;
 		bool keep;
-		DataEndif* matching_endif;
-
-
+		DataEndif *matching_endif;
 	};
 	Vector<DataIf> data_if;
 
 	struct DataEndif {
 		int line;
 		int ident_level;
-		DataIf* matching_if;
+		DataIf *matching_if;
 	};
 	Vector<DataEndif> data_endif;
 
@@ -314,11 +312,9 @@ String GDScriptParser::read_preprocessors(const String &p_source_code) {
 	int search = SEARCH::S_IF;
 
 	int line = 0;
-	for (int index = 0; index < lines.size(); index++)
-	{
+	for (int index = 0; index < lines.size(); index++) {
 		line++;
 		String text = lines[index] + "\n";
-
 
 		if (search == SEARCH::S_IF) {
 			Ref<RegExMatch> result_if = pp_if->search(text);
@@ -332,16 +328,14 @@ String GDScriptParser::read_preprocessors(const String &p_source_code) {
 				preprocessor.ident_level = result_if->get_string("seps").length();
 				data_if.push_back(preprocessor);
 
-				
-			} else if (index == lines.size()-1) {
+			} else if (index == lines.size() - 1) {
 				// Restart searching.
 				index = -1;
 				line = 0;
 				search = SEARCH::S_ENDIF;
 			}
 			continue;
-		} else if (search == SEARCH::S_ENDIF)
-		{
+		} else if (search == SEARCH::S_ENDIF) {
 			Ref<RegExMatch> result_endif = pp_endif->search(text);
 
 			if (result_endif != nullptr) {
@@ -352,8 +346,8 @@ String GDScriptParser::read_preprocessors(const String &p_source_code) {
 				data_endif.push_back(d);
 			}
 
-			if (index != lines.size()-1) continue;
-
+			if (index != lines.size() - 1)
+				continue;
 		}
 	}
 
@@ -382,25 +376,21 @@ String GDScriptParser::read_preprocessors(const String &p_source_code) {
 	Vector<SourceRemove> removes;
 
 	// With collected data we do the checks.
-	for (DataIf &_if : data_if)
-	{
+	for (DataIf &_if : data_if) {
 		_if.matching_endif = nullptr;
 		_if.keep = false;
 
-		
-		for(DataEndif &_endif : data_endif)
-		{
+		for (DataEndif &_endif : data_endif) {
 			if (_endif.line > _if.line && _endif.ident_level == _if.ident_level && _if.matching_endif == nullptr && _endif.matching_if == nullptr) {
 				SourceRemove sr;
-				
+
 				_if.matching_endif = &_endif;
 				_endif.matching_if = &_if;
 				if (defined_feature == _if.feature) {
 					//keep the code
 					_if.keep = true;
 					sr.from_a_to_b = false;
-				} else
-				{
+				} else {
 					sr.from_a_to_b = true;
 				}
 				//remove the preprocessor
@@ -415,7 +405,6 @@ String GDScriptParser::read_preprocessors(const String &p_source_code) {
 			push_error("Preprocessor: " + _if.feature + " has no matching ~endif", _if.line, _if.column);
 			return "";
 		}
-
 	}
 
 	// Prepare the source code
@@ -425,47 +414,43 @@ String GDScriptParser::read_preprocessors(const String &p_source_code) {
 	new_source_code = "";
 	const Vector<SourceRemove> *removes_ptr = &removes;
 	line = 0;
-	for (int index = 0; index < lines.size(); index++)
-	{
+	for (int index = 0; index < lines.size(); index++) {
 		line++;
 		String text = lines[index] + "\n";
 		bool removed_line = false;
-		for (int j = 0; j < removes.size(); j++)
-		{
-			if (removed_line) continue;
-			const SourceRemove& sr = removes_ptr->get(j);
+		for (int j = 0; j < removes.size(); j++) {
+			if (removed_line)
+				continue;
+			const SourceRemove &sr = removes_ptr->get(j);
 
-			if (sr.from_a_to_b == false)
-			{
+			if (sr.from_a_to_b == false) {
 				if (line == sr.remove_line_a) {
 					new_source_code += "";
 					removed_line = true;
 					continue;
 				}
-				
+
 				if (line == sr.remove_line_b) {
 					new_source_code += "";
 					removed_line = true;
 					continue;
-
 				};
 
 			} else {
-				while(line >= sr.remove_line_a && line <= sr.remove_line_b) {
+				while (line >= sr.remove_line_a && line <= sr.remove_line_b) {
 					new_source_code += "";
 					removed_line = true;
 					index++;
 					line++;
-					if (line > sr.remove_line_b) break;
+					if (line > sr.remove_line_b)
+						break;
 				}
 			}
 		}
 
-		if (removed_line == false)
-		{
+		if (removed_line == false) {
 			new_source_code += text;
 		}
-		
 	}
 
 	return new_source_code;
@@ -480,8 +465,9 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		push_error(preprocessor_data.message, preprocessor_data.line, preprocessor_data.column);
 		return ERR_PARSE_ERROR;
 	}
-	if (source == "") source = p_source_code;
-	
+	if (source == "")
+		source = p_source_code;
+
 	int cursor_line = -1;
 	int cursor_column = -1;
 	for_completion = p_for_completion;

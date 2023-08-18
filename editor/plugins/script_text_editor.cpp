@@ -809,7 +809,6 @@ void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, 
 }
 
 void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
-	
 	if (color_panel->is_visible()) {
 		return;
 	}
@@ -819,8 +818,6 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	}
 	String hint;
 
-
-	
 	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
 
 	if (err == OK) {
@@ -1243,15 +1240,13 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 void ScriptTextEditor::_list_features() {
 	features_menu->get_popup()->clear();
 
-	for(const String &feature : OS::FEATURES) {
+	for (const String &feature : OS::FEATURES) {
 		features_menu->get_popup()->add_check_item(feature);
 	}
 }
 
 void ScriptTextEditor::_features_update(int p_id) {
-	print_line("Selected feature: "+ features_menu->get_popup()->get_item_text(p_id));
-
-
+	print_line("Selected feature: " + features_menu->get_popup()->get_item_text(p_id));
 }
 
 void ScriptTextEditor::_edit_option(int p_op) {
@@ -2265,7 +2260,6 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	features_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_list_features));
 	features_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_features_update));
-	
 }
 
 ScriptTextEditor::ScriptTextEditor() {

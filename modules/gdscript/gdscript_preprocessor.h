@@ -37,48 +37,44 @@ struct DataIf;
 struct DataEndIf;
 
 struct DataIf {
-    String feature;
-    int line;
-    int column;
-    int ident_level;
-    DataEndIf* matching_endif;
+	String feature;
+	int line;
+	int column;
+	int ident_level;
+	DataEndIf *matching_endif;
 };
 
 struct DataEndIf {
-    int line;
-    int ident_level;
-    DataIf* matching_if;
+	int line;
+	int ident_level;
+	DataIf *matching_if;
 };
-
-
 
 class GDScriptPreprocessor {
+public:
+	struct ParserError {
+		String message = "";
+		int line = 0, column = 0;
+	};
+	static const StringName PREP_IF;
+	static const StringName PREP_ENDIF;
 
-    public:
-    struct ParserError {
-        String message = "";
-        int line = 0, column = 0;
-    };
-    static const StringName PREP_IF;
-    static const StringName PREP_ENDIF;
+	ParserError read_source(const String &p_source_code, String &p_new_source_code);
+	GDScriptPreprocessor();
+	~GDScriptPreprocessor();
 
-    ParserError read_source(const String &p_source_code, String &p_new_source_code);
-    GDScriptPreprocessor();
-    ~GDScriptPreprocessor();
+private:
+	LocalVector<DataIf> data_if;
+	LocalVector<DataEndIf> data_endif;
+	List<String> features;
 
-    private:
-    LocalVector<DataIf> data_if;
-    LocalVector<DataEndIf> data_endif;
-    List<String> features;
-    
-    bool find_preprocessor_if(const String &p_text, DataIf &p_data);
-    bool find_preprocessor_endif(const String &p_text, DataEndIf &p_data);
-    bool match(const String &p_search, const String &p_target, int p_at_index);
-    bool fast_check(const char &p_first_letter,const String &p_text, int &p_index, int &p_ident_level, char &p_c);
-    bool check(const StringName &p_PREP, int& p_index, const String &p_text, char &p_c);
-    bool is_active_feature(const String &p_feature);
-    ParserError validate();
-
+	bool find_preprocessor_if(const String &p_text, DataIf &p_data);
+	bool find_preprocessor_endif(const String &p_text, DataEndIf &p_data);
+	bool match(const String &p_search, const String &p_target, int p_at_index);
+	bool fast_check(const char &p_first_letter, const String &p_text, int &p_index, int &p_ident_level, char &p_c);
+	bool check(const StringName &p_PREP, int &p_index, const String &p_text, char &p_c);
+	bool is_active_feature(const String &p_feature);
+	ParserError validate();
 };
 
-#endif
+#endif // GDSCRIPT_PREPROCESSOR_H

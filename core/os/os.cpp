@@ -371,9 +371,9 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 void OS::register_compiled_features() {
-		//Register all features
+	//Register all features
 	int index = 0;
-	for(const StringName &feature : FEATURES){
+	for (const StringName &feature : FEATURES) {
 		feature_list_compiled[feature] = index;
 		feature_compiled |= 0 << index;
 		index++;
@@ -384,76 +384,76 @@ void OS::register_compiled_features() {
 	feature_compiled |= 1 << feature_list_compiled[get_identifier()]; // Current Operating System.
 
 #ifdef DEBUG_ENABLED
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::DEBUG]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::DEBUG]];
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::EDITOR]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::EDITOR]];
 #else
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::TEMPLATE]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::TEMPLATE]];
 #ifdef DEBUG_ENABLED
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::TEMPLATE_DEBUG]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::TEMPLATE_DEBUG]];
 #else
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::TEMPLATE_RELEASE]];
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::RELEASE]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::TEMPLATE_RELEASE]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::RELEASE]];
 #endif // DEBUG_ENABLED
 #endif // TOOLS_ENABLED
 
 #ifdef REAL_T_IS_DOUBLE
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::DOUBLE]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::DOUBLE]];
 #else
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::SINGLE]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::SINGLE]];
 #endif // REAL_T_IS_DOUBLE
 
 	if (sizeof(void *) == 8) {
-		feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::_64]];
+		feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::_64]];
 	}
 	if (sizeof(void *) == 4) {
-		feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::_32]];
+		feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::_32]];
 	}
 
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::X86_64]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::X86_64]];
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
 	feature_compiled |= feature_list_compiled[FEATURES[Feature::X86_32]];
 #endif
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::X86]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::X86]];
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 #if defined(__aarch64__) || defined(_M_ARM64)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::ARM64]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARM64]];
 #elif defined(__arm__) || defined(_M_ARM)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::ARM32]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARM32]];
 #endif
 #if defined(__ARM_ARCH_7A__)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::ARMV7A]];
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::ARMV7]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARMV7A]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARMV7]];
 #endif
 #if defined(__ARM_ARCH_7S__)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::ARMV7]];
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::ARMV7S]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARMV7]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARMV7S]];
 #endif
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::ARM]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARM]];
 #elif defined(__riscv)
 #if __riscv_xlen == 8
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::RV64]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::RV64]];
 #endif
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::RISCV]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::RISCV]];
 #elif defined(__powerpc__)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::PPC]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::PPC]];
 #if defined(__powerpc64__)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::PPC64]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::PPC64]];
 #endif
 #if defined(__powerpc32__)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::PPC32]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::PPC32]];
 #endif
 #elif defined(__wasm__)
 #if defined(__wasm64__)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::WASM64]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::WASM64]];
 #elif defined(__wasm32__)
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::WASM32]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::WASM32]];
 #endif
-	feature_compiled |= 1 <<  feature_list_compiled[FEATURES[Feature::WASM]];
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::WASM]];
 #endif
 
 	_register_compiled_feature();
@@ -465,29 +465,26 @@ void OS::register_compile_time_feature(Feature feature) {
 }
 
 void OS::register_compile_time_feature(const String &p_feature) {
-
 	bool has_feat = false;
-	for (int i = 0; i < FEATURES->size(); i++)
-	{
-		if (FEATURES[i] == p_feature) has_feat = true;
+	for (int i = 0; i < FEATURES->size(); i++) {
+		if (FEATURES[i] == p_feature)
+			has_feat = true;
 	}
 	ERR_FAIL_COND_MSG(has_feat, "Non existent feature: " + p_feature);
 
 	feature_compiled |= 1 << feature_list_compiled[p_feature];
-	
 }
 
 bool OS::has_feature(const String &p_feature) {
-
 	// Populate the features; (called only once)
-	
+
 	if (feature_list_compiled.size() == 0) {
 		register_compiled_features();
 	}
 
 	if (feature_list_dynamic.size() == 0) {
 		int index = 0;
-		for(const StringName &feature : FEATURES_DYNAMIC){
+		for (const StringName &feature : FEATURES_DYNAMIC) {
 			feature_list_dynamic[feature] = index;
 			feature_dynamic |= 0 << index;
 			index++;
@@ -495,11 +492,10 @@ bool OS::has_feature(const String &p_feature) {
 	}
 
 	// ==========
-	
 
 	// Check for "compiled" features;
 	if (feature_list_compiled.has(p_feature)) {
-		return feature_compiled & ( 1 << feature_list_compiled[p_feature]);
+		return feature_compiled & (1 << feature_list_compiled[p_feature]);
 	}
 
 	// Check for "dynamic" features;
@@ -507,12 +503,11 @@ bool OS::has_feature(const String &p_feature) {
 		if (p_feature == FEATURES_DYNAMIC[FeatureDynamic::MOVIE]) {
 			return true;
 		}
-		
+
 		return _check_dynamic_feature(p_feature);
 	}
 
 	// Check for "custom" features;
-	
 
 	// print_line("======");
 	// String value = "";
@@ -522,7 +517,7 @@ bool OS::has_feature(const String &p_feature) {
 	// 	if (v == 1) {
 	// 		print_line("activated feature: " + FEATURES[i]);
 	// 	}
-    // }
+	// }
 	// print_line(value);
 	// for(const StringName name : FEATURES) {
 	// 	print_line("Feature: " + String(Variant(name)) + " - " + String(Variant(bool(feature_compiled & ( 1 << feature_list_compiled[p_feature])))));
@@ -536,8 +531,6 @@ bool OS::has_feature(const String &p_feature) {
 	if (ProjectSettings::get_singleton()->has_custom_feature(p_feature)) {
 		return true;
 	}
-
-	
 
 	return false;
 }
@@ -750,7 +743,6 @@ OS::OS() {
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
-
 }
 
 OS::~OS() {

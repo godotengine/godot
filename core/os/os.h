@@ -97,7 +97,7 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 
-		// Feature system - char is used so we can have 64 features at max.
+	// Feature system - char is used so we can have 64 features at max.
 	enum Feature {
 		ANDROID,
 		LINUX,
@@ -158,10 +158,9 @@ public:
 		FEATURE_MAX
 	};
 
-	
 	static const String FEATURES[Feature::FEATURE_MAX];
 	static const String FEATURES_DYNAMIC[FeatureDynamic::FEATURE_MAX];
-	
+
 	HashMap<StringName, u_int8_t> feature_list_compiled;
 	HashMap<StringName, u_int8_t> feature_list_dynamic;
 

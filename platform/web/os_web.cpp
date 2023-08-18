@@ -134,7 +134,7 @@ int OS_Web::get_processor_count() const {
 
 void OS_Web::_register_compiled_feature() {
 	OS::get_singleton()->register_compile_time_feature(OS::Feature::WEB);
-	
+
 	const OS::Feature web_features = {
 		OS::Feature::WEB_IOS,
 		OS::Feature::WEB_LINUXBSD,
@@ -143,7 +143,7 @@ void OS_Web::_register_compiled_feature() {
 		OS::Feature::WEB_WINDOWS,
 	}
 
-	for(const String &feature : web_features) {
+	for (const String &feature : web_features) {
 		if (godot_js_os_has_feature(p_feature.utf8().get_data())) {
 			OS::get_singleton()->register_compile_time_feature(feature);
 		}

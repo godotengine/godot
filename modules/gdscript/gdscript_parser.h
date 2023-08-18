@@ -32,8 +32,8 @@
 #define GDSCRIPT_PARSER_H
 
 #include "gdscript_cache.h"
-#include "gdscript_tokenizer.h"
 #include "gdscript_preprocessor.h"
+#include "gdscript_tokenizer.h"
 
 #ifdef DEBUG_ENABLED
 #include "gdscript_warning.h"

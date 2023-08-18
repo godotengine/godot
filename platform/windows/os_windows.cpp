@@ -1642,7 +1642,6 @@ bool OS_Windows::_check_dynamic_feature(const String &p_feature) override {
 	return dwrite_init; // System fonts
 }
 
-
 void OS_Windows::disable_crash_handler() {
 	crash_handler.disable();
 }

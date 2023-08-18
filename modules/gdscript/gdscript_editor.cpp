@@ -2819,7 +2819,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	GDScriptAnalyzer analyzer(&parser);
 
 	Error error = parser.parse(p_code, p_path, true);
-	if (error != OK) return error;
+	if (error != OK)
+		return error;
 	analyzer.analyze();
 
 	r_forced = false;
