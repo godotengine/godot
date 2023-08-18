@@ -981,21 +981,6 @@ void DisplayServerWayland::process_events() {
 
 	frame = false;
 
-	// TODO: Move this stuff in thread?
-	int werror = wl_display_get_error(wayland_thread.get_wl_display());
-
-	if (werror) {
-		if (werror == EPROTO) {
-			struct wl_interface *wl_interface = nullptr;
-			uint32_t id = 0;
-
-			int error_code = wl_display_get_protocol_error(wayland_thread.get_wl_display(), (const struct wl_interface **)&wl_interface, &id);
-			print_error(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
-		} else {
-			print_error(vformat("Wayland client error code %d.", werror));
-		}
-	}
-
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
 

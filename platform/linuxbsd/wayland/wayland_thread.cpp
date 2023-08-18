@@ -2233,15 +2233,27 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 			// loop and thus the mutex locking, avoiding a deadlock.
 			MutexLock mutex_lock(data->mutex);
 
-			wl_display_dispatch_pending(data->wl_display);
-		}
-
-		if (wl_display_flush(data->wl_display) == -1) {
-			if (errno != EAGAIN) {
-				print_error(vformat("Error %d while flushing the Wayland display.", errno));
-				data->thread_done.set();
+			if (wl_display_dispatch_pending(data->wl_display) == -1) {
+				// Oh no. We'll check and handle any display error below.
+				break;
 			}
 		}
+
+		int werror = wl_display_get_error(data->wl_display);
+
+		if (werror) {
+			if (werror == EPROTO) {
+				struct wl_interface *wl_interface = nullptr;
+				uint32_t id = 0;
+
+				int error_code = wl_display_get_protocol_error(data->wl_display, (const struct wl_interface **)&wl_interface, &id);
+				CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
+			} else {
+				CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
+			}
+		}
+
+		wl_display_flush(data->wl_display);
 
 		// Wait for the event file descriptor to have new data.
 		poll(&poll_fd, 1, -1);
@@ -2252,10 +2264,16 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 		}
 
 		if (poll_fd.revents | POLLIN) {
+			// Load the queues with fresh new data.
 			wl_display_read_events(data->wl_display);
 		} else {
+			// Oh well... Stop signaling that we want to read.
 			wl_display_cancel_read(data->wl_display);
 		}
+
+		// The docs advise to redispatch unconditionally and it looks like that if we
+		// don't do this we can't catch protocol errors, which is bad.
+		wl_display_dispatch_pending(data->wl_display);
 	}
 }
 
