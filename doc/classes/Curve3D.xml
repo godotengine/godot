@@ -207,8 +207,22 @@
 		<member name="point_count" type="int" setter="set_point_count" getter="get_point_count" default="0">
 			The number of points describing the curve.
 		</member>
+		<member name="up_vector_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Curve3D.BakeMode" default="0">
+			The mode of how to bake local posture on the curve, depending on [enum BakeMode] being used.
+		</member>
 		<member name="up_vector_enabled" type="bool" setter="set_up_vector_enabled" getter="is_up_vector_enabled" default="true">
 			If [code]true[/code], the curve will bake up vectors used for orientation. This is used when [member PathFollow3D.rotation_mode] is set to [constant PathFollow3D.ROTATION_ORIENTED]. Changing it forces the cache to be recomputed.
 		</member>
 	</members>
+	<constants>
+		<constant name="BAKE_PARALLEL_TRANSPORT" value="0" enum="BakeMode">
+			Bake local posture with Parallel Transport frame. It is easier to achieve smooth rotation by default. However, moving control points will change all local posture along the curve, making it harder to tweak together with tilt. This is the default mode.
+		</constant>
+		<constant name="BAKE_FRENET" value="1" enum="BakeMode">
+			Bake local posture with Frenet frame. Moving a control point will only change local posture between the two neighboring control points. However Frenet frame relies on binormal, which is not well defined on straight lines and have abrupt change over saddle points on `S` shaped curves. Avoid these kinds of curves when using this mode.
+		</constant>
+		<constant name="BAKE_PLANAR" value="2" enum="BakeMode">
+			Bake local posture assuming that curves reside almost on a plane, with up vectors in the general direction of Y+. Think of racing tracks or express ways, instead of roller coasters.
+		</constant>
+	</constants>
 </class>
