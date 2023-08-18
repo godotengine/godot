@@ -588,6 +588,10 @@ void OS_IOS::_register_compiled_feature() {
 	OS::get_singleton()->register_compile_time_feature(OS::Feature::MOBILE);
 }
 
+bool OS_IOS::_check_dynamic_feature(const String &p_feature) {
+	return false;
+}
+
 void OS_IOS::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;

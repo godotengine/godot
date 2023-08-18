@@ -490,7 +490,7 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 	return !err_code ? ok : FAILED;
 }
 
-bool OS_LinuxBSD::_check_dynamic_feature(const String &p_feature) override {
+bool OS_LinuxBSD::_check_dynamic_feature(const String &p_feature) {
 #ifdef FONTCONFIG_ENABLED
 	return font_config_initialized;
 #endif

@@ -373,94 +373,92 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 void OS::register_compiled_features() {
 	//Register all features
 	int index = 0;
-	for (const StringName &feature : FEATURES) {
+	for (const String &feature : FEATURES) {
 		feature_list_compiled[feature] = index;
 		feature_compiled |= 0 << index;
 		index++;
 	}
 
-	// Set to true all compile time features.
-
-	feature_compiled |= 1 << feature_list_compiled[get_identifier()]; // Current Operating System.
+	register_compile_time_feature(get_identifier()); // Current Operating System.
 
 #ifdef DEBUG_ENABLED
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::DEBUG]];
+	register_compile_time_feature(Feature::DEBUG);
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::EDITOR]];
+	register_compile_time_feature(Feature::EDITOR);
 #else
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::TEMPLATE]];
+	register_compile_time_feature(Feature::TEMPLATE);
 #ifdef DEBUG_ENABLED
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::TEMPLATE_DEBUG]];
+	register_compile_time_feature(Feature::TEMPLATE_DEBUG);
 #else
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::TEMPLATE_RELEASE]];
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::RELEASE]];
+	register_compile_time_feature(Feature::TEMPLATE_RELEASE);
+	register_compile_time_feature(Feature::RELEASE);
 #endif // DEBUG_ENABLED
 #endif // TOOLS_ENABLED
 
 #ifdef REAL_T_IS_DOUBLE
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::DOUBLE]];
+	register_compile_time_feature(Feature::DOUBLE);
 #else
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::SINGLE]];
+	register_compile_time_feature(Feature::SINGLE);
 #endif // REAL_T_IS_DOUBLE
 
 	if (sizeof(void *) == 8) {
-		feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::_64]];
+		register_compile_time_feature(Feature::_64);
 	}
 	if (sizeof(void *) == 4) {
-		feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::_32]];
+		register_compile_time_feature(Feature::_32);
 	}
 
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::X86_64]];
+	register_compile_time_feature(Feature::X86_64);
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
 	feature_compiled |= feature_list_compiled[FEATURES[Feature::X86_32]];
 #endif
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::X86]];
+	register_compile_time_feature(Feature::X86);
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 #if defined(__aarch64__) || defined(_M_ARM64)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARM64]];
+	register_compile_time_feature(Feature::ARM64);
 #elif defined(__arm__) || defined(_M_ARM)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARM32]];
+	register_compile_time_feature(Feature::ARM32);
 #endif
 #if defined(__ARM_ARCH_7A__)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARMV7A]];
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARMV7]];
+	register_compile_time_feature(Feature::ARMV7A);
+	register_compile_time_feature(Feature::ARMV7);
 #endif
 #if defined(__ARM_ARCH_7S__)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARMV7]];
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARMV7S]];
+	register_compile_time_feature(Feature::ARMV7);
+	register_compile_time_feature(Feature::ARMV7S);
 #endif
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::ARM]];
+	register_compile_time_feature(Feature::ARM);
 #elif defined(__riscv)
 #if __riscv_xlen == 8
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::RV64]];
+	register_compile_time_feature(Feature::RV64);
 #endif
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::RISCV]];
+	register_compile_time_feature(Feature::RISCV);
 #elif defined(__powerpc__)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::PPC]];
+	register_compile_time_feature(Feature::PPC);
 #if defined(__powerpc64__)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::PPC64]];
+	register_compile_time_feature(Feature::PPC64);
 #endif
 #if defined(__powerpc32__)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::PPC32]];
+	register_compile_time_feature(Feature::PPC32);
 #endif
 #elif defined(__wasm__)
 #if defined(__wasm64__)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::WASM64]];
+	register_compile_time_feature(Feature::WASM64);
 #elif defined(__wasm32__)
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::WASM32]];
+	register_compile_time_feature(Feature::WASM32);
 #endif
-	feature_compiled |= 1 << feature_list_compiled[FEATURES[Feature::WASM]];
+	register_compile_time_feature(Feature::WASM);
 #endif
 
 	_register_compiled_feature();
 }
 
 void OS::register_compile_time_feature(Feature feature) {
-	ERR_FAIL_COND_MSG(feature >= Feature::FEATURE_MAX, "Invalid Feature!");
+	ERR_FAIL_COND_MSG(feature >= Feature::FEATURE_MAX, "Invalid Compiled feature.");
 	feature_compiled |= 1 << feature_list_compiled[FEATURES[feature]];
 }
 
@@ -484,7 +482,7 @@ bool OS::has_feature(const String &p_feature) {
 
 	if (feature_list_dynamic.size() == 0) {
 		int index = 0;
-		for (const StringName &feature : FEATURES_DYNAMIC) {
+		for (const String &feature : FEATURES_DYNAMIC) {
 			feature_list_dynamic[feature] = index;
 			feature_dynamic |= 0 << index;
 			index++;
@@ -509,20 +507,20 @@ bool OS::has_feature(const String &p_feature) {
 
 	// Check for "custom" features;
 
-	// print_line("======");
-	// String value = "";
-	// for (int i = sizeof(feature_compiled) * 8 - 1; i >= 0; --i) {
-	// 	int v = int((feature_compiled >> i) & 1);
-	// 	value += itos(v);
-	// 	if (v == 1) {
-	// 		print_line("activated feature: " + FEATURES[i]);
-	// 	}
-	// }
-	// print_line(value);
-	// for(const StringName name : FEATURES) {
-	// 	print_line("Feature: " + String(Variant(name)) + " - " + String(Variant(bool(feature_compiled & ( 1 << feature_list_compiled[p_feature])))));
-	// }
-	// print_line("======");
+	print_line("======");
+	String value = "";
+	for (int i = sizeof(feature_compiled) * 8 - 1; i >= 0; --i) {
+		int v = int((feature_compiled >> i) & 1);
+		value += itos(v);
+		if (v == 1) {
+			print_line("activated feature: " + FEATURES[i]);
+		}
+	}
+	print_line(value);
+	for(const StringName name : FEATURES) {
+		print_line("Feature: " + String(Variant(name)) + " - " + String(Variant(bool(feature_compiled & ( 1 << feature_list_compiled[p_feature])))));
+	}
+	print_line("======");
 
 	if (has_server_feature_callback && has_server_feature_callback(p_feature)) {
 		return true;

@@ -170,6 +170,8 @@ public:
 	virtual void benchmark_dump() override;
 
 	virtual void _register_compiled_feature() override;
+	virtual bool _check_dynamic_feature(const String &p_feature) override;
+
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
 	~OS_Android();
 };

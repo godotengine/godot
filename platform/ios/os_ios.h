@@ -124,7 +124,7 @@ public:
 	virtual void vibrate_handheld(int p_duration_ms = 500) override;
 
 	virtual void _register_compiled_feature() override;
-
+	virtual bool _check_dynamic_feature(const String &p_feature) override;
 	void on_focus_out();
 	void on_focus_in();
 };
