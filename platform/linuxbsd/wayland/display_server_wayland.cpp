@@ -788,7 +788,7 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 		emulate_vsync = (context_vulkan->get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
 
 		if (emulate_vsync) {
-			print_line("VSYNC: manually throttling frames using MAILBOX.");
+			print_verbose("VSYNC: manually throttling frames using MAILBOX.");
 			context_vulkan->set_vsync_mode(p_window_id, DisplayServer::VSYNC_MAILBOX);
 		}
 	}
@@ -801,7 +801,7 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 		emulate_vsync = egl_manager->is_using_vsync();
 
 		if (emulate_vsync) {
-			print_line("VSYNC: manually throttling frames with swap delay 0.");
+			print_verbose("VSYNC: manually throttling frames with swap delay 0.");
 			egl_manager->set_use_vsync(false);
 		}
 	}
