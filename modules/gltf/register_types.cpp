@@ -55,18 +55,7 @@ static void _editor_init() {
 	// Blend to glTF importer.
 
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
-	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
-	EDITOR_DEF_RST("filesystem/import/blender/rpc_port", 6011);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,
-			"filesystem/import/blender/rpc_port", PROPERTY_HINT_RANGE, "0,65535,1"));
-
-	EDITOR_DEF_RST("filesystem/import/blender/rpc_server_uptime", 5);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT,
-			"filesystem/import/blender/rpc_server_uptime", PROPERTY_HINT_RANGE, "0,300,1,or_greater,suffix:s"));
-
-	String blender3_path = EDITOR_DEF_RST("filesystem/import/blender/blender3_path", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
-			"filesystem/import/blender/blender3_path", PROPERTY_HINT_GLOBAL_DIR));
+	String blender3_path = EDITOR_GET("filesystem/import/blender/blender3_path");
 	if (blend_enabled) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (blender3_path.is_empty()) {
@@ -89,10 +78,6 @@ static void _editor_init() {
 	// FBX to glTF importer.
 
 	bool fbx_enabled = GLOBAL_GET("filesystem/import/fbx/enabled");
-	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
-	String fbx2gltf_path = EDITOR_DEF_RST("filesystem/import/fbx/fbx2gltf_path", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
-			"filesystem/import/fbx/fbx2gltf_path", PROPERTY_HINT_GLOBAL_FILE));
 	if (fbx_enabled) {
 		Ref<EditorSceneFormatImporterFBX> importer;
 		importer.instantiate();
