@@ -250,10 +250,22 @@ Vector3 Node3D::get_global_position() const {
 	return get_global_transform().get_origin();
 }
 
+Basis Node3D::get_global_basis() const {
+	ERR_READ_THREAD_GUARD_V(Basis());
+	return get_global_transform().get_basis();
+}
+
 void Node3D::set_global_position(const Vector3 &p_position) {
 	ERR_THREAD_GUARD;
 	Transform3D transform = get_global_transform();
 	transform.set_origin(p_position);
+	set_global_transform(transform);
+}
+
+void Node3D::set_global_basis(const Basis &p_basis) {
+	ERR_THREAD_GUARD;
+	Transform3D transform = get_global_transform();
+	transform.set_basis(p_basis);
 	set_global_transform(transform);
 }
 
@@ -1110,6 +1122,8 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
 	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Node3D::set_global_position);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Node3D::get_global_position);
+	ClassDB::bind_method(D_METHOD("set_global_basis", "basis"), &Node3D::set_global_basis);
+	ClassDB::bind_method(D_METHOD("get_global_basis"), &Node3D::get_global_basis);
 	ClassDB::bind_method(D_METHOD("set_global_rotation", "euler_radians"), &Node3D::set_global_rotation);
 	ClassDB::bind_method(D_METHOD("get_global_rotation"), &Node3D::get_global_rotation);
 	ClassDB::bind_method(D_METHOD("set_global_rotation_degrees", "euler_degrees"), &Node3D::set_global_rotation_degrees);
@@ -1191,6 +1205,7 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "global_basis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_basis", "get_global_basis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation", "get_global_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation_degrees", "get_global_rotation_degrees");
 	ADD_GROUP("Visibility", "");
