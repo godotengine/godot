@@ -695,27 +695,21 @@ void OS_Android::benchmark_dump() {
 #endif
 }
 
-bool OS_Android::_check_internal_feature_support(const String &p_feature) {
-	if (p_feature == "system_fonts") {
-		return true;
-	}
-	if (p_feature == "mobile") {
-		return true;
-	}
+void OS_Android::_register_compiled_feature() {
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::SYSTEM_FONTS);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::MOBILE);
+
 #if defined(__aarch64__)
-	if (p_feature == "arm64-v8a" || p_feature == "arm64") {
-		return true;
-	}
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::ARM64);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::ARM64V8A);
 #elif defined(__ARM_ARCH_7A__)
-	if (p_feature == "armeabi-v7a" || p_feature == "armeabi" || p_feature == "arm32") {
-		return true;
-	}
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::ARMEABI_V7A);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::ARM32);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::ARMEABI);
 #elif defined(__arm__)
-	if (p_feature == "armeabi" || p_feature == "arm") {
-		return true;
-	}
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::ARMEABI);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::ARM);
 #endif
-	return false;
 }
 
 OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion) {

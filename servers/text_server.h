@@ -390,7 +390,7 @@ public:
 	virtual void font_set_opentype_feature_overrides(const RID &p_font_rid, const Dictionary &p_overrides) = 0;
 	virtual Dictionary font_get_opentype_feature_overrides(const RID &p_font_rid) const = 0;
 
-	virtual Dictionary font_supported_feature_list(const RID &p_font_rid) const = 0;
+	virtual Dictionary font_supported_feature_list_compiled(const RID &p_font_rid) const = 0;
 	virtual Dictionary font_supported_variation_list(const RID &p_font_rid) const = 0;
 
 	virtual double font_get_global_oversampling() const = 0;

@@ -56,6 +56,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_node_ref = false;
 	bool in_annotation = false;
 	bool in_string_name = false;
+	bool in_preprocessor = false;
 	bool is_hex_notation = false;
 	bool is_bin_notation = false;
 	bool in_member_variable = false;
@@ -184,6 +185,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					}
 					if (in_string_name && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
 						region_color = string_name_color;
+					}
+					if (in_preprocessor && (color_regions[in_region].start_key == "~")) {
+						region_color = preprocessor_color;
 					}
 
 					prev_color = region_color;
@@ -500,6 +504,17 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_string_name = false;
 		}
 
+		// Keep symbol color for binary '~'. In the case of '~~~' use Preprocessor color for the last tilde.
+		if (!in_preprocessor && in_region == -1 && str[j] == '~' && !is_binary_op) {
+			if (j >= 2 && str[j - 1] == '~' && str[j - 2] != '~' && prev_is_binary_op) {
+				is_binary_op = true;
+			} else if (j == 0 || (j > 0 && str[j - 1] != '~') || prev_is_binary_op) {
+				in_preprocessor = true;
+			}
+		} else if (in_region != -1 || is_a_symbol) {
+			in_preprocessor = false;
+		}
+
 		// '^^' has no special meaning, so unlike StringName, when binary, use NodePath color for the last caret.
 		if (!in_node_path && in_region == -1 && str[j] == '^' && !is_binary_op && (j == 0 || (j > 0 && str[j - 1] != '^') || prev_is_binary_op)) {
 			in_node_path = true;
@@ -529,6 +544,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (in_string_name) {
 			next_type = STRING_NAME;
 			color = string_name_color;
+		} else if (in_preprocessor) {
+			next_type = PREPROCESSOR;
+			color = preprocessor_color;
 		} else if (in_node_path) {
 			next_type = NODE_PATH;
 			color = node_path_color;
@@ -738,6 +756,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		node_ref_color = Color(0.39, 0.76, 0.35);
 		annotation_color = Color(1.0, 0.7, 0.45);
 		string_name_color = Color(1.0, 0.76, 0.65);
+		preprocessor_color = Color(1.0, 0.6, 0);
 		comment_marker_colors[COMMENT_MARKER_CRITICAL] = Color(0.77, 0.35, 0.35);
 		comment_marker_colors[COMMENT_MARKER_WARNING] = Color(0.72, 0.61, 0.48);
 		comment_marker_colors[COMMENT_MARKER_NOTICE] = Color(0.56, 0.67, 0.51);
@@ -748,6 +767,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		node_ref_color = Color(0.0, 0.5, 0);
 		annotation_color = Color(0.8, 0.37, 0);
 		string_name_color = Color(0.8, 0.56, 0.45);
+		preprocessor_color = Color(1.0, 0.6, 0);
 		comment_marker_colors[COMMENT_MARKER_CRITICAL] = Color(0.8, 0.14, 0.14);
 		comment_marker_colors[COMMENT_MARKER_WARNING] = Color(0.75, 0.39, 0.03);
 		comment_marker_colors[COMMENT_MARKER_NOTICE] = Color(0.24, 0.54, 0.09);
@@ -759,6 +779,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_reference_color", node_ref_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/annotation_color", annotation_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/string_name_color", string_name_color);
+	EDITOR_DEF("text_editor/theme/highlighting/gdscript/preprocessor_color", preprocessor_color);
 	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/critical_color", comment_marker_colors[COMMENT_MARKER_CRITICAL]);
 	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/warning_color", comment_marker_colors[COMMENT_MARKER_WARNING]);
 	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/notice_color", comment_marker_colors[COMMENT_MARKER_NOTICE]);
@@ -793,6 +814,10 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 				string_name_color,
 				true);
 		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/theme/highlighting/gdscript/preprocessor_color",
+				preprocessor_color,
+				true);
+		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/theme/highlighting/comment_markers/critical_color",
 				comment_marker_colors[COMMENT_MARKER_CRITICAL],
 				true);
@@ -812,6 +837,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	node_ref_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_reference_color");
 	annotation_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/annotation_color");
 	string_name_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/string_name_color");
+	preprocessor_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/preprocessor_color");
 	type_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
 	comment_marker_colors[COMMENT_MARKER_CRITICAL] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/critical_color");
 	comment_marker_colors[COMMENT_MARKER_WARNING] = EDITOR_GET("text_editor/theme/highlighting/comment_markers/warning_color");

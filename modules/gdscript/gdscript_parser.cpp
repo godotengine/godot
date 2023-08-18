@@ -155,6 +155,16 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 	}
 }
 
+void GDScriptParser::push_error(const String &p_message, int line, int column) {
+	panic_mode = true;
+	errors.push_back({p_message, line, column});
+}
+
+void GDScriptParser::push_error(const String &p_message, int line, int column) {
+	panic_mode = true;
+	errors.push_back({p_message, line, column});
+}
+
 #ifdef DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_COND(p_source == nullptr);
@@ -266,10 +276,212 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 	completion_call_stack.back()->get().argument = p_argument;
 }
 
+String GDScriptParser::read_preprocessors(const String &p_source_code) {
+	String new_source_code = "";
+	String defined_feature = "DEBUG";
+
+	Vector<String> lines = p_source_code.split("\n", true);
+	Ref<RegEx> pp_if = RegEx::create_from_string("(?<seps>[ \t]*)~if (?<feature>[a-zA-Z0-9_]+)");
+	Ref<RegEx> pp_endif = RegEx::create_from_string("(?<seps>[ \t]*)~endif");
+
+	struct DataIf;
+	struct DataEndif;
+
+	struct DataIf {
+		String feature;
+		int line;
+		int column;
+		int ident_level;
+		bool keep;
+		DataEndif* matching_endif;
+
+
+	};
+	Vector<DataIf> data_if;
+
+	struct DataEndif {
+		int line;
+		int ident_level;
+		DataIf* matching_if;
+	};
+	Vector<DataEndif> data_endif;
+
+	enum SEARCH {
+		S_IF,
+		S_ENDIF
+	};
+
+	int search = SEARCH::S_IF;
+
+	int line = 0;
+	for (int index = 0; index < lines.size(); index++)
+	{
+		line++;
+		String text = lines[index] + "\n";
+
+
+		if (search == SEARCH::S_IF) {
+			Ref<RegExMatch> result_if = pp_if->search(text);
+
+			if (result_if != nullptr) {
+				//Create data
+				DataIf preprocessor;
+				preprocessor.line = line;
+				preprocessor.column = result_if->get_start("feature") + 1;
+				preprocessor.feature = result_if->get_string("feature");
+				preprocessor.ident_level = result_if->get_string("seps").length();
+				data_if.push_back(preprocessor);
+
+				
+			} else if (index == lines.size()-1) {
+				// Restart searching.
+				index = -1;
+				line = 0;
+				search = SEARCH::S_ENDIF;
+			}
+			continue;
+		} else if (search == SEARCH::S_ENDIF)
+		{
+			Ref<RegExMatch> result_endif = pp_endif->search(text);
+
+			if (result_endif != nullptr) {
+				DataEndif d;
+				d.line = line;
+				d.ident_level = result_endif->get_string("seps").length();
+				d.matching_if = nullptr;
+				data_endif.push_back(d);
+			}
+
+			if (index != lines.size()-1) continue;
+
+		}
+	}
+
+	// for(const DataIf &num : data_if) {
+	// 	print_line("=== DataIf ===");
+	// 	print_line(num.feature);
+	// 	print_line(num.line);
+	// 	print_line(num.column);
+	// 	print_line(num.ident_level);
+	// 	print_line(num.matching_endif);
+	// 	print_line("=======\n\n");
+	// }
+
+	// for(const DataEndif &num : data_endif) {
+	// 	print_line("=== DataEndIf ===");
+	// 	print_line(num.line);
+	// 	print_line(num.ident_level);
+	// 	print_line("=======\n\n");
+	// }
+
+	struct SourceRemove {
+		int remove_line_a;
+		int remove_line_b;
+		bool from_a_to_b;
+	};
+	Vector<SourceRemove> removes;
+
+	// With collected data we do the checks.
+	for (DataIf &_if : data_if)
+	{
+		_if.matching_endif = nullptr;
+		_if.keep = false;
+
+		
+		for(DataEndif &_endif : data_endif)
+		{
+			if (_endif.line > _if.line && _endif.ident_level == _if.ident_level && _if.matching_endif == nullptr && _endif.matching_if == nullptr) {
+				SourceRemove sr;
+				
+				_if.matching_endif = &_endif;
+				_endif.matching_if = &_if;
+				if (defined_feature == _if.feature) {
+					//keep the code
+					_if.keep = true;
+					sr.from_a_to_b = false;
+				} else
+				{
+					sr.from_a_to_b = true;
+				}
+				//remove the preprocessor
+				sr.remove_line_a = _if.line;
+				sr.remove_line_b = _endif.line;
+				removes.push_back(sr);
+				break;
+			}
+		}
+
+		if (_if.matching_endif == nullptr) {
+			push_error("Preprocessor: " + _if.feature + " has no matching ~endif", _if.line, _if.column);
+			return "";
+		}
+
+	}
+
+	// Prepare the source code
+	// 3-5 from a to b = false
+	// 8-10 from a to b = true
+
+	new_source_code = "";
+	const Vector<SourceRemove> *removes_ptr = &removes;
+	line = 0;
+	for (int index = 0; index < lines.size(); index++)
+	{
+		line++;
+		String text = lines[index] + "\n";
+		bool removed_line = false;
+		for (int j = 0; j < removes.size(); j++)
+		{
+			if (removed_line) continue;
+			const SourceRemove& sr = removes_ptr->get(j);
+
+			if (sr.from_a_to_b == false)
+			{
+				if (line == sr.remove_line_a) {
+					new_source_code += "";
+					removed_line = true;
+					continue;
+				}
+				
+				if (line == sr.remove_line_b) {
+					new_source_code += "";
+					removed_line = true;
+					continue;
+
+				};
+
+			} else {
+				while(line >= sr.remove_line_a && line <= sr.remove_line_b) {
+					new_source_code += "";
+					removed_line = true;
+					index++;
+					line++;
+					if (line > sr.remove_line_b) break;
+				}
+			}
+		}
+
+		if (removed_line == false)
+		{
+			new_source_code += text;
+		}
+		
+	}
+
+	return new_source_code;
+}
+
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion) {
 	clear();
 
-	String source = p_source_code;
+	String source = "";
+	GDScriptPreprocessor::ParserError preprocessor_data = preprocessor.read_source(p_source_code, source);
+	if (preprocessor_data.message != "") {
+		push_error(preprocessor_data.message, preprocessor_data.line, preprocessor_data.column);
+		return ERR_PARSE_ERROR;
+	}
+	if (source == "") source = p_source_code;
+	
 	int cursor_line = -1;
 	int cursor_column = -1;
 	for_completion = p_for_completion;
@@ -283,7 +495,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 
 	if (p_for_completion) {
 		// Remove cursor sentinel char.
-		const Vector<String> lines = p_source_code.split("\n");
+		const Vector<String> lines = source.split("\n");
 		cursor_line = 1;
 		cursor_column = 1;
 		for (int i = 0; i < lines.size(); i++) {

@@ -82,6 +82,8 @@ class OS {
 	HashMap<String, uint64_t> start_benchmark_from;
 	Dictionary startup_benchmark_json;
 
+	void register_compiled_features();
+
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
@@ -94,6 +96,78 @@ public:
 		RENDER_THREAD_SAFE,
 		RENDER_SEPARATE_THREAD
 	};
+
+		// Feature system - char is used so we can have 64 features at max.
+	enum Feature {
+		ANDROID,
+		LINUX,
+		MACOS,
+		IOS,
+		UWP,
+		WINDOWS,
+		LINUXBSD,
+		MOBILE,
+		DEBUG,
+		EDITOR,
+		TEMPLATE,
+		TEMPLATE_DEBUG,
+		TEMPLATE_RELEASE,
+		RELEASE,
+		DOUBLE,
+		SINGLE,
+		_64,
+		_32,
+		X86_64,
+		X86_32,
+		X86,
+		ARM,
+		ARM64,
+		ARM64V8A,
+		ARMEABI,
+		ARMEABI_V7A,
+		ARM32,
+		ARMV7A,
+		ARMV7,
+		ARMV7S,
+		ARM,
+		RV64,
+		RISCV,
+		PPC64,
+		PPC32,
+		PPC,
+		WASM64,
+		WASM32,
+		WASM,
+		BSD,
+		PC,
+		WEB,
+		WEB_ANDROID,
+		WEB_IOS,
+		WEB_LINUXBSD,
+		WEB_MACOS,
+		WEB_WINDOWS,
+		ETC,
+		ETC2,
+		S3TC,
+		FEATURE_MAX
+	};
+
+	enum FeatureDynamic {
+		MOVIE,
+		SYSTEM_FONTS,
+		FEATURE_MAX
+	};
+
+	
+	static const String FEATURES[Feature::FEATURE_MAX];
+	static const String FEATURES_DYNAMIC[FeatureDynamic::FEATURE_MAX];
+	
+	HashMap<StringName, u_int8_t> feature_list_compiled;
+	HashMap<StringName, u_int8_t> feature_list_dynamic;
+
+	// u_long_long is being used so we can have 64 features defined
+	unsigned long long feature_compiled = 0;
+	int feature_dynamic = 0;
 
 protected:
 	friend class Main;
@@ -122,7 +196,8 @@ protected:
 
 	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args, const List<String> &p_user_args);
 
-	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
+	virtual void _register_compiled_feature() = 0;
+	virtual bool _check_dynamic_feature(const String &p_feature) = 0;
 
 public:
 	typedef int64_t ProcessID;
@@ -294,6 +369,8 @@ public:
 	virtual String get_unique_id() const;
 
 	bool has_feature(const String &p_feature);
+	void register_compile_time_feature(Feature feature);
+	void register_compile_time_feature(const String &p_feature);
 
 	virtual bool is_sandboxed() const;
 

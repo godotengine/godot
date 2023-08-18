@@ -220,7 +220,7 @@ public:
 	virtual void move_window_to_foreground();
 	virtual String get_user_data_dir() const;
 
-	virtual bool _check_internal_feature_support(const String &p_feature);
+	virtual void _register_compiled_feature();
 
 	void set_window(Windows::UI::Core::CoreWindow ^ p_window);
 	void screen_size_changed();

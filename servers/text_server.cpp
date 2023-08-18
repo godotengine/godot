@@ -359,7 +359,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_opentype_feature_overrides", "font_rid", "overrides"), &TextServer::font_set_opentype_feature_overrides);
 	ClassDB::bind_method(D_METHOD("font_get_opentype_feature_overrides", "font_rid"), &TextServer::font_get_opentype_feature_overrides);
 
-	ClassDB::bind_method(D_METHOD("font_supported_feature_list", "font_rid"), &TextServer::font_supported_feature_list);
+	ClassDB::bind_method(D_METHOD("font_supported_feature_list_compiled", "font_rid"), &TextServer::font_supported_feature_list_compiled);
 	ClassDB::bind_method(D_METHOD("font_supported_variation_list", "font_rid"), &TextServer::font_supported_variation_list);
 
 	ClassDB::bind_method(D_METHOD("font_get_global_oversampling"), &TextServer::font_get_global_oversampling);

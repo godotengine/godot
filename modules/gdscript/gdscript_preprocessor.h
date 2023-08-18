@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_highlighter.h                                                */
+/*  gdscript_preprocessor.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,83 +28,57 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_HIGHLIGHTER_H
-#define GDSCRIPT_HIGHLIGHTER_H
+#ifndef GDSCRIPT_PREPROCESSOR_H
+#define GDSCRIPT_PREPROCESSOR_H
 
-#include "editor/plugins/script_editor_plugin.h"
-#include "scene/gui/text_edit.h"
+#include "gdscript.h"
 
-class GDScriptSyntaxHighlighter : public EditorSyntaxHighlighter {
-	GDCLASS(GDScriptSyntaxHighlighter, EditorSyntaxHighlighter)
+struct DataIf;
+struct DataEndIf;
 
-private:
-	struct ColorRegion {
-		Color color;
-		String start_key;
-		String end_key;
-		bool line_only = false;
-	};
-	Vector<ColorRegion> color_regions;
-	HashMap<int, int> color_region_cache;
-
-	HashMap<StringName, Color> class_names;
-	HashMap<StringName, Color> reserved_keywords;
-	HashMap<StringName, Color> member_keywords;
-	HashSet<StringName> global_functions;
-
-	enum Type {
-		NONE,
-		REGION,
-		NODE_PATH,
-		NODE_REF,
-		ANNOTATION,
-		STRING_NAME,
-		PREPROCESSOR,
-		SYMBOL,
-		NUMBER,
-		FUNCTION,
-		SIGNAL,
-		KEYWORD,
-		MEMBER,
-		IDENTIFIER,
-		TYPE,
-	};
-
-	// Colors.
-	Color font_color;
-	Color symbol_color;
-	Color function_color;
-	Color global_function_color;
-	Color function_definition_color;
-	Color built_in_type_color;
-	Color number_color;
-	Color member_color;
-	Color node_path_color;
-	Color node_ref_color;
-	Color annotation_color;
-	Color string_name_color;
-	Color type_color;
-	Color preprocessor_color;
-
-	enum CommentMarkerLevel {
-		COMMENT_MARKER_CRITICAL,
-		COMMENT_MARKER_WARNING,
-		COMMENT_MARKER_NOTICE,
-		COMMENT_MARKER_MAX,
-	};
-	Color comment_marker_colors[COMMENT_MARKER_MAX];
-	HashMap<String, CommentMarkerLevel> comment_markers;
-
-	void add_color_region(const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false);
-
-public:
-	virtual void _update_cache() override;
-	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
-
-	virtual String _get_name() const override;
-	virtual PackedStringArray _get_supported_languages() const override;
-
-	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+struct DataIf {
+    String feature;
+    int line;
+    int column;
+    int ident_level;
+    DataEndIf* matching_endif;
 };
 
-#endif // GDSCRIPT_HIGHLIGHTER_H
+struct DataEndIf {
+    int line;
+    int ident_level;
+    DataIf* matching_if;
+};
+
+
+
+class GDScriptPreprocessor {
+
+    public:
+    struct ParserError {
+        String message = "";
+        int line = 0, column = 0;
+    };
+    static const StringName PREP_IF;
+    static const StringName PREP_ENDIF;
+
+    ParserError read_source(const String &p_source_code, String &p_new_source_code);
+    GDScriptPreprocessor();
+    ~GDScriptPreprocessor();
+
+    private:
+    LocalVector<DataIf> data_if;
+    LocalVector<DataEndIf> data_endif;
+    List<String> features;
+    
+    bool find_preprocessor_if(const String &p_text, DataIf &p_data);
+    bool find_preprocessor_endif(const String &p_text, DataEndIf &p_data);
+    bool match(const String &p_search, const String &p_target, int p_at_index);
+    bool fast_check(const char &p_first_letter,const String &p_text, int &p_index, int &p_ident_level, char &p_c);
+    bool check(const StringName &p_PREP, int& p_index, const String &p_text, char &p_c);
+    bool is_active_feature(const String &p_feature);
+    ParserError validate();
+
+};
+
+#endif

@@ -970,6 +970,9 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 		case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
 			tex = get_theme_icon(SNAME("Variant"), SNAME("EditorIcons"));
 			break;
+		case ScriptLanguage::CODE_COMPLETION_KIND_PREPROCESSOR:
+			tex = get_theme_icon(SNAME("Preprocessor"), SNAME("EditorIcons"));
+			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
 			tex = get_theme_icon(SNAME("MemberConstant"), SNAME("EditorIcons"));
 			break;

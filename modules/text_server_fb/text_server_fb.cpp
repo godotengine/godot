@@ -2599,7 +2599,7 @@ Dictionary TextServerFallback::_font_get_opentype_feature_overrides(const RID &p
 	return fd->feature_overrides;
 }
 
-Dictionary TextServerFallback::_font_supported_feature_list(const RID &p_font_rid) const {
+Dictionary TextServerFallback::_font_supported_feature_list_compiled(const RID &p_font_rid) const {
 	return Dictionary();
 }
 

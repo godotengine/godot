@@ -80,6 +80,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	MenuButton *edit_menu = nullptr;
 	MenuButton *search_menu = nullptr;
 	MenuButton *goto_menu = nullptr;
+	MenuButton *features_menu = nullptr;
 	PopupMenu *bookmarks_menu = nullptr;
 	PopupMenu *breakpoints_menu = nullptr;
 	PopupMenu *highlighter_menu = nullptr;
@@ -192,6 +193,9 @@ protected:
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
+
+	void _features_update(int p_id);
+	void _list_features();
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
