@@ -500,7 +500,7 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 			s += p_args[i].get_slice(":", 0);
 			if (th) {
 				String type = p_args[i].get_slice(":", 1);
-				if (!type.is_empty() && type != "var") {
+				if (!type.is_empty()) {
 					s += ": " + type;
 				}
 			}
