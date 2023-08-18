@@ -340,6 +340,13 @@
 				Loads an image from the binary contents of a PNG file.
 			</description>
 		</method>
+		<method name="load_qoi_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a QOI file.
+			</description>
+		</method>
 		<method name="load_svg_from_buffer">
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />

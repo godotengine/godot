@@ -3016,6 +3016,7 @@ ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_qoi_mem_loader_func = nullptr;
 ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_dds_mem_loader_func = nullptr;
 
@@ -3489,6 +3490,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_bmp_from_buffer", "buffer"), &Image::load_bmp_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_qoi_from_buffer", "buffer"), &Image::load_qoi_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_dds_from_buffer", "buffer"), &Image::load_dds_from_buffer);
 
 	ClassDB::bind_method(D_METHOD("load_svg_from_buffer", "buffer", "scale"), &Image::load_svg_from_buffer, DEFVAL(1.0));
@@ -3841,6 +3843,14 @@ Error Image::load_bmp_from_buffer(const Vector<uint8_t> &p_array) {
 			ERR_UNAVAILABLE,
 			"The BMP module isn't enabled. Recompile the Godot editor or export template binary with the `module_bmp_enabled=yes` SCons option.");
 	return _load_from_buffer(p_array, _bmp_mem_loader_func);
+}
+
+Error Image::load_qoi_from_buffer(const Vector<uint8_t> &p_array) {
+	ERR_FAIL_NULL_V_MSG(
+			_qoi_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The qoi module isn't enabled. Recompile the Godot editor or export template binary with the `module_qoi_enabled=yes` SCons option.");
+	return _load_from_buffer(p_array, _qoi_mem_loader_func);
 }
 
 Error Image::load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale) {
