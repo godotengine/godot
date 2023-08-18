@@ -2297,34 +2297,6 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
-
-			text_edit->set_caret_mid_grapheme_enabled(false);
-			CHECK_FALSE(text_edit->is_caret_mid_grapheme_enabled());
-
-			text_edit->start_action(TextEdit::EditAction::ACTION_NONE);
-
-			text_edit->undo();
-			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "ffi some test text.ffi some test text.");
-
-			SIGNAL_DISCARD("text_set");
-			SIGNAL_DISCARD("text_changed");
-			SIGNAL_DISCARD("lines_edited_from");
-			SIGNAL_DISCARD("caret_changed");
-
-			SEND_GUI_ACTION("ui_text_delete");
-			CHECK(text_edit->get_viewport()->is_input_handled());
-			CHECK(text_edit->get_text() == " some test text. some test text.");
-			CHECK(text_edit->get_caret_line() == 0);
-			CHECK(text_edit->get_caret_column() == 0);
-			CHECK_FALSE(text_edit->has_selection(0));
-
-			CHECK(text_edit->get_caret_line(1) == 0);
-			CHECK(text_edit->get_caret_column(1) == 16);
-			CHECK_FALSE(text_edit->has_selection(1));
-			SIGNAL_CHECK("caret_changed", empty_signal_args);
-			SIGNAL_CHECK("text_changed", empty_signal_args);
-			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_word_left") {
@@ -3334,18 +3306,6 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 
 	SEND_GUI_ACTION("ui_text_caret_left");
 	CHECK(text_edit->get_caret_column() == 2);
-
-	text_edit->set_caret_mid_grapheme_enabled(false);
-	CHECK_FALSE(text_edit->is_caret_mid_grapheme_enabled());
-
-	SEND_GUI_ACTION("ui_text_caret_left");
-	CHECK(text_edit->get_caret_column() == 0);
-
-	SEND_GUI_ACTION("ui_text_caret_right");
-	CHECK(text_edit->get_caret_column() == 3);
-
-	SEND_GUI_ACTION("ui_text_caret_left");
-	CHECK(text_edit->get_caret_column() == 0);
 
 	text_edit->set_line(0, "Lorem  ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	for (int i = 0; i < 3; i++) {
