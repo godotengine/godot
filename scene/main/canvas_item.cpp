@@ -273,10 +273,9 @@ void CanvasItem::_exit_canvas() {
 }
 
 void CanvasItem::_notification(int p_what) {
-	ERR_MAIN_THREAD_GUARD;
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_MAIN_THREAD_GUARD;
 			ERR_FAIL_COND(!is_inside_tree());
 
 			Node *parent = get_parent();
@@ -336,6 +335,8 @@ void CanvasItem::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			ERR_MAIN_THREAD_GUARD;
+
 			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
@@ -357,14 +358,20 @@ void CanvasItem::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
+			ERR_MAIN_THREAD_GUARD;
+
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
 		case NOTIFICATION_WORLD_2D_CHANGED: {
+			ERR_MAIN_THREAD_GUARD;
+
 			_exit_canvas();
 			_enter_canvas();
 		} break;
 		case NOTIFICATION_PARENTED: {
 			// The node is not inside the tree during this notification.
+			ERR_MAIN_THREAD_GUARD;
+
 			_notify_transform();
 		} break;
 	}
