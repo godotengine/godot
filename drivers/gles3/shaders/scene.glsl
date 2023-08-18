@@ -1192,7 +1192,7 @@ void main() {
 #ifndef DISABLE_LIGHT_DIRECTIONAL
 	//diffuse_light = normal; //
 	for (uint i = uint(0); i < scene_data.directional_light_count; i++) {
-		light_compute(normal, normalize(directional_lights[i].direction), normalize(view), directional_lights[i].size, directional_lights[i].color * directional_lights[i].energy, true, 1.0, f0, roughness, metallic, 1.0, albedo, alpha,
+		light_compute(normal, normalize(directional_lights[i].direction), normalize(view), directional_lights[i].size, directional_lights[i].color * directional_lights[i].energy, true, directional_lights[i].specular, f0, roughness, metallic, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
