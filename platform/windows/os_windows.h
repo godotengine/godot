@@ -31,14 +31,15 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
+#include "crash_handler_windows.h"
+#include "key_mapping_windows.h"
+
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "crash_handler_windows.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
-#include "key_mapping_windows.h"
 #include "servers/audio_server.h"
 
 #ifdef XAUDIO2_ENABLED
@@ -46,8 +47,9 @@
 #endif
 
 #if defined(VULKAN_ENABLED)
+#include "vulkan_context_win.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/windows/vulkan_context_win.h"
 #endif
 
 #include <io.h>
@@ -178,6 +180,8 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const override;
 	virtual uint64_t get_ticks_usec() const override;
 
+	virtual Dictionary get_memory_info() const override;
+
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error kill(const ProcessID &p_pid) override;
@@ -212,6 +216,7 @@ public:
 	virtual String get_unique_id() const override;
 
 	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	void run();
 
@@ -222,6 +227,8 @@ public:
 	virtual void initialize_debugging() override;
 
 	virtual Error move_to_trash(const String &p_path) override;
+
+	virtual String get_system_ca_certificates() override;
 
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
 

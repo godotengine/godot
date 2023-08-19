@@ -38,6 +38,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_run_bar.h"
 
 DebugAdapterProtocol *DebugAdapterProtocol::singleton = nullptr;
 
@@ -51,7 +52,7 @@ Error DAPeer::handle_data() {
 		while (true) {
 			if (req_pos >= DAP_MAX_BUFFER_SIZE) {
 				req_pos = 0;
-				ERR_FAIL_COND_V_MSG(true, ERR_OUT_OF_MEMORY, "Response header too big");
+				ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Response header too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) {
@@ -812,7 +813,7 @@ Array DebugAdapterProtocol::update_breakpoints(const String &p_path, const Array
 }
 
 void DebugAdapterProtocol::on_debug_paused() {
-	if (EditorNode::get_singleton()->get_pause_button()->is_pressed()) {
+	if (EditorRunBar::get_singleton()->get_pause_button()->is_pressed()) {
 		notify_stopped_paused();
 	} else {
 		notify_continued();
@@ -1017,8 +1018,7 @@ DebugAdapterProtocol::DebugAdapterProtocol() {
 
 	reset_ids();
 
-	EditorNode *node = EditorNode::get_singleton();
-	node->get_pause_button()->connect("pressed", callable_mp(this, &DebugAdapterProtocol::on_debug_paused));
+	EditorRunBar::get_singleton()->get_pause_button()->connect("pressed", callable_mp(this, &DebugAdapterProtocol::on_debug_paused));
 
 	EditorDebuggerNode *debugger_node = EditorDebuggerNode::get_singleton();
 	debugger_node->connect("breakpoint_toggled", callable_mp(this, &DebugAdapterProtocol::on_debug_breakpoint_toggled));

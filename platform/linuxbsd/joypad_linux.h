@@ -32,6 +32,7 @@
 #define JOYPAD_LINUX_H
 
 #ifdef JOYDEV_ENABLED
+
 #include "core/input/input.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"

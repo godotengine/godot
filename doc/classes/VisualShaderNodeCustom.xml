@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Virtual class to define custom [VisualShaderNode]s for use in the Visual Shader Editor.
 	</brief_description>
@@ -35,6 +35,14 @@
 				The output ports can be assigned values in the shader code. For example, [code]return output_vars[0] + " = " + input_vars[0] + ";"[/code].
 				You can customize the generated code based on the shader [param mode] (see [enum Shader.Mode]) and/or [param type] (see [enum VisualShader.Type]).
 				Defining this method is [b]required[/b].
+			</description>
+		</method>
+		<method name="_get_default_input_port" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="type" type="int" enum="VisualShaderNode.PortType" />
+			<description>
+				Override this method to define the input port which should be connected by default when this node is created as a result of dragging a connection from an existing node to the empty space on the graph.
+				Defining this method is [b]optional[/b]. If not overridden, the connection will be created to the first valid port.
 			</description>
 		</method>
 		<method name="_get_description" qualifiers="virtual const">

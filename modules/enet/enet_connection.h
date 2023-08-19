@@ -31,10 +31,10 @@
 #ifndef ENET_CONNECTION_H
 #define ENET_CONNECTION_H
 
-#include "core/object/ref_counted.h"
+#include "enet_packet_peer.h"
 
 #include "core/crypto/crypto.h"
-#include "enet_packet_peer.h"
+#include "core/object/ref_counted.h"
 
 #include <enet/enet.h>
 
@@ -109,6 +109,7 @@ private:
 
 public:
 	void broadcast(enet_uint8 p_channel, ENetPacket *p_packet);
+	void socket_send(const String &p_address, int p_port, const PackedByteArray &p_packet);
 	Error create_host_bound(const IPAddress &p_bind_address = IPAddress("*"), int p_port = 0, int p_max_peers = 32, int p_max_channels = 0, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
 	Error create_host(int p_max_peers = 32, int p_max_channels = 0, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
 	void destroy();

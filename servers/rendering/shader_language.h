@@ -357,18 +357,18 @@ public:
 		Node *next = nullptr;
 
 		enum Type {
-			TYPE_SHADER,
-			TYPE_FUNCTION,
-			TYPE_BLOCK,
-			TYPE_VARIABLE,
-			TYPE_VARIABLE_DECLARATION,
-			TYPE_CONSTANT,
-			TYPE_OPERATOR,
-			TYPE_CONTROL_FLOW,
-			TYPE_MEMBER,
-			TYPE_ARRAY,
-			TYPE_ARRAY_CONSTRUCT,
-			TYPE_STRUCT,
+			NODE_TYPE_SHADER,
+			NODE_TYPE_FUNCTION,
+			NODE_TYPE_BLOCK,
+			NODE_TYPE_VARIABLE,
+			NODE_TYPE_VARIABLE_DECLARATION,
+			NODE_TYPE_CONSTANT,
+			NODE_TYPE_OPERATOR,
+			NODE_TYPE_CONTROL_FLOW,
+			NODE_TYPE_MEMBER,
+			NODE_TYPE_ARRAY,
+			NODE_TYPE_ARRAY_CONSTRUCT,
+			NODE_TYPE_STRUCT,
 		};
 
 		Type type;
@@ -407,7 +407,7 @@ public:
 		virtual bool is_indexed() const override { return op == OP_INDEX; }
 
 		OperatorNode() :
-				Node(TYPE_OPERATOR) {}
+				Node(NODE_TYPE_OPERATOR) {}
 	};
 
 	struct VariableNode : public Node {
@@ -421,7 +421,7 @@ public:
 		virtual String get_datatype_name() const override { return String(struct_name); }
 
 		VariableNode() :
-				Node(TYPE_VARIABLE) {}
+				Node(NODE_TYPE_VARIABLE) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
@@ -442,7 +442,7 @@ public:
 		virtual DataType get_datatype() const override { return datatype; }
 
 		VariableDeclarationNode() :
-				Node(TYPE_VARIABLE_DECLARATION) {}
+				Node(NODE_TYPE_VARIABLE_DECLARATION) {}
 	};
 
 	struct ArrayNode : public Node {
@@ -462,7 +462,7 @@ public:
 		virtual bool is_indexed() const override { return index_expression != nullptr; }
 
 		ArrayNode() :
-				Node(TYPE_ARRAY) {}
+				Node(NODE_TYPE_ARRAY) {}
 	};
 
 	struct ArrayConstructNode : public Node {
@@ -475,7 +475,7 @@ public:
 		virtual int get_array_size() const override { return initializer.size(); }
 
 		ArrayConstructNode() :
-				Node(TYPE_ARRAY_CONSTRUCT) {}
+				Node(NODE_TYPE_ARRAY_CONSTRUCT) {}
 	};
 
 	struct ConstantNode : public Node {
@@ -498,7 +498,7 @@ public:
 		virtual int get_array_size() const override { return array_size; }
 
 		ConstantNode() :
-				Node(TYPE_CONSTANT) {}
+				Node(NODE_TYPE_CONSTANT) {}
 	};
 
 	struct FunctionNode;
@@ -536,7 +536,7 @@ public:
 		bool use_comma_between_statements = false;
 
 		BlockNode() :
-				Node(TYPE_BLOCK) {}
+				Node(NODE_TYPE_BLOCK) {}
 	};
 
 	struct ControlFlowNode : public Node {
@@ -545,7 +545,7 @@ public:
 		Vector<BlockNode *> blocks;
 
 		ControlFlowNode() :
-				Node(TYPE_CONTROL_FLOW) {}
+				Node(NODE_TYPE_CONTROL_FLOW) {}
 	};
 
 	struct MemberNode : public Node {
@@ -569,13 +569,13 @@ public:
 		virtual bool is_indexed() const override { return index_expression != nullptr || call_expression != nullptr; }
 
 		MemberNode() :
-				Node(TYPE_MEMBER) {}
+				Node(NODE_TYPE_MEMBER) {}
 	};
 
 	struct StructNode : public Node {
 		List<MemberNode *> members;
 		StructNode() :
-				Node(TYPE_STRUCT) {}
+				Node(NODE_TYPE_STRUCT) {}
 	};
 
 	struct FunctionNode : public Node {
@@ -611,7 +611,7 @@ public:
 		virtual int get_array_size() const override { return return_array_size; }
 
 		FunctionNode() :
-				Node(TYPE_FUNCTION) {}
+				Node(NODE_TYPE_FUNCTION) {}
 	};
 
 	struct ShaderNode : public Node {
@@ -718,7 +718,7 @@ public:
 		Vector<Struct> vstructs;
 
 		ShaderNode() :
-				Node(TYPE_SHADER) {}
+				Node(NODE_TYPE_SHADER) {}
 	};
 
 	struct UniformOrderComparator {

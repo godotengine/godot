@@ -555,9 +555,11 @@ bool OpenXRInterface::initialize() {
 	xr_server->add_tracker(head);
 
 	// attach action sets
+	Vector<RID> loaded_action_sets;
 	for (int i = 0; i < action_sets.size(); i++) {
-		openxr_api->action_set_attach(action_sets[i]->action_set_rid);
+		loaded_action_sets.append(action_sets[i]->action_set_rid);
 	}
+	openxr_api->attach_action_sets(loaded_action_sets);
 
 	// make this our primary interface
 	xr_server->set_primary_interface(this);

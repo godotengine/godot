@@ -45,6 +45,12 @@ private:
 	friend DebugAdapterProtocol;
 
 	_FORCE_INLINE_ bool is_valid_path(const String &p_path) const {
+		// If path contains \, it's a Windows path, so we need to convert it to /, and check as case-insensitive.
+		if (p_path.contains("\\")) {
+			String project_path = ProjectSettings::get_singleton()->get_resource_path();
+			String path = p_path.replace("\\", "/");
+			return path.findn(project_path) != -1;
+		}
 		return p_path.begins_with(ProjectSettings::get_singleton()->get_resource_path());
 	}
 

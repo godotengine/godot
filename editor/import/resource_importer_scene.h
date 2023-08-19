@@ -296,7 +296,8 @@ public:
 
 	virtual bool can_import_threaded() const override { return false; }
 
-	ResourceImporterScene(bool p_animation_import = false);
+	ResourceImporterScene(bool p_animation_import = false, bool p_singleton = false);
+	~ResourceImporterScene();
 
 	template <class M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);

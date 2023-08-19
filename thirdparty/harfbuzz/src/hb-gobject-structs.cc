@@ -29,7 +29,7 @@
 #ifdef HAVE_GOBJECT
 
 
-/**
+/*
  * SECTION:hb-gobject
  * @title: hb-gobject
  * @short_description: GObject integration support

@@ -4,7 +4,7 @@
  *
  *   FreeType abstract glyph cache (specification).
  *
- * Copyright (C) 2000-2022 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -58,7 +58,7 @@
    * - FTC_GNode sub-class, e.g. MyNode, with relevant methods:
    *     my_node_new            (must call FTC_GNode_Init)
    *     my_node_free           (must call FTC_GNode_Done)
-   *     my_node_compare        (must call FTC_GNode_Compare)
+   *     my_node_compare        (must call ftc_gnode_compare)
    *     my_node_remove_faceid  (must call ftc_gnode_unselect in case
    *                             of match)
    *
@@ -178,19 +178,6 @@ FT_BEGIN_HEADER
   FTC_GNode_Init( FTC_GNode   node,
                   FT_UInt     gindex,  /* glyph index for node */
                   FTC_Family  family );
-
-#ifdef FTC_INLINE
-
-  /* returns TRUE iff the query's glyph index correspond to the node;  */
-  /* this assumes that the `family' and `hash' fields of the query are */
-  /* already correctly set                                             */
-  FT_LOCAL( FT_Bool )
-  FTC_GNode_Compare( FTC_GNode   gnode,
-                     FTC_GQuery  gquery,
-                     FTC_Cache   cache,
-                     FT_Bool*    list_changed );
-
-#endif
 
   /* call this function to clear a node's family -- this is necessary */
   /* to implement the `node_remove_faceid' cache method correctly     */

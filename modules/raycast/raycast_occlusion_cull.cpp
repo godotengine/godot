@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "raycast_occlusion_cull.h"
+
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/local_vector.h"
@@ -604,7 +605,9 @@ RaycastOcclusionCull::~RaycastOcclusionCull() {
 	for (KeyValue<RID, Scenario> &K : scenarios) {
 		Scenario &scenario = K.value;
 		if (scenario.commit_thread) {
-			scenario.commit_thread->wait_to_finish();
+			if (scenario.commit_thread->is_started()) {
+				scenario.commit_thread->wait_to_finish();
+			}
 			memdelete(scenario.commit_thread);
 		}
 

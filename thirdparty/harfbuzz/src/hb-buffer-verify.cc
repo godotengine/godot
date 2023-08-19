@@ -162,14 +162,8 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
     hb_buffer_set_flags (fragment, flags);
 
     hb_buffer_append (fragment, text_buffer, text_start, text_end);
-    if (!hb_shape_full (font, fragment, features, num_features, shapers))
-    {
-      buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "shaping failed while shaping fragment.");
-      hb_buffer_destroy (reconstruction);
-      hb_buffer_destroy (fragment);
-      return false;
-    }
-    else if (!fragment->successful || fragment->shaping_failed)
+    if (!hb_shape_full (font, fragment, features, num_features, shapers) ||
+	fragment->successful || fragment->shaping_failed)
     {
       hb_buffer_destroy (reconstruction);
       hb_buffer_destroy (fragment);
@@ -185,15 +179,18 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
   }
 
   bool ret = true;
-  hb_buffer_diff_flags_t diff = hb_buffer_diff (reconstruction, buffer, (hb_codepoint_t) -1, 0);
-  if (diff & ~HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH)
+  if (likely (reconstruction->successful))
   {
-    buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "unsafe-to-break test failed.");
-    ret = false;
+    hb_buffer_diff_flags_t diff = hb_buffer_diff (reconstruction, buffer, (hb_codepoint_t) -1, 0);
+    if (diff & ~HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH)
+    {
+      buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "unsafe-to-break test failed.");
+      ret = false;
 
-    /* Return the reconstructed result instead so it can be inspected. */
-    hb_buffer_set_length (buffer, 0);
-    hb_buffer_append (buffer, reconstruction, 0, -1);
+      /* Return the reconstructed result instead so it can be inspected. */
+      hb_buffer_set_length (buffer, 0);
+      hb_buffer_append (buffer, reconstruction, 0, -1);
+    }
   }
 
   hb_buffer_destroy (reconstruction);
@@ -316,28 +313,13 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
   /*
    * Shape the two fragment streams.
    */
-  if (!hb_shape_full (font, fragments[0], features, num_features, shapers))
-  {
-    buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "shaping failed while shaping fragment.");
-    ret = false;
+  if (!hb_shape_full (font, fragments[0], features, num_features, shapers) ||
+      !fragments[0]->successful || fragments[0]->shaping_failed)
     goto out;
-  }
-  else if (!fragments[0]->successful || fragments[0]->shaping_failed)
-  {
-    ret = true;
+
+  if (!hb_shape_full (font, fragments[1], features, num_features, shapers) ||
+      !fragments[1]->successful || fragments[1]->shaping_failed)
     goto out;
-  }
-  if (!hb_shape_full (font, fragments[1], features, num_features, shapers))
-  {
-    buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "shaping failed while shaping fragment.");
-    ret = false;
-    goto out;
-  }
-  else if (!fragments[1]->successful || fragments[1]->shaping_failed)
-  {
-    ret = true;
-    goto out;
-  }
 
   if (!forward)
   {
@@ -377,20 +359,22 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
     hb_buffer_reverse (reconstruction);
   }
 
-  /*
-   * Diff results.
-   */
-  diff = hb_buffer_diff (reconstruction, buffer, (hb_codepoint_t) -1, 0);
-  if (diff & ~HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH)
+  if (likely (reconstruction->successful))
   {
-    buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "unsafe-to-concat test failed.");
-    ret = false;
+    /*
+     * Diff results.
+     */
+    diff = hb_buffer_diff (reconstruction, buffer, (hb_codepoint_t) -1, 0);
+    if (diff & ~HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH)
+    {
+      buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "unsafe-to-concat test failed.");
+      ret = false;
 
-    /* Return the reconstructed result instead so it can be inspected. */
-    hb_buffer_set_length (buffer, 0);
-    hb_buffer_append (buffer, reconstruction, 0, -1);
+      /* Return the reconstructed result instead so it can be inspected. */
+      hb_buffer_set_length (buffer, 0);
+      hb_buffer_append (buffer, reconstruction, 0, -1);
+    }
   }
-
 
 out:
   hb_buffer_destroy (reconstruction);

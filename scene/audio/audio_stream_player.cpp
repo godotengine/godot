@@ -200,7 +200,7 @@ StringName AudioStreamPlayer::get_bus() const {
 			return bus;
 		}
 	}
-	return SNAME("Master");
+	return SceneStringNames::get_singleton()->Master;
 }
 
 void AudioStreamPlayer::set_autoplay(bool p_enable) {

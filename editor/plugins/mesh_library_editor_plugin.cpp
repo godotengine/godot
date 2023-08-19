@@ -30,6 +30,7 @@
 
 #include "mesh_library_editor_plugin.h"
 
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -300,6 +301,7 @@ void MeshLibraryEditorPlugin::edit(Object *p_node) {
 		mesh_library_editor->edit(Object::cast_to<MeshLibrary>(p_node));
 		mesh_library_editor->show();
 	} else {
+		mesh_library_editor->edit(Ref<MeshLibrary>());
 		mesh_library_editor->hide();
 	}
 }

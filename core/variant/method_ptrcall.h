@@ -159,7 +159,10 @@ MAKE_PTRARG_BY_REFERENCE(Variant);
 template <class T>
 struct PtrToArg<T *> {
 	_FORCE_INLINE_ static T *convert(const void *p_ptr) {
-		return const_cast<T *>(reinterpret_cast<const T *>(p_ptr));
+		if (p_ptr == nullptr) {
+			return nullptr;
+		}
+		return const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr));
 	}
 	typedef Object *EncodeT;
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
@@ -170,7 +173,10 @@ struct PtrToArg<T *> {
 template <class T>
 struct PtrToArg<const T *> {
 	_FORCE_INLINE_ static const T *convert(const void *p_ptr) {
-		return reinterpret_cast<const T *>(p_ptr);
+		if (p_ptr == nullptr) {
+			return nullptr;
+		}
+		return *reinterpret_cast<T *const *>(p_ptr);
 	}
 	typedef const Object *EncodeT;
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {

@@ -72,6 +72,14 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 				spawn_props.erase(prop.name);
 			}
 			return true;
+		} else if (what == "watch") {
+			prop.watch = p_value;
+			if (prop.watch) {
+				watch_props.push_back(prop.name);
+			} else {
+				watch_props.erase(prop.name);
+			}
+			return true;
 		}
 	}
 	return false;
@@ -94,6 +102,9 @@ bool SceneReplicationConfig::_get(const StringName &p_name, Variant &r_ret) cons
 		} else if (what == "spawn") {
 			r_ret = prop.spawn;
 			return true;
+		} else if (what == "watch") {
+			r_ret = prop.watch;
+			return true;
 		}
 	}
 	return false;
@@ -104,6 +115,7 @@ void SceneReplicationConfig::_get_property_list(List<PropertyInfo> *p_list) cons
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/spawn", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/watch", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 }
 
@@ -212,6 +224,27 @@ void SceneReplicationConfig::property_set_sync(const NodePath &p_path, bool p_en
 	}
 }
 
+bool SceneReplicationConfig::property_get_watch(const NodePath &p_path) {
+	List<ReplicationProperty>::Element *E = properties.find(p_path);
+	ERR_FAIL_COND_V(!E, false);
+	return E->get().watch;
+}
+
+void SceneReplicationConfig::property_set_watch(const NodePath &p_path, bool p_enabled) {
+	List<ReplicationProperty>::Element *E = properties.find(p_path);
+	ERR_FAIL_COND(!E);
+	if (E->get().watch == p_enabled) {
+		return;
+	}
+	E->get().watch = p_enabled;
+	watch_props.clear();
+	for (const ReplicationProperty &prop : properties) {
+		if (prop.watch) {
+			watch_props.push_back(p_path);
+		}
+	}
+}
+
 void SceneReplicationConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_properties"), &SceneReplicationConfig::get_properties);
 	ClassDB::bind_method(D_METHOD("add_property", "path", "index"), &SceneReplicationConfig::add_property, DEFVAL(-1));
@@ -222,4 +255,6 @@ void SceneReplicationConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("property_set_spawn", "path", "enabled"), &SceneReplicationConfig::property_set_spawn);
 	ClassDB::bind_method(D_METHOD("property_get_sync", "path"), &SceneReplicationConfig::property_get_sync);
 	ClassDB::bind_method(D_METHOD("property_set_sync", "path", "enabled"), &SceneReplicationConfig::property_set_sync);
+	ClassDB::bind_method(D_METHOD("property_get_watch", "path"), &SceneReplicationConfig::property_get_watch);
+	ClassDB::bind_method(D_METHOD("property_set_watch", "path", "enabled"), &SceneReplicationConfig::property_set_watch);
 }

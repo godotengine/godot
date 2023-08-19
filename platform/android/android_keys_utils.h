@@ -31,8 +31,9 @@
 #ifndef ANDROID_KEYS_UTILS_H
 #define ANDROID_KEYS_UTILS_H
 
+#include "core/os/keyboard.h"
+
 #include <android/input.h>
-#include <core/os/keyboard.h>
 
 #define AKEYCODE_MAX 0xFFFF
 
@@ -60,6 +61,7 @@ static AndroidGodotCodePair android_godot_code_pairs[] = {
 	{ AKEYCODE_DPAD_DOWN, Key::DOWN }, // (20) Directional Pad Down key.
 	{ AKEYCODE_DPAD_LEFT, Key::LEFT }, // (21) Directional Pad Left key.
 	{ AKEYCODE_DPAD_RIGHT, Key::RIGHT }, // (22) Directional Pad Right key.
+	{ AKEYCODE_DPAD_CENTER, Key::ENTER }, // (23) Directional Pad Center key.
 	{ AKEYCODE_VOLUME_UP, Key::VOLUMEUP }, // (24) Volume Up key.
 	{ AKEYCODE_VOLUME_DOWN, Key::VOLUMEDOWN }, // (25) Volume Down key.
 	{ AKEYCODE_POWER, Key::STANDBY }, // (26) Power key.

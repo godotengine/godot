@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,12 +60,6 @@
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
-
-struct Box
-{
-    float x, y, w, h;
-};
-
 
 static bool _appendShape(SvgNode* node, Shape* shape, const Box& vBox, const string& svgPath);
 static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox, const string& svgPath, bool mask, int depth, bool* isMaskWhite = nullptr);
@@ -255,7 +249,6 @@ static void _applyComposition(Paint* paint, const SvgNode* node, const Box& vBox
             node->style->clipPath.applying = true;
 
             auto comp = Shape::gen();
-            if (node->transform) comp->transform(*node->transform);
 
             auto child = compNode->child.data;
             auto valid = false; //Composite only when valid shapes are existed
@@ -264,7 +257,13 @@ static void _applyComposition(Paint* paint, const SvgNode* node, const Box& vBox
                 if (_appendChildShape(*child, comp.get(), vBox, svgPath)) valid = true;
             }
 
-            if (valid) paint->composite(move(comp), CompositeMethod::ClipPath);
+            if (node->transform) {
+                auto m = comp->transform();
+                m = mathMultiply(node->transform, &m);
+                comp->transform(m);
+            }
+
+            if (valid) paint->composite(std::move(comp), CompositeMethod::ClipPath);
 
             node->style->clipPath.applying = false;
         }
@@ -286,9 +285,9 @@ static void _applyComposition(Paint* paint, const SvgNode* node, const Box& vBox
                 if (node->transform) comp->transform(*node->transform);
 
                 if (compNode->node.mask.type == SvgMaskType::Luminance && !isMaskWhite) {
-                    paint->composite(move(comp), CompositeMethod::LumaMask);
+                    paint->composite(std::move(comp), CompositeMethod::LumaMask);
                 } else {
-                    paint->composite(move(comp), CompositeMethod::AlphaMask);
+                    paint->composite(std::move(comp), CompositeMethod::AlphaMask);
                 }
             }
 
@@ -314,10 +313,10 @@ static void _applyProperty(SvgNode* node, Shape* vg, const Box& vBox, const stri
 
         if (style->fill.paint.gradient->type == SvgGradientType::Linear) {
              auto linear = _applyLinearGradientProperty(style->fill.paint.gradient, vg, bBox, style->fill.opacity);
-             vg->fill(move(linear));
+             vg->fill(std::move(linear));
         } else if (style->fill.paint.gradient->type == SvgGradientType::Radial) {
              auto radial = _applyRadialGradientProperty(style->fill.paint.gradient, vg, bBox, style->fill.opacity);
-             vg->fill(move(radial));
+             vg->fill(std::move(radial));
         }
     } else if (style->fill.paint.url) {
         //TODO: Apply the color pointed by url
@@ -331,6 +330,8 @@ static void _applyProperty(SvgNode* node, Shape* vg, const Box& vBox, const stri
 
     //Apply the fill rule
     vg->fill((tvg::FillRule)style->fill.fillRule);
+    //Rendering order
+    vg->order(!style->paintOrder);
 
     //Apply node opacity
     if (style->opacity < 255) vg->opacity(style->opacity);
@@ -341,6 +342,7 @@ static void _applyProperty(SvgNode* node, Shape* vg, const Box& vBox, const stri
     vg->stroke(style->stroke.width);
     vg->stroke(style->stroke.cap);
     vg->stroke(style->stroke.join);
+    vg->strokeMiterlimit(style->stroke.miterlimit);
     if (style->stroke.dash.array.count > 0) {
         vg->stroke(style->stroke.dash.array.data, style->stroke.dash.array.count);
     }
@@ -354,10 +356,10 @@ static void _applyProperty(SvgNode* node, Shape* vg, const Box& vBox, const stri
 
         if (style->stroke.paint.gradient->type == SvgGradientType::Linear) {
              auto linear = _applyLinearGradientProperty(style->stroke.paint.gradient, vg, bBox, style->stroke.opacity);
-             vg->stroke(move(linear));
+             vg->stroke(std::move(linear));
         } else if (style->stroke.paint.gradient->type == SvgGradientType::Radial) {
              auto radial = _applyRadialGradientProperty(style->stroke.paint.gradient, vg, bBox, style->stroke.opacity);
-             vg->stroke(move(radial));
+             vg->stroke(std::move(radial));
         }
     } else if (style->stroke.paint.url) {
         //TODO: Apply the color pointed by url
@@ -400,19 +402,21 @@ static bool _appendShape(SvgNode* node, Shape* shape, const Box& vBox, const str
             break;
         }
         case SvgNodeType::Polygon: {
-            if (node->node.polygon.pointsCount < 2) break;
-            shape->moveTo(node->node.polygon.points[0], node->node.polygon.points[1]);
-            for (int i = 2; i < node->node.polygon.pointsCount - 1; i += 2) {
-                shape->lineTo(node->node.polygon.points[i], node->node.polygon.points[i + 1]);
+            if (node->node.polygon.pts.count < 2) break;
+            auto pts = node->node.polygon.pts.data;
+            shape->moveTo(pts[0], pts[1]);
+            for (pts += 2; pts < node->node.polygon.pts.end(); pts += 2) {
+                shape->lineTo(pts[0], pts[1]);
             }
             shape->close();
             break;
         }
         case SvgNodeType::Polyline: {
-            if (node->node.polygon.pointsCount < 2) break;
-            shape->moveTo(node->node.polygon.points[0], node->node.polygon.points[1]);
-            for (int i = 2; i < node->node.polygon.pointsCount - 1; i += 2) {
-                shape->lineTo(node->node.polygon.points[i], node->node.polygon.points[i + 1]);
+            if (node->node.polyline.pts.count < 2) break;
+            auto pts = node->node.polyline.pts.data;
+            shape->moveTo(pts[0], pts[1]);
+            for (pts += 2; pts < node->node.polyline.pts.end(); pts += 2) {
+                shape->lineTo(pts[0], pts[1]);
             }
             break;
         }
@@ -444,9 +448,11 @@ enum class imageMimeTypeEncoding
     base64 = 0x1,
     utf8 = 0x2
 };
+
 constexpr imageMimeTypeEncoding operator|(imageMimeTypeEncoding a, imageMimeTypeEncoding b) {
     return static_cast<imageMimeTypeEncoding>(static_cast<int>(a) | static_cast<int>(b));
 }
+
 constexpr bool operator&(imageMimeTypeEncoding a, imageMimeTypeEncoding b) {
     return (static_cast<int>(a) & static_cast<int>(b));
 }
@@ -673,7 +679,7 @@ static unique_ptr<Scene> _useBuildHelper(const SvgNode* node, const Box& vBox, c
         scene->transform(mSceneTransform);
 
         if (node->node.use.symbol->node.symbol.overflowVisible) {
-            finalScene = move(scene);
+            finalScene = std::move(scene);
         } else {
             auto viewBoxClip = Shape::gen();
             viewBoxClip->appendRect(0, 0, width, height, 0, 0);
@@ -686,17 +692,17 @@ static unique_ptr<Scene> _useBuildHelper(const SvgNode* node, const Box& vBox, c
             viewBoxClip->transform(mClipTransform);
 
             auto compositeLayer = Scene::gen();
-            compositeLayer->composite(move(viewBoxClip), CompositeMethod::ClipPath);
-            compositeLayer->push(move(scene));
+            compositeLayer->composite(std::move(viewBoxClip), CompositeMethod::ClipPath);
+            compositeLayer->push(std::move(scene));
 
             auto root = Scene::gen();
-            root->push(move(compositeLayer));
+            root->push(std::move(compositeLayer));
 
-            finalScene = move(root);
+            finalScene = std::move(root);
         }
     } else {
         if (!mathIdentity((const Matrix*)(&mUseTransform))) scene->transform(mUseTransform);
-        finalScene = move(scene);
+        finalScene = std::move(scene);
     }
 
     return finalScene;
@@ -728,7 +734,7 @@ static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox,
                 } else if ((*child)->type == SvgNodeType::Image) {
                     auto image = _imageBuildHelper(*child, vBox, svgPath);
                     if (image) {
-                        scene->push(move(image));
+                        scene->push(std::move(image));
                         if (isMaskWhite) *isMaskWhite = false;
                     }
                 } else if ((*child)->type != SvgNodeType::Mask) {
@@ -736,13 +742,13 @@ static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox,
                     if (shape) {
                         if (isMaskWhite) {
                             uint8_t r, g, b;
-                            shape->fillColor(&r, &g, &b, nullptr);
+                            shape->fillColor(&r, &g, &b);
                             if (shape->fill() || r < 255 || g < 255 || b < 255 || shape->strokeFill() ||
-                                (shape->strokeColor(&r, &g, &b, nullptr) == Result::Success && (r < 255 || g < 255 || b < 255))) {
+                                (shape->strokeColor(&r, &g, &b) == Result::Success && (r < 255 || g < 255 || b < 255))) {
                                 *isMaskWhite = false;
                             }
                         }
-                        scene->push(move(shape));
+                        scene->push(std::move(shape));
                     }
                 }
             }
@@ -755,36 +761,64 @@ static unique_ptr<Scene> _sceneBuildHelper(const SvgNode* node, const Box& vBox,
 }
 
 
+static void _updateInvalidViewSize(const Scene* scene, Box& vBox, float& w, float& h, SvgViewFlag viewFlag)
+{
+    bool validWidth = (viewFlag & SvgViewFlag::Width);
+    bool validHeight = (viewFlag & SvgViewFlag::Height);
+
+    float x, y;
+    scene->bounds(&x, &y, &vBox.w, &vBox.h, false);
+    if (!validWidth && !validHeight) {
+        vBox.x = x;
+        vBox.y = y;
+    } else {
+        if (validWidth) vBox.w = w;
+        if (validHeight) vBox.h = h;
+    }
+
+    //the size would have 1x1 or percentage values.
+    if (!validWidth) w *= vBox.w;
+    if (!validHeight) h *= vBox.h;
+}
+
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
-unique_ptr<Scene> svgSceneBuild(SvgNode* node, float vx, float vy, float vw, float vh, float w, float h, AspectRatioAlign align, AspectRatioMeetOrSlice meetOrSlice, const string& svgPath)
+unique_ptr<Scene> svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, float h, AspectRatioAlign align, AspectRatioMeetOrSlice meetOrSlice, const string& svgPath, SvgViewFlag viewFlag)
 {
     //TODO: aspect ratio is valid only if viewBox was set
 
-    if (!node || (node->type != SvgNodeType::Doc)) return nullptr;
+    if (!loaderData.doc || (loaderData.doc->type != SvgNodeType::Doc)) return nullptr;
 
-    Box vBox = {vx, vy, vw, vh};
-    auto docNode = _sceneBuildHelper(node, vBox, svgPath, false, 0);
+    auto docNode = _sceneBuildHelper(loaderData.doc, vBox, svgPath, false, 0);
 
-    if (!mathEqual(w, vw) || !mathEqual(h, vh)) {
+    if (!(viewFlag & SvgViewFlag::Viewbox)) _updateInvalidViewSize(docNode.get(), vBox, w, h, viewFlag);
+
+    if (!mathEqual(w, vBox.w) || !mathEqual(h, vBox.h)) {
         Matrix m = _calculateAspectRatioMatrix(align, meetOrSlice, w, h, vBox);
         docNode->transform(m);
-    } else if (!mathZero(vx) || !mathZero(vy)) {
-        docNode->translate(-vx, -vy);
+    } else if (!mathZero(vBox.x) || !mathZero(vBox.y)) {
+        docNode->translate(-vBox.x, -vBox.y);
     }
 
     auto viewBoxClip = Shape::gen();
     viewBoxClip->appendRect(0, 0, w, h, 0, 0);
-    viewBoxClip->fill(0, 0, 0, 255);
+    viewBoxClip->fill(0, 0, 0);
 
     auto compositeLayer = Scene::gen();
-    compositeLayer->composite(move(viewBoxClip), CompositeMethod::ClipPath);
-    compositeLayer->push(move(docNode));
+    compositeLayer->composite(std::move(viewBoxClip), CompositeMethod::ClipPath);
+    compositeLayer->push(std::move(docNode));
 
     auto root = Scene::gen();
-    root->push(move(compositeLayer));
+    root->push(std::move(compositeLayer));
+
+    loaderData.doc->node.doc.vx = vBox.x;
+    loaderData.doc->node.doc.vy = vBox.y;
+    loaderData.doc->node.doc.vw = vBox.w;
+    loaderData.doc->node.doc.vh = vBox.h;
+    loaderData.doc->node.doc.w = w;
+    loaderData.doc->node.doc.h = h;
 
     return root;
 }

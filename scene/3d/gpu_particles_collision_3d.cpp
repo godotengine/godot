@@ -469,8 +469,13 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	}
 
 	//compute bvh
-
-	ERR_FAIL_COND_V_MSG(faces.size() <= 1, Ref<Image>(), "No faces detected during GPUParticlesCollisionSDF3D bake. Check whether there are visible meshes matching the bake mask within its extents.");
+	if (faces.size() <= 1) {
+		ERR_PRINT("No faces detected during GPUParticlesCollisionSDF3D bake. Check whether there are visible meshes matching the bake mask within its extents.");
+		if (bake_end_function) {
+			bake_end_function();
+		}
+		return Ref<Image>();
+	}
 
 	LocalVector<FacePos> face_pos;
 

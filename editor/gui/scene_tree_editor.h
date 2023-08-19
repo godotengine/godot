@@ -31,9 +31,11 @@
 #ifndef SCENE_TREE_EDITOR_H
 #define SCENE_TREE_EDITOR_H
 
-#include "editor/editor_data.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+
+class EditorSelection;
+class TextureRect;
 
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
@@ -84,7 +86,7 @@ class SceneTreeEditor : public Control {
 	void _notification(int p_what);
 	void _selected_changed();
 	void _deselect_items();
-	void _rename_node(ObjectID p_node, const String &p_name);
+	void _rename_node(Node *p_node, const String &p_name);
 
 	void _cell_collapsed(Object *p_obj);
 
@@ -171,10 +173,10 @@ public:
 class SceneTreeDialog : public ConfirmationDialog {
 	GDCLASS(SceneTreeDialog, ConfirmationDialog);
 
+	VBoxContainer *content = nullptr;
 	SceneTreeEditor *tree = nullptr;
-	//Button *select;
-	//Button *cancel;
 	LineEdit *filter = nullptr;
+	LocalVector<TextureRect *> valid_type_icons;
 
 	void _select();
 	void _cancel();
@@ -188,8 +190,11 @@ protected:
 
 public:
 	void popup_scenetree_dialog();
+	void set_valid_types(const Vector<StringName> &p_valid);
+
 	SceneTreeEditor *get_scene_tree() { return tree; }
 	LineEdit *get_filter_line_edit() { return filter; }
+
 	SceneTreeDialog();
 	~SceneTreeDialog();
 };

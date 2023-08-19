@@ -33,11 +33,11 @@
 #include "core/os/os.h"
 #include "servers/rendering_server.h"
 
+#include <transcoder/basisu_transcoder.h>
+
 #ifdef TOOLS_ENABLED
 #include <encoder/basisu_comp.h>
 #endif
-
-#include <transcoder/basisu_transcoder.h>
 
 enum BasisDecompressFormat {
 	BASIS_DECOMPRESS_RG,
@@ -58,32 +58,7 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 		if (image->get_format() != Image::FORMAT_RGBA8) {
 			image->convert(Image::FORMAT_RGBA8);
 		}
-		if (!image->has_mipmaps()) {
-			basisu::image buimg(image->get_width(), image->get_height());
-			Vector<uint8_t> vec = image->get_data();
-			const uint8_t *r = vec.ptr();
-			memcpy(buimg.get_ptr(), r, vec.size());
-			params.m_source_images.push_back(buimg);
-		} else {
-			{
-				Ref<Image> base_image = image->get_image_from_mipmap(0);
-				Vector<uint8_t> image_vec = base_image->get_data();
-				basisu::image buimg_image(base_image->get_width(), base_image->get_height());
-				const uint8_t *r = image_vec.ptr();
-				memcpy(buimg_image.get_ptr(), r, image_vec.size());
-				params.m_source_images.push_back(buimg_image);
-			}
-			basisu::vector<basisu::image> images;
-			for (int32_t mip_map_i = 1; mip_map_i <= image->get_mipmap_count(); mip_map_i++) {
-				Ref<Image> mip_map = image->get_image_from_mipmap(mip_map_i);
-				Vector<uint8_t> mip_map_vec = mip_map->get_data();
-				basisu::image buimg_mipmap(mip_map->get_width(), mip_map->get_height());
-				const uint8_t *r = mip_map_vec.ptr();
-				memcpy(buimg_mipmap.get_ptr(), r, mip_map_vec.size());
-				images.push_back(buimg_mipmap);
-			}
-			params.m_source_mipmap_images.push_back(images);
-		}
+
 		params.m_uastc = true;
 		params.m_quality_level = basisu::BASISU_QUALITY_MIN;
 
@@ -117,6 +92,7 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 			} break;
 			case Image::USED_CHANNELS_RG: {
 #ifdef USE_RG_AS_RGBA
+				params.m_force_alpha = true;
 				image->convert_rg_to_ra_rgba8();
 				decompress_format = BASIS_DECOMPRESS_RG_AS_RA;
 #else
@@ -131,6 +107,33 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 				params.m_force_alpha = true;
 				decompress_format = BASIS_DECOMPRESS_RGBA;
 			} break;
+		}
+
+		if (!image->has_mipmaps()) {
+			basisu::image buimg(image->get_width(), image->get_height());
+			Vector<uint8_t> vec = image->get_data();
+			const uint8_t *r = vec.ptr();
+			memcpy(buimg.get_ptr(), r, vec.size());
+			params.m_source_images.push_back(buimg);
+		} else {
+			{
+				Ref<Image> base_image = image->get_image_from_mipmap(0);
+				Vector<uint8_t> image_vec = base_image->get_data();
+				basisu::image buimg_image(base_image->get_width(), base_image->get_height());
+				const uint8_t *r = image_vec.ptr();
+				memcpy(buimg_image.get_ptr(), r, image_vec.size());
+				params.m_source_images.push_back(buimg_image);
+			}
+			basisu::vector<basisu::image> images;
+			for (int32_t mip_map_i = 1; mip_map_i <= image->get_mipmap_count(); mip_map_i++) {
+				Ref<Image> mip_map = image->get_image_from_mipmap(mip_map_i);
+				Vector<uint8_t> mip_map_vec = mip_map->get_data();
+				basisu::image buimg_mipmap(mip_map->get_width(), mip_map->get_height());
+				const uint8_t *r = mip_map_vec.ptr();
+				memcpy(buimg_mipmap.get_ptr(), r, mip_map_vec.size());
+				images.push_back(buimg_mipmap);
+			}
+			params.m_source_mipmap_images.push_back(images);
 		}
 
 		basisu::basis_compressor c;

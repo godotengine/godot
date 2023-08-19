@@ -30,9 +30,10 @@
 
 #import "keyboard_input_view.h"
 
+#import "display_server_ios.h"
+#import "os_ios.h"
+
 #include "core/os/keyboard.h"
-#include "display_server_ios.h"
-#include "os_ios.h"
 
 @interface GodotKeyboardInputView () <UITextViewDelegate>
 

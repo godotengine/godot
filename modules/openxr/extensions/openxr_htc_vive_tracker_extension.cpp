@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "openxr_htc_vive_tracker_extension.h"
+
 #include "../action_map/openxr_interaction_profile_meta_data.h"
+
 #include "core/string/print_string.h"
 
 HashMap<String, bool *> OpenXRHTCViveTrackerExtension::get_requested_extensions() {

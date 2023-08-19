@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgLoader.h"
 
 #ifdef THORVG_SVG_LOADER_SUPPORT
@@ -35,6 +36,14 @@
 
 #ifdef THORVG_JPG_LOADER_SUPPORT
     #include "tvgJpgLoader.h"
+#endif
+
+#ifdef THORVG_WEBP_LOADER_SUPPORT
+    #include "tvgWebpLoader.h"
+#endif
+
+#ifdef THORVG_LOTTIE_LOADER_SUPPORT
+    #include "tvgLottieLoader.h"
 #endif
 
 #include "tvgRawLoader.h"
@@ -58,6 +67,12 @@ static LoadModule* _find(FileType type)
 #endif
             break;
         }
+        case FileType::Lottie: {
+#ifdef THORVG_LOTTIE_LOADER_SUPPORT
+            return new LottieLoader;
+#endif
+            break;
+        }
         case FileType::Raw: {
             return new RawLoader;
             break;
@@ -71,6 +86,12 @@ static LoadModule* _find(FileType type)
         case FileType::Jpg: {
 #ifdef THORVG_JPG_LOADER_SUPPORT
             return new JpgLoader;
+#endif
+            break;
+        }
+        case FileType::Webp: {
+#ifdef THORVG_WEBP_LOADER_SUPPORT
+            return new WebpLoader;
 #endif
             break;
         }
@@ -90,6 +111,10 @@ static LoadModule* _find(FileType type)
             format = "SVG";
             break;
         }
+        case FileType::Lottie: {
+            format = "lottie(json)";
+            break;
+        }
         case FileType::Raw: {
             format = "RAW";
             break;
@@ -100,6 +125,10 @@ static LoadModule* _find(FileType type)
         }
         case FileType::Jpg: {
             format = "JPG";
+            break;
+        }
+        case FileType::Webp: {
+            format = "WEBP";
             break;
         }
         default: {
@@ -118,8 +147,11 @@ static LoadModule* _findByPath(const string& path)
     auto ext = path.substr(path.find_last_of(".") + 1);
     if (!ext.compare("tvg")) return _find(FileType::Tvg);
     if (!ext.compare("svg")) return _find(FileType::Svg);
+    if (!ext.compare("json")) return _find(FileType::Lottie);
+    if (!ext.compare("lottie")) return _find(FileType::Lottie);
     if (!ext.compare("png")) return _find(FileType::Png);
     if (!ext.compare("jpg")) return _find(FileType::Jpg);
+    if (!ext.compare("webp")) return _find(FileType::Webp);
     return nullptr;
 }
 
@@ -132,9 +164,11 @@ static LoadModule* _findByType(const string& mimeType)
 
     if (mimeType == "tvg") type = FileType::Tvg;
     else if (mimeType == "svg" || mimeType == "svg+xml") type = FileType::Svg;
+    else if (mimeType == "lottie" || mimeType == "json") type = FileType::Lottie;
     else if (mimeType == "raw") type = FileType::Raw;
     else if (mimeType == "png") type = FileType::Png;
     else if (mimeType == "jpg" || mimeType == "jpeg") type = FileType::Jpg;
+    else if (mimeType == "webp") type = FileType::Webp;
     else {
         TVGLOG("LOADER", "Given mimetype is unknown = \"%s\".", mimeType.c_str());
         return nullptr;

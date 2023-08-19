@@ -37,8 +37,8 @@ class CodeEdit : public TextEdit {
 	GDCLASS(CodeEdit, TextEdit)
 
 public:
-	/* Keep enum in sync with:                                           */
-	/* /core/object/script_language.h - ScriptLanguage::CodeCompletionKind */
+	// Keep enums in sync with:
+	// core/object/script_language.h - ScriptLanguage::CodeCompletionKind
 	enum CodeCompletionKind {
 		KIND_CLASS,
 		KIND_FUNCTION,
@@ -50,6 +50,14 @@ public:
 		KIND_NODE_PATH,
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
+	};
+
+	// core/object/script_language.h - ScriptLanguage::CodeCompletionLocation
+	enum CodeCompletionLocation {
+		LOCATION_LOCAL = 0,
+		LOCATION_PARENT_MASK = 1 << 8,
+		LOCATION_OTHER_USER_CODE = 1 << 9,
+		LOCATION_OTHER = 1 << 10,
 	};
 
 private:
@@ -279,6 +287,11 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	String _get_text_for_symbol_lookup_bind_compat_73196();
+	static void _bind_compatibility_methods();
+#endif
+
 	virtual void _update_theme_item_cache() override;
 
 	/* Text manipulation */
@@ -313,6 +326,8 @@ public:
 
 	void indent_lines();
 	void unindent_lines();
+
+	void convert_indent(int p_from_line = -1, int p_to_line = -1);
 
 	/* Auto brace completion */
 	void set_auto_brace_completion_enabled(bool p_enabled);
@@ -425,7 +440,7 @@ public:
 
 	void request_code_completion(bool p_force = false);
 
-	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL);
+	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
 	void update_code_completion_options(bool p_forced = false);
 
 	TypedArray<Dictionary> get_code_completion_options() const;
@@ -445,7 +460,8 @@ public:
 	void set_symbol_lookup_on_click_enabled(bool p_enabled);
 	bool is_symbol_lookup_on_click_enabled() const;
 
-	String get_text_for_symbol_lookup();
+	String get_text_for_symbol_lookup() const;
+	String get_text_with_cursor_char(int p_line, int p_column) const;
 
 	void set_symbol_lookup_word_as_valid(bool p_valid);
 
@@ -454,5 +470,11 @@ public:
 };
 
 VARIANT_ENUM_CAST(CodeEdit::CodeCompletionKind);
+VARIANT_ENUM_CAST(CodeEdit::CodeCompletionLocation);
+
+// The custom comparer which will sort completion options.
+struct CodeCompletionOptionCompare {
+	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const;
+};
 
 #endif // CODE_EDIT_H

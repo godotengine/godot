@@ -87,21 +87,21 @@ void AudioStreamPlaybackWAV::seek(double p_time) {
 }
 
 template <class Depth, bool is_stereo, bool is_ima_adpcm>
-void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &offset, int32_t &increment, uint32_t amount, IMA_ADPCM_State *ima_adpcm) {
+void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm) {
 	// this function will be compiled branchless by any decent compiler
 
 	int32_t final, final_r, next, next_r;
-	while (amount) {
-		amount--;
-		int64_t pos = offset >> MIX_FRAC_BITS;
+	while (p_amount) {
+		p_amount--;
+		int64_t pos = p_offset >> MIX_FRAC_BITS;
 		if (is_stereo && !is_ima_adpcm) {
 			pos <<= 1;
 		}
 
 		if (is_ima_adpcm) {
-			int64_t sample_pos = pos + ima_adpcm[0].window_ofs;
+			int64_t sample_pos = pos + p_ima_adpcm[0].window_ofs;
 
-			while (sample_pos > ima_adpcm[0].last_nibble) {
+			while (sample_pos > p_ima_adpcm[0].last_nibble) {
 				static const int16_t _ima_adpcm_step_table[89] = {
 					7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
 					19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
@@ -122,20 +122,20 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 				for (int i = 0; i < (is_stereo ? 2 : 1); i++) {
 					int16_t nibble, diff, step;
 
-					ima_adpcm[i].last_nibble++;
+					p_ima_adpcm[i].last_nibble++;
 					const uint8_t *src_ptr = (const uint8_t *)base->data;
 					src_ptr += AudioStreamWAV::DATA_PAD;
 
-					uint8_t nbb = src_ptr[(ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
-					nibble = (ima_adpcm[i].last_nibble & 1) ? (nbb >> 4) : (nbb & 0xF);
-					step = _ima_adpcm_step_table[ima_adpcm[i].step_index];
+					uint8_t nbb = src_ptr[(p_ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
+					nibble = (p_ima_adpcm[i].last_nibble & 1) ? (nbb >> 4) : (nbb & 0xF);
+					step = _ima_adpcm_step_table[p_ima_adpcm[i].step_index];
 
-					ima_adpcm[i].step_index += _ima_adpcm_index_table[nibble];
-					if (ima_adpcm[i].step_index < 0) {
-						ima_adpcm[i].step_index = 0;
+					p_ima_adpcm[i].step_index += _ima_adpcm_index_table[nibble];
+					if (p_ima_adpcm[i].step_index < 0) {
+						p_ima_adpcm[i].step_index = 0;
 					}
-					if (ima_adpcm[i].step_index > 88) {
-						ima_adpcm[i].step_index = 88;
+					if (p_ima_adpcm[i].step_index > 88) {
+						p_ima_adpcm[i].step_index = 88;
 					}
 
 					diff = step >> 3;
@@ -152,26 +152,26 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 						diff = -diff;
 					}
 
-					ima_adpcm[i].predictor += diff;
-					if (ima_adpcm[i].predictor < -0x8000) {
-						ima_adpcm[i].predictor = -0x8000;
-					} else if (ima_adpcm[i].predictor > 0x7FFF) {
-						ima_adpcm[i].predictor = 0x7FFF;
+					p_ima_adpcm[i].predictor += diff;
+					if (p_ima_adpcm[i].predictor < -0x8000) {
+						p_ima_adpcm[i].predictor = -0x8000;
+					} else if (p_ima_adpcm[i].predictor > 0x7FFF) {
+						p_ima_adpcm[i].predictor = 0x7FFF;
 					}
 
 					/* store loop if there */
-					if (ima_adpcm[i].last_nibble == ima_adpcm[i].loop_pos) {
-						ima_adpcm[i].loop_step_index = ima_adpcm[i].step_index;
-						ima_adpcm[i].loop_predictor = ima_adpcm[i].predictor;
+					if (p_ima_adpcm[i].last_nibble == p_ima_adpcm[i].loop_pos) {
+						p_ima_adpcm[i].loop_step_index = p_ima_adpcm[i].step_index;
+						p_ima_adpcm[i].loop_predictor = p_ima_adpcm[i].predictor;
 					}
 
-					//printf("%i - %i - pred %i\n",int(ima_adpcm[i].last_nibble),int(nibble),int(ima_adpcm[i].predictor));
+					//printf("%i - %i - pred %i\n",int(p_ima_adpcm[i].last_nibble),int(nibble),int(p_ima_adpcm[i].predictor));
 				}
 			}
 
-			final = ima_adpcm[0].predictor;
+			final = p_ima_adpcm[0].predictor;
 			if (is_stereo) {
-				final_r = ima_adpcm[1].predictor;
+				final_r = p_ima_adpcm[1].predictor;
 			}
 
 		} else {
@@ -201,7 +201,7 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 				}
 			}
 
-			int32_t frac = int64_t(offset & MIX_FRAC_MASK);
+			int32_t frac = int64_t(p_offset & MIX_FRAC_MASK);
 
 			final = final + ((next - final) * frac >> MIX_FRAC_BITS);
 			if (is_stereo) {
@@ -217,7 +217,7 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 		p_dst->r = final_r / 32767.0;
 		p_dst++;
 
-		offset += increment;
+		p_offset += p_increment;
 	}
 }
 

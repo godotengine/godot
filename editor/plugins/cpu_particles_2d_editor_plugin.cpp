@@ -217,11 +217,16 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 
 	{
+		Vector2 offset;
+		if (emission_mask_centered->is_pressed()) {
+			offset = Vector2(-s.width * 0.5, -s.height * 0.5);
+		}
+
 		PackedVector2Array points;
 		points.resize(valid_positions.size());
 		Vector2 *pointsw = points.ptrw();
 		for (int i = 0; i < valid_positions.size(); i += 1) {
-			pointsw[i] = valid_positions[i];
+			pointsw[i] = valid_positions[i] + offset;
 		}
 		particles->set_emission_points(points);
 	}
@@ -281,9 +286,14 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	emission_mask_mode->add_item(TTR("Solid Pixels"), EMISSION_MODE_SOLID);
 	emission_mask_mode->add_item(TTR("Border Pixels"), EMISSION_MODE_BORDER);
 	emission_mask_mode->add_item(TTR("Directed Border Pixels"), EMISSION_MODE_BORDER_DIRECTED);
+	VBoxContainer *optionsvb = memnew(VBoxContainer);
+	emvb->add_margin_child(TTR("Options"), optionsvb);
+	emission_mask_centered = memnew(CheckBox);
+	emission_mask_centered->set_text(TTR("Centered"));
+	optionsvb->add_child(emission_mask_centered);
 	emission_colors = memnew(CheckBox);
-	emission_colors->set_text(TTR("Capture from Pixel"));
-	emvb->add_margin_child(TTR("Emission Colors"), emission_colors);
+	emission_colors->set_text(TTR("Capture Colors from Pixel"));
+	optionsvb->add_child(emission_colors);
 
 	toolbar->add_child(emission_mask);
 

@@ -75,9 +75,15 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		r.shortcut_text = E.value.shortcut;
 		r.last_used = E.value.last_used;
 
-		if (search_text.is_subsequence_ofn(r.display_name)) {
+		bool is_subsequence_of_key_name = search_text.is_subsequence_ofn(r.key_name);
+		bool is_subsequence_of_display_name = search_text.is_subsequence_ofn(r.display_name);
+
+		if (is_subsequence_of_key_name || is_subsequence_of_display_name) {
 			if (!search_text.is_empty()) {
-				r.score = _score_path(search_text, r.display_name.to_lower());
+				float key_name_score = is_subsequence_of_key_name ? _score_path(search_text, r.key_name.to_lower()) : .0f;
+				float display_name_score = is_subsequence_of_display_name ? _score_path(search_text, r.display_name.to_lower()) : .0f;
+
+				r.score = MAX(key_name_score, display_name_score);
 			}
 
 			entries.push_back(r);
@@ -256,7 +262,7 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 		ev.instantiate();
 		ev->set_shortcut(shortcut);
 		String shortcut_text = String(shortcut->get_as_text());
-		add_command(command_name, E.key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_unhandled_input), varray(ev, false), shortcut_text);
+		add_command(command_name, E.key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input), varray(ev, false), shortcut_text);
 	}
 	unregistered_shortcuts.clear();
 
@@ -277,7 +283,7 @@ Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command
 		ev.instantiate();
 		ev->set_shortcut(p_shortcut);
 		String shortcut_text = String(p_shortcut->get_as_text());
-		add_command(p_command, p_key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_unhandled_input), varray(ev, false), shortcut_text);
+		add_command(p_command, p_key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input), varray(ev, false), shortcut_text);
 	} else {
 		const String key_name = String(p_key);
 		const String command_name = String(p_command);

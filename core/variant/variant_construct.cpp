@@ -317,6 +317,17 @@ String Variant::get_constructor_argument_name(Variant::Type p_type, int p_constr
 	return construct_data[p_type][p_constructor].arg_names[p_argument];
 }
 
+void VariantInternal::refcounted_object_assign(Variant *v, const RefCounted *rc) {
+	if (!rc || !const_cast<RefCounted *>(rc)->init_ref()) {
+		v->_get_obj().obj = nullptr;
+		v->_get_obj().id = ObjectID();
+		return;
+	}
+
+	v->_get_obj().obj = const_cast<RefCounted *>(rc);
+	v->_get_obj().id = rc->get_instance_id();
+}
+
 void VariantInternal::object_assign(Variant *v, const Object *o) {
 	if (o) {
 		if (o->is_ref_counted()) {

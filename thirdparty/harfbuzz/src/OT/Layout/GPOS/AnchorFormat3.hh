@@ -25,7 +25,9 @@ struct AnchorFormat3
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) && xDeviceTable.sanitize (c, this) && yDeviceTable.sanitize (c, this));
+    if (unlikely (!c->check_struct (this))) return_trace (false);
+
+    return_trace (xDeviceTable.sanitize (c, this) && yDeviceTable.sanitize (c, this));
   }
 
   void get_anchor (hb_ot_apply_context_t *c, hb_codepoint_t glyph_id HB_UNUSED,
@@ -35,9 +37,9 @@ struct AnchorFormat3
     *x = font->em_fscale_x (xCoordinate);
     *y = font->em_fscale_y (yCoordinate);
 
-    if (font->x_ppem || font->num_coords)
+    if ((font->x_ppem || font->num_coords) && xDeviceTable.sanitize (&c->sanitizer, this))
       *x += (this+xDeviceTable).get_x_delta (font, c->var_store, c->var_store_cache);
-    if (font->y_ppem || font->num_coords)
+    if ((font->y_ppem || font->num_coords) && yDeviceTable.sanitize (&c->sanitizer, this))
       *y += (this+yDeviceTable).get_y_delta (font, c->var_store, c->var_store_cache);
   }
 
@@ -45,7 +47,6 @@ struct AnchorFormat3
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out)) return_trace (false);
     if (unlikely (!c->serializer->embed (format))) return_trace (false);
     if (unlikely (!c->serializer->embed (xCoordinate))) return_trace (false);
     if (unlikely (!c->serializer->embed (yCoordinate))) return_trace (false);

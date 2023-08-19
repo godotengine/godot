@@ -4,7 +4,7 @@
  *
  *   Private functions used in the `base' module (specification).
  *
- * Copyright (C) 2008-2022 by
+ * Copyright (C) 2008-2023 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and suzuki toshiya.
  *
  * This file is part of the FreeType project, and may only be used,

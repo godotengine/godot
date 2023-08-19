@@ -56,15 +56,17 @@ Array ServersDebugger::ResourceUsage::serialize() {
 bool ServersDebugger::ResourceUsage::deserialize(const Array &p_arr) {
 	CHECK_SIZE(p_arr, 1, "ResourceUsage");
 	uint32_t size = p_arr[0];
-	CHECK_SIZE(p_arr, size, "ResourceUsage");
-	int idx = 1;
-	for (uint32_t i = 0; i < size / 4; i++) {
+	ERR_FAIL_COND_V(size % 4, false);
+	CHECK_SIZE(p_arr, 1 + size, "ResourceUsage");
+	uint32_t idx = 1;
+	while (idx < 1 + size) {
 		ResourceInfo info;
 		info.path = p_arr[idx];
 		info.format = p_arr[idx + 1];
 		info.type = p_arr[idx + 2];
 		info.vram = p_arr[idx + 3];
 		infos.push_back(info);
+		idx += 4;
 	}
 	CHECK_END(p_arr, idx, "ResourceUsage");
 	return true;

@@ -293,16 +293,6 @@ struct WorkspaceEdit {
 	}
 
 	_FORCE_INLINE_ void add_change(const String &uri, const int &line, const int &start_character, const int &end_character, const String &new_text) {
-		if (HashMap<String, Vector<TextEdit>>::Iterator E = changes.find(uri)) {
-			Vector<TextEdit> edit_list = E->value;
-			for (int i = 0; i < edit_list.size(); ++i) {
-				TextEdit edit = edit_list[i];
-				if (edit.range.start.character == start_character) {
-					return;
-				}
-			}
-		}
-
 		TextEdit new_edit;
 		new_edit.newText = new_text;
 		new_edit.range.start.line = line;
@@ -1015,7 +1005,9 @@ struct CompletionItem {
 			if (commitCharacters.size()) {
 				dict["commitCharacters"] = commitCharacters;
 			}
-			dict["command"] = command.to_json();
+			if (!command.command.is_empty()) {
+				dict["command"] = command.to_json();
+			}
 		}
 		return dict;
 	}
@@ -1574,7 +1566,7 @@ struct SignatureHelp {
 	/**
 	 * The active signature. If omitted or the value lies outside the
 	 * range of `signatures` the value defaults to zero or is ignored if
-	 * `signatures.length === 0`. Whenever possible implementors should
+	 * `signatures.length === 0`. Whenever possible implementers should
 	 * make an active decision about the active signature and shouldn't
 	 * rely on a default value.
 	 * In future version of the protocol this property might become

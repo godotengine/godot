@@ -81,6 +81,9 @@ public:
 		JUSTIFICATION_TRIM_EDGE_SPACES = 1 << 2,
 		JUSTIFICATION_AFTER_LAST_TAB = 1 << 3,
 		JUSTIFICATION_CONSTRAIN_ELLIPSIS = 1 << 4,
+		JUSTIFICATION_SKIP_LAST_LINE = 1 << 5,
+		JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS = 1 << 6,
+		JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE = 1 << 7,
 	};
 
 	enum VisibleCharactersBehavior {
@@ -248,6 +251,7 @@ public:
 
 	virtual void font_set_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_name(const RID &p_font_rid) const = 0;
+	virtual Dictionary font_get_ot_name_strings(const RID &p_font_rid) const { return Dictionary(); }
 
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_style_name(const RID &p_font_rid) const = 0;
@@ -441,6 +445,7 @@ public:
 	virtual bool shaped_text_update_justification_ops(const RID &p_shaped) = 0;
 
 	virtual bool shaped_text_is_ready(const RID &p_shaped) const = 0;
+	bool shaped_text_has_visible_chars(const RID &p_shaped) const;
 
 	virtual const Glyph *shaped_text_get_glyphs(const RID &p_shaped) const = 0;
 	TypedArray<Dictionary> _shaped_text_get_glyphs_wrapper(const RID &p_shaped) const;
@@ -486,6 +491,11 @@ public:
 	virtual int64_t shaped_text_next_grapheme_pos(const RID &p_shaped, int64_t p_pos) const;
 	virtual int64_t shaped_text_prev_grapheme_pos(const RID &p_shaped, int64_t p_pos) const;
 
+	virtual PackedInt32Array shaped_text_get_character_breaks(const RID &p_shaped) const = 0;
+	virtual int64_t shaped_text_next_character_pos(const RID &p_shaped, int64_t p_pos) const;
+	virtual int64_t shaped_text_prev_character_pos(const RID &p_shaped, int64_t p_pos) const;
+	virtual int64_t shaped_text_closest_character_pos(const RID &p_shaped, int64_t p_pos) const;
+
 	// The pen position is always placed on the baseline and moveing left to right.
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
 	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
@@ -497,6 +507,7 @@ public:
 
 	// String functions.
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int64_t p_chars_per_line = 0) const = 0;
+	virtual PackedInt32Array string_get_character_breaks(const String &p_string, const String &p_language = "") const;
 
 	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
 	virtual bool spoof_check(const String &p_string) const { return false; };

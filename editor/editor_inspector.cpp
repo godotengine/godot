@@ -38,6 +38,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "multi_node_edit.h"
@@ -45,15 +46,16 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box_flat.h"
 
-static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
+bool EditorInspector::_property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.findn(p_filter) != -1) {
 		return true;
 	}
 
-	const Vector<String> sections = p_property_path.split("/");
-	for (int i = 0; i < sections.size(); i++) {
-		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style))) {
+	const Vector<String> prop_sections = p_property_path.split("/");
+	for (int i = 0; i < prop_sections.size(); i++) {
+		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(prop_sections[i], p_style))) {
 			return true;
 		}
 	}
@@ -259,7 +261,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			Color color;
-			if (draw_warning) {
+			if (draw_warning || draw_prop_warning) {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_warning_color") : SNAME("warning_color"));
 			} else {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
@@ -486,6 +488,11 @@ void EditorProperty::update_editor_property_status() {
 		new_pinned = node->is_property_pinned(property);
 	}
 
+	bool new_warning = false;
+	if (object->has_method("_get_property_warning")) {
+		new_warning = !String(object->call("_get_property_warning", property)).is_empty();
+	}
+
 	Variant current = object->get(_get_revert_property());
 	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property, &current) && !is_read_only();
 
@@ -498,10 +505,11 @@ void EditorProperty::update_editor_property_status() {
 		}
 	}
 
-	if (new_can_revert != can_revert || new_pinned != pinned || new_checked != checked) {
+	if (new_can_revert != can_revert || new_pinned != pinned || new_checked != checked || new_warning != draw_prop_warning) {
 		if (new_can_revert != can_revert) {
 			emit_signal(SNAME("property_can_revert_changed"), property, new_can_revert);
 		}
+		draw_prop_warning = new_warning;
 		can_revert = new_can_revert;
 		pinned = new_pinned;
 		checked = new_checked;
@@ -592,6 +600,9 @@ void EditorProperty::add_focusable(Control *p_control) {
 
 void EditorProperty::select(int p_focusable) {
 	bool already_selected = selected;
+	if (!selectable) {
+		return;
+	}
 
 	if (p_focusable >= 0) {
 		ERR_FAIL_INDEX(p_focusable, focusables.size());
@@ -665,11 +676,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			mpos.x = get_size().x - mpos.x;
 		}
 
-		if (!selected && selectable) {
-			selected = true;
-			emit_signal(SNAME("selected"), property, -1);
-			queue_redraw();
-		}
+		select();
 
 		if (keying_rect.has_point(mpos)) {
 			accept_event();
@@ -897,7 +904,7 @@ void EditorProperty::_update_pin_flags() {
 	}
 }
 
-static Control *make_help_bit(const String &p_text, bool p_property) {
+static Control *make_help_bit(const String &p_text, const String &p_warning, const Color &p_warn_color, bool p_property) {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
 	help_bit->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 1));
 
@@ -923,13 +930,23 @@ static Control *make_help_bit(const String &p_text, bool p_property) {
 	} else {
 		text += "\n[i]" + TTR("No description.") + "[/i]";
 	}
+
+	if (!p_warning.is_empty()) {
+		text += "\n[b][color=" + p_warn_color.to_html(false) + "]" + p_warning + "[/color][/b]";
+	}
 	help_bit->set_text(text);
 
 	return help_bit;
 }
 
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
-	return make_help_bit(p_text, true);
+	String warn;
+	Color warn_color;
+	if (object->has_method("_get_property_warning")) {
+		warn = object->call("_get_property_warning", property);
+		warn_color = get_theme_color(SNAME("warning_color"));
+	}
+	return make_help_bit(p_text, warn, warn_color, true);
 }
 
 void EditorProperty::menu_option(int p_option) {
@@ -1158,7 +1175,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 }
 
 Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
-	return make_help_bit(p_text, false);
+	return make_help_bit(p_text, String(), Color(), false);
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
@@ -1325,11 +1342,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					Color light_font_color = get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"));
 
 					// Can we fit the long version of the revertable count text?
-					if (revertable_properties.size() == 1) {
-						num_revertable_str = "(1 change)";
-					} else {
-						num_revertable_str = vformat("(%d changes)", revertable_properties.size());
-					}
+					num_revertable_str = vformat(TTRN("(%d change)", "(%d changes)", revertable_properties.size()), revertable_properties.size());
 					num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
 					if (label_width + separation + num_revertable_width > available) {
 						// We'll have to use the short version.
@@ -1517,6 +1530,11 @@ void EditorInspectorSection::fold() {
 
 	object->editor_set_section_unfold(section, false);
 	vbox->hide();
+	queue_redraw();
+}
+
+void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
+	bg_color = p_bg_color;
 	queue_redraw();
 }
 
@@ -2767,7 +2785,9 @@ void EditorInspector::update_tree() {
 					// Update the docs reference and the label based on the script.
 					Vector<DocData::ClassDoc> docs = scr->get_documentation();
 					if (!docs.is_empty()) {
-						doc_name = docs[0].name;
+						// The documentation of a GDScript's main class is at the end of the array.
+						// Hacky because this isn't necessarily always guaranteed.
+						doc_name = docs[docs.size() - 1].name;
 					}
 					if (script_name != StringName()) {
 						label = script_name;
@@ -2790,18 +2810,22 @@ void EditorInspector::update_tree() {
 			category->label = label;
 
 			if (use_doc_hints) {
+				String descr = "";
 				// Sets the category tooltip to show documentation.
 				if (!class_descr_cache.has(doc_name)) {
-					String descr;
 					DocTools *dd = EditorHelp::get_doc_data();
 					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(doc_name);
 					if (E) {
 						descr = DTR(E->value.brief_description);
 					}
-					class_descr_cache[doc_name] = descr;
+					if (ClassDB::class_exists(doc_name)) {
+						class_descr_cache[doc_name] = descr; // Do not cache the class description of scripts.
+					}
+				} else {
+					descr = class_descr_cache[doc_name];
 				}
 
-				category->set_tooltip_text(p.name + "::" + (class_descr_cache[doc_name].is_empty() ? "" : class_descr_cache[doc_name]));
+				category->set_tooltip_text(p.name + "::" + descr);
 			}
 
 			// Add editors at the start of a category.
@@ -3116,7 +3140,9 @@ void EditorInspector::update_tree() {
 					if (scr.is_valid()) {
 						Vector<DocData::ClassDoc> docs = scr->get_documentation();
 						if (!docs.is_empty()) {
-							classname = docs[0].name;
+							// The documentation of a GDScript's main class is at the end of the array.
+							// Hacky because this isn't necessarily always guaranteed.
+							classname = docs[docs.size() - 1].name;
 						}
 					}
 				}
@@ -3143,11 +3169,33 @@ void EditorInspector::update_tree() {
 			if (!found) {
 				// Build the property description String and add it to the cache.
 				DocTools *dd = EditorHelp::get_doc_data();
-				HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(classname);
+				HashMap<String, DocData::ClassDoc>::ConstIterator F = dd->class_list.find(classname);
 				while (F && doc_info.description.is_empty()) {
 					for (int i = 0; i < F->value.properties.size(); i++) {
 						if (F->value.properties[i].name == propname.operator String()) {
 							doc_info.description = DTR(F->value.properties[i].description);
+
+							const Vector<String> class_enum = F->value.properties[i].enumeration.split(".");
+							const String class_name = class_enum[0];
+							const String enum_name = class_enum.size() >= 2 ? class_enum[1] : "";
+							if (!enum_name.is_empty()) {
+								HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(class_name);
+								if (enum_class) {
+									for (DocData::ConstantDoc val : enum_class->value.constants) {
+										// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
+										if (val.enumeration == enum_name && !val.name.ends_with("_MAX")) {
+											const String enum_value = EditorPropertyNameProcessor::get_singleton()->process_name(val.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
+											// Prettify the enum value display, so that "<ENUM NAME>_<VALUE>" becomes "Value".
+											String desc = DTR(val.description).trim_prefix("\n");
+											doc_info.description += vformat(
+													"\n[b]%s:[/b] %s",
+													enum_value.trim_prefix(EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " "),
+													desc.is_empty() ? ("[i]" + TTR("No description.") + "[/i]") : desc);
+										}
+									}
+								}
+							}
+
 							doc_info.path = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
 							break;
 						}
@@ -3171,7 +3219,9 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				doc_info_cache[classname][propname] = doc_info;
+				if (ClassDB::class_exists(classname)) {
+					doc_info_cache[classname][propname] = doc_info; // Do not cache the doc information of scripts.
+				}
 			}
 		}
 
@@ -3398,6 +3448,16 @@ void EditorInspector::set_property_name_style(EditorPropertyNameProcessor::Style
 	}
 	property_name_style = p_style;
 	update_tree();
+}
+
+void EditorInspector::set_use_settings_name_style(bool p_enable) {
+	if (use_settings_name_style == p_enable) {
+		return;
+	}
+	use_settings_name_style = p_enable;
+	if (use_settings_name_style) {
+		set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
+	}
 }
 
 void EditorInspector::set_autoclear(bool p_enable) {
@@ -3633,8 +3693,9 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Variant v_undo_redo = undo_redo;
 		Variant v_object = object;
 		Variant v_name = p_name;
-		for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback().size(); i++) {
-			const Callable &callback = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback()[i];
+		const Vector<Callable> &callbacks = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback();
+		for (int i = 0; i < callbacks.size(); i++) {
+			const Callable &callback = callbacks[i];
 
 			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
 			Variant return_value;
@@ -3932,7 +3993,20 @@ void EditorInspector::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_inspector_bg();
 
+			bool needs_update = false;
+
+			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_settings_style();
+				if (property_name_style != style) {
+					property_name_style = style;
+					needs_update = true;
+				}
+			}
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				needs_update = true;
+			}
+
+			if (needs_update) {
 				update_tree();
 			}
 		} break;
@@ -4004,27 +4078,17 @@ void EditorInspector::_add_meta_confirm() {
 	undo_redo->commit_action();
 }
 
-void EditorInspector::_check_meta_name(const String &p_name) {
-	String error;
+void EditorInspector::_check_meta_name() {
+	const String meta_name = add_meta_name->get_text();
 
-	if (p_name == "") {
-		error = TTR("Metadata name can't be empty.");
-	} else if (!p_name.is_valid_identifier()) {
-		error = TTR("Metadata name must be a valid identifier.");
-	} else if (object->has_meta(p_name)) {
-		error = vformat(TTR("Metadata with name \"%s\" already exists."), p_name);
-	} else if (p_name[0] == '_') {
-		error = TTR("Names starting with _ are reserved for editor-only metadata.");
-	}
-
-	if (error != "") {
-		add_meta_error->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-		add_meta_error->set_text(error);
-		add_meta_dialog->get_ok_button()->set_disabled(true);
-	} else {
-		add_meta_error->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
-		add_meta_error->set_text(TTR("Metadata name is valid."));
-		add_meta_dialog->get_ok_button()->set_disabled(false);
+	if (meta_name.is_empty()) {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name can't be empty."), EditorValidationPanel::MSG_ERROR);
+	} else if (!meta_name.is_valid_identifier()) {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name must be a valid identifier."), EditorValidationPanel::MSG_ERROR);
+	} else if (object->has_meta(meta_name)) {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, vformat(TTR("Metadata with name \"%s\" already exists."), meta_name), EditorValidationPanel::MSG_ERROR);
+	} else if (meta_name[0] == '_') {
+		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Names starting with _ are reserved for editor-only metadata."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -4034,13 +4098,16 @@ void EditorInspector::_show_add_meta_dialog() {
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		add_meta_dialog->add_child(vbc);
+
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		vbc->add_child(hbc);
 		hbc->add_child(memnew(Label(TTR("Name:"))));
+
 		add_meta_name = memnew(LineEdit);
 		add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
 		hbc->add_child(add_meta_name);
 		hbc->add_child(memnew(Label(TTR("Type:"))));
+
 		add_meta_type = memnew(OptionButton);
 		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 			if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
@@ -4051,14 +4118,23 @@ void EditorInspector::_show_add_meta_dialog() {
 			add_meta_type->add_icon_item(get_theme_icon(type, "EditorIcons"), type, i);
 		}
 		hbc->add_child(add_meta_type);
+
+		Control *spacing = memnew(Control);
+		vbc->add_child(spacing);
+		spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
+
 		add_meta_dialog->set_ok_button_text(TTR("Add"));
 		add_child(add_meta_dialog);
 		add_meta_dialog->register_text_enter(add_meta_name);
 		add_meta_dialog->connect("confirmed", callable_mp(this, &EditorInspector::_add_meta_confirm));
-		add_meta_error = memnew(Label);
-		vbc->add_child(add_meta_error);
 
-		add_meta_name->connect("text_changed", callable_mp(this, &EditorInspector::_check_meta_name));
+		validation_panel = memnew(EditorValidationPanel);
+		vbc->add_child(validation_panel);
+		validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name is valid."));
+		validation_panel->set_update_callback(callable_mp(this, &EditorInspector::_check_meta_name));
+		validation_panel->set_accept_button(add_meta_dialog->get_ok_button());
+
+		add_meta_name->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 	}
 
 	Node *node = Object::cast_to<Node>(object);
@@ -4070,9 +4146,9 @@ void EditorInspector::_show_add_meta_dialog() {
 	}
 
 	add_meta_dialog->popup_centered();
-	add_meta_name->set_text("");
-	_check_meta_name("");
 	add_meta_name->grab_focus();
+	add_meta_name->set_text("");
+	validation_panel->update();
 }
 
 void EditorInspector::_bind_methods() {
@@ -4117,4 +4193,7 @@ EditorInspector::EditorInspector() {
 	ED_SHORTCUT("property_editor/copy_value", TTR("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("property_editor/paste_value", TTR("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
+
+	// `use_settings_name_style` is true by default, set the name style accordingly.
+	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 }

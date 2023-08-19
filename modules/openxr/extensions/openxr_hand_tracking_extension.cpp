@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "openxr_hand_tracking_extension.h"
+
 #include "../openxr_api.h"
+
 #include "core/string/print_string.h"
 #include "servers/xr_server.h"
 
@@ -132,6 +134,10 @@ void OpenXRHandTrackingExtension::on_process() {
 
 	// process our hands
 	const XrTime time = OpenXRAPI::get_singleton()->get_next_frame_time(); // This data will be used for the next frame we render
+	if (time == 0) {
+		// we don't have timing info yet, or we're skipping a frame...
+		return;
+	}
 
 	XrResult result;
 

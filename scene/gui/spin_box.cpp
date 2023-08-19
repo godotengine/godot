@@ -54,7 +54,7 @@ void SpinBox::_update_text() {
 		}
 	}
 
-	line_edit->set_text(value);
+	line_edit->set_text_with_selection(value);
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
@@ -62,7 +62,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	expr.instantiate();
 
 	String num = TS->parse_number(p_string);
-	// Ignore the prefix and suffix in the expression
+	// Ignore the prefix and suffix in the expression.
 	Error err = expr->parse(num.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
 	if (err != OK) {
 		return;
@@ -202,7 +202,8 @@ void SpinBox::_line_edit_focus_enter() {
 
 void SpinBox::_line_edit_focus_exit() {
 	// Discontinue because the focus_exit was caused by left-clicking the arrows.
-	if (get_viewport()->gui_get_focus_owner() == get_line_edit()) {
+	const Viewport *viewport = get_viewport();
+	if (!viewport || viewport->gui_get_focus_owner() == get_line_edit()) {
 		return;
 	}
 	// Discontinue because the focus_exit was caused by right-click context menu.

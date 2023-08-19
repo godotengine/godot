@@ -125,7 +125,10 @@ namespace Godot
                 NativePtr = IntPtr.Zero;
             }
 
-            DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
+            if (_weakReferenceToSelf != null)
+            {
+                DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
+            }
         }
 
         /// <summary>
@@ -188,12 +191,30 @@ namespace Godot
         }
 
         // ReSharper disable once VirtualMemberNeverOverridden.Global
+        /// <summary>
+        /// Set the value of a property contained in this class.
+        /// This method is used by Godot to assign property values.
+        /// Do not call or override this method.
+        /// </summary>
+        /// <param name="name">Name of the property to set.</param>
+        /// <param name="value">Value to set the property to if it was found.</param>
+        /// <returns><see langword="true"/> if a property with the given name was found.</returns>
+        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected internal virtual bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
         {
             return false;
         }
 
         // ReSharper disable once VirtualMemberNeverOverridden.Global
+        /// <summary>
+        /// Get the value of a property contained in this class.
+        /// This method is used by Godot to retrieve property values.
+        /// Do not call or override this method.
+        /// </summary>
+        /// <param name="name">Name of the property to get.</param>
+        /// <param name="value">Value of the property if it was found.</param>
+        /// <returns><see langword="true"/> if a property with the given name was found.</returns>
+        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected internal virtual bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
         {
             value = default;
@@ -201,6 +222,14 @@ namespace Godot
         }
 
         // ReSharper disable once VirtualMemberNeverOverridden.Global
+        /// <summary>
+        /// Raises the signal with the given name, using the given arguments.
+        /// This method is used by Godot to raise signals from the engine side.\n"
+        /// Do not call or override this method.
+        /// </summary>
+        /// <param name="signal">Name of the signal to raise.</param>
+        /// <param name="args">Arguments to use with the raised signal.</param>
+        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected internal virtual void RaiseGodotClassSignalCallbacks(in godot_string_name signal,
             NativeVariantPtrArgs args)
         {
@@ -230,11 +259,25 @@ namespace Godot
             return nativeConstructor;
         }
 
+        /// <summary>
+        /// Saves this instance's state to be restored when reloading assemblies.
+        /// Do not call or override this method.
+        /// To add data to be saved and restored, implement <see cref="ISerializationListener"/>.
+        /// </summary>
+        /// <param name="info">Object used to save the data.</param>
+        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected internal virtual void SaveGodotObjectData(GodotSerializationInfo info)
         {
         }
 
         // TODO: Should this be a constructor overload?
+        /// <summary>
+        /// Restores this instance's state after reloading assemblies.
+        /// Do not call or override this method.
+        /// To add data to be saved and restored, implement <see cref="ISerializationListener"/>.
+        /// </summary>
+        /// <param name="info">Object that contains the previously saved data.</param>
+        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected internal virtual void RestoreGodotObjectData(GodotSerializationInfo info)
         {
         }

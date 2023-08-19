@@ -83,7 +83,7 @@ private:
 		int line;
 		int index;
 		int size;
-		Vector<Token> generated;
+		LocalVector<Token> generated;
 
 	private:
 		void add_generated(const Token &p_t);
@@ -95,7 +95,7 @@ private:
 		char32_t peek();
 		int consume_line_continuations(int p_offset);
 
-		void get_and_clear_generated(Vector<Token> *r_out);
+		void get_and_clear_generated(LocalVector<char32_t> *r_out);
 		void backtrack(char32_t p_what);
 		LocalVector<Token> advance(char32_t p_what);
 		void skip_whitespace();
@@ -205,6 +205,7 @@ private:
 	Error expand_macros(const String &p_string, int p_line, String &r_result);
 	bool expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded);
 	bool find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start);
+	void concatenate_macro_body(String &r_body);
 
 	String next_directive(Tokenizer *p_tokenizer, const Vector<String> &p_directives);
 	void add_to_output(const String &p_str);

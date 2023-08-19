@@ -31,6 +31,7 @@
 #include "connections_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/templates/hash_set.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
@@ -39,6 +40,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/scene_tree_editor.h"
+#include "editor/node_dock.h"
 #include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/button.h"
@@ -303,7 +305,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 					break;
 				}
 
-				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && E->get().class_name != F->get().class_name) {
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().class_name, F->get().class_name)) {
 					type_mismatch = true;
 					break;
 				}
@@ -1238,60 +1240,107 @@ void ConnectionsDock::update_tree() {
 	}
 
 	TreeItem *root = tree->create_item();
+	DocTools *doc_data = EditorHelp::get_doc_data();
+	EditorData &editor_data = EditorNode::get_editor_data();
+	StringName native_base = selected_node->get_class();
+	Ref<Script> script_base = selected_node->get_script();
 
-	List<MethodInfo> node_signals;
+	while (native_base != StringName()) {
+		String class_name;
+		String doc_class_name;
+		Ref<Texture2D> class_icon;
+		List<MethodInfo> class_signals;
 
-	selected_node->get_signal_list(&node_signals);
+		if (script_base.is_valid()) {
+			class_name = script_base->get_global_name();
+			if (class_name.is_empty()) {
+				class_name = script_base->get_path().get_file();
+			}
 
-	bool did_script = false;
-	StringName base = selected_node->get_class();
+			doc_class_name = script_base->get_global_name();
+			if (doc_class_name.is_empty()) {
+				doc_class_name = script_base->get_path().trim_prefix("res://").quote();
+			}
 
-	while (base) {
-		List<MethodInfo> node_signals2;
-		Ref<Texture2D> icon;
-		String name;
-
-		if (!did_script) {
-			// Get script signals (including signals from any base scripts).
-			Ref<Script> scr = selected_node->get_script();
-			if (scr.is_valid()) {
-				scr->get_script_signal_list(&node_signals2);
-				if (scr->get_path().is_resource_file()) {
-					name = scr->get_path().get_file();
-				} else {
-					name = scr->get_class();
+			// For a script class, the cache is filled each time.
+			if (!doc_class_name.is_empty()) {
+				if (descr_cache.has(doc_class_name)) {
+					descr_cache[doc_class_name].clear();
 				}
-
-				if (has_theme_icon(scr->get_class(), SNAME("EditorIcons"))) {
-					icon = get_theme_icon(scr->get_class(), SNAME("EditorIcons"));
+				HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(doc_class_name);
+				if (F) {
+					for (int i = 0; i < F->value.signals.size(); i++) {
+						descr_cache[doc_class_name][F->value.signals[i].name] = F->value.signals[i].description;
+					}
 				}
 			}
+
+			class_icon = editor_data.get_script_icon(script_base);
+			if (class_icon.is_null() && has_theme_icon(native_base, SNAME("EditorIcons"))) {
+				class_icon = get_theme_icon(native_base, SNAME("EditorIcons"));
+			}
+
+			script_base->get_script_signal_list(&class_signals);
+
+			// TODO: Core: Add optional parameter to ignore base classes (no_inheritance like in ClassDB).
+			Ref<Script> base = script_base->get_base_script();
+			if (base.is_valid()) {
+				List<MethodInfo> base_signals;
+				base->get_script_signal_list(&base_signals);
+				HashSet<String> base_signal_names;
+				for (List<MethodInfo>::Element *F = base_signals.front(); F; F = F->next()) {
+					base_signal_names.insert(F->get().name);
+				}
+				for (List<MethodInfo>::Element *F = class_signals.front(); F; F = F->next()) {
+					if (base_signal_names.has(F->get().name)) {
+						class_signals.erase(F);
+					}
+				}
+			}
+
+			script_base = base;
 		} else {
-			ClassDB::get_signal_list(base, &node_signals2, true);
-			if (has_theme_icon(base, SNAME("EditorIcons"))) {
-				icon = get_theme_icon(base, SNAME("EditorIcons"));
+			class_name = native_base;
+			doc_class_name = class_name;
+
+			// For a native class, the cache is filled once.
+			if (!descr_cache.has(doc_class_name)) {
+				HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(doc_class_name);
+				if (F) {
+					for (int i = 0; i < F->value.signals.size(); i++) {
+						descr_cache[doc_class_name][F->value.signals[i].name] = DTR(F->value.signals[i].description);
+					}
+				}
 			}
-			name = base;
+
+			if (has_theme_icon(native_base, SNAME("EditorIcons"))) {
+				class_icon = get_theme_icon(native_base, SNAME("EditorIcons"));
+			}
+
+			ClassDB::get_signal_list(native_base, &class_signals, true);
+
+			native_base = ClassDB::get_parent_class(native_base);
 		}
 
-		if (icon.is_null()) {
-			icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+		if (class_icon.is_null()) {
+			class_icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 		}
 
 		TreeItem *section_item = nullptr;
 
 		// Create subsections.
-		if (node_signals2.size()) {
+		if (!class_signals.is_empty()) {
+			class_signals.sort();
+
 			section_item = tree->create_item(root);
-			section_item->set_text(0, name);
-			section_item->set_icon(0, icon);
+			section_item->set_text(0, class_name);
+			section_item->set_icon(0, class_icon);
 			section_item->set_selectable(0, false);
 			section_item->set_editable(0, false);
 			section_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			node_signals2.sort();
 		}
 
-		for (MethodInfo &mi : node_signals2) {
+		for (MethodInfo &mi : class_signals) {
 			const StringName signal_name = mi.name;
 			if (!search_box->get_text().is_subsequence_ofn(signal_name)) {
 				continue;
@@ -1317,34 +1366,13 @@ void ConnectionsDock::update_tree() {
 			// Set tooltip with the signal's documentation.
 			{
 				String descr;
-				bool found = false;
 
-				HashMap<StringName, HashMap<StringName, String>>::Iterator G = descr_cache.find(base);
+				HashMap<StringName, HashMap<StringName, String>>::ConstIterator G = descr_cache.find(doc_class_name);
 				if (G) {
-					HashMap<StringName, String>::Iterator F = G->value.find(signal_name);
+					HashMap<StringName, String>::ConstIterator F = G->value.find(signal_name);
 					if (F) {
-						found = true;
 						descr = F->value;
 					}
-				}
-
-				if (!found) {
-					DocTools *dd = EditorHelp::get_doc_data();
-					HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(base);
-					while (F && descr.is_empty()) {
-						for (int i = 0; i < F->value.signals.size(); i++) {
-							if (F->value.signals[i].name == signal_name.operator String()) {
-								descr = DTR(F->value.signals[i].description);
-								break;
-							}
-						}
-						if (!F->value.inherits.is_empty()) {
-							F = dd->class_list.find(F->value.inherits);
-						} else {
-							break;
-						}
-					}
-					descr_cache[base][signal_name] = descr;
 				}
 
 				// "::" separators used in make_custom_tooltip for formatting.
@@ -1399,12 +1427,6 @@ void ConnectionsDock::update_tree() {
 				}
 			}
 		}
-
-		if (!did_script) {
-			did_script = true;
-		} else {
-			base = ClassDB::get_parent_class(base);
-		}
 	}
 
 	connect_button->set_text(TTR("Connect..."));
@@ -1440,6 +1462,7 @@ ConnectionsDock::ConnectionsDock() {
 	connect_button->connect("pressed", callable_mp(this, &ConnectionsDock::_connect_pressed));
 
 	connect_dialog = memnew(ConnectDialog);
+	connect_dialog->connect("connected", callable_mp(NodeDock::get_singleton(), &NodeDock::restore_last_valid_node), CONNECT_DEFERRED);
 	add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);

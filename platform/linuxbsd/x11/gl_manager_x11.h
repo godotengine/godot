@@ -31,12 +31,11 @@
 #ifndef GL_MANAGER_X11_H
 #define GL_MANAGER_X11_H
 
-#ifdef X11_ENABLED
-
-#ifdef GLES3_ENABLED
+#if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "servers/display_server.h"
 
 #ifdef SOWRAP_ENABLED
 #include "dynwrappers/xlib-so_wrap.h"
@@ -52,8 +51,6 @@
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/shape.h>
 #endif
-
-#include "servers/display_server.h"
 
 struct GLManager_X11_Private;
 
@@ -77,17 +74,17 @@ private:
 	};
 
 	struct GLDisplay {
-		GLDisplay() { context = nullptr; }
+		GLDisplay() {}
 		~GLDisplay();
 		GLManager_X11_Private *context = nullptr;
-		::Display *x11_display;
-		XVisualInfo x_vi;
+		::Display *x11_display = nullptr;
+		XVisualInfo x_vi = {};
 	};
 
 	// just for convenience, window and display struct
 	struct XWinDisp {
 		::Window x11_window;
-		::Display *x11_display;
+		::Display *x11_display = nullptr;
 	} _x_windisp;
 
 	LocalVector<GLWindow> _windows;
@@ -136,7 +133,6 @@ public:
 	~GLManager_X11();
 };
 
-#endif // GLES3_ENABLED
-#endif // X11_ENABLED
+#endif // X11_ENABLED && GLES3_ENABLED
 
 #endif // GL_MANAGER_X11_H

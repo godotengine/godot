@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "key_mapping_ios.h"
+#import "key_mapping_ios.h"
 
 #include "core/templates/hash_map.h"
 

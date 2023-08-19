@@ -109,6 +109,15 @@ env_oidn.AppendUnique(CPPDEFINES=["NDEBUG"])  # No assert() even in debug builds
 
 env_thirdparty = env_oidn.Clone()
 env_thirdparty.disable_warnings()
+
+if env["disable_exceptions"]:
+    # OIDN hard-requires exceptions, so we re-enable them here.
+    if env.msvc and ("_HAS_EXCEPTIONS", 0) in env_thirdparty["CPPDEFINES"]:
+        env_thirdparty["CPPDEFINES"].remove(("_HAS_EXCEPTIONS", 0))
+        env_thirdparty.AppendUnique(CCFLAGS=["/EHsc"])
+    elif not env.msvc and "-fno-exceptions" in env_thirdparty["CCFLAGS"]:
+        env_thirdparty["CCFLAGS"].remove("-fno-exceptions")
+
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env.modules_sources += thirdparty_obj
 

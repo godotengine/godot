@@ -30,11 +30,12 @@
 
 #import "godot_view_renderer.h"
 
+#import "display_server_ios.h"
+#import "os_ios.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
-#import "display_server_ios.h"
 #include "main/main.h"
-#include "os_ios.h"
 #include "servers/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>

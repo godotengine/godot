@@ -30,11 +30,11 @@
 
 #include "scene_cache_interface.h"
 
+#include "scene_multiplayer.h"
+
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
-
-#include "scene_multiplayer.h"
 
 void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 	if (p_connected) {

@@ -99,25 +99,27 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 		return;
 	}
 
-	String project_name = GLOBAL_GET("application/config/name");
+	String project_name = GLOBAL_GET("application/config/name").operator String().replace("\n", "\\n");
 	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
 	String extracted_files = "";
 	for (int i = 0; i < files.size(); i++) {
-		extracted_files += "# " + files[i] + "\n";
+		extracted_files += "# " + files[i].replace("\n", "\\n") + "\n";
 	}
 	const String header =
-			"# LANGUAGE translation for " + project_name + " for the following files:\n" + extracted_files +
+			"# LANGUAGE translation for " + project_name + " for the following files:\n" +
+			extracted_files +
 			"#\n"
-			"# FIRST AUTHOR < EMAIL @ADDRESS>, YEAR.\n"
+			"# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n"
 			"#\n"
 			"#, fuzzy\n"
 			"msgid \"\"\n"
 			"msgstr \"\"\n"
 			"\"Project-Id-Version: " +
-			project_name + "\\n\"\n"
-						   "\"MIME-Version: 1.0\\n\"\n"
-						   "\"Content-Type: text/plain; charset=UTF-8\\n\"\n"
-						   "\"Content-Transfer-Encoding: 8-bit\\n\"\n";
+			project_name +
+			"\\n\"\n"
+			"\"MIME-Version: 1.0\\n\"\n"
+			"\"Content-Type: text/plain; charset=UTF-8\\n\"\n"
+			"\"Content-Transfer-Encoding: 8-bit\\n\"\n";
 
 	file->store_string(header);
 
@@ -134,12 +136,12 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 
 			// Write file locations.
 			for (const String &E : locations) {
-				file->store_line("#: " + E.trim_prefix("res://"));
+				file->store_line("#: " + E.trim_prefix("res://").replace("\n", "\\n"));
 			}
 
 			// Write context.
 			if (!context.is_empty()) {
-				file->store_line("msgctxt \"" + context + "\"");
+				file->store_line("msgctxt " + context.c_escape().quote());
 			}
 
 			// Write msgid.
@@ -158,30 +160,34 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 }
 
 void POTGenerator::_write_msgid(Ref<FileAccess> r_file, const String &p_id, bool p_plural) {
-	// Split \\n and \n.
-	Vector<String> msg_lines;
-	Vector<String> temp = p_id.split("\\n");
-	for (int i = 0; i < temp.size(); i++) {
-		msg_lines.append_array(temp[i].split("\n"));
-	}
-
-	// Add \n.
-	for (int i = 0; i < msg_lines.size() - 1; i++) {
-		msg_lines.set(i, msg_lines[i] + "\\n");
-	}
-
 	if (p_plural) {
 		r_file->store_string("msgid_plural ");
 	} else {
 		r_file->store_string("msgid ");
 	}
 
-	if (msg_lines.size() > 1) {
+	if (p_id.is_empty()) {
+		r_file->store_line("\"\"");
+		return;
+	}
+
+	const Vector<String> lines = p_id.split("\n");
+	const String &last_line = lines[lines.size() - 1]; // `lines` cannot be empty.
+	int pot_line_count = lines.size();
+	if (last_line.is_empty()) {
+		pot_line_count--;
+	}
+
+	if (pot_line_count > 1) {
 		r_file->store_line("\"\"");
 	}
 
-	for (int i = 0; i < msg_lines.size(); i++) {
-		r_file->store_line("\"" + msg_lines[i] + "\"");
+	for (int i = 0; i < lines.size() - 1; i++) {
+		r_file->store_line((lines[i] + "\n").c_escape().quote());
+	}
+
+	if (!last_line.is_empty()) {
+		r_file->store_line(last_line.c_escape().quote());
 	}
 }
 

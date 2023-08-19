@@ -34,7 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "servers/audio/audio_stream.h"
 
-#include "minimp3_ex.h"
+#include <minimp3_ex.h>
 
 class AudioStreamMP3;
 

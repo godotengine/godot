@@ -79,7 +79,7 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 		switch (err) {
 			case LightmapGI::BAKE_ERROR_NO_SAVE_PATH: {
 				String scene_path = lightmap->get_scene_file_path();
-				if (scene_path.is_empty()) {
+				if (scene_path.is_empty() && lightmap->get_owner()) {
 					scene_path = lightmap->get_owner()->get_scene_file_path();
 				}
 				if (scene_path.is_empty()) {

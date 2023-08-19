@@ -4,7 +4,7 @@
  *
  *   psnames module implementation (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -57,7 +57,7 @@
   /* the name, as in `A.swash' or `e.final'; in this case, the           */
   /* VARIANT_BIT is set in the return value.                             */
   /*                                                                     */
-  static FT_UInt32
+  FT_CALLBACK_DEF( FT_UInt32 )
   ps_unicode_value( const char*  glyph_name )
   {
     /* If the name begins with `uni', then the glyph name may be a */
@@ -309,7 +309,7 @@
 
 
   /* Build a table that maps Unicode values to glyph indices. */
-  static FT_Error
+  FT_CALLBACK_DEF( FT_Error )
   ps_unicodes_init( FT_Memory             memory,
                     PS_Unicodes           table,
                     FT_UInt               num_glyphs,
@@ -408,24 +408,21 @@
   }
 
 
-  static FT_UInt
+  FT_CALLBACK_DEF( FT_UInt )
   ps_unicodes_char_index( PS_Unicodes  table,
                           FT_UInt32    unicode )
   {
-    PS_UniMap  *min, *max, *mid, *result = NULL;
+    PS_UniMap  *result = NULL;
+    PS_UniMap  *min = table->maps;
+    PS_UniMap  *max = min + table->num_maps;
+    PS_UniMap  *mid = min + ( ( max - min ) >> 1 );
 
 
     /* Perform a binary search on the table. */
-
-    min = table->maps;
-    max = min + table->num_maps - 1;
-
-    while ( min <= max )
+    while ( min < max )
     {
       FT_UInt32  base_glyph;
 
-
-      mid = min + ( ( max - min ) >> 1 );
 
       if ( mid->unicode == unicode )
       {
@@ -438,13 +435,15 @@
       if ( base_glyph == unicode )
         result = mid; /* remember match but continue search for base glyph */
 
-      if ( min == max )
-        break;
-
       if ( base_glyph < unicode )
         min = mid + 1;
       else
-        max = mid - 1;
+        max = mid;
+
+      /* reasonable prediction in a continuous block */
+      mid += unicode - base_glyph;
+      if ( mid >= max || mid < min )
+        mid = min + ( ( max - min ) >> 1 );
     }
 
     if ( result )
@@ -454,7 +453,7 @@
   }
 
 
-  static FT_UInt32
+  FT_CALLBACK_DEF( FT_UInt )
   ps_unicodes_char_next( PS_Unicodes  table,
                          FT_UInt32   *unicode )
   {
@@ -465,14 +464,13 @@
     {
       FT_UInt     min = 0;
       FT_UInt     max = table->num_maps;
-      FT_UInt     mid;
+      FT_UInt     mid = min + ( ( max - min ) >> 1 );
       PS_UniMap*  map;
       FT_UInt32   base_glyph;
 
 
       while ( min < max )
       {
-        mid = min + ( ( max - min ) >> 1 );
         map = table->maps + mid;
 
         if ( map->unicode == char_code )
@@ -490,6 +488,11 @@
           min = mid + 1;
         else
           max = mid;
+
+        /* reasonable prediction in a continuous block */
+        mid += char_code - base_glyph;
+        if ( mid >= max || mid < min )
+          mid = min + ( max - min ) / 2;
       }
 
       if ( result )
@@ -515,7 +518,7 @@
 #endif /* FT_CONFIG_OPTION_ADOBE_GLYPH_LIST */
 
 
-  static const char*
+  FT_CALLBACK_DEF( const char* )
   ps_get_macintosh_name( FT_UInt  name_index )
   {
     if ( name_index >= FT_NUM_MAC_NAMES )
@@ -525,7 +528,7 @@
   }
 
 
-  static const char*
+  FT_CALLBACK_DEF( const char* )
   ps_get_standard_strings( FT_UInt  sid )
   {
     if ( sid >= FT_NUM_SID_NAMES )
@@ -540,13 +543,13 @@
   FT_DEFINE_SERVICE_PSCMAPSREC(
     pscmaps_interface,
 
-    (PS_Unicode_ValueFunc)     ps_unicode_value,        /* unicode_value         */
-    (PS_Unicodes_InitFunc)     ps_unicodes_init,        /* unicodes_init         */
-    (PS_Unicodes_CharIndexFunc)ps_unicodes_char_index,  /* unicodes_char_index   */
-    (PS_Unicodes_CharNextFunc) ps_unicodes_char_next,   /* unicodes_char_next    */
+    ps_unicode_value,         /* PS_Unicode_ValueFunc      unicode_value         */
+    ps_unicodes_init,         /* PS_Unicodes_InitFunc      unicodes_init         */
+    ps_unicodes_char_index,   /* PS_Unicodes_CharIndexFunc unicodes_char_index   */
+    ps_unicodes_char_next,    /* PS_Unicodes_CharNextFunc  unicodes_char_next    */
 
-    (PS_Macintosh_NameFunc)    ps_get_macintosh_name,   /* macintosh_name        */
-    (PS_Adobe_Std_StringsFunc) ps_get_standard_strings, /* adobe_std_strings     */
+    ps_get_macintosh_name,    /* PS_Macintosh_NameFunc     macintosh_name        */
+    ps_get_standard_strings,  /* PS_Adobe_Std_StringsFunc  adobe_std_strings     */
 
     t1_standard_encoding,                               /* adobe_std_encoding    */
     t1_expert_encoding                                  /* adobe_expert_encoding */
@@ -557,13 +560,13 @@
   FT_DEFINE_SERVICE_PSCMAPSREC(
     pscmaps_interface,
 
-    NULL,                                               /* unicode_value         */
-    NULL,                                               /* unicodes_init         */
-    NULL,                                               /* unicodes_char_index   */
-    NULL,                                               /* unicodes_char_next    */
+    NULL,                     /* PS_Unicode_ValueFunc      unicode_value         */
+    NULL,                     /* PS_Unicodes_InitFunc      unicodes_init         */
+    NULL,                     /* PS_Unicodes_CharIndexFunc unicodes_char_index   */
+    NULL,                     /* PS_Unicodes_CharNextFunc  unicodes_char_next    */
 
-    (PS_Macintosh_NameFunc)    ps_get_macintosh_name,   /* macintosh_name        */
-    (PS_Adobe_Std_StringsFunc) ps_get_standard_strings, /* adobe_std_strings     */
+    ps_get_macintosh_name,    /* PS_Macintosh_NameFunc     macintosh_name        */
+    ps_get_standard_strings,  /* PS_Adobe_Std_StringsFunc  adobe_std_strings     */
 
     t1_standard_encoding,                               /* adobe_std_encoding    */
     t1_expert_encoding                                  /* adobe_expert_encoding */
@@ -609,9 +612,9 @@
     PUT_PS_NAMES_SERVICE(
       (void*)&pscmaps_interface ),   /* module specific interface */
 
-    (FT_Module_Constructor)NULL,                                       /* module_init   */
-    (FT_Module_Destructor) NULL,                                       /* module_done   */
-    (FT_Module_Requester)  PUT_PS_NAMES_SERVICE( psnames_get_service ) /* get_interface */
+    NULL,                                        /* FT_Module_Constructor module_init   */
+    NULL,                                        /* FT_Module_Destructor  module_done   */
+    PUT_PS_NAMES_SERVICE( psnames_get_service )  /* FT_Module_Requester   get_interface */
   )
 
 

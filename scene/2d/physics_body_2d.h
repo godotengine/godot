@@ -212,6 +212,8 @@ private:
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state);
 	void _body_state_changed(PhysicsDirectBodyState2D *p_state);
 
+	void _sync_body_state(PhysicsDirectBodyState2D *p_state);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

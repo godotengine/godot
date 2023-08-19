@@ -31,14 +31,14 @@
 #ifndef EDITOR_NETWORK_PROFILER_H
 #define EDITOR_NETWORK_PROFILER_H
 
+#include "../multiplayer_debugger.h"
+
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
-
-#include "../multiplayer_debugger.h"
 
 class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)

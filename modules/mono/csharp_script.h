@@ -31,14 +31,14 @@
 #ifndef CSHARP_SCRIPT_H
 #define CSHARP_SCRIPT_H
 
+#include "mono_gc_handle.h"
+#include "mono_gd/gd_mono.h"
+
 #include "core/doc_data.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "core/templates/self_list.h"
-
-#include "mono_gc_handle.h"
-#include "mono_gd/gd_mono.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_plugin.h"
@@ -62,6 +62,7 @@ class CSharpScript : public Script {
 	friend class CSharpLanguage;
 
 	bool tool = false;
+	bool global_class = false;
 	bool valid = false;
 	bool reload_invalidated = false;
 
@@ -86,6 +87,8 @@ class CSharpScript : public Script {
 #endif
 
 	String source;
+	String class_name;
+	String icon_path;
 
 	SelfList<CSharpScript> script_list = this;
 
@@ -344,7 +347,6 @@ class CSharpLanguage : public ScriptLanguage {
 	String _debug_error;
 
 	friend class GDMono;
-	void _on_scripts_domain_about_to_unload();
 
 #ifdef TOOLS_ENABLED
 	EditorPlugin *godotsharp_editor = nullptr;
@@ -441,6 +443,10 @@ public:
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}
+
+	/* SCRIPT GLOBAL CLASS FUNCTIONS */
+	virtual bool handles_global_class_type(const String &p_type) const override;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
 
 	/* DEBUGGER FUNCTIONS */
 	String debug_get_error() const override;

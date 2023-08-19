@@ -45,6 +45,8 @@ class NavigationLink2D : public Node2D {
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
 
+	Transform2D current_global_transform;
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

@@ -244,13 +244,16 @@ void TileAtlasView::_draw_base_tiles() {
 		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 			Vector2i atlas_coords = tile_set_atlas_source->get_tile_id(i);
 
+			// Different materials need to be drawn with different CanvasItems.
+			RID ci_rid = _get_canvas_item_to_draw(tile_set_atlas_source->get_tile_data(atlas_coords, 0), base_tiles_draw, material_tiles_draw);
+
 			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(atlas_coords); frame++) {
 				// Update the y to max value.
 				Rect2i base_frame_rect = tile_set_atlas_source->get_tile_texture_region(atlas_coords, frame);
-				Vector2i offset_pos = base_frame_rect.get_center() + tile_set_atlas_source->get_tile_data(atlas_coords, 0)->get_texture_origin();
+				Vector2 offset_pos = Rect2(base_frame_rect).get_center() + Vector2(tile_set_atlas_source->get_tile_data(atlas_coords, 0)->get_texture_origin());
 
 				// Draw the tile.
-				TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0, frame);
+				TileMap::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, 0, frame);
 			}
 		}
 
@@ -284,6 +287,33 @@ void TileAtlasView::_draw_base_tiles() {
 			}
 		}
 	}
+}
+
+RID TileAtlasView::_get_canvas_item_to_draw(const TileData *p_for_data, const CanvasItem *p_base_item, HashMap<Ref<Material>, RID> &p_material_map) {
+	Ref<Material> mat = p_for_data->get_material();
+	if (mat.is_null()) {
+		return p_base_item->get_canvas_item();
+	} else if (p_material_map.has(mat)) {
+		return p_material_map[mat];
+	} else {
+		RID ci_rid = RS::get_singleton()->canvas_item_create();
+		RS::get_singleton()->canvas_item_set_parent(ci_rid, p_base_item->get_canvas_item());
+		RS::get_singleton()->canvas_item_set_material(ci_rid, mat->get_rid());
+		p_material_map[mat] = ci_rid;
+		return ci_rid;
+	}
+}
+
+void TileAtlasView::_clear_material_canvas_items() {
+	for (KeyValue<Ref<Material>, RID> kv : material_tiles_draw) {
+		RS::get_singleton()->free(kv.value);
+	}
+	material_tiles_draw.clear();
+
+	for (KeyValue<Ref<Material>, RID> kv : material_alternatives_draw) {
+		RS::get_singleton()->free(kv.value);
+	}
+	material_alternatives_draw.clear();
 }
 
 void TileAtlasView::_draw_base_tiles_texture_grid() {
@@ -331,7 +361,7 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 				}
 				Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id, frame);
 				Transform2D tile_xform;
-				tile_xform.set_origin(texture_region.get_center() + in_tile_base_offset);
+				tile_xform.set_origin(Rect2(texture_region).get_center() + in_tile_base_offset);
 				tile_xform.set_scale(tile_shape_size);
 				tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, color);
 			}
@@ -370,6 +400,9 @@ void TileAtlasView::_draw_alternatives() {
 				TileData *tile_data = tile_set_atlas_source->get_tile_data(atlas_coords, alternative_id);
 				bool transposed = tile_data->get_transpose();
 
+				// Different materials need to be drawn with different CanvasItems.
+				RID ci_rid = _get_canvas_item_to_draw(tile_data, alternatives_draw, material_alternatives_draw);
+
 				// Update the y to max value.
 				Vector2i offset_pos;
 				if (transposed) {
@@ -381,7 +414,7 @@ void TileAtlasView::_draw_alternatives() {
 				}
 
 				// Draw the tile.
-				TileMap::draw_tile(alternatives_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, alternative_id);
+				TileMap::draw_tile(ci_rid, offset_pos, tile_set, source_id, atlas_coords, alternative_id);
 
 				// Increment the x position.
 				current_pos.x += transposed ? texture_region_size.y : texture_region_size.x;
@@ -404,6 +437,8 @@ void TileAtlasView::_draw_background_right() {
 void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
 	tile_set = p_tile_set;
 	tile_set_atlas_source = p_tile_set_atlas_source;
+
+	_clear_material_canvas_items();
 
 	if (!tile_set) {
 		return;
@@ -462,19 +497,16 @@ Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p
 	Vector2i separation = tile_set_atlas_source->get_separation();
 	Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
 
-	// Compute index in atlas
+	// Compute index in atlas.
 	Vector2 pos = p_pos - margins;
 	Vector2i ret = (pos / (texture_region_size + separation)).floor();
 
-	// Return invalid value (without clamp).
-	Rect2i rect = Rect2(Vector2i(), tile_set_atlas_source->get_atlas_grid_size());
-	if (!p_clamp && !rect.has_point(ret)) {
-		return TileSetSource::INVALID_ATLAS_COORDS;
-	}
-
 	// Clamp.
-	ret.x = CLAMP(ret.x, 0, rect.size.x - 1);
-	ret.y = CLAMP(ret.y, 0, rect.size.y - 1);
+	if (p_clamp) {
+		Vector2i size = tile_set_atlas_source->get_atlas_grid_size();
+		ret.x = CLAMP(ret.x, 0, size.x - 1);
+		ret.y = CLAMP(ret.y, 0, size.y - 1);
+	}
 
 	return ret;
 }
@@ -580,6 +612,7 @@ TileAtlasView::TileAtlasView() {
 
 	button_center_view = memnew(Button);
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
+	button_center_view->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
 	button_center_view->connect("pressed", callable_mp(this, &TileAtlasView::_center_view));
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
@@ -693,4 +726,8 @@ TileAtlasView::TileAtlasView() {
 	alternatives_draw->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	alternatives_draw->connect("draw", callable_mp(this, &TileAtlasView::_draw_alternatives));
 	alternative_tiles_drawing_root->add_child(alternatives_draw);
+}
+
+TileAtlasView::~TileAtlasView() {
+	_clear_material_canvas_items();
 }

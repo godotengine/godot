@@ -31,11 +31,12 @@
 #include "gdscript_text_document.h"
 
 #include "../gdscript.h"
+#include "gdscript_extend_parser.h"
+#include "gdscript_language_protocol.h"
+
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_text_editor.h"
-#include "gdscript_extend_parser.h"
-#include "gdscript_language_protocol.h"
 #include "servers/display_server.h"
 
 void GDScriptTextDocument::_bind_methods() {

@@ -31,11 +31,13 @@
 #include "test_main.h"
 
 #include "tests/core/config/test_project_settings.h"
+#include "tests/core/input/test_input_event.h"
 #include "tests/core/input/test_input_event_key.h"
 #include "tests/core/input/test_input_event_mouse.h"
 #include "tests/core/input/test_shortcut.h"
 #include "tests/core/io/test_config_file.h"
 #include "tests/core/io/test_file_access.h"
+#include "tests/core/io/test_http_client.h"
 #include "tests/core/io/test_image.h"
 #include "tests/core/io/test_json.h"
 #include "tests/core/io/test_marshalls.h"
@@ -70,6 +72,7 @@
 #include "tests/core/string/test_node_path.h"
 #include "tests/core/string/test_string.h"
 #include "tests/core/string/test_translation.h"
+#include "tests/core/string/test_translation_server.h"
 #include "tests/core/templates/test_command_queue.h"
 #include "tests/core/templates/test_hash_map.h"
 #include "tests/core/templates/test_hash_set.h"
@@ -91,12 +94,19 @@
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_code_edit.h"
+#include "tests/scene/test_color_picker.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_curve_2d.h"
+#include "tests/scene/test_curve_3d.h"
 #include "tests/scene/test_gradient.h"
 #include "tests/scene/test_navigation_agent_2d.h"
 #include "tests/scene/test_navigation_agent_3d.h"
+#include "tests/scene/test_navigation_obstacle_2d.h"
+#include "tests/scene/test_navigation_obstacle_3d.h"
+#include "tests/scene/test_navigation_region_2d.h"
+#include "tests/scene/test_navigation_region_3d.h"
 #include "tests/scene/test_node.h"
+#include "tests/scene/test_packed_scene.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_primitives.h"
@@ -105,6 +115,8 @@
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_viewport.h"
 #include "tests/scene/test_visual_shader.h"
+#include "tests/scene/test_window.h"
+#include "tests/servers/rendering/test_shader_preprocessor.h"
 #include "tests/servers/test_navigation_server_2d.h"
 #include "tests/servers/test_navigation_server_3d.h"
 #include "tests/servers/test_text_server.h"
@@ -133,6 +145,8 @@ int test_main(int argc, char *argv[]) {
 	}
 	OS::get_singleton()->set_cmdline("", args, List<String>());
 	DisplayServerMock::register_mock_driver();
+
+	WorkerThreadPool::get_singleton()->init();
 
 	// Run custom test tools.
 	if (test_commands) {
@@ -199,7 +213,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	ThemeDB *theme_db = nullptr;
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
-		SignalWatcher::get_singleton()->_clear_signals();
+		reinitialize();
 
 		String name = String(p_in.m_name);
 		String suite_name = String(p_in.m_test_suite);
@@ -255,8 +269,8 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 		if (suite_name.find("[Navigation]") != -1 && navigation_server_2d == nullptr && navigation_server_3d == nullptr) {
-			navigation_server_2d = memnew(NavigationServer2D);
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
+			navigation_server_2d = memnew(NavigationServer2D);
 			return;
 		}
 	}
@@ -340,11 +354,11 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	}
 
 	void test_case_reenter(const doctest::TestCaseData &) override {
-		SignalWatcher::get_singleton()->_clear_signals();
+		reinitialize();
 	}
 
 	void subcase_start(const doctest::SubcaseSignature &) override {
-		SignalWatcher::get_singleton()->_clear_signals();
+		reinitialize();
 	}
 
 	void report_query(const doctest::QueryData &) override {}
@@ -354,6 +368,12 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	void log_assert(const doctest::AssertData &in) override {}
 	void log_message(const doctest::MessageData &) override {}
 	void test_case_skipped(const doctest::TestCaseData &) override {}
+
+private:
+	void reinitialize() {
+		Math::seed(0x60d07);
+		SignalWatcher::get_singleton()->_clear_signals();
+	}
 };
 
 REGISTER_LISTENER("GodotTestCaseListener", 1, GodotTestCaseListener);

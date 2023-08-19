@@ -237,7 +237,9 @@ void RenderingServerDefault::init() {
 void RenderingServerDefault::finish() {
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_thread_exit);
-		thread.wait_to_finish();
+		if (thread.is_started()) {
+			thread.wait_to_finish();
+		}
 	} else {
 		_finish();
 	}
@@ -249,27 +251,15 @@ uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
 	if (p_info == RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME) {
 		return RSG::viewport->get_total_objects_drawn();
 	} else if (p_info == RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME) {
-		return RSG::viewport->get_total_vertices_drawn();
+		return RSG::viewport->get_total_primitives_drawn();
 	} else if (p_info == RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
 		return RSG::viewport->get_total_draw_calls_used();
 	}
 	return RSG::utilities->get_rendering_info(p_info);
 }
 
-String RenderingServerDefault::get_video_adapter_name() const {
-	return RSG::utilities->get_video_adapter_name();
-}
-
-String RenderingServerDefault::get_video_adapter_vendor() const {
-	return RSG::utilities->get_video_adapter_vendor();
-}
-
 RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() const {
 	return RSG::utilities->get_video_adapter_type();
-}
-
-String RenderingServerDefault::get_video_adapter_api_version() const {
-	return RSG::utilities->get_video_adapter_api_version();
 }
 
 void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {
@@ -394,6 +384,12 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	} else {
 		_draw(p_swap_buffers, frame_step);
 	}
+}
+
+void RenderingServerDefault::_call_on_render_thread(const Callable &p_callable) {
+	Variant ret;
+	Callable::CallError ce;
+	p_callable.callp(nullptr, 0, ret, ce);
 }
 
 RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :

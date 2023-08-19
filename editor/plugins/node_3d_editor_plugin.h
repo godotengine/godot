@@ -44,6 +44,7 @@ class ColorPickerButton;
 class ConfirmationDialog;
 class DirectionalLight3D;
 class EditorData;
+class EditorSelection;
 class EditorSpinSlider;
 class HSplitContainer;
 class LineEdit;
@@ -124,25 +125,28 @@ class Node3DEditorViewport : public Control {
 		VIEW_GIZMOS,
 		VIEW_INFORMATION,
 		VIEW_FRAME_TIME,
+
+		// < Keep in sync with menu.
 		VIEW_DISPLAY_NORMAL,
 		VIEW_DISPLAY_WIREFRAME,
 		VIEW_DISPLAY_OVERDRAW,
-		VIEW_DISPLAY_SHADELESS,
 		VIEW_DISPLAY_LIGHTING,
+		VIEW_DISPLAY_UNSHADED,
 		VIEW_DISPLAY_ADVANCED,
+		// Advanced menu:
+		VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
 		VIEW_DISPLAY_NORMAL_BUFFER,
 		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
 		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
+		VIEW_DISPLAY_DEBUG_SDFGI,
+		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 		VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
 		VIEW_DISPLAY_DEBUG_SSAO,
 		VIEW_DISPLAY_DEBUG_SSIL,
-		VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
-		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
-		VIEW_DISPLAY_DEBUG_SDFGI,
-		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 		VIEW_DISPLAY_DEBUG_GI_BUFFER,
 		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
 		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
@@ -151,6 +155,8 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 		VIEW_DISPLAY_DEBUG_OCCLUDERS,
 		VIEW_DISPLAY_MOTION_VECTORS,
+		VIEW_DISPLAY_MAX,
+		// > Keep in sync with menu.
 
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
@@ -343,6 +349,15 @@ private:
 		Variant gizmo_initial_value;
 		bool original_local;
 		bool instant;
+
+		// Numeric blender-style transforms (e.g. 'g5x').
+		// numeric_input tracks the current input value, e.g. 1.23.
+		// numeric_negate indicates whether '-' has been pressed to negate the value
+		// while numeric_next_decimal is 0, numbers are input before the decimal point
+		// after pressing '.', numeric next decimal changes to -1, and decrements after each press.
+		double numeric_input = 0.0;
+		bool numeric_negate = false;
+		int numeric_next_decimal = 0;
 	} _edit;
 
 	struct Cursor {
@@ -395,6 +410,7 @@ private:
 	void _surface_focus_enter();
 	void _surface_focus_exit();
 
+	void input(const Ref<InputEvent> &p_event) override;
 	void _sinput(const Ref<InputEvent> &p_event);
 	void _update_freelook(real_t delta);
 	Node3DEditor *spatial_editor = nullptr;
@@ -402,8 +418,8 @@ private:
 	Camera3D *previewing = nullptr;
 	Camera3D *preview = nullptr;
 
-	bool previewing_camera;
-	bool previewing_cinema;
+	bool previewing_camera = false;
+	bool previewing_cinema = false;
 	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
@@ -438,11 +454,15 @@ private:
 
 	void begin_transform(TransformMode p_mode, bool instant);
 	void commit_transform();
-	void update_transform(Point2 p_mousepos, bool p_shift);
+	void apply_transform(Vector3 p_motion, double p_snap);
+	void update_transform(bool p_shift);
+	void update_transform_numeric();
 	void finish_transform();
 
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
+
+	void _set_lock_view_rotation(bool p_lock_rotation);
 
 protected:
 	void _notification(int p_what);
@@ -580,8 +600,8 @@ private:
 	bool origin_enabled = false;
 	RID grid[3];
 	RID grid_instance[3];
-	bool grid_visible[3]; //currently visible
-	bool grid_enable[3]; //should be always visible if true
+	bool grid_visible[3] = { false, false, false }; //currently visible
+	bool grid_enable[3] = { false, false, false }; //should be always visible if true
 	bool grid_enabled = false;
 	bool grid_init_draw = false;
 	Camera3D::ProjectionType grid_camera_last_update_perspective = Camera3D::PROJECTION_PERSPECTIVE;

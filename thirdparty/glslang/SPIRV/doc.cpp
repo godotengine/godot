@@ -53,6 +53,7 @@ namespace spv {
         #include "GLSL.ext.EXT.h"
         #include "GLSL.ext.AMD.h"
         #include "GLSL.ext.NV.h"
+        #include "GLSL.ext.ARM.h"
     }
 }
 
@@ -214,6 +215,10 @@ const char* ExecutionModeString(int mode)
     case ExecutionModeNoGlobalOffsetINTEL:      return "NoGlobalOffsetINTEL";
     case ExecutionModeNumSIMDWorkitemsINTEL:    return "NumSIMDWorkitemsINTEL";
 
+    case ExecutionModeNonCoherentColorAttachmentReadEXT:        return "NonCoherentColorAttachmentReadEXT";
+    case ExecutionModeNonCoherentDepthAttachmentReadEXT:        return "NonCoherentDepthAttachmentReadEXT";
+    case ExecutionModeNonCoherentStencilAttachmentReadEXT:      return "NonCoherentStencilAttachmentReadEXT";
+
     case ExecutionModeCeiling:
     default: return "Bad";
     }
@@ -245,6 +250,8 @@ const char* StorageClassString(int StorageClass)
 
     case StorageClassPhysicalStorageBufferEXT: return "PhysicalStorageBufferEXT";
     case StorageClassTaskPayloadWorkgroupEXT:  return "TaskPayloadWorkgroupEXT";
+    case StorageClassHitObjectAttributeNV:     return "HitObjectAttributeNV";
+    case StorageClassTileImageEXT:             return "TileImageEXT";
     default: return "Bad";
     }
 }
@@ -319,6 +326,8 @@ const char* DecorationString(int decoration)
     case DecorationHlslSemanticGOOGLE:      return "DecorationHlslSemanticGOOGLE";
     case DecorationRestrictPointerEXT:      return "DecorationRestrictPointerEXT";
     case DecorationAliasedPointerEXT:       return "DecorationAliasedPointerEXT";
+
+    case DecorationHitObjectShaderRecordBufferNV:  return "DecorationHitObjectShaderRecordBufferNV";
     }
 }
 
@@ -400,6 +409,7 @@ const char* BuiltInString(int builtIn)
     case BuiltInRayTminKHR:                  return "RayTminKHR";
     case BuiltInRayTmaxKHR:                  return "RayTmaxKHR";
     case BuiltInCullMaskKHR:                 return "CullMaskKHR";
+    case BuiltInHitTriangleVertexPositionsKHR: return "HitTriangleVertexPositionsKHR";
     case BuiltInInstanceCustomIndexKHR:      return "InstanceCustomIndexKHR";
     case BuiltInRayGeometryIndexKHR:         return "RayGeometryIndexKHR";
     case BuiltInObjectToWorldKHR:            return "ObjectToWorldKHR";
@@ -439,6 +449,11 @@ const char* BuiltInString(int builtIn)
     case BuiltInPrimitiveLineIndicesEXT:         return "PrimitiveLineIndicesEXT";
     case BuiltInPrimitiveTriangleIndicesEXT:     return "PrimitiveTriangleIndicesEXT";
     case BuiltInCullPrimitiveEXT:                return "CullPrimitiveEXT";
+    case BuiltInCoreCountARM:           return "CoreCountARM";
+    case BuiltInCoreIDARM:              return "CoreIDARM";
+    case BuiltInCoreMaxIDARM:           return "CoreMaxIDARM";
+    case BuiltInWarpIDARM:              return "WarpIDARM";
+    case BuiltInWarpMaxIDARM:           return "BuiltInWarpMaxIDARM";
 
     default: return "Bad";
     }
@@ -454,6 +469,7 @@ const char* DimensionString(int dim)
     case 4:  return "Rect";
     case 5:  return "Buffer";
     case 6:  return "SubpassData";
+    case DimTileImageDataEXT:  return "TileImageDataEXT";
 
     default: return "Bad";
     }
@@ -941,6 +957,8 @@ const char* CapabilityString(int info)
     case CapabilityRayQueryKHR:                     return "RayQueryKHR";
     case CapabilityRayTracingProvisionalKHR:        return "RayTracingProvisionalKHR";
     case CapabilityRayTraversalPrimitiveCullingKHR: return "RayTraversalPrimitiveCullingKHR";
+    case CapabilityRayTracingPositionFetchKHR:      return "RayTracingPositionFetchKHR";
+    case CapabilityRayQueryPositionFetchKHR:        return "RayQueryPositionFetchKHR";
     case CapabilityComputeDerivativeGroupQuadsNV:   return "ComputeDerivativeGroupQuadsNV";
     case CapabilityComputeDerivativeGroupLinearNV:  return "ComputeDerivativeGroupLinearNV";
     case CapabilityFragmentBarycentricKHR:          return "FragmentBarycentricKHR";
@@ -980,6 +998,10 @@ const char* CapabilityString(int info)
     case CapabilityFragmentShaderPixelInterlockEXT:         return "CapabilityFragmentShaderPixelInterlockEXT";
     case CapabilityFragmentShaderShadingRateInterlockEXT:   return "CapabilityFragmentShaderShadingRateInterlockEXT";
 
+    case CapabilityTileImageColorReadAccessEXT:           return "TileImageColorReadAccessEXT";
+    case CapabilityTileImageDepthReadAccessEXT:           return "TileImageDepthReadAccessEXT";
+    case CapabilityTileImageStencilReadAccessEXT:         return "TileImageStencilReadAccessEXT";
+
     case CapabilityFragmentShadingRateKHR:                  return "FragmentShadingRateKHR";
 
     case CapabilityDemoteToHelperInvocationEXT:             return "DemoteToHelperInvocationEXT";
@@ -998,7 +1020,9 @@ const char* CapabilityString(int info)
     case CapabilityWorkgroupMemoryExplicitLayoutKHR:            return "CapabilityWorkgroupMemoryExplicitLayoutKHR";
     case CapabilityWorkgroupMemoryExplicitLayout8BitAccessKHR:  return "CapabilityWorkgroupMemoryExplicitLayout8BitAccessKHR";
     case CapabilityWorkgroupMemoryExplicitLayout16BitAccessKHR: return "CapabilityWorkgroupMemoryExplicitLayout16BitAccessKHR";
+    case CapabilityCoreBuiltinsARM:                             return "CoreBuiltinsARM";
 
+    case CapabilityShaderInvocationReorderNV:                return "ShaderInvocationReorderNV";
     default: return "Bad";
     }
 }
@@ -1441,6 +1465,7 @@ const char* OpcodeString(int op)
     case OpRayQueryGetWorldRayOriginKHR:                                      return "OpRayQueryGetWorldRayOriginKHR";
     case OpRayQueryGetIntersectionObjectToWorldKHR:                           return "OpRayQueryGetIntersectionObjectToWorldKHR";
     case OpRayQueryGetIntersectionWorldToObjectKHR:                           return "OpRayQueryGetIntersectionWorldToObjectKHR";
+    case OpRayQueryGetIntersectionTriangleVertexPositionsKHR:                 return "OpRayQueryGetIntersectionTriangleVertexPositionsKHR";
 
     case OpTypeCooperativeMatrixNV:         return "OpTypeCooperativeMatrixNV";
     case OpCooperativeMatrixLoadNV:         return "OpCooperativeMatrixLoadNV";
@@ -1452,6 +1477,44 @@ const char* OpcodeString(int op)
 
     case OpBeginInvocationInterlockEXT:     return "OpBeginInvocationInterlockEXT";
     case OpEndInvocationInterlockEXT:       return "OpEndInvocationInterlockEXT";
+
+    case OpTypeHitObjectNV:                     return "OpTypeHitObjectNV";
+    case OpHitObjectTraceRayNV:                 return "OpHitObjectTraceRayNV";
+    case OpHitObjectTraceRayMotionNV:           return "OpHitObjectTraceRayMotionNV";
+    case OpHitObjectRecordHitNV:                return "OpHitObjectRecordHitNV";
+    case OpHitObjectRecordHitMotionNV:          return "OpHitObjectRecordHitMotionNV";
+    case OpHitObjectRecordHitWithIndexNV:       return "OpHitObjectRecordHitWithIndexNV";
+    case OpHitObjectRecordHitWithIndexMotionNV: return "OpHitObjectRecordHitWithIndexMotionNV";
+    case OpHitObjectRecordMissNV:               return "OpHitObjectRecordMissNV";
+    case OpHitObjectRecordMissMotionNV:         return "OpHitObjectRecordMissMotionNV";
+    case OpHitObjectRecordEmptyNV:              return "OpHitObjectRecordEmptyNV";
+    case OpHitObjectExecuteShaderNV:            return "OpHitObjectExecuteShaderNV";
+    case OpReorderThreadWithHintNV:             return "OpReorderThreadWithHintNV";
+    case OpReorderThreadWithHitObjectNV:        return "OpReorderThreadWithHitObjectNV";
+    case OpHitObjectGetCurrentTimeNV:           return "OpHitObjectGetCurrentTimeNV";
+    case OpHitObjectGetAttributesNV:            return "OpHitObjectGetAttributesNV";
+    case OpHitObjectGetHitKindNV:               return "OpHitObjectGetFrontFaceNV";
+    case OpHitObjectGetPrimitiveIndexNV:        return "OpHitObjectGetPrimitiveIndexNV";
+    case OpHitObjectGetGeometryIndexNV:         return "OpHitObjectGetGeometryIndexNV";
+    case OpHitObjectGetInstanceIdNV:            return "OpHitObjectGetInstanceIdNV";
+    case OpHitObjectGetInstanceCustomIndexNV:   return "OpHitObjectGetInstanceCustomIndexNV";
+    case OpHitObjectGetObjectRayDirectionNV:    return "OpHitObjectGetObjectRayDirectionNV";
+    case OpHitObjectGetObjectRayOriginNV:       return "OpHitObjectGetObjectRayOriginNV";
+    case OpHitObjectGetWorldRayDirectionNV:     return "OpHitObjectGetWorldRayDirectionNV";
+    case OpHitObjectGetWorldRayOriginNV:        return "OpHitObjectGetWorldRayOriginNV";
+    case OpHitObjectGetWorldToObjectNV:         return "OpHitObjectGetWorldToObjectNV";
+    case OpHitObjectGetObjectToWorldNV:         return "OpHitObjectGetObjectToWorldNV";
+    case OpHitObjectGetRayTMaxNV:               return "OpHitObjectGetRayTMaxNV";
+    case OpHitObjectGetRayTMinNV:               return "OpHitObjectGetRayTMinNV";
+    case OpHitObjectIsEmptyNV:                  return "OpHitObjectIsEmptyNV";
+    case OpHitObjectIsHitNV:                    return "OpHitObjectIsHitNV";
+    case OpHitObjectIsMissNV:                   return "OpHitObjectIsMissNV";
+    case OpHitObjectGetShaderBindingTableRecordIndexNV: return "OpHitObjectGetShaderBindingTableRecordIndexNV";
+    case OpHitObjectGetShaderRecordBufferHandleNV:   return "OpHitObjectGetShaderRecordBufferHandleNV";
+
+    case OpColorAttachmentReadEXT:          return "OpColorAttachmentReadEXT";
+    case OpDepthAttachmentReadEXT:          return "OpDepthAttachmentReadEXT";
+    case OpStencilAttachmentReadEXT:        return "OpStencilAttachmentReadEXT";
 
     default:
         return "Bad";
@@ -1607,7 +1670,7 @@ void Parameterize()
     DecorationOperands[DecorationInputAttachmentIndex].push(OperandLiteralNumber, "'Attachment Index'");
     DecorationOperands[DecorationAlignment].push(OperandLiteralNumber, "'Alignment'");
 
-    OperandClassParams[OperandSource].set(0, SourceString, 0);
+    OperandClassParams[OperandSource].set(0, SourceString, nullptr);
     OperandClassParams[OperandExecutionModel].set(0, ExecutionModelString, nullptr);
     OperandClassParams[OperandAddressing].set(0, AddressingString, nullptr);
     OperandClassParams[OperandMemory].set(0, MemoryString, nullptr);
@@ -1639,7 +1702,7 @@ void Parameterize()
     OperandClassParams[OperandKernelEnqueueFlags].set(0, KernelEnqueueFlagsString, nullptr);
     OperandClassParams[OperandKernelProfilingInfo].set(0, KernelProfilingInfoString, nullptr, true);
     OperandClassParams[OperandCapability].set(0, CapabilityString, nullptr);
-    OperandClassParams[OperandOpcode].set(OpCodeMask + 1, OpcodeString, 0);
+    OperandClassParams[OperandOpcode].set(OpCodeMask + 1, OpcodeString, nullptr);
 
     // set name of operator, an initial set of <id> style operands, and the description
 
@@ -2980,6 +3043,10 @@ void Parameterize()
     InstructionDesc[OpRayQueryGetIntersectionWorldToObjectKHR].operands.push(OperandId, "'Committed'");
     InstructionDesc[OpRayQueryGetIntersectionWorldToObjectKHR].setResultAndType(true, true);
 
+    InstructionDesc[OpRayQueryGetIntersectionTriangleVertexPositionsKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionTriangleVertexPositionsKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionWorldToObjectKHR].setResultAndType(true, true);
+
     InstructionDesc[OpImageSampleFootprintNV].operands.push(OperandId, "'Sampled Image'");
     InstructionDesc[OpImageSampleFootprintNV].operands.push(OperandId, "'Coordinate'");
     InstructionDesc[OpImageSampleFootprintNV].operands.push(OperandId, "'Granularity'");
@@ -3030,6 +3097,196 @@ void Parameterize()
     InstructionDesc[OpDemoteToHelperInvocationEXT].setResultAndType(false, false);
 
     InstructionDesc[OpReadClockKHR].operands.push(OperandScope, "'Scope'");
+
+    InstructionDesc[OpTypeHitObjectNV].setResultAndType(true, false);
+    
+    InstructionDesc[OpHitObjectGetShaderRecordBufferHandleNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetShaderRecordBufferHandleNV].setResultAndType(true, true);
+
+    InstructionDesc[OpReorderThreadWithHintNV].operands.push(OperandId, "'Hint'");
+    InstructionDesc[OpReorderThreadWithHintNV].operands.push(OperandId, "'Bits'");
+    InstructionDesc[OpReorderThreadWithHintNV].setResultAndType(false, false);
+
+    InstructionDesc[OpReorderThreadWithHitObjectNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpReorderThreadWithHitObjectNV].operands.push(OperandId, "'Hint'");
+    InstructionDesc[OpReorderThreadWithHitObjectNV].operands.push(OperandId, "'Bits'");
+    InstructionDesc[OpReorderThreadWithHitObjectNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectGetCurrentTimeNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetCurrentTimeNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetHitKindNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetHitKindNV].setResultAndType(true, true);
+    
+    InstructionDesc[OpHitObjectGetPrimitiveIndexNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetPrimitiveIndexNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetGeometryIndexNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetGeometryIndexNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetInstanceIdNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetInstanceIdNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetInstanceCustomIndexNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetInstanceCustomIndexNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetObjectRayDirectionNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetObjectRayDirectionNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetObjectRayOriginNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetObjectRayOriginNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetWorldRayDirectionNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetWorldRayDirectionNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetWorldRayOriginNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetWorldRayOriginNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetWorldToObjectNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetWorldToObjectNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetObjectToWorldNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetObjectToWorldNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetRayTMaxNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetRayTMaxNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetRayTMinNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetRayTMinNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetShaderBindingTableRecordIndexNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetShaderBindingTableRecordIndexNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectIsEmptyNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectIsEmptyNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectIsHitNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectIsHitNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectIsMissNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectIsMissNV].setResultAndType(true, true);
+
+    InstructionDesc[OpHitObjectGetAttributesNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectGetAttributesNV].operands.push(OperandId, "'HitObjectAttribute'");
+    InstructionDesc[OpHitObjectGetAttributesNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectExecuteShaderNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectExecuteShaderNV].operands.push(OperandId, "'Payload'");
+    InstructionDesc[OpHitObjectExecuteShaderNV].setResultAndType(false, false);
+    
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'Acceleration Structure'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'InstanceId'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'PrimitiveId'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'GeometryIndex'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'HitKind'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'SBT Record Offset'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'SBT Record Stride'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'Origin'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'TMin'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'Direction'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'TMax'");
+    InstructionDesc[OpHitObjectRecordHitNV].operands.push(OperandId, "'HitObject Attribute'");
+    InstructionDesc[OpHitObjectRecordHitNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'Acceleration Structure'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'InstanceId'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'PrimitiveId'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'GeometryIndex'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'HitKind'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'SBT Record Offset'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'SBT Record Stride'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'Origin'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'TMin'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'Direction'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'TMax'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'Current Time'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].operands.push(OperandId, "'HitObject Attribute'");
+    InstructionDesc[OpHitObjectRecordHitMotionNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'Acceleration Structure'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'InstanceId'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'PrimitiveId'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'GeometryIndex'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'HitKind'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'SBT Record Index'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'Origin'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'TMin'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'Direction'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'TMax'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].operands.push(OperandId, "'HitObject Attribute'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'Acceleration Structure'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'InstanceId'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'PrimitiveId'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'GeometryIndex'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'HitKind'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'SBT Record Index'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'Origin'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'TMin'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'Direction'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'TMax'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'Current Time'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].operands.push(OperandId, "'HitObject Attribute'");
+    InstructionDesc[OpHitObjectRecordHitWithIndexMotionNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectRecordMissNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectRecordMissNV].operands.push(OperandId, "'SBT Index'");
+    InstructionDesc[OpHitObjectRecordMissNV].operands.push(OperandId, "'Origin'");
+    InstructionDesc[OpHitObjectRecordMissNV].operands.push(OperandId, "'TMin'");
+    InstructionDesc[OpHitObjectRecordMissNV].operands.push(OperandId, "'Direction'");
+    InstructionDesc[OpHitObjectRecordMissNV].operands.push(OperandId, "'TMax'");
+    InstructionDesc[OpHitObjectRecordMissNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectRecordMissMotionNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectRecordMissMotionNV].operands.push(OperandId, "'SBT Index'");
+    InstructionDesc[OpHitObjectRecordMissMotionNV].operands.push(OperandId, "'Origin'");
+    InstructionDesc[OpHitObjectRecordMissMotionNV].operands.push(OperandId, "'TMin'");
+    InstructionDesc[OpHitObjectRecordMissMotionNV].operands.push(OperandId, "'Direction'");
+    InstructionDesc[OpHitObjectRecordMissMotionNV].operands.push(OperandId, "'TMax'");
+    InstructionDesc[OpHitObjectRecordMissMotionNV].operands.push(OperandId, "'Current Time'");
+    InstructionDesc[OpHitObjectRecordMissMotionNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectRecordEmptyNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectRecordEmptyNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'Acceleration Structure'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'RayFlags'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'Cullmask'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'SBT Record Offset'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'SBT Record Stride'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'Miss Index'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'Origin'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'TMin'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'Direction'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'TMax'");
+    InstructionDesc[OpHitObjectTraceRayNV].operands.push(OperandId, "'Payload'");
+    InstructionDesc[OpHitObjectTraceRayNV].setResultAndType(false, false);
+
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'HitObject'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'Acceleration Structure'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'RayFlags'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'Cullmask'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'SBT Record Offset'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'SBT Record Stride'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'Miss Index'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'Origin'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'TMin'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'Direction'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'TMax'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'Time'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].operands.push(OperandId, "'Payload'");
+    InstructionDesc[OpHitObjectTraceRayMotionNV].setResultAndType(false, false);
+
+    InstructionDesc[OpColorAttachmentReadEXT].operands.push(OperandId, "'Attachment'");
+    InstructionDesc[OpColorAttachmentReadEXT].operands.push(OperandId, "'Sample'", true);
+    InstructionDesc[OpStencilAttachmentReadEXT].operands.push(OperandId, "'Sample'", true);
+    InstructionDesc[OpDepthAttachmentReadEXT].operands.push(OperandId, "'Sample'", true);
 }
 
 }; // end spv namespace

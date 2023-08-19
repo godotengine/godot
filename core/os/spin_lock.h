@@ -36,15 +36,15 @@
 #include <atomic>
 
 class SpinLock {
-	std::atomic_flag locked = ATOMIC_FLAG_INIT;
+	mutable std::atomic_flag locked = ATOMIC_FLAG_INIT;
 
 public:
-	_ALWAYS_INLINE_ void lock() {
+	_ALWAYS_INLINE_ void lock() const {
 		while (locked.test_and_set(std::memory_order_acquire)) {
 			// Continue.
 		}
 	}
-	_ALWAYS_INLINE_ void unlock() {
+	_ALWAYS_INLINE_ void unlock() const {
 		locked.clear(std::memory_order_release);
 	}
 };

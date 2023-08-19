@@ -30,10 +30,10 @@
 
 #include "register_types.h"
 
-#include "core/error/error_macros.h"
-
 #include "upnp.h"
 #include "upnp_device.h"
+
+#include "core/error/error_macros.h"
 
 void initialize_upnp_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {

@@ -70,6 +70,9 @@ if env["dlink_enabled"]:
     sys_env.Append(LINKFLAGS=["-s", "WARN_ON_UNDEFINED_SYMBOLS=0"])
     # Force exporting the standard library (printf, malloc, etc.)
     sys_env["ENV"]["EMCC_FORCE_STDLIBS"] = "libc,libc++,libc++abi"
+    sys_env["CCFLAGS"].remove("-fvisibility=hidden")
+    sys_env["LINKFLAGS"].remove("-fvisibility=hidden")
+
     # The main emscripten runtime, with exported standard libraries.
     sys = sys_env.Program(build_targets, ["web_runtime.cpp"])
 

@@ -42,6 +42,6 @@ public:
 	virtual ~WindowsTerminalLogger();
 };
 
-#endif
+#endif // WINDOWS_ENABLED
 
 #endif // WINDOWS_TERMINAL_LOGGER_H

@@ -713,11 +713,8 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 				// Specific item was clicked. Open folders directly, or the folder containing a selected file.
 				Dictionary item_meta = item_list->get_item_metadata(idx);
 				path = ProjectSettings::get_singleton()->globalize_path(item_meta["path"]);
-				if (!item_meta["dir"]) {
-					path = path.get_base_dir();
-				}
 			}
-			OS::get_singleton()->shell_open(String("file://") + path);
+			OS::get_singleton()->shell_show_in_file_manager(path, true);
 		} break;
 	}
 }
@@ -826,7 +823,7 @@ void EditorFileDialog::update_file_list() {
 			}
 		} else if (!dir_access->current_is_hidden()) {
 			String full_path = cdir == "res://" ? item : dir_access->get_current_dir() + "/" + item;
-			if (dir_access->current_is_dir() && (!EditorFileSystem::_should_skip_directory(full_path) || Engine::get_singleton()->is_project_manager_hint())) {
+			if (dir_access->current_is_dir() && (Engine::get_singleton()->is_project_manager_hint() || !EditorFileSystem::_should_skip_directory(full_path))) {
 				dirs.push_back(item);
 			} else {
 				files.push_back(item);

@@ -67,6 +67,37 @@ Utilities::~Utilities() {
 	for (int i = 0; i < FRAME_COUNT; i++) {
 		glDeleteQueries(max_timestamp_query_elements, frames[i].queries);
 	}
+
+	if (texture_mem_cache) {
+		uint32_t leaked_data_size = 0;
+		for (const KeyValue<GLuint, ResourceAllocation> &E : texture_allocs_cache) {
+#ifdef DEV_ENABLED
+			ERR_PRINT(E.value.name + ": leaked " + itos(E.value.size) + " bytes.");
+#else
+			ERR_PRINT("Texture with GL ID of " + itos(E.key) + ": leaked " + itos(E.value.size) + " bytes.");
+#endif
+			leaked_data_size += E.value.size;
+		}
+		if (leaked_data_size < texture_mem_cache) {
+			ERR_PRINT("Texture cache is not empty. There may be an additional texture leak of " + itos(texture_mem_cache - leaked_data_size) + " bytes.");
+		}
+	}
+
+	if (buffer_mem_cache) {
+		uint32_t leaked_data_size = 0;
+
+		for (const KeyValue<GLuint, ResourceAllocation> &E : buffer_allocs_cache) {
+#ifdef DEV_ENABLED
+			ERR_PRINT(E.value.name + ": leaked " + itos(E.value.size) + " bytes.");
+#else
+			ERR_PRINT("Buffer with GL ID of " + itos(E.key) + ": leaked " + itos(E.value.size) + " bytes.");
+#endif
+			leaked_data_size += E.value.size;
+		}
+		if (leaked_data_size < buffer_mem_cache) {
+			ERR_PRINT("Buffer cache is not empty. There may be an additional buffer leak of " + itos(buffer_mem_cache - leaked_data_size) + " bytes.");
+		}
+	}
 }
 
 Vector<uint8_t> Utilities::buffer_get_data(GLenum p_target, GLuint p_buffer, uint32_t p_buffer_size) {
@@ -324,15 +355,26 @@ void Utilities::update_memory_info() {
 }
 
 uint64_t Utilities::get_rendering_info(RS::RenderingInfo p_info) {
+	if (p_info == RS::RENDERING_INFO_TEXTURE_MEM_USED) {
+		return texture_mem_cache;
+	} else if (p_info == RS::RENDERING_INFO_BUFFER_MEM_USED) {
+		return buffer_mem_cache;
+	} else if (p_info == RS::RENDERING_INFO_VIDEO_MEM_USED) {
+		return texture_mem_cache + buffer_mem_cache;
+	}
 	return 0;
 }
 
 String Utilities::get_video_adapter_name() const {
-	return (const char *)glGetString(GL_RENDERER);
+	const String rendering_device_name = (const char *)glGetString(GL_RENDERER);
+	// NVIDIA suffixes all GPU model names with "/PCIe/SSE2" in OpenGL (but not Vulkan). This isn't necessary to display nowadays, so it can be trimmed.
+	return rendering_device_name.trim_suffix("/PCIe/SSE2");
 }
 
 String Utilities::get_video_adapter_vendor() const {
-	return (const char *)glGetString(GL_VENDOR);
+	const String rendering_device_vendor = (const char *)glGetString(GL_VENDOR);
+	// NVIDIA suffixes its vendor name with " Corporation". This is neither necessary to process nor display.
+	return rendering_device_vendor.trim_suffix(" Corporation");
 }
 
 RenderingDevice::DeviceType Utilities::get_video_adapter_type() const {

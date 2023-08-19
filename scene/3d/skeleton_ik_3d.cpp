@@ -249,26 +249,6 @@ void FabrikInverseKinematic::make_goal(Task *p_task, const Transform3D &p_invers
 	}
 }
 
-static Vector3 get_bone_axis_forward_vector(Skeleton3D *skeleton, int p_bone) {
-	// If it is a child/leaf bone...
-	if (skeleton->get_bone_parent(p_bone) > 0) {
-		return skeleton->get_bone_rest(p_bone).origin.normalized();
-	}
-	// If it has children...
-	Vector<int> child_bones = skeleton->get_bone_children(p_bone);
-	if (child_bones.size() == 0) {
-		WARN_PRINT_ONCE("Cannot calculate forward direction for bone " + itos(p_bone));
-		WARN_PRINT_ONCE("Assuming direction of (0, 1, 0) for bone");
-		return Vector3(0, 1, 0);
-	}
-	Vector3 combined_child_dir = Vector3(0, 0, 0);
-	for (int i = 0; i < child_bones.size(); i++) {
-		combined_child_dir += skeleton->get_bone_rest(child_bones[i]).origin.normalized();
-	}
-	combined_child_dir = combined_child_dir / child_bones.size();
-	return combined_child_dir.normalized();
-}
-
 void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position) {
 	if (blending_delta <= 0.01f) {
 		// Before skipping, make sure we undo the global pose overrides
@@ -307,7 +287,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		new_bone_pose.origin = ci->current_pos;
 
 		if (!ci->children.is_empty()) {
-			Vector3 forward_vector = get_bone_axis_forward_vector(p_task->skeleton, ci->bone);
+			Vector3 forward_vector = (ci->children[0].initial_transform.origin - ci->initial_transform.origin).normalized();
 			// Rotate the bone towards the next bone in the chain:
 			new_bone_pose.basis.rotate_to_align(forward_vector, new_bone_pose.origin.direction_to(ci->children[0].current_pos));
 
@@ -350,6 +330,7 @@ void FabrikInverseKinematic::_update_chain(const Skeleton3D *p_sk, ChainItem *p_
 
 void SkeletonIK3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "root_bone" || p_property.name == "tip_bone") {
+		Skeleton3D *skeleton = get_parent_skeleton();
 		if (skeleton) {
 			String names("--,");
 			for (int i = 0; i < skeleton->get_bone_count(); i++) {
@@ -420,13 +401,13 @@ void SkeletonIK3D::_bind_methods() {
 void SkeletonIK3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			skeleton = Object::cast_to<Skeleton3D>(get_parent());
+			skeleton_ref = Object::cast_to<Skeleton3D>(get_parent());
 			set_process_priority(1);
 			reload_chain();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (target_node_override) {
+			if (target_node_override_ref) {
 				reload_goal();
 			}
 			_solve_chain();
@@ -483,7 +464,7 @@ const Transform3D &SkeletonIK3D::get_target_transform() const {
 
 void SkeletonIK3D::set_target_node(const NodePath &p_node) {
 	target_node_path_override = p_node;
-	target_node_override = nullptr;
+	target_node_override_ref = Variant();
 	reload_goal();
 }
 
@@ -523,6 +504,10 @@ void SkeletonIK3D::set_max_iterations(int p_iterations) {
 	max_iterations = p_iterations;
 }
 
+Skeleton3D *SkeletonIK3D::get_parent_skeleton() const {
+	return cast_to<Skeleton3D>(skeleton_ref.get_validated_object());
+}
+
 bool SkeletonIK3D::is_running() {
 	return is_processing_internal();
 }
@@ -531,7 +516,7 @@ void SkeletonIK3D::start(bool p_one_time) {
 	if (p_one_time) {
 		set_process_internal(false);
 
-		if (target_node_override) {
+		if (target_node_override_ref) {
 			reload_goal();
 		}
 
@@ -543,16 +528,18 @@ void SkeletonIK3D::start(bool p_one_time) {
 
 void SkeletonIK3D::stop() {
 	set_process_internal(false);
+	Skeleton3D *skeleton = get_parent_skeleton();
 	if (skeleton) {
 		skeleton->clear_bones_global_pose_override();
 	}
 }
 
 Transform3D SkeletonIK3D::_get_target_transform() {
-	if (!target_node_override && !target_node_path_override.is_empty()) {
-		target_node_override = Object::cast_to<Node3D>(get_node(target_node_path_override));
+	if (!target_node_override_ref && !target_node_path_override.is_empty()) {
+		target_node_override_ref = Object::cast_to<Node3D>(get_node(target_node_path_override));
 	}
 
+	Node3D *target_node_override = cast_to<Node3D>(target_node_override_ref.get_validated_object());
 	if (target_node_override && target_node_override->is_inside_tree()) {
 		return target_node_override->get_global_transform();
 	} else {
@@ -564,6 +551,7 @@ void SkeletonIK3D::reload_chain() {
 	FabrikInverseKinematic::free_task(task);
 	task = nullptr;
 
+	Skeleton3D *skeleton = get_parent_skeleton();
 	if (!skeleton) {
 		return;
 	}

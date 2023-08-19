@@ -346,11 +346,8 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Convert to MeshInstance2D"));
-	ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, mesh_instance, true, false);
-	ur->add_do_reference(mesh_instance);
-	ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", mesh_instance, node, false, false);
-	ur->add_undo_reference(node);
-	ur->commit_action();
+	SceneTreeDock::get_singleton()->replace_node(node, mesh_instance);
+	ur->commit_action(false);
 }
 
 void Sprite2DEditor::_convert_to_polygon_2d_node() {
@@ -404,11 +401,8 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Convert to Polygon2D"));
-	ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, polygon_2d_instance, true, false);
-	ur->add_do_reference(polygon_2d_instance);
-	ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", polygon_2d_instance, node, false, false);
-	ur->add_undo_reference(node);
-	ur->commit_action();
+	SceneTreeDock::get_singleton()->replace_node(node, polygon_2d_instance);
+	ur->commit_action(false);
 }
 
 void Sprite2DEditor::_create_collision_polygon_2d_node() {

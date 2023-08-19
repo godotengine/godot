@@ -35,6 +35,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
+#include "scene/resources/style_box_flat.h"
 
 EditorToaster *EditorToaster::singleton = nullptr;
 

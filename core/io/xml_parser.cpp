@@ -34,8 +34,6 @@
 
 //#define DEBUG_XML
 
-VARIANT_ENUM_CAST(XMLParser::NodeType);
-
 static inline bool _is_white_space(char c) {
 	return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
 }

@@ -42,6 +42,7 @@
 #include "scene/gui/tree.h"
 
 class AnimationPlayerEditorPlugin;
+class ImageTexture;
 
 class AnimationPlayerEditor : public VBoxContainer {
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);

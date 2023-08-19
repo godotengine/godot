@@ -1,2 +1,2 @@
 func test():
-	CanvasItem.new()
+	InstancePlaceholder.new()

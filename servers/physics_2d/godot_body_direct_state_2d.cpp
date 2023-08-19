@@ -186,6 +186,11 @@ int GodotPhysicsDirectBodyState2D::get_contact_local_shape(int p_contact_idx) co
 	return body->contacts[p_contact_idx].local_shape;
 }
 
+Vector2 GodotPhysicsDirectBodyState2D::get_contact_local_velocity_at_position(int p_contact_idx) const {
+	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector2());
+	return body->contacts[p_contact_idx].local_velocity_at_pos;
+}
+
 RID GodotPhysicsDirectBodyState2D::get_contact_collider(int p_contact_idx) const {
 	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, RID());
 	return body->contacts[p_contact_idx].collider;

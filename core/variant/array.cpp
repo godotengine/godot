@@ -454,17 +454,21 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
 
 	const int s = size();
 
-	int begin = CLAMP(p_begin, -s, s);
+	if (s == 0 || (p_begin < -s && p_step < 0) || (p_begin >= s && p_step > 0)) {
+		return result;
+	}
+
+	int begin = CLAMP(p_begin, -s, s - 1);
 	if (begin < 0) {
 		begin += s;
 	}
-	int end = CLAMP(p_end, -s, s);
+	int end = CLAMP(p_end, -s - 1, s);
 	if (end < 0) {
 		end += s;
 	}
 
-	ERR_FAIL_COND_V_MSG(p_step > 0 && begin > end, result, "Slice is positive, but bounds is decreasing.");
-	ERR_FAIL_COND_V_MSG(p_step < 0 && begin < end, result, "Slice is negative, but bounds is increasing.");
+	ERR_FAIL_COND_V_MSG(p_step > 0 && begin > end, result, "Slice step is positive, but bounds are decreasing.");
+	ERR_FAIL_COND_V_MSG(p_step < 0 && begin < end, result, "Slice step is negative, but bounds are increasing.");
 
 	int result_size = (end - begin) / p_step + (((end - begin) % p_step != 0) ? 1 : 0);
 	result.resize(result_size);

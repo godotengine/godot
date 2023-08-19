@@ -63,8 +63,9 @@ Error HTTPClient::_request_raw(Method p_method, const String &p_url, const Vecto
 }
 
 Error HTTPClient::_request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
-	int size = p_body.length();
-	return request(p_method, p_url, p_headers, size > 0 ? (const uint8_t *)p_body.utf8().get_data() : nullptr, size);
+	CharString body_utf8 = p_body.utf8();
+	int size = body_utf8.length();
+	return request(p_method, p_url, p_headers, size > 0 ? (const uint8_t *)body_utf8.get_data() : nullptr, size);
 }
 
 String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {

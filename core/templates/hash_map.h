@@ -67,9 +67,9 @@ template <class TKey, class TValue,
 		class Allocator = DefaultTypedAllocator<HashMapElement<TKey, TValue>>>
 class HashMap {
 public:
-	const uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
-	const float MAX_OCCUPANCY = 0.75;
-	const uint32_t EMPTY_HASH = 0;
+	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
+	static constexpr float MAX_OCCUPANCY = 0.75;
+	static constexpr uint32_t EMPTY_HASH = 0;
 
 private:
 	Allocator element_alloc;
@@ -97,7 +97,7 @@ private:
 	}
 
 	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
-		if (elements == nullptr) {
+		if (elements == nullptr || num_elements == 0) {
 			return false; // Failed lookups, no elements
 		}
 
@@ -252,7 +252,7 @@ public:
 	}
 
 	void clear() {
-		if (elements == nullptr) {
+		if (elements == nullptr || num_elements == 0) {
 			return;
 		}
 		uint32_t capacity = hash_table_size_primes[capacity_index];
@@ -350,6 +350,40 @@ public:
 		elements[pos] = nullptr;
 
 		num_elements--;
+		return true;
+	}
+
+	// Replace the key of an entry in-place, without invalidating iterators or changing the entries position during iteration.
+	// p_old_key must exist in the map and p_new_key must not, unless it is equal to p_old_key.
+	bool replace_key(const TKey &p_old_key, const TKey &p_new_key) {
+		if (p_old_key == p_new_key) {
+			return true;
+		}
+		uint32_t pos = 0;
+		ERR_FAIL_COND_V(_lookup_pos(p_new_key, pos), false);
+		ERR_FAIL_COND_V(!_lookup_pos(p_old_key, pos), false);
+		HashMapElement<TKey, TValue> *element = elements[pos];
+
+		// Delete the old entries in hashes and elements.
+		const uint32_t capacity = hash_table_size_primes[capacity_index];
+		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
+		uint32_t next_pos = fastmod((pos + 1), capacity_inv, capacity);
+		while (hashes[next_pos] != EMPTY_HASH && _get_probe_length(next_pos, hashes[next_pos], capacity, capacity_inv) != 0) {
+			SWAP(hashes[next_pos], hashes[pos]);
+			SWAP(elements[next_pos], elements[pos]);
+			pos = next_pos;
+			next_pos = fastmod((pos + 1), capacity_inv, capacity);
+		}
+		hashes[pos] = EMPTY_HASH;
+		elements[pos] = nullptr;
+		// _insert_with_hash will increment this again.
+		num_elements--;
+
+		// Update the HashMapElement with the new key and reinsert it.
+		const_cast<TKey &>(element->data.key) = p_new_key;
+		uint32_t hash = _hash(p_new_key);
+		_insert_with_hash(hash, element);
+
 		return true;
 	}
 

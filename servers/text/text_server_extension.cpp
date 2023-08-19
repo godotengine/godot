@@ -65,6 +65,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_set_name, "font_rid", "name");
 	GDVIRTUAL_BIND(_font_get_name, "font_rid");
+	GDVIRTUAL_BIND(_font_get_ot_name_strings, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_style_name, "font_rid", "name_style");
 	GDVIRTUAL_BIND(_font_get_style_name, "font_rid");
@@ -251,7 +252,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_substr, "shaped", "start", "length");
 	GDVIRTUAL_BIND(_shaped_text_get_parent, "shaped");
 
-	GDVIRTUAL_BIND(_shaped_text_fit_to_width, "shaped", "width", "jst_flags");
+	GDVIRTUAL_BIND(_shaped_text_fit_to_width, "shaped", "width", "justification_flags");
 	GDVIRTUAL_BIND(_shaped_text_tab_align, "shaped", "tab_stops");
 
 	GDVIRTUAL_BIND(_shaped_text_shape, "shaped");
@@ -302,6 +303,11 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_next_grapheme_pos, "shaped", "pos");
 	GDVIRTUAL_BIND(_shaped_text_prev_grapheme_pos, "shaped", "pos");
 
+	GDVIRTUAL_BIND(_shaped_text_get_character_breaks, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_next_character_pos, "shaped", "pos");
+	GDVIRTUAL_BIND(_shaped_text_prev_character_pos, "shaped", "pos");
+	GDVIRTUAL_BIND(_shaped_text_closest_character_pos, "shaped", "pos");
+
 	GDVIRTUAL_BIND(_format_number, "string", "language");
 	GDVIRTUAL_BIND(_parse_number, "string", "language");
 	GDVIRTUAL_BIND(_percent_sign, "language");
@@ -310,6 +316,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_is_valid_identifier, "string");
 
 	GDVIRTUAL_BIND(_string_get_word_breaks, "string", "language", "chars_per_line");
+	GDVIRTUAL_BIND(_string_get_character_breaks, "string", "language");
 
 	GDVIRTUAL_BIND(_is_confusable, "string", "dict");
 	GDVIRTUAL_BIND(_spoof_check, "string");
@@ -473,6 +480,12 @@ void TextServerExtension::font_set_name(const RID &p_font_rid, const String &p_n
 String TextServerExtension::font_get_name(const RID &p_font_rid) const {
 	String ret;
 	GDVIRTUAL_CALL(_font_get_name, p_font_rid, ret);
+	return ret;
+}
+
+Dictionary TextServerExtension::font_get_ot_name_strings(const RID &p_font_rid) const {
+	Dictionary ret;
+	GDVIRTUAL_CALL(_font_get_ot_name_strings, p_font_rid, ret);
 	return ret;
 }
 
@@ -1326,6 +1339,38 @@ int64_t TextServerExtension::shaped_text_prev_grapheme_pos(const RID &p_shaped, 
 	return TextServer::shaped_text_prev_grapheme_pos(p_shaped, p_pos);
 }
 
+PackedInt32Array TextServerExtension::shaped_text_get_character_breaks(const RID &p_shaped) const {
+	PackedInt32Array ret;
+	if (GDVIRTUAL_CALL(_shaped_text_get_character_breaks, p_shaped, ret)) {
+		return ret;
+	}
+	return PackedInt32Array();
+}
+
+int64_t TextServerExtension::shaped_text_next_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	int64_t ret;
+	if (GDVIRTUAL_CALL(_shaped_text_next_character_pos, p_shaped, p_pos, ret)) {
+		return ret;
+	}
+	return TextServer::shaped_text_next_character_pos(p_shaped, p_pos);
+}
+
+int64_t TextServerExtension::shaped_text_prev_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	int64_t ret;
+	if (GDVIRTUAL_CALL(_shaped_text_prev_character_pos, p_shaped, p_pos, ret)) {
+		return ret;
+	}
+	return TextServer::shaped_text_prev_character_pos(p_shaped, p_pos);
+}
+
+int64_t TextServerExtension::shaped_text_closest_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	int64_t ret;
+	if (GDVIRTUAL_CALL(_shaped_text_closest_character_pos, p_shaped, p_pos, ret)) {
+		return ret;
+	}
+	return TextServer::shaped_text_closest_character_pos(p_shaped, p_pos);
+}
+
 String TextServerExtension::format_number(const String &p_string, const String &p_language) const {
 	String ret;
 	if (GDVIRTUAL_CALL(_format_number, p_string, p_language, ret)) {
@@ -1390,6 +1435,14 @@ PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_str
 	PackedInt32Array ret;
 	GDVIRTUAL_CALL(_string_get_word_breaks, p_string, p_language, p_chars_per_line, ret);
 	return ret;
+}
+
+PackedInt32Array TextServerExtension::string_get_character_breaks(const String &p_string, const String &p_language) const {
+	PackedInt32Array ret;
+	if (GDVIRTUAL_CALL(_string_get_character_breaks, p_string, p_language, ret)) {
+		return ret;
+	}
+	return TextServer::string_get_character_breaks(p_string, p_language);
 }
 
 int64_t TextServerExtension::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {

@@ -23,7 +23,7 @@ namespace GodotTools.Build
             if (dotnetPath == null)
                 throw new FileNotFoundException("Cannot find the dotnet executable.");
 
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var editorSettings = EditorInterface.Singleton.GetEditorSettings();
 
             var startInfo = new ProcessStartInfo(dotnetPath);
 
@@ -40,6 +40,12 @@ namespace GodotTools.Build
             startInfo.CreateNoWindow = true;
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
                 = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
+
+            if (OperatingSystem.IsWindows())
+            {
+                startInfo.StandardOutputEncoding = Encoding.UTF8;
+                startInfo.StandardErrorEncoding = Encoding.UTF8;
+            }
 
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
@@ -88,7 +94,7 @@ namespace GodotTools.Build
             if (dotnetPath == null)
                 throw new FileNotFoundException("Cannot find the dotnet executable.");
 
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var editorSettings = EditorInterface.Singleton.GetEditorSettings();
 
             var startInfo = new ProcessStartInfo(dotnetPath);
 
@@ -104,6 +110,12 @@ namespace GodotTools.Build
             startInfo.UseShellExecute = false;
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
                 = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
+
+            if (OperatingSystem.IsWindows())
+            {
+                startInfo.StandardOutputEncoding = Encoding.UTF8;
+                startInfo.StandardErrorEncoding = Encoding.UTF8;
+            }
 
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);

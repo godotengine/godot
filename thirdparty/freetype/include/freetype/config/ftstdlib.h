@@ -5,7 +5,7 @@
  *   ANSI-specific library and header configuration file (specification
  *   only).
  *
- * Copyright (C) 2002-2022 by
+ * Copyright (C) 2002-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -111,13 +111,13 @@
 
 #include <stdio.h>
 
-#define FT_FILE     FILE
-#define ft_fclose   fclose
-#define ft_fopen    fopen
-#define ft_fread    fread
-#define ft_fseek    fseek
-#define ft_ftell    ftell
-#define ft_sprintf  sprintf
+#define FT_FILE      FILE
+#define ft_fclose    fclose
+#define ft_fopen     fopen
+#define ft_fread     fread
+#define ft_fseek     fseek
+#define ft_ftell     ftell
+#define ft_snprintf  snprintf
 
 
   /**************************************************************************

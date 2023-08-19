@@ -191,11 +191,10 @@ void Luminance::luminance_reduction(RID p_source_texture, const Size2i p_source_
 				RD::Uniform u_current_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_luminance_buffers->current }));
 				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_current_texture), 1);
 			}
-			RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
 
 			RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(LuminanceReduceRasterPushConstant));
 
-			RD::get_singleton()->draw_list_draw(draw_list, true);
+			RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 			RD::get_singleton()->draw_list_end();
 		}
 	} else {

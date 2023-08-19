@@ -8,8 +8,9 @@
 
 #include <stdlib.h>  /* free, malloc */
 
-#include "../common/dictionary.h"
 #include <brotli/types.h>
+
+#include "../common/dictionary.h"
 #include "huffman.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -43,6 +44,7 @@ BROTLI_BOOL BrotliDecoderStateInit(BrotliDecoderState* s,
   s->pos = 0;
   s->rb_roundtrips = 0;
   s->partial_pos_out = 0;
+  s->used_input = 0;
 
   s->block_type_trees = NULL;
   s->block_len_trees = NULL;
@@ -87,6 +89,10 @@ BROTLI_BOOL BrotliDecoderStateInit(BrotliDecoderState* s,
       BrotliSharedDictionaryCreateInstance(alloc_func, free_func, opaque);
   if (!s->dictionary) return BROTLI_FALSE;
 
+  s->metadata_start_func = NULL;
+  s->metadata_chunk_func = NULL;
+  s->metadata_callback_opaque = 0;
+
   return BROTLI_TRUE;
 }
 
@@ -129,8 +135,20 @@ void BrotliDecoderStateCleanupAfterMetablock(BrotliDecoderState* s) {
   BROTLI_DECODER_FREE(s, s->distance_hgroup.htrees);
 }
 
+#ifdef BROTLI_REPORTING
+/* When BROTLI_REPORTING is defined extra reporting module have to be linked. */
+void BrotliDecoderOnFinish(const BrotliDecoderState* s);
+#define BROTLI_DECODER_ON_FINISH(s) BrotliDecoderOnFinish(s);
+#else
+#if !defined(BROTLI_DECODER_ON_FINISH)
+#define BROTLI_DECODER_ON_FINISH(s) (void)(s);
+#endif
+#endif
+
 void BrotliDecoderStateCleanup(BrotliDecoderState* s) {
   BrotliDecoderStateCleanupAfterMetablock(s);
+
+  BROTLI_DECODER_ON_FINISH(s);
 
   BROTLI_DECODER_FREE(s, s->compound_dictionary);
   BrotliSharedDictionaryDestroyInstance(s->dictionary);

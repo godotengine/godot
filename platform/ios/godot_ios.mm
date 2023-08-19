@@ -28,9 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#import "os_ios.h"
+
 #include "core/string/ustring.h"
 #include "main/main.h"
-#include "os_ios.h"
 
 #include <stdio.h>
 #include <string.h>

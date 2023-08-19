@@ -58,7 +58,7 @@ private:
 			TYPE_REFERENCE
 		} type;
 
-		bool force_keep_in_merge_ends;
+		bool force_keep_in_merge_ends = false;
 		Ref<RefCounted> ref;
 		ObjectID object;
 		StringName name;
@@ -72,7 +72,8 @@ private:
 		String name;
 		List<Operation> do_ops;
 		List<Operation> undo_ops;
-		uint64_t last_tick;
+		uint64_t last_tick = 0;
+		bool backward_undo_ops = false;
 	};
 
 	Vector<Action> actions;
@@ -102,7 +103,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE);
+	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE, bool p_backward_undo_ops = false);
 
 	void add_do_method(const Callable &p_callable);
 	void add_undo_method(const Callable &p_callable);

@@ -163,6 +163,7 @@ const char* const E_GL_ARB_texture_query_lod            = "GL_ARB_texture_query_
 const char* const E_GL_ARB_vertex_attrib_64bit          = "GL_ARB_vertex_attrib_64bit";
 const char* const E_GL_ARB_draw_instanced               = "GL_ARB_draw_instanced";
 const char* const E_GL_ARB_fragment_coord_conventions   = "GL_ARB_fragment_coord_conventions";
+const char* const E_GL_ARB_bindless_texture             = "GL_ARB_bindless_texture";
 
 const char* const E_GL_KHR_shader_subgroup_basic            = "GL_KHR_shader_subgroup_basic";
 const char* const E_GL_KHR_shader_subgroup_vote             = "GL_KHR_shader_subgroup_vote";
@@ -264,6 +265,10 @@ const char* const E_GL_NV_fragment_shader_barycentric           = "GL_NV_fragmen
 const char* const E_GL_NV_compute_shader_derivatives            = "GL_NV_compute_shader_derivatives";
 const char* const E_GL_NV_shader_texture_footprint              = "GL_NV_shader_texture_footprint";
 const char* const E_GL_NV_mesh_shader                           = "GL_NV_mesh_shader";
+const char* const E_GL_EXT_ray_tracing_position_fetch           = "GL_EXT_ray_tracing_position_fetch";
+
+// ARM
+const char* const E_GL_ARM_shader_core_builtins                 = "GL_ARM_shader_core_builtins";
 
 // Arrays of extensions for the above viewportEXTs duplications
 
@@ -273,6 +278,7 @@ const int Num_viewportEXTs = sizeof(viewportEXTs) / sizeof(viewportEXTs[0]);
 const char* const E_GL_NV_cooperative_matrix                    = "GL_NV_cooperative_matrix";
 const char* const E_GL_NV_shader_sm_builtins                    = "GL_NV_shader_sm_builtins";
 const char* const E_GL_NV_integer_cooperative_matrix            = "GL_NV_integer_cooperative_matrix";
+const char* const E_GL_NV_shader_invocation_reorder             = "GL_NV_shader_invocation_reorder";
 
 // AEP
 const char* const E_GL_ANDROID_extension_pack_es31a             = "GL_ANDROID_extension_pack_es31a";
@@ -321,6 +327,8 @@ const char* const E_GL_EXT_terminate_invocation = "GL_EXT_terminate_invocation";
 
 const char* const E_GL_EXT_shader_atomic_float = "GL_EXT_shader_atomic_float";
 const char* const E_GL_EXT_shader_atomic_float2 = "GL_EXT_shader_atomic_float2";
+
+const char* const E_GL_EXT_shader_tile_image = "GL_EXT_shader_tile_image";
 
 // Arrays of extensions for the above AEP duplications
 

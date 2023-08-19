@@ -31,12 +31,11 @@
 #ifndef APP_UWP_H
 #define APP_UWP_H
 
-#include <string>
-
-#include <wrl.h>
-
-#include "GLES2/gl2.h"
 #include "os_uwp.h"
+
+#include <GLES2/gl2.h>
+#include <wrl.h>
+#include <string>
 
 /** clang-format does not play nice with this C++/CX hybrid, needs investigation. */
 /* clang-format off */

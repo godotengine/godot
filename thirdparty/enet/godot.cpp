@@ -436,6 +436,7 @@ ENetSocket enet_socket_create(ENetSocketType type) {
 }
 
 int enet_host_dtls_server_setup(ENetHost *host, void *p_options) {
+	ERR_FAIL_COND_V_MSG(!DTLSServer::is_available(), -1, "DTLS server is not available in this build.");
 	ENetGodotSocket *sock = (ENetGodotSocket *)host->socket;
 	if (!sock->can_upgrade()) {
 		return -1;
@@ -446,6 +447,7 @@ int enet_host_dtls_server_setup(ENetHost *host, void *p_options) {
 }
 
 int enet_host_dtls_client_setup(ENetHost *host, const char *p_for_hostname, void *p_options) {
+	ERR_FAIL_COND_V_MSG(!PacketPeerDTLS::is_available(), -1, "DTLS is not available in this build.");
 	ENetGodotSocket *sock = (ENetGodotSocket *)host->socket;
 	if (!sock->can_upgrade()) {
 		return -1;
@@ -532,6 +534,10 @@ int enet_socket_receive(ENetSocket socket, ENetAddress *address, ENetBuffer *buf
 	Error err = sock->recvfrom((uint8_t *)buffers[0].data, buffers[0].dataLength, read, ip, address->port);
 	if (err == ERR_BUSY) {
 		return 0;
+	}
+	if (err == ERR_OUT_OF_MEMORY) {
+		// A packet above the ENET_PROTOCOL_MAXIMUM_MTU was received.
+		return -2;
 	}
 
 	if (err != OK) {

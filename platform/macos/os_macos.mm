@@ -30,14 +30,15 @@
 
 #include "os_macos.h"
 
-#include "core/version_generated.gen.h"
-#include "main/main.h"
-
 #include "dir_access_macos.h"
 #include "display_server_macos.h"
 #include "godot_application.h"
 #include "godot_application_delegate.h"
 #include "macos_terminal_logger.h"
+
+#include "core/crypto/crypto_core.h"
+#include "core/version_generated.gen.h"
+#include "main/main.h"
 
 #include <dlfcn.h>
 #include <libproc.h>
@@ -75,6 +76,36 @@ String OS_MacOS::get_processor_name() const {
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
 }
 
+bool OS_MacOS::is_sandboxed() const {
+	return has_environment("APP_SANDBOX_CONTAINER_ID");
+}
+
+Vector<String> OS_MacOS::get_granted_permissions() const {
+	Vector<String> ret;
+
+	if (is_sandboxed()) {
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				String url_string;
+				url_string.parse_utf8([[url path] UTF8String]);
+				ret.push_back(url_string);
+			}
+		}
+	}
+
+	return ret;
+}
+
+void OS_MacOS::revoke_granted_permissions() {
+	if (is_sandboxed()) {
+		[[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"sec_bookmarks"];
+	}
+}
+
 void OS_MacOS::initialize_core() {
 	OS_Unix::initialize_core();
 
@@ -84,6 +115,18 @@ void OS_MacOS::initialize_core() {
 }
 
 void OS_MacOS::finalize() {
+	if (is_sandboxed()) {
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				[url stopAccessingSecurityScopedResource];
+			}
+		}
+	}
+
 #ifdef COREMIDI_ENABLED
 	midi_driver.close();
 #endif
@@ -188,7 +231,7 @@ Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handl
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = path;
@@ -285,6 +328,27 @@ String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	}
 
 	return ret;
+}
+
+Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	bool open_folder = false;
+	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
+		open_folder = true;
+	}
+
+	if (!p_path.begins_with("file://")) {
+		p_path = String("file://") + p_path;
+	}
+
+	NSString *string = [NSString stringWithUTF8String:p_path.utf8().get_data()];
+	NSURL *uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
+
+	if (open_folder) {
+		[[NSWorkspace sharedWorkspace] openURL:uri];
+	} else {
+		[[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:@[ uri ]];
+	}
+	return OK;
 }
 
 Error OS_MacOS::shell_open(String p_uri) {
@@ -650,6 +714,40 @@ Error OS_MacOS::move_to_trash(const String &p_path) {
 	return OK;
 }
 
+String OS_MacOS::get_system_ca_certificates() {
+	CFArrayRef result;
+	SecCertificateRef item;
+	CFDataRef der;
+
+	OSStatus ret = SecTrustCopyAnchorCertificates(&result);
+	ERR_FAIL_COND_V(ret != noErr, "");
+
+	CFIndex l = CFArrayGetCount(result);
+	String certs;
+	PackedByteArray pba;
+	for (CFIndex i = 0; i < l; i++) {
+		item = (SecCertificateRef)CFArrayGetValueAtIndex(result, i);
+		der = SecCertificateCopyData(item);
+		int derlen = CFDataGetLength(der);
+		if (pba.size() < derlen * 3) {
+			pba.resize(derlen * 3);
+		}
+		size_t b64len = 0;
+		Error err = CryptoCore::b64_encode(pba.ptrw(), pba.size(), &b64len, (unsigned char *)CFDataGetBytePtr(der), derlen);
+		CFRelease(der);
+		ERR_CONTINUE(err != OK);
+		certs += "-----BEGIN CERTIFICATE-----\n" + String((char *)pba.ptr(), b64len) + "\n-----END CERTIFICATE-----\n";
+	}
+	CFRelease(result);
+	return certs;
+}
+
+OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
+	// macOS supports both formats on ARM. Prefer S3TC/BPTC
+	// for better compatibility with x86 platforms.
+	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
+}
+
 void OS_MacOS::run() {
 	if (!main_loop) {
 		return;
@@ -677,6 +775,23 @@ void OS_MacOS::run() {
 }
 
 OS_MacOS::OS_MacOS() {
+	if (is_sandboxed()) {
+		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		NSMutableArray *new_bookmarks = [[NSMutableArray alloc] init];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				if ([url startAccessingSecurityScopedResource]) {
+					[new_bookmarks addObject:bookmark];
+				}
+			}
+		}
+		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+	}
+
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;

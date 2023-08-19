@@ -38,6 +38,7 @@
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/menu_button.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
 
 bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3> &normals) {
@@ -276,11 +277,8 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
-			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, cpu_particles, true, false);
-			ur->add_do_reference(cpu_particles);
-			ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", cpu_particles, node, false, false);
-			ur->add_undo_reference(node);
-			ur->commit_action();
+			SceneTreeDock::get_singleton()->replace_node(node, cpu_particles);
+			ur->commit_action(false);
 
 		} break;
 		case MENU_OPTION_RESTART: {

@@ -80,14 +80,14 @@ bool UndoRedo::_redo(bool p_execute) {
 	return true;
 }
 
-void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
+void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_backward_undo_ops) {
 	uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 
 	if (action_level == 0) {
 		_discard_redo();
 
 		// Check if the merge operation is valid
-		if (p_mode != MERGE_DISABLE && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].last_tick + 800 > ticks) {
+		if (p_mode != MERGE_DISABLE && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].backward_undo_ops == p_backward_undo_ops && actions[actions.size() - 1].last_tick + 800 > ticks) {
 			current_action = actions.size() - 2;
 
 			if (p_mode == MERGE_ENDS) {
@@ -108,12 +108,18 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 
 			actions.write[actions.size() - 1].last_tick = ticks;
 
+			// Revert reverse from previous commit.
+			if (actions[actions.size() - 1].backward_undo_ops) {
+				actions.write[actions.size() - 1].undo_ops.reverse();
+			}
+
 			merge_mode = p_mode;
 			merging = true;
 		} else {
 			Action new_action;
 			new_action.name = p_name;
 			new_action.last_tick = ticks;
+			new_action.backward_undo_ops = p_backward_undo_ops;
 			actions.push_back(new_action);
 
 			merge_mode = MERGE_DISABLE;
@@ -292,6 +298,10 @@ void UndoRedo::commit_action(bool p_execute) {
 		merging = false;
 	}
 
+	if (actions[actions.size() - 1].backward_undo_ops) {
+		actions.write[actions.size() - 1].undo_ops.reverse();
+	}
+
 	committing++;
 	_redo(p_execute); // perform action
 	committing--;
@@ -302,6 +312,11 @@ void UndoRedo::commit_action(bool p_execute) {
 }
 
 void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
+	const int PREALLOCATE_ARGS_COUNT = 16;
+
+	LocalVector<const Variant *> args;
+	args.reserve(PREALLOCATE_ARGS_COUNT);
+
 	for (; E; E = E->next()) {
 		Operation &op = E->get();
 
@@ -337,12 +352,13 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 					if (binds.is_empty()) {
 						method_callback(method_callback_ud, obj, op.name, nullptr, 0);
 					} else {
-						const Variant **args = (const Variant **)alloca(sizeof(const Variant **) * binds.size());
+						args.clear();
+
 						for (int i = 0; i < binds.size(); i++) {
-							args[i] = (const Variant *)&binds[i];
+							args.push_back(&binds[i]);
 						}
 
-						method_callback(method_callback_ud, obj, op.name, args, binds.size());
+						method_callback(method_callback_ud, obj, op.name, args.ptr(), binds.size());
 					}
 				}
 			} break;
@@ -458,7 +474,7 @@ UndoRedo::~UndoRedo() {
 }
 
 void UndoRedo::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE));
+	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode", "backward_undo_ops"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("commit_action", "execute"), &UndoRedo::commit_action, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_committing_action"), &UndoRedo::is_committing_action);
 

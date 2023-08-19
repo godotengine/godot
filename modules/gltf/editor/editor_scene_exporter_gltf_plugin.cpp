@@ -28,15 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef TOOLS_ENABLED
-
 #include "editor_scene_exporter_gltf_plugin.h"
+
+#ifdef TOOLS_ENABLED
 
 #include "../gltf_document.h"
 
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "scene/gui/popup_menu.h"
 
 String SceneExporterGLTFPlugin::get_name() const {
 	return "ConvertGLTF2";
@@ -85,6 +86,7 @@ void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
 	}
+	EditorFileSystem::get_singleton()->scan_changes();
 }
 
 void SceneExporterGLTFPlugin::convert_scene_to_gltf2() {

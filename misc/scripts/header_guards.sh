@@ -5,9 +5,17 @@ if [ ! -f "version.py" ]; then
   echo "Some of the paths checks may not work as intended from a different folder."
 fi
 
+if [ $# -eq 0 ]; then
+    # Loop through all code files tracked by Git.
+    files=$(find -name "thirdparty" -prune -o -name "*.h" -print | sed "s@^\./@@g")
+else
+    # $1 should be a file listing file paths to process. Used in CI.
+    files=$(cat "$1" | grep -v "thirdparty/" | grep -E "\.h$" | sed "s@^\./@@g")
+fi
+
 files_invalid_guard=""
 
-for file in $(find -name "thirdparty" -prune -o -name "*.h" -print); do
+for file in $files; do
   # Skip *.gen.h and *-so_wrap.h, they're generated.
   if [[ "$file" == *".gen.h" || "$file" == *"-so_wrap.h" ]]; then continue; fi
   # Has important define before normal header guards.
@@ -20,16 +28,16 @@ for file in $(find -name "thirdparty" -prune -o -name "*.h" -print); do
   # Add custom prefix or suffix for generic filenames with a well-defined namespace.
 
   prefix=
-  if [[ "$file" == "./modules/"*"/register_types.h" ]]; then
+  if [[ "$file" == "modules/"*"/register_types.h" ]]; then
     module=$(echo $file | sed "s@.*modules/\([^/]*\).*@\1@")
     prefix="${module^^}_"
   fi
-  if [[ "$file" == "./platform/"*"/api/api.h" || "$file" == "./platform/"*"/export/"* ]]; then
+  if [[ "$file" == "platform/"*"/api/api.h" || "$file" == "platform/"*"/export/"* ]]; then
     platform=$(echo $file | sed "s@.*platform/\([^/]*\).*@\1@")
     prefix="${platform^^}_"
   fi
-  if [[ "$file" == "./modules/mono/utils/"* && "$bname" != *"mono"* ]]; then prefix="MONO_"; fi
-  if [[ "$file" == "./servers/rendering/storage/utilities.h" ]]; then prefix="RENDERER_"; fi
+  if [[ "$file" == "modules/mono/utils/"* && "$bname" != *"mono"* ]]; then prefix="MONO_"; fi
+  if [[ "$file" == "servers/rendering/storage/utilities.h" ]]; then prefix="RENDERER_"; fi
 
   suffix=
   if [[ "$file" == *"dummy"* && "$bname" != *"dummy"* ]]; then suffix="_DUMMY"; fi

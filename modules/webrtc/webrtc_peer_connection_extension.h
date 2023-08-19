@@ -45,17 +45,12 @@ protected:
 	static void _bind_methods();
 
 public:
-	// FIXME Can't be directly exposed due to issues in exchanging Ref(s) between godot and extensions.
-	// See godot-cpp GH-652 .
-	virtual Ref<WebRTCDataChannel> create_data_channel(String p_label, Dictionary p_options = Dictionary()) override;
-	GDVIRTUAL2R(Object *, _create_data_channel, String, Dictionary);
-	// EXBIND2R(Ref<WebRTCDataChannel>, create_data_channel, String, Dictionary);
-
 	/** GDExtension **/
 	EXBIND0RC(ConnectionState, get_connection_state);
 	EXBIND0RC(GatheringState, get_gathering_state);
 	EXBIND0RC(SignalingState, get_signaling_state);
 	EXBIND1R(Error, initialize, Dictionary);
+	EXBIND2R(Ref<WebRTCDataChannel>, create_data_channel, String, Dictionary);
 	EXBIND0R(Error, create_offer);
 	EXBIND2R(Error, set_remote_description, String, String);
 	EXBIND2R(Error, set_local_description, String, String);

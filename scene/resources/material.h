@@ -46,6 +46,12 @@ class Material : public Resource {
 	Ref<Material> next_pass;
 	int render_priority;
 
+	enum {
+		INIT_STATE_UNINITIALIZED,
+		INIT_STATE_INITIALIZING,
+		INIT_STATE_READY,
+	} init_state = INIT_STATE_UNINITIALIZED;
+
 	void inspect_native_shader_code();
 
 protected:
@@ -55,6 +61,9 @@ protected:
 	virtual bool _can_use_render_priority() const;
 
 	void _validate_property(PropertyInfo &p_property) const;
+
+	void _mark_initialized(const Callable &p_queue_shader_change_callable);
+	bool _is_initialized() { return init_state == INIT_STATE_READY; }
 
 	GDVIRTUAL0RC(RID, _get_shader_rid)
 	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode)
@@ -318,6 +327,7 @@ private:
 		uint64_t deep_parallax : 1;
 		uint64_t grow : 1;
 		uint64_t proximity_fade : 1;
+		uint64_t orm : 1;
 
 		// flag bitfield
 		uint32_t feature_mask;
@@ -369,6 +379,7 @@ private:
 		mk.distance_fade = distance_fade;
 		mk.emission_op = emission_op;
 		mk.alpha_antialiasing_mode = alpha_antialiasing_mode;
+		mk.orm = orm;
 
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			if (features[i]) {
@@ -443,7 +454,7 @@ private:
 	};
 
 	static Mutex material_mutex;
-	static SelfList<BaseMaterial3D>::List *dirty_materials;
+	static SelfList<BaseMaterial3D>::List dirty_materials;
 	static ShaderNames *shader_names;
 
 	SelfList<BaseMaterial3D> element;
@@ -452,7 +463,6 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
-	bool is_initialized = false;
 	bool orm;
 
 	Color albedo;

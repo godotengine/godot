@@ -34,10 +34,10 @@
 #include "../action_map/openxr_action_map.h"
 #include "../action_map/openxr_interaction_profile.h"
 #include "../action_map/openxr_interaction_profile_meta_data.h"
+#include "openxr_select_action_dialog.h"
+
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/scroll_container.h"
-
-#include "openxr_select_action_dialog.h"
 
 class OpenXRInteractionProfileEditorBase : public ScrollContainer {
 	GDCLASS(OpenXRInteractionProfileEditorBase, ScrollContainer);

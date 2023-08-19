@@ -35,6 +35,7 @@
 
 #include <jpgd.h>
 #include <jpge.h>
+
 #include <string.h>
 
 Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {

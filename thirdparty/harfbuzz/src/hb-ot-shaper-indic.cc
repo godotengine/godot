@@ -1067,12 +1067,15 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 	      base = i;
 	      while (base < end && is_halant (info[base]))
 		base++;
-	      info[base].indic_position() = POS_BASE_C;
+	      if (base < end)
+		info[base].indic_position() = POS_BASE_C;
 
 	      try_pref = false;
 	    }
 	    break;
 	  }
+	if (base == end)
+	  break;
       }
       /* For Malayalam, skip over unformed below- (but NOT post-) forms. */
       if (buffer->props.script == HB_SCRIPT_MALAYALAM)

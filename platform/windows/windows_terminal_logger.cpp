@@ -33,6 +33,7 @@
 #ifdef WINDOWS_ENABLED
 
 #include <stdio.h>
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -163,4 +164,4 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 WindowsTerminalLogger::~WindowsTerminalLogger() {}
 
-#endif
+#endif // WINDOWS_ENABLED

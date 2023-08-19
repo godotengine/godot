@@ -33,14 +33,45 @@
 #include "nav_map.h"
 
 void NavRegion::set_map(NavMap *p_map) {
+	if (map == p_map) {
+		return;
+	}
+
+	if (map) {
+		map->remove_region(this);
+	}
+
 	map = p_map;
 	polygons_dirty = true;
-	if (!map) {
-		connections.clear();
+
+	connections.clear();
+
+	if (map) {
+		map->add_region(this);
+	}
+}
+
+void NavRegion::set_enabled(bool p_enabled) {
+	if (enabled == p_enabled) {
+		return;
+	}
+	enabled = p_enabled;
+
+	// TODO: This should not require a full rebuild as the region has not really changed.
+	polygons_dirty = true;
+};
+
+void NavRegion::set_use_edge_connections(bool p_enabled) {
+	if (use_edge_connections != p_enabled) {
+		use_edge_connections = p_enabled;
+		polygons_dirty = true;
 	}
 }
 
 void NavRegion::set_transform(Transform3D p_transform) {
+	if (transform == p_transform) {
+		return;
+	}
 	transform = p_transform;
 	polygons_dirty = true;
 }
@@ -91,6 +122,20 @@ void NavRegion::update_polygons() {
 	if (mesh.is_null()) {
 		return;
 	}
+
+#ifdef DEBUG_ENABLED
+	if (!Math::is_equal_approx(double(map->get_cell_size()), double(mesh->get_cell_size()))) {
+		ERR_PRINT_ONCE(vformat("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(map->get_cell_size()), double(mesh->get_cell_size())));
+	}
+
+	if (!Math::is_equal_approx(double(map->get_cell_height()), double(mesh->get_cell_height()))) {
+		ERR_PRINT_ONCE(vformat("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a `cell_height` of %s while assigned to a navigation map set to a `cell_height` of %s. The cell height for navigation maps can be changed by using the NavigationServer map_set_cell_height() function. The cell height for default navigation maps can also be changed in the ProjectSettings.", double(map->get_cell_height()), double(mesh->get_cell_height())));
+	}
+
+	if (map && Math::rad_to_deg(map->get_up().angle_to(transform.basis.get_column(1))) >= 90.0f) {
+		ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to update a navigation region transform rotated 90 degrees or more away from the current navigation map UP orientation.");
+	}
+#endif // DEBUG_ENABLED
 
 	Vector<Vector3> vertices = mesh->get_vertices();
 	int len = vertices.size();

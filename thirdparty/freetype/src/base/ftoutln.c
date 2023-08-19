@@ -4,7 +4,7 @@
  *
  *   FreeType outline management (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -58,7 +58,9 @@
     FT_Error    error;
 
     FT_Int   n;         /* index of contour in outline     */
-    FT_UInt  first;     /* index of first point in contour */
+    FT_Int   first;     /* index of first point in contour */
+    FT_Int   last;      /* index of last point in contour  */
+
     FT_Int   tag;       /* current point's state           */
 
     FT_Int   shift;
@@ -73,18 +75,17 @@
 
     shift = func_interface->shift;
     delta = func_interface->delta;
-    first = 0;
 
+    last = -1;
     for ( n = 0; n < outline->n_contours; n++ )
     {
-      FT_Int  last;  /* index of last point in contour */
+      FT_TRACE5(( "FT_Outline_Decompose: Contour %d\n", n ));
 
-
-      FT_TRACE5(( "FT_Outline_Decompose: Outline %d\n", n ));
-
-      last = outline->contours[n];
-      if ( last < 0 )
+      first = last + 1;
+      last  = outline->contours[n];
+      if ( last < first )
         goto Invalid_Outline;
+
       limit = outline->points + last;
 
       v_start   = outline->points[first];
@@ -130,7 +131,7 @@
       }
 
       FT_TRACE5(( "  move to (%.2f, %.2f)\n",
-                  v_start.x / 64.0, v_start.y / 64.0 ));
+                  (double)v_start.x / 64, (double)v_start.y / 64 ));
       error = func_interface->move_to( &v_start, user );
       if ( error )
         goto Exit;
@@ -152,7 +153,7 @@
             vec.y = SCALED( point->y );
 
             FT_TRACE5(( "  line to (%.2f, %.2f)\n",
-                        vec.x / 64.0, vec.y / 64.0 ));
+                        (double)vec.x / 64, (double)vec.y / 64 ));
             error = func_interface->line_to( &vec, user );
             if ( error )
               goto Exit;
@@ -181,8 +182,10 @@
             {
               FT_TRACE5(( "  conic to (%.2f, %.2f)"
                           " with control (%.2f, %.2f)\n",
-                          vec.x / 64.0, vec.y / 64.0,
-                          v_control.x / 64.0, v_control.y / 64.0 ));
+                          (double)vec.x / 64,
+                          (double)vec.y / 64,
+                          (double)v_control.x / 64,
+                          (double)v_control.y / 64 ));
               error = func_interface->conic_to( &v_control, &vec, user );
               if ( error )
                 goto Exit;
@@ -197,8 +200,10 @@
 
             FT_TRACE5(( "  conic to (%.2f, %.2f)"
                         " with control (%.2f, %.2f)\n",
-                        v_middle.x / 64.0, v_middle.y / 64.0,
-                        v_control.x / 64.0, v_control.y / 64.0 ));
+                        (double)v_middle.x / 64,
+                        (double)v_middle.y / 64,
+                        (double)v_control.x / 64,
+                        (double)v_control.y / 64 ));
             error = func_interface->conic_to( &v_control, &v_middle, user );
             if ( error )
               goto Exit;
@@ -209,8 +214,10 @@
 
           FT_TRACE5(( "  conic to (%.2f, %.2f)"
                       " with control (%.2f, %.2f)\n",
-                      v_start.x / 64.0, v_start.y / 64.0,
-                      v_control.x / 64.0, v_control.y / 64.0 ));
+                      (double)v_start.x / 64,
+                      (double)v_start.y / 64,
+                      (double)v_control.x / 64,
+                      (double)v_control.y / 64 ));
           error = func_interface->conic_to( &v_control, &v_start, user );
           goto Close;
 
@@ -242,9 +249,12 @@
 
               FT_TRACE5(( "  cubic to (%.2f, %.2f)"
                           " with controls (%.2f, %.2f) and (%.2f, %.2f)\n",
-                          vec.x / 64.0, vec.y / 64.0,
-                          vec1.x / 64.0, vec1.y / 64.0,
-                          vec2.x / 64.0, vec2.y / 64.0 ));
+                          (double)vec.x / 64,
+                          (double)vec.y / 64,
+                          (double)vec1.x / 64,
+                          (double)vec1.y / 64,
+                          (double)vec2.x / 64,
+                          (double)vec2.y / 64 ));
               error = func_interface->cubic_to( &vec1, &vec2, &vec, user );
               if ( error )
                 goto Exit;
@@ -253,9 +263,12 @@
 
             FT_TRACE5(( "  cubic to (%.2f, %.2f)"
                         " with controls (%.2f, %.2f) and (%.2f, %.2f)\n",
-                        v_start.x / 64.0, v_start.y / 64.0,
-                        vec1.x / 64.0, vec1.y / 64.0,
-                        vec2.x / 64.0, vec2.y / 64.0 ));
+                        (double)v_start.x / 64,
+                        (double)v_start.y / 64,
+                        (double)vec1.x / 64,
+                        (double)vec1.y / 64,
+                        (double)vec2.x / 64,
+                        (double)vec2.y / 64 ));
             error = func_interface->cubic_to( &vec1, &vec2, &v_start, user );
             goto Close;
           }
@@ -264,14 +277,12 @@
 
       /* close the contour with a line segment */
       FT_TRACE5(( "  line to (%.2f, %.2f)\n",
-                  v_start.x / 64.0, v_start.y / 64.0 ));
+                  (double)v_start.x / 64, (double)v_start.y / 64 ));
       error = func_interface->line_to( &v_start, user );
 
     Close:
       if ( error )
         goto Exit;
-
-      first = (FT_UInt)last + 1;
     }
 
     FT_TRACE5(( "FT_Outline_Decompose: Done\n" ));
@@ -356,7 +367,7 @@
       if ( n_points <= 0 || n_contours <= 0 )
         goto Bad;
 
-      end0 = end = -1;
+      end0 = -1;
       for ( n = 0; n < n_contours; n++ )
       {
         end = outline->contours[n];
@@ -368,7 +379,7 @@
         end0 = end;
       }
 
-      if ( end != n_points - 1 )
+      if ( end0 != n_points - 1 )
         goto Bad;
 
       /* XXX: check the tags array */
@@ -376,7 +387,7 @@
     }
 
   Bad:
-    return FT_THROW( Invalid_Argument );
+    return FT_THROW( Invalid_Outline );
   }
 
 
@@ -538,10 +549,12 @@
     if ( !outline )
       return;
 
-    first = 0;
-
+    last = -1;
     for ( n = 0; n < outline->n_contours; n++ )
     {
+      /* keep the first contour point as is and swap points around it */
+      /* to guarantee that the cubic arches stay valid after reverse  */
+      first = last + 2;
       last  = outline->contours[n];
 
       /* reverse point table */
@@ -579,8 +592,6 @@
           q--;
         }
       }
-
-      first = last + 1;
     }
 
     outline->flags ^= FT_OUTLINE_REVERSE_FILL;
@@ -929,7 +940,7 @@
 
     points = outline->points;
 
-    first = 0;
+    last = -1;
     for ( c = 0; c < outline->n_contours; c++ )
     {
       FT_Vector  in, out, anchor, shift;
@@ -937,8 +948,9 @@
       FT_Int     i, j, k;
 
 
-      l_in = 0;
-      last = outline->contours[c];
+      first = last + 1;
+      last  = outline->contours[c];
+      l_in  = 0;
 
       /* pacify compiler */
       in.x = in.y = anchor.x = anchor.y = 0;
@@ -1025,8 +1037,6 @@
         in   = out;
         l_in = l_out;
       }
-
-      first = last + 1;
     }
 
     return FT_Err_Ok;
@@ -1042,7 +1052,7 @@
     FT_Int      xshift, yshift;
     FT_Vector*  points;
     FT_Vector   v_prev, v_cur;
-    FT_Int      c, n, first;
+    FT_Int      c, n, first, last;
     FT_Pos      area = 0;
 
 
@@ -1074,11 +1084,11 @@
 
     points = outline->points;
 
-    first = 0;
+    last = -1;
     for ( c = 0; c < outline->n_contours; c++ )
     {
-      FT_Int  last = outline->contours[c];
-
+      first = last + 1;
+      last  = outline->contours[c];
 
       v_prev.x = points[last].x >> xshift;
       v_prev.y = points[last].y >> yshift;
@@ -1094,8 +1104,6 @@
 
         v_prev = v_cur;
       }
-
-      first = last + 1;
     }
 
     if ( area > 0 )

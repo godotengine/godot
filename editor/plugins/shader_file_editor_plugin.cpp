@@ -124,7 +124,7 @@ void ShaderFileEditor::_update_options() {
 	int c = versions->get_current();
 	//remember current
 	versions->clear();
-	Vector<StringName> version_list = shader_file->get_version_list();
+	TypedArray<StringName> version_list = shader_file->get_version_list();
 
 	if (c >= version_list.size()) {
 		c = version_list.size() - 1;
@@ -222,7 +222,7 @@ void ShaderFileEditor::_bind_methods() {
 void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 	if (p_shader.is_null()) {
 		if (shader_file.is_valid()) {
-			shader_file->disconnect("changed", callable_mp(this, &ShaderFileEditor::_shader_changed));
+			shader_file->disconnect_changed(callable_mp(this, &ShaderFileEditor::_shader_changed));
 		}
 		return;
 	}
@@ -234,7 +234,7 @@ void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 	shader_file = p_shader;
 
 	if (shader_file.is_valid()) {
-		shader_file->connect("changed", callable_mp(this, &ShaderFileEditor::_shader_changed));
+		shader_file->connect_changed(callable_mp(this, &ShaderFileEditor::_shader_changed));
 	}
 
 	_update_options();

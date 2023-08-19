@@ -35,7 +35,8 @@
 
 real_t Quaternion::angle_to(const Quaternion &p_to) const {
 	real_t d = dot(p_to);
-	return Math::acos(CLAMP(d * d * 2 - 1, -1, 1));
+	// acos does clamping.
+	return Math::acos(d * d * 2 - 1);
 }
 
 Vector3 Quaternion::get_euler(EulerOrder p_order) const {

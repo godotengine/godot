@@ -60,7 +60,10 @@ public:
 private:
 	RID particles;
 
-	bool one_shot;
+	bool emitting = false;
+	bool active = false;
+	bool signal_cancled = false;
+	bool one_shot = false;
 	int amount = 0;
 	double lifetime = 0.0;
 	double pre_process_time = 0.0;
@@ -86,6 +89,10 @@ private:
 
 	Vector<Ref<Mesh>> draw_passes;
 	Ref<Skin> skin;
+
+	double time = 0.0;
+	double emission_time = 0.0;
+	double active_time = 0.0;
 
 	void _attach_sub_emitter();
 

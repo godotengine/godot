@@ -419,13 +419,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 void EditorFeatureProfileManager::_profile_action(int p_action) {
 	switch (p_action) {
 		case PROFILE_CLEAR: {
-			EditorSettings::get_singleton()->set("_default_feature_profile", "");
-			EditorSettings::get_singleton()->save();
-			current_profile = "";
-			current.unref();
-
-			_update_profile_list();
-			_emit_current_profile_changed();
+			set_current_profile("", false);
 		} break;
 		case PROFILE_SET: {
 			String selected = _get_selected_profile();
@@ -433,13 +427,7 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			if (selected == current_profile) {
 				return; // Nothing to do here.
 			}
-			EditorSettings::get_singleton()->set("_default_feature_profile", selected);
-			EditorSettings::get_singleton()->save();
-			current_profile = selected;
-			current = edited;
-
-			_update_profile_list();
-			_emit_current_profile_changed();
+			set_current_profile(selected, false);
 		} break;
 		case PROFILE_IMPORT: {
 			import_profiles->popup_file_dialog();
@@ -878,11 +866,45 @@ Ref<EditorFeatureProfile> EditorFeatureProfileManager::get_current_profile() {
 	return current;
 }
 
+String EditorFeatureProfileManager::get_current_profile_name() const {
+	return current_profile;
+}
+
+void EditorFeatureProfileManager::set_current_profile(const String &p_profile_name, bool p_validate_profile) {
+	if (p_validate_profile && !p_profile_name.is_empty()) {
+		// Profile may not exist.
+		Ref<DirAccess> da = DirAccess::open(EditorPaths::get_singleton()->get_feature_profiles_dir());
+		ERR_FAIL_COND_MSG(da.is_null(), "Cannot open directory '" + EditorPaths::get_singleton()->get_feature_profiles_dir() + "'.");
+		ERR_FAIL_COND_MSG(!da->file_exists(p_profile_name + ".profile"), "Feature profile '" + p_profile_name + "' does not exist.");
+
+		// Change profile selection to emulate the UI interaction. Otherwise, the wrong profile would get activated.
+		// FIXME: Ideally, _update_selected_profile() should not rely on the user interface state to function properly.
+		for (int i = 0; i < profile_list->get_item_count(); i++) {
+			if (profile_list->get_item_metadata(i) == p_profile_name) {
+				profile_list->select(i);
+				break;
+			}
+		}
+		_update_selected_profile();
+	}
+
+	// Store in editor settings.
+	EditorSettings::get_singleton()->set("_default_feature_profile", p_profile_name);
+	EditorSettings::get_singleton()->save();
+
+	current_profile = p_profile_name;
+	if (p_profile_name.is_empty()) {
+		current.unref();
+	} else {
+		current = edited;
+	}
+	_update_profile_list();
+	_emit_current_profile_changed();
+}
+
 EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = nullptr;
 
 void EditorFeatureProfileManager::_bind_methods() {
-	ClassDB::bind_method("_update_selected_profile", &EditorFeatureProfileManager::_update_selected_profile);
-
 	ADD_SIGNAL(MethodInfo("current_feature_profile_changed"));
 }
 

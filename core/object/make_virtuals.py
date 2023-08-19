@@ -154,7 +154,6 @@ def generate_version(argcount, const=False, returns=False):
 
 
 def run(target, source, env):
-
     max_versions = 12
 
     txt = """
@@ -165,7 +164,6 @@ def run(target, source, env):
 """
 
     for i in range(max_versions + 1):
-
         txt += "/* " + str(i) + " Arguments */\n\n"
         txt += generate_version(i, False, False)
         txt += generate_version(i, False, True)

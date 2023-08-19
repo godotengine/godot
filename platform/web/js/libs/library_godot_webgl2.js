@@ -40,7 +40,7 @@ const GodotWebGL2 = {
 		if (typeof context.multiviewExt === 'undefined') {
 			const /** OVR_multiview2 */ ext = context.GLctx.getExtension('OVR_multiview2');
 			if (!ext) {
-				console.error('Trying to call glFramebufferTextureMultiviewOVR() without the OVR_multiview2 extension');
+				GodotRuntime.error('Trying to call glFramebufferTextureMultiviewOVR() without the OVR_multiview2 extension');
 				return;
 			}
 			context.multiviewExt = ext;

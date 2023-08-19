@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/project_settings_editor.h"
 #include "scene/gui/grid_container.h"
 
@@ -96,52 +97,28 @@ void PluginConfigDialog::_on_canceled() {
 	_clear_fields();
 }
 
-void PluginConfigDialog::_on_language_changed(const int) {
-	_on_required_text_changed(String());
-}
-
-void PluginConfigDialog::_on_required_text_changed(const String &) {
+void PluginConfigDialog::_on_required_text_changed() {
 	int lang_idx = script_option_edit->get_selected();
 	String ext = ScriptServer::get_language(lang_idx)->get_extension();
 
-	Ref<Texture2D> valid_icon = get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons"));
-	Ref<Texture2D> invalid_icon = get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
-
-	// Set variables to assume all is valid
-	bool is_valid = true;
-	name_validation->set_texture(valid_icon);
-	subfolder_validation->set_texture(valid_icon);
-	script_validation->set_texture(valid_icon);
-	name_validation->set_tooltip_text("");
-	subfolder_validation->set_tooltip_text("");
-	script_validation->set_tooltip_text("");
-
-	// Change valid status to invalid depending on conditions.
-	Vector<String> errors;
 	if (name_edit->get_text().is_empty()) {
-		is_valid = false;
-		name_validation->set_texture(invalid_icon);
-		name_validation->set_tooltip_text(TTR("Plugin name cannot be blank."));
+		validation_panel->set_message(MSG_ID_PLUGIN, TTR("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
 	}
 	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
-		is_valid = false;
-		script_validation->set_texture(invalid_icon);
-		script_validation->set_tooltip_text(vformat(TTR("Script extension must match chosen language extension (.%s)."), ext));
+		validation_panel->set_message(MSG_ID_SCRIPT, vformat(TTR("Script extension must match chosen language extension (.%s)."), ext), EditorValidationPanel::MSG_ERROR);
 	}
-	if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
-		is_valid = false;
-		subfolder_validation->set_texture(invalid_icon);
-		subfolder_validation->set_tooltip_text(TTR("Subfolder name is not a valid folder name."));
-	} else {
-		String path = "res://addons/" + _get_subfolder();
-		if (!_edit_mode && DirAccess::exists(path)) { // Only show this error if in "create" mode.
-			is_valid = false;
-			subfolder_validation->set_texture(invalid_icon);
-			subfolder_validation->set_tooltip_text(TTR("Subfolder cannot be one which already exists."));
+	if (subfolder_edit->is_visible()) {
+		if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
+			validation_panel->set_message(MSG_ID_SUBFOLDER, TTR("Subfolder name is not a valid folder name."), EditorValidationPanel::MSG_ERROR);
+		} else {
+			String path = "res://addons/" + _get_subfolder();
+			if (!_edit_mode && DirAccess::exists(path)) { // Only show this error if in "create" mode.
+				validation_panel->set_message(MSG_ID_SUBFOLDER, TTR("Subfolder cannot be one which already exists."), EditorValidationPanel::MSG_ERROR);
+			}
 		}
+	} else {
+		validation_panel->set_message(MSG_ID_SUBFOLDER, "", EditorValidationPanel::MSG_OK);
 	}
-
-	get_ok_button()->set_disabled(!is_valid);
 }
 
 String PluginConfigDialog::_get_subfolder() {
@@ -182,23 +159,20 @@ void PluginConfigDialog::config(const String &p_config_path) {
 
 		_edit_mode = true;
 		active_edit->hide();
-		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 2))->hide();
+		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->hide();
 		subfolder_edit->hide();
-		subfolder_validation->hide();
-		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 2))->hide();
+		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 1))->hide();
 		set_title(TTR("Edit a Plugin"));
 	} else {
 		_clear_fields();
 		_edit_mode = false;
 		active_edit->show();
-		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 2))->show();
+		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->show();
 		subfolder_edit->show();
-		subfolder_validation->show();
-		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 2))->show();
+		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 1))->show();
 		set_title(TTR("Create a Plugin"));
 	}
-	// Simulate text changing so the errors populate.
-	_on_required_text_changed("");
+	validation_panel->update();
 
 	get_ok_button()->set_disabled(!_edit_mode);
 	set_ok_button_text(_edit_mode ? TTR("Update") : TTR("Create"));
@@ -218,7 +192,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	add_child(vbox);
 
 	GridContainer *grid = memnew(GridContainer);
-	grid->set_columns(3);
+	grid->set_columns(2);
 	grid->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbox->add_child(grid);
 
@@ -228,12 +202,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	name_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(name_lb);
 
-	name_validation = memnew(TextureRect);
-	name_validation->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid->add_child(name_validation);
-
 	name_edit = memnew(LineEdit);
-	name_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	name_edit->set_placeholder("MyPlugin");
 	name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(name_edit);
@@ -244,14 +213,9 @@ PluginConfigDialog::PluginConfigDialog() {
 	subfolder_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(subfolder_lb);
 
-	subfolder_validation = memnew(TextureRect);
-	subfolder_validation->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid->add_child(subfolder_validation);
-
 	subfolder_edit = memnew(LineEdit);
 	subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin");
 	subfolder_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	subfolder_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	grid->add_child(subfolder_edit);
 
 	// Description
@@ -259,9 +223,6 @@ PluginConfigDialog::PluginConfigDialog() {
 	desc_lb->set_text(TTR("Description:"));
 	desc_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(desc_lb);
-
-	Control *desc_spacer = memnew(Control);
-	grid->add_child(desc_spacer);
 
 	desc_edit = memnew(TextEdit);
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
@@ -276,9 +237,6 @@ PluginConfigDialog::PluginConfigDialog() {
 	author_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(author_lb);
 
-	Control *author_spacer = memnew(Control);
-	grid->add_child(author_spacer);
-
 	author_edit = memnew(LineEdit);
 	author_edit->set_placeholder("Godette");
 	author_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -289,9 +247,6 @@ PluginConfigDialog::PluginConfigDialog() {
 	version_lb->set_text(TTR("Version:"));
 	version_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(version_lb);
-
-	Control *version_spacer = memnew(Control);
-	grid->add_child(version_spacer);
 
 	version_edit = memnew(LineEdit);
 	version_edit->set_placeholder("1.0");
@@ -304,9 +259,6 @@ PluginConfigDialog::PluginConfigDialog() {
 	script_option_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(script_option_lb);
 
-	Control *script_opt_spacer = memnew(Control);
-	grid->add_child(script_opt_spacer);
-
 	script_option_edit = memnew(OptionButton);
 	int default_lang = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -318,7 +270,6 @@ PluginConfigDialog::PluginConfigDialog() {
 	}
 	script_option_edit->select(default_lang);
 	grid->add_child(script_option_edit);
-	script_option_edit->connect("item_selected", callable_mp(this, &PluginConfigDialog::_on_language_changed));
 
 	// Plugin Script Name
 	Label *script_lb = memnew(Label);
@@ -326,12 +277,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	script_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(script_lb);
 
-	script_validation = memnew(TextureRect);
-	script_validation->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid->add_child(script_validation);
-
 	script_edit = memnew(LineEdit);
-	script_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
@@ -343,12 +289,26 @@ PluginConfigDialog::PluginConfigDialog() {
 	active_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(active_lb);
 
-	Control *active_spacer = memnew(Control);
-	grid->add_child(active_spacer);
-
 	active_edit = memnew(CheckBox);
 	active_edit->set_pressed(true);
 	grid->add_child(active_edit);
+
+	Control *spacing = memnew(Control);
+	vbox->add_child(spacing);
+	spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
+
+	validation_panel = memnew(EditorValidationPanel);
+	vbox->add_child(validation_panel);
+	validation_panel->add_line(MSG_ID_PLUGIN, TTR("Plugin name is valid."));
+	validation_panel->add_line(MSG_ID_SCRIPT, TTR("Script extension is valid."));
+	validation_panel->add_line(MSG_ID_SUBFOLDER, TTR("Subfolder name is valid."));
+	validation_panel->set_update_callback(callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
+	validation_panel->set_accept_button(get_ok_button());
+
+	script_option_edit->connect("item_selected", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	name_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	subfolder_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	script_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 }
 
 PluginConfigDialog::~PluginConfigDialog() {

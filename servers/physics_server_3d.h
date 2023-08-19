@@ -151,6 +151,7 @@ public:
 	struct RayResult {
 		Vector3 position;
 		Vector3 normal;
+		int face_index = -1;
 		RID rid;
 		ObjectID collider_id;
 		Object *collider = nullptr;

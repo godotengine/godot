@@ -36,6 +36,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/export/editor_export.h"
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
@@ -236,7 +237,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
 			String action = undo_redo->get_current_action_name();
 			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
+				EditorNode::get_log()->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 			}
 			undo_redo->undo();
 			handled = true;
@@ -246,7 +247,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			undo_redo->redo();
 			String action = undo_redo->get_current_action_name();
 			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
+				EditorNode::get_log()->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 			}
 			handled = true;
 		}
@@ -450,7 +451,8 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 
 	for (const PropertyInfo &prop : props) {
 		// Skip builtins and non-inputs
-		if (ProjectSettings::get_singleton()->is_builtin_setting(prop.name) || !prop.name.begins_with("input/")) {
+		// Order matters here, checking for "input/" filters out properties that aren't settings and produce errors in is_builtin_setting().
+		if (!prop.name.begins_with("input/") || ProjectSettings::get_singleton()->is_builtin_setting(prop.name)) {
 			continue;
 		}
 

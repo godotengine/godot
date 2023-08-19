@@ -215,7 +215,7 @@ bool LightOccluder2D::_edit_is_selected_on_click(const Point2 &p_point, double p
 void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon) {
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid()) {
-		occluder_polygon->disconnect("changed", callable_mp(this, &LightOccluder2D::_poly_changed));
+		occluder_polygon->disconnect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
 #endif
 	occluder_polygon = p_polygon;
@@ -228,7 +228,7 @@ void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polyg
 
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid()) {
-		occluder_polygon->connect("changed", callable_mp(this, &LightOccluder2D::_poly_changed));
+		occluder_polygon->connect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
 	queue_redraw();
 #endif

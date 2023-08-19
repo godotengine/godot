@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 // Copyright (c) 2019 Collabora, Ltd.
@@ -132,6 +132,8 @@ XrSdkSessionLabel::XrSdkSessionLabel(const XrDebugUtilsLabelEXT& label_info, boo
     : label_name(label_info.labelName), debug_utils_label(label_info), is_individual_label(individual) {
     // Update the c string pointer to the one we hold.
     debug_utils_label.labelName = label_name.c_str();
+    // Zero out the next pointer to avoid a dangling pointer
+    debug_utils_label.next = nullptr;
 }
 
 XrSdkSessionLabelPtr XrSdkSessionLabel::make(const XrDebugUtilsLabelEXT& label_info, bool individual) {
@@ -143,7 +145,7 @@ void DebugUtilsData::AddObjectName(uint64_t object_handle, XrObjectType object_t
 }
 
 // We always want to remove the old individual label before we do anything else.
-// So, do that in it's own method
+// So, do that in its own method
 void DebugUtilsData::RemoveIndividualLabel(XrSdkSessionLabelList& label_vec) {
     if (!label_vec.empty() && label_vec.back()->is_individual_label) {
         label_vec.pop_back();

@@ -168,7 +168,7 @@ void TQualifier::setSpirvDecorateId(int decoration, const TIntermAggregate* args
     TVector<const TIntermTyped*> extraOperands;
     for (auto arg : args->getSequence()) {
         auto extraOperand = arg->getAsTyped();
-        assert(extraOperand != nullptr && extraOperand->getQualifier().isConstant());
+        assert(extraOperand != nullptr);
         extraOperands.push_back(extraOperand);
     }
     spirvDecorate->decorateIds[decoration] = extraOperands;
@@ -202,30 +202,29 @@ TString TQualifier::getSpirvDecorateQualifierString() const
     const auto appendStr = [&](const char* s) { qualifierString.append(s); };
 
     const auto appendDecorate = [&](const TIntermTyped* constant) {
-        auto& constArray = constant->getAsConstantUnion() != nullptr ? constant->getAsConstantUnion()->getConstArray()
-                                                                     : constant->getAsSymbolNode()->getConstArray();
-        if (constant->getBasicType() == EbtFloat) {
-            float value = static_cast<float>(constArray[0].getDConst());
-            appendFloat(value);
+        if (constant->getAsConstantUnion()) {
+            auto& constArray = constant->getAsConstantUnion()->getConstArray();
+            if (constant->getBasicType() == EbtFloat) {
+                float value = static_cast<float>(constArray[0].getDConst());
+                appendFloat(value);
+            } else if (constant->getBasicType() == EbtInt) {
+                int value = constArray[0].getIConst();
+                appendInt(value);
+            } else if (constant->getBasicType() == EbtUint) {
+                unsigned value = constArray[0].getUConst();
+                appendUint(value);
+            } else if (constant->getBasicType() == EbtBool) {
+                bool value = constArray[0].getBConst();
+                appendBool(value);
+            } else if (constant->getBasicType() == EbtString) {
+                const TString* value = constArray[0].getSConst();
+                appendStr(value->c_str());
+            } else
+                assert(0);
+        } else {
+            assert(constant->getAsSymbolNode());
+            appendStr(constant->getAsSymbolNode()->getName().c_str());
         }
-        else if (constant->getBasicType() == EbtInt) {
-            int value = constArray[0].getIConst();
-            appendInt(value);
-        }
-        else if (constant->getBasicType() == EbtUint) {
-            unsigned value = constArray[0].getUConst();
-            appendUint(value);
-        }
-        else if (constant->getBasicType() == EbtBool) {
-            bool value = constArray[0].getBConst();
-            appendBool(value);
-        }
-        else if (constant->getBasicType() == EbtString) {
-            const TString* value = constArray[0].getSConst();
-            appendStr(value->c_str());
-        }
-        else
-            assert(0);
     };
 
     for (auto& decorate : spirvDecorate->decorates) {

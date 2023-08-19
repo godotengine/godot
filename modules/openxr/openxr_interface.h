@@ -31,13 +31,12 @@
 #ifndef OPENXR_INTERFACE_H
 #define OPENXR_INTERFACE_H
 
-#include "servers/xr/xr_interface.h"
-#include "servers/xr/xr_positional_tracker.h"
-
 #include "action_map/openxr_action_map.h"
+#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 #include "openxr_api.h"
 
-#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_positional_tracker.h"
 
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"

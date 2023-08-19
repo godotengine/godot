@@ -47,9 +47,6 @@
 
 #include <psapi.h>
 
-#pragma comment(lib, "psapi.lib")
-#pragma comment(lib, "dbghelp.lib")
-
 // Some versions of imagehlp.dll lack the proper packing directives themselves
 // so we need to do it.
 #pragma pack(push, before_imagehlp, 8)

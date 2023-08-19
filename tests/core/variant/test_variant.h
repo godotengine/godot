@@ -1171,6 +1171,22 @@ TEST_CASE("[Variant] Utility functions") {
 	}
 }
 
+TEST_CASE("[Variant] Operator NOT") {
+	// Verify that operator NOT works for all types and is consistent with booleanize().
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		Variant value;
+		Callable::CallError err;
+		Variant::construct((Variant::Type)i, value, nullptr, 0, err);
+
+		REQUIRE_EQ(err.error, Callable::CallError::CALL_OK);
+
+		Variant result = Variant::evaluate(Variant::OP_NOT, value, Variant());
+
+		REQUIRE_EQ(result.get_type(), Variant::BOOL);
+		CHECK_EQ(!value.booleanize(), result.operator bool());
+	}
+}
+
 } // namespace TestVariant
 
 #endif // TEST_VARIANT_H

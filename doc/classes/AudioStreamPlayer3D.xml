@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioStreamPlayer3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Plays positional sound in 3D space.
 	</brief_description>
@@ -85,7 +85,7 @@
 			Attenuation factor used if listener is outside of [member emission_angle_degrees] and [member emission_angle_enabled] is set, in decibels.
 		</member>
 		<member name="max_db" type="float" setter="set_max_db" getter="get_max_db" default="3.0">
-			Sets the absolute maximum of the soundlevel, in decibels.
+			Sets the absolute maximum of the sound level, in decibels.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
 			The distance past which the sound can no longer be heard at all. Only has an effect if set to a value greater than [code]0.0[/code]. [member max_distance] works in tandem with [member unit_size]. However, unlike [member unit_size] whose behavior depends on the [member attenuation_model], [member max_distance] always works in a linear fashion. This can be used to prevent the [AudioStreamPlayer3D] from requiring audio mixing when the listener is far away, which saves CPU resources.
@@ -139,10 +139,10 @@
 			Disables doppler tracking.
 		</constant>
 		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
-			Executes doppler tracking in idle step.
+			Executes doppler tracking during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
 		</constant>
 		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
-			Executes doppler tracking in physics step.
+			Executes doppler tracking during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
 		</constant>
 	</constants>
 </class>

@@ -132,8 +132,8 @@ class SkeletonIK3D : public Node {
 	real_t min_distance = 0.01;
 	int max_iterations = 10;
 
-	Skeleton3D *skeleton = nullptr;
-	Node3D *target_node_override = nullptr;
+	Variant skeleton_ref = Variant();
+	Variant target_node_override_ref = Variant();
 	FabrikInverseKinematic::Task *task = nullptr;
 
 protected:
@@ -176,7 +176,7 @@ public:
 	void set_max_iterations(int p_iterations);
 	int get_max_iterations() const { return max_iterations; }
 
-	Skeleton3D *get_parent_skeleton() const { return skeleton; }
+	Skeleton3D *get_parent_skeleton() const;
 
 	bool is_running();
 

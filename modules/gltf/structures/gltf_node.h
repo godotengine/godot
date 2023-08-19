@@ -32,6 +32,7 @@
 #define GLTF_NODE_H
 
 #include "../gltf_defines.h"
+
 #include "core/io/resource.h"
 
 class GLTFNode : public Resource {

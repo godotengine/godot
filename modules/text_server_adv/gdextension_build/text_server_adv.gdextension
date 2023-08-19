@@ -1,6 +1,7 @@
 [configuration]
 
 entry_symbol = "textserver_advanced_init"
+compatibility_minimum = 4.1
 
 [libraries]
 

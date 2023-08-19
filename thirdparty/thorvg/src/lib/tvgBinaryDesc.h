@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,14 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_BINARY_DESC_H_
 #define _TVG_BINARY_DESC_H_
 
 /* TODO: Need to consider whether uin8_t is enough size for extension...
    Rather than optimal data, we can use enough size and data compress? */
-
-/* Data types, do not change data types once Tvg Format is officially released,
-   That would occur the abi break. */
 
 using TvgBinByte = uint8_t;
 using TvgBinCounter = uint32_t;
@@ -38,11 +36,11 @@ using TvgBinFlag = TvgBinByte;
 #define TVG_HEADER_SIZE 33                //TVG_HEADER_SIGNATURE_LENGTH + TVG_HEADER_VERSION_LENGTH + 2*SIZE(float) + TVG_HEADER_RESERVED_LENGTH + TVG_HEADER_COMPRESS_SIZE
 #define TVG_HEADER_SIGNATURE "ThorVG"
 #define TVG_HEADER_SIGNATURE_LENGTH 6
-#define TVG_HEADER_VERSION "000400"       //Major 00, Minor 04, Micro 00
+#define TVG_HEADER_VERSION "001000"       //Major 00, Minor 10, Micro 00
 #define TVG_HEADER_VERSION_LENGTH 6
 #define TVG_HEADER_RESERVED_LENGTH 1      //Storing flags for extensions
 #define TVG_HEADER_COMPRESS_SIZE 12       //TVG_HEADER_UNCOMPRESSED_SIZE + TVG_HEADER_COMPRESSED_SIZE + TVG_HEADER_COMPRESSED_SIZE_BITS
-//Compress Size 
+//Compress Size
 #define TVG_HEADER_UNCOMPRESSED_SIZE 4     //SIZE (TvgBinCounter)
 #define TVG_HEADER_COMPRESSED_SIZE 4       //SIZE (TvgBinCounter)
 #define TVG_HEADER_COMPRESSED_SIZE_BITS 4  //SIZE (TvgBinCounter)
@@ -62,8 +60,9 @@ using TvgBinFlag = TvgBinByte;
 #define TVG_TAG_PAINT_CMP_METHOD                    (TvgBinTag)0x20
 
 
+//TODO: Keep this for the compatibility, Remove in TVG 1.0 release
 //Scene
-#define TVG_TAG_SCENE_RESERVEDCNT                   (TvgBinTag)0x30
+ #define TVG_TAG_SCENE_RESERVEDCNT                   (TvgBinTag)0x30
 
 
 //Shape
@@ -72,14 +71,17 @@ using TvgBinFlag = TvgBinByte;
 #define TVG_TAG_SHAPE_FILL                          (TvgBinTag)0x42
 #define TVG_TAG_SHAPE_COLOR                         (TvgBinTag)0x43
 #define TVG_TAG_SHAPE_FILLRULE                      (TvgBinTag)0x44
-#define TVG_TAG_SHAPE_STROKE_CAP                    (TvgBinTag)0x50
-#define TVG_TAG_SHAPE_STROKE_JOIN                   (TvgBinTag)0x51
+
 
 //Stroke
+#define TVG_TAG_SHAPE_STROKE_CAP                    (TvgBinTag)0x50
+#define TVG_TAG_SHAPE_STROKE_JOIN                   (TvgBinTag)0x51
 #define TVG_TAG_SHAPE_STROKE_WIDTH                  (TvgBinTag)0x52
 #define TVG_TAG_SHAPE_STROKE_COLOR                  (TvgBinTag)0x53
 #define TVG_TAG_SHAPE_STROKE_FILL                   (TvgBinTag)0x54
 #define TVG_TAG_SHAPE_STROKE_DASHPTRN               (TvgBinTag)0x55
+#define TVG_TAG_SHAPE_STROKE_MITERLIMIT             (TvgBinTag)0x56
+#define TVG_TAG_SHAPE_STROKE_ORDER                  (TvgBinTag)0x57
 
 
 //Fill
@@ -92,5 +94,6 @@ using TvgBinFlag = TvgBinByte;
 
 //Picture
 #define TVG_TAG_PICTURE_RAW_IMAGE                   (TvgBinTag)0x70
+#define TVG_TAG_PICTURE_MESH                        (TvgBinTag)0x71
 
 #endif //_TVG_BINARY_DESC_H_

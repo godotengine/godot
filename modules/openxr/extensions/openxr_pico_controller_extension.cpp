@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_pico_controller_extension.h"
+
 #include "../action_map/openxr_interaction_profile_meta_data.h"
 
 // Pico controllers are not part of the OpenXR spec at the time of writing this

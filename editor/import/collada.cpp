@@ -44,10 +44,10 @@
 
 /* HELPERS */
 
-String Collada::Effect::get_texture_path(const String &p_source, Collada &state) const {
+String Collada::Effect::get_texture_path(const String &p_source, Collada &p_state) const {
 	const String &image = p_source;
-	ERR_FAIL_COND_V(!state.state.image_map.has(image), "");
-	return state.state.image_map[image].path;
+	ERR_FAIL_COND_V(!p_state.state.image_map.has(image), "");
+	return p_state.state.image_map[image].path;
 }
 
 Transform3D Collada::get_root_transform() const {
@@ -58,9 +58,9 @@ Transform3D Collada::get_root_transform() const {
 	return unit_scale_transform;
 }
 
-void Collada::Vertex::fix_unit_scale(const Collada &state) {
+void Collada::Vertex::fix_unit_scale(const Collada &p_state) {
 #ifdef COLLADA_IMPORT_SCALE_SCENE
-	vertex *= state.state.unit_scale;
+	vertex *= p_state.state.unit_scale;
 #endif
 }
 
@@ -102,27 +102,27 @@ Transform3D Collada::fix_transform(const Transform3D &p_transform) {
 	//return state.matrix_fix * p_transform;
 }
 
-static Transform3D _read_transform_from_array(const Vector<float> &array, int ofs = 0) {
+static Transform3D _read_transform_from_array(const Vector<float> &p_array, int p_ofs = 0) {
 	Transform3D tr;
 	// i wonder why collada matrices are transposed, given that's opposed to opengl..
-	tr.basis.rows[0][0] = array[0 + ofs];
-	tr.basis.rows[0][1] = array[1 + ofs];
-	tr.basis.rows[0][2] = array[2 + ofs];
-	tr.basis.rows[1][0] = array[4 + ofs];
-	tr.basis.rows[1][1] = array[5 + ofs];
-	tr.basis.rows[1][2] = array[6 + ofs];
-	tr.basis.rows[2][0] = array[8 + ofs];
-	tr.basis.rows[2][1] = array[9 + ofs];
-	tr.basis.rows[2][2] = array[10 + ofs];
-	tr.origin.x = array[3 + ofs];
-	tr.origin.y = array[7 + ofs];
-	tr.origin.z = array[11 + ofs];
+	tr.basis.rows[0][0] = p_array[0 + p_ofs];
+	tr.basis.rows[0][1] = p_array[1 + p_ofs];
+	tr.basis.rows[0][2] = p_array[2 + p_ofs];
+	tr.basis.rows[1][0] = p_array[4 + p_ofs];
+	tr.basis.rows[1][1] = p_array[5 + p_ofs];
+	tr.basis.rows[1][2] = p_array[6 + p_ofs];
+	tr.basis.rows[2][0] = p_array[8 + p_ofs];
+	tr.basis.rows[2][1] = p_array[9 + p_ofs];
+	tr.basis.rows[2][2] = p_array[10 + p_ofs];
+	tr.origin.x = p_array[3 + p_ofs];
+	tr.origin.y = p_array[7 + p_ofs];
+	tr.origin.z = p_array[11 + p_ofs];
 	return tr;
 }
 
 /* STRUCTURES */
 
-Transform3D Collada::Node::compute_transform(const Collada &state) const {
+Transform3D Collada::Node::compute_transform(const Collada &p_state) const {
 	Transform3D xform;
 
 	for (int i = 0; i < xform_list.size(); i++) {
@@ -160,7 +160,7 @@ Transform3D Collada::Node::compute_transform(const Collada &state) const {
 	}
 
 #ifdef COLLADA_IMPORT_SCALE_SCENE
-	xform.origin *= state.state.unit_scale;
+	xform.origin *= p_state.state.unit_scale;
 #endif
 	return xform;
 }
@@ -243,41 +243,41 @@ Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) const {
 	ERR_FAIL_V(Vector<float>());
 }
 
-void Collada::_parse_asset(XMLParser &parser) {
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String name = parser.get_node_name();
+void Collada::_parse_asset(XMLParser &p_parser) {
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String name = p_parser.get_node_name();
 
 			if (name == "up_axis") {
-				parser.read();
-				if (parser.get_node_data() == "X_UP") {
+				p_parser.read();
+				if (p_parser.get_node_data() == "X_UP") {
 					state.up_axis = Vector3::AXIS_X;
 				}
-				if (parser.get_node_data() == "Y_UP") {
+				if (p_parser.get_node_data() == "Y_UP") {
 					state.up_axis = Vector3::AXIS_Y;
 				}
-				if (parser.get_node_data() == "Z_UP") {
+				if (p_parser.get_node_data() == "Z_UP") {
 					state.up_axis = Vector3::AXIS_Z;
 				}
 
-				COLLADA_PRINT("up axis: " + parser.get_node_data());
+				COLLADA_PRINT("up axis: " + p_parser.get_node_data());
 			} else if (name == "unit") {
-				state.unit_scale = parser.get_named_attribute_value("meter").to_float();
+				state.unit_scale = p_parser.get_named_attribute_value("meter").to_float();
 				COLLADA_PRINT("unit scale: " + rtos(state.unit_scale));
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "asset") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "asset") {
 			break; //end of <asset>
 		}
 	}
 }
 
-void Collada::_parse_image(XMLParser &parser) {
-	String id = parser.get_named_attribute_value("id");
+void Collada::_parse_image(XMLParser &p_parser) {
+	String id = p_parser.get_named_attribute_value("id");
 
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 		return;
 	}
@@ -286,19 +286,19 @@ void Collada::_parse_image(XMLParser &parser) {
 
 	if (state.version < State::Version(1, 4, 0)) {
 		/* <1.4 */
-		String path = parser.get_named_attribute_value("source").strip_edges();
+		String path = p_parser.get_named_attribute_value("source").strip_edges();
 		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().path_join(path.uri_decode()));
 		}
 	} else {
-		while (parser.read() == OK) {
-			if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-				String name = parser.get_node_name();
+		while (p_parser.read() == OK) {
+			if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+				String name = p_parser.get_node_name();
 
 				if (name == "init_from") {
-					parser.read();
-					String path = parser.get_node_data().strip_edges().uri_decode();
+					p_parser.read();
+					String path = p_parser.get_node_data().strip_edges().uri_decode();
 
 					if (!path.contains("://") && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
@@ -314,11 +314,11 @@ void Collada::_parse_image(XMLParser &parser) {
 				} else if (name == "data") {
 					ERR_PRINT("COLLADA Embedded image data not supported!");
 
-				} else if (name == "extra" && !parser.is_empty()) {
-					parser.skip_section();
+				} else if (name == "extra" && !p_parser.is_empty()) {
+					p_parser.skip_section();
 				}
 
-			} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "image") {
+			} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "image") {
 				break; //end of <asset>
 			}
 		}
@@ -327,29 +327,29 @@ void Collada::_parse_image(XMLParser &parser) {
 	state.image_map[id] = image;
 }
 
-void Collada::_parse_material(XMLParser &parser) {
+void Collada::_parse_material(XMLParser &p_parser) {
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 		return;
 	}
 
 	Material material;
 
-	String id = parser.get_named_attribute_value("id");
-	if (parser.has_attribute("name")) {
-		material.name = parser.get_named_attribute_value("name");
+	String id = p_parser.get_named_attribute_value("id");
+	if (p_parser.has_attribute("name")) {
+		material.name = p_parser.get_named_attribute_value("name");
 	}
 
 	if (state.version < State::Version(1, 4, 0)) {
 		/* <1.4 */
 		ERR_PRINT("Collada Materials < 1.4 are not supported (yet)");
 	} else {
-		while (parser.read() == OK) {
-			if (parser.get_node_type() == XMLParser::NODE_ELEMENT && parser.get_node_name() == "instance_effect") {
-				material.instance_effect = _uri_to_id(parser.get_named_attribute_value("url"));
-			} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "material") {
+		while (p_parser.read() == OK) {
+			if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT && p_parser.get_node_name() == "instance_effect") {
+				material.instance_effect = _uri_to_id(p_parser.get_named_attribute_value("url"));
+			} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "material") {
 				break; //end of <asset>
 			}
 		}
@@ -359,8 +359,8 @@ void Collada::_parse_material(XMLParser &parser) {
 }
 
 //! reads floats from inside of xml element until end of xml element
-Vector<float> Collada::_read_float_array(XMLParser &parser) {
-	if (parser.is_empty()) {
+Vector<float> Collada::_read_float_array(XMLParser &p_parser) {
+	if (p_parser.is_empty()) {
 		return Vector<float>();
 	}
 
@@ -371,16 +371,16 @@ Vector<float> Collada::_read_float_array(XMLParser &parser) {
 	splitters.push_back("\t");
 
 	Vector<float> array;
-	while (parser.read() == OK) {
+	while (p_parser.read() == OK) {
 		// TODO: check for comments inside the element
 		// and ignore them.
 
-		if (parser.get_node_type() == XMLParser::NODE_TEXT) {
+		if (p_parser.get_node_type() == XMLParser::NODE_TEXT) {
 			// parse float data
-			String str = parser.get_node_data();
+			String str = p_parser.get_node_data();
 			array = str.split_floats_mk(splitters, false);
 			//array=str.split_floats(" ",false);
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END) {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END) {
 			break; // end parsing text
 		}
 	}
@@ -388,21 +388,21 @@ Vector<float> Collada::_read_float_array(XMLParser &parser) {
 	return array;
 }
 
-Vector<String> Collada::_read_string_array(XMLParser &parser) {
-	if (parser.is_empty()) {
+Vector<String> Collada::_read_string_array(XMLParser &p_parser) {
+	if (p_parser.is_empty()) {
 		return Vector<String>();
 	}
 
 	Vector<String> array;
-	while (parser.read() == OK) {
+	while (p_parser.read() == OK) {
 		// TODO: check for comments inside the element
 		// and ignore them.
 
-		if (parser.get_node_type() == XMLParser::NODE_TEXT) {
+		if (p_parser.get_node_type() == XMLParser::NODE_TEXT) {
 			// parse String data
-			String str = parser.get_node_data();
+			String str = p_parser.get_node_data();
 			array = str.split_spaces();
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END) {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END) {
 			break; // end parsing text
 		}
 	}
@@ -410,21 +410,21 @@ Vector<String> Collada::_read_string_array(XMLParser &parser) {
 	return array;
 }
 
-Transform3D Collada::_read_transform(XMLParser &parser) {
-	if (parser.is_empty()) {
+Transform3D Collada::_read_transform(XMLParser &p_parser) {
+	if (p_parser.is_empty()) {
 		return Transform3D();
 	}
 
 	Vector<String> array;
-	while (parser.read() == OK) {
+	while (p_parser.read() == OK) {
 		// TODO: check for comments inside the element
 		// and ignore them.
 
-		if (parser.get_node_type() == XMLParser::NODE_TEXT) {
+		if (p_parser.get_node_type() == XMLParser::NODE_TEXT) {
 			// parse float data
-			String str = parser.get_node_data();
+			String str = p_parser.get_node_data();
 			array = str.split_spaces();
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END) {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END) {
 			break; // end parsing text
 		}
 	}
@@ -439,332 +439,332 @@ Transform3D Collada::_read_transform(XMLParser &parser) {
 	return _read_transform_from_array(farr);
 }
 
-String Collada::_read_empty_draw_type(XMLParser &parser) {
+String Collada::_read_empty_draw_type(XMLParser &p_parser) {
 	String empty_draw_type = "";
 
-	if (parser.is_empty()) {
+	if (p_parser.is_empty()) {
 		return empty_draw_type;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_TEXT) {
-			empty_draw_type = parser.get_node_data();
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END) {
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_TEXT) {
+			empty_draw_type = p_parser.get_node_data();
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END) {
 			break; // end parsing text
 		}
 	}
 	return empty_draw_type;
 }
 
-Variant Collada::_parse_param(XMLParser &parser) {
-	if (parser.is_empty()) {
+Variant Collada::_parse_param(XMLParser &p_parser) {
+	if (p_parser.is_empty()) {
 		return Variant();
 	}
 
-	String from = parser.get_node_name();
+	String from = p_parser.get_node_name();
 	Variant data;
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			if (parser.get_node_name() == "float") {
-				parser.read();
-				if (parser.get_node_type() == XMLParser::NODE_TEXT) {
-					data = parser.get_node_data().to_float();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			if (p_parser.get_node_name() == "float") {
+				p_parser.read();
+				if (p_parser.get_node_type() == XMLParser::NODE_TEXT) {
+					data = p_parser.get_node_data().to_float();
 				}
-			} else if (parser.get_node_name() == "float2") {
-				Vector<float> v2 = _read_float_array(parser);
+			} else if (p_parser.get_node_name() == "float2") {
+				Vector<float> v2 = _read_float_array(p_parser);
 
 				if (v2.size() >= 2) {
 					data = Vector2(v2[0], v2[1]);
 				}
-			} else if (parser.get_node_name() == "float3") {
-				Vector<float> v3 = _read_float_array(parser);
+			} else if (p_parser.get_node_name() == "float3") {
+				Vector<float> v3 = _read_float_array(p_parser);
 
 				if (v3.size() >= 3) {
 					data = Vector3(v3[0], v3[1], v3[2]);
 				}
-			} else if (parser.get_node_name() == "float4") {
-				Vector<float> v4 = _read_float_array(parser);
+			} else if (p_parser.get_node_name() == "float4") {
+				Vector<float> v4 = _read_float_array(p_parser);
 
 				if (v4.size() >= 4) {
 					data = Color(v4[0], v4[1], v4[2], v4[3]);
 				}
-			} else if (parser.get_node_name() == "sampler2D") {
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "source") {
-							parser.read();
+			} else if (p_parser.get_node_name() == "sampler2D") {
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "source") {
+							p_parser.read();
 
-							if (parser.get_node_type() == XMLParser::NODE_TEXT) {
-								data = parser.get_node_data();
+							if (p_parser.get_node_type() == XMLParser::NODE_TEXT) {
+								data = p_parser.get_node_data();
 							}
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "sampler2D") {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "sampler2D") {
 						break;
 					}
 				}
-			} else if (parser.get_node_name() == "surface") {
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "init_from") {
-							parser.read();
+			} else if (p_parser.get_node_name() == "surface") {
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "init_from") {
+							p_parser.read();
 
-							if (parser.get_node_type() == XMLParser::NODE_TEXT) {
-								data = parser.get_node_data();
+							if (p_parser.get_node_type() == XMLParser::NODE_TEXT) {
+								data = p_parser.get_node_data();
 							}
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "surface") {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "surface") {
 						break;
 					}
 				}
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == from) {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == from) {
 			break;
 		}
 	}
 
-	COLLADA_PRINT("newparam ending " + parser.get_node_name());
+	COLLADA_PRINT("newparam ending " + p_parser.get_node_name());
 	return data;
 }
 
-void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &id) {
+void Collada::_parse_effect_material(XMLParser &p_parser, Effect &p_effect, String &p_id) {
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 		return;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
 			// first come the tags we descend, but ignore the top-levels
 
-			COLLADA_PRINT("node name: " + parser.get_node_name());
+			COLLADA_PRINT("node name: " + p_parser.get_node_name());
 
-			if (!parser.is_empty() &&
-					(parser.get_node_name() == "profile_COMMON" ||
-							parser.get_node_name() == "technique" ||
-							parser.get_node_name() == "extra")) {
-				_parse_effect_material(parser, effect, id); // try again
+			if (!p_parser.is_empty() &&
+					(p_parser.get_node_name() == "profile_COMMON" ||
+							p_parser.get_node_name() == "technique" ||
+							p_parser.get_node_name() == "extra")) {
+				_parse_effect_material(p_parser, p_effect, p_id); // try again
 
-			} else if (parser.get_node_name() == "newparam") {
-				String name = parser.get_named_attribute_value("sid");
-				Variant value = _parse_param(parser);
-				effect.params[name] = value;
+			} else if (p_parser.get_node_name() == "newparam") {
+				String name = p_parser.get_named_attribute_value("sid");
+				Variant value = _parse_param(p_parser);
+				p_effect.params[name] = value;
 				COLLADA_PRINT("param: " + name + " value:" + String(value));
 
-			} else if (parser.get_node_name() == "constant" ||
-					parser.get_node_name() == "lambert" ||
-					parser.get_node_name() == "phong" ||
-					parser.get_node_name() == "blinn") {
-				COLLADA_PRINT("shade model: " + parser.get_node_name());
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						String what = parser.get_node_name();
+			} else if (p_parser.get_node_name() == "constant" ||
+					p_parser.get_node_name() == "lambert" ||
+					p_parser.get_node_name() == "phong" ||
+					p_parser.get_node_name() == "blinn") {
+				COLLADA_PRINT("shade model: " + p_parser.get_node_name());
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						String what = p_parser.get_node_name();
 
 						if (what == "emission" ||
 								what == "diffuse" ||
 								what == "specular" ||
 								what == "reflective") {
 							// color or texture types
-							while (parser.read() == OK) {
-								if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-									if (parser.get_node_name() == "color") {
-										Vector<float> colorarr = _read_float_array(parser);
+							while (p_parser.read() == OK) {
+								if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+									if (p_parser.get_node_name() == "color") {
+										Vector<float> colorarr = _read_float_array(p_parser);
 										COLLADA_PRINT("colorarr size: " + rtos(colorarr.size()));
 
 										if (colorarr.size() >= 3) {
 											// alpha strangely not alright? maybe it needs to be multiplied by value as a channel intensity
 											Color color(colorarr[0], colorarr[1], colorarr[2], 1.0);
 											if (what == "diffuse") {
-												effect.diffuse.color = color;
+												p_effect.diffuse.color = color;
 											}
 											if (what == "specular") {
-												effect.specular.color = color;
+												p_effect.specular.color = color;
 											}
 											if (what == "emission") {
-												effect.emission.color = color;
+												p_effect.emission.color = color;
 											}
 
 											COLLADA_PRINT(what + " color: " + color);
 										}
 
-									} else if (parser.get_node_name() == "texture") {
-										String sampler = parser.get_named_attribute_value("texture");
-										if (!effect.params.has(sampler)) {
-											ERR_PRINT(String("Couldn't find sampler: " + sampler + " in material:" + id).utf8().get_data());
+									} else if (p_parser.get_node_name() == "texture") {
+										String sampler = p_parser.get_named_attribute_value("texture");
+										if (!p_effect.params.has(sampler)) {
+											ERR_PRINT(String("Couldn't find sampler: " + sampler + " in material:" + p_id).utf8().get_data());
 										} else {
-											String surface = effect.params[sampler];
+											String surface = p_effect.params[sampler];
 
-											if (!effect.params.has(surface)) {
-												ERR_PRINT(String("Couldn't find surface: " + surface + " in material:" + id).utf8().get_data());
+											if (!p_effect.params.has(surface)) {
+												ERR_PRINT(String("Couldn't find surface: " + surface + " in material:" + p_id).utf8().get_data());
 											} else {
-												String uri = effect.params[surface];
+												String uri = p_effect.params[surface];
 
 												if (what == "diffuse") {
-													effect.diffuse.texture = uri;
+													p_effect.diffuse.texture = uri;
 												} else if (what == "specular") {
-													effect.specular.texture = uri;
+													p_effect.specular.texture = uri;
 												} else if (what == "emission") {
-													effect.emission.texture = uri;
+													p_effect.emission.texture = uri;
 												} else if (what == "bump") {
-													if (parser.has_attribute("bumptype") && parser.get_named_attribute_value("bumptype") != "NORMALMAP") {
+													if (p_parser.has_attribute("bumptype") && p_parser.get_named_attribute_value("bumptype") != "NORMALMAP") {
 														WARN_PRINT("'bump' texture type is not NORMALMAP, only NORMALMAP is supported.");
 													}
 
-													effect.bump.texture = uri;
+													p_effect.bump.texture = uri;
 												}
 
 												COLLADA_PRINT(what + " texture: " + uri);
 											}
 										}
-									} else if (!parser.is_empty()) {
-										parser.skip_section();
+									} else if (!p_parser.is_empty()) {
+										p_parser.skip_section();
 									}
 
-								} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == what) {
+								} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == what) {
 									break;
 								}
 							}
 
 						} else if (what == "shininess") {
-							effect.shininess = _parse_param(parser);
+							p_effect.shininess = _parse_param(p_parser);
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END &&
-							(parser.get_node_name() == "constant" ||
-									parser.get_node_name() == "lambert" ||
-									parser.get_node_name() == "phong" ||
-									parser.get_node_name() == "blinn")) {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END &&
+							(p_parser.get_node_name() == "constant" ||
+									p_parser.get_node_name() == "lambert" ||
+									p_parser.get_node_name() == "phong" ||
+									p_parser.get_node_name() == "blinn")) {
 						break;
 					}
 				}
-			} else if (parser.get_node_name() == "double_sided" || parser.get_node_name() == "show_double_sided") { // colladamax / google earth
+			} else if (p_parser.get_node_name() == "double_sided" || p_parser.get_node_name() == "show_double_sided") { // colladamax / google earth
 
 				// 3DS Max / Google Earth double sided extension
-				parser.read();
-				effect.found_double_sided = true;
-				effect.double_sided = parser.get_node_data().to_int();
-				COLLADA_PRINT("double sided: " + itos(parser.get_node_data().to_int()));
-			} else if (parser.get_node_name() == "unshaded") {
-				parser.read();
-				effect.unshaded = parser.get_node_data().to_int();
-			} else if (parser.get_node_name() == "bump") {
+				p_parser.read();
+				p_effect.found_double_sided = true;
+				p_effect.double_sided = p_parser.get_node_data().to_int();
+				COLLADA_PRINT("double sided: " + itos(p_parser.get_node_data().to_int()));
+			} else if (p_parser.get_node_name() == "unshaded") {
+				p_parser.read();
+				p_effect.unshaded = p_parser.get_node_data().to_int();
+			} else if (p_parser.get_node_name() == "bump") {
 				// color or texture types
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "texture") {
-							String sampler = parser.get_named_attribute_value("texture");
-							if (!effect.params.has(sampler)) {
-								ERR_PRINT(String("Couldn't find sampler: " + sampler + " in material:" + id).utf8().get_data());
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "texture") {
+							String sampler = p_parser.get_named_attribute_value("texture");
+							if (!p_effect.params.has(sampler)) {
+								ERR_PRINT(String("Couldn't find sampler: " + sampler + " in material:" + p_id).utf8().get_data());
 							} else {
-								String surface = effect.params[sampler];
+								String surface = p_effect.params[sampler];
 
-								if (!effect.params.has(surface)) {
-									ERR_PRINT(String("Couldn't find surface: " + surface + " in material:" + id).utf8().get_data());
+								if (!p_effect.params.has(surface)) {
+									ERR_PRINT(String("Couldn't find surface: " + surface + " in material:" + p_id).utf8().get_data());
 								} else {
-									String uri = effect.params[surface];
+									String uri = p_effect.params[surface];
 
-									if (parser.has_attribute("bumptype") && parser.get_named_attribute_value("bumptype") != "NORMALMAP") {
+									if (p_parser.has_attribute("bumptype") && p_parser.get_named_attribute_value("bumptype") != "NORMALMAP") {
 										WARN_PRINT("'bump' texture type is not NORMALMAP, only NORMALMAP is supported.");
 									}
 
-									effect.bump.texture = uri;
+									p_effect.bump.texture = uri;
 									COLLADA_PRINT(" bump: " + uri);
 								}
 							}
-						} else if (!parser.is_empty()) {
-							parser.skip_section();
+						} else if (!p_parser.is_empty()) {
+							p_parser.skip_section();
 						}
 
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "bump") {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "bump") {
 						break;
 					}
 				}
 
-			} else if (!parser.is_empty()) {
-				parser.skip_section();
+			} else if (!p_parser.is_empty()) {
+				p_parser.skip_section();
 			}
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END &&
-				(parser.get_node_name() == "effect" ||
-						parser.get_node_name() == "profile_COMMON" ||
-						parser.get_node_name() == "technique" ||
-						parser.get_node_name() == "extra")) {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END &&
+				(p_parser.get_node_name() == "effect" ||
+						p_parser.get_node_name() == "profile_COMMON" ||
+						p_parser.get_node_name() == "technique" ||
+						p_parser.get_node_name() == "extra")) {
 			break;
 		}
 	}
 }
 
-void Collada::_parse_effect(XMLParser &parser) {
+void Collada::_parse_effect(XMLParser &p_parser) {
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 		return;
 	}
 
-	String id = parser.get_named_attribute_value("id");
+	String id = p_parser.get_named_attribute_value("id");
 
 	Effect effect;
-	if (parser.has_attribute("name")) {
-		effect.name = parser.get_named_attribute_value("name");
+	if (p_parser.has_attribute("name")) {
+		effect.name = p_parser.get_named_attribute_value("name");
 	}
-	_parse_effect_material(parser, effect, id);
+	_parse_effect_material(p_parser, effect, id);
 
 	state.effect_map[id] = effect;
 
 	COLLADA_PRINT("Effect ID:" + id);
 }
 
-void Collada::_parse_camera(XMLParser &parser) {
+void Collada::_parse_camera(XMLParser &p_parser) {
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 		return;
 	}
 
-	String id = parser.get_named_attribute_value("id");
+	String id = p_parser.get_named_attribute_value("id");
 
 	state.camera_data_map[id] = CameraData();
 	CameraData &camera = state.camera_data_map[id];
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String name = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String name = p_parser.get_node_name();
 
 			if (name == "perspective") {
 				camera.mode = CameraData::MODE_PERSPECTIVE;
 			} else if (name == "orthographic") {
 				camera.mode = CameraData::MODE_ORTHOGONAL;
 			} else if (name == "xfov") {
-				parser.read();
-				camera.perspective.x_fov = parser.get_node_data().to_float();
+				p_parser.read();
+				camera.perspective.x_fov = p_parser.get_node_data().to_float();
 
 			} else if (name == "yfov") {
-				parser.read();
-				camera.perspective.y_fov = parser.get_node_data().to_float();
+				p_parser.read();
+				camera.perspective.y_fov = p_parser.get_node_data().to_float();
 			} else if (name == "xmag") {
-				parser.read();
-				camera.orthogonal.x_mag = parser.get_node_data().to_float();
+				p_parser.read();
+				camera.orthogonal.x_mag = p_parser.get_node_data().to_float();
 
 			} else if (name == "ymag") {
-				parser.read();
-				camera.orthogonal.y_mag = parser.get_node_data().to_float();
+				p_parser.read();
+				camera.orthogonal.y_mag = p_parser.get_node_data().to_float();
 			} else if (name == "aspect_ratio") {
-				parser.read();
-				camera.aspect = parser.get_node_data().to_float();
+				p_parser.read();
+				camera.aspect = p_parser.get_node_data().to_float();
 
 			} else if (name == "znear") {
-				parser.read();
-				camera.z_near = parser.get_node_data().to_float();
+				p_parser.read();
+				camera.z_near = p_parser.get_node_data().to_float();
 
 			} else if (name == "zfar") {
-				parser.read();
-				camera.z_far = parser.get_node_data().to_float();
+				p_parser.read();
+				camera.z_far = p_parser.get_node_data().to_float();
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "camera") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "camera") {
 			break; //end of <asset>
 		}
 	}
@@ -772,22 +772,22 @@ void Collada::_parse_camera(XMLParser &parser) {
 	COLLADA_PRINT("Camera ID:" + id);
 }
 
-void Collada::_parse_light(XMLParser &parser) {
+void Collada::_parse_light(XMLParser &p_parser) {
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 		return;
 	}
 
-	String id = parser.get_named_attribute_value("id");
+	String id = p_parser.get_named_attribute_value("id");
 
 	state.light_data_map[id] = LightData();
 	LightData &light = state.light_data_map[id];
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String name = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String name = p_parser.get_node_name();
 
 			if (name == "ambient") {
 				light.mode = LightData::MODE_AMBIENT;
@@ -798,8 +798,8 @@ void Collada::_parse_light(XMLParser &parser) {
 			} else if (name == "spot") {
 				light.mode = LightData::MODE_SPOT;
 			} else if (name == "color") {
-				parser.read();
-				Vector<float> colorarr = _read_float_array(parser);
+				p_parser.read();
+				Vector<float> colorarr = _read_float_array(p_parser);
 				COLLADA_PRINT("colorarr size: " + rtos(colorarr.size()));
 
 				if (colorarr.size() >= 4) {
@@ -809,24 +809,24 @@ void Collada::_parse_light(XMLParser &parser) {
 				}
 
 			} else if (name == "constant_attenuation") {
-				parser.read();
-				light.constant_att = parser.get_node_data().to_float();
+				p_parser.read();
+				light.constant_att = p_parser.get_node_data().to_float();
 			} else if (name == "linear_attenuation") {
-				parser.read();
-				light.linear_att = parser.get_node_data().to_float();
+				p_parser.read();
+				light.linear_att = p_parser.get_node_data().to_float();
 			} else if (name == "quadratic_attenuation") {
-				parser.read();
-				light.quad_att = parser.get_node_data().to_float();
+				p_parser.read();
+				light.quad_att = p_parser.get_node_data().to_float();
 			} else if (name == "falloff_angle") {
-				parser.read();
-				light.spot_angle = parser.get_node_data().to_float();
+				p_parser.read();
+				light.spot_angle = p_parser.get_node_data().to_float();
 
 			} else if (name == "falloff_exponent") {
-				parser.read();
-				light.spot_exp = parser.get_node_data().to_float();
+				p_parser.read();
+				light.spot_exp = p_parser.get_node_data().to_float();
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "light") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "light") {
 			break; //end of <asset>
 		}
 	}
@@ -834,10 +834,10 @@ void Collada::_parse_light(XMLParser &parser) {
 	COLLADA_PRINT("Light ID:" + id);
 }
 
-void Collada::_parse_curve_geometry(XMLParser &parser, String p_id, String p_name) {
+void Collada::_parse_curve_geometry(XMLParser &p_parser, String p_id, String p_name) {
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 		return;
 	}
@@ -848,7 +848,7 @@ void Collada::_parse_curve_geometry(XMLParser &parser, String p_id, String p_nam
 
 	CurveData &curvedata = state.curve_data_map[p_id];
 	curvedata.name = p_name;
-	String closed = parser.get_named_attribute_value_safe("closed").to_lower();
+	String closed = p_parser.get_named_attribute_value_safe("closed").to_lower();
 	curvedata.closed = closed == "true" || closed == "1";
 
 	COLLADA_PRINT("curve name: " + p_name);
@@ -856,16 +856,16 @@ void Collada::_parse_curve_geometry(XMLParser &parser, String p_id, String p_nam
 	String current_source;
 	// handles geometry node and the curve children in this loop
 	// read sources with arrays and accessor for each curve
-	if (parser.is_empty()) {
+	if (p_parser.is_empty()) {
 		return;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String section = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String section = p_parser.get_node_name();
 
 			if (section == "source") {
-				String id = parser.get_named_attribute_value("id");
+				String id = p_parser.get_named_attribute_value("id");
 				curvedata.sources[id] = CurveData::Source();
 				current_source = id;
 				COLLADA_PRINT("source data: " + id);
@@ -873,13 +873,13 @@ void Collada::_parse_curve_geometry(XMLParser &parser, String p_id, String p_nam
 			} else if (section == "float_array" || section == "array") {
 				// create a new array and read it.
 				if (curvedata.sources.has(current_source)) {
-					curvedata.sources[current_source].array = _read_float_array(parser);
+					curvedata.sources[current_source].array = _read_float_array(p_parser);
 					COLLADA_PRINT("section: " + current_source + " read " + itos(curvedata.sources[current_source].array.size()) + " values.");
 				}
 			} else if (section == "Name_array") {
 				// create a new array and read it.
 				if (curvedata.sources.has(current_source)) {
-					curvedata.sources[current_source].sarray = _read_string_array(parser);
+					curvedata.sources[current_source].sarray = _read_string_array(p_parser);
 					COLLADA_PRINT("section: " + current_source + " read " + itos(curvedata.sources[current_source].array.size()) + " values.");
 				}
 
@@ -888,38 +888,38 @@ void Collada::_parse_curve_geometry(XMLParser &parser, String p_id, String p_nam
 			} else if (section == "accessor") { // child of source (below a technique tag)
 
 				if (curvedata.sources.has(current_source)) {
-					curvedata.sources[current_source].stride = parser.get_named_attribute_value("stride").to_int();
+					curvedata.sources[current_source].stride = p_parser.get_named_attribute_value("stride").to_int();
 					COLLADA_PRINT("section: " + current_source + " stride " + itos(curvedata.sources[current_source].stride));
 				}
 			} else if (section == "control_vertices") {
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "input") {
-							String semantic = parser.get_named_attribute_value("semantic");
-							String source = _uri_to_id(parser.get_named_attribute_value("source"));
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "input") {
+							String semantic = p_parser.get_named_attribute_value("semantic");
+							String source = _uri_to_id(p_parser.get_named_attribute_value("source"));
 
 							curvedata.control_vertices[semantic] = source;
 
 							COLLADA_PRINT(section + " input semantic: " + semantic + " source: " + source);
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == section) {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == section) {
 						break;
 					}
 				}
 
-			} else if (!parser.is_empty()) {
-				parser.skip_section();
+			} else if (!p_parser.is_empty()) {
+				p_parser.skip_section();
 			}
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "spline") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "spline") {
 			break;
 		}
 	}
 }
 
-void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name) {
+void Collada::_parse_mesh_geometry(XMLParser &p_parser, String p_id, String p_name) {
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 		return;
 	}
@@ -936,16 +936,16 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 	String current_source;
 	// handles geometry node and the mesh children in this loop
 	// read sources with arrays and accessor for each mesh
-	if (parser.is_empty()) {
+	if (p_parser.is_empty()) {
 		return;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String section = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String section = p_parser.get_node_name();
 
 			if (section == "source") {
-				String id = parser.get_named_attribute_value("id");
+				String id = p_parser.get_named_attribute_value("id");
 				meshdata.sources[id] = MeshData::Source();
 				current_source = id;
 				COLLADA_PRINT("source data: " + id);
@@ -953,7 +953,7 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 			} else if (section == "float_array" || section == "array") {
 				// create a new array and read it.
 				if (meshdata.sources.has(current_source)) {
-					meshdata.sources[current_source].array = _read_float_array(parser);
+					meshdata.sources[current_source].array = _read_float_array(p_parser);
 					COLLADA_PRINT("section: " + current_source + " read " + itos(meshdata.sources[current_source].array.size()) + " values.");
 				}
 			} else if (section == "technique_common") {
@@ -961,19 +961,19 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 			} else if (section == "accessor") { // child of source (below a technique tag)
 
 				if (meshdata.sources.has(current_source)) {
-					meshdata.sources[current_source].stride = parser.get_named_attribute_value("stride").to_int();
+					meshdata.sources[current_source].stride = p_parser.get_named_attribute_value("stride").to_int();
 					COLLADA_PRINT("section: " + current_source + " stride " + itos(meshdata.sources[current_source].stride));
 				}
 			} else if (section == "vertices") {
 				MeshData::Vertices vert;
-				String id = parser.get_named_attribute_value("id");
+				String id = p_parser.get_named_attribute_value("id");
 				int last_ref = 0;
 
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "input") {
-							String semantic = parser.get_named_attribute_value("semantic");
-							String source = _uri_to_id(parser.get_named_attribute_value("source"));
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "input") {
+							String semantic = p_parser.get_named_attribute_value("semantic");
+							String source = _uri_to_id(p_parser.get_named_attribute_value("source"));
 
 							if (semantic == "TEXCOORD") {
 								semantic = "TEXCOORD" + itos(last_ref++);
@@ -983,7 +983,7 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 
 							COLLADA_PRINT(section + " input semantic: " + semantic + " source: " + source);
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == section) {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == section) {
 						break;
 					}
 				}
@@ -997,23 +997,23 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 				}
 				MeshData::Primitives prim;
 
-				if (parser.has_attribute("material")) {
-					prim.material = parser.get_named_attribute_value("material");
+				if (p_parser.has_attribute("material")) {
+					prim.material = p_parser.get_named_attribute_value("material");
 				}
-				prim.count = parser.get_named_attribute_value("count").to_int();
+				prim.count = p_parser.get_named_attribute_value("count").to_int();
 				prim.vertex_size = 0;
 				int last_ref = 0;
 
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "input") {
-							String semantic = parser.get_named_attribute_value("semantic");
-							String source = _uri_to_id(parser.get_named_attribute_value("source"));
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "input") {
+							String semantic = p_parser.get_named_attribute_value("semantic");
+							String source = _uri_to_id(p_parser.get_named_attribute_value("source"));
 
 							if (semantic == "TEXCOORD") {
 								semantic = "TEXCOORD" + itos(last_ref++);
 							}
-							int offset = parser.get_named_attribute_value("offset").to_int();
+							int offset = p_parser.get_named_attribute_value("offset").to_int();
 
 							MeshData::Primitives::SourceRef sref;
 							sref.source = source;
@@ -1023,9 +1023,9 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 
 							COLLADA_PRINT(section + " input semantic: " + semantic + " source: " + source + " offset: " + itos(offset));
 
-						} else if (parser.get_node_name() == "p") { //indices
+						} else if (p_parser.get_node_name() == "p") { //indices
 
-							Vector<float> values = _read_float_array(parser);
+							Vector<float> values = _read_float_array(p_parser);
 							if (polygons) {
 								ERR_CONTINUE(prim.vertex_size == 0);
 								prim.polygons.push_back(values.size() / prim.vertex_size);
@@ -1041,49 +1041,49 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 
 							COLLADA_PRINT("read " + itos(values.size()) + " index values");
 
-						} else if (parser.get_node_name() == "vcount") { // primitive
+						} else if (p_parser.get_node_name() == "vcount") { // primitive
 
-							Vector<float> values = _read_float_array(parser);
+							Vector<float> values = _read_float_array(p_parser);
 							prim.polygons = values;
 							COLLADA_PRINT("read " + itos(values.size()) + " polygon values");
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == section) {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == section) {
 						break;
 					}
 				}
 
 				meshdata.primitives.push_back(prim);
 
-			} else if (parser.get_node_name() == "double_sided") {
-				parser.read();
+			} else if (p_parser.get_node_name() == "double_sided") {
+				p_parser.read();
 				meshdata.found_double_sided = true;
-				meshdata.double_sided = parser.get_node_data().to_int();
+				meshdata.double_sided = p_parser.get_node_data().to_int();
 
-			} else if (parser.get_node_name() == "polygons") {
+			} else if (p_parser.get_node_name() == "polygons") {
 				ERR_PRINT("Primitive type \"polygons\" not supported, re-export using \"polylist\" or \"triangles\".");
-			} else if (!parser.is_empty()) {
-				parser.skip_section();
+			} else if (!p_parser.is_empty()) {
+				p_parser.skip_section();
 			}
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "mesh") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "mesh") {
 			break;
 		}
 	}
 }
 
-void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
+void Collada::_parse_skin_controller(XMLParser &p_parser, String p_id) {
 	state.skin_controller_data_map[p_id] = SkinControllerData();
 	SkinControllerData &skindata = state.skin_controller_data_map[p_id];
 
-	skindata.base = _uri_to_id(parser.get_named_attribute_value("source"));
+	skindata.base = _uri_to_id(p_parser.get_named_attribute_value("source"));
 
 	String current_source;
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String section = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String section = p_parser.get_node_name();
 
 			if (section == "bind_shape_matrix") {
-				skindata.bind_shape = _read_transform(parser);
+				skindata.bind_shape = _read_transform(p_parser);
 #ifdef COLLADA_IMPORT_SCALE_SCENE
 				skindata.bind_shape.origin *= state.unit_scale;
 
@@ -1091,7 +1091,7 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 				COLLADA_PRINT("skeleton bind shape transform: " + skindata.bind_shape);
 
 			} else if (section == "source") {
-				String id = parser.get_named_attribute_value("id");
+				String id = p_parser.get_named_attribute_value("id");
 				skindata.sources[id] = SkinControllerData::Source();
 				current_source = id;
 				COLLADA_PRINT("source data: " + id);
@@ -1099,7 +1099,7 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 			} else if (section == "float_array" || section == "array") {
 				// create a new array and read it.
 				if (skindata.sources.has(current_source)) {
-					skindata.sources[current_source].array = _read_float_array(parser);
+					skindata.sources[current_source].array = _read_float_array(p_parser);
 					COLLADA_PRINT("section: " + current_source + " read " + itos(skindata.sources[current_source].array.size()) + " values.");
 				}
 			} else if (section == "Name_array" || section == "IDREF_array") {
@@ -1109,7 +1109,7 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 					skindata.use_idrefs = true;
 				}
 				if (skindata.sources.has(current_source)) {
-					skindata.sources[current_source].sarray = _read_string_array(parser);
+					skindata.sources[current_source].sarray = _read_string_array(p_parser);
 					if (section == "IDREF_array") {
 						Vector<String> sa = skindata.sources[current_source].sarray;
 						for (int i = 0; i < sa.size(); i++) {
@@ -1124,8 +1124,8 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 
 				if (skindata.sources.has(current_source)) {
 					int stride = 1;
-					if (parser.has_attribute("stride")) {
-						stride = parser.get_named_attribute_value("stride").to_int();
+					if (p_parser.has_attribute("stride")) {
+						stride = p_parser.get_named_attribute_value("stride").to_int();
 					}
 
 					skindata.sources[current_source].stride = stride;
@@ -1135,17 +1135,17 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 			} else if (section == "joints") {
 				SkinControllerData::Joints joint;
 
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "input") {
-							String semantic = parser.get_named_attribute_value("semantic");
-							String source = _uri_to_id(parser.get_named_attribute_value("source"));
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "input") {
+							String semantic = p_parser.get_named_attribute_value("semantic");
+							String source = _uri_to_id(p_parser.get_named_attribute_value("source"));
 
 							joint.sources[semantic] = source;
 
 							COLLADA_PRINT(section + " input semantic: " + semantic + " source: " + source);
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == section) {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == section) {
 						break;
 					}
 				}
@@ -1155,15 +1155,15 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 			} else if (section == "vertex_weights") {
 				SkinControllerData::Weights weights;
 
-				weights.count = parser.get_named_attribute_value("count").to_int();
+				weights.count = p_parser.get_named_attribute_value("count").to_int();
 
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "input") {
-							String semantic = parser.get_named_attribute_value("semantic");
-							String source = _uri_to_id(parser.get_named_attribute_value("source"));
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "input") {
+							String semantic = p_parser.get_named_attribute_value("semantic");
+							String source = _uri_to_id(p_parser.get_named_attribute_value("source"));
 
-							int offset = parser.get_named_attribute_value("offset").to_int();
+							int offset = p_parser.get_named_attribute_value("offset").to_int();
 
 							SkinControllerData::Weights::SourceRef sref;
 							sref.source = source;
@@ -1172,26 +1172,26 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 
 							COLLADA_PRINT(section + " input semantic: " + semantic + " source: " + source + " offset: " + itos(offset));
 
-						} else if (parser.get_node_name() == "v") { //indices
+						} else if (p_parser.get_node_name() == "v") { //indices
 
-							Vector<float> values = _read_float_array(parser);
+							Vector<float> values = _read_float_array(p_parser);
 							weights.indices = values;
 							COLLADA_PRINT("read " + itos(values.size()) + " index values");
 
-						} else if (parser.get_node_name() == "vcount") { // weightsitive
+						} else if (p_parser.get_node_name() == "vcount") { // weightsitive
 
-							Vector<float> values = _read_float_array(parser);
+							Vector<float> values = _read_float_array(p_parser);
 							weights.sets = values;
 							COLLADA_PRINT("read " + itos(values.size()) + " polygon values");
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == section) {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == section) {
 						break;
 					}
 				}
 
 				skindata.weights = weights;
 			}
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "skin") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "skin") {
 			break;
 		}
 	}
@@ -1224,20 +1224,20 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 	}
 }
 
-void Collada::_parse_morph_controller(XMLParser &parser, String p_id) {
+void Collada::_parse_morph_controller(XMLParser &p_parser, String p_id) {
 	state.morph_controller_data_map[p_id] = MorphControllerData();
 	MorphControllerData &morphdata = state.morph_controller_data_map[p_id];
 
-	morphdata.mesh = _uri_to_id(parser.get_named_attribute_value("source"));
-	morphdata.mode = parser.get_named_attribute_value("method");
+	morphdata.mesh = _uri_to_id(p_parser.get_named_attribute_value("source"));
+	morphdata.mode = p_parser.get_named_attribute_value("method");
 	String current_source;
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String section = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String section = p_parser.get_node_name();
 
 			if (section == "source") {
-				String id = parser.get_named_attribute_value("id");
+				String id = p_parser.get_named_attribute_value("id");
 				morphdata.sources[id] = MorphControllerData::Source();
 				current_source = id;
 				COLLADA_PRINT("source data: " + id);
@@ -1245,13 +1245,13 @@ void Collada::_parse_morph_controller(XMLParser &parser, String p_id) {
 			} else if (section == "float_array" || section == "array") {
 				// create a new array and read it.
 				if (morphdata.sources.has(current_source)) {
-					morphdata.sources[current_source].array = _read_float_array(parser);
+					morphdata.sources[current_source].array = _read_float_array(p_parser);
 					COLLADA_PRINT("section: " + current_source + " read " + itos(morphdata.sources[current_source].array.size()) + " values.");
 				}
 			} else if (section == "Name_array" || section == "IDREF_array") {
 				// create a new array and read it.
 				if (morphdata.sources.has(current_source)) {
-					morphdata.sources[current_source].sarray = _read_string_array(parser);
+					morphdata.sources[current_source].sarray = _read_string_array(p_parser);
 					COLLADA_PRINT("section: " + current_source + " read " + itos(morphdata.sources[current_source].array.size()) + " values.");
 				}
 			} else if (section == "technique_common") {
@@ -1260,8 +1260,8 @@ void Collada::_parse_morph_controller(XMLParser &parser, String p_id) {
 
 				if (morphdata.sources.has(current_source)) {
 					int stride = 1;
-					if (parser.has_attribute("stride")) {
-						stride = parser.get_named_attribute_value("stride").to_int();
+					if (p_parser.has_attribute("stride")) {
+						stride = p_parser.get_named_attribute_value("stride").to_int();
 					}
 
 					morphdata.sources[current_source].stride = stride;
@@ -1269,22 +1269,22 @@ void Collada::_parse_morph_controller(XMLParser &parser, String p_id) {
 				}
 
 			} else if (section == "targets") {
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "input") {
-							String semantic = parser.get_named_attribute_value("semantic");
-							String source = _uri_to_id(parser.get_named_attribute_value("source"));
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "input") {
+							String semantic = p_parser.get_named_attribute_value("semantic");
+							String source = _uri_to_id(p_parser.get_named_attribute_value("source"));
 
 							morphdata.targets[semantic] = source;
 
 							COLLADA_PRINT(section + " input semantic: " + semantic + " source: " + source);
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == section) {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == section) {
 						break;
 					}
 				}
 			}
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "morph") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "morph") {
 			break;
 		}
 	}
@@ -1294,57 +1294,57 @@ void Collada::_parse_morph_controller(XMLParser &parser, String p_id) {
 	}
 }
 
-void Collada::_parse_controller(XMLParser &parser) {
-	String id = parser.get_named_attribute_value("id");
+void Collada::_parse_controller(XMLParser &p_parser) {
+	String id = p_parser.get_named_attribute_value("id");
 
-	if (parser.is_empty()) {
+	if (p_parser.is_empty()) {
 		return;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String section = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String section = p_parser.get_node_name();
 
 			if (section == "skin") {
-				_parse_skin_controller(parser, id);
+				_parse_skin_controller(p_parser, id);
 			} else if (section == "morph") {
-				_parse_morph_controller(parser, id);
+				_parse_morph_controller(p_parser, id);
 			}
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "controller") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "controller") {
 			break;
 		}
 	}
 }
 
-Collada::Node *Collada::_parse_visual_instance_geometry(XMLParser &parser) {
-	String type = parser.get_node_name();
+Collada::Node *Collada::_parse_visual_instance_geometry(XMLParser &p_parser) {
+	String type = p_parser.get_node_name();
 	NodeGeometry *geom = memnew(NodeGeometry);
 	geom->controller = type == "instance_controller";
-	geom->source = _uri_to_id(parser.get_named_attribute_value_safe("url"));
+	geom->source = _uri_to_id(p_parser.get_named_attribute_value_safe("url"));
 
-	if (parser.is_empty()) { //nothing else to parse...
+	if (p_parser.is_empty()) { //nothing else to parse...
 		return geom;
 	}
 	// try to find also many materials and skeletons!
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			if (parser.get_node_name() == "instance_material") {
-				String symbol = parser.get_named_attribute_value("symbol");
-				String target = _uri_to_id(parser.get_named_attribute_value("target"));
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			if (p_parser.get_node_name() == "instance_material") {
+				String symbol = p_parser.get_named_attribute_value("symbol");
+				String target = _uri_to_id(p_parser.get_named_attribute_value("target"));
 
 				NodeGeometry::Material mat;
 				mat.target = target;
 				geom->material_map[symbol] = mat;
 				COLLADA_PRINT("uses material: '" + target + "' on primitive'" + symbol + "'");
-			} else if (parser.get_node_name() == "skeleton") {
-				parser.read();
-				String uri = _uri_to_id(parser.get_node_data());
+			} else if (p_parser.get_node_name() == "skeleton") {
+				p_parser.read();
+				String uri = _uri_to_id(p_parser.get_node_data());
 				if (!uri.is_empty()) {
 					geom->skeletons.push_back(uri);
 				}
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == type) {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == type) {
 			break;
 		}
 	}
@@ -1368,20 +1368,20 @@ Collada::Node *Collada::_parse_visual_instance_geometry(XMLParser &parser) {
 	return geom;
 }
 
-Collada::Node *Collada::_parse_visual_instance_camera(XMLParser &parser) {
+Collada::Node *Collada::_parse_visual_instance_camera(XMLParser &p_parser) {
 	NodeCamera *cam = memnew(NodeCamera);
-	cam->camera = _uri_to_id(parser.get_named_attribute_value_safe("url"));
+	cam->camera = _uri_to_id(p_parser.get_named_attribute_value_safe("url"));
 
 	if (state.up_axis == Vector3::AXIS_Z) { //collada weirdness
 		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math_PI * 0.5);
 	}
 
-	if (parser.is_empty()) { //nothing else to parse...
+	if (p_parser.is_empty()) { //nothing else to parse...
 		return cam;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "instance_camera") {
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "instance_camera") {
 			break;
 		}
 	}
@@ -1389,20 +1389,20 @@ Collada::Node *Collada::_parse_visual_instance_camera(XMLParser &parser) {
 	return cam;
 }
 
-Collada::Node *Collada::_parse_visual_instance_light(XMLParser &parser) {
+Collada::Node *Collada::_parse_visual_instance_light(XMLParser &p_parser) {
 	NodeLight *cam = memnew(NodeLight);
-	cam->light = _uri_to_id(parser.get_named_attribute_value_safe("url"));
+	cam->light = _uri_to_id(p_parser.get_named_attribute_value_safe("url"));
 
 	if (state.up_axis == Vector3::AXIS_Z) { //collada weirdness
 		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math_PI * 0.5);
 	}
 
-	if (parser.is_empty()) { //nothing else to parse...
+	if (p_parser.is_empty()) { //nothing else to parse...
 		return cam;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "instance_light") {
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "instance_light") {
 			break;
 		}
 	}
@@ -1410,23 +1410,23 @@ Collada::Node *Collada::_parse_visual_instance_light(XMLParser &parser) {
 	return cam;
 }
 
-Collada::Node *Collada::_parse_visual_node_instance_data(XMLParser &parser) {
-	String instance_type = parser.get_node_name();
+Collada::Node *Collada::_parse_visual_node_instance_data(XMLParser &p_parser) {
+	String instance_type = p_parser.get_node_name();
 
 	if (instance_type == "instance_geometry" || instance_type == "instance_controller") {
-		return _parse_visual_instance_geometry(parser);
+		return _parse_visual_instance_geometry(p_parser);
 	} else if (instance_type == "instance_camera") {
-		return _parse_visual_instance_camera(parser);
+		return _parse_visual_instance_camera(p_parser);
 	} else if (instance_type == "instance_light") {
-		return _parse_visual_instance_light(parser);
+		return _parse_visual_instance_light(p_parser);
 	}
 
-	if (parser.is_empty()) { //nothing else to parse...
+	if (p_parser.is_empty()) { //nothing else to parse...
 		return nullptr;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == instance_type) {
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == instance_type) {
 			break;
 		}
 	}
@@ -1434,10 +1434,10 @@ Collada::Node *Collada::_parse_visual_node_instance_data(XMLParser &parser) {
 	return nullptr;
 }
 
-Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
+Collada::Node *Collada::_parse_visual_scene_node(XMLParser &p_parser) {
 	String name;
 
-	String id = parser.get_named_attribute_value_safe("id");
+	String id = p_parser.get_named_attribute_value_safe("id");
 
 	bool found_name = false;
 
@@ -1455,25 +1455,25 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 
 	Node *node = nullptr;
 
-	name = parser.has_attribute("name") ? parser.get_named_attribute_value_safe("name") : parser.get_named_attribute_value_safe("id");
+	name = p_parser.has_attribute("name") ? p_parser.get_named_attribute_value_safe("name") : p_parser.get_named_attribute_value_safe("id");
 	if (name.is_empty()) {
 		name = id;
 	} else {
 		found_name = true;
 	}
 
-	if ((parser.has_attribute("type") && parser.get_named_attribute_value("type") == "JOINT") || state.idref_joints.has(name)) {
+	if ((p_parser.has_attribute("type") && p_parser.get_named_attribute_value("type") == "JOINT") || state.idref_joints.has(name)) {
 		// handle a bone
 
 		NodeJoint *joint = memnew(NodeJoint);
 
-		if (parser.has_attribute("sid")) { //bones may not have sid
-			joint->sid = parser.get_named_attribute_value("sid");
+		if (p_parser.has_attribute("sid")) { //bones may not have sid
+			joint->sid = p_parser.get_named_attribute_value("sid");
 			//state.bone_map[joint->sid]=joint;
 		} else if (state.idref_joints.has(name)) {
 			joint->sid = name; //kind of a cheat but..
-		} else if (parser.has_attribute("name")) {
-			joint->sid = parser.get_named_attribute_value_safe("name");
+		} else if (p_parser.has_attribute("name")) {
+			joint->sid = p_parser.get_named_attribute_value_safe("name");
 		}
 
 		if (!joint->sid.is_empty()) {
@@ -1483,42 +1483,42 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 		node = joint;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String section = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String section = p_parser.get_node_name();
 
 			if (section == "translate") {
 				Node::XForm xf;
-				if (parser.has_attribute("sid")) {
-					xf.id = parser.get_named_attribute_value("sid");
+				if (p_parser.has_attribute("sid")) {
+					xf.id = p_parser.get_named_attribute_value("sid");
 				}
 				xf.op = Node::XForm::OP_TRANSLATE;
 
-				Vector<float> xlt = _read_float_array(parser);
+				Vector<float> xlt = _read_float_array(p_parser);
 				xf.data = xlt;
 				xform_list.push_back(xf);
 
 			} else if (section == "rotate") {
 				Node::XForm xf;
-				if (parser.has_attribute("sid")) {
-					xf.id = parser.get_named_attribute_value("sid");
+				if (p_parser.has_attribute("sid")) {
+					xf.id = p_parser.get_named_attribute_value("sid");
 				}
 				xf.op = Node::XForm::OP_ROTATE;
 
-				Vector<float> rot = _read_float_array(parser);
+				Vector<float> rot = _read_float_array(p_parser);
 				xf.data = rot;
 
 				xform_list.push_back(xf);
 
 			} else if (section == "scale") {
 				Node::XForm xf;
-				if (parser.has_attribute("sid")) {
-					xf.id = parser.get_named_attribute_value("sid");
+				if (p_parser.has_attribute("sid")) {
+					xf.id = p_parser.get_named_attribute_value("sid");
 				}
 
 				xf.op = Node::XForm::OP_SCALE;
 
-				Vector<float> scale = _read_float_array(parser);
+				Vector<float> scale = _read_float_array(p_parser);
 
 				xf.data = scale;
 
@@ -1526,12 +1526,12 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 
 			} else if (section == "matrix") {
 				Node::XForm xf;
-				if (parser.has_attribute("sid")) {
-					xf.id = parser.get_named_attribute_value("sid");
+				if (p_parser.has_attribute("sid")) {
+					xf.id = p_parser.get_named_attribute_value("sid");
 				}
 				xf.op = Node::XForm::OP_MATRIX;
 
-				Vector<float> matrix = _read_float_array(parser);
+				Vector<float> matrix = _read_float_array(p_parser);
 
 				xf.data = matrix;
 				String mtx;
@@ -1543,25 +1543,25 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 
 			} else if (section == "visibility") {
 				Node::XForm xf;
-				if (parser.has_attribute("sid")) {
-					xf.id = parser.get_named_attribute_value("sid");
+				if (p_parser.has_attribute("sid")) {
+					xf.id = p_parser.get_named_attribute_value("sid");
 				}
 				xf.op = Node::XForm::OP_VISIBILITY;
 
-				Vector<float> visible = _read_float_array(parser);
+				Vector<float> visible = _read_float_array(p_parser);
 
 				xf.data = visible;
 
 				xform_list.push_back(xf);
 
 			} else if (section == "empty_draw_type") {
-				empty_draw_type = _read_empty_draw_type(parser);
+				empty_draw_type = _read_empty_draw_type(p_parser);
 			} else if (section == "technique" || section == "extra") {
 			} else if (section != "node") {
 				//usually what defines the type of node
 				if (section.begins_with("instance_")) {
 					if (!node) {
-						node = _parse_visual_node_instance_data(parser);
+						node = _parse_visual_node_instance_data(p_parser);
 
 					} else {
 						ERR_PRINT("Multiple instance_* not supported.");
@@ -1571,11 +1571,11 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 			} else {
 				/* Found a child node!! what to do..*/
 
-				Node *child = _parse_visual_scene_node(parser);
+				Node *child = _parse_visual_scene_node(p_parser);
 				children.push_back(child);
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "node") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "node") {
 			break;
 		}
 	}
@@ -1608,29 +1608,29 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 	return node;
 }
 
-void Collada::_parse_visual_scene(XMLParser &parser) {
-	String id = parser.get_named_attribute_value("id");
+void Collada::_parse_visual_scene(XMLParser &p_parser) {
+	String id = p_parser.get_named_attribute_value("id");
 
-	if (parser.is_empty()) {
+	if (p_parser.is_empty()) {
 		return;
 	}
 
 	state.visual_scene_map[id] = VisualScene();
 	VisualScene &vscene = state.visual_scene_map[id];
 
-	if (parser.has_attribute("name")) {
-		vscene.name = parser.get_named_attribute_value("name");
+	if (p_parser.has_attribute("name")) {
+		vscene.name = p_parser.get_named_attribute_value("name");
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String section = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String section = p_parser.get_node_name();
 
 			if (section == "node") {
-				vscene.root_nodes.push_back(_parse_visual_scene_node(parser));
+				vscene.root_nodes.push_back(_parse_visual_scene_node(p_parser));
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "visual_scene") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "visual_scene") {
 			break;
 		}
 	}
@@ -1638,10 +1638,10 @@ void Collada::_parse_visual_scene(XMLParser &parser) {
 	COLLADA_PRINT("Scene ID:" + id);
 }
 
-void Collada::_parse_animation(XMLParser &parser) {
+void Collada::_parse_animation(XMLParser &p_parser) {
 	if (!(state.import_flags & IMPORT_FLAG_ANIMATION)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 
 		return;
@@ -1655,8 +1655,8 @@ void Collada::_parse_animation(XMLParser &parser) {
 	HashMap<String, Vector<String>> source_param_types;
 
 	String id = "";
-	if (parser.has_attribute("id")) {
-		id = parser.get_named_attribute_value("id");
+	if (p_parser.has_attribute("id")) {
+		id = p_parser.get_named_attribute_value("id");
 	}
 
 	String current_source;
@@ -1664,54 +1664,54 @@ void Collada::_parse_animation(XMLParser &parser) {
 	Vector<String> channel_sources;
 	Vector<String> channel_targets;
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String name = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String name = p_parser.get_node_name();
 			if (name == "source") {
-				current_source = parser.get_named_attribute_value("id");
+				current_source = p_parser.get_named_attribute_value("id");
 				source_param_names[current_source] = Vector<String>();
 				source_param_types[current_source] = Vector<String>();
 
 			} else if (name == "float_array") {
 				if (!current_source.is_empty()) {
-					float_sources[current_source] = _read_float_array(parser);
+					float_sources[current_source] = _read_float_array(p_parser);
 				}
 
 			} else if (name == "Name_array") {
 				if (!current_source.is_empty()) {
-					string_sources[current_source] = _read_string_array(parser);
+					string_sources[current_source] = _read_string_array(p_parser);
 				}
 			} else if (name == "accessor") {
-				if (!current_source.is_empty() && parser.has_attribute("stride")) {
-					source_strides[current_source] = parser.get_named_attribute_value("stride").to_int();
+				if (!current_source.is_empty() && p_parser.has_attribute("stride")) {
+					source_strides[current_source] = p_parser.get_named_attribute_value("stride").to_int();
 				}
 			} else if (name == "sampler") {
-				current_sampler = parser.get_named_attribute_value("id");
+				current_sampler = p_parser.get_named_attribute_value("id");
 				samplers[current_sampler] = HashMap<String, String>();
 			} else if (name == "param") {
-				if (parser.has_attribute("name")) {
-					source_param_names[current_source].push_back(parser.get_named_attribute_value("name"));
+				if (p_parser.has_attribute("name")) {
+					source_param_names[current_source].push_back(p_parser.get_named_attribute_value("name"));
 				} else {
 					source_param_names[current_source].push_back("");
 				}
 
-				if (parser.has_attribute("type")) {
-					source_param_types[current_source].push_back(parser.get_named_attribute_value("type"));
+				if (p_parser.has_attribute("type")) {
+					source_param_types[current_source].push_back(p_parser.get_named_attribute_value("type"));
 				} else {
 					source_param_types[current_source].push_back("");
 				}
 
 			} else if (name == "input") {
 				if (!current_sampler.is_empty()) {
-					samplers[current_sampler][parser.get_named_attribute_value("semantic")] = parser.get_named_attribute_value("source");
+					samplers[current_sampler][p_parser.get_named_attribute_value("semantic")] = p_parser.get_named_attribute_value("source");
 				}
 
 			} else if (name == "channel") {
-				channel_sources.push_back(parser.get_named_attribute_value("source"));
-				channel_targets.push_back(parser.get_named_attribute_value("target"));
+				channel_sources.push_back(p_parser.get_named_attribute_value("source"));
+				channel_targets.push_back(p_parser.get_named_attribute_value("target"));
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "animation") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "animation") {
 			break; //end of <asset>
 		}
 	}
@@ -1845,10 +1845,10 @@ void Collada::_parse_animation(XMLParser &parser) {
 	}
 }
 
-void Collada::_parse_animation_clip(XMLParser &parser) {
+void Collada::_parse_animation_clip(XMLParser &p_parser) {
 	if (!(state.import_flags & IMPORT_FLAG_ANIMATION)) {
-		if (!parser.is_empty()) {
-			parser.skip_section();
+		if (!p_parser.is_empty()) {
+			p_parser.skip_section();
 		}
 
 		return;
@@ -1856,27 +1856,27 @@ void Collada::_parse_animation_clip(XMLParser &parser) {
 
 	AnimationClip clip;
 
-	if (parser.has_attribute("name")) {
-		clip.name = parser.get_named_attribute_value("name");
-	} else if (parser.has_attribute("id")) {
-		clip.name = parser.get_named_attribute_value("id");
+	if (p_parser.has_attribute("name")) {
+		clip.name = p_parser.get_named_attribute_value("name");
+	} else if (p_parser.has_attribute("id")) {
+		clip.name = p_parser.get_named_attribute_value("id");
 	}
-	if (parser.has_attribute("start")) {
-		clip.begin = parser.get_named_attribute_value("start").to_float();
+	if (p_parser.has_attribute("start")) {
+		clip.begin = p_parser.get_named_attribute_value("start").to_float();
 	}
-	if (parser.has_attribute("end")) {
-		clip.end = parser.get_named_attribute_value("end").to_float();
+	if (p_parser.has_attribute("end")) {
+		clip.end = p_parser.get_named_attribute_value("end").to_float();
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String name = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String name = p_parser.get_node_name();
 			if (name == "instance_animation") {
-				String url = _uri_to_id(parser.get_named_attribute_value("url"));
+				String url = _uri_to_id(p_parser.get_named_attribute_value("url"));
 				clip.tracks.push_back(url);
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "animation_clip") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "animation_clip") {
 			break; //end of <asset>
 		}
 	}
@@ -1884,79 +1884,79 @@ void Collada::_parse_animation_clip(XMLParser &parser) {
 	state.animation_clips.push_back(clip);
 }
 
-void Collada::_parse_scene(XMLParser &parser) {
-	if (parser.is_empty()) {
+void Collada::_parse_scene(XMLParser &p_parser) {
+	if (p_parser.is_empty()) {
 		return;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String name = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String name = p_parser.get_node_name();
 
 			if (name == "instance_visual_scene") {
-				state.root_visual_scene = _uri_to_id(parser.get_named_attribute_value("url"));
+				state.root_visual_scene = _uri_to_id(p_parser.get_named_attribute_value("url"));
 			} else if (name == "instance_physics_scene") {
-				state.root_physics_scene = _uri_to_id(parser.get_named_attribute_value("url"));
+				state.root_physics_scene = _uri_to_id(p_parser.get_named_attribute_value("url"));
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "scene") {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "scene") {
 			break; //end of <asset>
 		}
 	}
 }
 
-void Collada::_parse_library(XMLParser &parser) {
-	if (parser.is_empty()) {
+void Collada::_parse_library(XMLParser &p_parser) {
+	if (p_parser.is_empty()) {
 		return;
 	}
 
-	while (parser.read() == OK) {
-		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-			String name = parser.get_node_name();
+	while (p_parser.read() == OK) {
+		if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+			String name = p_parser.get_node_name();
 			COLLADA_PRINT("library name is: " + name);
 			if (name == "image") {
-				_parse_image(parser);
+				_parse_image(p_parser);
 			} else if (name == "material") {
-				_parse_material(parser);
+				_parse_material(p_parser);
 			} else if (name == "effect") {
-				_parse_effect(parser);
+				_parse_effect(p_parser);
 			} else if (name == "camera") {
-				_parse_camera(parser);
+				_parse_camera(p_parser);
 			} else if (name == "light") {
-				_parse_light(parser);
+				_parse_light(p_parser);
 			} else if (name == "geometry") {
-				String id = parser.get_named_attribute_value("id");
-				String name2 = parser.get_named_attribute_value_safe("name");
-				while (parser.read() == OK) {
-					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
-						if (parser.get_node_name() == "mesh") {
+				String id = p_parser.get_named_attribute_value("id");
+				String name2 = p_parser.get_named_attribute_value_safe("name");
+				while (p_parser.read() == OK) {
+					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
+						if (p_parser.get_node_name() == "mesh") {
 							state.mesh_name_map[id] = (!name2.is_empty()) ? name2 : id;
-							_parse_mesh_geometry(parser, id, name2);
-						} else if (parser.get_node_name() == "spline") {
+							_parse_mesh_geometry(p_parser, id, name2);
+						} else if (p_parser.get_node_name() == "spline") {
 							state.mesh_name_map[id] = (!name2.is_empty()) ? name2 : id;
-							_parse_curve_geometry(parser, id, name2);
-						} else if (!parser.is_empty()) {
-							parser.skip_section();
+							_parse_curve_geometry(p_parser, id, name2);
+						} else if (!p_parser.is_empty()) {
+							p_parser.skip_section();
 						}
-					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "geometry") {
+					} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name() == "geometry") {
 						break;
 					}
 				}
 
 			} else if (name == "controller") {
-				_parse_controller(parser);
+				_parse_controller(p_parser);
 			} else if (name == "animation") {
-				_parse_animation(parser);
+				_parse_animation(p_parser);
 			} else if (name == "animation_clip") {
-				_parse_animation_clip(parser);
+				_parse_animation_clip(p_parser);
 			} else if (name == "visual_scene") {
 				COLLADA_PRINT("visual scene");
-				_parse_visual_scene(parser);
-			} else if (!parser.is_empty()) {
-				parser.skip_section();
+				_parse_visual_scene(p_parser);
+			} else if (!p_parser.is_empty()) {
+				p_parser.skip_section();
 			}
 
-		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name().begins_with("library_")) {
+		} else if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT_END && p_parser.get_node_name().begins_with("library_")) {
 			break; //end of <asset>
 		}
 	}

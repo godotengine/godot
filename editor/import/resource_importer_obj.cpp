@@ -267,7 +267,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			vtx.z = v[3].to_float() * scale_mesh.z + offset_mesh.z;
 			vertices.push_back(vtx);
 			//vertex color
-			if (v.size() == 7) {
+			if (v.size() >= 7) {
 				while (colors.size() < vertices.size() - 1) {
 					colors.push_back(Color(1.0, 1.0, 1.0));
 				}

@@ -70,7 +70,6 @@ private:
 	Timer *update_timer = nullptr;
 	real_t h_offset = 0.0;
 	real_t v_offset = 0.0;
-	real_t lookahead = 4.0;
 	bool cubic = true;
 	bool loop = true;
 	bool rotates = true;
@@ -98,17 +97,14 @@ public:
 	void set_progress_ratio(real_t p_ratio);
 	real_t get_progress_ratio() const;
 
-	void set_lookahead(real_t p_lookahead);
-	real_t get_lookahead() const;
-
 	void set_loop(bool p_loop);
 	bool has_loop() const;
 
-	void set_rotates(bool p_rotates);
-	bool is_rotating() const;
+	void set_rotation_enabled(bool p_enabled);
+	bool is_rotation_enabled() const;
 
-	void set_cubic_interpolation(bool p_enable);
-	bool get_cubic_interpolation() const;
+	void set_cubic_interpolation_enabled(bool p_enabled);
+	bool is_cubic_interpolation_enabled() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 

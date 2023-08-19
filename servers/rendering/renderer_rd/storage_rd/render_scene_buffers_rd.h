@@ -36,6 +36,7 @@
 #include "core/templates/hash_map.h"
 #include "render_buffer_custom_data_rd.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_binds.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
 
@@ -75,12 +76,14 @@ private:
 	Size2i internal_size = Size2i(0, 0);
 	RS::ViewportScaling3DMode scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 	float fsr_sharpness = 0.2f;
+	float texture_mipmap_bias = 0.0f;
 
 	// Aliassing settings
 	RS::ViewportMSAA msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
 	RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	bool use_taa = false;
 	bool use_debanding = false;
+	RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
 
 	// Named Textures
 
@@ -166,7 +169,7 @@ public:
 	void set_vrs(RendererRD::VRS *p_vrs) { vrs = p_vrs; }
 
 	void cleanup();
-	virtual void configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, RS::ViewportScaling3DMode p_scaling_3d_mode, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa_3d, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) override;
+	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
 	void configure_for_reflections(const Size2i p_reflection_size);
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
@@ -202,6 +205,7 @@ public:
 	_FORCE_INLINE_ RS::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
 	_FORCE_INLINE_ float get_fsr_sharpness() const { return fsr_sharpness; }
 	_FORCE_INLINE_ RS::ViewportMSAA get_msaa_3d() const { return msaa_3d; }
+	_FORCE_INLINE_ RD::TextureSamples get_texture_samples() const { return texture_samples; }
 	_FORCE_INLINE_ RS::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
 	_FORCE_INLINE_ bool get_use_taa() const { return use_taa; }
 	_FORCE_INLINE_ bool get_use_debanding() const { return use_debanding; }
@@ -220,10 +224,23 @@ public:
 	_FORCE_INLINE_ RID get_internal_texture(const uint32_t p_layer) {
 		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR, p_layer, 0);
 	}
+	_FORCE_INLINE_ RID get_color_msaa() const {
+		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA);
+	}
+	_FORCE_INLINE_ RID get_color_msaa(uint32_t p_layer) {
+		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, p_layer, 0);
+	}
 
 	bool has_depth_texture();
 	RID get_depth_texture();
 	RID get_depth_texture(const uint32_t p_layer);
+
+	RID get_depth_msaa() const {
+		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA);
+	}
+	RID get_depth_msaa(uint32_t p_layer) {
+		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, p_layer, 0);
+	}
 
 	// back buffer (color)
 	RID get_back_buffer_texture() const { return has_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0) ? get_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0) : RID(); } // We (re)use our blur texture here.
@@ -236,8 +253,78 @@ public:
 	RID get_velocity_buffer(bool p_get_msaa, uint32_t p_layer);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Everything after this needs to be re-evaluated, this is all old implementation
+	// Our classDB doesn't support calling our normal exposed functions
 
+private:
+	RID _create_texture_from_format(const StringName &p_context, const StringName &p_texture_name, const Ref<RDTextureFormat> &p_texture_format, const Ref<RDTextureView> &p_view = Ref<RDTextureView>(), bool p_unique = true);
+	RID _create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName p_view_name, const Ref<RDTextureView> p_view = Ref<RDTextureView>());
+	Ref<RDTextureFormat> _get_texture_format(const StringName &p_context, const StringName &p_texture_name) const;
+
+	// For color and depth as exposed to extensions, we return the buffer that we're rendering into.
+	// Resolving happens after effects etc. are run.
+	RID _get_color_texture() {
+		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
+			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA);
+		} else if (has_internal_texture()) {
+			return get_internal_texture();
+		} else {
+			return RID();
+		}
+	}
+
+	RID _get_color_layer(const uint32_t p_layer) {
+		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
+			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, p_layer, 0);
+		} else if (has_internal_texture()) {
+			return get_internal_texture(p_layer);
+		} else {
+			return RID();
+		}
+	}
+
+	RID _get_depth_texture() {
+		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
+			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA);
+		} else if (has_depth_texture()) {
+			return get_depth_texture();
+		} else {
+			return RID();
+		}
+	}
+
+	RID _get_depth_layer(const uint32_t p_layer) {
+		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
+			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, p_layer, 0);
+		} else if (has_depth_texture()) {
+			return get_depth_texture(p_layer);
+		} else {
+			return RID();
+		}
+	}
+
+	RID _get_velocity_texture() {
+		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_velocity_buffer(true)) {
+			return get_velocity_buffer(true);
+		} else if (has_velocity_buffer(false)) {
+			return get_velocity_buffer(false);
+		} else {
+			return RID();
+		}
+	}
+
+	RID _get_velocity_layer(const uint32_t p_layer) {
+		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_velocity_buffer(true)) {
+			return get_velocity_buffer(true, p_layer);
+		} else if (has_velocity_buffer(false)) {
+			return get_velocity_buffer(false, p_layer);
+		} else {
+			return RID();
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Everything after this needs to be re-evaluated, this is all old implementation
+public:
 	struct WeightBuffers {
 		RID weight;
 		RID fb; // FB with both texture and weight writing into one level lower

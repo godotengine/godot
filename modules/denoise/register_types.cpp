@@ -29,8 +29,10 @@
 /**************************************************************************/
 
 #include "register_types.h"
-#include "core/config/engine.h"
+
 #include "lightmap_denoiser.h"
+
+#include "core/config/engine.h"
 
 void initialize_denoise_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {

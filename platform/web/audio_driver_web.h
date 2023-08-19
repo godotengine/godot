@@ -31,11 +31,11 @@
 #ifndef AUDIO_DRIVER_WEB_H
 #define AUDIO_DRIVER_WEB_H
 
+#include "godot_audio.h"
+
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "servers/audio_server.h"
-
-#include "godot_audio.h"
 
 class AudioDriverWeb : public AudioDriver {
 private:

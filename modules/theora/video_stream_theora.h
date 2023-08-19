@@ -43,6 +43,8 @@
 #include <theora/theoradec.h>
 #include <vorbis/codec.h>
 
+class ImageTexture;
+
 //#define THEORA_USE_THREAD_STREAMING
 
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {

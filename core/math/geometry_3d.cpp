@@ -30,7 +30,6 @@
 
 #include "geometry_3d.h"
 
-#include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
 
 void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1, Vector3 &r_ps, Vector3 &r_qt) {

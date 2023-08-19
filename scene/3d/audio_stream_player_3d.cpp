@@ -35,6 +35,7 @@
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
+#include "scene/scene_string_names.h"
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
 // Speaker-Placement Correction Amplitude Panning (SPCAP)
@@ -635,7 +636,7 @@ StringName AudioStreamPlayer3D::get_bus() const {
 			return bus;
 		}
 	}
-	return SNAME("Master");
+	return SceneStringNames::get_singleton()->Master;
 }
 
 void AudioStreamPlayer3D::set_autoplay(bool p_enable) {

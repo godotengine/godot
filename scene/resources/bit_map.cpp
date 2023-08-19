@@ -354,7 +354,7 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 		prevx = stepx;
 		prevy = stepy;
 
-		ERR_FAIL_COND_V((int)count > width * height, Vector<Vector<Vector2>>());
+		ERR_FAIL_COND_V((int)count > 2 * (width * height + 1), Vector<Vector<Vector2>>());
 	} while (curx != startx || cury != starty);
 
 	// Add remaining points to result.

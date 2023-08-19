@@ -43,6 +43,9 @@
 #define __has_builtin(x) 0
 #endif
 
+//------------------------------------------------------------------------------
+// x86 defines.
+
 #if !defined(HAVE_CONFIG_H)
 #if defined(_MSC_VER) && _MSC_VER > 1310 && \
     (defined(_M_X64) || defined(_M_IX86))
@@ -80,6 +83,9 @@
 #undef WEBP_MSC_SSE41
 #undef WEBP_MSC_SSE2
 
+//------------------------------------------------------------------------------
+// Arm defines.
+
 // The intrinsics currently cause compiler errors with arm-nacl-gcc and the
 // inline assembly would need to be modified for use with Native Client.
 #if ((defined(__ARM_NEON__) || defined(__aarch64__)) &&       \
@@ -98,15 +104,25 @@
 // inclusion of arm64_neon.h; Visual Studio 2019 includes this file in
 // arm_neon.h. Compile errors were seen with Visual Studio 2019 16.4 with
 // vtbl4_u8(); a fix was made in 16.6.
-#if defined(_MSC_VER) && ((_MSC_VER >= 1700 && defined(_M_ARM)) || \
-                          (_MSC_VER >= 1926 && defined(_M_ARM64)))
+#if defined(_MSC_VER) && \
+    ((_MSC_VER >= 1700 && defined(_M_ARM)) || \
+     (_MSC_VER >= 1926 && (defined(_M_ARM64) || defined(_M_ARM64EC))))
 #define WEBP_USE_NEON
 #define WEBP_USE_INTRINSICS
+#endif
+
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#define WEBP_AARCH64 1
+#else
+#define WEBP_AARCH64 0
 #endif
 
 #if defined(WEBP_USE_NEON) && !defined(WEBP_HAVE_NEON)
 #define WEBP_HAVE_NEON
 #endif
+
+//------------------------------------------------------------------------------
+// MIPS defines.
 
 #if defined(__mips__) && !defined(__mips64) && defined(__mips_isa_rev) && \
     (__mips_isa_rev >= 1) && (__mips_isa_rev < 6)
@@ -123,6 +139,8 @@
 #define WEBP_USE_MSA
 #endif
 
+//------------------------------------------------------------------------------
+
 #ifndef WEBP_DSP_OMIT_C_CODE
 #define WEBP_DSP_OMIT_C_CODE 1
 #endif
@@ -133,12 +151,13 @@
 #define WEBP_NEON_OMIT_C_CODE 0
 #endif
 
-#if !(LOCAL_CLANG_PREREQ(3, 8) || LOCAL_GCC_PREREQ(4, 8) || \
-      defined(__aarch64__))
+#if !(LOCAL_CLANG_PREREQ(3, 8) || LOCAL_GCC_PREREQ(4, 8) || WEBP_AARCH64)
 #define WEBP_NEON_WORK_AROUND_GCC 1
 #else
 #define WEBP_NEON_WORK_AROUND_GCC 0
 #endif
+
+//------------------------------------------------------------------------------
 
 // This macro prevents thread_sanitizer from reporting known concurrent writes.
 #define WEBP_TSAN_IGNORE_FUNCTION
@@ -241,16 +260,7 @@ typedef enum {
   kMSA
 } CPUFeature;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // returns true if the CPU supports the feature.
 typedef int (*VP8CPUInfo)(CPUFeature feature);
-WEBP_EXTERN VP8CPUInfo VP8GetCPUInfo;
-
-#ifdef __cplusplus
-}    // extern "C"
-#endif
 
 #endif  // WEBP_DSP_CPU_H_

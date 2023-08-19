@@ -39,6 +39,11 @@ public interface GodotRenderView {
 
 	void initInputDevices();
 
+	/**
+	 * Starts the thread that will drive Godot's rendering.
+	 */
+	void startRenderer();
+
 	void queueOnRenderThread(Runnable event);
 
 	void onActivityPaused();
@@ -51,4 +56,8 @@ public interface GodotRenderView {
 	void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY);
 
 	void setPointerIcon(int pointerType);
+
+	default boolean canCapturePointer() {
+		return getInputHandler().canCapturePointer();
+	}
 }

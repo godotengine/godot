@@ -1754,11 +1754,10 @@ String Variant::stringify(int recursion_count) const {
 		case COLOR:
 			return operator Color();
 		case DICTIONARY: {
+			ERR_FAIL_COND_V_MSG(recursion_count > MAX_RECURSION, "{ ... }", "Maximum dictionary recursion reached!");
+			recursion_count++;
+
 			const Dictionary &d = *reinterpret_cast<const Dictionary *>(_data._mem);
-			if (recursion_count > MAX_RECURSION) {
-				ERR_PRINT("Maximum dictionary recursion reached!");
-				return "{ ... }";
-			}
 
 			// Add leading and trailing space to Dictionary printing. This distinguishes it
 			// from array printing on fonts that have similar-looking {} and [] characters.
@@ -1768,7 +1767,6 @@ String Variant::stringify(int recursion_count) const {
 
 			Vector<_VariantStrPair> pairs;
 
-			recursion_count++;
 			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 				_VariantStrPair sp;
 				sp.key = stringify_variant_clean(E->get(), recursion_count);
@@ -1787,6 +1785,7 @@ String Variant::stringify(int recursion_count) const {
 
 			return str;
 		}
+		// Packed arrays cannot contain recursive structures, the recursion_count increment is not needed.
 		case PACKED_VECTOR2_ARRAY: {
 			return stringify_vector(operator Vector<Vector2>(), recursion_count);
 		}
@@ -1815,13 +1814,10 @@ String Variant::stringify(int recursion_count) const {
 			return stringify_vector(operator Vector<double>(), recursion_count);
 		}
 		case ARRAY: {
-			Array arr = operator Array();
-			if (recursion_count > MAX_RECURSION) {
-				ERR_PRINT("Maximum array recursion reached!");
-				return "[...]";
-			}
+			ERR_FAIL_COND_V_MSG(recursion_count > MAX_RECURSION, "[...]", "Maximum array recursion reached!");
+			recursion_count++;
 
-			return stringify_vector(arr, recursion_count);
+			return stringify_vector(operator Array(), recursion_count);
 		}
 		case OBJECT: {
 			if (_get_obj().obj) {
@@ -3659,9 +3655,9 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected));
 		}
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount);
+		err_text = "Method expected " + itos(ce.expected) + " arguments, but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount);
+		err_text = "Method expected " + itos(ce.expected) + " arguments, but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		err_text = "Method not found";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {

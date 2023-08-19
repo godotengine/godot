@@ -170,7 +170,7 @@ void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
 			String action = undo_redo->get_current_action_name();
 			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
+				EditorNode::get_log()->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 			}
 			undo_redo->undo();
 			handled = true;
@@ -180,7 +180,7 @@ void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 			undo_redo->redo();
 			String action = undo_redo->get_current_action_name();
 			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
+				EditorNode::get_log()->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 			}
 			handled = true;
 		}

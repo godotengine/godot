@@ -41,6 +41,8 @@
 //  - Requirements code generator is not implemented (only hard-coded requirements for the ad-hoc signing is supported).
 //  - RFC5652/CMS blob generation is not implemented, supports ad-hoc signing only.
 
+#include "plist.h"
+
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -50,8 +52,6 @@
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif
-
-#include "plist.h"
 
 #ifdef MODULE_REGEX_ENABLED
 

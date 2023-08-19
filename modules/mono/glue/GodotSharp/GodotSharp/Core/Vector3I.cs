@@ -572,7 +572,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the vector is equal
-        /// to the given object (<see paramref="obj"/>).
+        /// to the given object (<paramref name="obj"/>).
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>

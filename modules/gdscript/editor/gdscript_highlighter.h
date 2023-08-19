@@ -84,6 +84,15 @@ private:
 	Color string_name_color;
 	Color type_color;
 
+	enum CommentMarkerLevel {
+		COMMENT_MARKER_CRITICAL,
+		COMMENT_MARKER_WARNING,
+		COMMENT_MARKER_NOTICE,
+		COMMENT_MARKER_MAX,
+	};
+	Color comment_marker_colors[COMMENT_MARKER_MAX];
+	HashMap<String, CommentMarkerLevel> comment_markers;
+
 	void add_color_region(const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false);
 
 public:

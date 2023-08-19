@@ -588,7 +588,7 @@ void RenameDialog::rename() {
 
 	if (!to_rename.is_empty()) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Batch Rename"));
+		undo_redo->create_action(TTR("Batch Rename"), UndoRedo::MERGE_DISABLE, root_node, true);
 
 		// Make sure to iterate reversed so that child nodes will find parents.
 		for (int i = to_rename.size() - 1; i >= 0; --i) {
@@ -600,9 +600,7 @@ void RenameDialog::rename() {
 				continue;
 			}
 
-			scene_tree_editor->emit_signal(SNAME("node_prerename"), n, new_name);
-			undo_redo->add_do_method(scene_tree_editor, "_rename_node", n->get_instance_id(), new_name);
-			undo_redo->add_undo_method(scene_tree_editor, "_rename_node", n->get_instance_id(), n->get_name());
+			scene_tree_editor->call("_rename_node", n, new_name);
 		}
 
 		undo_redo->commit_action();

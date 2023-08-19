@@ -36,10 +36,11 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
 #include "core/string/translation.h"
-#include "core/version.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 
@@ -386,7 +387,13 @@ void DocTools::generate(bool p_basic_types) {
 			List<PropertyInfo> properties;
 			List<PropertyInfo> own_properties;
 
-			// Special case for editor and project settings, so they can be documented.
+			// Special cases for editor/project settings, and ResourceImporter classes,
+			// we have to rely on Object's property list to get settings and import options.
+			// Otherwise we just use ClassDB's property list (pure registered properties).
+
+			bool properties_from_instance = true; // To skip `script`, etc.
+			bool import_option = false; // Special case for default value.
+			HashMap<StringName, Variant> import_options_default;
 			if (name == "EditorSettings") {
 				// We don't create the full blown EditorSettings (+ config file) with `create()`,
 				// instead we just make a local instance to get default values.
@@ -396,11 +403,36 @@ void DocTools::generate(bool p_basic_types) {
 			} else if (name == "ProjectSettings") {
 				ProjectSettings::get_singleton()->get_property_list(&properties);
 				own_properties = properties;
+			} else if (ClassDB::is_parent_class(name, "ResourceImporter") && name != "EditorImportPlugin" && ClassDB::can_instantiate(name)) {
+				import_option = true;
+				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
+				List<ResourceImporter::ImportOption> options;
+				resimp->get_import_options("", &options);
+				for (int i = 0; i < options.size(); i++) {
+					const PropertyInfo &prop = options[i].option;
+					properties.push_back(prop);
+					import_options_default[prop.name] = options[i].default_value;
+				}
+				own_properties = properties;
+				memdelete(resimp);
+			} else if (name.begins_with("EditorExportPlatform") && ClassDB::can_instantiate(name)) {
+				properties_from_instance = false;
+				Ref<EditorExportPlatform> platform = Object::cast_to<EditorExportPlatform>(ClassDB::instantiate(name));
+				if (platform.is_valid()) {
+					List<EditorExportPlatform::ExportOption> options;
+					platform->get_export_options(&options);
+					for (const EditorExportPlatform::ExportOption &E : options) {
+						properties.push_back(E.option);
+					}
+					own_properties = properties;
+				}
 			} else {
+				properties_from_instance = false;
 				ClassDB::get_property_list(name, &properties);
 				ClassDB::get_property_list(name, &own_properties, true);
 			}
 
+			// Sort is still needed here to handle inherited properties, even though it is done below, do not remove.
 			properties.sort();
 			own_properties.sort();
 
@@ -410,6 +442,13 @@ void DocTools::generate(bool p_basic_types) {
 				if (EO && EO->get() == E) {
 					inherited = false;
 					EO = EO->next();
+				}
+
+				if (properties_from_instance) {
+					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
+						// Don't include spurious properties from Object property list.
+						continue;
+					}
 				}
 
 				if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == Variant::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
@@ -431,16 +470,9 @@ void DocTools::generate(bool p_basic_types) {
 				bool default_value_valid = false;
 				Variant default_value;
 
-				if (name == "EditorSettings") {
-					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
-						// Don't include spurious properties in the generated EditorSettings class reference.
-						continue;
-					}
-				}
-
 				if (name == "ProjectSettings") {
 					// Special case for project settings, so that settings are not taken from the current project's settings
-					if (E.name == "script" || !ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
+					if (!ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
 						continue;
 					}
 					if (E.usage & PROPERTY_USAGE_EDITOR) {
@@ -449,6 +481,11 @@ void DocTools::generate(bool p_basic_types) {
 							default_value_valid = true;
 						}
 					}
+				} else if (name == "EditorSettings") {
+					// Special case for editor settings, to prevent hardware or OS specific settings to affect the result.
+				} else if (import_option) {
+					default_value = import_options_default[E.name];
+					default_value_valid = true;
 				} else {
 					default_value = get_documentation_default_value(name, E.name, default_value_valid);
 					if (inherited) {
@@ -479,6 +516,7 @@ void DocTools::generate(bool p_basic_types) {
 						found_type = true;
 						if (retinfo.type == Variant::INT && retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 							prop.enumeration = retinfo.class_name;
+							prop.is_bitfield = retinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 							prop.type = "int";
 						} else if (retinfo.class_name != StringName()) {
 							prop.type = retinfo.class_name;
@@ -513,9 +551,10 @@ void DocTools::generate(bool p_basic_types) {
 				c.properties.push_back(prop);
 			}
 
+			c.properties.sort();
+
 			List<MethodInfo> method_list;
 			ClassDB::get_method_list(name, &method_list, true);
-			method_list.sort();
 
 			for (const MethodInfo &E : method_list) {
 				if (E.name.is_empty() || (E.name[0] == '_' && !(E.flags & METHOD_FLAG_VIRTUAL))) {
@@ -548,6 +587,8 @@ void DocTools::generate(bool p_basic_types) {
 
 				c.methods.push_back(method);
 			}
+
+			c.methods.sort();
 
 			List<MethodInfo> signal_list;
 			ClassDB::get_signal_list(name, &signal_list, true);
@@ -687,7 +728,6 @@ void DocTools::generate(bool p_basic_types) {
 
 		List<MethodInfo> method_list;
 		v.get_method_list(&method_list);
-		method_list.sort();
 		Variant::get_constructor_list(Variant::Type(i), &method_list);
 
 		for (int j = 0; j < Variant::OP_AND; j++) { // Showing above 'and' is pretty confusing and there are a lot of variations.
@@ -809,6 +849,8 @@ void DocTools::generate(bool p_basic_types) {
 				c.methods.push_back(method);
 			}
 		}
+
+		c.methods.sort();
 
 		List<PropertyInfo> properties;
 		v.get_property_list(&properties);
@@ -1038,6 +1080,9 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 							method.return_type = parser->get_named_attribute_value("type");
 							if (parser->has_attribute("enum")) {
 								method.return_enum = parser->get_named_attribute_value("enum");
+								if (parser->has_attribute("is_bitfield")) {
+									method.return_is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+								}
 							}
 						} else if (name == "returns_error") {
 							ERR_FAIL_COND_V(!parser->has_attribute("number"), ERR_FILE_CORRUPT);
@@ -1050,6 +1095,9 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 							argument.type = parser->get_named_attribute_value("type");
 							if (parser->has_attribute("enum")) {
 								argument.enumeration = parser->get_named_attribute_value("enum");
+								if (parser->has_attribute("is_bitfield")) {
+									argument.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+								}
 							}
 
 							method.arguments.push_back(argument);
@@ -1240,6 +1288,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								}
 								if (parser->has_attribute("enum")) {
 									prop2.enumeration = parser->get_named_attribute_value("enum");
+									if (parser->has_attribute("is_bitfield")) {
+										prop2.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+									}
 								}
 								if (parser->has_attribute("is_deprecated")) {
 									prop2.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
@@ -1307,9 +1358,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								constant2.is_value_valid = true;
 								if (parser->has_attribute("enum")) {
 									constant2.enumeration = parser->get_named_attribute_value("enum");
-								}
-								if (parser->has_attribute("is_bitfield")) {
-									constant2.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+									if (parser->has_attribute("is_bitfield")) {
+										constant2.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+									}
 								}
 								if (parser->has_attribute("is_deprecated")) {
 									constant2.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
@@ -1350,10 +1401,7 @@ static void _write_string(Ref<FileAccess> f, int p_tablevel, const String &p_str
 	if (p_string.is_empty()) {
 		return;
 	}
-	String tab;
-	for (int i = 0; i < p_tablevel; i++) {
-		tab += "\t";
-	}
+	String tab = String("\t").repeat(p_tablevel);
 	f->store_string(tab + p_string + "\n");
 }
 
@@ -1383,8 +1431,11 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 				String enum_text;
 				if (!m.return_enum.is_empty()) {
 					enum_text = " enum=\"" + m.return_enum + "\"";
+					if (m.return_is_bitfield) {
+						enum_text += " is_bitfield=\"true\"";
+					}
 				}
-				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
+				_write_string(f, 3, "<return type=\"" + m.return_type.xml_escape(true) + "\"" + enum_text + " />");
 			}
 			if (m.errors_returned.size() > 0) {
 				for (int j = 0; j < m.errors_returned.size(); j++) {
@@ -1398,12 +1449,15 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 				String enum_text;
 				if (!a.enumeration.is_empty()) {
 					enum_text = " enum=\"" + a.enumeration + "\"";
+					if (a.is_bitfield) {
+						enum_text += " is_bitfield=\"true\"";
+					}
 				}
 
 				if (!a.default_value.is_empty()) {
-					_write_string(f, 3, "<param index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
+					_write_string(f, 3, "<param index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape(true) + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
 				} else {
-					_write_string(f, 3, "<param index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
+					_write_string(f, 3, "<param index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape(true) + "\"" + enum_text + " />");
 				}
 			}
 
@@ -1418,7 +1472,7 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 	}
 }
 
-Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path) {
+Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_include_xml_schema) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		DocData::ClassDoc &c = E.value;
 
@@ -1430,16 +1484,16 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		}
 
 		Error err;
-		String save_file = save_path.path_join(c.name + ".xml");
+		String save_file = save_path.path_join(c.name.replace("\"", "").replace("/", "--") + ".xml");
 		Ref<FileAccess> f = FileAccess::open(save_file, FileAccess::WRITE, &err);
 
 		ERR_CONTINUE_MSG(err != OK, "Can't write doc file: " + save_file + ".");
 
 		_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
 
-		String header = "<class name=\"" + c.name + "\"";
+		String header = "<class name=\"" + c.name.xml_escape(true) + "\"";
 		if (!c.inherits.is_empty()) {
-			header += " inherits=\"" + c.inherits + "\"";
+			header += " inherits=\"" + c.inherits.xml_escape(true) + "\"";
 			if (c.is_deprecated) {
 				header += " is_deprecated=\"true\"";
 			}
@@ -1447,13 +1501,15 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				header += " is_experimental=\"true\"";
 			}
 		}
-		header += String(" version=\"") + VERSION_BRANCH + "\"";
-		// Reference the XML schema so editors can provide error checking.
-		// Modules are nested deep, so change the path to reference the same schema everywhere.
-		const String schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
-		header += vformat(
-				R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s">)",
-				schema_path);
+		if (p_include_xml_schema) {
+			// Reference the XML schema so editors can provide error checking.
+			// Modules are nested deep, so change the path to reference the same schema everywhere.
+			const String schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
+			header += vformat(
+					R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s")",
+					schema_path);
+		}
+		header += ">";
 		_write_string(f, 0, header);
 
 		_write_string(f, 1, "<brief_description>");
@@ -1485,6 +1541,9 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				String additional_attributes;
 				if (!c.properties[i].enumeration.is_empty()) {
 					additional_attributes += " enum=\"" + c.properties[i].enumeration + "\"";
+					if (c.properties[i].is_bitfield) {
+						additional_attributes += " is_bitfield=\"true\"";
+					}
 				}
 				if (!c.properties[i].default_value.is_empty()) {
 					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";
@@ -1499,9 +1558,9 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				const DocData::PropertyDoc &p = c.properties[i];
 
 				if (c.properties[i].overridden) {
-					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" overrides=\"" + p.overrides + "\"" + additional_attributes + " />");
+					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type.xml_escape(true) + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" overrides=\"" + p.overrides + "\"" + additional_attributes + " />");
 				} else {
-					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + additional_attributes + ">");
+					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type.xml_escape(true) + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + additional_attributes + ">");
 					_write_string(f, 3, _translate_doc_string(p.description).strip_edges().xml_escape());
 					_write_string(f, 2, "</member>");
 				}
@@ -1527,12 +1586,12 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				if (k.is_value_valid) {
 					if (!k.enumeration.is_empty()) {
 						if (k.is_bitfield) {
-							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\" is_bitfield=\"true\"" + additional_attributes + ">");
+							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value.xml_escape(true) + "\" enum=\"" + k.enumeration + "\" is_bitfield=\"true\"" + additional_attributes + ">");
 						} else {
-							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\"" + additional_attributes + ">");
+							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value.xml_escape(true) + "\" enum=\"" + k.enumeration + "\"" + additional_attributes + ">");
 						}
 					} else {
-						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\"" + additional_attributes + ">");
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value.xml_escape(true) + "\"" + additional_attributes + ">");
 					}
 				} else {
 					if (!k.enumeration.is_empty()) {

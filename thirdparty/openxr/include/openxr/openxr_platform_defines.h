@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2017-2022, The Khronos Group Inc.
+** Copyright (c) 2017-2023, The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
@@ -65,7 +65,7 @@ typedef unsigned __int64 uint64_t;
 #endif  // !defined( XR_NO_STDINT_H )
 
 // XR_PTR_SIZE (in bytes)
-#if (defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__) ) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(__powerpc64__))
+#if (defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__) ) || defined(_M_X64) || defined(__ia64) || defined(_M_IA64) || defined(__aarch64__) || defined(__powerpc64__))
 #define XR_PTR_SIZE 8
 #else
 #define XR_PTR_SIZE 4
@@ -102,6 +102,10 @@ typedef unsigned __int64 uint64_t;
 #define XR_CPP_NULLPTR_SUPPORTED 1
 #endif
 #endif
+
+#if !defined(XR_CPP_NULLPTR_SUPPORTED)
+#define XR_CPP_NULLPTR_SUPPORTED 0
+#endif  // !defined(XR_CPP_NULLPTR_SUPPORTED)
 
 #ifdef __cplusplus
 }

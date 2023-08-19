@@ -25,9 +25,160 @@
 //------------------------------------------------------------------------------
 // Transforms (Paragraph 14.4)
 
-// Does one or two inverse transforms.
-static void ITransform_SSE2(const uint8_t* ref, const int16_t* in, uint8_t* dst,
-                            int do_two) {
+// Does one inverse transform.
+static void ITransform_One_SSE2(const uint8_t* ref, const int16_t* in,
+                                uint8_t* dst) {
+  // This implementation makes use of 16-bit fixed point versions of two
+  // multiply constants:
+  //    K1 = sqrt(2) * cos (pi/8) ~= 85627 / 2^16
+  //    K2 = sqrt(2) * sin (pi/8) ~= 35468 / 2^16
+  //
+  // To be able to use signed 16-bit integers, we use the following trick to
+  // have constants within range:
+  // - Associated constants are obtained by subtracting the 16-bit fixed point
+  //   version of one:
+  //      k = K - (1 << 16)  =>  K = k + (1 << 16)
+  //      K1 = 85267  =>  k1 =  20091
+  //      K2 = 35468  =>  k2 = -30068
+  // - The multiplication of a variable by a constant become the sum of the
+  //   variable and the multiplication of that variable by the associated
+  //   constant:
+  //      (x * K) >> 16 = (x * (k + (1 << 16))) >> 16 = ((x * k ) >> 16) + x
+  const __m128i k1k2 = _mm_set_epi16(-30068, -30068, -30068, -30068,
+                                     20091, 20091, 20091, 20091);
+  const __m128i k2k1 = _mm_set_epi16(20091, 20091, 20091, 20091,
+                                     -30068, -30068, -30068, -30068);
+  const __m128i zero = _mm_setzero_si128();
+  const __m128i zero_four = _mm_set_epi16(0, 0, 0, 0, 4, 4, 4, 4);
+  __m128i T01, T23;
+
+  // Load and concatenate the transform coefficients.
+  const __m128i in01 = _mm_loadu_si128((const __m128i*)&in[0]);
+  const __m128i in23 = _mm_loadu_si128((const __m128i*)&in[8]);
+  // a00 a10 a20 a30   a01 a11 a21 a31
+  // a02 a12 a22 a32   a03 a13 a23 a33
+
+  // Vertical pass and subsequent transpose.
+  {
+    const __m128i in1 = _mm_unpackhi_epi64(in01, in01);
+    const __m128i in3 = _mm_unpackhi_epi64(in23, in23);
+
+    // First pass, c and d calculations are longer because of the "trick"
+    // multiplications.
+    // c = MUL(in1, K2) - MUL(in3, K1) = MUL(in1, k2) - MUL(in3, k1) + in1 - in3
+    // d = MUL(in1, K1) + MUL(in3, K2) = MUL(in1, k1) + MUL(in3, k2) + in1 + in3
+    const __m128i a_d3 = _mm_add_epi16(in01, in23);
+    const __m128i b_c3 = _mm_sub_epi16(in01, in23);
+    const __m128i c1d1 = _mm_mulhi_epi16(in1, k2k1);
+    const __m128i c2d2 = _mm_mulhi_epi16(in3, k1k2);
+    const __m128i c3 = _mm_unpackhi_epi64(b_c3, b_c3);
+    const __m128i c4 = _mm_sub_epi16(c1d1, c2d2);
+    const __m128i c = _mm_add_epi16(c3, c4);
+    const __m128i d4u = _mm_add_epi16(c1d1, c2d2);
+    const __m128i du = _mm_add_epi16(a_d3, d4u);
+    const __m128i d = _mm_unpackhi_epi64(du, du);
+
+    // Second pass.
+    const __m128i comb_ab = _mm_unpacklo_epi64(a_d3, b_c3);
+    const __m128i comb_dc = _mm_unpacklo_epi64(d, c);
+
+    const __m128i tmp01 = _mm_add_epi16(comb_ab, comb_dc);
+    const __m128i tmp32 = _mm_sub_epi16(comb_ab, comb_dc);
+    const __m128i tmp23 = _mm_shuffle_epi32(tmp32, _MM_SHUFFLE(1, 0, 3, 2));
+
+    const __m128i transpose_0 = _mm_unpacklo_epi16(tmp01, tmp23);
+    const __m128i transpose_1 = _mm_unpackhi_epi16(tmp01, tmp23);
+    // a00 a20 a01 a21   a02 a22 a03 a23
+    // a10 a30 a11 a31   a12 a32 a13 a33
+
+    T01 = _mm_unpacklo_epi16(transpose_0, transpose_1);
+    T23 = _mm_unpackhi_epi16(transpose_0, transpose_1);
+    // a00 a10 a20 a30   a01 a11 a21 a31
+    // a02 a12 a22 a32   a03 a13 a23 a33
+  }
+
+  // Horizontal pass and subsequent transpose.
+  {
+    const __m128i T1 = _mm_unpackhi_epi64(T01, T01);
+    const __m128i T3 = _mm_unpackhi_epi64(T23, T23);
+
+    // First pass, c and d calculations are longer because of the "trick"
+    // multiplications.
+    const __m128i dc = _mm_add_epi16(T01, zero_four);
+
+    // c = MUL(T1, K2) - MUL(T3, K1) = MUL(T1, k2) - MUL(T3, k1) + T1 - T3
+    // d = MUL(T1, K1) + MUL(T3, K2) = MUL(T1, k1) + MUL(T3, k2) + T1 + T3
+    const __m128i a_d3 = _mm_add_epi16(dc, T23);
+    const __m128i b_c3 = _mm_sub_epi16(dc, T23);
+    const __m128i c1d1 = _mm_mulhi_epi16(T1, k2k1);
+    const __m128i c2d2 = _mm_mulhi_epi16(T3, k1k2);
+    const __m128i c3 = _mm_unpackhi_epi64(b_c3, b_c3);
+    const __m128i c4 = _mm_sub_epi16(c1d1, c2d2);
+    const __m128i c = _mm_add_epi16(c3, c4);
+    const __m128i d4u = _mm_add_epi16(c1d1, c2d2);
+    const __m128i du = _mm_add_epi16(a_d3, d4u);
+    const __m128i d = _mm_unpackhi_epi64(du, du);
+
+    // Second pass.
+    const __m128i comb_ab = _mm_unpacklo_epi64(a_d3, b_c3);
+    const __m128i comb_dc = _mm_unpacklo_epi64(d, c);
+
+    const __m128i tmp01 = _mm_add_epi16(comb_ab, comb_dc);
+    const __m128i tmp32 = _mm_sub_epi16(comb_ab, comb_dc);
+    const __m128i tmp23 = _mm_shuffle_epi32(tmp32, _MM_SHUFFLE(1, 0, 3, 2));
+
+    const __m128i shifted01 = _mm_srai_epi16(tmp01, 3);
+    const __m128i shifted23 = _mm_srai_epi16(tmp23, 3);
+    // a00 a01 a02 a03   a10 a11 a12 a13
+    // a20 a21 a22 a23   a30 a31 a32 a33
+
+    const __m128i transpose_0 = _mm_unpacklo_epi16(shifted01, shifted23);
+    const __m128i transpose_1 = _mm_unpackhi_epi16(shifted01, shifted23);
+    // a00 a20 a01 a21   a02 a22 a03 a23
+    // a10 a30 a11 a31   a12 a32 a13 a33
+
+    T01 = _mm_unpacklo_epi16(transpose_0, transpose_1);
+    T23 = _mm_unpackhi_epi16(transpose_0, transpose_1);
+    // a00 a10 a20 a30   a01 a11 a21 a31
+    // a02 a12 a22 a32   a03 a13 a23 a33
+  }
+
+  // Add inverse transform to 'ref' and store.
+  {
+    // Load the reference(s).
+    __m128i ref01, ref23, ref0123;
+    int32_t buf[4];
+
+    // Load four bytes/pixels per line.
+    const __m128i ref0 = _mm_cvtsi32_si128(WebPMemToInt32(&ref[0 * BPS]));
+    const __m128i ref1 = _mm_cvtsi32_si128(WebPMemToInt32(&ref[1 * BPS]));
+    const __m128i ref2 = _mm_cvtsi32_si128(WebPMemToInt32(&ref[2 * BPS]));
+    const __m128i ref3 = _mm_cvtsi32_si128(WebPMemToInt32(&ref[3 * BPS]));
+    ref01 = _mm_unpacklo_epi32(ref0, ref1);
+    ref23 = _mm_unpacklo_epi32(ref2, ref3);
+
+    // Convert to 16b.
+    ref01 = _mm_unpacklo_epi8(ref01, zero);
+    ref23 = _mm_unpacklo_epi8(ref23, zero);
+    // Add the inverse transform(s).
+    ref01 = _mm_add_epi16(ref01, T01);
+    ref23 = _mm_add_epi16(ref23, T23);
+    // Unsigned saturate to 8b.
+    ref0123 = _mm_packus_epi16(ref01, ref23);
+
+    _mm_storeu_si128((__m128i *)buf, ref0123);
+
+    // Store four bytes/pixels per line.
+    WebPInt32ToMem(&dst[0 * BPS], buf[0]);
+    WebPInt32ToMem(&dst[1 * BPS], buf[1]);
+    WebPInt32ToMem(&dst[2 * BPS], buf[2]);
+    WebPInt32ToMem(&dst[3 * BPS], buf[3]);
+  }
+}
+
+// Does two inverse transforms.
+static void ITransform_Two_SSE2(const uint8_t* ref, const int16_t* in,
+                                uint8_t* dst) {
   // This implementation makes use of 16-bit fixed point versions of two
   // multiply constants:
   //    K1 = sqrt(2) * cos (pi/8) ~= 85627 / 2^16
@@ -49,33 +200,21 @@ static void ITransform_SSE2(const uint8_t* ref, const int16_t* in, uint8_t* dst,
   __m128i T0, T1, T2, T3;
 
   // Load and concatenate the transform coefficients (we'll do two inverse
-  // transforms in parallel). In the case of only one inverse transform, the
-  // second half of the vectors will just contain random value we'll never
-  // use nor store.
+  // transforms in parallel).
   __m128i in0, in1, in2, in3;
   {
-    in0 = _mm_loadl_epi64((const __m128i*)&in[0]);
-    in1 = _mm_loadl_epi64((const __m128i*)&in[4]);
-    in2 = _mm_loadl_epi64((const __m128i*)&in[8]);
-    in3 = _mm_loadl_epi64((const __m128i*)&in[12]);
-    // a00 a10 a20 a30   x x x x
-    // a01 a11 a21 a31   x x x x
-    // a02 a12 a22 a32   x x x x
-    // a03 a13 a23 a33   x x x x
-    if (do_two) {
-      const __m128i inB0 = _mm_loadl_epi64((const __m128i*)&in[16]);
-      const __m128i inB1 = _mm_loadl_epi64((const __m128i*)&in[20]);
-      const __m128i inB2 = _mm_loadl_epi64((const __m128i*)&in[24]);
-      const __m128i inB3 = _mm_loadl_epi64((const __m128i*)&in[28]);
-      in0 = _mm_unpacklo_epi64(in0, inB0);
-      in1 = _mm_unpacklo_epi64(in1, inB1);
-      in2 = _mm_unpacklo_epi64(in2, inB2);
-      in3 = _mm_unpacklo_epi64(in3, inB3);
-      // a00 a10 a20 a30   b00 b10 b20 b30
-      // a01 a11 a21 a31   b01 b11 b21 b31
-      // a02 a12 a22 a32   b02 b12 b22 b32
-      // a03 a13 a23 a33   b03 b13 b23 b33
-    }
+    const __m128i tmp0 = _mm_loadu_si128((const __m128i*)&in[0]);
+    const __m128i tmp1 = _mm_loadu_si128((const __m128i*)&in[8]);
+    const __m128i tmp2 = _mm_loadu_si128((const __m128i*)&in[16]);
+    const __m128i tmp3 = _mm_loadu_si128((const __m128i*)&in[24]);
+    in0 = _mm_unpacklo_epi64(tmp0, tmp2);
+    in1 = _mm_unpackhi_epi64(tmp0, tmp2);
+    in2 = _mm_unpacklo_epi64(tmp1, tmp3);
+    in3 = _mm_unpackhi_epi64(tmp1, tmp3);
+    // a00 a10 a20 a30   b00 b10 b20 b30
+    // a01 a11 a21 a31   b01 b11 b21 b31
+    // a02 a12 a22 a32   b02 b12 b22 b32
+    // a03 a13 a23 a33   b03 b13 b23 b33
   }
 
   // Vertical pass and subsequent transpose.
@@ -148,19 +287,11 @@ static void ITransform_SSE2(const uint8_t* ref, const int16_t* in, uint8_t* dst,
     const __m128i zero = _mm_setzero_si128();
     // Load the reference(s).
     __m128i ref0, ref1, ref2, ref3;
-    if (do_two) {
-      // Load eight bytes/pixels per line.
-      ref0 = _mm_loadl_epi64((const __m128i*)&ref[0 * BPS]);
-      ref1 = _mm_loadl_epi64((const __m128i*)&ref[1 * BPS]);
-      ref2 = _mm_loadl_epi64((const __m128i*)&ref[2 * BPS]);
-      ref3 = _mm_loadl_epi64((const __m128i*)&ref[3 * BPS]);
-    } else {
-      // Load four bytes/pixels per line.
-      ref0 = _mm_cvtsi32_si128(WebPMemToInt32(&ref[0 * BPS]));
-      ref1 = _mm_cvtsi32_si128(WebPMemToInt32(&ref[1 * BPS]));
-      ref2 = _mm_cvtsi32_si128(WebPMemToInt32(&ref[2 * BPS]));
-      ref3 = _mm_cvtsi32_si128(WebPMemToInt32(&ref[3 * BPS]));
-    }
+    // Load eight bytes/pixels per line.
+    ref0 = _mm_loadl_epi64((const __m128i*)&ref[0 * BPS]);
+    ref1 = _mm_loadl_epi64((const __m128i*)&ref[1 * BPS]);
+    ref2 = _mm_loadl_epi64((const __m128i*)&ref[2 * BPS]);
+    ref3 = _mm_loadl_epi64((const __m128i*)&ref[3 * BPS]);
     // Convert to 16b.
     ref0 = _mm_unpacklo_epi8(ref0, zero);
     ref1 = _mm_unpacklo_epi8(ref1, zero);
@@ -176,20 +307,21 @@ static void ITransform_SSE2(const uint8_t* ref, const int16_t* in, uint8_t* dst,
     ref1 = _mm_packus_epi16(ref1, ref1);
     ref2 = _mm_packus_epi16(ref2, ref2);
     ref3 = _mm_packus_epi16(ref3, ref3);
-    // Store the results.
-    if (do_two) {
-      // Store eight bytes/pixels per line.
-      _mm_storel_epi64((__m128i*)&dst[0 * BPS], ref0);
-      _mm_storel_epi64((__m128i*)&dst[1 * BPS], ref1);
-      _mm_storel_epi64((__m128i*)&dst[2 * BPS], ref2);
-      _mm_storel_epi64((__m128i*)&dst[3 * BPS], ref3);
-    } else {
-      // Store four bytes/pixels per line.
-      WebPInt32ToMem(&dst[0 * BPS], _mm_cvtsi128_si32(ref0));
-      WebPInt32ToMem(&dst[1 * BPS], _mm_cvtsi128_si32(ref1));
-      WebPInt32ToMem(&dst[2 * BPS], _mm_cvtsi128_si32(ref2));
-      WebPInt32ToMem(&dst[3 * BPS], _mm_cvtsi128_si32(ref3));
-    }
+    // Store eight bytes/pixels per line.
+    _mm_storel_epi64((__m128i*)&dst[0 * BPS], ref0);
+    _mm_storel_epi64((__m128i*)&dst[1 * BPS], ref1);
+    _mm_storel_epi64((__m128i*)&dst[2 * BPS], ref2);
+    _mm_storel_epi64((__m128i*)&dst[3 * BPS], ref3);
+  }
+}
+
+// Does one or two inverse transforms.
+static void ITransform_SSE2(const uint8_t* ref, const int16_t* in, uint8_t* dst,
+                            int do_two) {
+  if (do_two) {
+    ITransform_Two_SSE2(ref, in, dst);
+  } else {
+    ITransform_One_SSE2(ref, in, dst);
   }
 }
 

@@ -30,9 +30,12 @@
 
 #include "cpu_particles_2d.h"
 
-#include "core/core_string_names.h"
 #include "scene/2d/gpu_particles_2d.h"
+#include "scene/resources/atlas_texture.h"
+#include "scene/resources/curve_texture.h"
+#include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "scene/scene_string_names.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {
@@ -41,6 +44,7 @@ void CPUParticles2D::set_emitting(bool p_emitting) {
 
 	emitting = p_emitting;
 	if (emitting) {
+		active = true;
 		set_process_internal(true);
 	}
 }
@@ -202,13 +206,13 @@ void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}
 
 	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
+		texture->disconnect_changed(callable_mp(this, &CPUParticles2D::_texture_changed));
 	}
 
 	texture = p_texture;
 
 	if (texture.is_valid()) {
-		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
+		texture->connect_changed(callable_mp(this, &CPUParticles2D::_texture_changed));
 	}
 
 	queue_redraw();
@@ -259,7 +263,6 @@ PackedStringArray CPUParticles2D::get_configuration_warnings() const {
 
 void CPUParticles2D::restart() {
 	time = 0;
-	inactive_time = 0;
 	frame_remainder = 0;
 	cycle = 0;
 	emitting = false;
@@ -561,21 +564,15 @@ void CPUParticles2D::_update_internal() {
 	}
 
 	double delta = get_process_delta_time();
-	if (emitting) {
-		inactive_time = 0;
-	} else {
-		inactive_time += delta;
-		if (inactive_time > lifetime * 1.2) {
-			set_process_internal(false);
-			_set_do_redraw(false);
+	if (!active && !emitting) {
+		set_process_internal(false);
+		_set_do_redraw(false);
 
-			//reset variables
-			time = 0;
-			inactive_time = 0;
-			frame_remainder = 0;
-			cycle = 0;
-			return;
-		}
+		//reset variables
+		time = 0;
+		frame_remainder = 0;
+		cycle = 0;
+		return;
 	}
 	_set_do_redraw(true);
 
@@ -650,6 +647,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 	double system_phase = time / lifetime;
 
+	bool should_be_active = false;
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
 
@@ -994,6 +992,12 @@ void CPUParticles2D::_particles_process(double p_delta) {
 		p.transform.columns[1] *= base_scale.y;
 
 		p.transform[2] += p.velocity * local_delta;
+
+		should_be_active = true;
+	}
+	if (!Math::is_equal_approx(time, 0.0) && active && !should_be_active) {
+		active = false;
+		emit_signal(SceneStringNames::get_singleton()->finished);
 	}
 }
 
@@ -1163,7 +1167,7 @@ void CPUParticles2D::_notification(int p_what) {
 
 void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	GPUParticles2D *gpu_particles = Object::cast_to<GPUParticles2D>(p_particles);
-	ERR_FAIL_COND_MSG(!gpu_particles, "Only GPUParticles2D nodes can be converted to CPUParticles2D.");
+	ERR_FAIL_NULL_MSG(gpu_particles, "Only GPUParticles2D nodes can be converted to CPUParticles2D.");
 
 	set_emitting(gpu_particles->is_emitting());
 	set_amount(gpu_particles->get_amount());
@@ -1364,6 +1368,8 @@ void CPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles2D::convert_from_particles);
 
+	ADD_SIGNAL(MethodInfo("finished"));
+
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Rectangle,Points,Directed Points", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,suffix:px"), "set_emission_sphere_radius", "get_emission_sphere_radius");
@@ -1402,8 +1408,8 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "tangential_accel_max", PROPERTY_HINT_RANGE, "-100,100,0.01,or_less,or_greater"), "set_param_max", "get_param_max", PARAM_TANGENTIAL_ACCEL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "tangential_accel_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_TANGENTIAL_ACCEL);
 	ADD_GROUP("Damping", "");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_min", PROPERTY_HINT_RANGE, "0,100,0.01,or_greater"), "set_param_min", "get_param_min", PARAM_DAMPING);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_max", PROPERTY_HINT_RANGE, "0,100,0.01,or_greater"), "set_param_max", "get_param_max", PARAM_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_min", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_param_min", "get_param_min", PARAM_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_max", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_param_max", "get_param_max", PARAM_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_DAMPING);
 	ADD_GROUP("Angle", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle_min", PROPERTY_HINT_RANGE, "-720,720,0.1,or_less,or_greater,degrees"), "set_param_min", "get_param_min", PARAM_ANGLE);

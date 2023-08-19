@@ -30,9 +30,10 @@
 
 #include "dir_access_jandroid.h"
 
-#include "core/string/print_string.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
+
+#include "core/string/print_string.h"
 
 jobject DirAccessJAndroid::dir_access_handler = nullptr;
 jclass DirAccessJAndroid::cls = nullptr;

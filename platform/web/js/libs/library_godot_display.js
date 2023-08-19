@@ -289,11 +289,11 @@ const GodotDisplayScreen = {
 			const isFullscreen = GodotDisplayScreen.isFullscreen();
 			const wantsFullWindow = GodotConfig.canvas_resize_policy === 2;
 			const noResize = GodotConfig.canvas_resize_policy === 0;
-			const wwidth = GodotDisplayScreen.desired_size[0];
-			const wheight = GodotDisplayScreen.desired_size[1];
+			const dWidth = GodotDisplayScreen.desired_size[0];
+			const dHeight = GodotDisplayScreen.desired_size[1];
 			const canvas = GodotConfig.canvas;
-			let width = wwidth;
-			let height = wheight;
+			let width = dWidth;
+			let height = dHeight;
 			if (noResize) {
 				// Don't resize canvas, just update GL if needed.
 				if (canvas.width !== width || canvas.height !== height) {
@@ -536,7 +536,7 @@ const GodotDisplay = {
 		}
 		navigator.clipboard.writeText(text).catch(function (e) {
 			// Setting OS clipboard is only possible from an input callback.
-			GodotRuntime.error('Setting OS clipboard is only possible from an input callback for the Web plafrom. Exception:', e);
+			GodotRuntime.error('Setting OS clipboard is only possible from an input callback for the Web platform. Exception:', e);
 		});
 		return 0;
 	},
@@ -568,16 +568,23 @@ const GodotDisplay = {
 	godot_js_display_window_icon_set__sig: 'vii',
 	godot_js_display_window_icon_set: function (p_ptr, p_len) {
 		let link = document.getElementById('-gd-engine-icon');
-		if (link === null) {
-			link = document.createElement('link');
-			link.rel = 'icon';
-			link.id = '-gd-engine-icon';
-			document.head.appendChild(link);
-		}
 		const old_icon = GodotDisplay.window_icon;
-		const png = new Blob([GodotRuntime.heapSlice(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
-		GodotDisplay.window_icon = URL.createObjectURL(png);
-		link.href = GodotDisplay.window_icon;
+		if (p_ptr) {
+			if (link === null) {
+				link = document.createElement('link');
+				link.rel = 'icon';
+				link.id = '-gd-engine-icon';
+				document.head.appendChild(link);
+			}
+			const png = new Blob([GodotRuntime.heapSlice(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
+			GodotDisplay.window_icon = URL.createObjectURL(png);
+			link.href = GodotDisplay.window_icon;
+		} else {
+			if (link) {
+				link.remove();
+			}
+			GodotDisplay.window_icon = null;
+		}
 		if (old_icon) {
 			URL.revokeObjectURL(old_icon);
 		}

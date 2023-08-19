@@ -341,6 +341,11 @@ void NavigationMesh::clear_polygons() {
 	polygons.clear();
 }
 
+void NavigationMesh::clear() {
+	polygons.clear();
+	vertices.clear();
+}
+
 #ifdef DEBUG_ENABLED
 Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	if (debug_mesh.is_valid()) {
@@ -517,6 +522,8 @@ void NavigationMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationMesh::_get_polygons);
+
+	ClassDB::bind_method(D_METHOD("clear"), &NavigationMesh::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");

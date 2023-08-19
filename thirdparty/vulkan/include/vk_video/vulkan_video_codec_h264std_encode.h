@@ -2,7 +2,7 @@
 #define VULKAN_VIDEO_CODEC_H264STD_ENCODE_H_ 1
 
 /*
-** Copyright 2015-2022 The Khronos Group Inc.
+** Copyright 2015-2023 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -21,9 +21,9 @@ extern "C" {
 
 #define vulkan_video_codec_h264std_encode 1
 // Vulkan 0.9 provisional Vulkan video H.264 encode std specification version number
-#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_8 VK_MAKE_VIDEO_STD_VERSION(0, 9, 8) // Patch version should always be set to 0
+#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_9 VK_MAKE_VIDEO_STD_VERSION(0, 9, 9)
 
-#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_8
+#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_9
 #define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_EXTENSION_NAME "VK_STD_vulkan_video_codec_h264_encode"
 typedef struct StdVideoEncodeH264WeightTableFlags {
     uint32_t    luma_weight_l0_flag;
@@ -64,10 +64,10 @@ typedef struct StdVideoEncodeH264ReferenceInfoFlags {
     uint32_t    used_for_long_term_reference : 1;
 } StdVideoEncodeH264ReferenceInfoFlags;
 
-typedef struct StdVideoEncodeH264RefMgmtFlags {
-    uint32_t    ref_pic_list_modification_l0_flag : 1;
-    uint32_t    ref_pic_list_modification_l1_flag : 1;
-} StdVideoEncodeH264RefMgmtFlags;
+typedef struct StdVideoEncodeH264ReferenceListsInfoFlags {
+    uint32_t    ref_pic_list_modification_flag_l0 : 1;
+    uint32_t    ref_pic_list_modification_flag_l1 : 1;
+} StdVideoEncodeH264ReferenceListsInfoFlags;
 
 typedef struct StdVideoEncodeH264RefListModEntry {
     StdVideoH264ModificationOfPicNumsIdc    modification_of_pic_nums_idc;
@@ -83,20 +83,26 @@ typedef struct StdVideoEncodeH264RefPicMarkingEntry {
     uint16_t                        max_long_term_frame_idx_plus1;
 } StdVideoEncodeH264RefPicMarkingEntry;
 
-typedef struct StdVideoEncodeH264RefMemMgmtCtrlOperations {
-    StdVideoEncodeH264RefMgmtFlags                 flags;
+typedef struct StdVideoEncodeH264ReferenceListsInfo {
+    StdVideoEncodeH264ReferenceListsInfoFlags      flags;
+    uint8_t                                        refPicList0EntryCount;
+    uint8_t                                        refPicList1EntryCount;
     uint8_t                                        refList0ModOpCount;
-    const StdVideoEncodeH264RefListModEntry*       pRefList0ModOperations;
     uint8_t                                        refList1ModOpCount;
-    const StdVideoEncodeH264RefListModEntry*       pRefList1ModOperations;
     uint8_t                                        refPicMarkingOpCount;
+    uint8_t                                        reserved1[7];
+    const uint8_t*                                 pRefPicList0Entries;
+    const uint8_t*                                 pRefPicList1Entries;
+    const StdVideoEncodeH264RefListModEntry*       pRefList0ModOperations;
+    const StdVideoEncodeH264RefListModEntry*       pRefList1ModOperations;
     const StdVideoEncodeH264RefPicMarkingEntry*    pRefPicMarkingOperations;
-} StdVideoEncodeH264RefMemMgmtCtrlOperations;
+} StdVideoEncodeH264ReferenceListsInfo;
 
 typedef struct StdVideoEncodeH264PictureInfo {
     StdVideoEncodeH264PictureInfoFlags    flags;
     uint8_t                               seq_parameter_set_id;
     uint8_t                               pic_parameter_set_id;
+    uint16_t                              reserved1;
     StdVideoH264PictureType               pictureType;
     uint32_t                              frame_num;
     int32_t                               PicOrderCnt;
@@ -104,6 +110,7 @@ typedef struct StdVideoEncodeH264PictureInfo {
 
 typedef struct StdVideoEncodeH264ReferenceInfo {
     StdVideoEncodeH264ReferenceInfoFlags    flags;
+    StdVideoH264PictureType                 pictureType;
     uint32_t                                FrameNum;
     int32_t                                 PicOrderCnt;
     uint16_t                                long_term_pic_num;
@@ -121,6 +128,8 @@ typedef struct StdVideoEncodeH264SliceHeader {
     StdVideoH264DisableDeblockingFilterIdc    disable_deblocking_filter_idc;
     int8_t                                    slice_alpha_c0_offset_div2;
     int8_t                                    slice_beta_offset_div2;
+    uint16_t                                  reserved1;
+    uint32_t                                  reserved2;
     const StdVideoEncodeH264WeightTable*      pWeightTable;
 } StdVideoEncodeH264SliceHeader;
 

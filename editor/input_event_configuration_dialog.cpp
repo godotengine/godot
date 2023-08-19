@@ -107,6 +107,33 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		// Update mode selector based on original key event.
 		Ref<InputEventKey> ko = p_original_event;
 		if (ko.is_valid()) {
+			if (ko->get_keycode() == Key::NONE) {
+				if (ko->get_physical_keycode() != Key::NONE) {
+					ko->set_keycode(ko->get_physical_keycode());
+				}
+				if (ko->get_key_label() != Key::NONE) {
+					ko->set_keycode(fix_keycode((char32_t)ko->get_key_label(), Key::NONE));
+				}
+			}
+
+			if (ko->get_physical_keycode() == Key::NONE) {
+				if (ko->get_keycode() != Key::NONE) {
+					ko->set_physical_keycode(ko->get_keycode());
+				}
+				if (ko->get_key_label() != Key::NONE) {
+					ko->set_physical_keycode(fix_keycode((char32_t)ko->get_key_label(), Key::NONE));
+				}
+			}
+
+			if (ko->get_key_label() == Key::NONE) {
+				if (ko->get_keycode() != Key::NONE) {
+					ko->set_key_label(fix_key_label((char32_t)ko->get_keycode(), Key::NONE));
+				}
+				if (ko->get_physical_keycode() != Key::NONE) {
+					ko->set_key_label(fix_key_label((char32_t)ko->get_physical_keycode(), Key::NONE));
+				}
+			}
+
 			key_mode->set_item_disabled(KEYMODE_KEYCODE, ko->get_keycode() == Key::NONE);
 			key_mode->set_item_disabled(KEYMODE_PHY_KEYCODE, ko->get_physical_keycode() == Key::NONE);
 			key_mode->set_item_disabled(KEYMODE_UNICODE, ko->get_key_label() == Key::NONE);

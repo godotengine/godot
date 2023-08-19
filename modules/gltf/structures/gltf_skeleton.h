@@ -32,6 +32,7 @@
 #define GLTF_SKELETON_H
 
 #include "../gltf_defines.h"
+
 #include "core/io/resource.h"
 
 class GLTFSkeleton : public Resource {

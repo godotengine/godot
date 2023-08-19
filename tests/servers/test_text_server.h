@@ -636,6 +636,54 @@ TEST_SUITE("[TextServer]") {
 						CHECK(breaks[17] == 42);
 					}
 				}
+
+				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) {
+					String text2 = U"U+2764 U+FE0F U+200D U+1F525 ; 13.1 # ❤️‍🔥";
+
+					PackedInt32Array breaks = ts->string_get_character_breaks(text2, "en");
+					CHECK(breaks.size() == 39);
+					if (breaks.size() == 39) {
+						CHECK(breaks[0] == 1);
+						CHECK(breaks[1] == 2);
+						CHECK(breaks[2] == 3);
+						CHECK(breaks[3] == 4);
+						CHECK(breaks[4] == 5);
+						CHECK(breaks[5] == 6);
+						CHECK(breaks[6] == 7);
+						CHECK(breaks[7] == 8);
+						CHECK(breaks[8] == 9);
+						CHECK(breaks[9] == 10);
+						CHECK(breaks[10] == 11);
+						CHECK(breaks[11] == 12);
+						CHECK(breaks[12] == 13);
+						CHECK(breaks[13] == 14);
+						CHECK(breaks[14] == 15);
+						CHECK(breaks[15] == 16);
+						CHECK(breaks[16] == 17);
+						CHECK(breaks[17] == 18);
+						CHECK(breaks[18] == 19);
+						CHECK(breaks[19] == 20);
+						CHECK(breaks[20] == 21);
+						CHECK(breaks[21] == 22);
+						CHECK(breaks[22] == 23);
+						CHECK(breaks[23] == 24);
+						CHECK(breaks[24] == 25);
+						CHECK(breaks[25] == 26);
+						CHECK(breaks[26] == 27);
+						CHECK(breaks[27] == 28);
+						CHECK(breaks[28] == 29);
+						CHECK(breaks[29] == 30);
+						CHECK(breaks[30] == 31);
+						CHECK(breaks[31] == 32);
+						CHECK(breaks[32] == 33);
+						CHECK(breaks[33] == 34);
+						CHECK(breaks[34] == 35);
+						CHECK(breaks[35] == 36);
+						CHECK(breaks[36] == 37);
+						CHECK(breaks[37] == 38);
+						CHECK(breaks[38] == 42);
+					}
+				}
 			}
 		}
 	}

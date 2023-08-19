@@ -35,7 +35,8 @@
 extern "C" {
 #endif
 
-#include "stddef.h"
+#include <stddef.h>
+#include <stdint.h>
 
 extern int godot_audio_is_available();
 extern int godot_audio_has_worklet();

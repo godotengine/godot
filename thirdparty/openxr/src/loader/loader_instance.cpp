@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -200,8 +200,8 @@ XrResult LoaderInstance::CreateInstance(PFN_xrGetInstanceProcAddr get_instance_p
         if (!api_layer_interfaces.empty()) {
             // Initialize an array of ApiLayerNextInfo structs
             std::unique_ptr<XrApiLayerNextInfo[]> next_info_list(new XrApiLayerNextInfo[api_layer_interfaces.size()]);
-            auto ni_index = static_cast<uint32_t>(api_layer_interfaces.size() - 1);
-            for (uint32_t i = 0; i <= ni_index; i++) {
+            size_t ni_index = api_layer_interfaces.size() - 1;
+            for (size_t i = 0; i <= ni_index; i++) {
                 next_info_list[i].structType = XR_LOADER_INTERFACE_STRUCT_API_LAYER_NEXT_INFO;
                 next_info_list[i].structVersion = XR_API_LAYER_NEXT_INFO_STRUCT_VERSION;
                 next_info_list[i].structSize = sizeof(XrApiLayerNextInfo);

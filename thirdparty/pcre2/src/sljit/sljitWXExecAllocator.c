@@ -59,38 +59,15 @@
 #include <sys/mman.h>
 
 #ifdef __NetBSD__
-#if defined(PROT_MPROTECT)
-#define check_se_protected(ptr, size) (0)
 #define SLJIT_PROT_WX PROT_MPROTECT(PROT_EXEC)
-#else /* !PROT_MPROTECT */
-#ifdef _NETBSD_SOURCE
-#include <sys/param.h>
-#else /* !_NETBSD_SOURCE */
-typedef unsigned int	u_int;
-#define devmajor_t sljit_s32
-#endif /* _NETBSD_SOURCE */
-#include <sys/sysctl.h>
-#include <unistd.h>
-
-#define check_se_protected(ptr, size) netbsd_se_protected()
-
-static SLJIT_INLINE int netbsd_se_protected(void)
-{
-	int mib[3];
-	int paxflags;
-	size_t len = sizeof(paxflags);
-
-	mib[0] = CTL_PROC;
-	mib[1] = getpid();
-	mib[2] = PROC_PID_PAXFLAGS;
-
-	if (SLJIT_UNLIKELY(sysctl(mib, 3, &paxflags, &len, NULL, 0) < 0))
-		return -1;
-
-	return (paxflags & CTL_PROC_PAXFLAGS_MPROTECT) ? -1 : 0;
-}
-#endif /* PROT_MPROTECT */
+#define check_se_protected(ptr, size) (0)
 #else /* POSIX */
+#if !(defined SLJIT_SINGLE_THREADED && SLJIT_SINGLE_THREADED)
+#include <pthread.h>
+#define SLJIT_SE_LOCK()		pthread_mutex_lock(&se_lock)
+#define SLJIT_SE_UNLOCK()	pthread_mutex_unlock(&se_lock)
+#endif /* !SLJIT_SINGLE_THREADED */
+
 #define check_se_protected(ptr, size) generic_se_protected(ptr, size)
 
 static SLJIT_INLINE int generic_se_protected(void *ptr, sljit_uw size)
@@ -102,22 +79,20 @@ static SLJIT_INLINE int generic_se_protected(void *ptr, sljit_uw size)
 }
 #endif /* NetBSD */
 
-#if defined SLJIT_SINGLE_THREADED && SLJIT_SINGLE_THREADED
+#ifndef SLJIT_SE_LOCK
 #define SLJIT_SE_LOCK()
+#endif
+#ifndef SLJIT_SE_UNLOCK
 #define SLJIT_SE_UNLOCK()
-#else /* !SLJIT_SINGLE_THREADED */
-#include <pthread.h>
-#define SLJIT_SE_LOCK()	pthread_mutex_lock(&se_lock)
-#define SLJIT_SE_UNLOCK()	pthread_mutex_unlock(&se_lock)
-#endif /* SLJIT_SINGLE_THREADED */
-
+#endif
 #ifndef SLJIT_PROT_WX
 #define SLJIT_PROT_WX 0
-#endif /* !SLJIT_PROT_WX */
+#endif
 
 SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 {
-#if !(defined SLJIT_SINGLE_THREADED && SLJIT_SINGLE_THREADED)
+#if !(defined SLJIT_SINGLE_THREADED && SLJIT_SINGLE_THREADED) \
+	&& !defined(__NetBSD__)
 	static pthread_mutex_t se_lock = PTHREAD_MUTEX_INITIALIZER;
 #endif
 	static int se_protected = !SLJIT_PROT_WX;

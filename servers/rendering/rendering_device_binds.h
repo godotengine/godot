@@ -53,7 +53,9 @@
 
 class RDTextureFormat : public RefCounted {
 	GDCLASS(RDTextureFormat, RefCounted)
+
 	friend class RenderingDevice;
+	friend class RenderSceneBuffersRD;
 
 	RD::TextureFormat base;
 
@@ -91,6 +93,7 @@ class RDTextureView : public RefCounted {
 	GDCLASS(RDTextureView, RefCounted)
 
 	friend class RenderingDevice;
+	friend class RenderSceneBuffersRD;
 
 	RD::TextureView base;
 
@@ -349,13 +352,18 @@ public:
 		return versions[p_version]->get_stages();
 	}
 
-	Vector<StringName> get_version_list() const {
+	TypedArray<StringName> get_version_list() const {
 		Vector<StringName> vnames;
 		for (const KeyValue<StringName, Ref<RDShaderSPIRV>> &E : versions) {
 			vnames.push_back(E.key);
 		}
 		vnames.sort_custom<StringName::AlphCompare>();
-		return vnames;
+		TypedArray<StringName> ret;
+		ret.resize(vnames.size());
+		for (int i = 0; i < vnames.size(); i++) {
+			ret[i] = vnames[i];
+		}
+		return ret;
 	}
 
 	void set_base_error(const String &p_error) {
@@ -395,7 +403,7 @@ public:
 
 protected:
 	Dictionary _get_versions() const {
-		Vector<StringName> vnames = get_version_list();
+		TypedArray<StringName> vnames = get_version_list();
 		Dictionary ret;
 		for (int i = 0; i < vnames.size(); i++) {
 			ret[vnames[i]] = versions[vnames[i]];

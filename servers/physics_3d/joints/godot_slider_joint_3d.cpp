@@ -57,25 +57,6 @@ April 04, 2008
 
 //-----------------------------------------------------------------------------
 
-static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
-	real_t coeff_1 = Math_PI / 4.0f;
-	real_t coeff_2 = 3.0f * coeff_1;
-	real_t abs_y = Math::abs(y);
-	real_t angle;
-	if (x >= 0.0f) {
-		real_t r = (x - abs_y) / (x + abs_y);
-		angle = coeff_1 - coeff_1 * r;
-	} else {
-		real_t r = (x + abs_y) / (abs_y - x);
-		angle = coeff_2 - coeff_1 * r;
-	}
-	return (y < 0.0f) ? -angle : angle;
-}
-
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-
 GodotSliderJoint3D::GodotSliderJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameInA, const Transform3D &frameInB) :
 		GodotJoint3D(_arr, 2),
 		m_frameInA(frameInA),

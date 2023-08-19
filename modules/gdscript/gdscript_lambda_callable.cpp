@@ -30,8 +30,9 @@
 
 #include "gdscript_lambda_callable.h"
 
-#include "core/templates/hashfuncs.h"
 #include "gdscript.h"
+
+#include "core/templates/hashfuncs.h"
 
 bool GDScriptLambdaCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	// Lambda callables are only compared by reference.
@@ -64,6 +65,10 @@ CallableCustom::CompareLessFunc GDScriptLambdaCallable::get_compare_less_func() 
 
 ObjectID GDScriptLambdaCallable::get_object() const {
 	return script->get_instance_id();
+}
+
+StringName GDScriptLambdaCallable::get_method() const {
+	return function->get_name();
 }
 
 void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

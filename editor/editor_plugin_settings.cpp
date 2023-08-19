@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
 #include "editor/editor_node.h"
@@ -100,9 +101,18 @@ void EditorPluginSettings::update_plugins() {
 				String description = cf->get_value("plugin", "description");
 				String scr = cf->get_value("plugin", "script");
 
+				const PackedInt32Array boundaries = TS->string_get_word_breaks(description, "", 80);
+				String wrapped_description;
+
+				for (int j = 0; j < boundaries.size(); j += 2) {
+					const int start = boundaries[j];
+					const int end = boundaries[j + 1];
+					wrapped_description += "\n" + description.substr(start, end - start + 1).rstrip("\n");
+				}
+
 				TreeItem *item = plugin_list->create_item(root);
 				item->set_text(0, name);
-				item->set_tooltip_text(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + scr + "\n" + TTR("Description:") + " " + description);
+				item->set_tooltip_text(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + scr + "\n" + TTR("Description:") + " " + wrapped_description);
 				item->set_metadata(0, path);
 				item->set_text(1, version);
 				item->set_metadata(1, scr);

@@ -43,6 +43,9 @@ class TypedArray;
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
+	friend class TestProjectSettingsInternalsAccessor;
+
+	bool is_changed = false;
 
 public:
 	typedef HashMap<String, Variant> CustomMap;
@@ -114,6 +117,9 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
+	void _queue_changed();
+	void _emit_changed();
+
 	static ProjectSettings *singleton;
 
 	Error _load_settings_text(const String &p_path);
@@ -166,7 +172,6 @@ public:
 	String get_project_data_dir_name() const;
 	String get_project_data_path() const;
 	String get_resource_path() const;
-	String get_safe_project_name() const;
 	String get_imported_files_path() const;
 
 	static ProjectSettings *get_singleton();

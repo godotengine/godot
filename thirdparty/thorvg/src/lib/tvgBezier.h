@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_BEZIER_H_
 #define _TVG_BEZIER_H_
 
@@ -26,8 +27,6 @@
 
 namespace tvg
 {
-
-#define BEZIER_EPSILON 1e-4f
 
 struct Bezier
 {
@@ -40,8 +39,10 @@ struct Bezier
 void bezSplit(const Bezier&cur, Bezier& left, Bezier& right);
 float bezLength(const Bezier& cur);
 void bezSplitLeft(Bezier& cur, float at, Bezier& left);
-float bezAt(const Bezier& bz, float at);
+float bezAt(const Bezier& bz, float at, float length);
 void bezSplitAt(const Bezier& cur, float at, Bezier& left, Bezier& right);
+Point bezPointAt(const Bezier& bz, float t);
+float bezAngleAt(const Bezier& bz, float t);
 
 }
 

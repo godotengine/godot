@@ -37,11 +37,11 @@ extern "C" {
 /* List of all PEM-encoded CA certificates, terminated by NULL;
  * PEM encoded if MBEDTLS_PEM_PARSE_C is enabled, DER encoded
  * otherwise. */
-extern const char * mbedtls_test_cas[];
+extern const char *mbedtls_test_cas[];
 extern const size_t mbedtls_test_cas_len[];
 
 /* List of all DER-encoded CA certificates, terminated by NULL */
-extern const unsigned char * mbedtls_test_cas_der[];
+extern const unsigned char *mbedtls_test_cas_der[];
 extern const size_t mbedtls_test_cas_der_len[];
 
 #if defined(MBEDTLS_PEM_PARSE_C)
@@ -112,9 +112,9 @@ extern const size_t mbedtls_test_ca_crt_rsa_len;
 /* Config-dependent dispatch between EC and RSA
  * (RSA if enabled, otherwise EC) */
 
-extern const char * mbedtls_test_ca_crt;
-extern const char * mbedtls_test_ca_key;
-extern const char * mbedtls_test_ca_pwd;
+extern const char *mbedtls_test_ca_crt;
+extern const char *mbedtls_test_ca_key;
+extern const char *mbedtls_test_ca_pwd;
 extern const size_t mbedtls_test_ca_crt_len;
 extern const size_t mbedtls_test_ca_key_len;
 extern const size_t mbedtls_test_ca_pwd_len;
@@ -181,9 +181,9 @@ extern const size_t mbedtls_test_srv_crt_rsa_len;
 /* Config-dependent dispatch between EC and RSA
  * (RSA if enabled, otherwise EC) */
 
-extern const char * mbedtls_test_srv_crt;
-extern const char * mbedtls_test_srv_key;
-extern const char * mbedtls_test_srv_pwd;
+extern const char *mbedtls_test_srv_crt;
+extern const char *mbedtls_test_srv_key;
+extern const char *mbedtls_test_srv_pwd;
 extern const size_t mbedtls_test_srv_crt_len;
 extern const size_t mbedtls_test_srv_key_len;
 extern const size_t mbedtls_test_srv_pwd_len;
@@ -236,9 +236,9 @@ extern const size_t mbedtls_test_cli_crt_rsa_len;
 /* Config-dependent dispatch between EC and RSA
  * (RSA if enabled, otherwise EC) */
 
-extern const char * mbedtls_test_cli_crt;
-extern const char * mbedtls_test_cli_key;
-extern const char * mbedtls_test_cli_pwd;
+extern const char *mbedtls_test_cli_crt;
+extern const char *mbedtls_test_cli_key;
+extern const char *mbedtls_test_cli_pwd;
 extern const size_t mbedtls_test_cli_crt_len;
 extern const size_t mbedtls_test_cli_key_len;
 extern const size_t mbedtls_test_cli_pwd_len;

@@ -1,9 +1,10 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using GodotTools.Build;
 using GodotTools.Core;
 using GodotTools.Internals;
@@ -21,10 +22,44 @@ namespace GodotTools.Export
 
         private List<string> _tempFolders = new List<string>();
 
-        public void RegisterExportSettings()
+        public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetExportOptions(EditorExportPlatform platform)
         {
-            // TODO: These would be better as export preset options, but that doesn't seem to be supported yet
-            GlobalDef("dotnet/export/include_scripts_content", false);
+            return new Godot.Collections.Array<Godot.Collections.Dictionary>()
+            {
+                new Godot.Collections.Dictionary()
+                {
+                    {
+                        "option", new Godot.Collections.Dictionary()
+                        {
+                            { "name", "dotnet/include_scripts_content" },
+                            { "type", (int)Variant.Type.Bool }
+                        }
+                    },
+                    { "default_value", false }
+                },
+                new Godot.Collections.Dictionary()
+                {
+                    {
+                        "option", new Godot.Collections.Dictionary()
+                        {
+                            { "name", "dotnet/include_debug_symbols" },
+                            { "type", (int)Variant.Type.Bool }
+                        }
+                    },
+                    { "default_value", true }
+                },
+                new Godot.Collections.Dictionary()
+                {
+                    {
+                        "option", new Godot.Collections.Dictionary()
+                        {
+                            { "name", "dotnet/embed_build_outputs" },
+                            { "type", (int)Variant.Type.Bool }
+                        }
+                    },
+                    { "default_value", false }
+                }
+            };
         }
 
         private string _maybeLastExportError;
@@ -44,7 +79,7 @@ namespace GodotTools.Export
 
             // TODO What if the source file is not part of the game's C# project
 
-            bool includeScriptsContent = (bool)ProjectSettings.GetSetting("dotnet/export/include_scripts_content");
+            bool includeScriptsContent = (bool)GetOption("dotnet/include_scripts_content");
 
             if (!includeScriptsContent)
             {
@@ -92,31 +127,34 @@ namespace GodotTools.Export
             if (!DeterminePlatformFromFeatures(features, out string platform))
                 throw new NotSupportedException("Target platform not supported.");
 
-            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS }
+            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android }
                     .Contains(platform))
             {
                 throw new NotImplementedException("Target platform not yet implemented.");
             }
 
-            string outputDir = new FileInfo(path).Directory?.FullName ??
-                               throw new FileNotFoundException("Output base directory not found.");
-
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
+
+            bool includeDebugSymbols = (bool)GetOption("dotnet/include_debug_symbols");
 
             var archs = new List<string>();
             if (features.Contains("x86_64"))
             {
                 archs.Add("x86_64");
             }
-            else if (features.Contains("x86_32"))
+            if (features.Contains("x86_32"))
             {
                 archs.Add("x86_32");
             }
-            else if (features.Contains("arm64"))
+            if (features.Contains("arm64"))
             {
                 archs.Add("arm64");
             }
-            else if (features.Contains("universal"))
+            if (features.Contains("arm32"))
+            {
+                archs.Add("arm32");
+            }
+            if (features.Contains("universal"))
             {
                 if (platform == OS.Platforms.MacOS)
                 {
@@ -125,12 +163,14 @@ namespace GodotTools.Export
                 }
             }
 
+            bool embedBuildResults = (bool)GetOption("dotnet/embed_build_outputs") || features.Contains("android");
+
             foreach (var arch in archs)
             {
                 string ridOS = DetermineRuntimeIdentifierOS(platform);
                 string ridArch = DetermineRuntimeIdentifierArch(arch);
                 string runtimeIdentifier = $"{ridOS}-{ridArch}";
-                string projectDataDirName = $"{DetermineDataDirNameForProject()}_{arch}";
+                string projectDataDirName = $"data_{GodotSharpDirs.CSharpProjectName}_{platform}_{arch}";
                 if (platform == OS.Platforms.MacOS)
                 {
                     projectDataDirName = Path.Combine("Contents", "Resources", projectDataDirName);
@@ -139,7 +179,7 @@ namespace GodotTools.Export
                 // Create temporary publish output directory
 
                 string publishOutputTempDir = Path.Combine(Path.GetTempPath(), "godot-publish-dotnet",
-                    $"{Process.GetCurrentProcess().Id}-{buildConfig}-{runtimeIdentifier}");
+                    $"{System.Environment.ProcessId}-{buildConfig}-{runtimeIdentifier}");
 
                 _tempFolders.Add(publishOutputTempDir);
 
@@ -149,7 +189,7 @@ namespace GodotTools.Export
                 // Execute dotnet publish
 
                 if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
-                        runtimeIdentifier, publishOutputTempDir))
+                        runtimeIdentifier, publishOutputTempDir, includeDebugSymbols))
                 {
                     throw new InvalidOperationException("Failed to build project.");
                 }
@@ -169,15 +209,42 @@ namespace GodotTools.Export
                         "Publish succeeded but project assembly not found in the output directory");
                 }
 
-                // Add to the exported project shared object list.
+                var manifest = new StringBuilder();
 
+                // Add to the exported project shared object list or packed resources.
                 foreach (string file in Directory.GetFiles(publishOutputTempDir, "*", SearchOption.AllDirectories))
                 {
-                    AddSharedObject(file, tags: null,
-                        Path.Join(projectDataDirName,
-                            Path.GetRelativePath(publishOutputTempDir, Path.GetDirectoryName(file))));
+                    if (embedBuildResults)
+                    {
+                        var filePath = SanitizeSlashes(Path.GetRelativePath(publishOutputTempDir, file));
+                        var fileData = File.ReadAllBytes(file);
+                        var hash = Convert.ToBase64String(SHA512.HashData(fileData));
+
+                        manifest.Append($"{filePath}\t{hash}\n");
+
+                        AddFile($"res://.godot/mono/publish/{arch}/{filePath}", fileData, false);
+                    }
+                    else
+                    {
+                        AddSharedObject(file, tags: null,
+                            Path.Join(projectDataDirName,
+                                Path.GetRelativePath(publishOutputTempDir, Path.GetDirectoryName(file))));
+                    }
+                }
+
+                if (embedBuildResults)
+                {
+                    var fileData = Encoding.Default.GetBytes(manifest.ToString());
+                    AddFile($"res://.godot/mono/publish/{arch}/.dotnet-publish-manifest", fileData, false);
                 }
             }
+        }
+
+        private string SanitizeSlashes(string path)
+        {
+            if (Path.DirectorySeparatorChar == '\\')
+                return path.Replace('\\', '/');
+            return path;
         }
 
         private string DetermineRuntimeIdentifierOS(string platform)
@@ -193,7 +260,7 @@ namespace GodotTools.Export
                 "x86_64" => "x64",
                 "armeabi-v7a" => "arm",
                 "arm64-v8a" => "arm64",
-                "armv7" => "arm",
+                "arm32" => "arm",
                 "arm64" => "arm64",
                 _ => throw new ArgumentOutOfRangeException(nameof(arch), arch, "Unexpected architecture")
             };
@@ -203,7 +270,7 @@ namespace GodotTools.Export
         {
             base._ExportEnd();
 
-            string aotTempDir = Path.Combine(Path.GetTempPath(), $"godot-aot-{Process.GetCurrentProcess().Id}");
+            string aotTempDir = Path.Combine(Path.GetTempPath(), $"godot-aot-{System.Environment.ProcessId}");
 
             if (Directory.Exists(aotTempDir))
                 Directory.Delete(aotTempDir, recursive: true);
@@ -236,13 +303,6 @@ namespace GodotTools.Export
 
             platform = null;
             return false;
-        }
-
-        private static string DetermineDataDirNameForProject()
-        {
-            string appName = (string)ProjectSettings.GetSetting("application/config/name");
-            string appNameSafe = appName.ToSafeDirName();
-            return $"data_{appNameSafe}";
         }
     }
 }

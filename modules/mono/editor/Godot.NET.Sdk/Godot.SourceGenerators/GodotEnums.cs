@@ -86,7 +86,8 @@ namespace Godot.SourceGenerators
         NodeType = 34,
         HideQuaternionEdit = 35,
         Password = 36,
-        Max = 37
+        LayersAvoidance = 37,
+        Max = 38
     }
 
     [Flags]

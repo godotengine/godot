@@ -35,6 +35,8 @@
 #include "scene/gui/popup.h"
 #include "scene/resources/gradient.h"
 
+class GradientTexture1D;
+
 class GradientEditor : public Control {
 	GDCLASS(GradientEditor, Control);
 
@@ -45,6 +47,7 @@ class GradientEditor : public Control {
 	int grabbed = -1;
 	Vector<Gradient::Point> points;
 	Gradient::InterpolationMode interpolation_mode = Gradient::GRADIENT_INTERPOLATE_LINEAR;
+	Gradient::ColorSpace interpolation_color_space = Gradient::GRADIENT_COLOR_SPACE_SRGB;
 
 	bool editing = false;
 	Ref<Gradient> gradient;
@@ -83,6 +86,9 @@ public:
 
 	void set_interpolation_mode(Gradient::InterpolationMode p_interp_mode);
 	Gradient::InterpolationMode get_interpolation_mode();
+
+	void set_interpolation_color_space(Gradient::ColorSpace p_color_space);
+	Gradient::ColorSpace get_interpolation_color_space();
 
 	ColorPicker *get_picker();
 	PopupPanel *get_popup();

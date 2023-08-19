@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CPUParticles2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CPUParticles2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		CPU-based 2D particle emitter.
+		A CPU-based 2D particle emitter.
 	</brief_description>
 	<description>
 		CPU-based 2D particle node used to create a variety of particle systems and effects.
@@ -169,7 +169,7 @@
 			The sphere's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_SPHERE].
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
-			If [code]true[/code], particles are being emitted.
+			If [code]true[/code], particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is [code]true[/code] setting [member emitting] to [code]true[/code] will not restart the emission cycle until after all active particles finish processing. You can use the [signal finished] signal to be notified once all active particles finish processing.
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins.
@@ -285,6 +285,13 @@
 			Particle texture. If [code]null[/code], particles will be squares.
 		</member>
 	</members>
+	<signals>
+		<signal name="finished">
+			<description>
+				Emitted when all active particles have finished processing. When [member one_shot] is disabled, particles will process continuously, so this is never emitted.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
 			Particles are drawn in the order emitted.

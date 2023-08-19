@@ -101,8 +101,10 @@ public:
 
 	virtual void font_set_name(const RID &p_font_rid, const String &p_name) override;
 	virtual String font_get_name(const RID &p_font_rid) const override;
+	virtual Dictionary font_get_ot_name_strings(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_name, RID, const String &);
 	GDVIRTUAL1RC(String, _font_get_name, RID);
+	GDVIRTUAL1RC(Dictionary, _font_get_ot_name_strings, RID);
 
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) override;
 	virtual String font_get_style_name(const RID &p_font_rid) const override;
@@ -503,6 +505,15 @@ public:
 	GDVIRTUAL2RC(int64_t, _shaped_text_next_grapheme_pos, RID, int64_t);
 	GDVIRTUAL2RC(int64_t, _shaped_text_prev_grapheme_pos, RID, int64_t);
 
+	virtual PackedInt32Array shaped_text_get_character_breaks(const RID &p_shaped) const override;
+	virtual int64_t shaped_text_next_character_pos(const RID &p_shaped, int64_t p_pos) const override;
+	virtual int64_t shaped_text_prev_character_pos(const RID &p_shaped, int64_t p_pos) const override;
+	virtual int64_t shaped_text_closest_character_pos(const RID &p_shaped, int64_t p_pos) const override;
+	GDVIRTUAL1RC(PackedInt32Array, _shaped_text_get_character_breaks, RID);
+	GDVIRTUAL2RC(int64_t, _shaped_text_next_character_pos, RID, int64_t);
+	GDVIRTUAL2RC(int64_t, _shaped_text_prev_character_pos, RID, int64_t);
+	GDVIRTUAL2RC(int64_t, _shaped_text_closest_character_pos, RID, int64_t);
+
 	virtual String format_number(const String &p_string, const String &p_language = "") const override;
 	virtual String parse_number(const String &p_string, const String &p_language = "") const override;
 	virtual String percent_sign(const String &p_language = "") const override;
@@ -515,6 +526,9 @@ public:
 
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int64_t p_chars_per_line = 0) const override;
 	GDVIRTUAL3RC(PackedInt32Array, _string_get_word_breaks, const String &, const String &, int64_t);
+
+	virtual PackedInt32Array string_get_character_breaks(const String &p_string, const String &p_language = "") const override;
+	GDVIRTUAL2RC(PackedInt32Array, _string_get_character_breaks, const String &, const String &);
 
 	virtual bool is_valid_identifier(const String &p_string) const override;
 	GDVIRTUAL1RC(bool, _is_valid_identifier, const String &);

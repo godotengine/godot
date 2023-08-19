@@ -116,9 +116,12 @@ static int MuxImageParse(const WebPChunk* const chunk, int copy_data,
     // Each of ANMF chunk contain a header at the beginning. So, its size should
     // be at least 'hdr_size'.
     if (size < hdr_size) goto Fail;
-    ChunkAssignData(&subchunk, &temp, copy_data, chunk->tag_);
+    if (ChunkAssignData(&subchunk, &temp, copy_data,
+                        chunk->tag_) != WEBP_MUX_OK) {
+      goto Fail;
+    }
   }
-  ChunkSetHead(&subchunk, &wpi->header_);
+  if (ChunkSetHead(&subchunk, &wpi->header_) != WEBP_MUX_OK) goto Fail;
   wpi->is_partial_ = 1;  // Waiting for ALPH and/or VP8/VP8L chunks.
 
   // Rest of the chunks.

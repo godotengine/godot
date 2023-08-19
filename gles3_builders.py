@@ -40,7 +40,6 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
     line = fs.readline()
 
     while line:
-
         if line.find("=") != -1 and header_data.reading == "":
             # Mode
             eqpos = line.find("=")
@@ -121,7 +120,6 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
             uline = uline.replace(";", "")
             lines = uline.split(",")
             for x in lines:
-
                 x = x.strip()
                 x = x[x.rfind(" ") + 1 :]
                 if x.find("[") != -1:
@@ -143,7 +141,6 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
             uline = uline.replace("{", "").strip()
             lines = uline.split(",")
             for x in lines:
-
                 x = x.strip()
                 x = x[x.rfind(" ") + 1 :]
                 if x.find("[") != -1:
@@ -159,7 +156,6 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
             uline = uline.replace(";", "")
             lines = uline.split(",")
             for x in lines:
-
                 x = x.strip()
                 x = x[x.rfind(" ") + 1 :]
                 if x.find("[") != -1:
@@ -486,7 +482,6 @@ def build_gles3_header(
     fd.write("\tvirtual void _init() override {\n\n")
 
     if header_data.uniforms:
-
         fd.write("\t\tstatic const char* _uniform_strings[]={\n")
         if header_data.uniforms:
             for x in header_data.uniforms:
@@ -497,7 +492,6 @@ def build_gles3_header(
 
     variant_count = 1
     if len(header_data.variant_defines) > 0:
-
         fd.write("\t\tstatic const char* _variant_defines[]={\n")
         for x in header_data.variant_defines:
             fd.write('\t\t\t"' + x + '",\n')
@@ -542,7 +536,6 @@ def build_gles3_header(
     feedback_count = 0
 
     if header_data.feedbacks:
-
         fd.write("\t\tstatic const Feedback _feedbacks[]={\n")
         for x in header_data.feedbacks:
             name = x[0]

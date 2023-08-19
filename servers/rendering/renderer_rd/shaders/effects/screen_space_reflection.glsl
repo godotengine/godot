@@ -263,7 +263,9 @@ void main() {
 
 		// Schlick term.
 		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;
-		float f0 = mix(0.04, 0.37, metallic); // The default value of R0 is 0.04 and the maximum value is considered to be Germanium with R0 value of 0.37
+		// F0 is the reflectance of normally incident light (perpendicular to the surface).
+		// Dielectric materials have a widely accepted default value of 0.04. We assume that metals reflect all light, so their F0 is 1.0.
+		float f0 = mix(0.04, 1.0, metallic);
 		float m = clamp(1.0 - dot(normal, -view_dir), 0.0, 1.0);
 		float m2 = m * m;
 		m = m2 * m2 * m; // pow(m,5)

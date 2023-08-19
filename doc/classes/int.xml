@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="int" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="int" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Built-in integer Variant type.
+		A built-in type for integers.
 	</brief_description>
 	<description>
 		Signed 64-bit integer type. This means that it can take values from [code]-2^63[/code] to [code]2^63 - 1[/code], i.e. from [code]-9223372036854775808[/code] to [code]9223372036854775807[/code]. When it exceeds these bounds, it will wrap around.
@@ -390,7 +390,7 @@
 		<operator name="operator ~">
 			<return type="int" />
 			<description>
-				Performs the bitwise [code]NOT[/code] operation on the [int]. Due to [url=https://en.wikipedia.org/wiki/Two%27s_complement/]2's complement[/url], it's effectively equal to [code]-(int + 1)[/code].
+				Performs the bitwise [code]NOT[/code] operation on the [int]. Due to [url=https://en.wikipedia.org/wiki/Two%27s_complement]2's complement[/url], it's effectively equal to [code]-(int + 1)[/code].
 				[codeblock]
 				print(~4) # Prints -5
 				print(~(-7)) # Prints 6

@@ -158,7 +158,7 @@ class EditorHelp : public VBoxContainer {
 	bool scroll_locked = false;
 
 	//void _button_pressed(int p_idx);
-	void _add_type(const String &p_type, const String &p_enum = String());
+	void _add_type(const String &p_type, const String &p_enum = String(), bool p_is_bitfield = false);
 	void _add_type_icon(const String &p_type, int p_size = 0, const String &p_fallback = "");
 	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
 
@@ -178,7 +178,7 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
 
-	Error _goto_desc(const String &p_class, int p_vscr = -1);
+	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
 	void _update_method_list(const Vector<DocData::MethodDoc> p_methods);
 	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, const String &p_method_type);
@@ -204,13 +204,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	static void generate_doc();
+	static void generate_doc(bool p_use_cache = true);
 	static DocTools *get_doc_data();
 	static void cleanup_doc();
 	static String get_cache_full_path();
 
 	void go_to_help(const String &p_help);
-	void go_to_class(const String &p_class, int p_scroll = 0);
+	void go_to_class(const String &p_class);
 	void update_doc();
 
 	Vector<Pair<String, int>> get_sections();

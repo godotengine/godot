@@ -74,11 +74,13 @@ public:
 	static _ALWAYS_INLINE_ double tanh(double p_x) { return ::tanh(p_x); }
 	static _ALWAYS_INLINE_ float tanh(float p_x) { return ::tanhf(p_x); }
 
-	static _ALWAYS_INLINE_ double asin(double p_x) { return ::asin(p_x); }
-	static _ALWAYS_INLINE_ float asin(float p_x) { return ::asinf(p_x); }
+	// Always does clamping so always safe to use.
+	static _ALWAYS_INLINE_ double asin(double p_x) { return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asin(p_x)); }
+	static _ALWAYS_INLINE_ float asin(float p_x) { return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asinf(p_x)); }
 
-	static _ALWAYS_INLINE_ double acos(double p_x) { return ::acos(p_x); }
-	static _ALWAYS_INLINE_ float acos(float p_x) { return ::acosf(p_x); }
+	// Always does clamping so always safe to use.
+	static _ALWAYS_INLINE_ double acos(double p_x) { return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acos(p_x)); }
+	static _ALWAYS_INLINE_ float acos(float p_x) { return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acosf(p_x)); }
 
 	static _ALWAYS_INLINE_ double atan(double p_x) { return ::atan(p_x); }
 	static _ALWAYS_INLINE_ float atan(float p_x) { return ::atanf(p_x); }

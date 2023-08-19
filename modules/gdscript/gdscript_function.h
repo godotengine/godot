@@ -31,6 +31,8 @@
 #ifndef GDSCRIPT_FUNCTION_H
 #define GDSCRIPT_FUNCTION_H
 
+#include "gdscript_utility_functions.h"
+
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/os/thread.h"
@@ -38,7 +40,6 @@
 #include "core/templates/pair.h"
 #include "core/templates/self_list.h"
 #include "core/variant/variant.h"
-#include "gdscript_utility_functions.h"
 
 class GDScriptInstance;
 class GDScript;
@@ -148,6 +149,7 @@ public:
 
 	operator PropertyInfo() const {
 		PropertyInfo info;
+		info.usage = PROPERTY_USAGE_NONE;
 		if (has_type) {
 			switch (kind) {
 				case UNINITIALIZED:
@@ -237,6 +239,8 @@ public:
 		OPCODE_GET_NAMED_VALIDATED,
 		OPCODE_SET_MEMBER,
 		OPCODE_GET_MEMBER,
+		OPCODE_SET_STATIC_VARIABLE, // Only for GDScript.
+		OPCODE_GET_STATIC_VARIABLE, // Only for GDScript.
 		OPCODE_ASSIGN,
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
@@ -416,6 +420,7 @@ public:
 		ADDR_STACK_SELF = 0,
 		ADDR_STACK_CLASS = 1,
 		ADDR_STACK_NIL = 2,
+		FIXED_ADDRESSES_MAX = 3,
 		ADDR_SELF = ADDR_STACK_SELF | (ADDR_TYPE_STACK << ADDR_BITS),
 		ADDR_CLASS = ADDR_STACK_CLASS | (ADDR_TYPE_STACK << ADDR_BITS),
 		ADDR_NIL = ADDR_STACK_NIL | (ADDR_TYPE_STACK << ADDR_BITS),
@@ -468,7 +473,7 @@ private:
 	MethodBind **_methods_ptr = nullptr;
 	int _lambdas_count = 0;
 	GDScriptFunction **_lambdas_ptr = nullptr;
-	const int *_code_ptr = nullptr;
+	int *_code_ptr = nullptr;
 	int _code_size = 0;
 	int _argument_count = 0;
 	int _stack_size = 0;
@@ -534,12 +539,12 @@ private:
 
 	struct Profile {
 		StringName signature;
-		uint64_t call_count = 0;
-		uint64_t self_time = 0;
-		uint64_t total_time = 0;
-		uint64_t frame_call_count = 0;
-		uint64_t frame_self_time = 0;
-		uint64_t frame_total_time = 0;
+		SafeNumeric<uint64_t> call_count;
+		SafeNumeric<uint64_t> self_time;
+		SafeNumeric<uint64_t> total_time;
+		SafeNumeric<uint64_t> frame_call_count;
+		SafeNumeric<uint64_t> frame_self_time;
+		SafeNumeric<uint64_t> frame_total_time;
 		uint64_t last_frame_call_count = 0;
 		uint64_t last_frame_self_time = 0;
 		uint64_t last_frame_total_time = 0;

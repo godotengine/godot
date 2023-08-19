@@ -383,14 +383,15 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
   if (!all_simple && buffer->message(font, "start reorder"))
   {
     count = buffer->len;
+    hb_glyph_info_t *info = buffer->info;
     for (unsigned int i = 0; i < count; i++)
     {
-      if (_hb_glyph_info_get_modified_combining_class (&buffer->info[i]) == 0)
+      if (_hb_glyph_info_get_modified_combining_class (&info[i]) == 0)
 	continue;
 
       unsigned int end;
       for (end = i + 1; end < count; end++)
-	if (_hb_glyph_info_get_modified_combining_class (&buffer->info[end]) == 0)
+	if (_hb_glyph_info_get_modified_combining_class (&info[end]) == 0)
 	  break;
 
       /* We are going to do a O(n^2).  Only do this if the sequence is short. */
@@ -414,11 +415,13 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
      * If it did NOT, then make it skippable.
      * https://github.com/harfbuzz/harfbuzz/issues/554
      */
-    for (unsigned int i = 1; i + 1 < buffer->len; i++)
-      if (buffer->info[i].codepoint == 0x034Fu/*CGJ*/ &&
-	  (info_cc(buffer->info[i+1]) == 0 || info_cc(buffer->info[i-1]) <= info_cc(buffer->info[i+1])))
+    unsigned count = buffer->len;
+    hb_glyph_info_t *info = buffer->info;
+    for (unsigned int i = 1; i + 1 < count; i++)
+      if (info[i].codepoint == 0x034Fu/*CGJ*/ &&
+	  (info_cc(info[i+1]) == 0 || info_cc(info[i-1]) <= info_cc(info[i+1])))
       {
-	_hb_glyph_info_unhide (&buffer->info[i]);
+	_hb_glyph_info_unhide (&info[i]);
       }
   }
 

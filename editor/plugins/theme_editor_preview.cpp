@@ -321,7 +321,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	first_vb->add_child(bt);
 	Button *tb = memnew(Button);
 	tb->set_flat(true);
-	tb->set_text("Button");
+	tb->set_text("Flat Button");
 	first_vb->add_child(tb);
 
 	CheckButton *cb = memnew(CheckButton);

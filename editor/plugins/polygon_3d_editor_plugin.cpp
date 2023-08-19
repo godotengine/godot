@@ -30,7 +30,6 @@
 
 #include "polygon_3d_editor_plugin.h"
 
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/math/geometry_2d.h"
@@ -497,7 +496,7 @@ void Polygon3DEditor::edit(Node *p_node) {
 		node_resource = node->call("_get_editable_3d_polygon_resource");
 
 		if (node_resource.is_valid()) {
-			node_resource->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Polygon3DEditor::_polygon_draw));
+			node_resource->connect_changed(callable_mp(this, &Polygon3DEditor::_polygon_draw));
 		}
 		//Enable the pencil tool if the polygon is empty
 		if (_get_polygon().is_empty()) {
@@ -518,7 +517,7 @@ void Polygon3DEditor::edit(Node *p_node) {
 	} else {
 		node = nullptr;
 		if (node_resource.is_valid()) {
-			node_resource->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Polygon3DEditor::_polygon_draw));
+			node_resource->disconnect_changed(callable_mp(this, &Polygon3DEditor::_polygon_draw));
 		}
 		node_resource.unref();
 

@@ -37,120 +37,73 @@
 
 namespace TestWorkerThreadPool {
 
-int u32scmp(const char32_t *l, const char32_t *r) {
-	for (; *l == *r && *l && *r; l++, r++) {
-		// Continue.
-	}
-	return *l - *r;
-}
+static LocalVector<SafeNumeric<int>> counter;
 
 static void static_test(void *p_arg) {
-	SafeNumeric<uint32_t> *counter = (SafeNumeric<uint32_t> *)p_arg;
-	counter->increment();
+	counter[(uint64_t)p_arg].increment();
+	counter[0].add(2);
 }
-
-static SafeNumeric<uint32_t> callable_counter;
-
 static void static_callable_test() {
-	callable_counter.increment();
+	counter[0].sub(2);
 }
+TEST_CASE("[WorkerThreadPool] Process threads using individual tasks") {
+	for (int iterations = 0; iterations < 500; iterations++) {
+		const int count = Math::pow(2.0f, Math::random(0.0f, 5.0f));
+		const bool low_priority = Math::rand() % 2;
 
-TEST_CASE("[WorkerThreadPool] Process 256 threads using native task") {
-	const int count = 256;
-	SafeNumeric<uint32_t> counter;
-	WorkerThreadPool::TaskID tasks[count];
-	for (int i = 0; i < count; i++) {
-		tasks[i] = WorkerThreadPool::get_singleton()->add_native_task(static_test, &counter, true);
-	}
-	for (int i = 0; i < count; i++) {
-		WorkerThreadPool::get_singleton()->wait_for_task_completion(tasks[i]);
-	}
+		LocalVector<WorkerThreadPool::TaskID> tasks1;
+		LocalVector<WorkerThreadPool::TaskID> tasks2;
+		tasks1.resize(count);
+		tasks2.resize(count);
 
-	CHECK(counter.get() == count);
-}
+		counter.clear();
+		counter.resize(count);
+		for (int i = 0; i < count; i++) {
+			tasks1[i] = WorkerThreadPool::get_singleton()->add_native_task(static_test, (void *)(uintptr_t)i, low_priority);
+			tasks2[i] = WorkerThreadPool::get_singleton()->add_task(callable_mp_static(static_callable_test), !low_priority);
+		}
+		for (int i = 0; i < count; i++) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(tasks1[i]);
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(tasks2[i]);
+		}
 
-TEST_CASE("[WorkerThreadPool] Process 256 threads using native low priority") {
-	const int count = 256;
-	SafeNumeric<uint32_t> counter = SafeNumeric<uint32_t>(0);
-	WorkerThreadPool::TaskID tasks[count];
-	for (int i = 0; i < count; i++) {
-		tasks[i] = WorkerThreadPool::get_singleton()->add_native_task(static_test, &counter, false);
+		bool all_run_once = true;
+		for (int i = 0; i < count; i++) {
+			//Reduce number of check messages
+			all_run_once &= counter[i].get() == 1;
+		}
+		CHECK(all_run_once);
 	}
-	for (int i = 0; i < count; i++) {
-		WorkerThreadPool::get_singleton()->wait_for_task_completion(tasks[i]);
-	}
-
-	CHECK(counter.get() == count);
-}
-
-TEST_CASE("[WorkerThreadPool] Process 256 threads using callable") {
-	const int count = 256;
-	WorkerThreadPool::TaskID tasks[count];
-	callable_counter.set(0);
-	for (int i = 0; i < count; i++) {
-		tasks[i] = WorkerThreadPool::get_singleton()->add_task(callable_mp_static(static_callable_test), true);
-	}
-	for (int i = 0; i < count; i++) {
-		WorkerThreadPool::get_singleton()->wait_for_task_completion(tasks[i]);
-	}
-
-	CHECK(callable_counter.get() == count);
-}
-
-TEST_CASE("[WorkerThreadPool] Process 256 threads using callable low priority") {
-	const int count = 256;
-	WorkerThreadPool::TaskID tasks[count];
-	callable_counter.set(0);
-	for (int i = 0; i < count; i++) {
-		tasks[i] = WorkerThreadPool::get_singleton()->add_task(callable_mp_static(static_callable_test), false);
-	}
-	for (int i = 0; i < count; i++) {
-		WorkerThreadPool::get_singleton()->wait_for_task_completion(tasks[i]);
-	}
-
-	CHECK(callable_counter.get() == count);
 }
 
 static void static_group_test(void *p_arg, uint32_t p_index) {
-	SafeNumeric<uint32_t> *counter = (SafeNumeric<uint32_t> *)p_arg;
-	counter->exchange_if_greater(p_index);
+	counter[p_index].increment();
+	counter[0].add((uintptr_t)p_arg);
 }
-
-TEST_CASE("[WorkerThreadPool] Process 256 elements on native task group") {
-	const int count = 256;
-	SafeNumeric<uint32_t> counter;
-	WorkerThreadPool::GroupID group = WorkerThreadPool::get_singleton()->add_native_group_task(static_group_test, &counter, count, -1, true);
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group);
-	CHECK(counter.get() == count - 1);
-}
-
-TEST_CASE("[WorkerThreadPool] Process 256 elements on native task group low priority") {
-	const int count = 256;
-	SafeNumeric<uint32_t> counter;
-	WorkerThreadPool::GroupID group = WorkerThreadPool::get_singleton()->add_native_group_task(static_group_test, &counter, count, -1, false);
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group);
-	CHECK(counter.get() == count - 1);
-}
-
-static SafeNumeric<uint32_t> callable_group_counter;
-
 static void static_callable_group_test(uint32_t p_index) {
-	callable_group_counter.exchange_if_greater(p_index);
+	counter[p_index].increment();
+	counter[0].sub(2);
 }
+TEST_CASE("[WorkerThreadPool] Process elements using group tasks") {
+	for (int iterations = 0; iterations < 500; iterations++) {
+		const int count = Math::pow(2.0f, Math::random(0.0f, 5.0f));
+		const int tasks = Math::pow(2.0f, Math::random(0.0f, 5.0f));
+		const bool low_priority = Math::rand() % 2;
 
-TEST_CASE("[WorkerThreadPool] Process 256 elements on native task group") {
-	const int count = 256;
-	WorkerThreadPool::GroupID group = WorkerThreadPool::get_singleton()->add_group_task(callable_mp_static(static_callable_group_test), count, -1, true);
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group);
-	CHECK(callable_group_counter.get() == count - 1);
-}
+		counter.clear();
+		counter.resize(count);
+		WorkerThreadPool::GroupID group1 = WorkerThreadPool::get_singleton()->add_native_group_task(static_group_test, (void *)2, count, tasks, !low_priority);
+		WorkerThreadPool::GroupID group2 = WorkerThreadPool::get_singleton()->add_group_task(callable_mp_static(static_callable_group_test), count, tasks, low_priority);
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group1);
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group2);
 
-TEST_CASE("[WorkerThreadPool] Process 256 elements on native task group low priority") {
-	const int count = 256;
-	callable_group_counter.set(0);
-	WorkerThreadPool::GroupID group = WorkerThreadPool::get_singleton()->add_group_task(callable_mp_static(static_callable_group_test), count, -1, false);
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group);
-	CHECK(callable_group_counter.get() == count - 1);
+		bool all_run_once = true;
+		for (int i = 0; i < count; i++) {
+			//Reduce number of check messages
+			all_run_once &= counter[i].get() == 2;
+		}
+		CHECK(all_run_once);
+	}
 }
 
 } // namespace TestWorkerThreadPool

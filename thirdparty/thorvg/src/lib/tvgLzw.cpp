@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -258,8 +258,8 @@ struct Dictionary
 
     Dictionary()
     {
-        /* First 256 dictionary entries are reserved to the byte/ASCII range. 
-           Additional entries follow for the character sequences found in the input. 
+        /* First 256 dictionary entries are reserved to the byte/ASCII range.
+           Additional entries follow for the character sequences found in the input.
            Up to 4096 - 256 (MaxDictEntries - FirstCode). */
         size = FirstCode;
 

@@ -391,7 +391,7 @@ static float compress_symbolic_block_for_partition_1plane(
 	for (unsigned int i = 0; i < max_decimation_modes; i++)
 	{
 		const auto& dm = bsd.get_decimation_mode(i);
-		if (!dm.is_ref_1_plane(static_cast<quant_method>(max_weight_quant)))
+		if (!dm.is_ref_1plane(static_cast<quant_method>(max_weight_quant)))
 		{
 			continue;
 		}
@@ -561,7 +561,7 @@ static float compress_symbolic_block_for_partition_1plane(
 			workscb.color_formats_matched = 0;
 			if (partition_count >= 2 && all_same)
 			{
-				uint8_t colorvals[BLOCK_MAX_PARTITIONS][12];
+				uint8_t colorvals[BLOCK_MAX_PARTITIONS][8];
 				uint8_t color_formats_mod[BLOCK_MAX_PARTITIONS] { 0 };
 				bool all_same_mod = true;
 				for (unsigned int j = 0; j < partition_count; j++)
@@ -743,7 +743,7 @@ static float compress_symbolic_block_for_partition_2planes(
 	for (unsigned int i = 0; i < bsd.decimation_mode_count_selected; i++)
 	{
 		const auto& dm = bsd.get_decimation_mode(i);
-		if (!dm.is_ref_2_plane(static_cast<quant_method>(max_weight_quant)))
+		if (!dm.is_ref_2plane(static_cast<quant_method>(max_weight_quant)))
 		{
 			continue;
 		}
@@ -1263,8 +1263,8 @@ void compress_block(
 
 	float exit_thresholds_for_pcount[BLOCK_MAX_PARTITIONS] {
 		0.0f,
-		ctx.config.tune_2_partition_early_out_limit_factor,
-		ctx.config.tune_3_partition_early_out_limit_factor,
+		ctx.config.tune_2partition_early_out_limit_factor,
+		ctx.config.tune_3partition_early_out_limit_factor,
 		0.0f
 	};
 
@@ -1318,7 +1318,7 @@ void compress_block(
 	lowest_correl = prepare_block_statistics(bsd.texel_count, blk);
 #endif
 
-	block_skip_two_plane = lowest_correl > ctx.config.tune_2_plane_early_out_limit_correlation;
+	block_skip_two_plane = lowest_correl > ctx.config.tune_2plane_early_out_limit_correlation;
 
 	// Test the four possible 1-partition, 2-planes modes. Do this in reverse, as
 	// alpha is the most likely to be non-correlated if it is present in the data.
@@ -1331,7 +1331,7 @@ void compress_block(
 
 		if (block_skip_two_plane)
 		{
-			trace_add_data("skip", "tune_2_plane_early_out_limit_correlation");
+			trace_add_data("skip", "tune_2plane_early_out_limit_correlation");
 			continue;
 		}
 

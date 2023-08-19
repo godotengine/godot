@@ -220,6 +220,7 @@ private:
 		uint32_t flags = 0;
 		uint32_t surface_index = 0;
 		uint32_t lod_index = 0;
+		uint32_t index_count = 0;
 
 		void *surface = nullptr;
 		GLES3::SceneShaderData *shader = nullptr;

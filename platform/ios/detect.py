@@ -8,10 +8,6 @@ if TYPE_CHECKING:
     from SCons import Environment
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "iOS"
 
@@ -34,9 +30,18 @@ def get_opts():
         ),
         ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),
-        BoolVariable("ios_exceptions", "Enable exceptions", False),
         ("ios_triple", "Triple for ios toolchain", ""),
     ]
+
+
+def get_doc_classes():
+    return [
+        "EditorExportPlatformIOS",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
 
 
 def get_flags():
@@ -79,19 +84,18 @@ def configure(env: "Environment"):
     env["ENV"]["PATH"] = env["IOS_TOOLCHAIN_PATH"] + "/Developer/usr/bin/:" + env["ENV"]["PATH"]
 
     compiler_path = "$IOS_TOOLCHAIN_PATH/usr/bin/${ios_triple}"
-    s_compiler_path = "$IOS_TOOLCHAIN_PATH/Developer/usr/bin/"
 
     ccache_path = os.environ.get("CCACHE")
     if ccache_path is None:
         env["CC"] = compiler_path + "clang"
         env["CXX"] = compiler_path + "clang++"
-        env["S_compiler"] = s_compiler_path + "gcc"
+        env["S_compiler"] = compiler_path + "clang"
     else:
         # there aren't any ccache wrappers available for iOS,
         # to enable caching we need to prepend the path to the ccache binary
         env["CC"] = ccache_path + " " + compiler_path + "clang"
         env["CXX"] = ccache_path + " " + compiler_path + "clang++"
-        env["S_compiler"] = ccache_path + " " + s_compiler_path + "gcc"
+        env["S_compiler"] = ccache_path + " " + compiler_path + "clang"
     env["AR"] = compiler_path + "ar"
     env["RANLIB"] = compiler_path + "ranlib"
 
@@ -132,11 +136,6 @@ def configure(env: "Environment"):
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
-
-    if env["ios_exceptions"]:
-        env.Append(CCFLAGS=["-fexceptions"])
-    else:
-        env.Append(CCFLAGS=["-fno-exceptions"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])

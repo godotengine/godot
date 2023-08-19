@@ -225,6 +225,16 @@ enum ComputeDerivativeMode {
     LayoutDerivativeGroupLinear,  // derivative_group_linearNV
 };
 
+//
+// Status type on AST level. Some uncalled status or functions would be reset in call graph.
+// Currently we will keep status set by explicitly declared layout or variable decl.
+//
+enum AstRefType {
+    AstRefTypeVar,         // Status set by variable decl
+    AstRefTypeFunc,        // Status set by function decl
+    AstRefTypeLayout,      // Status set by layout decl
+};
+
 class TIdMaps {
 public:
     TMap<TString, long long>& operator[](long long i) { return maps[i]; }
@@ -283,10 +293,8 @@ class TIntermediate {
 public:
     explicit TIntermediate(EShLanguage l, int v = 0, EProfile p = ENoProfile) :
         language(l),
-#ifndef GLSLANG_ANGLE
         profile(p), version(v),
-#endif
-        treeRoot(0),
+        treeRoot(nullptr),
         resources(TBuiltInResource{}),
         numEntryPoints(0), numErrors(0), numPushConstants(0), recursive(false),
         invertY(false),
@@ -313,7 +321,12 @@ public:
         inputPrimitive(ElgNone), outputPrimitive(ElgNone),
         pixelCenterInteger(false), originUpperLeft(false),texCoordBuiltinRedeclared(false),
         vertexSpacing(EvsNone), vertexOrder(EvoNone), interlockOrdering(EioNone), pointMode(false), earlyFragmentTests(false),
-        postDepthCoverage(false), earlyAndLateFragmentTestsAMD(false), depthLayout(EldNone), stencilLayout(ElsNone),
+        postDepthCoverage(false), earlyAndLateFragmentTestsAMD(false),
+        nonCoherentColorAttachmentReadEXT(false),
+        nonCoherentDepthAttachmentReadEXT(false),
+        nonCoherentStencilAttachmentReadEXT(false),
+        depthLayout(EldNone),
+        stencilLayout(ElsNone),
         hlslFunctionality1(false),
         blendEquations(0), xfbMode(false), multiStream(false),
         layoutOverrideCoverage(false),
@@ -358,15 +371,11 @@ public:
 
     void setVersion(int v)
     {
-#ifndef GLSLANG_ANGLE
         version = v;
-#endif
     }
     void setProfile(EProfile p)
     {
-#ifndef GLSLANG_ANGLE
         profile = p;
-#endif
     }
 
     int getVersion() const { return version; }
@@ -634,6 +643,9 @@ public:
     bool getXfbMode() const { return false; }
     bool isMultiStream() const { return false; }
     TLayoutGeometry getOutputPrimitive() const { return ElgNone; }
+    bool getNonCoherentColorAttachmentReadEXT() const { return false; }
+    bool getNonCoherentDepthAttachmentReadEXT() const { return false; }
+    bool getNonCoherentStencilAttachmentReadEXT() const { return false; }
     bool getPostDepthCoverage() const { return false; }
     bool getEarlyFragmentTests() const { return false; }
     TLayoutDepth getDepth() const { return EldNone; }
@@ -750,6 +762,65 @@ public:
         useVariablePointers = true;
         processes.addProcess("use-variable-pointers");
     }
+    // Set the global flag for bindless texture
+    void setBindlessTextureMode(const TString& currentCaller, AstRefType type)
+    {
+        // When type is not func, currentCaller should be "" (empty string)
+        bindlessTextureModeCaller[currentCaller] = type;
+    }
+
+    // Get the global flag for bindless texture
+    bool getBindlessTextureMode() const
+    {
+        return (bindlessTextureModeCaller.size() > 0);
+    }
+
+    // Set the global flag for bindless image
+    void setBindlessImageMode(const TString& currentCaller, AstRefType type)
+    {
+        // When type is not func, currentCaller should be "" (empty string)
+        bindlessImageModeCaller[currentCaller] = type;
+    }
+
+    // Get the global flag for bindless image
+    bool getBindlessImageMode() const
+    {
+        return (bindlessImageModeCaller.size() > 0);
+    }
+
+    // Get the global flag for bindless texture
+    bool resetTopLevelUncalledStatus(const TString& deadCaller)
+    {
+        // For reflection collection purpose, currently uniform layout setting and some
+        // flags introduced by variables (IO, global, etc,.) won't be reset here.
+        // Remove each global status (AST top level) introduced by uncalled functions.
+        // If a status is set by several functions, keep those which in call graph.
+        bool result = false;
+
+        // For two types of bindless mode flag, we would only reset which is set by an uncalled function.
+        // If one status flag's key in caller vec is empty, it should be come from a non-function setting.
+        if (!bindlessTextureModeCaller.empty()) {
+            auto caller = bindlessTextureModeCaller.find(deadCaller);
+            if (caller != bindlessTextureModeCaller.end() && bindlessTextureModeCaller[deadCaller] == AstRefTypeFunc) {
+                bindlessTextureModeCaller.erase(caller);
+                result = true;
+            }
+        }
+        if (!bindlessImageModeCaller.empty()) {
+            auto caller = bindlessImageModeCaller.find(deadCaller);
+            if (caller != bindlessImageModeCaller.end() && bindlessImageModeCaller[deadCaller] == AstRefTypeFunc) {
+                bindlessImageModeCaller.erase(caller);
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    bool getBindlessMode() const
+    {
+        return getBindlessTextureMode() || getBindlessImageMode();
+    }
+
     bool usingVariablePointers() const { return useVariablePointers; }
 
 #ifdef ENABLE_HLSL
@@ -831,6 +902,12 @@ public:
         return true;
     }
     TLayoutGeometry getOutputPrimitive() const { return outputPrimitive; }
+    void setNonCoherentColorAttachmentReadEXT() { nonCoherentColorAttachmentReadEXT = true; }
+    bool getNonCoherentColorAttachmentReadEXT() const { return nonCoherentColorAttachmentReadEXT; }
+    void setNonCoherentDepthAttachmentReadEXT() { nonCoherentDepthAttachmentReadEXT = true; }
+    bool getNonCoherentDepthAttachmentReadEXT() const { return nonCoherentDepthAttachmentReadEXT; }
+    void setNonCoherentStencilAttachmentReadEXT() { nonCoherentStencilAttachmentReadEXT = true; }
+    bool getNonCoherentStencilAttachmentReadEXT() const { return nonCoherentStencilAttachmentReadEXT; }
     void setPostDepthCoverage() { postDepthCoverage = true; }
     bool getPostDepthCoverage() const { return postDepthCoverage; }
     void setEarlyFragmentTests() { earlyFragmentTests = true; }
@@ -1101,13 +1178,8 @@ protected:
     typedef std::list<TCall> TGraph;
     TGraph callGraph;
 
-#ifdef GLSLANG_ANGLE
-    const EProfile profile = ECoreProfile;
-    const int version = 450;
-#else
     EProfile profile;                           // source profile
     int version;                                // source version
-#endif
     SpvVersion spvVersion;
     TIntermNode* treeRoot;
     std::set<std::string> requestedExtensions;  // cumulation of all enabled or required extensions; not connected to what subset of the shader used them
@@ -1157,6 +1229,9 @@ protected:
     bool earlyFragmentTests;
     bool postDepthCoverage;
     bool earlyAndLateFragmentTestsAMD;
+    bool nonCoherentColorAttachmentReadEXT;
+    bool nonCoherentDepthAttachmentReadEXT;
+    bool nonCoherentStencilAttachmentReadEXT;
     TLayoutDepth depthLayout;
     TLayoutStencil stencilLayout;
     bool hlslFunctionality1;
@@ -1199,7 +1274,8 @@ protected:
 
     TSpirvRequirement* spirvRequirement;
     TSpirvExecutionMode* spirvExecutionMode;
-
+    std::map<TString, AstRefType> bindlessTextureModeCaller;
+    std::map<TString, AstRefType> bindlessImageModeCaller;
     std::unordered_map<std::string, int> uniformLocationOverrides;
     int uniformLocationBase;
     TNumericFeatures numericFeatures;
@@ -1209,8 +1285,9 @@ protected:
     std::unordered_set<int> usedConstantId; // specialization constant ids used
     std::vector<TOffsetRange> usedAtomics;  // sets of bindings used by atomic counters
     std::vector<TIoRange> usedIo[4];        // sets of used locations, one for each of in, out, uniform, and buffers
-    std::vector<TRange> usedIoRT[2];        // sets of used location, one for rayPayload/rayPayloadIN and other
-                                            // for callableData/callableDataIn
+    std::vector<TRange> usedIoRT[4];        // sets of used location, one for rayPayload/rayPayloadIN,
+                                            // one for callableData/callableDataIn, one for hitObjectAttributeNV and
+                                            // one for shaderrecordhitobjectNV
     // set of names of statically read/written I/O that might need extra checking
     std::set<TString> ioAccessed;
 

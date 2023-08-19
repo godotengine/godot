@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_ITERATOR_ACCESSOR_H_
 #define _TVG_ITERATOR_ACCESSOR_H_
 
@@ -31,7 +32,7 @@ class IteratorAccessor
 {
 public:
     //Utility Method: Iterator Accessor
-    Iterator* iterator(const Paint* paint)
+    static Iterator* iterator(const Paint* paint)
     {
         return paint->pImpl->iterator();
     }

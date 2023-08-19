@@ -574,11 +574,11 @@ bool OT::cff1::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, h
 
 struct get_seac_param_t
 {
-  get_seac_param_t (const OT::cff1::accelerator_t *_cff) : cff (_cff) {}
+  get_seac_param_t (const OT::cff1::accelerator_subset_t *_cff) : cff (_cff) {}
 
   bool has_seac () const { return base && accent; }
 
-  const OT::cff1::accelerator_t *cff;
+  const OT::cff1::accelerator_subset_t *cff;
   hb_codepoint_t  base = 0;
   hb_codepoint_t  accent = 0;
 };
@@ -596,7 +596,7 @@ struct cff1_cs_opset_seac_t : cff1_cs_opset_t<cff1_cs_opset_seac_t, get_seac_par
   }
 };
 
-bool OT::cff1::accelerator_t::get_seac_components (hb_codepoint_t glyph, hb_codepoint_t *base, hb_codepoint_t *accent) const
+bool OT::cff1::accelerator_subset_t::get_seac_components (hb_codepoint_t glyph, hb_codepoint_t *base, hb_codepoint_t *accent) const
 {
   if (unlikely (!is_valid () || (glyph >= num_glyphs))) return false;
 

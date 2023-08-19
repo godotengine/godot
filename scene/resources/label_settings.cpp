@@ -30,8 +30,6 @@
 
 #include "label_settings.h"
 
-#include "core/core_string_names.h"
-
 void LabelSettings::_font_changed() {
 	emit_changed();
 }
@@ -95,11 +93,11 @@ real_t LabelSettings::get_line_spacing() const {
 void LabelSettings::set_font(const Ref<Font> &p_font) {
 	if (font != p_font) {
 		if (font.is_valid()) {
-			font->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &LabelSettings::_font_changed));
+			font->disconnect_changed(callable_mp(this, &LabelSettings::_font_changed));
 		}
 		font = p_font;
 		if (font.is_valid()) {
-			font->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &LabelSettings::_font_changed), CONNECT_REFERENCE_COUNTED);
+			font->connect_changed(callable_mp(this, &LabelSettings::_font_changed), CONNECT_REFERENCE_COUNTED);
 		}
 		emit_changed();
 	}

@@ -49,7 +49,7 @@ protected:
 	BuildMode build_mode = BUILD_SOLIDS;
 	Vector<Point2> polygon;
 	uint32_t owner_id = 0;
-	CollisionObject2D *parent = nullptr;
+	CollisionObject2D *collision_object = nullptr;
 	bool disabled = false;
 	bool one_way_collision = false;
 	real_t one_way_collision_margin = 1.0;

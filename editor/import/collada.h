@@ -69,7 +69,7 @@ public:
 		bool double_sided = true;
 		bool unshaded = false;
 
-		String get_texture_path(const String &p_source, Collada &state) const;
+		String get_texture_path(const String &p_source, Collada &p_state) const;
 
 		Effect() {
 			diffuse.color = Color(1, 1, 1, 1);
@@ -266,7 +266,7 @@ public:
 			}
 		}
 
-		void fix_unit_scale(const Collada &state);
+		void fix_unit_scale(const Collada &p_state);
 
 		bool operator<(const Vertex &p_vert) const {
 			if (uid == p_vert.uid) {
@@ -348,7 +348,7 @@ public:
 
 		Node *parent = nullptr;
 
-		Transform3D compute_transform(const Collada &state) const;
+		Transform3D compute_transform(const Collada &p_state) const;
 		Transform3D get_global_transform() const;
 		Transform3D get_transform() const;
 
@@ -526,39 +526,39 @@ public:
 private: // private stuff
 	HashMap<String, int> channel_map;
 
-	void _parse_asset(XMLParser &parser);
-	void _parse_image(XMLParser &parser);
-	void _parse_material(XMLParser &parser);
-	void _parse_effect_material(XMLParser &parser, Effect &effect, String &id);
-	void _parse_effect(XMLParser &parser);
-	void _parse_camera(XMLParser &parser);
-	void _parse_light(XMLParser &parser);
-	void _parse_animation_clip(XMLParser &parser);
+	void _parse_asset(XMLParser &p_parser);
+	void _parse_image(XMLParser &p_parser);
+	void _parse_material(XMLParser &p_parser);
+	void _parse_effect_material(XMLParser &p_parser, Effect &p_effect, String &p_id);
+	void _parse_effect(XMLParser &p_parser);
+	void _parse_camera(XMLParser &p_parser);
+	void _parse_light(XMLParser &p_parser);
+	void _parse_animation_clip(XMLParser &p_parser);
 
-	void _parse_mesh_geometry(XMLParser &parser, String p_id, String p_name);
-	void _parse_curve_geometry(XMLParser &parser, String p_id, String p_name);
+	void _parse_mesh_geometry(XMLParser &p_parser, String p_id, String p_name);
+	void _parse_curve_geometry(XMLParser &p_parser, String p_id, String p_name);
 
-	void _parse_skin_controller(XMLParser &parser, String p_id);
-	void _parse_morph_controller(XMLParser &parser, String p_id);
-	void _parse_controller(XMLParser &parser);
+	void _parse_skin_controller(XMLParser &p_parser, String p_id);
+	void _parse_morph_controller(XMLParser &p_parser, String p_id);
+	void _parse_controller(XMLParser &p_parser);
 
-	Node *_parse_visual_instance_geometry(XMLParser &parser);
-	Node *_parse_visual_instance_camera(XMLParser &parser);
-	Node *_parse_visual_instance_light(XMLParser &parser);
+	Node *_parse_visual_instance_geometry(XMLParser &p_parser);
+	Node *_parse_visual_instance_camera(XMLParser &p_parser);
+	Node *_parse_visual_instance_light(XMLParser &p_parser);
 
-	Node *_parse_visual_node_instance_data(XMLParser &parser);
-	Node *_parse_visual_scene_node(XMLParser &parser);
-	void _parse_visual_scene(XMLParser &parser);
+	Node *_parse_visual_node_instance_data(XMLParser &p_parser);
+	Node *_parse_visual_scene_node(XMLParser &p_parser);
+	void _parse_visual_scene(XMLParser &p_parser);
 
-	void _parse_animation(XMLParser &parser);
-	void _parse_scene(XMLParser &parser);
-	void _parse_library(XMLParser &parser);
+	void _parse_animation(XMLParser &p_parser);
+	void _parse_scene(XMLParser &p_parser);
+	void _parse_library(XMLParser &p_parser);
 
-	Variant _parse_param(XMLParser &parser);
-	Vector<float> _read_float_array(XMLParser &parser);
-	Vector<String> _read_string_array(XMLParser &parser);
-	Transform3D _read_transform(XMLParser &parser);
-	String _read_empty_draw_type(XMLParser &parser);
+	Variant _parse_param(XMLParser &p_parser);
+	Vector<float> _read_float_array(XMLParser &p_parser);
+	Vector<String> _read_string_array(XMLParser &p_parser);
+	Transform3D _read_transform(XMLParser &p_parser);
+	String _read_empty_draw_type(XMLParser &p_parser);
 
 	void _joint_set_owner(Collada::Node *p_node, NodeSkeleton *p_owner);
 	void _create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton = nullptr);

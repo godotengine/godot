@@ -41,17 +41,20 @@
 
 class CreateDialog;
 class EditorFileDialog;
+class EditorValidationPanel;
 
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
 
+	enum {
+		MSG_ID_SCRIPT,
+		MSG_ID_PATH,
+		MSG_ID_BUILT_IN,
+		MSG_ID_TEMPLATE,
+	};
+
 	LineEdit *class_name = nullptr;
-	Label *error_label = nullptr;
-	Label *path_error_label = nullptr;
-	Label *builtin_warning_label = nullptr;
-	Label *script_name_warning_label = nullptr;
-	Label *template_info_label = nullptr;
-	PanelContainer *status_panel = nullptr;
+	EditorValidationPanel *validation_panel = nullptr;
 	LineEdit *parent_name = nullptr;
 	Button *parent_browse_button = nullptr;
 	Button *parent_search_button = nullptr;
@@ -67,6 +70,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	AcceptDialog *alert = nullptr;
 	CreateDialog *select_class = nullptr;
 	bool is_browsing_parent = false;
+	String path_error;
 	String template_inactive_message;
 	String initial_bp;
 	bool is_new_script_created = true;
@@ -113,8 +117,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	virtual void ok_pressed() override;
 	void _create_new();
 	void _load_exist();
-	void _msg_script_valid(bool valid, const String &p_msg = String());
-	void _msg_path_valid(bool valid, const String &p_msg = String());
 	void _update_template_menu();
 	void _update_dialog();
 	ScriptLanguage::ScriptTemplate _get_current_template() const;

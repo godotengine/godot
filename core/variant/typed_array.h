@@ -33,6 +33,7 @@
 
 #include "core/object/object.h"
 #include "core/variant/array.h"
+#include "core/variant/binder_common.h"
 #include "core/variant/method_ptrcall.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"
@@ -53,6 +54,17 @@ public:
 	_FORCE_INLINE_ TypedArray() {
 		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
 	}
+};
+
+template <class T>
+struct VariantInternalAccessor<TypedArray<T>> {
+	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = p_array; }
+};
+template <class T>
+struct VariantInternalAccessor<const TypedArray<T> &> {
+	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = p_array; }
 };
 
 //specialization for the rest of variant types
@@ -117,6 +129,7 @@ MAKE_TYPED_ARRAY(Vector<String>, Variant::PACKED_STRING_ARRAY)
 MAKE_TYPED_ARRAY(Vector<Vector2>, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPED_ARRAY(Vector<Vector3>, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPED_ARRAY(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
+MAKE_TYPED_ARRAY(IPAddress, Variant::STRING)
 
 template <class T>
 struct PtrToArg<TypedArray<T>> {
@@ -215,5 +228,6 @@ MAKE_TYPED_ARRAY_INFO(Vector<String>, Variant::PACKED_STRING_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Vector2>, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Vector3>, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
+MAKE_TYPED_ARRAY_INFO(IPAddress, Variant::STRING)
 
 #endif // TYPED_ARRAY_H

@@ -12,7 +12,7 @@
 
 #define FLAGS_CLIP_RECT_UV uint(1 << 9)
 #define FLAGS_TRANSPOSE_RECT uint(1 << 10)
-#define FLAGS_USING_LIGHT_MASK uint(1 << 11)
+// (1 << 11) is for FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR in RD backends, unused here.
 #define FLAGS_NINEPACH_DRAW_CENTER uint(1 << 12)
 #define FLAGS_USING_PARTICLES uint(1 << 13)
 

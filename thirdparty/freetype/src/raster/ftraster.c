@@ -4,7 +4,7 @@
  *
  *   The FreeType glyph rasterizer (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1742,9 +1742,9 @@
    *   SUCCESS on success, FAILURE on error.
    */
   static Bool
-  Decompose_Curve( RAS_ARGS UShort  first,
-                            UShort  last,
-                            Int     flipped )
+  Decompose_Curve( RAS_ARGS Int  first,
+                            Int  last,
+                            Int  flipped )
   {
     FT_Vector   v_last;
     FT_Vector   v_control;
@@ -1969,8 +1969,8 @@
   static Bool
   Convert_Glyph( RAS_ARGS Int  flipped )
   {
-    Int   i;
-    UInt  start;
+    Int  i;
+    Int  first, last;
 
 
     ras.fProfile = NULL;
@@ -1985,8 +1985,7 @@
     ras.cProfile->offset = ras.top;
     ras.num_Profs        = 0;
 
-    start = 0;
-
+    last = -1;
     for ( i = 0; i < ras.outline.n_contours; i++ )
     {
       PProfile  lastProfile;
@@ -1996,12 +1995,11 @@
       ras.state    = Unknown_State;
       ras.gProfile = NULL;
 
-      if ( Decompose_Curve( RAS_VARS (UShort)start,
-                                     (UShort)ras.outline.contours[i],
-                                     flipped ) )
-        return FAILURE;
+      first = last + 1;
+      last  = ras.outline.contours[i];
 
-      start = (UShort)ras.outline.contours[i] + 1;
+      if ( Decompose_Curve( RAS_VARS first, last, flipped ) )
+        return FAILURE;
 
       /* we must now check whether the extreme arcs join or not */
       if ( FRAC( ras.lastY ) == 0 &&
@@ -2219,8 +2217,8 @@
     /* represent multiples of 1/(1<<12) = 1/4096                    */
     FT_TRACE7(( "  y=%d x=[% .12f;% .12f]",
                 y,
-                x1 / (double)ras.precision,
-                x2 / (double)ras.precision ));
+                (double)x1 / (double)ras.precision,
+                (double)x2 / (double)ras.precision ));
 
     /* Drop-out control */
 
@@ -2294,8 +2292,8 @@
 
     FT_TRACE7(( "  y=%d x=[% .12f;% .12f]",
                 y,
-                x1 / (double)ras.precision,
-                x2 / (double)ras.precision ));
+                (double)x1 / (double)ras.precision,
+                (double)x2 / (double)ras.precision ));
 
     /* Drop-out control */
 
@@ -2477,8 +2475,8 @@
 
     FT_TRACE7(( "  x=%d y=[% .12f;% .12f]",
                 y,
-                x1 / (double)ras.precision,
-                x2 / (double)ras.precision ));
+                (double)x1 / (double)ras.precision,
+                (double)x2 / (double)ras.precision ));
 
     /* We should not need this procedure but the vertical sweep   */
     /* mishandles horizontal lines through pixel centers.  So we  */
@@ -2548,8 +2546,8 @@
 
     FT_TRACE7(( "  x=%d y=[% .12f;% .12f]",
                 y,
-                x1 / (double)ras.precision,
-                x2 / (double)ras.precision ));
+                (double)x1 / (double)ras.precision,
+                (double)x2 / (double)ras.precision ));
 
     /* During the horizontal sweep, we only take care of drop-outs */
 
@@ -3167,9 +3165,12 @@
 
 
   static int
-  ft_black_new( FT_Memory       memory,
-                black_PRaster  *araster )
+  ft_black_new( void*       memory_,    /* FT_Memory     */
+                FT_Raster  *araster_ )  /* black_PRaster */
   {
+    FT_Memory       memory = (FT_Memory)memory_;
+    black_PRaster  *araster = (black_PRaster*)araster_;
+
     FT_Error       error;
     black_PRaster  raster = NULL;
 
@@ -3184,9 +3185,10 @@
 
 
   static void
-  ft_black_done( black_PRaster  raster )
+  ft_black_done( FT_Raster  raster_ )   /* black_PRaster */
   {
-    FT_Memory  memory = (FT_Memory)raster->memory;
+    black_PRaster  raster = (black_PRaster)raster_;
+    FT_Memory      memory = (FT_Memory)raster->memory;
 
 
     FT_FREE( raster );
@@ -3281,11 +3283,11 @@
 
     FT_GLYPH_FORMAT_OUTLINE,
 
-    (FT_Raster_New_Func)     ft_black_new,       /* raster_new      */
-    (FT_Raster_Reset_Func)   ft_black_reset,     /* raster_reset    */
-    (FT_Raster_Set_Mode_Func)ft_black_set_mode,  /* raster_set_mode */
-    (FT_Raster_Render_Func)  ft_black_render,    /* raster_render   */
-    (FT_Raster_Done_Func)    ft_black_done       /* raster_done     */
+    ft_black_new,       /* FT_Raster_New_Func      raster_new      */
+    ft_black_reset,     /* FT_Raster_Reset_Func    raster_reset    */
+    ft_black_set_mode,  /* FT_Raster_Set_Mode_Func raster_set_mode */
+    ft_black_render,    /* FT_Raster_Render_Func   raster_render   */
+    ft_black_done       /* FT_Raster_Done_Func     raster_done     */
   )
 
 

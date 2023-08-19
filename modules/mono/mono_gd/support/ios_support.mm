@@ -32,12 +32,12 @@
 
 #if defined(IOS_ENABLED)
 
-#import <Foundation/Foundation.h>
-#include <os/log.h>
+#include "../gd_mono_marshal.h"
 
 #include "core/ustring.h"
 
-#include "../gd_mono_marshal.h"
+#import <Foundation/Foundation.h>
+#include <os/log.h>
 
 // Implemented mostly following: https://github.com/mono/mono/blob/master/sdks/ios/app/runtime.m
 

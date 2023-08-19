@@ -77,19 +77,19 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		}
 		if (key->get_physical_keycode() != Key::NONE) {
 			if (!text.is_empty()) {
-				text += " or ";
+				text += " " + TTR("or") + " ";
 			}
-			text += mods_text + keycode_get_string(key->get_physical_keycode()) + " (" + RTR("Physical") + ")";
+			text += mods_text + keycode_get_string(key->get_physical_keycode()) + " (" + TTR("Physical") + ")";
 		}
 		if (key->get_key_label() != Key::NONE) {
 			if (!text.is_empty()) {
-				text += " or ";
+				text += " " + TTR("or") + " ";
 			}
-			text += mods_text + keycode_get_string(key->get_key_label()) + " (Unicode)";
+			text += mods_text + keycode_get_string(key->get_key_label()) + " (" + TTR("Unicode") + ")";
 		}
 
 		if (text.is_empty()) {
-			text = "(" + RTR("Unset") + ")";
+			text = "(" + TTR("Unset") + ")";
 		}
 	} else {
 		text = p_event->as_text();
@@ -102,7 +102,7 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		// Joypad motion events will display slightly differently than what the event->as_text() provides. See #43660.
 		String desc = TTR("Unknown Joypad Axis");
 		if (jp_motion->get_axis() < JoyAxis::MAX) {
-			desc = RTR(_joy_axis_descriptions[2 * (size_t)jp_motion->get_axis() + (jp_motion->get_axis_value() < 0 ? 0 : 1)]);
+			desc = TTR(_joy_axis_descriptions[2 * (size_t)jp_motion->get_axis() + (jp_motion->get_axis_value() < 0 ? 0 : 1)]);
 		}
 
 		// TRANSLATORS: %d is the axis number, the first %s is either "-" or "+", and the second %s is the description of the axis.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRInterfaceExtension" inherits="XRInterface" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRInterfaceExtension" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for XR interface extensions (plugins).
 	</brief_description>
@@ -101,7 +101,7 @@
 		<method name="_get_system_info" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<description>
-				Returns a [Dictionary] with system informationr elated to this interface.
+				Returns a [Dictionary] with system information related to this interface.
 			</description>
 		</method>
 		<method name="_get_tracking_status" qualifiers="virtual const">
@@ -165,13 +165,13 @@
 		<method name="_pre_render" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called if this [XRInterfaceExtension] is active before rendering starts, most XR interfaces will sync tracking at this point in time.
+				Called if this [XRInterfaceExtension] is active before rendering starts. Most XR interfaces will sync tracking at this point in time.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called if this [XRInterfaceExtension] is active before our physics and game process is called. most XR interfaces will update its [XRPositionalTracker]s at this point in time.
+				Called if this [XRInterfaceExtension] is active before our physics and game process is called. Most XR interfaces will update its [XRPositionalTracker]s at this point in time.
 			</description>
 		</method>
 		<method name="_set_anchor_detection_is_enabled" qualifiers="virtual">

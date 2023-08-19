@@ -32,6 +32,7 @@
 #define AUDIO_STREAM_PLAYER_2D_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
 
@@ -66,7 +67,7 @@ private:
 	float volume_db = 0.0;
 	float pitch_scale = 1.0;
 	bool autoplay = false;
-	StringName default_bus = SNAME("Master");
+	StringName default_bus = SceneStringNames::get_singleton()->Master;
 	int max_polyphony = 1;
 
 	void _set_playing(bool p_enable);

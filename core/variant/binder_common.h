@@ -83,50 +83,60 @@ struct VariantCaster<const T &> {
 	}
 };
 
-#define VARIANT_ENUM_CAST(m_enum)                                            \
-	MAKE_ENUM_TYPE_INFO(m_enum)                                              \
-	template <>                                                              \
-	struct VariantCaster<m_enum> {                                           \
-		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) {        \
-			return (m_enum)p_variant.operator int64_t();                     \
-		}                                                                    \
-	};                                                                       \
-	template <>                                                              \
-	struct PtrToArg<m_enum> {                                                \
-		_FORCE_INLINE_ static m_enum convert(const void *p_ptr) {            \
-			return m_enum(*reinterpret_cast<const int64_t *>(p_ptr));        \
-		}                                                                    \
-		typedef int64_t EncodeT;                                             \
-		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
-			*(int64_t *)p_ptr = (int64_t)p_val;                              \
-		}                                                                    \
-	};                                                                       \
-	template <>                                                              \
-	struct ZeroInitializer<m_enum> {                                         \
-		static void initialize(m_enum &value) { value = (m_enum)0; }         \
+#define VARIANT_ENUM_CAST(m_enum)                                                                                       \
+	MAKE_ENUM_TYPE_INFO(m_enum)                                                                                         \
+	template <>                                                                                                         \
+	struct VariantCaster<m_enum> {                                                                                      \
+		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) {                                                   \
+			return (m_enum)p_variant.operator int64_t();                                                                \
+		}                                                                                                               \
+	};                                                                                                                  \
+	template <>                                                                                                         \
+	struct PtrToArg<m_enum> {                                                                                           \
+		_FORCE_INLINE_ static m_enum convert(const void *p_ptr) {                                                       \
+			return m_enum(*reinterpret_cast<const int64_t *>(p_ptr));                                                   \
+		}                                                                                                               \
+		typedef int64_t EncodeT;                                                                                        \
+		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) {                                            \
+			*(int64_t *)p_ptr = (int64_t)p_val;                                                                         \
+		}                                                                                                               \
+	};                                                                                                                  \
+	template <>                                                                                                         \
+	struct ZeroInitializer<m_enum> {                                                                                    \
+		static void initialize(m_enum &value) { value = (m_enum)0; }                                                    \
+	};                                                                                                                  \
+	template <>                                                                                                         \
+	struct VariantInternalAccessor<m_enum> {                                                                            \
+		static _FORCE_INLINE_ m_enum get(const Variant *v) { return m_enum(*VariantInternal::get_int(v)); }             \
+		static _FORCE_INLINE_ void set(Variant *v, m_enum p_value) { *VariantInternal::get_int(v) = (int64_t)p_value; } \
 	};
 
-#define VARIANT_BITFIELD_CAST(m_enum)                                                  \
-	MAKE_BITFIELD_TYPE_INFO(m_enum)                                                    \
-	template <>                                                                        \
-	struct VariantCaster<BitField<m_enum>> {                                           \
-		static _FORCE_INLINE_ BitField<m_enum> cast(const Variant &p_variant) {        \
-			return BitField<m_enum>(p_variant.operator int64_t());                     \
-		}                                                                              \
-	};                                                                                 \
-	template <>                                                                        \
-	struct PtrToArg<BitField<m_enum>> {                                                \
-		_FORCE_INLINE_ static BitField<m_enum> convert(const void *p_ptr) {            \
-			return BitField<m_enum>(*reinterpret_cast<const int64_t *>(p_ptr));        \
-		}                                                                              \
-		typedef int64_t EncodeT;                                                       \
-		_FORCE_INLINE_ static void encode(BitField<m_enum> p_val, const void *p_ptr) { \
-			*(int64_t *)p_ptr = p_val;                                                 \
-		}                                                                              \
-	};                                                                                 \
-	template <>                                                                        \
-	struct ZeroInitializer<BitField<m_enum>> {                                         \
-		static void initialize(BitField<m_enum> &value) { value = 0; }                 \
+#define VARIANT_BITFIELD_CAST(m_enum)                                                                                                       \
+	MAKE_BITFIELD_TYPE_INFO(m_enum)                                                                                                         \
+	template <>                                                                                                                             \
+	struct VariantCaster<BitField<m_enum>> {                                                                                                \
+		static _FORCE_INLINE_ BitField<m_enum> cast(const Variant &p_variant) {                                                             \
+			return BitField<m_enum>(p_variant.operator int64_t());                                                                          \
+		}                                                                                                                                   \
+	};                                                                                                                                      \
+	template <>                                                                                                                             \
+	struct PtrToArg<BitField<m_enum>> {                                                                                                     \
+		_FORCE_INLINE_ static BitField<m_enum> convert(const void *p_ptr) {                                                                 \
+			return BitField<m_enum>(*reinterpret_cast<const int64_t *>(p_ptr));                                                             \
+		}                                                                                                                                   \
+		typedef int64_t EncodeT;                                                                                                            \
+		_FORCE_INLINE_ static void encode(BitField<m_enum> p_val, const void *p_ptr) {                                                      \
+			*(int64_t *)p_ptr = p_val;                                                                                                      \
+		}                                                                                                                                   \
+	};                                                                                                                                      \
+	template <>                                                                                                                             \
+	struct ZeroInitializer<BitField<m_enum>> {                                                                                              \
+		static void initialize(BitField<m_enum> &value) { value = 0; }                                                                      \
+	};                                                                                                                                      \
+	template <>                                                                                                                             \
+	struct VariantInternalAccessor<BitField<m_enum>> {                                                                                      \
+		static _FORCE_INLINE_ BitField<m_enum> get(const Variant *v) { return BitField<m_enum>(*VariantInternal::get_int(v)); }             \
+		static _FORCE_INLINE_ void set(Variant *v, BitField<m_enum> p_value) { *VariantInternal::get_int(v) = p_value.operator int64_t(); } \
 	};
 
 // Object enum casts must go here
@@ -597,6 +607,8 @@ void call_with_ptr_args_static_method(void (*p_method)(P...), const void **p_arg
 	call_with_ptr_args_static_method_helper<P...>(p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
+// Validated
+
 template <class T, class... P>
 void call_with_validated_variant_args(Variant *base, void (T::*p_method)(P...), const Variant **p_args) {
 	call_with_validated_variant_args_helper<T, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
@@ -630,6 +642,38 @@ void call_with_validated_variant_args_static_method(void (*p_method)(P...), cons
 template <class R, class... P>
 void call_with_validated_variant_args_static_method_ret(R (*p_method)(P...), const Variant **p_args, Variant *r_ret) {
 	call_with_validated_variant_args_static_method_ret_helper<R, P...>(p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+}
+
+// Validated Object
+
+template <class T, class... P>
+void call_with_validated_object_instance_args(T *base, void (T::*p_method)(P...), const Variant **p_args) {
+	call_with_validated_variant_args_helper<T, P...>(base, p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class T, class... P>
+void call_with_validated_object_instance_argsc(T *base, void (T::*p_method)(P...) const, const Variant **p_args) {
+	call_with_validated_variant_argsc_helper<T, P...>(base, p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class T, class R, class... P>
+void call_with_validated_object_instance_args_ret(T *base, R (T::*p_method)(P...), const Variant **p_args, Variant *r_ret) {
+	call_with_validated_variant_args_ret_helper<T, R, P...>(base, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class T, class R, class... P>
+void call_with_validated_object_instance_args_retc(T *base, R (T::*p_method)(P...) const, const Variant **p_args, Variant *r_ret) {
+	call_with_validated_variant_args_retc_helper<T, R, P...>(base, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class T, class... P>
+void call_with_validated_object_instance_args_static(T *base, void (*p_method)(T *, P...), const Variant **p_args) {
+	call_with_validated_variant_args_static_helper<T, P...>(base, p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class T, class R, class... P>
+void call_with_validated_object_instance_args_static_retc(T *base, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret) {
+	call_with_validated_variant_args_static_retc_helper<T, R, P...>(base, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
 // GCC raises "parameter 'p_args' set but not used" when P = {},

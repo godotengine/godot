@@ -111,7 +111,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 
 	int chr_width = chr_cell_width - char_margin.position.x - char_margin.size.x;
 	int chr_height = chr_cell_height - char_margin.position.y - char_margin.size.y;
-	ERR_FAIL_COND_V_MSG(chr_width <= 0 || chr_height <= 0, ERR_FILE_CANT_READ, TTR("Character margin too bit."));
+	ERR_FAIL_COND_V_MSG(chr_width <= 0 || chr_height <= 0, ERR_FILE_CANT_READ, TTR("Character margin too big."));
 
 	Ref<FontFile> font;
 	font.instantiate();
@@ -151,7 +151,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			int x = pos % columns;
 			int y = pos / columns;
 			font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width, 0));
-			font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2(0, -0.5 * chr_height));
+			font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2i(0, -0.5 * chr_height));
 			font->set_glyph_size(0, Vector2i(chr_height, 0), idx, Vector2(chr_width, chr_height));
 			font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
 			font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);

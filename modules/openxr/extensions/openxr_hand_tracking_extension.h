@@ -31,9 +31,8 @@
 #ifndef OPENXR_HAND_TRACKING_EXTENSION_H
 #define OPENXR_HAND_TRACKING_EXTENSION_H
 
-#include "openxr_extension_wrapper.h"
-
 #include "../util.h"
+#include "openxr_extension_wrapper.h"
 
 #define MAX_OPENXR_TRACKED_HANDS 2
 

@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Window" inherits="Viewport" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Window" inherits="Viewport" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for all windows.
+		Base class for all windows, dialogs, and popups.
 	</brief_description>
 	<description>
 		A node that creates a window. The window can either be a native system window or embedded inside another [Window] (see [member Viewport.gui_embed_subwindows]).
-		At runtime, [Window]s will not close automatically when requested. You need to handle it manually using [signal close_requested] (this applies both to clicking close button and clicking outside popup).
+		At runtime, [Window]s will not close automatically when requested. You need to handle it manually using the [signal close_requested] signal (this applies both to pressing the close button and clicking outside of a popup).
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_contents_minimum_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Overrides the value returned by [method get_contents_minimum_size].
+			</description>
+		</method>
 		<method name="add_theme_color_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -92,6 +98,7 @@
 			<return type="Vector2" />
 			<description>
 				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when children nodes have changed.
+				The value returned by this method can be overridden with [method _get_contents_minimum_size].
 			</description>
 		</method>
 		<method name="get_flag" qualifiers="const">
@@ -192,6 +199,12 @@
 			<description>
 				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_window_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of the window.
 			</description>
 		</method>
 		<method name="grab_focus">
@@ -348,16 +361,14 @@
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
-				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size.
-				Fails if called on the main window.
+				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size. Fails if called on the main window.
 			</description>
 		</method>
 		<method name="popup_centered">
 			<return type="void" />
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<description>
-				Popups the [Window] at the center of the current screen, with optionally given minimum size.
-				If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
+				Popups the [Window] at the center of the current screen, with optionally given minimum size. If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
@@ -366,8 +377,7 @@
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<param index="1" name="fallback_ratio" type="float" default="0.75" />
 			<description>
-				Popups the [Window] centered inside its parent [Window].
-				[code]fallback_ratio[/code] determines the maximum size of the [Window], in relation to its parent.
+				Popups the [Window] centered inside its parent [Window]. [param fallback_ratio] determines the maximum size of the [Window], in relation to its parent.
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
@@ -375,15 +385,61 @@
 			<return type="void" />
 			<param index="0" name="ratio" type="float" default="0.8" />
 			<description>
-				Popups the [Window] centered inside its parent [Window] and sets its size as a [param ratio] of parent's size.
+				If [Window] is embedded, popups the [Window] centered inside its embedder and sets its size as a [param ratio] of embedder's size.
+				If [Window] is a native window, popups the [Window] centered inside the screen of its parent [Window] and sets its size as a [param ratio] of the screen size.
+			</description>
+		</method>
+		<method name="popup_exclusive">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_centered">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_centered] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_centered_clamped">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<param index="2" name="fallback_ratio" type="float" default="0.75" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_centered_clamped] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_centered_ratio">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="ratio" type="float" default="0.8" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_centered_ratio] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_on_parent">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="parent_rect" type="Rect2i" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_on_parent] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
 			</description>
 		</method>
 		<method name="popup_on_parent">
 			<return type="void" />
 			<param index="0" name="parent_rect" type="Rect2i" />
 			<description>
-				Popups the [Window] with a position shifted by parent [Window]'s position.
-				If the [Window] is embedded, has the same effect as [method popup].
+				Popups the [Window] with a position shifted by parent [Window]'s position. If the [Window] is embedded, has the same effect as [method popup].
 			</description>
 		</method>
 		<method name="remove_theme_color_override">
@@ -469,6 +525,14 @@
 				Sets layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
 			</description>
 		</method>
+		<method name="set_unparent_when_invisible">
+			<return type="void" />
+			<param index="0" name="unparent" type="bool" />
+			<description>
+				If [param unparent] is [code]true[/code], the window is automatically unparented when going invisible.
+				[b]Note:[/b] Make sure to keep a reference to the node, otherwise it will be orphaned. You also need to manually call [method Node.queue_free] to free the window if it's not parented.
+			</description>
+		</method>
 		<method name="set_use_font_oversampling">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
@@ -505,6 +569,9 @@
 		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">
 			Base size of the content (i.e. nodes that are drawn inside the window). If non-zero, [Window]'s content will be scaled when the window is resized to a different size.
 		</member>
+		<member name="content_scale_stretch" type="int" setter="set_content_scale_stretch" getter="get_content_scale_stretch" enum="Window.ContentScaleStretch" default="0">
+			The policy to use to determine the final scale factor for 2D elements. This affects how [member content_scale_factor] is applied, in addition to the automatic scale factor determined by [member content_scale_size].
+		</member>
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
 			The screen the window is currently on.
 		</member>
@@ -514,8 +581,11 @@
 		</member>
 		<member name="extend_to_title" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] contents is expanded to the full size of the window, window title bar is transparent.
+			[b]Note:[/b] This property is implemented only on macOS.
+			[b]Note:[/b] This property only works with native windows.
 		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
+			Specifies the initial type of position for the [Window]. See [enum WindowInitialPosition] constants.
 		</member>
 		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be bigger than this size.
@@ -528,10 +598,12 @@
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
 			Set's the window's current mode.
 			[b]Note:[/b] Fullscreen mode is not exclusive full screen on Windows and Linux.
+			[b]Note:[/b] This method only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
 		</member>
 		<member name="mouse_passthrough" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], all mouse events will be passed to the underlying window of the same application. See also [member mouse_passthrough_polygon].
 			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
+			[b]Note:[/b] This property only works with native windows.
 		</member>
 		<member name="mouse_passthrough_polygon" type="PackedVector2Array" setter="set_mouse_passthrough_polygon" getter="get_mouse_passthrough_polygon" default="PackedVector2Array()">
 			Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
@@ -567,6 +639,8 @@
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
+			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]true[/code], the window's position is in the coordinates of its parent [Viewport].
+			[b]Note:[/b] This property only works if [member initial_position] is set to [constant WINDOW_INITIAL_POSITION_ABSOLUTE].
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
 			The window's size in pixels.
@@ -579,7 +653,7 @@
 			The name of a theme type variation used by this [Window] to look up its own theme items. See [member Control.theme_type_variation] for more details.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
-			The window's title. If the [Window] is non-embedded, title styles set in [Theme] will have no effect.
+			The window's title. If the [Window] is native, title styles set in [Theme] will have no effect.
 		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
 			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. The transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
@@ -587,8 +661,8 @@
 		</member>
 		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows.
-			[b]Note:[/b] For native windows, this flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] This property has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
 		</member>
 		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.
@@ -626,7 +700,7 @@
 			<param index="0" name="files" type="PackedStringArray" />
 			<description>
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
-				Note that this method only works with non-embedded windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
+				Note that this method only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
 				Example usage:
 				[codeblock]
 				func _ready():
@@ -654,12 +728,12 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse cursor enters the [Window]'s area, regardless if it's currently focused or not.
+				Emitted when the mouse cursor enters the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse cursor exits the [Window]'s area (including when it's hovered over another window on top of this one).
+				Emitted when the mouse cursor leaves the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 			</description>
 		</signal>
 		<signal name="theme_changed">
@@ -714,7 +788,7 @@
 			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
-			The window can't be resizing by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
+			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
 		</constant>
 		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
 			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
@@ -723,21 +797,24 @@
 			The window is floating on top of all other windows. This flag is ignored for full-screen windows. Set with [member always_on_top].
 		</constant>
 		<constant name="FLAG_TRANSPARENT" value="3" enum="Flags">
-			The window background can be transparent.
-			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code]. Set with [member transparent].
+			The window background can be transparent. Set with [member transparent].
+			[b]Note:[/b] This flag has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
 		</constant>
 		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
 		</constant>
 		<constant name="FLAG_POPUP" value="5" enum="Flags">
-			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [code]transient parent[/code] set (see [member transient]).
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
+			[b]Note:[/b] This flag has no effect in embedded windows (unless said window is a [Popup]).
 		</constant>
 		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
-			[b]Note:[/b] This flag is implemented on macOS.
+			[b]Note:[/b] This flag is implemented only on macOS.
+			[b]Note:[/b] This flag has no effect in embedded windows.
 		</constant>
 		<constant name="FLAG_MOUSE_PASSTHROUGH" value="7" enum="Flags">
 			All mouse events are passed to the underlying window of the same application.
+			[b]Note:[/b] This flag has no effect in embedded windows.
 		</constant>
 		<constant name="FLAG_MAX" value="8" enum="Flags">
 			Max value of the [enum Flags].
@@ -766,6 +843,12 @@
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
 			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the top-left corner and add an extra visible area in the stretched space.
 		</constant>
+		<constant name="CONTENT_SCALE_STRETCH_FRACTIONAL" value="0" enum="ContentScaleStretch">
+			The content will be stretched according to a fractional factor. This fills all the space available in the window, but allows "pixel wobble" to occur due to uneven pixel scaling.
+		</constant>
+		<constant name="CONTENT_SCALE_STRETCH_INTEGER" value="1" enum="ContentScaleStretch">
+			The content will be stretched only according to an integer factor, preserving sharp pixels. This may leave a black background visible on the window's edges depending on the window size.
+		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent window layout direction.
 		</constant>
@@ -782,13 +865,19 @@
 			Initial window position is determined by [member position].
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN" value="1" enum="WindowInitialPosition">
-			Initial window position is a center of the primary screen.
+			Initial window position is the center of the primary screen.
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN" value="2" enum="WindowInitialPosition">
-			Initial window position is a center of the main window screen.
+			Initial window position is the center of the main window screen.
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN" value="3" enum="WindowInitialPosition">
-			Initial window position is a center of [member current_screen] screen.
+			Initial window position is the center of [member current_screen] screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS" value="4" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the mouse pointer.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS" value="5" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the window with the keyboard focus.
 		</constant>
 	</constants>
 	<theme_items>
@@ -828,6 +917,9 @@
 		<theme_item name="embedded_border" data_type="style" type="StyleBox">
 			The background style used when the [Window] is embedded. Note that this is drawn only under the window's content, excluding the title. For proper borders and title bar style, you can use [code]expand_margin_*[/code] properties of [StyleBoxFlat].
 			[b]Note:[/b] The content background will not be visible unless [member transparent] is enabled.
+		</theme_item>
+		<theme_item name="embedded_unfocused_border" data_type="style" type="StyleBox">
+			The background style used when the [Window] is embedded and unfocused.
 		</theme_item>
 	</theme_items>
 </class>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShader" inherits="Shader" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualShader" inherits="Shader" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A custom shader program with a visual editor.
 	</brief_description>
 	<description>
-		This class allows you to define a custom shader program that can be used for various materials to render objects.
-		The visual shader editor creates the shader.
+		This class provides a graph-like visual editor for creating a [Shader]. Although [VisualShader]s do not require coding, they share the same logic with script shaders. They use [VisualShaderNode]s that can be connected to each other to control the flow of the shader. The visual shader graph is converted to a script shader behind the scenes.
 	</description>
 	<tutorials>
+		<link title="Using VisualShaders">$DOCS_URL/tutorials/shaders/visual_shaders.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderSceneBuffersConfiguration" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Configuration object used to setup a [RenderSceneBuffers] object.
+	</brief_description>
+	<description>
+		This configuration object is created and populated by the render engine on a viewport change and used to (re)configure a [RenderSceneBuffers] object.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="fsr_sharpness" type="float" setter="set_fsr_sharpness" getter="get_fsr_sharpness" default="0.0">
+			FSR Sharpness applicable if FSR upscaling is used.
+		</member>
+		<member name="internal_size" type="Vector2i" setter="set_internal_size" getter="get_internal_size" default="Vector2i(0, 0)">
+			The size of the 3D render buffer used for rendering.
+		</member>
+		<member name="msaa_3d" type="int" setter="set_msaa_3d" getter="get_msaa_3d" enum="RenderingServer.ViewportMSAA" default="0">
+			The MSAA mode we're using for 3D rendering.
+		</member>
+		<member name="render_target" type="RID" setter="set_render_target" getter="get_render_target" default="RID()">
+			The render target associated with these buffer.
+		</member>
+		<member name="scaling_3d_mode" type="int" setter="set_scaling_3d_mode" getter="get_scaling_3d_mode" enum="RenderingServer.ViewportScaling3DMode" default="255">
+			The requested scaling mode with which we upscale/downscale if [member internal_size] and [member target_size] are not equal.
+		</member>
+		<member name="screen_space_aa" type="int" setter="set_screen_space_aa" getter="get_screen_space_aa" enum="RenderingServer.ViewportScreenSpaceAA" default="0">
+			The requested screen space AA applied in post processing.
+		</member>
+		<member name="target_size" type="Vector2i" setter="set_target_size" getter="get_target_size" default="Vector2i(0, 0)">
+			The target (upscale) size if scaling is used.
+		</member>
+		<member name="texture_mipmap_bias" type="float" setter="set_texture_mipmap_bias" getter="get_texture_mipmap_bias" default="0.0">
+			Bias applied to mipmaps.
+		</member>
+		<member name="view_count" type="int" setter="set_view_count" getter="get_view_count" default="1">
+			The number of views we're rendering.
+		</member>
+	</members>
+</class>

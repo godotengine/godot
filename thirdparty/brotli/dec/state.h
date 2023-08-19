@@ -9,12 +9,14 @@
 #ifndef BROTLI_DEC_STATE_H_
 #define BROTLI_DEC_STATE_H_
 
+#include <brotli/decode.h>
+#include <brotli/shared_dictionary.h>
+#include <brotli/types.h>
+
 #include "../common/constants.h"
 #include "../common/dictionary.h"
 #include "../common/platform.h"
-#include <brotli/shared_dictionary.h>
 #include "../common/transform.h"
-#include <brotli/types.h>
 #include "bit_reader.h"
 #include "huffman.h"
 
@@ -320,6 +322,13 @@ struct BrotliDecoderStateStruct {
   uint32_t mtf[64 + 1];
 
   /* Less used attributes are at the end of this struct. */
+
+  brotli_decoder_metadata_start_func metadata_start_func;
+  brotli_decoder_metadata_chunk_func metadata_chunk_func;
+  void* metadata_callback_opaque;
+
+  /* For reporting. */
+  uint64_t used_input;  /* how many bytes of input are consumed */
 
   /* States inside function calls. */
   BrotliRunningMetablockHeaderState substate_metablock_header;

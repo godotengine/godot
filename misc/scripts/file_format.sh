@@ -7,14 +7,20 @@
 # We need dos2unix and isutf8.
 if [ ! -x "$(command -v dos2unix)" -o ! -x "$(command -v isutf8)" ]; then
     printf "Install 'dos2unix' and 'isutf8' (moreutils package) to use this script.\n"
+    exit 1
 fi
 
 set -uo pipefail
-IFS=$'\n\t'
 
-# Loops through all text files tracked by Git.
-git grep -zIl '' |
-while IFS= read -rd '' f; do
+if [ $# -eq 0 ]; then
+    # Loop through all code files tracked by Git.
+    mapfile -d '' files < <(git grep -zIl '')
+else
+    # $1 should be a file listing file paths to process. Used in CI.
+    mapfile -d ' ' < <(cat "$1")
+fi
+
+for f in "${files[@]}"; do
     # Exclude some types of files.
     if [[ "$f" == *"csproj" ]]; then
         continue

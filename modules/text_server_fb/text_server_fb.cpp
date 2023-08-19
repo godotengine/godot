@@ -59,10 +59,10 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
-#include "core/ShapeDistanceFinder.h"
-#include "core/contour-combiners.h"
-#include "core/edge-selectors.h"
-#include "msdfgen.h"
+#include <core/ShapeDistanceFinder.h>
+#include <core/contour-combiners.h>
+#include <core/edge-selectors.h>
+#include <msdfgen.h>
 #endif
 
 #ifdef MODULE_SVG_ENABLED
@@ -3563,7 +3563,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis) {
 		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis)) {
-			// Insert an additional space when cutting word bound for aesthetics.
+			// Insert an additional space when cutting word bound for esthetics.
 			if (cut_per_word && (ellipsis_pos > 0)) {
 				Glyph gl;
 				gl.count = 1;
@@ -3865,8 +3865,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				}
 				prev_font = gl.font_rid;
 
-				double scale = _font_get_scale(gl.font_rid, gl.font_size);
 				if (gl.font_rid.is_valid()) {
+					double scale = _font_get_scale(gl.font_rid, gl.font_size);
 					bool subpos = (scale != 1.0) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_HALF) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_QUARTER) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_AUTO && gl.font_size <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE);
 					if (sd->text[j - sd->start] != 0 && !is_linebreak(sd->text[j - sd->start])) {
 						if (sd->orientation == ORIENTATION_HORIZONTAL) {
@@ -4077,6 +4077,20 @@ double TextServerFallback::_shaped_text_get_underline_thickness(const RID &p_sha
 	}
 
 	return sd->uthk;
+}
+
+PackedInt32Array TextServerFallback::_shaped_text_get_character_breaks(const RID &p_shaped) const {
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, PackedInt32Array());
+
+	MutexLock lock(sd->mutex);
+
+	PackedInt32Array ret;
+	ret.resize(sd->end - sd->start);
+	for (int i = sd->start; i < sd->end; i++) {
+		ret.write[i] = i;
+	}
+	return ret;
 }
 
 String TextServerFallback::_string_to_upper(const String &p_string, const String &p_language) const {

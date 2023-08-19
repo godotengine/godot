@@ -31,7 +31,6 @@
 #include "occluder_instance_3d.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"
@@ -441,14 +440,14 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	}
 
 	if (occluder.is_valid()) {
-		occluder->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &OccluderInstance3D::_occluder_changed));
+		occluder->disconnect_changed(callable_mp(this, &OccluderInstance3D::_occluder_changed));
 	}
 
 	occluder = p_occluder;
 
 	if (occluder.is_valid()) {
 		set_base(occluder->get_rid());
-		occluder->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &OccluderInstance3D::_occluder_changed));
+		occluder->connect_changed(callable_mp(this, &OccluderInstance3D::_occluder_changed));
 	} else {
 		set_base(RID());
 	}
@@ -605,7 +604,7 @@ void OccluderInstance3D::_bake_node(Node *p_node, PackedVector3Array &r_vertices
 }
 
 void OccluderInstance3D::bake_single_node(const Node3D *p_node, float p_simplification_distance, PackedVector3Array &r_vertices, PackedInt32Array &r_indices) {
-	ERR_FAIL_COND(!p_node);
+	ERR_FAIL_NULL(p_node);
 
 	Transform3D xform = p_node->is_inside_tree() ? p_node->get_global_transform() : p_node->get_transform();
 

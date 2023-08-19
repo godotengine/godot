@@ -50,6 +50,7 @@ public:
 		String name;
 		String type;
 		String enumeration;
+		bool is_bitfield = false;
 		String default_value;
 		bool operator<(const ArgumentDoc &p_arg) const {
 			if (name == p_arg.name) {
@@ -70,6 +71,9 @@ public:
 
 			if (p_dict.has("enumeration")) {
 				doc.enumeration = p_dict["enumeration"];
+				if (p_dict.has("is_bitfield")) {
+					doc.is_bitfield = p_dict["is_bitfield"];
+				}
 			}
 
 			if (p_dict.has("default_value")) {
@@ -91,6 +95,7 @@ public:
 
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
+				dict["is_bitfield"] = p_doc.is_bitfield;
 			}
 
 			if (!p_doc.default_value.is_empty()) {
@@ -105,6 +110,7 @@ public:
 		String name;
 		String return_type;
 		String return_enum;
+		bool return_is_bitfield = false;
 		String qualifiers;
 		String description;
 		bool is_deprecated = false;
@@ -137,7 +143,7 @@ public:
 					return arguments[0] < p_method.arguments[0];
 				}
 			}
-			return name < p_method.name;
+			return name.naturalcasecmp_to(p_method.name) < 0;
 		}
 		static MethodDoc from_dict(const Dictionary &p_dict) {
 			MethodDoc doc;
@@ -152,6 +158,9 @@ public:
 
 			if (p_dict.has("return_enum")) {
 				doc.return_enum = p_dict["return_enum"];
+				if (p_dict.has("return_is_bitfield")) {
+					doc.return_is_bitfield = p_dict["return_is_bitfield"];
+				}
 			}
 
 			if (p_dict.has("qualifiers")) {
@@ -201,6 +210,7 @@ public:
 
 			if (!p_doc.return_enum.is_empty()) {
 				dict["return_enum"] = p_doc.return_enum;
+				dict["return_is_bitfield"] = p_doc.return_is_bitfield;
 			}
 
 			if (!p_doc.qualifiers.is_empty()) {
@@ -264,10 +274,9 @@ public:
 
 			if (p_dict.has("enumeration")) {
 				doc.enumeration = p_dict["enumeration"];
-			}
-
-			if (p_dict.has("is_bitfield")) {
-				doc.is_bitfield = p_dict["is_bitfield"];
+				if (p_dict.has("is_bitfield")) {
+					doc.is_bitfield = p_dict["is_bitfield"];
+				}
 			}
 
 			if (p_dict.has("description")) {
@@ -299,9 +308,8 @@ public:
 
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
+				dict["is_bitfield"] = p_doc.is_bitfield;
 			}
-
-			dict["is_bitfield"] = p_doc.is_bitfield;
 
 			if (!p_doc.description.is_empty()) {
 				dict["description"] = p_doc.description;
@@ -315,65 +323,11 @@ public:
 		}
 	};
 
-	struct EnumDoc {
-		String name = "@unnamed_enum";
-		bool is_bitfield = false;
-		String description;
-		Vector<DocData::ConstantDoc> values;
-		static EnumDoc from_dict(const Dictionary &p_dict) {
-			EnumDoc doc;
-
-			if (p_dict.has("name")) {
-				doc.name = p_dict["name"];
-			}
-
-			if (p_dict.has("is_bitfield")) {
-				doc.is_bitfield = p_dict["is_bitfield"];
-			}
-
-			if (p_dict.has("description")) {
-				doc.description = p_dict["description"];
-			}
-
-			Array values;
-			if (p_dict.has("values")) {
-				values = p_dict["values"];
-			}
-			for (int i = 0; i < values.size(); i++) {
-				doc.values.push_back(ConstantDoc::from_dict(values[i]));
-			}
-
-			return doc;
-		}
-		static Dictionary to_dict(const EnumDoc &p_doc) {
-			Dictionary dict;
-
-			if (!p_doc.name.is_empty()) {
-				dict["name"] = p_doc.name;
-			}
-
-			dict["is_bitfield"] = p_doc.is_bitfield;
-
-			if (!p_doc.description.is_empty()) {
-				dict["description"] = p_doc.description;
-			}
-
-			if (!p_doc.values.is_empty()) {
-				Array values;
-				for (int i = 0; i < p_doc.values.size(); i++) {
-					values.push_back(ConstantDoc::to_dict(p_doc.values[i]));
-				}
-				dict["values"] = values;
-			}
-
-			return dict;
-		}
-	};
-
 	struct PropertyDoc {
 		String name;
 		String type;
 		String enumeration;
+		bool is_bitfield = false;
 		String description;
 		String setter, getter;
 		String default_value;
@@ -382,7 +336,7 @@ public:
 		bool is_deprecated = false;
 		bool is_experimental = false;
 		bool operator<(const PropertyDoc &p_prop) const {
-			return name < p_prop.name;
+			return name.naturalcasecmp_to(p_prop.name) < 0;
 		}
 		static PropertyDoc from_dict(const Dictionary &p_dict) {
 			PropertyDoc doc;
@@ -397,6 +351,9 @@ public:
 
 			if (p_dict.has("enumeration")) {
 				doc.enumeration = p_dict["enumeration"];
+				if (p_dict.has("is_bitfield")) {
+					doc.is_bitfield = p_dict["is_bitfield"];
+				}
 			}
 
 			if (p_dict.has("description")) {
@@ -446,6 +403,7 @@ public:
 
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
+				dict["is_bitfield"] = p_doc.is_bitfield;
 			}
 
 			if (!p_doc.description.is_empty()) {
@@ -487,7 +445,7 @@ public:
 		bool operator<(const ThemeItemDoc &p_theme_item) const {
 			// First sort by the data type, then by name.
 			if (data_type == p_theme_item.data_type) {
-				return name < p_theme_item.name;
+				return name.naturalcasecmp_to(p_theme_item.name) < 0;
 			}
 			return data_type < p_theme_item.data_type;
 		}
@@ -574,6 +532,42 @@ public:
 		}
 	};
 
+	struct EnumDoc {
+		String description;
+		bool is_deprecated = false;
+		bool is_experimental = false;
+		static EnumDoc from_dict(const Dictionary &p_dict) {
+			EnumDoc doc;
+
+			if (p_dict.has("description")) {
+				doc.description = p_dict["description"];
+			}
+
+			if (p_dict.has("is_deprecated")) {
+				doc.is_deprecated = p_dict["is_deprecated"];
+			}
+
+			if (p_dict.has("is_experimental")) {
+				doc.is_experimental = p_dict["is_experimental"];
+			}
+
+			return doc;
+		}
+		static Dictionary to_dict(const EnumDoc &p_doc) {
+			Dictionary dict;
+
+			if (!p_doc.description.is_empty()) {
+				dict["description"] = p_doc.description;
+			}
+
+			dict["is_deprecated"] = p_doc.is_deprecated;
+
+			dict["is_experimental"] = p_doc.is_experimental;
+
+			return dict;
+		}
+	};
+
 	struct ClassDoc {
 		String name;
 		String inherits;
@@ -585,7 +579,7 @@ public:
 		Vector<MethodDoc> operators;
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
-		HashMap<String, String> enums;
+		HashMap<String, EnumDoc> enums;
 		Vector<PropertyDoc> properties;
 		Vector<MethodDoc> annotations;
 		Vector<ThemeItemDoc> theme_properties;
@@ -668,7 +662,7 @@ public:
 				enums = p_dict["enums"];
 			}
 			for (int i = 0; i < enums.size(); i++) {
-				doc.enums[enums.get_key_at_index(i)] = enums.get_value_at_index(i);
+				doc.enums[enums.get_key_at_index(i)] = EnumDoc::from_dict(enums.get_value_at_index(i));
 			}
 
 			Array properties;
@@ -782,8 +776,8 @@ public:
 
 			if (!p_doc.enums.is_empty()) {
 				Dictionary enums;
-				for (const KeyValue<String, String> &E : p_doc.enums) {
-					enums[E.key] = E.value;
+				for (const KeyValue<String, EnumDoc> &E : p_doc.enums) {
+					enums[E.key] = EnumDoc::to_dict(E.value);
 				}
 				dict["enums"] = enums;
 			}

@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef TOOLS_ENABLED
-
 #include "editor_scene_importer_gltf.h"
+
+#ifdef TOOLS_ENABLED
 
 #include "../gltf_defines.h"
 #include "../gltf_document.h"

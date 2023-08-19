@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "regex.h"
+
 #include "core/os/memory.h"
 
 extern "C" {
@@ -40,7 +41,9 @@ static void *_regex_malloc(PCRE2_SIZE size, void *user) {
 }
 
 static void _regex_free(void *ptr, void *user) {
-	memfree(ptr);
+	if (ptr) {
+		memfree(ptr);
+	}
 }
 
 int RegExMatch::_find(const Variant &p_name) const {

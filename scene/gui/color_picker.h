@@ -46,6 +46,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/style_box_flat.h"
 
 class ColorMode;
 class ColorModeRGB;
@@ -122,11 +123,14 @@ private:
 	Vector<ColorMode *> modes;
 
 	Popup *picker_window = nullptr;
+	// Legacy color picking.
 	TextureRect *picker_texture_rect = nullptr;
 	Panel *picker_preview = nullptr;
 	Label *picker_preview_label = nullptr;
 	Ref<StyleBoxFlat> picker_preview_style_box;
 	Color picker_color;
+
+	MarginContainer *internal_margin = nullptr;
 	Control *uv_edit = nullptr;
 	Control *w_edit = nullptr;
 	AspectRatioContainer *wheel_edit = nullptr;
@@ -183,6 +187,7 @@ private:
 
 	Color color;
 	Color old_color;
+	bool is_picking_color = false;
 
 	bool display_old_color = false;
 	bool deferred_mode_enabled = false;
@@ -212,6 +217,8 @@ private:
 		int sv_height = 0;
 		int sv_width = 0;
 		int h_width = 0;
+
+		bool center_slider_grabbers = true;
 
 		Ref<Texture2D> screen_picker;
 		Ref<Texture2D> expanded_arrow;
@@ -257,11 +264,14 @@ private:
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 	void _preset_input(const Ref<InputEvent> &p_event, const Color &p_color);
 	void _recent_preset_pressed(const bool pressed, ColorPresetButton *p_preset);
-	void _picker_texture_input(const Ref<InputEvent> &p_event);
 	void _text_changed(const String &p_new_text);
 	void _add_preset_pressed();
-	void _pick_button_pressed();
 	void _html_focus_exit();
+	void _pick_button_pressed();
+	void _pick_finished();
+	// Legacy color picking.
+	void _pick_button_pressed_legacy();
+	void _picker_texture_input(const Ref<InputEvent> &p_event);
 
 	inline int _get_preset_size();
 	void _add_preset_button(int p_size, const Color &p_color);
@@ -286,7 +296,6 @@ public:
 #ifdef TOOLS_ENABLED
 	void set_editor_settings(Object *p_editor_settings);
 #endif
-
 	HSlider *get_slider(int idx);
 	Vector<float> get_active_slider_values();
 

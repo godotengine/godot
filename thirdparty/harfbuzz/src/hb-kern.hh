@@ -53,7 +53,7 @@ struct hb_kern_machine_t
       return;
 
     buffer->unsafe_to_concat ();
-    OT::hb_ot_apply_context_t c (1, font, buffer);
+    OT::hb_ot_apply_context_t c (1, font, buffer, hb_blob_get_empty ());
     c.set_lookup_mask (kern_mask);
     c.set_lookup_props (OT::LookupFlag::IgnoreMarks);
     auto &skippy_iter = c.iter_input;

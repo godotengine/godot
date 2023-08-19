@@ -74,8 +74,11 @@ float ProceduralSkyMaterial::get_sky_energy_multiplier() const {
 
 void ProceduralSkyMaterial::set_sky_cover(const Ref<Texture2D> &p_sky_cover) {
 	sky_cover = p_sky_cover;
-	RID tex_rid = p_sky_cover.is_valid() ? p_sky_cover->get_rid() : RID();
-	RS::get_singleton()->material_set_param(_get_material(), "sky_cover", tex_rid);
+	if (p_sky_cover.is_valid()) {
+		RS::get_singleton()->material_set_param(_get_material(), "sky_cover", p_sky_cover->get_rid());
+	} else {
+		RS::get_singleton()->material_set_param(_get_material(), "sky_cover", Variant());
+	}
 }
 
 Ref<Texture2D> ProceduralSkyMaterial::get_sky_cover() const {
@@ -365,8 +368,11 @@ ProceduralSkyMaterial::~ProceduralSkyMaterial() {
 
 void PanoramaSkyMaterial::set_panorama(const Ref<Texture2D> &p_panorama) {
 	panorama = p_panorama;
-	RID tex_rid = p_panorama.is_valid() ? p_panorama->get_rid() : RID();
-	RS::get_singleton()->material_set_param(_get_material(), "source_panorama", tex_rid);
+	if (p_panorama.is_valid()) {
+		RS::get_singleton()->material_set_param(_get_material(), "source_panorama", p_panorama->get_rid());
+	} else {
+		RS::get_singleton()->material_set_param(_get_material(), "source_panorama", Variant());
+	}
 }
 
 Ref<Texture2D> PanoramaSkyMaterial::get_panorama() const {
@@ -558,8 +564,11 @@ bool PhysicalSkyMaterial::get_use_debanding() const {
 
 void PhysicalSkyMaterial::set_night_sky(const Ref<Texture2D> &p_night_sky) {
 	night_sky = p_night_sky;
-	RID tex_rid = p_night_sky.is_valid() ? p_night_sky->get_rid() : RID();
-	RS::get_singleton()->material_set_param(_get_material(), "night_sky", tex_rid);
+	if (p_night_sky.is_valid()) {
+		RS::get_singleton()->material_set_param(_get_material(), "night_sky", p_night_sky->get_rid());
+	} else {
+		RS::get_singleton()->material_set_param(_get_material(), "night_sky", Variant());
+	}
 }
 
 Ref<Texture2D> PhysicalSkyMaterial::get_night_sky() const {

@@ -98,7 +98,6 @@ Variant GodotSoftBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
 		} break;
 		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
 			ERR_FAIL_V_MSG(Vector3(), "Angular velocity is not supported for Soft bodies.");
-			return Vector3();
 		} break;
 		case PhysicsServer3D::BODY_STATE_SLEEPING: {
 			ERR_FAIL_V_MSG(false, "Sleeping state is not supported for Soft bodies.");
@@ -1267,7 +1266,7 @@ struct _SoftBodyIntersectSegmentInfo {
 	}
 };
 
-bool GodotSoftBodyShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
+bool GodotSoftBodyShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, int &r_face_index, bool p_hit_back_faces) const {
 	_SoftBodyIntersectSegmentInfo query_info;
 	query_info.soft_body = soft_body;
 	query_info.from = p_begin;

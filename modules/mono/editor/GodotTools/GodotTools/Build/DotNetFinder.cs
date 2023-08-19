@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using JetBrains.Annotations;
 using OS = GodotTools.Utils.OS;
 
@@ -57,6 +58,11 @@ namespace GodotTools.Build
                 UseShellExecute = false,
                 RedirectStandardOutput = true
             };
+
+            if (OperatingSystem.IsWindows())
+            {
+                process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+            }
 
             process.StartInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
 

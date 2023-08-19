@@ -103,7 +103,7 @@ namespace Godot
         ///
         /// Note: This method has an abnormally high amount
         /// of floating-point error, so methods such as
-        /// <see cref="Mathf.IsZeroApprox"/> will not work reliably.
+        /// <see cref="Mathf.IsZeroApprox(real_t)"/> will not work reliably.
         /// </summary>
         /// <param name="to">The other quaternion.</param>
         /// <returns>The angle between the quaternions.</returns>
@@ -320,7 +320,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this quaternion is finite, by calling
-        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
         /// </summary>
         /// <returns>Whether this vector is finite or not.</returns>
         public readonly bool IsFinite()

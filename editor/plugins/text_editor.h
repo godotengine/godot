@@ -38,6 +38,8 @@
 class TextEditor : public ScriptEditorBase {
 	GDCLASS(TextEditor, ScriptEditorBase);
 
+	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
+
 private:
 	CodeTextEditor *code_editor = nullptr;
 
@@ -72,6 +74,7 @@ private:
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
 		EDIT_CAPITALIZE,
+		EDIT_TOGGLE_WORD_WRAP,
 		EDIT_TOGGLE_FOLD_LINE,
 		EDIT_FOLD_ALL_LINES,
 		EDIT_UNFOLD_ALL_LINES,
@@ -130,8 +133,7 @@ public:
 	virtual void clear_executing_line() override;
 	virtual void trim_trailing_whitespace() override;
 	virtual void insert_final_newline() override;
-	virtual void convert_indent_to_spaces() override;
-	virtual void convert_indent_to_tabs() override;
+	virtual void convert_indent() override;
 	virtual void ensure_focus() override;
 	virtual void tag_saved_version() override;
 	virtual void update_settings() override;

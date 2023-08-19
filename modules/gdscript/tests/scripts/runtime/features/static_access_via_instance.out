@@ -1,0 +1,25 @@
+GDTEST_OK
+true
+{ "VALUE": 111 }
+111
+222
+333
+444
+test_self before: 1
+test_self after: 2
+true
+{ "VALUE": 111 }
+111
+222
+333
+444
+hard before: 2
+hard after: 3
+true
+{ "VALUE": 111 }
+111
+222
+333
+444
+weak before: 3
+weak after: 4

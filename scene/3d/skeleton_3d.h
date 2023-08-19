@@ -125,6 +125,7 @@ private:
 	bool process_order_dirty = false;
 
 	Vector<int> parentless_bones;
+	HashMap<String, int> name_to_bone_index;
 
 	void _make_dirty();
 	bool dirty = false;

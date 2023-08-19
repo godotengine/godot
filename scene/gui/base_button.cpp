@@ -40,7 +40,7 @@ void BaseButton::_unpress_group() {
 		return;
 	}
 
-	if (toggle_mode) {
+	if (toggle_mode && !button_group->is_allow_unpress()) {
 		status.pressed = true;
 	}
 
@@ -366,11 +366,9 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (toggle_mode) {
 			status.pressed = !status.pressed;
 
-			if (status.pressed) {
-				_unpress_group();
-				if (button_group.is_valid()) {
-					button_group->emit_signal(SNAME("pressed"), this);
-				}
+			_unpress_group();
+			if (button_group.is_valid()) {
+				button_group->emit_signal(SNAME("pressed"), this);
 			}
 
 			_toggled(status.pressed);
@@ -470,12 +468,12 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
 
 	GDVIRTUAL_BIND(_pressed);
-	GDVIRTUAL_BIND(_toggled, "button_pressed");
+	GDVIRTUAL_BIND(_toggled, "toggled_on");
 
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("button_up"));
 	ADD_SIGNAL(MethodInfo("button_down"));
-	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
+	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "toggled_on")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
@@ -537,9 +535,20 @@ BaseButton *ButtonGroup::get_pressed_button() {
 	return nullptr;
 }
 
+void ButtonGroup::set_allow_unpress(bool p_enabled) {
+	allow_unpress = p_enabled;
+}
+bool ButtonGroup::is_allow_unpress() {
+	return allow_unpress;
+}
+
 void ButtonGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &ButtonGroup::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("get_buttons"), &ButtonGroup::_get_buttons);
+	ClassDB::bind_method(D_METHOD("set_allow_unpress", "enabled"), &ButtonGroup::set_allow_unpress);
+	ClassDB::bind_method(D_METHOD("is_allow_unpress"), &ButtonGroup::is_allow_unpress);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_unpress"), "set_allow_unpress", "is_allow_unpress");
 
 	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
 }

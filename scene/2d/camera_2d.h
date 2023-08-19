@@ -85,6 +85,7 @@ protected:
 	bool drag_vertical_offset_changed = false;
 
 	Point2 camera_screen_center;
+	bool _is_editing_in_editor() const;
 	void _update_process_callback();
 	void _update_scroll();
 

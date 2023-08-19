@@ -38,11 +38,11 @@
 #include "scene/3d/sprite_3d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/nine_patch_rect.h"
-#include "scene/resources/style_box.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/style_box_texture.h"
 
-class ViewPanner;
+class AtlasTexture;
 class OptionButton;
+class ViewPanner;
 
 class TextureRegionEditor : public AcceptDialog {
 	GDCLASS(TextureRegionEditor, AcceptDialog);

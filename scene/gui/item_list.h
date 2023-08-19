@@ -84,11 +84,13 @@ private:
 	};
 
 	int current = -1;
+	int hovered = -1;
 
 	bool shape_changed = true;
 
 	bool ensure_selected_visible = false;
 	bool same_column_width = false;
+	bool allow_search = true;
 
 	bool auto_height = false;
 	float auto_height_value = 0.0;
@@ -130,12 +132,14 @@ private:
 		Ref<Font> font;
 		int font_size = 0;
 		Color font_color;
+		Color font_hovered_color;
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
 
 		int line_separation = 0;
 		int icon_margin = 0;
+		Ref<StyleBox> hovered_style;
 		Ref<StyleBox> selected_style;
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
@@ -146,6 +150,7 @@ private:
 	void _scroll_changed(double);
 	void _check_shape_changed();
 	void _shape_text(int p_idx);
+	void _mouse_exited();
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -206,6 +211,8 @@ public:
 	void set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color);
 	Color get_item_custom_fg_color(int p_idx) const;
 
+	Rect2 get_item_rect(int p_idx, bool p_expand = true) const;
+
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
@@ -253,6 +260,9 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	void set_allow_search(bool p_allow);
+	bool get_allow_search() const;
 
 	void ensure_current_is_visible();
 

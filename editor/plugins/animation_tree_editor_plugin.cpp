@@ -66,11 +66,6 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 
 	Vector<String> path;
 	if (tree) {
-		if (tree->has_meta("_tree_edit_path")) {
-			path = tree->get_meta("_tree_edit_path");
-		} else {
-			current_root = ObjectID();
-		}
 		edit_path(path);
 	}
 }
@@ -246,7 +241,8 @@ bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 }
 
 Vector<String> AnimationTreeEditor::get_animation_list() {
-	if (!singleton->is_visible()) {
+	if (!singleton->tree || !singleton->is_visible()) {
+		// When tree is empty, singleton not in the main thread.
 		return Vector<String>();
 	}
 

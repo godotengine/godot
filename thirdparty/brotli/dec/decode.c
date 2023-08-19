@@ -113,8 +113,9 @@ void BrotliDecoderDestroyInstance(BrotliDecoderState* state) {
 
 /* Saves error code and converts it to BrotliDecoderResult. */
 static BROTLI_NOINLINE BrotliDecoderResult SaveErrorCode(
-    BrotliDecoderState* s, BrotliDecoderErrorCode e) {
+    BrotliDecoderState* s, BrotliDecoderErrorCode e, size_t consumed_input) {
   s->error_code = (int)e;
+  s->used_input += consumed_input;
   switch (e) {
     case BROTLI_DECODER_SUCCESS:
       return BROTLI_DECODER_RESULT_SUCCESS;
@@ -1172,7 +1173,7 @@ static BROTLI_INLINE void DetectTrivialLiteralBlockTypes(
     size_t sample = s->context_map[offset];
     size_t j;
     for (j = 0; j < (1u << BROTLI_LITERAL_CONTEXT_BITS);) {
-      BROTLI_REPEAT(4, error |= s->context_map[offset + j++] ^ sample;)
+      BROTLI_REPEAT_4({ error |= s->context_map[offset + j++] ^ sample; })
     }
     if (error == 0) {
       s->trivial_literal_contexts[i >> 5] |= 1u << (i & 31);
@@ -1351,6 +1352,57 @@ static BROTLI_BOOL BROTLI_NOINLINE BrotliEnsureRingBuffer(
   s->ringbuffer_end = s->ringbuffer + s->ringbuffer_size;
 
   return BROTLI_TRUE;
+}
+
+static BrotliDecoderErrorCode BROTLI_NOINLINE
+SkipMetadataBlock(BrotliDecoderState* s) {
+  BrotliBitReader* br = &s->br;
+
+  if (s->meta_block_remaining_len == 0) {
+    return BROTLI_DECODER_SUCCESS;
+  }
+
+  BROTLI_DCHECK((BrotliGetAvailableBits(br) & 7) == 0);
+
+  /* Drain accumulator. */
+  if (BrotliGetAvailableBits(br) >= 8) {
+    uint8_t buffer[8];
+    int nbytes = (int)(BrotliGetAvailableBits(br)) >> 3;
+    BROTLI_DCHECK(nbytes <= 8);
+    if (nbytes > s->meta_block_remaining_len) {
+      nbytes = s->meta_block_remaining_len;
+    }
+    BrotliCopyBytes(buffer, br, (size_t)nbytes);
+    if (s->metadata_chunk_func) {
+      s->metadata_chunk_func(s->metadata_callback_opaque, buffer,
+                             (size_t)nbytes);
+    }
+    s->meta_block_remaining_len -= nbytes;
+    if (s->meta_block_remaining_len == 0) {
+      return BROTLI_DECODER_SUCCESS;
+    }
+  }
+
+  /* Direct access to metadata is possible. */
+  int nbytes = (int)BrotliGetRemainingBytes(br);
+  if (nbytes > s->meta_block_remaining_len) {
+    nbytes = s->meta_block_remaining_len;
+  }
+  if (nbytes > 0) {
+    if (s->metadata_chunk_func) {
+      s->metadata_chunk_func(s->metadata_callback_opaque, br->next_in,
+                             (size_t)nbytes);
+    }
+    BrotliDropBytes(br, (size_t)nbytes);
+    s->meta_block_remaining_len -= nbytes;
+    if (s->meta_block_remaining_len == 0) {
+      return BROTLI_DECODER_SUCCESS;
+    }
+  }
+
+  BROTLI_DCHECK(BrotliGetRemainingBytes(br) == 0);
+
+  return BROTLI_DECODER_NEEDS_MORE_INPUT;
 }
 
 static BrotliDecoderErrorCode BROTLI_NOINLINE CopyUncompressedBlockToOutput(
@@ -2243,6 +2295,9 @@ BrotliDecoderResult BrotliDecoderDecompressStream(
     size_t* available_out, uint8_t** next_out, size_t* total_out) {
   BrotliDecoderErrorCode result = BROTLI_DECODER_SUCCESS;
   BrotliBitReader* br = &s->br;
+  size_t input_size = *available_in;
+#define BROTLI_SAVE_ERROR_CODE(code) \
+    SaveErrorCode(s, (code), input_size - *available_in)
   /* Ensure that |total_out| is set, even if no data will ever be pushed out. */
   if (total_out) {
     *total_out = s->partial_pos_out;
@@ -2252,8 +2307,8 @@ BrotliDecoderResult BrotliDecoderDecompressStream(
     return BROTLI_DECODER_RESULT_ERROR;
   }
   if (*available_out && (!next_out || !*next_out)) {
-    return SaveErrorCode(
-        s, BROTLI_FAILURE(BROTLI_DECODER_ERROR_INVALID_ARGUMENTS));
+    return BROTLI_SAVE_ERROR_CODE(
+        BROTLI_FAILURE(BROTLI_DECODER_ERROR_INVALID_ARGUMENTS));
   }
   if (!*available_out) next_out = 0;
   if (s->buffer_length == 0) {  /* Just connect bit reader to input stream. */
@@ -2410,6 +2465,10 @@ BrotliDecoderResult BrotliDecoderDecompressStream(
         }
         if (s->is_metadata) {
           s->state = BROTLI_STATE_METADATA;
+          if (s->metadata_start_func) {
+            s->metadata_start_func(s->metadata_callback_opaque,
+                                   (size_t)s->meta_block_remaining_len);
+          }
           break;
         }
         if (s->meta_block_remaining_len == 0) {
@@ -2502,17 +2561,11 @@ BrotliDecoderResult BrotliDecoderDecompressStream(
       }
 
       case BROTLI_STATE_METADATA:
-        for (; s->meta_block_remaining_len > 0; --s->meta_block_remaining_len) {
-          uint32_t bits;
-          /* Read one byte and ignore it. */
-          if (!BrotliSafeReadBits(br, 8, &bits)) {
-            result = BROTLI_DECODER_NEEDS_MORE_INPUT;
-            break;
-          }
+        result = SkipMetadataBlock(s);
+        if (result != BROTLI_DECODER_SUCCESS) {
+          break;
         }
-        if (result == BROTLI_DECODER_SUCCESS) {
-          s->state = BROTLI_STATE_METABLOCK_DONE;
-        }
+        s->state = BROTLI_STATE_METABLOCK_DONE;
         break;
 
       case BROTLI_STATE_METABLOCK_HEADER_2: {
@@ -2586,7 +2639,7 @@ BrotliDecoderResult BrotliDecoderDecompressStream(
             s, &s->distance_hgroup, distance_alphabet_size_max,
             distance_alphabet_size_limit, s->num_dist_htrees);
         if (!allocation_success) {
-          return SaveErrorCode(s,
+          return BROTLI_SAVE_ERROR_CODE(
               BROTLI_FAILURE(BROTLI_DECODER_ERROR_ALLOC_TREE_GROUPS));
         }
         s->loop_counter = 0;
@@ -2600,7 +2653,7 @@ BrotliDecoderResult BrotliDecoderDecompressStream(
           case 0: hgroup = &s->literal_hgroup; break;
           case 1: hgroup = &s->insert_copy_hgroup; break;
           case 2: hgroup = &s->distance_hgroup; break;
-          default: return SaveErrorCode(s, BROTLI_FAILURE(
+          default: return BROTLI_SAVE_ERROR_CODE(BROTLI_FAILURE(
               BROTLI_DECODER_ERROR_UNREACHABLE));  /* COV_NF_LINE */
         }
         result = HuffmanTreeGroupDecode(hgroup, s);
@@ -2710,10 +2763,11 @@ BrotliDecoderResult BrotliDecoderDecompressStream(
             break;
           }
         }
-        return SaveErrorCode(s, result);
+        return BROTLI_SAVE_ERROR_CODE(result);
     }
   }
-  return SaveErrorCode(s, result);
+  return BROTLI_SAVE_ERROR_CODE(result);
+#undef BROTLI_SAVE_ERROR_CODE
 }
 
 BROTLI_BOOL BrotliDecoderHasMoreOutput(const BrotliDecoderState* s) {
@@ -2743,7 +2797,7 @@ const uint8_t* BrotliDecoderTakeOutput(BrotliDecoderState* s, size_t* size) {
   } else {
     /* ... or stream is broken. Normally this should be caught by
        BrotliDecoderDecompressStream, this is just a safeguard. */
-    if ((int)status < 0) SaveErrorCode(s, status);
+    if ((int)status < 0) SaveErrorCode(s, status, 0);
     *size = 0;
     result = 0;
   }
@@ -2776,8 +2830,17 @@ const char* BrotliDecoderErrorString(BrotliDecoderErrorCode c) {
   }
 }
 
-uint32_t BrotliDecoderVersion() {
+uint32_t BrotliDecoderVersion(void) {
   return BROTLI_VERSION;
+}
+
+void BrotliDecoderSetMetadataCallbacks(
+    BrotliDecoderState* state,
+    brotli_decoder_metadata_start_func start_func,
+    brotli_decoder_metadata_chunk_func chunk_func, void* opaque) {
+  state->metadata_start_func = start_func;
+  state->metadata_chunk_func = chunk_func;
+  state->metadata_callback_opaque = opaque;
 }
 
 /* Escalate internal functions visibility; for testing purposes only. */

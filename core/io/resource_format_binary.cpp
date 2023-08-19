@@ -445,13 +445,12 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 						WARN_PRINT("Broken external resource! (index out of size)");
 						r_v = Variant();
 					} else {
-						if (external_resources[erindex].cache.is_null()) {
-							//cache not here yet, wait for it?
-							if (use_sub_threads) {
-								Error err;
-								external_resources.write[erindex].cache = ResourceLoader::load_threaded_get(external_resources[erindex].path, &err);
-
-								if (err != OK || external_resources[erindex].cache.is_null()) {
+						Ref<ResourceLoader::LoadToken> &load_token = external_resources.write[erindex].load_token;
+						if (load_token.is_valid()) { // If not valid, it's OK since then we know this load accepts broken dependencies.
+							Error err;
+							Ref<Resource> res = ResourceLoader::_load_complete(*load_token.ptr(), &err);
+							if (res.is_null()) {
+								if (!ResourceLoader::is_cleaning_tasks()) {
 									if (!ResourceLoader::get_abort_on_missing_resources()) {
 										ResourceLoader::notify_dependency_error(local_path, external_resources[erindex].path, external_resources[erindex].type);
 									} else {
@@ -459,12 +458,11 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 										ERR_FAIL_V_MSG(error, "Can't load dependency: " + external_resources[erindex].path + ".");
 									}
 								}
+							} else {
+								r_v = res;
 							}
 						}
-
-						r_v = external_resources[erindex].cache;
 					}
-
 				} break;
 				default: {
 					ERR_FAIL_V(ERR_FILE_CORRUPT);
@@ -684,28 +682,13 @@ Error ResourceLoaderBinary::load() {
 		}
 
 		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
-
-		if (!use_sub_threads) {
-			external_resources.write[i].cache = ResourceLoader::load(path, external_resources[i].type);
-
-			if (external_resources[i].cache.is_null()) {
-				if (!ResourceLoader::get_abort_on_missing_resources()) {
-					ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
-				} else {
-					error = ERR_FILE_MISSING_DEPENDENCIES;
-					ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
-				}
-			}
-
-		} else {
-			Error err = ResourceLoader::load_threaded_request(path, external_resources[i].type, use_sub_threads, ResourceFormatLoader::CACHE_MODE_REUSE, local_path);
-			if (err != OK) {
-				if (!ResourceLoader::get_abort_on_missing_resources()) {
-					ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
-				} else {
-					error = ERR_FILE_MISSING_DEPENDENCIES;
-					ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
-				}
+		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, ResourceFormatLoader::CACHE_MODE_REUSE);
+		if (!external_resources[i].load_token.is_valid()) {
+			if (!ResourceLoader::get_abort_on_missing_resources()) {
+				ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
+			} else {
+				error = ERR_FILE_MISSING_DEPENDENCIES;
+				ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
 			}
 		}
 	}
@@ -937,14 +920,23 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 
 	for (int i = 0; i < external_resources.size(); i++) {
 		String dep;
+		String fallback_path;
+
 		if (external_resources[i].uid != ResourceUID::INVALID_ID) {
 			dep = ResourceUID::get_singleton()->id_to_text(external_resources[i].uid);
+			fallback_path = external_resources[i].path; // Used by Dependency Editor, in case uid path fails.
 		} else {
 			dep = external_resources[i].path;
 		}
 
 		if (p_add_types && !external_resources[i].type.is_empty()) {
 			dep += "::" + external_resources[i].type;
+		}
+		if (!fallback_path.is_empty()) {
+			if (!p_add_types) {
+				dep += "::"; // Ensure that path comes third, even if there is no type.
+			}
+			dep += "::" + fallback_path;
 		}
 
 		p_dependencies->push_back(dep);
@@ -1783,9 +1775,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 		case Variant::OBJECT: {
 			f->store_32(VARIANT_OBJECT);
 			Ref<Resource> res = p_property;
-			if (res.is_null()) {
+			if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
 				f->store_32(OBJECT_EMPTY);
-				return; // don't save it
+				return; // Don't save it.
 			}
 
 			if (!res->is_built_in()) {
@@ -1950,7 +1942,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 		case Variant::OBJECT: {
 			Ref<Resource> res = p_variant;
 
-			if (res.is_null() || external_resources.has(res)) {
+			if (res.is_null() || external_resources.has(res) || res->get_meta(SNAME("_skip_save_"), false)) {
 				return;
 			}
 
@@ -1968,6 +1960,8 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				return;
 			}
 
+			resource_set.insert(res);
+
 			List<PropertyInfo> property_list;
 
 			res->get_property_list(&property_list);
@@ -1976,14 +1970,17 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				if (E.usage & PROPERTY_USAGE_STORAGE) {
 					Variant value = res->get(E.name);
 					if (E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+						NonPersistentKey npk;
+						npk.base = res;
+						npk.property = E.name;
+						non_persistent_map[npk] = value;
+
 						Ref<Resource> sres = value;
 						if (sres.is_valid()) {
-							NonPersistentKey npk;
-							npk.base = res;
-							npk.property = E.name;
-							non_persistent_map[npk] = sres;
 							resource_set.insert(sres);
 							saved_resources.push_back(sres);
+						} else {
+							_find_resources(value);
 						}
 					} else {
 						_find_resources(value);
@@ -1991,7 +1988,6 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				}
 			}
 
-			resource_set.insert(res);
 			saved_resources.push_back(res);
 
 		} break;

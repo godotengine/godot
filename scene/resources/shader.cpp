@@ -62,11 +62,32 @@ void Shader::set_include_path(const String &p_path) {
 }
 
 void Shader::set_code(const String &p_code) {
-	for (Ref<ShaderInclude> E : include_dependencies) {
-		E->disconnect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
+	for (const Ref<ShaderInclude> &E : include_dependencies) {
+		E->disconnect_changed(callable_mp(this, &Shader::_dependency_changed));
 	}
 
-	String type = ShaderLanguage::get_shader_type(p_code);
+	code = p_code;
+	String pp_code = p_code;
+
+	{
+		String path = get_path();
+		if (path.is_empty()) {
+			path = include_path;
+		}
+		// Preprocessor must run here and not in the server because:
+		// 1) Need to keep track of include dependencies at resource level
+		// 2) Server does not do interaction with Resource filetypes, this is a scene level feature.
+		HashSet<Ref<ShaderInclude>> new_include_dependencies;
+		ShaderPreprocessor preprocessor;
+		Error result = preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_include_dependencies);
+		if (result == OK) {
+			// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
+			include_dependencies = new_include_dependencies;
+		}
+	}
+
+	// Try to get the shader type from the final, fully preprocessed shader code.
+	String type = ShaderLanguage::get_shader_type(pp_code);
 
 	if (type == "canvas_item") {
 		mode = MODE_CANVAS_ITEM;
@@ -80,28 +101,8 @@ void Shader::set_code(const String &p_code) {
 		mode = MODE_SPATIAL;
 	}
 
-	code = p_code;
-	String pp_code = p_code;
-
-	HashSet<Ref<ShaderInclude>> new_include_dependencies;
-
-	{
-		String path = get_path();
-		if (path.is_empty()) {
-			path = include_path;
-		}
-		// Preprocessor must run here and not in the server because:
-		// 1) Need to keep track of include dependencies at resource level
-		// 2) Server does not do interaction with Resource filetypes, this is a scene level feature.
-		ShaderPreprocessor preprocessor;
-		preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_include_dependencies);
-	}
-
-	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
-	include_dependencies = new_include_dependencies;
-
-	for (Ref<ShaderInclude> E : include_dependencies) {
-		E->connect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
+	for (const Ref<ShaderInclude> &E : include_dependencies) {
+		E->connect_changed(callable_mp(this, &Shader::_dependency_changed));
 	}
 
 	RenderingServer::get_singleton()->shader_set_code(shader, pp_code);

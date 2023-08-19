@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorDebuggerPlugin" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorDebuggerPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A base class to implement debugger plugins.
 	</brief_description>
@@ -81,7 +81,7 @@
 			<return type="Array" />
 			<description>
 				Returns an array of [EditorDebuggerSession] currently available to this debugger plugin.
-				Note: Not sessions in the array may be inactive, check their state via [method EditorDebuggerSession.is_active]
+				[b]Note:[/b] Not sessions in the array may be inactive, check their state via [method EditorDebuggerSession.is_active]
 			</description>
 		</method>
 	</methods>

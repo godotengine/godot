@@ -191,10 +191,16 @@ void DependencyEditor::_update_list() {
 
 		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(path);
 		if (uid != ResourceUID::INVALID_ID) {
-			// dependency is in uid format, obtain proper path
-			ERR_CONTINUE(!ResourceUID::get_singleton()->has_id(uid));
-
-			path = ResourceUID::get_singleton()->get_id_path(uid);
+			// Dependency is in uid format, obtain proper path.
+			if (ResourceUID::get_singleton()->has_id(uid)) {
+				path = ResourceUID::get_singleton()->get_id_path(uid);
+			} else if (n.get_slice_count("::") >= 3) {
+				// If uid can't be found, try to use fallback path.
+				path = n.get_slice("::", 2);
+			} else {
+				ERR_PRINT("Invalid dependency UID and fallback path.");
+				continue;
+			}
 		}
 
 		String name = path.get_file();
@@ -286,10 +292,23 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 	file_options->clear();
 	file_options->reset_size();
 	if (p_item >= 0) {
-		if (owners->get_selected_items().size() == 1) {
-			file_options->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scene"), FILE_OPEN);
+		PackedInt32Array selected_items = owners->get_selected_items();
+		bool only_scenes_selected = true;
+
+		for (int i = 0; i < selected_items.size(); i++) {
+			int item_idx = selected_items[i];
+			if (ResourceLoader::get_resource_type(owners->get_item_text(item_idx)) != "PackedScene") {
+				only_scenes_selected = false;
+				break;
+			}
+		}
+
+		if (only_scenes_selected) {
+			file_options->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_OPEN);
+		} else if (selected_items.size() == 1) {
+			file_options->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
 		} else {
-			file_options->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scenes"), FILE_OPEN);
+			return;
 		}
 	}
 
@@ -303,9 +322,19 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 
 	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
 		EditorNode::get_singleton()->open_request(fpath);
-		hide();
-		emit_signal(SNAME("confirmed"));
+	} else {
+		EditorNode::get_singleton()->load_resource(fpath);
 	}
+	hide();
+	emit_signal(SNAME("confirmed"));
+}
+
+void DependencyEditorOwners::_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::LEFT) {
+		return;
+	}
+
+	owners->deselect_all();
 }
 
 void DependencyEditorOwners::_file_option(int p_option) {
@@ -372,6 +401,7 @@ DependencyEditorOwners::DependencyEditorOwners() {
 	owners->set_select_mode(ItemList::SELECT_MULTI);
 	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
+	owners->connect("empty_clicked", callable_mp(this, &DependencyEditorOwners::_empty_clicked));
 	owners->set_allow_rmb_select(true);
 	add_child(owners);
 }

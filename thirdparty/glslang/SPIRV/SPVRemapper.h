@@ -43,12 +43,6 @@
 
 namespace spv {
 
-// MSVC defines __cplusplus as an older value, even when it supports almost all of 11.
-// We handle that here by making our own symbol.
-#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1700)
-#   define use_cpp11 1
-#endif
-
 class spirvbin_base_t
 {
 public:
@@ -73,27 +67,6 @@ public:
 };
 
 } // namespace SPV
-
-#if !defined (use_cpp11)
-#include <cstdio>
-#include <cstdint>
-
-namespace spv {
-class spirvbin_t : public spirvbin_base_t
-{
-public:
-    spirvbin_t(int /*verbose = 0*/) { }
-
-    void remap(std::vector<std::uint32_t>& /*spv*/, unsigned int /*opts = 0*/)
-    {
-        printf("Tool not compiled for C++11, which is required for SPIR-V remapping.\n");
-        exit(5);
-    }
-};
-
-} // namespace SPV
-
-#else // defined (use_cpp11)
 
 #include <functional>
 #include <cstdint>
@@ -308,5 +281,4 @@ private:
 
 } // namespace SPV
 
-#endif // defined (use_cpp11)
 #endif // SPIRVREMAPPER_H

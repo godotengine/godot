@@ -34,12 +34,6 @@
 
 #include "graph_edit.h"
 
-struct _MinSizeCache {
-	int min_size;
-	bool will_stretch;
-	int final_size;
-};
-
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
 
@@ -292,37 +286,12 @@ void GraphNode::_resort() {
 	connpos_dirty = true;
 }
 
-bool GraphNode::has_point(const Point2 &p_point) const {
-	if (comment) {
-		Ref<StyleBox> comment_sb = get_theme_stylebox(SNAME("comment"));
-		Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
-
-		if (Rect2(get_size() - resizer->get_size(), resizer->get_size()).has_point(p_point)) {
-			return true;
-		}
-
-		if (Rect2(0, 0, get_size().width, comment_sb->get_margin(SIDE_TOP)).has_point(p_point)) {
-			return true;
-		}
-
-		return false;
-
-	} else {
-		return Control::has_point(p_point);
-	}
-}
-
 void GraphNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			Ref<StyleBox> sb;
 
-			if (comment) {
-				sb = get_theme_stylebox(selected ? SNAME("comment_focus") : SNAME("comment"));
-
-			} else {
-				sb = get_theme_stylebox(selected ? SNAME("selected_frame") : SNAME("frame"));
-			}
+			sb = get_theme_stylebox(selected ? SNAME("selected_frame") : SNAME("frame"));
 
 			Ref<StyleBox> sb_slot = get_theme_stylebox(SNAME("slot"));
 
@@ -446,7 +415,7 @@ void GraphNode::_shape() {
 void GraphNode::_edit_set_position(const Point2 &p_position) {
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
-		Point2 offset = (p_position + graph->get_scroll_ofs()) * graph->get_zoom();
+		Point2 offset = (p_position + graph->get_scroll_offset()) * graph->get_zoom();
 		set_position_offset(offset);
 	}
 	set_position(p_position);
@@ -990,7 +959,6 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 	if (resizing && mm.is_valid()) {
 		Vector2 mpos = mm->get_position();
-
 		Vector2 diff = mpos - resizing_from;
 
 		emit_signal(SNAME("resize_request"), resizing_from_size + diff);
@@ -1008,19 +976,6 @@ void GraphNode::set_overlay(Overlay p_overlay) {
 
 GraphNode::Overlay GraphNode::get_overlay() const {
 	return overlay;
-}
-
-void GraphNode::set_comment(bool p_enable) {
-	if (comment == p_enable) {
-		return;
-	}
-
-	comment = p_enable;
-	queue_redraw();
-}
-
-bool GraphNode::is_comment() const {
-	return comment;
 }
 
 void GraphNode::set_resizable(bool p_enable) {
@@ -1053,6 +1008,18 @@ void GraphNode::set_selectable(bool p_selectable) {
 
 bool GraphNode::is_selectable() {
 	return selectable;
+}
+
+Control::CursorShape GraphNode::get_cursor_shape(const Point2 &p_pos) const {
+	if (resizable) {
+		Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
+
+		if (resizing || (p_pos.x > get_size().x - resizer->get_width() && p_pos.y > get_size().y - resizer->get_height())) {
+			return CURSOR_FDIAGSIZE;
+		}
+	}
+
+	return Control::get_cursor_shape(p_pos);
 }
 
 Vector<int> GraphNode::get_allowed_size_flags_horizontal() const {
@@ -1110,9 +1077,6 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position_offset", "offset"), &GraphNode::set_position_offset);
 	ClassDB::bind_method(D_METHOD("get_position_offset"), &GraphNode::get_position_offset);
 
-	ClassDB::bind_method(D_METHOD("set_comment", "comment"), &GraphNode::set_comment);
-	ClassDB::bind_method(D_METHOD("is_comment"), &GraphNode::is_comment);
-
 	ClassDB::bind_method(D_METHOD("set_resizable", "resizable"), &GraphNode::set_resizable);
 	ClassDB::bind_method(D_METHOD("is_resizable"), &GraphNode::is_resizable);
 
@@ -1152,7 +1116,6 @@ void GraphNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draggable"), "set_draggable", "is_draggable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selectable"), "set_selectable", "is_selectable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "comment"), "set_comment", "is_comment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "overlay", PROPERTY_HINT_ENUM, "Disabled,Breakpoint,Position"), "set_overlay", "get_overlay");
 
 	ADD_GROUP("BiDi", "");

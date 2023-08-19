@@ -35,8 +35,8 @@
 #include "servers/rendering_server.h"
 
 bool WorldBoundaryShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	Vector2 point = get_distance() * get_normal();
-	Vector2 l[2][2] = { { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 }, { point, point + get_normal() * 30 } };
+	Vector2 point = distance * normal;
+	Vector2 l[2][2] = { { point - normal.orthogonal() * 100, point + normal.orthogonal() * 100 }, { point, point + normal * 30 } };
 
 	for (int i = 0; i < 2; i++) {
 		Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, l[i]);
@@ -57,11 +57,19 @@ void WorldBoundaryShape2D::_update_shape() {
 }
 
 void WorldBoundaryShape2D::set_normal(const Vector2 &p_normal) {
+	// Can be non-unit but prevent zero.
+	ERR_FAIL_COND(p_normal.is_zero_approx());
+	if (normal == p_normal) {
+		return;
+	}
 	normal = p_normal;
 	_update_shape();
 }
 
 void WorldBoundaryShape2D::set_distance(real_t p_distance) {
+	if (distance == p_distance) {
+		return;
+	}
 	distance = p_distance;
 	_update_shape();
 }
@@ -75,20 +83,20 @@ real_t WorldBoundaryShape2D::get_distance() const {
 }
 
 void WorldBoundaryShape2D::draw(const RID &p_to_rid, const Color &p_color) {
-	Vector2 point = get_distance() * get_normal();
+	Vector2 point = distance * normal;
 	real_t line_width = 3.0;
 
-	Vector2 l1[2] = { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 };
+	Vector2 l1[2] = { point - normal.orthogonal() * 100, point + normal.orthogonal() * 100 };
 	RS::get_singleton()->canvas_item_add_line(p_to_rid, l1[0], l1[1], p_color, line_width);
-	Vector2 l2[2] = { point + get_normal().normalized() * (0.5 * line_width), point + get_normal() * 30 };
+	Vector2 l2[2] = { point + normal.normalized() * (0.5 * line_width), point + normal * 30 };
 	RS::get_singleton()->canvas_item_add_line(p_to_rid, l2[0], l2[1], p_color, line_width);
 }
 
 Rect2 WorldBoundaryShape2D::get_rect() const {
-	Vector2 point = get_distance() * get_normal();
+	Vector2 point = distance * normal;
 
-	Vector2 l1[2] = { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 };
-	Vector2 l2[2] = { point, point + get_normal() * 30 };
+	Vector2 l1[2] = { point - normal.orthogonal() * 100, point + normal.orthogonal() * 100 };
+	Vector2 l2[2] = { point, point + normal * 30 };
 	Rect2 rect;
 	rect.position = l1[0];
 	rect.expand_to(l1[1]);
@@ -109,7 +117,7 @@ void WorldBoundaryShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_distance"), &WorldBoundaryShape2D::get_distance);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "normal"), "set_normal", "get_normal");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:px"), "set_distance", "get_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less,suffix:px"), "set_distance", "get_distance");
 }
 
 WorldBoundaryShape2D::WorldBoundaryShape2D() :

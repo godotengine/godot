@@ -41,6 +41,7 @@
 #include "scene/resources/immediate_mesh.h"
 
 class EditorInspectorPluginSkeleton;
+class EditorPropertyVector3;
 class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
@@ -132,6 +133,8 @@ class Skeleton3DEditor : public VBoxContainer {
 	Button *key_insert_button = nullptr;
 	Button *key_insert_all_button = nullptr;
 
+	EditorInspectorSection *bones_section = nullptr;
+
 	EditorFileDialog *file_dialog = nullptr;
 
 	bool keyable = false;
@@ -146,7 +149,6 @@ class Skeleton3DEditor : public VBoxContainer {
 	EditorFileDialog *file_export_lib = nullptr;
 
 	void update_joint_tree();
-	void update_editors();
 
 	void create_editors();
 

@@ -39,6 +39,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/multi_node_edit.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/packed_scene.h"
 
@@ -48,25 +49,48 @@ void EditorSelectionHistory::cleanup_history() {
 
 		for (int j = 0; j < history[i].path.size(); j++) {
 			if (!history[i].path[j].ref.is_null()) {
-				// Reference is not null - object still alive.
-				continue;
+				// If the node is a MultiNodeEdit node, examine it and see if anything is missing from it.
+				Ref<MultiNodeEdit> multi_node_edit = history[i].path[j].ref;
+				if (multi_node_edit.is_valid()) {
+					Node *root = EditorNode::get_singleton()->get_edited_scene();
+					if (root) {
+						for (int k = 0; k < multi_node_edit->get_node_count(); k++) {
+							NodePath np = multi_node_edit->get_node(k);
+							Node *multi_node_selected_node = root->get_node_or_null(np);
+							if (!multi_node_selected_node) {
+								fail = true;
+								break;
+							}
+						}
+					} else {
+						fail = true;
+					}
+				} else {
+					// Reference is not null - object still alive.
+					continue;
+				}
 			}
 
-			Object *obj = ObjectDB::get_instance(history[i].path[j].object);
-			if (obj) {
-				Node *n = Object::cast_to<Node>(obj);
-				if (n && n->is_inside_tree()) {
-					// Node valid and inside tree - object still alive.
-					continue;
-				}
-				if (!n) {
-					// Node possibly still alive.
-					continue;
-				}
-			} // Else: object not valid - not alive.
+			if (!fail) {
+				Object *obj = ObjectDB::get_instance(history[i].path[j].object);
+				if (obj) {
+					Node *n = Object::cast_to<Node>(obj);
+					if (n && n->is_inside_tree()) {
+						// Node valid and inside tree - object still alive.
+						continue;
+					}
+					if (!n) {
+						// Node possibly still alive.
+						continue;
+					}
+				} // Else: object not valid - not alive.
 
-			fail = true;
-			break;
+				fail = true;
+			}
+
+			if (fail) {
+				break;
+			}
 		}
 
 		if (fail) {
@@ -276,7 +300,7 @@ void EditorData::get_editor_breakpoints(List<String> *p_breakpoints) {
 	}
 }
 
-Dictionary EditorData::get_editor_states() const {
+Dictionary EditorData::get_editor_plugin_states() const {
 	Dictionary metadata;
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		Dictionary state = editor_plugins[i]->get_state();
@@ -295,7 +319,7 @@ Dictionary EditorData::get_scene_editor_states(int p_idx) const {
 	return es.editor_states;
 }
 
-void EditorData::set_editor_states(const Dictionary &p_states) {
+void EditorData::set_editor_plugin_states(const Dictionary &p_states) {
 	if (p_states.is_empty()) {
 		for (EditorPlugin *ep : editor_plugins) {
 			ep->clear();
@@ -461,6 +485,24 @@ EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
 	return editor_plugins[p_idx];
 }
 
+void EditorData::add_extension_editor_plugin(const StringName &p_class_name, EditorPlugin *p_plugin) {
+	ERR_FAIL_COND(extension_editor_plugins.has(p_class_name));
+	extension_editor_plugins.insert(p_class_name, p_plugin);
+}
+
+void EditorData::remove_extension_editor_plugin(const StringName &p_class_name) {
+	extension_editor_plugins.erase(p_class_name);
+}
+
+bool EditorData::has_extension_editor_plugin(const StringName &p_class_name) {
+	return extension_editor_plugins.has(p_class_name);
+}
+
+EditorPlugin *EditorData::get_extension_editor_plugin(const StringName &p_class_name) {
+	EditorPlugin **plugin = extension_editor_plugins.getptr(p_class_name);
+	return plugin == nullptr ? nullptr : *plugin;
+}
+
 void EditorData::add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND_MSG(p_script.is_null(), "It's not a reference to a valid Script object.");
 	CustomType ct;
@@ -598,7 +640,7 @@ void EditorData::remove_scene(int p_idx) {
 	}
 
 	if (!edited_scene[p_idx].path.is_empty()) {
-		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(edited_scene[p_idx].path);
+		EditorNode::get_singleton()->emit_signal("scene_closed", edited_scene[p_idx].path);
 	}
 
 	undo_redo_manager->discard_history(edited_scene[p_idx].history_id);
@@ -687,6 +729,16 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 int EditorData::get_edited_scene() const {
 	return current_edited_scene;
+}
+
+int EditorData::get_edited_scene_from_path(const String &p_path) const {
+	for (int i = 0; i < edited_scene.size(); i++) {
+		if (edited_scene[i].path == p_path) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 void EditorData::set_edited_scene(int p_idx) {
@@ -857,7 +909,7 @@ void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorSel
 	es.selection = p_selection->get_full_selected_node_list();
 	es.history_current = p_history->current_elem_idx;
 	es.history_stored = p_history->history;
-	es.editor_states = get_editor_states();
+	es.editor_states = get_editor_plugin_states();
 	es.custom_state = p_custom;
 }
 
@@ -873,7 +925,7 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 	for (Node *E : es.selection) {
 		p_selection->add_node(E);
 	}
-	set_editor_states(es.editor_states);
+	set_editor_plugin_states(es.editor_states);
 
 	return es.custom_state;
 }
@@ -1061,7 +1113,9 @@ Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {
 
 Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 	// Take from the local cache, if available.
-	if (_script_icon_cache.has(p_script) && _script_icon_cache[p_script].is_valid()) {
+	if (_script_icon_cache.has(p_script)) {
+		// Can be an empty value if we can't resolve any icon for this script.
+		// An empty value is still cached to avoid unnecessary attempts at resolving it again.
 		return _script_icon_cache[p_script];
 	}
 
@@ -1086,6 +1140,18 @@ Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 
 		// Move to the base class.
 		base_scr = base_scr->get_base_script();
+	}
+
+	// No custom icon was found in the inheritance chain, so check the base
+	// class of the script instead.
+	String base_type;
+	p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
+
+	// Check if the base type is an extension-defined type.
+	Ref<Texture2D> ext_icon = extension_class_get_icon(base_type);
+	if (ext_icon.is_valid()) {
+		_script_icon_cache[p_script] = ext_icon;
+		return ext_icon;
 	}
 
 	// If no icon found, cache it as null.

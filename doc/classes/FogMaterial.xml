@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FogMaterial" inherits="Material" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FogMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		[Material] used with a [FogVolume] to draw things with the volumetric fog effect.
+		A material that controls how volumetric fog is rendered, to be assigned to a [FogVolume].
 	</brief_description>
 	<description>
 		A [Material] resource that can be used by [FogVolume]s to draw volumetric effects.

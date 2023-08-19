@@ -203,11 +203,11 @@ public: // internal methods
 	_FORCE_INLINE_ Ref<VisualShaderNode> get_node_unchecked(Type p_type, int p_id) const {
 		return graph[p_type].nodes[p_id].node;
 	}
-	_FORCE_INLINE_ void get_next_connected_nodes(Type p_type, int p_id, LocalVector<int> &r_list) const {
-		r_list = graph[p_type].nodes[p_id].next_connected_nodes;
+	_FORCE_INLINE_ const LocalVector<int> &get_next_connected_nodes(Type p_type, int p_id) const {
+		return graph[p_type].nodes[p_id].next_connected_nodes;
 	}
-	_FORCE_INLINE_ void get_prev_connected_nodes(Type p_type, int p_id, LocalVector<int> &r_list) const {
-		r_list = graph[p_type].nodes[p_id].prev_connected_nodes;
+	_FORCE_INLINE_ const LocalVector<int> &get_prev_connected_nodes(Type p_type, int p_id) const {
+		return graph[p_type].nodes[p_id].prev_connected_nodes;
 	}
 
 	Vector<int> get_node_list(Type p_type) const;
@@ -289,6 +289,7 @@ public:
 	virtual int get_input_port_count() const = 0;
 	virtual PortType get_input_port_type(int p_port) const = 0;
 	virtual String get_input_port_name(int p_port) const = 0;
+	virtual int get_default_input_port(PortType p_type) const;
 
 	virtual void set_input_port_default_value(int p_port, const Variant &p_value, const Variant &p_prev_value = Variant());
 	Variant get_input_port_default_value(int p_port) const; // if NIL (default if node does not set anything) is returned, it means no default value is wanted if disconnected, thus no input var must be supplied (empty string will be supplied)
@@ -367,6 +368,7 @@ protected:
 	virtual int get_input_port_count() const override;
 	virtual PortType get_input_port_type(int p_port) const override;
 	virtual String get_input_port_name(int p_port) const override;
+	virtual int get_default_input_port(PortType p_type) const override;
 
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
@@ -384,6 +386,7 @@ protected:
 	GDVIRTUAL0RC(int, _get_input_port_count)
 	GDVIRTUAL1RC(PortType, _get_input_port_type, int)
 	GDVIRTUAL1RC(String, _get_input_port_name, int)
+	GDVIRTUAL1RC(int, _get_default_input_port, PortType)
 	GDVIRTUAL0RC(int, _get_output_port_count)
 	GDVIRTUAL1RC(PortType, _get_output_port_type, int)
 	GDVIRTUAL1RC(String, _get_output_port_name, int)
@@ -411,6 +414,12 @@ public:
 
 	bool _is_initialized();
 	void _set_initialized(bool p_enabled);
+
+	String _get_name() const;
+	String _get_description() const;
+	String _get_category() const;
+	PortType _get_return_icon_type() const;
+	bool _is_highend() const;
 };
 
 /////

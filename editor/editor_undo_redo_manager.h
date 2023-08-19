@@ -52,6 +52,7 @@ public:
 		double timestamp = 0;
 		String action_name;
 		UndoRedo::MergeMode merge_mode = UndoRedo::MERGE_DISABLE;
+		bool backward_undo_ops = false;
 	};
 
 	struct History {
@@ -79,8 +80,8 @@ public:
 	int get_history_id_for_object(Object *p_object) const;
 	History &get_history_for_object(Object *p_object);
 
-	void create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE);
-	void create_action(const String &p_name = "", UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, Object *p_custom_context = nullptr);
+	void create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, bool p_backward_undo_ops = false);
+	void create_action(const String &p_name = "", UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, Object *p_custom_context = nullptr, bool p_backward_undo_ops = false);
 
 	void add_do_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 	void add_undo_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);

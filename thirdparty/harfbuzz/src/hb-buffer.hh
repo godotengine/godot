@@ -493,6 +493,13 @@ struct hb_buffer_t
 
   HB_NODISCARD HB_INTERNAL bool enlarge (unsigned int size);
 
+  HB_NODISCARD bool resize (unsigned length)
+  {
+    assert (!have_output);
+    if (unlikely (!ensure (length))) return false;
+    len = length;
+    return true;
+  }
   HB_NODISCARD bool ensure (unsigned int size)
   { return likely (!size || size < allocated) ? true : enlarge (size); }
 
@@ -553,7 +560,7 @@ struct hb_buffer_t
   bool message (hb_font_t *font, const char *fmt, ...) HB_PRINTF_FUNC(3, 4)
   {
 #ifdef HB_NO_BUFFER_MESSAGE
-   return true;
+    return true;
 #else
     if (likely (!messaging ()))
       return true;

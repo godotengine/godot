@@ -40,6 +40,8 @@ msdfgen_enabled = "msdfgen" in env.module_list
 
 if "svg" in env.module_list:
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/thorvg/inc", "#thirdparty/thorvg/src/lib"])
+    # Enable ThorVG static object linking.
+    env_text_server_adv.Append(CPPDEFINES=["TVG_STATIC"])
 
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
@@ -297,6 +299,7 @@ if env["builtin_icu4c"]:
         "common/lsr.cpp",
         "common/lstmbe.cpp",
         "common/messagepattern.cpp",
+        "common/mlbe.cpp",
         "common/normalizer2.cpp",
         "common/normalizer2impl.cpp",
         "common/normlzr.cpp",
@@ -457,7 +460,7 @@ if env["builtin_icu4c"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    icu_data_name = "icudt72l.dat"
+    icu_data_name = "icudt73l.dat"
 
     if env.editor_build:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
@@ -520,7 +523,11 @@ if env["builtin_icu4c"]:
 module_obj = []
 
 if env["builtin_msdfgen"] and msdfgen_enabled:
-    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/msdfgen"])
+    # Treat msdfgen headers as system headers to avoid raising warnings. Not supported on MSVC.
+    if not env.msvc:
+        env_text_server_adv.Append(CPPFLAGS=["-isystem", Dir("#thirdparty/msdfgen").path])
+    else:
+        env_text_server_adv.Prepend(CPPPATH=["#thirdparty/msdfgen"])
 
 if env["builtin_freetype"] and freetype_enabled:
     env_text_server_adv.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])

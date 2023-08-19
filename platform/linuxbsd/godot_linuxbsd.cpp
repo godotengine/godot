@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "os_linuxbsd.h"
+
+#include "main/main.h"
+
 #include <limits.h>
 #include <locale.h>
 #include <stdlib.h>
@@ -36,9 +40,6 @@
 #if defined(SANITIZERS_ENABLED)
 #include <sys/resource.h>
 #endif
-
-#include "main/main.h"
-#include "os_linuxbsd.h"
 
 int main(int argc, char *argv[]) {
 #if defined(SANITIZERS_ENABLED)

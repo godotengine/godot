@@ -63,6 +63,10 @@ ObjectID GDScriptRPCCallable::get_object() const {
 	return object->get_instance_id();
 }
 
+StringName GDScriptRPCCallable::get_method() const {
+	return method;
+}
+
 void GDScriptRPCCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 	r_return_value = object->callp(method, p_arguments, p_argcount, r_call_error);
 }

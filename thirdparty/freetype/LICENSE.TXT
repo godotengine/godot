@@ -29,11 +29,15 @@ The contributed  BDF and PCF  drivers come  with a license  similar to
 that  of the  X Window  System.   It is  compatible to  the above  two
 licenses (see files `src/bdf/README`  and `src/pcf/README`).  The same
 holds   for   the   source    code   files   `src/base/fthash.c`   and
-`include/freetype/internal/fthash.h`; they wer part  of the BDF driver
+`include/freetype/internal/fthash.h`; they were part of the BDF driver
 in earlier FreeType versions.
 
 The gzip  module uses the  zlib license (see  `src/gzip/zlib.h`) which
 too is compatible to the above two licenses.
+
+The files `src/autofit/ft-hb.c` and `src/autofit/ft-hb.h` contain code
+taken almost  verbatim from the  HarfBuzz file `hb-ft.cc`,  which uses
+the 'Old MIT' license, compatible to the above two licenses.
 
 The  MD5 checksum  support  (only used  for  debugging in  development
 builds) is in the public domain.

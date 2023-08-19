@@ -128,7 +128,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.type = Variant::VECTOR3I;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_IVEC4: {
-				pinfo.type = Variant::PACKED_INT32_ARRAY;
+				pinfo.type = Variant::VECTOR4I;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_RECT2I: {
 				pinfo.type = Variant::RECT2I;
@@ -143,7 +143,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.type = Variant::VECTOR3I;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_UVEC4: {
-				pinfo.type = Variant::PACKED_INT32_ARRAY;
+				pinfo.type = Variant::VECTOR4I;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_FLOAT: {
 				pinfo.type = Variant::FLOAT;
@@ -164,7 +164,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.type = Variant::COLOR;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_MAT2: {
-				pinfo.type = Variant::PACKED_INT32_ARRAY;
+				pinfo.type = Variant::PACKED_FLOAT32_ARRAY;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_MAT3: {
 				pinfo.type = Variant::BASIS;

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ParticleProcessMaterial" inherits="Material" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ParticleProcessMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Particle properties for [GPUParticles3D] and [GPUParticles2D] nodes.
+		Holds a particle configuration for [GPUParticles2D] or [GPUParticles3D] nodes.
 	</brief_description>
 	<description>
-		ParticleProcessMaterial defines particle properties and behavior. It is used in the [code]process_material[/code] of [GPUParticles3D] and [GPUParticles2D] emitter nodes.
-		Some of this material's properties are applied to each particle when emitted, while others can have a [CurveTexture] applied to vary values over the lifetime of the particle.
-		Particle animation is available only in [GPUParticles2D]. To use it, attach a [CanvasItemMaterial], with [member CanvasItemMaterial.particles_animation] enabled, to the particles node.
+		[ParticleProcessMaterial] defines particle properties and behavior. It is used in the [code]process_material[/code] of the [GPUParticles2D] and [GPUParticles3D] nodes. Some of this material's properties are applied to each particle when emitted, while others can have a [CurveTexture] or a [GradientTexture1D] applied to vary numerical or color values over the lifetime of the particle.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -209,7 +207,7 @@
 			Minimum equivalent of [member initial_velocity_max].
 		</member>
 		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
-			Particle lifetime randomness ratio. The lifetime will be multiplied by a value interpolated between [code]1.0[/code] and a random number less than one. For example a random ratio of [code]0.4[/code] would scale the original lifetime between [code]0.4-1.0[/code] of its original value.
+			Particle lifetime randomness ratio. The equation for the lifetime of a particle is [code]lifetime * (1.0 - randf() * lifetime_randomness)[/code]. For example, a [member lifetime_randomness] of [code]0.4[/code] scales the lifetime between [code]0.6[/code] to [code]1.0[/code] of its original value.
 		</member>
 		<member name="linear_accel_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's linear acceleration will vary along this [CurveTexture].
@@ -282,7 +280,8 @@
 			Minimum equivalent of [member tangential_accel_max].
 		</member>
 		<member name="turbulence_enabled" type="bool" setter="set_turbulence_enabled" getter="get_turbulence_enabled" default="false">
-			Enables and disables Turbulence for the particle system.
+			If [code]true[/code], enables turbulence for the particle system. Turbulence can be used to vary particle movement according to its position (based on a 3D noise pattern). In 3D, [GPUParticlesAttractorVectorField3D] with [NoiseTexture3D] can be used as an alternative to turbulence that works in world space and with multiple particle systems reacting in the same way.
+			[b]Note:[/b] Enabling turbulence has a high performance cost on the GPU. Only enable turbulence on a few particle systems at once at most, and consider disabling it when targeting mobile/web platforms.
 		</member>
 		<member name="turbulence_influence_max" type="float" setter="set_param_max" getter="get_param_max" default="0.1">
 			Maximum turbulence influence on each particle.
@@ -296,26 +295,27 @@
 			Each particle's amount of turbulence will be influenced along this [CurveTexture] over its life time.
 		</member>
 		<member name="turbulence_initial_displacement_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum displacement of each particles spawn position by the turbulence.
+			Maximum displacement of each particle's spawn position by the turbulence.
 			The actual amount of displacement will be a factor of the underlying turbulence multiplied by a random value between [member turbulence_initial_displacement_min] and [member turbulence_initial_displacement_max].
 		</member>
 		<member name="turbulence_initial_displacement_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum displacement of each particles spawn position by the turbulence.
+			Minimum displacement of each particle's spawn position by the turbulence.
 			The actual amount of displacement will be a factor of the underlying turbulence multiplied by a random value between [member turbulence_initial_displacement_min] and [member turbulence_initial_displacement_max].
 		</member>
 		<member name="turbulence_noise_scale" type="float" setter="set_turbulence_noise_scale" getter="get_turbulence_noise_scale" default="9.0">
 			This value controls the overall scale/frequency of the turbulence noise pattern.
 			A small scale will result in smaller features with more detail while a high scale will result in smoother noise with larger features.
 		</member>
-		<member name="turbulence_noise_speed" type="Vector3" setter="set_turbulence_noise_speed" getter="get_turbulence_noise_speed" default="Vector3(0.5, 0.5, 0.5)">
-			The movement speed of the turbulence pattern. This changes how quickly the noise changes over time.
-			A value of [code]Vector3(0.0, 0.0, 0.0)[/code] will freeze the turbulence pattern in place.
+		<member name="turbulence_noise_speed" type="Vector3" setter="set_turbulence_noise_speed" getter="get_turbulence_noise_speed" default="Vector3(0, 0, 0)">
+			A scrolling velocity for the turbulence field. This sets a directional trend for the pattern to move in over time.
+			The default value of [code]Vector3(0, 0, 0)[/code] turns off the scrolling.
 		</member>
-		<member name="turbulence_noise_speed_random" type="float" setter="set_turbulence_noise_speed_random" getter="get_turbulence_noise_speed_random" default="0.0">
-			Use to influence the noise speed in a random pattern. This helps to break up visible movement patterns.
+		<member name="turbulence_noise_speed_random" type="float" setter="set_turbulence_noise_speed_random" getter="get_turbulence_noise_speed_random" default="0.2">
+			The in-place rate of change of the turbulence field. This defines how quickly the noise pattern varies over time.
+			A value of 0.0 will result in a fixed pattern.
 		</member>
 		<member name="turbulence_noise_strength" type="float" setter="set_turbulence_noise_strength" getter="get_turbulence_noise_strength" default="1.0">
-			The turbulence noise strength. Increasing this will result in a stronger, more contrasting, noise pattern.
+			The turbulence noise strength. Increasing this will result in a stronger, more contrasting, flow pattern.
 		</member>
 	</members>
 	<constants>

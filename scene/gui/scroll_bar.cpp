@@ -428,6 +428,14 @@ void ScrollBar::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				incr_active = false;
+				decr_active = false;
+				drag.active = false;
+			}
+		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			highlight = HIGHLIGHT_NONE;
 			queue_redraw();

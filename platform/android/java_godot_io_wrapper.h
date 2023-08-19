@@ -31,12 +31,13 @@
 #ifndef JAVA_GODOT_IO_WRAPPER_H
 #define JAVA_GODOT_IO_WRAPPER_H
 
-#include <android/log.h>
-#include <jni.h>
+#include "string_android.h"
 
 #include "core/math/rect2i.h"
 #include "core/variant/typed_array.h"
-#include "string_android.h"
+
+#include <android/log.h>
+#include <jni.h>
 
 // Class that makes functions in java/src/org/godotengine/godot/GodotIO.java callable from C++
 class GodotIOJavaWrapper {

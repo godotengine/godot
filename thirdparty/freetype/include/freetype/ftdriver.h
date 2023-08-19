@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright (C) 2017-2022 by
+ * Copyright (C) 2017-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -134,7 +134,7 @@ FT_BEGIN_HEADER
    *   each being rounded to the nearest pixel edge, taking care of overshoot
    *   suppression at small sizes, stem darkening, and scaling.
    *
-   *   Hstems (this is, hint values defined in the font to help align
+   *   Hstems (that is, hint values defined in the font to help align
    *   horizontal features) that fall within a blue zone are said to be
    *   'captured' and are aligned to that zone.  Uncaptured stems are moved
    *   in one of four ways, top edge up or down, bottom edge up or down.
@@ -446,7 +446,7 @@ FT_BEGIN_HEADER
    *   at smaller sizes.
    *
    *   For the auto-hinter, stem-darkening is experimental currently and thus
-   *   switched off by default (this is, `no-stem-darkening` is set to TRUE
+   *   switched off by default (that is, `no-stem-darkening` is set to TRUE
    *   by default).  Total consistency with the CFF driver is not achieved
    *   right now because the emboldening method differs and glyphs must be
    *   scaled down on the Y-axis to keep outline points inside their
@@ -651,11 +651,8 @@ FT_BEGIN_HEADER
    *     Windows~98; only grayscale and B/W rasterizing is supported.
    *
    *   TT_INTERPRETER_VERSION_38 ::
-   *     Version~38 corresponds to MS rasterizer v.1.9; it is roughly
-   *     equivalent to the hinting provided by DirectWrite ClearType (as can
-   *     be found, for example, in the Internet Explorer~9 running on
-   *     Windows~7).  It is used in FreeType to select the 'Infinality'
-   *     subpixel hinting code.  The code may be removed in a future version.
+   *     Version~38 is the same Version~40. The original 'Infinality' code is
+   *     no longer available.
    *
    *   TT_INTERPRETER_VERSION_40 ::
    *     Version~40 corresponds to MS rasterizer v.2.1; it is roughly
@@ -819,7 +816,6 @@ FT_BEGIN_HEADER
    * @since:
    *   2.5
    */
-
 
   /**************************************************************************
    *

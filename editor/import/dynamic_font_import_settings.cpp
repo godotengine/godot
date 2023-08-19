@@ -858,7 +858,7 @@ bool DynamicFontImportSettings::_char_update(int32_t p_char) {
 	if (import_variation_data->selected_chars.has(p_char)) {
 		import_variation_data->selected_chars.erase(p_char);
 		return false;
-	} else if (font_main.is_valid() && font_main.is_valid() && import_variation_data->selected_glyphs.has(font_main->get_glyph_index(16, p_char))) {
+	} else if (font_main.is_valid() && import_variation_data->selected_glyphs.has(font_main->get_glyph_index(16, p_char))) {
 		import_variation_data->selected_glyphs.erase(font_main->get_glyph_index(16, p_char));
 		return false;
 	} else {
@@ -927,15 +927,6 @@ void DynamicFontImportSettings::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			add_var->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			label_warn->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
-				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_singleton()->get_settings_style();
-				inspector_general->set_property_name_style(style);
-				inspector_vars->set_property_name_style(style);
-				inspector_text->set_property_name_style(style);
-			}
 		} break;
 	}
 }
@@ -1092,7 +1083,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	font_preview_label->set_text(sample);
 
 	Ref<Font> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-	if (bold_font.is_valid() && bold_font.is_valid()) {
+	if (bold_font.is_valid()) {
 		font_name_label->add_theme_font_override("bold_font", bold_font);
 	}
 	font_name_label->set_text(font_name);
@@ -1342,7 +1333,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	inspector_general->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_general->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
 	inspector_general->connect("property_edited", callable_mp(this, &DynamicFontImportSettings::_main_prop_changed));
-	inspector_general->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	page1_hb->add_child(inspector_general);
 
 	// Page 2 layout: Configurations
@@ -1394,7 +1384,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	inspector_vars = memnew(EditorInspector);
 	inspector_vars->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_vars->connect("property_edited", callable_mp(this, &DynamicFontImportSettings::_variation_changed));
-	inspector_vars->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	page2_side_vb->add_child(inspector_vars);
 
 	VBoxContainer *preload_pages_vb = memnew(VBoxContainer);
@@ -1470,7 +1459,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	inspector_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_text->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
 	inspector_text->connect("property_edited", callable_mp(this, &DynamicFontImportSettings::_change_text_opts));
-	inspector_text->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	page2_1_hb->add_child(inspector_text);
 
 	text_edit = memnew(TextEdit);

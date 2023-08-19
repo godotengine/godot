@@ -83,13 +83,13 @@ private:
 
 	void _wheel_button_click(BitField<MouseButtonMask> event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor);
 
-	void _parse_mouse_event_info(BitField<MouseButtonMask> event_buttons_mask, bool p_pressed, bool p_double_click, bool p_source_mouse_relative);
+	void _parse_mouse_event_info(BitField<MouseButtonMask> event_buttons_mask, bool p_pressed, bool p_canceled, bool p_double_click, bool p_source_mouse_relative);
 
 	void _release_mouse_event_info(bool p_source_mouse_relative = false);
 
 	void _cancel_mouse_event_info(bool p_source_mouse_relative = false);
 
-	void _parse_all_touch(bool p_pressed, bool p_double_tap, bool reset_index = false);
+	void _parse_all_touch(bool p_pressed, bool p_canceled = false, bool p_double_tap = false);
 
 	void _release_all_touch();
 
@@ -101,7 +101,7 @@ public:
 	void process_magnify(Point2 p_pos, float p_factor);
 	void process_pan(Point2 p_pos, Vector2 p_delta);
 	void process_joy_event(JoypadEvent p_event);
-	void process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed);
+	void process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed, bool p_echo);
 };
 
 #endif // ANDROID_INPUT_HANDLER_H

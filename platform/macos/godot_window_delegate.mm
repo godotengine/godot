@@ -67,6 +67,7 @@
 		ds->window_set_transient(window_id, DisplayServerMacOS::INVALID_WINDOW_ID);
 	}
 
+	ds->mouse_exit_window(window_id);
 	ds->window_destroy(window_id);
 }
 
@@ -314,6 +315,7 @@
 
 	[self windowDidResize:notification]; // Emit resize event, to ensure content is resized if the window was resized while it was hidden.
 
+	wd.focused = true;
 	ds->set_last_focused_window(window_id);
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
 }
@@ -330,6 +332,7 @@
 		[(GodotButtonView *)wd.window_button_view displayButtons];
 	}
 
+	wd.focused = false;
 	ds->release_pressed_events();
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
 }
@@ -342,6 +345,7 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 
+	wd.focused = false;
 	ds->release_pressed_events();
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
 }
@@ -353,9 +357,11 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-
-	ds->set_last_focused_window(window_id);
-	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
+	if ([wd.window_object isKeyWindow]) {
+		wd.focused = true;
+		ds->set_last_focused_window(window_id);
+		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
+	}
 }
 
 @end

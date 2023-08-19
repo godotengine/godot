@@ -5,7 +5,7 @@
  *   Basic SFNT/TrueType tables definitions and interface
  *   (specification only).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -424,8 +424,8 @@ FT_BEGIN_HEADER
 
     /* only version 5 and higher: */
 
-    FT_UShort  usLowerOpticalPointSize;       /* in twips (1/20th points) */
-    FT_UShort  usUpperOpticalPointSize;       /* in twips (1/20th points) */
+    FT_UShort  usLowerOpticalPointSize;       /* in twips (1/20 points) */
+    FT_UShort  usUpperOpticalPointSize;       /* in twips (1/20 points) */
 
   } TT_OS2;
 

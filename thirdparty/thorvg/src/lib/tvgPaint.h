@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_PAINT_H_
 #define _TVG_PAINT_H_
 
@@ -27,7 +28,7 @@
 
 namespace tvg
 {
-    enum ContextFlag {Invalid = 0, FastTrack = 1};
+    enum ContextFlag : uint8_t {Invalid = 0, FastTrack = 1};
 
     struct Iterator
     {
@@ -42,7 +43,7 @@ namespace tvg
         virtual ~StrategyMethod() {}
 
         virtual bool dispose(RenderMethod& renderer) = 0;
-        virtual void* update(RenderMethod& renderer, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag pFlag) = 0;   //Return engine data if it has.
+        virtual void* update(RenderMethod& renderer, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper) = 0;   //Return engine data if it has.
         virtual bool render(RenderMethod& renderer) = 0;
         virtual bool bounds(float* x, float* y, float* w, float* h) = 0;
         virtual RenderRegion bounds(RenderMethod& renderer) const = 0;
@@ -62,10 +63,10 @@ namespace tvg
         StrategyMethod* smethod = nullptr;
         RenderTransform* rTransform = nullptr;
         Composite* compData = nullptr;
-        Paint* compSource = nullptr;
-        uint32_t renderFlag = RenderUpdateFlag::None;
-        uint32_t ctxFlag = ContextFlag::Invalid;
-        uint32_t id;
+        BlendMethod blendMethod = BlendMethod::Normal;              //uint8_t
+        uint8_t renderFlag = RenderUpdateFlag::None;
+        uint8_t ctxFlag = ContextFlag::Invalid;
+        uint8_t id;
         uint8_t opacity = 255;
 
         ~Impl()
@@ -74,8 +75,8 @@ namespace tvg
                 delete(compData->target);
                 free(compData);
             }
-            if (smethod) delete(smethod);
-            if (rTransform) delete(rTransform);
+            delete(smethod);
+            delete(rTransform);
         }
 
         void method(StrategyMethod* method)
@@ -137,7 +138,6 @@ namespace tvg
                 if (!target && method == CompositeMethod::None) return true;
                 compData = static_cast<Composite*>(calloc(1, sizeof(Composite)));
             }
-            target->pImpl->compSource = source;
             compData->target = target;
             compData->source = source;
             compData->method = method;
@@ -148,7 +148,7 @@ namespace tvg
         bool scale(float factor);
         bool translate(float x, float y);
         bool bounds(float* x, float* y, float* w, float* h, bool transformed);
-        void* update(RenderMethod& renderer, const RenderTransform* pTransform, uint32_t opacity, Array<RenderData>& clips, uint32_t pFlag);
+        RenderData update(RenderMethod& renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper = false);
         bool render(RenderMethod& renderer);
         Paint* duplicate();
     };
@@ -177,9 +177,9 @@ namespace tvg
             return inst->dispose(renderer);
         }
 
-        void* update(RenderMethod& renderer, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag renderFlag) override
+        RenderData update(RenderMethod& renderer, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag renderFlag, bool clipper) override
         {
-            return inst->update(renderer, transform, opacity, clips, renderFlag);
+            return inst->update(renderer, transform, clips, opacity, renderFlag, clipper);
         }
 
         bool render(RenderMethod& renderer) override

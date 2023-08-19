@@ -72,6 +72,7 @@ void (*SharpYuvFilterRow)(const int16_t* A, const int16_t* B, int len,
                           const uint16_t* best_y, uint16_t* out,
                           int bit_depth);
 
+extern VP8CPUInfo SharpYuvGetCPUInfo;
 extern void InitSharpYuvSSE2(void);
 extern void InitSharpYuvNEON(void);
 

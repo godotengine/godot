@@ -43,6 +43,7 @@ class ThemeOwner;
 class Window : public Viewport {
 	GDCLASS(Window, Viewport)
 public:
+	// Keep synced with enum hint for `mode` property.
 	enum Mode {
 		MODE_WINDOWED = DisplayServer::WINDOW_MODE_WINDOWED,
 		MODE_MINIMIZED = DisplayServer::WINDOW_MODE_MINIMIZED,
@@ -77,6 +78,11 @@ public:
 		CONTENT_SCALE_ASPECT_EXPAND,
 	};
 
+	enum ContentScaleStretch {
+		CONTENT_SCALE_STRETCH_FRACTIONAL,
+		CONTENT_SCALE_STRETCH_INTEGER,
+	};
+
 	enum LayoutDirection {
 		LAYOUT_DIRECTION_INHERITED,
 		LAYOUT_DIRECTION_LOCALE,
@@ -88,11 +94,14 @@ public:
 		DEFAULT_WINDOW_SIZE = 100,
 	};
 
+	// Keep synced with enum hint for `initial_position` property.
 	enum WindowInitialPosition {
 		WINDOW_INITIAL_POSITION_ABSOLUTE,
 		WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN,
 		WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN,
 		WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN,
+		WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS,
+		WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS,
 	};
 
 private:
@@ -119,6 +128,7 @@ private:
 	bool updating_child_controls = false;
 	bool updating_embedded_window = false;
 	bool clamp_to_embedder = false;
+	bool unparent_when_invisible = false;
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
@@ -130,11 +140,14 @@ private:
 	Size2i content_scale_size;
 	ContentScaleMode content_scale_mode = CONTENT_SCALE_MODE_DISABLED;
 	ContentScaleAspect content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
+	ContentScaleStretch content_scale_stretch = CONTENT_SCALE_STRETCH_FRACTIONAL;
 	real_t content_scale_factor = 1.0;
 
 	void _make_window();
 	void _clear_window();
 	void _update_from_window();
+
+	bool _try_parent_dialog(Node *p_from_node);
 
 	Size2i max_size_used;
 
@@ -190,6 +203,10 @@ private:
 	void _event_callback(DisplayServer::WindowEvent p_event);
 	virtual bool _can_consume_input_events() const override;
 
+	bool mouse_in_window = false;
+	void _update_mouse_over(Vector2 p_pos) override;
+	void _mouse_leave_viewport() override;
+
 	Ref<Shortcut> debugger_stop_shortcut;
 
 protected:
@@ -198,7 +215,6 @@ protected:
 	virtual void _update_theme_item_cache();
 
 	virtual void _post_popup() {}
-	virtual Size2 _get_contents_minimum_size() const;
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -209,6 +225,8 @@ protected:
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+
+	GDVIRTUAL0RC(Vector2, _get_contents_minimum_size)
 
 public:
 	enum {
@@ -256,7 +274,7 @@ public:
 	void set_visible(bool p_visible);
 	bool is_visible() const;
 
-	void update_mouse_cursor_shape();
+	void update_mouse_cursor_state() override;
 
 	void show();
 	void hide();
@@ -269,6 +287,8 @@ public:
 
 	void set_clamp_to_embedder(bool p_enable);
 	bool is_clamped_to_embedder() const;
+
+	void set_unparent_when_invisible(bool p_unparent);
 
 	bool is_in_edited_scene_root() const;
 
@@ -289,6 +309,9 @@ public:
 	void set_content_scale_aspect(ContentScaleAspect p_aspect);
 	ContentScaleAspect get_content_scale_aspect() const;
 
+	void set_content_scale_stretch(ContentScaleStretch p_stretch);
+	ContentScaleStretch get_content_scale_stretch() const;
+
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;
 
@@ -305,11 +328,18 @@ public:
 	Window *get_exclusive_child() const { return exclusive_child; };
 	Window *get_parent_visible_window() const;
 	Viewport *get_parent_viewport() const;
-	void popup(const Rect2i &p_rect = Rect2i());
+
+	virtual void popup(const Rect2i &p_screen_rect = Rect2i());
 	void popup_on_parent(const Rect2i &p_parent_rect);
-	void popup_centered_ratio(float p_ratio = 0.8);
 	void popup_centered(const Size2i &p_minsize = Size2i());
+	void popup_centered_ratio(float p_ratio = 0.8);
 	void popup_centered_clamped(const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
+
+	void popup_exclusive(Node *p_from_node, const Rect2i &p_screen_rect = Rect2i());
+	void popup_exclusive_on_parent(Node *p_from_node, const Rect2i &p_parent_rect);
+	void popup_exclusive_centered(Node *p_from_node, const Size2i &p_minsize = Size2i());
+	void popup_exclusive_centered_ratio(Node *p_from_node, float p_ratio = 0.8);
+	void popup_exclusive_centered_clamped(Node *p_from_node, const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
 	Rect2i fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) const;
 	Size2 get_contents_minimum_size() const;
@@ -387,9 +417,13 @@ public:
 	virtual Transform2D get_final_transform() const override;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
+	virtual bool is_directly_attached_to_screen() const override;
+	virtual bool is_attached_in_viewport() const override;
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
+
+	virtual Size2 _get_contents_minimum_size() const;
 
 	Window();
 	~Window();
@@ -399,6 +433,7 @@ VARIANT_ENUM_CAST(Window::Mode);
 VARIANT_ENUM_CAST(Window::Flags);
 VARIANT_ENUM_CAST(Window::ContentScaleMode);
 VARIANT_ENUM_CAST(Window::ContentScaleAspect);
+VARIANT_ENUM_CAST(Window::ContentScaleStretch);
 VARIANT_ENUM_CAST(Window::LayoutDirection);
 VARIANT_ENUM_CAST(Window::WindowInitialPosition);
 

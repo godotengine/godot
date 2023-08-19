@@ -1782,15 +1782,8 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "Cannot load scene from file '" + p_path + "'.");
 
 	if (state.missing_textures.size()) {
-		/*
-	for(int i=0;i<state.missing_textures.size();i++) {
-		EditorNode::add_io_error("Texture Not Found: "+state.missing_textures[i]);
-	}
-	*/
-
 		if (r_missing_deps) {
 			for (int i = 0; i < state.missing_textures.size(); i++) {
-				//EditorNode::add_io_error("Texture Not Found: "+state.missing_textures[i]);
 				r_missing_deps->push_back(state.missing_textures[i]);
 			}
 		}

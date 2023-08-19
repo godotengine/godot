@@ -230,7 +230,9 @@ typedef enum SpvReflectShaderStageFlagBits {
   SPV_REFLECT_SHADER_STAGE_FRAGMENT_BIT                = 0x00000010, // = VK_SHADER_STAGE_FRAGMENT_BIT
   SPV_REFLECT_SHADER_STAGE_COMPUTE_BIT                 = 0x00000020, // = VK_SHADER_STAGE_COMPUTE_BIT
   SPV_REFLECT_SHADER_STAGE_TASK_BIT_NV                 = 0x00000040, // = VK_SHADER_STAGE_TASK_BIT_NV
+  SPV_REFLECT_SHADER_STAGE_TASK_BIT_EXT                = SPV_REFLECT_SHADER_STAGE_TASK_BIT_NV, // = VK_SHADER_STAGE_CALLABLE_BIT_EXT
   SPV_REFLECT_SHADER_STAGE_MESH_BIT_NV                 = 0x00000080, // = VK_SHADER_STAGE_MESH_BIT_NV
+  SPV_REFLECT_SHADER_STAGE_MESH_BIT_EXT                = SPV_REFLECT_SHADER_STAGE_MESH_BIT_NV, // = VK_SHADER_STAGE_CALLABLE_BIT_EXT
   SPV_REFLECT_SHADER_STAGE_RAYGEN_BIT_KHR              = 0x00000100, // = VK_SHADER_STAGE_RAYGEN_BIT_KHR
   SPV_REFLECT_SHADER_STAGE_ANY_HIT_BIT_KHR             = 0x00000200, // = VK_SHADER_STAGE_ANY_HIT_BIT_KHR
   SPV_REFLECT_SHADER_STAGE_CLOSEST_HIT_BIT_KHR         = 0x00000400, // = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR
@@ -401,6 +403,11 @@ typedef struct SpvReflectBlockVariable {
   struct SpvReflectBlockVariable*   members;
 
   SpvReflectTypeDescription*        type_description;
+
+  struct {
+    uint32_t                          offset;
+  } word_offset;
+
 } SpvReflectBlockVariable;
 
 /*! @struct SpvReflectDescriptorBinding

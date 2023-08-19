@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgSceneImpl.h"
 
 /************************************************************************/
@@ -54,17 +55,15 @@ Result Scene::push(unique_ptr<Paint> paint) noexcept
 {
     auto p = paint.release();
     if (!p) return Result::MemoryCorruption;
-    pImpl->paints.push(p);
+    pImpl->paints.push_back(p);
 
     return Result::Success;
 }
 
 
-Result Scene::reserve(uint32_t size) noexcept
+Result Scene::reserve(TVG_UNUSED uint32_t size) noexcept
 {
-    if (!pImpl->paints.reserve(size)) return Result::FailedAllocation;
-
-    return Result::Success;
+    return Result::NonSupport;
 }
 
 
@@ -73,4 +72,10 @@ Result Scene::clear(bool free) noexcept
     pImpl->clear(free);
 
     return Result::Success;
+}
+
+
+list<Paint*>& Scene::paints() noexcept
+{
+    return pImpl->paints;
 }

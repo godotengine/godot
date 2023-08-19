@@ -30,6 +30,11 @@
 
 #include "test_gdscript.h"
 
+#include "../gdscript_analyzer.h"
+#include "../gdscript_compiler.h"
+#include "../gdscript_parser.h"
+#include "../gdscript_tokenizer.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
@@ -37,11 +42,6 @@
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "scene/resources/packed_scene.h"
-
-#include "modules/gdscript/gdscript_analyzer.h"
-#include "modules/gdscript/gdscript_compiler.h"
-#include "modules/gdscript/gdscript_parser.h"
-#include "modules/gdscript/gdscript_tokenizer.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"

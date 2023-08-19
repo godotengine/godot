@@ -31,12 +31,11 @@
 #ifndef CONTEXT_EGL_UWP_H
 #define CONTEXT_EGL_UWP_H
 
-#include <wrl.h>
-
-#include <EGL/egl.h>
-
 #include "core/error/error_list.h"
 #include "core/os/os.h"
+
+#include <EGL/egl.h>
+#include <wrl.h>
 
 using namespace Windows::UI::Core;
 

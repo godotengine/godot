@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Expression" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Expression" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A class that stores an expression you can execute.
 	</brief_description>
@@ -49,6 +49,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
+		<link title="Evaluating Expressions">$DOCS_URL/tutorials/scripting/evaluating_expressions.html</link>
 	</tutorials>
 	<methods>
 		<method name="execute">

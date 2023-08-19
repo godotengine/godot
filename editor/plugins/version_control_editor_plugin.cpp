@@ -34,6 +34,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/time.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -942,7 +943,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	metadata_dialog->set_title(TTR("Create Version Control Metadata"));
 	metadata_dialog->set_min_size(Size2(200, 40));
 	metadata_dialog->get_ok_button()->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_create_vcs_metadata_files));
-	add_child(metadata_dialog);
+	EditorInterface::get_singleton()->get_base_control()->add_child(metadata_dialog);
 
 	VBoxContainer *metadata_vb = memnew(VBoxContainer);
 	metadata_dialog->add_child(metadata_vb);
@@ -971,7 +972,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_dialog->set_min_size(Size2(600, 100));
 	set_up_dialog->add_cancel_button("Cancel");
 	set_up_dialog->set_hide_on_ok(true);
-	add_child(set_up_dialog);
+	EditorInterface::get_singleton()->get_base_control()->add_child(set_up_dialog);
 
 	Button *set_up_apply_button = set_up_dialog->get_ok_button();
 	set_up_apply_button->set_text(TTR("Apply"));

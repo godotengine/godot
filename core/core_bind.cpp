@@ -39,6 +39,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
+#include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
 namespace core_bind {
@@ -224,6 +225,14 @@ int OS::get_low_processor_usage_mode_sleep_usec() const {
 	return ::OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
 }
 
+void OS::set_delta_smoothing(bool p_enabled) {
+	::OS::get_singleton()->set_delta_smoothing(p_enabled);
+}
+
+bool OS::is_delta_smoothing_enabled() const {
+	return ::OS::get_singleton()->is_delta_smoothing_enabled();
+}
+
 void OS::alert(const String &p_alert, const String &p_title) {
 	::OS::get_singleton()->alert(p_alert, p_title);
 }
@@ -255,6 +264,15 @@ Error OS::shell_open(String p_uri) {
 		WARN_PRINT("Attempting to open an URL with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
 	}
 	return ::OS::get_singleton()->shell_open(p_uri);
+}
+
+Error OS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	if (p_path.begins_with("res://")) {
+		WARN_PRINT("Attempting to explore file path with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_file_manager()`.");
+	} else if (p_path.begins_with("user://")) {
+		WARN_PRINT("Attempting to explore file path with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_file_manager()`.");
+	}
+	return ::OS::get_singleton()->shell_show_in_file_manager(p_path, p_open_folder);
 }
 
 String OS::read_string_from_stdin() {
@@ -414,7 +432,18 @@ Error OS::set_thread_name(const String &p_name) {
 };
 
 bool OS::has_feature(const String &p_feature) const {
-	return ::OS::get_singleton()->has_feature(p_feature);
+	const bool *value_ptr = feature_cache.getptr(p_feature);
+	if (value_ptr) {
+		return *value_ptr;
+	} else {
+		const bool has = ::OS::get_singleton()->has_feature(p_feature);
+		feature_cache[p_feature] = has;
+		return has;
+	}
+}
+
+bool OS::is_sandboxed() const {
+	return ::OS::get_singleton()->is_sandboxed();
 }
 
 uint64_t OS::get_static_memory_usage() const {
@@ -423,6 +452,10 @@ uint64_t OS::get_static_memory_usage() const {
 
 uint64_t OS::get_static_memory_peak_usage() const {
 	return ::OS::get_singleton()->get_static_memory_peak_usage();
+}
+
+Dictionary OS::get_memory_info() const {
+	return ::OS::get_singleton()->get_memory_info();
 }
 
 /** This method uses a signed argument for better error reporting as it's used from the scripting API. */
@@ -516,6 +549,10 @@ Vector<String> OS::get_granted_permissions() const {
 	return ::OS::get_singleton()->get_granted_permissions();
 }
 
+void OS::revoke_granted_permissions() {
+	::OS::get_singleton()->revoke_granted_permissions();
+}
+
 String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
@@ -536,6 +573,9 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode_sleep_usec", "usec"), &OS::set_low_processor_usage_mode_sleep_usec);
 	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec"), &OS::get_low_processor_usage_mode_sleep_usec);
 
+	ClassDB::bind_method(D_METHOD("set_delta_smoothing", "delta_smoothing_enabled"), &OS::set_delta_smoothing);
+	ClassDB::bind_method(D_METHOD("is_delta_smoothing_enabled"), &OS::is_delta_smoothing_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
 	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
@@ -549,6 +589,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
+	ClassDB::bind_method(D_METHOD("shell_show_in_file_manager", "file_or_dir_path", "open_folder"), &OS::shell_show_in_file_manager, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
@@ -582,6 +623,7 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &OS::get_static_memory_usage);
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &OS::get_static_memory_peak_usage);
+	ClassDB::bind_method(D_METHOD("get_memory_info"), &OS::get_memory_info);
 
 	ClassDB::bind_method(D_METHOD("move_to_trash", "path"), &OS::move_to_trash);
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &OS::get_user_data_dir);
@@ -602,13 +644,16 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_main_thread_id"), &OS::get_main_thread_id);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &OS::has_feature);
+	ClassDB::bind_method(D_METHOD("is_sandboxed"), &OS::is_sandboxed);
 
 	ClassDB::bind_method(D_METHOD("request_permission", "name"), &OS::request_permission);
 	ClassDB::bind_method(D_METHOD("request_permissions"), &OS::request_permissions);
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &OS::get_granted_permissions);
+	ClassDB::bind_method(D_METHOD("revoke_granted_permissions"), &OS::revoke_granted_permissions);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
 
 	// Those default values need to be specified for the docs generator,
 	// to avoid using values from the documentation writer's own OS instance.
@@ -884,6 +929,17 @@ Geometry3D *Geometry3D::get_singleton() {
 	return singleton;
 }
 
+Vector<Vector3> Geometry3D::compute_convex_mesh_points(const TypedArray<Plane> &p_planes) {
+	Vector<Plane> planes_vec;
+	int size = p_planes.size();
+	planes_vec.resize(size);
+	for (int i = 0; i < size; ++i) {
+		planes_vec.set(i, p_planes[i]);
+	}
+	Variant ret = ::Geometry3D::compute_convex_mesh_points(planes_vec.ptr(), size);
+	return ret;
+}
+
 TypedArray<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
 	Variant ret = ::Geometry3D::build_box_planes(p_extents);
 	return ret;
@@ -914,6 +970,11 @@ Vector3 Geometry3D::get_closest_point_to_segment(const Vector3 &p_point, const V
 Vector3 Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
 	Vector3 s[2] = { p_a, p_b };
 	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, s);
+}
+
+Vector3 Geometry3D::get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
+	Vector3 res = ::Geometry3D::triangle_get_barycentric_coords(p_v0, p_v1, p_v2, p_point);
+	return res;
 }
 
 Variant Geometry3D::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
@@ -960,10 +1021,11 @@ Vector<Vector3> Geometry3D::segment_intersects_cylinder(const Vector3 &p_from, c
 	return r;
 }
 
-Vector<Vector3> Geometry3D::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes) {
+Vector<Vector3> Geometry3D::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const TypedArray<Plane> &p_planes) {
 	Vector<Vector3> r;
 	Vector3 res, norm;
-	if (!::Geometry3D::segment_intersects_convex(p_from, p_to, p_planes.ptr(), p_planes.size(), &res, &norm)) {
+	Vector<Plane> planes = Variant(p_planes);
+	if (!::Geometry3D::segment_intersects_convex(p_from, p_to, planes.ptr(), planes.size(), &res, &norm)) {
 		return r;
 	}
 
@@ -978,6 +1040,7 @@ Vector<Vector3> Geometry3D::clip_polygon(const Vector<Vector3> &p_points, const 
 }
 
 void Geometry3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("compute_convex_mesh_points", "planes"), &Geometry3D::compute_convex_mesh_points);
 	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &Geometry3D::build_box_planes);
 	ClassDB::bind_method(D_METHOD("build_cylinder_planes", "radius", "height", "sides", "axis"), &Geometry3D::build_cylinder_planes, DEFVAL(Vector3::AXIS_Z));
 	ClassDB::bind_method(D_METHOD("build_capsule_planes", "radius", "height", "sides", "lats", "axis"), &Geometry3D::build_capsule_planes, DEFVAL(Vector3::AXIS_Z));
@@ -987,6 +1050,8 @@ void Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "point", "s1", "s2"), &Geometry3D::get_closest_point_to_segment);
 
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &Geometry3D::get_closest_point_to_segment_uncapped);
+
+	ClassDB::bind_method(D_METHOD("get_triangle_barycentric_coords", "point", "a", "b", "c"), &Geometry3D::get_triangle_barycentric_coords);
 
 	ClassDB::bind_method(D_METHOD("ray_intersects_triangle", "from", "dir", "a", "b", "c"), &Geometry3D::ray_intersects_triangle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_triangle", "from", "to", "a", "b", "c"), &Geometry3D::segment_intersects_triangle);
@@ -1152,17 +1217,37 @@ void Thread::_start_func(void *ud) {
 		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
 	}
 
+	// Finding out a suitable name for the thread can involve querying a node, if the target is one.
+	// We know this is safe (unless the user is causing life cycle race conditions, which would be a bug on their part).
+	set_current_thread_safe_for_nodes(true);
 	String func_name = t->target_callable.is_custom() ? t->target_callable.get_custom()->get_as_text() : String(t->target_callable.get_method());
+	set_current_thread_safe_for_nodes(false);
 	::Thread::set_name(func_name);
 
+	// To avoid a circular reference between the thread and the script which can possibly contain a reference
+	// to the thread, we will do the call (keeping a reference up to that point) and then break chains with it.
+	// When the call returns, we will reference the thread again if possible.
+	ObjectID th_instance_id = t->get_instance_id();
+	Callable target_callable = t->target_callable;
+	t = Ref<Thread>();
+
 	Callable::CallError ce;
-	t->target_callable.callp(nullptr, 0, t->ret, ce);
-	if (ce.error != Callable::CallError::CALL_OK) {
+	Variant ret;
+	target_callable.callp(nullptr, 0, ret, ce);
+	// If script properly kept a reference to the thread, we should be able to re-reference it now
+	// (well, or if the call failed, since we had to break chains anyway because the outcome isn't known upfront).
+	t = Ref<Thread>(ObjectDB::get_instance(th_instance_id));
+	if (t.is_valid()) {
+		t->ret = ret;
 		t->running.clear();
-		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
+	} else {
+		// We could print a warning here, but the Thread object will be eventually destroyed
+		// noticing wait_to_finish() hasn't been called on it, and it will print a warning itself.
 	}
 
-	t->running.clear();
+	if (ce.error != Callable::CallError::CALL_OK) {
+		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
+	}
 }
 
 Error Thread::start(const Callable &p_callable, Priority p_priority) {
@@ -1204,12 +1289,19 @@ Variant Thread::wait_to_finish() {
 	return r;
 }
 
+void Thread::set_thread_safety_checks_enabled(bool p_enabled) {
+	ERR_FAIL_COND_MSG(::Thread::is_main_thread(), "This call is forbidden on the main thread.");
+	set_current_thread_safe_for_nodes(!p_enabled);
+}
+
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_started"), &Thread::is_started);
 	ClassDB::bind_method(D_METHOD("is_alive"), &Thread::is_alive);
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
+
+	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
@@ -1278,11 +1370,11 @@ Variant ClassDB::instantiate(const StringName &p_class) const {
 	}
 }
 
-bool ClassDB::has_signal(StringName p_class, StringName p_signal) const {
+bool ClassDB::class_has_signal(StringName p_class, StringName p_signal) const {
 	return ::ClassDB::has_signal(p_class, p_signal);
 }
 
-Dictionary ClassDB::get_signal(StringName p_class, StringName p_signal) const {
+Dictionary ClassDB::class_get_signal(StringName p_class, StringName p_signal) const {
 	MethodInfo signal;
 	if (::ClassDB::get_signal(p_class, p_signal, &signal)) {
 		return signal.operator Dictionary();
@@ -1291,7 +1383,7 @@ Dictionary ClassDB::get_signal(StringName p_class, StringName p_signal) const {
 	}
 }
 
-TypedArray<Dictionary> ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::class_get_signal_list(StringName p_class, bool p_no_inheritance) const {
 	List<MethodInfo> signals;
 	::ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1303,7 +1395,7 @@ TypedArray<Dictionary> ClassDB::get_signal_list(StringName p_class, bool p_no_in
 	return ret;
 }
 
-TypedArray<Dictionary> ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::class_get_property_list(StringName p_class, bool p_no_inheritance) const {
 	List<PropertyInfo> plist;
 	::ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1314,13 +1406,13 @@ TypedArray<Dictionary> ClassDB::get_property_list(StringName p_class, bool p_no_
 	return ret;
 }
 
-Variant ClassDB::get_property(Object *p_object, const StringName &p_property) const {
+Variant ClassDB::class_get_property(Object *p_object, const StringName &p_property) const {
 	Variant ret;
 	::ClassDB::get_property(p_object, p_property, ret);
 	return ret;
 }
 
-Error ClassDB::set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const {
+Error ClassDB::class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const {
 	Variant ret;
 	bool valid;
 	if (!::ClassDB::set_property(p_object, p_property, p_value, &valid)) {
@@ -1331,11 +1423,11 @@ Error ClassDB::set_property(Object *p_object, const StringName &p_property, cons
 	return OK;
 }
 
-bool ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
+bool ClassDB::class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
 	return ::ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
 
-TypedArray<Dictionary> ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::class_get_method_list(StringName p_class, bool p_no_inheritance) const {
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1353,7 +1445,7 @@ TypedArray<Dictionary> ClassDB::get_method_list(StringName p_class, bool p_no_in
 	return ret;
 }
 
-PackedStringArray ClassDB::get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
+PackedStringArray ClassDB::class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<String> constants;
 	::ClassDB::get_integer_constant_list(p_class, &constants, p_no_inheritance);
 
@@ -1367,24 +1459,24 @@ PackedStringArray ClassDB::get_integer_constant_list(const StringName &p_class, 
 	return ret;
 }
 
-bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &p_name) const {
+bool ClassDB::class_has_integer_constant(const StringName &p_class, const StringName &p_name) const {
 	bool success;
 	::ClassDB::get_integer_constant(p_class, p_name, &success);
 	return success;
 }
 
-int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
+int64_t ClassDB::class_get_integer_constant(const StringName &p_class, const StringName &p_name) const {
 	bool found;
 	int64_t c = ::ClassDB::get_integer_constant(p_class, p_name, &found);
 	ERR_FAIL_COND_V(!found, 0);
 	return c;
 }
 
-bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
+bool ClassDB::class_has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
 	return ::ClassDB::has_enum(p_class, p_name, p_no_inheritance);
 }
 
-PackedStringArray ClassDB::get_enum_list(const StringName &p_class, bool p_no_inheritance) const {
+PackedStringArray ClassDB::class_get_enum_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<StringName> enums;
 	::ClassDB::get_enum_list(p_class, &enums, p_no_inheritance);
 
@@ -1398,7 +1490,7 @@ PackedStringArray ClassDB::get_enum_list(const StringName &p_class, bool p_no_in
 	return ret;
 }
 
-PackedStringArray ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
+PackedStringArray ClassDB::class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
 	List<StringName> constants;
 	::ClassDB::get_enum_constants(p_class, p_enum, &constants, p_no_inheritance);
 
@@ -1412,7 +1504,7 @@ PackedStringArray ClassDB::get_enum_constants(const StringName &p_class, const S
 	return ret;
 }
 
-StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
+StringName ClassDB::class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
 	return ::ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
 }
 
@@ -1429,27 +1521,27 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("can_instantiate", "class"), &ClassDB::can_instantiate);
 	::ClassDB::bind_method(D_METHOD("instantiate", "class"), &ClassDB::instantiate);
 
-	::ClassDB::bind_method(D_METHOD("class_has_signal", "class", "signal"), &ClassDB::has_signal);
-	::ClassDB::bind_method(D_METHOD("class_get_signal", "class", "signal"), &ClassDB::get_signal);
-	::ClassDB::bind_method(D_METHOD("class_get_signal_list", "class", "no_inheritance"), &ClassDB::get_signal_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_has_signal", "class", "signal"), &ClassDB::class_has_signal);
+	::ClassDB::bind_method(D_METHOD("class_get_signal", "class", "signal"), &ClassDB::class_get_signal);
+	::ClassDB::bind_method(D_METHOD("class_get_signal_list", "class", "no_inheritance"), &ClassDB::class_get_signal_list, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_get_property_list", "class", "no_inheritance"), &ClassDB::get_property_list, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &ClassDB::get_property);
-	::ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &ClassDB::set_property);
+	::ClassDB::bind_method(D_METHOD("class_get_property_list", "class", "no_inheritance"), &ClassDB::class_get_property_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &ClassDB::class_get_property);
+	::ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &ClassDB::class_set_property);
 
-	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::has_method, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::class_has_method, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::get_method_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::class_get_method_list, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_list", "class", "no_inheritance"), &ClassDB::get_integer_constant_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_list", "class", "no_inheritance"), &ClassDB::class_get_integer_constant_list, DEFVAL(false));
 
-	::ClassDB::bind_method(D_METHOD("class_has_integer_constant", "class", "name"), &ClassDB::has_integer_constant);
-	::ClassDB::bind_method(D_METHOD("class_get_integer_constant", "class", "name"), &ClassDB::get_integer_constant);
+	::ClassDB::bind_method(D_METHOD("class_has_integer_constant", "class", "name"), &ClassDB::class_has_integer_constant);
+	::ClassDB::bind_method(D_METHOD("class_get_integer_constant", "class", "name"), &ClassDB::class_get_integer_constant);
 
-	::ClassDB::bind_method(D_METHOD("class_has_enum", "class", "name", "no_inheritance"), &ClassDB::has_enum, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::get_enum_list, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::get_enum_constants, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::get_integer_constant_enum, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_has_enum", "class", "name", "no_inheritance"), &ClassDB::class_has_enum, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::class_get_enum_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::class_get_enum_constants, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::class_get_integer_constant_enum, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }

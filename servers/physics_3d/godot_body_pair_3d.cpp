@@ -168,7 +168,6 @@ void GodotBodyPair3D::validate_contacts() {
 // adjust the velocity of A down so that it will just slightly intersect the collider instead of blowing right past it.
 bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, const Transform3D &p_xform_A, GodotBody3D *p_B, int p_shape_B, const Transform3D &p_xform_B) {
 	GodotShape3D *shape_A_ptr = p_A->get_shape(p_shape_A);
-	GodotShape3D *shape_B_ptr = p_B->get_shape(p_shape_B);
 
 	Vector3 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
@@ -190,6 +189,9 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 
 	// A is moving fast enough that tunneling might occur. See if it's really about to collide.
 
+	// Roughly predict body B's position in the next frame (ignoring collisions).
+	Transform3D predicted_xform_B = p_xform_B.translated(p_B->get_linear_velocity() * p_step);
+
 	// Support points are the farthest forward points on A in the direction of the motion vector.
 	// i.e. the candidate points of which one should hit B first if any collision does occur.
 	static const int max_supports = 16;
@@ -209,7 +211,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		Vector3 from = supports_A[i];
 		Vector3 to = from + motion;
 
-		Transform3D from_inv = p_xform_B.affine_inverse();
+		Transform3D from_inv = predicted_xform_B.affine_inverse();
 
 		// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
 		// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd.
@@ -218,7 +220,8 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		Vector3 local_to = from_inv.xform(to);
 
 		Vector3 rpos, rnorm;
-		if (shape_B_ptr->intersect_segment(local_from, local_to, rpos, rnorm, true)) {
+		int fi = -1;
+		if (p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm, fi, true)) {
 			float hit_length = local_from.distance_to(rpos);
 			if (hit_length < segment_hit_length) {
 				segment_support_idx = i;
@@ -234,7 +237,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		return false;
 	}
 
-	Vector3 hitpos = p_xform_B.xform(segment_hit_local);
+	Vector3 hitpos = predicted_xform_B.xform(segment_hit_local);
 
 	real_t newlen = hitpos.distance_to(supports_A[segment_support_idx]);
 	// Adding 1% of body length to the distance between collision and support point
@@ -354,6 +357,8 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 	bool do_process = false;
 
+	const Vector3 &offset_A = A->get_transform().get_origin();
+
 	const Basis &basis_A = A->get_transform().basis;
 	const Basis &basis_B = B->get_transform().basis;
 
@@ -382,7 +387,6 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 #ifdef DEBUG_ENABLED
 		if (space->is_debugging_contacts()) {
-			const Vector3 &offset_A = A->get_transform().get_origin();
 			space->add_debug_contact(global_A + offset_A);
 			space->add_debug_contact(global_B + offset_A);
 		}
@@ -410,14 +414,13 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 		if (A->can_report_contacts() || B->can_report_contacts()) {
 			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
 			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
-			Vector3 wlB = global_B - offset_B;
 
 			if (A->can_report_contacts()) {
-				A->add_contact(global_A, -c.normal, depth, shape_A, crA, wlB, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
+				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
 			}
 
 			if (B->can_report_contacts()) {
-				B->add_contact(wlB, c.normal, depth, shape_B, crB, global_A, shape_A, A->get_instance_id(), A->get_self(), crA, -c.acc_impulse);
+				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, -c.acc_impulse);
 			}
 		}
 

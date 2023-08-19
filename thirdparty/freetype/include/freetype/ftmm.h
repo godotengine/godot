@@ -4,7 +4,7 @@
  *
  *   FreeType Multiple Master font interface (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -153,7 +153,7 @@ FT_BEGIN_HEADER
    * @note:
    *   The fields `minimum`, `def`, and `maximum` are 16.16 fractional values
    *   for TrueType GX and OpenType variation fonts.  For Adobe MM fonts, the
-   *   values are integers.
+   *   values are whole numbers (i.e., the fractional part is zero).
    */
   typedef struct  FT_Var_Axis_
   {
@@ -398,6 +398,10 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @note:
+   *   The design coordinates are 16.16 fractional values for TrueType GX and
+   *   OpenType variation fonts.  For Adobe MM fonts, the values are supposed
+   *   to be whole numbers (i.e., the fractional part is zero).
+   *
    *   [Since 2.8.1] To reset all axes to the default values, call the
    *   function with `num_coords` set to zero and `coords` set to `NULL`.
    *   [Since 2.9] 'Default values' means the currently selected named
@@ -440,6 +444,11 @@ FT_BEGIN_HEADER
    * @return:
    *   FreeType error code.  0~means success.
    *
+   * @note:
+   *   The design coordinates are 16.16 fractional values for TrueType GX and
+   *   OpenType variation fonts.  For Adobe MM fonts, the values are whole
+   *   numbers (i.e., the fractional part is zero).
+   *
    * @since:
    *   2.7.1
    */
@@ -471,9 +480,9 @@ FT_BEGIN_HEADER
    *     the number of axes, use default values for the remaining axes.
    *
    *   coords ::
-   *     The design coordinates array (each element must be between 0 and 1.0
-   *     for Adobe MM fonts, and between -1.0 and 1.0 for TrueType GX and
-   *     OpenType variation fonts).
+   *     The design coordinates array.  Each element is a 16.16 fractional
+   *     value and must be between 0 and 1.0 for Adobe MM fonts, and between
+   *     -1.0 and 1.0 for TrueType GX and OpenType variation fonts.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -518,7 +527,7 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   coords ::
-   *     The normalized blend coordinates array.
+   *     The normalized blend coordinates array (as 16.16 fractional values).
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -593,10 +602,12 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   Adobe Multiple Master fonts limit the number of designs, and thus the
-   *   length of the weight vector to~16.
+   *   length of the weight vector to 16~elements.
    *
-   *   If `len` is zero and `weightvector` is `NULL`, the weight vector array
-   *   is reset to the default values.
+   *   If `len` is larger than zero, this function sets the
+   *   @FT_FACE_FLAG_VARIATION bit in @FT_Face's `face_flags` field (i.e.,
+   *   @FT_IS_VARIATION will return true).  If `len` is zero, this bit flag
+   *   is unset and the weight vector array is reset to the default values.
    *
    *   The Adobe documentation also states that the values in the
    *   WeightVector array must total 1.0 +/-~0.001.  In practice this does
@@ -743,6 +754,45 @@ FT_BEGIN_HEADER
   FT_EXPORT( FT_Error )
   FT_Set_Named_Instance( FT_Face  face,
                          FT_UInt  instance_index );
+
+
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_Get_Default_Named_Instance
+   *
+   * @description:
+   *   Retrieve the index of the default named instance, to be used with
+   *   @FT_Set_Named_Instance.
+   *
+   *   The default instance of a variation font is that instance for which
+   *   the nth axis coordinate is equal to `axis[n].def` (as specified in the
+   *   @FT_MM_Var structure), with~n covering all axes.
+   *
+   *   FreeType synthesizes a named instance for the default instance if the
+   *   font does not contain such an entry.
+   *
+   * @input:
+   *   face ::
+   *     A handle to the source face.
+   *
+   * @output:
+   *   instance_index ::
+   *     The index of the default named instance.
+   *
+   * @return:
+   *   FreeType error code.  0~means success.
+   *
+   * @note:
+   *   For Adobe MM fonts (which don't have named instances) this function
+   *   always returns zero for `instance_index`.
+   *
+   * @since:
+   *   2.13.1
+   */
+  FT_EXPORT( FT_Error )
+  FT_Get_Default_Named_Instance( FT_Face   face,
+                                 FT_UInt  *instance_index );
 
   /* */
 

@@ -204,6 +204,7 @@ struct hb_atomic_ptr_t
 
   hb_atomic_ptr_t () = default;
   constexpr hb_atomic_ptr_t (T* v) : v (v) {}
+  hb_atomic_ptr_t (const hb_atomic_ptr_t &other) = delete;
 
   void init (T* v_ = nullptr) { set_relaxed (v_); }
   void set_relaxed (T* v_) { hb_atomic_ptr_impl_set_relaxed (&v, v_); }

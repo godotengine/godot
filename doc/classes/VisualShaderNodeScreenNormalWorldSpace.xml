@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeScreenNormalWorldSpace" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A visual shader node that unpacks the screen normal texture in World Space.
+	</brief_description>
+	<description>
+		The ScreenNormalWorldSpace node allows to create outline effects.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

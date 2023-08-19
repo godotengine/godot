@@ -36,7 +36,7 @@
 #include "core/version.h"
 
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
-static const String META_TEXT_TO_COPY = "text_to_copy";
+const String EditorAbout::META_TEXT_TO_COPY = "text_to_copy";
 
 void EditorAbout::_theme_changed() {
 	const Ref<Font> font = get_theme_font(SNAME("source"), SNAME("EditorFonts"));

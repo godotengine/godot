@@ -48,6 +48,11 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 		if (initialize_speechd(dylibloader_verbose) != 0) {
 			print_verbose("Text-to-Speech: Cannot load Speech Dispatcher library!");
 		} else {
+			if (!spd_open || !spd_set_notification_on || !spd_list_synthesis_voices || !free_spd_voices || !spd_set_synthesis_voice || !spd_set_volume || !spd_set_voice_pitch || !spd_set_voice_rate || !spd_set_data_mode || !spd_say || !spd_pause || !spd_resume || !spd_cancel) {
+				// There's no API to check version, check if functions are available instead.
+				print_verbose("Text-to-Speech: Unsupported Speech Dispatcher library version!");
+				return;
+			}
 #else
 		{
 #endif
@@ -96,6 +101,24 @@ void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNo
 	}
 }
 
+void TTS_Linux::_load_voices() {
+	if (!voices_loaded) {
+		SPDVoice **spd_voices = spd_list_synthesis_voices(synth);
+		if (spd_voices != nullptr) {
+			SPDVoice **voices_ptr = spd_voices;
+			while (*voices_ptr != nullptr) {
+				VoiceInfo vi;
+				vi.language = String::utf8((*voices_ptr)->language);
+				vi.variant = String::utf8((*voices_ptr)->variant);
+				voices[String::utf8((*voices_ptr)->name)] = vi;
+				voices_ptr++;
+			}
+			free_spd_voices(spd_voices);
+		}
+		voices_loaded = true;
+	}
+}
+
 void TTS_Linux::_speech_event(size_t p_msg_id, size_t p_client_id, int p_type) {
 	_THREAD_SAFE_METHOD_
 
@@ -118,18 +141,13 @@ void TTS_Linux::_speech_event(size_t p_msg_id, size_t p_client_id, int p_type) {
 		// Inject index mark after each word.
 		String text;
 		String language;
-		SPDVoice **voices = spd_list_synthesis_voices(synth);
-		if (voices != nullptr) {
-			SPDVoice **voices_ptr = voices;
-			while (*voices_ptr != nullptr) {
-				if (String::utf8((*voices_ptr)->name) == message.voice) {
-					language = String::utf8((*voices_ptr)->language);
-					break;
-				}
-				voices_ptr++;
-			}
-			free_spd_voices(voices);
+
+		_load_voices();
+		const VoiceInfo *voice = voices.getptr(message.voice);
+		if (voice) {
+			language = voice->language;
 		}
+
 		PackedInt32Array breaks = TS->string_get_word_breaks(message.text, language);
 		for (int i = 0; i < breaks.size(); i += 2) {
 			const int start = breaks[i];
@@ -169,21 +187,17 @@ Array TTS_Linux::get_voices() const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!synth, Array());
-	Array list;
-	SPDVoice **voices = spd_list_synthesis_voices(synth);
-	if (voices != nullptr) {
-		SPDVoice **voices_ptr = voices;
-		while (*voices_ptr != nullptr) {
-			Dictionary voice_d;
-			voice_d["name"] = String::utf8((*voices_ptr)->name);
-			voice_d["id"] = String::utf8((*voices_ptr)->name);
-			voice_d["language"] = String::utf8((*voices_ptr)->language) + "_" + String::utf8((*voices_ptr)->variant);
-			list.push_back(voice_d);
+	const_cast<TTS_Linux *>(this)->_load_voices();
 
-			voices_ptr++;
-		}
-		free_spd_voices(voices);
+	Array list;
+	for (const KeyValue<String, VoiceInfo> &E : voices) {
+		Dictionary voice_d;
+		voice_d["name"] = E.key;
+		voice_d["id"] = E.key;
+		voice_d["language"] = E.value.language + "_" + E.value.variant;
+		list.push_back(voice_d);
 	}
+
 	return list;
 }
 

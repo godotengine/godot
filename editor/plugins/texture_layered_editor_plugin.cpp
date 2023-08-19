@@ -181,7 +181,7 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 
 void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	if (!texture.is_null()) {
-		texture->disconnect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
+		texture->disconnect_changed(callable_mp(this, &TextureLayeredEditor::_texture_changed));
 	}
 
 	texture = p_texture;
@@ -191,7 +191,7 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 			_make_shaders();
 		}
 
-		texture->connect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
+		texture->connect_changed(callable_mp(this, &TextureLayeredEditor::_texture_changed));
 		queue_redraw();
 		texture_rect->set_material(materials[texture->get_layered_type()]);
 		setting = true;

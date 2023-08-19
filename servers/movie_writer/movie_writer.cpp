@@ -33,6 +33,7 @@
 #include "core/io/dir_access.h"
 #include "core/os/time.h"
 #include "servers/display_server.h"
+#include "servers/rendering_server.h"
 
 MovieWriter *MovieWriter::writers[MovieWriter::MAX_WRITERS];
 uint32_t MovieWriter::writer_count = 0;
@@ -109,6 +110,9 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 		WARN_PRINT(vformat("Current available space on disk is low (%s). MovieWriter will fail during movie recording if the disk runs out of available space.", String::humanize_size(dir->get_space_left())));
 	}
 
+	cpu_time = 0.0f;
+	gpu_time = 0.0f;
+
 	mix_rate = get_audio_mix_rate();
 	AudioDriverDummy::get_dummy_singleton()->set_mix_rate(mix_rate);
 	AudioDriverDummy::get_dummy_singleton()->set_speaker_mode(AudioDriver::SpeakerMode(get_audio_speaker_mode()));
@@ -165,7 +169,7 @@ void MovieWriter::set_extensions_hint() {
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "editor/movie_writer/movie_file", PROPERTY_HINT_GLOBAL_SAVE_FILE, ext_hint));
 }
 
-void MovieWriter::add_frame(const Ref<Image> &p_image) {
+void MovieWriter::add_frame() {
 	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
 	const String movie_time = vformat("%s:%s:%s",
 			String::num(movie_time_seconds / 3600).pad_zeros(2),
@@ -178,8 +182,17 @@ void MovieWriter::add_frame(const Ref<Image> &p_image) {
 	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
 #endif
 
+	RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
+	RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
+	Ref<Image> vp_tex = RenderingServer::get_singleton()->texture_2d_get(main_vp_texture);
+
+	RenderingServer::get_singleton()->viewport_set_measure_render_time(main_vp_rid, true);
+	cpu_time += RenderingServer::get_singleton()->viewport_get_measured_render_time_cpu(main_vp_rid);
+	cpu_time += RenderingServer::get_singleton()->get_frame_setup_time_cpu();
+	gpu_time += RenderingServer::get_singleton()->viewport_get_measured_render_time_gpu(main_vp_rid);
+
 	AudioDriverDummy::get_dummy_singleton()->mix_audio(mix_rate / fps, audio_mix_buffer.ptr());
-	write_frame(p_image, audio_mix_buffer.ptr());
+	write_frame(vp_tex, audio_mix_buffer.ptr());
 }
 
 void MovieWriter::end() {
@@ -208,5 +221,7 @@ void MovieWriter::end() {
 			String::num(real_time_seconds % 60).pad_zeros(2));
 
 	print_line(vformat("%d frames at %d FPS (movie length: %s), recorded in %s (%d%% of real-time speed).", Engine::get_singleton()->get_frames_drawn(), fps, movie_time, real_time, (float(movie_time_seconds) / real_time_seconds) * 100));
+	print_line(vformat("CPU time: %.2f seconds (average: %.2f ms/frame)", cpu_time / 1000, cpu_time / Engine::get_singleton()->get_frames_drawn()));
+	print_line(vformat("GPU time: %.2f seconds (average: %.2f ms/frame)", gpu_time / 1000, gpu_time / Engine::get_singleton()->get_frames_drawn()));
 	print_line("----------------");
 }

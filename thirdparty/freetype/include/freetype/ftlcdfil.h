@@ -5,7 +5,7 @@
  *   FreeType API for color filtering of subpixel bitmap glyphs
  *   (specification).
  *
- * Copyright (C) 2006-2022 by
+ * Copyright (C) 2006-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -137,11 +137,11 @@ FT_BEGIN_HEADER
    *
    *   FT_LCD_FILTER_DEFAULT ::
    *     This is a beveled, normalized, and color-balanced five-tap filter
-   *     with weights of [0x08 0x4D 0x56 0x4D 0x08] in 1/256th units.
+   *     with weights of [0x08 0x4D 0x56 0x4D 0x08] in 1/256 units.
    *
    *   FT_LCD_FILTER_LIGHT ::
    *     this is a boxy, normalized, and color-balanced three-tap filter with
-   *     weights of [0x00 0x55 0x56 0x55 0x00] in 1/256th units.
+   *     weights of [0x00 0x55 0x56 0x55 0x00] in 1/256 units.
    *
    *   FT_LCD_FILTER_LEGACY ::
    *   FT_LCD_FILTER_LEGACY1 ::
@@ -226,7 +226,7 @@ FT_BEGIN_HEADER
    *
    *   weights ::
    *     A pointer to an array; the function copies the first five bytes and
-   *     uses them to specify the filter weights in 1/256th units.
+   *     uses them to specify the filter weights in 1/256 units.
    *
    * @return:
    *   FreeType error code.  0~means success.

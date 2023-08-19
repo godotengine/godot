@@ -115,7 +115,7 @@ struct hb_sparseset_t
   /* Sink interface. */
   hb_sparseset_t& operator << (hb_codepoint_t v)
   { add (v); return *this; }
-  hb_sparseset_t& operator << (const hb_pair_t<hb_codepoint_t, hb_codepoint_t>& range)
+  hb_sparseset_t& operator << (const hb_codepoint_pair_t& range)
   { add_range (range.first, range.second); return *this; }
 
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
@@ -174,7 +174,7 @@ struct hb_set_t : hb_sparseset_t<hb_bit_set_invertible_t>
 
   hb_set_t& operator << (hb_codepoint_t v)
   { sparseset::operator<< (v); return *this; }
-  hb_set_t& operator << (const hb_pair_t<hb_codepoint_t, hb_codepoint_t>& range)
+  hb_set_t& operator << (const hb_codepoint_pair_t& range)
   { sparseset::operator<< (range); return *this; }
 };
 

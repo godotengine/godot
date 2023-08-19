@@ -38,9 +38,6 @@ thirdparty_sources = [
     "src/lib/tvgShape.cpp",
     "src/lib/tvgSwCanvas.cpp",
     "src/lib/tvgTaskScheduler.cpp",
-    "src/loaders/external_png/tvgPngLoader.cpp",
-    "src/loaders/jpg/tvgJpgd.cpp",
-    "src/loaders/jpg/tvgJpgLoader.cpp",
     "src/loaders/raw/tvgRawLoader.cpp",
     "src/loaders/svg/tvgSvgCssStyle.cpp",
     "src/loaders/svg/tvgSvgLoader.cpp",
@@ -48,14 +45,14 @@ thirdparty_sources = [
     "src/loaders/svg/tvgSvgSceneBuilder.cpp",
     "src/loaders/svg/tvgSvgUtil.cpp",
     "src/loaders/svg/tvgXmlParser.cpp",
-    "src/loaders/tvg/tvgTvgBinInterpreter.cpp",
-    "src/loaders/tvg/tvgTvgLoader.cpp",
-    "src/savers/tvg/tvgTvgSaver.cpp",
 ]
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_svg.Prepend(CPPPATH=[thirdparty_dir + "inc"])
+
+# Enable ThorVG static object linking.
+env_svg.Append(CPPDEFINES=["TVG_STATIC"])
 
 env_thirdparty = env_svg.Clone()
 env_thirdparty.disable_warnings()
@@ -63,12 +60,8 @@ env_thirdparty.Prepend(
     CPPPATH=[
         thirdparty_dir + "src/lib",
         thirdparty_dir + "src/lib/sw_engine",
-        thirdparty_dir + "src/loaders/external_png",
-        thirdparty_dir + "src/loaders/jpg",
         thirdparty_dir + "src/loaders/raw",
         thirdparty_dir + "src/loaders/svg",
-        thirdparty_dir + "src/loaders/tvg",
-        thirdparty_dir + "src/savers/tvg",
     ]
 )
 # Also requires libpng headers

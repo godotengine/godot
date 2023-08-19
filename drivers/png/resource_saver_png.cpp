@@ -33,7 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "drivers/png/png_driver_common.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/image_texture.h"
 
 Error ResourceSaverPNG::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<ImageTexture> texture = p_resource;

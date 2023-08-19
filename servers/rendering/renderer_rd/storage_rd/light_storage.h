@@ -93,11 +93,11 @@ private:
 		struct ShadowTransform {
 			Projection camera;
 			Transform3D transform;
-			float farplane;
-			float split;
-			float bias_scale;
-			float shadow_texel_size;
-			float range_begin;
+			float farplane = 0.0;
+			float split = 0.0;
+			float bias_scale = 0.0;
+			float shadow_texel_size = 0.0;
+			float range_begin = 0.0;
 			Rect2 atlas_rect;
 			Vector2 uv_scale;
 		};
@@ -451,7 +451,7 @@ public:
 
 	/* LIGHT */
 
-	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); };
+	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); }
 
 	void _light_initialize(RID p_rid, RS::LightType p_type);
 
@@ -563,6 +563,13 @@ public:
 		ERR_FAIL_COND_V(!light, 0.0);
 
 		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
+	}
+
+	virtual bool light_get_reverse_cull_face_mode(RID p_light) const override {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, false);
+
+		return light->reverse_cull;
 	}
 
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override;

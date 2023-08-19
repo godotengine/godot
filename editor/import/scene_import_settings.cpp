@@ -64,7 +64,7 @@ class SceneImportSettingsData : public Object {
 
 			current[p_name] = p_value;
 
-			// SceneImportSettings must decide if a new collider should be generated or not
+			// SceneImportSettings must decide if a new collider should be generated or not.
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE) {
 				SceneImportSettings::get_singleton()->request_generate_collider();
 			}
@@ -350,8 +350,12 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE;
 			} else if (Object::cast_to<AnimationPlayer>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
+
+				animation_player = Object::cast_to<AnimationPlayer>(p_node);
+				animation_player->connect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettings::_animation_finished));
 			} else if (Object::cast_to<Skeleton3D>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
+				skeletons.push_back(Object::cast_to<Skeleton3D>(p_node));
 			} else {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 			}
@@ -413,7 +417,7 @@ void SceneImportSettings::_update_scene() {
 	material_tree->clear();
 	mesh_tree->clear();
 
-	//hidden roots
+	// Hidden roots.
 	material_tree->create_item();
 	mesh_tree->create_item();
 
@@ -432,7 +436,7 @@ void SceneImportSettings::_update_view_gizmos() {
 
 		MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
 		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
-			// Nothing to do
+			// Nothing to do.
 			continue;
 		}
 
@@ -591,7 +595,7 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	scene_import_settings_data->settings = nullptr;
 	scene_import_settings_data->path = p_path;
 
-	// Visibility
+	// Visibility.
 	data_mode->set_tab_hidden(1, p_for_animation);
 	data_mode->set_tab_hidden(2, p_for_animation);
 	if (p_for_animation) {
@@ -691,12 +695,13 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	scene_import_settings_data->hide_options = false;
 
 	if (p_type == "Node") {
-		node_selected->hide(); //always hide just in case
+		node_selected->hide(); // Always hide just in case.
 		mesh_preview->hide();
+		_reset_animation();
+
 		if (Object::cast_to<Node3D>(scene)) {
 			Object::cast_to<Node3D>(scene)->show();
 		}
-		//NodeData &nd=node_map[p_id];
 		material_tree->deselect_all();
 		mesh_tree->deselect_all();
 		NodeData &nd = node_map[p_id];
@@ -734,12 +739,13 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 			}
 		}
 	} else if (p_type == "Animation") {
-		node_selected->hide(); //always hide just in case
+		node_selected->hide(); // Always hide just in case.
 		mesh_preview->hide();
+		_reset_animation(p_id);
+
 		if (Object::cast_to<Node3D>(scene)) {
 			Object::cast_to<Node3D>(scene)->show();
 		}
-		//NodeData &nd=node_map[p_id];
 		material_tree->deselect_all();
 		mesh_tree->deselect_all();
 		AnimationData &ad = animation_map[p_id];
@@ -768,6 +774,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 
 		mesh_preview->set_mesh(md.mesh);
 		mesh_preview->show();
+		_reset_animation();
 
 		material_tree->deselect_all();
 
@@ -780,6 +787,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 		}
 
 		mesh_preview->show();
+		_reset_animation();
 
 		MaterialData &md = material_map[p_id];
 
@@ -836,7 +844,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	if (scene_import_settings_data->settings) {
 		for (const ResourceImporter::ImportOption &E : options) {
 			scene_import_settings_data->defaults[E.option.name] = E.default_value;
-			//needed for visibility toggling (fails if something is missing)
+			// Needed for visibility toggling (fails if something is missing).
 			if (scene_import_settings_data->settings->has(E.option.name)) {
 				scene_import_settings_data->current[E.option.name] = (*scene_import_settings_data->settings)[E.option.name];
 			} else {
@@ -848,6 +856,127 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	scene_import_settings_data->options = options;
 	inspector->edit(scene_import_settings_data);
 	scene_import_settings_data->notify_property_list_changed();
+}
+
+void SceneImportSettings::_inspector_property_edited(const String &p_name) {
+	if (p_name == "settings/loop_mode") {
+		if (!animation_map.has(selected_id)) {
+			return;
+		}
+		HashMap<StringName, Variant> settings = animation_map[selected_id].settings;
+		if (settings.has(p_name)) {
+			animation_loop_mode = static_cast<Animation::LoopMode>((int)settings[p_name]);
+		} else {
+			animation_loop_mode = Animation::LoopMode::LOOP_NONE;
+		}
+	}
+}
+
+void SceneImportSettings::_reset_bone_transforms() {
+	for (Skeleton3D *skeleton : skeletons) {
+		skeleton->reset_bone_poses();
+	}
+}
+
+void SceneImportSettings::_play_animation() {
+	if (animation_player == nullptr) {
+		return;
+	}
+	StringName id = StringName(selected_id);
+	if (animation_player->has_animation(id)) {
+		if (animation_player->is_playing()) {
+			animation_player->pause();
+			animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+			set_process(false);
+		} else {
+			animation_player->play(id);
+			animation_play_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+			set_process(true);
+		}
+	}
+}
+
+void SceneImportSettings::_stop_current_animation() {
+	animation_pingpong = false;
+	animation_player->stop();
+	animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	animation_slider->set_value_no_signal(0.0);
+	set_process(false);
+}
+
+void SceneImportSettings::_reset_animation(const String &p_animation_name) {
+	if (p_animation_name.is_empty()) {
+		animation_preview->hide();
+
+		if (animation_player != nullptr && animation_player->is_playing()) {
+			animation_player->stop();
+		}
+		animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+
+		_reset_bone_transforms();
+		set_process(false);
+	} else {
+		_reset_bone_transforms();
+		animation_preview->show();
+
+		animation_loop_mode = Animation::LoopMode::LOOP_NONE;
+		animation_pingpong = false;
+
+		if (animation_map.has(p_animation_name)) {
+			HashMap<StringName, Variant> settings = animation_map[p_animation_name].settings;
+			if (settings.has("settings/loop_mode")) {
+				animation_loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
+			}
+		}
+
+		if (animation_player->is_playing() && animation_loop_mode != Animation::LoopMode::LOOP_NONE) {
+			animation_player->play(p_animation_name);
+		} else {
+			animation_player->stop(true);
+			animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+			animation_player->set_assigned_animation(p_animation_name);
+			animation_player->seek(0.0, true);
+			animation_slider->set_value_no_signal(0.0);
+			set_process(false);
+		}
+	}
+}
+
+void SceneImportSettings::_animation_slider_value_changed(double p_value) {
+	if (animation_player == nullptr || !animation_map.has(selected_id) || animation_map[selected_id].animation.is_null()) {
+		return;
+	}
+	if (animation_player->is_playing()) {
+		animation_player->stop();
+		animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+		set_process(false);
+	}
+	animation_player->seek(p_value * animation_map[selected_id].animation->get_length(), true);
+}
+
+void SceneImportSettings::_animation_finished(const StringName &p_name) {
+	Animation::LoopMode loop_mode = animation_loop_mode;
+
+	switch (loop_mode) {
+		case Animation::LOOP_NONE: {
+			animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+			animation_slider->set_value_no_signal(1.0);
+			set_process(false);
+		} break;
+		case Animation::LOOP_LINEAR: {
+			animation_player->play(p_name);
+		} break;
+		case Animation::LOOP_PINGPONG: {
+			if (animation_pingpong) {
+				animation_player->play(p_name);
+			} else {
+				animation_player->play_backwards(p_name);
+			}
+			animation_pingpong = !animation_pingpong;
+		} break;
+		default: {
+		} break;
+	}
 }
 
 void SceneImportSettings::_material_tree_selected() {
@@ -894,6 +1023,15 @@ void SceneImportSettings::_light_button_pressed(Node *p_button) {
 	}
 }
 
+void SceneImportSettings::_cleanup() {
+	skeletons.clear();
+	if (animation_player != nullptr) {
+		animation_player->disconnect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettings::_animation_finished));
+		animation_player = nullptr;
+	}
+	set_process(false);
+}
+
 void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 	float *rot_x = &cam_rot_x;
 	float *rot_y = &cam_rot_y;
@@ -937,7 +1075,7 @@ void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 void SceneImportSettings::_re_import() {
 	HashMap<StringName, Variant> main_settings;
 
-	main_settings = defaults;
+	main_settings = scene_import_settings_data->current;
 	main_settings.erase("_subresources");
 	Dictionary nodes;
 	Dictionary materials;
@@ -1029,10 +1167,25 @@ void SceneImportSettings::_notification(int p_what) {
 			light_1_switch->set_texture_pressed(theme_cache.light_1_off);
 			light_2_switch->set_texture_normal(theme_cache.light_2_on);
 			light_2_switch->set_texture_pressed(theme_cache.light_2_off);
+
+			if (animation_player != nullptr && animation_player->is_playing()) {
+				animation_play_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+			} else {
+				animation_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+			}
+			animation_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+		case NOTIFICATION_PROCESS: {
+			if (animation_player != nullptr) {
+				animation_slider->set_value_no_signal(animation_player->get_current_animation_position() / animation_player->get_current_animation_length());
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				_cleanup();
+			}
 		} break;
 	}
 }
@@ -1359,15 +1512,52 @@ SceneImportSettings::SceneImportSettings() {
 
 	material_tree->set_hide_root(true);
 
+	VBoxContainer *vp_vb = memnew(VBoxContainer);
+	vp_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_vb->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
+	property_split->add_child(vp_vb);
+
 	SubViewportContainer *vp_container = memnew(SubViewportContainer);
-	vp_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vp_container->set_custom_minimum_size(Size2(10, 10));
 	vp_container->set_stretch(true);
 	vp_container->connect("gui_input", callable_mp(this, &SceneImportSettings::_viewport_input));
-	property_split->add_child(vp_container);
+	vp_vb->add_child(vp_container);
 
 	base_viewport = memnew(SubViewport);
 	vp_container->add_child(base_viewport);
+
+	animation_preview = memnew(PanelContainer);
+	animation_preview->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vp_vb->add_child(animation_preview);
+	animation_preview->hide();
+
+	HBoxContainer *animation_hbox = memnew(HBoxContainer);
+	animation_preview->add_child(animation_hbox);
+
+	animation_play_button = memnew(Button);
+	animation_hbox->add_child(animation_play_button);
+	animation_play_button->set_flat(true);
+	animation_play_button->set_focus_mode(Control::FOCUS_NONE);
+	animation_play_button->set_shortcut(ED_SHORTCUT("scene_import_settings/play_selected_animation", TTR("Selected Animation Play/Pause"), Key::SPACE));
+	animation_play_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettings::_play_animation));
+
+	animation_stop_button = memnew(Button);
+	animation_hbox->add_child(animation_stop_button);
+	animation_stop_button->set_flat(true);
+	animation_stop_button->set_focus_mode(Control::FOCUS_NONE);
+	animation_stop_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettings::_stop_current_animation));
+
+	animation_slider = memnew(HSlider);
+	animation_hbox->add_child(animation_slider);
+	animation_slider->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	animation_slider->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	animation_slider->set_max(1.0);
+	animation_slider->set_step(1.0 / 100.0);
+	animation_slider->set_value_no_signal(0.0);
+	animation_slider->set_focus_mode(Control::FOCUS_NONE);
+	animation_slider->connect(SNAME("value_changed"), callable_mp(this, &SceneImportSettings::_animation_slider_value_changed));
 
 	base_viewport->set_use_own_world_3d(true);
 
@@ -1465,7 +1655,7 @@ SceneImportSettings::SceneImportSettings() {
 
 	inspector = memnew(EditorInspector);
 	inspector->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
-	inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+	inspector->connect(SNAME("property_edited"), callable_mp(this, &SceneImportSettings::_inspector_property_edited));
 
 	property_split->add_child(inspector);
 

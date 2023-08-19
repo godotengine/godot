@@ -40,7 +40,7 @@ class ZIPPacker : public RefCounted {
 	GDCLASS(ZIPPacker, RefCounted);
 
 	Ref<FileAccess> fa;
-	zipFile zf;
+	zipFile zf = nullptr;
 
 protected:
 	static void _bind_methods();

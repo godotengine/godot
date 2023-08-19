@@ -26,10 +26,10 @@ index 8c70ebecfb..c5ed7ab07d 100644
          CHECKED_READU32(p_parser, p_node->word_offset + 2, p_node->result_id);
        }
        break;
--
-+// -- GODOT begin --
+
        case SpvOpSpecConstantTrue:
        case SpvOpSpecConstantFalse:
++// -- GODOT begin --
 -      case SpvOpSpecConstant:
 +      case SpvOpSpecConstant: {
 +        CHECKED_READU32(p_parser, p_node->word_offset + 1, p_node->result_type_id);

@@ -68,11 +68,10 @@
     CF2_Fixed  maxScale;
 
 
-    FT_ASSERT( unitsPerEm > 0 );
-
     if ( transform->a <= 0 || transform->d <= 0 )
       return FT_THROW( Invalid_Size_Handle );
 
+    FT_ASSERT( unitsPerEm > 0 );
     FT_ASSERT( transform->b == 0 && transform->c == 0 );
     FT_ASSERT( transform->tx == 0 && transform->ty == 0 );
 
@@ -297,7 +296,6 @@
   cf2_getUnitsPerEm( PS_Decoder*  decoder )
   {
     FT_ASSERT( decoder && decoder->builder.face );
-    FT_ASSERT( decoder->builder.face->units_per_EM );
 
     return decoder->builder.face->units_per_EM;
   }

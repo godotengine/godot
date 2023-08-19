@@ -30,7 +30,6 @@
 
 #include "label_3d.h"
 
-#include "core/core_string_names.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
@@ -88,6 +87,9 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Label3D::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Label3D::get_autowrap_mode);
 
+	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &Label3D::set_justification_flags);
+	ClassDB::bind_method(D_METHOD("get_justification_flags"), &Label3D::get_justification_flags);
+
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &Label3D::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &Label3D::get_width);
 
@@ -123,10 +125,6 @@ void Label3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &Label3D::generate_triangle_mesh);
 
-	ClassDB::bind_method(D_METHOD("_queue_update"), &Label3D::_queue_update);
-	ClassDB::bind_method(D_METHOD("_font_changed"), &Label3D::_font_changed);
-	ClassDB::bind_method(D_METHOD("_im_update"), &Label3D::_im_update);
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 
@@ -157,6 +155,7 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 
 	ADD_GROUP("BiDi", "");
@@ -200,12 +199,12 @@ void Label3D::_notification(int p_what) {
 				_im_update();
 			}
 			Viewport *viewport = get_viewport();
-			ERR_FAIL_COND(!viewport);
+			ERR_FAIL_NULL(viewport);
 			viewport->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			Viewport *viewport = get_viewport();
-			ERR_FAIL_COND(!viewport);
+			ERR_FAIL_NULL(viewport);
 			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -235,7 +234,7 @@ void Label3D::_queue_update() {
 	}
 
 	pending_update = true;
-	call_deferred(SceneStringNames::get_singleton()->_im_update);
+	callable_mp(this, &Label3D::_im_update).call_deferred();
 }
 
 AABB Label3D::get_aabb() const {
@@ -533,8 +532,24 @@ void Label3D::_shape() {
 		}
 
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			for (int i = 0; i < lines_rid.size() - 1; i++) {
-				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA);
+			int jst_to_line = lines_rid.size();
+			if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+				jst_to_line = lines_rid.size();
+			} else {
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+					jst_to_line = lines_rid.size() - 1;
+				}
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+					for (int i = lines_rid.size() - 1; i >= 0; i--) {
+						if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
+							jst_to_line = i;
+							break;
+						}
+					}
+				}
+			}
+			for (int i = 0; i < jst_to_line; i++) {
+				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, jst_flags);
 			}
 		}
 		dirty_lines = false;
@@ -746,12 +761,12 @@ void Label3D::_font_changed() {
 void Label3D::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
 		if (font_override.is_valid()) {
-			font_override->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->disconnect_changed(callable_mp(this, &Label3D::_font_changed));
 		}
 		font_override = p_font;
 		dirty_font = true;
 		if (font_override.is_valid()) {
-			font_override->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->connect_changed(callable_mp(this, &Label3D::_font_changed));
 		}
 		_queue_update();
 	}
@@ -763,7 +778,7 @@ Ref<Font> Label3D::get_font() const {
 
 Ref<Font> Label3D::_get_font_or_default() const {
 	if (theme_font.is_valid()) {
-		theme_font->disconnect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font->disconnect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 		theme_font.unref();
 	}
 
@@ -781,7 +796,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+					theme_font->connect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 				}
 				return f;
 			}
@@ -798,7 +813,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+					theme_font->connect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 				}
 				return f;
 			}
@@ -809,7 +824,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 	Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
 	if (f.is_valid()) {
 		theme_font = f;
-		theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font->connect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 	}
 	return f;
 }
@@ -869,6 +884,18 @@ void Label3D::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 
 TextServer::AutowrapMode Label3D::get_autowrap_mode() const {
 	return autowrap_mode;
+}
+
+void Label3D::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
+	if (jst_flags != p_flags) {
+		jst_flags = p_flags;
+		dirty_lines = true;
+		_queue_update();
+	}
+}
+
+BitField<TextServer::JustificationFlag> Label3D::get_justification_flags() const {
+	return jst_flags;
 }
 
 void Label3D::set_width(float p_width) {

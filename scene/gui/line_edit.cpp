@@ -79,7 +79,7 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 		if (caret_mid_grapheme_enabled) {
 			set_caret_column(get_caret_column() - 1);
 		} else {
-			set_caret_column(TS->shaped_text_prev_grapheme_pos(text_rid, get_caret_column()));
+			set_caret_column(TS->shaped_text_prev_character_pos(text_rid, get_caret_column()));
 		}
 	}
 
@@ -112,7 +112,7 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 		if (caret_mid_grapheme_enabled) {
 			set_caret_column(get_caret_column() + 1);
 		} else {
-			set_caret_column(TS->shaped_text_next_grapheme_pos(text_rid, get_caret_column()));
+			set_caret_column(TS->shaped_text_next_character_pos(text_rid, get_caret_column()));
 		}
 	}
 
@@ -211,7 +211,7 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 			delete_char();
 		} else {
 			int cc = caret_column;
-			set_caret_column(TS->shaped_text_next_grapheme_pos(text_rid, caret_column));
+			set_caret_column(TS->shaped_text_next_character_pos(text_rid, caret_column));
 			delete_text(cc, caret_column);
 		}
 	}
@@ -284,7 +284,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		_reset_caret_blink_timer();
 		if (b->is_pressed()) {
-			accept_event(); // don't pass event further when clicked on text field
+			accept_event(); // Don't pass event further when clicked on text field.
 			if (!text.is_empty() && is_editable() && _is_over_clear_button(b->get_position())) {
 				clear_button_status.press_attempt = true;
 				clear_button_status.pressing_inside = true;
@@ -341,13 +341,15 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				selection.drag_attempt = false;
-
-				if ((caret_column < selection.begin) || (caret_column > selection.end) || !selection.enabled) {
-					deselect();
-					selection.start_column = caret_column;
-					selection.creating = true;
-				} else if (selection.enabled && !selection.double_click) {
-					selection.drag_attempt = true;
+				if (!selection.double_click) {
+					bool is_inside_sel = selection.enabled && caret_column >= selection.begin && caret_column <= selection.end;
+					if (drag_and_drop_selection_enabled && is_inside_sel) {
+						selection.drag_attempt = true;
+					} else {
+						deselect();
+						selection.start_column = caret_column;
+						selection.creating = true;
+					}
 				}
 			}
 
@@ -429,7 +431,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		// Alt+ Unicode input:
+		// Alt + Unicode input:
 		if (k->is_alt_pressed()) {
 			if (!alt_start) {
 				if (k->get_keycode() == Key::KP_ADD) {
@@ -470,7 +472,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE
+		// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
 		if (k->is_action("ui_text_submit", false)) {
 			emit_signal(SNAME("text_submitted"), text);
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
@@ -608,7 +610,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
-			// Handle Unicode (if no modifiers active)
+			// Handle Unicode if no modifiers are active.
 			selection_delete();
 			char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
 			int prev_len = text.length();
@@ -1116,7 +1118,7 @@ void LineEdit::_notification(int p_what) {
 			ime_text = "";
 			ime_selection = Point2();
 			_shape();
-			set_caret_column(caret_column); // Update scroll_offset
+			set_caret_column(caret_column); // Update scroll_offset.
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
@@ -1137,7 +1139,7 @@ void LineEdit::_notification(int p_what) {
 				}
 
 				_shape();
-				set_caret_column(caret_column); // Update scroll_offset
+				set_caret_column(caret_column); // Update scroll_offset.
 
 				queue_redraw();
 			}
@@ -1324,6 +1326,9 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 	}
 
 	int ofs = ceil(TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset));
+	if (!caret_mid_grapheme_enabled) {
+		ofs = TS->shaped_text_closest_character_pos(text_rid, ofs);
+	}
 	set_caret_column(ofs);
 }
 
@@ -1525,6 +1530,22 @@ void LineEdit::set_text(String p_text) {
 	queue_redraw();
 	caret_column = 0;
 	scroll_offset = 0.0;
+}
+
+void LineEdit::set_text_with_selection(const String &p_text) {
+	Selection selection_copy = selection;
+
+	clear_internal();
+	insert_text_at_caret(p_text);
+	_create_undo_state();
+
+	int tlen = text.length();
+	selection = selection_copy;
+	selection.begin = MIN(selection.begin, tlen);
+	selection.end = MIN(selection.end, tlen);
+	selection.start_column = MIN(selection.start_column, tlen);
+
+	queue_redraw();
 }
 
 void LineEdit::set_text_direction(Control::TextDirection p_text_direction) {
@@ -1776,8 +1797,8 @@ Size2 LineEdit::get_minimum_size() const {
 	min_size.width = theme_cache.minimum_character_width * em_space_size;
 
 	if (expand_to_text_length) {
-		// Add a space because some fonts are too exact, and because caret needs a bit more when at the end.
-		min_size.width = MAX(min_size.width, full_width + em_space_size);
+		// Ensure some space for the caret when placed at the end.
+		min_size.width = MAX(min_size.width, full_width + theme_cache.caret_width);
 	}
 
 	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height(font_size));
@@ -2208,6 +2229,14 @@ bool LineEdit::is_deselect_on_focus_loss_enabled() const {
 	return deselect_on_focus_loss_enabled;
 }
 
+void LineEdit::set_drag_and_drop_selection_enabled(const bool p_enabled) {
+	drag_and_drop_selection_enabled = p_enabled;
+}
+
+bool LineEdit::is_drag_and_drop_selection_enabled() const {
+	return drag_and_drop_selection_enabled;
+}
+
 void LineEdit::set_right_icon(const Ref<Texture2D> &p_icon) {
 	if (right_icon == p_icon) {
 		return;
@@ -2360,7 +2389,7 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 		return Key::NONE;
 	}
 
-	// Use physical keycode if non-zero
+	// Use physical keycode if non-zero.
 	if (event->get_physical_keycode() != Key::NONE) {
 		return event->get_physical_keycode_with_modifiers();
 	} else {
@@ -2554,6 +2583,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &LineEdit::is_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &LineEdit::set_deselect_on_focus_loss_enabled);
 	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &LineEdit::is_deselect_on_focus_loss_enabled);
+	ClassDB::bind_method(D_METHOD("set_drag_and_drop_selection_enabled", "enable"), &LineEdit::set_drag_and_drop_selection_enabled);
+	ClassDB::bind_method(D_METHOD("is_drag_and_drop_selection_enabled"), &LineEdit::is_drag_and_drop_selection_enabled);
 	ClassDB::bind_method(D_METHOD("set_right_icon", "icon"), &LineEdit::set_right_icon);
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
@@ -2622,6 +2653,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");

@@ -310,16 +310,6 @@ void SectionedInspector::_search_changed(const String &p_what) {
 	update_category_list();
 }
 
-void SectionedInspector::_notification(int p_what) {
-	switch (p_what) {
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
-				inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
-			}
-		} break;
-	}
-}
-
 EditorInspector *SectionedInspector::get_inspector() {
 	return inspector;
 }
@@ -353,7 +343,6 @@ SectionedInspector::SectionedInspector() :
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
-	inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 
 	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }

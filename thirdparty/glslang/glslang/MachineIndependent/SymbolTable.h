@@ -84,7 +84,7 @@ typedef TVector<const char*> TExtensionList;
 class TSymbol {
 public:
     POOL_ALLOCATOR_NEW_DELETE(GetThreadPoolAllocator())
-    explicit TSymbol(const TString *n) :  name(n), uniqueId(0), extensions(0), writable(true) { }
+    explicit TSymbol(const TString *n) :  name(n), uniqueId(0), extensions(nullptr), writable(true) { }
     virtual TSymbol* clone() const = 0;
     virtual ~TSymbol() { }  // rely on all symbol owned memory coming from the pool
 
@@ -97,18 +97,18 @@ public:
         changeName(NewPoolTString(newName.c_str()));
     }
     virtual const TString& getMangledName() const { return getName(); }
-    virtual TFunction* getAsFunction() { return 0; }
-    virtual const TFunction* getAsFunction() const { return 0; }
-    virtual TVariable* getAsVariable() { return 0; }
-    virtual const TVariable* getAsVariable() const { return 0; }
-    virtual const TAnonMember* getAsAnonMember() const { return 0; }
+    virtual TFunction* getAsFunction() { return nullptr; }
+    virtual const TFunction* getAsFunction() const { return nullptr; }
+    virtual TVariable* getAsVariable() { return nullptr; }
+    virtual const TVariable* getAsVariable() const { return nullptr; }
+    virtual const TAnonMember* getAsAnonMember() const { return nullptr; }
     virtual const TType& getType() const = 0;
     virtual TType& getWritableType() = 0;
     virtual void setUniqueId(long long id) { uniqueId = id; }
     virtual long long getUniqueId() const { return uniqueId; }
     virtual void setExtensions(int numExts, const char* const exts[])
     {
-        assert(extensions == 0);
+        assert(extensions == nullptr);
         assert(numExts > 0);
         extensions = NewPoolObject(extensions);
         for (int e = 0; e < numExts; ++e)
@@ -117,7 +117,7 @@ public:
     virtual int getNumExtensions() const { return extensions == nullptr ? 0 : (int)extensions->size(); }
     virtual const char** getExtensions() const { return extensions->data(); }
 
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+#if !defined(GLSLANG_WEB)
     virtual void dump(TInfoSink& infoSink, bool complete = false) const = 0;
     void dumpExtensions(TInfoSink& infoSink) const;
 #endif
@@ -196,7 +196,7 @@ public:
     }
     virtual const char** getMemberExtensions(int member) const { return (*memberExtensions)[member].data(); }
 
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+#if !defined(GLSLANG_WEB)
     virtual void dump(TInfoSink& infoSink, bool complete = false) const;
 #endif
 
@@ -229,7 +229,7 @@ struct TParameter {
         if (param.name)
             name = NewPoolTString(param.name->c_str());
         else
-            name = 0;
+            name = nullptr;
         type = param.type->clone();
         defaultValue = param.defaultValue;
         return *this;
@@ -243,7 +243,7 @@ struct TParameter {
 class TFunction : public TSymbol {
 public:
     explicit TFunction(TOperator o) :
-        TSymbol(0),
+        TSymbol(nullptr),
         op(o),
         defined(false), prototyped(false), implicitThis(false), illegalImplicitThis(false), defaultParamCount(0) { }
     TFunction(const TString *name, const TType& retType, TOperator tOp = EOpNull) :
@@ -319,6 +319,7 @@ public:
 
     virtual TParameter& operator[](int i) { assert(writable); return parameters[i]; }
     virtual const TParameter& operator[](int i) const { return parameters[i]; }
+    const TQualifier& getQualifier() const { return returnType.getQualifier(); }
 
 #ifndef GLSLANG_WEB
     virtual void setSpirvInstruction(const TSpirvInstruction& inst)
@@ -329,7 +330,7 @@ public:
     virtual const TSpirvInstruction& getSpirvInstruction() const { return spirvInst; }
 #endif
 
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+#if !defined(GLSLANG_WEB)
     virtual void dump(TInfoSink& infoSink, bool complete = false) const override;
 #endif
 
@@ -395,7 +396,7 @@ public:
     virtual const char** getExtensions() const override { return anonContainer.getMemberExtensions(memberNumber); }
 
     virtual int getAnonId() const { return anonId; }
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+#if !defined(GLSLANG_WEB)
     virtual void dump(TInfoSink& infoSink, bool complete = false) const override;
 #endif
 
@@ -411,7 +412,7 @@ protected:
 class TSymbolTableLevel {
 public:
     POOL_ALLOCATOR_NEW_DELETE(GetThreadPoolAllocator())
-    TSymbolTableLevel() : defaultPrecision(0), anonId(0), thisLevel(false) { }
+    TSymbolTableLevel() : defaultPrecision(nullptr), anonId(0), thisLevel(false) { }
     ~TSymbolTableLevel();
 
     bool insert(const TString& name, TSymbol* symbol) {
@@ -493,7 +494,7 @@ public:
     {
         tLevel::const_iterator it = level.find(name);
         if (it == level.end())
-            return 0;
+            return nullptr;
         else
             return (*it).second;
     }
@@ -561,7 +562,7 @@ public:
     {
         // can call multiple times at one scope, will only latch on first call,
         // as we're tracking the previous scope's values, not the current values
-        if (defaultPrecision != 0)
+        if (defaultPrecision != nullptr)
             return;
 
         defaultPrecision = new TPrecisionQualifier[EbtNumTypes];
@@ -573,7 +574,7 @@ public:
     {
         // can be called for table level pops that didn't set the
         // defaults
-        if (defaultPrecision == 0 || p == 0)
+        if (defaultPrecision == nullptr || p == nullptr)
             return;
 
         for (int t = 0; t < EbtNumTypes; ++t)
@@ -582,7 +583,7 @@ public:
 
     void relateToOperator(const char* name, TOperator op);
     void setFunctionExtensions(const char* name, int num, const char* const extensions[]);
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+#if !defined(GLSLANG_WEB)
     void dump(TInfoSink& infoSink, bool complete = false) const;
 #endif
     TSymbolTableLevel* clone() const;
@@ -622,7 +623,7 @@ public:
 
         // don't deallocate levels passed in from elsewhere
         while (table.size() > adoptedLevels)
-            pop(0);
+            pop(nullptr);
     }
 
     void adoptLevels(TSymbolTable& symTable)
@@ -783,7 +784,7 @@ public:
 
     // Normal find of a symbol, that can optionally say whether the symbol was found
     // at a built-in level or the current top-scope level.
-    TSymbol* find(const TString& name, bool* builtIn = 0, bool* currentScope = 0, int* thisDepthP = 0)
+    TSymbol* find(const TString& name, bool* builtIn = nullptr, bool* currentScope = nullptr, int* thisDepthP = nullptr)
     {
         int level = currentLevel();
         TSymbol* symbol;
@@ -827,7 +828,7 @@ public:
                 ++thisDepth;
             symbol = table[level]->find(name);
             --level;
-        } while (symbol == 0 && level >= 0);
+        } while (symbol == nullptr && level >= 0);
 
         if (! table[level + 1]->isThisLevel())
             thisDepth = 0;
@@ -912,7 +913,7 @@ public:
     }
 
     long long getMaxSymbolId() { return uniqueId; }
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+#if !defined(GLSLANG_WEB)
     void dump(TInfoSink& infoSink, bool complete = false) const;
 #endif
     void copyTable(const TSymbolTable& copyOf);

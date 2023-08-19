@@ -126,6 +126,7 @@ public:
 
 	virtual String get_font_name() const;
 	virtual String get_font_style_name() const;
+	virtual Dictionary get_ot_name_strings() const;
 	virtual BitField<TextServer::FontStyle> get_font_style() const;
 	virtual int get_font_weight() const;
 	virtual int get_font_stretch() const;
@@ -209,6 +210,7 @@ class FontFile : public Font {
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
