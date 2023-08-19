@@ -111,6 +111,7 @@ public:
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
 	void make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size);
+	Ref<Texture2D> make_mesh_preview_with_environment(const RID &p_scenario, const RID &p_camera, const RID &p_light_instance, const RID &p_light_instance2, const RID &p_viewport_texture, const Ref<Mesh> &p_mesh, const Transform3D &p_transform);
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
