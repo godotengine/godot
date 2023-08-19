@@ -2820,7 +2820,16 @@ void WaylandThread::window_set_borderless(DisplayServer::WindowID p_window_id, b
 
 #ifdef LIBDECOR_ENABLED
 	if (ws.libdecor_frame) {
-		libdecor_frame_set_visibility(ws.libdecor_frame, !p_borderless);
+		bool visible_current = libdecor_frame_is_visible(ws.libdecor_frame);
+		bool visible_target = !p_borderless;
+
+		// NOTE: We have to do this otherwise we trip on a libdecor bug where it's
+		// possible to destroy the frame more than once, by setting the visibility
+		// to false multiple times and thus crashing.
+		if (visible_current != visible_target) {
+			print_line("Setting libdecor frame visibility to ", visible_target);
+			libdecor_frame_set_visibility(ws.libdecor_frame, visible_target);
+		}
 	}
 #endif // LIBDECOR_ENABLED
 }
@@ -3410,6 +3419,12 @@ void WaylandThread::destroy() {
 	if (main_window.frame_callback) {
 		wl_callback_destroy(main_window.frame_callback);
 	}
+
+#ifdef LIBDECOR_ENABLED
+	if (main_window.libdecor_frame) {
+		libdecor_frame_close(main_window.libdecor_frame);
+	}
+#endif // LIBDECOR_ENABLED
 
 	if (main_window.xdg_toplevel) {
 		xdg_toplevel_destroy(main_window.xdg_toplevel);
