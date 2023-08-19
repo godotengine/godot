@@ -21,6 +21,13 @@
 				[b]Note:[/b] When using threaded rendering this method synchronizes the rendering thread. Calling it often may have a negative impact on performance.
 			</description>
 		</method>
+		<method name="convert_from_particles">
+			<return type="void" />
+			<param index="0" name="particles" type="Node" />
+			<description>
+				Sets this node's properties to match a given [CPUParticles2D] node.
+			</description>
+		</method>
 		<method name="emit_particle">
 			<return type="void" />
 			<param index="0" name="xform" type="Transform2D" />
