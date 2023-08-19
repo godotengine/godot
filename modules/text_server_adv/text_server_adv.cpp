@@ -4864,8 +4864,7 @@ void TextServerAdvanced::_update_chars(ShapedTextDataAdvanced *p_sd) const {
 			while (i + 1 < spans.size() && language == spans[i + 1].language) {
 				i++;
 			}
-			int r_end = MIN(spans[i].end - p_sd->start, p_sd->text.size());
-
+			int r_end = MIN(spans[i].end - p_sd->start, p_sd->text.length());
 			UBreakIterator *bi = ubrk_open(UBRK_CHARACTER, (language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale().ascii().get_data() : language.ascii().get_data(), data + _convert_pos_inv(p_sd, r_start), _convert_pos_inv(p_sd, r_end - r_start), &err);
 			if (U_SUCCESS(err)) {
 				while (ubrk_next(bi) != UBRK_DONE) {
@@ -4877,9 +4876,9 @@ void TextServerAdvanced::_update_chars(ShapedTextDataAdvanced *p_sd) const {
 				}
 				ubrk_close(bi);
 			} else {
-				for (int j = r_start; j <= r_end; j++) {
+				for (int j = r_start; j < r_end; j++) {
 					if (prev != j) {
-						p_sd->chars.push_back(j + p_sd->start);
+						p_sd->chars.push_back(j + 1 + p_sd->start);
 					}
 					prev = j;
 				}

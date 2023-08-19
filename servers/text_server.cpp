@@ -1474,9 +1474,11 @@ int64_t TextServer::shaped_text_closest_character_pos(const RID &p_shaped, int64
 
 PackedInt32Array TextServer::string_get_character_breaks(const String &p_string, const String &p_language) const {
 	PackedInt32Array ret;
-	ret.resize(p_string.size());
-	for (int i = 0; i <= p_string.size(); i++) {
-		ret.write[i] = i;
+	if (!p_string.is_empty()) {
+		ret.resize(p_string.size() - 1);
+		for (int i = 0; i < p_string.size() - 1; i++) {
+			ret.write[i] = i + 1;
+		}
 	}
 	return ret;
 }
