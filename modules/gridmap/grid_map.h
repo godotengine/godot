@@ -275,6 +275,7 @@ public:
 	bool get_center_z() const;
 
 	void set_cell_item(const Vector3i &p_position, int p_item, int p_rot = 0);
+	void set_cell_item_thread_safe(const Vector3i &p_position, int p_item, int p_rot = 0);
 	int get_cell_item(const Vector3i &p_position) const;
 	int get_cell_item_orientation(const Vector3i &p_position) const;
 	Basis get_cell_item_basis(const Vector3i &p_position) const;
@@ -296,6 +297,8 @@ public:
 	void make_baked_meshes(bool p_gen_lightmap_uv = false, float p_lightmap_uv_texel_size = 0.1);
 
 	void clear();
+
+	void update();
 
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
