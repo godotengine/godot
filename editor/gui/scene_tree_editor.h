@@ -31,6 +31,7 @@
 #ifndef SCENE_TREE_EDITOR_H
 #define SCENE_TREE_EDITOR_H
 
+#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
@@ -61,6 +62,7 @@ class SceneTreeEditor : public Control {
 
 	String filter;
 	String filter_term_warning;
+	bool show_all_nodes = false;
 
 	AcceptDialog *error = nullptr;
 	AcceptDialog *warning = nullptr;
@@ -142,6 +144,7 @@ public:
 	void set_filter(const String &p_filter);
 	String get_filter() const;
 	String get_filter_term_warning();
+	void set_show_all_nodes(bool p_show_all_nodes);
 
 	void set_as_scene_tree_dock();
 	void set_display_foreign_nodes(bool p_display);
@@ -176,12 +179,14 @@ class SceneTreeDialog : public ConfirmationDialog {
 	VBoxContainer *content = nullptr;
 	SceneTreeEditor *tree = nullptr;
 	LineEdit *filter = nullptr;
+	CheckButton *show_all_nodes = nullptr;
 	LocalVector<TextureRect *> valid_type_icons;
 
 	void _select();
 	void _cancel();
 	void _selected_changed();
 	void _filter_changed(const String &p_filter);
+	void _show_all_nodes_changed(bool p_button_pressed);
 	void _update_theme();
 
 protected:
