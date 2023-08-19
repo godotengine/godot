@@ -320,6 +320,8 @@ public:
 		wl_fixed_t old_pinch_scale = 0;
 
 		struct wl_surface *cursor_surface = nullptr;
+		struct wl_callback *cursor_frame_callback = nullptr;
+		uint32_t cursor_time_ms = 0;
 
 		// This variable is needed to buffer all pointer changes until a
 		// wl_pointer.frame event, as per Wayland's specification. Everything is
@@ -412,13 +414,12 @@ private:
 	List<Ref<Message>> messages;
 
 	struct wl_cursor_theme *wl_cursor_theme = nullptr;
-	struct wl_cursor_image *cursor_images[DisplayServer::CURSOR_MAX] = {};
-	struct wl_buffer *cursor_bufs[DisplayServer::CURSOR_MAX] = {};
+	struct wl_cursor *wl_cursors[DisplayServer::CURSOR_MAX] = {};
 
 	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
 
-	struct wl_buffer *cursor_buffer = nullptr;
-	Point2i cursor_hotspot;
+	struct wl_cursor *current_wl_cursor = nullptr;
+	struct CustomCursor *current_custom_cursor = nullptr;
 
 	PointerConstraint pointer_constraint = PointerConstraint::NONE;
 
@@ -458,6 +459,8 @@ private:
 
 	static void _wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities);
 	static void _wl_seat_on_name(void *data, struct wl_seat *wl_seat, const char *name);
+
+	static void _cursor_frame_callback_on_done(void *data, struct wl_callback *wl_callback, uint32_t time_ms);
 
 	static void _wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
 	static void _wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface);
@@ -573,6 +576,10 @@ private:
 	static constexpr struct wl_seat_listener wl_seat_listener = {
 		.capabilities = _wl_seat_on_capabilities,
 		.name = _wl_seat_on_name,
+	};
+
+	static constexpr struct wl_callback_listener cursor_frame_callback_listener {
+		.done = _cursor_frame_callback_on_done,
 	};
 
 	static constexpr struct wl_pointer_listener wl_pointer_listener = {
@@ -772,7 +779,7 @@ public:
 	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
 	void seat_state_confine_pointer(SeatState *p_ss);
 
-	void seat_state_update_cursor(SeatState *p_ss);
+	static void seat_state_update_cursor(SeatState *p_ss);
 
 	void seat_state_echo_keys(SeatState *p_ss);
 

@@ -1047,6 +1047,9 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 	// Pointer handling.
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
 		ss->cursor_surface = wl_compositor_create_surface(ss->registry->wl_compositor);
+		ss->cursor_frame_callback = wl_surface_frame(ss->cursor_surface);
+		wl_callback_add_listener(ss->cursor_frame_callback, &cursor_frame_callback_listener, ss);
+		wl_surface_commit(ss->cursor_surface);
 
 		ss->wl_pointer = wl_seat_get_pointer(wl_seat);
 		wl_pointer_add_listener(ss->wl_pointer, &wl_pointer_listener, ss);
@@ -1063,6 +1066,14 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 
 		// TODO: Constrain new pointers if the global mouse mode is constrained.
 	} else {
+		if (ss->cursor_frame_callback) {
+			// Just in case. I got bitten by weird race-like conditions already.
+			wl_callback_set_user_data(ss->cursor_frame_callback, nullptr);
+
+			wl_callback_destroy(ss->cursor_frame_callback);
+			ss->cursor_frame_callback = nullptr;
+		}
+
 		if (ss->cursor_surface) {
 			wl_surface_destroy(ss->cursor_surface);
 			ss->cursor_surface = nullptr;
@@ -1112,6 +1123,21 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 void WaylandThread::_wl_seat_on_name(void *data, struct wl_seat *wl_seat, const char *name) {
 }
 
+void WaylandThread::_cursor_frame_callback_on_done(void *data, struct wl_callback *wl_callback, uint32_t time_ms) {
+	wl_callback_destroy(wl_callback);
+
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->cursor_time_ms = time_ms;
+
+	ss->cursor_frame_callback = wl_surface_frame(ss->cursor_surface);
+	wl_callback_add_listener(ss->cursor_frame_callback, &cursor_frame_callback_listener, ss);
+	wl_surface_commit(ss->cursor_surface);
+
+	seat_state_update_cursor(ss);
+}
+
 void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
@@ -1121,11 +1147,7 @@ void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_point
 	ss->pointed_surface = surface;
 	ss->last_pointed_surface = surface;
 
-	Point2i hotspot = ss->wayland_thread->cursor_hotspot;
-
-	wl_pointer_set_cursor(wl_pointer, serial, ss->cursor_surface, hotspot.x, hotspot.y);
-	wl_surface_attach(ss->cursor_surface, ss->wayland_thread->cursor_buffer, 0, 0);
-	wl_surface_damage_buffer(ss->cursor_surface, 0, 0, INT_MAX, INT_MAX);
+	seat_state_update_cursor(ss);
 
 	wl_surface_commit(ss->cursor_surface);
 
@@ -2339,7 +2361,7 @@ int WaylandThread::window_state_calculate_scale(WindowState *p_ws) {
 		// towards the idea that rescaling when a window gets a resolution change is a
 		// pretty good approach, but this means that we'll have to use the screen data
 		// before it's "committed".
-		// FIXME: Use the committed data.
+		// FIXME: Use the committed data. Somehow.
 		return ss->pending_data.scale;
 	}
 
@@ -2430,12 +2452,33 @@ void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 // TODO: Use pointer buffer reference?
 void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
+	ERR_FAIL_NULL(p_ss->wayland_thread);
 
 	if (p_ss->wl_pointer && p_ss->cursor_surface) {
-		Point2i hotspot = p_ss->wayland_thread->cursor_hotspot;
+		struct wl_buffer *cursor_buffer = nullptr;
+		uint32_t hotspot_x;
+		uint32_t hotspot_y;
 
-		wl_pointer_set_cursor(p_ss->wl_pointer, p_ss->pointer_enter_serial, p_ss->cursor_surface, hotspot.x, hotspot.y);
-		wl_surface_attach(p_ss->cursor_surface, p_ss->wayland_thread->cursor_buffer, 0, 0);
+		CustomCursor *custom_cursor = p_ss->wayland_thread->current_custom_cursor;
+		if (custom_cursor) {
+			cursor_buffer = custom_cursor->wl_buffer;
+			hotspot_x = custom_cursor->hotspot.x;
+			hotspot_y = custom_cursor->hotspot.y;
+		} else {
+			struct wl_cursor *wl_cursor = p_ss->wayland_thread->current_wl_cursor;
+			ERR_FAIL_NULL(wl_cursor);
+
+			int frame = wl_cursor_frame(wl_cursor, p_ss->cursor_time_ms);
+
+			struct wl_cursor_image *wl_cursor_image = wl_cursor->images[frame];
+
+			cursor_buffer = wl_cursor_image_get_buffer(wl_cursor_image);
+			hotspot_x = wl_cursor_image->hotspot_x;
+			hotspot_y = wl_cursor_image->hotspot_y;
+		}
+
+		wl_pointer_set_cursor(p_ss->wl_pointer, p_ss->pointer_enter_serial, p_ss->cursor_surface, hotspot_x, hotspot_y);
+		wl_surface_attach(p_ss->cursor_surface, cursor_buffer, 0, 0);
 		wl_surface_damage_buffer(p_ss->cursor_surface, 0, 0, INT_MAX, INT_MAX);
 
 		wl_surface_commit(p_ss->cursor_surface);
@@ -3120,11 +3163,9 @@ Error WaylandThread::init() {
 		}
 
 		if (cursor && cursor->image_count > 0) {
-			cursor_images[i] = cursor->images[0];
-			cursor_bufs[i] = wl_cursor_image_get_buffer(cursor->images[0]);
+			wl_cursors[i] = cursor;
 		} else {
-			cursor_images[i] = nullptr;
-			cursor_bufs[i] = nullptr;
+			wl_cursors[i] = nullptr;
 			print_verbose("Failed loading cursor: " + String(cursor_names[i]));
 		}
 	}
@@ -3137,10 +3178,8 @@ Error WaylandThread::init() {
 }
 
 void WaylandThread::cursor_hide() {
-	cursor_buffer = nullptr;
-
-	cursor_hotspot.x = 0;
-	cursor_hotspot.y = 0;
+	current_wl_cursor = nullptr;
+	current_custom_cursor = nullptr;
 
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 	ERR_FAIL_NULL(ss);
@@ -3148,12 +3187,7 @@ void WaylandThread::cursor_hide() {
 }
 
 void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) {
-	if (cursor_images[p_cursor_shape] != nullptr) {
-		cursor_buffer = cursor_bufs[p_cursor_shape];
-
-		cursor_hotspot.x = cursor_images[p_cursor_shape]->hotspot_x;
-		cursor_hotspot.y = cursor_images[p_cursor_shape]->hotspot_y;
-	}
+	current_wl_cursor = wl_cursors[p_cursor_shape];
 
 	for (struct wl_seat *wl_seat : registry.wl_seats) {
 		SeatState *ss = wl_seat_get_seat_state(wl_seat);
@@ -3166,10 +3200,7 @@ void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) 
 void WaylandThread::cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape) {
 	ERR_FAIL_COND(!custom_cursors.has(p_cursor_shape));
 
-	CustomCursor &cursor = custom_cursors[p_cursor_shape];
-
-	cursor_buffer = cursor.wl_buffer;
-	cursor_hotspot = cursor.hotspot;
+	current_custom_cursor = &custom_cursors[p_cursor_shape];
 
 	for (struct wl_seat *wl_seat : registry.wl_seats) {
 		SeatState *ss = wl_seat_get_seat_state(wl_seat);
@@ -3458,6 +3489,11 @@ void WaylandThread::destroy() {
 
 		if (ss->wl_pointer) {
 			wl_pointer_destroy(ss->wl_pointer);
+		}
+
+		if (ss->cursor_frame_callback) {
+			// We don't need to set a null userdata for safety as the thread is done.
+			wl_callback_destroy(ss->cursor_frame_callback);
 		}
 
 		if (ss->cursor_surface) {
