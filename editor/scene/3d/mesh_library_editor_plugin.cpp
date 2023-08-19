@@ -94,7 +94,9 @@ bool MeshLibraryEditor::MeshLibraryItem::_set(const StringName &p_name, const Va
 		mesh_library->_set_item_shapes(mesh_id, p_value);
 #endif // PHYSICS_3D_DISABLED
 	} else if (p_name == "preview") {
-		mesh_library->set_item_preview(mesh_id, p_value);
+		mesh_library->set_item_custom_preview(mesh_id, p_value);
+	} else if (p_name == "use_custom_preview") {
+		mesh_library->set_item_use_custom_preview(mesh_id, p_value);
 	} else if (p_name == "navigation_mesh") {
 		mesh_library->set_item_navigation_mesh(mesh_id, p_value);
 	} else if (p_name == "navigation_mesh_transform") {
@@ -135,6 +137,8 @@ bool MeshLibraryEditor::MeshLibraryItem::_get(const StringName &p_name, Variant 
 		r_ret = mesh_library->get_item_navigation_layers(mesh_id);
 	} else if (p_name == "preview") {
 		r_ret = mesh_library->get_item_preview(mesh_id);
+	} else if (p_name == "custom_preview") {
+		r_ret = mesh_library->get_item_use_custom_preview(mesh_id);
 	} else {
 		return false;
 	}
@@ -185,8 +189,8 @@ void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 }
 
-Error MeshLibraryEditor::update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge, bool p_apply_xforms) {
-	_import_scene(p_base_scene, ml, p_merge, p_apply_xforms);
+Error MeshLibraryEditor::update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge, bool p_apply_xforms, bool p_bake_previews) {
+	_import_scene(p_base_scene, ml, p_merge, p_apply_xforms, p_bake_previews);
 	return OK;
 }
 
@@ -461,7 +465,7 @@ void MeshLibraryEditor::_menu_update_confirm(bool p_apply_xforms) {
 	_import_scene_cbk(existing);
 }
 
-void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms) {
+void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms, bool p_bake_previews) {
 	if (!p_merge) {
 		p_library->clear();
 	}
@@ -471,24 +475,26 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		_import_scene_parse_node(p_library, mesh_instances, p_scene->get_child(i), p_merge, p_apply_xforms);
 	}
 
-	// Generate previews.
+	// Generate previews!
 
-	Vector<Ref<Mesh>> meshes;
-	Vector<Transform3D> transforms;
-	Vector<int> ids = p_library->get_item_list();
-	for (const int &E : ids) {
-		if (mesh_instances.find(E)) {
-			meshes.push_back(p_library->get_item_mesh(E));
-			transforms.push_back(mesh_instances[E]->get_transform());
+	if (p_bake_previews) {
+		Vector<Ref<Mesh>> meshes;
+		Vector<Transform3D> transforms;
+		Vector<int> ids = p_library->get_item_list();
+		for (int id : ids) {
+			if (mesh_instances.find(id)) {
+				meshes.push_back(p_library->get_item_mesh(id));
+				transforms.push_back(mesh_instances[id]->get_transform());
+			}
 		}
-	}
 
-	Vector<Ref<Texture2D>> textures = EditorInterface::get_singleton()->make_mesh_previews(meshes, &transforms, EDITOR_GET("editors/grid_map/preview_size"));
-	int idx = 0;
-	for (const int &E : ids) {
-		if (mesh_instances.find(E)) {
-			p_library->set_item_preview(E, textures[idx]);
-			idx++;
+		Vector<Ref<Texture2D>> textures = EditorInterface::get_singleton()->make_mesh_previews(meshes, &transforms, EDITOR_GET("editors/grid_map/preview_size"));
+		int i = 0;
+		for (int id : ids) {
+			if (mesh_instances.find(id)) {
+				p_library->set_item_custom_preview(id, textures[i]);
+				i++;
+			}
 		}
 	}
 }
@@ -504,7 +510,7 @@ void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
 	Ref<MeshLibrary> old_lib;
 	old_lib = mesh_library->duplicate();
 
-	_import_scene(scene, mesh_library, import_update, apply_xforms);
+	_import_scene(scene, mesh_library, import_update, apply_xforms, false);
 
 	memdelete(scene);
 	mesh_library->set_meta("_editor_source_scene", p_str);
