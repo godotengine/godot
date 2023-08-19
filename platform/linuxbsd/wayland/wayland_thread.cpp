@@ -1803,7 +1803,15 @@ void WaylandThread::_wl_data_source_on_send(void *data, struct wl_data_source *w
 	if (data_to_send) {
 		ssize_t written_bytes = 0;
 
-		if (strcmp(mime_type, "text/plain") == 0) {
+		bool valid_mime = false;
+
+		if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
+			valid_mime = true;
+		} else if (strcmp(mime_type, "text/plain") == 0) {
+			valid_mime = true;
+		}
+
+		if (valid_mime) {
 			written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
 		}
 
@@ -3418,6 +3426,7 @@ void WaylandThread::selection_set_text(String p_text) {
 	if (ss->wl_data_source_selection == nullptr) {
 		ss->wl_data_source_selection = wl_data_device_manager_create_data_source(registry.wl_data_device_manager);
 		wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
+		wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
 		wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
 	}
 
@@ -3458,6 +3467,7 @@ void WaylandThread::primary_set_text(String p_text) {
 	if (ss->wp_primary_selection_source == nullptr) {
 		ss->wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(registry.wp_primary_selection_device_manager);
 		zwp_primary_selection_source_v1_add_listener(ss->wp_primary_selection_source, &wp_primary_selection_source_listener, ss);
+		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain;charset=utf-8");
 		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain");
 	}
 
