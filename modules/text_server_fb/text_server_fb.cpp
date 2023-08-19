@@ -4084,11 +4084,17 @@ PackedInt32Array TextServerFallback::_shaped_text_get_character_breaks(const RID
 	ERR_FAIL_COND_V(!sd, PackedInt32Array());
 
 	MutexLock lock(sd->mutex);
+	if (!sd->valid) {
+		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
+	}
 
 	PackedInt32Array ret;
-	ret.resize(sd->end - sd->start);
-	for (int i = sd->start; i < sd->end; i++) {
-		ret.write[i] = i;
+	int size = sd->end - sd->start;
+	if (size > 0) {
+		ret.resize(size);
+		for (int i = 0; i < size; i++) {
+			ret.write[i] = i + 1 + sd->start;
+		}
 	}
 	return ret;
 }
