@@ -107,7 +107,7 @@ class MeshLibraryEditor : public EditorDock {
 	void _menu_update_confirm(bool p_apply_xforms);
 
 	void _import_scene_cbk(const String &p_str);
-	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms);
+	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms, bool p_bake_previews);
 	static void _import_scene_parse_node(Ref<MeshLibrary> p_library, HashMap<int, MeshInstance3D *> &p_mesh_instances, Node *p_node, bool p_merge, bool p_apply_xforms);
 
 	void _icon_size_changed(float p_value);
@@ -118,7 +118,7 @@ private:
 
 public:
 	void edit(const Ref<MeshLibrary> &p_mesh_library);
-	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false);
+	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false, bool p_bake_previews = false);
 
 	MeshLibraryEditor();
 };
