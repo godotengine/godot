@@ -252,6 +252,102 @@ void WaylandThread::_set_current_seat(struct wl_seat *p_seat) {
 	pointer_set_constraint(pointer_constraint);
 }
 
+// Returns whether it loaded the theme or not.
+bool WaylandThread::_load_cursor_theme(int p_cursor_size) {
+	if (wl_cursor_theme) {
+		wl_cursor_theme_destroy(wl_cursor_theme);
+		wl_cursor_theme = nullptr;
+
+		current_wl_cursor = nullptr;
+	}
+
+	print_verbose(vformat("Loading cursor theme \"%s\" size %d.", cursor_theme_name, p_cursor_size));
+	wl_cursor_theme = wl_cursor_theme_load(cursor_theme_name, p_cursor_size, registry.wl_shm);
+
+	ERR_FAIL_NULL_V_MSG(wl_cursor_theme, false, "Can't load any cursor theme.");
+
+	static const char *cursor_names[] = {
+		"left_ptr",
+		"xterm",
+		"hand2",
+		"cross",
+		"watch",
+		"left_ptr_watch",
+		"fleur",
+		"dnd-move",
+		"crossed_circle",
+		"v_double_arrow",
+		"h_double_arrow",
+		"size_bdiag",
+		"size_fdiag",
+		"move",
+		"row_resize",
+		"col_resize",
+		"question_arrow"
+	};
+
+	static const char *cursor_names_fallback[] = {
+		nullptr,
+		nullptr,
+		"pointer",
+		"cross",
+		"wait",
+		"progress",
+		"grabbing",
+		"hand1",
+		"forbidden",
+		"ns-resize",
+		"ew-resize",
+		"fd_double_arrow",
+		"bd_double_arrow",
+		"fleur",
+		"sb_v_double_arrow",
+		"sb_h_double_arrow",
+		"help"
+	};
+
+	for (int i = 0; i < DisplayServer::CURSOR_MAX; i++) {
+		struct wl_cursor *cursor = wl_cursor_theme_get_cursor(wl_cursor_theme, cursor_names[i]);
+
+		if (!cursor && cursor_names_fallback[i]) {
+			cursor = wl_cursor_theme_get_cursor(wl_cursor_theme, cursor_names_fallback[i]);
+		}
+
+		if (cursor && cursor->image_count > 0) {
+			wl_cursors[i] = cursor;
+		} else {
+			wl_cursors[i] = nullptr;
+			print_verbose("Failed loading cursor: " + String(cursor_names[i]));
+		}
+	}
+
+	return true;
+}
+
+void WaylandThread::_update_scale(int p_scale) {
+	if (p_scale <= cursor_scale) {
+		return;
+	}
+
+	print_verbose(vformat("Bumping cursor scale to %d", p_scale));
+
+	// There's some display that's bigger than the cache, let's update it.
+	cursor_scale = p_scale;
+
+	if (wl_cursor_theme == nullptr) {
+		// Ugh. Either we're still initializing (this must've been called from the
+		// first roundtrips) or we had some error while doing so. We'll trust that it
+		// will be updated for us if needed.
+		return;
+	}
+
+	int cursor_size = unscaled_cursor_size * p_scale;
+
+	if (_load_cursor_theme(cursor_size)) {
+		cursor_set_shape(last_cursor_shape);
+	}
+}
+
 void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 	RegistryState *registry = (RegistryState *)data;
 	ERR_FAIL_NULL(registry);
@@ -298,6 +394,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 
 		ScreenState *ss = memnew(ScreenState);
 		ss->wl_output_name = name;
+		ss->wayland_thread = registry->wayland_thread;
 
 		wl_proxy_tag_godot((struct wl_proxy *)wl_output);
 		wl_output_add_listener(wl_output, &wl_output_listener, ss);
@@ -805,6 +902,8 @@ void WaylandThread::_wl_output_on_done(void *data, struct wl_output *wl_output) 
 
 	ss->data = ss->pending_data;
 
+	ss->wayland_thread->_update_scale(ss->data.scale);
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Output %x done.", (size_t)wl_output));
 }
 
@@ -1139,6 +1238,8 @@ void WaylandThread::_cursor_frame_callback_on_done(void *data, struct wl_callbac
 }
 
 void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
+	DEBUG_LOG_WAYLAND_THREAD("Pointing window.");
+
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -1149,15 +1250,11 @@ void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_point
 
 	seat_state_update_cursor(ss);
 
-	wl_surface_commit(ss->cursor_surface);
-
 	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
 
 	ss->wayland_thread->push_message(msg);
-
-	DEBUG_LOG_WAYLAND_THREAD("Pointing window.");
 }
 
 void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
@@ -2449,21 +2546,25 @@ void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 	}
 }
 
-// TODO: Use pointer buffer reference?
 void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
 	ERR_FAIL_NULL(p_ss->wayland_thread);
 
 	if (p_ss->wl_pointer && p_ss->cursor_surface) {
 		struct wl_buffer *cursor_buffer = nullptr;
-		uint32_t hotspot_x;
-		uint32_t hotspot_y;
+		uint32_t hotspot_x = 0;
+		uint32_t hotspot_y = 0;
+		int scale = 1;
 
 		CustomCursor *custom_cursor = p_ss->wayland_thread->current_custom_cursor;
 		if (custom_cursor) {
 			cursor_buffer = custom_cursor->wl_buffer;
 			hotspot_x = custom_cursor->hotspot.x;
 			hotspot_y = custom_cursor->hotspot.y;
+
+			// We can't really reasonably scale custom cursors, so we'll let the
+			// compositor do it for us (badly).
+			scale = 1;
 		} else {
 			struct wl_cursor *wl_cursor = p_ss->wayland_thread->current_wl_cursor;
 			ERR_FAIL_NULL(wl_cursor);
@@ -2472,12 +2573,19 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 
 			struct wl_cursor_image *wl_cursor_image = wl_cursor->images[frame];
 
+			scale = p_ss->wayland_thread->cursor_scale;
+
 			cursor_buffer = wl_cursor_image_get_buffer(wl_cursor_image);
-			hotspot_x = wl_cursor_image->hotspot_x;
-			hotspot_y = wl_cursor_image->hotspot_y;
+
+			// As the surface's buffer is scaled (thus the surface is smaller) and the
+			// hotspot must be expressed in surface-local coordinates, we need to scale
+			// them down accordingly.
+			hotspot_x = wl_cursor_image->hotspot_x / scale;
+			hotspot_y = wl_cursor_image->hotspot_y / scale;
 		}
 
 		wl_pointer_set_cursor(p_ss->wl_pointer, p_ss->pointer_enter_serial, p_ss->cursor_surface, hotspot_x, hotspot_y);
+		wl_surface_set_buffer_scale(p_ss->cursor_surface, scale);
 		wl_surface_attach(p_ss->cursor_surface, cursor_buffer, 0, 0);
 		wl_surface_damage_buffer(p_ss->cursor_surface, 0, 0, INT_MAX, INT_MAX);
 
@@ -3102,75 +3210,22 @@ Error WaylandThread::init() {
 	}
 #endif // LIBDECOR_ENABLED
 
-	const char *cursor_theme = OS::get_singleton()->get_environment("XCURSOR_THEME").utf8().ptr();
+	cursor_theme_name = OS::get_singleton()->get_environment("XCURSOR_THEME").utf8().ptr();
 
-	int64_t cursor_size = OS::get_singleton()->get_environment("XCURSOR_SIZE").to_int();
-	if (cursor_size <= 0) {
+	unscaled_cursor_size = OS::get_singleton()->get_environment("XCURSOR_SIZE").to_int();
+	if (unscaled_cursor_size <= 0) {
 		print_verbose("Detected invalid cursor size preference, defaulting to 24.");
-		cursor_size = 24;
+		unscaled_cursor_size = 24;
 	}
 
-	print_verbose(vformat("Loading cursor theme \"%s\" size %d.", cursor_theme, cursor_size));
-	wl_cursor_theme = wl_cursor_theme_load(cursor_theme, cursor_size, registry.wl_shm);
+	// NOTE: The scale is useful here as it might've been updated by _update_scale.
+	bool cursor_theme_loaded = _load_cursor_theme(unscaled_cursor_size * cursor_scale);
 
-	ERR_FAIL_NULL_V_MSG(wl_cursor_theme, ERR_CANT_CREATE, "Can't find a cursor theme.");
-
-	static const char *cursor_names[] = {
-		"left_ptr",
-		"xterm",
-		"hand2",
-		"cross",
-		"watch",
-		"left_ptr_watch",
-		"fleur",
-		"dnd-move",
-		"crossed_circle",
-		"v_double_arrow",
-		"h_double_arrow",
-		"size_bdiag",
-		"size_fdiag",
-		"move",
-		"row_resize",
-		"col_resize",
-		"question_arrow"
-	};
-
-	static const char *cursor_names_fallback[] = {
-		nullptr,
-		nullptr,
-		"pointer",
-		"cross",
-		"wait",
-		"progress",
-		"grabbing",
-		"hand1",
-		"forbidden",
-		"ns-resize",
-		"ew-resize",
-		"fd_double_arrow",
-		"bd_double_arrow",
-		"fleur",
-		"sb_v_double_arrow",
-		"sb_h_double_arrow",
-		"help"
-	};
-
-	for (int i = 0; i < DisplayServer::CURSOR_MAX; i++) {
-		struct wl_cursor *cursor = wl_cursor_theme_get_cursor(wl_cursor_theme, cursor_names[i]);
-
-		if (!cursor && cursor_names_fallback[i]) {
-			cursor = wl_cursor_theme_get_cursor(wl_cursor_theme, cursor_names_fallback[i]);
-		}
-
-		if (cursor && cursor->image_count > 0) {
-			wl_cursors[i] = cursor;
-		} else {
-			wl_cursors[i] = nullptr;
-			print_verbose("Failed loading cursor: " + String(cursor_names[i]));
-		}
+	if (!cursor_theme_loaded) {
+		return ERR_CANT_CREATE;
 	}
 
-	// Update the cursor buffer.
+	// Update the cursor.
 	cursor_set_shape(DisplayServer::CURSOR_ARROW);
 
 	initialized = true;
@@ -3195,6 +3250,8 @@ void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) 
 
 		seat_state_update_cursor(ss);
 	}
+
+	last_cursor_shape = p_cursor_shape;
 }
 
 void WaylandThread::cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape) {
@@ -3208,6 +3265,8 @@ void WaylandThread::cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_
 
 		seat_state_update_cursor(ss);
 	}
+
+	last_cursor_shape = p_cursor_shape;
 }
 
 void WaylandThread::cursor_shape_set_custom_image(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image, Point2i p_hotspot) {

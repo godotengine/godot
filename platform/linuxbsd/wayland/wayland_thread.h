@@ -223,6 +223,8 @@ public:
 
 		ScreenData pending_data;
 		ScreenData data;
+
+		WaylandThread *wayland_thread;
 	};
 
 	enum class Gesture {
@@ -413,6 +415,16 @@ private:
 
 	List<Ref<Message>> messages;
 
+	const char *cursor_theme_name = "default";
+	int unscaled_cursor_size = 24;
+
+	// NOTE: Regarding screen scale handling, the cursor cache is currently
+	// "static", by which I mean that we try to change it as little as possible and
+	// thus will be as big as the largest screen. This is mainly due to the fact
+	// that doing it dynamically doesn't look like it's worth it to me currently,
+	// especially as usually screen scales don't change continuously.
+	int cursor_scale = 1;
+
 	struct wl_cursor_theme *wl_cursor_theme = nullptr;
 	struct wl_cursor *wl_cursors[DisplayServer::CURSOR_MAX] = {};
 
@@ -420,6 +432,8 @@ private:
 
 	struct wl_cursor *current_wl_cursor = nullptr;
 	struct CustomCursor *current_custom_cursor = nullptr;
+
+	DisplayServer::CursorShape last_cursor_shape = DisplayServer::CURSOR_ARROW;
 
 	PointerConstraint pointer_constraint = PointerConstraint::NONE;
 
@@ -763,6 +777,10 @@ public:
 	static void _wayland_state_update_cursor();
 
 	void _set_current_seat(struct wl_seat *p_seat);
+
+	bool _load_cursor_theme(int p_cursor_size);
+
+	void _update_scale(int p_scale);
 
 	struct wl_display *get_wl_display() const;
 
