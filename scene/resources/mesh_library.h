@@ -52,6 +52,7 @@ public:
 		Transform3D mesh_transform;
 		Vector<ShapeData> shapes;
 		Ref<Texture2D> preview;
+		bool use_custom_preview = false;
 		Ref<NavigationMesh> navigation_mesh;
 		Transform3D navigation_mesh_transform;
 		uint32_t navigation_layers = 1;
@@ -61,6 +62,7 @@ public:
 
 	void _set_item_shapes(int p_item, const Array &p_shapes);
 	Array _get_item_shapes(int p_item) const;
+	void _mesh_changed(int p_idx);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -80,6 +82,8 @@ public:
 	void set_item_navigation_layers(int p_item, uint32_t p_navigation_layers);
 	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
 	void set_item_preview(int p_item, const Ref<Texture2D> &p_preview);
+	void set_item_custom_preview(int p_item, const Ref<Texture2D> &p_preview);
+	void set_item_use_custom_preview(int p_item, bool p_use_custom_preview);
 	String get_item_name(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
 	Transform3D get_item_mesh_transform(int p_item) const;
@@ -88,6 +92,7 @@ public:
 	uint32_t get_item_navigation_layers(int p_item) const;
 	Vector<ShapeData> get_item_shapes(int p_item) const;
 	Ref<Texture2D> get_item_preview(int p_item) const;
+	bool get_item_use_custom_preview(int p_item) const;
 
 	void remove_item(int p_item);
 	bool has_item(int p_item) const;

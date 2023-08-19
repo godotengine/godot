@@ -2020,7 +2020,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = Ref<MeshLibrary>(memnew(MeshLibrary));
 			}
 
-			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true, file_export_lib_apply_xforms->is_pressed());
+			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true, file_export_lib_apply_xforms->is_pressed(), file_export_lib_bake_previews->is_pressed());
 
 			Error err = ResourceSaver::save(ml, p_file);
 			if (err) {
@@ -7919,8 +7919,11 @@ EditorNode::EditorNode() {
 	file_export_lib_apply_xforms = memnew(CheckBox);
 	file_export_lib_apply_xforms->set_text(TTR("Apply MeshInstance Transforms"));
 	file_export_lib_apply_xforms->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	file_export_lib_apply_xforms->set_pressed(false);
 	file_export_lib->get_vbox()->add_child(file_export_lib_apply_xforms);
+	file_export_lib_bake_previews = memnew(CheckBox);
+	file_export_lib_bake_previews->set_text(TTR("Bake Mesh Previews"));
+	file_export_lib_bake_previews->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	file_export_lib->get_vbox()->add_child(file_export_lib_bake_previews);
 	gui_base->add_child(file_export_lib);
 
 	file_script = memnew(EditorFileDialog);

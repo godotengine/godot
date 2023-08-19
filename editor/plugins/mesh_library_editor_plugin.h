@@ -64,7 +64,7 @@ class MeshLibraryEditor : public Control {
 	void _menu_remove_confirm();
 	void _menu_update_confirm(bool p_apply_xforms);
 
-	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms);
+	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms, bool p_bake_previews);
 
 protected:
 	static void _bind_methods();
@@ -73,7 +73,7 @@ public:
 	MenuButton *get_menu_button() const { return menu; }
 
 	void edit(const Ref<MeshLibrary> &p_mesh_library);
-	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false);
+	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false, bool p_bake_previews = false);
 
 	MeshLibraryEditor();
 };

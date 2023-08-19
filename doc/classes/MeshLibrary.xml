@@ -95,6 +95,13 @@
 				The array consists of each [Shape3D] followed by its [Transform3D].
 			</description>
 		</method>
+		<method name="get_item_use_custom_preview" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns whether the item uses a custom preview.
+			</description>
+		</method>
 		<method name="get_last_unused_item_id" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -162,7 +169,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
-				Sets a texture to use as the item's preview icon in the editor.
+				Sets a texture to use as the item's preview icon in the editor. Calling this method automatically enables [method set_item_use_custom_preview].
 			</description>
 		</method>
 		<method name="set_item_shapes">
@@ -172,6 +179,15 @@
 			<description>
 				Sets an item's collision shapes.
 				The array should consist of [Shape3D] objects, each followed by a [Transform3D] that will be applied to it. For shapes that should not have a transform, use [constant Transform3D.IDENTITY].
+			</description>
+		</method>
+		<method name="set_item_use_custom_preview">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="use_custom_preview" type="bool" />
+			<description>
+				If [code]true[/code], the item's preview will be saved with the resource. Use it only if you really need a custom mesh preview and your [MeshLibrary] resource is saved in binary format. The image is intended for editor usage and will get embedded in the library. It also makes the previews not updated when mesh changes.
+				If [code]false[/code], no preview will be stored and the editor will automatically generate them on when needed.
 			</description>
 		</method>
 	</methods>

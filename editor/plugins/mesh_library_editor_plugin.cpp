@@ -69,7 +69,7 @@ void MeshLibraryEditor::_menu_update_confirm(bool p_apply_xforms) {
 	_import_scene_cbk(existing);
 }
 
-void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms) {
+void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms, bool p_bake_previews) {
 	if (!p_merge) {
 		p_library->clear();
 	}
@@ -181,9 +181,9 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		}
 	}
 
-	//generate previews!
+	// Generate previews!
 
-	if (true) {
+	if (p_bake_previews) {
 		Vector<Ref<Mesh>> meshes;
 		Vector<Transform3D> transforms;
 		Vector<int> ids = p_library->get_item_list();
@@ -198,7 +198,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		int j = 0;
 		for (int i = 0; i < ids.size(); i++) {
 			if (mesh_instances.find(ids[i])) {
-				p_library->set_item_preview(ids[i], textures[j]);
+				p_library->set_item_custom_preview(ids[i], textures[j]);
 				j++;
 			}
 		}
@@ -212,7 +212,7 @@ void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
 
 	ERR_FAIL_COND_MSG(!scene, "Cannot create an instance from PackedScene '" + p_str + "'.");
 
-	_import_scene(scene, mesh_library, option == MENU_OPTION_UPDATE_FROM_SCENE, apply_xforms);
+	_import_scene(scene, mesh_library, option == MENU_OPTION_UPDATE_FROM_SCENE, apply_xforms, false);
 
 	memdelete(scene);
 	mesh_library->set_meta("_editor_source_scene", p_str);
@@ -220,8 +220,8 @@ void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
 	menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), false);
 }
 
-Error MeshLibraryEditor::update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge, bool p_apply_xforms) {
-	_import_scene(p_base_scene, ml, p_merge, p_apply_xforms);
+Error MeshLibraryEditor::update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge, bool p_apply_xforms, bool p_bake_previews) {
+	_import_scene(p_base_scene, ml, p_merge, p_apply_xforms, p_bake_previews);
 	return OK;
 }
 

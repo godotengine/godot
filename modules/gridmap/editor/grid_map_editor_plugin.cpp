@@ -35,6 +35,7 @@
 #include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -849,6 +850,11 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 }
 
 void GridMapEditor::update_palette() {
+	if (updating) {
+		// Main::iteration() from make_mesh_preview_with_environment() can cause a recursive call.
+		return;
+	}
+
 	float min_size = EDITOR_GET("editors/grid_map/preview_size");
 	min_size *= EDSCALE;
 
@@ -892,10 +898,22 @@ void GridMapEditor::update_palette() {
 
 	int item = 0;
 
+	int preview_size = EDITOR_GET("editors/grid_map/preview_size");
+	RS::get_singleton()->viewport_set_size(viewport, preview_size, preview_size);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ALWAYS);
+	RID viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
+
+	mesh_library->set_block_signals(true);
+	updating = true;
 	for (_CGMEItemSort &E : il) {
 		int id = E.id;
 		String name = mesh_library->get_item_name(id);
 		Ref<Texture2D> preview = mesh_library->get_item_preview(id);
+		if (preview.is_null()) {
+			preview = EditorInterface::get_singleton()->make_mesh_preview_with_environment(
+					scenario, preview_camera, light_instance, light_instance2, viewport_texture, mesh_library->get_item_mesh(id), mesh_library->get_item_mesh_transform(id));
+			mesh_library->set_item_preview(id, preview);
+		}
 
 		if (name.is_empty()) {
 			name = "#" + itos(id);
@@ -906,7 +924,7 @@ void GridMapEditor::update_palette() {
 		}
 
 		mesh_library_palette->add_item("");
-		if (!preview.is_null()) {
+		if (preview.is_valid()) {
 			mesh_library_palette->set_item_icon(item, preview);
 			mesh_library_palette->set_item_tooltip(item, name);
 		}
@@ -919,6 +937,9 @@ void GridMapEditor::update_palette() {
 
 		item++;
 	}
+	mesh_library->set_block_signals(false);
+	updating = false;
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
 }
 
 void GridMapEditor::_update_mesh_library() {
@@ -976,7 +997,6 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 		return;
 	}
 
-	update_palette();
 	_update_cursor_instance();
 
 	set_process(true);
@@ -1002,9 +1022,7 @@ void GridMapEditor::update_grid() {
 		RenderingServer::get_singleton()->instance_set_visible(grid_instance[i], i == edit_axis);
 	}
 
-	updating = true;
-	floor->set_value(edit_floor[edit_axis]);
-	updating = false;
+	floor->set_value_no_signal(edit_floor[edit_axis]);
 }
 
 void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
@@ -1163,10 +1181,6 @@ void GridMapEditor::_item_selected_cbk(int idx) {
 }
 
 void GridMapEditor::_floor_changed(float p_value) {
-	if (updating) {
-		return;
-	}
-
 	edit_floor[edit_axis] = p_value;
 	node->set_meta("_editor_floor_", Vector3(edit_floor[0], edit_floor[1], edit_floor[2]));
 	update_grid();
@@ -1456,6 +1470,23 @@ GridMapEditor::GridMapEditor() {
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	indicator_mat->set_albedo(Color(0.8, 0.5, 0.1));
+
+	scenario = RS::get_singleton()->scenario_create();
+
+	viewport = RS::get_singleton()->viewport_create();
+	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
+	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
+	RS::get_singleton()->viewport_set_active(viewport, true);
+
+	preview_camera = RS::get_singleton()->camera_create();
+	RS::get_singleton()->viewport_attach_camera(viewport, preview_camera);
+
+	light = RS::get_singleton()->directional_light_create();
+	light_instance = RS::get_singleton()->instance_create2(light, scenario);
+
+	light2 = RS::get_singleton()->directional_light_create();
+	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
 }
 
 GridMapEditor::~GridMapEditor() {
@@ -1489,6 +1520,14 @@ GridMapEditor::~GridMapEditor() {
 	if (paste_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(paste_instance);
 	}
+
+	RS::get_singleton()->free(viewport);
+	RS::get_singleton()->free(light);
+	RS::get_singleton()->free(light_instance);
+	RS::get_singleton()->free(light2);
+	RS::get_singleton()->free(light_instance2);
+	RS::get_singleton()->free(preview_camera);
+	RS::get_singleton()->free(scenario);
 }
 
 void GridMapEditorPlugin::_notification(int p_what) {
