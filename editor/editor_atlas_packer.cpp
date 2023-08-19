@@ -105,7 +105,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 		Ref<BitMap> src_bitmap;
 		src_bitmap.instance();
-		src_bitmap->create(aabb.size / divide_by);
+		src_bitmap->create(Size2(Math::ceil(aabb.size.x / (real_t)divide_by), Math::ceil(aabb.size.y / (real_t)divide_by)));
 
 		int w = src_bitmap->get_size().width;
 		int h = src_bitmap->get_size().height;

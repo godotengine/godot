@@ -404,7 +404,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	bool trim = p_options["edit/trim"];
 
-	if (trim && (loop_mode != AudioStreamSample::LOOP_DISABLED) && format_channels > 0) {
+	if (trim && (loop_mode == AudioStreamSample::LOOP_DISABLED) && format_channels > 0) {
 		int first = 0;
 		int last = (frames / format_channels) - 1;
 		bool found = false;

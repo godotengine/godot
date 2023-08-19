@@ -15,6 +15,7 @@
 		@"." # The current node.
 		@".." # The parent node.
 		@"../C" # A sibling node C.
+		@"../.." # The grandparent node.
 		# A leading slash means it is absolute from the SceneTree.
 		@"/root" # Equivalent to get_tree().get_root().
 		@"/root/Main" # If your main scene's root node were named "Main".
@@ -96,7 +97,7 @@
 			<return type="String" />
 			<argument index="0" name="idx" type="int" />
 			<description>
-				Gets the resource or property name indicated by [code]idx[/code] (0 to [method get_subname_count]).
+				Gets the resource or property name indicated by [code]idx[/code] (0 to [method get_subname_count] - 1).
 				[codeblock]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite:texture:load_path")
 				print(node_path.get_subname(0)) # texture

@@ -289,7 +289,7 @@
 		<method name="get_canvas_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform matrix of this item's canvas.
+				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s coordinate system.
 			</description>
 		</method>
 		<method name="get_global_mouse_position" qualifiers="const">
@@ -307,7 +307,7 @@
 		<method name="get_global_transform_with_canvas" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the global transform matrix of this item in relation to the canvas.
+				Returns the transform from the local coordinate system of this [CanvasItem] to the [Viewport]s coordinate system.
 			</description>
 		</method>
 		<method name="get_local_mouse_position" qualifiers="const">
@@ -331,7 +331,7 @@
 		<method name="get_viewport_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns this item's transform in relation to the viewport.
+				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s embedders coordinate system.
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
@@ -367,7 +367,7 @@
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree, and is consequently not drawn (see [method _draw]).
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree, and is consequently not drawn (see [method _draw]).
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -441,7 +441,7 @@
 			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
-			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its antecedents are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
+			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its ancestors are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
 			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 	</members>
