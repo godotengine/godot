@@ -143,6 +143,16 @@ void GLTFState::add_used_extension(const String &p_extension_name, bool p_requir
 	}
 }
 
+String GLTFState::generate_unique_name(const String &p_from_name) {
+	const String start_name = p_from_name.validate_node_name();
+	String unique_name = start_name;
+	for (int i = 2; unique_names.has(unique_name); i++) {
+		unique_name = start_name + itos(i);
+	}
+	unique_names.insert(unique_name);
+	return unique_name;
+}
+
 Dictionary GLTFState::get_json() {
 	return json;
 }

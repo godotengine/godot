@@ -465,28 +465,6 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-String GLTFDocument::_gen_unique_name(Ref<GLTFState> p_state, const String &p_name) {
-	const String s_name = p_name.validate_node_name();
-
-	String u_name;
-	int index = 1;
-	while (true) {
-		u_name = s_name;
-
-		if (index > 1) {
-			u_name += itos(index);
-		}
-		if (!p_state->unique_names.has(u_name)) {
-			break;
-		}
-		index++;
-	}
-
-	p_state->unique_names.insert(u_name);
-
-	return u_name;
-}
-
 String GLTFDocument::_sanitize_animation_name(const String &p_name) {
 	// Animations disallow the normal node invalid characters as well as  "," and "["
 	// (See animation/animation_player.cpp::add_animation)
@@ -577,7 +555,7 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> p_state) {
 			p_state->scene_name = p_state->filename;
 		}
 		if (_naming_version == 0) {
-			p_state->scene_name = _gen_unique_name(p_state, p_state->scene_name);
+			p_state->scene_name = p_state->generate_unique_name(p_state->scene_name);
 		}
 	}
 
@@ -2570,7 +2548,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 		if (d.has("name") && !String(d["name"]).is_empty()) {
 			mesh_name = d["name"];
 		}
-		import_mesh->set_name(_gen_unique_name(p_state, vformat("%s_%s", p_state->scene_name, mesh_name)));
+		import_mesh->set_name(p_state->generate_unique_name(vformat("%s_%s", p_state->scene_name, mesh_name)));
 
 		for (int j = 0; j < primitives.size(); j++) {
 			uint64_t flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
@@ -3080,7 +3058,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 			if (img_name.is_empty()) {
 				img_name = itos(i);
 			}
-			img_name = _gen_unique_name(p_state, img_name);
+			img_name = p_state->generate_unique_name(img_name);
 			img_name = img_name.pad_zeros(3);
 			String relative_texture_dir = "textures";
 			String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
@@ -3617,7 +3595,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			continue;
 		}
 		if (!material->get_name().is_empty()) {
-			d["name"] = _gen_unique_name(p_state, material->get_name());
+			d["name"] = p_state->generate_unique_name(material->get_name());
 		}
 
 		Ref<BaseMaterial3D> base_material = material;
@@ -4891,7 +4869,7 @@ Error GLTFDocument::_create_skins(Ref<GLTFState> p_state) {
 		Ref<Skin> skin = p_state->skins.write[skin_i]->godot_skin;
 		if (skin->get_name().is_empty()) {
 			// Make a unique name, no gltf node represents this skin
-			skin->set_name(_gen_unique_name(p_state, "Skin"));
+			skin->set_name(p_state->generate_unique_name("Skin"));
 		}
 	}
 
@@ -5371,11 +5349,11 @@ void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
 		if (gltf_node_name.is_empty()) {
 			if (_naming_version == 0) {
 				if (gltf_node->mesh >= 0) {
-					gltf_node_name = _gen_unique_name(p_state, "Mesh");
+					gltf_node_name = p_state->generate_unique_name("Mesh");
 				} else if (gltf_node->camera >= 0) {
-					gltf_node_name = _gen_unique_name(p_state, "Camera3D");
+					gltf_node_name = p_state->generate_unique_name("Camera3D");
 				} else {
-					gltf_node_name = _gen_unique_name(p_state, "Node");
+					gltf_node_name = p_state->generate_unique_name("Node");
 				}
 			} else {
 				if (gltf_node->mesh >= 0) {
@@ -5387,7 +5365,7 @@ void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
 				}
 			}
 		}
-		gltf_node->set_name(_gen_unique_name(p_state, gltf_node_name));
+		gltf_node->set_name(p_state->generate_unique_name(gltf_node_name));
 	}
 }
 
@@ -5526,7 +5504,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 	}
 	Ref<GLTFNode> gltf_node;
 	gltf_node.instantiate();
-	gltf_node->set_name(_gen_unique_name(p_state, p_current->get_name()));
+	gltf_node->set_name(p_state->generate_unique_name(p_current->get_name()));
 	if (cast_to<Node3D>(p_current)) {
 		Node3D *spatial = cast_to<Node3D>(p_current);
 		_convert_spatial(p_state, spatial, gltf_node);
@@ -5621,7 +5599,7 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	p_state->meshes.push_back(gltf_mesh);
 	p_gltf_node->mesh = mesh_i;
 	p_gltf_node->xform = csg->get_meshes()[0];
-	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
+	p_gltf_node->set_name(p_state->generate_unique_name(csg->get_name()));
 }
 #endif // MODULE_CSG_ENABLED
 
@@ -5697,7 +5675,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		new_gltf_node->mesh = p_state->meshes.size();
 		p_state->meshes.push_back(gltf_mesh);
 		new_gltf_node->xform = cell_xform * p_grid_map->get_transform();
-		new_gltf_node->set_name(_gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell)));
+		new_gltf_node->set_name(p_state->generate_unique_name(p_grid_map->get_mesh_library()->get_item_name(cell)));
 	}
 }
 #endif // MODULE_GRIDMAP_ENABLED
@@ -5765,7 +5743,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 		new_gltf_node.instantiate();
 		new_gltf_node->mesh = mesh_index;
 		new_gltf_node->xform = transform;
-		new_gltf_node->set_name(_gen_unique_name(p_state, p_multi_mesh_instance->get_name()));
+		new_gltf_node->set_name(p_state->generate_unique_name(p_multi_mesh_instance->get_name()));
 		p_gltf_node->children.push_back(p_state->nodes.size());
 		p_state->nodes.push_back(new_gltf_node);
 	}
@@ -5788,7 +5766,7 @@ void GLTFDocument::_convert_skeleton_to_gltf(Skeleton3D *p_skeleton3d, Ref<GLTFS
 		joint_node.instantiate();
 		// Note that we cannot use _gen_unique_bone_name here, because glTF spec requires all node
 		// names to be unique regardless of whether or not they are used as joints.
-		joint_node->set_name(_gen_unique_name(p_state, skeleton->get_bone_name(bone_i)));
+		joint_node->set_name(p_state->generate_unique_name(skeleton->get_bone_name(bone_i)));
 		Transform3D xform = skeleton->get_bone_pose(bone_i);
 		joint_node->scale = xform.basis.get_scale();
 		joint_node->rotation = xform.basis.get_rotation_quaternion();
@@ -5969,7 +5947,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 			p_scene_parent->add_child(bone_attachment, true);
 			bone_attachment->set_owner(p_scene_root);
 			// There is no gltf_node that represent this, so just directly create a unique name
-			bone_attachment->set_name(_gen_unique_name(p_state, "BoneAttachment3D"));
+			bone_attachment->set_name(p_state->generate_unique_name("BoneAttachment3D"));
 			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 			// and attach it to the bone_attachment
 			p_scene_parent = bone_attachment;
@@ -6169,7 +6147,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 	String anim_name = anim->get_name();
 	if (anim_name.is_empty()) {
 		// No node represent these, and they are not in the hierarchy, so just make a unique name
-		anim_name = _gen_unique_name(p_state, "Animation");
+		anim_name = p_state->generate_unique_name("Animation");
 	}
 
 	Ref<Animation> animation;
@@ -6918,7 +6896,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 	Ref<Animation> animation = p_animation_player->get_animation(p_animation_track_name);
 	Ref<GLTFAnimation> gltf_animation;
 	gltf_animation.instantiate();
-	gltf_animation->set_name(_gen_unique_name(p_state, p_animation_track_name));
+	gltf_animation->set_name(p_state->generate_unique_name(p_animation_track_name));
 	for (int32_t track_i = 0; track_i < animation->get_track_count(); track_i++) {
 		if (!animation->track_is_enabled(track_i)) {
 			continue;
@@ -7429,7 +7407,7 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 		if (_naming_version == 0) {
 			single_root->set_name(p_state->scene_name);
 		} else {
-			single_root->set_name(_gen_unique_name(p_state, p_state->scene_name));
+			single_root->set_name(p_state->generate_unique_name(p_state->scene_name));
 		}
 	}
 	return single_root;

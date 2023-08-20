@@ -105,7 +105,6 @@ private:
 	Error _parse_nodes(Ref<GLTFState> p_state);
 	String _get_type_name(const GLTFType p_component);
 	String _get_accessor_type_name(const GLTFType p_type);
-	String _gen_unique_name(Ref<GLTFState> p_state, const String &p_name);
 	String _sanitize_animation_name(const String &p_name);
 	String _gen_unique_animation_name(Ref<GLTFState> p_state, const String &p_name);
 	String _sanitize_bone_name(const String &p_name);

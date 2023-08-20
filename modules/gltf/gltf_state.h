@@ -105,6 +105,7 @@ protected:
 
 public:
 	void add_used_extension(const String &p_extension, bool p_required = false);
+	String generate_unique_name(const String &p_from_name);
 
 	enum GLTFHandleBinary {
 		HANDLE_BINARY_DISCARD_TEXTURES = 0,
