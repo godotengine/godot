@@ -2400,6 +2400,7 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 
 		// The docs advise to redispatch unconditionally and it looks like that if we
 		// don't do this we can't catch protocol errors, which is bad.
+		MutexLock mutex_lock(data->mutex);
 		wl_display_dispatch_pending(data->wl_display);
 	}
 }
