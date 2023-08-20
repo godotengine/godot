@@ -1188,6 +1188,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const int vsep_base = extra_spacing + default_margin_size + 6;
 	const int force_even_vsep = vsep_base + (vsep_base % 2);
 	theme->set_constant("v_separation", "PopupMenu", force_even_vsep * EDSCALE);
+	theme->set_constant("h_separation", "PopupMenu", 8 * EDSCALE);
 	theme->set_constant("outline_size", "PopupMenu", 0);
 	theme->set_constant("item_start_padding", "PopupMenu", default_margin_size * 1.5 * EDSCALE);
 	theme->set_constant("item_end_padding", "PopupMenu", default_margin_size * 1.5 * EDSCALE);
