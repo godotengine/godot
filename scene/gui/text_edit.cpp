@@ -7000,6 +7000,11 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 				col = p_search.findn(p_key, p_from_column);
 			}
 
+			// If not found, just break early to improve performance.
+			if (col == -1) {
+				break;
+			}
+
 			// Whole words only.
 			if (col != -1 && p_search_flags & SEARCH_WHOLE_WORDS) {
 				p_from_column = col;
