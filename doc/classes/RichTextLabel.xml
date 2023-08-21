@@ -380,6 +380,13 @@
 				Adds a [code][font][/code] tag with an italics font to the tag stack. This is the same as adding an [code][i][/code] tag if not currently in a [code][b][/code] tag.
 			</description>
 		</method>
+		<method name="push_language">
+			<return type="void" />
+			<param index="0" name="language" type="String" />
+			<description>
+				Adds language code used for text shaping algorithm and Open-Type font features.
+			</description>
+		</method>
 		<method name="push_list">
 			<return type="void" />
 			<param index="0" name="level" type="int" />
