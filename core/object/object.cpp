@@ -309,7 +309,17 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	}
 }
 
-Variant Object::get(const StringName &p_name, bool *r_valid) const {
+Variant Object::get(const StringName &p_name, const Variant &p_default_value) const {
+	bool is_defined = false;
+	const Variant result = get_or_null(p_name, &is_defined);
+	if (result.is_null() and !is_defined) {
+		return p_default_value;
+	}
+
+	return result;
+}
+
+Variant Object::get_or_null(const StringName &p_name, bool *r_valid) const {
 	Variant ret;
 
 	if (script_instance) {
@@ -413,7 +423,7 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 
 	List<Variant> value_stack;
 
-	value_stack.push_back(get(p_names[0], r_valid));
+	value_stack.push_back(get_or_null(p_names[0], r_valid));
 
 	if (!*r_valid) {
 		value_stack.clear();
@@ -462,7 +472,7 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 	}
 	bool valid = false;
 
-	Variant current_value = get(p_names[0], &valid);
+	Variant current_value = get_or_null(p_names[0], &valid);
 	for (int i = 1; i < p_names.size(); i++) {
 		current_value = current_value.get_named(p_names[i], valid);
 
@@ -650,7 +660,7 @@ Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
 	}
 
 	if (p_key.get_type() == Variant::STRING_NAME || p_key.get_type() == Variant::STRING) {
-		return get(p_key, r_valid);
+		return get_or_null(p_key, r_valid);
 	}
 	return Variant();
 }
@@ -1380,8 +1390,12 @@ void Object::_set_bind(const StringName &p_set, const Variant &p_value) {
 	set(p_set, p_value);
 }
 
-Variant Object::_get_bind(const StringName &p_name) const {
-	return get(p_name);
+Variant Object::_get_bind(const StringName &p_name, const Variant &p_default_value) const {
+	return get(p_name, p_default_value);
+}
+
+Variant Object::_get_or_null_bind(const StringName &p_name) const {
+	return get_or_null(p_name);
 }
 
 void Object::_set_indexed_bind(const NodePath &p_name, const Variant &p_value) {
@@ -1494,7 +1508,7 @@ void Object::clear_internal_resource_paths() {
 	get_property_list(&pinfo);
 
 	for (const PropertyInfo &E : pinfo) {
-		_clear_internal_resource_paths(get(E.name));
+		_clear_internal_resource_paths(get_or_null(E.name));
 	}
 }
 
@@ -1506,7 +1520,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
 	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
-	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
+	ClassDB::bind_method(D_METHOD("get", "property", "default_value"), &Object::_get_bind, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("get_or_null", "property"), &Object::_get_or_null_bind);
 	ClassDB::bind_method(D_METHOD("set_indexed", "property_path", "value"), &Object::_set_indexed_bind);
 	ClassDB::bind_method(D_METHOD("get_indexed", "property_path"), &Object::_get_indexed_bind);
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);

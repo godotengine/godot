@@ -1150,7 +1150,7 @@ Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
 
 	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			new_anim->set(E.name, p_anim->get(E.name));
+			new_anim->set(E.name, p_anim->get_or_null(E.name));
 		}
 	}
 	new_anim->set_path("");

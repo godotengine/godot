@@ -82,7 +82,7 @@ class SectionedInspectorFilter : public Object {
 
 		bool valid = false;
 
-		r_ret = edited->get(name, &valid);
+		r_ret = edited->get_or_null(name, &valid);
 		return valid;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {

@@ -270,7 +270,7 @@ public:
 		Vector<PluginConfigIOS> all_plugins = get_plugins();
 		for (int i = 0; i < all_plugins.size(); i++) {
 			PluginConfigIOS plugin = all_plugins[i];
-			bool enabled = p_presets->get("plugins/" + plugin.name);
+			bool enabled = p_presets->get_or_null("plugins/" + plugin.name);
 			if (enabled) {
 				enabled_plugins.push_back(plugin);
 			}

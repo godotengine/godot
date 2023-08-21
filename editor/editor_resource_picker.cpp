@@ -222,7 +222,7 @@ void EditorResourcePicker::_update_menu_items() {
 			edited_resource->get_property_list(&property_list);
 			bool has_subresources = false;
 			for (PropertyInfo &p : property_list) {
-				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get(p.name) != nullptr)) {
+				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get_or_null(p.name) != nullptr)) {
 					has_subresources = true;
 					break;
 				}
@@ -986,7 +986,7 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 			continue;
 		}
 
-		Ref<Resource> res = p_resource->get(E.name);
+		Ref<Resource> res = p_resource->get_or_null(E.name);
 		if (res.is_null()) {
 			continue;
 		}

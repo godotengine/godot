@@ -318,7 +318,7 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 					undo_redo->add_do_property(p_edited, "roughness", 1.0);
 
 					bool valid = false;
-					Variant value = p_edited->get("roughness", &valid);
+					Variant value = p_edited->get_or_null("roughness", &valid);
 					if (valid) {
 						undo_redo->add_undo_property(p_edited, "roughness", value);
 					}
@@ -328,7 +328,7 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 					undo_redo->add_do_property(p_edited, "metallic", 1.0);
 
 					bool valid = false;
-					Variant value = p_edited->get("metallic", &valid);
+					Variant value = p_edited->get_or_null("metallic", &valid);
 					if (valid) {
 						undo_redo->add_undo_property(p_edited, "metallic", value);
 					}

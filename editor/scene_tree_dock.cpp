@@ -1272,7 +1272,7 @@ void SceneTreeDock::_perform_property_drop(Node *p_node, String p_property, Ref<
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Set %s"), p_property));
 	undo_redo->add_do_property(p_node, p_property, p_res);
-	undo_redo->add_undo_property(p_node, p_property, p_node->get(p_property));
+	undo_redo->add_undo_property(p_node, p_property, p_node->get_or_null(p_property));
 	undo_redo->commit_action();
 }
 
@@ -1718,7 +1718,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 			continue;
 		}
 		String propertyname = E.name;
-		Variant old_variant = p_base->get(propertyname);
+		Variant old_variant = p_base->get_or_null(propertyname);
 		Variant updated_variant = old_variant;
 		if (_check_node_path_recursive(p_base, updated_variant, p_renames)) {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -2473,8 +2473,8 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 				continue;
 			}
 
-			if (default_oldnode->get(E.name) != n->get(E.name)) {
-				newnode->set(E.name, n->get(E.name));
+			if (default_oldnode->get_or_null(E.name) != n->get_or_null(E.name)) {
+				newnode->set(E.name, n->get_or_null(E.name));
 			}
 		}
 
@@ -2550,7 +2550,7 @@ void SceneTreeDock::perform_node_replace(Node *p_base, Node *p_node, Node *p_by_
 			continue;
 		}
 		String propertyname = E.name;
-		Variant old_variant = p_base->get(propertyname);
+		Variant old_variant = p_base->get_or_null(propertyname);
 		Variant updated_variant = old_variant;
 		String warn_message;
 
@@ -2899,7 +2899,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 			continue;
 		}
 
-		Variant value = p_obj->get(E.name);
+		Variant value = p_obj->get_or_null(E.name);
 		if (value.get_type() != Variant::OBJECT) {
 			continue;
 		}
@@ -3600,7 +3600,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, HashMap<Ref<Resource>, 
 			continue;
 		}
 
-		Variant v = p_node->get(E.name);
+		Variant v = p_node->get_or_null(E.name);
 		if (v.is_ref_counted()) {
 			Ref<Resource> res = v;
 			if (res.is_valid()) {
@@ -3638,7 +3638,7 @@ void SceneTreeDock::_create_remap_for_resource(Ref<Resource> p_resource, HashMap
 			continue;
 		}
 
-		Variant v = p_resource->get(E.name);
+		Variant v = p_resource->get_or_null(E.name);
 		if (v.is_ref_counted()) {
 			Ref<Resource> res = v;
 			if (res.is_valid()) {
@@ -3712,7 +3712,7 @@ void SceneTreeDock::_gather_resources(Node *p_node, List<Pair<Ref<Resource>, Nod
 			continue;
 		}
 
-		Variant value = p_node->get(E.name);
+		Variant value = p_node->get_or_null(E.name);
 		if (value.get_type() != Variant::OBJECT) {
 			continue;
 		}

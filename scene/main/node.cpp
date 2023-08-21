@@ -2502,7 +2502,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 		if (p_flags & DUPLICATE_SCRIPTS) {
 			bool is_valid = false;
-			Variant scr = N->get()->get(script_property_name, &is_valid);
+			Variant scr = N->get()->get_or_null(script_property_name, &is_valid);
 			if (is_valid) {
 				current_node->set(script_property_name, scr);
 			}
@@ -2520,7 +2520,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 				continue;
 			}
 
-			Variant value = N->get()->get(name).duplicate(true);
+			Variant value = N->get()->get_or_null(name).duplicate(true);
 
 			if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
 				Resource *res = Object::cast_to<Resource>(value);
@@ -2643,7 +2643,7 @@ void Node::remap_node_resources(Node *p_node, const HashMap<Ref<Resource>, Ref<R
 			continue;
 		}
 
-		Variant v = p_node->get(E.name);
+		Variant v = p_node->get_or_null(E.name);
 		if (v.is_ref_counted()) {
 			Ref<Resource> res = v;
 			if (res.is_valid()) {
@@ -2669,7 +2669,7 @@ void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Re
 			continue;
 		}
 
-		Variant v = p_resource->get(E.name);
+		Variant v = p_resource->get_or_null(E.name);
 		if (v.is_ref_counted()) {
 			Ref<Resource> res = v;
 			if (res.is_valid()) {
@@ -2870,7 +2870,7 @@ Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, 
 		// If not p_last_is_property, we shouldn't consider the last one as part of the resource
 		for (; j < p_path.get_subname_count() - (int)p_last_is_property; j++) {
 			bool is_valid = false;
-			Variant new_res_v = j == 0 ? node->get(p_path.get_subname(j), &is_valid) : r_res->get(p_path.get_subname(j), &is_valid);
+			Variant new_res_v = j == 0 ? node->get_or_null(p_path.get_subname(j), &is_valid) : r_res->get_or_null(p_path.get_subname(j), &is_valid);
 
 			if (!is_valid) { // Found nothing on that path
 				return nullptr;

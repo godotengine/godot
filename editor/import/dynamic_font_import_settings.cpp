@@ -68,10 +68,10 @@ bool DynamicFontImportSettingsData::_get(const StringName &p_name, Variant &r_re
 void DynamicFontImportSettingsData::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
 		if (owner && owner->import_settings_data.is_valid()) {
-			if (owner->import_settings_data->get("multichannel_signed_distance_field") && (E->get().option.name == "size" || E->get().option.name == "outline_size" || E->get().option.name == "oversampling")) {
+			if (owner->import_settings_data->get_or_null("multichannel_signed_distance_field") && (E->get().option.name == "size" || E->get().option.name == "outline_size" || E->get().option.name == "oversampling")) {
 				continue;
 			}
-			if (!owner->import_settings_data->get("multichannel_signed_distance_field") && (E->get().option.name == "msdf_pixel_range" || E->get().option.name == "msdf_size")) {
+			if (!owner->import_settings_data->get_or_null("multichannel_signed_distance_field") && (E->get().option.name == "msdf_pixel_range" || E->get().option.name == "msdf_size")) {
 				continue;
 			}
 		}
@@ -460,27 +460,27 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 
 	if (font_preview.is_valid()) {
 		if (p_edited_property == "antialiasing") {
-			font_preview->set_antialiasing((TextServer::FontAntialiasing)import_settings_data->get("antialiasing").operator int());
+			font_preview->set_antialiasing((TextServer::FontAntialiasing)import_settings_data->get_or_null("antialiasing").operator int());
 		} else if (p_edited_property == "generate_mipmaps") {
-			font_preview->set_generate_mipmaps(import_settings_data->get("generate_mipmaps"));
+			font_preview->set_generate_mipmaps(import_settings_data->get_or_null("generate_mipmaps"));
 		} else if (p_edited_property == "multichannel_signed_distance_field") {
-			font_preview->set_multichannel_signed_distance_field(import_settings_data->get("multichannel_signed_distance_field"));
+			font_preview->set_multichannel_signed_distance_field(import_settings_data->get_or_null("multichannel_signed_distance_field"));
 			_variation_selected();
 			_variations_validate();
 		} else if (p_edited_property == "msdf_pixel_range") {
-			font_preview->set_msdf_pixel_range(import_settings_data->get("msdf_pixel_range"));
+			font_preview->set_msdf_pixel_range(import_settings_data->get_or_null("msdf_pixel_range"));
 		} else if (p_edited_property == "msdf_size") {
-			font_preview->set_msdf_size(import_settings_data->get("msdf_size"));
+			font_preview->set_msdf_size(import_settings_data->get_or_null("msdf_size"));
 		} else if (p_edited_property == "allow_system_fallback") {
-			font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
+			font_preview->set_allow_system_fallback(import_settings_data->get_or_null("allow_system_fallback"));
 		} else if (p_edited_property == "force_autohinter") {
-			font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
+			font_preview->set_force_autohinter(import_settings_data->get_or_null("force_autohinter"));
 		} else if (p_edited_property == "hinting") {
-			font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
+			font_preview->set_hinting((TextServer::Hinting)import_settings_data->get_or_null("hinting").operator int());
 		} else if (p_edited_property == "subpixel_positioning") {
-			font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
+			font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get_or_null("subpixel_positioning").operator int());
 		} else if (p_edited_property == "oversampling") {
-			font_preview->set_oversampling(import_settings_data->get("oversampling"));
+			font_preview->set_oversampling(import_settings_data->get_or_null("oversampling"));
 		}
 	}
 
@@ -601,10 +601,10 @@ void DynamicFontImportSettings::_variations_validate() {
 			}
 		}
 	}
-	if ((TextServer::FontAntialiasing)(int)import_settings_data->get("antialiasing") == TextServer::FONT_ANTIALIASING_LCD) {
+	if ((TextServer::FontAntialiasing)(int)import_settings_data->get_or_null("antialiasing") == TextServer::FONT_ANTIALIASING_LCD) {
 		warn += "\n" + TTR("Note: LCD Subpixel antialiasing is selected, each of the glyphs will be pre-rendered for all supported subpixel layouts (5x).");
 	}
-	if ((TextServer::SubpixelPositioning)(int)import_settings_data->get("subpixel_positioning") != TextServer::SUBPIXEL_POSITIONING_DISABLED) {
+	if ((TextServer::SubpixelPositioning)(int)import_settings_data->get_or_null("subpixel_positioning") != TextServer::SUBPIXEL_POSITIONING_DISABLED) {
 		warn += "\n" + TTR("Note: Subpixel positioning is selected, each of the glyphs might be pre-rendered for multiple subpixel offsets (up to 4x).");
 	}
 	if (warn.is_empty()) {
@@ -634,11 +634,11 @@ void DynamicFontImportSettings::_change_text_opts() {
 	Ref<FontVariation> font_main_text;
 	font_main_text.instantiate();
 	font_main_text->set_base_font(font_main);
-	font_main_text->set_opentype_features(text_settings_data->get("opentype_features"));
-	font_main_text->set_variation_opentype(import_variation_data->get("variation_opentype"));
-	font_main_text->set_variation_embolden(import_variation_data->get("variation_embolden"));
-	font_main_text->set_variation_face_index(import_variation_data->get("variation_face_index"));
-	font_main_text->set_variation_transform(import_variation_data->get("variation_transform"));
+	font_main_text->set_opentype_features(text_settings_data->get_or_null("opentype_features"));
+	font_main_text->set_variation_opentype(import_variation_data->get_or_null("variation_opentype"));
+	font_main_text->set_variation_embolden(import_variation_data->get_or_null("variation_embolden"));
+	font_main_text->set_variation_face_index(import_variation_data->get_or_null("variation_face_index"));
+	font_main_text->set_variation_transform(import_variation_data->get_or_null("variation_transform"));
 
 	text_edit->add_theme_font_override("font", font_main_text);
 }
@@ -692,7 +692,7 @@ void DynamicFontImportSettings::_glyph_text_selected() {
 	}
 	RID text_rid = TS->create_shaped_text();
 	if (text_rid.is_valid()) {
-		TS->shaped_text_add_string(text_rid, text_edit->get_text(), font_main->get_rids(), 16, text_settings_data->get("opentype_features"), text_settings_data->get("language"));
+		TS->shaped_text_add_string(text_rid, text_edit->get_text(), font_main->get_rids(), 16, text_settings_data->get_or_null("opentype_features"), text_settings_data->get_or_null("language"));
 		TS->shaped_text_shape(text_rid);
 		const Glyph *gl = TS->shaped_text_get_glyphs(text_rid);
 		const int gl_size = TS->shaped_text_get_glyph_count(text_rid);
@@ -934,19 +934,19 @@ void DynamicFontImportSettings::_notification(int p_what) {
 void DynamicFontImportSettings::_re_import() {
 	HashMap<StringName, Variant> main_settings;
 
-	main_settings["face_index"] = import_settings_data->get("face_index");
-	main_settings["antialiasing"] = import_settings_data->get("antialiasing");
-	main_settings["generate_mipmaps"] = import_settings_data->get("generate_mipmaps");
-	main_settings["multichannel_signed_distance_field"] = import_settings_data->get("multichannel_signed_distance_field");
-	main_settings["msdf_pixel_range"] = import_settings_data->get("msdf_pixel_range");
-	main_settings["msdf_size"] = import_settings_data->get("msdf_size");
-	main_settings["allow_system_fallback"] = import_settings_data->get("allow_system_fallback");
-	main_settings["force_autohinter"] = import_settings_data->get("force_autohinter");
-	main_settings["hinting"] = import_settings_data->get("hinting");
-	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
-	main_settings["oversampling"] = import_settings_data->get("oversampling");
-	main_settings["fallbacks"] = import_settings_data->get("fallbacks");
-	main_settings["compress"] = import_settings_data->get("compress");
+	main_settings["face_index"] = import_settings_data->get_or_null("face_index");
+	main_settings["antialiasing"] = import_settings_data->get_or_null("antialiasing");
+	main_settings["generate_mipmaps"] = import_settings_data->get_or_null("generate_mipmaps");
+	main_settings["multichannel_signed_distance_field"] = import_settings_data->get_or_null("multichannel_signed_distance_field");
+	main_settings["msdf_pixel_range"] = import_settings_data->get_or_null("msdf_pixel_range");
+	main_settings["msdf_size"] = import_settings_data->get_or_null("msdf_size");
+	main_settings["allow_system_fallback"] = import_settings_data->get_or_null("allow_system_fallback");
+	main_settings["force_autohinter"] = import_settings_data->get_or_null("force_autohinter");
+	main_settings["hinting"] = import_settings_data->get_or_null("hinting");
+	main_settings["subpixel_positioning"] = import_settings_data->get_or_null("subpixel_positioning");
+	main_settings["oversampling"] = import_settings_data->get_or_null("oversampling");
+	main_settings["fallbacks"] = import_settings_data->get_or_null("fallbacks");
+	main_settings["compress"] = import_settings_data->get_or_null("compress");
 
 	Array configurations;
 	for (TreeItem *vars_item = vars_list_root->get_first_child(); vars_item; vars_item = vars_item->get_next()) {
@@ -984,9 +984,9 @@ void DynamicFontImportSettings::_re_import() {
 		configurations.push_back(preload_config);
 	}
 	main_settings["preload"] = configurations;
-	main_settings["language_support"] = import_settings_data->get("language_support");
-	main_settings["script_support"] = import_settings_data->get("script_support");
-	main_settings["opentype_features"] = import_settings_data->get("opentype_features");
+	main_settings["language_support"] = import_settings_data->get_or_null("language_support");
+	main_settings["script_support"] = import_settings_data->get_or_null("script_support");
+	main_settings["opentype_features"] = import_settings_data->get_or_null("opentype_features");
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("Import settings:");
@@ -1212,15 +1212,15 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	import_settings_data->notify_property_list_changed();
 
 	if (font_preview.is_valid()) {
-		font_preview->set_antialiasing((TextServer::FontAntialiasing)import_settings_data->get("antialiasing").operator int());
-		font_preview->set_multichannel_signed_distance_field(import_settings_data->get("multichannel_signed_distance_field"));
-		font_preview->set_msdf_pixel_range(import_settings_data->get("msdf_pixel_range"));
-		font_preview->set_msdf_size(import_settings_data->get("msdf_size"));
-		font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
-		font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
-		font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
-		font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
-		font_preview->set_oversampling(import_settings_data->get("oversampling"));
+		font_preview->set_antialiasing((TextServer::FontAntialiasing)import_settings_data->get_or_null("antialiasing").operator int());
+		font_preview->set_multichannel_signed_distance_field(import_settings_data->get_or_null("multichannel_signed_distance_field"));
+		font_preview->set_msdf_pixel_range(import_settings_data->get_or_null("msdf_pixel_range"));
+		font_preview->set_msdf_size(import_settings_data->get_or_null("msdf_size"));
+		font_preview->set_allow_system_fallback(import_settings_data->get_or_null("allow_system_fallback"));
+		font_preview->set_force_autohinter(import_settings_data->get_or_null("force_autohinter"));
+		font_preview->set_hinting((TextServer::Hinting)import_settings_data->get_or_null("hinting").operator int());
+		font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get_or_null("subpixel_positioning").operator int());
+		font_preview->set_oversampling(import_settings_data->get_or_null("oversampling"));
 	}
 	font_preview_label->add_theme_font_override("font", font_preview);
 	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);

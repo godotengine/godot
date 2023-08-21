@@ -690,7 +690,7 @@ Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_enabled_plugins(con
 	Vector<PluginConfigAndroid> all_plugins = get_plugins();
 	for (int i = 0; i < all_plugins.size(); i++) {
 		PluginConfigAndroid plugin = all_plugins[i];
-		bool enabled = p_presets->get("plugins/" + plugin.name);
+		bool enabled = p_presets->get_or_null("plugins/" + plugin.name);
 		if (enabled) {
 			enabled_plugins.push_back(plugin);
 		}
@@ -815,13 +815,13 @@ bool EditorExportPlatformAndroid::_uses_vulkan() {
 void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
 	const char **aperms = android_perms;
 	while (*aperms) {
-		bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
+		bool enabled = p_preset->get_or_null("permissions/" + String(*aperms).to_lower());
 		if (enabled) {
 			r_permissions.push_back("android.permission." + String(*aperms));
 		}
 		aperms++;
 	}
-	PackedStringArray user_perms = p_preset->get("permissions/custom_permissions");
+	PackedStringArray user_perms = p_preset->get_or_null("permissions/custom_permissions");
 	for (int i = 0; i < user_perms.size(); i++) {
 		String user_perm = user_perms[i].strip_edges();
 		if (!user_perm.is_empty()) {
@@ -906,21 +906,21 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	Vector<uint8_t> stable_extra;
 
 	String version_name = p_preset->get_version("version/name");
-	int version_code = p_preset->get("version/code");
-	String package_name = p_preset->get("package/unique_name");
+	int version_code = p_preset->get_or_null("version/code");
+	String package_name = p_preset->get_or_null("package/unique_name");
 
 	const int screen_orientation =
 			_get_android_orientation_value(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 
-	bool screen_support_small = p_preset->get("screen/support_small");
-	bool screen_support_normal = p_preset->get("screen/support_normal");
-	bool screen_support_large = p_preset->get("screen/support_large");
-	bool screen_support_xlarge = p_preset->get("screen/support_xlarge");
+	bool screen_support_small = p_preset->get_or_null("screen/support_small");
+	bool screen_support_normal = p_preset->get_or_null("screen/support_normal");
+	bool screen_support_large = p_preset->get_or_null("screen/support_large");
+	bool screen_support_xlarge = p_preset->get_or_null("screen/support_xlarge");
 
-	bool backup_allowed = p_preset->get("user_data_backup/allow");
-	int app_category = p_preset->get("package/app_category");
-	bool retain_data_on_uninstall = p_preset->get("package/retain_data_on_uninstall");
-	bool exclude_from_recents = p_preset->get("package/exclude_from_recents");
+	bool backup_allowed = p_preset->get_or_null("user_data_backup/allow");
+	int app_category = p_preset->get_or_null("package/app_category");
+	bool retain_data_on_uninstall = p_preset->get_or_null("package/retain_data_on_uninstall");
+	bool exclude_from_recents = p_preset->get_or_null("package/exclude_from_recents");
 	bool is_resizeable = bool(GLOBAL_GET("display/window/size/resizable"));
 
 	Vector<String> perms;
@@ -1429,7 +1429,7 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 
 	Vector<String> string_table;
 
-	String package_name = p_preset->get("package/name");
+	String package_name = p_preset->get_or_null("package/name");
 	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
 
 	for (uint32_t i = 0; i < string_count; i++) {
@@ -1579,7 +1579,7 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 
 	// Setup the splash bg color
 	bool bg_color_valid;
-	Color bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color", &bg_color_valid);
+	Color bg_color = ProjectSettings::get_singleton()->get_or_null("application/boot_splash/bg_color", &bg_color_valid);
 	if (!bg_color_valid) {
 		bg_color = boot_splash_bg_color;
 	}
@@ -1601,7 +1601,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	background.instantiate();
 
 	// Regular icon: user selection -> project icon -> default.
-	String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
+	String path = static_cast<String>(p_preset->get_or_null(launcher_icon_option)).strip_edges();
 	print_verbose("Loading regular icon from " + path);
 	if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
 		print_verbose("- falling back to project icon: " + project_icon_path);
@@ -1609,7 +1609,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	}
 
 	// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
+	path = static_cast<String>(p_preset->get_or_null(launcher_adaptive_icon_foreground_option)).strip_edges();
 	print_verbose("Loading adaptive foreground icon from " + path);
 	if (path.is_empty() || ImageLoader::load_image(path, foreground) != OK) {
 		print_verbose("- falling back to using the regular icon");
@@ -1617,7 +1617,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	}
 
 	// Adaptive background: user selection -> default.
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
+	path = static_cast<String>(p_preset->get_or_null(launcher_adaptive_icon_background_option)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive background icon from " + path);
 		ImageLoader::load_image(path, background);
@@ -1695,7 +1695,7 @@ Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_enable
 	Vector<ABI> abis = get_abis();
 	Vector<ABI> enabled_abis;
 	for (int i = 0; i < abis.size(); ++i) {
-		bool is_enabled = p_preset->get("architectures/" + abis[i].abi);
+		bool is_enabled = p_preset->get_or_null("architectures/" + abis[i].abi);
 		if (is_enabled) {
 			enabled_abis.push_back(abis[i]);
 		}
@@ -1717,39 +1717,39 @@ void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPres
 String EditorExportPlatformAndroid::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		if (p_name == ("apk_expansion/public_key")) {
-			bool apk_expansion = p_preset->get("apk_expansion/enable");
-			String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
+			bool apk_expansion = p_preset->get_or_null("apk_expansion/enable");
+			String apk_expansion_pkey = p_preset->get_or_null("apk_expansion/public_key");
 			if (apk_expansion && apk_expansion_pkey.is_empty()) {
 				return TTR("Invalid public key for APK expansion.");
 			}
 		} else if (p_name == "package/unique_name") {
-			String pn = p_preset->get("package/unique_name");
+			String pn = p_preset->get_or_null("package/unique_name");
 			String pn_err;
 
 			if (!is_package_name_valid(pn, &pn_err)) {
 				return TTR("Invalid package name:") + " " + pn_err;
 			}
 		} else if (p_name == "gradle_build/use_gradle_build") {
-			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			bool gradle_build_enabled = p_preset->get_or_null("gradle_build/use_gradle_build");
 			String enabled_plugins_names = _get_plugins_names(Ref<EditorExportPreset>(p_preset));
 			if (!enabled_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
 			}
 		} else if (p_name == "xr_features/xr_mode") {
-			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-			int xr_mode_index = p_preset->get("xr_features/xr_mode");
+			bool gradle_build_enabled = p_preset->get_or_null("gradle_build/use_gradle_build");
+			int xr_mode_index = p_preset->get_or_null("xr_features/xr_mode");
 			if (xr_mode_index == XR_MODE_OPENXR && !gradle_build_enabled) {
 				return TTR("OpenXR requires \"Use Gradle Build\" to be enabled");
 			}
 		} else if (p_name == "gradle_build/export_format") {
-			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-			if (int(p_preset->get("gradle_build/export_format")) == EXPORT_FORMAT_AAB && !gradle_build_enabled) {
+			bool gradle_build_enabled = p_preset->get_or_null("gradle_build/use_gradle_build");
+			if (int(p_preset->get_or_null("gradle_build/export_format")) == EXPORT_FORMAT_AAB && !gradle_build_enabled) {
 				return TTR("\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled.");
 			}
 		} else if (p_name == "gradle_build/min_sdk") {
-			String min_sdk_str = p_preset->get("gradle_build/min_sdk");
+			String min_sdk_str = p_preset->get_or_null("gradle_build/min_sdk");
 			int min_sdk_int = VULKAN_MIN_SDK_VERSION;
-			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			bool gradle_build_enabled = p_preset->get_or_null("gradle_build/use_gradle_build");
 			if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
 				if (!gradle_build_enabled) {
 					return TTR("\"Min SDK\" can only be overridden when \"Use Gradle Build\" is enabled.");
@@ -1764,15 +1764,15 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 				}
 			}
 		} else if (p_name == "gradle_build/target_sdk") {
-			String target_sdk_str = p_preset->get("gradle_build/target_sdk");
+			String target_sdk_str = p_preset->get_or_null("gradle_build/target_sdk");
 			int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
 
-			String min_sdk_str = p_preset->get("gradle_build/min_sdk");
+			String min_sdk_str = p_preset->get_or_null("gradle_build/min_sdk");
 			int min_sdk_int = VULKAN_MIN_SDK_VERSION;
 			if (min_sdk_str.is_valid_int()) {
 				min_sdk_int = min_sdk_str.to_int();
 			}
-			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			bool gradle_build_enabled = p_preset->get_or_null("gradle_build/use_gradle_build");
 			if (!target_sdk_str.is_empty()) { // Empty means no override, nothing to do.
 				if (!gradle_build_enabled) {
 					return TTR("\"Target SDK\" can only be overridden when \"Use Gradle Build\" is enabled.");
@@ -1983,7 +1983,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	bool remove_prev = EDITOR_GET("export/android/one_click_deploy_clear_previous_install");
 	String version_name = p_preset->get_version("version/name");
-	String package_name = p_preset->get("package/unique_name");
+	String package_name = p_preset->get_or_null("package/unique_name");
 
 	if (remove_prev) {
 		if (ep.step(TTR("Uninstalling..."), 1)) {
@@ -2229,7 +2229,7 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
-	const bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+	const bool gradle_build_enabled = p_preset->get_or_null("gradle_build/use_gradle_build");
 
 #ifdef MODULE_MONO_ENABLED
 	// Android export is still a work in progress, keep a message as a warning.
@@ -2244,8 +2244,8 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		bool rvalid = false;
 		bool has_export_templates = false;
 
-		if (p_preset->get("custom_template/debug") != "") {
-			dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+		if (p_preset->get_or_null("custom_template/debug") != "") {
+			dvalid = FileAccess::exists(p_preset->get_or_null("custom_template/debug"));
 			if (!dvalid) {
 				template_err += TTR("Custom debug template not found.") + "\n";
 			}
@@ -2253,8 +2253,8 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			has_export_templates |= exists_export_template("android_debug.apk", &template_err);
 		}
 
-		if (p_preset->get("custom_template/release") != "") {
-			rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+		if (p_preset->get_or_null("custom_template/release") != "") {
+			rvalid = FileAccess::exists(p_preset->get_or_null("custom_template/release"));
 			if (!rvalid) {
 				template_err += TTR("Custom release template not found.") + "\n";
 			}
@@ -2346,7 +2346,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			valid = false;
 		}
 
-		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
+		String target_sdk_version = p_preset->get_or_null("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
 			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 		}
@@ -2389,7 +2389,7 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		valid = false;
 	}
 
-	String min_sdk_str = p_preset->get("gradle_build/min_sdk");
+	String min_sdk_str = p_preset->get_or_null("gradle_build/min_sdk");
 	int min_sdk_int = VULKAN_MIN_SDK_VERSION;
 	if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
 		if (min_sdk_str.is_valid_int()) {
@@ -2397,7 +2397,7 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		}
 	}
 
-	String target_sdk_str = p_preset->get("gradle_build/target_sdk");
+	String target_sdk_str = p_preset->get_or_null("gradle_build/target_sdk");
 	int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
 	if (!target_sdk_str.is_empty()) { // Empty means no override, nothing to do.
 		if (target_sdk_str.is_valid_int()) {
@@ -2435,8 +2435,8 @@ List<String> EditorExportPlatformAndroid::get_binary_extensions(const Ref<Editor
 }
 
 String EditorExportPlatformAndroid::get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
-	int version_code = p_preset->get("version/code");
-	String package_name = p_preset->get("package/unique_name");
+	int version_code = p_preset->get_or_null("version/code");
+	String package_name = p_preset->get_or_null("package/unique_name");
 	String apk_file_name = "main." + itos(version_code) + "." + get_package_name(package_name) + ".obb";
 	String fullpath = p_path.get_base_dir().path_join(apk_file_name);
 	return fullpath;
@@ -2449,7 +2449,7 @@ Error EditorExportPlatformAndroid::save_apk_expansion_file(const Ref<EditorExpor
 }
 
 void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, int p_flags, Vector<uint8_t> &r_command_line_flags) {
-	String cmdline = p_preset->get("command_line/extra_args");
+	String cmdline = p_preset->get_or_null("command_line/extra_args");
 	Vector<String> command_line_strings = cmdline.strip_edges().split(" ");
 	for (int i = 0; i < command_line_strings.size(); i++) {
 		if (command_line_strings[i].strip_edges().length() == 0) {
@@ -2460,10 +2460,10 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 
 	gen_export_flags(command_line_strings, p_flags);
 
-	bool apk_expansion = p_preset->get("apk_expansion/enable");
+	bool apk_expansion = p_preset->get_or_null("apk_expansion/enable");
 	if (apk_expansion) {
 		String fullpath = get_apk_expansion_fullpath(p_preset, p_path);
-		String apk_expansion_public_key = p_preset->get("apk_expansion/public_key");
+		String apk_expansion_public_key = p_preset->get_or_null("apk_expansion/public_key");
 
 		command_line_strings.push_back("--use_apk_expansion");
 		command_line_strings.push_back("--apk_expansion_md5");
@@ -2472,19 +2472,19 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 		command_line_strings.push_back(apk_expansion_public_key.strip_edges());
 	}
 
-	int xr_mode_index = p_preset->get("xr_features/xr_mode");
+	int xr_mode_index = p_preset->get_or_null("xr_features/xr_mode");
 	if (xr_mode_index == XR_MODE_OPENXR) {
 		command_line_strings.push_back("--xr_mode_openxr");
 	} else { // XRMode.REGULAR is the default.
 		command_line_strings.push_back("--xr_mode_regular");
 	}
 
-	bool immersive = p_preset->get("screen/immersive_mode");
+	bool immersive = p_preset->get_or_null("screen/immersive_mode");
 	if (immersive) {
 		command_line_strings.push_back("--use_immersive");
 	}
 
-	bool debug_opengl = p_preset->get("graphics/opengl_debug");
+	bool debug_opengl = p_preset->get_or_null("graphics/opengl_debug");
 	if (debug_opengl) {
 		command_line_strings.push_back("--debug_opengl");
 	}
@@ -2508,12 +2508,12 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 }
 
 Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep) {
-	int export_format = int(p_preset->get("gradle_build/export_format"));
+	int export_format = int(p_preset->get_or_null("gradle_build/export_format"));
 	String export_label = export_format == EXPORT_FORMAT_AAB ? "AAB" : "APK";
 	String release_keystore = p_preset->get_or_env("keystore/release", ENV_ANDROID_KEYSTORE_RELEASE_PATH);
 	String release_username = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
 	String release_password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
-	String target_sdk_version = p_preset->get("gradle_build/target_sdk");
+	String target_sdk_version = p_preset->get_or_null("gradle_build/target_sdk");
 	if (!target_sdk_version.is_valid_int()) {
 		target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 	}
@@ -2747,8 +2747,8 @@ bool EditorExportPlatformAndroid::_is_clean_build_required(const Ref<EditorExpor
 }
 
 Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
-	int export_format = int(p_preset->get("gradle_build/export_format"));
-	bool should_sign = p_preset->get("package/signed");
+	int export_format = int(p_preset->get_or_null("gradle_build/export_format"));
+	bool should_sign = p_preset->get_or_null("package/signed");
 	return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);
 }
 
@@ -2760,9 +2760,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	EditorProgress ep("export", TTR("Exporting for Android"), 105, true);
 
-	bool use_gradle_build = bool(p_preset->get("gradle_build/use_gradle_build"));
+	bool use_gradle_build = bool(p_preset->get_or_null("gradle_build/use_gradle_build"));
 	bool p_give_internet = p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG);
-	bool apk_expansion = p_preset->get("apk_expansion/enable");
+	bool apk_expansion = p_preset->get_or_null("apk_expansion/enable");
 	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
 
 	print_verbose("Exporting for Android...");
@@ -2833,7 +2833,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		print_verbose("Android sdk path: " + sdk_path);
 
 		// TODO: should we use "package/name" or "application/config/name"?
-		String project_name = get_project_name(p_preset->get("package/name"));
+		String project_name = get_project_name(p_preset->get_or_null("package/name"));
 		err = _create_project_name_strings_files(p_preset, project_name); //project name localization.
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unable to overwrite res://android/build/res/*.xml files with project name."));
@@ -2888,14 +2888,14 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String build_path = ProjectSettings::get_singleton()->get_resource_path().path_join("android/build");
 		build_command = build_path.path_join(build_command);
 
-		String package_name = get_package_name(p_preset->get("package/unique_name"));
-		String version_code = itos(p_preset->get("version/code"));
+		String package_name = get_package_name(p_preset->get_or_null("package/unique_name"));
+		String version_code = itos(p_preset->get_or_null("version/code"));
 		String version_name = p_preset->get_version("version/name");
-		String min_sdk_version = p_preset->get("gradle_build/min_sdk");
+		String min_sdk_version = p_preset->get_or_null("gradle_build/min_sdk");
 		if (!min_sdk_version.is_valid_int()) {
 			min_sdk_version = itos(VULKAN_MIN_SDK_VERSION);
 		}
-		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
+		String target_sdk_version = p_preset->get_or_null("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
 			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 		}
@@ -3056,9 +3056,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	// This is the start of the Legacy build system
 	print_verbose("Starting legacy build system...");
 	if (p_debug) {
-		src_apk = p_preset->get("custom_template/debug");
+		src_apk = p_preset->get_or_null("custom_template/debug");
 	} else {
-		src_apk = p_preset->get("custom_template/release");
+		src_apk = p_preset->get_or_null("custom_template/release");
 	}
 	src_apk = src_apk.strip_edges();
 	if (src_apk.is_empty()) {
@@ -3106,12 +3106,12 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 
-	String cmdline = p_preset->get("command_line/extra_args");
+	String cmdline = p_preset->get_or_null("command_line/extra_args");
 
 	String version_name = p_preset->get_version("version/name");
-	String package_name = p_preset->get("package/unique_name");
+	String package_name = p_preset->get_or_null("package/unique_name");
 
-	String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
+	String apk_expansion_pkey = p_preset->get_or_null("apk_expansion/public_key");
 
 	Vector<ABI> invalid_abis(enabled_abis);
 	while (ret == UNZ_OK) {

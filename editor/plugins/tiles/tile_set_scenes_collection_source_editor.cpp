@@ -86,7 +86,7 @@ bool TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_g
 		name = "resource_name";
 	}
 	bool valid = false;
-	r_ret = tile_set_scenes_collection_source->get(name, &valid);
+	r_ret = tile_set_scenes_collection_source->get_or_null(name, &valid);
 	return valid;
 }
 

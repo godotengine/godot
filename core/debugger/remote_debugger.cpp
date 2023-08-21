@@ -66,7 +66,7 @@ public:
 			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_names);
 		}
 
-		int max = performance->get("MONITOR_MAX");
+		int max = performance->get_or_null("MONITOR_MAX");
 		Array arr;
 		arr.resize(max + custom_monitor_names.size());
 		for (int i = 0; i < max; i++) {

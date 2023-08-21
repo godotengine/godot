@@ -283,7 +283,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			r_valid = false;
 			return "Instance base is null.";
 		} else {
-			return obj->get(p_member, &r_valid);
+			return obj->get_or_null(p_member, &r_valid);
 		}
 	} else if (type == Variant::DICTIONARY) {
 		const Variant *v = VariantGetInternalPtr<Dictionary>::get_ptr(this)->getptr(p_member);

@@ -339,7 +339,7 @@ void AnimationNodeStateMachinePlayback::_clear_path_children(AnimationTree *p_tr
 	for (int i = 0; i < child_nodes.size(); i++) {
 		Ref<AnimationNodeStateMachine> anodesm = child_nodes[i].node;
 		if (anodesm.is_valid() && anodesm->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
-			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get(base_path + child_nodes[i].name + "/playback");
+			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get_or_null(base_path + child_nodes[i].name + "/playback");
 			ERR_FAIL_COND(!playback.is_valid());
 			playback->_set_base_path(base_path + child_nodes[i].name + "/");
 			if (p_test_only) {
@@ -369,7 +369,7 @@ void AnimationNodeStateMachinePlayback::_start_children(AnimationTree *p_tree, A
 			if (anodesm.is_valid() && anodesm->get_state_machine_type() != AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
 				ERR_FAIL_MSG("Root/Nested AnimationNodeStateMachine can't have path from parent AnimationNodeStateMachine.");
 			}
-			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get(base_path + concatenated + "/playback");
+			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get_or_null(base_path + concatenated + "/playback");
 			ERR_FAIL_COND(!playback.is_valid());
 			playback->_set_base_path(base_path + concatenated + "/");
 			if (p_test_only) {
@@ -401,7 +401,7 @@ bool AnimationNodeStateMachinePlayback::_travel_children(AnimationTree *p_tree, 
 			if (anodesm.is_valid() && anodesm->get_state_machine_type() != AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
 				ERR_FAIL_V_MSG(false, "Root/Nested AnimationNodeStateMachine can't have path from parent AnimationNodeStateMachine.");
 			}
-			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get(base_path + concatenated + "/playback");
+			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get_or_null(base_path + concatenated + "/playback");
 			ERR_FAIL_COND_V(!playback.is_valid(), false);
 			playback->_set_base_path(base_path + concatenated + "/");
 			if (p_test_only) {
@@ -424,7 +424,7 @@ bool AnimationNodeStateMachinePlayback::_travel_children(AnimationTree *p_tree, 
 					if (!child_anodesm.is_valid() || child_anodesm->get_state_machine_type() != AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
 						break;
 					}
-					Ref<AnimationNodeStateMachinePlayback> child_playback = p_tree->get(base_path + concatenated + child_path + "/playback");
+					Ref<AnimationNodeStateMachinePlayback> child_playback = p_tree->get_or_null(base_path + concatenated + child_path + "/playback");
 					ERR_FAIL_COND_V(!child_playback.is_valid(), false);
 					child_playback->_set_base_path(base_path + concatenated + "/");
 					if (p_test_only) {
@@ -631,7 +631,7 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 		for (int i = 0; i < len; i++) {
 			Ref<AnimationNodeStateMachine> anodesm = p_state_machine->find_node_by_path(current_path);
 			if (anodesm.is_valid() && anodesm->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
-				Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get(base_path + current_path + "/playback");
+				Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get_or_null(base_path + current_path + "/playback");
 				ERR_FAIL_COND_V(!playback.is_valid(), false);
 				playback->_set_base_path(base_path + current_path + "/");
 				if (p_test_only) {
@@ -987,7 +987,7 @@ bool AnimationNodeStateMachinePlayback::_can_transition_to_next(AnimationTree *p
 		// Next request must be applied to only deepest state machine.
 		Ref<AnimationNodeStateMachine> anodesm = p_state_machine->find_node_by_path(current);
 		if (anodesm.is_valid() && anodesm->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
-			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get(base_path + current + "/playback");
+			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get_or_null(base_path + current + "/playback");
 			ERR_FAIL_COND_V(!playback.is_valid(), false);
 			playback->_set_base_path(base_path + current + "/");
 			if (p_test_only) {
@@ -1140,7 +1140,7 @@ Ref<AnimationNodeStateMachinePlayback> AnimationNodeStateMachinePlayback::_get_p
 	StringName self_path = split[split.size() - 2];
 	split.remove_at(split.size() - 2);
 	String playback_path = String("/").join(split) + "playback";
-	Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get(playback_path);
+	Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get_or_null(playback_path);
 	if (!playback.is_valid()) {
 		ERR_PRINT_ONCE("Can't get parent AnimationNodeStateMachinePlayback with path: " + playback_path + ". Maybe there is no Root/Nested AnimationNodeStateMachine in the parent of the Grouped AnimationNodeStateMachine.");
 		return Ref<AnimationNodeStateMachinePlayback>();

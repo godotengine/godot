@@ -206,34 +206,34 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 		result = result.replace("$godot_version$", VERSION_FULL_NAME);
 
-		result = result.replace("$identity_name$", p_preset->get("package/unique_name"));
-		result = result.replace("$publisher$", p_preset->get("package/publisher"));
+		result = result.replace("$identity_name$", p_preset->get_or_null("package/unique_name"));
+		result = result.replace("$publisher$", p_preset->get_or_null("package/publisher"));
 
-		result = result.replace("$product_guid$", p_preset->get("identity/product_guid"));
-		result = result.replace("$publisher_guid$", p_preset->get("identity/publisher_guid"));
+		result = result.replace("$product_guid$", p_preset->get_or_null("identity/product_guid"));
+		result = result.replace("$publisher_guid$", p_preset->get_or_null("identity/publisher_guid"));
 
-		String version = itos(p_preset->get("version/major")) + "." + itos(p_preset->get("version/minor")) + "." + itos(p_preset->get("version/build")) + "." + itos(p_preset->get("version/revision"));
+		String version = itos(p_preset->get_or_null("version/major")) + "." + itos(p_preset->get_or_null("version/minor")) + "." + itos(p_preset->get_or_null("version/build")) + "." + itos(p_preset->get_or_null("version/revision"));
 		result = result.replace("$version_string$", version);
 
-		String arch = p_preset->get("binary_format/architecture");
+		String arch = p_preset->get_or_null("binary_format/architecture");
 		String architecture = arch == "arm32" ? "arm" : (arch == "x86_32" ? "x86" : "x64");
 		result = result.replace("$architecture$", architecture);
 
-		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).is_empty() ? (String)GLOBAL_GET("application/config/name") : String(p_preset->get("package/display_name")));
+		result = result.replace("$display_name$", String(p_preset->get_or_null("package/display_name")).is_empty() ? (String)GLOBAL_GET("application/config/name") : String(p_preset->get_or_null("package/display_name")));
 
-		result = result.replace("$publisher_display_name$", p_preset->get("package/publisher_display_name"));
-		result = result.replace("$app_description$", p_preset->get("package/description"));
-		result = result.replace("$bg_color$", p_preset->get("images/background_color"));
-		result = result.replace("$short_name$", p_preset->get("package/short_name"));
+		result = result.replace("$publisher_display_name$", p_preset->get_or_null("package/publisher_display_name"));
+		result = result.replace("$app_description$", p_preset->get_or_null("package/description"));
+		result = result.replace("$bg_color$", p_preset->get_or_null("images/background_color"));
+		result = result.replace("$short_name$", p_preset->get_or_null("package/short_name"));
 
 		String name_on_tiles = "";
-		if ((bool)p_preset->get("tiles/show_name_on_square150x150")) {
+		if ((bool)p_preset->get_or_null("tiles/show_name_on_square150x150")) {
 			name_on_tiles += "          <uap:ShowOn Tile=\"square150x150Logo\" />\n";
 		}
-		if ((bool)p_preset->get("tiles/show_name_on_wide310x150")) {
+		if ((bool)p_preset->get_or_null("tiles/show_name_on_wide310x150")) {
 			name_on_tiles += "          <uap:ShowOn Tile=\"wide310x150Logo\" />\n";
 		}
-		if ((bool)p_preset->get("tiles/show_name_on_square310x310")) {
+		if ((bool)p_preset->get_or_null("tiles/show_name_on_square310x310")) {
 			name_on_tiles += "          <uap:ShowOn Tile=\"square310x310Logo\" />\n";
 		}
 
@@ -245,16 +245,16 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		result = result.replace("$name_on_tiles$", name_on_tiles);
 
 		String rotations = "";
-		if ((bool)p_preset->get("orientation/landscape")) {
+		if ((bool)p_preset->get_or_null("orientation/landscape")) {
 			rotations += "          <uap:Rotation Preference=\"landscape\" />\n";
 		}
-		if ((bool)p_preset->get("orientation/portrait")) {
+		if ((bool)p_preset->get_or_null("orientation/portrait")) {
 			rotations += "          <uap:Rotation Preference=\"portrait\" />\n";
 		}
-		if ((bool)p_preset->get("orientation/landscape_flipped")) {
+		if ((bool)p_preset->get_or_null("orientation/landscape_flipped")) {
 			rotations += "          <uap:Rotation Preference=\"landscapeFlipped\" />\n";
 		}
-		if ((bool)p_preset->get("orientation/portrait_flipped")) {
+		if ((bool)p_preset->get_or_null("orientation/portrait_flipped")) {
 			rotations += "          <uap:Rotation Preference=\"portraitFlipped\" />\n";
 		}
 
@@ -268,27 +268,27 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		String capabilities_elements = "";
 		const char **basic = uwp_capabilities;
 		while (*basic) {
-			if ((bool)p_preset->get("capabilities/" + String(*basic))) {
+			if ((bool)p_preset->get_or_null("capabilities/" + String(*basic))) {
 				capabilities_elements += "    <Capability Name=\"" + String(*basic) + "\" />\n";
 			}
 			basic++;
 		}
 		const char **uap = uwp_uap_capabilities;
 		while (*uap) {
-			if ((bool)p_preset->get("capabilities/" + String(*uap))) {
+			if ((bool)p_preset->get_or_null("capabilities/" + String(*uap))) {
 				capabilities_elements += "    <uap:Capability Name=\"" + String(*uap) + "\" />\n";
 			}
 			uap++;
 		}
 		const char **device = uwp_device_capabilities;
 		while (*device) {
-			if ((bool)p_preset->get("capabilities/" + String(*device))) {
+			if ((bool)p_preset->get_or_null("capabilities/" + String(*device))) {
 				capabilities_elements += "    <DeviceCapability Name=\"" + String(*device) + "\" />\n";
 			}
 			device++;
 		}
 
-		if (!((bool)p_preset->get("capabilities/internetClient")) && p_give_internet) {
+		if (!((bool)p_preset->get_or_null("capabilities/internetClient")) && p_give_internet) {
 			capabilities_elements += "    <Capability Name=\"internetClient\" />\n";
 		}
 
@@ -314,19 +314,19 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		CompressedTexture2D *texture = nullptr;
 
 		if (p_path.find("StoreLogo") != -1) {
-			texture = p_preset->get("images/store_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/store_logo")));
+			texture = p_preset->get_or_null("images/store_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get_or_null("images/store_logo")));
 		} else if (p_path.find("Square44x44Logo") != -1) {
-			texture = p_preset->get("images/square44x44_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/square44x44_logo")));
+			texture = p_preset->get_or_null("images/square44x44_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get_or_null("images/square44x44_logo")));
 		} else if (p_path.find("Square71x71Logo") != -1) {
-			texture = p_preset->get("images/square71x71_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/square71x71_logo")));
+			texture = p_preset->get_or_null("images/square71x71_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get_or_null("images/square71x71_logo")));
 		} else if (p_path.find("Square150x150Logo") != -1) {
-			texture = p_preset->get("images/square150x150_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/square150x150_logo")));
+			texture = p_preset->get_or_null("images/square150x150_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get_or_null("images/square150x150_logo")));
 		} else if (p_path.find("Square310x310Logo") != -1) {
-			texture = p_preset->get("images/square310x310_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/square310x310_logo")));
+			texture = p_preset->get_or_null("images/square310x310_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get_or_null("images/square310x310_logo")));
 		} else if (p_path.find("Wide310x150Logo") != -1) {
-			texture = p_preset->get("images/wide310x150_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/wide310x150_logo")));
+			texture = p_preset->get_or_null("images/wide310x150_logo").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get_or_null("images/wide310x150_logo")));
 		} else if (p_path.find("SplashScreen") != -1) {
-			texture = p_preset->get("images/splash_screen").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get("images/splash_screen")));
+			texture = p_preset->get_or_null("images/splash_screen").is_zero() ? nullptr : Object::cast_to<CompressedTexture2D>(((Object *)p_preset->get_or_null("images/splash_screen")));
 		} else {
 			ERR_PRINT("Unable to load logo");
 		}

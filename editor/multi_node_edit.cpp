@@ -79,12 +79,12 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 				new_value = p_value;
 			} else {
 				// only one field
-				new_value = fieldwise_assign(n->get(name), p_value, p_field);
+				new_value = fieldwise_assign(n->get_or_null(name), p_value, p_field);
 			}
 			ur->add_do_property(n, name, new_value);
 		}
 
-		ur->add_undo_property(n, name, n->get(name));
+		ur->add_undo_property(n, name, n->get_or_null(name));
 	}
 
 	ur->commit_action();
@@ -111,7 +111,7 @@ bool MultiNodeEdit::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		bool found;
-		r_ret = n->get(name, &found);
+		r_ret = n->get_or_null(name, &found);
 		if (found) {
 			return true;
 		}
@@ -203,7 +203,7 @@ bool MultiNodeEdit::_property_can_revert(const StringName &p_name) const {
 				continue;
 			}
 
-			if (node->get(p_name) != default_value) {
+			if (node->get_or_null(p_name) != default_value) {
 				// A node that doesn't have the default value has been found, so show the revert button.
 				return true;
 			}

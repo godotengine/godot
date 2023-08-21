@@ -4039,7 +4039,7 @@ bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
 					if (alternative_id != TileSetSource::INVALID_TILE_ALTERNATIVE && tiles[coords].alternatives.has(alternative_id)) {
 						if (components.size() >= 3) {
 							bool valid;
-							r_ret = tiles[coords].alternatives[alternative_id]->get(components[2], &valid);
+							r_ret = tiles[coords].alternatives[alternative_id]->get_or_null(components[2], &valid);
 							return valid;
 						} else {
 							// Only to notify the tile alternative exists.
@@ -4125,7 +4125,7 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 			E_alternative.value->get_property_list(&alternative_property_list);
 			for (PropertyInfo &alternative_property_info : alternative_property_list) {
 				Variant default_value = ClassDB::class_get_default_property_value("TileData", alternative_property_info.name);
-				Variant value = E_alternative.value->get(alternative_property_info.name);
+				Variant value = E_alternative.value->get_or_null(alternative_property_info.name);
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 					alternative_property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}

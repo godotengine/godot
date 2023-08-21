@@ -514,7 +514,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 		end = MIN(MAX(p_from_index, p_to_pos) + 1, end);
 	}
 
-#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
+#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get_or_null(property));
 
 	// Add undo method to adding array element.
 	if (p_array_prefix == "occlusion_layer_") {
@@ -682,7 +682,7 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 
-#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
+#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get_or_null(property));
 	TileSet *ed_tile_set = Object::cast_to<TileSet>(p_edited);
 	if (ed_tile_set) {
 		Vector<String> components = p_property.split("/", true, 3);
@@ -986,14 +986,14 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 		id_edit_dialog->connect("confirmed", callable_mp(this, &TileSourceInspectorPlugin::_confirm_change_id));
 	}
 	edited_source = p_for_source;
-	id_input->set_value(p_for_source->get("id"));
+	id_input->set_value(p_for_source->get_or_null("id"));
 	id_edit_dialog->popup_centered(Vector2i(400, 0) * EDSCALE);
 	callable_mp((Control *)id_input->get_line_edit(), &Control::grab_focus).call_deferred();
 }
 
 void TileSourceInspectorPlugin::_confirm_change_id() {
 	edited_source->set("id", id_input->get_value());
-	id_label->set_text(vformat(TTR("ID: %d"), edited_source->get("id"))); // Use get(), because the provided ID might've been invalid.
+	id_label->set_text(vformat(TTR("ID: %d"), edited_source->get_or_null("id"))); // Use get(), because the provided ID might've been invalid.
 }
 
 bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
@@ -1002,7 +1002,7 @@ bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
 
 bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (p_path == "id") {
-		const Variant value = p_object->get("id");
+		const Variant value = p_object->get_or_null("id");
 		if (value.get_type() == Variant::NIL) { // May happen if the object is not yet initialized.
 			return true;
 		}

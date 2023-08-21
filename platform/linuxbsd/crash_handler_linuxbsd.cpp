@@ -60,7 +60,7 @@ static void handle_crash(int sig) {
 	String msg;
 	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
 	if (proj_settings) {
-		msg = proj_settings->get("debug/settings/crash_handler/message");
+		msg = proj_settings->get_or_null("debug/settings/crash_handler/message");
 	}
 
 	// Tell MainLoop about the crash. This can be handled by users too in Node.

@@ -56,7 +56,7 @@ void EditorObjectSelector::_add_children_to_popup(Object *p_obj, int p_depth) {
 			continue;
 		}
 
-		Variant value = p_obj->get(E.name);
+		Variant value = p_obj->get_or_null(E.name);
 		if (value.get_type() != Variant::OBJECT) {
 			continue;
 		}

@@ -2209,7 +2209,7 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 					if (mi && path.get_subname_count() > 0) {
 						StringName bs = path.get_subname(0);
 						bool valid;
-						float value = mi->get(bs, &valid);
+						float value = mi->get_or_null(bs, &valid);
 						if (valid) {
 							int track_idx = anim->add_track(track_types[j]);
 							anim->track_set_path(track_idx, path);

@@ -76,7 +76,7 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 		end = MIN(MAX(p_from_index, p_to_pos) + 1, end);
 	}
 
-#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
+#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get_or_null(property));
 	// Save layers' properties.
 	if (p_from_index < 0) {
 		undo_redo_man->add_undo_method(randomizer, "remove_stream", p_to_pos < 0 ? randomizer->get_streams_count() : p_to_pos);

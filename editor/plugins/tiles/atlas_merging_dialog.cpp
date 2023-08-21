@@ -124,7 +124,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 						if (!(property.usage & PROPERTY_USAGE_STORAGE)) {
 							continue;
 						}
-						Variant value = src_tile_data->get(property.name);
+						Variant value = src_tile_data->get_or_null(property.name);
 						Variant default_value = ClassDB::class_get_default_property_value("TileData", property.name);
 						if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 							continue;

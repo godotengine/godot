@@ -131,7 +131,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	String node_directory;
-	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(_get_root_playback_path(node_directory));
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get_or_null(_get_root_playback_path(node_directory));
 	if (!playback.is_valid()) {
 		return;
 	}
@@ -903,7 +903,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		return;
 	}
 
-	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get_or_null(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 	Ref<StyleBoxFlat> style = get_theme_stylebox(SNAME("state_machine_frame"), SNAME("GraphNode"));
 	Ref<StyleBoxFlat> style_selected = get_theme_stylebox(SNAME("state_machine_selected_frame"), SNAME("GraphNode"));
@@ -1091,7 +1091,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		}
 
 		StringName fullpath = AnimationTreeEditor::get_singleton()->get_base_path() + String(tl.advance_condition_name);
-		if (tl.advance_condition_name != StringName() && bool(tree->get(fullpath))) {
+		if (tl.advance_condition_name != StringName() && bool(tree->get_or_null(fullpath))) {
 			tl.advance_condition_state = true;
 			tl.auto_advance = true;
 		}
@@ -1206,7 +1206,7 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw_individual(String 
 		return;
 	}
 
-	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get_or_null(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 	if (!playback.is_valid() || !playback->is_playing()) {
 		return;
 	}
@@ -1263,7 +1263,7 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw_all() {
 		return;
 	}
 
-	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get_or_null(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 	if (!playback.is_valid() || !playback->is_playing()) {
 		return;
 	}
@@ -1331,7 +1331,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 			String error;
 
-			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+			Ref<AnimationNodeStateMachinePlayback> playback = tree->get_or_null(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 			if (error_time > 0) {
 				error = error_text;
@@ -1387,7 +1387,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 					break;
 				}
 
-				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
+				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(tree->get_or_null(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
 
 				if (transition_lines[i].advance_condition_state != acstate) {
 					state_machine_draw->queue_redraw();
@@ -1460,7 +1460,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 					Ref<AnimationNodeStateMachinePlayback> current_node_playback;
 
 					while (anodesm.is_valid()) {
-						current_node_playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
+						current_node_playback = tree->get_or_null(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
 						StringName cnode = current_node_playback->get_current_node();
 						next += "/" + cnode;
 						if (!anodesm->has_node(cnode)) {
@@ -1844,7 +1844,7 @@ bool EditorAnimationMultiTransitionEdit::_get(const StringName &p_name, Variant 
 	}
 
 	bool found;
-	r_property = transitions[index].transition->get(prop, &found);
+	r_property = transitions[index].transition->get_or_null(prop, &found);
 	if (found) {
 		return true;
 	}

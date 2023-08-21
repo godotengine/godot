@@ -629,7 +629,8 @@ private:
 	TypedArray<Dictionary> _get_signal_connection_list(const StringName &p_signal) const;
 	TypedArray<Dictionary> _get_incoming_connections() const;
 	void _set_bind(const StringName &p_set, const Variant &p_value);
-	Variant _get_bind(const StringName &p_name) const;
+	Variant _get_bind(const StringName &p_name, const Variant &p_default_value) const;
+	Variant _get_or_null_bind(const StringName &p_name) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 
@@ -815,7 +816,8 @@ public:
 	/* IAPI */
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
-	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
+	Variant get(const StringName &p_name, const Variant &p_default_value = Variant()) const;
+	Variant get_or_null(const StringName &p_name, bool *r_valid = nullptr) const;
 	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 

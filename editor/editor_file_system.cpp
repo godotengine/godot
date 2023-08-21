@@ -708,7 +708,7 @@ bool EditorFileSystem::_update_scan_actions() {
 }
 
 void EditorFileSystem::scan() {
-	if (false /*&& bool(Globals::get_singleton()->get("debug/disable_scan"))*/) {
+	if (false) {
 		return;
 	}
 

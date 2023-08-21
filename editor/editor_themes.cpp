@@ -2080,7 +2080,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color search_result_border_color = dark_theme ? Color(0.41, 0.61, 0.91, 0.38) : Color(0, 0.4, 1, 0.38);
 
 	EditorSettings *setting = EditorSettings::get_singleton();
-	String text_editor_color_theme = setting->get("text_editor/theme/color_theme");
+	String text_editor_color_theme = setting->get_or_null("text_editor/theme/color_theme");
 	if (text_editor_color_theme == "Default") {
 		setting->set_initial_value("text_editor/theme/highlighting/symbol_color", symbol_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/keyword_color", keyword_color, true);

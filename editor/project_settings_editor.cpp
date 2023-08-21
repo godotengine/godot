@@ -122,7 +122,7 @@ void ProjectSettingsEditor::_add_setting() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Project Setting"));
 	undo_redo->add_do_property(ps, setting, value);
-	undo_redo->add_undo_property(ps, setting, ps->has_setting(setting) ? ps->get(setting) : Variant());
+	undo_redo->add_undo_property(ps, setting, ps->has_setting(setting) ? ps->get_or_null(setting) : Variant());
 
 	undo_redo->add_do_method(general_settings_inspector, "update_category_list");
 	undo_redo->add_undo_method(general_settings_inspector, "update_category_list");
@@ -136,7 +136,7 @@ void ProjectSettingsEditor::_add_setting() {
 
 void ProjectSettingsEditor::_delete_setting() {
 	String setting = _get_setting_name();
-	Variant value = ps->get(setting);
+	Variant value = ps->get_or_null(setting);
 	int order = ps->get_order(setting);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -439,8 +439,8 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 	const String target_name = "input/" + p_relative_to;
 
 	// It is much easier to rebuild the custom "input" properties rather than messing around with the "order" values of them.
-	Variant action_value = ps->get(action_name);
-	Variant target_value = ps->get(target_name);
+	Variant action_value = ps->get_or_null(action_name);
+	Variant target_value = ps->get_or_null(target_name);
 
 	List<PropertyInfo> props;
 	HashMap<String, Variant> action_values;
@@ -456,7 +456,7 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 			continue;
 		}
 
-		action_values.insert(prop.name, ps->get(prop.name));
+		action_values.insert(prop.name, ps->get_or_null(prop.name));
 
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", prop.name);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", prop.name);

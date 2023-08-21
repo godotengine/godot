@@ -612,7 +612,7 @@ Error ResourceLoaderText::load() {
 					if (value.get_type() == Variant::ARRAY) {
 						Array set_array = value;
 						bool is_get_valid = false;
-						Variant get_value = res->get(assign, &is_get_valid);
+						Variant get_value = res->get_or_null(assign, &is_get_valid);
 						if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
 							Array get_array = get_value;
 							if (!set_array.is_same_typed(get_array)) {
@@ -734,7 +734,7 @@ Error ResourceLoaderText::load() {
 				if (value.get_type() == Variant::ARRAY) {
 					Array set_array = value;
 					bool is_get_valid = false;
-					Variant get_value = resource->get(assign, &is_get_valid);
+					Variant get_value = resource->get_or_null(assign, &is_get_valid);
 					if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
 						Array get_array = get_value;
 						if (!set_array.is_same_typed(get_array)) {
@@ -1359,7 +1359,7 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 				}
 
 				String name = E.name;
-				Variant value = packed_scene->get(name);
+				Variant value = packed_scene->get_or_null(name);
 
 				HashMap<StringName, int> empty_string_map; //unused
 				bs_save_unicode_string(wf2, name, true);
@@ -1890,7 +1890,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				PropertyInfo pi = I->get();
 
 				if (pi.usage & PROPERTY_USAGE_STORAGE) {
-					Variant v = res->get(I->get().name);
+					Variant v = res->get_or_null(I->get().name);
 
 					if (pi.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
 						NonPersistentKey npk;
@@ -2168,7 +2168,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 						value = non_persistent_map[npk];
 					}
 				} else {
-					value = res->get(name);
+					value = res->get_or_null(name);
 				}
 
 				if (PE->get().type == Variant::OBJECT && missing_resource_properties.has(PE->get().name)) {

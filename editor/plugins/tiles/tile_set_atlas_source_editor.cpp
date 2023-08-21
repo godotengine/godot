@@ -101,7 +101,7 @@ bool TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get(const StringN
 		name = "resource_name";
 	}
 	bool valid = false;
-	r_ret = tile_set_atlas_source->get(name, &valid);
+	r_ret = tile_set_atlas_source->get_or_null(name, &valid);
 	return valid;
 }
 
@@ -384,7 +384,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		ERR_FAIL_COND_V(!tile_data, false);
 
 		bool valid = false;
-		r_ret = tile_data->get(p_name, &valid);
+		r_ret = tile_data->get_or_null(p_name, &valid);
 		if (valid) {
 			return true;
 		}
@@ -1384,7 +1384,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				if (per_tile.has(coords)) {
 					for (List<const PropertyInfo *>::Element *E_property = per_tile[coords].front(); E_property; E_property = E_property->next()) {
 						String property = E_property->get()->name;
-						Variant value = tile_set_atlas_source->get(property);
+						Variant value = tile_set_atlas_source->get_or_null(property);
 						if (value.get_type() != Variant::NIL) {
 							undo_redo->add_undo_method(tile_set_atlas_source, "set", E_property->get()->name, value);
 						}
@@ -1438,7 +1438,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				if (per_tile.has(coords)) {
 					for (List<const PropertyInfo *>::Element *E_property = per_tile[coords].front(); E_property; E_property = E_property->next()) {
 						String property = E_property->get()->name;
-						Variant value = tile_set_atlas_source->get(property);
+						Variant value = tile_set_atlas_source->get_or_null(property);
 						if (value.get_type() != Variant::NIL) {
 							undo_redo->add_undo_method(tile_set_atlas_source, "set", E_property->get()->name, value);
 						}
@@ -1608,7 +1608,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 					if (per_tile.has(selected.tile)) {
 						for (List<const PropertyInfo *>::Element *E_property = per_tile[selected.tile].front(); E_property; E_property = E_property->next()) {
 							String property = E_property->get()->name;
-							Variant value = tile_set_atlas_source->get(property);
+							Variant value = tile_set_atlas_source->get_or_null(property);
 							if (value.get_type() != Variant::NIL) {
 								undo_redo->add_undo_method(tile_set_atlas_source, "set", E_property->get()->name, value);
 							}
@@ -1629,7 +1629,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 							Vector<String> components = E_property->get()->name.split("/", true, 2);
 							if (components.size() >= 2 && components[1].is_valid_int() && components[1].to_int() == selected.alternative) {
 								String property = E_property->get()->name;
-								Variant value = tile_set_atlas_source->get(property);
+								Variant value = tile_set_atlas_source->get_or_null(property);
 								if (value.get_type() != Variant::NIL) {
 									undo_redo->add_undo_method(tile_set_atlas_source, "set", E_property->get()->name, value);
 								}
@@ -2095,7 +2095,7 @@ void TileSetAtlasSourceEditor::_tile_proxy_object_changed(String p_what) {
 }
 
 void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what) {
-	if (p_what == "texture" && !atlas_source_proxy_object->get("texture").is_null()) {
+	if (p_what == "texture" && !atlas_source_proxy_object->get_or_null("texture").is_null()) {
 		confirm_auto_create_tiles->popup_centered();
 	} else if (p_what == "id") {
 		emit_signal(SNAME("source_id_changed"), atlas_source_proxy_object->get_id());
@@ -2106,7 +2106,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 
-#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
+#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get_or_null(property));
 
 	AtlasTileProxyObject *tile_data_proxy = Object::cast_to<AtlasTileProxyObject>(p_edited);
 	if (tile_data_proxy) {
@@ -2117,7 +2117,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 		if (components.size() == 2 && components[1] == "polygons_count") {
 			int layer_index = components[0].trim_prefix("physics_layer_").to_int();
 			int new_polygons_count = p_new_value;
-			int old_polygons_count = tile_data_proxy->get(vformat("physics_layer_%d/polygons_count", layer_index));
+			int old_polygons_count = tile_data_proxy->get_or_null(vformat("physics_layer_%d/polygons_count", layer_index));
 			if (new_polygons_count < old_polygons_count) {
 				for (int i = new_polygons_count; i < old_polygons_count; i++) {
 					ADD_UNDO(tile_data_proxy, vformat("physics_layer_%d/polygon_%d/points", layer_index, i));
@@ -2126,7 +2126,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 				}
 			}
 		} else if (p_property == "terrain_set") {
-			int current_terrain_set = tile_data_proxy->get("terrain_set");
+			int current_terrain_set = tile_data_proxy->get_or_null("terrain_set");
 			ADD_UNDO(tile_data_proxy, "terrain");
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
@@ -2342,7 +2342,7 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 				if (per_tile.has(coords)) {
 					for (List<const PropertyInfo *>::Element *E_property = per_tile[coords].front(); E_property; E_property = E_property->next()) {
 						String property = E_property->get()->name;
-						Variant value = tile_set_atlas_source->get(property);
+						Variant value = tile_set_atlas_source->get_or_null(property);
 						if (value.get_type() != Variant::NIL) {
 							undo_redo->add_undo_method(tile_set_atlas_source, "set", E_property->get()->name, value);
 						}
@@ -2750,12 +2750,12 @@ void EditorPropertyTilePolygon::update_property() {
 			}
 		}
 	} else {
-		int count = get_edited_object()->get(count_property);
+		int count = get_edited_object()->get_or_null(count_property);
 		if (base_type.is_empty()) {
 			// Multiple array of vertices.
 			generic_tile_polygon_editor->clear_polygons();
 			for (int i = 0; i < count; i++) {
-				generic_tile_polygon_editor->add_polygon(get_edited_object()->get(vformat(element_pattern, i)));
+				generic_tile_polygon_editor->add_polygon(get_edited_object()->get_or_null(vformat(element_pattern, i)));
 			}
 		}
 	}
@@ -2816,7 +2816,7 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 			ep->setup_multiple_mode(vformat("physics_layer_%d/polygons", layer_index), vformat("physics_layer_%d/polygons_count", layer_index), vformat("physics_layer_%d/polygon_%%d/points", layer_index), "");
 			Vector<String> properties;
 			properties.push_back(p_path);
-			int count = p_object->get(vformat("physics_layer_%d/polygons_count", layer_index));
+			int count = p_object->get_or_null(vformat("physics_layer_%d/polygons_count", layer_index));
 			for (int i = 0; i < count; i++) {
 				properties.push_back(vformat(vformat("physics_layer_%d/polygon_%d/points", layer_index, i)));
 			}

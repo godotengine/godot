@@ -959,8 +959,8 @@ fail:
 }
 
 void EditorSettings::setup_language() {
-	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/debug/enable_pseudolocalization"));
-	String lang = get("interface/editor/editor_language");
+	TranslationServer::get_singleton()->set_editor_pseudolocalization(get_or_null("interface/editor/debug/enable_pseudolocalization"));
+	String lang = get_or_null("interface/editor/editor_language");
 	if (lang == "en") {
 		return; // Default, nothing to do.
 	}
@@ -976,7 +976,7 @@ void EditorSettings::setup_network() {
 	List<IPAddress> local_ip;
 	IP::get_singleton()->get_local_addresses(&local_ip);
 	String hint;
-	String current = has_setting("network/debug/remote_host") ? get("network/debug/remote_host") : "";
+	String current = has_setting("network/debug/remote_host") ? get_or_null("network/debug/remote_host") : "";
 	String selected = "127.0.0.1";
 
 	// Check that current remote_host is a valid interface address and populate hints.
@@ -1066,7 +1066,7 @@ void EditorSettings::set_setting(const String &p_setting, const Variant &p_value
 
 Variant EditorSettings::get_setting(const String &p_setting) const {
 	_THREAD_SAFE_METHOD_
-	return get(p_setting);
+	return get_or_null(p_setting);
 }
 
 bool EditorSettings::has_setting(const String &p_setting) const {
@@ -1130,7 +1130,7 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 
 Variant _EDITOR_GET(const String &p_setting) {
 	ERR_FAIL_COND_V(!EditorSettings::get_singleton() || !EditorSettings::get_singleton()->has_setting(p_setting), Variant());
-	return EditorSettings::get_singleton()->get(p_setting);
+	return EditorSettings::get_singleton()->get_or_null(p_setting);
 }
 
 bool EditorSettings::_property_can_revert(const StringName &p_name) const {
@@ -1255,8 +1255,8 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 bool EditorSettings::is_dark_theme() {
 	int AUTO_COLOR = 0;
 	int LIGHT_COLOR = 2;
-	Color base_color = get("interface/theme/base_color");
-	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
+	Color base_color = get_or_null("interface/theme/base_color");
+	int icon_font_color_setting = get_or_null("interface/theme/icon_and_font_color");
 	return (icon_font_color_setting == AUTO_COLOR && base_color.get_luminance() < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 }
 
@@ -1285,7 +1285,7 @@ void EditorSettings::list_text_editor_themes() {
 }
 
 void EditorSettings::load_text_editor_theme() {
-	String p_file = get("text_editor/theme/color_theme");
+	String p_file = get_or_null("text_editor/theme/color_theme");
 
 	if (_is_default_text_editor_theme(p_file.get_file().to_lower())) {
 		if (p_file == "Godot 2") {
@@ -1339,7 +1339,7 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 }
 
 bool EditorSettings::save_text_editor_theme() {
-	String p_file = get("text_editor/theme/color_theme");
+	String p_file = get_or_null("text_editor/theme/color_theme");
 
 	if (_is_default_text_editor_theme(p_file.get_file().to_lower())) {
 		return false;
@@ -1371,7 +1371,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 }
 
 bool EditorSettings::is_default_text_editor_theme() {
-	String p_file = get("text_editor/theme/color_theme");
+	String p_file = get_or_null("text_editor/theme/color_theme");
 	return _is_default_text_editor_theme(p_file.get_file().to_lower());
 }
 
