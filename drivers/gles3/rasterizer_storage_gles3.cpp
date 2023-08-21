@@ -8157,6 +8157,10 @@ void RasterizerStorageGLES3::initialize() {
 	config.shrink_textures_x2 = false;
 	config.use_fast_texture_filter = int(ProjectSettings::get_singleton()->get("rendering/quality/filters/use_nearest_mipmap_filter"));
 
+	// Initialize GLWrapper early on, as required for any calls to glActiveTexture.
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
+	gl_wrapper.initialize(config.max_texture_image_units);
+
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 	config.latc_supported = config.extensions.has("GL_EXT_texture_compression_latc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
@@ -8388,8 +8392,6 @@ void RasterizerStorageGLES3::initialize() {
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
-	gl_wrapper.initialize(config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &config.max_cubemap_texture_size);
 

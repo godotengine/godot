@@ -6315,6 +6315,10 @@ void RasterizerStorageGLES2::initialize() {
 	config.depth_internalformat = GL_DEPTH_COMPONENT;
 	config.depth_type = GL_UNSIGNED_INT;
 
+	// Initialize GLWrapper early on, as required for any calls to glActiveTexture.
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
+	gl_wrapper.initialize(config.max_texture_image_units);
+
 #ifdef GLES_OVER_GL
 	config.float_texture_supported = true;
 	config.s3tc_supported = true;
@@ -6506,8 +6510,6 @@ void RasterizerStorageGLES2::initialize() {
 	frame.clear_request = false;
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &config.max_vertex_texture_image_units);
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
-	gl_wrapper.initialize(config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &config.max_cubemap_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, config.max_viewport_dimensions);
