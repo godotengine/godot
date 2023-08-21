@@ -462,7 +462,7 @@
 		<method name="pick_random" qualifiers="const">
 			<return type="Variant" />
 			<description>
-				Returns a random value from the target array.
+				Returns a random value from the target array. Prints an error and returns [code]null[/code] if the array is empty.
 				[codeblocks]
 				[gdscript]
 				var array: Array[int] = [1, 2, 3, 4]
