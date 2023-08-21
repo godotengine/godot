@@ -9135,12 +9135,32 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	draw_list_split = false;
 
 	compute_list = nullptr;
+
+	pipelines_cache.file_path = "user://vulkan/pipelines";
+	pipelines_cache.file_path += "." + context->get_device_name().validate_filename().replace(" ", "_").to_lower();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		pipelines_cache.file_path += ".editor";
+	}
+	pipelines_cache.file_path += ".cache";
+
+	// Prepare most fields now.
+	VkPhysicalDeviceProperties props;
+	vkGetPhysicalDeviceProperties(context->get_physical_device(), &props);
+	pipelines_cache.header.magic = 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE;
+	pipelines_cache.header.device_id = props.deviceID;
+	pipelines_cache.header.vendor_id = props.vendorID;
+	pipelines_cache.header.driver_version = props.driverVersion;
+	memcpy(pipelines_cache.header.uuid, props.pipelineCacheUUID, VK_UUID_SIZE);
+	pipelines_cache.header.driver_abi = sizeof(void *);
+
 	_load_pipeline_cache();
 	print_verbose(vformat("Startup PSO cache (%.1f MiB)", pipelines_cache.buffer.size() / (1024.0f * 1024.0f)));
 	VkPipelineCacheCreateInfo cache_info = {};
 	cache_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	cache_info.pNext = nullptr;
-	cache_info.flags = 0;
+	if (context->is_device_extension_enabled(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
+		cache_info.flags = VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+	}
 	cache_info.initialDataSize = pipelines_cache.buffer.size();
 	cache_info.pInitialData = pipelines_cache.buffer.ptr();
 	VkResult err = vkCreatePipelineCache(device, &cache_info, nullptr, &pipelines_cache.cache_object);
@@ -9151,111 +9171,106 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 }
 
 void RenderingDeviceVulkan::_load_pipeline_cache() {
-	if (!DirAccess::exists("user://vulkan/")) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_USERDATA);
+	DirAccess::make_dir_recursive_absolute(pipelines_cache.file_path.get_base_dir());
 
-		if (da.is_valid()) {
-			da->make_dir_recursive("user://vulkan/");
-		}
-	}
-
-	if (FileAccess::exists("user://vulkan/pipelines.cache")) {
+	if (FileAccess::exists(pipelines_cache.file_path)) {
 		Error file_error;
-		Vector<uint8_t> file_data = FileAccess::get_file_as_bytes("user://vulkan/pipelines.cache", &file_error);
+		Vector<uint8_t> file_data = FileAccess::get_file_as_bytes(pipelines_cache.file_path, &file_error);
 		if (file_error != OK || file_data.size() <= (int)sizeof(PipelineCacheHeader)) {
 			WARN_PRINT("Invalid/corrupt pipelines cache.");
 			return;
 		}
-		PipelineCacheHeader header = {};
-		memcpy((char *)&header, file_data.ptr(), sizeof(PipelineCacheHeader));
-		if (header.magic != 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE) {
+		const PipelineCacheHeader *header = reinterpret_cast<const PipelineCacheHeader *>(file_data.ptr());
+		if (header->magic != 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE) {
 			WARN_PRINT("Invalid pipelines cache magic number.");
 			return;
 		}
-		pipelines_cache.buffer.resize(file_data.size() - sizeof(PipelineCacheHeader));
-		memcpy(pipelines_cache.buffer.ptrw(), file_data.ptr() + sizeof(PipelineCacheHeader), pipelines_cache.buffer.size());
-		VkPhysicalDeviceProperties props;
-		vkGetPhysicalDeviceProperties(context->get_physical_device(), &props);
-		bool invalid_uuid = false;
-		for (size_t i = 0; i < VK_UUID_SIZE; i++) {
-			if (header.uuid[i] != props.pipelineCacheUUID[i]) {
-				invalid_uuid = true;
-				break;
-			}
-		}
-		if (header.data_hash != hash_murmur3_buffer(pipelines_cache.buffer.ptr(), pipelines_cache.buffer.size()) || header.data_size != (uint32_t)pipelines_cache.buffer.size() || header.vendor_id != props.vendorID || header.device_id != props.deviceID || header.driver_abi != sizeof(void *) || invalid_uuid) {
+		const uint8_t *loaded_buffer_start = file_data.ptr() + sizeof(PipelineCacheHeader);
+		uint32_t loaded_buffer_size = file_data.size() - sizeof(PipelineCacheHeader);
+		if (header->data_hash != hash_murmur3_buffer(loaded_buffer_start, loaded_buffer_size) ||
+				header->data_size != loaded_buffer_size ||
+				header->vendor_id != pipelines_cache.header.vendor_id ||
+				header->device_id != pipelines_cache.header.device_id ||
+				header->driver_version != pipelines_cache.header.driver_version ||
+				memcmp(header->uuid, pipelines_cache.header.uuid, VK_UUID_SIZE) != 0 ||
+				header->driver_abi != pipelines_cache.header.driver_abi) {
 			WARN_PRINT("Invalid pipelines cache header.");
 			pipelines_cache.current_size = 0;
 			pipelines_cache.buffer.clear();
 		} else {
-			pipelines_cache.current_size = pipelines_cache.buffer.size();
+			pipelines_cache.current_size = loaded_buffer_size;
+			pipelines_cache.buffer.resize(loaded_buffer_size);
+			memcpy(pipelines_cache.buffer.ptr(), loaded_buffer_start, pipelines_cache.buffer.size());
 		}
 	}
 }
 
 void RenderingDeviceVulkan::_update_pipeline_cache(bool p_closing) {
-	size_t pso_blob_size = 0;
-	float save_interval = GLOBAL_GET("rendering/rendering_device/pipeline_cache/save_chunk_size_mb");
-	VkResult vr = vkGetPipelineCacheData(device, pipelines_cache.cache_object, &pso_blob_size, nullptr);
-	ERR_FAIL_COND(vr);
-	size_t difference = (pso_blob_size - pipelines_cache.current_size) / (1024 * 1024);
-	if (p_closing && Engine::get_singleton()->is_editor_hint()) {
-		// This is mostly for the editor to check if after playing the game, game's pipeline cache size still matches with editor's cache.
-		_load_pipeline_cache();
-		if (pipelines_cache.current_size > pso_blob_size) {
-			pso_blob_size = pipelines_cache.current_size;
-			if (pipelines_cache_save_task != WorkerThreadPool::INVALID_TASK_ID || !WorkerThreadPool::get_singleton()->is_task_completed(pipelines_cache_save_task)) {
+	{
+		bool still_saving = pipelines_cache_save_task != WorkerThreadPool::INVALID_TASK_ID && !WorkerThreadPool::get_singleton()->is_task_completed(pipelines_cache_save_task);
+		if (still_saving) {
+			if (p_closing) {
 				WorkerThreadPool::get_singleton()->wait_for_task_completion(pipelines_cache_save_task);
+				pipelines_cache_save_task = WorkerThreadPool::INVALID_TASK_ID;
+			} else {
+				// We can't save until the currently running save is done. We'll retry next time; worst case, we'll save when exiting.
+				return;
 			}
 		}
 	}
-	if (pso_blob_size == pipelines_cache.current_size) {
-		return;
-	} else if (difference < save_interval && !p_closing) {
-		return;
+
+	{
+		// FIXME:
+		// We're letting the cache grow unboundedly. We may want to set at limit and see if implementations use LRU or the like.
+		// If we do, we won't be able to assume any longer that the cache is dirty if, and only if, it has grown.
+		size_t pso_blob_size = 0;
+		VkResult vr = vkGetPipelineCacheData(device, pipelines_cache.cache_object, &pso_blob_size, nullptr);
+		ERR_FAIL_COND(vr);
+		size_t difference = pso_blob_size - pipelines_cache.current_size;
+
+		bool must_save = false;
+
+		if (p_closing) {
+			must_save = difference > 0;
+		} else {
+			float save_interval = GLOBAL_GET("rendering/rendering_device/pipeline_cache/save_chunk_size_mb");
+			must_save = difference > 0 && difference / (1024.0f * 1024.0f) >= save_interval;
+		}
+
+		if (must_save) {
+			pipelines_cache.current_size = pso_blob_size;
+		} else {
+			return;
+		}
 	}
 
 	if (p_closing) {
-		if (pipelines_cache_save_task == WorkerThreadPool::INVALID_TASK_ID || WorkerThreadPool::get_singleton()->is_task_completed(pipelines_cache_save_task)) {
-			pipelines_cache_save_task = WorkerThreadPool::get_singleton()->add_template_task(this, &RenderingDeviceVulkan::_save_pipeline_cache_threaded, pso_blob_size, false, "PipelineCacheSave");
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(pipelines_cache_save_task);
-		} else {
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(pipelines_cache_save_task);
-			pipelines_cache_save_task = WorkerThreadPool::get_singleton()->add_template_task(this, &RenderingDeviceVulkan::_save_pipeline_cache_threaded, pso_blob_size, false, "PipelineCacheSave");
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(pipelines_cache_save_task);
-		}
+		_save_pipeline_cache(this);
 	} else {
-		if (pipelines_cache_save_task == WorkerThreadPool::INVALID_TASK_ID || WorkerThreadPool::get_singleton()->is_task_completed(pipelines_cache_save_task)) {
-			pipelines_cache_save_task = WorkerThreadPool::get_singleton()->add_template_task(this, &RenderingDeviceVulkan::_save_pipeline_cache_threaded, pso_blob_size, false, "PipelineCacheSave");
-		}
+		pipelines_cache_save_task = WorkerThreadPool::get_singleton()->add_native_task(&_save_pipeline_cache, this, false, "PipelineCacheSave");
 	}
 }
 
-void RenderingDeviceVulkan::_save_pipeline_cache_threaded(size_t p_pso_blob_size) {
-	pipelines_cache.current_size = p_pso_blob_size;
-	pipelines_cache.buffer.clear();
-	pipelines_cache.buffer.resize(p_pso_blob_size);
-	VkResult vr = vkGetPipelineCacheData(device, pipelines_cache.cache_object, &p_pso_blob_size, pipelines_cache.buffer.ptrw());
-	ERR_FAIL_COND(vr);
-	print_verbose(vformat("Updated PSO cache (%.1f MiB)", p_pso_blob_size / (1024.0f * 1024.0f)));
+void RenderingDeviceVulkan::_save_pipeline_cache(void *p_data) {
+	RenderingDeviceVulkan *self = static_cast<RenderingDeviceVulkan *>(p_data);
 
-	VkPhysicalDeviceProperties props;
-	vkGetPhysicalDeviceProperties(context->get_physical_device(), &props);
-	PipelineCacheHeader header = {};
-	header.magic = 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE;
-	header.data_size = pipelines_cache.buffer.size();
-	header.data_hash = hash_murmur3_buffer(pipelines_cache.buffer.ptr(), pipelines_cache.buffer.size());
-	header.device_id = props.deviceID;
-	header.vendor_id = props.vendorID;
-	header.driver_version = props.driverVersion;
-	for (size_t i = 0; i < VK_UUID_SIZE; i++) {
-		header.uuid[i] = props.pipelineCacheUUID[i];
-	}
-	header.driver_abi = sizeof(void *);
-	Ref<FileAccess> f = FileAccess::open("user://vulkan/pipelines.cache", FileAccess::WRITE, nullptr);
+	self->pipelines_cache.buffer.resize(self->pipelines_cache.current_size);
+
+	self->_thread_safe_.lock();
+	VkResult vr = vkGetPipelineCacheData(self->device, self->pipelines_cache.cache_object, &self->pipelines_cache.current_size, self->pipelines_cache.buffer.ptr());
+	self->_thread_safe_.unlock();
+	ERR_FAIL_COND(vr != VK_SUCCESS && vr != VK_INCOMPLETE); // Incomplete is OK because the cache may have grown since the size was queried (unless when exiting).
+	print_verbose(vformat("Updated PSO cache (%.1f MiB)", self->pipelines_cache.current_size / (1024.0f * 1024.0f)));
+
+	// The real buffer size may now be bigger than the updated current_size.
+	// We take into account the new size but keep the buffer resized in a worst-case fashion.
+
+	self->pipelines_cache.header.data_size = self->pipelines_cache.current_size;
+	self->pipelines_cache.header.data_hash = hash_murmur3_buffer(self->pipelines_cache.buffer.ptr(), self->pipelines_cache.current_size);
+	Ref<FileAccess> f = FileAccess::open(self->pipelines_cache.file_path, FileAccess::WRITE, nullptr);
 	if (f.is_valid()) {
-		f->store_buffer((const uint8_t *)&header, sizeof(PipelineCacheHeader));
-		f->store_buffer(pipelines_cache.buffer);
+		f->store_buffer((const uint8_t *)&self->pipelines_cache.header, sizeof(PipelineCacheHeader));
+		f->store_buffer(self->pipelines_cache.buffer.ptr(), self->pipelines_cache.current_size);
 	}
 }
 

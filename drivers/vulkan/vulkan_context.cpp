@@ -503,6 +503,7 @@ Error VulkanContext::_initialize_device_extensions() {
 	register_requested_device_extension(VK_KHR_16BIT_STORAGE_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, false);
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
