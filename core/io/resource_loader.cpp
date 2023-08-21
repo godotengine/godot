@@ -620,6 +620,15 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 				// Load is in progress, but it's precisely this thread the one in charge.
 				// That means this is a cyclic load.
 				if (r_error) {
+					String error_text = vformat(
+							"Cycle detected during asset loading phase while loading of %s. Workarounds: "
+							"(1) Remove cycles: cycles can come from preload() statements evaluated during "
+							"resource loading and also from referencing other scripts for e.g. singletons or autoloads. "
+							"(2) Switch preload() to load(): this may convert static cycles to a runtime cycle. "
+							"This engine limitation may be fixed in the future. "
+							"For more details, see: https://github.com/godotengine/godot/issues/70985",
+							p_load_token.local_path);
+					ERR_PRINT(error_text.utf8().get_data());
 					*r_error = ERR_BUSY;
 				}
 				return Ref<Resource>();
