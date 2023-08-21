@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A 1D texture that obtains colors from a [Gradient] to fill the texture data. The texture is filled by sampling the gradient for each pixel. Therefore, the texture does not necessarily represent an exact copy of the gradient, as it may miss some colors if there are not enough pixels. See also [GradientTexture2D], [CurveTexture] and [CurveXYZTexture].
+		[b]Note:[/b] [GradientTexture1D] updates are deferred, which means that the result of changing a property such as [member width] is only guaranteed to be visible after 2 frames have passed. To use [method Texture2D.get_image] correctly on a [GradientTexture1D] with non-default values, wait for 2 frames using [code]await get_tree().process_frame[/code] [i]twice[/i] before calling [method Texture2D.get_image].
 	</description>
 	<tutorials>
 	</tutorials>
