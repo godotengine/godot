@@ -49,7 +49,7 @@ private:
 	bool read_setting(const char *p_namespace, const char *p_key, int p_type, void *r_value);
 
 	static void append_dbus_string(DBusMessageIter *p_iter, const String &p_string);
-	static void append_dbus_dict_filters(DBusMessageIter *p_iter, const Vector<String> &p_filters);
+	static void append_dbus_dict_filters(DBusMessageIter *p_iter, const Vector<String> &p_filter_names, const Vector<String> &p_filter_exts);
 	static void append_dbus_dict_string(DBusMessageIter *p_iter, const String &p_key, const String &p_value, bool p_as_byte_array = false);
 	static void append_dbus_dict_bool(DBusMessageIter *p_iter, const String &p_key, bool p_value);
 	static bool file_chooser_parse_response(DBusMessageIter *p_iter, bool &r_cancel, Vector<String> &r_urls);

@@ -142,36 +142,40 @@ void FreeDesktopPortalDesktop::append_dbus_string(DBusMessageIter *p_iter, const
 	}
 }
 
-void FreeDesktopPortalDesktop::append_dbus_dict_filters(DBusMessageIter *p_iter, const Vector<String> &p_filters) {
+void FreeDesktopPortalDesktop::append_dbus_dict_filters(DBusMessageIter *p_iter, const Vector<String> &p_filter_names, const Vector<String> &p_filter_exts) {
 	DBusMessageIter dict_iter;
 	DBusMessageIter var_iter;
 	DBusMessageIter arr_iter;
 	const char *filters_key = "filters";
 
+	ERR_FAIL_COND(p_filter_names.size() != p_filter_exts.size());
+
 	dbus_message_iter_open_container(p_iter, DBUS_TYPE_DICT_ENTRY, nullptr, &dict_iter);
 	dbus_message_iter_append_basic(&dict_iter, DBUS_TYPE_STRING, &filters_key);
 	dbus_message_iter_open_container(&dict_iter, DBUS_TYPE_VARIANT, "a(sa(us))", &var_iter);
 	dbus_message_iter_open_container(&var_iter, DBUS_TYPE_ARRAY, "(sa(us))", &arr_iter);
-	for (int i = 0; i < p_filters.size(); i++) {
-		Vector<String> tokens = p_filters[i].split(";");
-		if (tokens.size() == 2) {
-			DBusMessageIter struct_iter;
-			DBusMessageIter array_iter;
-			DBusMessageIter array_struct_iter;
-			dbus_message_iter_open_container(&arr_iter, DBUS_TYPE_STRUCT, nullptr, &struct_iter);
-			append_dbus_string(&struct_iter, tokens[0]);
+	for (int i = 0; i < p_filter_names.size(); i++) {
+		DBusMessageIter struct_iter;
+		DBusMessageIter array_iter;
+		DBusMessageIter array_struct_iter;
+		dbus_message_iter_open_container(&arr_iter, DBUS_TYPE_STRUCT, nullptr, &struct_iter);
+		append_dbus_string(&struct_iter, p_filter_names[i]);
 
-			dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "(us)", &array_iter);
+		dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "(us)", &array_iter);
+		String flt = p_filter_exts[i];
+		int filter_slice_count = flt.get_slice_count(",");
+		for (int j = 0; j < filter_slice_count; j++) {
 			dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, nullptr, &array_struct_iter);
+			String str = (flt.get_slice(",", j).strip_edges());
 			{
 				const unsigned nil = 0;
 				dbus_message_iter_append_basic(&array_struct_iter, DBUS_TYPE_UINT32, &nil);
 			}
-			append_dbus_string(&array_struct_iter, tokens[1]);
+			append_dbus_string(&array_struct_iter, str);
 			dbus_message_iter_close_container(&array_iter, &array_struct_iter);
-			dbus_message_iter_close_container(&struct_iter, &array_iter);
-			dbus_message_iter_close_container(&arr_iter, &struct_iter);
 		}
+		dbus_message_iter_close_container(&struct_iter, &array_iter);
+		dbus_message_iter_close_container(&arr_iter, &struct_iter);
 	}
 	dbus_message_iter_close_container(&var_iter, &arr_iter);
 	dbus_message_iter_close_container(&dict_iter, &var_iter);
@@ -271,6 +275,30 @@ Error FreeDesktopPortalDesktop::file_dialog_show(const String &p_xid, const Stri
 		return FAILED;
 	}
 
+	ERR_FAIL_INDEX_V(int(p_mode), DisplayServer::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+
+	Vector<String> filter_names;
+	Vector<String> filter_exts;
+	for (int i = 0; i < p_filters.size(); i++) {
+		Vector<String> tokens = p_filters[i].split(";");
+		if (tokens.size() >= 1) {
+			String flt = tokens[0].strip_edges();
+			if (!flt.is_empty()) {
+				if (tokens.size() == 2) {
+					filter_exts.push_back(flt);
+					filter_names.push_back(tokens[1]);
+				} else {
+					filter_exts.push_back(flt);
+					filter_names.push_back(flt);
+				}
+			}
+		}
+	}
+	if (filter_names.is_empty()) {
+		filter_exts.push_back("*.*");
+		filter_names.push_back(RTR("All Files"));
+	}
+
 	DBusError err;
 	dbus_error_init(&err);
 
@@ -307,16 +335,10 @@ Error FreeDesktopPortalDesktop::file_dialog_show(const String &p_xid, const Stri
 
 	// Generate FileChooser message.
 	const char *method = nullptr;
-	switch (p_mode) {
-		case DisplayServer::FILE_DIALOG_MODE_SAVE_FILE: {
-			method = "SaveFile";
-		} break;
-		case DisplayServer::FILE_DIALOG_MODE_OPEN_ANY:
-		case DisplayServer::FILE_DIALOG_MODE_OPEN_FILE:
-		case DisplayServer::FILE_DIALOG_MODE_OPEN_DIR:
-		case DisplayServer::FILE_DIALOG_MODE_OPEN_FILES: {
-			method = "OpenFile";
-		} break;
+	if (p_mode == DisplayServer::FILE_DIALOG_MODE_SAVE_FILE) {
+		method = "SaveFile";
+	} else {
+		method = "OpenFile";
 	}
 
 	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_FILE_CHOOSER, method);
@@ -333,7 +355,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(const String &p_xid, const Stri
 		append_dbus_dict_string(&arr_iter, "handle_token", token);
 		append_dbus_dict_bool(&arr_iter, "multiple", p_mode == DisplayServer::FILE_DIALOG_MODE_OPEN_FILES);
 		append_dbus_dict_bool(&arr_iter, "directory", p_mode == DisplayServer::FILE_DIALOG_MODE_OPEN_DIR);
-		append_dbus_dict_filters(&arr_iter, p_filters);
+		append_dbus_dict_filters(&arr_iter, filter_names, filter_exts);
 		append_dbus_dict_string(&arr_iter, "current_folder", p_current_directory, true);
 		if (p_mode == DisplayServer::FILE_DIALOG_MODE_SAVE_FILE) {
 			append_dbus_dict_string(&arr_iter, "current_name", p_filename);
