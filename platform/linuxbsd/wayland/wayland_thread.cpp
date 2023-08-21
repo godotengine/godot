@@ -1238,6 +1238,10 @@ void WaylandThread::_cursor_frame_callback_on_done(void *data, struct wl_callbac
 }
 
 void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
+	if (!wl_proxy_is_godot((struct wl_proxy *)surface)) {
+		return;
+	}
+
 	DEBUG_LOG_WAYLAND_THREAD("Pointing window.");
 
 	SeatState *ss = (SeatState *)data;
@@ -1258,6 +1262,12 @@ void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_point
 }
 
 void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
+	if (!wl_proxy_is_godot((struct wl_proxy *)surface)) {
+		return;
+	}
+
+	DEBUG_LOG_WAYLAND_THREAD("Left window.");
+
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -1271,13 +1281,16 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_EXIT;
 
 	wayland_thread->push_message(msg);
-
-	DEBUG_LOG_WAYLAND_THREAD("Left window.");
 }
 
 void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
+
+	if (!ss->pointed_surface) {
+		// We're probably on a decoration or some other third-party thing.
+		return;
+	}
 
 	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
 	ERR_FAIL_NULL(ws);
@@ -1295,6 +1308,11 @@ void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_poin
 void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
+
+	if (!ss->pointed_surface) {
+		// We're probably on a decoration or some other third-party thing.
+		return;
+	}
 
 	PointerData &pd = ss->pointer_data_buffer;
 
@@ -1343,6 +1361,11 @@ void WaylandThread::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointe
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	if (!ss->pointed_surface) {
+		// We're probably on a decoration or some other third-party thing.
+		return;
+	}
+
 	PointerData &pd = ss->pointer_data_buffer;
 
 	switch (axis) {
@@ -1361,6 +1384,11 @@ void WaylandThread::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointe
 void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
+
+	if (!ss->pointed_surface) {
+		// We're probably on a decoration or some other third-party thing.
+		return;
+	}
 
 	WaylandThread *wayland_thread = ss->wayland_thread;
 	ERR_FAIL_NULL(wayland_thread);
@@ -1556,6 +1584,11 @@ void WaylandThread::_wl_pointer_on_axis_source(void *data, struct wl_pointer *wl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	if (!ss->pointed_surface) {
+		// We're probably on a decoration or some other third-party thing.
+		return;
+	}
+
 	ss->pointer_data_buffer.scroll_type = axis_source;
 }
 
@@ -1565,6 +1598,11 @@ void WaylandThread::_wl_pointer_on_axis_stop(void *data, struct wl_pointer *wl_p
 void WaylandThread::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
+
+	if (!ss->pointed_surface) {
+		// We're probably on a decoration or some other third-party thing.
+		return;
+	}
 
 	PointerData &pd = ss->pointer_data_buffer;
 
