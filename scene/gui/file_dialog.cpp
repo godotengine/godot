@@ -73,7 +73,7 @@ void FileDialog::set_visible(bool p_visible) {
 	}
 }
 
-void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
+void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter) {
 	if (p_ok) {
 		if (p_files.size() > 0) {
 			String f = p_files[0];
@@ -90,6 +90,7 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
 			}
 			file->set_text(f);
 			dir->set_text(f.get_base_dir());
+			_filter_selected(p_filter);
 		}
 	} else {
 		file->set_text("");
