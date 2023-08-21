@@ -19,6 +19,7 @@
 		<link title="GUI documentation index">$DOCS_URL/tutorials/ui/index.html</link>
 		<link title="Custom drawing in 2D">$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html</link>
 		<link title="Control node gallery">$DOCS_URL/tutorials/ui/control_node_gallery.html</link>
+		<link title="Multiple resolutions">$DOCS_URL/tutorials/rendering/multiple_resolutions.html</link>
 		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
