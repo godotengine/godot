@@ -3213,17 +3213,19 @@ bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 
 	if (!had_newline) {
 		current_frame->lines.remove_at(p_paragraph);
-		if (current_frame->lines.size() == 0) {
-			current_frame->lines.resize(1);
-		}
+	}
+
+	if (current_frame->lines.is_empty()) {
+		current_frame->lines.resize(1);
 	}
 
 	if (p_paragraph == 0 && current->subitems.size() > 0) {
 		main->lines[0].from = main;
 	}
 
-	int to_line = main->first_invalid_line.load();
-	main->first_invalid_line.store(MIN(to_line, p_paragraph));
+	main->first_invalid_line.store(MIN(main->first_invalid_line.load(), p_paragraph));
+	main->first_resized_line.store(MIN(main->first_resized_line.load(), p_paragraph));
+	main->first_invalid_font_line.store(MIN(main->first_invalid_font_line.load(), p_paragraph));
 	queue_redraw();
 
 	return true;
