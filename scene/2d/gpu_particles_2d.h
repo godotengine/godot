@@ -169,6 +169,8 @@ public:
 
 	void restart();
 	Rect2 capture_rect() const;
+	void convert_from_particles(Node *p_particles);
+
 	GPUParticles2D();
 	~GPUParticles2D();
 };

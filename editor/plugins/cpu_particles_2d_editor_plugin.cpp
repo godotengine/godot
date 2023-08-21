@@ -33,8 +33,11 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/2d/gpu_particles_2d.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
@@ -67,14 +70,26 @@ void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_LOAD_EMISSION_MASK: {
 			file->popup_file_dialog();
-
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
 			emission_mask->popup_centered();
 		} break;
 		case MENU_RESTART: {
 			particles->restart();
-		}
+		} break;
+		case MENU_CONVERT_TO_GPU_PARTICLES: {
+			GPUParticles2D *gpu_particles = memnew(GPUParticles2D);
+			gpu_particles->convert_from_particles(particles);
+			gpu_particles->set_name(particles->get_name());
+			gpu_particles->set_transform(particles->get_transform());
+			gpu_particles->set_visible(particles->is_visible());
+			gpu_particles->set_process_mode(particles->get_process_mode());
+
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+			ur->create_action(TTR("Convert to GPUParticles3D"));
+			SceneTreeDock::get_singleton()->replace_node(particles, gpu_particles);
+			ur->commit_action(false);
+		} break;
 	}
 }
 
@@ -257,6 +272,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	menu = memnew(MenuButton);
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
+	menu->get_popup()->add_item(TTR("Convert to GPUParticles2D"), MENU_CONVERT_TO_GPU_PARTICLES);
 	menu->set_text(TTR("CPUParticles2D"));
 	menu->set_switch_on_hover(true);
 	toolbar->add_child(menu);

@@ -19,6 +19,13 @@
 				Returns the axis-aligned bounding box that contains all the particles that are active in the current frame.
 			</description>
 		</method>
+		<method name="convert_from_particles">
+			<return type="void" />
+			<param index="0" name="particles" type="Node" />
+			<description>
+				Sets this node's properties to match a given [CPUParticles3D] node.
+			</description>
+		</method>
 		<method name="emit_particle">
 			<return type="void" />
 			<param index="0" name="xform" type="Transform3D" />
