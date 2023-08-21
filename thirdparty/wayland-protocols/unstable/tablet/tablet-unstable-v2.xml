@@ -247,7 +247,7 @@
 	previously been used as cursor surface for a different tool, a
 	protocol error is raised.
       </description>
-      <arg name="serial" type="uint" summary="serial of the enter event"/>
+      <arg name="serial" type="uint" summary="serial of the proximity_in event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
       <arg name="hotspot_x" type="int" summary="surface-local x coordinate"/>
       <arg name="hotspot_y" type="int" summary="surface-local y coordinate"/>

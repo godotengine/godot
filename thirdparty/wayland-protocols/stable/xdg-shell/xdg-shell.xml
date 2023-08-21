@@ -29,7 +29,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="xdg_wm_base" version="5">
+  <interface name="xdg_wm_base" version="6">
     <description summary="create desktop-style surfaces">
       The xdg_wm_base interface is exposed as a global object enabling clients
       to turn their wl_surfaces into windows in a desktop environment. It
@@ -50,6 +50,8 @@
 	     summary="the client provided an invalid surface state"/>
       <entry name="invalid_positioner" value="5"
 	     summary="the client provided an invalid positioner"/>
+      <entry name="unresponsive" value="6"
+	     summary="the client didn’t respond to a ping event in time"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -58,7 +60,7 @@
 
 	Destroying a bound xdg_wm_base object while there are surfaces
 	still alive created by this xdg_wm_base object instance is illegal
-	and will result in a protocol error.
+	and will result in a defunct_surfaces error.
       </description>
     </request>
 
@@ -77,7 +79,7 @@
 	itself is not a role, the corresponding surface may only be assigned
 	a role extending xdg_surface, such as xdg_toplevel or xdg_popup. It is
 	illegal to create an xdg_surface for a wl_surface which already has an
-	assigned role and this will result in a protocol error.
+	assigned role and this will result in a role error.
 
 	This creates an xdg_surface for the given surface. An xdg_surface is
 	used as basis to define a role to a given surface, such as xdg_toplevel
@@ -94,7 +96,8 @@
     <request name="pong">
       <description summary="respond to a ping event">
 	A client must respond to a ping event with a pong request or
-	the client may be deemed unresponsive. See xdg_wm_base.ping.
+	the client may be deemed unresponsive. See xdg_wm_base.ping
+	and xdg_wm_base.error.unresponsive.
       </description>
       <arg name="serial" type="uint" summary="serial of the ping event"/>
     </request>
@@ -108,7 +111,9 @@
 	Compositors can use this to determine if the client is still
 	alive. It's unspecified what will happen if the client doesn't
 	respond to the ping request, or in what timeframe. Clients should
-	try to respond in a reasonable amount of time.
+	try to respond in a reasonable amount of time. The “unresponsive”
+	error is provided for compositors that wish to disconnect unresponsive
+	clients.
 
 	A compositor is free to ping in any way it wants, but a client must
 	always respond to any xdg_wm_base object it created.
@@ -117,7 +122,7 @@
     </event>
   </interface>
 
-  <interface name="xdg_positioner" version="5">
+  <interface name="xdg_positioner" version="6">
     <description summary="child surface positioner">
       The xdg_positioner provides a collection of rules for the placement of a
       child surface relative to a parent surface. Rules can be defined to ensure
@@ -137,7 +142,7 @@
       For an xdg_positioner object to be considered complete, it must have a
       non-zero size set by set_size, and a non-zero anchor rectangle set by
       set_anchor_rect. Passing an incomplete xdg_positioner object when
-      positioning a surface raises an error.
+      positioning a surface raises an invalid_positioner error.
     </description>
 
     <enum name="error">
@@ -225,7 +230,8 @@
 	specified (e.g. 'bottom_right' or 'top_left'), then the child surface
 	will be placed towards the specified gravity; otherwise, the child
 	surface will be centered over the anchor point on any axis that had no
-	gravity specified.
+	gravity specified. If the gravity is not in the ‘gravity’ enum, an
+	invalid_input error is raised.
       </description>
       <arg name="gravity" type="uint" enum="gravity"
 	   summary="gravity direction"/>
@@ -401,7 +407,7 @@
     </request>
   </interface>
 
-  <interface name="xdg_surface" version="5">
+  <interface name="xdg_surface" version="6">
     <description summary="desktop user interface surface base interface">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface.
@@ -430,8 +436,10 @@
 
       After creating a role-specific object and setting it up, the client must
       perform an initial commit without any buffer attached. The compositor
-      will reply with an xdg_surface.configure event. The client must
-      acknowledge it and is then allowed to attach a buffer to map the surface.
+      will reply with initial wl_surface state such as
+      wl_surface.preferred_buffer_scale followed by an xdg_surface.configure
+      event. The client must acknowledge it and is then allowed to attach a
+      buffer to map the surface.
 
       Mapping an xdg_surface-based role surface is defined as making it
       possible for the surface to be shown by the compositor. Note that
@@ -451,16 +459,25 @@
     </description>
 
     <enum name="error">
-      <entry name="not_constructed" value="1"/>
-      <entry name="already_constructed" value="2"/>
-      <entry name="unconfigured_buffer" value="3"/>
-      <entry name="invalid_serial" value="4"/>
+      <entry name="not_constructed" value="1"
+	     summary="Surface was not fully constructed"/>
+      <entry name="already_constructed" value="2"
+	     summary="Surface was already constructed"/>
+      <entry name="unconfigured_buffer" value="3"
+	     summary="Attaching a buffer to an unconfigured surface"/>
+      <entry name="invalid_serial" value="4"
+	     summary="Invalid serial number when acking a configure event"/>
+      <entry name="invalid_size" value="5"
+	     summary="Width or height was zero or negative"/>
+      <entry name="defunct_role_object" value="6"
+	     summary="Surface was destroyed before its role object"/>
     </enum>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the xdg_surface">
 	Destroy the xdg_surface object. An xdg_surface must only be destroyed
-	after its role object has been destroyed.
+	after its role object has been destroyed, otherwise
+	a defunct_role_object error is raised.
       </description>
     </request>
 
@@ -515,13 +532,22 @@
 	commit. This unset is meant for extremely simple clients.
 
 	The arguments are given in the surface-local coordinate space of
-	the wl_surface associated with this xdg_surface.
+	the wl_surface associated with this xdg_surface, and may extend outside
+	of the wl_surface itself to mark parts of the subsurface tree as part of
+	the window geometry.
 
-	The width and height must be greater than zero. Setting an invalid size
-	will raise an error. When applied, the effective window geometry will be
-	the set window geometry clamped to the bounding rectangle of the
-	combined geometry of the surface of the xdg_surface and the associated
+	When applied, the effective window geometry will be the set window
+	geometry clamped to the bounding rectangle of the combined
+	geometry of the surface of the xdg_surface and the associated
 	subsurfaces.
+
+	The effective geometry will not be recalculated unless a new call to
+	set_window_geometry is done and the new pending surface state is
+	subsequently applied.
+
+	The width and height of the effective window geometry must be
+	greater than zero. Setting an invalid size will raise an
+	invalid_size error.
       </description>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -542,6 +568,8 @@
 
 	If the client receives multiple configure events before it
 	can respond to one, it only has to ack the last configure event.
+	Acking a configure event that was never sent raises an invalid_serial
+	error.
 
 	A client is not required to commit immediately after sending
 	an ack_configure request - it may even ack_configure several times
@@ -589,7 +617,7 @@
 
   </interface>
 
-  <interface name="xdg_toplevel" version="5">
+  <interface name="xdg_toplevel" version="6">
     <description summary="toplevel surface">
       This interface defines an xdg_surface role which allows a surface to,
       among other things, set window-like properties such as maximize,
@@ -622,6 +650,8 @@
         not a valid variant of the resize_edge enum"/>
       <entry name="invalid_parent" value="1"
         summary="invalid parent toplevel"/>
+      <entry name="invalid_size" value="2"
+	summary="client provided an invalid min or max size"/>
     </enum>
 
     <request name="set_parent">
@@ -687,7 +717,7 @@
 	application identifiers and how they relate to well-known D-Bus
 	names and .desktop files.
 
-	[0] http://standards.freedesktop.org/desktop-entry-spec/
+	[0] https://standards.freedesktop.org/desktop-entry-spec/
       </description>
       <arg name="app_id" type="string"/>
     </request>
@@ -701,7 +731,8 @@
 	This request asks the compositor to pop up such a window menu at
 	the given position, relative to the local surface coordinates of
 	the parent surface. There are no guarantees as to what menu items
-	the window menu contains.
+	the window menu contains, or even if a window menu will be drawn
+	at all.
 
 	This request must be used in response to some sort of user action
 	like a button press, key press, or touch down event.
@@ -779,10 +810,10 @@
 
 	The edges parameter specifies how the surface should be resized, and
 	is one of the values of the resize_edge enum. Values not matching
-	a variant of the enum will cause a protocol error. The compositor
-	may use this information to update the surface position for example
-	when dragging the top left corner. The compositor may also use
-	this information to adapt its behavior, e.g. choose an appropriate
+	a variant of the enum will cause the invalid_resize_edge protocol error.
+	The compositor may use this information to update the surface position
+	for example when dragging the top left corner. The compositor may also
+	use this information to adapt its behavior, e.g. choose an appropriate
 	cursor image.
       </description>
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat of the user event"/>
@@ -803,7 +834,8 @@
       <entry name="maximized" value="1" summary="the surface is maximized">
 	<description summary="the surface is maximized">
 	  The surface is maximized. The window geometry specified in the configure
-	  event must be obeyed by the client.
+	  event must be obeyed by the client, or the xdg_wm_base.invalid_surface_state
+	  error is raised.
 
 	  The client should draw without shadow or other
 	  decoration outside of the window geometry.
@@ -857,6 +889,13 @@
 	  considered to be adjacent to another part of the tiling grid.
 	</description>
       </entry>
+      <entry name="suspended" value="9" since="6">
+        <description summary="surface repaint is suspended">
+	  The surface is currently not ordinarily being repainted; for
+	  example because its content is occluded by another window, or its
+	  outputs are switched off due to screen locking.
+	</description>
+      </entry>
     </enum>
 
     <request name="set_max_size">
@@ -890,11 +929,11 @@
 	request.
 
 	Requesting a maximum size to be smaller than the minimum size of
-	a surface is illegal and will result in a protocol error.
+	a surface is illegal and will result in an invalid_size error.
 
 	The width and height must be greater than or equal to zero. Using
-	strictly negative values for width and height will result in a
-	protocol error.
+	strictly negative values for width or height will result in a
+	invalid_size error.
       </description>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
@@ -931,11 +970,11 @@
 	request.
 
 	Requesting a minimum size to be larger than the maximum size of
-	a surface is illegal and will result in a protocol error.
+	a surface is illegal and will result in an invalid_size error.
 
 	The width and height must be greater than or equal to zero. Using
 	strictly negative values for width and height will result in a
-	protocol error.
+	invalid_size error.
       </description>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
@@ -1155,7 +1194,7 @@
     </event>
   </interface>
 
-  <interface name="xdg_popup" version="5">
+  <interface name="xdg_popup" version="6">
     <description summary="short-lived, popup surfaces for menus">
       A popup surface is a short-lived, temporary surface. It can be used to
       implement for example menus, popovers, tooltips and other similar user
@@ -1193,8 +1232,8 @@
 	This destroys the popup. Explicitly destroying the xdg_popup
 	object will also dismiss the popup, and unmap the surface.
 
-	If this xdg_popup is not the "topmost" popup, a protocol error
-	will be sent.
+	If this xdg_popup is not the "topmost" popup, the
+	xdg_wm_base.not_the_topmost_popup protocol error will be sent.
       </description>
     </request>
 

@@ -40,7 +40,7 @@
 
     Another established way exists for Applications implementing the D-Bus
     interface org.freedesktop.Application, which should get their token under
-    XDG_ACTIVATION_TOKEN on their platform_data.
+    activation-token on their platform_data.
 
     In general activation tokens may be transferred across clients through
     means not described in this protocol.
@@ -193,7 +193,7 @@
     <request name="destroy" type="destructor">
       <description summary="destroy the xdg_activation_token_v1 object">
         Notify the compositor that the xdg_activation_token_v1 object will no
-        longer be used.
+        longer be used. The received token stays valid.
       </description>
     </request>
   </interface>

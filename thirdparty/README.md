@@ -784,7 +784,7 @@ Patches in the `patches` directory should be re-applied after updates.
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.27 (e631010ab7b96988e7c64c24b7d90f64717eaeee, 2022)
+- Version: 1.32 (681c33c8547d6aefe24455ba2bffe1c5ae11fee5, 2023)
 - License: MIT
 
 Files extracted from upstream source:
