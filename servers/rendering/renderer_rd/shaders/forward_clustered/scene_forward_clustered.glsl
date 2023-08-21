@@ -1543,6 +1543,13 @@ void fragment_shader(in SceneData scene_data) {
 #if defined(AMBIENT_LIGHT_DISABLED)
 		ambient_light = vec3(0.0, 0.0, 0.0);
 #else
+
+#if defined(AMBIENT_CODE_USED)
+		{
+#CODE : AMBIENT
+		}
+#endif
+
 		ambient_light *= albedo.rgb;
 		ambient_light *= ao;
 

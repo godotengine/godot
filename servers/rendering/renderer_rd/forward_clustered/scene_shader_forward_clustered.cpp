@@ -82,6 +82,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
 	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
+	actions.entry_point_stages["ambient"] = ShaderCompiler::STAGE_FRAGMENT;
 	actions.entry_point_stages["light"] = ShaderCompiler::STAGE_FRAGMENT;
 
 	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
@@ -624,6 +625,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["VIEW_MONO_LEFT"] = "0";
 		actions.renames["VIEW_RIGHT"] = "1";
 		actions.renames["EYE_OFFSET"] = "eye_offset";
+
+		// for ambient
+		actions.renames["AMBIENT_LIGHT"] = "ambient_light";
 
 		//for light
 		actions.renames["VIEW"] = "view";
