@@ -11,6 +11,7 @@ thirdparty_obj = []
 
 thirdparty_dir = "#thirdparty/libktx/"
 thirdparty_sources = [
+    "lib/basis_transcode.cpp",
     "lib/checkheader.c",
     "lib/filestream.c",
     "lib/hashlist.c",
@@ -32,10 +33,7 @@ env_ktx.Prepend(CPPPATH=[thirdparty_dir + "include"])
 env_ktx.Prepend(CPPPATH=[thirdparty_dir + "utils"])
 env_ktx.Prepend(CPPPATH=[thirdparty_dir + "lib"])
 env_ktx.Prepend(CPPPATH=[thirdparty_dir + "other_include"])
-
-if env["module_basis_universal_enabled"]:
-    thirdparty_sources += [thirdparty_dir + "lib/basis_transcode.cpp"]
-    env_ktx.Prepend(CPPPATH=["#thirdparty/basis_universal"])
+env_ktx.Prepend(CPPPATH=["#thirdparty/basis_universal"])
 
 if env["vulkan"]:
     env_ktx.Prepend(CPPPATH=["#thirdparty/vulkan/include"])

@@ -310,12 +310,11 @@ Files extracted from upstream source:
 - `LICENSE.md`
 - `include/*`
 - `lib/dfdutils/{LICENSES/Apache-2.0.txt,KHR,*.c,*.h,*.inl}`
-- `lib/{basis_sgd.h,basis_transcode.cpp,checkheader.c,filestream.*,formatsize.h,gl_format.h,hashlist.c,ktxint.h,memstream.*,swap.c,texture*,uthash.h,vk_format.h,vkformat_enum.h`
+- `lib/{basis_sgd.h,basis_transcode.cpp,checkheader.c,filestream.*,formatsize.h,gl_format.h,hashlist.c,ktxint.h,memstream.*,swap.c,texture*,uthash.h,vk_format.h,vkformat_enum.h}`
 - `utils/unused.h`
 - `other_include/KHR/*`
-- ifndef-protect NOMINMAX define in `lib/gl_format.h` (see godot.patch)
-- remove `basisu/` prefix from `thirdparty/libktx/lib/basis_transcode.cpp` basisu includes (see godot.patch)
-- comment `VK_FORMAT_ASTC_*x*x*_UNORM_BLOCK_EXT` cases in `lib/dfdutils/vk2dfd.inl` (see godot.patch)
+
+Some Godot-specific changes are applied via `godot.patch`.
 
 
 ## libogg
