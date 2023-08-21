@@ -130,7 +130,7 @@ jobs:
       - name: Generate C# glue
         if: ${{ matrix.build-mono }}
         run: |
-          ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue || true
+          ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue
 
       - name: Build .NET solutions
         if: ${{ matrix.build-mono }}
