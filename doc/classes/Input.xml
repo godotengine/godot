@@ -215,7 +215,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
 			<description>
-				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons assigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
+				Returns [code]true[/code] if you are pressing the action event.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 				[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>
