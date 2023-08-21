@@ -750,6 +750,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 		class_list.sort_custom<StringName::AlphCompare>();
 
 		for (const StringName &class_name : class_list) {
+			if (!ClassDB::is_class_exposed(class_name)) {
+				continue;
+			}
 			Dictionary d;
 			d["name"] = String(class_name);
 			d["is_refcounted"] = ClassDB::is_parent_class(class_name, "RefCounted");
