@@ -1178,8 +1178,8 @@ GridMapEditor::GridMapEditor() {
 	ED_SHORTCUT("grid_map/cursor_back_rotate_z", TTR("Cursor Back Rotate Z"), KeyModifierMask::SHIFT + Key::D, true);
 	ED_SHORTCUT("grid_map/cursor_clear_rotation", TTR("Cursor Clear Rotation"), Key::W, true);
 	ED_SHORTCUT("grid_map/paste_selects", TTR("Paste Selects"));
-	ED_SHORTCUT("grid_map/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::CTRL + Key::C, true);
-	ED_SHORTCUT("grid_map/cut_selection", TTR("Cut Selection"), KeyModifierMask::CTRL + Key::X, true);
+	ED_SHORTCUT("grid_map/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::CTRL + Key::C);
+	ED_SHORTCUT("grid_map/cut_selection", TTR("Cut Selection"), KeyModifierMask::CTRL + Key::X);
 	ED_SHORTCUT("grid_map/clear_selection", TTR("Clear Selection"), Key::KEY_DELETE);
 	ED_SHORTCUT("grid_map/fill_selection", TTR("Fill Selection"), KeyModifierMask::CTRL + Key::F);
 
