@@ -1850,7 +1850,18 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		n_for->variable = parse_identifier();
 	}
 
-	consume(GDScriptTokenizer::Token::IN, R"(Expected "in" after "for" variable name.)");
+	if (match(GDScriptTokenizer::Token::COLON)) {
+		n_for->datatype_specifier = parse_type();
+		if (n_for->datatype_specifier == nullptr) {
+			push_error(R"(Expected type specifier after ":".)");
+		}
+	}
+
+	if (n_for->datatype_specifier == nullptr) {
+		consume(GDScriptTokenizer::Token::IN, R"(Expected "in" or ":" after "for" variable name.)");
+	} else {
+		consume(GDScriptTokenizer::Token::IN, R"(Expected "in" after "for" variable type specifier.)");
+	}
 
 	n_for->list = parse_expression(false);
 
