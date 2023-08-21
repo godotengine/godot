@@ -87,6 +87,23 @@ void ProjectSettingsEditor::update_plugins() {
 	plugin_settings->update_plugins();
 }
 
+void ProjectSettingsEditor::_tab_clicked(int p_tab) {
+	// Tab 'General'
+	if (tab_container->get_tab_idx_from_control(general_editor) == p_tab && settings_last_update > general_editor_last_update) {
+		general_settings_inspector->update_category_list();
+		general_editor_last_update = OS::get_singleton()->get_ticks_msec();
+	}
+	// Tab 'Input Map'
+	else if (tab_container->get_tab_idx_from_control(action_map_editor) == p_tab && settings_last_update > action_map_editor_last_update) {
+		_update_action_map_editor();
+		action_map_editor_last_update = OS::get_singleton()->get_ticks_msec();
+	}
+}
+
+void ProjectSettingsEditor::_settings_changed() {
+	settings_last_update = OS::get_singleton()->get_ticks_msec();
+}
+
 void ProjectSettingsEditor::_setting_edited(const String &p_name) {
 	queue_save();
 }
@@ -591,11 +608,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	set_clamp_to_embedder(true);
 
 	ps = ProjectSettings::get_singleton();
+	ps->connect("settings_changed", callable_mp(this, &ProjectSettingsEditor::_settings_changed));
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	tab_container->set_theme_type_variation("TabContainerOdd");
+	tab_container->connect("tab_clicked", callable_mp(this, &ProjectSettingsEditor::_tab_clicked));
 	add_child(tab_container);
 
 	general_editor = memnew(VBoxContainer);

@@ -78,6 +78,13 @@ class ProjectSettingsEditor : public AcceptDialog {
 	ImportDefaultsEditor *import_defaults_editor = nullptr;
 	EditorData *data = nullptr;
 
+	uint64_t general_editor_last_update = 0;
+	uint64_t action_map_editor_last_update = 0;
+	uint64_t settings_last_update = 0;
+
+	void _tab_clicked(int p_tab);
+	void _settings_changed();
+
 	void _advanced_toggled(bool p_button_pressed);
 	void _update_advanced(bool p_is_advanced);
 	void _property_box_changed(const String &p_text);
