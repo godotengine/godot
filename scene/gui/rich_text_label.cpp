@@ -2564,7 +2564,10 @@ String RichTextLabel::_find_language(Item *p_item) {
 	Item *item = p_item;
 
 	while (item) {
-		if (item->type == ITEM_PARAGRAPH) {
+		if (item->type == ITEM_LANGUAGE) {
+			ItemLanguage *p = static_cast<ItemLanguage *>(item);
+			return p->language;
+		} else if (item->type == ITEM_PARAGRAPH) {
 			ItemParagraph *p = static_cast<ItemParagraph *>(item);
 			return p->language;
 		}
@@ -3443,6 +3446,17 @@ void RichTextLabel::push_meta(const Variant &p_meta) {
 	_add_item(item, true);
 }
 
+void RichTextLabel::push_language(const String &p_language) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemLanguage *item = memnew(ItemLanguage);
+
+	item->language = p_language;
+	_add_item(item, true);
+}
+
 void RichTextLabel::push_hint(const String &p_string) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
@@ -4224,6 +4238,11 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_indent(indent_level);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("lang=")) {
+			String lang = tag.substr(5, tag.length()).unquote();
+			push_language(lang);
+			pos = brk_end + 1;
+			tag_stack.push_front("lang");
 		} else if (tag == "p") {
 			push_paragraph(HORIZONTAL_ALIGNMENT_LEFT);
 			pos = brk_end + 1;
@@ -5609,6 +5628,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet"), &RichTextLabel::push_list, DEFVAL(String::utf8("•")));
 	ClassDB::bind_method(D_METHOD("push_meta", "data"), &RichTextLabel::push_meta);
 	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
+	ClassDB::bind_method(D_METHOD("push_language", "language"), &RichTextLabel::push_language);
 	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);
 	ClassDB::bind_method(D_METHOD("push_strikethrough"), &RichTextLabel::push_strikethrough);
 	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align", "align_to_row"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGNMENT_TOP), DEFVAL(-1));
