@@ -1245,15 +1245,23 @@ void EditorNode::_viewport_resized() {
 void EditorNode::_titlebar_resized() {
 	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
 	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	int left_sp = main_menu->get_minimum_size().x;
+	int right_sp = project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x;
 	if (left_menu_spacer) {
 		int w = (gui_base->is_layout_rtl()) ? margin.y : margin.x;
 		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+		left_sp += w;
 	}
 	if (right_menu_spacer) {
 		int w = (gui_base->is_layout_rtl()) ? margin.x : margin.y;
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+		right_sp += w;
 	}
 	if (title_bar) {
+		// Adjust spacers to center buttons.
+		left_spacer_al->set_custom_minimum_size(Size2(MAX(0, right_sp - left_sp), 0));
+		right_spacer_al->set_custom_minimum_size(Size2(MAX(0, left_sp - right_sp), 0));
+
 		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
 	}
 }
@@ -7338,6 +7346,10 @@ EditorNode::EditorNode() {
 	left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_bar->add_child(left_spacer);
 
+	left_spacer_al = memnew(Control);
+	left_spacer_al->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	title_bar->add_child(left_spacer_al);
+
 	if (can_expand && global_menu) {
 		project_title = memnew(Label);
 		project_title->add_theme_font_override(SceneStringName(font), theme->get_font(SNAME("bold"), EditorStringName(EditorFonts)));
@@ -7350,7 +7362,7 @@ EditorNode::EditorNode() {
 		left_spacer->add_child(project_title);
 	}
 
-	HBoxContainer *main_editor_button_hb = memnew(HBoxContainer);
+	main_editor_button_hb = memnew(HBoxContainer);
 	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	editor_main_screen->set_button_container(main_editor_button_hb);
 	title_bar->add_child(main_editor_button_hb);
@@ -7446,13 +7458,17 @@ EditorNode::EditorNode() {
 	right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_bar->add_child(right_spacer);
 
+	right_spacer_al = memnew(Control);
+	right_spacer_al->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	title_bar->add_child(right_spacer_al);
+
 	project_run_bar = memnew(EditorRunBar);
 	project_run_bar->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(project_run_bar);
 	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
 	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
 
-	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
+	right_menu_hb = memnew(HBoxContainer);
 	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(right_menu_hb);
 
@@ -7943,11 +7959,6 @@ EditorNode::EditorNode() {
 	screenshot_timer->connect("timeout", callable_mp(this, &EditorNode::_request_screenshot));
 	add_child(screenshot_timer);
 	screenshot_timer->set_owner(get_owner());
-
-	// Adjust spacers to center 2D / 3D / Script buttons.
-	int max_w = MAX(project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
-	left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu->get_minimum_size().x), 0));
-	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - project_run_bar->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
 
 	// Extend menu bar to window title.
 	if (can_expand) {

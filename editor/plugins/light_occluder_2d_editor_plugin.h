@@ -42,7 +42,7 @@ class LightOccluder2DEditor : public AbstractPolygon2DEditor {
 	Ref<OccluderPolygon2D> _ensure_occluder() const;
 
 protected:
-	virtual Node2D *_get_node() const override;
+	virtual CanvasItem *_get_node() const override;
 	virtual void _set_node(Node *p_polygon) override;
 
 	virtual bool _is_line() const override;

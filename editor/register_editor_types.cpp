@@ -129,6 +129,7 @@
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
+#include "editor/plugins/window_decoration_editor_plugin.h"
 #include "editor/register_exporters.h"
 
 void register_editor_types() {
@@ -268,6 +269,9 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
+
+	// GUI
+	EditorPlugins::add_by_type<WindowDecorationEditorPlugin>();
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");

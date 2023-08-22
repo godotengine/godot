@@ -261,6 +261,10 @@
 	wd.size.width = content_rect.size.width * scale;
 	wd.size.height = content_rect.size.height * scale;
 
+	if (!([wd.window_object styleMask] & NSWindowStyleMaskTitled)) {
+		[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
+	}
+
 	CALayer *layer = [wd.window_view layer];
 	if (layer) {
 		layer.contentsScale = scale;

@@ -45,7 +45,7 @@ Ref<NavigationPolygon> NavigationPolygonEditor::_ensure_navpoly() const {
 	return navpoly;
 }
 
-Node2D *NavigationPolygonEditor::_get_node() const {
+CanvasItem *NavigationPolygonEditor::_get_node() const {
 	return node;
 }
 

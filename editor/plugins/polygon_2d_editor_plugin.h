@@ -165,7 +165,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	int _get_polygon_count() const override;
 
 protected:
-	virtual Node2D *_get_node() const override;
+	virtual CanvasItem *_get_node() const override;
 	virtual void _set_node(Node *p_polygon) override;
 
 	virtual Vector2 _get_offset(int p_idx) const override;

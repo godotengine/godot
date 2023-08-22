@@ -77,7 +77,7 @@ class UVEditDialog : public AcceptDialog {
 	}
 };
 
-Node2D *Polygon2DEditor::_get_node() const {
+CanvasItem *Polygon2DEditor::_get_node() const {
 	return node;
 }
 

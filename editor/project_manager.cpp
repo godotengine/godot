@@ -1049,17 +1049,23 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 void ProjectManager::_titlebar_resized() {
 	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
 	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	int left_sp = left_hbox->get_minimum_size().x;
+	int right_sp = right_hbox->get_minimum_size().x;
 	if (left_menu_spacer) {
 		int w = (root_container->is_layout_rtl()) ? margin.y : margin.x;
 		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
-		right_spacer->set_custom_minimum_size(Size2(w, 0));
+		left_sp += w;
 	}
 	if (right_menu_spacer) {
 		int w = (root_container->is_layout_rtl()) ? margin.x : margin.y;
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
-		left_spacer->set_custom_minimum_size(Size2(w, 0));
+		right_sp += w;
 	}
 	if (title_bar) {
+		// Adjust spacers to center buttons.
+		left_spacer_al->set_custom_minimum_size(Size2(MAX(0, right_sp - left_sp), 0));
+		right_spacer_al->set_custom_minimum_size(Size2(MAX(0, left_sp - right_sp), 0));
+
 		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
 	}
 }
@@ -1182,10 +1188,10 @@ ProjectManager::ProjectManager() {
 			title_bar->add_child(left_menu_spacer);
 		}
 
-		HBoxContainer *left_hbox = memnew(HBoxContainer);
+		left_hbox = memnew(HBoxContainer);
 		left_hbox->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
-		left_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		left_hbox->set_stretch_ratio(1.0);
+		left_hbox->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 		title_bar->add_child(left_hbox);
 
 		title_bar_logo = memnew(Button);
@@ -1193,32 +1199,38 @@ ProjectManager::ProjectManager() {
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
-		if (can_expand) {
-			// Spacer to center main toggles.
-			left_spacer = memnew(Control);
-			left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			title_bar->add_child(left_spacer);
-		}
+		// Spacer to center main toggles.
+		left_spacer = memnew(Control);
+		left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		title_bar->add_child(left_spacer);
+
+		left_spacer_al = memnew(Control);
+		left_spacer_al->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		title_bar->add_child(left_spacer_al);
 
 		main_view_toggles = memnew(HBoxContainer);
 		main_view_toggles->set_alignment(BoxContainer::ALIGNMENT_CENTER);
-		main_view_toggles->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		main_view_toggles->set_stretch_ratio(2.0);
+		main_view_toggles->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 		title_bar->add_child(main_view_toggles);
 
-		if (can_expand) {
-			// Spacer to center main toggles.
-			right_spacer = memnew(Control);
-			right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			title_bar->add_child(right_spacer);
-		}
+		// Spacer to center main toggles.
+		right_spacer = memnew(Control);
+		right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		title_bar->add_child(right_spacer);
+
+		right_spacer_al = memnew(Control);
+		right_spacer_al->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		title_bar->add_child(right_spacer_al);
 
 		main_view_toggles_group.instantiate();
 
-		HBoxContainer *right_hbox = memnew(HBoxContainer);
+		right_hbox = memnew(HBoxContainer);
 		right_hbox->set_alignment(BoxContainer::ALIGNMENT_END);
-		right_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		right_hbox->set_stretch_ratio(1.0);
+		right_hbox->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 		title_bar->add_child(right_hbox);
 
 		quick_settings_button = memnew(Button);

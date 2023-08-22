@@ -80,8 +80,12 @@ class ProjectManager : public Control {
 	EditorTitleBar *title_bar = nullptr;
 	Control *left_menu_spacer = nullptr;
 	Control *left_spacer = nullptr;
+	Control *left_spacer_al = nullptr;
+	HBoxContainer *left_hbox = nullptr;
 	Control *right_menu_spacer = nullptr;
 	Control *right_spacer = nullptr;
+	Control *right_spacer_al = nullptr;
+	HBoxContainer *right_hbox = nullptr;
 	Button *title_bar_logo = nullptr;
 	HBoxContainer *main_view_toggles = nullptr;
 	Button *quick_settings_button = nullptr;

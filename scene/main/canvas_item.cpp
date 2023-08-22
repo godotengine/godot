@@ -980,6 +980,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 		_notify_transform(ci);
 	}
+	_global_transform_changed();
 }
 
 void CanvasItem::_physics_interpolated_changed() {
@@ -1120,6 +1121,11 @@ Vector2 CanvasItem::get_local_mouse_position() const {
 	ERR_FAIL_NULL_V(get_viewport(), Vector2());
 
 	return get_global_transform().affine_inverse().xform(get_global_mouse_position());
+}
+
+Point2 CanvasItem::to_local(Point2 p_global) const {
+	ERR_READ_THREAD_GUARD_V(Point2());
+	return get_global_transform().affine_inverse().xform(p_global);
 }
 
 void CanvasItem::force_update_transform() {

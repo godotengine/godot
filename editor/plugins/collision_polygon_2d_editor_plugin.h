@@ -40,7 +40,7 @@ class CollisionPolygon2DEditor : public AbstractPolygon2DEditor {
 	CollisionPolygon2D *node = nullptr;
 
 protected:
-	virtual Node2D *_get_node() const override;
+	virtual CanvasItem *_get_node() const override;
 	virtual void _set_node(Node *p_polygon) override;
 
 public:

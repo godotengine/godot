@@ -93,7 +93,7 @@ void AbstractPolygon2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) 
 }
 
 void AbstractPolygon2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
-	Node2D *node = _get_node();
+	CanvasItem *node = _get_node();
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_method(node, "set_polygon", p_polygon);
 	undo_redo->add_undo_method(node, "set_polygon", p_previous);

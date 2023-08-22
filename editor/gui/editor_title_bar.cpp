@@ -30,55 +30,129 @@
 
 #include "editor_title_bar.h"
 
-void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
-	if (!can_move) {
+void EditorTitleBar::_update_rects() {
+	if (!is_inside_tree()) {
+		return;
+	}
+	if (!DisplayServer::get_singleton()) {
+		return;
+	}
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIENT_SIDE_DECORATIONS)) {
 		return;
 	}
 
-	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && moving) {
-		if (mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
-			Window *w = Object::cast_to<Window>(get_viewport());
-			if (w) {
-				Point2 mouse = DisplayServer::get_singleton()->mouse_get_position();
-				w->set_position(mouse - click_pos);
-			}
-		} else {
-			moving = false;
-		}
+	DisplayServer::WindowID wid = get_viewport()->get_window_id();
+	for (int &id : ids) {
+		DisplayServer::get_singleton()->window_remove_decoration(id, wid);
 	}
+	ids.clear();
 
-	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && has_point(mb->get_position())) {
-		Window *w = Object::cast_to<Window>(get_viewport());
-		if (w) {
-			if (mb->get_button_index() == MouseButton::LEFT) {
-				if (mb->is_pressed()) {
-					click_pos = DisplayServer::get_singleton()->mouse_get_position() - w->get_position();
-					moving = true;
-				} else {
-					moving = false;
-				}
+	if (can_move) {
+		Vector<Rect2i> rects;
+		int prev_pos = 0;
+		int count = get_child_count();
+		for (int i = 0; i < count; i++) {
+			Control *n = Object::cast_to<Control>(get_child(i));
+			if (n && n->get_mouse_filter() != Control::MOUSE_FILTER_PASS) {
+				int start = n->get_position().x;
+				rects.push_back(Rect2(prev_pos, 0, start - prev_pos, get_size().y));
+				prev_pos = start + n->get_size().x;
 			}
-			if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click() && mb->is_pressed()) {
-				if (DisplayServer::get_singleton()->window_maximize_on_title_dbl_click()) {
-					if (w->get_mode() == Window::MODE_WINDOWED) {
-						w->set_mode(Window::MODE_MAXIMIZED);
-					} else if (w->get_mode() == Window::MODE_MAXIMIZED) {
-						w->set_mode(Window::MODE_WINDOWED);
-					}
-				} else if (DisplayServer::get_singleton()->window_minimize_on_title_dbl_click()) {
-					w->set_mode(Window::MODE_MINIMIZED);
-				}
-				moving = false;
+		}
+		if (prev_pos != 0) {
+			rects.push_back(Rect2(prev_pos, 0, get_size().x - prev_pos, get_size().y));
+		}
+
+		for (Rect2i &rect : rects) {
+			Vector<Point2> polygon_global;
+			polygon_global.push_back(rect.position);
+			polygon_global.push_back(rect.position + Vector2(rect.size.x, 0));
+			polygon_global.push_back(rect.position + rect.size);
+			polygon_global.push_back(rect.position + Vector2(0, rect.size.y));
+
+			Transform2D t = get_global_transform();
+			for (Vector2 &E : polygon_global) {
+				E = t.xform(E);
 			}
+			int id = DisplayServer::get_singleton()->window_add_decoration(polygon_global, DisplayServer::WINDOW_DECORATION_MOVE, wid);
+			ids.push_back(id);
 		}
 	}
 }
 
+void EditorTitleBar::_global_transform_changed() {
+	_update_rects();
+}
+
+void EditorTitleBar::add_child_notify(Node *p_child) {
+	Control::add_child_notify(p_child);
+
+	Control *control = Object::cast_to<Control>(p_child);
+	if (!control) {
+		return;
+	}
+
+	control->connect(SceneStringName(item_rect_changed), callable_mp(this, &EditorTitleBar::_update_rects));
+
+	_update_rects();
+}
+
+void EditorTitleBar::move_child_notify(Node *p_child) {
+	Control::move_child_notify(p_child);
+
+	if (!Object::cast_to<Control>(p_child)) {
+		return;
+	}
+
+	_update_rects();
+}
+
+void EditorTitleBar::remove_child_notify(Node *p_child) {
+	Control::remove_child_notify(p_child);
+
+	Control *control = Object::cast_to<Control>(p_child);
+	if (!control) {
+		return;
+	}
+
+	control->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &EditorTitleBar::_update_rects));
+
+	_update_rects();
+}
+
+void EditorTitleBar::_notification(int p_notification) {
+	switch (p_notification) {
+		case NOTIFICATION_RESIZED: {
+			_update_rects();
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			get_viewport()->connect("size_changed", callable_mp(this, &EditorTitleBar::_update_rects));
+			_update_rects();
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_viewport()->disconnect("size_changed", callable_mp(this, &EditorTitleBar::_update_rects));
+			if (!DisplayServer::get_singleton()) {
+				return;
+			}
+			if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIENT_SIDE_DECORATIONS)) {
+				return;
+			}
+			DisplayServer::WindowID wid = get_viewport()->get_window_id();
+			for (int &id : ids) {
+				DisplayServer::get_singleton()->window_remove_decoration(id, wid);
+			}
+			ids.clear();
+		} break;
+	}
+}
+
 void EditorTitleBar::set_can_move_window(bool p_enabled) {
-	can_move = p_enabled;
-	set_process_input(can_move);
+	if (can_move != p_enabled) {
+		can_move = p_enabled;
+		_update_rects();
+	}
 }
 
 bool EditorTitleBar::get_can_move_window() const {

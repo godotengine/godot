@@ -68,7 +68,7 @@ class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 protected:
 	void _notification(int p_what);
 
-	virtual Node2D *_get_node() const override;
+	virtual CanvasItem *_get_node() const override;
 	virtual void _set_node(Node *p_polygon) override;
 
 	virtual int _get_polygon_count() const override;

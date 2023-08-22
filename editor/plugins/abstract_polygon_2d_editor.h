@@ -117,7 +117,7 @@ protected:
 
 	bool _is_empty() const;
 
-	virtual Node2D *_get_node() const = 0;
+	virtual CanvasItem *_get_node() const = 0;
 	virtual void _set_node(Node *p_polygon) = 0;
 
 	virtual bool _is_line() const;

@@ -46,6 +46,7 @@ class ColorPicker;
 class ConfirmationDialog;
 class Control;
 class FileDialog;
+class HBoxContainer;
 class MenuBar;
 class MenuButton;
 class OptionButton;
@@ -318,7 +319,11 @@ private:
 
 	Label *project_title = nullptr;
 	Control *left_menu_spacer = nullptr;
+	Control *left_spacer_al = nullptr;
 	Control *right_menu_spacer = nullptr;
+	Control *right_spacer_al = nullptr;
+	HBoxContainer *main_editor_button_hb = nullptr;
+	HBoxContainer *right_menu_hb = nullptr;
 	EditorTitleBar *title_bar = nullptr;
 	EditorRunBar *project_run_bar = nullptr;
 	MenuBar *main_menu = nullptr;

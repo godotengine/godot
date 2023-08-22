@@ -1421,11 +1421,30 @@
 				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS, and Linux (X11/Wayland). It has no effect on Android, iOS, and Web.
 			</description>
 		</method>
+		<method name="window_add_decoration">
+			<return type="int" />
+			<param index="0" name="region" type="PackedVector2Array" />
+			<param index="1" name="dec_type" type="int" enum="DisplayServer.WindowDecorationType" />
+			<param index="2" name="window" type="int" default="0" />
+			<description>
+				Adds polygon which should act as window client side decoration (UI element used to move or resize window) specified by [param dec_type]. Returns decoration ID.
+			</description>
+		</method>
 		<method name="window_can_draw" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Returns [code]true[/code] if anything can be drawn in the window specified by [param window_id], [code]false[/code] otherwise. Using the [code]--disable-render-loop[/code] command line argument or a headless build will return [code]false[/code].
+			</description>
+		</method>
+		<method name="window_change_decoration">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="region" type="PackedVector2Array" />
+			<param index="2" name="dec_type" type="int" enum="DisplayServer.WindowDecorationType" />
+			<param index="3" name="window" type="int" default="0" />
+			<description>
+				Changes type and polygon of the client side decoration (UI element used to move or resize window) specified by [param id].
 			</description>
 		</method>
 		<method name="window_get_active_popup" qualifiers="const">
@@ -1446,6 +1465,13 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Returns the screen the window specified by [param window_id] is currently positioned on. If the screen overlaps multiple displays, the screen where the window's center is located is returned. See also [method window_set_current_screen].
+			</description>
+		</method>
+		<method name="window_get_decorations" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="window" type="int" default="0" />
+			<description>
+				Returns [Array] of the window client side decorations (UI elements used to move or resize window) set by [method window_add_decoration] and [method window_change_decoration], each entry is a [Dictionary] with the following keys: [code]id: Int[/code], [code]region: PackedVector2Array[/code] and [code]type: WindowDecorationType[/code].
 			</description>
 		</method>
 		<method name="window_get_flag" qualifiers="const">
@@ -1577,6 +1603,14 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Moves the window specified by [param window_id] to the foreground, so that it is visible over other windows.
+			</description>
+		</method>
+		<method name="window_remove_decoration">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="window" type="int" default="0" />
+			<description>
+				Removes client side decoration (UI element used to move or resize window) specified by [param id].
 			</description>
 		</method>
 		<method name="window_request_attention">
@@ -1895,6 +1929,9 @@
 		<constant name="FEATURE_NATIVE_DIALOG_FILE_EXTRA" value="26" enum="Feature">
 			The display server supports all features of [constant FEATURE_NATIVE_DIALOG_FILE], with the added functionality of Options and native dialog file access to [code]res://[/code] and [code]user://[/code] paths. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
 		</constant>
+		<constant name="FEATURE_CLIENT_SIDE_DECORATIONS" value="27" enum="Feature">
+			Display server supports client side decorations. See [method window_add_decoration], [method window_change_decoration], and [method window_remove_decoration].
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -2139,6 +2176,36 @@
 		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
 			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode).
 			[b]Note:[/b] This flag is implemented only on macOS.
+		</constant>
+		<constant name="WINDOW_DECORATION_TOP_LEFT" value="0" enum="WindowDecorationType">
+			Window top-left resize element.
+		</constant>
+		<constant name="WINDOW_DECORATION_TOP" value="1" enum="WindowDecorationType">
+			Window top resize element.
+		</constant>
+		<constant name="WINDOW_DECORATION_TOP_RIGHT" value="2" enum="WindowDecorationType">
+			Window top-right resize element.
+		</constant>
+		<constant name="WINDOW_DECORATION_LEFT" value="3" enum="WindowDecorationType">
+			Window left resize element.
+		</constant>
+		<constant name="WINDOW_DECORATION_RIGHT" value="4" enum="WindowDecorationType">
+			Window right resize element.
+		</constant>
+		<constant name="WINDOW_DECORATION_BOTTOM_LEFT" value="5" enum="WindowDecorationType">
+			Window bottom-left resize element.
+		</constant>
+		<constant name="WINDOW_DECORATION_BOTTOM" value="6" enum="WindowDecorationType">
+			Window bottom resize element.
+		</constant>
+		<constant name="WINDOW_DECORATION_BOTTOM_RIGHT" value="7" enum="WindowDecorationType">
+			Window bottom-right resize element.
+		</constant>
+		<constant name="WINDOW_DECORATION_MOVE" value="8" enum="WindowDecorationType">
+			Window move element.
+		</constant>
+		<constant name="WINDOW_DECORATION_PASS" value="9" enum="WindowDecorationType">
+			Element excluded from window decorations.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).

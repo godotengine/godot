@@ -765,6 +765,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_NATIVE_HELP:
+		case FEATURE_CLIENT_SIDE_DECORATIONS:
 			return true;
 		default: {
 		}
@@ -1868,6 +1869,92 @@ void DisplayServerMacOS::window_set_mouse_passthrough(const Vector<Vector2> &p_r
 	wd.mpath = p_region;
 }
 
+int DisplayServerMacOS::window_add_decoration(const Vector<Vector2> &p_region, DisplayServer::WindowDecorationType p_dec_type, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX_V(p_dec_type, DisplayServer::WINDOW_DECORATION_MAX, -1);
+	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	WindowData &wd = windows[p_window];
+
+	int did = wd.decor_id++;
+	if (p_dec_type == WINDOW_DECORATION_PASS) {
+		wd.decor_pass[did].region = p_region;
+		wd.decor_pass[did].dec_type = p_dec_type;
+	} else {
+		wd.decor[did].region = p_region;
+		wd.decor[did].dec_type = p_dec_type;
+	}
+
+	return did;
+}
+
+Array DisplayServerMacOS::window_get_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Array());
+	const WindowData &wd = windows[p_window];
+
+	Array ret;
+	for (const KeyValue<int, DecorData> &E : wd.decor) {
+		Dictionary decor;
+		decor["id"] = E.key;
+		decor["region"] = E.value.region;
+		decor["type"] = E.value.dec_type;
+		ret.push_back(decor);
+	}
+	for (const KeyValue<int, DecorData> &E : wd.decor_pass) {
+		Dictionary decor;
+		decor["id"] = E.key;
+		decor["region"] = E.value.region;
+		decor["type"] = E.value.dec_type;
+		ret.push_back(decor);
+	}
+	return ret;
+}
+
+void DisplayServerMacOS::window_change_decoration(int p_rect_id, const Vector<Vector2> &p_region, DisplayServer::WindowDecorationType p_dec_type, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX(p_dec_type, DisplayServer::WINDOW_DECORATION_MAX);
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.decor.has(p_rect_id)) {
+		if (p_dec_type == WINDOW_DECORATION_PASS) {
+			wd.decor.erase(p_rect_id);
+			wd.decor_pass[p_rect_id].region = p_region;
+			wd.decor_pass[p_rect_id].dec_type = p_dec_type;
+		} else {
+			wd.decor[p_rect_id].region = p_region;
+			wd.decor[p_rect_id].dec_type = p_dec_type;
+		}
+	}
+	if (wd.decor_pass.has(p_rect_id)) {
+		if (p_dec_type != WINDOW_DECORATION_PASS) {
+			wd.decor_pass.erase(p_rect_id);
+			wd.decor[p_rect_id].region = p_region;
+			wd.decor[p_rect_id].dec_type = p_dec_type;
+		} else {
+			wd.decor_pass[p_rect_id].region = p_region;
+			wd.decor_pass[p_rect_id].dec_type = p_dec_type;
+		}
+	}
+}
+
+void DisplayServerMacOS::window_remove_decoration(int p_rect_id, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.decor.has(p_rect_id)) {
+		wd.decor.erase(p_rect_id);
+	}
+	if (wd.decor_pass.has(p_rect_id)) {
+		wd.decor_pass.erase(p_rect_id);
+	}
+}
+
 int DisplayServerMacOS::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(!windows.has(p_window), -1);
@@ -2257,6 +2344,9 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
+				if (!([wd.window_object styleMask] & NSWindowStyleMaskTitled)) { // Window should be resizable to zoom.
+					[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
+				}
 				[wd.window_object zoom:nil];
 			}
 		} break;
@@ -2267,7 +2357,7 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			// Do nothing.
 		} break;
 		case WINDOW_MODE_MINIMIZED: {
-			[wd.window_object performMiniaturize:nil];
+			[wd.window_object miniaturize:nil];
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
@@ -2290,6 +2380,9 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			if (!NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
+				if (!([wd.window_object styleMask] & NSWindowStyleMaskTitled)) { // Window should be resizable to zoom.
+					[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
+				}
 				[wd.window_object zoom:nil];
 			}
 		} break;
@@ -2309,6 +2402,7 @@ DisplayServer::WindowMode DisplayServerMacOS::window_get_mode(WindowID p_window)
 			return WINDOW_MODE_FULLSCREEN;
 		}
 	}
+
 	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 		return WINDOW_MODE_MAXIMIZED;
 	}
@@ -2457,7 +2551,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			}
 			wd.borderless = p_enabled;
 			if (p_enabled) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
+				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskMiniaturizable];
 			} else {
 				if (wd.layered_window) {
 					wd.layered_window = false;
@@ -2496,7 +2590,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				return;
 			}
 			if (p_enabled) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless]; // Force borderless.
+				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskMiniaturizable]; // Force borderless.
 			} else if (!wd.borderless) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 			}
@@ -2543,7 +2637,7 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 			return [wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView;
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
-			return [wd.window_object styleMask] == NSWindowStyleMaskBorderless;
+			return !([wd.window_object styleMask] & NSWindowStyleMaskTitled);
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			if (wd.fullscreen) {

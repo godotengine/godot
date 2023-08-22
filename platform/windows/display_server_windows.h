@@ -454,12 +454,23 @@ class DisplayServerWindows : public DisplayServer {
 	TTS_Windows *tts = nullptr;
 	NativeMenuWindows *native_menu = nullptr;
 
+	struct DecorData {
+		Vector<Vector2> region;
+		WindowDecorationType dec_type = WINDOW_DECORATION_MOVE;
+	};
+
 	struct WindowData {
+		int decor_id = 0;
+		HashMap<int, DecorData> decor;
+		HashMap<int, DecorData> decor_pass;
+
 		HWND hWnd;
 
 		Vector<Vector2> mpath;
 
 		bool create_completed = false;
+		bool pre_max_valid = false;
+		RECT pre_max_rect;
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
 		bool maximized = false;
@@ -741,6 +752,11 @@ public:
 	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
 
+	virtual int window_add_decoration(const Vector<Vector2> &p_region, WindowDecorationType p_dec_type, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_change_decoration(int p_rect_id, const Vector<Vector2> &p_region, WindowDecorationType p_dec_type, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_remove_decoration(int p_rect_id, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Array window_get_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
+
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
 
@@ -787,6 +803,9 @@ public:
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+
+	virtual bool window_maximize_on_title_dbl_click() const override;
+	virtual bool window_minimize_on_title_dbl_click() const override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;

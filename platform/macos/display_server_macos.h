@@ -83,7 +83,16 @@ public:
 		KeyLocation location = KeyLocation::UNSPECIFIED;
 	};
 
+	struct DecorData {
+		Vector<Vector2> region;
+		WindowDecorationType dec_type = WINDOW_DECORATION_MOVE;
+	};
+
 	struct WindowData {
+		int decor_id = 0;
+		HashMap<int, DecorData> decor;
+		HashMap<int, DecorData> decor_pass;
+
 		id window_delegate;
 		id window_object;
 		id window_view;
@@ -346,6 +355,11 @@ public:
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window) const override;
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
+
+	virtual int window_add_decoration(const Vector<Vector2> &p_region, WindowDecorationType p_dec_type, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_change_decoration(int p_rect_id, const Vector<Vector2> &p_region, WindowDecorationType p_dec_type, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_remove_decoration(int p_rect_id, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Array window_get_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;

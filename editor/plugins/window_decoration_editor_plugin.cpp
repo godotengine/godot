@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  line_2d_editor_plugin.cpp                                             */
+/*  window_decoration_editor_plugin.cpp                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,40 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "line_2d_editor_plugin.h"
+#include "window_decoration_editor_plugin.h"
 
-#include "editor/editor_node.h"
-#include "editor/editor_undo_redo_manager.h"
-
-CanvasItem *Line2DEditor::_get_node() const {
+CanvasItem *WindowDecorationEditor::_get_node() const {
 	return node;
 }
 
-void Line2DEditor::_set_node(Node *p_line) {
-	node = Object::cast_to<Line2D>(p_line);
+void WindowDecorationEditor::_set_node(Node *p_polygon) {
+	WindowDecoration *wd = Object::cast_to<WindowDecoration>(p_polygon);
+	if (wd && wd->is_non_rectangular_region()) {
+		node = wd;
+	} else {
+		node = nullptr;
+	}
 }
 
-bool Line2DEditor::_is_line() const {
-	return true;
-}
+WindowDecorationEditor::WindowDecorationEditor() {}
 
-Variant Line2DEditor::_get_polygon(int p_idx) const {
-	return _get_node()->get("points");
-}
-
-void Line2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {
-	_get_node()->set("points", p_polygon);
-}
-
-void Line2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
-	CanvasItem *_node = _get_node();
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(_node, "set_points", p_polygon);
-	undo_redo->add_undo_method(_node, "set_points", p_previous);
-}
-
-Line2DEditor::Line2DEditor() {}
-
-Line2DEditorPlugin::Line2DEditorPlugin() :
-		AbstractPolygon2DEditorPlugin(memnew(Line2DEditor), "Line2D") {
+WindowDecorationEditorPlugin::WindowDecorationEditorPlugin() :
+		AbstractPolygon2DEditorPlugin(memnew(WindowDecorationEditor), "WindowDecoration") {
 }

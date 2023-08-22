@@ -42,7 +42,7 @@ Ref<OccluderPolygon2D> LightOccluder2DEditor::_ensure_occluder() const {
 	return occluder;
 }
 
-Node2D *LightOccluder2DEditor::_get_node() const {
+CanvasItem *LightOccluder2DEditor::_get_node() const {
 	return node;
 }
 

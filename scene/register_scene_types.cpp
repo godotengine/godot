@@ -91,6 +91,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_stream_player.h"
+#include "scene/gui/window_decoration.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
@@ -382,6 +383,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CanvasModulate);
 	GDREGISTER_CLASS(ResourcePreloader);
 	GDREGISTER_CLASS(Window);
+	GDREGISTER_CLASS(WindowDecoration);
 
 	GDREGISTER_CLASS(StatusIndicator);
 

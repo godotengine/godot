@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/math/geometry_2d.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
@@ -136,6 +137,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
+		case FEATURE_CLIENT_SIDE_DECORATIONS:
 			return true;
 		default:
 			return false;
@@ -1808,6 +1810,92 @@ void DisplayServerWindows::window_set_mouse_passthrough(const Vector<Vector2> &p
 	_update_window_mouse_passthrough(p_window);
 }
 
+int DisplayServerWindows::window_add_decoration(const Vector<Vector2> &p_region, DisplayServer::WindowDecorationType p_dec_type, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX_V(p_dec_type, DisplayServer::WINDOW_DECORATION_MAX, -1);
+	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	WindowData &wd = windows[p_window];
+
+	int did = wd.decor_id++;
+	if (p_dec_type == WINDOW_DECORATION_PASS) {
+		wd.decor_pass[did].region = p_region;
+		wd.decor_pass[did].dec_type = p_dec_type;
+	} else {
+		wd.decor[did].region = p_region;
+		wd.decor[did].dec_type = p_dec_type;
+	}
+
+	return did;
+}
+
+Array DisplayServerWindows::window_get_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Array());
+	const WindowData &wd = windows[p_window];
+
+	Array ret;
+	for (const KeyValue<int, DecorData> &E : wd.decor) {
+		Dictionary decor;
+		decor["id"] = E.key;
+		decor["region"] = E.value.region;
+		decor["type"] = E.value.dec_type;
+		ret.push_back(decor);
+	}
+	for (const KeyValue<int, DecorData> &E : wd.decor_pass) {
+		Dictionary decor;
+		decor["id"] = E.key;
+		decor["region"] = E.value.region;
+		decor["type"] = E.value.dec_type;
+		ret.push_back(decor);
+	}
+	return ret;
+}
+
+void DisplayServerWindows::window_change_decoration(int p_rect_id, const Vector<Vector2> &p_region, DisplayServer::WindowDecorationType p_dec_type, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX(p_dec_type, DisplayServer::WINDOW_DECORATION_MAX);
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.decor.has(p_rect_id)) {
+		if (p_dec_type == WINDOW_DECORATION_PASS) {
+			wd.decor.erase(p_rect_id);
+			wd.decor_pass[p_rect_id].region = p_region;
+			wd.decor_pass[p_rect_id].dec_type = p_dec_type;
+		} else {
+			wd.decor[p_rect_id].region = p_region;
+			wd.decor[p_rect_id].dec_type = p_dec_type;
+		}
+	}
+	if (wd.decor_pass.has(p_rect_id)) {
+		if (p_dec_type != WINDOW_DECORATION_PASS) {
+			wd.decor_pass.erase(p_rect_id);
+			wd.decor[p_rect_id].region = p_region;
+			wd.decor[p_rect_id].dec_type = p_dec_type;
+		} else {
+			wd.decor_pass[p_rect_id].region = p_region;
+			wd.decor_pass[p_rect_id].dec_type = p_dec_type;
+		}
+	}
+}
+
+void DisplayServerWindows::window_remove_decoration(int p_rect_id, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.decor.has(p_rect_id)) {
+		wd.decor.erase(p_rect_id);
+	}
+	if (wd.decor_pass.has(p_rect_id)) {
+		wd.decor_pass.erase(p_rect_id);
+	}
+}
+
 void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
@@ -2228,8 +2316,17 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
 			restore_mouse_trails = 0;
 		}
+	} else if (wd.borderless) {
+		int cs = window_get_current_screen(p_window);
+		Rect2i srect = screen_get_usable_rect(cs);
+		Rect2i wrect = Rect2i(window_get_position_with_decorations(p_window), window_get_size_with_decorations(p_window));
+		if (wrect == srect) {
+			if (wd.pre_max_valid) {
+				MoveWindow(wd.hWnd, wd.pre_max_rect.left, wd.pre_max_rect.top, wd.pre_max_rect.right - wd.pre_max_rect.left, wd.pre_max_rect.bottom - wd.pre_max_rect.top, TRUE);
+				wd.pre_max_valid = false;
+			}
+		}
 	}
-
 	if (p_mode == WINDOW_MODE_WINDOWED) {
 		ShowWindow(wd.hWnd, SW_NORMAL);
 		wd.maximized = false;
@@ -2237,7 +2334,15 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	}
 
 	if (p_mode == WINDOW_MODE_MAXIMIZED) {
-		ShowWindow(wd.hWnd, SW_MAXIMIZE);
+		if (wd.borderless) {
+			int cs = window_get_current_screen(p_window);
+			Rect2i srect = screen_get_usable_rect(cs);
+			GetWindowRect(wd.hWnd, &wd.pre_max_rect);
+			wd.pre_max_valid = true;
+			MoveWindow(wd.hWnd, srect.position.x, srect.position.y, srect.size.width, srect.size.height, TRUE);
+		} else {
+			ShowWindow(wd.hWnd, SW_MAXIMIZE);
+		}
 		wd.maximized = true;
 		wd.minimized = false;
 	}
@@ -2303,6 +2408,15 @@ DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_windo
 		return WINDOW_MODE_MINIMIZED;
 	} else if (wd.maximized) {
 		return WINDOW_MODE_MAXIMIZED;
+	} else if (wd.borderless) {
+		int cs = window_get_current_screen(p_window);
+		Rect2i srect = screen_get_usable_rect(cs);
+		Rect2i wrect = Rect2i(window_get_position_with_decorations(p_window), window_get_size_with_decorations(p_window));
+		if (wrect == srect) {
+			return WINDOW_MODE_MAXIMIZED;
+		} else {
+			return WINDOW_MODE_WINDOWED;
+		}
 	} else {
 		return WINDOW_MODE_WINDOWED;
 	}
@@ -3692,6 +3806,14 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	return DisplayServer::VSYNC_ENABLED;
 }
 
+bool DisplayServerWindows::window_maximize_on_title_dbl_click() const {
+	return true;
+}
+
+bool DisplayServerWindows::window_minimize_on_title_dbl_click() const {
+	return false;
+}
+
 void DisplayServerWindows::set_context(Context p_context) {
 }
 
@@ -4082,6 +4204,56 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 		} break;
 		case WM_NCHITTEST: {
+			POINT coords;
+			GetCursorPos(&coords);
+			ScreenToClient(windows[window_id].hWnd, &coords);
+
+			bool pass = false;
+			for (const KeyValue<int, DisplayServerWindows::DecorData> &E : windows[window_id].decor_pass) {
+				if (Geometry2D::is_point_in_polygon(Vector2i(coords.x, coords.y), E.value.region)) {
+					pass = true;
+					break;
+				}
+			}
+
+			if (!pass) {
+				for (const KeyValue<int, DisplayServerWindows::DecorData> &E : windows[window_id].decor) {
+					if (Geometry2D::is_point_in_polygon(Vector2i(coords.x, coords.y), E.value.region)) {
+						switch (E.value.dec_type) {
+							case DisplayServer::WINDOW_DECORATION_TOP_LEFT: {
+								return HTTOPLEFT;
+							} break;
+							case DisplayServer::WINDOW_DECORATION_TOP: {
+								return HTTOP;
+							} break;
+							case DisplayServer::WINDOW_DECORATION_TOP_RIGHT: {
+								return HTTOPRIGHT;
+							} break;
+							case DisplayServer::WINDOW_DECORATION_LEFT: {
+								return HTLEFT;
+							} break;
+							case DisplayServer::WINDOW_DECORATION_RIGHT: {
+								return HTRIGHT;
+							} break;
+							case DisplayServer::WINDOW_DECORATION_BOTTOM_LEFT: {
+								return HTBOTTOMLEFT;
+							} break;
+							case DisplayServer::WINDOW_DECORATION_BOTTOM: {
+								return HTBOTTOM;
+							} break;
+							case DisplayServer::WINDOW_DECORATION_BOTTOM_RIGHT: {
+								return HTBOTTOMRIGHT;
+							} break;
+							case DisplayServer::WINDOW_DECORATION_MOVE: {
+								return HTCAPTION;
+							} break;
+							default:
+								break;
+						}
+					}
+				}
+			}
+
 			if (windows[window_id].mpass) {
 				return HTTRANSPARENT;
 			}
@@ -4876,6 +5048,60 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			Input::get_singleton()->parse_input_event(mm);
 
+		} break;
+		case WM_NCLBUTTONDBLCLK: {
+			POINT coords;
+			GetCursorPos(&coords);
+			ScreenToClient(windows[window_id].hWnd, &coords);
+
+			WindowData &wd = windows[window_id];
+			bool pass = false;
+			for (const KeyValue<int, DecorData> &E : wd.decor_pass) {
+				if (Geometry2D::is_point_in_polygon(Vector2i(coords.x, coords.y), E.value.region)) {
+					pass = true;
+					break;
+				}
+			}
+			if (!pass) {
+				for (const KeyValue<int, DecorData> &E : wd.decor) {
+					if (Geometry2D::is_point_in_polygon(Vector2(coords.x, coords.y), E.value.region)) {
+						if (E.value.dec_type == DisplayServer::WINDOW_DECORATION_MOVE) {
+							if (window_maximize_on_title_dbl_click()) {
+								if (wd.borderless) {
+									int cs = window_get_current_screen(window_id);
+									Rect2i srect = screen_get_usable_rect(cs);
+									Rect2i wrect = Rect2i(window_get_position_with_decorations(window_id), window_get_size_with_decorations(window_id));
+									if (wrect == srect) {
+										if (wd.pre_max_valid) {
+											MoveWindow(wd.hWnd, wd.pre_max_rect.left, wd.pre_max_rect.top, wd.pre_max_rect.right - wd.pre_max_rect.left, wd.pre_max_rect.bottom - wd.pre_max_rect.top, TRUE);
+											wd.pre_max_valid = false;
+										}
+										wd.maximized = false;
+										wd.minimized = false;
+									} else {
+										GetWindowRect(wd.hWnd, &wd.pre_max_rect);
+										wd.pre_max_valid = true;
+										MoveWindow(wd.hWnd, srect.position.x, srect.position.y, srect.size.width, srect.size.height, TRUE);
+										wd.maximized = true;
+										wd.minimized = false;
+									}
+								} else {
+									if (wd.maximized) {
+										ShowWindow(wd.hWnd, SW_RESTORE);
+										wd.maximized = false;
+										wd.minimized = false;
+									} else {
+										ShowWindow(wd.hWnd, SW_MAXIMIZE);
+										wd.maximized = true;
+										wd.minimized = false;
+									}
+								}
+								return 0;
+							}
+						}
+					}
+				}
+			}
 		} break;
 		case WM_LBUTTONDOWN:
 		case WM_LBUTTONUP:

@@ -33,7 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 
-Node2D *NavigationObstacle2DEditor::_get_node() const {
+CanvasItem *NavigationObstacle2DEditor::_get_node() const {
 	return node;
 }
 
