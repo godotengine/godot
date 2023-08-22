@@ -395,6 +395,16 @@ Dependency *GI::voxel_gi_get_dependency(RID p_voxel_gi) const {
 ////////////////////////////////////////////////////////////////////////////////
 // SDFGI
 
+static RID create_clear_texture(const RD::TextureFormat &p_format, const String &p_name) {
+	RID texture = RD::get_singleton()->texture_create(p_format, RD::TextureView());
+	ERR_FAIL_COND_V_MSG(texture.is_null(), RID(), String("Cannot create texture: ") + p_name);
+
+	RD::get_singleton()->set_resource_name(texture, p_name);
+	RD::get_singleton()->texture_clear(texture, Color(0, 0, 0, 0), 0, p_format.mipmaps, 0, p_format.array_layers);
+
+	return texture;
+}
+
 void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
@@ -424,39 +434,31 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	{
 		RD::TextureFormat tf_render = tf_sdf;
 		tf_render.format = RD::DATA_FORMAT_R16_UINT;
-		render_albedo = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_albedo, "VoxelGI Render Albedo");
+		render_albedo = create_clear_texture(tf_render, "SDFGI Render Albedo");
+
 		tf_render.format = RD::DATA_FORMAT_R32_UINT;
-		render_emission = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_emission, "VoxelGI Render Emission");
-		render_emission_aniso = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_emission_aniso, "VoxelGI Render Emission Aniso");
+		render_emission = create_clear_texture(tf_render, "SDFGI Render Emission");
+		render_emission_aniso = create_clear_texture(tf_render, "SDFGI Render Emission Aniso");
 
 		tf_render.format = RD::DATA_FORMAT_R8_UNORM; //at least its easy to visualize
 
 		for (int i = 0; i < 8; i++) {
-			render_occlusion[i] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-			RD::get_singleton()->set_resource_name(render_occlusion[i], String("VoxelGI Render Occlusion ") + itos(i));
+			render_occlusion[i] = create_clear_texture(tf_render, String("SDFGI Render Occlusion ") + itos(i));
 		}
 
 		tf_render.format = RD::DATA_FORMAT_R32_UINT;
-		render_geom_facing = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_geom_facing, "VoxelGI Render Geometry Facing");
+		render_geom_facing = create_clear_texture(tf_render, "SDFGI Render Geometry Facing");
 
 		tf_render.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
-		render_sdf[0] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_sdf[0], "VoxelGI Render SDF 0");
-		render_sdf[1] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_sdf[1], "VoxelGI Render SDF 1");
+		render_sdf[0] = create_clear_texture(tf_render, "SDFGI Render SDF 0");
+		render_sdf[1] = create_clear_texture(tf_render, "SDFGI Render SDF 1");
 
 		tf_render.width /= 2;
 		tf_render.height /= 2;
 		tf_render.depth /= 2;
 
-		render_sdf_half[0] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_sdf_half[0], "VoxelGI Render SDF Half 0");
-		render_sdf_half[1] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
-		RD::get_singleton()->set_resource_name(render_sdf_half[1], "VoxelGI Render SDF Half 1");
+		render_sdf_half[0] = create_clear_texture(tf_render, "SDFGI Render SDF Half 0");
+		render_sdf_half[1] = create_clear_texture(tf_render, "SDFGI Render SDF Half 1");
 	}
 
 	RD::TextureFormat tf_occlusion = tf_sdf;
@@ -496,10 +498,8 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	tf_probe_average.format = RD::DATA_FORMAT_R32G32B32A32_SINT; //signed integer because SH are signed
 	tf_probe_average.texture_type = RD::TEXTURE_TYPE_2D;
 
-	lightprobe_history_scroll = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
-	RD::get_singleton()->set_resource_name(lightprobe_history_scroll, "VoxelGI LightProbe History Scroll");
-	lightprobe_average_scroll = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
-	RD::get_singleton()->set_resource_name(lightprobe_average_scroll, "VoxelGI LightProbe Average Scroll");
+	lightprobe_history_scroll = create_clear_texture(tf_probe_history, "SDFGI LightProbe History Scroll");
+	lightprobe_average_scroll = create_clear_texture(tf_probe_average, "SDFGI LightProbe Average Scroll");
 
 	{
 		//octahedral lightprobes
@@ -512,8 +512,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		tf_octprobes.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
 		//lightprobe texture is an octahedral texture
 
-		lightprobe_data = RD::get_singleton()->texture_create(tf_octprobes, RD::TextureView());
-		RD::get_singleton()->set_resource_name(lightprobe_data, "VoxelGI LightProbe Data");
+		lightprobe_data = create_clear_texture(tf_octprobes, "SDFGI LightProbe Data");
 		RD::TextureView tv;
 		tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 		lightprobe_texture = RD::get_singleton()->texture_create_shared(tv, lightprobe_data);
@@ -526,14 +525,12 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		tf_ambient.height = probe_axis_count;
 		tf_ambient.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		//lightprobe texture is an octahedral texture
-		ambient_texture = RD::get_singleton()->texture_create(tf_ambient, RD::TextureView());
-		RD::get_singleton()->set_resource_name(ambient_texture, "VoxelGI Ambient Texture");
+		ambient_texture = create_clear_texture(tf_ambient, "SDFGI Ambient Texture");
 	}
 
 	cascades_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES);
 
-	occlusion_data = RD::get_singleton()->texture_create(tf_occlusion, RD::TextureView());
-	RD::get_singleton()->set_resource_name(occlusion_data, "VoxelGI Occlusion Data");
+	occlusion_data = create_clear_texture(tf_occlusion, "SDFGI Occlusion Data");
 	{
 		RD::TextureView tv;
 		tv.format_override = RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16;
@@ -543,25 +540,17 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	for (SDFGI::Cascade &cascade : cascades) {
 		/* 3D Textures */
 
-		cascade.sdf_tex = RD::get_singleton()->texture_create(tf_sdf, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.sdf_tex, "VoxelGI Cascade SDF Texture");
+		cascade.sdf_tex = create_clear_texture(tf_sdf, "SDFGI Cascade SDF Texture");
 
-		cascade.light_data = RD::get_singleton()->texture_create(tf_light, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.light_data, "VoxelGI Cascade Light Data");
+		cascade.light_data = create_clear_texture(tf_light, "SDFGI Cascade Light Data");
 
-		cascade.light_aniso_0_tex = RD::get_singleton()->texture_create(tf_aniso0, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.light_aniso_0_tex, "VoxelGI Cascade Light Aniso 0 Texture");
-		cascade.light_aniso_1_tex = RD::get_singleton()->texture_create(tf_aniso1, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.light_aniso_1_tex, "VoxelGI Cascade Light Aniso 1 Texture");
+		cascade.light_aniso_0_tex = create_clear_texture(tf_aniso0, "SDFGI Cascade Light Aniso 0 Texture");
+		cascade.light_aniso_1_tex = create_clear_texture(tf_aniso1, "SDFGI Cascade Light Aniso 1 Texture");
 
 		{
 			RD::TextureView tv;
 			tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 			cascade.light_tex = RD::get_singleton()->texture_create_shared(tv, cascade.light_data);
-
-			RD::get_singleton()->texture_clear(cascade.light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-			RD::get_singleton()->texture_clear(cascade.light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
-			RD::get_singleton()->texture_clear(cascade.light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
 		}
 
 		cascade.cell_size = base_cell_size;
@@ -579,11 +568,11 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		/* Probe History */
 
 		cascade.lightprobe_history_tex = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.lightprobe_history_tex, "VoxelGI Cascade LightProbe History Texture");
+		RD::get_singleton()->set_resource_name(cascade.lightprobe_history_tex, "SDFGI Cascade LightProbe History Texture");
 		RD::get_singleton()->texture_clear(cascade.lightprobe_history_tex, Color(0, 0, 0, 0), 0, 1, 0, tf_probe_history.array_layers); //needs to be cleared for average to work
 
 		cascade.lightprobe_average_tex = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
-		RD::get_singleton()->set_resource_name(cascade.lightprobe_average_tex, "VoxelGI Cascade LightProbe Average Texture");
+		RD::get_singleton()->set_resource_name(cascade.lightprobe_average_tex, "SDFGI Cascade LightProbe Average Texture");
 		RD::get_singleton()->texture_clear(cascade.lightprobe_average_tex, Color(0, 0, 0, 0), 0, 1, 0, 1); //needs to be cleared for average to work
 
 		/* Buffers */
