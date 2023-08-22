@@ -238,6 +238,58 @@ const Engine = (function () {
 					this.rtenv['request_quit']();
 				}
 			},
+
+			/**
+			 * Getter for {@link https://docs.godotengine.org/en/stable/classes/class_os.html#class-os-property-low-processor-usage-mode | OS.low_processor_usage_mode}.
+			 * @returns {boolean}
+			 */
+			get lowProcessorUsageMode() {
+				if (this.rtenv) {
+					return Boolean(this.rtenv['getLowProcessorUsageMode']());
+				}
+				return false;
+			},
+
+			/**
+			 * Setter for {@link https://docs.godotengine.org/en/stable/classes/class_os.html#class-os-property-low-processor-usage-mode | OS.low_processor_usage_mode}.
+			 * Only works if the engine was compiled using the `do_not_block_main_thread` option.
+			 * @param {boolean | 0 | 1} val Set the low processor mode on or off
+			 */
+			set lowProcessorUsageMode(val) {
+				if (!(typeof val === 'boolean' || typeof val === 'number')) {
+					throw new Error('val must be a boolean or a number');
+				}
+
+				if (this.rtenv) {
+					this.rtenv['setLowProcessorUsageMode'](Number(val));
+				}
+			},
+
+			/**
+			 * Getter for {@link https://docs.godotengine.org/en/stable/classes/class_os.html#class-os-property-low-processor-usage-mode-sleep-usec | OS.low_processor_usage_mode_sleep_usec}.
+			 * @returns {number}
+			 */
+			get lowProcessorUsageModeSleepUsec() {
+				if (this.rtenv) {
+					return this.rtenv['getLowProcessorUsageModeSleepUsec']();
+				}
+				return 6900;
+			},
+
+			/**
+			 * Setter for {@link https://docs.godotengine.org/en/stable/classes/class_os.html#class-os-property-low-processor-usage-mode-sleep-usec | OS.low_processor_usage_mode_sleep_usec}.
+			 * Only works if the engine was compiled using the `do_not_block_main_thread` option.
+			 * @param {number} val Low processor mode sleep usec value
+			 */
+			set lowProcessorUsageModeSleepUsec(val) {
+				if (typeof val !== 'number') {
+					throw new Error('val must be a number');
+				}
+
+				if (this.rtenv) {
+					this.rtenv['setLowProcessorUsageModeSleepUsec'](val);
+				}
+			},
 		};
 
 		Engine.prototype = proto;
@@ -248,6 +300,8 @@ const Engine = (function () {
 		Engine.prototype['startGame'] = Engine.prototype.startGame;
 		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
 		Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
+		Engine.prototype['lowProcessorUsageMode'] = Engine.prototype.lowProcessorUsageMode;
+		Engine.prototype['lowProcessorUsageModeSleepUsec'] = Engine.prototype.lowProcessorUsageModeSleepUsec;
 		// Also expose static methods as instance methods
 		Engine.prototype['load'] = Engine.load;
 		Engine.prototype['unload'] = Engine.unload;

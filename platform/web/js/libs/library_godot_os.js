@@ -231,11 +231,44 @@ const GodotOS = {
 		'Module["request_quit"] = function() { GodotOS.request_quit() };',
 		'Module["onExit"] = GodotOS.cleanup;',
 		'GodotOS._fs_sync_promise = Promise.resolve();',
+		'Module["getLowProcessorUsageMode"] = GodotOS.low_processor_usage_mode_getter;',
+		'Module["setLowProcessorUsageMode"] = GodotOS.low_processor_usage_mode_setter;',
+		'Module["getLowProcessorUsageModeSleepUsec"] = GodotOS.low_processor_usage_mode_sleep_usec_getter;',
+		'Module["setLowProcessorUsageModeSleepUsec"] = GodotOS.low_processor_usage_mode_sleep_usec_setter;',
 	].join(''),
 	$GodotOS: {
 		request_quit: function () {},
 		_async_cbs: [],
 		_fs_sync_promise: null,
+
+		low_processor_usage_mode_getter: function () {
+			if (GodotOS._low_processor_usage_mode_getter == null) {
+				return null;
+			}
+			return GodotOS._low_processor_usage_mode_getter();
+		},
+		low_processor_usage_mode_setter: function (val) {
+			if (GodotOS._low_processor_usage_mode_setter == null) {
+				return;
+			}
+			GodotOS._low_processor_usage_mode_setter(val);
+		},
+		low_processor_usage_mode_sleep_usec_getter: function () {
+			if (GodotOS._low_processor_usage_mode_sleep_usec_getter == null) {
+				return null;
+			}
+			return GodotOS._low_processor_usage_mode_sleep_usec_getter();
+		},
+		low_processor_usage_mode_sleep_usec_setter: function (val) {
+			if (GodotOS._low_processor_usage_mode_sleep_usec_setter == null) {
+				return;
+			}
+			GodotOS._low_processor_usage_mode_sleep_usec_setter(val);
+		},
+		_low_processor_usage_mode_getter: null,
+		_low_processor_usage_mode_setter: null,
+		_low_processor_usage_mode_sleep_usec_getter: null,
+		_low_processor_usage_mode_sleep_usec_setter: null,
 
 		atexit: function (p_promise_cb) {
 			GodotOS._async_cbs.push(p_promise_cb);
@@ -362,6 +395,36 @@ const GodotOS = {
 		a.click();
 		a.remove();
 		window.URL.revokeObjectURL(url);
+	},
+
+	godot_js_os_low_processor_usage_mode_get_set_cb__proxy: 'sync',
+	godot_js_os_low_processor_usage_mode_get_set_cb__sig: 'vii',
+	godot_js_os_low_processor_usage_mode_get_set_cb: function (p_get_callback, p_set_callback) {
+		const get_func = GodotRuntime.get_func(p_get_callback);
+		const set_func = GodotRuntime.get_func(p_set_callback);
+
+		GodotOS._low_processor_usage_mode_getter = function () {
+			return get_func();
+		};
+
+		GodotOS._low_processor_usage_mode_setter = function (val) {
+			set_func(val);
+		};
+	},
+
+	godot_js_os_low_processor_usage_mode_sleep_usec_get_set_cb__proxy: 'sync',
+	godot_js_os_low_processor_usage_mode_sleep_usec_get_set_cb__sig: 'vii',
+	godot_js_os_low_processor_usage_mode_sleep_usec_get_set_cb: function (p_get_callback, p_set_callback) {
+		const get_func = GodotRuntime.get_func(p_get_callback);
+		const set_func = GodotRuntime.get_func(p_set_callback);
+
+		GodotOS._low_processor_usage_mode_sleep_usec_getter = function () {
+			return get_func();
+		};
+
+		GodotOS._low_processor_usage_mode_sleep_usec_setter = function (val) {
+			set_func(val);
+		};
 	},
 };
 

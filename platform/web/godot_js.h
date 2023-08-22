@@ -51,6 +51,8 @@ extern int godot_js_os_execute(const char *p_json);
 extern void godot_js_os_shell_open(const char *p_uri);
 extern int godot_js_os_hw_concurrency_get();
 extern int godot_js_os_has_feature(const char *p_ftr);
+extern void godot_js_os_low_processor_usage_mode_get_set_cb(int (*p_callback_get)(), void (*p_callback_set)(int p_enabled));
+extern void godot_js_os_low_processor_usage_mode_sleep_usec_get_set_cb(int (*p_callback_get)(), void (*p_callback_set)(int p_sleep_usec));
 extern int godot_js_pwa_cb(void (*p_callback)());
 extern int godot_js_pwa_update();
 

@@ -215,6 +215,26 @@ void OS_Web::update_pwa_state_callback() {
 	}
 }
 
+void OS_Web::low_processor_usage_mode_set_callback(int p_enabled) {
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	OS::get_singleton()->set_low_processor_usage_mode(p_enabled > 0);
+#endif
+}
+
+int OS_Web::low_processor_usage_mode_get_callback() {
+	return OS::get_singleton()->is_in_low_processor_usage_mode();
+}
+
+void OS_Web::low_processor_usage_mode_sleep_usec_set_callback(int p_sleep_usec) {
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(p_sleep_usec);
+#endif
+}
+
+int OS_Web::low_processor_usage_mode_sleep_usec_get_callback() {
+	return OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
+}
+
 void OS_Web::force_fs_sync() {
 	if (is_userfs_persistent()) {
 		idb_needs_sync = true;
@@ -263,6 +283,9 @@ OS_Web::OS_Web() {
 	}
 
 	idb_available = godot_js_os_fs_is_persistent();
+
+	godot_js_os_low_processor_usage_mode_get_set_cb(&OS_Web::low_processor_usage_mode_get_callback, &OS_Web::low_processor_usage_mode_set_callback);
+	godot_js_os_low_processor_usage_mode_sleep_usec_get_set_cb(&OS_Web::low_processor_usage_mode_sleep_usec_get_callback, &OS_Web::low_processor_usage_mode_sleep_usec_set_callback);
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
