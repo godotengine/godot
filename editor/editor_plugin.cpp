@@ -527,9 +527,44 @@ void EditorPlugin::remove_resource_conversion_plugin(const Ref<EditorResourceCon
 	EditorNode::get_singleton()->remove_resource_conversion_plugin(p_plugin);
 }
 
+void EditorPlugin::add_custom_translation(const Ref<Translation> &p_translation) {
+	ERR_FAIL_COND(p_translation.is_null());
+
+	Ref<Translation> tool_translation = TranslationServer::get_singleton()->get_tool_translation();
+	if (!tool_translation->get_locale().begins_with(p_translation->get_locale())) {
+		return;
+	}
+
+	List<StringName> message_list;
+	p_translation->get_message_list(&message_list);
+
+	for (const StringName &message : message_list) {
+		if (tool_translation->get_message(message) != StringName()) {
+			WARN_PRINT(vformat("Trying to add already existing translation message: '%s'. It will be ignored.", message));
+			continue;
+		}
+		tool_translation->add_message(message, p_translation->get_message(message));
+		custom_translation_messages[p_translation->get_path()].append(message);
+	}
+}
+
+void EditorPlugin::remove_custom_translation(const Ref<Translation> &p_translation) {
+	ERR_FAIL_COND(p_translation.is_null());
+	if (!custom_translation_messages.has(p_translation->get_path())) {
+		return;
+	}
+	Ref<Translation> tool_translation = TranslationServer::get_singleton()->get_tool_translation();
+
+	for (const StringName &message : custom_translation_messages[p_translation->get_path()]) {
+		tool_translation->erase_message(message);
+	}
+	custom_translation_messages.erase(p_translation->get_path());
+}
+
 void EditorPlugin::_editor_project_settings_changed() {
 	emit_signal(SNAME("project_settings_changed"));
 }
+
 void EditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -584,6 +619,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_inspector_plugin", "plugin"), &EditorPlugin::remove_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("add_resource_conversion_plugin", "plugin"), &EditorPlugin::add_resource_conversion_plugin);
 	ClassDB::bind_method(D_METHOD("remove_resource_conversion_plugin", "plugin"), &EditorPlugin::remove_resource_conversion_plugin);
+	ClassDB::bind_method(D_METHOD("add_custom_translation", "translation"), &EditorPlugin::add_custom_translation);
+	ClassDB::bind_method(D_METHOD("remove_custom_translation", "translation"), &EditorPlugin::remove_custom_translation);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
 

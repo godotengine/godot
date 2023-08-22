@@ -52,6 +52,7 @@ class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
 class ScriptCreateDialog;
+class Translation;
 
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
@@ -59,6 +60,8 @@ class EditorPlugin : public Node {
 
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;
+
+	HashMap<String, Vector<StringName>> custom_translation_messages;
 
 	String last_main_screen_name;
 	String plugin_version;
@@ -231,6 +234,9 @@ public:
 
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
+
+	void add_custom_translation(const Ref<Translation> &p_translation);
+	void remove_custom_translation(const Ref<Translation> &p_translation);
 
 	void enable_plugin();
 	void disable_plugin();
