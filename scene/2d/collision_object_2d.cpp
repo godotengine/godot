@@ -30,6 +30,7 @@
 
 #include "collision_object_2d.h"
 
+#include "scene/2d/path_2d.h"
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
 
@@ -78,6 +79,10 @@ void CollisionObject2D::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {
+				PathFollow2D *synchronized_body_parent = Object::cast_to<PathFollow2D>(get_parent());
+				if (synchronized_body_parent) {
+					call_deferred("set_global_position", synchronized_body_parent->get_global_position());
+				}
 				return;
 			}
 
