@@ -589,7 +589,7 @@
 			The right margin of the scrollbars. When negative, uses [theme_item panel] right margin.
 		</theme_item>
 		<theme_item name="scrollbar_margin_top" data_type="constant" type="int" default="-1">
-			The right margin of the vertical scrollbar. When negative, uses [theme_item panel] top margin.
+			The top margin of the vertical scrollbar. When negative, uses [theme_item panel] top margin.
 		</theme_item>
 		<theme_item name="scrollbar_v_separation" data_type="constant" type="int" default="4">
 			The vertical separation of tree content and scrollbar.

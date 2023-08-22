@@ -155,7 +155,7 @@
 			If enabled, a wrapper that can be used to run the application with console output is created alongside the exported application.
 		</member>
 		<member name="display/high_res" type="bool" setter="" getter="">
-			If [code]true[/code], the application is rendered at native display resolution, otherwise it is always rendered at loHPI resolution and upscaled by OS when required.
+			If [code]true[/code], the application is rendered at native display resolution, otherwise it is always rendered at loDPI resolution and upscaled by OS when required.
 		</member>
 		<member name="export/distribution_type" type="int" setter="" getter="">
 			Application distribution target.
