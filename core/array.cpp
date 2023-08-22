@@ -118,16 +118,25 @@ bool Array::operator==(const Array &p_array) const {
 }
 
 uint32_t Array::hash() const {
+	return recursive_hash(0);
+}
+
+uint32_t Array::recursive_hash(int p_recursion_count) const {
+	ERR_FAIL_COND_V_MSG(p_recursion_count > MAX_RECURSION, 0, "Max recursion reached");
+	p_recursion_count++;
+
 	uint32_t h = hash_djb2_one_32(0);
 
 	for (int i = 0; i < _p->array.size(); i++) {
-		h = hash_djb2_one_32(_p->array[i].hash(), h);
+		h = hash_djb2_one_32(_p->array[i].recursive_hash(p_recursion_count), h);
 	}
 	return h;
 }
+
 void Array::operator=(const Array &p_array) {
 	_ref(p_array);
 }
+
 void Array::push_back(const Variant &p_value) {
 	_p->array.push_back(p_value);
 }

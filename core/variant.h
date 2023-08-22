@@ -413,6 +413,7 @@ public:
 	bool operator!=(const Variant &p_variant) const;
 	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
+	uint32_t recursive_hash(int p_recursion_count) const;
 
 	bool hash_compare(const Variant &p_variant) const;
 	bool booleanize() const;

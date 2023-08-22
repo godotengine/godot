@@ -2508,6 +2508,10 @@ Variant::~Variant() {
 }*/
 
 uint32_t Variant::hash() const {
+	return recursive_hash(0);
+}
+
+uint32_t Variant::recursive_hash(int p_recursion_count) const {
 	switch (type) {
 		case NIL: {
 			return 0;
@@ -2622,13 +2626,10 @@ uint32_t Variant::hash() const {
 			return reinterpret_cast<const NodePath *>(_data._mem)->hash();
 		} break;
 		case DICTIONARY: {
-			return reinterpret_cast<const Dictionary *>(_data._mem)->hash();
-
+			return reinterpret_cast<const Dictionary *>(_data._mem)->recursive_hash(p_recursion_count);
 		} break;
 		case ARRAY: {
-			const Array &arr = *reinterpret_cast<const Array *>(_data._mem);
-			return arr.hash();
-
+			return reinterpret_cast<const Array *>(_data._mem)->recursive_hash(p_recursion_count);
 		} break;
 		case POOL_BYTE_ARRAY: {
 			const PoolVector<uint8_t> &arr = *reinterpret_cast<const PoolVector<uint8_t> *>(_data._mem);
