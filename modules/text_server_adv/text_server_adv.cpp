@@ -3780,6 +3780,7 @@ void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *
 			p_shaped->script_iter = nullptr;
 		}
 		p_shaped->break_ops_valid = false;
+		p_shaped->chars_valid = false;
 		p_shaped->js_ops_valid = false;
 	}
 }
@@ -4833,6 +4834,75 @@ int64_t TextServerAdvanced::_shaped_text_get_ellipsis_glyph_count(const RID &p_s
 	return sd->overrun_trim_data.ellipsis_glyph_buf.size();
 }
 
+void TextServerAdvanced::_update_chars(ShapedTextDataAdvanced *p_sd) const {
+	if (!p_sd->chars_valid) {
+		p_sd->chars.clear();
+
+		const UChar *data = p_sd->utf16.get_data();
+		UErrorCode err = U_ZERO_ERROR;
+		int prev = -1;
+		int i = 0;
+
+		Vector<ShapedTextDataAdvanced::Span> &spans = p_sd->spans;
+		if (p_sd->parent != RID()) {
+			ShapedTextDataAdvanced *parent_sd = shaped_owner.get_or_null(p_sd->parent);
+			ERR_FAIL_COND(!parent_sd->valid);
+			spans = parent_sd->spans;
+		}
+
+		while (i < spans.size()) {
+			if (spans[i].start > p_sd->end) {
+				break;
+			}
+			if (spans[i].end < p_sd->start) {
+				i++;
+				continue;
+			}
+
+			int r_start = MAX(0, spans[i].start - p_sd->start);
+			String language = spans[i].language;
+			while (i + 1 < spans.size() && language == spans[i + 1].language) {
+				i++;
+			}
+			int r_end = MIN(spans[i].end - p_sd->start, p_sd->text.length());
+			UBreakIterator *bi = ubrk_open(UBRK_CHARACTER, (language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale().ascii().get_data() : language.ascii().get_data(), data + _convert_pos_inv(p_sd, r_start), _convert_pos_inv(p_sd, r_end - r_start), &err);
+			if (U_SUCCESS(err)) {
+				while (ubrk_next(bi) != UBRK_DONE) {
+					int pos = _convert_pos(p_sd, ubrk_current(bi)) + r_start + p_sd->start;
+					if (prev != pos) {
+						p_sd->chars.push_back(pos);
+					}
+					prev = pos;
+				}
+				ubrk_close(bi);
+			} else {
+				for (int j = r_start; j < r_end; j++) {
+					if (prev != j) {
+						p_sd->chars.push_back(j + 1 + p_sd->start);
+					}
+					prev = j;
+				}
+			}
+			i++;
+		}
+		p_sd->chars_valid = true;
+	}
+}
+
+PackedInt32Array TextServerAdvanced::_shaped_text_get_character_breaks(const RID &p_shaped) const {
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, PackedInt32Array());
+
+	MutexLock lock(sd->mutex);
+	if (!sd->valid) {
+		const_cast<TextServerAdvanced *>(this)->_shaped_text_shape(p_shaped);
+	}
+
+	_update_chars(sd);
+
+	return sd->chars;
+}
+
 bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
@@ -5336,7 +5406,17 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 		// Try system fallback.
 		RID fdef = p_fonts[0];
 		if (_font_is_allow_system_fallback(fdef)) {
-			String text = p_sd->text.substr(p_start, 1);
+			_update_chars(p_sd);
+
+			int64_t next = p_end;
+			for (const int32_t &E : p_sd->chars) {
+				if (E > p_start) {
+					next = E;
+					break;
+				}
+			}
+			String text = p_sd->text.substr(p_start, next - p_start);
+
 			String font_name = _font_get_name(fdef);
 			BitField<FontStyle> font_style = _font_get_style(fdef);
 			int font_weight = _font_get_weight(fdef);
@@ -6597,6 +6677,30 @@ PackedInt32Array TextServerAdvanced::_string_get_word_breaks(const String &p_str
 		ret.push_back(line_start);
 		ret.push_back(p_string.length());
 	}
+	return ret;
+}
+
+PackedInt32Array TextServerAdvanced::_string_get_character_breaks(const String &p_string, const String &p_language) const {
+	const String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	// Convert to UTF-16.
+	Char16String utf16 = p_string.utf16();
+
+	PackedInt32Array ret;
+
+	UErrorCode err = U_ZERO_ERROR;
+	UBreakIterator *bi = ubrk_open(UBRK_CHARACTER, lang.ascii().get_data(), (const UChar *)utf16.get_data(), utf16.length(), &err);
+	if (U_SUCCESS(err)) {
+		while (ubrk_next(bi) != UBRK_DONE) {
+			int pos = _convert_pos(p_string, utf16, ubrk_current(bi));
+			ret.push_back(pos);
+		}
+		ubrk_close(bi);
+	} else {
+		for (int i = 0; i <= p_string.size(); i++) {
+			ret.push_back(i);
+		}
+	}
+
 	return ret;
 }
 

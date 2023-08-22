@@ -613,7 +613,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 	updating_tree = false;
 	tree_dirty = false;
 
-	if (!filter.strip_edges().is_empty()) {
+	if (!filter.strip_edges().is_empty() || !show_all_nodes) {
 		_update_filter(nullptr, p_scroll_to_selected);
 	}
 }
@@ -639,21 +639,28 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	PackedStringArray terms = filter.to_lower().split_spaces();
 	bool keep = _item_matches_all_terms(p_parent, terms);
 
-	p_parent->set_visible(keep_for_children || keep);
+	bool selectable = keep;
 	if (keep && !valid_types.is_empty()) {
-		keep = false;
+		selectable = false;
 		Node *n = get_node(p_parent->get_metadata(0));
 
 		for (const StringName &E : valid_types) {
 			if (n->is_class(E) ||
 					EditorNode::get_singleton()->is_object_of_custom_type(n, E)) {
-				keep = true;
+				selectable = true;
 				break;
 			}
 		}
 	}
 
-	if (keep) {
+	if (show_all_nodes) {
+		p_parent->set_visible(keep_for_children || keep);
+	} else {
+		// Show only selectable nodes, or parents of selectable.
+		p_parent->set_visible(keep_for_children || selectable);
+	}
+
+	if (selectable) {
 		p_parent->clear_custom_color(0);
 		p_parent->set_selectable(0, true);
 	} else if (keep_for_children) {
@@ -664,7 +671,7 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 
 	if (editor_selection) {
 		Node *n = get_node(p_parent->get_metadata(0));
-		if (keep) {
+		if (selectable) {
 			if (p_scroll_to_selected && n && editor_selection->is_selected(n)) {
 				tree->scroll_to_item(p_parent);
 			}
@@ -676,7 +683,7 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		}
 	}
 
-	return keep || keep_for_children;
+	return p_parent->is_visible();
 }
 
 bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArray p_terms) {
@@ -1084,6 +1091,11 @@ String SceneTreeEditor::get_filter() const {
 
 String SceneTreeEditor::get_filter_term_warning() {
 	return filter_term_warning;
+}
+
+void SceneTreeEditor::set_show_all_nodes(bool p_show_all_nodes) {
+	show_all_nodes = p_show_all_nodes;
+	_update_filter(nullptr, true);
 }
 
 void SceneTreeEditor::set_as_scene_tree_dock() {
@@ -1494,6 +1506,11 @@ void SceneTreeDialog::popup_scenetree_dialog() {
 	popup_centered_clamped(Size2(350, 700) * EDSCALE);
 }
 
+void SceneTreeDialog::_show_all_nodes_changed(bool p_button_pressed) {
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "show_all_nodes_for_node_selection", p_button_pressed);
+	tree->set_show_all_nodes(p_button_pressed);
+}
+
 void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 	if (p_valid.is_empty()) {
 		return;
@@ -1531,6 +1548,8 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 		label->set_text(type);
 		label->set_auto_translate(false);
 	}
+
+	show_all_nodes->show();
 }
 
 void SceneTreeDialog::_update_theme() {
@@ -1598,17 +1617,31 @@ SceneTreeDialog::SceneTreeDialog() {
 	content = memnew(VBoxContainer);
 	add_child(content);
 
+	HBoxContainer *filter_hbc = memnew(HBoxContainer);
+	content->add_child(filter_hbc);
+
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTR("Filter Nodes"));
 	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDialog::_filter_changed));
-	content->add_child(filter);
+	filter_hbc->add_child(filter);
+
+	// Add 'Show All' button to HBoxContainer next to the filter, visible only when valid_types is defined.
+	show_all_nodes = memnew(CheckButton);
+	show_all_nodes->set_text(TTR("Show All"));
+	show_all_nodes->connect("toggled", callable_mp(this, &SceneTreeDialog::_show_all_nodes_changed));
+	show_all_nodes->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
+	show_all_nodes->hide();
+	filter_hbc->add_child(show_all_nodes);
 
 	tree = memnew(SceneTreeEditor(false, false, true));
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &SceneTreeDialog::_select));
+	// Initialize button state, must be done after the tree has been created to update its 'show_all_nodes' flag.
+	// This is also done before adding the tree to the content to avoid triggering unnecessary tree filtering.
+	show_all_nodes->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_all_nodes_for_node_selection", false));
 	content->add_child(tree);
 
 	// Disable the OK button when no node is selected.

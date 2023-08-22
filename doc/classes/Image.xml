@@ -333,6 +333,13 @@
 				Loads an image from the binary contents of a JPEG file.
 			</description>
 		</method>
+		<method name="load_ktx_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a KTX file.
+			</description>
+		</method>
 		<method name="load_png_from_buffer">
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />

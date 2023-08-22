@@ -7,6 +7,7 @@
 	</description>
 	<tutorials>
 		<link title="Exporting for iOS">$DOCS_URL/tutorials/export/exporting_for_ios.html</link>
+		<link title="iOS plugins documentation index">$DOCS_URL/tutorials/platform/ios/index.html</link>
 	</tutorials>
 	<members>
 		<member name="application/app_store_team_id" type="String" setter="" getter="">

@@ -32,6 +32,7 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
@@ -341,7 +342,6 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 	if (selected_palette < 0 && input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE) {
 		return false;
 	}
-	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
 	if (mesh_library.is_null()) {
 		return false;
 	}
@@ -866,10 +866,7 @@ void GridMapEditor::update_palette() {
 	mesh_library_palette->set_fixed_icon_size(Size2(min_size, min_size));
 	mesh_library_palette->set_max_text_lines(2);
 
-	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
-
 	if (mesh_library.is_null()) {
-		last_mesh_library = nullptr;
 		search_box->set_text("");
 		search_box->set_editable(false);
 		info_message->show();
@@ -922,13 +919,39 @@ void GridMapEditor::update_palette() {
 
 		item++;
 	}
+}
 
-	last_mesh_library = *mesh_library;
+void GridMapEditor::_update_mesh_library() {
+	ERR_FAIL_NULL(node);
+
+	Ref<MeshLibrary> new_mesh_library = node->get_mesh_library();
+	if (new_mesh_library != mesh_library) {
+		if (mesh_library.is_valid()) {
+			mesh_library->disconnect_changed(callable_mp(this, &GridMapEditor::update_palette));
+		}
+		mesh_library = new_mesh_library;
+	} else {
+		return;
+	}
+
+	if (mesh_library.is_valid()) {
+		mesh_library->connect_changed(callable_mp(this, &GridMapEditor::update_palette));
+	}
+
+	update_palette();
+	// Update the cursor and grid in case the library is changed or removed.
+	_update_cursor_instance();
+	update_grid();
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
-	if (node && node->is_connected("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids))) {
-		node->disconnect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
+	if (node) {
+		node->disconnect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
+		node->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GridMapEditor::_update_mesh_library));
+		if (mesh_library.is_valid()) {
+			mesh_library->disconnect_changed(callable_mp(this, &GridMapEditor::update_palette));
+			mesh_library = Ref<MeshLibrary>();
+		}
 	}
 
 	node = p_gridmap;
@@ -961,7 +984,9 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	_draw_grids(node->get_cell_size());
 	update_grid();
 
-	node->connect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
+	node->connect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
+	node->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GridMapEditor::_update_mesh_library));
+	_update_mesh_library();
 }
 
 void GridMapEditor::update_grid() {
@@ -1092,13 +1117,6 @@ void GridMapEditor::_notification(int p_what) {
 				}
 				grid_xform = xf;
 			}
-			Ref<MeshLibrary> cgmt = node->get_mesh_library();
-			if (cgmt.operator->() != last_mesh_library) {
-				update_palette();
-				// Update the cursor and grid in case the library is changed or removed.
-				_update_cursor_instance();
-				update_grid();
-			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1178,8 +1196,8 @@ GridMapEditor::GridMapEditor() {
 	ED_SHORTCUT("grid_map/cursor_back_rotate_z", TTR("Cursor Back Rotate Z"), KeyModifierMask::SHIFT + Key::D, true);
 	ED_SHORTCUT("grid_map/cursor_clear_rotation", TTR("Cursor Clear Rotation"), Key::W, true);
 	ED_SHORTCUT("grid_map/paste_selects", TTR("Paste Selects"));
-	ED_SHORTCUT("grid_map/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::CTRL + Key::C, true);
-	ED_SHORTCUT("grid_map/cut_selection", TTR("Cut Selection"), KeyModifierMask::CTRL + Key::X, true);
+	ED_SHORTCUT("grid_map/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::CTRL + Key::C);
+	ED_SHORTCUT("grid_map/cut_selection", TTR("Cut Selection"), KeyModifierMask::CTRL + Key::X);
 	ED_SHORTCUT("grid_map/clear_selection", TTR("Clear Selection"), Key::KEY_DELETE);
 	ED_SHORTCUT("grid_map/fill_selection", TTR("Fill Selection"), KeyModifierMask::CTRL + Key::F);
 

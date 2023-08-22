@@ -11,7 +11,7 @@
 		[b]Note:[/b] [RenderingDevice] is not available when running in headless mode or when using the Compatibility rendering method.
 	</description>
 	<tutorials>
-		<link title="Using compute shaders">https://docs.godotengine.org/en/latest/tutorials/shaders/compute_shaders.html</link>
+		<link title="Using compute shaders">$DOCS_URL/tutorials/shaders/compute_shaders.html</link>
 	</tutorials>
 	<methods>
 		<method name="barrier">

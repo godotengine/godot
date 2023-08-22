@@ -49,6 +49,7 @@
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>
+		<link title="Using the MeshDataTool">$DOCS_URL/tutorials/3d/procedural_geometry/meshdatatool.html</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
