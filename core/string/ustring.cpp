@@ -3665,7 +3665,9 @@ String String::left(int p_len) const {
 		return *this;
 	}
 
-	return substr(0, p_len);
+	String s;
+	s.copy_from_unchecked(&get_data()[0], p_len);
+	return s;
 }
 
 String String::right(int p_len) const {
@@ -3681,7 +3683,9 @@ String String::right(int p_len) const {
 		return *this;
 	}
 
-	return substr(length() - p_len);
+	String s;
+	s.copy_from_unchecked(&get_data()[length() - p_len], p_len);
+	return s;
 }
 
 char32_t String::unicode_at(int p_idx) const {

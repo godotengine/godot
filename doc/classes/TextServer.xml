@@ -1139,6 +1139,14 @@
 				Clears text buffer (removes text and inline objects).
 			</description>
 		</method>
+		<method name="shaped_text_closest_character_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns composite character position closest to the [param pos].
+			</description>
+		</method>
 		<method name="shaped_text_draw" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
@@ -1187,6 +1195,13 @@
 			<param index="1" name="position" type="int" />
 			<description>
 				Returns shapes of the carets corresponding to the character offset [param position] in the text. Returned caret shape is 1 pixel wide rectangle.
+			</description>
+		</method>
+		<method name="shaped_text_get_character_breaks" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns array of the composite character boundaries.
 			</description>
 		</method>
 		<method name="shaped_text_get_custom_punctuation" qualifiers="const">
@@ -1432,12 +1447,20 @@
 				Returns [code]true[/code] if buffer is successfully shaped.
 			</description>
 		</method>
-		<method name="shaped_text_next_grapheme_pos" qualifiers="const">
+		<method name="shaped_text_next_character_pos" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="pos" type="int" />
 			<description>
 				Returns composite character end position closest to the [param pos].
+			</description>
+		</method>
+		<method name="shaped_text_next_grapheme_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns grapheme end position closest to the [param pos].
 			</description>
 		</method>
 		<method name="shaped_text_overrun_trim_to_width">
@@ -1449,12 +1472,20 @@
 				Trims text if it exceeds the given width.
 			</description>
 		</method>
-		<method name="shaped_text_prev_grapheme_pos" qualifiers="const">
+		<method name="shaped_text_prev_character_pos" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="pos" type="int" />
 			<description>
 				Returns composite character start position closest to the [param pos].
+			</description>
+		</method>
+		<method name="shaped_text_prev_grapheme_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns grapheme start position closest to the [param pos].
 			</description>
 		</method>
 		<method name="shaped_text_resize_object">
@@ -1566,6 +1597,18 @@
 			<description>
 				Returns [code]true[/code] if [param string] is likely to be an attempt at confusing the reader.
 				[b]Note:[/b] Always returns [code]false[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.
+			</description>
+		</method>
+		<method name="string_get_character_breaks" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns array of the composite character boundaries.
+				[codeblock]
+				var ts = TextServerManager.get_primary_interface()
+				print(ts.string_get_word_breaks("Test ❤️‍🔥 Test")) # Prints [1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="string_get_word_breaks" qualifiers="const">

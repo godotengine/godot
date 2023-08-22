@@ -1585,6 +1585,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 					}
 				} else {
 					char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
+					char_pos = TS->shaped_text_closest_character_pos(rid, char_pos);
 				}
 			}
 			line_clicked = true;
@@ -2563,7 +2564,10 @@ String RichTextLabel::_find_language(Item *p_item) {
 	Item *item = p_item;
 
 	while (item) {
-		if (item->type == ITEM_PARAGRAPH) {
+		if (item->type == ITEM_LANGUAGE) {
+			ItemLanguage *p = static_cast<ItemLanguage *>(item);
+			return p->language;
+		} else if (item->type == ITEM_PARAGRAPH) {
 			ItemParagraph *p = static_cast<ItemParagraph *>(item);
 			return p->language;
 		}
@@ -3212,17 +3216,19 @@ bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 
 	if (!had_newline) {
 		current_frame->lines.remove_at(p_paragraph);
-		if (current_frame->lines.size() == 0) {
-			current_frame->lines.resize(1);
-		}
+	}
+
+	if (current_frame->lines.is_empty()) {
+		current_frame->lines.resize(1);
 	}
 
 	if (p_paragraph == 0 && current->subitems.size() > 0) {
 		main->lines[0].from = main;
 	}
 
-	int to_line = main->first_invalid_line.load();
-	main->first_invalid_line.store(MIN(to_line, p_paragraph));
+	main->first_invalid_line.store(MIN(main->first_invalid_line.load(), p_paragraph));
+	main->first_resized_line.store(MIN(main->first_resized_line.load(), p_paragraph));
+	main->first_invalid_font_line.store(MIN(main->first_invalid_font_line.load(), p_paragraph));
 	queue_redraw();
 
 	return true;
@@ -3437,6 +3443,17 @@ void RichTextLabel::push_meta(const Variant &p_meta) {
 	ItemMeta *item = memnew(ItemMeta);
 
 	item->meta = p_meta;
+	_add_item(item, true);
+}
+
+void RichTextLabel::push_language(const String &p_language) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemLanguage *item = memnew(ItemLanguage);
+
+	item->language = p_language;
 	_add_item(item, true);
 }
 
@@ -4221,6 +4238,11 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_indent(indent_level);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("lang=")) {
+			String lang = tag.substr(5, tag.length()).unquote();
+			push_language(lang);
+			pos = brk_end + 1;
+			tag_stack.push_front("lang");
 		} else if (tag == "p") {
 			push_paragraph(HORIZONTAL_ALIGNMENT_LEFT);
 			pos = brk_end + 1;
@@ -5606,6 +5628,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet"), &RichTextLabel::push_list, DEFVAL(String::utf8("•")));
 	ClassDB::bind_method(D_METHOD("push_meta", "data"), &RichTextLabel::push_meta);
 	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
+	ClassDB::bind_method(D_METHOD("push_language", "language"), &RichTextLabel::push_language);
 	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);
 	ClassDB::bind_method(D_METHOD("push_strikethrough"), &RichTextLabel::push_strikethrough);
 	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align", "align_to_row"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGNMENT_TOP), DEFVAL(-1));

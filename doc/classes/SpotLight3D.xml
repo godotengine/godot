@@ -10,6 +10,7 @@
 	</description>
 	<tutorials>
 		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
+		<link title="Faking global illumination">$DOCS_URL/tutorials/3d/global_illumination/faking_global_illumination.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<members>

@@ -15,7 +15,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link title="Importing translations">https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/importing_translations.html</link>
+		<link title="Importing translations">$DOCS_URL/tutorials/assets_pipeline/importing_translations.html</link>
 	</tutorials>
 	<members>
 		<member name="compress" type="bool" setter="" getter="" default="true">

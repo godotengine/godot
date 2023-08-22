@@ -298,10 +298,12 @@
 		</member>
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
+			[b]Note:[/b] The number of simultaneously pickable objects is limited to 64 and they are selected in a non-deterministic order, which can be different in each picking process.
 		</member>
 		<member name="physics_object_picking_sort" type="bool" setter="set_physics_object_picking_sort" getter="get_physics_object_picking_sort" default="false">
 			If [code]true[/code], objects receive mouse picking events sorted primarily by their [member CanvasItem.z_index] and secondarily by their position in the scene tree. If [code]false[/code], the order is undetermined.
 			[b]Note:[/b] This setting is disabled by default because of its potential expensive computational cost.
+			[b]Note:[/b] Sorting happens after selecting the pickable objects. Because of the limitation of 64 simultaneously pickable objects, it is not guaranteed that the object with the highest [member CanvasItem.z_index] receives the picking event.
 		</member>
 		<member name="positional_shadow_atlas_16_bits" type="bool" setter="set_positional_shadow_atlas_16_bits" getter="get_positional_shadow_atlas_16_bits" default="true">
 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.

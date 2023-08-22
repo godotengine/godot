@@ -448,6 +448,11 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_next_grapheme_pos", "shaped", "pos"), &TextServer::shaped_text_next_grapheme_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_prev_grapheme_pos", "shaped", "pos"), &TextServer::shaped_text_prev_grapheme_pos);
 
+	ClassDB::bind_method(D_METHOD("shaped_text_get_character_breaks", "shaped"), &TextServer::shaped_text_get_character_breaks);
+	ClassDB::bind_method(D_METHOD("shaped_text_next_character_pos", "shaped", "pos"), &TextServer::shaped_text_next_character_pos);
+	ClassDB::bind_method(D_METHOD("shaped_text_prev_character_pos", "shaped", "pos"), &TextServer::shaped_text_prev_character_pos);
+	ClassDB::bind_method(D_METHOD("shaped_text_closest_character_pos", "shaped", "pos"), &TextServer::shaped_text_closest_character_pos);
+
 	ClassDB::bind_method(D_METHOD("shaped_text_draw", "shaped", "canvas", "pos", "clip_l", "clip_r", "color"), &TextServer::shaped_text_draw, DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("shaped_text_draw_outline", "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color"), &TextServer::shaped_text_draw_outline, DEFVAL(-1), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 
@@ -458,6 +463,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("percent_sign", "language"), &TextServer::percent_sign, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("string_get_word_breaks", "string", "language", "chars_per_line"), &TextServer::string_get_word_breaks, DEFVAL(""), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("string_get_character_breaks", "string", "language"), &TextServer::string_get_character_breaks, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("is_confusable", "string", "dict"), &TextServer::is_confusable);
 	ClassDB::bind_method(D_METHOD("spoof_check", "string"), &TextServer::spoof_check);
@@ -1422,6 +1428,59 @@ int64_t TextServer::shaped_text_prev_grapheme_pos(const RID &p_shaped, int64_t p
 	}
 
 	return p_pos;
+}
+
+int64_t TextServer::shaped_text_prev_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	const PackedInt32Array &chars = shaped_text_get_character_breaks(p_shaped);
+	int64_t prev = 0;
+	for (const int32_t &E : chars) {
+		if (E >= p_pos) {
+			return prev;
+		}
+		prev = E;
+	}
+	return prev;
+}
+
+int64_t TextServer::shaped_text_next_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	const PackedInt32Array &chars = shaped_text_get_character_breaks(p_shaped);
+	int64_t prev = 0;
+	for (const int32_t &E : chars) {
+		if (E > p_pos) {
+			return E;
+		}
+		prev = E;
+	}
+	return prev;
+}
+
+int64_t TextServer::shaped_text_closest_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	const PackedInt32Array &chars = shaped_text_get_character_breaks(p_shaped);
+	int64_t prev = 0;
+	for (const int32_t &E : chars) {
+		if (E == p_pos) {
+			return E;
+		} else if (E > p_pos) {
+			if ((E - p_pos) < (p_pos - prev)) {
+				return E;
+			} else {
+				return prev;
+			}
+		}
+		prev = E;
+	}
+	return prev;
+}
+
+PackedInt32Array TextServer::string_get_character_breaks(const String &p_string, const String &p_language) const {
+	PackedInt32Array ret;
+	if (!p_string.is_empty()) {
+		ret.resize(p_string.size() - 1);
+		for (int i = 0; i < p_string.size() - 1; i++) {
+			ret.write[i] = i + 1;
+		}
+	}
+	return ret;
 }
 
 void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Color &p_color) const {

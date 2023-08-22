@@ -3996,7 +3996,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 	members_dialog->popup();
 
 	// Keep dialog within window bounds.
-	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
+	Rect2 window_rect = Rect2(get_window()->get_position(), get_window()->get_size());
 	Rect2 dialog_rect = Rect2(members_dialog->get_position(), members_dialog->get_size());
 	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
 	members_dialog->set_position(members_dialog->get_position() - difference);
