@@ -454,6 +454,20 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	if (strcmp(interface, wp_viewporter_interface.name) == 0) {
+		registry->wp_viewporter = (struct wp_viewporter *)wl_registry_bind(wl_registry, name, &wp_viewporter_interface, 1);
+		registry->wp_viewporter_name = name;
+	}
+
+	if (strcmp(interface, wp_fractional_scale_manager_v1_interface.name) == 0) {
+		registry->wp_fractional_scale_manager = (struct wp_fractional_scale_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_fractional_scale_manager_v1_interface, 1);
+		registry->wp_fractional_scale_manager_name = name;
+
+		// NOTE: We're not mapping the fractional scale object here because this is
+		// supposed to be a "startup global". If for some reason this isn't true (who
+		// knows), add a conditional branch for creating the add-on object.
+	}
+
 	if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
 		registry->xdg_decoration_manager = (struct zxdg_decoration_manager_v1 *)wl_registry_bind(wl_registry, name, &zxdg_decoration_manager_v1_interface, 1);
 		registry->xdg_decoration_manager_name = name;
@@ -592,6 +606,40 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		registry->xdg_wm_base_name = 0;
 
 		return;
+	}
+
+	if (name == registry->wp_viewporter_name) {
+		WindowState *ws = &registry->wayland_thread->main_window;
+
+		if (registry->wp_viewporter) {
+			wp_viewporter_destroy(registry->wp_viewporter);
+			registry->wp_viewporter = nullptr;
+		}
+
+		if (ws->wp_viewport) {
+			wp_viewport_destroy(ws->wp_viewport);
+			ws->wp_viewport = nullptr;
+		}
+
+		registry->wp_viewporter_name = 0;
+
+		return;
+	}
+
+	if (name == registry->wp_fractional_scale_manager_name) {
+		WindowState *ws = &registry->wayland_thread->main_window;
+
+		if (registry->wp_fractional_scale_manager) {
+			wp_fractional_scale_manager_v1_destroy(registry->wp_fractional_scale_manager);
+			registry->wp_fractional_scale_manager = nullptr;
+		}
+
+		if (ws->wp_fractional_scale) {
+			wp_fractional_scale_v1_destroy(ws->wp_fractional_scale);
+			ws->wp_fractional_scale = nullptr;
+		}
+
+		registry->wp_fractional_scale_manager_name = 0;
 	}
 
 	if (name == registry->xdg_decoration_manager_name) {
@@ -836,19 +884,45 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	ws->wl_output = wl_output;
 
 	// This event gets sent _after_ the initial creation of a window, so a new
-	// window has always scale 1. While this isn't ideal, the easiest solution is
-	// just to resize it ourselves.
-	int scale = window_state_calculate_scale(ws);
+	// window has always a bufffer scale of 1. While this isn't ideal, the easiest
+	// solution is just to rescale it ourselves.
+	int buffer_scale = window_state_get_buffer_scale(ws);
 
-	// FIXME: Multiplying and dividing isn't exactly ideal. Perhaps we could move
-	// the resizing logic into an internal, perhaps static, unscaled method?
-	ws->wayland_thread->window_resize(ws->id, ws->rect.size * scale);
+	Size2i scaled_size;
 
-	// And we have to obviously tell the main thread about the resize.
+	if (ws->fractional_scale > 0) {
+		scaled_size = scale_vector2i(ws->rect.size, ws->fractional_scale);
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Rescaling window at %s with fractional scale %f.", scaled_size, ws->fractional_scale));
+	} else {
+		scaled_size = scale_vector2i(ws->rect.size, buffer_scale);
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Rescaling window at %s with integer scale %d.", scaled_size, buffer_scale));
+	}
+
+	if (ws->wl_surface) {
+		wl_surface_set_buffer_scale(ws->wl_surface, buffer_scale);
+
+		if (ws->xdg_surface) {
+			xdg_surface_set_window_geometry(ws->xdg_surface, 0, 0, scaled_size.width, scaled_size.height);
+		}
+
+		wl_surface_commit(ws->wl_surface);
+	}
+
+#ifdef LIBDECOR_ENABLED
+	if (ws->libdecor_frame) {
+		struct libdecor_state *state = libdecor_state_new(scaled_size.width, scaled_size.height);
+		libdecor_frame_commit(ws->libdecor_frame, state, nullptr);
+		libdecor_state_free(state);
+	}
+#endif
+
+	// FIXME: Actually resize the hint instead of centering it.
+	ws->wayland_thread->pointer_set_hint(scaled_size / 2);
+
 	Ref<WindowRectMessage> rect_msg;
 	rect_msg.instantiate();
 	rect_msg->rect = ws->rect;
-	rect_msg->rect.size *= scale;
+	rect_msg->rect.size = scaled_size;
 	ws->wayland_thread->push_message(rect_msg);
 }
 
@@ -932,28 +1006,7 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	int scale = window_state_calculate_scale(ws);
-
-	Rect2i scaled_rect = ws->rect;
-	scaled_rect.size *= scale;
-
-	if (ws->wl_surface) {
-		wl_surface_set_buffer_scale(ws->wl_surface, scale);
-	}
-
-	if (ws->xdg_surface) {
-		xdg_surface_set_window_geometry(ws->xdg_surface, 0, 0, scaled_rect.size.width, scaled_rect.size.height);
-	}
-
-	ws->wayland_thread->pointer_set_hint(scaled_rect.size.width / 2, scaled_rect.size.height / 2);
-
-	Ref<WindowRectMessage> msg;
-	msg.instantiate();
-	msg->rect = scaled_rect;
-
-	ws->wayland_thread->push_message(msg);
-
-	DEBUG_LOG_WAYLAND_THREAD(vformat("xdg surface on configure rect %s", ws->rect));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("xdg surface on configure", ws->rect));
 }
 
 void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
@@ -985,6 +1038,41 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 			} break;
 		}
 	}
+
+	int buffer_scale = window_state_get_buffer_scale(ws);
+
+	Size2i scaled_size;
+
+	if (ws->fractional_scale > 0) {
+		scaled_size = scale_vector2i(ws->rect.size, ws->fractional_scale);
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Rescaling window at %s with fractional scale %f.", scaled_size, ws->fractional_scale));
+	} else {
+		scaled_size = scale_vector2i(ws->rect.size, buffer_scale);
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Rescaling window at %s with integer scale %f.", scaled_size, buffer_scale));
+	}
+
+	if (ws->wl_surface) {
+		wl_surface_set_buffer_scale(ws->wl_surface, buffer_scale);
+
+		if (ws->wp_viewport) {
+			wp_viewport_set_destination(ws->wp_viewport, scaled_size.width, scaled_size.height);
+		}
+
+		if (ws->xdg_surface) {
+			xdg_surface_set_window_geometry(ws->xdg_surface, 0, 0, scaled_size.width, scaled_size.height);
+		}
+
+		wl_surface_commit(ws->wl_surface);
+	}
+
+	// FIXME: Actually resize the hint instead of centering it.
+	ws->wayland_thread->pointer_set_hint(scaled_size / 2);
+
+	Ref<WindowRectMessage> rect_msg;
+	rect_msg.instantiate();
+	rect_msg->rect = ws->rect;
+	rect_msg->rect.size = scaled_size;
+	ws->wayland_thread->push_message(rect_msg);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("XDG toplevel on configure width %d height %d.", width, height));
 }
@@ -1081,31 +1169,42 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 		}
 	}
 
-	int scale = window_state_calculate_scale(ws);
+	int buffer_scale = window_state_get_buffer_scale(ws);
 
-	Rect2i scaled_rect = ws->rect;
-	scaled_rect.size *= scale;
+	Size2i scaled_size;
+
+	if (ws->fractional_scale > 0) {
+		scaled_size = scale_vector2i(ws->rect.size, ws->fractional_scale);
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Rescaling window at %s with fractional scale %f.", scaled_size, ws->fractional_scale));
+	} else {
+		scaled_size = scale_vector2i(ws->rect.size, buffer_scale);
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Rescaling window at %s with integer scale %d.", scaled_size, buffer_scale));
+	}
 
 	if (ws->wl_surface) {
-		wl_surface_set_buffer_scale(ws->wl_surface, scale);
+		wl_surface_set_buffer_scale(ws->wl_surface, buffer_scale);
+
 		wl_surface_commit(ws->wl_surface);
+
+		if (ws->wp_viewport) {
+			wp_viewport_set_destination(ws->wp_viewport, width, height);
+		}
 	}
 
 	if (ws->libdecor_frame) {
-		struct libdecor_state *state = libdecor_state_new(scaled_rect.size.width, scaled_rect.size.height);
+		struct libdecor_state *state = libdecor_state_new(scaled_size.width, scaled_size.height);
 		libdecor_frame_commit(ws->libdecor_frame, state, configuration);
 		libdecor_state_free(state);
 	}
 
-	// Since the cursor's currently locked and the window's rect might have
-	// changed, we have to recenter the position hint to ensure that the cursor
-	// stays centered on unlock.
-	ws->wayland_thread->pointer_set_hint(scaled_rect.size.width / 2, scaled_rect.size.height / 2);
+	// FIXME: Actually resize the hint instead of centering it.
+	ws->wayland_thread->pointer_set_hint(scaled_size / 2);
 
-	Ref<WindowRectMessage> winrect_msg;
-	winrect_msg.instantiate();
-	winrect_msg->rect = scaled_rect;
-	ws->wayland_thread->push_message(winrect_msg);
+	Ref<WindowRectMessage> rect_msg;
+	rect_msg.instantiate();
+	rect_msg->rect = ws->rect;
+	rect_msg->rect.size = scaled_size;
+	ws->wayland_thread->push_message(rect_msg);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("libdecor frame on configure rect %s", ws->rect));
 }
@@ -1295,12 +1394,13 @@ void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_poin
 	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
 	ERR_FAIL_NULL(ws);
 
-	int scale = window_state_calculate_scale(ws);
-
 	PointerData &pd = ss->pointer_data_buffer;
 
-	pd.position.x = wl_fixed_to_int(surface_x) * scale;
-	pd.position.y = wl_fixed_to_int(surface_y) * scale;
+	// TODO: Scale only when sending the Wayland message.
+	pd.position.x = wl_fixed_to_int(surface_x);
+	pd.position.y = wl_fixed_to_int(surface_y);
+
+	pd.position = scale_vector2i(pd.position, window_state_get_scale_factor(ws));
 
 	pd.motion_time = time;
 }
@@ -1889,6 +1989,13 @@ void WaylandThread::_wl_data_source_on_dnd_finished(void *data, struct wl_data_s
 void WaylandThread::_wl_data_source_on_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action) {
 }
 
+void WaylandThread::_wp_fractional_scale_on_preferred_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale) {
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	ws->fractional_scale = (float)scale / 120;
+}
+
 void WaylandThread::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
@@ -2171,12 +2278,14 @@ void WaylandThread::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	ss->tablet_tool_data_buffer.touching = false;
-	ss->tablet_tool_data_buffer.pressed_button_mask.clear_flag(mouse_button_to_mask(MouseButton::LEFT));
+	TabletToolData &td = ss->tablet_tool_data_buffer;
+
+	td.touching = false;
+	td.pressed_button_mask.clear_flag(mouse_button_to_mask(MouseButton::LEFT));
 
 	// The protocol doesn't cover this, but we can use this funky hack to make
 	// double clicking work.
-	ss->tablet_tool_data_buffer.button_time = OS::get_singleton()->get_ticks_msec();
+	td.button_time = OS::get_singleton()->get_ticks_msec();
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on up", (size_t)zwp_tablet_tool_v2));
 }
@@ -2188,10 +2297,11 @@ void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool
 	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
 	ERR_FAIL_NULL(ws);
 
-	int scale = window_state_calculate_scale(ws);
+	float scale_factor = window_state_get_scale_factor(ws);
 
-	ss->tablet_tool_data_buffer.position.x = wl_fixed_to_double(x) * scale;
-	ss->tablet_tool_data_buffer.position.y = wl_fixed_to_double(y) * scale;
+	TabletToolData &td = ss->tablet_tool_data_buffer;
+
+	td.position = scale_vector2i(td.position, scale_factor);
 }
 
 void WaylandThread::_wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t pressure) {
@@ -2491,9 +2601,16 @@ WaylandThread::SeatState *WaylandThread::wl_seat_get_seat_state(struct wl_seat *
 	return nullptr;
 }
 
-// NOTE: This method is the simplest way of accounting for dynamic output scale
-// changes.
-int WaylandThread::window_state_calculate_scale(WindowState *p_ws) {
+// This is implemented as a method because this is the simplest way of
+// accounting for dynamic output scale changes.
+int WaylandThread::window_state_get_buffer_scale(WindowState *p_ws) {
+	ERR_FAIL_NULL_V(p_ws, 1);
+
+	if (p_ws->fractional_scale > 0) {
+		// We're scaling fractionally. Per spec, the buffer scale is always 1.
+		return 1;
+	}
+
 	// TODO: Handle multiple screens (eg. two screens: one scale 2, one scale 1).
 
 	// TODO: Cache value?
@@ -2510,6 +2627,27 @@ int WaylandThread::window_state_calculate_scale(WindowState *p_ws) {
 	}
 
 	return 1;
+}
+
+float WaylandThread::window_state_get_scale_factor(WindowState *p_ws) {
+	ERR_FAIL_NULL_V(p_ws, 1);
+
+	if (p_ws->fractional_scale > 0) {
+		// The fractional scale amount takes priority.
+		return p_ws->fractional_scale;
+	}
+
+	return window_state_get_buffer_scale(p_ws);
+}
+
+// Scales a vector according to wp_fractional_scale's rules, where coordinates
+// must be scaled with away from zero half-rounding.
+Vector2i WaylandThread::scale_vector2i(Vector2i p_vector, float p_amount) {
+	// This snippet is tiny, I know, but this is done a lot.
+	p_vector.x = round(p_vector.x * p_amount);
+	p_vector.y = round(p_vector.y * p_amount);
+
+	return p_vector;
 }
 
 void WaylandThread::seat_state_unlock_pointer(SeatState *p_ss) {
@@ -2555,15 +2693,9 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 }
 
 void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
-	WindowState *ws = wl_surface_get_window_state(p_ss->pointed_surface);
-	if (p_ss->wp_locked_pointer == nullptr || ws == nullptr) {
+	if (p_ss->wp_locked_pointer == nullptr) {
 		return;
 	}
-
-	int scale = window_state_calculate_scale(ws);
-
-	p_x /= scale;
-	p_y /= scale;
 
 	zwp_locked_pointer_v1_set_cursor_position_hint(p_ss->wp_locked_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y));
 	wl_surface_commit(p_ss->pointed_surface);
@@ -2702,7 +2834,6 @@ Ref<WaylandThread::Message> WaylandThread::pop_message() {
 	return Ref<Message>();
 }
 
-// TODO: Finish splitting.
 void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
 	// TODO: Implement multi-window support.
 	WindowState &ws = main_window;
@@ -2714,9 +2845,17 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 	ws.rect.size.height = p_height;
 
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
-
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
 	wl_surface_add_listener(ws.wl_surface, &wl_surface_listener, &ws);
+
+	if (registry.wp_viewporter) {
+		ws.wp_viewport = wp_viewporter_get_viewport(registry.wp_viewporter, ws.wl_surface);
+
+		if (registry.wp_fractional_scale_manager) {
+			ws.wp_fractional_scale = wp_fractional_scale_manager_v1_get_fractional_scale(registry.wp_fractional_scale_manager, ws.wl_surface);
+			wp_fractional_scale_v1_add_listener(ws.wp_fractional_scale, &wp_fractional_scale_listener, &ws);
+		}
+	}
 
 	bool decorated = false;
 
@@ -2761,39 +2900,11 @@ struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServer::WindowID 
 	return ws.wl_surface;
 }
 
-void WaylandThread::window_resize(DisplayServer::WindowID p_window_id, Size2i p_size) {
-	// TODO: Use window IDs for multiwindow support.
-	WindowState &ws = main_window;
-
-	int scale = window_state_calculate_scale(&ws);
-
-	ws.rect.size = p_size / scale;
-
-	if (ws.wl_surface) {
-		wl_surface_set_buffer_scale(ws.wl_surface, scale);
-
-		if (ws.xdg_surface) {
-			xdg_surface_set_window_geometry(ws.xdg_surface, 0, 0, p_size.width, p_size.height);
-		}
-
-		wl_surface_commit(ws.wl_surface);
-	}
-
-#ifdef LIBDECOR_ENABLED
-	if (ws.libdecor_frame) {
-		struct libdecor_state *state = libdecor_state_new(p_size.width, p_size.height);
-		// I'm not sure whether we can just pass null here.
-		libdecor_frame_commit(ws.libdecor_frame, state, nullptr);
-		libdecor_state_free(state);
-	}
-#endif
-}
-
 void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowState &ws = main_window;
 
-	Size2i logical_max_size = p_size / window_state_calculate_scale(&ws);
+	Vector2i logical_max_size = p_size / window_state_get_scale_factor(&ws);
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_max_size(ws.xdg_toplevel, logical_max_size.width, logical_max_size.height);
@@ -2813,7 +2924,7 @@ void WaylandThread::window_set_min_size(DisplayServer::WindowID p_window_id, Siz
 	// TODO: Use window IDs for multiwindow support.
 	WindowState &ws = main_window;
 
-	Size2i logical_min_size = p_size / window_state_calculate_scale(&ws);
+	Size2i logical_min_size = p_size / window_state_get_scale_factor(&ws);
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_min_size(ws.xdg_toplevel, logical_min_size.width, logical_min_size.height);
@@ -3147,11 +3258,20 @@ void WaylandThread::pointer_set_constraint(PointerConstraint p_constraint) {
 	pointer_constraint = p_constraint;
 }
 
-void WaylandThread::pointer_set_hint(int p_x, int p_y) {
+void WaylandThread::pointer_set_hint(Point2i p_hint) {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	if (!ss) {
+		return;
+	}
+
+	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
+
+	if (ws) {
+		p_hint /= window_state_get_scale_factor(ws);
+	}
 
 	if (ss) {
-		seat_state_set_hint(ss, p_x, p_y);
+		seat_state_set_hint(ss, p_hint.x, p_hint.y);
 	}
 }
 
@@ -3555,6 +3675,14 @@ void WaylandThread::destroy() {
 		events_thread.wait_to_finish();
 	}
 
+	if (main_window.wp_fractional_scale) {
+		wp_fractional_scale_v1_destroy(main_window.wp_fractional_scale);
+	}
+
+	if (main_window.wp_viewport) {
+		wp_viewport_destroy(main_window.wp_viewport);
+	}
+
 	if (main_window.frame_callback) {
 		wl_callback_destroy(main_window.frame_callback);
 	}
@@ -3668,6 +3796,14 @@ void WaylandThread::destroy() {
 
 	if (registry.xdg_decoration_manager) {
 		zxdg_decoration_manager_v1_destroy(registry.xdg_decoration_manager);
+	}
+
+	if (registry.wp_fractional_scale_manager) {
+		wp_fractional_scale_manager_v1_destroy(registry.wp_fractional_scale_manager);
+	}
+
+	if (registry.wp_viewporter) {
+		wp_viewporter_destroy(registry.wp_viewporter);
 	}
 
 	if (registry.xdg_wm_base) {

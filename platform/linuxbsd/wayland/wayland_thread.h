@@ -50,7 +50,7 @@
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
 
-// These must go after the Wayland include to work properly.
+// These must go after the Wayland client include to work properly.
 #include "wayland/protocol/idle_inhibit.gen.h"
 #include "wayland/protocol/primary_selection.gen.h"
 // These three protocol headers name wl_pointer method arguments as `pointer`,
@@ -61,7 +61,9 @@
 #include "wayland/protocol/pointer_gestures.gen.h"
 #include "wayland/protocol/relative_pointer.gen.h"
 #undef pointer
+#include "wayland/protocol/fractional_scale.gen.h"
 #include "wayland/protocol/tablet.gen.h"
+#include "wayland/protocol/viewporter.gen.h"
 #include "wayland/protocol/wayland.gen.h"
 #include "wayland/protocol/xdg_activation.gen.h"
 #include "wayland/protocol/xdg_decoration.gen.h"
@@ -133,6 +135,12 @@ public:
 
 		// wayland-protocols globals.
 
+		struct wp_viewporter *wp_viewporter = nullptr;
+		uint32_t wp_viewporter_name = 0;
+
+		struct wp_fractional_scale_manager_v1 *wp_fractional_scale_manager = nullptr;
+		uint32_t wp_fractional_scale_manager_name = 0;
+
 		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
 		uint32_t xdg_decoration_manager_name = 0;
 
@@ -187,6 +195,13 @@ public:
 		struct wl_surface *wl_surface = nullptr;
 		struct xdg_surface *xdg_surface = nullptr;
 		struct xdg_toplevel *xdg_toplevel = nullptr;
+
+		struct wp_viewport *wp_viewport = nullptr;
+		struct wp_fractional_scale_v1 *wp_fractional_scale = nullptr;
+
+		// Override used by the fractional scale add-on object. If less or equal to 0
+		// (default) then the normal output-based scale is used instead.
+		float fractional_scale = 0;
 
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
@@ -523,6 +538,8 @@ private:
 	static void _xdg_toplevel_on_wm_capabilities(void *data, struct xdg_toplevel *xdg_toplevel, struct wl_array *capabilities);
 
 	// wayland-protocols event handlers.
+	static void _wp_fractional_scale_on_preferred_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale);
+
 	static void _wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
 
 	static void _wp_pointer_gesture_pinch_on_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers);
@@ -659,6 +676,10 @@ private:
 	};
 
 	// wayland-protocols event listeners.
+	static constexpr struct wp_fractional_scale_v1_listener wp_fractional_scale_listener = {
+		.preferred_scale = _wp_fractional_scale_on_preferred_scale,
+	};
+
 	static constexpr struct zwp_relative_pointer_v1_listener wp_relative_pointer_listener = {
 		.relative_motion = _wp_relative_pointer_on_relative_motion,
 	};
@@ -801,7 +822,10 @@ public:
 
 	void seat_state_echo_keys(SeatState *p_ss);
 
-	static int window_state_calculate_scale(WindowState *p_ws);
+	static int window_state_get_buffer_scale(WindowState *p_ws);
+	static float window_state_get_scale_factor(WindowState *p_ws);
+
+	static Vector2i scale_vector2i(Vector2i p_vector, float p_amount);
 
 	void push_message(Ref<Message> message);
 	bool has_message();
@@ -811,7 +835,6 @@ public:
 
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
 
-	void window_resize(DisplayServer::WindowID p_window_id, Size2i p_size);
 	void window_set_max_size(DisplayServer::WindowID p_window_id, Size2i p_size);
 	void window_set_min_size(DisplayServer::WindowID p_window_id, Size2i p_size);
 
@@ -836,7 +859,7 @@ public:
 	int get_screen_count() const;
 
 	void pointer_set_constraint(PointerConstraint p_constraint);
-	void pointer_set_hint(int p_x, int p_y);
+	void pointer_set_hint(Point2i p_hint);
 	PointerConstraint pointer_get_constraint() const;
 	DisplayServer::WindowID pointer_get_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;

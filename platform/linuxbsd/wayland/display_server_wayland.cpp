@@ -272,7 +272,7 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 	WaylandThread::PointerConstraint old_constraint = wayland_thread.pointer_get_constraint();
 
 	wayland_thread.pointer_set_constraint(WaylandThread::PointerConstraint::LOCKED);
-	wayland_thread.pointer_set_hint(p_to.x, p_to.y);
+	wayland_thread.pointer_set_hint(p_to);
 
 	wayland_thread.pointer_set_constraint(old_constraint);
 }
@@ -653,17 +653,7 @@ Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_windo
 }
 
 void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window_id) {
-	MutexLock mutex_lock(wayland_thread.mutex);
-
-	// For some reason after setting the size manually we're getting issues at
-	// least on sway where we don't get new configure events shutting us up so the
-	// window renders all weird. It actually makes sense but... how did this work
-	// up until the refactor? The code is exactly the same, AFAICT. Was there some
-	// race? Can we even resize outside of interactive resizes? So many questions,
-	// so little answers.
-	// TODO: Figure out what's going on.
-	//wayland_thread.window_resize(MAIN_WINDOW_ID, p_size);
-	//_resize_window(p_size);
+	// The XDG spec doesn't allow non-interactive resizes.
 }
 
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window_id) const {

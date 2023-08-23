@@ -789,22 +789,26 @@ Patches in the `patches` directory should be re-applied after updates.
 
 Files extracted from upstream source:
 
-- `stable/xdg-shell/xdg-shell.xml`
+- `stable/viewporter/README`
+- `stable/viewporter/viewporter.xml`
 - `stable/xdg-shell/README`
-- `staging/xdg-activation/xdg-activation-v1.xml`
+- `stable/xdg-shell/xdg-shell.xml`
+- `staging/fractional-scale/README`
+- `staging/fractional-scale/fractional-scale-v1.xml`
 - `staging/xdg-activation/README`
-- `unstable/pointer-constraints/pointer-constraints-unstable-v1.xml`
+- `staging/xdg-activation/xdg-activation-v1.xml`
 - `unstable/pointer-constraints/README`
-- `unstable/primary-selection/primary-selection-unstable-v1.xml`
-- `unstable/primary-selection/README`
-- `unstable/relative-pointer/relative-pointer-unstable-v1.xml`
-- `unstable/relative-pointer/README`
-- `unstable/xdg-decoration/xdg-decoration-unstable-v1.xml`
-- `unstable/xdg-decoration/README`
-- `unstable/pointer-gestures/pointer-gestures-unstable-v1.xml`
+- `unstable/pointer-constraints/pointer-constraints-unstable-v1.xml`
 - `unstable/pointer-gestures/README`
-- `unstable/tablet/tablet-unstable-v2.xml`
+- `unstable/pointer-gestures/pointer-gestures-unstable-v1.xml`
+- `unstable/primary-selection/README`
+- `unstable/primary-selection/primary-selection-unstable-v1.xml`
+- `unstable/relative-pointer/README`
+- `unstable/relative-pointer/relative-pointer-unstable-v1.xml`
 - `unstable/tablet/README`
+- `unstable/tablet/tablet-unstable-v2.xml`
+- `unstable/xdg-decoration/README`
+- `unstable/xdg-decoration/xdg-decoration-unstable-v1.xml`
 - `COPYING`
 
 
