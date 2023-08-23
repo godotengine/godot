@@ -908,6 +908,7 @@ public:
 	struct LambdaNode : public ExpressionNode {
 		FunctionNode *function = nullptr;
 		FunctionNode *parent_function = nullptr;
+		LambdaNode *parent_lambda = nullptr;
 		Vector<IdentifierNode *> captures;
 		HashMap<StringName, int> captures_indices;
 		bool use_self = false;
@@ -1321,6 +1322,7 @@ private:
 
 	ClassNode *current_class = nullptr;
 	FunctionNode *current_function = nullptr;
+	LambdaNode *current_lambda = nullptr;
 	SuiteNode *current_suite = nullptr;
 
 	CompletionContext completion_context;

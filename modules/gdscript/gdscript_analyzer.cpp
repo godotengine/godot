@@ -882,9 +882,12 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 			case GDScriptParser::ClassNode::Member::VARIABLE: {
 				bool previous_static_context = static_context;
 				static_context = member.variable->is_static;
+
 				check_class_member_name_conflict(p_class, member.variable->identifier->name, member.variable);
+
 				member.variable->set_datatype(resolving_datatype);
 				resolve_variable(member.variable, false);
+				resolve_pending_lambda_bodies();
 
 				// Apply annotations.
 				for (GDScriptParser::AnnotationNode *&E : member.variable->annotations) {
@@ -893,7 +896,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 						E->apply(parser, member.variable);
 					}
 				}
+
 				static_context = previous_static_context;
+
 #ifdef DEBUG_ENABLED
 				if (member.variable->exported && member.variable->onready) {
 					parser->push_warning(member.variable, GDScriptWarning::ONREADY_WITH_EXPORT);
@@ -1345,6 +1350,11 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		}
 	}
 
+	if (!pending_body_resolution_lambdas.is_empty()) {
+		ERR_PRINT("GDScript bug (please report): Not all pending lambda bodies were resolved in time.");
+		resolve_pending_lambda_bodies();
+	}
+
 	parser->current_class = previous_class;
 }
 
@@ -1757,6 +1767,7 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 #endif // DEBUG_ENABLED
 
 		resolve_node(stmt);
+		resolve_pending_lambda_bodies();
 
 #ifdef DEBUG_ENABLED
 		parser->ignored_warnings = previously_ignored_warnings;
@@ -3080,7 +3091,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		base_type.is_meta_type = false;
 		is_self = true;
 
-		if (p_call->callee == nullptr && !lambda_stack.is_empty()) {
+		if (p_call->callee == nullptr && current_lambda != nullptr) {
 			push_error("Cannot use `super()` inside a lambda.", p_call);
 		}
 	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
@@ -3753,7 +3764,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			}
 		}
 
-		if (!lambda_stack.is_empty()) {
+		if (current_lambda != nullptr) {
 			// If the identifier is a member variable (including the native class properties) or a signal, we consider the lambda to be using `self`, so we keep a reference to the current instance.
 			if (source_is_variable || source_is_signal) {
 				mark_lambda_use_self();
@@ -3765,7 +3776,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 				return;
 			}
 
-			GDScriptParser::FunctionNode *function_test = lambda_stack.back()->get()->function;
+			GDScriptParser::FunctionNode *function_test = current_lambda->function;
 			// Make sure we aren't capturing variable in the same lambda.
 			// This also add captures for nested lambdas.
 			while (function_test != nullptr && function_test != p_identifier->source_function && function_test->source_lambda != nullptr && !function_test->source_lambda->captures_indices.has(p_identifier->name)) {
@@ -3920,34 +3931,12 @@ void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {
 		return;
 	}
 
-	lambda_stack.push_back(p_lambda);
+	GDScriptParser::LambdaNode *previous_lambda = current_lambda;
+	current_lambda = p_lambda;
 	resolve_function_signature(p_lambda->function, p_lambda, true);
-	resolve_function_body(p_lambda->function, true);
-	lambda_stack.pop_back();
+	current_lambda = previous_lambda;
 
-	int captures_amount = p_lambda->captures.size();
-	if (captures_amount > 0) {
-		// Create space for lambda parameters.
-		// At the beginning to not mess with optional parameters.
-		int param_count = p_lambda->function->parameters.size();
-		p_lambda->function->parameters.resize(param_count + captures_amount);
-		for (int i = param_count - 1; i >= 0; i--) {
-			p_lambda->function->parameters.write[i + captures_amount] = p_lambda->function->parameters[i];
-			p_lambda->function->parameters_indices[p_lambda->function->parameters[i]->identifier->name] = i + captures_amount;
-		}
-
-		// Add captures as extra parameters at the beginning.
-		for (int i = 0; i < p_lambda->captures.size(); i++) {
-			GDScriptParser::IdentifierNode *capture = p_lambda->captures[i];
-			GDScriptParser::ParameterNode *capture_param = parser->alloc_node<GDScriptParser::ParameterNode>();
-			capture_param->identifier = capture;
-			capture_param->usages = capture->usages;
-			capture_param->set_datatype(capture->get_datatype());
-
-			p_lambda->function->parameters.write[i] = capture_param;
-			p_lambda->function->parameters_indices[capture->name] = i;
-		}
-	}
+	pending_body_resolution_lambdas.push_back(p_lambda);
 }
 
 void GDScriptAnalyzer::reduce_literal(GDScriptParser::LiteralNode *p_literal) {
@@ -5288,9 +5277,53 @@ void GDScriptAnalyzer::downgrade_node_type_source(GDScriptParser::Node *p_node) 
 }
 
 void GDScriptAnalyzer::mark_lambda_use_self() {
-	for (GDScriptParser::LambdaNode *lambda : lambda_stack) {
+	GDScriptParser::LambdaNode *lambda = current_lambda;
+	while (lambda != nullptr) {
 		lambda->use_self = true;
+		lambda = lambda->parent_lambda;
 	}
+}
+
+void GDScriptAnalyzer::resolve_pending_lambda_bodies() {
+	if (pending_body_resolution_lambdas.is_empty()) {
+		return;
+	}
+
+	GDScriptParser::LambdaNode *previous_lambda = current_lambda;
+
+	List<GDScriptParser::LambdaNode *> lambdas = pending_body_resolution_lambdas;
+	pending_body_resolution_lambdas.clear();
+
+	for (GDScriptParser::LambdaNode *lambda : lambdas) {
+		current_lambda = lambda;
+		resolve_function_body(lambda->function, true);
+
+		int captures_amount = lambda->captures.size();
+		if (captures_amount > 0) {
+			// Create space for lambda parameters.
+			// At the beginning to not mess with optional parameters.
+			int param_count = lambda->function->parameters.size();
+			lambda->function->parameters.resize(param_count + captures_amount);
+			for (int i = param_count - 1; i >= 0; i--) {
+				lambda->function->parameters.write[i + captures_amount] = lambda->function->parameters[i];
+				lambda->function->parameters_indices[lambda->function->parameters[i]->identifier->name] = i + captures_amount;
+			}
+
+			// Add captures as extra parameters at the beginning.
+			for (int i = 0; i < lambda->captures.size(); i++) {
+				GDScriptParser::IdentifierNode *capture = lambda->captures[i];
+				GDScriptParser::ParameterNode *capture_param = parser->alloc_node<GDScriptParser::ParameterNode>();
+				capture_param->identifier = capture;
+				capture_param->usages = capture->usages;
+				capture_param->set_datatype(capture->get_datatype());
+
+				lambda->function->parameters.write[i] = capture_param;
+				lambda->function->parameters_indices[capture->name] = i;
+			}
+		}
+	}
+
+	current_lambda = previous_lambda;
 }
 
 bool GDScriptAnalyzer::class_exists(const StringName &p_class) const {
