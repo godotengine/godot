@@ -24,10 +24,13 @@ using Godot.NativeInterop;
 
 namespace GodotPlugins.Game
 {
-    internal static partial class Main
+    public static partial class Main
     {
+        /// <summary>
+        /// Should not be touched endless you know what your doing this is a UnmanagedCallersOnly function
+        /// </summary>
         [UnmanagedCallersOnly(EntryPoint = ""godotsharp_game_main_init"")]
-        private static godot_bool InitializeFromGameProject(IntPtr godotDllHandle, IntPtr outManagedCallbacks,
+        public static godot_bool InitializeFromGameProject(IntPtr godotDllHandle, IntPtr outManagedCallbacks,
             IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             try

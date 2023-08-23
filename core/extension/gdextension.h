@@ -41,6 +41,7 @@
 class GDExtension : public Resource {
 	GDCLASS(GDExtension, Resource)
 
+	bool embedded = false;
 	void *library = nullptr; // pointer if valid,
 	String library_path;
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
@@ -76,6 +77,7 @@ public:
 	static String get_extension_list_config_file();
 	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
 
+	Error initialize_extension_function(GDExtensionInitializationFunction initialization_function, const String &p_entry_symbol);
 	Error open_library(const String &p_path, const String &p_entry_symbol);
 	void close_library();
 
@@ -90,7 +92,7 @@ public:
 		INITIALIZATION_LEVEL_SCENE = GDEXTENSION_INITIALIZATION_SCENE,
 		INITIALIZATION_LEVEL_EDITOR = GDEXTENSION_INITIALIZATION_EDITOR
 	};
-
+	bool is_embedded() const;
 	bool is_library_open() const;
 
 	InitializationLevel get_minimum_library_initialization_level() const;

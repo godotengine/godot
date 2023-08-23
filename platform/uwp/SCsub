@@ -14,7 +14,12 @@ files = [
 if "build_angle" in env and env["build_angle"]:
     cmd = env.AlwaysBuild(env.ANGLE("libANGLE.lib", None))
 
-prog = env.add_program("#bin/godot", files)
+if env["library_type"] == "static_library":
+    prog = env.add_library("#bin/godot", files)
+elif env["library_type"] == "shared_library":
+    prog = env.add_shared_library("#bin/godot", files)
+else:
+    prog = env.add_program("#bin/godot", files)
 
 if "build_angle" in env and env["build_angle"]:
     env.Depends(prog, [cmd])

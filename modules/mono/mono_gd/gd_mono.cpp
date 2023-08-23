@@ -53,6 +53,10 @@
 #include <dlfcn.h>
 #endif
 
+#ifdef LIBRARY_ENABLED
+#include "core/libgodot/libgodot.h"
+#endif
+
 // TODO mobile
 #if 0
 #ifdef IOS_ENABLED
@@ -383,13 +387,22 @@ void GDMono::initialize() {
 	}
 
 	if (!load_hostfxr(hostfxr_dll_handle)) {
+#ifdef LIBRARY_ENABLED
+		if (libgodot_sharp_main_init() != nullptr) {
+			godot_plugins_initialize = (godot_plugins_initialize_fn)libgodot_sharp_main_init();
+		}
+#endif
 #if !defined(TOOLS_ENABLED)
-		godot_plugins_initialize = try_load_native_aot_library(hostfxr_dll_handle);
+		if (godot_plugins_initialize == nullptr) {
+			godot_plugins_initialize = try_load_native_aot_library(hostfxr_dll_handle);
 
-		if (godot_plugins_initialize != nullptr) {
-			is_native_aot = true;
+			if (godot_plugins_initialize != nullptr) {
+				is_external_function = true;
+			} else {
+				ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+			}
 		} else {
-			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+			is_external_function = true;
 		}
 #else
 
@@ -399,7 +412,7 @@ void GDMono::initialize() {
 #endif
 	}
 
-	if (!is_native_aot) {
+	if (!is_external_function) {
 		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
 		ERR_FAIL_NULL(godot_plugins_initialize);
 	}

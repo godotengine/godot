@@ -30,6 +30,9 @@
 
 #include "gdextension_manager.h"
 #include "core/io/file_access.h"
+#ifdef LIBRARY_ENABLED
+#include "core/libgodot/libgodot.h"
+#endif
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &p_path) {
 	if (gdextension_map.has(p_path)) {
@@ -143,6 +146,9 @@ void GDExtensionManager::load_extensions() {
 			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, "Error loading extension: " + s);
 		}
 	}
+#ifdef LIBRARY_ENABLED
+	libgodot_init_resource();
+#endif
 }
 
 GDExtensionManager *GDExtensionManager::get_singleton() {

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_main_macos.mm                                                   */
+/*  libgodot.cpp                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,63 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "os_macos.h"
+#ifdef LIBRARY_ENABLED
+#include "libgodot.h"
+#include "core/extension/gdextension_manager.h"
 
-#include "main/main.h"
-
-#include <string.h>
-#include <unistd.h>
-
-#if defined(SANITIZERS_ENABLED)
-#include <sys/resource.h>
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-int main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	// MoltenVK - enable full component swizzling support.
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
-#endif
+void *godotsharp_game_main_init;
+GDExtensionInitializationFunction initialization_function;
+void (*scene_load_function)(void *);
 
-#if defined(SANITIZERS_ENABLED)
-	// Note: Set stack size to be at least 30 MB (vs 8 MB default) to avoid overflow, address sanitizer can increase stack usage up to 3 times.
-	struct rlimit stack_lim = { 0x1E00000, 0x1E00000 };
-	setrlimit(RLIMIT_STACK, &stack_lim);
-#endif
+void *libgodot_sharp_main_init() {
+	return godotsharp_game_main_init;
+}
 
-	int first_arg = 1;
-	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
-	for (int i = 0; i < argc; i++) {
-		if (strcmp(dbg_arg, argv[i]) == 0) {
-			first_arg = i + 2;
+LIBGODOT_API void libgodot_mono_bind(void *sharp_main_init, void (*scene_function_bind)(void *)) {
+	godotsharp_game_main_init = sharp_main_init;
+	scene_load_function = scene_function_bind;
+}
+
+LIBGODOT_API void libgodot_gdextension_bind(GDExtensionInitializationFunction initialization_bind, void (*scene_function_bind)(void *)) {
+	initialization_function = initialization_bind;
+	scene_load_function = scene_function_bind;
+}
+
+void libgodot_scene_load(void *scene) {
+	if (scene_load_function != nullptr) {
+		scene_load_function(scene);
+	}
+}
+
+int libgodot_is_scene_loadable() {
+	return scene_load_function != nullptr;
+}
+
+void libgodot_init_resource() {
+	if (initialization_function != nullptr) {
+		Ref<GDExtension> libgodot;
+		libgodot.instantiate();
+		Error err = libgodot->initialize_extension_function(initialization_function, "LibGodot");
+		if (err != OK) {
+			ERR_PRINT("LibGodot Had an error initialize_extension_function'");
+		} else {
+			print_verbose("LibGodot initialization");
+			libgodot->set_path("res://LibGodotGDExtension");
+			GDExtensionManager::get_singleton()->load_extension("res://LibGodotGDExtension");
 		}
 	}
-
-	OS_MacOS os;
-	Error err;
-
-	// We must override main when testing is enabled.
-	TEST_MAIN_OVERRIDE
-
-	err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
-
-	if (err == ERR_HELP) { // Returned by --help and --version, so success.
-		return 0;
-	} else if (err != OK) {
-		return 255;
-	}
-
-	if (Main::start()) {
-		os.run(); // It is actually the OS that decides how to run.
-	}
-
-	Main::cleanup();
-
-	return os.get_exit_code();
 }
 
-#if defined(LIBRARY_ENABLED)
-#include "core/libgodot/libgodot.h"
-extern "C" LIBGODOT_API int godot_main(int argc, char *argv[]) {
-	return main(argc, argv);
+#ifdef __cplusplus
 }
+#endif
 #endif

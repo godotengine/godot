@@ -149,27 +149,16 @@ char *wc_to_utf8(const wchar_t *wc) {
 	return ubuf;
 }
 
-int widechar_main(int argc, wchar_t **argv) {
+int utf8_char_main(int argc, char **argv_utf8) {
 	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");
-
-	char **argv_utf8 = new char *[argc];
-
-	for (int i = 0; i < argc; ++i) {
-		argv_utf8[i] = wc_to_utf8(argv[i]);
-	}
 
 	TEST_MAIN_PARAM_OVERRIDE(argc, argv_utf8)
 
 	Error err = Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
 
 	if (err != OK) {
-		for (int i = 0; i < argc; ++i) {
-			delete[] argv_utf8[i];
-		}
-		delete[] argv_utf8;
-
 		if (err == ERR_HELP) { // Returned by --help and --version, so success.
 			return 0;
 		}
@@ -181,12 +170,23 @@ int widechar_main(int argc, wchar_t **argv) {
 	}
 	Main::cleanup();
 
+	return os.get_exit_code();
+}
+
+int widechar_main(int argc, wchar_t **argv) {
+	char **argv_utf8 = new char *[argc];
+
+	for (int i = 0; i < argc; ++i) {
+		argv_utf8[i] = wc_to_utf8(argv[i]);
+	}
+	int returnCode = utf8_char_main(argc, argv_utf8);
+
 	for (int i = 0; i < argc; ++i) {
 		delete[] argv_utf8[i];
 	}
 	delete[] argv_utf8;
 
-	return os.get_exit_code();
+	return returnCode;
 }
 
 int _main() {
@@ -206,6 +206,14 @@ int _main() {
 	LocalFree(wc_argv);
 	return result;
 }
+
+#if defined(LIBRARY_ENABLED)
+#include "core/libgodot/libgodot.h"
+extern "C" LIBGODOT_API int godot_main(int argc, char *argv[]) {
+	return utf8_char_main(argc, argv);
+}
+
+#else
 
 int main(int argc, char **argv) {
 	// override the arguments for the test handler / if symbol is provided
@@ -230,3 +238,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	godot_hinstance = hInstance;
 	return main(0, nullptr);
 }
+#endif

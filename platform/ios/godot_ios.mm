@@ -117,3 +117,10 @@ void ios_finish() {
 	Main::cleanup();
 	delete os;
 }
+
+#if defined(LIBRARY_ENABLED)
+#include "core/libgodot/libgodot.h"
+extern "C" LIBGODOT_API int godot_main(int argc, char *argv[]) {
+	return ios_main(argc, argv);
+}
+#endif

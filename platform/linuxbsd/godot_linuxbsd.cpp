@@ -84,3 +84,10 @@ int main(int argc, char *argv[]) {
 
 	return os.get_exit_code();
 }
+
+#if defined(LIBRARY_ENABLED)
+#include "core/libgodot/libgodot.h"
+extern "C" LIBGODOT_API int godot_main(int argc, char *argv[]) {
+	return main(argc, argv);
+}
+#endif
