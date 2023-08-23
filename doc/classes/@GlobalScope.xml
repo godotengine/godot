@@ -2404,11 +2404,51 @@
 		<constant name="JOY_BUTTON_SDL_MAX" value="21" enum="JoyButton">
 			The number of SDL game controller buttons.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="128" enum="JoyButton">
+		<constant name="JOY_BUTTON_DIRECT_INPUT_MAX" value="128" enum="JoyButton">
+			The number of DirectInput game controller buttons.
+		</constant>
+		<constant name="JOY_BUTTON_LEFT_X_NEG" value="1000" enum="JoyButton">
+			Game controller button associated with the negative side of left joystick x-axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_LEFT_X_POS" value="1001" enum="JoyButton">
+			Game controller button associated with the positive side of left joystick x-axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_LEFT_Y_NEG" value="1002" enum="JoyButton">
+			Game controller button associated with the negative side of left joystick y-axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_LEFT_Y_POS" value="1003" enum="JoyButton">
+			Game controller button associated with the positive side of left joystick y-axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_RIGHT_X_NEG" value="1004" enum="JoyButton">
+			Game controller button associated with the negative side of right joystick x-axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_RIGHT_X_POS" value="1005" enum="JoyButton">
+			Game controller button associated with the positive side of right joystick x-axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_RIGHT_Y_NEG" value="1006" enum="JoyButton">
+			Game controller button associated with the negative side of right joystick y-axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_RIGHT_Y_POS" value="1007" enum="JoyButton">
+			Game controller button associated with the positive side of right joystick y-axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_TRIGGER_LEFT_NEG" value="1008" enum="JoyButton">
+			Game controller button associated with the negative side of left trigger axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_TRIGGER_LEFT_POS" value="1009" enum="JoyButton">
+			Game controller button associated with the positive side of left trigger axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_TRIGGER_RIGHT_NEG" value="1010" enum="JoyButton">
+			Game controller button associated with the negative side of right trigger axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_TRIGGER_RIGHT_POS" value="1011" enum="JoyButton">
+			Game controller button associated with the positive side of right trigger axis, when configured as button.
+		</constant>
+		<constant name="JOY_BUTTON_MAX" value="1020" enum="JoyButton">
 			The maximum number of game controller buttons supported by the engine. The actual limit may be lower on specific platforms:
 			- [b]Android:[/b] Up to 36 buttons.
 			- [b]Linux:[/b] Up to 80 buttons.
 			- [b]Windows[/b] and [b]macOS:[/b] Up to 128 buttons.
+			- Buttons 1000-1019 are virtual buttons, in the case that the respective axis is configured to be treated as a button.
 		</constant>
 		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
 			An invalid game controller axis.

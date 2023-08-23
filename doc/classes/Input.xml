@@ -295,6 +295,16 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="register_axis_as_button">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<param index="2" name="deadzone" type="float" />
+			<description>
+				Treat axis with the id [param axis] (see [enum JoyAxis]) of the device with id [param device] as if it were not an axis, but two associated buttons, that get pressed when the axis reaches [param deadzone] on the negative and positive side respectively.
+				For example, when [constant @GlobalScope.JOY_AXIS_LEFT_X] is registered as button, instead of [InputEventJoypadMotion] events it will send [InputEventJoypadButton] events with [member InputEventJoypadButton.button_index] being either [constant @GlobalScope.JOY_BUTTON_LEFT_X_NEG] or [constant @GlobalScope.JOY_BUTTON_LEFT_X_POS].
+			</description>
+		</method>
 		<method name="remove_joy_mapping">
 			<return type="void" />
 			<param index="0" name="guid" type="String" />
@@ -382,6 +392,14 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Stops the vibration of the joypad started with [method start_joy_vibration].
+			</description>
+		</method>
+		<method name="unregister_axis_as_button">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<description>
+				Treat axis with the id [param axis] (see [enum JoyAxis]) of the device with id [param device] no longer as two buttons, but as an axis.
 			</description>
 		</method>
 		<method name="vibrate_handheld">

@@ -56,7 +56,7 @@ enum class JoyAxis {
 	TRIGGER_LEFT = 4,
 	TRIGGER_RIGHT = 5,
 	SDL_MAX = 6,
-	MAX = 10, // OpenVR supports up to 5 Joysticks making a total of 10 axes.
+	MAX = 10, // OpenVR supports up to 5 Joysticks making a total of 10 axes. Changing this value affects JoyButton::MAX. JoyButton::MAX = 1000 + 2 * JoyAxis.MAX
 };
 
 enum class JoyButton {
@@ -83,7 +83,22 @@ enum class JoyButton {
 	PADDLE4 = 19,
 	TOUCHPAD = 20,
 	SDL_MAX = 21,
-	MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
+	// Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
+	DIRECT_INPUT_MAX = 128,
+	LEFT_X_NEG = 1000,
+	LEFT_X_POS = 1001,
+	LEFT_Y_NEG = 1002,
+	LEFT_Y_POS = 1003,
+	RIGHT_X_NEG = 1004,
+	RIGHT_X_POS = 1005,
+	RIGHT_Y_NEG = 1006,
+	RIGHT_Y_POS = 1007,
+	TRIGGER_LEFT_NEG = 1008,
+	TRIGGER_LEFT_POS = 1009,
+	TRIGGER_RIGHT_NEG = 1010,
+	TRIGGER_RIGHT_POS = 1011,
+	// 10 JoyAxis represent a total of 20 Joy Buttons.
+	MAX = 1020, // 20 buttons from 10 axis-button emulations are represented by values 1000 to 1019.
 };
 
 enum class MIDIMessage {

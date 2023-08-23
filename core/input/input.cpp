@@ -120,6 +120,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
+	ClassDB::bind_method(D_METHOD("register_axis_as_button", "device", "axis", "deadzone"), &Input::register_axis_as_button);
+	ClassDB::bind_method(D_METHOD("unregister_axis_as_button", "device", "axis"), &Input::unregister_axis_as_button);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms"), &Input::vibrate_handheld, DEFVAL(500));
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
@@ -1164,6 +1166,29 @@ void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
 }
 
 void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
+	int axis_id = (int)p_axis;
+
+	if ((int)axis_to_button_mapper.size() > p_device && axis_id >= 0 && axis_id < (int)axis_to_button_mapper[p_device].size() && axis_to_button_mapper[p_device][axis_id].replace_axis_as_button) {
+		JoyAxisButtonMapping *mapping = &axis_to_button_mapper[p_device][axis_id];
+		if (mapping->previous_value < p_value) {
+			if (mapping->previous_value <= -mapping->deadzone && -mapping->deadzone < p_value) {
+				_button_event(p_device, (JoyButton)((int)JoyButton::DIRECT_INPUT_MAX + axis_id * 2), false);
+			}
+			if (mapping->previous_value < mapping->deadzone && mapping->deadzone <= p_value) {
+				_button_event(p_device, (JoyButton)((int)JoyButton::DIRECT_INPUT_MAX + axis_id * 2 + 1), true);
+			}
+		} else if (mapping->previous_value > p_value) {
+			if (mapping->previous_value >= mapping->deadzone && mapping->deadzone > p_value) {
+				_button_event(p_device, (JoyButton)((int)JoyButton::DIRECT_INPUT_MAX + axis_id * 2 + 1), false);
+			}
+			if (mapping->previous_value > -mapping->deadzone && -mapping->deadzone >= p_value) {
+				_button_event(p_device, (JoyButton)((int)JoyButton::DIRECT_INPUT_MAX + axis_id * 2), true);
+			}
+		}
+		mapping->previous_value = p_value;
+		return;
+	}
+
 	Ref<InputEventJoypadMotion> ievent;
 	ievent.instantiate();
 	ievent->set_device(p_device);
@@ -1171,6 +1196,32 @@ void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
 	ievent->set_axis_value(p_value);
 
 	parse_input_event(ievent);
+}
+
+void Input::register_axis_as_button(int p_device, JoyAxis p_axis, float p_deadzone) {
+	int axis_id = (int)p_axis;
+	ERR_FAIL_COND_MSG(axis_id < 0, "Invalid p_axis");
+	while ((int)axis_to_button_mapper.size() <= p_device) {
+		LocalVector<JoyAxisButtonMapping> temp;
+		axis_to_button_mapper.push_back(temp);
+	}
+
+	while ((int)axis_to_button_mapper[p_device].size() <= axis_id) {
+		JoyAxisButtonMapping mapping;
+		axis_to_button_mapper[p_device].push_back(mapping);
+	}
+
+	axis_to_button_mapper[p_device][axis_id].replace_axis_as_button = true;
+	axis_to_button_mapper[p_device][axis_id].deadzone = p_deadzone;
+}
+
+void Input::unregister_axis_as_button(int p_device, JoyAxis p_axis) {
+	ERR_FAIL_COND_MSG(p_device >= (int)axis_to_button_mapper.size(), "Invalid p_device");
+	int axis_id = (int)p_axis;
+	ERR_FAIL_COND_MSG(axis_id < 0, "Invalid p_axis");
+	ERR_FAIL_COND_MSG(axis_id >= (int)axis_to_button_mapper[p_device].size(), "Unknown p_axis");
+
+	axis_to_button_mapper[p_device].remove_at(axis_id);
 }
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {

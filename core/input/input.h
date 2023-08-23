@@ -219,6 +219,14 @@ private:
 
 	Vector<JoyDeviceMapping> map_db;
 
+	struct JoyAxisButtonMapping {
+		bool replace_axis_as_button = false;
+		float deadzone = 0.0;
+		float previous_value = 0.0;
+	};
+
+	LocalVector<LocalVector<JoyAxisButtonMapping>> axis_to_button_mapper;
+
 	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button);
 	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value);
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
@@ -271,6 +279,8 @@ public:
 	float get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const;
 	Vector2 get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f) const;
 
+	void register_axis_as_button(int p_device, JoyAxis p_axis, float p_deadzone = 0.2);
+	void unregister_axis_as_button(int p_device, JoyAxis p_axis);
 	float get_joy_axis(int p_device, JoyAxis p_axis) const;
 	String get_joy_name(int p_idx);
 	TypedArray<int> get_connected_joypads();
