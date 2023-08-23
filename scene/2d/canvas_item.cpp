@@ -490,6 +490,20 @@ Transform2D CanvasItem::get_global_transform() const {
 	return global_transform;
 }
 
+// Same as get_global_transform() but no reset for `global_invalid`.
+Transform2D CanvasItem::get_global_transform_const() const {
+	if (global_invalid) {
+		const CanvasItem *pi = get_parent_item();
+		if (pi) {
+			global_transform = pi->get_global_transform_const() * get_transform();
+		} else {
+			global_transform = get_transform();
+		}
+	}
+
+	return global_transform;
+}
+
 void CanvasItem::_toplevel_raise_self() {
 	if (!is_inside_tree()) {
 		return;

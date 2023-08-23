@@ -882,9 +882,7 @@ void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
 }
 
 void Node::reset_physics_interpolation() {
-	if (is_physics_interpolated_and_enabled()) {
-		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
-	}
+	propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 }
 
 float Node::get_physics_process_delta_time() const {
