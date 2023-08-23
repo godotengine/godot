@@ -4793,12 +4793,13 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 			push_error(vformat("Native class %s used in script doesn't exist or isn't exposed.", base_native), p_source);
 			return false;
 		} else if (p_is_constructor && !ClassDB::can_instantiate(base_native)) {
+			const bool is_base_singleton = Engine::get_singleton()->has_singleton(base_native);
 			if (p_base_type.kind == GDScriptParser::DataType::CLASS) {
-				push_error(vformat(R"(Class "%s" cannot be constructed as it is based on abstract native class "%s".)", p_base_type.class_type->fqcn.get_file(), base_native), p_source);
+				push_error(vformat(R"(Class "%s" cannot be constructed as it is based on %s native class "%s".)", p_base_type.class_type->fqcn.get_file(), is_base_singleton ? "singleton" : "abstract", base_native), p_source);
 			} else if (p_base_type.kind == GDScriptParser::DataType::SCRIPT) {
-				push_error(vformat(R"(Script "%s" cannot be constructed as it is based on abstract native class "%s".)", p_base_type.script_path.get_file(), base_native), p_source);
+				push_error(vformat(R"(Script "%s" cannot be constructed as it is based on %s native class "%s".)", p_base_type.script_path.get_file(), is_base_singleton ? "singleton" : "abstract", base_native), p_source);
 			} else {
-				push_error(vformat(R"(Native class "%s" cannot be constructed as it is abstract.)", base_native), p_source);
+				push_error(vformat(R"(Native class "%s" cannot be constructed as it is %s.)", base_native, is_base_singleton ? "a singleton" : "abstract"), p_source);
 			}
 			return false;
 		}

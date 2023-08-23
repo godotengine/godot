@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Class "derived_singleton_class_instantiate.gd::A" cannot be constructed as it is based on singleton native class "IP".
