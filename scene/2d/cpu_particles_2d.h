@@ -35,7 +35,7 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
 
-#define GODOT_CPU_PARTICLES_2D_LEGACY_COMPATIBILITY
+// #define GODOT_CPU_PARTICLES_2D_LEGACY_COMPATIBILITY
 
 class CPUParticles2D : public Node2D {
 private:
