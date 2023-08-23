@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build-linux:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -100,6 +100,13 @@ jobs:
           echo "Disk usage before:" && df -h
           sudo rm -rf /usr/local/lib/android
           echo "Disk usage after:" && df -h
+
+      - name: Install gcc-13 and g++-13
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install gcc-13 g++-13
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 --slave /usr/bin/g++ g++ /usr/bin/g++-13
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
