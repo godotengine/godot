@@ -884,7 +884,7 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	ws->wl_output = wl_output;
 
 	// This event gets sent _after_ the initial creation of a window, so a new
-	// window has always a bufffer scale of 1. While this isn't ideal, the easiest
+	// window has always a buffer scale of 1. While this isn't ideal, the easiest
 	// solution is just to rescale it ourselves.
 	int buffer_scale = window_state_get_buffer_scale(ws);
 
