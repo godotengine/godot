@@ -99,6 +99,12 @@
 				Returns the render target associated with this buffers object.
 			</description>
 		</method>
+		<method name="get_target_size" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the render target size (size after upscaling, or our viewport size).
+			</description>
+		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="context" type="StringName" />
@@ -134,6 +140,20 @@
 			<param index="2" name="mipmap" type="int" />
 			<description>
 				Returns the texture size of a given slice of a cached texture.
+			</description>
+		</method>
+		<method name="get_upscaler_input">
+			<return type="RID" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns the specified layer from which an upscaler [RenderingEffect] should input data.
+			</description>
+		</method>
+		<method name="get_upscaler_output">
+			<return type="RID" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns the specified layer into which an upscaler [RenderingEffect] should output data.
 			</description>
 		</method>
 		<method name="get_use_taa" qualifiers="const">

@@ -57,7 +57,10 @@
 		<constant name="EFFECT_CALLBACK_TYPE_POST_TRANSPARENT" value="3" enum="EffectCallbackType">
 			The callback is called after our transparent rendering pass, but before any build in post effects and output to our render target.
 		</constant>
-		<constant name="EFFECT_CALLBACK_TYPE_MAX" value="4" enum="EffectCallbackType">
+		<constant name="EFFECT_CALLBACK_TYPE_UPSCALER" value="4" enum="EffectCallbackType">
+			The callback is called to perform our upscaling rendering pass. Only one such effect is applied.
+		</constant>
+		<constant name="EFFECT_CALLBACK_TYPE_MAX" value="5" enum="EffectCallbackType">
 			Represents the size of the [enum EffectCallbackType] enum.
 		</constant>
 	</constants>

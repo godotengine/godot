@@ -150,6 +150,12 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 					render_width = width;
 					render_height = height;
 					break;
+				case RS::VIEWPORT_SCALING_3D_MODE_RENDERING_EFFECT:
+					width = p_viewport->size.width;
+					height = p_viewport->size.height;
+					render_width = MAX(width * scaling_3d_scale, 1.0); // width / (width * scaling)
+					render_height = MAX(height * scaling_3d_scale, 1.0);
+					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR:
 					width = p_viewport->size.width;
 					height = p_viewport->size.height;

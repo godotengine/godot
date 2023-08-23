@@ -101,7 +101,9 @@ protected:
 	void _post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi);
 
+	RID _render_effects_get(const RenderDataRD *p_render_data, RS::RenderingEffectCallbackType p_callback_type);
 	bool _render_effects_has_flag(const RenderDataRD *p_render_data, RS::RenderingEffectFlags p_flag, RS::RenderingEffectCallbackType p_callback_type = RS::RENDERING_EFFECT_CALLBACK_TYPE_ANY);
+
 	void _process_render_effects(RS::RenderingEffectCallbackType p_callback_type, const RenderDataRD *p_render_data);
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);

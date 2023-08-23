@@ -55,6 +55,7 @@
 #define RB_TEX_BLUR_1 SNAME("blur_1")
 #define RB_TEX_HALF_BLUR SNAME("half_blur") // only for raster!
 
+#define RB_TEX_UPSCALER SNAME("upscaler")
 #define RB_TEX_BACK_DEPTH SNAME("back_depth")
 
 class RenderSceneBuffersRD : public RenderSceneBuffers {
@@ -251,6 +252,10 @@ public:
 	bool has_velocity_buffer(bool p_has_msaa);
 	RID get_velocity_buffer(bool p_get_msaa);
 	RID get_velocity_buffer(bool p_get_msaa, uint32_t p_layer);
+
+	// Upscaler Rendering Effect
+	RID get_upscaler_input(const uint32_t p_layer);
+	RID get_upscaler_output(const uint32_t p_layer);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Our classDB doesn't support calling our normal exposed functions

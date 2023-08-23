@@ -275,6 +275,22 @@ bool RendererSceneRenderRD::_render_effects_has_flag(const RenderDataRD *p_rende
 	return false;
 }
 
+RID RendererSceneRenderRD::_render_effects_get(const RenderDataRD *p_render_data, RS::RenderingEffectCallbackType p_callback_type) {
+	RendererEnvironmentStorage *env_storage = RendererEnvironmentStorage::get_singleton();
+
+	if (p_render_data->environment.is_null()) {
+		return RID();
+	}
+
+	if (p_render_data->reflection_probe.is_valid()) {
+		return RID();
+	}
+
+	ERR_FAIL_COND_V(!env_storage->is_environment(p_render_data->environment), RID());
+
+	return env_storage->environment_get_rendering_effect(p_render_data->environment, p_callback_type);
+}
+
 void RendererSceneRenderRD::_process_render_effects(RS::RenderingEffectCallbackType p_callback_type, const RenderDataRD *p_render_data) {
 	RendererEnvironmentStorage *env_storage = RendererEnvironmentStorage::get_singleton();
 
@@ -535,6 +551,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
+	RID re_upscaler;
+
 	{
 		RENDER_TIMESTAMP("Tonemap");
 		RD::get_singleton()->draw_command_begin_label("Tonemap");
@@ -615,7 +633,15 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// Note that this is cached so we only create the texture the first time.
 			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
 			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
-		} else {
+		} else if (rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_RENDERING_EFFECT) {
+			re_upscaler = _render_effects_get(p_render_data, RS::RENDERING_EFFECT_CALLBACK_TYPE_UPSCALER);
+			if (re_upscaler.is_valid()) {
+				RID dest_texture = rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_UPSCALER, _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
+				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
+			}
+		}
+
+		if (dest_fb.is_null()) {
 			// If we do a bilinear upscale we just render into our render target and our shader will upscale automatically.
 			// Target size in this case is lying as we never get our real target size communicated.
 			// Bit nasty but...
@@ -636,6 +662,12 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 			fsr->fsr_upscale(rb, source_texture, dest_texture);
 		}
+
+		RD::get_singleton()->draw_command_end_label();
+	} else if (re_upscaler.is_valid() && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_RENDERING_EFFECT) {
+		RD::get_singleton()->draw_command_begin_label("Rendering Effects Upscale");
+
+		_process_render_effects(RS::RENDERING_EFFECT_CALLBACK_TYPE_UPSCALER, p_render_data);
 
 		RD::get_singleton()->draw_command_end_label();
 	}
