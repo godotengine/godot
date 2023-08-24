@@ -859,9 +859,7 @@ public:
 
 	struct IdentifierNode : public ExpressionNode {
 		StringName name;
-#ifdef DEBUG_ENABLED
 		SuiteNode *suite = nullptr; // The block in which the identifier is used.
-#endif
 
 		enum Source {
 			UNDEFINED_SOURCE,
