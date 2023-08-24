@@ -144,6 +144,7 @@ class GDScript : public Script {
 	String path;
 	String name;
 	String fully_qualified_name;
+	String simplified_icon_path;
 	SelfList<GDScript> script_list;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
@@ -250,6 +251,7 @@ public:
 	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		return docs;
 	}
+	virtual String get_class_icon_path() const override;
 #endif // TOOLS_ENABLED
 
 	virtual Error reload(bool p_keep_state = false) override;

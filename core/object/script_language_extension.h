@@ -77,6 +77,7 @@ public:
 	EXBIND1R(Error, reload, bool)
 
 	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_documentation)
+	GDVIRTUAL0RC(String, _get_class_icon_path)
 #ifdef TOOLS_ENABLED
 	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		TypedArray<Dictionary> doc;
@@ -88,6 +89,12 @@ public:
 		}
 
 		return class_doc;
+	}
+
+	virtual String get_class_icon_path() const override {
+		String ret;
+		GDVIRTUAL_CALL(_get_class_icon_path, ret);
+		return ret;
 	}
 #endif // TOOLS_ENABLED
 

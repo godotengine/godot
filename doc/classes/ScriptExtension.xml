@@ -22,6 +22,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_class_icon_path" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_constants" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<description>

@@ -482,6 +482,10 @@ void GDScript::_clear_doc() {
 	docs.clear();
 	doc = DocData::ClassDoc();
 }
+
+String GDScript::get_class_icon_path() const {
+	return simplified_icon_path;
+}
 #endif
 
 bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update) {
@@ -2527,13 +2531,6 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	 * Before changing this function, please ask the current maintainer of EditorFileSystem.
 	 */
 
-	if (r_icon_path) {
-		if (c->icon_path.is_empty() || c->icon_path.is_absolute_path()) {
-			*r_icon_path = c->icon_path.simplify_path();
-		} else if (c->icon_path.is_relative_path()) {
-			*r_icon_path = p_path.get_base_dir().path_join(c->icon_path).simplify_path();
-		}
-	}
 	if (r_base_type) {
 		const GDScriptParser::ClassNode *subclass = c;
 		String path = p_path;
@@ -2600,6 +2597,9 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 				subclass = nullptr;
 			}
 		}
+	}
+	if (r_icon_path) {
+		*r_icon_path = c->simplified_icon_path;
 	}
 	return c->identifier != nullptr ? String(c->identifier->name) : String();
 }

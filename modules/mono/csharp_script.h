@@ -164,6 +164,9 @@ public:
 		Vector<DocData::ClassDoc> docs;
 		return docs;
 	}
+	virtual String get_class_icon_path() const override {
+		return icon_path;
+	}
 #endif // TOOLS_ENABLED
 
 	Error reload(bool p_keep_state = false) override;

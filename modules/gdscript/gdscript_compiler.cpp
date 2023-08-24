@@ -2928,6 +2928,7 @@ void GDScriptCompiler::convert_to_initializer_type(Variant &p_variant, const GDS
 void GDScriptCompiler::make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 	p_script->fully_qualified_name = p_class->fqcn;
 	p_script->name = p_class->identifier ? p_class->identifier->name : "";
+	p_script->simplified_icon_path = p_class->simplified_icon_path;
 
 	HashMap<StringName, Ref<GDScript>> old_subclasses;
 
