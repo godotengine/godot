@@ -243,9 +243,6 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 				font_size = font_size_it->font_size;
 			}
 			TS->shaped_set_span_update_font(t, i, font->get_rids(), font_size, font->get_opentype_features());
-			for (int j = 0; j < TextServer::SPACING_MAX; j++) {
-				TS->shaped_text_set_spacing(t, TextServer::SpacingType(j), font->get_spacing(TextServer::SpacingType(j)));
-			}
 		}
 	}
 

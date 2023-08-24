@@ -325,6 +325,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_font_get_spacing" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_get_stretch" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
@@ -721,6 +728,14 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="script" type="String" />
 			<param index="2" name="supported" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_spacing" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="int" />
 			<description>
 			</description>
 		</method>

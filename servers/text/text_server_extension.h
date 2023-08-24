@@ -161,6 +161,11 @@ public:
 	GDVIRTUAL2(_font_set_embolden, RID, double);
 	GDVIRTUAL1RC(double, _font_get_embolden, RID);
 
+	virtual void font_set_spacing(const RID &p_font_rid, SpacingType p_spacing, int64_t p_value) override;
+	virtual int64_t font_get_spacing(const RID &p_font_rid, SpacingType p_spacing) const override;
+	GDVIRTUAL3(_font_set_spacing, const RID &, SpacingType, int64_t);
+	GDVIRTUAL2RC(int64_t, _font_get_spacing, const RID &, SpacingType);
+
 	virtual void font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) override;
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_transform, RID, Transform2D);

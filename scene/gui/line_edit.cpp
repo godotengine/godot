@@ -2314,9 +2314,6 @@ void LineEdit::_shape() {
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
-	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-	}
 	TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, t));
 
 	full_width = TS->shaped_text_get_size(text_rid).x;
