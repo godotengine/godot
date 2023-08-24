@@ -56,6 +56,7 @@ private:
 
 	struct FileDialogData {
 		DBusConnection *connection = nullptr;
+		DisplayServer::WindowID prev_focus = DisplayServer::INVALID_WINDOW_ID;
 		Callable callback;
 		String path;
 	};
@@ -73,7 +74,7 @@ public:
 
 	bool is_supported() { return !unsupported; }
 
-	Error file_dialog_show(const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
+	Error file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
 
 	// Retrieve the system's preferred color scheme.
 	// 0: No preference or unknown.

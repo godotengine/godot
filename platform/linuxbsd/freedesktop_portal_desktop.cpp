@@ -266,7 +266,7 @@ bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_it
 	return true;
 }
 
-Error FreeDesktopPortalDesktop::file_dialog_show(const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	if (unsupported) {
 		return FAILED;
 	}
@@ -277,6 +277,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(const String &p_xid, const Stri
 	// Open connection and add signal handler.
 	FileDialogData fd;
 	fd.callback = p_callback;
+	fd.prev_focus = p_window_id;
 
 	CryptoCore::RandomGenerator rng;
 	ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
@@ -415,6 +416,9 @@ void FreeDesktopPortalDesktop::_thread_file_dialog_monitor(void *p_ud) {
 										Variant v_files = uris;
 										Variant *v_args[2] = { &v_status, &v_files };
 										fd.callback.call_deferredp((const Variant **)&v_args, 2);
+									}
+									if (fd.prev_focus != DisplayServer::INVALID_WINDOW_ID) {
+										callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.prev_focus);
 									}
 								}
 								dbus_message_unref(msg);
