@@ -854,6 +854,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->initialize();
 
+	// Add our logger so we can log *everything*
+	// This must be extremely early so it can record every log so we can catch Godot startup errors
+	// At the moment the log subsystem owns this object, which prevents us from easily removing it
+	// I'm just living with that, but if a conditional per log message ends up being too much overhead,
+	// it could be turned into its own global that manages its own registration and deregistration
+	// This is also likely necessary if it starts using other log attachments
+	// such as add_error_handler, add_print_handler, register_message_capture, and EditorToaster.
+	OS::get_singleton()->add_logger(memnew(UserLogManagerLogger()));
+
 	// Benchmark tracking must be done after `OS::get_singleton()->initialize()` as on some
 	// platforms, it's used to set up the time utilities.
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Total");
@@ -3989,6 +3998,9 @@ bool Main::iteration() {
 			force_redraw_requested = false;
 		}
 	}
+
+	// do this ASAP after incrementing frames_drawn
+	UserLogManagerLogger::get_singleton()->flush();
 
 	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
 	process_max = MAX(process_ticks, process_max);
