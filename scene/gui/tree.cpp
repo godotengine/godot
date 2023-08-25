@@ -352,6 +352,24 @@ TextServer::AutowrapMode TreeItem::get_autowrap_mode(int p_column) const {
 	return cells[p_column].autowrap_mode;
 }
 
+void TreeItem::set_text_overrun_behavior(int p_column, TextServer::OverrunBehavior p_behavior) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
+	if (cells[p_column].text_buf->get_text_overrun_behavior() == p_behavior) {
+		return;
+	}
+
+	cells.write[p_column].text_buf->set_text_overrun_behavior(p_behavior);
+	cells.write[p_column].dirty = true;
+	_changed_notify(p_column);
+	cells.write[p_column].cached_minimum_size_dirty = true;
+}
+
+TextServer::OverrunBehavior TreeItem::get_text_overrun_behavior(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), TextServer::OVERRUN_TRIM_ELLIPSIS);
+	return cells[p_column].text_buf->get_text_overrun_behavior();
+}
+
 void TreeItem::set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -1512,6 +1530,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "column", "autowrap_mode"), &TreeItem::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode", "column"), &TreeItem::get_autowrap_mode);
 
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "column", "overrun_behavior"), &TreeItem::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior", "column"), &TreeItem::get_text_overrun_behavior);
+
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "column", "parser"), &TreeItem::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override", "column"), &TreeItem::get_structured_text_bidi_override);
 
@@ -2096,7 +2117,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				buttons_width += button_size.width + theme_cache.button_margin;
 			}
 
-			p_item->cells.write[i].text_buf->set_width(item_width);
+			int text_width = item_width - theme_cache.inner_item_margin_left - theme_cache.inner_item_margin_right;
+			if (p_item->cells[i].icon.is_valid()) {
+				text_width -= p_item->cells[i].get_icon_size().x + theme_cache.h_separation;
+			}
+
+			p_item->cells.write[i].text_buf->set_width(text_width);
 
 			r_self_height = compute_item_height(p_item);
 			label_h = r_self_height + theme_cache.v_separation;
@@ -2224,7 +2250,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			Point2i text_pos = item_rect.position;
 			text_pos.y += Math::floor(p_draw_ofs.y) - _get_title_button_height();
-			int text_width = p_item->cells[i].text_buf->get_size().x;
 
 			switch (p_item->cells[i].mode) {
 				case TreeItem::CELL_MODE_STRING: {
