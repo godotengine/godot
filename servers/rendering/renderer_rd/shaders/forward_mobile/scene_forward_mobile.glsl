@@ -899,6 +899,10 @@ void main() {
 				break;
 			}
 
+			if (!bool(decals.data[decal_index].mask & draw_call.layer_mask)) {
+				continue; //not masked
+			}
+
 			vec3 uv_local = (decals.data[decal_index].xform * vec4(vertex, 1.0)).xyz;
 			if (any(lessThan(uv_local, vec3(0.0, -1.0, 0.0))) || any(greaterThan(uv_local, vec3(1.0)))) {
 				continue; //out of decal
