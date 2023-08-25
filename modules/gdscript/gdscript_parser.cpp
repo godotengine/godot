@@ -2291,9 +2291,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 	IdentifierNode *identifier = alloc_node<IdentifierNode>();
 	complete_extents(identifier);
 	identifier->name = previous.get_identifier();
-#ifdef DEBUG_ENABLED
 	identifier->suite = current_suite;
-#endif
 
 	if (current_suite != nullptr && current_suite->has_local(identifier->name)) {
 		const SuiteNode::Local &declaration = current_suite->get_local(identifier->name);
@@ -4289,7 +4287,7 @@ String GDScriptParser::SuiteNode::Local::get_name() const {
 		case SuiteNode::Local::FOR_VARIABLE:
 			return "for loop iterator";
 		case SuiteNode::Local::PATTERN_BIND:
-			return "pattern_bind";
+			return "pattern bind";
 		case SuiteNode::Local::UNDEFINED:
 			return "<undefined>";
 		default:
