@@ -331,3 +331,13 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 		env->CallVoidMethod(godot_instance, _dump_benchmark, j_benchmark_file);
 	}
 }
+
+int GodotJavaWrapper::get_display_rotation() {
+	if (_get_display_rotation) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, 0);
+		return env->CallIntMethod(godot_instance, _get_display_rotation);
+	} else {
+		return 0;
+	}
+}

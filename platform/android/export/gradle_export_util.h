@@ -60,6 +60,7 @@ static const int APP_CATEGORY_VIDEO = 8;
 // This should match the entries in 'platform/android/java/lib/src/org/godotengine/godot/xr/XRMode.java'
 static const int XR_MODE_REGULAR = 0;
 static const int XR_MODE_OPENXR = 1;
+static const int XR_MODE_ARCORE = 2;
 
 struct CustomExportData {
 	String assets_directory;

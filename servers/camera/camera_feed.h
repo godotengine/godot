@@ -49,7 +49,8 @@ public:
 		FEED_NOIMAGE, // we don't have an image yet
 		FEED_RGB, // our texture will contain a normal RGB texture that can be used directly
 		FEED_YCBCR, // our texture will contain a YCbCr texture that needs to be converted to RGB before output
-		FEED_YCBCR_SEP // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
+		FEED_YCBCR_SEP, // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
+		FEED_EXTERNAL // specific for android, camera feed is managed externally, assumed RGB
 	};
 
 	enum FeedPosition {
@@ -101,6 +102,7 @@ public:
 	void set_RGB_img(const Ref<Image> &p_rgb_img);
 	void set_YCbCr_img(const Ref<Image> &p_ycbcr_img);
 	void set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_cbcr_img);
+	void set_external(const Ref<Image> &p_external_img);
 
 	virtual bool activate_feed();
 	virtual void deactivate_feed();

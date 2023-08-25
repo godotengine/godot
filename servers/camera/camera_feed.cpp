@@ -53,6 +53,7 @@ void CameraFeed::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_RGB_img", "rgb_img"), &CameraFeed::set_RGB_img);
 	ClassDB::bind_method(D_METHOD("_set_YCbCr_img", "ycbcr_img"), &CameraFeed::set_YCbCr_img);
+	ClassDB::bind_method(D_METHOD("_set_external", "external_img"), &CameraFeed::set_external);
 
 	ClassDB::bind_method(D_METHOD("get_datatype"), &CameraFeed::get_datatype);
 
@@ -64,6 +65,7 @@ void CameraFeed::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_RGB);
 	BIND_ENUM_CONSTANT(FEED_YCBCR);
 	BIND_ENUM_CONSTANT(FEED_YCBCR_SEP);
+	BIND_ENUM_CONSTANT(FEED_EXTERNAL);
 
 	BIND_ENUM_CONSTANT(FEED_UNSPECIFIED);
 	BIND_ENUM_CONSTANT(FEED_FRONT);
@@ -147,6 +149,7 @@ CameraFeed::CameraFeed() {
 	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
 	texture[CameraServer::FEED_Y_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
 	texture[CameraServer::FEED_CBCR_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
+	texture[CameraServer::FEED_EXTERNAL] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
 }
 
 CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
@@ -241,6 +244,28 @@ void CameraFeed::set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_c
 		}
 
 		datatype = CameraFeed::FEED_YCBCR_SEP;
+	}
+}
+
+void CameraFeed::set_external(const Ref<Image> &p_external_img) {
+	ERR_FAIL_COND(p_external_img.is_null());
+
+	if (active) {
+		int new_external_width = p_external_img->get_width();
+		int new_external_height = p_external_img->get_height();
+
+		if ((base_width != new_external_width) || (base_height != new_external_height)) {
+			// assume that camera image doesn't change formats etc.
+			base_width = new_external_width;
+			base_height = new_external_height;
+
+			{
+				RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_external_img);
+				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_EXTERNAL], new_texture);
+			}
+		} else {
+			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_EXTERNAL], p_external_img);
+		}
 	}
 }
 

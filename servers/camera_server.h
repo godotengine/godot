@@ -56,7 +56,8 @@ public:
 		FEED_YCBCR_IMAGE = 0,
 		FEED_Y_IMAGE = 0,
 		FEED_CBCR_IMAGE = 1,
-		FEED_IMAGES = 2
+		FEED_EXTERNAL = 2,
+		FEED_IMAGES = 3
 	};
 
 	typedef CameraServer *(*CreateFunc)();

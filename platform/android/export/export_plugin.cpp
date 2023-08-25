@@ -2475,6 +2475,8 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 	int xr_mode_index = p_preset->get("xr_features/xr_mode");
 	if (xr_mode_index == XR_MODE_OPENXR) {
 		command_line_strings.push_back("--xr_mode_openxr");
+	} else if (xr_mode_index == XR_MODE_ARCORE) {
+		command_line_strings.push_back("--xr_mode_arcore");
 	} else { // XRMode.REGULAR is the default.
 		command_line_strings.push_back("--xr_mode_regular");
 	}
