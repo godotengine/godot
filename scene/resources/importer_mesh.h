@@ -32,11 +32,14 @@
 #define IMPORTER_MESH_H
 
 #include "core/io/resource.h"
+#include "core/math/transform_3d.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/typed_array.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
+#include "servers/rendering_server.h"
 
 #include <cstdint>
 
@@ -81,6 +84,13 @@ class ImporterMesh : public Resource {
 	Ref<ImporterMesh> shadow_mesh;
 
 	Size2i lightmap_size_hint;
+	struct SurfaceLodData {
+		int surface = -1;
+		float normal_merge_angle = 0.0f;
+		float normal_split_angle = 0.0f;
+		TypedArray<Transform3D> bone_transform_vector;
+	};
+	void _process_surface(int32_t p_index, SurfaceLodData *data);
 
 protected:
 	void _set_data(const Dictionary &p_data);
