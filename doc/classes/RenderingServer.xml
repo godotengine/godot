@@ -4184,7 +4184,7 @@
 		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat" is_bitfield="true">
 		</constant>
 		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark that the array uses 8 bone weighs instead of 4.
+			Flag used to mark that the array uses 8 bone weights instead of 4.
 		</constant>
 		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
 		</constant>

@@ -53,7 +53,7 @@
 			If [code]true[/code] the obstacle affects avoidance using agents.
 		</member>
 		<member name="avoidance_layers" type="int" setter="set_avoidance_layers" getter="get_avoidance_layers" default="1">
-			A bitfield determining the avoidance layers for this obstacle. Agent's with a matching bit on the their avoidance mask will avoid this obstacle.
+			A bitfield determining the avoidance layers for this obstacle. Agents with a matching bit on the their avoidance mask will avoid this obstacle.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.0">
 			Sets the avoidance radius for the obstacle.

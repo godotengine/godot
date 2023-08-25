@@ -200,7 +200,7 @@
 			<param index="2" name="char" type="int" />
 			<param index="3" name="variation_selector" type="int" />
 			<description>
-				Returns the glyph index of a [param char], optionally modified by the [param variation_selector].  See [method font_get_char_from_glyph_index].
+				Returns the glyph index of a [param char], optionally modified by the [param variation_selector]. See [method font_get_char_from_glyph_index].
 			</description>
 		</method>
 		<method name="font_get_glyph_list" qualifiers="const">
@@ -1421,7 +1421,7 @@
 			<return type="bool" />
 			<param index="0" name="shaped" type="RID" />
 			<description>
-				Returns [code]true[/code], if text buffer contents any visible characters.
+				Returns [code]true[/code] if text buffer contains any visible characters.
 			</description>
 		</method>
 		<method name="shaped_text_hit_test_grapheme" qualifiers="const">
