@@ -709,7 +709,7 @@ void SceneReplicationInterface::_send_delta(int p_peer, const HashSet<ObjectID> 
 	for (const ObjectID &oid : p_synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(oid);
 		ERR_CONTINUE(!sync || !sync->is_multiplayer_authority());
-		ERR_CONTINUE_MSG(!sync->get_replication_config().is_valid(), "MultiplayerSynchronizer has no replication config.");
+		ERR_CONTINUE_MSG(!sync->get_replication_config().is_valid(), "MultiplayerSynchronizer has an invalid or non-existent replication configuration.");
 		uint32_t net_id;
 		if (!_verify_synchronizer(p_peer, sync, net_id)) {
 			continue;
@@ -805,7 +805,7 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> p
 	for (const ObjectID &oid : p_synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(oid);
 		ERR_CONTINUE(!sync || !sync->is_multiplayer_authority());
-		ERR_CONTINUE_MSG(!sync->get_replication_config().is_valid(), "MultiplayerSynchronizer has no replication config.");
+		ERR_CONTINUE_MSG(!sync->get_replication_config().is_valid(), "MultiplayerSynchronizer has an invalid or non-existent replication configuration.");
 		if (!sync->update_outbound_sync_time(p_usec)) {
 			continue; // nothing to sync.
 		}
