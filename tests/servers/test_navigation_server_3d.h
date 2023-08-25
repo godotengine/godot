@@ -123,6 +123,7 @@ TEST_SUITE("[Navigation]") {
 		CHECK_FALSE(map.is_valid());
 
 		SUBCASE("Queries against invalid map should return empty or invalid values") {
+			ERR_PRINT_OFF;
 			CHECK_EQ(navigation_server->map_get_closest_point(map, Vector3(7, 7, 7)), Vector3());
 			CHECK_EQ(navigation_server->map_get_closest_point_normal(map, Vector3(7, 7, 7)), Vector3());
 			CHECK_FALSE(navigation_server->map_get_closest_point_owner(map, Vector3(7, 7, 7)).is_valid());
@@ -141,6 +142,7 @@ TEST_SUITE("[Navigation]") {
 			CHECK_EQ(query_result->get_path_types().size(), 0);
 			CHECK_EQ(query_result->get_path_rids().size(), 0);
 			CHECK_EQ(query_result->get_path_owner_ids().size(), 0);
+			ERR_PRINT_ON;
 		}
 
 		map = navigation_server->map_create();
@@ -225,6 +227,7 @@ TEST_SUITE("[Navigation]") {
 			navigation_server->map_set_active(map, true);
 			navigation_server->process(0.0); // Give server some cycles to commit.
 
+			ERR_PRINT_OFF;
 			CHECK_EQ(navigation_server->map_get_closest_point(map, Vector3(7, 7, 7)), Vector3());
 			CHECK_EQ(navigation_server->map_get_closest_point_normal(map, Vector3(7, 7, 7)), Vector3());
 			CHECK_FALSE(navigation_server->map_get_closest_point_owner(map, Vector3(7, 7, 7)).is_valid());
@@ -243,6 +246,7 @@ TEST_SUITE("[Navigation]") {
 			CHECK_EQ(query_result->get_path_types().size(), 0);
 			CHECK_EQ(query_result->get_path_rids().size(), 0);
 			CHECK_EQ(query_result->get_path_owner_ids().size(), 0);
+			ERR_PRINT_ON;
 
 			navigation_server->map_set_active(map, false);
 			navigation_server->process(0.0); // Give server some cycles to commit.
@@ -350,9 +354,11 @@ TEST_SUITE("[Navigation]") {
 		}
 
 		SUBCASE("Queries against empty region should return empty or invalid values") {
+			ERR_PRINT_OFF;
 			CHECK_EQ(navigation_server->region_get_connections_count(region), 0);
 			CHECK_EQ(navigation_server->region_get_connection_pathway_end(region, 55), Vector3());
 			CHECK_EQ(navigation_server->region_get_connection_pathway_start(region, 55), Vector3());
+			ERR_PRINT_ON;
 		}
 
 		navigation_server->free(region);
@@ -450,7 +456,9 @@ TEST_SUITE("[Navigation]") {
 		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
 		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
 
+		ERR_PRINT_OFF;
 		navigation_server->region_bake_navigation_mesh(navigation_mesh, node_3d);
+		ERR_PRINT_ON;
 		// FIXME: The above line should trigger the update (line below) under the hood.
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh); // Force update.
 		CHECK_EQ(navigation_mesh->get_polygon_count(), 2);

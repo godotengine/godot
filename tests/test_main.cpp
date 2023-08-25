@@ -242,8 +242,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 			physics_server_2d->init();
 
+			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			navigation_server_2d = memnew(NavigationServer2D);
+			ERR_PRINT_ON;
 
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
@@ -269,8 +271,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 		if (suite_name.find("[Navigation]") != -1 && navigation_server_2d == nullptr && navigation_server_3d == nullptr) {
+			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			navigation_server_2d = memnew(NavigationServer2D);
+			ERR_PRINT_ON;
 			return;
 		}
 	}
