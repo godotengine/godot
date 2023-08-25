@@ -2418,12 +2418,24 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 
 	if (!inspector_only) {
 		EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
+		Resource *current_res = Object::cast_to<Resource>(current_obj);
 
 		int plugin_index = 0;
 		for (; plugin_index < editor_table.size(); plugin_index++) {
 			if (editor_table[plugin_index] == main_plugin) {
+				// If button is not visible, then no plugin is active.
 				if (!main_editor_buttons[plugin_index]->is_visible()) {
-					main_plugin = nullptr; // If button is not visible, then no plugin is active.
+					Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
+					if (profile->is_feature_disabled(EditorFeatureProfile::FEATURE_EDITOR_SCRIPT) &&
+							!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT)) {
+						if (main_plugin->get_name() == "Script" && current_res && !current_res->is_built_in() && (bool(EDITOR_GET("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+							continue;
+						} else {
+							ERR_PRINT_ED("Cannot open script. Internal editor is disabled, but external editor is not set.");
+						}
+					}
+
+					main_plugin = nullptr;
 				}
 
 				break;
@@ -2433,7 +2445,6 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		ObjectID editor_owner_id = editor_owner->get_instance_id();
 		if (main_plugin && !skip_main_plugin) {
 			// Special case if use of external editor is true.
-			Resource *current_res = Object::cast_to<Resource>(current_obj);
 			if (main_plugin->get_name() == "Script" && current_res && !current_res->is_built_in() && (bool(EDITOR_GET("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
@@ -6674,7 +6685,7 @@ void EditorNode::_feature_profile_changed() {
 		history_tabs->set_tab_hidden(history_tabs->get_tab_idx_from_control(history_dock), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_HISTORY_DOCK));
 
 		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
-		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
+		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_EDITOR_SCRIPT));
 		if (AssetLibraryEditorPlugin::is_available()) {
 			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
 		}

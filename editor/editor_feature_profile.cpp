@@ -41,6 +41,7 @@
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("3D Editor"),
+	TTRC("Scripting"),
 	TTRC("Script Editor"),
 	TTRC("Asset Library"),
 	TTRC("Scene Tree Editing"),
@@ -765,12 +766,17 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	features->set_text(0, TTR("Main Features:"));
 	for (int i = 0; i < EditorFeatureProfile::FEATURE_MAX; i++) {
 		TreeItem *feature;
-		if (i == EditorFeatureProfile::FEATURE_IMPORT_DOCK) {
-			feature = class_list->create_item(last_feature);
-		} else {
-			feature = class_list->create_item(features);
-			last_feature = feature;
+		switch (i) {
+			case EditorFeatureProfile::FEATURE_IMPORT_DOCK:
+			case EditorFeatureProfile::FEATURE_EDITOR_SCRIPT:
+				feature = class_list->create_item(last_feature);
+				break;
+			default:
+				feature = class_list->create_item(features);
+				last_feature = feature;
+				break;
 		}
+
 		feature->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		feature->set_text(0, TTRGET(EditorFeatureProfile::get_feature_name(EditorFeatureProfile::Feature(i))));
 		feature->set_selectable(0, true);
