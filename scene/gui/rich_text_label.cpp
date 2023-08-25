@@ -3095,15 +3095,17 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 		// If a newline was erased, all lines AFTER the newline need to be decremented.
 		if (p_item->type == ITEM_NEWLINE) {
 			current_frame->lines.remove_at(p_line);
-			for (int i = 0; i < current->subitems.size(); i++) {
-				if (current->subitems[i]->line > p_subitem_line) {
-					current->subitems[i]->line--;
+			if (p_line < (int)current_frame->lines.size() && current_frame->lines[p_line].from) {
+				for (List<Item *>::Element *E = current_frame->lines[p_line].from->E; E; E = E->next()) {
+					if (E->get()->line > p_subitem_line) {
+						E->get()->line--;
+					}
 				}
 			}
 		}
 	} else {
 		// First, remove all child items for the provided item.
-		for (int i = 0; i < size; i++) {
+		while (p_item->subitems.size()) {
 			_remove_item(p_item->subitems.front()->get(), p_line, p_subitem_line);
 		}
 		// Then remove the provided item itself.
@@ -3199,19 +3201,23 @@ bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 	}
 
 	// Remove all subitems with the same line as that provided.
-	Vector<int> subitem_indices_to_remove;
-	for (int i = 0; i < current->subitems.size(); i++) {
-		if (current->subitems[i]->line == p_paragraph) {
-			subitem_indices_to_remove.push_back(i);
+	Vector<List<Item *>::Element *> subitem_to_remove;
+	if (current_frame->lines[p_paragraph].from) {
+		for (List<Item *>::Element *E = current_frame->lines[p_paragraph].from->E; E; E = E->next()) {
+			if (E->get()->line == p_paragraph) {
+				subitem_to_remove.push_back(E);
+			} else {
+				break;
+			}
 		}
 	}
 
 	bool had_newline = false;
 	// Reverse for loop to remove items from the end first.
-	for (int i = subitem_indices_to_remove.size() - 1; i >= 0; i--) {
-		int subitem_idx = subitem_indices_to_remove[i];
-		had_newline = had_newline || current->subitems[subitem_idx]->type == ITEM_NEWLINE;
-		_remove_item(current->subitems[subitem_idx], current->subitems[subitem_idx]->line, p_paragraph);
+	for (int i = subitem_to_remove.size() - 1; i >= 0; i--) {
+		List<Item *>::Element *subitem = subitem_to_remove[i];
+		had_newline = had_newline || subitem->get()->type == ITEM_NEWLINE;
+		_remove_item(subitem->get(), subitem->get()->line, p_paragraph);
 	}
 
 	if (!had_newline) {
