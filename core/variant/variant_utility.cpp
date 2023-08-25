@@ -116,7 +116,9 @@ Variant VariantUtilityFunctions::floor(Variant x, Callable::CallError &r_error) 
 			return VariantInternalAccessor<Vector4>::get(&x).floor();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
+			r_error.argument = 0;
+			r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT) | (1ULL << Variant::VECTOR2) | (1ULL << Variant::VECTOR3) | (1ULL << Variant::VECTOR4);
 			return Variant();
 		}
 	}
@@ -149,7 +151,9 @@ Variant VariantUtilityFunctions::ceil(Variant x, Callable::CallError &r_error) {
 			return VariantInternalAccessor<Vector4>::get(&x).ceil();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
+			r_error.argument = 0;
+			r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT) | (1ULL << Variant::VECTOR2) | (1ULL << Variant::VECTOR3) | (1ULL << Variant::VECTOR4);
 			return Variant();
 		}
 	}
@@ -182,7 +186,9 @@ Variant VariantUtilityFunctions::round(Variant x, Callable::CallError &r_error) 
 			return VariantInternalAccessor<Vector4>::get(&x).round();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
+			r_error.argument = 0;
+			r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT) | (1ULL << Variant::VECTOR2) | (1ULL << Variant::VECTOR3) | (1ULL << Variant::VECTOR4);
 			return Variant();
 		}
 	}
@@ -224,7 +230,9 @@ Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_er
 			return VariantInternalAccessor<Vector4i>::get(&x).abs();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
+			r_error.argument = 0;
+			r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT) | (1ULL << Variant::VECTOR2) | (1ULL << Variant::VECTOR2I) | (1ULL << Variant::VECTOR3) | (1ULL << Variant::VECTOR3I) | (1ULL << Variant::VECTOR4) | (1ULL << Variant::VECTOR4I);
 			return Variant();
 		}
 	}
@@ -266,7 +274,9 @@ Variant VariantUtilityFunctions::sign(const Variant &x, Callable::CallError &r_e
 			return VariantInternalAccessor<Vector4i>::get(&x).sign();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
+			r_error.argument = 0;
+			r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT) | (1ULL << Variant::VECTOR2) | (1ULL << Variant::VECTOR2I) | (1ULL << Variant::VECTOR3) | (1ULL << Variant::VECTOR3I) | (1ULL << Variant::VECTOR4) | (1ULL << Variant::VECTOR4I);
 			return Variant();
 		}
 	}
@@ -325,6 +335,7 @@ Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, 
 	if (x.get_type() != step.get_type() && !((x.get_type() == Variant::INT && step.get_type() == Variant::FLOAT) || (x.get_type() == Variant::FLOAT && step.get_type() == Variant::INT))) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
+		r_error.expected = x.get_type();
 		return Variant();
 	}
 
@@ -354,7 +365,9 @@ Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, 
 			return VariantInternalAccessor<Vector4i>::get(&x).snapped(VariantInternalAccessor<Vector4i>::get(&step));
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
+			r_error.argument = 0;
+			r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT) | (1ULL << Variant::VECTOR2) | (1ULL << Variant::VECTOR2I) | (1ULL << Variant::VECTOR3) | (1ULL << Variant::VECTOR3I) | (1ULL << Variant::VECTOR4) | (1ULL << Variant::VECTOR4I);
 			return Variant();
 		}
 	}
@@ -372,8 +385,8 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 	r_error.error = Callable::CallError::CALL_OK;
 	if (from.get_type() != to.get_type()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.expected = from.get_type();
 		r_error.argument = 1;
+		r_error.expected = from.get_type();
 		return Variant();
 	}
 
@@ -403,7 +416,9 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 			return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
+			r_error.argument = 0;
+			r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT) | (1ULL << Variant::VECTOR2) | (1ULL << Variant::VECTOR3) | (1ULL << Variant::VECTOR4) | (1ULL << Variant::QUATERNION) | (1ULL << Variant::BASIS) | (1ULL << Variant::COLOR);
 			return Variant();
 		}
 	}
@@ -478,25 +493,25 @@ double VariantUtilityFunctions::db_to_linear(double db) {
 Variant VariantUtilityFunctions::wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
 	Variant::Type x_type = p_x.get_type();
 	if (x_type != Variant::INT && x_type != Variant::FLOAT) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
 		r_error.argument = 0;
-		r_error.expected = x_type;
+		r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT);
 		return Variant();
 	}
 
 	Variant::Type min_type = p_min.get_type();
 	if (min_type != Variant::INT && min_type != Variant::FLOAT) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
 		r_error.argument = 1;
-		r_error.expected = x_type;
+		r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT);
 		return Variant();
 	}
 
 	Variant::Type max_type = p_max.get_type();
 	if (max_type != Variant::INT && max_type != Variant::FLOAT) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
 		r_error.argument = 2;
-		r_error.expected = x_type;
+		r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT);
 		return Variant();
 	}
 
@@ -545,9 +560,9 @@ Variant VariantUtilityFunctions::max(const Variant **p_args, int p_argcount, Cal
 	for (int i = 0; i < p_argcount; i++) {
 		Variant::Type arg_type = p_args[i]->get_type();
 		if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.expected = Variant::FLOAT;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
 			r_error.argument = i;
+			r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT);
 			return Variant();
 		}
 		if (i == 0) {
@@ -589,9 +604,9 @@ Variant VariantUtilityFunctions::min(const Variant **p_args, int p_argcount, Cal
 	for (int i = 0; i < p_argcount; i++) {
 		Variant::Type arg_type = p_args[i]->get_type();
 		if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.expected = Variant::FLOAT;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI;
 			r_error.argument = i;
+			r_error.expected = (1ULL << Variant::INT) | (1ULL << Variant::FLOAT);
 			return Variant();
 		}
 		if (i == 0) {

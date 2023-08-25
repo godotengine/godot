@@ -127,6 +127,20 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		{
 			err_text = "Invalid type in " + p_where + ". Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(Variant::Type(p_err.expected)) + ".";
 		}
+	} else if (p_err.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI) {
+		int errorarg = p_err.argument;
+		String arg_text;
+
+		for (int i = 0; i < Variant::Type::VARIANT_MAX; i++) {
+			if (p_err.expected & (1ULL << i)) {
+				if (!arg_text.is_empty()) {
+					arg_text += ", ";
+				}
+				arg_text += Variant::get_type_name(Variant::Type(i));
+			}
+		}
+
+		err_text = "Invalid type in " + p_where + ". Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(argptrs[errorarg]->get_type()) + " to one of the following: " + arg_text + ".";
 	} else if (p_err.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
 		err_text = "Invalid call to " + p_where + ". Expected " + itos(p_err.argument) + " arguments.";
 	} else if (p_err.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {

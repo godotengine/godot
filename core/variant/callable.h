@@ -58,15 +58,16 @@ public:
 		enum Error {
 			CALL_OK,
 			CALL_ERROR_INVALID_METHOD,
-			CALL_ERROR_INVALID_ARGUMENT, // expected is variant type
-			CALL_ERROR_TOO_MANY_ARGUMENTS, // expected is number of arguments
-			CALL_ERROR_TOO_FEW_ARGUMENTS, // expected is number of arguments
+			CALL_ERROR_INVALID_ARGUMENT, // CallError.expected contains a variant type.
+			CALL_ERROR_TOO_MANY_ARGUMENTS, // CallError.expected contains a number of arguments.
+			CALL_ERROR_TOO_FEW_ARGUMENTS, // CallError.expected contains a number of arguments.
 			CALL_ERROR_INSTANCE_IS_NULL,
 			CALL_ERROR_METHOD_NOT_CONST,
+			CALL_ERROR_INVALID_ARGUMENT_MULTI, // CallError.expected contains a bitmask of variant types.
 		};
 		Error error = Error::CALL_OK;
 		int argument = 0;
-		int expected = 0;
+		int64_t expected = 0;
 	};
 
 	void callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const;

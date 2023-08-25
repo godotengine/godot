@@ -724,6 +724,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 			case Callable::CallError::CALL_ERROR_INVALID_METHOD:
 				break;
 			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI:
 			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 			case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
@@ -769,6 +770,7 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 			case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
 				break;
 			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI:
 			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 				return ret;

@@ -2889,6 +2889,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 						push_error(vformat(R"(Too few arguments for %s constructor. Received %d but expected %d.)", Variant::get_type_name(builtin_type), p_call->arguments.size(), err.expected), p_call);
 						break;
+					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI:
 					case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 					case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
 						break; // Can't happen in a builtin constructor.
@@ -3002,6 +3003,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 						push_error(vformat(R"*(Too few arguments for "%s()" call. Expected at least %d but received %d.)*", function_name, err.expected, p_call->arguments.size()), p_call);
 						break;
+					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI:
 					case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
 					case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 						break; // Can't happen in a builtin constructor.
@@ -3043,6 +3045,21 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 						}
 
 						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*", function_name, err.argument + 1,
+										   expected_type_name, p_call->arguments[err.argument]->get_datatype().to_string()),
+								p_call->arguments[err.argument]);
+					} break;
+					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT_MULTI: {
+						String expected_type_name;
+						for (int i = 0; i < Variant::Type::VARIANT_MAX; i++) {
+							if (err.expected & (1ULL << i)) {
+								if (!expected_type_name.is_empty()) {
+									expected_type_name += "\", \"";
+								}
+								expected_type_name += Variant::get_type_name(Variant::Type(i));
+							}
+						}
+
+						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be one of "%s" but is "%s".)*", function_name, err.argument + 1,
 										   expected_type_name, p_call->arguments[err.argument]->get_datatype().to_string()),
 								p_call->arguments[err.argument]);
 					} break;

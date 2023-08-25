@@ -182,17 +182,18 @@ typedef const void *GDExtensionConstRefPtr;
 typedef enum {
 	GDEXTENSION_CALL_OK,
 	GDEXTENSION_CALL_ERROR_INVALID_METHOD,
-	GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT, // Expected a different variant type.
-	GDEXTENSION_CALL_ERROR_TOO_MANY_ARGUMENTS, // Expected lower number of arguments.
-	GDEXTENSION_CALL_ERROR_TOO_FEW_ARGUMENTS, // Expected higher number of arguments.
+	GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT, // GDExtensionCallError.expected contains a variant type.
+	GDEXTENSION_CALL_ERROR_TOO_MANY_ARGUMENTS, // GDExtensionCallError.expected contains a number of arguments.
+	GDEXTENSION_CALL_ERROR_TOO_FEW_ARGUMENTS, // GDExtensionCallError.expected contains a number of arguments.
 	GDEXTENSION_CALL_ERROR_INSTANCE_IS_NULL,
-	GDEXTENSION_CALL_ERROR_METHOD_NOT_CONST, // Used for const call.
+	GDEXTENSION_CALL_ERROR_METHOD_NOT_CONST,
+	GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT_MULTI, // GDExtensionCallError.expected contains a bitmask of variant types.
 } GDExtensionCallErrorType;
 
 typedef struct {
 	GDExtensionCallErrorType error;
 	int32_t argument;
-	int32_t expected;
+	int64_t expected;
 } GDExtensionCallError;
 
 typedef void (*GDExtensionVariantFromTypeConstructorFunc)(GDExtensionUninitializedVariantPtr, GDExtensionTypePtr);
