@@ -167,14 +167,12 @@ void ImportDefaultsEditor::_importer_selected(int p_index) {
 
 void ImportDefaultsEditor::clear() {
 	String last_selected;
-	if (importers->get_selected() > 0) {
+
+	if (importers->get_selected() >= 0) {
 		last_selected = importers->get_item_text(importers->get_selected());
 	}
 
 	importers->clear();
-
-	importers->add_item("<" + TTR("Select Importer") + ">");
-	importers->set_item_disabled(0, true);
 
 	List<Ref<ResourceImporter>> importer_list;
 	ResourceFormatImporter::get_singleton()->get_importers(&importer_list);
@@ -185,11 +183,17 @@ void ImportDefaultsEditor::clear() {
 	}
 	names.sort();
 
+	// `last_selected.is_empty()` means it's the first time being called.
+	if (last_selected.is_empty() && !names.is_empty()) {
+		last_selected = names[0];
+	}
+
 	for (int i = 0; i < names.size(); i++) {
 		importers->add_item(names[i]);
 
 		if (names[i] == last_selected) {
-			importers->select(i + 1);
+			importers->select(i);
+			_update_importer();
 		}
 	}
 }
