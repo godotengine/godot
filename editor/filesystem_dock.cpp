@@ -1789,11 +1789,13 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 
+	if (tree->has_focus()) {
+		current_path = new_path;
+		current_path_line_edit->set_text(current_path);
+	}
+
 	print_verbose("FileSystem: calling rescan.");
 	_rescan();
-
-	current_path = new_path;
-	current_path_line_edit->set_text(current_path);
 }
 
 void FileSystemDock::_duplicate_operation_confirm() {
