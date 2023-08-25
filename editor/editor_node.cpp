@@ -431,6 +431,8 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorNode::_update_from_settings() {
+	_update_title();
+
 	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
 	if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
 		Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
@@ -509,6 +511,8 @@ void EditorNode::_update_from_settings() {
 	tree->set_debug_collisions_color(GLOBAL_GET("debug/shapes/collision/shape_color"));
 	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
 
+	ResourceImporterTexture::get_singleton()->update_imports();
+
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/edge_connection_color"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/geometry_edge_color"));
@@ -581,18 +585,6 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			editor_selection->update();
-
-			ResourceImporterTexture::get_singleton()->update_imports();
-
-			if (settings_changed) {
-				_update_title();
-			}
-
-			if (settings_changed) {
-				_update_from_settings();
-				settings_changed = false;
-				emit_signal(SNAME("project_settings_changed"));
-			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();
 
@@ -1146,7 +1138,6 @@ void EditorNode::_reload_modified_scenes() {
 
 void EditorNode::_reload_project_settings() {
 	ProjectSettings::get_singleton()->setup(ProjectSettings::get_singleton()->get_resource_path(), String(), true);
-	settings_changed = true;
 }
 
 void EditorNode::_vp_resized() {
@@ -6731,7 +6722,6 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
-	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
 }
@@ -6817,10 +6807,6 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 	return eta.exitcode;
 }
 
-void EditorNode::notify_settings_changed() {
-	settings_changed = true;
-}
-
 EditorNode::EditorNode() {
 	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
 	add_child(epnp);
@@ -6868,6 +6854,7 @@ EditorNode::EditorNode() {
 
 	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// Load settings.

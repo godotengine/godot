@@ -2721,7 +2721,7 @@ void Node3DEditorViewport::_project_settings_changed() {
 void Node3DEditorViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -7602,7 +7602,7 @@ void Node3DEditor::_notification(int p_what) {
 			sun_state->set_custom_minimum_size(sun_vb->get_combined_minimum_size());
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 
-			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

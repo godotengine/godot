@@ -109,8 +109,6 @@ void ImportDefaultsEditor::_save() {
 		} else {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), Variant());
 		}
-
-		emit_signal(SNAME("project_settings_changed"));
 	}
 }
 
@@ -194,10 +192,6 @@ void ImportDefaultsEditor::clear() {
 			importers->select(i + 1);
 		}
 	}
-}
-
-void ImportDefaultsEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 }
 
 ImportDefaultsEditor::ImportDefaultsEditor() {

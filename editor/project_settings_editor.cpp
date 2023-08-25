@@ -70,7 +70,6 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 }
 
 void ProjectSettingsEditor::queue_save() {
-	EditorNode::get_singleton()->notify_settings_changed();
 	timer->start();
 }
 
@@ -734,7 +733,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	import_defaults_editor = memnew(ImportDefaultsEditor);
 	import_defaults_editor->set_name(TTR("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
-	import_defaults_editor->connect("project_settings_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 
 	MovieWriter::set_extensions_hint(); // ensure extensions are properly displayed.
 }

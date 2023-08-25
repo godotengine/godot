@@ -1076,7 +1076,7 @@ TextShaderEditor::TextShaderEditor() {
 	shader_editor->connect("show_warnings_panel", callable_mp(this, &TextShaderEditor::_show_warnings_panel));
 	shader_editor->connect("script_changed", callable_mp(this, &TextShaderEditor::apply_shaders));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_editor_settings_changed));
-	ProjectSettingsEditor::get_singleton()->connect("confirmed", callable_mp(this, &TextShaderEditor::_project_settings_changed));
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_project_settings_changed));
 
 	shader_editor->get_text_editor()->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
