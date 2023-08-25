@@ -31,6 +31,7 @@
 #include "editor/action_map_editor.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 #include "scene/gui/check_button.h"
@@ -224,6 +225,7 @@ void ActionMapEditor::_tree_item_activated() {
 void ActionMapEditor::set_show_builtin_actions(bool p_show) {
 	show_builtin_actions = p_show;
 	show_builtin_actions_checkbutton->set_pressed(p_show);
+	EditorSettings::get_singleton()->set_project_metadata("project_settings", "show_builtin_actions", show_builtin_actions);
 
 	// Prevent unnecessary updates of action list when cache is empty.
 	if (!actions_cache.is_empty()) {
@@ -568,10 +570,12 @@ ActionMapEditor::ActionMapEditor() {
 	_add_edit_text_changed(add_edit->get_text());
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
-	show_builtin_actions_checkbutton->set_pressed(false);
 	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
 	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
 	add_hbox->add_child(show_builtin_actions_checkbutton);
+
+	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
+	show_builtin_actions_checkbutton->set_pressed(show_builtin_actions);
 
 	main_vbox->add_child(add_hbox);
 
