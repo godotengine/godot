@@ -109,7 +109,7 @@ const GodotJSWrapper = {
 					return 2; // INT
 				}
 				GodotRuntime.setHeapValue(p_exchange, p_val, 'double');
-				return 3; // REAL
+				return 3; // FLOAT
 			} else if (type === 'string') {
 				const c_str = GodotRuntime.allocString(p_val);
 				GodotRuntime.setHeapValue(p_exchange, c_str, '*');
@@ -313,7 +313,7 @@ const GodotEval = {
 
 		case 'number':
 			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'double');
-			return 3; // REAL
+			return 3; // FLOAT
 
 		case 'string':
 			GodotRuntime.setHeapValue(p_union_ptr, GodotRuntime.allocString(eval_ret), '*');
@@ -333,7 +333,7 @@ const GodotEval = {
 				const func = GodotRuntime.get_func(p_callback);
 				const bytes_ptr = func(p_byte_arr, p_byte_arr_write, eval_ret.length);
 				HEAPU8.set(eval_ret, bytes_ptr);
-				return 20; // POOL_BYTE_ARRAY
+				return 29; // PACKED_BYTE_ARRAY
 			}
 			break;
 
