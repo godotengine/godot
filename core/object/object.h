@@ -382,6 +382,7 @@ private:                                                                        
 	friend class ::ClassDB;                                                                                                                      \
                                                                                                                                                  \
 public:                                                                                                                                          \
+	typedef m_class self_type;                                                                                                                   \
 	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;                  \
 	virtual String get_class() const override {                                                                                                  \
 		if (_get_extension()) {                                                                                                                  \
@@ -557,6 +558,8 @@ class ScriptInstance;
 
 class Object {
 public:
+	typedef Object self_type;
+
 	enum ConnectFlags {
 		CONNECT_DEFERRED = 1,
 		CONNECT_PERSIST = 2, // hint for scene to save this connection
