@@ -148,7 +148,7 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase(Ref<OpenX
 	String profile_path = interaction_profile->get_interaction_profile_path();
 	String profile_name = profile_path;
 
-	profile_def = OpenXRInteractionProfileMetaData::get_singleton()->get_profile(profile_path);
+	profile_def = OpenXRInteractionProfileMetadata::get_singleton()->get_profile(profile_path);
 	if (profile_def != nullptr) {
 		profile_name = profile_def->display_name;
 	}
@@ -185,7 +185,7 @@ void OpenXRInteractionProfileEditor::_on_remove_pressed(const String p_action, c
 	undo_redo->commit_action(true);
 }
 
-void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, const OpenXRInteractionProfileMetaData::IOPath *p_io_path) {
+void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, const OpenXRInteractionProfileMetadata::IOPath *p_io_path) {
 	HBoxContainer *path_hb = memnew(HBoxContainer);
 	path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	p_container->add_child(path_hb);
@@ -274,7 +274,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 	// Determine toplevel paths
 	Vector<String> top_level_paths;
 	for (int i = 0; i < profile_def->io_paths.size(); i++) {
-		const OpenXRInteractionProfileMetaData::IOPath *io_path = &profile_def->io_paths[i];
+		const OpenXRInteractionProfileMetadata::IOPath *io_path = &profile_def->io_paths[i];
 
 		if (!top_level_paths.has(io_path->top_level_path)) {
 			top_level_paths.push_back(io_path->top_level_path);
@@ -291,11 +291,11 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 		panel->add_child(container);
 
 		Label *label = memnew(Label);
-		label->set_text(OpenXRInteractionProfileMetaData::get_singleton()->get_top_level_name(top_level_paths[i]));
+		label->set_text(OpenXRInteractionProfileMetadata::get_singleton()->get_top_level_name(top_level_paths[i]));
 		container->add_child(label);
 
 		for (int j = 0; j < profile_def->io_paths.size(); j++) {
-			const OpenXRInteractionProfileMetaData::IOPath *io_path = &profile_def->io_paths[j];
+			const OpenXRInteractionProfileMetadata::IOPath *io_path = &profile_def->io_paths[j];
 			if (io_path->top_level_path == top_level_paths[i]) {
 				_add_io_path(container, io_path);
 			}
