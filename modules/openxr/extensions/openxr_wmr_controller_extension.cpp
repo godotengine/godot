@@ -30,7 +30,7 @@
 
 #include "openxr_wmr_controller_extension.h"
 
-#include "../action_map/openxr_interaction_profile_meta_data.h"
+#include "../action_map/openxr_interaction_profile_metadata.h"
 
 HashMap<String, bool *> OpenXRWMRControllerExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
@@ -47,7 +47,7 @@ bool OpenXRWMRControllerExtension::is_available(WMRControllers p_type) {
 }
 
 void OpenXRWMRControllerExtension::on_register_metadata() {
-	OpenXRInteractionProfileMetaData *metadata = OpenXRInteractionProfileMetaData::get_singleton();
+	OpenXRInteractionProfileMetadata *metadata = OpenXRInteractionProfileMetadata::get_singleton();
 	ERR_FAIL_NULL(metadata);
 
 	// HP MR controller (newer G2 controllers)

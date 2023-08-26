@@ -547,7 +547,7 @@ PackedStringArray OpenXRActionMap::get_top_level_paths(const Ref<OpenXRAction> p
 
 	for (int i = 0; i < interaction_profiles.size(); i++) {
 		Ref<OpenXRInteractionProfile> ip = interaction_profiles[i];
-		const OpenXRInteractionProfileMetaData::InteractionProfile *profile = OpenXRInteractionProfileMetaData::get_singleton()->get_profile(ip->get_interaction_profile_path());
+		const OpenXRInteractionProfileMetadata::InteractionProfile *profile = OpenXRInteractionProfileMetadata::get_singleton()->get_profile(ip->get_interaction_profile_path());
 
 		if (profile != nullptr) {
 			for (int j = 0; j < ip->get_binding_count(); j++) {
@@ -556,7 +556,7 @@ PackedStringArray OpenXRActionMap::get_top_level_paths(const Ref<OpenXRAction> p
 					PackedStringArray paths = binding->get_paths();
 
 					for (int k = 0; k < paths.size(); k++) {
-						const OpenXRInteractionProfileMetaData::IOPath *io_path = profile->get_io_path(paths[k]);
+						const OpenXRInteractionProfileMetadata::IOPath *io_path = profile->get_io_path(paths[k]);
 						if (io_path != nullptr) {
 							String top_path = io_path->top_level_path;
 
