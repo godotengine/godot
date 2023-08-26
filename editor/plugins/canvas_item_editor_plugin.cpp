@@ -254,7 +254,7 @@ bool CanvasItemEditor::_is_node_movable(const Node *p_node, bool p_popup_warning
 	}
 	if (Object::cast_to<Control>(p_node) && Object::cast_to<Container>(p_node->get_parent())) {
 		if (p_popup_warning) {
-			EditorToaster::get_singleton()->popup_str("Children of a container get their position and size determined only by their parent.", EditorToaster::SEVERITY_WARNING);
+			EditorToaster::get_singleton()->popup_str(TTR("Children of a container get their position and size determined only by their parent."), EditorToaster::SEVERITY_WARNING);
 		}
 		return false;
 	}
