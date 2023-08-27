@@ -267,6 +267,7 @@ private:                                                                        
 	friend class ClassDB;                                                                                                               \
                                                                                                                                         \
 public:                                                                                                                                 \
+	typedef m_class self_type;                                                                                                          \
 	virtual String get_class() const {                                                                                                  \
 		return String(#m_class);                                                                                                        \
 	}                                                                                                                                   \
@@ -405,6 +406,8 @@ class ObjectRC;
 
 class Object {
 public:
+	typedef Object self_type;
+
 	enum ConnectFlags {
 
 		CONNECT_DEFERRED = 1,
