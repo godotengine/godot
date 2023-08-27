@@ -701,6 +701,8 @@ void EditorSpinSlider::_ensure_input_popup() {
 }
 
 EditorSpinSlider::EditorSpinSlider() {
+	// Provide a visual hint that EditorSpinSlider can be dragged to adjust the value (like in Blender).
+	set_default_cursor_shape(CURSOR_HSIZE);
 	set_focus_mode(FOCUS_ALL);
 	grabber = memnew(TextureRect);
 	add_child(grabber);
