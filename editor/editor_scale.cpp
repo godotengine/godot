@@ -29,11 +29,16 @@
 /**************************************************************************/
 
 #include "editor_scale.h"
+#include "core/typedefs.h"
 
 float EditorScale::_scale = 1.0f;
 
 void EditorScale::set_scale(float p_scale) {
-	_scale = p_scale;
+	if (p_scale >= 0.5) {
+		_scale = MIN(p_scale, 3);
+	} else {
+		_scale = 0.5f;
+	}
 }
 
 float EditorScale::get_scale() {
