@@ -60,6 +60,10 @@ void ThemeDB::initialize_theme() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"), 1);
 	ProjectSettings::get_singleton()->set_restart_if_changed("gui/theme/lcd_subpixel_layout", false);
 
+	if (!Math::is_finite(default_theme_scale)) {
+		default_theme_scale = 1.0;
+	}
+
 	Ref<Font> font;
 	if (!font_path.is_empty()) {
 		font = ResourceLoader::load(font_path);
