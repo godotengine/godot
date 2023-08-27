@@ -1780,10 +1780,8 @@ class MyInnerClass:
 class MyInnerClass:
 	var hi
 
-
 	func my_inner_class_function() -> void:
 		pass
-
 
 	func another_one() -> void:
 		pass
@@ -3853,7 +3851,6 @@ var my_array = [
 func _ready():
 	var v = [0]
 	var a = v[0] # A
-
 
 func another():
 	pass
