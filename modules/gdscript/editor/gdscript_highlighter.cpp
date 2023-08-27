@@ -304,7 +304,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		// Allow ABCDEF in hex notation.
 		if (is_hex_notation && (is_hex_digit(str[j]) || is_a_digit)) {
 			is_a_digit = true;
-		} else {
+		} else if (str[j] != '_') {
 			is_hex_notation = false;
 		}
 
@@ -327,14 +327,14 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			} else if (!((str[j] == '-' || str[j] == '+') && str[j - 1] == 'e' && !prev_is_digit) &&
 					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'x' || str[j - 1] == '.')) &&
 					!(str[j] == 'e' && (prev_is_digit || str[j - 1] == '_')) &&
-					!(str[j] == '.' && (prev_is_digit || (!prev_is_binary_op && (j > 0 && (str[j - 1] == '-' || str[j - 1] == '+' || str[j - 1] == '~'))))) &&
+					!(str[j] == '.' && (prev_is_digit || (!prev_is_binary_op && (j > 0 && (str[j - 1] == '_' || str[j - 1] == '-' || str[j - 1] == '+' || str[j - 1] == '~'))))) &&
 					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op && !prev_is_binary_op && str[j - 1] != 'e')) {
 				/* This condition continues number highlighting in special cases.
 				1st row: '+' or '-' after scientific notation (like 3e-4);
 				2nd row: '_' as a numeric separator;
 				3rd row: Scientific notation 'e' and floating points;
 				4th row: Floating points inside the number, or leading if after a unary mathematical operator;
-				5th row: Multiple unary mathematical operators (like ~-7)*/
+				5th row: Multiple unary mathematical operators (like ~-7) */
 				in_number = false;
 			}
 		} else if (str[j] == '.' && !is_binary_op && is_digit(str[j + 1]) && (j == 0 || (j > 0 && str[j - 1] != '.'))) {
