@@ -32,11 +32,11 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/theme.h"
+#include "scene/theme/default_theme.h"
 #include "servers/text_server.h"
 
 // Default engine theme creation and configuration.

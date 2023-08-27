@@ -34,7 +34,6 @@
 #include "core/io/dir_access.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/font.h"
 
 Ref<FontFile> load_external_font(const String &p_path, TextServer::Hinting p_hinting, TextServer::FontAntialiasing p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_msdf = false, TypedArray<Font> *r_fallbacks = nullptr) {
