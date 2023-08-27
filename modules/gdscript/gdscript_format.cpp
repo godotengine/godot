@@ -58,8 +58,8 @@ Error GDScriptFormat::format(const String &p_code, String &r_formatted_code) {
 
 	if (err != OK) {
 		parser_errors.clear();
-		for (GDScriptParser::ParserError err : parser.get_errors()) {
-			parser_errors.push_back({ vformat("%s", err.message), err.line, err.column });
+		for (GDScriptParser::ParserError parser_error : parser.get_errors()) {
+			parser_errors.push_back({ vformat("%s", parser_error.message), parser_error.line, parser_error.column });
 		}
 		return FAILED;
 	}
