@@ -212,14 +212,14 @@ private:
 		int cursor_column = -1;
 		int tab_size = 4;
 
-		// Multichar tokens
+		// Multichar tokens.
 		const char32_t *_start = nullptr;
 		int start_line = 0;
 		int start_column = 0;
 		int leftmost_column = 0;
 		int rightmost_column = 0;
 
-		// Info cache
+		// Info cache.
 		bool line_continuation = false; // Whether this line is a continuation of the previous, like when using '\'.
 		bool multiline_mode = false;
 		List<Token> error_stack;

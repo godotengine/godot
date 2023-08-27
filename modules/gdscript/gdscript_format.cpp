@@ -436,7 +436,7 @@ String GDScriptFormat::parse_class(const GDP::ClassNode *p_node, const int p_ind
 		}
 		int indent_mod = p_node->outer != nullptr ? 1 : 0;
 		for (int i = 0; i < p_node->members.size(); ++i) {
-			// Section newlines
+			// Section newlines.
 			switch (p_node->members[i].type) {
 				case GDP::ClassNode::Member::Type::FUNCTION: {
 					if (i > 0 && p_node->members[i - 1].type != GDP::ClassNode::Member::Type::FUNCTION) {
@@ -446,7 +446,7 @@ String GDScriptFormat::parse_class(const GDP::ClassNode *p_node, const int p_ind
 					}
 				} break;
 				default: {
-					// do nothing
+					// Do nothing.
 				}
 			}
 
@@ -697,7 +697,7 @@ String GDScriptFormat::parse_var_value(const GDP::ExpressionNode *p_node, const 
 	output += comment_headers;
 	output += value;
 
-	// Expressions can themselves write comments (eg. function calls comments)
+	// Expressions can themselves write comments (eg. function calls comments).
 	if (!output.as_string().ends_with(comment)) {
 		output += comment;
 	}
@@ -1699,8 +1699,8 @@ String GDScriptFormat::parse_binary_operator(const GDP::BinaryOpNode *p_node, co
 	bool split = false;
 	StringBuilder left_operand, right_operand;
 
-	// Check if the binary operands have comments (if we need to split the expression)
-	// In the binary tree, only the rightmost node can have a comment to not split
+	// Check if the binary operands have comments (if we need to split the expression).
+	// In the binary tree, only the rightmost node can have a comment to not split.
 	if (children_have_comments(p_node)) {
 		const GDP::BinaryOpNode *right_node = p_node;
 		while (right_node) {

@@ -409,7 +409,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		current = tokenizer.scan();
 	}
 
-	// Check for empty files with only comments
+	// Check for empty files with only comments.
 	if (current.type == GDScriptTokenizer::Token::COMMENT) {
 		while (current.type == GDScriptTokenizer::Token::COMMENT || current.type == GDScriptTokenizer::Token::NEWLINE) {
 			current = tokenizer.scan();
@@ -1146,7 +1146,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 
 	variable->inline_comment = check_for_comment();
 
-	// For setter and getters properties (hence the check for ":")
+	// For setter and getters properties (hence the check for ":").
 	if (p_allow_property && match(GDScriptTokenizer::Token::COLON)) {
 		if (match(GDScriptTokenizer::Token::NEWLINE)) {
 			return parse_property(variable, true);

@@ -4016,7 +4016,7 @@ static func generate_guid() -> String:
 TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 	TEST_CASE("Syntactic sugar should be preserved") {
 		SUBCASE("get_node ($)") {
-			// Should let as-is
+			// Should let as-is.
 			String code =
 					GDSCRIPT(R"(
 @onready var child_node = $ChildNode
@@ -4025,7 +4025,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 
 			CHECK_FORMAT(code, pre_formatted);
 
-			// Should remove useless quotes
+			// Should remove useless quotes.
 			code =
 					GDSCRIPT(R"(
 @onready var child_node = $"ChildNode"
@@ -4037,7 +4037,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 
 			CHECK_FORMAT(code, pre_formatted);
 
-			// Should keep quotes
+			// Should keep quotes.
 			code =
 					GDSCRIPT(R"(
 @onready var sub_child_node = $"ChildNode/Node$/Path"
@@ -4048,7 +4048,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 		}
 
 		SUBCASE("Unique names (%)") {
-			// Should let as-is
+			// Should let as-is.
 			String code =
 					GDSCRIPT(R"(
 @onready var unique_node = %UniqueNode
@@ -4057,7 +4057,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 
 			CHECK_FORMAT(code, pre_formatted);
 
-			// Should remove useless quotes
+			// Should remove useless quotes.
 			code =
 					GDSCRIPT(R"(
 @onready var unique_node = %UniqueNodeIndeed
@@ -4066,7 +4066,7 @@ TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Syntax]") {
 
 			CHECK_FORMAT(code, pre_formatted);
 
-			// Should keep quotes
+			// Should keep quotes.
 			code =
 					GDSCRIPT(R"(
 @onready var unique_node = %"UniqueNodeIndeedWith$"
@@ -4186,7 +4186,7 @@ func _ready() -> void:
 		String code;
 		String pre_formatted;
 
-		// Without typing
+		// Without typing.
 		code =
 				GDSCRIPT(R"(
 func my_func(optional_param= null):
@@ -4199,7 +4199,7 @@ func my_func(optional_param = null):
 )");
 		CHECK_FORMAT(code, pre_formatted);
 
-		// With explicit typing
+		// With explicit typing.
 		code =
 				GDSCRIPT(R"(
 func my_func(optional_param: Node =null):
@@ -4212,7 +4212,7 @@ func my_func(optional_param: Node = null):
 )");
 		CHECK_FORMAT(code, pre_formatted);
 
-		// With inferred typing
+		// With inferred typing.
 		code =
 				GDSCRIPT(R"(
 func my_func(optional_param:=""):
