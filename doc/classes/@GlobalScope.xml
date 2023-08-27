@@ -2035,6 +2035,18 @@
 		<constant name="KEY_LAUNCHF" value="4194415" enum="Key">
 			Launch Shortcut F key.
 		</constant>
+		<constant name="KEY_GLOBE" value="4194416" enum="Key">
+			"Globe" key on Mac / iPad keyboard.
+		</constant>
+		<constant name="KEY_KEYBOARD" value="4194417" enum="Key">
+			"On-screen keyboard" key on iPad keyboard.
+		</constant>
+		<constant name="KEY_JIS_EISU" value="4194418" enum="Key">
+			英数 key on Mac keyboard.
+		</constant>
+		<constant name="KEY_JIS_KANA" value="4194419" enum="Key">
+			かな key on Mac keyboard.
+		</constant>
 		<constant name="KEY_UNKNOWN" value="8388607" enum="Key">
 			Unknown key.
 		</constant>
@@ -2250,18 +2262,6 @@
 		</constant>
 		<constant name="KEY_SECTION" value="167" enum="Key">
 			§ key.
-		</constant>
-		<constant name="KEY_GLOBE" value="4194416" enum="Key">
-			"Globe" key on Mac / iPad keyboard.
-		</constant>
-		<constant name="KEY_KEYBOARD" value="4194417" enum="Key">
-			"On-screen keyboard" key iPad keyboard.
-		</constant>
-		<constant name="KEY_JIS_EISU" value="4194418" enum="Key">
-			英数 key on Mac keyboard.
-		</constant>
-		<constant name="KEY_JIS_KANA" value="4194419" enum="Key">
-			かな key on Mac keyboard.
 		</constant>
 		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask" is_bitfield="true">
 			Key Code mask.
