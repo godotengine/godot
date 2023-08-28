@@ -221,12 +221,20 @@ void Dictionary::_unref() const {
 	}
 	_p = nullptr;
 }
+
 uint32_t Dictionary::hash() const {
+	return recursive_hash(0);
+}
+
+uint32_t Dictionary::recursive_hash(int p_recursion_count) const {
+	ERR_FAIL_COND_V_MSG(p_recursion_count > MAX_RECURSION, 0, "Max recursion reached");
+	p_recursion_count++;
+
 	uint32_t h = hash_djb2_one_32(Variant::DICTIONARY);
 
 	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
-		h = hash_djb2_one_32(E.key().hash(), h);
-		h = hash_djb2_one_32(E.value().hash(), h);
+		h = hash_djb2_one_32(E.key().recursive_hash(p_recursion_count), h);
+		h = hash_djb2_one_32(E.value().recursive_hash(p_recursion_count), h);
 	}
 
 	return h;
