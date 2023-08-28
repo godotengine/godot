@@ -127,6 +127,9 @@
 #include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "scene/gui/tree2.h"
+#include "scene/gui/tree_item.h"
+#include "scene/gui/tree_item_cell.h"
 #include "scene/gui/video_stream_player.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
@@ -417,6 +420,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(PopupMenu);
 	GDREGISTER_CLASS(Tree);
+	GDREGISTER_CLASS(Tree2);
 
 	GDREGISTER_CLASS(TextEdit);
 	GDREGISTER_CLASS(CodeEdit);
@@ -424,6 +428,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CodeHighlighter);
 
 	GDREGISTER_ABSTRACT_CLASS(TreeItem);
+	GDREGISTER_ABSTRACT_CLASS(TreeItem2);
+	GDREGISTER_ABSTRACT_CLASS(TreeItemCell);
+	GDREGISTER_ABSTRACT_CLASS(TreeItemCellCheck);
+	GDREGISTER_ABSTRACT_CLASS(TreeItemCellRange);
+	GDREGISTER_ABSTRACT_CLASS(TreeItemCellText);
 	GDREGISTER_CLASS(OptionButton);
 	GDREGISTER_CLASS(SpinBox);
 	GDREGISTER_CLASS(ColorPicker);
