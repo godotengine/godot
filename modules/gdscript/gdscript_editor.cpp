@@ -59,6 +59,7 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("' '");
 	p_delimiters->push_back("\"\"\" \"\"\"");
 	p_delimiters->push_back("''' '''");
+	// NOTE: StringName, NodePath and r-strings are not listed here.
 }
 
 bool GDScriptLanguage::is_using_templates() {
