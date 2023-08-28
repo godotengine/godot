@@ -608,7 +608,17 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 	instance->base = RID();
 
 	if (p_base.is_valid()) {
+		RS::InstanceType old_base = instance->base_type;
 		instance->base_type = RSG::utilities->get_base_type(p_base);
+
+		if (old_base == RS::INSTANCE_NONE && ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) && instance->indexer_id.is_valid()) {
+			DynamicBVH &geometry = instance->scenario->indexers[Scenario::INDEXER_GEOMETRY];
+			DynamicBVH &volumes = instance->scenario->indexers[Scenario::INDEXER_VOLUMES];
+			if (!volumes.is_empty() && geometry.is_empty()) {
+				volumes.remove(instance->indexer_id);
+				instance->indexer_id = geometry.insert(instance->transformed_aabb, instance);
+			}
+		}
 
 		// fix up a specific malfunctioning case before the switch, so it can be handled
 		if (instance->base_type == RS::INSTANCE_NONE && RendererSceneOcclusionCull::get_singleton()->is_occluder(p_base)) {
