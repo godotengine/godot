@@ -162,6 +162,7 @@ void SceneReplicationConfig::remove_property(const NodePath &p_path) {
 	properties.erase(p_path);
 	sync_props.erase(p_path);
 	spawn_props.erase(p_path);
+	watch_props.clear();
 }
 
 bool SceneReplicationConfig::has_property(const NodePath &p_path) const {
