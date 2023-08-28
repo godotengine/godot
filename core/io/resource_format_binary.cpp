@@ -339,7 +339,18 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 							path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 						}
 
-						RES res = ResourceLoader::load(path, exttype, no_subresource_cache);
+						RES res;
+
+						for (List<RES>::Element *E = resource_cache.front(); E; E = E->next()) {
+							if (E->get()->get_path() == path) {
+								res = E->get();
+								break;
+							}
+						}
+
+						if (res.is_null()) {
+							res = ResourceLoader::load(path, exttype, no_subresource_cache);
+						}
 
 						if (res.is_null()) {
 							WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
