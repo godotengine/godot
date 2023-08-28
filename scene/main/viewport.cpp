@@ -2524,6 +2524,7 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 
 void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference) {
 	List<ObjectID> to_erase;
+	List<ObjectID> to_mouse_exit;
 
 	for (const KeyValue<ObjectID, uint64_t> &E : physics_2d_mouseover) {
 		if (!p_clean_all_frames && E.value == p_frame_reference) {
@@ -2537,7 +2538,7 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 				if (p_clean_all_frames && p_paused_only && co->can_process()) {
 					continue;
 				}
-				co->_mouse_exit();
+				to_mouse_exit.push_back(E.key);
 			}
 		}
 		to_erase.push_back(E.key);
@@ -2550,6 +2551,7 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 
 	// Per-shape.
 	List<Pair<ObjectID, int>> shapes_to_erase;
+	List<Pair<ObjectID, int>> shapes_to_mouse_exit;
 
 	for (KeyValue<Pair<ObjectID, int>, uint64_t> &E : physics_2d_shape_mouseover) {
 		if (!p_clean_all_frames && E.value == p_frame_reference) {
@@ -2563,7 +2565,7 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 				if (p_clean_all_frames && p_paused_only && co->can_process()) {
 					continue;
 				}
-				co->_mouse_shape_exit(E.key.second);
+				shapes_to_mouse_exit.push_back(E.key);
 			}
 		}
 		shapes_to_erase.push_back(E.key);
@@ -2572,6 +2574,21 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 	while (shapes_to_erase.size()) {
 		physics_2d_shape_mouseover.erase(shapes_to_erase.front()->get());
 		shapes_to_erase.pop_front();
+	}
+
+	while (to_mouse_exit.size()) {
+		Object *o = ObjectDB::get_instance(to_mouse_exit.front()->get());
+		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+		co->_mouse_exit();
+		to_mouse_exit.pop_front();
+	}
+
+	while (shapes_to_mouse_exit.size()) {
+		Pair<ObjectID, int> e = shapes_to_mouse_exit.front()->get();
+		Object *o = ObjectDB::get_instance(e.first);
+		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+		co->_mouse_shape_exit(e.second);
+		shapes_to_mouse_exit.pop_front();
 	}
 }
 
