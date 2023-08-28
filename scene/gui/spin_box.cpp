@@ -65,6 +65,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	// Ignore the prefix and suffix in the expression.
 	Error err = expr->parse(num.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
 	if (err != OK) {
+		_update_text();
 		return;
 	}
 
