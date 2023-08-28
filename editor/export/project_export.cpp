@@ -1070,7 +1070,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	current->set_export_path(p_path);
 
 	platform->clear_messages();
-	Error err = platform->export_project(current, export_debug->is_pressed(), p_path, 0);
+	Error err = platform->export_project(current, export_debug->is_pressed(), current->get_export_path(), 0);
 	result_dialog_log->clear();
 	if (err != ERR_SKIP) {
 		if (platform->fill_log_messages(result_dialog_log, err)) {
