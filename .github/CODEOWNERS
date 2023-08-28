@@ -68,6 +68,7 @@ doc_classes/*                       @godotengine/documentation
 # Misc
 
 /misc/                              @godotengine/buildsystem
+/misc/extension_api_validation/     @godotengine/gdextension @godotengine/dotnet
 
 # Modules
 
