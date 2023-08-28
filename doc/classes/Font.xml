@@ -114,6 +114,10 @@
 			<param index="1" name="face_index" type="int" default="0" />
 			<param index="2" name="strength" type="float" default="0.0" />
 			<param index="3" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
+			<param index="4" name="spacing_top" type="int" default="0" />
+			<param index="5" name="spacing_bottom" type="int" default="0" />
+			<param index="6" name="spacing_space" type="int" default="0" />
+			<param index="7" name="spacing_glyph" type="int" default="0" />
 			<description>
 				Returns [TextServer] RID of the font cache for specific variation.
 			</description>

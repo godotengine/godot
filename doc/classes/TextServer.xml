@@ -378,6 +378,14 @@
 				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
 			</description>
 		</method>
+		<method name="font_get_spacing" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns the spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+			</description>
+		</method>
 		<method name="font_get_stretch" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
@@ -826,6 +834,15 @@
 			<param index="2" name="supported" type="bool" />
 			<description>
 				Adds override for [method font_is_script_supported].
+			</description>
+		</method>
+		<method name="font_set_spacing">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="int" />
+			<description>
+				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="font_set_stretch">
