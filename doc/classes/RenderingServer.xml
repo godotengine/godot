@@ -1680,6 +1680,14 @@
 				Sets the per-instance shader uniform on the specified 3D geometry instance. Equivalent to [method GeometryInstance3D.set_instance_shader_parameter].
 			</description>
 		</method>
+		<method name="instance_geometry_set_shadow_mode">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="shadow_mode" type="int" enum="RenderingServer.ShadowDynamicMode" />
+			<description>
+				Sets the shadow mode on the specified 3D geometry instance.
+			</description>
+		</method>
 		<method name="instance_geometry_set_transparency">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
@@ -5021,6 +5029,15 @@
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
 			Only render the shadows from the object. The object itself will not be drawn.
+		</constant>
+		<constant name="SHADOW_MODE_AUTO" value="0" enum="ShadowDynamicMode">
+			Shadow mode is automatically determined by changes to an instance.
+		</constant>
+		<constant name="SHADOW_MODE_STATIC" value="1" enum="ShadowDynamicMode">
+			Instance will be rendered to a static shadow map if applicable.
+		</constant>
+		<constant name="SHADOW_MODE_DYNAMIC" value="2" enum="ShadowDynamicMode">
+			Instance will be rendered to a dynamic shadow map if applicable.
 		</constant>
 		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode">
 			Disable visibility range fading for the given instance.

@@ -62,6 +62,9 @@
 			The material override for the whole geometry.
 			If a material is assigned to this property, it will be used instead of any material set in any material slot of the mesh.
 		</member>
+		<member name="render_shadow" type="int" setter="set_shadow_render_setting" getter="get_shadow_render_setting" enum="GeometryInstance3D.ShadowRenderSetting" default="0">
+			Sets the render mode for shadow maps.
+		</member>
 		<member name="transparency" type="float" setter="set_transparency" getter="get_transparency" default="0.0">
 			The transparency applied to the whole geometry (as a multiplier of the materials' existing transparency). [code]0.0[/code] is fully opaque, while [code]1.0[/code] is fully transparent. Values greater than [code]0.0[/code] (exclusive) will force the geometry's materials to go through the transparent pipeline, which is slower to render and can exhibit rendering issues due to incorrect transparency sorting. However, unlike using a transparent material, setting [member transparency] to a value greater than [code]0.0[/code] (exclusive) will [i]not[/i] disable shadow rendering.
 			In spatial shaders, [code]1.0 - transparency[/code] is set as the default value of the [code]ALPHA[/code] built-in.
@@ -100,6 +103,16 @@
 		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
 			Will only show the shadows casted from this object.
 			In other words, the actual mesh will not be visible, only the shadows casted from the mesh will be.
+		</constant>
+		<constant name="SHADOW_RENDER_AUTO" value="0" enum="ShadowRenderSetting">
+			Let Godot determine whether this instance is dynamic. Objects are determined to be dynamic when altered after being rendered to a static shadow map.
+		</constant>
+		<constant name="SHADOW_RENDER_STATIC_MAP" value="1" enum="ShadowRenderSetting">
+			This instance is rendered to static shadow maps. This speeds up shadow map rendering for objects that do not move.
+			Note: if the objects position or orientation changes, its shadow will not be updated.
+		</constant>
+		<constant name="SHADOW_RENDER_DYNAMIC_MAP" value="2" enum="ShadowRenderSetting">
+			This instance is rendered to dynamic shadow maps. You must select this if the object changes position or orientation.
 		</constant>
 		<constant name="GI_MODE_DISABLED" value="0" enum="GIMode">
 			Disabled global illumination mode. Use for dynamic objects that do not contribute to global illumination (such as characters). When using [VoxelGI] and SDFGI, the geometry will [i]receive[/i] indirect lighting and reflections but the geometry will not be considered in GI baking. When using [LightmapGI], the object will receive indirect lighting using lightmap probes instead of using the baked lightmap texture.

@@ -366,6 +366,7 @@ private:
 	/* SHADOW ATLAS */
 
 	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
+	bool split_static_and_dynamic_shadows = false;
 
 	struct ShadowShrinkStage {
 		RID texture;
@@ -397,8 +398,10 @@ private:
 		int size = 0;
 		bool use_16_bits = true;
 
-		RID depth;
-		RID fb; //for copying
+		RID static_depth;
+		RID dynamic_depth;
+		RID static_fb; //for copying
+		RID dynamic_fb; //for copying
 
 		HashMap<RID, uint32_t> shadow_owners;
 	};
@@ -997,6 +1000,8 @@ public:
 
 	/* SHADOW ATLAS API */
 
+	virtual bool shadow_atlas_get_split_shadows() const override { return split_static_and_dynamic_shadows; }
+
 	bool owns_shadow_atlas(RID p_rid) { return shadow_atlas_owner.owns(p_rid); };
 
 	virtual RID shadow_atlas_create() override;
@@ -1016,10 +1021,11 @@ public:
 		return atlas->shadow_owners[p_light_intance];
 	}
 
-	_FORCE_INLINE_ RID shadow_atlas_get_texture(RID p_atlas) {
+	_FORCE_INLINE_ RID shadow_atlas_get_texture(RID p_atlas, bool p_static = false) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_COND_V(!atlas, RID());
-		return atlas->depth;
+		bool split_shadow = RSG::light_storage->shadow_atlas_get_split_shadows();
+		return (p_static && split_shadow) ? atlas->static_depth : atlas->dynamic_depth;
 	}
 
 	_FORCE_INLINE_ int shadow_atlas_get_size(RID p_atlas) {
@@ -1042,10 +1048,11 @@ public:
 		return atlas->quadrants[p_quadrant].subdivision;
 	}
 
-	_FORCE_INLINE_ RID shadow_atlas_get_fb(RID p_atlas) {
+	_FORCE_INLINE_ RID shadow_atlas_get_fb(RID p_atlas, bool p_static = false) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_COND_V(!atlas, RID());
-		return atlas->fb;
+		bool split_shadow = RSG::light_storage->shadow_atlas_get_split_shadows();
+		return (p_static && split_shadow) ? atlas->static_fb : atlas->dynamic_fb;
 	}
 
 	virtual void shadow_atlas_update(RID p_atlas) override;

@@ -32,6 +32,7 @@
 #define DEBUG_EFFECTS_RD_H
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/debug_combined_shadow_map.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/shadow_frustum.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
@@ -41,6 +42,8 @@ namespace RendererRD {
 
 class DebugEffects {
 private:
+	/* Shadow frustum */
+
 	struct {
 		RD::VertexFormatID vertex_format;
 		RID vertex_buffer;
@@ -72,12 +75,20 @@ private:
 
 	void _create_frustum_arrays();
 
+	/* Combined shadow map */
+	struct {
+		DebugCombinedShadowMapShaderRD shader;
+		RID shader_version;
+		PipelineCacheRD pipeline;
+	} combined_shadow_map;
+
 protected:
 public:
 	DebugEffects();
 	~DebugEffects();
 
 	void draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect);
+	void draw_combined_shadow_map(RID p_static_texture, RID p_dynamic_texture, RID p_dest_fb, const Rect2 p_rect);
 };
 
 } // namespace RendererRD

@@ -142,7 +142,9 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 		geom->lights.insert(B);
 		light->geometries.insert(A);
 
-		if (geom->can_cast_shadows) {
+		// We mark our light dirty if an object is paired and it is marked static or if dynamic shadow maps are disabled.
+		// Note that static lights get paired on the first frame or if a light moves into range.
+		if (geom->can_cast_shadows && (A->dynamic_shadow_mode != RS::SHADOW_MODE_DYNAMIC || !RSG::light_storage->shadow_atlas_get_split_shadows())) {
 			light->shadow_dirty = true;
 		}
 
@@ -249,7 +251,9 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		geom->lights.erase(B);
 		light->geometries.erase(A);
 
-		if (geom->can_cast_shadows) {
+		// We mark our light dirty if an object is unpaired and is marked static or if dynamic shadow maps are disabled.
+		// Note that a static light can be unpaired if a light moves out of range, so don't mark as dynamic.
+		if (geom->can_cast_shadows && (A->dynamic_shadow_mode != RS::SHADOW_MODE_DYNAMIC || !RSG::light_storage->shadow_atlas_get_split_shadows())) {
 			light->shadow_dirty = true;
 		}
 
@@ -853,7 +857,8 @@ void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 		ERR_FAIL_NULL(geom->geometry_instance);
 		geom->geometry_instance->set_layer_mask(p_mask);
 
-		if (geom->can_cast_shadows) {
+		// We mark our lights dirty if an objects layer mask is changed and is marked static or if dynamic shadow maps are disabled.
+		if (geom->can_cast_shadows && (instance->dynamic_shadow_mode != RS::SHADOW_MODE_DYNAMIC || !RSG::light_storage->shadow_atlas_get_split_shadows())) {
 			for (HashSet<RendererSceneCull::Instance *>::Iterator I = geom->lights.begin(); I != geom->lights.end(); ++I) {
 				InstanceLightData *light = static_cast<InstanceLightData *>((*I)->base_data);
 				light->shadow_dirty = true;
@@ -1253,6 +1258,15 @@ void RendererSceneCull::instance_geometry_set_cast_shadows_setting(RID p_instanc
 	_instance_queue_update(instance, false, true);
 }
 
+void RendererSceneCull::instance_geometry_set_shadow_mode(RID p_instance, RS::ShadowDynamicMode p_shadow_dynamic_mode) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->dynamic_shadow_mode = p_shadow_dynamic_mode;
+
+	_instance_queue_update(instance, false, true);
+}
+
 void RendererSceneCull::instance_geometry_set_material_override(RID p_instance, RID p_material) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -1632,10 +1646,22 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 		//make sure lights are updated if it casts shadow
 
-		if (geom->can_cast_shadows) {
+		// If an instance marked as auto changes, it must be a dynamic object,
+		// so we change it and mark the light as dirty.
+		// If it's static, the user must have a reason not to want to update the shadow map.
+		// If it's dynamic, it's rendered to the dynamic shadow map.
+		// TODO: may need to be more precise on what changed in the instance, we may get false positives
+		bool split_shadows = RSG::light_storage->shadow_atlas_get_split_shadows();
+		if (geom->can_cast_shadows && (p_instance->dynamic_shadow_mode == RS::SHADOW_MODE_AUTO || !split_shadows)) {
 			for (const Instance *E : geom->lights) {
 				InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
-				light->shadow_dirty = true;
+				if (!split_shadows) {
+					light->shadow_dirty = true;
+				} else if (!light->shadow_dirty) {
+					// instance changed while lights shadow map was fully rendered? Mark object as dynamic
+					p_instance->dynamic_shadow_mode = RS::SHADOW_MODE_DYNAMIC;
+					light->shadow_split_update = true;
+				}
 			}
 		}
 
@@ -2275,13 +2301,22 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 	}
 }
 
-bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers) {
+bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, bool p_atlas_changed, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 	Transform3D light_transform = p_instance->transform;
 	light_transform.orthonormalize(); //scale does not count on lights
 
-	bool animated_material_found = false;
+	bool split_shadows = RSG::light_storage->shadow_atlas_get_split_shadows();
+
+	if (!split_shadows && !p_atlas_changed) {
+		// If we're not splitting shadows and last frame we successfully rendered our shadow map, keep our result.
+		return false;
+	}
+
+	// Note, if we're not splitting shadows into static and dynamic, we add all elements to our dynamic list and leave our static list empty.
+	// In this scenario we also return keep_dirty as true if we encounter any elements
+	bool keep_dirty = false;
 
 	switch (RSG::light_storage->light_get_type(p_instance->base)) {
 		case RS::LIGHT_DIRECTIONAL: {
@@ -2328,14 +2363,23 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 					p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
 
 					RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
+					shadow_data.redraw_staticmap = split_shadows && p_atlas_changed;
 
 					for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 						Instance *instance = instance_shadow_cull_result[j];
+						bool use_dynamic_shadowmap = !split_shadows || instance->dynamic_shadow_mode == RS::SHADOW_MODE_DYNAMIC;
+
 						if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
 							continue;
 						} else {
 							if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
-								animated_material_found = true;
+								if (!split_shadows) {
+									keep_dirty = true;
+								} else if (!use_dynamic_shadowmap) {
+									// Always render these to our dynamic shadow map regardless of our setting!
+									instance->dynamic_shadow_mode = RS::SHADOW_MODE_DYNAMIC;
+									use_dynamic_shadowmap = true;
+								}
 							}
 
 							if (instance->mesh_instance.is_valid()) {
@@ -2343,7 +2387,11 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 							}
 						}
 
-						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+						if (use_dynamic_shadowmap) {
+							shadow_data.dynamic_instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+						} else if (p_atlas_changed) {
+							shadow_data.static_instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+						}
 					}
 
 					RSG::mesh_storage->update_mesh_instances();
@@ -2353,7 +2401,6 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 					shadow_data.pass = i;
 				}
 			} else { //shadow cube
-
 				if (max_shadows_used + 6 > MAX_UPDATE_SHADOWS) {
 					return true;
 				}
@@ -2406,21 +2453,35 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 					p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
 
 					RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
+					shadow_data.redraw_staticmap = split_shadows && p_atlas_changed;
 
 					for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 						Instance *instance = instance_shadow_cull_result[j];
+						bool use_dynamic_shadowmap = !split_shadows || instance->dynamic_shadow_mode == RS::SHADOW_MODE_DYNAMIC;
+
 						if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
 							continue;
 						} else {
 							if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
-								animated_material_found = true;
+								if (!split_shadows) {
+									keep_dirty = true;
+								} else if (!use_dynamic_shadowmap) {
+									// Always render these to our dynamic shadow map regardless of our setting!
+									instance->dynamic_shadow_mode = RS::SHADOW_MODE_DYNAMIC;
+									use_dynamic_shadowmap = true;
+								}
 							}
+
 							if (instance->mesh_instance.is_valid()) {
 								RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 							}
 						}
 
-						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+						if (use_dynamic_shadowmap) {
+							shadow_data.dynamic_instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+						} else if (p_atlas_changed) {
+							shadow_data.static_instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+						}
 					}
 
 					RSG::mesh_storage->update_mesh_instances();
@@ -2469,21 +2530,35 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 			p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
 
 			RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
+			shadow_data.redraw_staticmap = split_shadows && p_atlas_changed;
 
 			for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 				Instance *instance = instance_shadow_cull_result[j];
+				bool use_dynamic_shadowmap = !split_shadows || instance->dynamic_shadow_mode == RS::SHADOW_MODE_DYNAMIC;
+
 				if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
 					continue;
 				} else {
 					if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
-						animated_material_found = true;
+						if (!split_shadows) {
+							keep_dirty = true;
+						} else if (!use_dynamic_shadowmap) {
+							// Always render these to our dynamic shadow map regardless of our setting!
+							instance->dynamic_shadow_mode = RS::SHADOW_MODE_DYNAMIC;
+							use_dynamic_shadowmap = true;
+						}
 					}
 
 					if (instance->mesh_instance.is_valid()) {
 						RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 					}
 				}
-				shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+
+				if (use_dynamic_shadowmap) {
+					shadow_data.dynamic_instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+				} else if (p_atlas_changed) {
+					shadow_data.static_instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+				}
 			}
 
 			RSG::mesh_storage->update_mesh_instances();
@@ -2495,7 +2570,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 		} break;
 	}
 
-	return animated_material_found;
+	return keep_dirty;
 }
 
 void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info) {
@@ -3151,7 +3226,9 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 				}
 				render_shadow_data[max_shadows_used].light = cull.shadows[i].light_instance;
 				render_shadow_data[max_shadows_used].pass = j;
-				render_shadow_data[max_shadows_used].instances.merge_unordered(scene_cull_result.directional_shadows[i].cascade_geometry_instances[j]);
+				render_shadow_data[max_shadows_used].redraw_staticmap = false;
+				// TODO see if we can split static instances, currently not supported yet in any renderer
+				render_shadow_data[max_shadows_used].dynamic_instances.merge_unordered(scene_cull_result.directional_shadows[i].cascade_geometry_instances[j]);
 				max_shadows_used++;
 			}
 		}
@@ -3237,19 +3314,26 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			}
 
 			if (light->shadow_dirty) {
+				// A light will be marked as dirty if:
+				// - this is the first time we're rendering a shadow map for it,
+				// - any of its properties changed,
+				// - if it couldn't be updated last frame,
+				// - if we detected animated/dynamic meshes last frame (only for Omni light with cubemap shadows).
+				// We increase the last version to trigger a redraw of our static shadowmaps
 				light->last_version++;
 				light->shadow_dirty = false;
 			}
 
-			bool redraw = RSG::light_storage->shadow_atlas_update_light(p_shadow_atlas, light->instance, coverage, light->last_version);
+			bool atlas_changed = RSG::light_storage->shadow_atlas_update_light(p_shadow_atlas, light->instance, coverage, light->last_version);
 
-			if (redraw && max_shadows_used < MAX_UPDATE_SHADOWS) {
+			if (max_shadows_used < MAX_UPDATE_SHADOWS) {
 				//must redraw!
 				RENDER_TIMESTAMP("> Render Light3D " + itos(i));
-				light->shadow_dirty = _light_instance_update_shadow(ins, p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_orthogonal, p_camera_data->vaspect, p_shadow_atlas, scenario, p_screen_mesh_lod_threshold, p_visible_layers);
+				light->shadow_dirty = _light_instance_update_shadow(ins, p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_orthogonal, p_camera_data->vaspect, p_shadow_atlas, atlas_changed || light->shadow_split_update, scenario, p_screen_mesh_lod_threshold, p_visible_layers);
+				light->shadow_split_update = false;
 				RENDER_TIMESTAMP("< Render Light3D " + itos(i));
 			} else {
-				light->shadow_dirty = redraw;
+				light->shadow_dirty = atlas_changed;
 			}
 		}
 	}
@@ -3319,7 +3403,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	}
 
 	for (uint32_t i = 0; i < max_shadows_used; i++) {
-		render_shadow_data[i].instances.clear();
+		render_shadow_data[i].dynamic_instances.clear();
+		render_shadow_data[i].static_instances.clear();
 	}
 	max_shadows_used = 0;
 
@@ -4132,7 +4217,8 @@ RendererSceneCull::RendererSceneCull() {
 	instance_shadow_cull_result.set_page_pool(&instance_cull_page_pool);
 
 	for (uint32_t i = 0; i < MAX_UPDATE_SHADOWS; i++) {
-		render_shadow_data[i].instances.set_page_pool(&geometry_instance_cull_page_pool);
+		render_shadow_data[i].dynamic_instances.set_page_pool(&geometry_instance_cull_page_pool);
+		render_shadow_data[i].static_instances.set_page_pool(&geometry_instance_cull_page_pool);
 	}
 	for (uint32_t i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
 		render_sdfgi_data[i].instances.set_page_pool(&geometry_instance_cull_page_pool);
@@ -4162,7 +4248,8 @@ RendererSceneCull::~RendererSceneCull() {
 	instance_shadow_cull_result.reset();
 
 	for (uint32_t i = 0; i < MAX_UPDATE_SHADOWS; i++) {
-		render_shadow_data[i].instances.reset();
+		render_shadow_data[i].dynamic_instances.reset();
+		render_shadow_data[i].static_instances.reset();
 	}
 	for (uint32_t i = 0; i < SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE; i++) {
 		render_sdfgi_data[i].instances.reset();

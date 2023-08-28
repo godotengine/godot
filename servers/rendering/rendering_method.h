@@ -96,6 +96,7 @@ public:
 
 	virtual void instance_geometry_set_flag(RID p_instance, RS::InstanceFlags p_flags, bool p_enabled) = 0;
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting) = 0;
+	virtual void instance_geometry_set_shadow_mode(RID p_instance, RS::ShadowDynamicMode p_shadow_dynamic_mode) = 0;
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material) = 0;
 	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material) = 0;
 

@@ -400,6 +400,7 @@ public:
 		Vector<RID> materials;
 
 		RS::ShadowCastingSetting cast_shadows;
+		RS::ShadowDynamicMode dynamic_shadow_mode = RS::SHADOW_MODE_AUTO;
 
 		uint32_t layer_mask;
 		//fit in 32 bits
@@ -676,7 +677,8 @@ public:
 		uint64_t last_version;
 		List<Instance *>::Element *D; // directional light in scenario
 
-		bool shadow_dirty;
+		bool shadow_dirty = true; // mark that shadow map needs to be updated fully
+		bool shadow_split_update = false; // if shadow split is on, marked as true if a static object moved while shadow_dirty is false
 		bool uses_projector = false;
 		bool uses_softshadow = false;
 
@@ -689,7 +691,6 @@ public:
 
 		InstanceLightData() {
 			bake_mode = RS::LIGHT_BAKE_DISABLED;
-			shadow_dirty = true;
 			D = nullptr;
 			last_version = 0;
 			baked_light = nullptr;
@@ -988,6 +989,7 @@ public:
 
 	virtual void instance_geometry_set_flag(RID p_instance, RS::InstanceFlags p_flags, bool p_enabled);
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting);
+	virtual void instance_geometry_set_shadow_mode(RID p_instance, RS::ShadowDynamicMode p_shadow_dynamic_mode);
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material);
 	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material);
 
@@ -1011,7 +1013,7 @@ public:
 
 	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, bool p_atlas_changed, Scenario *p_scenario, float p_scren_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 

@@ -674,14 +674,28 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS) {
 		if (p_render_data->shadow_atlas.is_valid()) {
-			RID shadow_atlas_texture = RendererRD::LightStorage::get_singleton()->shadow_atlas_get_texture(p_render_data->shadow_atlas);
+			RID static_shadow_atlas_texture = RendererRD::LightStorage::get_singleton()->shadow_atlas_get_texture(p_render_data->shadow_atlas, true);
+			RID dynamic_shadow_atlas_texture = RendererRD::LightStorage::get_singleton()->shadow_atlas_get_texture(p_render_data->shadow_atlas);
 
-			if (shadow_atlas_texture.is_null()) {
-				shadow_atlas_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+			if (static_shadow_atlas_texture.is_null()) {
+				static_shadow_atlas_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+			}
+
+			if (dynamic_shadow_atlas_texture.is_null()) {
+				dynamic_shadow_atlas_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 			}
 
 			Size2 rtsize = texture_storage->render_target_get_size(render_target);
-			copy_effects->copy_to_fb_rect(shadow_atlas_texture, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), rtsize / 2), false, true);
+
+			// Determine our display size, try and keep square by using the smallest edge.
+			Size2i size = 2 * rtsize / 3;
+			if (size.x < size.y) {
+				size.y = size.x;
+			} else if (size.y < size.x) {
+				size.x = size.y;
+			}
+
+			debug_effects->draw_combined_shadow_map(static_shadow_atlas_texture, dynamic_shadow_atlas_texture, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), size));
 		}
 	}
 

@@ -177,6 +177,8 @@ public:
 
 	/* SHADOW ATLAS */
 
+	virtual bool shadow_atlas_get_split_shadows() const = 0;
+
 	virtual RID shadow_atlas_create() = 0;
 	virtual void shadow_atlas_free(RID p_atlas) = 0;
 

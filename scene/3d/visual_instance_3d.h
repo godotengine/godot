@@ -91,6 +91,13 @@ public:
 		SHADOW_CASTING_SETTING_SHADOWS_ONLY = RS::SHADOW_CASTING_SETTING_SHADOWS_ONLY
 	};
 
+	enum ShadowRenderSetting {
+		SHADOW_RENDER_AUTO,
+		SHADOW_RENDER_STATIC_MAP,
+		SHADOW_RENDER_DYNAMIC_MAP,
+		SHADOW_RENDER_MAX
+	};
+
 	enum GIMode {
 		GI_MODE_DISABLED,
 		GI_MODE_STATIC,
@@ -113,6 +120,7 @@ public:
 
 private:
 	ShadowCastingSetting shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
+	ShadowRenderSetting shadow_render_setting = SHADOW_RENDER_AUTO;
 	Ref<Material> material_override;
 	Ref<Material> material_overlay;
 
@@ -148,6 +156,9 @@ protected:
 public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
+
+	void set_shadow_render_setting(ShadowRenderSetting p_shadow_render_setting);
+	ShadowRenderSetting get_shadow_render_setting() const;
 
 	void set_transparency(float p_transparency);
 	float get_transparency() const;
@@ -200,6 +211,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(GeometryInstance3D::ShadowCastingSetting);
+VARIANT_ENUM_CAST(GeometryInstance3D::ShadowRenderSetting);
 VARIANT_ENUM_CAST(GeometryInstance3D::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance3D::GIMode);
 VARIANT_ENUM_CAST(GeometryInstance3D::VisibilityRangeFadeMode);
