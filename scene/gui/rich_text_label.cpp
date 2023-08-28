@@ -5310,6 +5310,8 @@ void RichTextLabel::selection_copy() {
 }
 
 void RichTextLabel::select_all() {
+	_validate_line_caches();
+
 	if (!selection.enabled) {
 		return;
 	}
@@ -5322,13 +5324,12 @@ void RichTextLabel::select_all() {
 		if (it->type != ITEM_FRAME) {
 			if (!from_item) {
 				from_item = it;
-			} else {
-				to_item = it;
 			}
+			to_item = it;
 		}
 		it = _get_next_item(it, true);
 	}
-	if (!from_item || !to_item) {
+	if (!from_item) {
 		return;
 	}
 
