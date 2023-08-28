@@ -234,7 +234,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT);
 		} else {
 			//has no script (or script is a custom type)
-			item->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 			item->set_selectable(0, false);
 
 			if (!scr.is_null()) { // make sure to mark the script if a custom type
@@ -251,11 +251,11 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 				node_name += " " + TTR("(Connecting From)");
 			}
 			item->set_text(0, node_name);
-			item->set_custom_color(0, accent);
+			_set_item_custom_color(item, accent);
 		}
 	} else if (part_of_subscene) {
 		if (valid_types.size() == 0) {
-			item->set_custom_color(0, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			_set_item_custom_color(item, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		}
 	} else if (marked.has(p_node)) {
 		String node_name = p_node->get_name();
@@ -264,15 +264,15 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 		item->set_text(0, node_name);
 		item->set_selectable(0, marked_selectable);
-		item->set_custom_color(0, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
+		_set_item_custom_color(item, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
 	} else if (!p_node->can_process()) {
-		item->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 	} else if (!marked_selectable && !marked_children_selectable) {
 		Node *node = p_node;
 		while (node) {
 			if (marked.has(node)) {
 				item->set_selectable(0, false);
-				item->set_custom_color(0, get_theme_color(SNAME("error_color"), SNAME("Editor")));
+				_set_item_custom_color(item, get_theme_color(SNAME("error_color"), SNAME("Editor")));
 				break;
 			}
 			node = node->get_parent();
@@ -500,7 +500,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		if (!valid) {
-			item->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 			item->set_selectable(0, false);
 		}
 	}
@@ -548,6 +548,11 @@ void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
 		int idx = p_item->get_button_by_id(0, BUTTON_VISIBILITY);
 		p_item->set_button_color(0, idx, color);
 	}
+}
+
+void SceneTreeEditor::_set_item_custom_color(TreeItem *p_item, Color p_color) {
+	p_item->set_custom_color(0, p_color);
+	p_item->set_meta(SNAME("custom_color"), p_color);
 }
 
 void SceneTreeEditor::_node_script_changed(Node *p_node) {
@@ -661,7 +666,12 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	}
 
 	if (selectable) {
-		p_parent->clear_custom_color(0);
+		Color custom_color = p_parent->get_meta(SNAME("custom_color"), Color(0, 0, 0, 0));
+		if (custom_color == Color(0, 0, 0, 0)) {
+			p_parent->clear_custom_color(0);
+		} else {
+			p_parent->set_custom_color(0, custom_color);
+		}
 		p_parent->set_selectable(0, true);
 	} else if (keep_for_children) {
 		p_parent->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
