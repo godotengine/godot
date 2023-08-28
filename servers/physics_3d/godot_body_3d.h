@@ -316,6 +316,8 @@ public:
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);
 	bool is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const;
 
+	void offset_position_for_ccd(const Vector3& p_offset);
+
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
 

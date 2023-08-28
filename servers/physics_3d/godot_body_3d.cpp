@@ -472,6 +472,13 @@ bool GodotBody3D::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 	return locked_axis & p_axis;
 }
 
+void GodotBody3D::offset_position_for_ccd(const Vector3& p_offset) {
+	Transform3D offset_transform = get_transform();
+	offset_transform.origin += p_offset;
+	_set_transform(offset_transform);
+	_set_inv_transform(offset_transform.affine_inverse());
+}
+
 void GodotBody3D::integrate_forces(real_t p_step) {
 	if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
 		return;
