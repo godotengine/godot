@@ -52,6 +52,7 @@
 #include "editor/find_in_files.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_run_bar.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
@@ -1347,27 +1348,40 @@ void ScriptEditor::_menu_option(int p_option) {
 				scr->reload(true);
 
 			} break;
+
 			case FILE_RUN: {
 				Ref<Script> scr = current->get_edited_resource();
 				if (scr == nullptr || scr.is_null()) {
-					EditorNode::get_singleton()->show_warning(TTR("Can't obtain the script for running."));
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the edited file because it's not a script."), EditorToaster::SEVERITY_WARNING);
 					break;
-				}
-				if (!scr->is_tool()) {
-					EditorNode::get_singleton()->show_warning(TTR("Script is not in tool mode, will not be able to run."));
-					return;
 				}
 
 				current->apply_code();
-				Error err = scr->reload(false); //hard reload script before running always
 
-				if (err != OK) {
-					EditorNode::get_singleton()->show_warning(TTR("Script failed reloading, check console for errors."));
+				Error err = scr->reload(false); // Always hard reload the script before running.
+				if (err != OK || !scr->is_valid()) {
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it contains errors, check the output log."), EditorToaster::SEVERITY_WARNING);
 					return;
 				}
 
+				// Perform additional checks on the script to evaluate if it's runnable.
+
+				bool is_runnable = true;
 				if (!ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
-					EditorNode::get_singleton()->show_warning(TTR("To run this script, it must inherit EditorScript and be set to tool mode."));
+					is_runnable = false;
+
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it doesn't extend EditorScript."), EditorToaster::SEVERITY_WARNING);
+				}
+				if (!scr->is_tool()) {
+					is_runnable = false;
+
+					if (scr->get_class() == "GDScript") {
+						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script (add the @tool annotation at the top)."), EditorToaster::SEVERITY_WARNING);
+					} else {
+						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script."), EditorToaster::SEVERITY_WARNING);
+					}
+				}
+				if (!is_runnable) {
 					return;
 				}
 
@@ -1375,6 +1389,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				es->set_script(scr);
 				es->run();
 			} break;
+
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
 					_ask_close_current_unsaved_tab(current);
