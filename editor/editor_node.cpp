@@ -2037,52 +2037,61 @@ bool EditorNode::_is_class_editor_disabled_by_feature_profile(const StringName &
 void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	ERR_FAIL_NULL(p_editing_owner);
 
-	if (p_object && _is_class_editor_disabled_by_feature_profile(p_object->get_class())) {
+	// Editing for this type of object may be disabled by user's feature profile.
+	if (!p_object || _is_class_editor_disabled_by_feature_profile(p_object->get_class())) {
+		// Nothing to edit, clean up the owner context and return.
+		hide_unused_editors(p_editing_owner);
 		return;
 	}
 
-	Vector<EditorPlugin *> item_plugins;
-	if (p_object) {
-		item_plugins = editor_data.get_subeditors(p_object);
+	// Get a list of editor plugins that can handle this type of object.
+	Vector<EditorPlugin *> available_plugins = editor_data.get_handling_sub_editors(p_object);
+	if (available_plugins.is_empty()) {
+		// None, clean up the owner context and return.
+		hide_unused_editors(p_editing_owner);
+		return;
 	}
 
-	if (!item_plugins.is_empty()) {
-		ObjectID owner_id = p_editing_owner->get_instance_id();
+	ObjectID owner_id = p_editing_owner->get_instance_id();
 
-		List<EditorPlugin *> to_remove;
-		for (EditorPlugin *plugin : active_plugins[owner_id]) {
-			if (!item_plugins.has(plugin)) {
-				// Remove plugins no longer used by this editing owner.
-				to_remove.push_back(plugin);
-				_plugin_over_edit(plugin, nullptr);
-			}
+	// Remove editor plugins no longer used by this editing owner. Keep the ones that can
+	// still be reused by the new edited object.
+
+	List<EditorPlugin *> to_remove;
+	for (EditorPlugin *plugin : active_plugins[owner_id]) {
+		if (!available_plugins.has(plugin)) {
+			to_remove.push_back(plugin);
+			_plugin_over_edit(plugin, nullptr);
+		}
+	}
+
+	for (EditorPlugin *plugin : to_remove) {
+		active_plugins[owner_id].erase(plugin);
+	}
+
+	// Send the edited object to the plugins.
+	for (EditorPlugin *plugin : available_plugins) {
+		if (active_plugins[owner_id].has(plugin)) {
+			// Plugin was already active, just change the object.
+			plugin->edit(p_object);
+			continue;
 		}
 
-		for (EditorPlugin *plugin : to_remove) {
-			active_plugins[owner_id].erase(plugin);
-		}
-
-		for (EditorPlugin *plugin : item_plugins) {
-			if (active_plugins[owner_id].has(plugin)) {
-				plugin->edit(p_object);
-				continue;
-			}
-
-			for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
-				if (kv.key != owner_id) {
-					EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
-					if (epres && kv.value.has(plugin)) {
-						// If it's resource property editing the same resource type, fold it.
-						epres->fold_resource();
-					}
-					kv.value.erase(plugin);
+		// If plugin is already associated with another owner, remove it from there first.
+		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
+			if (kv.key != owner_id) {
+				EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
+				if (epres && kv.value.has(plugin)) {
+					// If it's resource property editing the same resource type, fold it.
+					epres->fold_resource();
 				}
+				kv.value.erase(plugin);
 			}
-			active_plugins[owner_id].insert(plugin);
-			_plugin_over_edit(plugin, p_object);
 		}
-	} else {
-		hide_unused_editors(p_editing_owner);
+
+		// Activate previously inactive plugin and edit the object.
+		active_plugins[owner_id].insert(plugin);
+		_plugin_over_edit(plugin, p_object);
 	}
 }
 
@@ -2184,15 +2193,16 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		InspectorDock::get_inspector_singleton()->edit(nullptr);
 		NodeDock::get_singleton()->set_node(nullptr);
 		InspectorDock::get_singleton()->update(nullptr);
-
 		hide_unused_editors();
-
 		return;
 	}
 
-	Object *prev_inspected_object = InspectorDock::get_inspector_singleton()->get_edited_object();
-
+	// Update the use folding setting and state.
 	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
+	if (InspectorDock::get_inspector_singleton()->is_using_folding() == disable_folding) {
+		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding, false);
+	}
+
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 	bool stay_in_script_editor_on_node_selected = bool(EDITOR_GET("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected"));
@@ -2210,6 +2220,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	if (is_resource) {
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
 		ERR_FAIL_COND(!current_res);
+
 		InspectorDock::get_inspector_singleton()->edit(current_res);
 		SceneTreeDock::get_singleton()->set_selected(nullptr);
 		NodeDock::get_singleton()->set_node(nullptr);
@@ -2299,19 +2310,10 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		InspectorDock::get_singleton()->update(nullptr);
 	}
 
-	if (current_obj == prev_inspected_object) {
-		// Make sure inspected properties are restored.
-		InspectorDock::get_inspector_singleton()->update_tree();
-	}
-
 	InspectorDock::get_singleton()->set_info(
 			info_is_warning ? TTR("Changes may be lost!") : TTR("This object is read-only."),
 			editable_info,
 			info_is_warning);
-
-	if (InspectorDock::get_inspector_singleton()->is_using_folding() == disable_folding) {
-		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding);
-	}
 
 	Object *editor_owner = is_node ? (Object *)SceneTreeDock::get_singleton() : is_resource ? (Object *)InspectorDock::get_inspector_singleton()
 																							: (Object *)this;
@@ -2319,7 +2321,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	// Take care of the main editor plugin.
 
 	if (!inspector_only) {
-		EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
+		EditorPlugin *main_plugin = editor_data.get_handling_main_editor(current_obj);
 
 		int plugin_index = 0;
 		for (; plugin_index < editor_table.size(); plugin_index++) {
@@ -3716,11 +3718,14 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	prev_scene->set_disabled(previous_scenes.size() == 0);
 	opening_prev = false;
-	SceneTreeDock::get_singleton()->set_selected(new_scene);
 
 	EditorDebuggerNode::get_singleton()->update_live_edit_root();
 
-	push_item(new_scene);
+	// Tell everything to edit this object, unless we're in the process of restoring scenes.
+	// If we are, we'll edit it after the restoration is done.
+	if (!restoring_scenes) {
+		push_item(new_scene);
+	}
 
 	// Load the selected nodes.
 	if (editor_state_cf->has_section_key("editor_states", "selected_nodes")) {

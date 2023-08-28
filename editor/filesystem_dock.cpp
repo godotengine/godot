@@ -1362,7 +1362,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			String new_item_path = p_item.is_file ? new_path : file_changed_paths[i].replace_first(old_path, new_path);
 			if (ResourceLoader::get_resource_type(new_item_path) == "PackedScene" && EditorNode::get_singleton()->is_scene_open(file_changed_paths[i])) {
-				EditorData *ed = &EditorNode::get_singleton()->get_editor_data();
+				EditorData *ed = &EditorNode::get_editor_data();
 				for (int j = 0; j < ed->get_edited_scene_count(); j++) {
 					if (ed->get_scene_path(j) == file_changed_paths[i]) {
 						ed->get_edited_scene_root(j)->set_scene_file_path(new_item_path);
@@ -1630,7 +1630,7 @@ void FileSystemDock::_make_scene_confirm() {
 	const String scene_path = make_scene_dialog->get_scene_path();
 
 	int idx = EditorNode::get_singleton()->new_scene();
-	EditorNode::get_singleton()->get_editor_data().set_scene_path(idx, scene_path);
+	EditorNode::get_editor_data().set_scene_path(idx, scene_path);
 	EditorNode::get_singleton()->set_edited_scene(make_scene_dialog->create_scene_root());
 	EditorNode::get_singleton()->save_scene_list({ scene_path });
 }

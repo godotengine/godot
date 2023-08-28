@@ -244,7 +244,7 @@ EditorSelectionHistory::EditorSelectionHistory() {
 
 ////////////////////////////////////////////////////////////
 
-EditorPlugin *EditorData::get_editor(Object *p_object) {
+EditorPlugin *EditorData::get_handling_main_editor(Object *p_object) {
 	// We need to iterate backwards so that we can check user-created plugins first.
 	// Otherwise, it would not be possible for plugins to handle CanvasItem and Spatial nodes.
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
@@ -256,7 +256,7 @@ EditorPlugin *EditorData::get_editor(Object *p_object) {
 	return nullptr;
 }
 
-Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
+Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 	Vector<EditorPlugin *> sub_plugins;
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (!editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
@@ -266,7 +266,7 @@ Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
 	return sub_plugins;
 }
 
-EditorPlugin *EditorData::get_editor(String p_name) {
+EditorPlugin *EditorData::get_editor_by_name(String p_name) {
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (editor_plugins[i]->get_name() == p_name) {
 			return editor_plugins[i];
