@@ -342,6 +342,25 @@ Point2i Window::get_position() const {
 	return position;
 }
 
+void Window::move_to_center() {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_COND(!is_inside_tree());
+
+	Rect2 parent_rect;
+
+	if (is_embedded()) {
+		parent_rect = get_embedder()->get_visible_rect();
+	} else {
+		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
+		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
+		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
+	}
+
+	if (parent_rect != Rect2()) {
+		set_position(parent_rect.position + (parent_rect.size - get_size()) / 2);
+	}
+}
+
 void Window::set_size(const Size2i &p_size) {
 	ERR_MAIN_THREAD_GUARD;
 
@@ -2602,6 +2621,7 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Window::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &Window::get_position);
+	ClassDB::bind_method(D_METHOD("move_to_center"), &Window::move_to_center);
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Window::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
