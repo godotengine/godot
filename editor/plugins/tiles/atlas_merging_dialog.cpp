@@ -61,6 +61,10 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 		int line_height = 0;
 		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
 			Ref<TileSetAtlasSource> atlas_source = p_atlas_sources[source_index];
+			Ref<Image> input_image = atlas_source->get_texture()->get_image();
+			if (input_image->get_format() != Image::FORMAT_RGBA8) {
+				input_image->convert(Image::FORMAT_RGBA8);
+			}
 			merged_mapping.push_back(HashMap<Vector2i, Vector2i>());
 
 			// Layout the tiles.
@@ -84,7 +88,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 					if (dst_rect_wide.get_end().x > output_image->get_width() || dst_rect_wide.get_end().y > output_image->get_height()) {
 						output_image->crop(MAX(dst_rect_wide.get_end().x, output_image->get_width()), MAX(dst_rect_wide.get_end().y, output_image->get_height()));
 					}
-					output_image->blit_rect(atlas_source->get_texture()->get_image(), src_rect, dst_rect_wide.get_center() - src_rect.size / 2);
+					output_image->blit_rect(input_image, src_rect, dst_rect_wide.get_center() - src_rect.size / 2);
 				}
 
 				// Add to the mapping.
