@@ -4144,11 +4144,11 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector2i p_size) {
 	// Create a tile if it does not exists.
-	ERR_FAIL_COND(p_atlas_coords.x < 0 || p_atlas_coords.y < 0);
-	ERR_FAIL_COND(p_size.x <= 0 || p_size.y <= 0);
 
-	bool room_for_tile = has_room_for_tile(p_atlas_coords, p_size, 1, Vector2i(), 1);
-	ERR_FAIL_COND_MSG(!room_for_tile, "Cannot create tile. The tile is outside the texture or tiles are already present in the space the tile would cover.");
+	RoomCheck room_for_tile = _has_room_for_tile(p_atlas_coords, p_size, 1, Vector2i(), 1);
+	ERR_FAIL_COND_MSG(room_for_tile == ROOM_OCCUPIED, "Cannot create tile. Tiles are already present in the space the tile would cover.");
+	ERR_FAIL_COND_MSG(room_for_tile == ROOM_OUTSIDE, "Cannot create tile. The tile is outside the texture.");
+	ERR_FAIL_COND_MSG(room_for_tile == ROOM_INVALID, "Cannot create tile. Size is 0.");
 
 	// Initialize the tile data.
 	TileAlternativesData tad;
@@ -4354,28 +4354,7 @@ Vector2i TileSetAtlasSource::get_tile_id(int p_index) const {
 }
 
 bool TileSetAtlasSource::has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_size, int p_animation_columns, Vector2i p_animation_separation, int p_frames_count, Vector2i p_ignored_tile) const {
-	if (p_atlas_coords.x < 0 || p_atlas_coords.y < 0) {
-		return false;
-	}
-	if (p_size.x <= 0 || p_size.y <= 0) {
-		return false;
-	}
-	Size2i atlas_grid_size = get_atlas_grid_size();
-	for (int frame = 0; frame < p_frames_count; frame++) {
-		Vector2i frame_coords = p_atlas_coords + (p_size + p_animation_separation) * ((p_animation_columns > 0) ? Vector2i(frame % p_animation_columns, frame / p_animation_columns) : Vector2i(frame, 0));
-		for (int x = 0; x < p_size.x; x++) {
-			for (int y = 0; y < p_size.y; y++) {
-				Vector2i coords = frame_coords + Vector2i(x, y);
-				if (_coords_mapping_cache.has(coords) && _coords_mapping_cache[coords] != p_ignored_tile) {
-					return false;
-				}
-				if (coords.x >= atlas_grid_size.x || coords.y >= atlas_grid_size.y) {
-					return false;
-				}
-			}
-		}
-	}
-	return true;
+	return _has_room_for_tile(p_atlas_coords, p_size, p_animation_columns, p_animation_separation, p_frames_count, p_ignored_tile) == ROOM_OK;
 }
 
 PackedVector2Array TileSetAtlasSource::get_tiles_to_be_removed_on_change(Ref<Texture2D> p_texture, Vector2i p_margins, Vector2i p_separation, Vector2i p_texture_region_size) {
@@ -4716,6 +4695,31 @@ void TileSetAtlasSource::_clear_tiles_outside_texture() {
 	for (const Vector2i &v : to_remove) {
 		remove_tile(v);
 	}
+}
+
+TileSetAtlasSource::RoomCheck TileSetAtlasSource::_has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_size, int p_animation_columns, Vector2i p_animation_separation, int p_frames_count, Vector2i p_ignored_tile) const {
+	if (p_atlas_coords.x < 0 || p_atlas_coords.y < 0) {
+		return ROOM_OUTSIDE;
+	}
+	if (p_size.x <= 0 || p_size.y <= 0) {
+		return ROOM_INVALID;
+	}
+	Size2i atlas_grid_size = get_atlas_grid_size();
+	for (int frame = 0; frame < p_frames_count; frame++) {
+		Vector2i frame_coords = p_atlas_coords + (p_size + p_animation_separation) * ((p_animation_columns > 0) ? Vector2i(frame % p_animation_columns, frame / p_animation_columns) : Vector2i(frame, 0));
+		for (int x = 0; x < p_size.x; x++) {
+			for (int y = 0; y < p_size.y; y++) {
+				Vector2i coords = frame_coords + Vector2i(x, y);
+				if (_coords_mapping_cache.has(coords) && _coords_mapping_cache[coords] != p_ignored_tile) {
+					return ROOM_OCCUPIED;
+				}
+				if (coords.x >= atlas_grid_size.x || coords.y >= atlas_grid_size.y) {
+					return ROOM_OUTSIDE;
+				}
+			}
+		}
+	}
+	return ROOM_OK;
 }
 
 void TileSetAtlasSource::_queue_update_padded_texture() {

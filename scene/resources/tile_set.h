@@ -617,6 +617,13 @@ private:
 		int next_alternative_id = 1;
 	};
 
+	enum RoomCheck {
+		ROOM_OK,
+		ROOM_OCCUPIED,
+		ROOM_OUTSIDE,
+		ROOM_INVALID,
+	};
+
 	Ref<Texture2D> texture;
 	Vector2i margins;
 	Vector2i separation;
@@ -635,6 +642,7 @@ private:
 	void _create_coords_mapping_cache(Vector2i p_atlas_coords);
 
 	void _clear_tiles_outside_texture();
+	RoomCheck _has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_size, int p_animation_columns, Vector2i p_animation_separation, int p_frames_count, Vector2i p_ignored_tile = INVALID_ATLAS_COORDS) const;
 
 	bool use_texture_padding = true;
 	Ref<ImageTexture> padded_texture;
