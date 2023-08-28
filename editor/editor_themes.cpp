@@ -1507,6 +1507,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_theme_preview_bg_tab->set_expand_margin(SIDE_BOTTOM, 2 * EDSCALE);
 	theme->set_stylebox("ThemeEditorPreviewBG", "EditorStyles", style_theme_preview_bg_tab);
 
+	Ref<StyleBoxFlat> style_texture_region_bg = style_tree_bg->duplicate();
+	style_texture_region_bg->set_content_margin_all(0);
+	theme->set_stylebox("TextureRegionPreviewBG", "EditorStyles", style_texture_region_bg);
+	theme->set_stylebox("TextureRegionPreviewFG", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
+
 	// Separators
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, MAX(Math::round(EDSCALE), border_width)));
 	theme->set_stylebox("separator", "VSeparator", make_line_stylebox(separator_color, MAX(Math::round(EDSCALE), border_width), 0, 0, true));
