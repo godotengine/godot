@@ -6354,10 +6354,10 @@ public:
 		updating = true;
 		undo_redo->create_action(TTR("Edit Visual Property:") + " " + p_property, UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(node.ptr(), p_property, p_value);
-		undo_redo->add_undo_property(node.ptr(), p_property, node->get(p_property));
+		undo_redo->add_undo_property(node.ptr(), p_property, node->get_or_null(p_property));
 
 		if (p_value.get_type() == Variant::OBJECT) {
-			Ref<Resource> prev_res = node->get(p_property);
+			Ref<Resource> prev_res = node->get_or_null(p_property);
 			Ref<Resource> curr_res = p_value;
 
 			if (curr_res.is_null()) {
@@ -6595,7 +6595,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 
 	for (const PropertyInfo &E : props) {
 		if (E.name.begins_with("flags/") || E.name.begins_with("modes/")) {
-			undo_redo->add_undo_property(visual_shader.ptr(), E.name, visual_shader->get(E.name));
+			undo_redo->add_undo_property(visual_shader.ptr(), E.name, visual_shader->get_or_null(E.name));
 		}
 	}
 
@@ -6709,7 +6709,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 			List<PropertyInfo> params;
 			src_mat->get_shader()->get_shader_uniform_list(&params);
 			for (const PropertyInfo &E : params) {
-				mat->set(E.name, src_mat->get(E.name));
+				mat->set(E.name, src_mat->get_or_null(E.name));
 			}
 		}
 	}

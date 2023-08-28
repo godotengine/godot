@@ -354,7 +354,7 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 	obj->get_property_list(&pinfo, true);
 	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-			properties.push_back(SceneDebuggerProperty(E, obj->get(E.name)));
+			properties.push_back(SceneDebuggerProperty(E, obj->get_or_null(E.name)));
 		}
 	}
 }

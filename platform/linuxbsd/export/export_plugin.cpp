@@ -97,7 +97,7 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 
 	// Save console wrapper.
 	if (err == OK) {
-		int con_scr = p_preset->get("debug/export_console_wrapper");
+		int con_scr = p_preset->get_or_null("debug/export_console_wrapper");
 		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
 			String scr_path = path.get_basename() + ".sh";
 			err = _export_debug_script(p_preset, pkg_name, path.get_file(), scr_path);
@@ -138,7 +138,7 @@ String EditorExportPlatformLinuxBSD::get_template_file_name(const String &p_targ
 
 List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
-	list.push_back(p_preset->get("binary_format/architecture"));
+	list.push_back(p_preset->get_or_null("binary_format/architecture"));
 	list.push_back("zip");
 
 	return list;
@@ -147,7 +147,7 @@ List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<Edito
 bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	if (p_preset) {
 		// Hide SSH options.
-		bool ssh = p_preset->get("ssh_remote_deploy/enabled");
+		bool ssh = p_preset->get_or_null("ssh_remote_deploy/enabled");
 		if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
 			return false;
 		}
@@ -320,7 +320,7 @@ bool EditorExportPlatformLinuxBSD::poll_export() {
 	}
 
 	int prev = menu_options;
-	menu_options = (preset.is_valid() && preset->get("ssh_remote_deploy/enabled").operator bool());
+	menu_options = (preset.is_valid() && preset->get_or_null("ssh_remote_deploy/enabled").operator bool());
 	if (ssh_pid != 0 || !cleanup_commands.is_empty()) {
 		if (menu_options == 0) {
 			cleanup();
@@ -386,13 +386,13 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 		}
 	}
 
-	String host = p_preset->get("ssh_remote_deploy/host").operator String();
-	String port = p_preset->get("ssh_remote_deploy/port").operator String();
+	String host = p_preset->get_or_null("ssh_remote_deploy/host").operator String();
+	String port = p_preset->get_or_null("ssh_remote_deploy/port").operator String();
 	if (port.is_empty()) {
 		port = "22";
 	}
-	Vector<String> extra_args_ssh = p_preset->get("ssh_remote_deploy/extra_args_ssh").operator String().split(" ", false);
-	Vector<String> extra_args_scp = p_preset->get("ssh_remote_deploy/extra_args_scp").operator String().split(" ", false);
+	Vector<String> extra_args_ssh = p_preset->get_or_null("ssh_remote_deploy/extra_args_ssh").operator String().split(" ", false);
+	Vector<String> extra_args_scp = p_preset->get_or_null("ssh_remote_deploy/extra_args_scp").operator String().split(" ", false);
 
 	const String basepath = dest.path_join("tmp_linuxbsd_export");
 
@@ -433,7 +433,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 	}
 
 	const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
-	int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
+	int dbg_port = EditorSettings::get_singleton()->get_or_null("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");
 	ep.step(TTR("Creating temporary directory..."), 2);
@@ -451,7 +451,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 	}
 
 	{
-		String run_script = p_preset->get("ssh_remote_deploy/run_script");
+		String run_script = p_preset->get_or_null("ssh_remote_deploy/run_script");
 		run_script = run_script.replace("{temp_dir}", temp_dir);
 		run_script = run_script.replace("{archive_name}", basepath.get_file() + ".zip");
 		run_script = run_script.replace("{exe_name}", basepath.get_file());
@@ -466,7 +466,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 	}
 
 	{
-		String clean_script = p_preset->get("ssh_remote_deploy/cleanup_script");
+		String clean_script = p_preset->get_or_null("ssh_remote_deploy/cleanup_script");
 		clean_script = clean_script.replace("{temp_dir}", temp_dir);
 		clean_script = clean_script.replace("{archive_name}", basepath.get_file() + ".zip");
 		clean_script = clean_script.replace("{exe_name}", basepath.get_file());

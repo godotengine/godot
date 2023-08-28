@@ -128,7 +128,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 							continue;
 						}
 
-						Variant v = current->get(E->get().name);
+						Variant v = current->get_or_null(E->get().name);
 						Ref<RefCounted> ref = v;
 						Ref<Resource> res = ref;
 						if (v.is_ref_counted() && ref.is_valid() && res.is_valid()) {
@@ -168,7 +168,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 							continue;
 						}
 
-						Variant v = current->get(prop_info.name);
+						Variant v = current->get_or_null(prop_info.name);
 						if (v.is_ref_counted()) {
 							Ref<RefCounted> ref = v;
 							if (ref.is_valid()) {

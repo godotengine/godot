@@ -563,7 +563,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 		item->set_text(0, String(node->get_name()) + ":" + subpath);
 		icon = _get_class_icon(node);
 		bool valid = false;
-		Variant value = node->get(subpath, &valid);
+		Variant value = node->get_or_null(subpath, &valid);
 		if (valid && !can_sync(value)) {
 			item->set_icon(3, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 			item->set_tooltip_text(3, TTR("Property of this type not supported."));

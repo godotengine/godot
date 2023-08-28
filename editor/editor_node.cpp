@@ -758,7 +758,7 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 
 void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 	ProjectSettings *ps = ProjectSettings::get_singleton();
-	PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
+	PackedStringArray enabled_plugins = ps->get_or_null("editor_plugins/enabled");
 	for (int i = 0; i < enabled_plugins.size(); ++i) {
 		if (enabled_plugins.get(i) == p_name) {
 			enabled_plugins.remove_at(i);
@@ -1413,7 +1413,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 
 		switch (E.type) {
 			case Variant::OBJECT: {
-				Ref<Resource> res = obj->get(E.name);
+				Ref<Resource> res = obj->get_or_null(E.name);
 
 				if (_find_and_save_resource(res, processed, flags)) {
 					ret_changed = true;
@@ -1421,7 +1421,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 
 			} break;
 			case Variant::ARRAY: {
-				Array varray = obj->get(E.name);
+				Array varray = obj->get_or_null(E.name);
 				int len = varray.size();
 				for (int i = 0; i < len; i++) {
 					const Variant &v = varray.get(i);
@@ -1433,7 +1433,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Res
 
 			} break;
 			case Variant::DICTIONARY: {
-				Dictionary d = obj->get(E.name);
+				Dictionary d = obj->get_or_null(E.name);
 				List<Variant> keys;
 				d.get_key_list(&keys);
 				for (const Variant &F : keys) {
@@ -3755,7 +3755,7 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *
 		if (E.usage & PROPERTY_USAGE_STORAGE) {
 			bool is_valid_revert = false;
 			Variant revert_value = EditorPropertyRevert::get_property_revert_value(p_node, E.name, &is_valid_revert);
-			Variant current_value = p_node->get(E.name);
+			Variant current_value = p_node->get_or_null(E.name);
 			if (is_valid_revert) {
 				if (PropertyUtils::is_property_value_different(current_value, revert_value)) {
 					modified_property_map[E.name] = current_value;

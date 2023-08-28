@@ -1518,7 +1518,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 						_encode_string(E.name, buf, r_len);
 
 						int len;
-						Error err = encode_variant(obj->get(E.name), buf, len, p_full_objects, p_depth + 1);
+						Error err = encode_variant(obj->get_or_null(E.name), buf, len, p_full_objects, p_depth + 1);
 						ERR_FAIL_COND_V(err, err);
 						ERR_FAIL_COND_V(len % 4, ERR_BUG);
 						r_len += len;

@@ -867,7 +867,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 			if (p_custom.has(k)) {
 				value = p_custom[k];
 			} else {
-				value = get(k);
+				value = get_or_null(k);
 			}
 
 			file->store_pascal_string(k);
@@ -927,7 +927,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 			if (p_custom.has(key)) {
 				value = p_custom[key];
 			} else {
-				value = get(key);
+				value = get_or_null(key);
 			}
 
 			String vstr;
@@ -1154,7 +1154,7 @@ void ProjectSettings::set_setting(const String &p_setting, const Variant &p_valu
 
 Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_default_value) const {
 	if (has_setting(p_setting)) {
-		return get(p_setting);
+		return get_or_null(p_setting);
 	} else {
 		return p_default_value;
 	}

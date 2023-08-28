@@ -1110,7 +1110,7 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		String prefix = String(*prefixes);
 
 		String enabled = prefix + "enabled";
-		if (p_property.name.begins_with(prefix) && p_property.name != enabled && !bool(get(enabled))) {
+		if (p_property.name.begins_with(prefix) && p_property.name != enabled && !bool(get_or_null(enabled))) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			return;
 		}

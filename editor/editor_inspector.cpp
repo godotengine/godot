@@ -468,7 +468,7 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 	if (!is_valid_revert) {
 		return false;
 	}
-	Variant current_value = p_custom_current_value ? *p_custom_current_value : p_object->get(p_property);
+	Variant current_value = p_custom_current_value ? *p_custom_current_value : p_object->get_or_null(p_property);
 	return PropertyUtils::is_property_value_different(current_value, revert_value);
 }
 
@@ -493,13 +493,13 @@ void EditorProperty::update_editor_property_status() {
 		new_warning = !String(object->call("_get_property_warning", property)).is_empty();
 	}
 
-	Variant current = object->get(_get_revert_property());
+	Variant current = object->get_or_null(_get_revert_property());
 	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property, &current) && !is_read_only();
 
 	bool new_checked = checked;
 	if (checkable) { // for properties like theme overrides.
 		bool valid = false;
-		Variant value = object->get(property, &valid);
+		Variant value = object->get_or_null(property, &valid);
 		if (valid) {
 			new_checked = value.get_type() != Variant::NIL;
 		}
@@ -684,18 +684,18 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (use_keying_next()) {
 				if (property == "frame_coords" && (object->is_class("Sprite2D") || object->is_class("Sprite3D"))) {
-					Vector2i new_coords = object->get(property);
+					Vector2i new_coords = object->get_or_null(property);
 					new_coords.x++;
-					if (new_coords.x >= int64_t(object->get("hframes"))) {
+					if (new_coords.x >= int64_t(object->get_or_null("hframes"))) {
 						new_coords.x = 0;
 						new_coords.y++;
 					}
-					if (new_coords.x < int64_t(object->get("hframes")) && new_coords.y < int64_t(object->get("vframes"))) {
+					if (new_coords.x < int64_t(object->get_or_null("hframes")) && new_coords.y < int64_t(object->get_or_null("vframes"))) {
 						call_deferred(SNAME("emit_changed"), property, new_coords, "", false);
 					}
 				} else {
-					if (int64_t(object->get(property)) + 1 < (int64_t(object->get("hframes")) * int64_t(object->get("vframes")))) {
-						call_deferred(SNAME("emit_changed"), property, object->get(property).operator int64_t() + 1, "", false);
+					if (int64_t(object->get_or_null(property)) + 1 < (int64_t(object->get_or_null("hframes")) * int64_t(object->get_or_null("vframes")))) {
+						call_deferred(SNAME("emit_changed"), property, object->get_or_null(property).operator int64_t() + 1, "", false);
 					}
 				}
 
@@ -773,7 +773,7 @@ void EditorProperty::set_bottom_editor(Control *p_control) {
 }
 
 Variant EditorProperty::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
-	return object->get(p_prop, &r_valid);
+	return object->get_or_null(p_prop, &r_valid);
 }
 
 bool EditorProperty::is_cache_valid() const {
@@ -807,7 +807,7 @@ Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	dp["type"] = "obj_property";
 	dp["object"] = object;
 	dp["property"] = property;
-	dp["value"] = object->get(property);
+	dp["value"] = object->get_or_null(property);
 
 	Label *drag_label = memnew(Label);
 	drag_label->set_text(property);
@@ -952,7 +952,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 void EditorProperty::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
-			InspectorDock::get_inspector_singleton()->set_property_clipboard(object->get(property));
+			InspectorDock::get_inspector_singleton()->set_property_clipboard(object->get_or_null(property));
 		} break;
 		case MENU_PASTE_VALUE: {
 			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
@@ -1587,7 +1587,7 @@ int EditorInspectorArray::_get_array_count() {
 		return _extract_properties_as_array(object_property_list).size();
 	} else if (mode == MODE_USE_COUNT_PROPERTY) {
 		bool valid;
-		int count_val = object->get(count_property, &valid);
+		int count_val = object->get_or_null(count_property, &valid);
 		ERR_FAIL_COND_V_MSG(!valid, 0, vformat("%s is not a valid property to be used as array count.", count_property));
 		return count_val;
 	}
@@ -1769,7 +1769,7 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 
 					for (const PropertyInfo &E : object_property_list) {
 						if (E.name.begins_with(erase_prefix)) {
-							undo_redo->add_undo_property(object, E.name, object->get(E.name));
+							undo_redo->add_undo_property(object, E.name, object->get_or_null(E.name));
 						}
 					}
 
@@ -2005,7 +2005,7 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 				if (error == OK) {
 					String format_string = String(array_element_prefix) + "%d" + str.substr(to_char_index);
 					Dictionary dict = output[array_index];
-					dict[format_string] = object->get(pi.name);
+					dict[format_string] = object->get_or_null(pi.name);
 					output[array_index] = dict;
 				} else {
 					WARN_PRINT(vformat("Array element %s has an index too high. Array allocation failed.", pi.name));
@@ -3669,7 +3669,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(object, p_name, p_value);
 		bool valid = false;
-		Variant value = object->get(p_name, &valid);
+		Variant value = object->get_or_null(p_name, &valid);
 		if (valid) {
 			undo_redo->add_undo_property(object, p_name, value);
 		}
@@ -3679,7 +3679,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 
 		for (const StringName &linked_prop : linked_properties) {
 			valid = false;
-			Variant undo_value = object->get(linked_prop, &valid);
+			Variant undo_value = object->get_or_null(linked_prop, &valid);
 			if (valid) {
 				undo_redo->add_undo_property(object, linked_prop, undo_value);
 			}
@@ -3688,7 +3688,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		PackedStringArray linked_properties_dynamic = object->call("_get_linked_undo_properties", p_name, p_value);
 		for (int i = 0; i < linked_properties_dynamic.size(); i++) {
 			valid = false;
-			Variant undo_value = object->get(linked_properties_dynamic[i], &valid);
+			Variant undo_value = object->get_or_null(linked_properties_dynamic[i], &valid);
 			if (valid) {
 				undo_redo->add_undo_property(object, linked_properties_dynamic[i], undo_value);
 			}
@@ -3722,7 +3722,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Resource *r = Object::cast_to<Resource>(object);
 		if (r) {
 			if (String(p_name) == "resource_local_to_scene") {
-				bool prev = object->get(p_name);
+				bool prev = object->get_or_null(p_name);
 				bool next = p_value;
 				if (next) {
 					undo_redo->add_do_method(r, "setup_local_to_scene");
@@ -3795,7 +3795,7 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 	}
 
 	// The second parameter could be null, causing the event to fire with less arguments, so use the pointer call which preserves it.
-	const Variant args[3] = { p_path, object->get(p_path), p_advance };
+	const Variant args[3] = { p_path, object->get_or_null(p_path), p_advance };
 	const Variant *argp[3] = { &args[0], &args[1], &args[2] };
 	emit_signalp(SNAME("property_keyed"), argp, 3);
 }

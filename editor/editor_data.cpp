@@ -289,7 +289,7 @@ void EditorData::copy_object_params(Object *p_object) {
 
 		PropertyData pd;
 		pd.name = E.name;
-		pd.value = p_object->get(pd.name);
+		pd.value = p_object->get_or_null(pd.name);
 		clipboard.push_back(pd);
 	}
 }
@@ -385,7 +385,7 @@ void EditorData::paste_object_params(Object *p_object) {
 	for (const PropertyData &E : clipboard) {
 		String name = E.name;
 		undo_redo_manager->add_do_property(p_object, name, E.value);
-		undo_redo_manager->add_undo_property(p_object, name, p_object->get(name));
+		undo_redo_manager->add_undo_property(p_object, name, p_object->get_or_null(name));
 	}
 	undo_redo_manager->commit_action();
 }

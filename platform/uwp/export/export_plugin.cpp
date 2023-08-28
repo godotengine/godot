@@ -61,7 +61,7 @@ Ref<Texture2D> EditorExportPlatformUWP::get_logo() const {
 void EditorExportPlatformUWP::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	r_features->push_back("s3tc");
 	r_features->push_back("etc");
-	r_features->push_back(p_preset->get("binary_format/architecture"));
+	r_features->push_back(p_preset->get_or_null("binary_format/architecture"));
 }
 
 void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) const {
@@ -142,7 +142,7 @@ bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExp
 	bool valid = false;
 
 	// Look for export templates (first official, and if defined custom templates).
-	String arch = p_preset->get("binary_format/architecture");
+	String arch = p_preset->get_or_null("binary_format/architecture");
 	String arch_infix;
 	if (arch == "arm32") {
 		arch_infix = "arm";
@@ -155,14 +155,14 @@ bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExp
 	bool dvalid = exists_export_template("uwp_" + arch_infix + "_debug.zip", &err);
 	bool rvalid = exists_export_template("uwp_" + arch_infix + "_release.zip", &err);
 
-	if (p_preset->get("custom_template/debug") != "") {
-		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+	if (p_preset->get_or_null("custom_template/debug") != "") {
+		dvalid = FileAccess::exists(p_preset->get_or_null("custom_template/debug"));
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-	if (p_preset->get("custom_template/release") != "") {
-		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+	if (p_preset->get_or_null("custom_template/release") != "") {
+		rvalid = FileAccess::exists(p_preset->get_or_null("custom_template/release"));
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
@@ -193,67 +193,67 @@ bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorEx
 
 	// Validate the project configuration.
 
-	if (!_valid_resource_name(p_preset->get("package/short_name"))) {
+	if (!_valid_resource_name(p_preset->get_or_null("package/short_name"))) {
 		valid = false;
 		err += TTR("Invalid package short name.") + "\n";
 	}
 
-	if (!_valid_resource_name(p_preset->get("package/unique_name"))) {
+	if (!_valid_resource_name(p_preset->get_or_null("package/unique_name"))) {
 		valid = false;
 		err += TTR("Invalid package unique name.") + "\n";
 	}
 
-	if (!_valid_resource_name(p_preset->get("package/publisher_display_name"))) {
+	if (!_valid_resource_name(p_preset->get_or_null("package/publisher_display_name"))) {
 		valid = false;
 		err += TTR("Invalid package publisher display name.") + "\n";
 	}
 
-	if (!_valid_guid(p_preset->get("identity/product_guid"))) {
+	if (!_valid_guid(p_preset->get_or_null("identity/product_guid"))) {
 		valid = false;
 		err += TTR("Invalid product GUID.") + "\n";
 	}
 
-	if (!_valid_guid(p_preset->get("identity/publisher_guid"))) {
+	if (!_valid_guid(p_preset->get_or_null("identity/publisher_guid"))) {
 		valid = false;
 		err += TTR("Invalid publisher GUID.") + "\n";
 	}
 
-	if (!_valid_bgcolor(p_preset->get("images/background_color"))) {
+	if (!_valid_bgcolor(p_preset->get_or_null("images/background_color"))) {
 		valid = false;
 		err += TTR("Invalid background color.") + "\n";
 	}
 
-	if (!p_preset->get("images/store_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/store_logo"))), 50, 50)) {
+	if (!p_preset->get_or_null("images/store_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get_or_null("images/store_logo"))), 50, 50)) {
 		valid = false;
 		err += TTR("Invalid Store Logo image dimensions (should be 50x50).") + "\n";
 	}
 
-	if (!p_preset->get("images/square44x44_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square44x44_logo"))), 44, 44)) {
+	if (!p_preset->get_or_null("images/square44x44_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get_or_null("images/square44x44_logo"))), 44, 44)) {
 		valid = false;
 		err += TTR("Invalid square 44x44 logo image dimensions (should be 44x44).") + "\n";
 	}
 
-	if (!p_preset->get("images/square71x71_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square71x71_logo"))), 71, 71)) {
+	if (!p_preset->get_or_null("images/square71x71_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get_or_null("images/square71x71_logo"))), 71, 71)) {
 		valid = false;
 		err += TTR("Invalid square 71x71 logo image dimensions (should be 71x71).") + "\n";
 	}
 
-	if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
+	if (!p_preset->get_or_null("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get_or_null("images/square150x150_logo"))), 150, 150)) {
 		valid = false;
 		err += TTR("Invalid square 150x150 logo image dimensions (should be 150x150).") + "\n";
 	}
 
-	if (!p_preset->get("images/square310x310_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square310x310_logo"))), 310, 310)) {
+	if (!p_preset->get_or_null("images/square310x310_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get_or_null("images/square310x310_logo"))), 310, 310)) {
 		valid = false;
 		err += TTR("Invalid square 310x310 logo image dimensions (should be 310x310).") + "\n";
 	}
 
-	if (!p_preset->get("images/wide310x150_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/wide310x150_logo"))), 310, 150)) {
+	if (!p_preset->get_or_null("images/wide310x150_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get_or_null("images/wide310x150_logo"))), 310, 150)) {
 		valid = false;
 		err += TTR("Invalid wide 310x150 logo image dimensions (should be 310x150).") + "\n";
 	}
 
-	if (!p_preset->get("images/splash_screen").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/splash_screen"))), 620, 300)) {
+	if (!p_preset->get_or_null("images/splash_screen").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get_or_null("images/splash_screen"))), 620, 300)) {
 		valid = false;
 		err += TTR("Invalid splash screen image dimensions (should be 620x300).") + "\n";
 	}
@@ -271,14 +271,14 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	EditorProgress ep("export", TTR("Exporting for UWP"), 7, true);
 
 	if (p_debug) {
-		src_appx = p_preset->get("custom_template/debug");
+		src_appx = p_preset->get_or_null("custom_template/debug");
 	} else {
-		src_appx = p_preset->get("custom_template/release");
+		src_appx = p_preset->get_or_null("custom_template/release");
 	}
 
 	src_appx = src_appx.strip_edges();
 
-	String arch = p_preset->get("binary_format/architecture");
+	String arch = p_preset->get_or_null("binary_format/architecture");
 
 	if (src_appx.is_empty()) {
 		String err, arch_infix;
@@ -395,7 +395,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_SKIP;
 	}
 
-	Vector<String> cl = ((String)p_preset->get("command_line/extra_args")).strip_edges().split(" ");
+	Vector<String> cl = ((String)p_preset->get_or_null("command_line/extra_args")).strip_edges().split(" ");
 	for (int i = 0; i < cl.size(); i++) {
 		if (cl[i].strip_edges().length() == 0) {
 			cl.remove_at(i);
@@ -471,7 +471,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	if (!p_debug) {
 		cert_path = p_preset->get_or_env("signing/certificate", ENV_UWP_SIGNING_CERT);
 		cert_pass = p_preset->get_or_env("signing/password", ENV_UWP_SIGNING_PASS);
-		cert_alg = p_preset->get("signing/algorithm");
+		cert_alg = p_preset->get_or_null("signing/algorithm");
 	}
 
 	if (cert_path.is_empty()) {

@@ -286,7 +286,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 									// tampering the resource object already there with the values from the node in the parent scene and
 									// then tell this node to reference that resource.
 									if (n.instance >= 0) {
-										Ref<Resource> node_res = node->get(snames[nprops[j].name]);
+										Ref<Resource> node_res = node->get_or_null(snames[nprops[j].name]);
 										if (node_res.is_valid()) {
 											node_res->copy_from(res);
 											node_res->configure_for_local_scene(node, resources_local_to_scene);
@@ -317,7 +317,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						if (value.get_type() == Variant::ARRAY) {
 							Array set_array = value;
 							bool is_get_valid = false;
-							Variant get_value = node->get(snames[nprops[j].name], &is_get_valid);
+							Variant get_value = node->get_or_null(snames[nprops[j].name], &is_get_valid);
 							if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
 								Array get_array = get_value;
 								if (!set_array.is_same_typed(get_array)) {
@@ -445,7 +445,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			Array paths = dnp.value;
 
 			bool valid;
-			Array array = dnp.base->get(dnp.property, &valid);
+			Array array = dnp.base->get_or_null(dnp.property, &valid);
 			ERR_CONTINUE(!valid);
 			array = array.duplicate();
 
@@ -633,7 +633,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		}
 
 		StringName name = E.name;
-		Variant value = p_node->get(name);
+		Variant value = p_node->get_or_null(name);
 		bool use_deferred_node_path_bit = false;
 
 		if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {

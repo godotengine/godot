@@ -549,20 +549,28 @@
 		<method name="get" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="property" type="StringName" />
+			<param index="1" name="default_value" type="Variant" default="null" />
 			<description>
-				Returns the [Variant] value of the given [param property]. If the [param property] does not exist, this method returns [code]null[/code].
+				Returns the [Variant] value of the given [param property]. If the [param property] does not exist, returns [param default_value], or [code]null[/code] if the parameter is omitted.
+				The optional [param default_value] is helpful when using static typing, when one wants something other than null to be returned.
+				This also has an added benefit making code self-documenting by adding a "prescriptive type" for the results of the get request.
 				[codeblocks]
 				[gdscript]
-				var node = Node2D.new()
-				node.rotation = 1.5
-				var a = node.get("rotation") # a is 1.5
+				# Assumes a "CustomEvent" system exists, and some objects have a property called "position".
+				# A user can set a null case to a Vector2, and now the function will always return a valid Vector2.
+				func get_event_position(event : CustomEvent) -&gt; Vector2:
+				    return event.get("position", Vector2.ZERO)
 				[/gdscript]
 				[csharp]
-				var node = new Node2D();
-				node.Rotation = 1.5f;
-				var a = node.Get("rotation"); // a is 1.5
+				// Assumes a "CustomEvent" system exists, and some objects have a property called "position".
+				// A user can set a null case to a Vector2, and now the function will always return a valid Vector2.
+				public Vector2 GetEventPosition(CustomEvent event):
+				{
+				    return event.Get("position", Vector2.ZERO)
+				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This always returns the [param property]'s existing value on the object if it exists, and will [b]not[/b] use the [param default_value] if the existing value evaluates to [code]false[/code], like: [code]0[/code], the empty string [code]""[/code], or [code]null[/code].
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
@@ -639,6 +647,26 @@
 				- [code]id[/code] is the method's internal identifier [int];
 				- [code]return[/code] is the returned value, as a [Dictionary];
 				[b]Note:[/b] The dictionaries of [code]args[/code] and [code]return[/code] are formatted identically to the results of [method get_property_list], although not all entries are used.
+			</description>
+		</method>
+		<method name="get_or_null" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Returns the [Variant] value of the given [param property]. If the [param property] does not exist, this method returns [code]null[/code].
+				[codeblocks]
+				[gdscript]
+				var node = Node2D.new()
+				node.rotation = 1.5
+				var a = node.get_or_null("rotation") # a is 1.5
+				[/gdscript]
+				[csharp]
+				var node = new Node2D();
+				node.Rotation = 1.5f;
+				var a = node.GetOrNull("rotation"); // a is 1.5
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="get_property_list" qualifiers="const">

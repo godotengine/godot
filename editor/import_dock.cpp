@@ -626,7 +626,7 @@ void ImportDock::_replace_resource_in_object(Object *p_object, const Ref<Resourc
 			continue;
 		}
 
-		Ref<Resource> res = p_object->get(p.name);
+		Ref<Resource> res = p_object->get_or_null(p.name);
 		if (res.is_null()) {
 			continue;
 		}

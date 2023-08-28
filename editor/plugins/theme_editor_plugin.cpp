@@ -3256,8 +3256,8 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 			continue;
 		}
 
-		Variant value = leading_stylebox.stylebox->get(E.name);
-		Variant ref_value = leading_stylebox.ref_stylebox->get(E.name);
+		Variant value = leading_stylebox.stylebox->get_or_null(E.name);
+		Variant ref_value = leading_stylebox.ref_stylebox->get_or_null(E.name);
 		if (value == ref_value) {
 			continue;
 		}

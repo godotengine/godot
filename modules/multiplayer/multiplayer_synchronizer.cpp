@@ -382,7 +382,7 @@ Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 		bool valid = false;
 		const Object *obj = _get_prop_target(node, prop);
 		ERR_CONTINUE_MSG(!obj, vformat("Node not found for property '%s'.", prop));
-		Variant v = obj->get(prop.get_concatenated_subnames(), &valid);
+		Variant v = obj->get_or_null(prop.get_concatenated_subnames(), &valid);
 		ERR_CONTINUE_MSG(!valid, vformat("Property '%s' not found.", prop));
 		Watcher &w = ptr[idx];
 		if (w.prop != prop) {

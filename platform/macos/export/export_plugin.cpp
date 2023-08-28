@@ -50,8 +50,8 @@
 #endif
 
 void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	r_features->push_back(p_preset->get("binary_format/architecture"));
-	String architecture = p_preset->get("binary_format/architecture");
+	r_features->push_back(p_preset->get_or_null("binary_format/architecture"));
+	String architecture = p_preset->get_or_null("binary_format/architecture");
 
 	if (architecture == "universal" || architecture == "x86_64") {
 		r_features->push_back("s3tc");
@@ -66,10 +66,10 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 
 String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
-		int dist_type = p_preset->get("export/distribution_type");
+		int dist_type = p_preset->get_or_null("export/distribution_type");
 		bool ad_hoc = false;
-		int codesign_tool = p_preset->get("codesign/codesign");
-		int notary_tool = p_preset->get("notarization/notarization");
+		int codesign_tool = p_preset->get_or_null("codesign/codesign");
+		int notary_tool = p_preset->get_or_null("notarization/notarization");
 		switch (codesign_tool) {
 			case 1: { // built-in ad-hoc
 				ad_hoc = true;
@@ -79,7 +79,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 			} break;
 #ifdef MACOS_ENABLED
 			case 3: { // "codesign"
-				ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+				ad_hoc = (p_preset->get_or_null("codesign/identity") == "" || p_preset->get_or_null("codesign/identity") == "-");
 			} break;
 #endif
 			default: {
@@ -87,7 +87,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 		}
 
 		if (p_name == "application/bundle_identifier") {
-			String identifier = p_preset->get("application/bundle_identifier");
+			String identifier = p_preset->get_or_null("application/bundle_identifier");
 			String pn_err;
 			if (!is_package_name_valid(identifier, &pn_err)) {
 				return TTR("Invalid bundle identifier:") + " " + pn_err;
@@ -105,7 +105,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 		}
 
 		if (p_name == "codesign/apple_team_id") {
-			String team_id = p_preset->get("codesign/apple_team_id");
+			String team_id = p_preset->get_or_null("codesign/apple_team_id");
 			if (team_id.is_empty()) {
 				if (dist_type == 2) {
 					return TTR("Apple Team ID is required for App Store distribution.");
@@ -123,14 +123,14 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 		}
 
 		if (p_name == "codesign/installer_identity" && dist_type == 2) {
-			String ident = p_preset->get("codesign/installer_identity");
+			String ident = p_preset->get_or_null("codesign/installer_identity");
 			if (ident.is_empty()) {
 				return TTR("Installer signing identity is required for App Store distribution.");
 			}
 		}
 
 		if (p_name == "codesign/entitlements/app_sandbox/enabled" && dist_type == 2) {
-			bool sandbox = p_preset->get("codesign/entitlements/app_sandbox/enabled");
+			bool sandbox = p_preset->get_or_null("codesign/entitlements/app_sandbox/enabled");
 			if (!sandbox) {
 				return TTR("App sandbox is required for App Store distribution.");
 			}
@@ -196,43 +196,43 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 
 		if (codesign_tool > 0) {
 			if (p_name == "privacy/microphone_usage_description") {
-				String discr = p_preset->get("privacy/microphone_usage_description");
-				bool enabled = p_preset->get("codesign/entitlements/audio_input");
+				String discr = p_preset->get_or_null("privacy/microphone_usage_description");
+				bool enabled = p_preset->get_or_null("codesign/entitlements/audio_input");
 				if (enabled && discr.is_empty()) {
 					return TTR("Microphone access is enabled, but usage description is not specified.");
 				}
 			}
 			if (p_name == "privacy/camera_usage_description") {
-				String discr = p_preset->get("privacy/camera_usage_description");
-				bool enabled = p_preset->get("codesign/entitlements/camera");
+				String discr = p_preset->get_or_null("privacy/camera_usage_description");
+				bool enabled = p_preset->get_or_null("codesign/entitlements/camera");
 				if (enabled && discr.is_empty()) {
 					return TTR("Camera access is enabled, but usage description is not specified.");
 				}
 			}
 			if (p_name == "privacy/location_usage_description") {
-				String discr = p_preset->get("privacy/location_usage_description");
-				bool enabled = p_preset->get("codesign/entitlements/location");
+				String discr = p_preset->get_or_null("privacy/location_usage_description");
+				bool enabled = p_preset->get_or_null("codesign/entitlements/location");
 				if (enabled && discr.is_empty()) {
 					return TTR("Location information access is enabled, but usage description is not specified.");
 				}
 			}
 			if (p_name == "privacy/address_book_usage_description") {
-				String discr = p_preset->get("privacy/address_book_usage_description");
-				bool enabled = p_preset->get("codesign/entitlements/address_book");
+				String discr = p_preset->get_or_null("privacy/address_book_usage_description");
+				bool enabled = p_preset->get_or_null("codesign/entitlements/address_book");
 				if (enabled && discr.is_empty()) {
 					return TTR("Address book access is enabled, but usage description is not specified.");
 				}
 			}
 			if (p_name == "privacy/calendar_usage_description") {
-				String discr = p_preset->get("privacy/calendar_usage_description");
-				bool enabled = p_preset->get("codesign/entitlements/calendars");
+				String discr = p_preset->get_or_null("privacy/calendar_usage_description");
+				bool enabled = p_preset->get_or_null("codesign/entitlements/calendars");
 				if (enabled && discr.is_empty()) {
 					return TTR("Calendar access is enabled, but usage description is not specified.");
 				}
 			}
 			if (p_name == "privacy/photos_library_usage_description") {
-				String discr = p_preset->get("privacy/photos_library_usage_description");
-				bool enabled = p_preset->get("codesign/entitlements/photos_library");
+				String discr = p_preset->get_or_null("privacy/photos_library_usage_description");
+				bool enabled = p_preset->get_or_null("codesign/entitlements/photos_library");
 				if (enabled && discr.is_empty()) {
 					return TTR("Photo library access is enabled, but usage description is not specified.");
 				}
@@ -245,7 +245,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	// Hide irrelevant code signing options.
 	if (p_preset) {
-		int codesign_tool = p_preset->get("codesign/codesign");
+		int codesign_tool = p_preset->get_or_null("codesign/codesign");
 		switch (codesign_tool) {
 			case 1: { // built-in ad-hoc
 				if (p_option == "codesign/identity" || p_option == "codesign/certificate_file" || p_option == "codesign/certificate_password" || p_option == "codesign/custom_options" || p_option == "codesign/team_id") {
@@ -272,7 +272,7 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 		}
 
 		// Distribution type.
-		int dist_type = p_preset->get("export/distribution_type");
+		int dist_type = p_preset->get_or_null("export/distribution_type");
 		if (dist_type != 2 && p_option == "codesign/installer_identity") {
 			return false;
 		}
@@ -285,25 +285,25 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 			return false;
 		}
 
-		String custom_prof = p_preset->get("codesign/entitlements/custom_file");
+		String custom_prof = p_preset->get_or_null("codesign/entitlements/custom_file");
 		if (!custom_prof.is_empty() && p_option != "codesign/entitlements/custom_file" && p_option.begins_with("codesign/entitlements/")) {
 			return false;
 		}
 
 		// Hide sandbox entitlements.
-		bool sandbox = p_preset->get("codesign/entitlements/app_sandbox/enabled");
+		bool sandbox = p_preset->get_or_null("codesign/entitlements/app_sandbox/enabled");
 		if (!sandbox && p_option != "codesign/entitlements/app_sandbox/enabled" && p_option.begins_with("codesign/entitlements/app_sandbox/")) {
 			return false;
 		}
 
 		// Hide SSH options.
-		bool ssh = p_preset->get("ssh_remote_deploy/enabled");
+		bool ssh = p_preset->get_or_null("ssh_remote_deploy/enabled");
 		if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
 			return false;
 		}
 
 		// Hide irrelevant notarization options.
-		int notary_tool = p_preset->get("notarization/notarization");
+		int notary_tool = p_preset->get_or_null("notarization/notarization");
 		switch (notary_tool) {
 			case 1: { // "rcodesign"
 				if (p_option == "notarization/apple_id_name" || p_option == "notarization/apple_id_password") {
@@ -337,7 +337,7 @@ List<String> EditorExportPlatformMacOS::get_binary_extensions(const Ref<EditorEx
 	List<String> list;
 
 	if (p_preset.is_valid()) {
-		int dist_type = p_preset->get("export/distribution_type");
+		int dist_type = p_preset->get_or_null("export/distribution_type");
 		if (dist_type == 0) {
 #ifdef MACOS_ENABLED
 			list.push_back("dmg");
@@ -586,7 +586,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
 		Ref<Image> copy = p_icon; // does this make sense? doesn't this just increase the reference count instead of making a copy? Do we even need a copy?
 		copy->convert(Image::FORMAT_RGBA8);
-		copy->resize(icon_infos[i].size, icon_infos[i].size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+		copy->resize(icon_infos[i].size, icon_infos[i].size, (Image::Interpolation)(p_preset->get_or_null("application/icon_interpolation").operator int()));
 
 		if (icon_infos[i].is_png) {
 			// Encode PNG icon.
@@ -669,79 +669,79 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 		} else if (lines[i].find("$name") != -1) {
 			strnew += lines[i].replace("$name", GLOBAL_GET("application/config/name")) + "\n";
 		} else if (lines[i].find("$bundle_identifier") != -1) {
-			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
+			strnew += lines[i].replace("$bundle_identifier", p_preset->get_or_null("application/bundle_identifier")) + "\n";
 		} else if (lines[i].find("$short_version") != -1) {
-			strnew += lines[i].replace("$short_version", p_preset->get("application/short_version")) + "\n";
+			strnew += lines[i].replace("$short_version", p_preset->get_or_null("application/short_version")) + "\n";
 		} else if (lines[i].find("$version") != -1) {
 			strnew += lines[i].replace("$version", p_preset->get_version("application/version")) + "\n";
 		} else if (lines[i].find("$signature") != -1) {
-			strnew += lines[i].replace("$signature", p_preset->get("application/signature")) + "\n";
+			strnew += lines[i].replace("$signature", p_preset->get_or_null("application/signature")) + "\n";
 		} else if (lines[i].find("$app_category") != -1) {
-			String cat = p_preset->get("application/app_category");
+			String cat = p_preset->get_or_null("application/app_category");
 			strnew += lines[i].replace("$app_category", cat.to_lower()) + "\n";
 		} else if (lines[i].find("$copyright") != -1) {
-			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
+			strnew += lines[i].replace("$copyright", p_preset->get_or_null("application/copyright")) + "\n";
 		} else if (lines[i].find("$min_version") != -1) {
-			strnew += lines[i].replace("$min_version", p_preset->get("application/min_macos_version")) + "\n";
+			strnew += lines[i].replace("$min_version", p_preset->get_or_null("application/min_macos_version")) + "\n";
 		} else if (lines[i].find("$highres") != -1) {
-			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
+			strnew += lines[i].replace("$highres", p_preset->get_or_null("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
 		} else if (lines[i].find("$platfbuild") != -1) {
-			strnew += lines[i].replace("$platfbuild", p_preset->get("xcode/platform_build")) + "\n";
+			strnew += lines[i].replace("$platfbuild", p_preset->get_or_null("xcode/platform_build")) + "\n";
 		} else if (lines[i].find("$sdkver") != -1) {
-			strnew += lines[i].replace("$sdkver", p_preset->get("xcode/sdk_version")) + "\n";
+			strnew += lines[i].replace("$sdkver", p_preset->get_or_null("xcode/sdk_version")) + "\n";
 		} else if (lines[i].find("$sdkname") != -1) {
-			strnew += lines[i].replace("$sdkname", p_preset->get("xcode/sdk_name")) + "\n";
+			strnew += lines[i].replace("$sdkname", p_preset->get_or_null("xcode/sdk_name")) + "\n";
 		} else if (lines[i].find("$sdkbuild") != -1) {
-			strnew += lines[i].replace("$sdkbuild", p_preset->get("xcode/sdk_build")) + "\n";
+			strnew += lines[i].replace("$sdkbuild", p_preset->get_or_null("xcode/sdk_build")) + "\n";
 		} else if (lines[i].find("$xcodever") != -1) {
-			strnew += lines[i].replace("$xcodever", p_preset->get("xcode/xcode_version")) + "\n";
+			strnew += lines[i].replace("$xcodever", p_preset->get_or_null("xcode/xcode_version")) + "\n";
 		} else if (lines[i].find("$xcodebuild") != -1) {
-			strnew += lines[i].replace("$xcodebuild", p_preset->get("xcode/xcode_build")) + "\n";
+			strnew += lines[i].replace("$xcodebuild", p_preset->get_or_null("xcode/xcode_build")) + "\n";
 		} else if (lines[i].find("$usage_descriptions") != -1) {
 			String descriptions;
-			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/microphone_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSMicrophoneUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/microphone_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/microphone_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/camera_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSCameraUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/camera_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/camera_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/location_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSLocationUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/location_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/location_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/address_book_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSContactsUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/address_book_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/address_book_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/calendar_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSCalendarsUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/calendar_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/calendar_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/photos_library_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSPhotoLibraryUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/photos_library_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/photos_library_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/desktop_folder_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSDesktopFolderUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/desktop_folder_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/desktop_folder_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/documents_folder_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSDocumentsFolderUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/documents_folder_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/documents_folder_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/downloads_folder_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSDownloadsFolderUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/downloads_folder_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/downloads_folder_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/network_volumes_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSNetworkVolumesUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/network_volumes_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/network_volumes_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
+			if (!((String)p_preset->get_or_null("privacy/removable_volumes_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSRemovableVolumesUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/removable_volumes_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + (String)p_preset->get_or_null("privacy/removable_volumes_usage_description") + "</string>\n";
 			}
 			if (!descriptions.is_empty()) {
 				strnew += lines[i].replace("$usage_descriptions", descriptions);
@@ -766,7 +766,7 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
  */
 
 Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
-	int notary_tool = p_preset->get("notarization/notarization");
+	int notary_tool = p_preset->get_or_null("notarization/notarization");
 	switch (notary_tool) {
 		case 1: { // "rcodesign"
 			print_verbose("using rcodesign notarization...");
@@ -883,9 +883,9 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 
 			args.push_back("--no-progress");
 
-			if (p_preset->get("codesign/apple_team_id")) {
+			if (p_preset->get_or_null("codesign/apple_team_id")) {
 				args.push_back("--team-id");
-				args.push_back(p_preset->get("codesign/apple_team_id"));
+				args.push_back(p_preset->get_or_null("codesign/apple_team_id"));
 			}
 
 			String str;
@@ -928,7 +928,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			args.push_back("--notarize-app");
 
 			args.push_back("--primary-bundle-id");
-			args.push_back(p_preset->get("application/bundle_identifier"));
+			args.push_back(p_preset->get_or_null("application/bundle_identifier"));
 
 			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) == "" && p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) == "") {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Neither Apple ID name nor App Store Connect issuer ID name not specified."));
@@ -964,9 +964,9 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			args.push_back("--type");
 			args.push_back("osx");
 
-			if (p_preset->get("codesign/apple_team_id")) {
+			if (p_preset->get_or_null("codesign/apple_team_id")) {
 				args.push_back("--asc-provider");
-				args.push_back(p_preset->get("codesign/apple_team_id"));
+				args.push_back(p_preset->get_or_null("codesign/apple_team_id"));
 			}
 
 			args.push_back("--file");
@@ -1005,7 +1005,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 }
 
 Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn) {
-	int codesign_tool = p_preset->get("codesign/codesign");
+	int codesign_tool = p_preset->get_or_null("codesign/codesign");
 	switch (codesign_tool) {
 		case 1: { // built-in ad-hoc
 			print_verbose("using built-in codesign...");
@@ -1076,7 +1076,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 				return Error::FAILED;
 			}
 
-			bool ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+			bool ad_hoc = (p_preset->get_or_null("codesign/identity") == "" || p_preset->get_or_null("codesign/identity") == "-");
 
 			List<String> args;
 			if (!ad_hoc) {
@@ -1090,7 +1090,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 				args.push_back(p_ent_path);
 			}
 
-			PackedStringArray user_args = p_preset->get("codesign/custom_options");
+			PackedStringArray user_args = p_preset->get_or_null("codesign/custom_options");
 			for (int i = 0; i < user_args.size(); i++) {
 				String user_arg = user_args[i].strip_edges();
 				if (!user_arg.is_empty()) {
@@ -1102,7 +1102,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 			if (ad_hoc) {
 				args.push_back("-");
 			} else {
-				args.push_back(p_preset->get("codesign/identity"));
+				args.push_back(p_preset->get_or_null("codesign/identity"));
 			}
 
 			args.push_back("-v"); /* provide some more feedback */
@@ -1260,7 +1260,7 @@ Error EditorExportPlatformMacOS::_create_pkg(const Ref<EditorExportPreset> &p_pr
 	args.push_back("--component");
 	args.push_back(p_app_path_name);
 	args.push_back("/Applications");
-	String ident = p_preset->get("codesign/installer_identity");
+	String ident = p_preset->get_or_null("codesign/installer_identity");
 	if (!ident.is_empty()) {
 		args.push_back("--timestamp");
 		args.push_back("--sign");
@@ -1367,9 +1367,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	EditorProgress ep("export", TTR("Exporting for macOS"), 3, true);
 
 	if (p_debug) {
-		src_pkg_name = p_preset->get("custom_template/debug");
+		src_pkg_name = p_preset->get_or_null("custom_template/debug");
 	} else {
-		src_pkg_name = p_preset->get("custom_template/release");
+		src_pkg_name = p_preset->get_or_null("custom_template/release");
 	}
 
 	if (src_pkg_name.is_empty()) {
@@ -1401,7 +1401,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	int ret = unzGoToFirstFile(src_pkg_zip);
 
-	String architecture = p_preset->get("binary_format/architecture");
+	String architecture = p_preset->get_or_null("binary_format/architecture");
 	String binary_to_use = "godot_macos_" + String(p_debug ? "debug" : "release") + "." + architecture;
 
 	String pkg_name;
@@ -1464,7 +1464,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 	}
 
-	Array helpers = p_preset->get("codesign/entitlements/app_sandbox/helper_executables");
+	Array helpers = p_preset->get_or_null("codesign/entitlements/app_sandbox/helper_executables");
 
 	// Create our folder structure.
 	if (err == OK) {
@@ -1500,18 +1500,18 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	}
 
 	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
-	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
-	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
-	Dictionary location_usage_descriptions = p_preset->get("privacy/location_usage_description_localized");
-	Dictionary address_book_usage_descriptions = p_preset->get("privacy/address_book_usage_description_localized");
-	Dictionary calendar_usage_descriptions = p_preset->get("privacy/calendar_usage_description_localized");
-	Dictionary photos_library_usage_descriptions = p_preset->get("privacy/photos_library_usage_description_localized");
-	Dictionary desktop_folder_usage_descriptions = p_preset->get("privacy/desktop_folder_usage_description_localized");
-	Dictionary documents_folder_usage_descriptions = p_preset->get("privacy/documents_folder_usage_description_localized");
-	Dictionary downloads_folder_usage_descriptions = p_preset->get("privacy/downloads_folder_usage_description_localized");
-	Dictionary network_volumes_usage_descriptions = p_preset->get("privacy/network_volumes_usage_description_localized");
-	Dictionary removable_volumes_usage_descriptions = p_preset->get("privacy/removable_volumes_usage_description_localized");
-	Dictionary copyrights = p_preset->get("application/copyright_localized");
+	Dictionary microphone_usage_descriptions = p_preset->get_or_null("privacy/microphone_usage_description_localized");
+	Dictionary camera_usage_descriptions = p_preset->get_or_null("privacy/camera_usage_description_localized");
+	Dictionary location_usage_descriptions = p_preset->get_or_null("privacy/location_usage_description_localized");
+	Dictionary address_book_usage_descriptions = p_preset->get_or_null("privacy/address_book_usage_description_localized");
+	Dictionary calendar_usage_descriptions = p_preset->get_or_null("privacy/calendar_usage_description_localized");
+	Dictionary photos_library_usage_descriptions = p_preset->get_or_null("privacy/photos_library_usage_description_localized");
+	Dictionary desktop_folder_usage_descriptions = p_preset->get_or_null("privacy/desktop_folder_usage_description_localized");
+	Dictionary documents_folder_usage_descriptions = p_preset->get_or_null("privacy/documents_folder_usage_description_localized");
+	Dictionary downloads_folder_usage_descriptions = p_preset->get_or_null("privacy/downloads_folder_usage_description_localized");
+	Dictionary network_volumes_usage_descriptions = p_preset->get_or_null("privacy/network_volumes_usage_description_localized");
+	Dictionary removable_volumes_usage_descriptions = p_preset->get_or_null("privacy/removable_volumes_usage_description_localized");
+	Dictionary copyrights = p_preset->get_or_null("application/copyright_localized");
 
 	Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
 	if (translations.size() > 0) {
@@ -1522,40 +1522,40 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
 			f->store_line("CFBundleDisplayName = \"" + GLOBAL_GET("application/config/name").operator String() + "\";");
-			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/microphone_usage_description")).is_empty()) {
+				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get_or_null("privacy/microphone_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
-				f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/camera_usage_description")).is_empty()) {
+				f->store_line("NSCameraUsageDescription = \"" + p_preset->get_or_null("privacy/camera_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
-				f->store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/location_usage_description")).is_empty()) {
+				f->store_line("NSLocationUsageDescription = \"" + p_preset->get_or_null("privacy/location_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
-				f->store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/address_book_usage_description")).is_empty()) {
+				f->store_line("NSContactsUsageDescription = \"" + p_preset->get_or_null("privacy/address_book_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
-				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/calendar_usage_description")).is_empty()) {
+				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get_or_null("privacy/calendar_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/photos_library_usage_description")).is_empty()) {
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get_or_null("privacy/photos_library_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
-				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/desktop_folder_usage_description")).is_empty()) {
+				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get_or_null("privacy/desktop_folder_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
-				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/documents_folder_usage_description")).is_empty()) {
+				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get_or_null("privacy/documents_folder_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
-				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/downloads_folder_usage_description")).is_empty()) {
+				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get_or_null("privacy/downloads_folder_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
-				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/network_volumes_usage_description")).is_empty()) {
+				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get_or_null("privacy/network_volumes_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
-				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String() + "\";");
+			if (!((String)p_preset->get_or_null("privacy/removable_volumes_usage_description")).is_empty()) {
+				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get_or_null("privacy/removable_volumes_usage_description").operator String() + "\";");
 			}
-			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
+			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get_or_null("application/copyright").operator String() + "\";");
 		}
 
 		HashSet<String> languages;
@@ -1680,8 +1680,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		if (file == "Contents/Resources/icon.icns") {
 			// See if there is an icon.
 			String icon_path;
-			if (p_preset->get("application/icon") != "") {
-				icon_path = p_preset->get("application/icon");
+			if (p_preset->get_or_null("application/icon") != "") {
+				icon_path = p_preset->get_or_null("application/icon");
 			} else if (GLOBAL_GET("application/config/macos_native_icon") != "") {
 				icon_path = GLOBAL_GET("application/config/macos_native_icon");
 			} else {
@@ -1746,7 +1746,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	// Save console wrapper.
 	if (err == OK) {
-		int con_scr = p_preset->get("debug/export_console_wrapper");
+		int con_scr = p_preset->get_or_null("debug/export_console_wrapper");
 		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
 			err = _export_debug_script(p_preset, pkg_name, tmp_app_path_name.get_file() + "/Contents/MacOS/" + pkg_name, scr_path);
 			FileAccess::set_unix_permissions(scr_path, 0755);
@@ -1762,9 +1762,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		// See if we can code sign our new package.
-		bool sign_enabled = (p_preset->get("codesign/codesign").operator int() > 0);
+		bool sign_enabled = (p_preset->get_or_null("codesign/codesign").operator int() > 0);
 		bool ad_hoc = false;
-		int codesign_tool = p_preset->get("codesign/codesign");
+		int codesign_tool = p_preset->get_or_null("codesign/codesign");
 		switch (codesign_tool) {
 			case 1: { // built-in ad-hoc
 				ad_hoc = true;
@@ -1774,7 +1774,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			} break;
 #ifdef MACOS_ENABLED
 			case 3: { // "codesign"
-				ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+				ad_hoc = (p_preset->get_or_null("codesign/identity") == "" || p_preset->get_or_null("codesign/identity") == "-");
 			} break;
 #endif
 			default: {
@@ -1785,13 +1785,13 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		Vector<SharedObject> shared_objects;
 		err = save_pack(p_preset, p_debug, pack_path, &shared_objects);
 
-		bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
+		bool lib_validation = p_preset->get_or_null("codesign/entitlements/disable_library_validation");
 		if (!shared_objects.is_empty() && sign_enabled && ad_hoc && !lib_validation) {
 			add_message(EXPORT_MESSAGE_INFO, TTR("Entitlements Modified"), TTR("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries."));
 			lib_validation = true;
 		}
 
-		String ent_path = p_preset->get("codesign/entitlements/custom_file");
+		String ent_path = p_preset->get_or_null("codesign/entitlements/custom_file");
 		String hlp_ent_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + "_helper.entitlements");
 		if (sign_enabled && (ent_path.is_empty())) {
 			ent_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + ".entitlements");
@@ -1811,15 +1811,15 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					ent_f->store_line("<key>com.apple.security.cs.allow-dyld-environment-variables</key>");
 					ent_f->store_line("<true/>");
 				} else {
-					if ((bool)p_preset->get("codesign/entitlements/allow_jit_code_execution")) {
+					if ((bool)p_preset->get_or_null("codesign/entitlements/allow_jit_code_execution")) {
 						ent_f->store_line("<key>com.apple.security.cs.allow-jit</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((bool)p_preset->get("codesign/entitlements/allow_unsigned_executable_memory")) {
+					if ((bool)p_preset->get_or_null("codesign/entitlements/allow_unsigned_executable_memory")) {
 						ent_f->store_line("<key>com.apple.security.cs.allow-unsigned-executable-memory</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((bool)p_preset->get("codesign/entitlements/allow_dyld_environment_variables")) {
+					if ((bool)p_preset->get_or_null("codesign/entitlements/allow_dyld_environment_variables")) {
 						ent_f->store_line("<key>com.apple.security.cs.allow-dyld-environment-variables</key>");
 						ent_f->store_line("<true/>");
 					}
@@ -1829,44 +1829,44 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					ent_f->store_line("<key>com.apple.security.cs.disable-library-validation</key>");
 					ent_f->store_line("<true/>");
 				}
-				if ((bool)p_preset->get("codesign/entitlements/audio_input")) {
+				if ((bool)p_preset->get_or_null("codesign/entitlements/audio_input")) {
 					ent_f->store_line("<key>com.apple.security.device.audio-input</key>");
 					ent_f->store_line("<true/>");
 				}
-				if ((bool)p_preset->get("codesign/entitlements/camera")) {
+				if ((bool)p_preset->get_or_null("codesign/entitlements/camera")) {
 					ent_f->store_line("<key>com.apple.security.device.camera</key>");
 					ent_f->store_line("<true/>");
 				}
-				if ((bool)p_preset->get("codesign/entitlements/location")) {
+				if ((bool)p_preset->get_or_null("codesign/entitlements/location")) {
 					ent_f->store_line("<key>com.apple.security.personal-information.location</key>");
 					ent_f->store_line("<true/>");
 				}
-				if ((bool)p_preset->get("codesign/entitlements/address_book")) {
+				if ((bool)p_preset->get_or_null("codesign/entitlements/address_book")) {
 					ent_f->store_line("<key>com.apple.security.personal-information.addressbook</key>");
 					ent_f->store_line("<true/>");
 				}
-				if ((bool)p_preset->get("codesign/entitlements/calendars")) {
+				if ((bool)p_preset->get_or_null("codesign/entitlements/calendars")) {
 					ent_f->store_line("<key>com.apple.security.personal-information.calendars</key>");
 					ent_f->store_line("<true/>");
 				}
-				if ((bool)p_preset->get("codesign/entitlements/photos_library")) {
+				if ((bool)p_preset->get_or_null("codesign/entitlements/photos_library")) {
 					ent_f->store_line("<key>com.apple.security.personal-information.photos-library</key>");
 					ent_f->store_line("<true/>");
 				}
-				if ((bool)p_preset->get("codesign/entitlements/apple_events")) {
+				if ((bool)p_preset->get_or_null("codesign/entitlements/apple_events")) {
 					ent_f->store_line("<key>com.apple.security.automation.apple-events</key>");
 					ent_f->store_line("<true/>");
 				}
-				if ((bool)p_preset->get("codesign/entitlements/debugging")) {
+				if ((bool)p_preset->get_or_null("codesign/entitlements/debugging")) {
 					ent_f->store_line("<key>com.apple.security.get-task-allow</key>");
 					ent_f->store_line("<true/>");
 				}
 
-				int dist_type = p_preset->get("export/distribution_type");
+				int dist_type = p_preset->get_or_null("export/distribution_type");
 				if (dist_type == 2) {
 					String pprof = p_preset->get_or_env("codesign/provisioning_profile", ENV_MAC_CODESIGN_PROFILE);
-					String teamid = p_preset->get("codesign/apple_team_id");
-					String bid = p_preset->get("application/bundle_identifier");
+					String teamid = p_preset->get_or_null("codesign/apple_team_id");
+					String bid = p_preset->get_or_null("application/bundle_identifier");
 					if (!pprof.is_empty() && !teamid.is_empty()) {
 						ent_f->store_line("<key>com.apple.developer.team-identifier</key>");
 						ent_f->store_line("<string>" + teamid + "</string>");
@@ -1875,63 +1875,63 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					}
 				}
 
-				if ((bool)p_preset->get("codesign/entitlements/app_sandbox/enabled")) {
+				if ((bool)p_preset->get_or_null("codesign/entitlements/app_sandbox/enabled")) {
 					ent_f->store_line("<key>com.apple.security.app-sandbox</key>");
 					ent_f->store_line("<true/>");
 
-					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/network_server")) {
+					if ((bool)p_preset->get_or_null("codesign/entitlements/app_sandbox/network_server")) {
 						ent_f->store_line("<key>com.apple.security.network.server</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/network_client")) {
+					if ((bool)p_preset->get_or_null("codesign/entitlements/app_sandbox/network_client")) {
 						ent_f->store_line("<key>com.apple.security.network.client</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/device_usb")) {
+					if ((bool)p_preset->get_or_null("codesign/entitlements/app_sandbox/device_usb")) {
 						ent_f->store_line("<key>com.apple.security.device.usb</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/device_bluetooth")) {
+					if ((bool)p_preset->get_or_null("codesign/entitlements/app_sandbox/device_bluetooth")) {
 						ent_f->store_line("<key>com.apple.security.device.bluetooth</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_downloads") == 1) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_downloads") == 1) {
 						ent_f->store_line("<key>com.apple.security.files.downloads.read-only</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_downloads") == 2) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_downloads") == 2) {
 						ent_f->store_line("<key>com.apple.security.files.downloads.read-write</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_pictures") == 1) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_pictures") == 1) {
 						ent_f->store_line("<key>com.apple.security.files.pictures.read-only</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_pictures") == 2) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_pictures") == 2) {
 						ent_f->store_line("<key>com.apple.security.files.pictures.read-write</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_music") == 1) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_music") == 1) {
 						ent_f->store_line("<key>com.apple.security.files.music.read-only</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_music") == 2) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_music") == 2) {
 						ent_f->store_line("<key>com.apple.security.files.music.read-write</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_movies") == 1) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_movies") == 1) {
 						ent_f->store_line("<key>com.apple.security.files.movies.read-only</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_movies") == 2) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_movies") == 2) {
 						ent_f->store_line("<key>com.apple.security.files.movies.read-write</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_user_selected") == 1) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_user_selected") == 1) {
 						ent_f->store_line("<key>com.apple.security.files.user-selected.read-only</key>");
 						ent_f->store_line("<true/>");
 					}
-					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_user_selected") == 2) {
+					if ((int)p_preset->get_or_null("codesign/entitlements/app_sandbox/files_user_selected") == 2) {
 						ent_f->store_line("<key>com.apple.security.files.user-selected.read-write</key>");
 						ent_f->store_line("<true/>");
 					}
@@ -2003,7 +2003,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (err == OK && sign_enabled) {
-			int dist_type = p_preset->get("export/distribution_type");
+			int dist_type = p_preset->get_or_null("export/distribution_type");
 			if (dist_type == 2) {
 				String pprof = p_preset->get_or_env("codesign/provisioning_profile", ENV_MAC_CODESIGN_PROFILE).operator String();
 				if (!pprof.is_empty()) {
@@ -2061,7 +2061,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			}
 		}
 
-		bool noto_enabled = (p_preset->get("notarization/notarization").operator int() > 0);
+		bool noto_enabled = (p_preset->get_or_null("notarization/notarization").operator int() > 0);
 		if (err == OK && noto_enabled) {
 			if (export_format == "app" || export_format == "pkg") {
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("Notarization requires the app to be archived first, select the DMG or ZIP export format instead."));
@@ -2079,7 +2079,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		// Clean up temporary .app dir and generated entitlements.
-		if ((String)(p_preset->get("codesign/entitlements/custom_file")) == "") {
+		if ((String)(p_preset->get_or_null("codesign/entitlements/custom_file")) == "") {
 			tmp_app_dir->remove(ent_path);
 		}
 		if (export_format != "app") {
@@ -2100,14 +2100,14 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 	bool dvalid = false;
 	bool rvalid = false;
 
-	if (p_preset->get("custom_template/debug") != "") {
-		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+	if (p_preset->get_or_null("custom_template/debug") != "") {
+		dvalid = FileAccess::exists(p_preset->get_or_null("custom_template/debug"));
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-	if (p_preset->get("custom_template/release") != "") {
-		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+	if (p_preset->get_or_null("custom_template/release") != "") {
+		rvalid = FileAccess::exists(p_preset->get_or_null("custom_template/release"));
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
@@ -2123,7 +2123,7 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 	r_missing_templates = !valid;
 
 	// Check the texture formats, which vary depending on the target architecture.
-	String architecture = p_preset->get("binary_format/architecture");
+	String architecture = p_preset->get_or_null("binary_format/architecture");
 	if (architecture == "universal" || architecture == "x86_64") {
 		if (!ResourceImporterTextureSettings::should_import_s3tc_bptc()) {
 			valid = false;
@@ -2146,10 +2146,10 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 	String err;
 	bool valid = true;
 
-	int dist_type = p_preset->get("export/distribution_type");
+	int dist_type = p_preset->get_or_null("export/distribution_type");
 	bool ad_hoc = false;
-	int codesign_tool = p_preset->get("codesign/codesign");
-	int notary_tool = p_preset->get("notarization/notarization");
+	int codesign_tool = p_preset->get_or_null("codesign/codesign");
+	int notary_tool = p_preset->get_or_null("notarization/notarization");
 	switch (codesign_tool) {
 		case 1: { // built-in ad-hoc
 			ad_hoc = true;
@@ -2159,7 +2159,7 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 		} break;
 #ifdef MACOS_ENABLED
 		case 3: { // "codesign"
-			ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+			ad_hoc = (p_preset->get_or_null("codesign/identity") == "" || p_preset->get_or_null("codesign/identity") == "-");
 		} break;
 #endif
 		default: {
@@ -2242,7 +2242,7 @@ bool EditorExportPlatformMacOS::poll_export() {
 	}
 
 	int prev = menu_options;
-	menu_options = (preset.is_valid() && preset->get("ssh_remote_deploy/enabled").operator bool());
+	menu_options = (preset.is_valid() && preset->get_or_null("ssh_remote_deploy/enabled").operator bool());
 	if (ssh_pid != 0 || !cleanup_commands.is_empty()) {
 		if (menu_options == 0) {
 			cleanup();
@@ -2309,20 +2309,20 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 	}
 
 	String pkg_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
-		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	if (String(ProjectSettings::get_singleton()->get_or_null("application/config/name")) != "") {
+		pkg_name = String(ProjectSettings::get_singleton()->get_or_null("application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
 	}
 	pkg_name = OS::get_singleton()->get_safe_dir_name(pkg_name);
 
-	String host = p_preset->get("ssh_remote_deploy/host").operator String();
-	String port = p_preset->get("ssh_remote_deploy/port").operator String();
+	String host = p_preset->get_or_null("ssh_remote_deploy/host").operator String();
+	String port = p_preset->get_or_null("ssh_remote_deploy/port").operator String();
 	if (port.is_empty()) {
 		port = "22";
 	}
-	Vector<String> extra_args_ssh = p_preset->get("ssh_remote_deploy/extra_args_ssh").operator String().split(" ", false);
-	Vector<String> extra_args_scp = p_preset->get("ssh_remote_deploy/extra_args_scp").operator String().split(" ", false);
+	Vector<String> extra_args_ssh = p_preset->get_or_null("ssh_remote_deploy/extra_args_ssh").operator String().split(" ", false);
+	Vector<String> extra_args_scp = p_preset->get_or_null("ssh_remote_deploy/extra_args_scp").operator String().split(" ", false);
 
 	const String basepath = dest.path_join("tmp_macos_export");
 
@@ -2363,7 +2363,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 	}
 
 	const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
-	int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
+	int dbg_port = EditorSettings::get_singleton()->get_or_null("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");
 	ep.step(TTR("Creating temporary directory..."), 2);
@@ -2381,7 +2381,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 	}
 
 	{
-		String run_script = p_preset->get("ssh_remote_deploy/run_script");
+		String run_script = p_preset->get_or_null("ssh_remote_deploy/run_script");
 		run_script = run_script.replace("{temp_dir}", temp_dir);
 		run_script = run_script.replace("{archive_name}", basepath.get_file() + ".zip");
 		run_script = run_script.replace("{exe_name}", pkg_name);
@@ -2396,7 +2396,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 	}
 
 	{
-		String clean_script = p_preset->get("ssh_remote_deploy/cleanup_script");
+		String clean_script = p_preset->get_or_null("ssh_remote_deploy/cleanup_script");
 		clean_script = clean_script.replace("{temp_dir}", temp_dir);
 		clean_script = clean_script.replace("{archive_name}", basepath.get_file() + ".zip");
 		clean_script = clean_script.replace("{exe_name}", pkg_name);

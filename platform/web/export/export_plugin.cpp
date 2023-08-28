@@ -142,27 +142,27 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	for (int i = 0; i < flags.size(); i++) {
 		args.push_back(flags[i]);
 	}
-	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
-	config["experimentalVK"] = p_preset->get("html/experimental_virtual_keyboard");
-	config["focusCanvas"] = p_preset->get("html/focus_canvas_on_start");
+	config["canvasResizePolicy"] = p_preset->get_or_null("html/canvas_resize_policy");
+	config["experimentalVK"] = p_preset->get_or_null("html/experimental_virtual_keyboard");
+	config["focusCanvas"] = p_preset->get_or_null("html/focus_canvas_on_start");
 	config["gdextensionLibs"] = libs;
 	config["executable"] = p_name;
 	config["args"] = args;
 	config["fileSizes"] = p_file_sizes;
 
 	String head_include;
-	if (p_preset->get("html/export_icon")) {
+	if (p_preset->get_or_null("html/export_icon")) {
 		head_include += "<link id='-gd-engine-icon' rel='icon' type='image/png' href='" + p_name + ".icon.png' />\n";
 		head_include += "<link rel='apple-touch-icon' href='" + p_name + ".apple-touch-icon.png'/>\n";
 	}
-	if (p_preset->get("progressive_web_app/enabled")) {
+	if (p_preset->get_or_null("progressive_web_app/enabled")) {
 		head_include += "<link rel='manifest' href='" + p_name + ".manifest.json'>\n";
 		config["serviceWorker"] = p_name + ".service.worker.js";
 	}
 
 	// Replaces HTML string
 	const String str_config = Variant(config).to_json_string();
-	const String custom_head_include = p_preset->get("html/head_include");
+	const String custom_head_include = p_preset->get_or_null("html/head_include");
 	HashMap<String, String> replaces;
 	replaces["$GODOT_URL"] = p_name + ".js";
 	replaces["$GODOT_PROJECT_NAME"] = GLOBAL_GET("application/config/name");
@@ -213,7 +213,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	// Service worker
 	const String dir = p_path.get_base_dir();
 	const String name = p_path.get_file().get_basename();
-	bool extensions = (bool)p_preset->get("variant/extensions_support");
+	bool extensions = (bool)p_preset->get_or_null("variant/extensions_support");
 	HashMap<String, String> replaces;
 	replaces["@GODOT_VERSION@"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
 	replaces["@GODOT_NAME@"] = proj_name.substr(0, 16);
@@ -224,7 +224,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	cache_files.push_back(name + ".html");
 	cache_files.push_back(name + ".js");
 	cache_files.push_back(name + ".offline.html");
-	if (p_preset->get("html/export_icon")) {
+	if (p_preset->get_or_null("html/export_icon")) {
 		cache_files.push_back(name + ".icon.png");
 		cache_files.push_back(name + ".apple-touch-icon.png");
 	}
@@ -262,7 +262,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	}
 
 	// Custom offline page
-	const String offline_page = p_preset->get("progressive_web_app/offline_page");
+	const String offline_page = p_preset->get_or_null("progressive_web_app/offline_page");
 	if (!offline_page.is_empty()) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		const String offline_dest = dir.path_join(name + ".offline.html");
@@ -276,28 +276,28 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	// Manifest
 	const char *modes[4] = { "fullscreen", "standalone", "minimal-ui", "browser" };
 	const char *orientations[3] = { "any", "landscape", "portrait" };
-	const int display = CLAMP(int(p_preset->get("progressive_web_app/display")), 0, 4);
-	const int orientation = CLAMP(int(p_preset->get("progressive_web_app/orientation")), 0, 3);
+	const int display = CLAMP(int(p_preset->get_or_null("progressive_web_app/display")), 0, 4);
+	const int orientation = CLAMP(int(p_preset->get_or_null("progressive_web_app/orientation")), 0, 3);
 
 	Dictionary manifest;
 	manifest["name"] = proj_name;
 	manifest["start_url"] = "./" + name + ".html";
 	manifest["display"] = String::utf8(modes[display]);
 	manifest["orientation"] = String::utf8(orientations[orientation]);
-	manifest["background_color"] = "#" + p_preset->get("progressive_web_app/background_color").operator Color().to_html(false);
+	manifest["background_color"] = "#" + p_preset->get_or_null("progressive_web_app/background_color").operator Color().to_html(false);
 
 	Array icons_arr;
-	const String icon144_path = p_preset->get("progressive_web_app/icon_144x144");
+	const String icon144_path = p_preset->get_or_null("progressive_web_app/icon_144x144");
 	err = _add_manifest_icon(p_path, icon144_path, 144, icons_arr);
 	if (err != OK) {
 		return err;
 	}
-	const String icon180_path = p_preset->get("progressive_web_app/icon_180x180");
+	const String icon180_path = p_preset->get_or_null("progressive_web_app/icon_180x180");
 	err = _add_manifest_icon(p_path, icon180_path, 180, icons_arr);
 	if (err != OK) {
 		return err;
 	}
-	const String icon512_path = p_preset->get("progressive_web_app/icon_512x512");
+	const String icon512_path = p_preset->get_or_null("progressive_web_app/icon_512x512");
 	err = _add_manifest_icon(p_path, icon512_path, 512, icons_arr);
 	if (err != OK) {
 		return err;
@@ -314,11 +314,11 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 }
 
 void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	if (p_preset->get("vram_texture_compression/for_desktop")) {
+	if (p_preset->get_or_null("vram_texture_compression/for_desktop")) {
 		r_features->push_back("s3tc");
 	}
 
-	if (p_preset->get("vram_texture_compression/for_mobile")) {
+	if (p_preset->get_or_null("vram_texture_compression/for_mobile")) {
 		r_features->push_back("etc2");
 	}
 	r_features->push_back("wasm32");
@@ -370,20 +370,20 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 
 	String err;
 	bool valid = false;
-	bool extensions = (bool)p_preset->get("variant/extensions_support");
+	bool extensions = (bool)p_preset->get_or_null("variant/extensions_support");
 
 	// Look for export templates (first official, and if defined custom templates).
 	bool dvalid = exists_export_template(_get_template_name(extensions, true), &err);
 	bool rvalid = exists_export_template(_get_template_name(extensions, false), &err);
 
-	if (p_preset->get("custom_template/debug") != "") {
-		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+	if (p_preset->get_or_null("custom_template/debug") != "") {
+		dvalid = FileAccess::exists(p_preset->get_or_null("custom_template/debug"));
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-	if (p_preset->get("custom_template/release") != "") {
-		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+	if (p_preset->get_or_null("custom_template/release") != "") {
+		rvalid = FileAccess::exists(p_preset->get_or_null("custom_template/release"));
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
@@ -406,7 +406,7 @@ bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorEx
 
 	// Validate the project configuration.
 
-	if (p_preset->get("vram_texture_compression/for_mobile")) {
+	if (p_preset->get_or_null("vram_texture_compression/for_mobile")) {
 		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 			valid = false;
 		}
@@ -428,11 +428,11 @@ List<String> EditorExportPlatformWeb::get_binary_extensions(const Ref<EditorExpo
 Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
-	const String custom_debug = p_preset->get("custom_template/debug");
-	const String custom_release = p_preset->get("custom_template/release");
-	const String custom_html = p_preset->get("html/custom_html_shell");
-	const bool export_icon = p_preset->get("html/export_icon");
-	const bool pwa = p_preset->get("progressive_web_app/enabled");
+	const String custom_debug = p_preset->get_or_null("custom_template/debug");
+	const String custom_release = p_preset->get_or_null("custom_template/release");
+	const String custom_html = p_preset->get_or_null("html/custom_html_shell");
+	const bool export_icon = p_preset->get_or_null("html/export_icon");
+	const bool pwa = p_preset->get_or_null("progressive_web_app/enabled");
 
 	const String base_dir = p_path.get_base_dir();
 	const String base_path = p_path.get_basename();
@@ -442,7 +442,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	String template_path = p_debug ? custom_debug : custom_release;
 	template_path = template_path.strip_edges();
 	if (template_path.is_empty()) {
-		bool extensions = (bool)p_preset->get("variant/extensions_support");
+		bool extensions = (bool)p_preset->get_or_null("variant/extensions_support");
 		template_path = find_export_template(_get_template_name(extensions, p_debug));
 	}
 

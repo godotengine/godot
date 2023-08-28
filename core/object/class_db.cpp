@@ -1596,7 +1596,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 			for (const PropertyInfo &E : plist) {
 				if (E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
 					if (!default_values[p_class].has(E.name)) {
-						Variant v = c->get(E.name);
+						Variant v = c->get_or_null(E.name);
 						default_values[p_class][E.name] = v;
 					}
 				}

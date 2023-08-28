@@ -2774,7 +2774,7 @@ void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
 Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
 	if (p_prop == get_edited_property()) {
 		r_valid = true;
-		return const_cast<EditorPropertyNodePath *>(this)->get_edited_object()->get(get_edited_property(), &r_valid);
+		return const_cast<EditorPropertyNodePath *>(this)->get_edited_object()->get_or_null(get_edited_property(), &r_valid);
 	}
 	return Variant();
 }
@@ -2867,7 +2867,7 @@ void EditorPropertyNodePath::update_property() {
 	Node *base_node = get_base_node();
 
 	NodePath p;
-	Variant val = get_edited_object()->get(get_edited_property());
+	Variant val = get_edited_object()->get_or_null(get_edited_property());
 	Node *n = Object::cast_to<Node>(val);
 	if (n) {
 		if (!n->is_inside_tree()) {
@@ -3084,7 +3084,7 @@ static bool _find_recursive_resources(const Variant &v, HashSet<Resource *> &res
 				if (pinfo.type != Variant::ARRAY && pinfo.type != Variant::DICTIONARY && pinfo.type != Variant::OBJECT) {
 					continue;
 				}
-				if (_find_recursive_resources(r->get(pinfo.name), resources_found)) {
+				if (_find_recursive_resources(r->get_or_null(pinfo.name), resources_found)) {
 					return true;
 				}
 			}

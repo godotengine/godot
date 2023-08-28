@@ -818,7 +818,7 @@ Error ResourceLoaderBinary::load() {
 			if (value.get_type() == Variant::ARRAY) {
 				Array set_array = value;
 				bool is_get_valid = false;
-				Variant get_value = res->get(name, &is_get_valid);
+				Variant get_value = res->get_or_null(name, &is_get_valid);
 				if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
 					Array get_array = get_value;
 					if (!set_array.is_same_typed(get_array)) {
@@ -1968,7 +1968,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 			for (const PropertyInfo &E : property_list) {
 				if (E.usage & PROPERTY_USAGE_STORAGE) {
-					Variant value = res->get(E.name);
+					Variant value = res->get_or_null(E.name);
 					if (E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
 						NonPersistentKey npk;
 						npk.base = res;
@@ -2173,7 +2173,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 							p.value = non_persistent_map[npk];
 						}
 					} else {
-						p.value = E->get(F.name);
+						p.value = E->get_or_null(F.name);
 					}
 
 					if (p.pi.type == Variant::OBJECT && missing_resource_properties.has(F.name)) {

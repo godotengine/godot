@@ -104,7 +104,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 
 			Ref<Image> res_image = src_image->duplicate();
 			ERR_FAIL_COND_V(res_image.is_null() || res_image->is_empty(), ERR_CANT_OPEN);
-			res_image->resize(size, size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+			res_image->resize(size, size, (Image::Interpolation)(p_preset->get_or_null("application/icon_interpolation").operator int()));
 			images[icon_size[i]].data = res_image->save_png_to_buffer();
 		}
 	}
@@ -159,7 +159,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 }
 
 Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
-	if (p_preset->get("codesign/enable")) {
+	if (p_preset->get_or_null("codesign/enable")) {
 		return _code_sign(p_preset, p_path);
 	} else {
 		return OK;
@@ -167,7 +167,7 @@ Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPres
 }
 
 Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
-	if (p_preset->get("application/modify_resources")) {
+	if (p_preset->get_or_null("application/modify_resources")) {
 		_rcedit_add_data(p_preset, p_path, false);
 		String wrapper_path = p_path.get_basename() + ".console.exe";
 		if (FileAccess::exists(wrapper_path)) {
@@ -179,11 +179,11 @@ Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset>
 
 Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	bool export_as_zip = p_path.ends_with("zip");
-	bool embedded = p_preset->get("binary_format/embed_pck");
+	bool embedded = p_preset->get_or_null("binary_format/embed_pck");
 
 	String pkg_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
-		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	if (String(ProjectSettings::get_singleton()->get_or_null("application/config/name")) != "") {
+		pkg_name = String(ProjectSettings::get_singleton()->get_or_null("application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
 	}
@@ -213,7 +213,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		pck_path = pck_path.get_basename() + ".tmp";
 	}
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags);
-	if (p_preset->get("codesign/enable") && err == OK) {
+	if (p_preset->get_or_null("codesign/enable") && err == OK) {
 		_code_sign(p_preset, pck_path);
 		String wrapper_path = p_path.get_basename() + ".console.exe";
 		if (FileAccess::exists(wrapper_path)) {
@@ -267,12 +267,12 @@ List<String> EditorExportPlatformWindows::get_binary_extensions(const Ref<Editor
 String EditorExportPlatformWindows::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		if (p_name == "application/icon") {
-			String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
+			String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get_or_null("application/icon"));
 			if (!icon_path.is_empty() && !FileAccess::exists(icon_path)) {
 				return TTR("Invalid icon path.");
 			}
 		} else if (p_name == "application/file_version") {
-			String file_version = p_preset->get("application/file_version");
+			String file_version = p_preset->get_or_null("application/file_version");
 			if (!file_version.is_empty()) {
 				PackedStringArray version_array = file_version.split(".", false);
 				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
@@ -282,7 +282,7 @@ String EditorExportPlatformWindows::get_export_option_warning(const EditorExport
 				}
 			}
 		} else if (p_name == "application/product_version") {
-			String product_version = p_preset->get("application/product_version");
+			String product_version = p_preset->get_or_null("application/product_version");
 			if (!product_version.is_empty()) {
 				PackedStringArray version_array = product_version.split(".", false);
 				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
@@ -303,19 +303,19 @@ bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExpor
 	}
 
 	// Hide codesign.
-	bool codesign = p_preset->get("codesign/enable");
+	bool codesign = p_preset->get_or_null("codesign/enable");
 	if (!codesign && p_option != "codesign/enable" && p_option.begins_with("codesign/")) {
 		return false;
 	}
 
 	// Hide resources.
-	bool mod_res = p_preset->get("application/modify_resources");
+	bool mod_res = p_preset->get_or_null("application/modify_resources");
 	if (!mod_res && p_option != "application/modify_resources" && p_option.begins_with("application/")) {
 		return false;
 	}
 
 	// Hide SSH options.
-	bool ssh = p_preset->get("ssh_remote_deploy/enabled");
+	bool ssh = p_preset->get_or_null("ssh_remote_deploy/enabled");
 	if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
 		return false;
 	}
@@ -401,8 +401,8 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 #endif
 
 	String icon_path;
-	if (p_preset->get("application/icon") != "") {
-		icon_path = p_preset->get("application/icon");
+	if (p_preset->get_or_null("application/icon") != "") {
+		icon_path = p_preset->get_or_null("application/icon");
 	} else if (GLOBAL_GET("application/config/windows_native_icon") != "") {
 		icon_path = GLOBAL_GET("application/config/windows_native_icon");
 	} else {
@@ -411,7 +411,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	icon_path = ProjectSettings::get_singleton()->globalize_path(icon_path);
 
 	if (p_console_icon) {
-		String console_icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/console_wrapper_icon"));
+		String console_icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get_or_null("application/console_wrapper_icon"));
 		if (!console_icon_path.is_empty() && FileAccess::exists(console_icon_path)) {
 			icon_path = console_icon_path;
 		}
@@ -427,12 +427,12 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 
 	String file_verion = p_preset->get_version("application/file_version", true);
 	String product_version = p_preset->get_version("application/product_version", true);
-	String company_name = p_preset->get("application/company_name");
-	String product_name = p_preset->get("application/product_name");
-	String file_description = p_preset->get("application/file_description");
-	String copyright = p_preset->get("application/copyright");
-	String trademarks = p_preset->get("application/trademarks");
-	String comments = p_preset->get("application/comments");
+	String company_name = p_preset->get_or_null("application/company_name");
+	String product_name = p_preset->get_or_null("application/product_name");
+	String file_description = p_preset->get_or_null("application/file_description");
+	String copyright = p_preset->get_or_null("application/copyright");
+	String trademarks = p_preset->get_or_null("application/trademarks");
+	String comments = p_preset->get_or_null("application/comments");
 
 	List<String> args;
 	args.push_back(p_path);
@@ -573,20 +573,20 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	}
 
 	//timestamp
-	if (p_preset->get("codesign/timestamp")) {
-		if (p_preset->get("codesign/timestamp_server") != "") {
+	if (p_preset->get_or_null("codesign/timestamp")) {
+		if (p_preset->get_or_null("codesign/timestamp_server") != "") {
 #ifdef WINDOWS_ENABLED
 			args.push_back("/tr");
-			args.push_back(p_preset->get("codesign/timestamp_server_url"));
+			args.push_back(p_preset->get_or_null("codesign/timestamp_server_url"));
 			args.push_back("/td");
-			if ((int)p_preset->get("codesign/digest_algorithm") == 0) {
+			if ((int)p_preset->get_or_null("codesign/digest_algorithm") == 0) {
 				args.push_back("sha1");
 			} else {
 				args.push_back("sha256");
 			}
 #else
 			args.push_back("-ts");
-			args.push_back(p_preset->get("codesign/timestamp_server_url"));
+			args.push_back(p_preset->get_or_null("codesign/timestamp_server_url"));
 #endif
 		} else {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Invalid timestamp server."));
@@ -600,24 +600,24 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #else
 	args.push_back("-h");
 #endif
-	if ((int)p_preset->get("codesign/digest_algorithm") == 0) {
+	if ((int)p_preset->get_or_null("codesign/digest_algorithm") == 0) {
 		args.push_back("sha1");
 	} else {
 		args.push_back("sha256");
 	}
 
 	//description
-	if (p_preset->get("codesign/description") != "") {
+	if (p_preset->get_or_null("codesign/description") != "") {
 #ifdef WINDOWS_ENABLED
 		args.push_back("/d");
 #else
 		args.push_back("-n");
 #endif
-		args.push_back(p_preset->get("codesign/description"));
+		args.push_back(p_preset->get_or_null("codesign/description"));
 	}
 
 	//user options
-	PackedStringArray user_args = p_preset->get("codesign/custom_options");
+	PackedStringArray user_args = p_preset->get_or_null("codesign/custom_options");
 	for (int i = 0; i < user_args.size(); i++) {
 		String user_arg = user_args[i].strip_edges();
 		if (!user_arg.is_empty()) {
@@ -679,7 +679,7 @@ bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<Edito
 	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates, p_debug);
 
 	String rcedit_path = EDITOR_GET("export/windows/rcedit");
-	if (p_preset->get("application/modify_resources") && rcedit_path.is_empty()) {
+	if (p_preset->get_or_null("application/modify_resources") && rcedit_path.is_empty()) {
 		err += TTR("The rcedit tool must be configured in the Editor Settings (Export > Windows > rcedit) to change the icon or app information data.") + "\n";
 	}
 
@@ -810,7 +810,7 @@ bool EditorExportPlatformWindows::poll_export() {
 	}
 
 	int prev = menu_options;
-	menu_options = (preset.is_valid() && preset->get("ssh_remote_deploy/enabled").operator bool());
+	menu_options = (preset.is_valid() && preset->get_or_null("ssh_remote_deploy/enabled").operator bool());
 	if (ssh_pid != 0 || !cleanup_commands.is_empty()) {
 		if (menu_options == 0) {
 			cleanup();
@@ -876,13 +876,13 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 		}
 	}
 
-	String host = p_preset->get("ssh_remote_deploy/host").operator String();
-	String port = p_preset->get("ssh_remote_deploy/port").operator String();
+	String host = p_preset->get_or_null("ssh_remote_deploy/host").operator String();
+	String port = p_preset->get_or_null("ssh_remote_deploy/port").operator String();
 	if (port.is_empty()) {
 		port = "22";
 	}
-	Vector<String> extra_args_ssh = p_preset->get("ssh_remote_deploy/extra_args_ssh").operator String().split(" ", false);
-	Vector<String> extra_args_scp = p_preset->get("ssh_remote_deploy/extra_args_scp").operator String().split(" ", false);
+	Vector<String> extra_args_ssh = p_preset->get_or_null("ssh_remote_deploy/extra_args_ssh").operator String().split(" ", false);
+	Vector<String> extra_args_scp = p_preset->get_or_null("ssh_remote_deploy/extra_args_scp").operator String().split(" ", false);
 
 	const String basepath = dest.path_join("tmp_windows_export");
 
@@ -923,7 +923,7 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 	}
 
 	const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
-	int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
+	int dbg_port = EditorSettings::get_singleton()->get_or_null("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");
 	ep.step(TTR("Creating temporary directory..."), 2);
@@ -949,7 +949,7 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 	}
 
 	{
-		String run_script = p_preset->get("ssh_remote_deploy/run_script");
+		String run_script = p_preset->get_or_null("ssh_remote_deploy/run_script");
 		run_script = run_script.replace("{temp_dir}", temp_dir);
 		run_script = run_script.replace("{archive_name}", basepath.get_file() + ".zip");
 		run_script = run_script.replace("{exe_name}", basepath.get_file() + ".exe");
@@ -964,7 +964,7 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 	}
 
 	{
-		String clean_script = p_preset->get("ssh_remote_deploy/cleanup_script");
+		String clean_script = p_preset->get_or_null("ssh_remote_deploy/cleanup_script");
 		clean_script = clean_script.replace("{temp_dir}", temp_dir);
 		clean_script = clean_script.replace("{archive_name}", basepath.get_file() + ".zip");
 		clean_script = clean_script.replace("{exe_name}", basepath.get_file() + ".exe");

@@ -309,7 +309,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 			color.a *= 0.5;
 		}
 
-		float point = tree->get(get_blend_position_path());
+		float point = tree->get_or_null(get_blend_position_path());
 
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 		point *= s.width;

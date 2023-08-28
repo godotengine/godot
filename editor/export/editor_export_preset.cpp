@@ -331,11 +331,11 @@ Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p
 		}
 		return from_env;
 	}
-	return get(p_name, r_valid);
+	return get_or_null(p_name, r_valid);
 }
 
 String EditorExportPreset::get_version(const StringName &p_preset_string, bool p_windows_version) const {
-	String result = get(p_preset_string);
+	String result = get_or_null(p_preset_string);
 	if (result.is_empty()) {
 		result = GLOBAL_GET("application/config/version");
 

@@ -107,7 +107,7 @@ void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_propert
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Parameter Changed:") + " " + String(p_property), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_property(tree, p_property, p_value);
-	undo_redo->add_undo_property(tree, p_property, tree->get(p_property));
+	undo_redo->add_undo_property(tree, p_property, tree->get_or_null(p_property));
 	undo_redo->add_do_method(this, "update_graph");
 	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
@@ -899,7 +899,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 								E.value->set_max(anim->get_length());
 								//StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
 								StringName time_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E.key) + "/time";
-								E.value->set_value(tree->get(time_path));
+								E.value->set_value(tree->get_or_null(time_path));
 							}
 						}
 					}

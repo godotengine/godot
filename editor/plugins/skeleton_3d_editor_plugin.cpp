@@ -120,7 +120,7 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 	if (skeleton) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
-		undo_redo->add_undo_property(skeleton, p_property, skeleton->get(p_property));
+		undo_redo->add_undo_property(skeleton, p_property, skeleton->get_or_null(p_property));
 		undo_redo->add_do_property(skeleton, p_property, p_value);
 		undo_redo->commit_action();
 	}
@@ -164,13 +164,13 @@ void BoneTransformEditor::_property_keyed(const String &p_path, bool p_advance) 
 	if (split.size() == 3 && split[0] == "bones") {
 		int bone_idx = split[1].to_int();
 		if (split[2] == "position") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, (Vector3)skeleton->get(p_path) / skeleton->get_motion_scale());
+			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, (Vector3)skeleton->get_or_null(p_path) / skeleton->get_motion_scale());
 		}
 		if (split[2] == "rotation") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_ROTATION_3D, skeleton->get(p_path));
+			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_ROTATION_3D, skeleton->get_or_null(p_path));
 		}
 		if (split[2] == "scale") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_SCALE_3D, skeleton->get(p_path));
+			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_SCALE_3D, skeleton->get_or_null(p_path));
 		}
 	}
 }

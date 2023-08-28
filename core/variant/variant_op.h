@@ -1487,7 +1487,7 @@ public:
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 
 		bool exist;
-		b->get(a, &exist);
+		b->get_or_null(a, &exist);
 		*r_ret = exist;
 		r_valid = true;
 	}
@@ -1497,12 +1497,12 @@ public:
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(left);
 
 		bool valid;
-		l->get(a, &valid);
+		l->get_or_null(a, &valid);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = valid;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		bool valid;
-		PtrToArg<Object *>::convert(right)->get(PtrToArg<String>::convert(left), &valid);
+		PtrToArg<Object *>::convert(right)->get_or_null(PtrToArg<String>::convert(left), &valid);
 		PtrToArg<bool>::encode(valid, r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::BOOL; }
@@ -1521,7 +1521,7 @@ public:
 		const StringName &a = *VariantGetInternalPtr<StringName>::get_ptr(&p_left);
 
 		bool exist;
-		b->get(a, &exist);
+		b->get_or_null(a, &exist);
 		*r_ret = exist;
 		r_valid = true;
 	}
@@ -1531,12 +1531,12 @@ public:
 		const StringName &a = *VariantGetInternalPtr<StringName>::get_ptr(left);
 
 		bool valid;
-		l->get(a, &valid);
+		l->get_or_null(a, &valid);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = valid;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		bool valid;
-		PtrToArg<Object *>::convert(right)->get(PtrToArg<StringName>::convert(left), &valid);
+		PtrToArg<Object *>::convert(right)->get_or_null(PtrToArg<StringName>::convert(left), &valid);
 		PtrToArg<bool>::encode(valid, r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::BOOL; }

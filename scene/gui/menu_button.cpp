@@ -188,7 +188,7 @@ bool MenuButton::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0] == "popup") {
 		bool valid;
-		r_ret = popup->get(String(p_name).trim_prefix("popup/"), &valid);
+		r_ret = popup->get_or_null(String(p_name).trim_prefix("popup/"), &valid);
 		return valid;
 	}
 	return false;

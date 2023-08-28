@@ -624,7 +624,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 	for (const PropertyInfo &E : props) {
 		switch (E.type) {
 			case Variant::OBJECT: {
-				Ref<Resource> res = p_object->get(E.name);
+				Ref<Resource> res = p_object->get_or_null(E.name);
 				if (res.is_valid()) {
 					for (Ref<EditorExportPlugin> &plugin : customize_resources_plugins) {
 						Ref<Resource> new_res = plugin->_customize_resource(res, "");
@@ -646,7 +646,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 
 			} break;
 			case Variant::DICTIONARY: {
-				Dictionary d = p_object->get(E.name);
+				Dictionary d = p_object->get_or_null(E.name);
 				if (_export_customize_dictionary(d, customize_resources_plugins)) {
 					// May have been generated, so set back just in case
 					p_object->set(E.name, d);
@@ -654,7 +654,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 				}
 			} break;
 			case Variant::ARRAY: {
-				Array a = p_object->get(E.name);
+				Array a = p_object->get_or_null(E.name);
 				if (_export_customize_array(a, customize_resources_plugins)) {
 					// May have been generated, so set back just in case
 					p_object->set(E.name, a);
@@ -1831,7 +1831,7 @@ bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, S
 }
 
 Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, String *r_out, int p_port_fwd) const {
-	String ssh_path = EditorSettings::get_singleton()->get("export/ssh/ssh");
+	String ssh_path = EditorSettings::get_singleton()->get_or_null("export/ssh/ssh");
 	if (ssh_path.is_empty()) {
 		ssh_path = "ssh";
 	}
@@ -1888,7 +1888,7 @@ Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String
 }
 
 Error EditorExportPlatform::ssh_run_on_remote_no_wait(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, OS::ProcessID *r_pid, int p_port_fwd) const {
-	String ssh_path = EditorSettings::get_singleton()->get("export/ssh/ssh");
+	String ssh_path = EditorSettings::get_singleton()->get_or_null("export/ssh/ssh");
 	if (ssh_path.is_empty()) {
 		ssh_path = "ssh";
 	}
@@ -1925,7 +1925,7 @@ Error EditorExportPlatform::ssh_run_on_remote_no_wait(const String &p_host, cons
 }
 
 Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const String &p_port, const Vector<String> &p_scp_args, const String &p_src_file, const String &p_dst_file) const {
-	String scp_path = EditorSettings::get_singleton()->get("export/ssh/scp");
+	String scp_path = EditorSettings::get_singleton()->get_or_null("export/ssh/scp");
 	if (scp_path.is_empty()) {
 		scp_path = "scp";
 	}

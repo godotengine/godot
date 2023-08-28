@@ -1934,7 +1934,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					}
 
 					p_store_string_func(p_store_string_ud, "\"" + E.name + "\":");
-					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
+					write(obj->get_or_null(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
 				}
 			}
 

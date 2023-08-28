@@ -84,7 +84,7 @@ int AbstractPolygon2DEditor::_get_polygon_count() const {
 }
 
 Variant AbstractPolygon2DEditor::_get_polygon(int p_idx) const {
-	return _get_node()->get("polygon");
+	return _get_node()->get_or_null("polygon");
 }
 
 void AbstractPolygon2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {
@@ -212,7 +212,7 @@ void AbstractPolygon2DEditor::_wip_close() {
 		_action_add_polygon(wip);
 		if (_has_uv()) {
 			undo_redo->add_do_method(_get_node(), "set_uv", Vector<Vector2>());
-			undo_redo->add_undo_method(_get_node(), "set_uv", _get_node()->get("uv"));
+			undo_redo->add_undo_method(_get_node(), "set_uv", _get_node()->get_or_null("uv"));
 		}
 		_commit_action();
 	} else {

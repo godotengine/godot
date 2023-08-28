@@ -246,7 +246,7 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 	size_t num_sizes = sizeof(sizes) / sizeof(sizes[0]);
 	for (size_t i = 0; i < num_sizes; i++) {
 		String feature_name = vformat("screen/support_%s", sizes[i]);
-		String feature_support = bool_to_string(p_preset->get(feature_name));
+		String feature_support = bool_to_string(p_preset->get_or_null(feature_name));
 		String xml_entry = vformat("\n        android:%sScreens=\"%s\"", sizes[i], feature_support);
 		manifest_screen_sizes += xml_entry;
 	}
@@ -263,7 +263,7 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 			"android:excludeFromRecents=\"%s\" "
 			"android:screenOrientation=\"%s\" "
 			"android:resizeableActivity=\"%s\">\n",
-			bool_to_string(p_preset->get("package/exclude_from_recents")),
+			bool_to_string(p_preset->get_or_null("package/exclude_from_recents")),
 			orientation,
 			bool_to_string(bool(GLOBAL_GET("display/window/size/resizable"))));
 
@@ -276,12 +276,12 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 		manifest_activity_text += "                <category android:name=\"android.intent.category.LAUNCHER\" />\n";
 	}
 
-	bool uses_leanback_category = p_preset->get("package/show_in_android_tv");
+	bool uses_leanback_category = p_preset->get_or_null("package/show_in_android_tv");
 	if (uses_leanback_category) {
 		manifest_activity_text += "                <category android:name=\"android.intent.category.LEANBACK_LAUNCHER\" />\n";
 	}
 
-	bool uses_home_category = p_preset->get("package/show_as_launcher_app");
+	bool uses_home_category = p_preset->get_or_null("package/show_as_launcher_app");
 	if (uses_home_category) {
 		manifest_activity_text += "                <category android:name=\"android.intent.category.HOME\" />\n";
 	}
@@ -304,7 +304,7 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 }
 
 String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug) {
-	int app_category_index = (int)(p_preset->get("package/app_category"));
+	int app_category_index = (int)(p_preset->get_or_null("package/app_category"));
 	bool is_game = app_category_index == APP_CATEGORY_GAME;
 
 	String manifest_application_text = vformat(
@@ -317,10 +317,10 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 			"        android:requestLegacyExternalStorage=\"%s\"\n"
 			"        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n"
 			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
-			bool_to_string(p_preset->get("user_data_backup/allow")),
+			bool_to_string(p_preset->get_or_null("user_data_backup/allow")),
 			_get_app_category_label(app_category_index),
 			bool_to_string(is_game),
-			bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
+			bool_to_string(p_preset->get_or_null("package/retain_data_on_uninstall")),
 			bool_to_string(p_has_read_write_storage_permission));
 
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();

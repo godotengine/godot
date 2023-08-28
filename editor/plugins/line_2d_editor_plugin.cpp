@@ -46,7 +46,7 @@ bool Line2DEditor::_is_line() const {
 }
 
 Variant Line2DEditor::_get_polygon(int p_idx) const {
-	return _get_node()->get("points");
+	return _get_node()->get_or_null("points");
 }
 
 void Line2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {

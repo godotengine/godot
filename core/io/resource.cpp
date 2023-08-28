@@ -181,7 +181,7 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 			continue; //do not change path
 		}
 
-		set(E.name, p_resource->get(E.name));
+		set(E.name, p_resource->get_or_null(E.name));
 	}
 	return OK;
 }
@@ -213,7 +213,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		Variant p = get(E.name);
+		Variant p = get_or_null(E.name);
 		if (p.get_type() == Variant::OBJECT) {
 			Ref<Resource> sr = p;
 			if (sr.is_valid()) {
@@ -246,7 +246,7 @@ void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		Variant p = get(E.name);
+		Variant p = get_or_null(E.name);
 		if (p.get_type() == Variant::OBJECT) {
 			Ref<Resource> sr = p;
 			if (sr.is_valid()) {
@@ -272,7 +272,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		Variant p = get(E.name);
+		Variant p = get_or_null(E.name);
 
 		switch (p.get_type()) {
 			case Variant::Type::DICTIONARY:
@@ -346,7 +346,7 @@ uint32_t Resource::hash_edited_version() const {
 
 	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-			Ref<Resource> res = get(E.name);
+			Ref<Resource> res = get_or_null(E.name);
 			if (res.is_valid()) {
 				hash = hash_murmur3_one_32(res->hash_edited_version(), hash);
 			}

@@ -210,7 +210,7 @@ bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		bool valid;
-		r_ret = popup->get(String(p_name).trim_prefix("popup/"), &valid);
+		r_ret = popup->get_or_null(String(p_name).trim_prefix("popup/"), &valid);
 		return valid;
 	}
 	return false;
