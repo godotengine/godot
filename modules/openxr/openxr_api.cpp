@@ -216,7 +216,7 @@ bool OpenXRAPI::is_extension_enabled(const String &p_extension) const {
 }
 
 bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
-	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_top_level_extension(p_toplevel_path);
+	String required_extension = OpenXRInteractionProfileMetadata::get_singleton()->get_top_level_extension(p_toplevel_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
 	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported toplevel path " + p_toplevel_path);
@@ -236,7 +236,7 @@ bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
 }
 
 bool OpenXRAPI::is_interaction_profile_supported(const String &p_ip_path) {
-	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_interaction_profile_extension(p_ip_path);
+	String required_extension = OpenXRInteractionProfileMetadata::get_singleton()->get_interaction_profile_extension(p_ip_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
 	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported interaction profile " + p_ip_path);
@@ -260,9 +260,9 @@ bool OpenXRAPI::interaction_profile_supports_io_path(const String &p_ip_path, co
 		return false;
 	}
 
-	const OpenXRInteractionProfileMetaData::IOPath *io_path = OpenXRInteractionProfileMetaData::get_singleton()->get_io_path(p_ip_path, p_io_path);
+	const OpenXRInteractionProfileMetadata::IOPath *io_path = OpenXRInteractionProfileMetadata::get_singleton()->get_io_path(p_ip_path, p_io_path);
 
-	// If the io_path is not part of our meta data we've likely got a misspelled name or a bad action map, report
+	// If the io_path is not part of our metadata we've likely got a misspelled name or a bad action map, report
 	ERR_FAIL_NULL_V_MSG(io_path, false, "OpenXR: Unsupported io path " + String(p_ip_path) + String(p_io_path));
 
 	if (io_path->openxr_extension_name == "") {
