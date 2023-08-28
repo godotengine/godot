@@ -270,6 +270,7 @@ VoxelGIData::~VoxelGIData() {
 void VoxelGI::set_probe_data(const Ref<VoxelGIData> &p_data) {
 	if (p_data.is_valid()) {
 		RS::get_singleton()->instance_set_base(get_instance(), p_data->get_rid());
+		RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(p_data->get_rid(), _get_camera_exposure_normalization());
 	} else {
 		RS::get_singleton()->instance_set_base(get_instance(), RID());
 	}
@@ -303,6 +304,10 @@ Vector3 VoxelGI::get_size() const {
 
 void VoxelGI::set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes) {
 	camera_attributes = p_camera_attributes;
+
+	if (probe_data.is_valid()) {
+		RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(probe_data->get_rid(), _get_camera_exposure_normalization());
+	}
 }
 
 Ref<CameraAttributes> VoxelGI::get_camera_attributes() const {
@@ -398,13 +403,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 	p_from_node = p_from_node ? p_from_node : get_parent();
 	ERR_FAIL_NULL(p_from_node);
 
-	float exposure_normalization = 1.0;
-	if (camera_attributes.is_valid()) {
-		exposure_normalization = camera_attributes->get_exposure_multiplier();
-		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
-			exposure_normalization = camera_attributes->calculate_exposure_normalization();
-		}
-	}
+	float exposure_normalization = _get_camera_exposure_normalization();
 
 	Voxelizer baker;
 
@@ -483,6 +482,17 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 void VoxelGI::_debug_bake() {
 	bake(nullptr, true);
+}
+
+float VoxelGI::_get_camera_exposure_normalization() {
+	float exposure_normalization = 1.0;
+	if (camera_attributes.is_valid()) {
+		exposure_normalization = camera_attributes->get_exposure_multiplier();
+		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+			exposure_normalization = camera_attributes->calculate_exposure_normalization();
+		}
+	}
+	return exposure_normalization;
 }
 
 AABB VoxelGI::get_aabb() const {
