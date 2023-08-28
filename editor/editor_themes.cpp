@@ -245,7 +245,7 @@ static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, 
 	return style;
 }
 
-// See also `generate_icon()` in `scene/resources/default_theme.cpp`.
+// See also `generate_icon()` in `scene/theme/default_theme.cpp`.
 static Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float p_saturation, const HashMap<Color, Color> &p_convert_colors = HashMap<Color, Color>()) {
 	Ref<Image> img = memnew(Image);
 
