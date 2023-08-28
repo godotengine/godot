@@ -69,6 +69,7 @@ class GDScript : public Script {
 		StringName setter;
 		StringName getter;
 		GDScriptDataType data_type;
+		PropertyInfo property_info;
 	};
 
 	struct ClearData {
@@ -100,7 +101,7 @@ class GDScript : public Script {
 	HashMap<StringName, GDScriptFunction *> member_functions;
 	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
-	HashMap<StringName, Vector<StringName>> _signals;
+	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
 
 #ifdef TOOLS_ENABLED
@@ -126,8 +127,6 @@ class GDScript : public Script {
 	void _add_doc(const DocData::ClassDoc &p_inner_class);
 #endif
 
-	HashMap<StringName, PropertyInfo> member_info;
-
 	GDScriptFunction *implicit_initializer = nullptr;
 	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
 	GDScriptFunction *implicit_ready = nullptr;
@@ -142,7 +141,8 @@ class GDScript : public Script {
 	//exported members
 	String source;
 	String path;
-	String name;
+	StringName local_name; // Inner class identifier or `class_name`.
+	StringName global_name; // `class_name`.
 	String fully_qualified_name;
 	String simplified_icon_path;
 	SelfList<GDScript> script_list;
@@ -174,9 +174,6 @@ class GDScript : public Script {
 	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
 	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
 
-	// This method will map the class name from "RefCounted" to "MyClass.InnerClass".
-	static String _get_gdscript_reference_class_name(const GDScript *p_gdscript);
-
 	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
 	void _get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
 
@@ -193,6 +190,8 @@ public:
 #ifdef DEBUG_ENABLED
 	static String debug_get_script_name(const Ref<Script> &p_script);
 #endif
+
+	_FORCE_INLINE_ StringName get_local_name() const { return local_name; }
 
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
@@ -214,7 +213,6 @@ public:
 	}
 	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
-	const String &get_script_class_name() const { return name; }
 
 	RBSet<GDScript *> get_dependencies();
 	RBSet<GDScript *> get_inverted_dependencies();

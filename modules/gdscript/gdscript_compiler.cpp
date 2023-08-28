@@ -2165,8 +2165,14 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		}
 	}
 
+	MethodInfo method_info;
+
 	codegen.function_name = func_name;
+	method_info.name = func_name;
 	codegen.is_static = is_static;
+	if (is_static) {
+		method_info.flags |= METHOD_FLAG_STATIC;
+	}
 	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
 
 	int optional_parameters = 0;
@@ -2178,10 +2184,14 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			uint32_t par_addr = codegen.generator->add_parameter(parameter->identifier->name, parameter->initializer != nullptr, par_type);
 			codegen.parameters[parameter->identifier->name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::FUNCTION_PARAMETER, par_addr, par_type);
 
+			method_info.arguments.push_back(parameter->get_datatype().to_property_info(parameter->identifier->name));
+
 			if (parameter->initializer != nullptr) {
 				optional_parameters++;
 			}
 		}
+
+		method_info.default_arguments.append_array(p_func->default_arg_values);
 	}
 
 	// Parse initializer if applies.
@@ -2335,19 +2345,19 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	}
 
 	if (p_func) {
-		// if no return statement -> return type is void not unresolved Variant
+		// If no `return` statement, then return type is `void`, not `Variant`.
 		if (p_func->body->has_return) {
 			gd_function->return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
+			method_info.return_val = p_func->get_datatype().to_property_info(String());
 		} else {
 			gd_function->return_type = GDScriptDataType();
 			gd_function->return_type.has_type = true;
 			gd_function->return_type.kind = GDScriptDataType::BUILTIN;
 			gd_function->return_type.builtin_type = Variant::NIL;
 		}
-#ifdef TOOLS_ENABLED
-		gd_function->default_arg_values = p_func->default_arg_values;
-#endif
 	}
+
+	gd_function->method_info = method_info;
 
 	if (!is_implicit_initializer && !is_implicit_ready && !p_for_lambda) {
 		p_script->member_functions[func_name] = gd_function;
@@ -2554,7 +2564,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 
 	p_script->member_functions.clear();
 	p_script->member_indices.clear();
-	p_script->member_info.clear();
 	p_script->static_variables_indices.clear();
 	p_script->static_variables.clear();
 	p_script->_signals.clear();
@@ -2567,9 +2576,9 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 
 	p_script->tool = parser->is_tool();
 
-	if (!p_script->name.is_empty()) {
-		if (ClassDB::class_exists(p_script->name) && ClassDB::is_class_exposed(p_script->name)) {
-			_set_error("The class '" + p_script->name + "' shadows a native class", p_class);
+	if (p_script->local_name != StringName()) {
+		if (ClassDB::class_exists(p_script->local_name) && ClassDB::is_class_exposed(p_script->local_name)) {
+			_set_error(vformat(R"(The class "%s" shadows a native class)", p_script->local_name), p_class);
 			return ERR_ALREADY_EXISTS;
 		}
 	}
@@ -2636,7 +2645,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				StringName name = variable->identifier->name;
 
 				GDScript::MemberInfo minfo;
-				minfo.index = p_script->member_indices.size();
 				switch (variable->property) {
 					case GDScriptParser::VariableNode::PROP_NONE:
 						break; // Nothing to do.
@@ -2659,8 +2667,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				}
 				minfo.data_type = _gdtype_from_datatype(variable->get_datatype(), p_script);
 
-				PropertyInfo prop_info = minfo.data_type;
-				prop_info.name = name;
+				PropertyInfo prop_info = variable->get_datatype().to_property_info(name);
 				PropertyInfo export_info = variable->export_info;
 
 				if (variable->exported) {
@@ -2670,16 +2677,16 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 					}
 					prop_info.hint = export_info.hint;
 					prop_info.hint_string = export_info.hint_string;
-					prop_info.usage = export_info.usage | PROPERTY_USAGE_SCRIPT_VARIABLE;
-				} else {
-					prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
+					prop_info.usage = export_info.usage;
 				}
+				prop_info.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+				minfo.property_info = prop_info;
 
 				if (variable->is_static) {
 					minfo.index = p_script->static_variables_indices.size();
 					p_script->static_variables_indices[name] = minfo;
 				} else {
-					p_script->member_info[name] = prop_info;
+					minfo.index = p_script->member_indices.size();
 					p_script->member_indices[name] = minfo;
 					p_script->members.insert(name);
 				}
@@ -2712,12 +2719,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				const GDScriptParser::SignalNode *signal = member.signal;
 				StringName name = signal->identifier->name;
 
-				Vector<StringName> parameters_names;
-				parameters_names.resize(signal->parameters.size());
-				for (int j = 0; j < signal->parameters.size(); j++) {
-					parameters_names.write[j] = signal->parameters[j]->identifier->name;
-				}
-				p_script->_signals[name] = parameters_names;
+				p_script->_signals[name] = signal->method_info;
 			} break;
 
 			case GDScriptParser::ClassNode::Member::ENUM: {
@@ -2740,8 +2742,8 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				prop_info.name = annotation->export_info.name;
 				prop_info.usage = annotation->export_info.usage;
 				prop_info.hint_string = annotation->export_info.hint_string;
+				minfo.property_info = prop_info;
 
-				p_script->member_info[name] = prop_info;
 				p_script->member_indices[name] = minfo;
 				p_script->members.insert(Variant());
 			} break;
@@ -2927,7 +2929,8 @@ void GDScriptCompiler::convert_to_initializer_type(Variant &p_variant, const GDS
 
 void GDScriptCompiler::make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 	p_script->fully_qualified_name = p_class->fqcn;
-	p_script->name = p_class->identifier ? p_class->identifier->name : "";
+	p_script->local_name = p_class->identifier ? p_class->identifier->name : StringName();
+	p_script->global_name = p_class->get_global_name();
 	p_script->simplified_icon_path = p_class->simplified_icon_path;
 
 	HashMap<StringName, Ref<GDScript>> old_subclasses;

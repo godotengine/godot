@@ -1000,10 +1000,11 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					GDScriptParser::ParameterNode *param = member.signal->parameters[j];
 					GDScriptParser::DataType param_type = type_from_metatype(resolve_datatype(param->datatype_specifier));
 					param->set_datatype(param_type);
-					mi.arguments.push_back(PropertyInfo(param_type.builtin_type, param->identifier->name));
-					// TODO: add signal parameter default values
+					mi.arguments.push_back(param_type.to_property_info(param->identifier->name));
+					// Signals do not support parameter default values.
 				}
 				member.signal->set_datatype(make_signal_type(mi));
+				member.signal->method_info = mi;
 
 				// Apply annotations.
 				for (GDScriptParser::AnnotationNode *&E : member.signal->annotations) {
@@ -1604,9 +1605,11 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
 #endif // DEBUG_ENABLED
-#ifdef TOOLS_ENABLED
+
 		if (p_function->parameters[i]->initializer) {
+#ifdef TOOLS_ENABLED
 			default_value_count++;
+#endif // TOOLS_ENABLED
 
 			if (p_function->parameters[i]->initializer->is_constant) {
 				p_function->default_arg_values.push_back(p_function->parameters[i]->initializer->reduced_value);
@@ -1614,7 +1617,6 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				p_function->default_arg_values.push_back(Variant()); // Prevent shift.
 			}
 		}
-#endif // TOOLS_ENABLED
 	}
 
 	if (!p_is_lambda && function_name == GDScriptLanguage::get_singleton()->strings._init) {
