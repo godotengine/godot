@@ -58,6 +58,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			afs.push_back(RD::AttachmentFormat());
 			afs.write[0].usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			fb_format = RD::get_singleton()->framebuffer_format_create(afs);
+			blend_state = RD::PipelineColorBlendState::create_blend();
 			defines = "\n#define USE_ATTACHMENT\n";
 		}
 
