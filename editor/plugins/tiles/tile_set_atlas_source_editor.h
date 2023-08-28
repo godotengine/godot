@@ -270,7 +270,9 @@ private:
 	// -- Misc --
 	void _auto_create_tiles();
 	void _auto_remove_tiles();
+	void _cancel_auto_create_tiles();
 	AcceptDialog *confirm_auto_create_tiles = nullptr;
+	Vector<Ref<TileSetAtlasSource>> atlases_to_auto_create_tiles;
 	Vector2i _get_drag_offset_tile_coords(const Vector2i &p_offset) const;
 
 	void _tile_set_changed();
@@ -288,7 +290,7 @@ protected:
 
 public:
 	void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_source, int p_source_id);
-	void init_source();
+	void init_new_atlases(const Vector<Ref<TileSetAtlasSource>> &p_atlases);
 
 	TileSetAtlasSourceEditor();
 	~TileSetAtlasSourceEditor();
