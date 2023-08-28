@@ -196,9 +196,9 @@ Error ImageLoaderDDS::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 		dds_format = DDS_BGR10A2;
 	} else if (format_flags & DDPF_RGB && !(format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 16 && format_red_mask == 0x0000f800 && format_green_mask == 0x000007e0 && format_blue_mask == 0x0000001f) {
 		dds_format = DDS_BGR565;
-	} else if (!(format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 8 && format_red_mask == 0xff && format_green_mask == 0xff && format_blue_mask == 0xff) {
+	} else if (!(format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 8 && format_red_mask == 0xff) {
 		dds_format = DDS_LUMINANCE;
-	} else if ((format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 16 && format_red_mask == 0xff && format_green_mask == 0xff && format_blue_mask == 0xff && format_alpha_mask == 0xff00) {
+	} else if ((format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 16 && format_red_mask == 0xff && format_alpha_mask == 0xff00) {
 		dds_format = DDS_LUMINANCE_ALPHA;
 	} else if (format_flags & DDPF_INDEXED && format_rgb_bits == 8) {
 		dds_format = DDS_BGR565;
