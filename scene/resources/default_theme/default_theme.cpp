@@ -223,6 +223,28 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("outline_size", "LinkButton", 0);
 	theme->set_constant("underline_spacing", "LinkButton", Math::round(2 * scale));
 
+	// CarouselButton
+	theme->set_icon("arrow_left_normal", "CarouselButton", icons["arrow_left"]);
+	theme->set_icon("arrow_left_hover", "CarouselButton", icons["arrow_left"]);
+	theme->set_icon("arrow_left_pressed", "CarouselButton", icons["arrow_left"]);
+	theme->set_icon("arrow_left_disabled", "CarouselButton", icons["arrow_left"]);
+
+	theme->set_icon("arrow_right_normal", "CarouselButton", icons["arrow_right"]);
+	theme->set_icon("arrow_right_hover", "CarouselButton", icons["arrow_right"]);
+	theme->set_icon("arrow_right_pressed", "CarouselButton", icons["arrow_right"]);
+	theme->set_icon("arrow_right_disabled", "CarouselButton", icons["arrow_right"]);
+
+	theme->set_stylebox("normal", "CarouselButton", button_normal);
+	theme->set_stylebox("pressed", "CarouselButton", button_pressed);
+	theme->set_stylebox("hover", "CarouselButton", button_hover);
+	theme->set_stylebox("disabled", "CarouselButton", button_disabled);
+	theme->set_stylebox("focus", "CarouselButton", focus);
+
+	theme->set_color("arrow_normal_modulate", "CarouselButton", control_font_color);
+	theme->set_color("arrow_hover_modulate", "CarouselButton", control_font_hover_color);
+	theme->set_color("arrow_pressed_modulate", "CarouselButton", control_font_pressed_color);
+	theme->set_color("arrow_disabled_modulate", "CarouselButton", control_font_disabled_color);
+
 	// OptionButton
 	theme->set_stylebox("focus", "OptionButton", focus);
 

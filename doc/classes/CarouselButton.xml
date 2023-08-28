@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CarouselButton" inherits="Button" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Button that selects from a list of items.
+	</brief_description>
+	<description>
+		CarouselButton is a button that selects an item from a list of items.
+		It will move to the next item when it is left clicked, "ui_right" is pressed, or the right arrow is pressed. It will move to the previous item when it is right clicked, "ui_left" is pressed, or the left arrow is pressed.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_item">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="index" type="int" default="-1" />
+			<description>
+				Adds an item with a name and an optional index.
+			</description>
+		</method>
+		<method name="get_item_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Gets the icon for an item.
+			</description>
+		</method>
+		<method name="get_item_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Gets the text for an item.
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void" />
+			<param index="0" name="index" type="int" default="-1" />
+			<description>
+				Removes an item.
+			</description>
+		</method>
+		<method name="set_item_icon">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets the icon for an item.
+			</description>
+		</method>
+		<method name="set_item_text">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="text" type="String" />
+			<description>
+				Sets the text for an item.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" overrides="BaseButton" enum="MouseButton" default="3" />
+		<member name="fit_to_longest_item" type="bool" setter="set_fit_to_longest_item" getter="get_fit_to_longest_item" default="true">
+			If true, make the CarouselButton as large as the largest item. This can take a long time on large lists.
+		</member>
+		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
+			The amount of items in the CarouselButton.
+		</member>
+		<member name="selected" type="int" setter="select" getter="get_selected" default="0">
+			The index of the selected item.
+		</member>
+		<member name="wraparound" type="bool" setter="set_wraparound" getter="get_wraparound" default="true">
+			If true, wrap around when selecting items that don't exist.
+		</member>
+	</members>
+	<signals>
+		<signal name="item_selected">
+			<param index="0" name="index" type="int" />
+			<description>
+				Emitted when a new item is selected.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="arrow_disabled_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+		</theme_item>
+		<theme_item name="arrow_hover_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+		</theme_item>
+		<theme_item name="arrow_normal_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+		</theme_item>
+		<theme_item name="arrow_pressed_modulate" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		</theme_item>
+		<theme_item name="arrow_left_disabled" data_type="icon" type="Texture2D">
+		</theme_item>
+		<theme_item name="arrow_left_hover" data_type="icon" type="Texture2D">
+		</theme_item>
+		<theme_item name="arrow_left_normal" data_type="icon" type="Texture2D">
+		</theme_item>
+		<theme_item name="arrow_left_pressed" data_type="icon" type="Texture2D">
+		</theme_item>
+		<theme_item name="arrow_right_disabled" data_type="icon" type="Texture2D">
+		</theme_item>
+		<theme_item name="arrow_right_hover" data_type="icon" type="Texture2D">
+		</theme_item>
+		<theme_item name="arrow_right_normal" data_type="icon" type="Texture2D">
+		</theme_item>
+		<theme_item name="arrow_right_pressed" data_type="icon" type="Texture2D">
+		</theme_item>
+		<theme_item name="disabled" data_type="style" type="StyleBox">
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+		</theme_item>
+		<theme_item name="hover" data_type="style" type="StyleBox">
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+		</theme_item>
+		<theme_item name="pressed" data_type="style" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>
