@@ -5876,13 +5876,21 @@ int RichTextLabel::get_character_line(int p_char) {
 		int char_offset = main->lines[i].char_offset;
 		int char_count = main->lines[i].char_count;
 		if (char_offset <= p_char && p_char < char_offset + char_count) {
-			for (int j = 0; j < main->lines[i].text_buf->get_line_count(); j++) {
+			int lc = main->lines[i].text_buf->get_line_count();
+			for (int j = 0; j < lc; j++) {
 				Vector2i range = main->lines[i].text_buf->get_line_range(j);
-				if (char_offset + range.x <= p_char && p_char <= char_offset + range.y) {
-					return line_count;
+				if (char_offset + range.x <= p_char && p_char < char_offset + range.y) {
+					break;
 				}
-				line_count++;
+				if (char_offset + range.x > p_char && line_count > 0) {
+					line_count--; // Character is not rendered and is between the lines (e.g., edge space).
+					break;
+				}
+				if (j != lc - 1) {
+					line_count++;
+				}
 			}
+			return line_count;
 		} else {
 			line_count += main->lines[i].text_buf->get_line_count();
 		}
