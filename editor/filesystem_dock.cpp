@@ -45,6 +45,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_dir_dialog.h"
+#include "editor/gui/editor_scene_tabs.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import_dock.h"
 #include "editor/plugins/editor_resource_tooltip_plugins.h"
@@ -1732,14 +1733,14 @@ void FileSystemDock::_rename_operation_confirm() {
 	HashMap<String, String> folder_renames;
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
-	int current_tab = EditorNode::get_singleton()->get_current_tab();
+	int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 	_save_scenes_after_move(file_renames); // save scenes before updating
 	_update_dependencies_after_move(file_renames);
 	_update_resource_paths_after_move(file_renames);
 	_update_project_settings_after_move(file_renames);
 	_update_favorites_list_after_move(file_renames, folder_renames);
 
-	EditorNode::get_singleton()->set_current_tab(current_tab);
+	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 
 	print_verbose("FileSystem: calling rescan.");
 	_rescan();
@@ -1881,14 +1882,14 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		}
 
 		if (is_moved) {
-			int current_tab = EditorNode::get_singleton()->get_current_tab();
+			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 			_save_scenes_after_move(file_renames); // Save scenes before updating.
 			_update_dependencies_after_move(file_renames);
 			_update_resource_paths_after_move(file_renames);
 			_update_project_settings_after_move(file_renames);
 			_update_favorites_list_after_move(file_renames, folder_renames);
 
-			EditorNode::get_singleton()->set_current_tab(current_tab);
+			EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 
 			print_verbose("FileSystem: calling rescan.");
 			_rescan();
