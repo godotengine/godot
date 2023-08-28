@@ -2356,7 +2356,9 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	}
 
 	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "match" expression.)");
-	match->test->inline_comment = check_for_comment();
+	if (match->test != nullptr) {
+		match->test->inline_comment = check_for_comment();
+	}
 	consume(GDScriptTokenizer::Token::NEWLINE, R"(Expected a newline after "match" statement.)");
 
 	if (!consume(GDScriptTokenizer::Token::INDENT, R"(Expected an indented block after "match" statement.)")) {
