@@ -192,7 +192,11 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		if (scene_collection_source) {
 			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
 			if (item_text.is_empty()) {
-				item_text = vformat(TTR("Scene Collection Source (ID: %d)"), source_id);
+				if (scene_collection_source->get_scene_tiles_count() > 0) {
+					item_text = vformat(TTR("Scene Collection Source (ID: %d)"), source_id);
+				} else {
+					item_text = vformat(TTR("Empty Scene Collection Source (ID: %d)"), source_id);
+				}
 			}
 		}
 
