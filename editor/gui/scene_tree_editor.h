@@ -117,6 +117,7 @@ class SceneTreeEditor : public Control {
 	void _node_script_changed(Node *p_node);
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
+	void _set_item_custom_color(TreeItem *p_item, Color p_color);
 
 	void _selection_changed();
 	Node *get_scene_node();
