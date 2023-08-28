@@ -3823,7 +3823,6 @@ void TileSetAtlasSource::set_texture(Ref<Texture2D> p_texture) {
 		texture->connect_changed(callable_mp(this, &TileSetAtlasSource::_queue_update_padded_texture));
 	}
 
-	_clear_tiles_outside_texture();
 	_queue_update_padded_texture();
 	emit_changed();
 }
@@ -3840,7 +3839,6 @@ void TileSetAtlasSource::set_margins(Vector2i p_margins) {
 		margins = p_margins;
 	}
 
-	_clear_tiles_outside_texture();
 	_queue_update_padded_texture();
 	emit_changed();
 }
@@ -3857,7 +3855,6 @@ void TileSetAtlasSource::set_separation(Vector2i p_separation) {
 		separation = p_separation;
 	}
 
-	_clear_tiles_outside_texture();
 	_queue_update_padded_texture();
 	emit_changed();
 }
@@ -3874,7 +3871,6 @@ void TileSetAtlasSource::set_texture_region_size(Vector2i p_tile_size) {
 		texture_region_size = p_tile_size;
 	}
 
-	_clear_tiles_outside_texture();
 	_queue_update_padded_texture();
 	emit_changed();
 }
@@ -4360,6 +4356,9 @@ bool TileSetAtlasSource::has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_s
 	if (p_size.x <= 0 || p_size.y <= 0) {
 		return false;
 	}
+	if (p_frames_count <= 0) {
+		return false;
+	}
 	Size2i atlas_grid_size = get_atlas_grid_size();
 	for (int frame = 0; frame < p_frames_count; frame++) {
 		Vector2i frame_coords = p_atlas_coords + (p_size + p_animation_separation) * ((p_animation_columns > 0) ? Vector2i(frame % p_animation_columns, frame / p_animation_columns) : Vector2i(frame, 0));
@@ -4376,6 +4375,40 @@ bool TileSetAtlasSource::has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_s
 		}
 	}
 	return true;
+}
+
+bool TileSetAtlasSource::has_tiles_outside_texture() const {
+	for (const KeyValue<Vector2i, TileSetAtlasSource::TileAlternativesData> &E : tiles) {
+		if (!has_room_for_tile(E.key, E.value.size_in_atlas, E.value.animation_columns, E.value.animation_separation, E.value.animation_frames_durations.size(), E.key)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+Vector<Vector2i> TileSetAtlasSource::get_tiles_outside_texture() const {
+	Vector<Vector2i> to_return;
+
+	for (const KeyValue<Vector2i, TileSetAtlasSource::TileAlternativesData> &E : tiles) {
+		if (!has_room_for_tile(E.key, E.value.size_in_atlas, E.value.animation_columns, E.value.animation_separation, E.value.animation_frames_durations.size(), E.key)) {
+			to_return.push_back(E.key);
+		}
+	}
+	return to_return;
+}
+
+void TileSetAtlasSource::clear_tiles_outside_texture() {
+	LocalVector<Vector2i> to_remove;
+
+	for (const KeyValue<Vector2i, TileSetAtlasSource::TileAlternativesData> &E : tiles) {
+		if (!has_room_for_tile(E.key, E.value.size_in_atlas, E.value.animation_columns, E.value.animation_separation, E.value.animation_frames_durations.size(), E.key)) {
+			to_remove.push_back(E.key);
+		}
+	}
+
+	for (const Vector2i &v : to_remove) {
+		remove_tile(v);
+	}
 }
 
 PackedVector2Array TileSetAtlasSource::get_tiles_to_be_removed_on_change(Ref<Texture2D> p_texture, Vector2i p_margins, Vector2i p_separation, Vector2i p_texture_region_size) {
@@ -4598,6 +4631,9 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tiles_to_be_removed_on_change", "texture", "margins", "separation", "texture_region_size"), &TileSetAtlasSource::get_tiles_to_be_removed_on_change);
 	ClassDB::bind_method(D_METHOD("get_tile_at_coords", "atlas_coords"), &TileSetAtlasSource::get_tile_at_coords);
 
+	ClassDB::bind_method(D_METHOD("has_tiles_outside_texture"), &TileSetAtlasSource::has_tiles_outside_texture);
+	ClassDB::bind_method(D_METHOD("clear_tiles_outside_texture"), &TileSetAtlasSource::clear_tiles_outside_texture);
+
 	ClassDB::bind_method(D_METHOD("set_tile_animation_columns", "atlas_coords", "frame_columns"), &TileSetAtlasSource::set_tile_animation_columns);
 	ClassDB::bind_method(D_METHOD("get_tile_animation_columns", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_columns);
 	ClassDB::bind_method(D_METHOD("set_tile_animation_separation", "atlas_coords", "separation"), &TileSetAtlasSource::set_tile_animation_separation);
@@ -4701,20 +4737,6 @@ void TileSetAtlasSource::_create_coords_mapping_cache(Vector2i p_atlas_coords) {
 				_coords_mapping_cache[coords] = p_atlas_coords;
 			}
 		}
-	}
-}
-
-void TileSetAtlasSource::_clear_tiles_outside_texture() {
-	LocalVector<Vector2i> to_remove;
-
-	for (const KeyValue<Vector2i, TileSetAtlasSource::TileAlternativesData> &E : tiles) {
-		if (!has_room_for_tile(E.key, E.value.size_in_atlas, E.value.animation_columns, E.value.animation_separation, E.value.animation_frames_durations.size(), E.key)) {
-			to_remove.push_back(E.key);
-		}
-	}
-
-	for (const Vector2i &v : to_remove) {
-		remove_tile(v);
 	}
 }
 

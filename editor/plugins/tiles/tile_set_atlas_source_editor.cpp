@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/plugins/tiles/tile_set_editor.h"
 #include "editor/progress_dialog.h"
 
@@ -1679,6 +1680,9 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 		case ADVANCED_AUTO_REMOVE_TILES: {
 			_auto_remove_tiles();
 		} break;
+		case ADVANCED_CLEANUP_TILES: {
+			_cleanup_outside_tiles();
+		} break;
 	}
 }
 
@@ -2141,44 +2145,6 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 		}
 		internal_undo_redo->end_force_keep_in_merge_ends();
 	}
-
-	TileSetAtlasSourceProxyObject *atlas_source_proxy = Object::cast_to<TileSetAtlasSourceProxyObject>(p_edited);
-	if (atlas_source_proxy) {
-		Ref<TileSetAtlasSource> atlas_source = atlas_source_proxy->get_edited();
-		ERR_FAIL_COND(!atlas_source.is_valid());
-
-		UndoRedo *internal_undo_redo = undo_redo_man->get_history_for_object(atlas_source_proxy).undo_redo;
-		internal_undo_redo->start_force_keep_in_merge_ends();
-
-		PackedVector2Array arr;
-		if (p_property == "texture") {
-			arr = atlas_source->get_tiles_to_be_removed_on_change(p_new_value, atlas_source->get_margins(), atlas_source->get_separation(), atlas_source->get_texture_region_size());
-		} else if (p_property == "margins") {
-			arr = atlas_source->get_tiles_to_be_removed_on_change(atlas_source->get_texture(), p_new_value, atlas_source->get_separation(), atlas_source->get_texture_region_size());
-		} else if (p_property == "separation") {
-			arr = atlas_source->get_tiles_to_be_removed_on_change(atlas_source->get_texture(), atlas_source->get_margins(), p_new_value, atlas_source->get_texture_region_size());
-		} else if (p_property == "texture_region_size") {
-			arr = atlas_source->get_tiles_to_be_removed_on_change(atlas_source->get_texture(), atlas_source->get_margins(), atlas_source->get_separation(), p_new_value);
-		}
-
-		if (!arr.is_empty()) {
-			// Get all properties assigned to a tile.
-			List<PropertyInfo> properties;
-			atlas_source->get_property_list(&properties);
-
-			for (int i = 0; i < arr.size(); i++) {
-				Vector2i coords = arr[i];
-				String prefix = vformat("%d:%d/", coords.x, coords.y);
-				for (PropertyInfo pi : properties) {
-					if (pi.name.begins_with(prefix)) {
-						ADD_UNDO(atlas_source_proxy, pi.name);
-					}
-				}
-			}
-		}
-		internal_undo_redo->end_force_keep_in_merge_ends();
-	}
-
 #undef ADD_UNDO
 }
 
@@ -2208,6 +2174,14 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 		tile_set->disconnect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
 	}
 
+	if (tile_set_atlas_source) {
+		tile_set_atlas_source->disconnect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_update_source_texture));
+		if (atlas_source_texture.is_valid()) {
+			atlas_source_texture->disconnect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_check_outside_tiles));
+			atlas_source_texture = Ref<Texture2D>();
+		}
+	}
+
 	// Clear the selection.
 	selection.clear();
 
@@ -2221,6 +2195,11 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 
 	if (tile_set.is_valid()) {
 		tile_set->connect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
+	}
+
+	if (tile_set_atlas_source) {
+		tile_set_atlas_source->connect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_update_source_texture));
+		_update_source_texture();
 	}
 
 	if (read_only && tools_button_group->get_pressed_button() == tool_paint_button) {
@@ -2250,6 +2229,61 @@ void TileSetAtlasSourceEditor::init_new_atlases(const Vector<Ref<TileSetAtlasSou
 	tool_setup_atlas_source_button->set_pressed(true);
 	atlases_to_auto_create_tiles = p_atlases;
 	confirm_auto_create_tiles->popup_centered();
+}
+
+void TileSetAtlasSourceEditor::_update_source_texture() {
+	if (tile_set_atlas_source && tile_set_atlas_source->get_texture() == atlas_source_texture) {
+		return;
+	}
+
+	if (atlas_source_texture.is_valid()) {
+		atlas_source_texture->disconnect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_check_outside_tiles));
+		atlas_source_texture = Ref<Texture2D>();
+	}
+
+	if (!tile_set_atlas_source || tile_set_atlas_source->get_texture().is_null()) {
+		return;
+	}
+	atlas_source_texture = tile_set_atlas_source->get_texture();
+	atlas_source_texture->connect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_check_outside_tiles), CONNECT_DEFERRED);
+	_check_outside_tiles();
+}
+
+void TileSetAtlasSourceEditor::_check_outside_tiles() {
+	ERR_FAIL_NULL(tile_set_atlas_source);
+	outside_tiles_warning->set_visible(!read_only && tile_set_atlas_source->has_tiles_outside_texture());
+	tool_advanced_menu_button->get_popup()->set_item_disabled(tool_advanced_menu_button->get_popup()->get_item_index(ADVANCED_CLEANUP_TILES), !tile_set_atlas_source->has_tiles_outside_texture());
+}
+
+void TileSetAtlasSourceEditor::_cleanup_outside_tiles() {
+	ERR_FAIL_NULL(tile_set_atlas_source);
+
+	List<PropertyInfo> list;
+	tile_set_atlas_source->get_property_list(&list);
+	HashMap<Vector2i, List<const PropertyInfo *>> per_tile = _group_properties_per_tiles(list, tile_set_atlas_source);
+	Vector<Vector2i> tiles_outside = tile_set_atlas_source->get_tiles_outside_texture();
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Remove Tiles Outside the Texture"));
+
+	undo_redo->add_do_method(tile_set_atlas_source, "clear_tiles_outside_texture");
+	for (const Vector2i &coords : tiles_outside) {
+		undo_redo->add_undo_method(tile_set_atlas_source, "create_tile", coords);
+		if (per_tile.has(coords)) {
+			for (List<const PropertyInfo *>::Element *E_property = per_tile[coords].front(); E_property; E_property = E_property->next()) {
+				String property = E_property->get()->name;
+				Variant value = tile_set_atlas_source->get(property);
+				if (value.get_type() != Variant::NIL) {
+					undo_redo->add_undo_method(tile_set_atlas_source, "set", E_property->get()->name, value);
+				}
+			}
+		}
+	}
+
+	undo_redo->add_do_method(this, "_check_outside_tiles");
+	undo_redo->add_undo_method(this, "_check_outside_tiles");
+	undo_redo->commit_action();
+	outside_tiles_warning->hide();
 }
 
 void TileSetAtlasSourceEditor::_auto_create_tiles() {
@@ -2374,8 +2408,8 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 			tool_paint_button->set_icon(get_theme_icon(SNAME("CanvasItem"), SNAME("EditorIcons")));
 
 			tools_settings_erase_button->set_icon(get_theme_icon(SNAME("Eraser"), SNAME("EditorIcons")));
-
 			tool_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			outside_tiles_warning->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 
 			resize_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
 			resize_handle_disabled = get_theme_icon(SNAME("EditorHandleDisabled"), SNAME("EditorIcons"));
@@ -2424,6 +2458,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 void TileSetAtlasSourceEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_selection_from_array"), &TileSetAtlasSourceEditor::_set_selection_from_array);
+	ClassDB::bind_method(D_METHOD("_check_outside_tiles"), &TileSetAtlasSourceEditor::_check_outside_tiles);
 
 	ADD_SIGNAL(MethodInfo("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
 }
@@ -2566,8 +2601,15 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_advanced_menu_button->set_flat(true);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
+	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles Outside the Texture"), ADVANCED_CLEANUP_TILES);
 	tool_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tool_settings->add_child(tool_advanced_menu_button);
+
+	outside_tiles_warning = memnew(TextureRect);
+	outside_tiles_warning->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+	outside_tiles_warning->set_tooltip_text(vformat(TTR("The current atlas source has tiles outside the texture.\nYou can clear it using \"%s\" option in the 3 dots menu."), TTR("Remove Tiles Outside the Texture")));
+	outside_tiles_warning->hide();
+	tool_settings->add_child(outside_tiles_warning);
 
 	_update_toolbar();
 

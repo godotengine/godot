@@ -127,6 +127,7 @@ private:
 	Ref<TileSet> tile_set;
 	TileSetAtlasSource *tile_set_atlas_source = nullptr;
 	int tile_set_atlas_source_id = TileSet::INVALID_SOURCE;
+	Ref<Texture2D> atlas_source_texture;
 
 	bool tile_set_changed_needs_update = false;
 
@@ -205,6 +206,7 @@ private:
 
 		ADVANCED_AUTO_CREATE_TILES,
 		ADVANCED_AUTO_REMOVE_TILES,
+		ADVANCED_CLEANUP_TILES,
 	};
 	Vector2i menu_option_coords;
 	int menu_option_alternative = TileSetSource::INVALID_TILE_ALTERNATIVE;
@@ -222,6 +224,7 @@ private:
 	HBoxContainer *tool_settings_tile_data_toolbar_container = nullptr;
 	Button *tools_settings_erase_button = nullptr;
 	MenuButton *tool_advanced_menu_button = nullptr;
+	TextureRect *outside_tiles_warning = nullptr;
 
 	// Selection.
 	RBSet<TileSelection> selection;
@@ -274,6 +277,10 @@ private:
 	AcceptDialog *confirm_auto_create_tiles = nullptr;
 	Vector<Ref<TileSetAtlasSource>> atlases_to_auto_create_tiles;
 	Vector2i _get_drag_offset_tile_coords(const Vector2i &p_offset) const;
+
+	void _update_source_texture();
+	void _check_outside_tiles();
+	void _cleanup_outside_tiles();
 
 	void _tile_set_changed();
 	void _tile_proxy_object_changed(String p_what);

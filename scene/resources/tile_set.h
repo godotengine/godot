@@ -634,8 +634,6 @@ private:
 	void _clear_coords_mapping_cache(Vector2i p_atlas_coords);
 	void _create_coords_mapping_cache(Vector2i p_atlas_coords);
 
-	void _clear_tiles_outside_texture();
-
 	bool use_texture_padding = true;
 	Ref<ImageTexture> padded_texture;
 	bool padded_texture_needs_update = false;
@@ -701,6 +699,10 @@ public:
 	bool has_room_for_tile(Vector2i p_atlas_coords, Vector2i p_size, int p_animation_columns, Vector2i p_animation_separation, int p_frames_count, Vector2i p_ignored_tile = INVALID_ATLAS_COORDS) const;
 	PackedVector2Array get_tiles_to_be_removed_on_change(Ref<Texture2D> p_texture, Vector2i p_margins, Vector2i p_separation, Vector2i p_texture_region_size);
 	Vector2i get_tile_at_coords(Vector2i p_atlas_coords) const;
+
+	bool has_tiles_outside_texture() const;
+	Vector<Vector2i> get_tiles_outside_texture() const;
+	void clear_tiles_outside_texture();
 
 	// Animation.
 	void set_tile_animation_columns(const Vector2i p_atlas_coords, int p_frame_columns);
