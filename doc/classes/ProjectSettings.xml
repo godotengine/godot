@@ -362,7 +362,7 @@
 		<member name="debug/gdscript/warnings/property_used_as_function" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when using a property as if it was a function.
 		</member>
-		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables warnings when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="" default="true">
