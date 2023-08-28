@@ -2293,7 +2293,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 position_uv = position_clip * vec2(0.5, 0.5);
 	vec2 prev_position_uv = prev_position_clip * vec2(0.5, 0.5);
 
-	motion_vector = position_uv - prev_position_uv;
+	motion_vector = prev_position_uv - position_uv;
 #endif
 }
 
