@@ -196,11 +196,12 @@ class ConnectionsDockTree : public Tree {
 class ConnectionsDock : public VBoxContainer {
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
-	//Right-click Pop-up Menu Options.
+	// Right-click popup menu options.
 	enum SignalMenuOption {
 		CONNECT,
 		DISCONNECT_ALL,
 		COPY_NAME,
+		OPEN_DOCUMENTATION,
 	};
 
 	enum SlotMenuOption {

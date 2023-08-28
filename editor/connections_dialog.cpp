@@ -992,12 +992,15 @@ void ConnectionsDock::_tree_item_selected() {
 	TreeItem *item = tree->get_selected();
 	if (!item) { // Unlikely. Disable button just in case.
 		connect_button->set_text(TTR("Connect..."));
+		connect_button->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 		connect_button->set_disabled(true);
 	} else if (_is_item_signal(*item)) {
 		connect_button->set_text(TTR("Connect..."));
+		connect_button->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 		connect_button->set_disabled(false);
 	} else {
 		connect_button->set_text(TTR("Disconnect"));
+		connect_button->set_icon(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 		connect_button->set_disabled(false);
 	}
 }
@@ -1105,32 +1108,44 @@ void ConnectionsDock::_handle_signal_menu_option(int p_option) {
 		return;
 	}
 
+	Dictionary meta = item->get_metadata(0);
+
 	switch (p_option) {
 		case CONNECT: {
 			_open_connection_dialog(*item);
 		} break;
 		case DISCONNECT_ALL: {
-			StringName signal_name = item->get_metadata(0).operator Dictionary()["name"];
-			disconnect_all_dialog->set_text(vformat(TTR("Are you sure you want to remove all connections from the \"%s\" signal?"), signal_name));
+			disconnect_all_dialog->set_text(vformat(TTR("Are you sure you want to remove all connections from the \"%s\" signal?"), meta["name"]));
 			disconnect_all_dialog->popup_centered();
 		} break;
 		case COPY_NAME: {
-			DisplayServer::get_singleton()->clipboard_set(item->get_metadata(0).operator Dictionary()["name"]);
+			DisplayServer::get_singleton()->clipboard_set(meta["name"]);
+		} break;
+		case OPEN_DOCUMENTATION: {
+			ScriptEditor::get_singleton()->goto_help("class_signal:" + String(meta["class"]) + ":" + String(meta["name"]));
+			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 		} break;
 	}
 }
 
 void ConnectionsDock::_signal_menu_about_to_popup() {
-	TreeItem *signal_item = tree->get_selected();
+	TreeItem *item = tree->get_selected();
+
+	if (!item) {
+		return;
+	}
+
+	Dictionary meta = item->get_metadata(0);
 
 	bool disable_disconnect_all = true;
-	for (int i = 0; i < signal_item->get_child_count(); i++) {
-		if (!signal_item->get_child(i)->has_meta("_inherited_connection")) {
+	for (int i = 0; i < item->get_child_count(); i++) {
+		if (!item->get_child(i)->has_meta("_inherited_connection")) {
 			disable_disconnect_all = false;
 		}
 	}
 
-	signal_menu->set_item_disabled(slot_menu->get_item_index(DISCONNECT_ALL), disable_disconnect_all);
+	signal_menu->set_item_disabled(signal_menu->get_item_index(DISCONNECT_ALL), disable_disconnect_all);
+	signal_menu->set_item_disabled(signal_menu->get_item_index(OPEN_DOCUMENTATION), String(meta["class"]).is_empty());
 }
 
 void ConnectionsDock::_handle_slot_menu_option(int p_option) {
@@ -1211,6 +1226,15 @@ void ConnectionsDock::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+
+			signal_menu->set_item_icon(signal_menu->get_item_index(CONNECT), get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(DISCONNECT_ALL), get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(COPY_NAME), get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(OPEN_DOCUMENTATION), get_theme_icon(SNAME("Help"), SNAME("EditorIcons")));
+
+			slot_menu->set_item_icon(slot_menu->get_item_index(EDIT), get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			slot_menu->set_item_icon(slot_menu->get_item_index(GO_TO_SCRIPT), get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons")));
+			slot_menu->set_item_icon(slot_menu->get_item_index(DISCONNECT), get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1272,6 +1296,8 @@ void ConnectionsDock::update_tree() {
 					for (int i = 0; i < F->value.signals.size(); i++) {
 						descr_cache[doc_class_name][F->value.signals[i].name] = F->value.signals[i].description;
 					}
+				} else {
+					doc_class_name = String();
 				}
 			}
 
@@ -1310,6 +1336,8 @@ void ConnectionsDock::update_tree() {
 					for (int i = 0; i < F->value.signals.size(); i++) {
 						descr_cache[doc_class_name][F->value.signals[i].name] = DTR(F->value.signals[i].description);
 					}
+				} else {
+					doc_class_name = String();
 				}
 			}
 
@@ -1358,6 +1386,7 @@ void ConnectionsDock::update_tree() {
 			}
 
 			Dictionary sinfo;
+			sinfo["class"] = doc_class_name;
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
 			signal_item->set_metadata(0, sinfo);
@@ -1430,6 +1459,7 @@ void ConnectionsDock::update_tree() {
 	}
 
 	connect_button->set_text(TTR("Connect..."));
+	connect_button->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 	connect_button->set_disabled(true);
 }
 
@@ -1477,6 +1507,8 @@ ConnectionsDock::ConnectionsDock() {
 	signal_menu->add_item(TTR("Connect..."), CONNECT);
 	signal_menu->add_item(TTR("Disconnect All"), DISCONNECT_ALL);
 	signal_menu->add_item(TTR("Copy Name"), COPY_NAME);
+	signal_menu->add_separator();
+	signal_menu->add_item(TTR("Open Documentation"), OPEN_DOCUMENTATION);
 
 	slot_menu = memnew(PopupMenu);
 	add_child(slot_menu);
