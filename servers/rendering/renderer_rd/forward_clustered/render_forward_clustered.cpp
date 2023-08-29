@@ -252,6 +252,7 @@ bool RenderForwardClustered::free(RID p_rid) {
 template <RenderForwardClustered::PassMode p_pass_mode, uint32_t p_color_pass_flags>
 void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	RendererRD::ParticlesStorage *particles_storage = RendererRD::ParticlesStorage::get_singleton();
 	RD::DrawListID draw_list = p_draw_list;
 	RD::FramebufferFormatID framebuffer_format = p_framebuffer_Format;
 
@@ -477,7 +478,9 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			prev_material_uniform_set = material_uniform_set;
 		}
 
-		if ((surf->owner->base_flags & (INSTANCE_DATA_FLAG_MULTIMESH | INSTANCE_DATA_FLAG_PARTICLES)) == INSTANCE_DATA_FLAG_MULTIMESH) {
+		if (surf->owner->base_flags & INSTANCE_DATA_FLAG_PARTICLES) {
+			particles_storage->particles_get_instance_buffer_motion_vectors_offsets(surf->owner->data->base, push_constant.multimesh_motion_vectors_current_offset, push_constant.multimesh_motion_vectors_previous_offset);
+		} else if (surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH) {
 			mesh_storage->_multimesh_get_motion_vectors_offsets(surf->owner->data->base, push_constant.multimesh_motion_vectors_current_offset, push_constant.multimesh_motion_vectors_previous_offset);
 		} else {
 			push_constant.multimesh_motion_vectors_current_offset = 0;
@@ -3716,6 +3719,10 @@ void RenderForwardClustered::_geometry_instance_update(RenderGeometryInstance *p
 			// Particles haven't been cleared or updated, update once now to ensure they are ready to render.
 			particles_storage->update_particles();
 		}
+
+		if (ginstance->data->dirty_dependencies) {
+			particles_storage->particles_update_dependency(ginstance->data->base, &ginstance->data->dependency_tracker);
+		}
 	} else if (ginstance->data->base_type == RS::INSTANCE_MESH) {
 		if (mesh_storage->skeleton_is_valid(ginstance->data->skeleton)) {
 			ginstance->transforms_uniform_set = mesh_storage->skeleton_get_3d_uniform_set(ginstance->data->skeleton, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
@@ -3755,6 +3762,7 @@ void RenderForwardClustered::_geometry_instance_dependency_changed(Dependency::D
 		case Dependency::DEPENDENCY_CHANGED_MATERIAL:
 		case Dependency::DEPENDENCY_CHANGED_MESH:
 		case Dependency::DEPENDENCY_CHANGED_PARTICLES:
+		case Dependency::DEPENDENCY_CHANGED_PARTICLES_INSTANCES:
 		case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
 		case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA: {
 			static_cast<RenderGeometryInstance *>(p_tracker->userdata)->_mark_dirty();

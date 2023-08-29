@@ -225,6 +225,11 @@ private:
 		double frame_remainder = 0;
 		real_t collision_base_size = 0.01;
 
+		uint32_t instance_motion_vectors_current_offset = 0;
+		uint32_t instance_motion_vectors_previous_offset = 0;
+		uint64_t instance_motion_vectors_last_change = -1;
+		bool instance_motion_vectors_enabled = false;
+
 		bool clear = true;
 
 		bool force_sub_emit = false;
@@ -288,10 +293,13 @@ private:
 			float align_up[3];
 			uint32_t align_mode;
 
-			uint32_t order_by_lifetime;
 			uint32_t lifetime_split;
 			uint32_t lifetime_reverse;
-			uint32_t copy_mode_2d;
+			uint32_t motion_vectors_current_offset;
+			struct {
+				uint32_t order_by_lifetime : 1;
+				uint32_t copy_mode_2d : 1;
+			};
 
 			float inv_emission_transform[16];
 		};
@@ -521,12 +529,15 @@ public:
 		return particles->particles_transforms_buffer_uniform_set;
 	}
 
+	void particles_get_instance_buffer_motion_vectors_offsets(RID p_particles, uint32_t &r_current_offset, uint32_t &r_prev_offset);
+
 	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance) override;
 	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance) override;
 	void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture);
 
 	virtual void update_particles() override;
 
+	void particles_update_dependency(RID p_particles, DependencyTracker *p_instance);
 	Dependency *particles_get_dependency(RID p_particles) const;
 
 	/* Particles Collision */
