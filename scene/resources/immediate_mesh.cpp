@@ -149,7 +149,7 @@ void ImmediateMesh::surface_end() {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
 	ERR_FAIL_COND_MSG(!vertices.size(), "No vertices were added, surface can't be created.");
 
-	uint32_t format = ARRAY_FORMAT_VERTEX;
+	uint64_t format = ARRAY_FORMAT_VERTEX | ARRAY_FLAG_FORMAT_CURRENT_VERSION;
 
 	uint32_t vertex_stride = 0;
 	if (active_surface_data.vertex_2d) {
@@ -158,18 +158,18 @@ void ImmediateMesh::surface_end() {
 	} else {
 		vertex_stride = sizeof(float) * 3;
 	}
-
+	uint32_t normal_tangent_stride = 0;
 	uint32_t normal_offset = 0;
 	if (uses_normals) {
 		format |= ARRAY_FORMAT_NORMAL;
-		normal_offset = vertex_stride;
-		vertex_stride += sizeof(uint32_t);
+		normal_offset = vertex_stride * vertices.size();
+		normal_tangent_stride += sizeof(uint32_t);
 	}
 	uint32_t tangent_offset = 0;
 	if (uses_tangents) {
 		format |= ARRAY_FORMAT_TANGENT;
-		tangent_offset += vertex_stride;
-		vertex_stride += sizeof(uint32_t);
+		tangent_offset = vertex_stride * vertices.size() + normal_tangent_stride;
+		normal_tangent_stride += sizeof(uint32_t);
 	}
 
 	AABB aabb;
@@ -192,7 +192,7 @@ void ImmediateMesh::surface_end() {
 				}
 			}
 			if (uses_normals) {
-				uint32_t *normal = (uint32_t *)&surface_vertex_ptr[i * vertex_stride + normal_offset];
+				uint32_t *normal = (uint32_t *)&surface_vertex_ptr[i * normal_tangent_stride + normal_offset];
 
 				Vector2 n = normals[i].octahedron_encode();
 
@@ -203,7 +203,7 @@ void ImmediateMesh::surface_end() {
 				*normal = value;
 			}
 			if (uses_tangents) {
-				uint32_t *tangent = (uint32_t *)&surface_vertex_ptr[i * vertex_stride + tangent_offset];
+				uint32_t *tangent = (uint32_t *)&surface_vertex_ptr[i * normal_tangent_stride + tangent_offset];
 				Vector2 t = tangents[i].normal.octahedron_tangent_encode(tangents[i].d);
 				uint32_t value = 0;
 				value |= (uint16_t)CLAMP(t.x * 65535, 0, 65535);

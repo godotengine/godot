@@ -1383,7 +1383,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				GLuint vertex_array_gl = 0;
 				GLuint index_array_gl = 0;
 
-				uint32_t input_mask = 0; // 2D meshes always use the same vertex format
+				uint64_t input_mask = 0; // 2D meshes always use the same vertex format.
 				if (mesh_instance.is_valid()) {
 					mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, vertex_array_gl);
 				} else {

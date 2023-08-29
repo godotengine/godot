@@ -4499,6 +4499,7 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 			if (atf.frequency == VERTEX_FREQUENCY_VERTEX) {
 				// Validate size for regular drawing.
 				uint64_t total_size = uint64_t(atf.stride) * (p_vertex_count - 1) + atf.offset + element_size;
+
 				ERR_FAIL_COND_V_MSG(total_size > buffer->size, RID(),
 						"Attachment (" + itos(i) + ") will read past the end of the buffer.");
 
@@ -4665,7 +4666,7 @@ struct RenderingDeviceVulkanShaderBinarySpecializationConstant {
 };
 
 struct RenderingDeviceVulkanShaderBinaryData {
-	uint32_t vertex_input_mask;
+	uint64_t vertex_input_mask;
 	uint32_t fragment_output_mask;
 	uint32_t specialization_constants_count;
 	uint32_t is_compute;
@@ -4881,7 +4882,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	push_constant.size = binary_data.push_constant_size;
 	push_constant.vk_stages_mask = binary_data.push_constant_vk_stages_mask;
 
-	uint32_t vertex_input_mask = binary_data.vertex_input_mask;
+	uint64_t vertex_input_mask = binary_data.vertex_input_mask;
 
 	uint32_t fragment_output_mask = binary_data.fragment_output_mask;
 
@@ -5209,7 +5210,7 @@ RID RenderingDeviceVulkan::shader_create_placeholder() {
 	return shader_owner.make_rid(shader);
 }
 
-uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
+uint64_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
 	_THREAD_SAFE_METHOD_
 
 	const Shader *shader = shader_owner.get_or_null(p_shader);
@@ -6152,8 +6153,8 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		pipeline_vertex_input_state_create_info = vd.create_info;
 
 		// Validate with inputs.
-		for (uint32_t i = 0; i < 32; i++) {
-			if (!(shader->vertex_input_mask & (1UL << i))) {
+		for (uint64_t i = 0; i < 64; i++) {
+			if (!(shader->vertex_input_mask & (1ULL << i))) {
 				continue;
 			}
 			bool found = false;

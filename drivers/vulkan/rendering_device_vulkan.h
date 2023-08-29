@@ -621,7 +621,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			VkDescriptorSetLayout descriptor_set_layout = VK_NULL_HANDLE;
 		};
 
-		uint32_t vertex_input_mask = 0; // Inputs used, this is mostly for validation.
+		uint64_t vertex_input_mask = 0; // Inputs used, this is mostly for validation.
 		uint32_t fragment_output_mask = 0;
 
 		struct PushConstant {
@@ -1140,7 +1140,7 @@ public:
 	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID());
 	virtual RID shader_create_placeholder();
 
-	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader);
+	virtual uint64_t shader_get_vertex_input_attribute_mask(RID p_shader);
 
 	/*****************/
 	/**** UNIFORM ****/
