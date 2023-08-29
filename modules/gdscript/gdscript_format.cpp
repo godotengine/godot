@@ -2044,15 +2044,21 @@ String GDScriptFormat::parse_dictionary(const GDP::DictionaryNode *p_node, const
 		indent_mod = 1;
 	}
 
+	int indent_size = (p_indent_level + indent_mod) * tab_size;
+	bool wrap_content = false;
+
 	String elements;
 	if (children_have_comments(p_node) || !p_node->footer_comments.is_empty()) {
 		elements = parse_dictionary_elements(p_node, p_indent_level + 1, WRAP);
+		wrap_content = true;
 	} else {
-		elements = parse_dictionary_elements(p_node, p_indent_level + indent_mod);
-		if (p_break_type != NONE && get_length_without_comments(elements) > line_length_maximum) {
+		elements = parse_dictionary_elements(p_node, 0);
+		if (p_break_type != NONE && indent_size + get_length_without_comments(elements) > line_length_maximum) {
 			elements = parse_dictionary_elements(p_node, p_indent_level + indent_mod, p_break_type);
+			wrap_content = true;
 		} else if (p_break_type != NONE) {
 			dictionary_string += indent(p_indent_level + indent_mod);
+			wrap_content = true;
 		}
 	}
 	dictionary_string += elements;
@@ -2062,7 +2068,7 @@ String GDScriptFormat::parse_dictionary(const GDP::DictionaryNode *p_node, const
 		dictionary_string += "# ";
 		dictionary_string += p_node->footer_comments[i];
 	}
-	if (children_have_comments(p_node) || !p_node->footer_comments.is_empty()) {
+	if (wrap_content) {
 		dictionary_string += indent(p_indent_level);
 	}
 	dictionary_string += "}";
