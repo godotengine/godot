@@ -29,6 +29,12 @@
 			<param index="2" name="size_bytes" type="int" />
 			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
+				Clears the contents of the [param buffer], clearing [param size_bytes] bytes, starting at [param offset]. Always raises a memory barrier.
+				Prints an error if:
+				- the size isn't a multiple of four
+				- the region specified by [param offset] + [param size_bytes] exceeds the buffer
+				- a draw list is currently active (created by [method draw_list_begin])
+				- a compute list is currently active (created by [method compute_list_begin])
 			</description>
 		</method>
 		<method name="buffer_get_data">
@@ -48,6 +54,11 @@
 			<param index="3" name="data" type="PackedByteArray" />
 			<param index="4" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
+				Updates a region of [param size_bytes] bytes, starting at [param offset], in the buffer, with the specified [param data]. Raises a memory barrier except when [param post_barrier] is set to [constant BARRIER_MASK_NO_BARRIER].
+				Prints an error if:
+				- the region specified by [param offset] + [param size_bytes] exceeds the buffer
+				- a draw list is currently active (created by [method draw_list_begin])
+				- a compute list is currently active (created by [method compute_list_begin])
 			</description>
 		</method>
 		<method name="capture_timestamp">
@@ -61,6 +72,7 @@
 			<return type="void" />
 			<param index="0" name="compute_list" type="int" />
 			<description>
+				Raises a Vulkan compute barrier in the specified [param compute_list].
 			</description>
 		</method>
 		<method name="compute_list_begin">
@@ -92,6 +104,7 @@
 			<param index="0" name="compute_list" type="int" />
 			<param index="1" name="compute_pipeline" type="RID" />
 			<description>
+				Tells the GPU what compute pipeline to use when processing the compute list. If the shader has changed since the last time this function was called, Godot will unbind all descriptor sets and will re-bind them inside [method compute_list_dispatch].
 			</description>
 		</method>
 		<method name="compute_list_bind_uniform_set">
@@ -100,6 +113,7 @@
 			<param index="1" name="uniform_set" type="RID" />
 			<param index="2" name="set_index" type="int" />
 			<description>
+				Binds the [param uniform_set] to this [param compute_list]. Godot ensures that all textures in the uniform set have the correct Vulkan access masks. If Godot had to change access masks of textures, it will raise a Vulkan image memory barrier.
 			</description>
 		</method>
 		<method name="compute_list_dispatch">
@@ -644,6 +658,7 @@
 			<return type="int" />
 			<param index="0" name="shader" type="RID" />
 			<description>
+				Returns the internal vertex input mask. Internally, the vertex input mask is an unsigned integer consisting of the locations (specified in GLSL via. [code]layout(location = ...)[/code]) of the input variables (specified in GLSL by the [code]in[/code] keyword).
 			</description>
 		</method>
 		<method name="storage_buffer_create">
@@ -830,7 +845,7 @@
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
-				It can be accessed with the RID that is returned.
+				Creates a new uniform buffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
@@ -840,7 +855,7 @@
 			<param index="1" name="shader" type="RID" />
 			<param index="2" name="shader_set" type="int" />
 			<description>
-				It can be accessed with the RID that is returned.
+				Creates a new uniform set. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
@@ -848,6 +863,7 @@
 			<return type="bool" />
 			<param index="0" name="uniform_set" type="RID" />
 			<description>
+				Checks if the [param uniform_set] is valid, i.e. is owned.
 			</description>
 		</method>
 		<method name="vertex_array_create">
