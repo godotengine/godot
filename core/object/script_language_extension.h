@@ -682,6 +682,9 @@ public:
 		}
 		return Variant::NIL;
 	}
+	virtual void validate_property(PropertyInfo &p_property) const override {
+		// TODO
+	}
 
 	virtual bool property_can_revert(const StringName &p_name) const override {
 		if (native_info->property_can_revert_func) {

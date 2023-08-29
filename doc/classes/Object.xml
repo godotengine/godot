@@ -269,6 +269,59 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="_validate_property" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="property" type="Dictionary" />
+			<description>
+				Override this method to customize existing properties. Every property info goes through this method. The dictionary contents is the same as in [method _get_property_list].
+				[codeblocks]
+				[gdscript]
+				@tool
+				extends Node
+
+				@export var is_number_editable: bool:
+				    set(value):
+				        is_number_editable = value
+				        notify_property_list_changed()
+				@export var number: int
+
+				func _validate_property(property: Dictionary):
+				    if property.name == "number" and not is_number_editable:
+				        property.usage |= PROPERTY_USAGE_READ_ONLY
+				[/gdscript]
+				[csharp]
+				[Tool]
+				public partial class MyNode : Node
+				{
+				    private bool _isNumberEditable;
+
+				    [Export]
+				    public bool IsNumberEditable
+				    {
+				        get =&gt; _isNumberEditable;
+				        set
+				        {
+				            _isNumberEditable = value;
+				            NotifyPropertyListChanged();
+				        }
+				    }
+
+				    [Export]
+				    public int Number { get; set; }
+
+				    public override void _ValidateProperty(Godot.Collections.Dictionary property)
+				    {
+				        if (property["name"].AsStringName() == PropertyName.Number &amp;&amp; IsNumberEditable)
+				        {
+				            var usage = property["usage"].As&gt;PropertyUsageFlags&lt;() | PropertyUsageFlags.ReadOnly;
+				            property["usage"] = (int)usage;
+				        }
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="add_user_signal">
 			<return type="void" />
 			<param index="0" name="signal" type="String" />

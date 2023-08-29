@@ -1732,6 +1732,25 @@ Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool
 	return Variant::NIL;
 }
 
+void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
+	Variant property = (Dictionary)p_property;
+	const Variant *args[1] = { &property };
+
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._validate_property);
+		if (E) {
+			Callable::CallError err;
+			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+			if (err.error == Callable::CallError::CALL_OK) {
+				p_property = PropertyInfo::from_dict(property);
+				return;
+			}
+		}
+		sptr = sptr->_base;
+	}
+}
+
 void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	// exported members, not done yet!
 
@@ -1797,7 +1816,8 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		p_properties->push_back(sptr->get_class_category());
 #endif // TOOLS_ENABLED
 
-		for (const PropertyInfo &prop : props) {
+		for (PropertyInfo &prop : props) {
+			validate_property(prop);
 			p_properties->push_back(prop);
 		}
 
@@ -2616,6 +2636,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._set = StaticCString::create("_set");
 	strings._get = StaticCString::create("_get");
 	strings._get_property_list = StaticCString::create("_get_property_list");
+	strings._validate_property = StaticCString::create("_validate_property");
 	strings._property_can_revert = StaticCString::create("_property_can_revert");
 	strings._property_get_revert = StaticCString::create("_property_get_revert");
 	strings._script_source = StaticCString::create("script/source");
