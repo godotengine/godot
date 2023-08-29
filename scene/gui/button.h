@@ -54,6 +54,8 @@ private:
 	TextAlign icon_align;
 	float _internal_margin[4];
 
+	void _texture_changed();
+
 protected:
 	void _set_internal_margin(Margin p_margin, float p_value);
 	void _notification(int p_what);

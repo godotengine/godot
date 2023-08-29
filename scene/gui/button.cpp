@@ -31,6 +31,7 @@
 #include "button.h"
 
 #include "core/translation.h"
+#include "scene/scene_string_names.h"
 #include "servers/visual_server.h"
 
 Size2 Button::get_minimum_size() const {
@@ -309,7 +310,13 @@ void Button::set_icon(const Ref<Texture> &p_icon) {
 	if (icon == p_icon) {
 		return;
 	}
+	if (icon.is_valid()) {
+		icon->disconnect(SceneStringNames::get_singleton()->changed, this, "_texture_changed");
+	}
 	icon = p_icon;
+	if (icon.is_valid()) {
+		icon->connect(SceneStringNames::get_singleton()->changed, this, "_texture_changed");
+	}
 	update();
 	_change_notify("icon");
 	minimum_size_changed();
@@ -317,6 +324,11 @@ void Button::set_icon(const Ref<Texture> &p_icon) {
 
 Ref<Texture> Button::get_icon() const {
 	return icon;
+}
+
+void Button::_texture_changed() {
+	update();
+	minimum_size_changed();
 }
 
 void Button::set_expand_icon(bool p_expand_icon) {
@@ -383,6 +395,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_icon_align"), &Button::get_icon_align);
 	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
+
+	ClassDB::bind_method(D_METHOD("_texture_changed"), &Button::_texture_changed);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
