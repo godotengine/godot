@@ -285,8 +285,6 @@ bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	if (p_action == "move_right")
-		print_line(action_state.has(p_action), action_state[p_action].pressed, action_state[p_action].pressed > 0, (p_exact ? action_state[p_action].exact : true));
 	return action_state.has(p_action) && action_state[p_action].pressed > 0 && (p_exact ? action_state[p_action].exact : true);
 }
 
