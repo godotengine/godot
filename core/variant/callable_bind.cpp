@@ -88,7 +88,7 @@ ObjectID CallableCustomBind::get_object() const {
 }
 
 const Callable *CallableCustomBind::get_base_comparator() const {
-	return &callable;
+	return callable.get_base_comparator();
 }
 
 int CallableCustomBind::get_bound_arguments_count() const {
@@ -222,7 +222,7 @@ ObjectID CallableCustomUnbind::get_object() const {
 }
 
 const Callable *CallableCustomUnbind::get_base_comparator() const {
-	return &callable;
+	return callable.get_base_comparator();
 }
 
 int CallableCustomUnbind::get_bound_arguments_count() const {
