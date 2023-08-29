@@ -132,23 +132,9 @@ cppcheck-cppcheck-build-dir/
 *.pydevproject
 *.launch
 
-# Gcov and Lcov code coverage
-*.gcno
+# GCOV code coverage
 *.gcda
-*.gcov.html
-*.func.html
-*.func-sort-c.html
-*index-sort-f.html
-*index-sort-l.html
-*index.html
-godot.info
-amber.png
-emerald.png
-glass.png
-ruby.png
-snow.png
-updown.png
-gcov.css
+*.gcno
 
 # Geany
 *.geany
