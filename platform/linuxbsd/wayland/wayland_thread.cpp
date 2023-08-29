@@ -879,6 +879,8 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.\n", (size_t)wl_output));
+
 	// TODO: Handle multiple outputs?
 
 	ws->wl_output = wl_output;
@@ -942,6 +944,7 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 }
 
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Window left output %x.\n", (size_t)wl_output));
 }
 
 void WaylandThread::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
@@ -2625,6 +2628,8 @@ int WaylandThread::window_state_get_buffer_scale(WindowState *p_ws) {
 		// FIXME: Use the committed data. Somehow.
 		return ss->pending_data.scale;
 	}
+
+	DEBUG_LOG_WAYLAND_THREAD("Window has no output associated, returning buffer scale of 1.");
 
 	return 1;
 }
