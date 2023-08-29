@@ -285,7 +285,9 @@ bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	return action_state.has(p_action) && action_state[p_action].pressed && (p_exact ? action_state[p_action].exact : true);
+	if (p_action == "move_right")
+		print_line(action_state.has(p_action), action_state[p_action].pressed, action_state[p_action].pressed > 0, (p_exact ? action_state[p_action].exact : true));
+	return action_state.has(p_action) && action_state[p_action].pressed > 0 && (p_exact ? action_state[p_action].exact : true);
 }
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
@@ -697,23 +699,30 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
 		if (InputMap::get_singleton()->event_is_action(p_event, E.key)) {
 			Action &action = action_state[E.key];
-			// If not echo and action pressed state has changed
-			if (!p_event->is_echo() && is_action_pressed(E.key, false) != p_event->is_action_pressed(E.key)) {
+			bool is_pressed = false;
+
+			if (!p_event->is_echo()) {
 				if (p_event->is_action_pressed(E.key)) {
-					action.pressed = true;
-					action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
-					action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+					action.pressed++;
+					is_pressed = true;
+					if (action.pressed == 1) {
+						action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+						action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+					}
 				} else {
-					action.pressed = false;
-					action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
-					action.released_process_frame = Engine::get_singleton()->get_process_frames();
+					if (action.pressed == 1) {
+						action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+						action.released_process_frame = Engine::get_singleton()->get_process_frames();
+					}
+					action.pressed = MAX(action.pressed - 1, 0);
 				}
-				action.strength = 0.0f;
-				action.raw_strength = 0.0f;
 				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
 			}
-			action.strength = p_event->get_action_strength(E.key);
-			action.raw_strength = p_event->get_action_raw_strength(E.key);
+
+			if (is_pressed || action.pressed == 0) {
+				action.strength = p_event->get_action_strength(E.key);
+				action.raw_strength = p_event->get_action_raw_strength(E.key);
+			}
 		}
 	}
 
@@ -831,9 +840,11 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	// Create or retrieve existing action.
 	Action &action = action_state[p_action];
 
-	action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
-	action.pressed = true;
+	action.pressed++;
+	if (action.pressed == 1) {
+		action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+		action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+	}
 	action.strength = p_strength;
 	action.raw_strength = p_strength;
 	action.exact = true;
@@ -843,9 +854,11 @@ void Input::action_release(const StringName &p_action) {
 	// Create or retrieve existing action.
 	Action &action = action_state[p_action];
 
-	action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.released_process_frame = Engine::get_singleton()->get_process_frames();
-	action.pressed = false;
+	action.pressed--;
+	if (action.pressed == 0) {
+		action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+		action.released_process_frame = Engine::get_singleton()->get_process_frames();
+	}
 	action.strength = 0.0f;
 	action.raw_strength = 0.0f;
 	action.exact = true;
@@ -1006,8 +1019,10 @@ void Input::release_pressed_events() {
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
-	for (const KeyValue<StringName, Input::Action> &E : action_state) {
-		if (E.value.pressed) {
+	for (KeyValue<StringName, Input::Action> &E : action_state) {
+		if (E.value.pressed > 0) {
+			// Make sure the action is really released.
+			E.value.pressed = 1;
 			action_release(E.key);
 		}
 	}
