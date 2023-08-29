@@ -63,8 +63,8 @@ namespace GDScriptTests {
 						error_messages.size(),                                               \
 						String("\n").join(error_messages)));                                 \
 		CHECK_EQ(                                                                            \
-				vformat(CHECK_FORMAT_FORMAT, output),                                        \
-				vformat(CHECK_FORMAT_FORMAT, pre_formatted));                                \
+				vformat(CHECK_FORMAT_FORMAT, pre_formatted),                                 \
+				vformat(CHECK_FORMAT_FORMAT, output));                                       \
 	} while (false);
 #define CHECK_FORMAT_FORMAT "\n---\n%s\n---\n"
 
