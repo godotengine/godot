@@ -309,15 +309,17 @@ String GDScriptFormat::parse_class_variable(const GDP::ClassNode *p_node, const 
 	String variable_string;
 	bool did_break = false;
 
+	int indent_size = tab_size * p_indent_level;
+
 	if (children_have_comments(p_node->members[p_member_index].variable) && is_nestable_statement(p_node->members[p_member_index].variable->initializer)) {
 		variable_string = parse_variable(p_node->members[p_member_index].variable, p_indent_level, NONE);
-		if (get_length_without_comments(variable_string) > line_length_maximum || variable_string.contains("\n")) {
+		if (indent_size + get_length_without_comments(variable_string) > line_length_maximum || variable_string.contains("\n")) {
 			variable_string = parse_variable(p_node->members[p_member_index].variable, p_indent_level, WRAP);
 			did_break = get_length_without_comments(variable_string) > line_length_maximum || variable_string.contains("\n");
 		}
 	} else {
 		variable_string = parse_variable(p_node->members[p_member_index].variable, p_indent_level, NONE);
-		if (get_length_without_comments(variable_string) > line_length_maximum) {
+		if (indent_size + get_length_without_comments(variable_string) > line_length_maximum) {
 			did_break = true;
 			variable_string = parse_variable(p_node->members[p_member_index].variable, p_indent_level, WRAP);
 		}
@@ -329,7 +331,7 @@ String GDScriptFormat::parse_class_variable(const GDP::ClassNode *p_node, const 
 		String annotation_string;
 		if (!did_break) {
 			annotation_string = parse_annotations(p_node->members[p_member_index].variable->annotations, p_indent_level);
-			if (get_length_without_comments(annotation_string) + get_length_without_comments(variable_string) > line_length_maximum) {
+			if (indent_size + get_length_without_comments(annotation_string) + get_length_without_comments(variable_string) > line_length_maximum) {
 				annotation_string = parse_annotations(p_node->members[p_member_index].variable->annotations, p_indent_level, SPLIT);
 			}
 		} else {
@@ -1745,14 +1747,14 @@ String GDScriptFormat::parse_binary_operator(const GDP::BinaryOpNode *p_node, co
 			right_operand = StringBuilder();
 
 			if (p_node->left_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-				left_operand += parse_expression(p_node->left_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0) + 1, FORCE_SPLIT);
+				left_operand += parse_expression(p_node->left_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
 			} else {
 				left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level, WRAP);
 			}
 			if (p_node->right_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-				right_operand += parse_expression(p_node->right_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0) + 1, FORCE_SPLIT);
+				right_operand += parse_expression(p_node->right_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
 			} else {
-				right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + 1, WRAP);
+				right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level, WRAP);
 			}
 		} else {
 			String right_operand_string = right_operand.as_string();
@@ -1916,7 +1918,7 @@ String GDScriptFormat::parse_array_elements(const GDP::ArrayNode *p_node, const 
 			String array_element = parse_array_element(p_node->elements[i], p_indent_level, WRAP);
 			element = print_comment(p_node->elements[i], true, p_indent_level) + array_element;
 		} else {
-			element = parse_array_element(p_node->elements[i], p_indent_level);
+			element = parse_array_element(p_node->elements[i], p_indent_level, NONE);
 			if (p_break_type != NONE && element.length() > line_length_maximum) {
 				element = parse_array_element(p_node->elements[i], p_indent_level, p_break_type);
 			}
@@ -1944,23 +1946,19 @@ String GDScriptFormat::parse_array(const GDP::ArrayNode *p_node, const int p_ind
 		array_string += indent(p_indent_level + 1);
 	}
 
+	int indent_size = (p_indent_level + indent_mod) * tab_size;
+
 	String elements;
 	if (!children_have_comments(p_node, false)) {
-		if (p_break_type == NONE && !p_node->elements.is_empty()) {
-			array_string += indent(p_indent_level + 1);
-		}
-		elements = parse_array_elements(p_node, p_indent_level + 1, NONE);
-		if (elements.length() > line_length_maximum) {
+		elements = parse_array_elements(p_node, 0);
+		if (indent_size + elements.length() > line_length_maximum) {
 			elements = parse_array_elements(p_node, p_indent_level + 1, WRAP);
 		}
 	} else if (children_have_comments(p_node) || !p_node->footer_comments.is_empty()) {
-		if (p_break_type == NONE && !p_node->elements.is_empty()) {
-			array_string += indent(p_indent_level + 1);
-		}
-		elements = parse_array_elements(p_node, p_indent_level + 1, WRAP);
+		elements = parse_array_elements(p_node, 0, WRAP);
 	} else {
-		elements = parse_array_elements(p_node, p_indent_level + indent_mod);
-		if (p_break_type != NONE && elements.length() > line_length_maximum) {
+		elements = parse_array_elements(p_node, 0);
+		if (p_break_type != NONE && indent_size + elements.length() > line_length_maximum) {
 			elements = parse_array_elements(p_node, p_indent_level + indent_mod, p_break_type);
 		}
 	}
@@ -1972,7 +1970,7 @@ String GDScriptFormat::parse_array(const GDP::ArrayNode *p_node, const int p_ind
 		array_string += "# ";
 		array_string += p_node->footer_comments[i];
 	}
-	if (p_break_type != NONE || !p_node->footer_comments.is_empty()) {
+	if (p_break_type == WRAP || !p_node->footer_comments.is_empty()) {
 		array_string += indent(p_indent_level);
 	}
 	array_string += "]";
