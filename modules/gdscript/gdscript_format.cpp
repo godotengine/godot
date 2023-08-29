@@ -1716,29 +1716,29 @@ String GDScriptFormat::parse_binary_operator(const GDP::BinaryOpNode *p_node, co
 		break_string = true;
 
 		if (p_node->left_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-			left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0) + 1, FORCE_SPLIT);
+			left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
 		} else {
-			left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level + 1, WRAP);
+			left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level, WRAP);
 		}
 		String left_operand_string = left_operand.as_string();
 		left_operand = StringBuilder();
-		left_operand += print_comment(p_node->left_operand, true, p_indent_level + 1);
+		left_operand += print_comment(p_node->left_operand, true, p_indent_level);
 		left_operand += left_operand_string;
-		left_operand += print_comment(p_node->left_operand, false, p_indent_level + 1);
+		left_operand += print_comment(p_node->left_operand, false, p_indent_level);
 
 		if (p_node->right_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-			right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0) + 1, FORCE_SPLIT);
+			right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
 		} else {
-			right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + 1, WRAP);
+			right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level, WRAP);
 		}
 		String right_operand_string = right_operand.as_string();
 		right_operand = StringBuilder();
-		right_operand += print_comment(p_node->right_operand, true, p_indent_level + 1);
+		right_operand += print_comment(p_node->right_operand, true, p_indent_level);
 		right_operand += right_operand_string;
-		right_operand += print_comment(p_node->right_operand, false, p_indent_level + 1);
+		right_operand += print_comment(p_node->right_operand, false, p_indent_level);
 	} else {
-		left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level + 1);
-		right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + 1);
+		left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level);
+		right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level);
 		if (p_break_type != NONE && get_length_without_comments(left_operand) + get_length_without_comments(right_operand) + get_length_without_comments(operator_string) + 1 > line_length_maximum) {
 			break_string = true;
 			left_operand = StringBuilder();
