@@ -874,6 +874,9 @@ def generate_vs_project(env, num_jobs, project_name="godot"):
                 if env["precision"] == "double":
                     common_build_postfix.append("precision=double")
 
+                if env["incremental_link"]:
+                    common_build_postfix.append("incremental_link=yes")
+
                 result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
                 return result
 
