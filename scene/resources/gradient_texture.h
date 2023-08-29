@@ -64,6 +64,7 @@ public:
 	virtual bool has_alpha() const override { return true; }
 
 	virtual Ref<Image> get_image() const override;
+	void update_now();
 
 	GradientTexture1D();
 	virtual ~GradientTexture1D();
@@ -133,6 +134,7 @@ public:
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override { return true; }
 	virtual Ref<Image> get_image() const override;
+	void update_now();
 
 	GradientTexture2D();
 	virtual ~GradientTexture2D();
