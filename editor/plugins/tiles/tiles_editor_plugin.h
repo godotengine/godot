@@ -118,7 +118,7 @@ class TileMapEditorPlugin : public EditorPlugin {
 	ObjectID tile_map_id;
 
 	bool tile_map_changed_needs_update = false;
-	ObjectID edited_tileset;
+	ObjectID edited_tileset; // The TileSet associated with the TileMap.
 
 	void _tile_map_changed();
 	void _update_tile_map();
@@ -147,10 +147,14 @@ class TileSetEditorPlugin : public EditorPlugin {
 	TileSetEditor *editor = nullptr;
 	Button *button = nullptr;
 
+	ObjectID edited_tileset;
+
 public:
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
+
+	ObjectID get_edited_tileset() const;
 
 	TileSetEditorPlugin();
 	~TileSetEditorPlugin();
