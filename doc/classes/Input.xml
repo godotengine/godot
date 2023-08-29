@@ -53,6 +53,16 @@
 				[b]Note:[/b] This method only works on iOS, Android, and UWP. On other platforms, it always returns [constant Vector3.ZERO].
 			</description>
 		</method>
+		<method name="get_action_peak_strength" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="exact_match" type="bool" default="false" />
+			<description>
+				Returns a value between 0 and 1 representing the peak intensity of the given action during the last press. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
+				While similar to [method get_action_strength], this function provides the peak over the whole current (or previous) press, and is not reset to zero on release. This allows reliably reading pressure for short button presses detected using [method is_action_just_pressed], on controllers that report button pressure.
+				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+			</description>
+		</method>
 		<method name="get_action_raw_strength" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="action" type="StringName" />

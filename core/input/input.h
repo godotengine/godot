@@ -107,6 +107,7 @@ private:
 		bool exact = true;
 		float strength = 0.0f;
 		float raw_strength = 0.0f;
+		float peak_strength = 0.0f;
 	};
 
 	HashMap<StringName, Action> action_state;
@@ -267,6 +268,7 @@ public:
 	bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
 	float get_action_strength(const StringName &p_action, bool p_exact = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const;
+	float get_action_peak_strength(const StringName &p_action, bool p_exact = false) const;
 
 	float get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const;
 	Vector2 get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f) const;
