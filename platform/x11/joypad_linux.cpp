@@ -79,6 +79,7 @@ void JoypadLinux::Joypad::reset() {
 	events.clear();
 }
 
+#ifdef UDEV_ENABLED
 // This function is derived from SDL:
 // https://github.com/libsdl-org/SDL/blob/main/src/core/linux/SDL_sandbox.c#L28-L45
 static bool detect_sandbox() {
@@ -98,6 +99,7 @@ static bool detect_sandbox() {
 
 	return false;
 }
+#endif // UDEV_ENABLED
 
 JoypadLinux::JoypadLinux(InputDefault *in) {
 #ifdef UDEV_ENABLED

@@ -44,7 +44,7 @@
  * Behavior:
  * Set N to c * 2^bits + old_value_of_N.
  */
-void mbedtls_ecp_fix_negative( mbedtls_mpi *N, signed char c, size_t bits );
+void mbedtls_ecp_fix_negative(mbedtls_mpi *N, signed char c, size_t bits);
 #endif
 
 #if defined(MBEDTLS_ECP_MONTGOMERY_ENABLED)
@@ -61,7 +61,7 @@ void mbedtls_ecp_fix_negative( mbedtls_mpi *N, signed char c, size_t bits );
  *                  This is the bit-size of the key minus 1:
  *                  254 for Curve25519 or 447 for Curve448.
  * \param d         The randomly generated key. This is a number of size
- *                  exactly \p n_bits + 1 bits, with the least significant bits
+ *                  exactly \p high_bit + 1 bits, with the least significant bits
  *                  masked as specified in [Curve25519] and in [RFC7748] §5.
  * \param f_rng     The RNG function.
  * \param p_rng     The RNG context to be passed to \p f_rng.
@@ -69,10 +69,10 @@ void mbedtls_ecp_fix_negative( mbedtls_mpi *N, signed char c, size_t bits );
  * \return          \c 0 on success.
  * \return          \c MBEDTLS_ERR_ECP_xxx or MBEDTLS_ERR_MPI_xxx on failure.
  */
-int mbedtls_ecp_gen_privkey_mx( size_t n_bits,
-                                mbedtls_mpi *d,
-                                int (*f_rng)(void *, unsigned char *, size_t),
-                                void *p_rng );
+int mbedtls_ecp_gen_privkey_mx(size_t high_bit,
+                               mbedtls_mpi *d,
+                               int (*f_rng)(void *, unsigned char *, size_t),
+                               void *p_rng);
 
 #endif /* MBEDTLS_ECP_MONTGOMERY_ENABLED */
 

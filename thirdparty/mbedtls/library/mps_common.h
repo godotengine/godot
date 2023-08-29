@@ -99,41 +99,41 @@
 
 #if defined(MBEDTLS_MPS_STATE_VALIDATION)
 
-#define MBEDTLS_MPS_STATE_VALIDATE_RAW( cond, string )                         \
+#define MBEDTLS_MPS_STATE_VALIDATE_RAW(cond, string)                         \
     do                                                                         \
     {                                                                          \
-        if( !(cond) )                                                          \
+        if (!(cond))                                                          \
         {                                                                      \
-            MBEDTLS_MPS_TRACE( MBEDTLS_MPS_TRACE_TYPE_ERROR, string );         \
-            MBEDTLS_MPS_TRACE_RETURN( MBEDTLS_ERR_MPS_OPERATION_UNEXPECTED );  \
+            MBEDTLS_MPS_TRACE(MBEDTLS_MPS_TRACE_TYPE_ERROR, string);         \
+            MBEDTLS_MPS_TRACE_RETURN(MBEDTLS_ERR_MPS_OPERATION_UNEXPECTED);  \
         }                                                                      \
-    } while( 0 )
+    } while (0)
 
 #else /* MBEDTLS_MPS_STATE_VALIDATION */
 
-#define MBEDTLS_MPS_STATE_VALIDATE_RAW( cond, string )           \
+#define MBEDTLS_MPS_STATE_VALIDATE_RAW(cond, string)           \
     do                                                           \
     {                                                            \
-        ( cond );                                                \
-    } while( 0 )
+        (cond);                                                \
+    } while (0)
 
 #endif /* MBEDTLS_MPS_STATE_VALIDATION */
 
 #if defined(MBEDTLS_MPS_ENABLE_ASSERTIONS)
 
-#define MBEDTLS_MPS_ASSERT_RAW( cond, string )                          \
+#define MBEDTLS_MPS_ASSERT_RAW(cond, string)                          \
     do                                                                  \
     {                                                                   \
-        if( !(cond) )                                                   \
+        if (!(cond))                                                   \
         {                                                               \
-            MBEDTLS_MPS_TRACE( MBEDTLS_MPS_TRACE_TYPE_ERROR, string );  \
-            MBEDTLS_MPS_TRACE_RETURN( MBEDTLS_ERR_MPS_INTERNAL_ERROR ); \
+            MBEDTLS_MPS_TRACE(MBEDTLS_MPS_TRACE_TYPE_ERROR, string);  \
+            MBEDTLS_MPS_TRACE_RETURN(MBEDTLS_ERR_MPS_INTERNAL_ERROR); \
         }                                                               \
-    } while( 0 )
+    } while (0)
 
 #else /* MBEDTLS_MPS_ENABLE_ASSERTIONS */
 
-#define MBEDTLS_MPS_ASSERT_RAW( cond, string ) do {} while( 0 )
+#define MBEDTLS_MPS_ASSERT_RAW(cond, string) do {} while (0)
 
 #endif /* MBEDTLS_MPS_ENABLE_ASSERTIONS */
 
@@ -169,7 +169,7 @@
  *
  */
 typedef size_t mbedtls_mps_stored_size_t;
-#define MBEDTLS_MPS_STORED_SIZE_MAX  ( (mbedtls_mps_stored_size_t) -1 )
+#define MBEDTLS_MPS_STORED_SIZE_MAX  ((mbedtls_mps_stored_size_t) -1)
 
 /** \brief The type of buffer sizes and offsets used in the MPS API
  *         and implementation.
@@ -183,7 +183,7 @@ typedef size_t mbedtls_mps_stored_size_t;
  *         so almost 10%.
  */
 typedef size_t mbedtls_mps_size_t;
-#define MBEDTLS_MPS_SIZE_MAX  ( (mbedtls_mps_size_t) -1 )
+#define MBEDTLS_MPS_SIZE_MAX  ((mbedtls_mps_size_t) -1)
 
 #if MBEDTLS_MPS_STORED_SIZE_MAX > MBEDTLS_MPS_SIZE_MAX
 #error "Misconfiguration of mbedtls_mps_size_t and mbedtls_mps_stored_size_t."

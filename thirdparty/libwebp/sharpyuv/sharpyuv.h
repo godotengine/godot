@@ -12,16 +12,32 @@
 #ifndef WEBP_SHARPYUV_SHARPYUV_H_
 #define WEBP_SHARPYUV_SHARPYUV_H_
 
-#include <inttypes.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifndef SHARPYUV_EXTERN
+#ifdef WEBP_EXTERN
+#define SHARPYUV_EXTERN WEBP_EXTERN
+#else
+// This explicitly marks library functions and allows for changing the
+// signature for e.g., Windows DLL builds.
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define SHARPYUV_EXTERN extern __attribute__((visibility("default")))
+#else
+#if defined(_MSC_VER) && defined(WEBP_DLL)
+#define SHARPYUV_EXTERN __declspec(dllexport)
+#else
+#define SHARPYUV_EXTERN extern
+#endif /* _MSC_VER && WEBP_DLL */
+#endif /* __GNUC__ >= 4 */
+#endif /* WEBP_EXTERN */
+#endif /* SHARPYUV_EXTERN */
+
 // SharpYUV API version following the convention from semver.org
 #define SHARPYUV_VERSION_MAJOR 0
-#define SHARPYUV_VERSION_MINOR 1
-#define SHARPYUV_VERSION_PATCH 0
+#define SHARPYUV_VERSION_MINOR 2
+#define SHARPYUV_VERSION_PATCH 1
 // Version as a uint32_t. The major number is the high 8 bits.
 // The minor number is the middle 8 bits. The patch number is the low 16 bits.
 #define SHARPYUV_MAKE_VERSION(MAJOR, MINOR, PATCH) \
@@ -29,6 +45,10 @@ extern "C" {
 #define SHARPYUV_VERSION                                                \
   SHARPYUV_MAKE_VERSION(SHARPYUV_VERSION_MAJOR, SHARPYUV_VERSION_MINOR, \
                         SHARPYUV_VERSION_PATCH)
+
+// Returns the library's version number, packed in hexadecimal. See
+// SHARPYUV_VERSION.
+SHARPYUV_EXTERN int SharpYuvGetVersion(void);
 
 // RGB to YUV conversion matrix, in 16 bit fixed point.
 // y = rgb_to_y[0] * r + rgb_to_y[1] * g + rgb_to_y[2] * b + rgb_to_y[3]
@@ -65,11 +85,13 @@ typedef struct {
 //     adjacent pixels on the y, u and v channels. If yuv_bit_depth > 8, they
 //     should be multiples of 2.
 // width, height: width and height of the image in pixels
-int SharpYuvConvert(const void* r_ptr, const void* g_ptr, const void* b_ptr,
-                    int rgb_step, int rgb_stride, int rgb_bit_depth,
-                    void* y_ptr, int y_stride, void* u_ptr, int u_stride,
-                    void* v_ptr, int v_stride, int yuv_bit_depth, int width,
-                    int height, const SharpYuvConversionMatrix* yuv_matrix);
+SHARPYUV_EXTERN int SharpYuvConvert(const void* r_ptr, const void* g_ptr,
+                                    const void* b_ptr, int rgb_step,
+                                    int rgb_stride, int rgb_bit_depth,
+                                    void* y_ptr, int y_stride, void* u_ptr,
+                                    int u_stride, void* v_ptr, int v_stride,
+                                    int yuv_bit_depth, int width, int height,
+                                    const SharpYuvConversionMatrix* yuv_matrix);
 
 // TODO(b/194336375): Add YUV444 to YUV420 conversion. Maybe also add 422
 // support (it's rarely used in practice, especially for images).

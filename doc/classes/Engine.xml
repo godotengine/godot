@@ -166,7 +166,7 @@
 			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. A value of 0 means no limit.
 		</member>
 		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale" default="1.0">
-			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed.
+			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed. This also affects [Timer] and [SceneTreeTimer] (see [method SceneTree.create_timer] for how to control this).
 		</member>
 	</members>
 	<constants>

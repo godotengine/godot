@@ -522,11 +522,11 @@ static void GetCombinedEntropyUnrefined_C(const uint32_t X[],
 void VP8LSubtractGreenFromBlueAndRed_C(uint32_t* argb_data, int num_pixels) {
   int i;
   for (i = 0; i < num_pixels; ++i) {
-    const int argb = argb_data[i];
+    const int argb = (int)argb_data[i];
     const int green = (argb >> 8) & 0xff;
     const uint32_t new_r = (((argb >> 16) & 0xff) - green) & 0xff;
     const uint32_t new_b = (((argb >>  0) & 0xff) - green) & 0xff;
-    argb_data[i] = (argb & 0xff00ff00u) | (new_r << 16) | new_b;
+    argb_data[i] = ((uint32_t)argb & 0xff00ff00u) | (new_r << 16) | new_b;
   }
 }
 
@@ -547,10 +547,10 @@ void VP8LTransformColor_C(const VP8LMultipliers* const m, uint32_t* data,
     const int8_t red   = U32ToS8(argb >> 16);
     int new_red = red & 0xff;
     int new_blue = argb & 0xff;
-    new_red -= ColorTransformDelta(m->green_to_red_, green);
+    new_red -= ColorTransformDelta((int8_t)m->green_to_red_, green);
     new_red &= 0xff;
-    new_blue -= ColorTransformDelta(m->green_to_blue_, green);
-    new_blue -= ColorTransformDelta(m->red_to_blue_, red);
+    new_blue -= ColorTransformDelta((int8_t)m->green_to_blue_, green);
+    new_blue -= ColorTransformDelta((int8_t)m->red_to_blue_, red);
     new_blue &= 0xff;
     data[i] = (argb & 0xff00ff00u) | (new_red << 16) | (new_blue);
   }
@@ -560,7 +560,7 @@ static WEBP_INLINE uint8_t TransformColorRed(uint8_t green_to_red,
                                              uint32_t argb) {
   const int8_t green = U32ToS8(argb >> 8);
   int new_red = argb >> 16;
-  new_red -= ColorTransformDelta(green_to_red, green);
+  new_red -= ColorTransformDelta((int8_t)green_to_red, green);
   return (new_red & 0xff);
 }
 
@@ -569,9 +569,9 @@ static WEBP_INLINE uint8_t TransformColorBlue(uint8_t green_to_blue,
                                               uint32_t argb) {
   const int8_t green = U32ToS8(argb >>  8);
   const int8_t red   = U32ToS8(argb >> 16);
-  uint8_t new_blue = argb & 0xff;
-  new_blue -= ColorTransformDelta(green_to_blue, green);
-  new_blue -= ColorTransformDelta(red_to_blue, red);
+  int new_blue = argb & 0xff;
+  new_blue -= ColorTransformDelta((int8_t)green_to_blue, green);
+  new_blue -= ColorTransformDelta((int8_t)red_to_blue, red);
   return (new_blue & 0xff);
 }
 
@@ -791,6 +791,7 @@ VP8LBundleColorMapFunc VP8LBundleColorMap;
 VP8LPredictorAddSubFunc VP8LPredictorsSub[16];
 VP8LPredictorAddSubFunc VP8LPredictorsSub_C[16];
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8LEncDspInitSSE2(void);
 extern void VP8LEncDspInitSSE41(void);
 extern void VP8LEncDspInitNEON(void);

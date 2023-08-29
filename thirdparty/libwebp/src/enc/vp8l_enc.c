@@ -196,8 +196,7 @@ static int CoOccurrenceBuild(const WebPPicture* const pic,
   uint32_t palette_sorted[MAX_PALETTE_SIZE];
   lines = (uint32_t*)WebPSafeMalloc(2 * pic->width, sizeof(*lines));
   if (lines == NULL) {
-    WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
-    return 0;
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
   }
   line_top = &lines[0];
   line_current = &lines[pic->width];
@@ -255,10 +254,10 @@ static int PaletteSortModifiedZeng(
   cooccurrence =
       (uint32_t*)WebPSafeCalloc(num_colors * num_colors, sizeof(*cooccurrence));
   if (cooccurrence == NULL) {
-    WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
-    return 0;
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
   }
   if (!CoOccurrenceBuild(pic, palette_sorted, num_colors, cooccurrence)) {
+    WebPSafeFree(cooccurrence);
     return 0;
   }
 
@@ -361,10 +360,11 @@ typedef enum {
   kHistoTotal  // Must be last.
 } HistoIx;
 
-static void AddSingleSubGreen(int p, uint32_t* const r, uint32_t* const b) {
-  const int green = p >> 8;  // The upper bits are masked away later.
-  ++r[((p >> 16) - green) & 0xff];
-  ++b[((p >>  0) - green) & 0xff];
+static void AddSingleSubGreen(uint32_t p,
+                              uint32_t* const r, uint32_t* const b) {
+  const int green = (int)p >> 8;  // The upper bits are masked away later.
+  ++r[(((int)p >> 16) - green) & 0xff];
+  ++b[(((int)p >>  0) - green) & 0xff];
 }
 
 static void AddSingle(uint32_t p,
@@ -1011,8 +1011,7 @@ static int StoreImageToBitMask(
     VP8LRefsCursorNext(&c);
   }
   if (bw->error_) {
-    WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
-    return 0;
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
   }
   return 1;
 }
@@ -1296,7 +1295,10 @@ static int EncodeImageInternal(
           }
         }
         tokens = (HuffmanTreeToken*)WebPSafeMalloc(max_tokens, sizeof(*tokens));
-        if (tokens == NULL) goto Error;
+        if (tokens == NULL) {
+          WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
+          goto Error;
+        }
         for (i = 0; i < 5 * histogram_image_size; ++i) {
           HuffmanTreeCode* const codes = &huffman_codes[i];
           StoreHuffmanCode(bw, huff_tree, tokens, codes);
@@ -1354,7 +1356,7 @@ static int EncodeImageInternal(
 static void ApplySubtractGreen(VP8LEncoder* const enc, int width, int height,
                                VP8LBitWriter* const bw) {
   VP8LPutBits(bw, TRANSFORM_PRESENT, 1);
-  VP8LPutBits(bw, SUBTRACT_GREEN, 2);
+  VP8LPutBits(bw, SUBTRACT_GREEN_TRANSFORM, 2);
   VP8LSubtractGreenFromBlueAndRed(enc->argb_, width * height);
 }
 
@@ -1447,18 +1449,21 @@ static int WriteImage(const WebPPicture* const pic, VP8LBitWriter* const bw,
   const size_t vp8l_size = VP8L_SIGNATURE_SIZE + webpll_size;
   const size_t pad = vp8l_size & 1;
   const size_t riff_size = TAG_SIZE + CHUNK_HEADER_SIZE + vp8l_size + pad;
+  *coded_size = 0;
+
+  if (bw->error_) {
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
+  }
 
   if (!WriteRiffHeader(pic, riff_size, vp8l_size) ||
       !pic->writer(webpll_data, webpll_size, pic)) {
-    WebPEncodingSetError(pic, VP8_ENC_ERROR_BAD_WRITE);
-    return 0;
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_BAD_WRITE);
   }
 
   if (pad) {
     const uint8_t pad_byte[1] = { 0 };
     if (!pic->writer(pad_byte, 1, pic)) {
-      WebPEncodingSetError(pic, VP8_ENC_ERROR_BAD_WRITE);
-      return 0;
+      return WebPEncodingSetError(pic, VP8_ENC_ERROR_BAD_WRITE);
     }
   }
   *coded_size = CHUNK_HEADER_SIZE + riff_size;
@@ -1503,8 +1508,7 @@ static int AllocateTransformBuffer(VP8LEncoder* const enc, int width,
     ClearTransformBuffer(enc);
     mem = (uint32_t*)WebPSafeMalloc(mem_size, sizeof(*mem));
     if (mem == NULL) {
-      WebPEncodingSetError(enc->pic_, VP8_ENC_ERROR_OUT_OF_MEMORY);
-      return 0;
+      return WebPEncodingSetError(enc->pic_, VP8_ENC_ERROR_OUT_OF_MEMORY);
     }
     enc->transform_mem_ = mem;
     enc->transform_mem_size_ = (size_t)mem_size;
@@ -1612,8 +1616,7 @@ static int ApplyPalette(const uint32_t* src, uint32_t src_stride, uint32_t* dst,
   int x, y;
 
   if (tmp_row == NULL) {
-    WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
-    return 0;
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
   }
 
   if (palette_size < APPLY_PALETTE_GREEDY_MAX) {
@@ -1967,9 +1970,8 @@ int VP8LEncodeStream(const WebPConfig* const config,
   int ok_main;
 
   if (enc_main == NULL || !VP8LBitWriterInit(&bw_side, 0)) {
-    WebPEncodingSetError(picture, VP8_ENC_ERROR_OUT_OF_MEMORY);
     VP8LEncoderDelete(enc_main);
-    return 0;
+    return WebPEncodingSetError(picture, VP8_ENC_ERROR_OUT_OF_MEMORY);
   }
 
   // Avoid "garbage value" error from Clang's static analysis tool.
@@ -2116,8 +2118,7 @@ int VP8LEncodeImage(const WebPConfig* const config,
   if (picture == NULL) return 0;
 
   if (config == NULL || picture->argb == NULL) {
-    WebPEncodingSetError(picture, VP8_ENC_ERROR_NULL_PARAMETER);
-    return 0;
+    return WebPEncodingSetError(picture, VP8_ENC_ERROR_NULL_PARAMETER);
   }
 
   width = picture->width;
