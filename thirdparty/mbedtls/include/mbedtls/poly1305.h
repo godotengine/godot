@@ -60,8 +60,7 @@ extern "C" {
 
 #if !defined(MBEDTLS_POLY1305_ALT)
 
-typedef struct mbedtls_poly1305_context
-{
+typedef struct mbedtls_poly1305_context {
     uint32_t r[4];      /** The value for 'r' (low 128 bits of the key). */
     uint32_t s[4];      /** The value for 's' (high 128 bits of the key). */
     uint32_t acc[5];    /** The accumulator number. */
@@ -89,7 +88,7 @@ mbedtls_poly1305_context;
  * \param ctx       The Poly1305 context to initialize. This must
  *                  not be \c NULL.
  */
-void mbedtls_poly1305_init( mbedtls_poly1305_context *ctx );
+void mbedtls_poly1305_init(mbedtls_poly1305_context *ctx);
 
 /**
  * \brief           This function releases and clears the specified
@@ -99,7 +98,7 @@ void mbedtls_poly1305_init( mbedtls_poly1305_context *ctx );
  *                  case this function is a no-op. If it is not \c NULL, it must
  *                  point to an initialized Poly1305 context.
  */
-void mbedtls_poly1305_free( mbedtls_poly1305_context *ctx );
+void mbedtls_poly1305_free(mbedtls_poly1305_context *ctx);
 
 /**
  * \brief           This function sets the one-time authentication key.
@@ -114,8 +113,8 @@ void mbedtls_poly1305_free( mbedtls_poly1305_context *ctx );
  * \return          \c 0 on success.
  * \return          A negative error code on failure.
  */
-int mbedtls_poly1305_starts( mbedtls_poly1305_context *ctx,
-                             const unsigned char key[32] );
+int mbedtls_poly1305_starts(mbedtls_poly1305_context *ctx,
+                            const unsigned char key[32]);
 
 /**
  * \brief           This functions feeds an input buffer into an ongoing
@@ -135,9 +134,9 @@ int mbedtls_poly1305_starts( mbedtls_poly1305_context *ctx,
  * \return          \c 0 on success.
  * \return          A negative error code on failure.
  */
-int mbedtls_poly1305_update( mbedtls_poly1305_context *ctx,
-                             const unsigned char *input,
-                             size_t ilen );
+int mbedtls_poly1305_update(mbedtls_poly1305_context *ctx,
+                            const unsigned char *input,
+                            size_t ilen);
 
 /**
  * \brief           This function generates the Poly1305 Message
@@ -151,8 +150,8 @@ int mbedtls_poly1305_update( mbedtls_poly1305_context *ctx,
  * \return          \c 0 on success.
  * \return          A negative error code on failure.
  */
-int mbedtls_poly1305_finish( mbedtls_poly1305_context *ctx,
-                             unsigned char mac[16] );
+int mbedtls_poly1305_finish(mbedtls_poly1305_context *ctx,
+                            unsigned char mac[16]);
 
 /**
  * \brief           This function calculates the Poly1305 MAC of the input
@@ -172,10 +171,10 @@ int mbedtls_poly1305_finish( mbedtls_poly1305_context *ctx,
  * \return          \c 0 on success.
  * \return          A negative error code on failure.
  */
-int mbedtls_poly1305_mac( const unsigned char key[32],
-                          const unsigned char *input,
-                          size_t ilen,
-                          unsigned char mac[16] );
+int mbedtls_poly1305_mac(const unsigned char key[32],
+                         const unsigned char *input,
+                         size_t ilen,
+                         unsigned char mac[16]);
 
 #if defined(MBEDTLS_SELF_TEST)
 /**
@@ -184,7 +183,7 @@ int mbedtls_poly1305_mac( const unsigned char key[32],
  * \return          \c 0 on success.
  * \return          \c 1 on failure.
  */
-int mbedtls_poly1305_self_test( int verbose );
+int mbedtls_poly1305_self_test(int verbose);
 #endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus

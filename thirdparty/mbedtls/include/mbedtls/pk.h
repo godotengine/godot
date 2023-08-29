@@ -47,7 +47,7 @@
 #include "psa/crypto.h"
 #endif
 
-#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
+#if (defined(__ARMCC_VERSION) || defined(_MSC_VER)) && \
     !defined(inline) && !defined(__cplusplus)
 #define inline __inline
 #endif
@@ -107,8 +107,7 @@ typedef enum {
  * \brief           Options for RSASSA-PSS signature verification.
  *                  See \c mbedtls_rsa_rsassa_pss_verify_ext()
  */
-typedef struct mbedtls_pk_rsassa_pss_options
-{
+typedef struct mbedtls_pk_rsassa_pss_options {
     mbedtls_md_type_t mgf1_hash_id;
     int expected_salt_len;
 
@@ -128,7 +127,7 @@ typedef struct mbedtls_pk_rsassa_pss_options
  */
 #define MBEDTLS_PK_SIGNATURE_MAX_SIZE 0
 
-#if ( defined(MBEDTLS_RSA_C) || defined(MBEDTLS_PK_RSA_ALT_SUPPORT) ) && \
+#if (defined(MBEDTLS_RSA_C) || defined(MBEDTLS_PK_RSA_ALT_SUPPORT)) && \
     MBEDTLS_MPI_MAX_SIZE > MBEDTLS_PK_SIGNATURE_MAX_SIZE
 /* For RSA, the signature can be as large as the bignum module allows.
  * For RSA_ALT, the signature size is not necessarily tied to what the
@@ -162,15 +161,14 @@ typedef struct mbedtls_pk_rsassa_pss_options
  * types, lengths (represented by up to 2 bytes), and potential leading
  * zeros of the INTEGERs and the SEQUENCE. */
 #undef MBEDTLS_PK_SIGNATURE_MAX_SIZE
-#define MBEDTLS_PK_SIGNATURE_MAX_SIZE ( PSA_VENDOR_ECDSA_SIGNATURE_MAX_SIZE + 11 )
+#define MBEDTLS_PK_SIGNATURE_MAX_SIZE (PSA_VENDOR_ECDSA_SIGNATURE_MAX_SIZE + 11)
 #endif
 #endif /* defined(MBEDTLS_USE_PSA_CRYPTO) */
 
 /**
  * \brief           Types for interfacing with the debug module
  */
-typedef enum
-{
+typedef enum {
     MBEDTLS_PK_DEBUG_NONE = 0,
     MBEDTLS_PK_DEBUG_MPI,
     MBEDTLS_PK_DEBUG_ECP,
@@ -179,8 +177,7 @@ typedef enum
 /**
  * \brief           Item to send to the debug module
  */
-typedef struct mbedtls_pk_debug_item
-{
+typedef struct mbedtls_pk_debug_item {
     mbedtls_pk_debug_type type;
     const char *name;
     void *value;
@@ -197,20 +194,18 @@ typedef struct mbedtls_pk_info_t mbedtls_pk_info_t;
 /**
  * \brief           Public key container
  */
-typedef struct mbedtls_pk_context
-{
-    const mbedtls_pk_info_t *   pk_info; /**< Public key information         */
-    void *                      pk_ctx;  /**< Underlying public key context  */
+typedef struct mbedtls_pk_context {
+    const mbedtls_pk_info_t *pk_info;    /**< Public key information         */
+    void *pk_ctx;                        /**< Underlying public key context  */
 } mbedtls_pk_context;
 
 #if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
 /**
  * \brief           Context for resuming operations
  */
-typedef struct
-{
-    const mbedtls_pk_info_t *   pk_info; /**< Public key information         */
-    void *                      rs_ctx;  /**< Underlying restart context     */
+typedef struct {
+    const mbedtls_pk_info_t *pk_info;    /**< Public key information         */
+    void *rs_ctx;                        /**< Underlying restart context     */
 } mbedtls_pk_restart_ctx;
 #else /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
 /* Now we can declare functions that take a pointer to that */
@@ -221,14 +216,16 @@ typedef void mbedtls_pk_restart_ctx;
 /**
  * \brief           Types for RSA-alt abstraction
  */
-typedef int (*mbedtls_pk_rsa_alt_decrypt_func)( void *ctx, int mode, size_t *olen,
-                    const unsigned char *input, unsigned char *output,
-                    size_t output_max_len );
-typedef int (*mbedtls_pk_rsa_alt_sign_func)( void *ctx,
-                    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
-                    int mode, mbedtls_md_type_t md_alg, unsigned int hashlen,
-                    const unsigned char *hash, unsigned char *sig );
-typedef size_t (*mbedtls_pk_rsa_alt_key_len_func)( void *ctx );
+typedef int (*mbedtls_pk_rsa_alt_decrypt_func)(void *ctx, int mode, size_t *olen,
+                                               const unsigned char *input, unsigned char *output,
+                                               size_t output_max_len);
+typedef int (*mbedtls_pk_rsa_alt_sign_func)(void *ctx,
+                                            int (*f_rng)(void *, unsigned char *, size_t),
+                                            void *p_rng,
+                                            int mode, mbedtls_md_type_t md_alg,
+                                            unsigned int hashlen,
+                                            const unsigned char *hash, unsigned char *sig);
+typedef size_t (*mbedtls_pk_rsa_alt_key_len_func)(void *ctx);
 #endif /* MBEDTLS_PK_RSA_ALT_SUPPORT */
 
 /**
@@ -238,7 +235,7 @@ typedef size_t (*mbedtls_pk_rsa_alt_key_len_func)( void *ctx );
  *
  * \return          The PK info associated with the type or NULL if not found.
  */
-const mbedtls_pk_info_t *mbedtls_pk_info_from_type( mbedtls_pk_type_t pk_type );
+const mbedtls_pk_info_t *mbedtls_pk_info_from_type(mbedtls_pk_type_t pk_type);
 
 /**
  * \brief           Initialize a #mbedtls_pk_context (as NONE).
@@ -246,7 +243,7 @@ const mbedtls_pk_info_t *mbedtls_pk_info_from_type( mbedtls_pk_type_t pk_type );
  * \param ctx       The context to initialize.
  *                  This must not be \c NULL.
  */
-void mbedtls_pk_init( mbedtls_pk_context *ctx );
+void mbedtls_pk_init(mbedtls_pk_context *ctx);
 
 /**
  * \brief           Free the components of a #mbedtls_pk_context.
@@ -259,7 +256,7 @@ void mbedtls_pk_init( mbedtls_pk_context *ctx );
  *                  PSA key and you still need to call psa_destroy_key()
  *                  independently if you want to destroy that key.
  */
-void mbedtls_pk_free( mbedtls_pk_context *ctx );
+void mbedtls_pk_free(mbedtls_pk_context *ctx);
 
 #if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
 /**
@@ -268,7 +265,7 @@ void mbedtls_pk_free( mbedtls_pk_context *ctx );
  * \param ctx       The context to initialize.
  *                  This must not be \c NULL.
  */
-void mbedtls_pk_restart_init( mbedtls_pk_restart_ctx *ctx );
+void mbedtls_pk_restart_init(mbedtls_pk_restart_ctx *ctx);
 
 /**
  * \brief           Free the components of a restart context
@@ -276,7 +273,7 @@ void mbedtls_pk_restart_init( mbedtls_pk_restart_ctx *ctx );
  * \param ctx       The context to clear. It must have been initialized.
  *                  If this is \c NULL, this function does nothing.
  */
-void mbedtls_pk_restart_free( mbedtls_pk_restart_ctx *ctx );
+void mbedtls_pk_restart_free(mbedtls_pk_restart_ctx *ctx);
 #endif /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
 
 /**
@@ -294,7 +291,7 @@ void mbedtls_pk_restart_free( mbedtls_pk_restart_ctx *ctx );
  * \note            For contexts holding an RSA-alt key, use
  *                  \c mbedtls_pk_setup_rsa_alt() instead.
  */
-int mbedtls_pk_setup( mbedtls_pk_context *ctx, const mbedtls_pk_info_t *info );
+int mbedtls_pk_setup(mbedtls_pk_context *ctx, const mbedtls_pk_info_t *info);
 
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
 /**
@@ -325,8 +322,8 @@ int mbedtls_pk_setup( mbedtls_pk_context *ctx, const mbedtls_pk_info_t *info );
  *                  ECC key pair.
  * \return          #MBEDTLS_ERR_PK_ALLOC_FAILED on allocation failure.
  */
-int mbedtls_pk_setup_opaque( mbedtls_pk_context *ctx,
-                             const psa_key_id_t key );
+int mbedtls_pk_setup_opaque(mbedtls_pk_context *ctx,
+                            const psa_key_id_t key);
 #endif /* MBEDTLS_USE_PSA_CRYPTO */
 
 #if defined(MBEDTLS_PK_RSA_ALT_SUPPORT)
@@ -345,10 +342,10 @@ int mbedtls_pk_setup_opaque( mbedtls_pk_context *ctx,
  *
  * \note            This function replaces \c mbedtls_pk_setup() for RSA-alt.
  */
-int mbedtls_pk_setup_rsa_alt( mbedtls_pk_context *ctx, void * key,
-                         mbedtls_pk_rsa_alt_decrypt_func decrypt_func,
-                         mbedtls_pk_rsa_alt_sign_func sign_func,
-                         mbedtls_pk_rsa_alt_key_len_func key_len_func );
+int mbedtls_pk_setup_rsa_alt(mbedtls_pk_context *ctx, void *key,
+                             mbedtls_pk_rsa_alt_decrypt_func decrypt_func,
+                             mbedtls_pk_rsa_alt_sign_func sign_func,
+                             mbedtls_pk_rsa_alt_key_len_func key_len_func);
 #endif /* MBEDTLS_PK_RSA_ALT_SUPPORT */
 
 /**
@@ -358,7 +355,7 @@ int mbedtls_pk_setup_rsa_alt( mbedtls_pk_context *ctx, void * key,
  *
  * \return          Key size in bits, or 0 on error
  */
-size_t mbedtls_pk_get_bitlen( const mbedtls_pk_context *ctx );
+size_t mbedtls_pk_get_bitlen(const mbedtls_pk_context *ctx);
 
 /**
  * \brief           Get the length in bytes of the underlying key
@@ -367,9 +364,9 @@ size_t mbedtls_pk_get_bitlen( const mbedtls_pk_context *ctx );
  *
  * \return          Key length in bytes, or 0 on error
  */
-static inline size_t mbedtls_pk_get_len( const mbedtls_pk_context *ctx )
+static inline size_t mbedtls_pk_get_len(const mbedtls_pk_context *ctx)
 {
-    return( ( mbedtls_pk_get_bitlen( ctx ) + 7 ) / 8 );
+    return (mbedtls_pk_get_bitlen(ctx) + 7) / 8;
 }
 
 /**
@@ -384,7 +381,7 @@ static inline size_t mbedtls_pk_get_len( const mbedtls_pk_context *ctx )
  *                  been initialized but not set up, or that has been
  *                  cleared with mbedtls_pk_free().
  */
-int mbedtls_pk_can_do( const mbedtls_pk_context *ctx, mbedtls_pk_type_t type );
+int mbedtls_pk_can_do(const mbedtls_pk_context *ctx, mbedtls_pk_type_t type);
 
 /**
  * \brief           Verify signature (including padding if relevant).
@@ -398,21 +395,26 @@ int mbedtls_pk_can_do( const mbedtls_pk_context *ctx, mbedtls_pk_type_t type );
  *
  * \return          0 on success (signature is valid),
  *                  #MBEDTLS_ERR_PK_SIG_LEN_MISMATCH if there is a valid
- *                  signature in sig but its length is less than \p siglen,
+ *                  signature in \p sig but its length is less than \p sig_len,
  *                  or a specific error code.
  *
  * \note            For RSA keys, the default padding type is PKCS#1 v1.5.
  *                  Use \c mbedtls_pk_verify_ext( MBEDTLS_PK_RSASSA_PSS, ... )
  *                  to verify RSASSA_PSS signatures.
  *
+ * \note            If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
+ *                  subsystem must have been initialized by calling
+ *                  psa_crypto_init() before calling this function,
+ *                  if the key might be an ECC (ECDSA) key.
+ *
  * \note            If hash_len is 0, then the length associated with md_alg
  *                  is used instead, or an error returned if it is invalid.
  *
  * \note            md_alg may be MBEDTLS_MD_NONE, only if hash_len != 0
  */
-int mbedtls_pk_verify( mbedtls_pk_context *ctx, mbedtls_md_type_t md_alg,
-               const unsigned char *hash, size_t hash_len,
-               const unsigned char *sig, size_t sig_len );
+int mbedtls_pk_verify(mbedtls_pk_context *ctx, mbedtls_md_type_t md_alg,
+                      const unsigned char *hash, size_t hash_len,
+                      const unsigned char *sig, size_t sig_len);
 
 /**
  * \brief           Restartable version of \c mbedtls_pk_verify()
@@ -434,11 +436,11 @@ int mbedtls_pk_verify( mbedtls_pk_context *ctx, mbedtls_md_type_t md_alg,
  * \return          #MBEDTLS_ERR_ECP_IN_PROGRESS if maximum number of
  *                  operations was reached: see \c mbedtls_ecp_set_max_ops().
  */
-int mbedtls_pk_verify_restartable( mbedtls_pk_context *ctx,
-               mbedtls_md_type_t md_alg,
-               const unsigned char *hash, size_t hash_len,
-               const unsigned char *sig, size_t sig_len,
-               mbedtls_pk_restart_ctx *rs_ctx );
+int mbedtls_pk_verify_restartable(mbedtls_pk_context *ctx,
+                                  mbedtls_md_type_t md_alg,
+                                  const unsigned char *hash, size_t hash_len,
+                                  const unsigned char *sig, size_t sig_len,
+                                  mbedtls_pk_restart_ctx *rs_ctx);
 
 /**
  * \brief           Verify signature, with options.
@@ -457,7 +459,7 @@ int mbedtls_pk_verify_restartable( mbedtls_pk_context *ctx,
  *                  #MBEDTLS_ERR_PK_TYPE_MISMATCH if the PK context can't be
  *                  used for this type of signatures,
  *                  #MBEDTLS_ERR_PK_SIG_LEN_MISMATCH if there is a valid
- *                  signature in sig but its length is less than \p siglen,
+ *                  signature in \p sig but its length is less than \p sig_len,
  *                  or a specific error code.
  *
  * \note            If hash_len is 0, then the length associated with md_alg
@@ -469,10 +471,10 @@ int mbedtls_pk_verify_restartable( mbedtls_pk_context *ctx,
  *                  to a mbedtls_pk_rsassa_pss_options structure,
  *                  otherwise it must be NULL.
  */
-int mbedtls_pk_verify_ext( mbedtls_pk_type_t type, const void *options,
-                   mbedtls_pk_context *ctx, mbedtls_md_type_t md_alg,
-                   const unsigned char *hash, size_t hash_len,
-                   const unsigned char *sig, size_t sig_len );
+int mbedtls_pk_verify_ext(mbedtls_pk_type_t type, const void *options,
+                          mbedtls_pk_context *ctx, mbedtls_md_type_t md_alg,
+                          const unsigned char *hash, size_t hash_len,
+                          const unsigned char *sig, size_t sig_len);
 
 /**
  * \brief           Make signature, including padding if relevant.
@@ -504,10 +506,10 @@ int mbedtls_pk_verify_ext( mbedtls_pk_type_t type, const void *options,
  * \note            For RSA, md_alg may be MBEDTLS_MD_NONE if hash_len != 0.
  *                  For ECDSA, md_alg may never be MBEDTLS_MD_NONE.
  */
-int mbedtls_pk_sign( mbedtls_pk_context *ctx, mbedtls_md_type_t md_alg,
-             const unsigned char *hash, size_t hash_len,
-             unsigned char *sig, size_t *sig_len,
-             int (*f_rng)(void *, unsigned char *, size_t), void *p_rng );
+int mbedtls_pk_sign(mbedtls_pk_context *ctx, mbedtls_md_type_t md_alg,
+                    const unsigned char *hash, size_t hash_len,
+                    unsigned char *sig, size_t *sig_len,
+                    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
 
 /**
  * \brief           Restartable version of \c mbedtls_pk_sign()
@@ -537,12 +539,12 @@ int mbedtls_pk_sign( mbedtls_pk_context *ctx, mbedtls_md_type_t md_alg,
  * \return          #MBEDTLS_ERR_ECP_IN_PROGRESS if maximum number of
  *                  operations was reached: see \c mbedtls_ecp_set_max_ops().
  */
-int mbedtls_pk_sign_restartable( mbedtls_pk_context *ctx,
-             mbedtls_md_type_t md_alg,
-             const unsigned char *hash, size_t hash_len,
-             unsigned char *sig, size_t *sig_len,
-             int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
-             mbedtls_pk_restart_ctx *rs_ctx );
+int mbedtls_pk_sign_restartable(mbedtls_pk_context *ctx,
+                                mbedtls_md_type_t md_alg,
+                                const unsigned char *hash, size_t hash_len,
+                                unsigned char *sig, size_t *sig_len,
+                                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+                                mbedtls_pk_restart_ctx *rs_ctx);
 
 /**
  * \brief           Decrypt message (including padding if relevant).
@@ -561,10 +563,10 @@ int mbedtls_pk_sign_restartable( mbedtls_pk_context *ctx,
  *
  * \return          0 on success, or a specific error code.
  */
-int mbedtls_pk_decrypt( mbedtls_pk_context *ctx,
-                const unsigned char *input, size_t ilen,
-                unsigned char *output, size_t *olen, size_t osize,
-                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng );
+int mbedtls_pk_decrypt(mbedtls_pk_context *ctx,
+                       const unsigned char *input, size_t ilen,
+                       unsigned char *output, size_t *olen, size_t osize,
+                       int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
 
 /**
  * \brief           Encrypt message (including padding if relevant).
@@ -582,10 +584,10 @@ int mbedtls_pk_decrypt( mbedtls_pk_context *ctx,
  *
  * \return          0 on success, or a specific error code.
  */
-int mbedtls_pk_encrypt( mbedtls_pk_context *ctx,
-                const unsigned char *input, size_t ilen,
-                unsigned char *output, size_t *olen, size_t osize,
-                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng );
+int mbedtls_pk_encrypt(mbedtls_pk_context *ctx,
+                       const unsigned char *input, size_t ilen,
+                       unsigned char *output, size_t *olen, size_t osize,
+                       int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
 
 /**
  * \brief           Check if a public-private pair of keys matches.
@@ -599,7 +601,7 @@ int mbedtls_pk_encrypt( mbedtls_pk_context *ctx,
  * \return          #MBEDTLS_ERR_PK_BAD_INPUT_DATA if a context is invalid.
  * \return          Another non-zero value if the keys do not match.
  */
-int mbedtls_pk_check_pair( const mbedtls_pk_context *pub, const mbedtls_pk_context *prv );
+int mbedtls_pk_check_pair(const mbedtls_pk_context *pub, const mbedtls_pk_context *prv);
 
 /**
  * \brief           Export debug information
@@ -609,7 +611,7 @@ int mbedtls_pk_check_pair( const mbedtls_pk_context *pub, const mbedtls_pk_conte
  *
  * \return          0 on success or MBEDTLS_ERR_PK_BAD_INPUT_DATA
  */
-int mbedtls_pk_debug( const mbedtls_pk_context *ctx, mbedtls_pk_debug_item *items );
+int mbedtls_pk_debug(const mbedtls_pk_context *ctx, mbedtls_pk_debug_item *items);
 
 /**
  * \brief           Access the type name
@@ -618,7 +620,7 @@ int mbedtls_pk_debug( const mbedtls_pk_context *ctx, mbedtls_pk_debug_item *item
  *
  * \return          Type name on success, or "invalid PK"
  */
-const char * mbedtls_pk_get_name( const mbedtls_pk_context *ctx );
+const char *mbedtls_pk_get_name(const mbedtls_pk_context *ctx);
 
 /**
  * \brief           Get the key type
@@ -628,7 +630,7 @@ const char * mbedtls_pk_get_name( const mbedtls_pk_context *ctx );
  * \return          Type on success.
  * \return          #MBEDTLS_PK_NONE for a context that has not been set up.
  */
-mbedtls_pk_type_t mbedtls_pk_get_type( const mbedtls_pk_context *ctx );
+mbedtls_pk_type_t mbedtls_pk_get_type(const mbedtls_pk_context *ctx);
 
 #if defined(MBEDTLS_RSA_C)
 /**
@@ -641,14 +643,13 @@ mbedtls_pk_type_t mbedtls_pk_get_type( const mbedtls_pk_context *ctx );
  *
  * \return The internal RSA context held by the PK context, or NULL.
  */
-static inline mbedtls_rsa_context *mbedtls_pk_rsa( const mbedtls_pk_context pk )
+static inline mbedtls_rsa_context *mbedtls_pk_rsa(const mbedtls_pk_context pk)
 {
-    switch( mbedtls_pk_get_type( &pk ) )
-    {
+    switch (mbedtls_pk_get_type(&pk)) {
         case MBEDTLS_PK_RSA:
-            return( (mbedtls_rsa_context *) (pk).pk_ctx );
+            return (mbedtls_rsa_context *) (pk).pk_ctx;
         default:
-            return( NULL );
+            return NULL;
     }
 }
 #endif /* MBEDTLS_RSA_C */
@@ -665,16 +666,15 @@ static inline mbedtls_rsa_context *mbedtls_pk_rsa( const mbedtls_pk_context pk )
  *
  * \return The internal EC context held by the PK context, or NULL.
  */
-static inline mbedtls_ecp_keypair *mbedtls_pk_ec( const mbedtls_pk_context pk )
+static inline mbedtls_ecp_keypair *mbedtls_pk_ec(const mbedtls_pk_context pk)
 {
-    switch( mbedtls_pk_get_type( &pk ) )
-    {
+    switch (mbedtls_pk_get_type(&pk)) {
         case MBEDTLS_PK_ECKEY:
         case MBEDTLS_PK_ECKEY_DH:
         case MBEDTLS_PK_ECDSA:
-            return( (mbedtls_ecp_keypair *) (pk).pk_ctx );
+            return (mbedtls_ecp_keypair *) (pk).pk_ctx;
         default:
-            return( NULL );
+            return NULL;
     }
 }
 #endif /* MBEDTLS_ECP_C */
@@ -709,9 +709,9 @@ static inline mbedtls_ecp_keypair *mbedtls_pk_ec( const mbedtls_pk_context pk )
  *
  * \return          0 if successful, or a specific PK or PEM error code
  */
-int mbedtls_pk_parse_key( mbedtls_pk_context *ctx,
-                  const unsigned char *key, size_t keylen,
-                  const unsigned char *pwd, size_t pwdlen );
+int mbedtls_pk_parse_key(mbedtls_pk_context *ctx,
+                         const unsigned char *key, size_t keylen,
+                         const unsigned char *pwd, size_t pwdlen);
 
 /** \ingroup pk_module */
 /**
@@ -735,8 +735,8 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *ctx,
  *
  * \return          0 if successful, or a specific PK or PEM error code
  */
-int mbedtls_pk_parse_public_key( mbedtls_pk_context *ctx,
-                         const unsigned char *key, size_t keylen );
+int mbedtls_pk_parse_public_key(mbedtls_pk_context *ctx,
+                                const unsigned char *key, size_t keylen);
 
 #if defined(MBEDTLS_FS_IO)
 /** \ingroup pk_module */
@@ -760,8 +760,8 @@ int mbedtls_pk_parse_public_key( mbedtls_pk_context *ctx,
  *
  * \return          0 if successful, or a specific PK or PEM error code
  */
-int mbedtls_pk_parse_keyfile( mbedtls_pk_context *ctx,
-                      const char *path, const char *password );
+int mbedtls_pk_parse_keyfile(mbedtls_pk_context *ctx,
+                             const char *path, const char *password);
 
 /** \ingroup pk_module */
 /**
@@ -780,7 +780,7 @@ int mbedtls_pk_parse_keyfile( mbedtls_pk_context *ctx,
  *
  * \return          0 if successful, or a specific PK or PEM error code
  */
-int mbedtls_pk_parse_public_keyfile( mbedtls_pk_context *ctx, const char *path );
+int mbedtls_pk_parse_public_keyfile(mbedtls_pk_context *ctx, const char *path);
 #endif /* MBEDTLS_FS_IO */
 #endif /* MBEDTLS_PK_PARSE_C */
 
@@ -798,7 +798,7 @@ int mbedtls_pk_parse_public_keyfile( mbedtls_pk_context *ctx, const char *path )
  * \return          length of data written if successful, or a specific
  *                  error code
  */
-int mbedtls_pk_write_key_der( mbedtls_pk_context *ctx, unsigned char *buf, size_t size );
+int mbedtls_pk_write_key_der(mbedtls_pk_context *ctx, unsigned char *buf, size_t size);
 
 /**
  * \brief           Write a public key to a SubjectPublicKeyInfo DER structure
@@ -813,7 +813,7 @@ int mbedtls_pk_write_key_der( mbedtls_pk_context *ctx, unsigned char *buf, size_
  * \return          length of data written if successful, or a specific
  *                  error code
  */
-int mbedtls_pk_write_pubkey_der( mbedtls_pk_context *ctx, unsigned char *buf, size_t size );
+int mbedtls_pk_write_pubkey_der(mbedtls_pk_context *ctx, unsigned char *buf, size_t size);
 
 #if defined(MBEDTLS_PEM_WRITE_C)
 /**
@@ -826,7 +826,7 @@ int mbedtls_pk_write_pubkey_der( mbedtls_pk_context *ctx, unsigned char *buf, si
  *
  * \return          0 if successful, or a specific error code
  */
-int mbedtls_pk_write_pubkey_pem( mbedtls_pk_context *ctx, unsigned char *buf, size_t size );
+int mbedtls_pk_write_pubkey_pem(mbedtls_pk_context *ctx, unsigned char *buf, size_t size);
 
 /**
  * \brief           Write a private key to a PKCS#1 or SEC1 PEM string
@@ -838,7 +838,7 @@ int mbedtls_pk_write_pubkey_pem( mbedtls_pk_context *ctx, unsigned char *buf, si
  *
  * \return          0 if successful, or a specific error code
  */
-int mbedtls_pk_write_key_pem( mbedtls_pk_context *ctx, unsigned char *buf, size_t size );
+int mbedtls_pk_write_key_pem(mbedtls_pk_context *ctx, unsigned char *buf, size_t size);
 #endif /* MBEDTLS_PEM_WRITE_C */
 #endif /* MBEDTLS_PK_WRITE_C */
 
@@ -858,8 +858,8 @@ int mbedtls_pk_write_key_pem( mbedtls_pk_context *ctx, unsigned char *buf, size_
  *
  * \return          0 if successful, or a specific PK error code
  */
-int mbedtls_pk_parse_subpubkey( unsigned char **p, const unsigned char *end,
-                        mbedtls_pk_context *pk );
+int mbedtls_pk_parse_subpubkey(unsigned char **p, const unsigned char *end,
+                               mbedtls_pk_context *pk);
 #endif /* MBEDTLS_PK_PARSE_C */
 
 #if defined(MBEDTLS_PK_WRITE_C)
@@ -873,8 +873,8 @@ int mbedtls_pk_parse_subpubkey( unsigned char **p, const unsigned char *end,
  *
  * \return          the length written or a negative error code
  */
-int mbedtls_pk_write_pubkey( unsigned char **p, unsigned char *start,
-                     const mbedtls_pk_context *key );
+int mbedtls_pk_write_pubkey(unsigned char **p, unsigned char *start,
+                            const mbedtls_pk_context *key);
 #endif /* MBEDTLS_PK_WRITE_C */
 
 /*
@@ -882,7 +882,7 @@ int mbedtls_pk_write_pubkey( unsigned char **p, unsigned char *start,
  * know you do.
  */
 #if defined(MBEDTLS_FS_IO)
-int mbedtls_pk_load_file( const char *path, unsigned char **buf, size_t *n );
+int mbedtls_pk_load_file(const char *path, unsigned char **buf, size_t *n);
 #endif
 
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
@@ -906,9 +906,9 @@ int mbedtls_pk_load_file( const char *path, unsigned char **buf, size_t *n );
  * \return          \c 0 if successful.
  * \return          An Mbed TLS error code otherwise.
  */
-int mbedtls_pk_wrap_as_opaque( mbedtls_pk_context *pk,
-                               psa_key_id_t *key,
-                               psa_algorithm_t hash_alg );
+int mbedtls_pk_wrap_as_opaque(mbedtls_pk_context *pk,
+                              psa_key_id_t *key,
+                              psa_algorithm_t hash_alg);
 #endif /* MBEDTLS_USE_PSA_CRYPTO */
 
 #ifdef __cplusplus

@@ -21,10 +21,15 @@
 
 #define IsFlat IsFlat_NEON
 
-static uint32x2_t horizontal_add_uint32x4(const uint32x4_t a) {
+static uint32_t horizontal_add_uint32x4(const uint32x4_t a) {
+#if WEBP_AARCH64
+  return vaddvq_u32(a);
+#else
   const uint64x2_t b = vpaddlq_u32(a);
-  return vadd_u32(vreinterpret_u32_u64(vget_low_u64(b)),
-                  vreinterpret_u32_u64(vget_high_u64(b)));
+  const uint32x2_t c = vadd_u32(vreinterpret_u32_u64(vget_low_u64(b)),
+                                vreinterpret_u32_u64(vget_high_u64(b)));
+  return vget_lane_u32(c, 0);
+#endif
 }
 
 static WEBP_INLINE int IsFlat(const int16_t* levels, int num_blocks,
@@ -45,7 +50,7 @@ static WEBP_INLINE int IsFlat(const int16_t* levels, int num_blocks,
 
     levels += 16;
   }
-  return thresh >= (int32_t)vget_lane_u32(horizontal_add_uint32x4(sum), 0);
+  return thresh >= (int)horizontal_add_uint32x4(sum);
 }
 
 #else
