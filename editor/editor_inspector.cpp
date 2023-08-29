@@ -1852,6 +1852,10 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 		if (page == max_page && (MAX(0, count - 1) / page_length != max_page)) {
 			emit_signal(SNAME("page_change_request"), max_page - 1);
 		}
+	} else if (p_to_pos == begin_array_index - 1) {
+		emit_signal(SNAME("page_change_request"), page - 1);
+	} else if (p_to_pos > end_array_index) {
+		emit_signal(SNAME("page_change_request"), page + 1);
 	}
 	begin_array_index = page * page_length;
 	end_array_index = MIN(count, (page + 1) * page_length);
@@ -2112,6 +2116,19 @@ void EditorInspectorArray::_setup() {
 
 		// Move button.
 		if (movable) {
+			int element_position = begin_array_index + i;
+			VBoxContainer *move_vbox = memnew(VBoxContainer);
+			move_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+			move_vbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+			ae.hbox->add_child(move_vbox);
+
+			if (element_position > 0) {
+				ae.move_up = memnew(Button);
+				ae.move_up->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
+				ae.move_up->connect("pressed", callable_mp(this, &EditorInspectorArray::_move_element).bind(element_position, element_position - 1));
+				move_vbox->add_child(ae.move_up);
+			}
+
 			ae.move_texture_rect = memnew(TextureRect);
 			ae.move_texture_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 			ae.move_texture_rect->set_default_cursor_shape(Control::CURSOR_MOVE);
@@ -2119,7 +2136,14 @@ void EditorInspectorArray::_setup() {
 			if (is_inside_tree()) {
 				ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 			}
-			ae.hbox->add_child(ae.move_texture_rect);
+			move_vbox->add_child(ae.move_texture_rect);
+
+			if (element_position < _get_array_count() - 1) {
+				ae.move_down = memnew(Button);
+				ae.move_down->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
+				ae.move_down->connect("pressed", callable_mp(this, &EditorInspectorArray::_move_element).bind(element_position, element_position + 2));
+				move_vbox->add_child(ae.move_down);
+			}
 		}
 
 		if (numbered) {
@@ -2220,7 +2244,12 @@ void EditorInspectorArray::_notification(int p_what) {
 				if (ae.move_texture_rect) {
 					ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 				}
-
+				if (ae.move_up) {
+					ae.move_up->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
+				}
+				if (ae.move_down) {
+					ae.move_down->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
+				}
 				Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
 				ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 				ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);

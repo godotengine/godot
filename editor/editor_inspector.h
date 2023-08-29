@@ -361,7 +361,9 @@ class EditorInspectorArray : public EditorInspectorSection {
 		PanelContainer *panel = nullptr;
 		MarginContainer *margin = nullptr;
 		HBoxContainer *hbox = nullptr;
+		Button *move_up = nullptr;
 		TextureRect *move_texture_rect = nullptr;
+		Button *move_down = nullptr;
 		Label *number = nullptr;
 		VBoxContainer *vbox = nullptr;
 		Button *erase = nullptr;
