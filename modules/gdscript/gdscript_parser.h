@@ -724,6 +724,7 @@ public:
 
 		IdentifierNode *identifier = nullptr;
 		String icon_path;
+		String simplified_icon_path;
 		Vector<Member> members;
 		HashMap<StringName, int> members_indices;
 		ClassNode *outer = nullptr;

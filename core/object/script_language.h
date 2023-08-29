@@ -141,6 +141,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;
+	virtual String get_class_icon_path() const = 0;
 	virtual PropertyInfo get_class_category() const;
 #endif // TOOLS_ENABLED
 

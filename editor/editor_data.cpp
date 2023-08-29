@@ -1122,8 +1122,14 @@ Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 	Ref<Script> base_scr = p_script;
 	while (base_scr.is_valid()) {
 		// Check for scripted classes.
+		String icon_path;
 		StringName class_name = script_class_get_name(base_scr->get_path());
-		String icon_path = script_class_get_icon_path(class_name);
+		if (base_scr->is_built_in() || class_name == StringName()) {
+			icon_path = base_scr->get_class_icon_path();
+		} else {
+			icon_path = script_class_get_icon_path(class_name);
+		}
+
 		Ref<Texture2D> icon = _load_script_icon(icon_path);
 		if (icon.is_valid()) {
 			_script_icon_cache[p_script] = icon;

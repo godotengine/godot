@@ -3840,18 +3840,31 @@ bool GDScriptParser::tool_annotation(const AnnotationNode *p_annotation, Node *p
 bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::CLASS, false, R"("@icon" annotation can only be applied to classes.)");
 	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
+
 	ClassNode *p_class = static_cast<ClassNode *>(p_node);
+	String path = p_annotation->resolved_arguments[0];
+
 #ifdef DEBUG_ENABLED
 	if (!p_class->icon_path.is_empty()) {
 		push_error(R"("@icon" annotation can only be used once.)", p_annotation);
 		return false;
 	}
-	if (String(p_annotation->resolved_arguments[0]).is_empty()) {
+	if (path.is_empty()) {
 		push_error(R"("@icon" annotation argument must contain the path to the icon.)", p_annotation->arguments[0]);
 		return false;
 	}
 #endif // DEBUG_ENABLED
-	p_class->icon_path = p_annotation->resolved_arguments[0];
+
+	p_class->icon_path = path;
+
+	if (path.is_empty() || path.is_absolute_path()) {
+		p_class->simplified_icon_path = path.simplify_path();
+	} else if (path.is_relative_path()) {
+		p_class->simplified_icon_path = script_path.get_base_dir().path_join(path).simplify_path();
+	} else {
+		p_class->simplified_icon_path = path;
+	}
+
 	return true;
 }
 
