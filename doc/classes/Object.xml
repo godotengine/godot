@@ -704,6 +704,7 @@
 				- [code]hint[/code] is [i]how[/i] the property is meant to be edited (see [enum PropertyHint]);
 				- [code]hint_string[/code] depends on the hint (see [enum PropertyHint]);
 				- [code]usage[/code] is a combination of [enum PropertyUsageFlags].
+				[b]Note:[/b] In GDScript, all class members are treated as properties. In C# and GDExtension, it may be necessary to explicitly mark class members as Godot properties using decorators or attributes.
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
