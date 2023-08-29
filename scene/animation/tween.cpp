@@ -675,6 +675,10 @@ bool CallbackTweener::step(double &r_delta) {
 		return false;
 	}
 
+	if (!callback.get_object()) {
+		return false;
+	}
+
 	elapsed_time += r_delta;
 	if (elapsed_time >= delay) {
 		Variant result;
@@ -733,6 +737,10 @@ void MethodTweener::start() {
 
 bool MethodTweener::step(double &r_delta) {
 	if (finished) {
+		return false;
+	}
+
+	if (!callback.get_object()) {
 		return false;
 	}
 
