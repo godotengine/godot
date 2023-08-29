@@ -506,6 +506,7 @@ if selected_platform in platform_list:
 
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
+            env.Append(LINKFLAGS=["/WX"])
     else:  # GCC, Clang
         version = methods.get_compiler_version(env) or [-1, -1]
 

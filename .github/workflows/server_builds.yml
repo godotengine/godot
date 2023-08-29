@@ -1,5 +1,6 @@
 name: ☁ Server Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:

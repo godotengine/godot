@@ -112,6 +112,11 @@ def configure(env):
         env.Prepend(CCFLAGS=["-g3"])
         env.Append(LINKFLAGS=["-rdynamic"])
 
+    if env["debug_symbols"]:
+        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+        # otherwise addr2line doesn't understand them
+        env.Append(CCFLAGS=["-gdwarf-4"])
+
     ## Architecture
 
     is64 = sys.maxsize > 2**32
@@ -419,7 +424,7 @@ def configure(env):
         gnu_ld_version = re.search("^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
         if not gnu_ld_version:
             print(
-                "Warning: Creating template binaries enabled for PCK embedding is currently only supported with GNU ld, not gold or LLD."
+                "Warning: Creating export template binaries enabled for PCK embedding is currently only supported with GNU ld, not gold, LLD or mold."
             )
         else:
             if float(gnu_ld_version.group(1)) >= 2.30:

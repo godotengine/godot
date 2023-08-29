@@ -131,23 +131,9 @@ cppcheck-cppcheck-build-dir/
 *.pydevproject
 *.launch
 
-# Gcov and Lcov code coverage
-*.gcno
+# GCOV code coverage
 *.gcda
-*.gcov.html
-*.func.html
-*.func-sort-c.html
-*index-sort-f.html
-*index-sort-l.html
-*index.html
-godot.info
-amber.png
-emerald.png
-glass.png
-ruby.png
-snow.png
-updown.png
-gcov.css
+*.gcno
 
 # Geany
 *.geany
@@ -246,9 +232,6 @@ xcuserdata/
 x64/
 x86/
 
-# Do not ignore x86 folders anywhere under thirdparty libraries
-!thirdparty/**/x86/
-
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
@@ -257,6 +240,12 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+
+# Do not ignore arch-specific folders anywhere under thirdparty libraries
+!thirdparty/**/x64/
+!thirdparty/**/x86/
+!thirdparty/**/arm/
+!thirdparty/**/arm64/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

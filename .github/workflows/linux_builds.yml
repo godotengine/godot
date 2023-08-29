@@ -1,5 +1,6 @@
 name: 🐧 Linux Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
@@ -62,6 +63,12 @@ jobs:
               libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
               libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip \
               libspeechd-dev speech-dispatcher
+
+      - name: Free disk space on runner
+        run: |
+          echo "Disk usage before:" && df -h
+          sudo rm -rf /usr/local/lib/android
+          echo "Disk usage after:" && df -h
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache

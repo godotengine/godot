@@ -269,7 +269,7 @@ License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnP Project
-Copyright: 2005-2022, Thomas Bernard
+Copyright: 2005-2023, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
@@ -413,7 +413,7 @@ License: Zlib
 
 Files: ./thirdparty/zstd/
 Comment: Zstandard
-Copyright: 2016-2021, Facebook, Inc.
+Copyright: Meta Platforms, Inc. and affiliates.
 License: BSD-3-clause
 
 

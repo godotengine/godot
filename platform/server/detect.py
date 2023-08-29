@@ -51,7 +51,6 @@ def get_flags():
 
 
 def configure(env):
-
     ## Build type
 
     if env["target"] == "release":
@@ -75,6 +74,11 @@ def configure(env):
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-g3"])
         env.Append(LINKFLAGS=["-rdynamic"])
+
+    if env["debug_symbols"]:
+        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+        # otherwise addr2line doesn't understand them
+        env.Append(CCFLAGS=["-gdwarf-4"])
 
     ## Architecture
 
