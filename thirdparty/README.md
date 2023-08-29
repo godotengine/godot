@@ -178,14 +178,14 @@ Files extracted from upstream source:
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.13.1 (e4586d960f339cf75e2e0b34aee30a0ed8353c0d, 2023)
+- Version: 2.13.2 (920c5502cc3ddda88f6c7d85ee834ac611bb11cc, 2023)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
 
 - `src/` folder, minus the `dlg` and `tools` subfolders
   * These files can be removed: `.dat`, `.diff`, `.mk`, `.rc`, `README*`
-  * In `src/gzip/`, remove zlib files (everything but `ftgzip.c` and `ftzconf.h`)
+  * In `src/gzip/`, keep only `ftgzip.c`
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
