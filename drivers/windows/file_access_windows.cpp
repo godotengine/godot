@@ -175,32 +175,27 @@ void FileAccessWindows::_close() {
 	f = nullptr;
 
 	if (!save_path.is_empty()) {
+		// This workaround of trying multiple times is added to deal with paranoid Windows
+		// antiviruses that love reading just written files even if they are not executable, thus
+		// locking the file and preventing renaming from happening.
+
 		bool rename_error = true;
-		int attempts = 4;
-		while (rename_error && attempts) {
-			// This workaround of trying multiple times is added to deal with paranoid Windows
-			// antiviruses that love reading just written files even if they are not executable, thus
-			// locking the file and preventing renaming from happening.
-
-#ifdef UWP_ENABLED
-			// UWP has no PathFileExists, so we check attributes instead
-			DWORD fileAttr;
-
-			fileAttr = GetFileAttributesW((LPCWSTR)(save_path.utf16().get_data()));
-			if (INVALID_FILE_ATTRIBUTES == fileAttr) {
-#else
-			if (!PathFileExistsW((LPCWSTR)(save_path.utf16().get_data()))) {
-#endif
-				// Creating new file
-				rename_error = _wrename((LPCWSTR)(path.utf16().get_data()), (LPCWSTR)(save_path.utf16().get_data())) != 0;
+		const Char16String &path_utf16 = path.utf16();
+		const Char16String &save_path_utf16 = save_path.utf16();
+		for (int i = 0; i < 1000; i++) {
+			if (ReplaceFileW((LPCWSTR)(save_path_utf16.get_data()), (LPCWSTR)(path_utf16.get_data()), nullptr, REPLACEFILE_IGNORE_MERGE_ERRORS | REPLACEFILE_IGNORE_ACL_ERRORS, nullptr, nullptr)) {
+				rename_error = false;
 			} else {
-				// Atomic replace for existing file
-				rename_error = !ReplaceFileW((LPCWSTR)(save_path.utf16().get_data()), (LPCWSTR)(path.utf16().get_data()), nullptr, 2 | 4, nullptr, nullptr);
+				// Either the target exists and is locked (temporarily, hopefully)
+				// or it doesn't exist; let's assume the latter before re-trying.
+				rename_error = _wrename((LPCWSTR)(path_utf16.get_data()), (LPCWSTR)(save_path_utf16.get_data())) != 0;
 			}
-			if (rename_error) {
-				attempts--;
-				OS::get_singleton()->delay_usec(100000); // wait 100msec and try again
+
+			if (!rename_error) {
+				break;
 			}
+
+			OS::get_singleton()->delay_usec(1000);
 		}
 
 		if (rename_error) {
