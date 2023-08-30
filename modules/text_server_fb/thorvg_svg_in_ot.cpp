@@ -187,8 +187,8 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to get SVG bounds.");
 		}
 
-		gl_state.bmp_y = -min_y * gl_state.h / new_h;
-		gl_state.bmp_x = min_x * gl_state.w / new_w;
+		gl_state.bmp_y = gl_state.h + metrics.descender / 64.f;
+		gl_state.bmp_x = 0;
 
 		gl_state.ready = true;
 	}
