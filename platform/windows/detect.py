@@ -185,6 +185,7 @@ def get_opts():
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
+        BoolVariable("build_hid_proxy", "Build the HID proxy that fixes an EnumDevices stall", True),
     ]
 
 

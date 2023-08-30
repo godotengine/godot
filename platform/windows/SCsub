@@ -46,6 +46,15 @@ if env["windows_subsystem"] == "gui":
     prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
     env_wrap.Depends(prog_wrap, prog)
 
+# Build HID proxy.
+if env["build_hid_proxy"] == True:
+    hid_wrap = env.Clone()
+    # The entrypoint on `template_release` is `mainCRTStartup`, but that is invalid if we are generating a
+    # dynamic link library. Instead, it should be `DllMainCRTStartup`, but it is fine to keep it as the default.
+    if "/ENTRY:mainCRTStartup" in hid_wrap["LINKFLAGS"]:
+        hid_wrap["LINKFLAGS"].remove("/ENTRY:mainCRTStartup")
+    hid_wrap.add_shared_library("#bin/hid", ["hid_proxy.cpp"])
+
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:
     env.vs_srcs += ["platform/windows/" + res_file]
