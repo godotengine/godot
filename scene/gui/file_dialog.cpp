@@ -263,6 +263,27 @@ void FileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 				case Key::BACKSPACE: {
 					_dir_submitted("..");
 				} break;
+#ifdef MACOS_ENABLED
+				// Cmd + Shift + G (matches Finder's "Go To" shortcut).
+				case Key::G: {
+					if (k->is_command_or_control_pressed() && k->is_shift_pressed()) {
+						dir->grab_focus();
+						dir->select_all();
+					} else {
+						handled = false;
+					}
+				} break;
+#endif
+				// Ctrl + L (matches most Windows/Linux file managers' "focus on path bar" shortcut,
+				// plus macOS Safari's "focus on address bar" shortcut).
+				case Key::L: {
+					if (k->is_command_or_control_pressed()) {
+						dir->grab_focus();
+						dir->select_all();
+					} else {
+						handled = false;
+					}
+				} break;
 				default: {
 					handled = false;
 				}
