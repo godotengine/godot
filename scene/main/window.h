@@ -356,6 +356,7 @@ public:
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
 	_FORCE_INLINE_ String atr(const String p_string) const { return is_auto_translating() ? tr(p_string) : p_string; };
+	_FORCE_INLINE_ String ATR(const String p_string) const { return atr(p_string); } // For translation fetching.
 
 	Rect2i get_usable_parent_rect() const;
 

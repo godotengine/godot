@@ -1959,7 +1959,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 
 			int option = (int)p_item->cells[p_col].val;
 
-			valtext = RTR("(Other)");
+			valtext = ATR("(Other)");
 			Vector<String> strings = p_item->cells[p_col].text.split(",");
 			for (int j = 0; j < strings.size(); j++) {
 				int value = j;

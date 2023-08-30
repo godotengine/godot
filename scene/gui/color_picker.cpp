@@ -48,6 +48,15 @@ List<Color> ColorPicker::recent_preset_cache;
 
 void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY:
+		case MainLoop::NOTIFICATION_TRANSLATION_CHANGED: {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE)) {
+				btn_pick->set_tooltip_text(ATR("Pick a color from the screen."));
+			} else {
+				btn_pick->set_tooltip_text(ATR("Pick a color from the application window."));
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			_update_color();
 		} break;
@@ -659,13 +668,13 @@ void ColorPicker::_text_type_toggled() {
 #endif
 
 		c_text->set_editable(false);
-		c_text->set_tooltip_text(RTR("Copy this constructor in a script."));
+		c_text->set_tooltip_text(ATR("Copy this constructor in a script."));
 	} else {
 		text_type->set_text("#");
 		text_type->set_icon(nullptr);
 
 		c_text->set_editable(true);
-		c_text->set_tooltip_text(RTR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
+		c_text->set_tooltip_text(ATR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	}
 	_update_color();
 }
@@ -705,7 +714,7 @@ inline int ColorPicker::_get_preset_size() {
 
 void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
 	ColorPresetButton *btn_preset_new = memnew(ColorPresetButton(p_color, p_size));
-	btn_preset_new->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
+	btn_preset_new->set_tooltip_text(vformat(ATR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
 	SET_DRAG_FORWARDING_GCDU(btn_preset_new, ColorPicker);
 	btn_preset_new->set_button_group(preset_group);
 	preset_container->add_child(btn_preset_new);
@@ -715,7 +724,7 @@ void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
 
 void ColorPicker::_add_recent_preset_button(int p_size, const Color &p_color) {
 	ColorPresetButton *btn_preset_new = memnew(ColorPresetButton(p_color, p_size));
-	btn_preset_new->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color"), p_color.to_html(p_color.a < 1)));
+	btn_preset_new->set_tooltip_text(vformat(ATR("Color: #%s\nLMB: Apply color"), p_color.to_html(p_color.a < 1)));
 	btn_preset_new->set_button_group(recent_preset_group);
 	recent_preset_hbc->add_child(btn_preset_new);
 	recent_preset_hbc->move_child(btn_preset_new, 0);
@@ -1737,11 +1746,9 @@ ColorPicker::ColorPicker() {
 	btn_pick = memnew(Button);
 	sample_hbc->add_child(btn_pick);
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE)) {
-		btn_pick->set_tooltip_text(RTR("Pick a color from the screen."));
 		btn_pick->connect(SNAME("pressed"), callable_mp(this, &ColorPicker::_pick_button_pressed));
 	} else {
 		// On unsupported platforms, use a legacy method for color picking.
-		btn_pick->set_tooltip_text(RTR("Pick a color from the application window."));
 		btn_pick->connect(SNAME("pressed"), callable_mp(this, &ColorPicker::_pick_button_pressed_legacy));
 	}
 
@@ -1755,7 +1762,7 @@ ColorPicker::ColorPicker() {
 	btn_shape->set_flat(false);
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
-	btn_shape->set_tooltip_text(RTR("Select a picker shape."));
+	btn_shape->set_tooltip_text(ATR("Select a picker shape."));
 
 	current_shape = SHAPE_HSV_RECTANGLE;
 
@@ -1796,7 +1803,7 @@ ColorPicker::ColorPicker() {
 	btn_mode->set_flat(false);
 	mode_hbc->add_child(btn_mode);
 	btn_mode->set_toggle_mode(true);
-	btn_mode->set_tooltip_text(RTR("Select a picker mode."));
+	btn_mode->set_tooltip_text(ATR("Select a picker mode."));
 
 	current_mode = MODE_RGB;
 
@@ -1838,7 +1845,7 @@ ColorPicker::ColorPicker() {
 	text_type = memnew(Button);
 	hex_hbc->add_child(text_type);
 	text_type->set_text("#");
-	text_type->set_tooltip_text(RTR("Switch between hexadecimal and code values."));
+	text_type->set_tooltip_text(ATR("Switch between hexadecimal and code values."));
 	if (Engine::get_singleton()->is_editor_hint()) {
 		text_type->connect("pressed", callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
@@ -1850,8 +1857,8 @@ ColorPicker::ColorPicker() {
 	hex_hbc->add_child(c_text);
 	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	c_text->set_select_all_on_focus(true);
-	c_text->set_tooltip_text(RTR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
-	c_text->set_placeholder(RTR("Hex code or named color"));
+	c_text->set_tooltip_text(ATR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
+	c_text->set_placeholder(ATR("Hex code or named color"));
 	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_html_focus_exit));
@@ -1929,7 +1936,7 @@ ColorPicker::ColorPicker() {
 
 	btn_add_preset = memnew(Button);
 	btn_add_preset->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	btn_add_preset->set_tooltip_text(RTR("Add current color as a preset."));
+	btn_add_preset->set_tooltip_text(ATR("Add current color as a preset."));
 	btn_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);
 }
