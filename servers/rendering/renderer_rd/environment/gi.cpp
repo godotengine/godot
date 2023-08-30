@@ -392,6 +392,10 @@ Dependency *GI::voxel_gi_get_dependency(RID p_voxel_gi) const {
 	return &voxel_gi->dependency;
 }
 
+void GI::sdfgi_reset() {
+	sdfgi_current_version++;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SDFGI
 
@@ -416,6 +420,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	y_scale_mode = RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_y_scale(p_env);
 	static const float y_scale[3] = { 2.0, 1.5, 1.0 };
 	y_mult = y_scale[y_scale_mode];
+	version = gi->sdfgi_current_version;
 	cascades.resize(num_cascades);
 	probe_axis_count = SDFGI::PROBE_DIVISOR + 1;
 	solid_cell_ratio = gi->sdfgi_solid_cell_ratio;

@@ -617,6 +617,8 @@ public:
 
 	virtual void voxel_gi_set_quality(VoxelGIQuality) = 0;
 
+	virtual void sdfgi_reset() = 0;
+
 	/* LIGHTMAP */
 
 	virtual RID lightmap_create() = 0;
