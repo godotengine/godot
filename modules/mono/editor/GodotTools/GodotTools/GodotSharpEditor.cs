@@ -440,7 +440,7 @@ namespace GodotTools
         {
             base._EnablePlugin();
 
-            ProjectSettingsChanged += GodotSharpDirs.DetermineProjectLocation;
+            ProjectSettings.SettingsChanged += GodotSharpDirs.DetermineProjectLocation;
 
             if (Instance != null)
                 throw new InvalidOperationException();
