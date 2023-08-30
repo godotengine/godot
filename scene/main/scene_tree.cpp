@@ -344,7 +344,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				gr_nodes[i]->notification(p_notification);
+				gr_nodes[i]->notification(p_notification, true);
 			} else {
 				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
 			}

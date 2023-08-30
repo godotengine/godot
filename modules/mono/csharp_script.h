@@ -283,8 +283,8 @@ public:
 
 	const Variant get_rpc_config() const override;
 
-	void notification(int p_notification) override;
-	void _call_notification(int p_notification);
+	void notification(int p_notification, bool p_reversed = false) override;
+	void _call_notification(int p_notification, bool p_reversed = false);
 
 	String to_string(bool *r_valid) override;
 

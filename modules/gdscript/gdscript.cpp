@@ -1921,14 +1921,23 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 	return Variant();
 }
 
-void GDScriptInstance::notification(int p_notification) {
+void GDScriptInstance::notification(int p_notification, bool p_reversed) {
 	//notification is not virtual, it gets called at ALL levels just like in C.
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
 
+	List<GDScript *> pl;
 	GDScript *sptr = script.ptr();
 	while (sptr) {
-		HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._notification);
+		if (p_reversed) {
+			pl.push_back(sptr);
+		} else {
+			pl.push_front(sptr);
+		}
+		sptr = sptr->_base;
+	}
+	for (GDScript *sc : pl) {
+		HashMap<StringName, GDScriptFunction *>::Iterator E = sc->member_functions.find(GDScriptLanguage::get_singleton()->strings._notification);
 		if (E) {
 			Callable::CallError err;
 			E->value->call(this, args, 1, err);
@@ -1936,7 +1945,6 @@ void GDScriptInstance::notification(int p_notification) {
 				//print error about notification call
 			}
 		}
-		sptr = sptr->_base;
 	}
 }
 

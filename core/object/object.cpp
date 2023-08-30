@@ -799,14 +799,30 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 }
 
 void Object::notification(int p_notification, bool p_reversed) {
-	_notificationv(p_notification, p_reversed);
-
-	if (script_instance) {
-		script_instance->notification(p_notification);
+	if (p_reversed) {
+		if (script_instance) {
+			script_instance->notification(p_notification, p_reversed);
+		}
+	} else {
+		_notificationv(p_notification, p_reversed);
 	}
 
-	if (_extension && _extension->notification) {
-		_extension->notification(_extension_instance, p_notification);
+	if (_extension) {
+		if (_extension->notification2) {
+			_extension->notification2(_extension_instance, p_notification, p_reversed);
+#ifndef DISABLE_DEPRECATED
+		} else if (_extension->notification) {
+			_extension->notification(_extension_instance, p_notification);
+#endif // DISABLE_DEPRECATED
+		}
+	}
+
+	if (p_reversed) {
+		_notificationv(p_notification, p_reversed);
+	} else {
+		if (script_instance) {
+			script_instance->notification(p_notification, p_reversed);
+		}
 	}
 }
 
