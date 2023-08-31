@@ -68,8 +68,6 @@
 
 #include <stdint.h>
 
-#define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
-
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
 const Vector<String> ignored_types = {};
@@ -1686,7 +1684,7 @@ bool CSharpInstance::property_can_revert(const StringName &p_name) const {
 	Variant ret;
 	Callable::CallError call_error;
 	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &CACHED_STRING_NAME(_property_can_revert), args, 1, &call_error, &ret);
+			gchandle.get_intptr(), &SNAME("_property_can_revert"), args, 1, &call_error, &ret);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return false;
@@ -1722,7 +1720,7 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 	Variant ret;
 	Callable::CallError call_error;
 	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &CACHED_STRING_NAME(_property_get_revert), args, 1, &call_error, &ret);
+			gchandle.get_intptr(), &SNAME("_property_get_revert"), args, 1, &call_error, &ret);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return false;
@@ -2010,13 +2008,11 @@ void CSharpInstance::notification(int p_notification, bool p_reversed) {
 void CSharpInstance::_call_notification(int p_notification, bool p_reversed) {
 	Variant arg = p_notification;
 	const Variant *args[1] = { &arg };
-	StringName method_name = SNAME("_notification");
-
-	Callable::CallError call_error;
 
 	Variant ret;
+	Callable::CallError call_error;
 	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &method_name, args, 1, &call_error, &ret);
+			gchandle.get_intptr(), &SNAME("_notification"), args, 1, &call_error, &ret);
 }
 
 String CSharpInstance::to_string(bool *r_valid) {
@@ -2240,7 +2236,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 }
 
 bool CSharpScript::_get(const StringName &p_name, Variant &r_ret) const {
-	if (p_name == CSharpLanguage::singleton->string_names._script_source) {
+	if (p_name == SNAME("script/source")) {
 		r_ret = get_source_code();
 		return true;
 	}
@@ -2249,7 +2245,7 @@ bool CSharpScript::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 bool CSharpScript::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == CSharpLanguage::singleton->string_names._script_source) {
+	if (p_name == SNAME("script/source")) {
 		set_source_code(p_value);
 		reload();
 		return true;
@@ -2259,7 +2255,7 @@ bool CSharpScript::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void CSharpScript::_get_property_list(List<PropertyInfo> *p_properties) const {
-	p_properties->push_back(PropertyInfo(Variant::STRING, CSharpLanguage::singleton->string_names._script_source, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+	p_properties->push_back(PropertyInfo(Variant::STRING, SNAME("script/source"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void CSharpScript::_bind_methods() {
@@ -2905,10 +2901,4 @@ void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resour
 
 bool ResourceFormatSaverCSharpScript::recognize(const Ref<Resource> &p_resource) const {
 	return Object::cast_to<CSharpScript>(p_resource.ptr()) != nullptr;
-}
-
-CSharpLanguage::StringNameCache::StringNameCache() {
-	_property_can_revert = StaticCString::create("_property_can_revert");
-	_property_get_revert = StaticCString::create("_property_get_revert");
-	_script_source = StaticCString::create("script/source");
 }

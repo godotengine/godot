@@ -335,14 +335,6 @@ class CSharpLanguage : public ScriptLanguage {
 
 	ManagedCallableMiddleman *managed_callable_middleman = memnew(ManagedCallableMiddleman);
 
-	struct StringNameCache {
-		StringName _property_can_revert;
-		StringName _property_get_revert;
-		StringName _script_source;
-
-		StringNameCache();
-	};
-
 	int lang_idx = -1;
 
 	// For debug_break and debug_break_parse
@@ -370,8 +362,6 @@ public:
 	static void set_instance_binding(Object *p_object, void *p_binding);
 	static bool has_instance_binding(Object *p_object);
 
-	StringNameCache string_names;
-
 	const Mutex &get_language_bind_mutex() {
 		return language_bind_mutex;
 	}
@@ -383,10 +373,6 @@ public:
 		return lang_idx;
 	}
 	void set_language_index(int p_idx);
-
-	_FORCE_INLINE_ const StringNameCache &get_string_names() {
-		return string_names;
-	}
 
 	_FORCE_INLINE_ static CSharpLanguage *get_singleton() {
 		return singleton;
