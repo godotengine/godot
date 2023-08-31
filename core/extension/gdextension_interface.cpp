@@ -1043,7 +1043,9 @@ static void gdextension_ref_set_object(GDExtensionRefPtr p_ref, GDExtensionObjec
 
 #ifndef DISABLE_DEPRECATED
 static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
-	const GDExtensionScriptInstanceInfo2 info_2 = {
+	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
+	script_instance_extension->instance = p_instance_data;
+	script_instance_extension->native_info = {
 		p_info->set_func,
 		p_info->get_func,
 		p_info->get_property_list_func,
@@ -1068,10 +1070,6 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 		p_info->get_language_func,
 		p_info->free_func,
 	};
-
-	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
-	script_instance_extension->instance = p_instance_data;
-	script_instance_extension->native_info = &info_2;
 	script_instance_extension->deprecated_native_info.notification_func = p_info->notification_func;
 	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
 }
@@ -1080,7 +1078,7 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 static GDExtensionScriptInstancePtr gdextension_script_instance_create2(const GDExtensionScriptInstanceInfo2 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
 	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
 	script_instance_extension->instance = p_instance_data;
-	script_instance_extension->native_info = p_info;
+	script_instance_extension->native_info = *p_info;
 	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
 }
 

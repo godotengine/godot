@@ -2194,6 +2194,8 @@ typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate)
  *
  * Creates a script instance that contains the given info and instance data.
  *
+ * Provided struct can be safely freed once the function returns.
+ *
  * @param p_info A pointer to a GDExtensionScriptInstanceInfo2 struct.
  * @param p_instance_data A pointer to a data representing the script instance in the GDExtension. This will be passed to all the function pointers on p_info.
  *

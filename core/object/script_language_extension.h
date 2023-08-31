@@ -630,7 +630,7 @@ VARIANT_ENUM_CAST(ScriptLanguageExtension::CodeCompletionLocation)
 
 class ScriptInstanceExtension : public ScriptInstance {
 public:
-	const GDExtensionScriptInstanceInfo2 *native_info;
+	GDExtensionScriptInstanceInfo2 native_info;
 	struct {
 		GDExtensionClassNotification notification_func;
 	} deprecated_native_info;
@@ -644,21 +644,21 @@ public:
 #endif
 
 	virtual bool set(const StringName &p_name, const Variant &p_value) override {
-		if (native_info->set_func) {
-			return native_info->set_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionConstVariantPtr)&p_value);
+		if (native_info.set_func) {
+			return native_info.set_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionConstVariantPtr)&p_value);
 		}
 		return false;
 	}
 	virtual bool get(const StringName &p_name, Variant &r_ret) const override {
-		if (native_info->get_func) {
-			return native_info->get_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&r_ret);
+		if (native_info.get_func) {
+			return native_info.get_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&r_ret);
 		}
 		return false;
 	}
 	virtual void get_property_list(List<PropertyInfo> *p_list) const override {
-		if (native_info->get_property_list_func) {
+		if (native_info.get_property_list_func) {
 			uint32_t pcount;
-			const GDExtensionPropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
+			const GDExtensionPropertyInfo *pinfo = native_info.get_property_list_func(instance, &pcount);
 
 #ifdef TOOLS_ENABLED
 			Ref<Script> script = get_script();
@@ -670,15 +670,15 @@ public:
 			for (uint32_t i = 0; i < pcount; i++) {
 				p_list->push_back(PropertyInfo(pinfo[i]));
 			}
-			if (native_info->free_property_list_func) {
-				native_info->free_property_list_func(instance, pinfo);
+			if (native_info.free_property_list_func) {
+				native_info.free_property_list_func(instance, pinfo);
 			}
 		}
 	}
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override {
-		if (native_info->get_property_type_func) {
+		if (native_info.get_property_type_func) {
 			GDExtensionBool is_valid = 0;
-			GDExtensionVariantType type = native_info->get_property_type_func(instance, (GDExtensionConstStringNamePtr)&p_name, &is_valid);
+			GDExtensionVariantType type = native_info.get_property_type_func(instance, (GDExtensionConstStringNamePtr)&p_name, &is_valid);
 			if (r_is_valid) {
 				*r_is_valid = is_valid != 0;
 			}
@@ -691,21 +691,21 @@ public:
 	}
 
 	virtual bool property_can_revert(const StringName &p_name) const override {
-		if (native_info->property_can_revert_func) {
-			return native_info->property_can_revert_func(instance, (GDExtensionConstStringNamePtr)&p_name);
+		if (native_info.property_can_revert_func) {
+			return native_info.property_can_revert_func(instance, (GDExtensionConstStringNamePtr)&p_name);
 		}
 		return false;
 	}
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
-		if (native_info->property_get_revert_func) {
-			return native_info->property_get_revert_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&r_ret);
+		if (native_info.property_get_revert_func) {
+			return native_info.property_get_revert_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&r_ret);
 		}
 		return false;
 	}
 
 	virtual Object *get_owner() override {
-		if (native_info->get_owner_func) {
-			return (Object *)native_info->get_owner_func(instance);
+		if (native_info.get_owner_func) {
+			return (Object *)native_info.get_owner_func(instance);
 		}
 		return nullptr;
 	}
@@ -714,35 +714,35 @@ public:
 		state->push_back(Pair<StringName, Variant>(*(const StringName *)p_name, *(const Variant *)p_value));
 	}
 	virtual void get_property_state(List<Pair<StringName, Variant>> &state) override {
-		if (native_info->get_property_state_func) {
-			native_info->get_property_state_func(instance, _add_property_with_state, &state);
+		if (native_info.get_property_state_func) {
+			native_info.get_property_state_func(instance, _add_property_with_state, &state);
 		}
 	}
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const override {
-		if (native_info->get_method_list_func) {
+		if (native_info.get_method_list_func) {
 			uint32_t mcount;
-			const GDExtensionMethodInfo *minfo = native_info->get_method_list_func(instance, &mcount);
+			const GDExtensionMethodInfo *minfo = native_info.get_method_list_func(instance, &mcount);
 			for (uint32_t i = 0; i < mcount; i++) {
 				p_list->push_back(MethodInfo(minfo[i]));
 			}
-			if (native_info->free_method_list_func) {
-				native_info->free_method_list_func(instance, minfo);
+			if (native_info.free_method_list_func) {
+				native_info.free_method_list_func(instance, minfo);
 			}
 		}
 	}
 	virtual bool has_method(const StringName &p_method) const override {
-		if (native_info->has_method_func) {
-			return native_info->has_method_func(instance, (GDExtensionStringNamePtr)&p_method);
+		if (native_info.has_method_func) {
+			return native_info.has_method_func(instance, (GDExtensionStringNamePtr)&p_method);
 		}
 		return false;
 	}
 
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		Variant ret;
-		if (native_info->call_func) {
+		if (native_info.call_func) {
 			GDExtensionCallError ce;
-			native_info->call_func(instance, (GDExtensionConstStringNamePtr)&p_method, (GDExtensionConstVariantPtr *)p_args, p_argcount, (GDExtensionVariantPtr)&ret, &ce);
+			native_info.call_func(instance, (GDExtensionConstStringNamePtr)&p_method, (GDExtensionConstVariantPtr *)p_args, p_argcount, (GDExtensionVariantPtr)&ret, &ce);
 			r_error.error = Callable::CallError::Error(ce.error);
 			r_error.argument = ce.argument;
 			r_error.expected = ce.expected;
@@ -751,8 +751,8 @@ public:
 	}
 
 	virtual void notification(int p_notification, bool p_reversed = false) override {
-		if (native_info->notification_func) {
-			native_info->notification_func(instance, p_notification, p_reversed);
+		if (native_info.notification_func) {
+			native_info.notification_func(instance, p_notification, p_reversed);
 #ifndef DISABLE_DEPRECATED
 		} else if (deprecated_native_info.notification_func) {
 			deprecated_native_info.notification_func(instance, p_notification);
@@ -761,10 +761,10 @@ public:
 	}
 
 	virtual String to_string(bool *r_valid) override {
-		if (native_info->to_string_func) {
+		if (native_info.to_string_func) {
 			GDExtensionBool valid;
 			String ret;
-			native_info->to_string_func(instance, &valid, reinterpret_cast<GDExtensionStringPtr>(&ret));
+			native_info.to_string_func(instance, &valid, reinterpret_cast<GDExtensionStringPtr>(&ret));
 			if (r_valid) {
 				*r_valid = valid != 0;
 			}
@@ -774,35 +774,35 @@ public:
 	}
 
 	virtual void refcount_incremented() override {
-		if (native_info->refcount_incremented_func) {
-			native_info->refcount_incremented_func(instance);
+		if (native_info.refcount_incremented_func) {
+			native_info.refcount_incremented_func(instance);
 		}
 	}
 	virtual bool refcount_decremented() override {
-		if (native_info->refcount_decremented_func) {
-			return native_info->refcount_decremented_func(instance);
+		if (native_info.refcount_decremented_func) {
+			return native_info.refcount_decremented_func(instance);
 		}
 		return false;
 	}
 
 	virtual Ref<Script> get_script() const override {
-		if (native_info->get_script_func) {
-			GDExtensionObjectPtr script = native_info->get_script_func(instance);
+		if (native_info.get_script_func) {
+			GDExtensionObjectPtr script = native_info.get_script_func(instance);
 			return Ref<Script>(reinterpret_cast<Script *>(script));
 		}
 		return Ref<Script>();
 	}
 
 	virtual bool is_placeholder() const override {
-		if (native_info->is_placeholder_func) {
-			return native_info->is_placeholder_func(instance);
+		if (native_info.is_placeholder_func) {
+			return native_info.is_placeholder_func(instance);
 		}
 		return false;
 	}
 
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) override {
-		if (native_info->set_fallback_func) {
-			bool ret = native_info->set_fallback_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionConstVariantPtr)&p_value);
+		if (native_info.set_fallback_func) {
+			bool ret = native_info.set_fallback_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionConstVariantPtr)&p_value);
 			if (r_valid) {
 				*r_valid = ret;
 			}
@@ -810,8 +810,8 @@ public:
 	}
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid) override {
 		Variant ret;
-		if (native_info->get_fallback_func) {
-			bool valid = native_info->get_fallback_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&ret);
+		if (native_info.get_fallback_func) {
+			bool valid = native_info.get_fallback_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&ret);
 			if (r_valid) {
 				*r_valid = valid;
 			}
@@ -820,16 +820,16 @@ public:
 	}
 
 	virtual ScriptLanguage *get_language() override {
-		if (native_info->get_language_func) {
-			GDExtensionScriptLanguagePtr lang = native_info->get_language_func(instance);
+		if (native_info.get_language_func) {
+			GDExtensionScriptLanguagePtr lang = native_info.get_language_func(instance);
 			return reinterpret_cast<ScriptLanguage *>(lang);
 		}
 		return nullptr;
 		;
 	}
 	virtual ~ScriptInstanceExtension() {
-		if (native_info->free_func) {
-			native_info->free_func(instance);
+		if (native_info.free_func) {
+			native_info.free_func(instance);
 		}
 	}
 
