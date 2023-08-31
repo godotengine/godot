@@ -68,8 +68,48 @@ void CollisionShape3D::make_convex_from_siblings() {
 	set_shape(shape_new);
 }
 
+CollisionObject3D *CollisionShape3D::_get_ancestor_collision_object() const {
+	Node *parent = get_parent();
+	while (parent) {
+		Node3D *parent_3d = Object::cast_to<Node3D>(parent);
+		if (unlikely(!parent_3d)) {
+			return nullptr;
+		}
+		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(parent);
+		if (likely(co)) {
+			return co;
+		}
+		parent = parent->get_parent();
+	}
+	return nullptr;
+}
+
+Transform3D CollisionShape3D::_get_transform_to_collision_object() const {
+	Transform3D transform_to_col_obj = get_transform();
+	Node *parent = get_parent();
+	while (parent != collision_object) {
+		Node3D *parent_3d = Object::cast_to<Node3D>(parent);
+		if (unlikely(!parent_3d)) {
+			break;
+		}
+		transform_to_col_obj = parent_3d->get_transform() * transform_to_col_obj;
+		parent = parent->get_parent();
+	}
+	return transform_to_col_obj;
+}
+
+void CollisionShape3D::_set_transform_notifications() {
+	if (collision_object == get_parent()) {
+		set_notify_local_transform(true);
+		set_notify_transform(false);
+	} else {
+		set_notify_local_transform(false);
+		set_notify_transform(true);
+	}
+}
+
 void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
-	collision_object->shape_owner_set_transform(owner_id, get_transform());
+	collision_object->shape_owner_set_transform(owner_id, _get_transform_to_collision_object());
 	if (p_xform_only) {
 		return;
 	}
@@ -78,31 +118,27 @@ void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
 
 void CollisionShape3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_PARENTED: {
-			collision_object = Object::cast_to<CollisionObject3D>(get_parent());
+		case NOTIFICATION_ENTER_TREE: {
+			collision_object = _get_ancestor_collision_object();
 			if (collision_object) {
 				owner_id = collision_object->create_shape_owner(this);
 				if (shape.is_valid()) {
 					collision_object->shape_owner_add_shape(owner_id, shape);
 				}
+				_set_transform_notifications();
 				_update_in_shape_owner();
 			}
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
-			if (collision_object) {
-				_update_in_shape_owner();
-			}
-		} break;
-
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (collision_object) {
 				_update_in_shape_owner(true);
 			}
 			update_configuration_warnings();
 		} break;
 
-		case NOTIFICATION_UNPARENTED: {
+		case NOTIFICATION_EXIT_TREE: {
 			if (collision_object) {
 				collision_object->remove_shape_owner(owner_id);
 			}
@@ -120,7 +156,7 @@ void CollisionShape3D::resource_changed(Ref<Resource> res) {
 PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
-	CollisionObject3D *col_object = Object::cast_to<CollisionObject3D>(get_parent());
+	CollisionObject3D *col_object = _get_ancestor_collision_object();
 	if (col_object == nullptr) {
 		warnings.push_back(RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
@@ -204,7 +240,6 @@ bool CollisionShape3D::is_disabled() const {
 
 CollisionShape3D::CollisionShape3D() {
 	//indicator = RenderingServer::get_singleton()->mesh_create();
-	set_notify_local_transform(true);
 }
 
 CollisionShape3D::~CollisionShape3D() {
