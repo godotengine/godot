@@ -553,6 +553,7 @@ void EditorNode::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			{
+				started_timestamp = Time::get_singleton()->get_unix_time_from_system();
 				_initializing_plugins = true;
 				Vector<String> addons;
 				if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
@@ -5517,7 +5518,19 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 		if (scene_filename.is_empty()) {
 			unsaved_message = TTR("This scene was never saved.");
 		} else {
-			unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes."), scene_filename);
+			// Consider editor startup to be a point of saving, so that when you
+			// close and reopen the editor, you don't get an excessively long
+			// "modified X hours ago".
+			const uint64_t last_modified_seconds = Time::get_singleton()->get_unix_time_from_system() - MAX(started_timestamp, FileAccess::get_modified_time(scene->get_scene_file_path()));
+			String last_modified_string;
+			if (last_modified_seconds < 120) {
+				last_modified_string = vformat(TTRN("%d second ago", "%d seconds ago", last_modified_seconds), last_modified_seconds);
+			} else if (last_modified_seconds < 7200) {
+				last_modified_string = vformat(TTRN("%d minute ago", "%d minutes ago", last_modified_seconds / 60), last_modified_seconds / 60);
+			} else {
+				last_modified_string = vformat(TTRN("%d hour ago", "%d hours ago", last_modified_seconds / 3600), last_modified_seconds / 3600);
+			}
+			unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes.\nLast saved: %s."), scene_filename, last_modified_string);
 		}
 	} else {
 		// Check if any plugin has unsaved changes in that scene.
