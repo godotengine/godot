@@ -904,36 +904,34 @@ void EditorProperty::_update_pin_flags() {
 	}
 }
 
-static Control *make_help_bit(const String &p_text, const String &p_warning, const Color &p_warn_color, bool p_property) {
-	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 1));
-
-	PackedStringArray slices = p_text.split("::", false);
-	if (slices.is_empty()) {
-		// Shouldn't happen here, but just in case pass the text along.
-		help_bit->set_text(p_text);
-		return help_bit;
+static Control *make_help_bit(const String &p_item_type, const String &p_text, const String &p_warning, const Color &p_warn_color) {
+	// `p_text` is expected to be something like this:
+	// `item_name|Item description.`.
+	// Note that the description can be empty or contain `|`.
+	PackedStringArray slices = p_text.split("|", true, 1);
+	if (slices.size() < 2) {
+		return nullptr; // Use default tooltip instead.
 	}
 
-	String property_name = slices[0].strip_edges();
+	String item_name = slices[0].strip_edges();
+	String item_descr = slices[1].strip_edges();
+
 	String text;
-	if (p_property) {
-		text = TTR("Property:") + " ";
+	if (!p_item_type.is_empty()) {
+		text = p_item_type + " ";
 	}
-	text += "[u][b]" + property_name + "[/b][/u]";
-
-	if (slices.size() > 1) {
-		String property_doc = slices[1].strip_edges();
-		if (property_name != property_doc) {
-			text += "\n" + property_doc;
-		}
+	text += "[u][b]" + item_name + "[/b][/u]\n";
+	if (item_descr.is_empty()) {
+		text += "[i]" + TTR("No description.") + "[/i]";
 	} else {
-		text += "\n[i]" + TTR("No description.") + "[/i]";
+		text += item_descr;
 	}
-
 	if (!p_warning.is_empty()) {
 		text += "\n[b][color=" + p_warn_color.to_html(false) + "]" + p_warning + "[/color][/b]";
 	}
+
+	EditorHelpBit *help_bit = memnew(EditorHelpBit);
+	help_bit->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 1));
 	help_bit->set_text(text);
 
 	return help_bit;
@@ -946,7 +944,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 		warn = object->call("_get_property_warning", property);
 		warn_color = get_theme_color(SNAME("warning_color"));
 	}
-	return make_help_bit(p_text, warn, warn_color, true);
+	return make_help_bit(TTR("Property:"), p_text, warn, warn_color);
 }
 
 void EditorProperty::menu_option(int p_option) {
@@ -1142,6 +1140,10 @@ void EditorInspectorPlugin::_bind_methods() {
 
 void EditorInspectorCategory::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			menu->set_item_icon(menu->get_item_index(MENU_OPEN_DOCS), get_theme_icon(SNAME("Help"), SNAME("EditorIcons")));
+		} break;
 		case NOTIFICATION_DRAW: {
 			Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
 
@@ -1175,7 +1177,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 }
 
 Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
-	return make_help_bit(p_text, String(), Color(), false);
+	return make_help_bit(TTR("Class:"), p_text, String(), Color());
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
@@ -1192,7 +1194,37 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	return ms;
 }
 
+void EditorInspectorCategory::_handle_menu_option(int p_option) {
+	switch (p_option) {
+		case MENU_OPEN_DOCS:
+			ScriptEditor::get_singleton()->goto_help("class:" + doc_class_name);
+			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+			break;
+	}
+}
+
+void EditorInspectorCategory::gui_input(const Ref<InputEvent> &p_event) {
+	if (doc_class_name.is_empty()) {
+		return;
+	}
+
+	const Ref<InputEventMouseButton> &mb_event = p_event;
+	if (mb_event.is_null() || !mb_event->is_pressed() || mb_event->get_button_index() != MouseButton::RIGHT) {
+		return;
+	}
+
+	menu->set_item_disabled(menu->get_item_index(MENU_OPEN_DOCS), !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
+
+	menu->set_position(get_screen_position() + mb_event->get_position());
+	menu->reset_size();
+	menu->popup();
+}
+
 EditorInspectorCategory::EditorInspectorCategory() {
+	menu = memnew(PopupMenu);
+	menu->connect("id_pressed", callable_mp(this, &EditorInspectorCategory::_handle_menu_option));
+	menu->add_item(TTR("Open Documentation"), MENU_OPEN_DOCS);
+	add_child(menu);
 }
 
 ////////////////////////////////////////////////
@@ -2801,6 +2833,14 @@ void EditorInspector::update_tree() {
 			main_vbox->add_child(category);
 			category_vbox = nullptr; //reset
 
+			// `hint_script` should contain a native class name or a script path.
+			// Otherwise the category was probably added via `@export_category` or `_get_property_list()`.
+			if (p.hint_string.is_empty()) {
+				category->label = p.name;
+				category->set_tooltip_text(p.name);
+				continue; // Do not add an icon, do not change the current class (`doc_name`).
+			}
+
 			String type = p.name;
 			String label = p.name;
 			doc_name = p.name;
@@ -2837,6 +2877,7 @@ void EditorInspector::update_tree() {
 
 			// Set the category label.
 			category->label = label;
+			category->doc_class_name = doc_name;
 
 			if (use_doc_hints) {
 				String descr = "";
@@ -2845,16 +2886,18 @@ void EditorInspector::update_tree() {
 					DocTools *dd = EditorHelp::get_doc_data();
 					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(doc_name);
 					if (E) {
-						descr = DTR(E->value.brief_description);
+						descr = E->value.brief_description;
 					}
 					if (ClassDB::class_exists(doc_name)) {
+						descr = DTR(descr); // Do not translate the class description of scripts.
 						class_descr_cache[doc_name] = descr; // Do not cache the class description of scripts.
 					}
 				} else {
 					descr = class_descr_cache[doc_name];
 				}
 
-				category->set_tooltip_text(p.name + "::" + descr);
+				// `|` separator used in `make_help_bit()` for formatting.
+				category->set_tooltip_text(p.name + "|" + descr);
 			}
 
 			// Add editors at the start of a category.
@@ -3196,13 +3239,18 @@ void EditorInspector::update_tree() {
 			}
 
 			if (!found) {
+				bool is_native_class = ClassDB::class_exists(classname);
+
 				// Build the property description String and add it to the cache.
 				DocTools *dd = EditorHelp::get_doc_data();
 				HashMap<String, DocData::ClassDoc>::ConstIterator F = dd->class_list.find(classname);
 				while (F && doc_info.description.is_empty()) {
 					for (int i = 0; i < F->value.properties.size(); i++) {
 						if (F->value.properties[i].name == propname.operator String()) {
-							doc_info.description = DTR(F->value.properties[i].description);
+							doc_info.description = F->value.properties[i].description;
+							if (is_native_class) {
+								doc_info.description = DTR(doc_info.description); // Do not translate the property description of scripts.
+							}
 
 							const Vector<String> class_enum = F->value.properties[i].enumeration.split(".");
 							const String class_name = class_enum[0];
@@ -3215,7 +3263,11 @@ void EditorInspector::update_tree() {
 										if (val.enumeration == enum_name && !val.name.ends_with("_MAX")) {
 											const String enum_value = EditorPropertyNameProcessor::get_singleton()->process_name(val.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 											// Prettify the enum value display, so that "<ENUM NAME>_<VALUE>" becomes "Value".
-											String desc = DTR(val.description).trim_prefix("\n");
+											String desc = val.description;
+											if (is_native_class) {
+												desc = DTR(desc); // Do not translate the enum value description of scripts.
+											}
+											desc = desc.trim_prefix("\n");
 											doc_info.description += vformat(
 													"\n[b]%s:[/b] %s",
 													enum_value.trim_prefix(EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " "),
@@ -3234,7 +3286,10 @@ void EditorInspector::update_tree() {
 					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
 						for (int i = 0; i < F->value.theme_properties.size(); i++) {
 							if (F->value.theme_properties[i].name == slices[1]) {
-								doc_info.description = DTR(F->value.theme_properties[i].description);
+								doc_info.description = F->value.theme_properties[i].description;
+								if (is_native_class) {
+									doc_info.description = DTR(doc_info.description); // Do not translate the theme item description of scripts.
+								}
 								doc_info.path = "class_theme_item:" + F->value.name + ":" + F->value.theme_properties[i].name;
 								break;
 							}
@@ -3248,7 +3303,7 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				if (ClassDB::class_exists(classname)) {
+				if (is_native_class) {
 					doc_info_cache[classname][propname] = doc_info; // Do not cache the doc information of scripts.
 				}
 			}
@@ -3340,11 +3395,8 @@ void EditorInspector::update_tree() {
 				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
 				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
-				if (!doc_info.description.is_empty()) {
-					ep->set_tooltip_text(property_prefix + p.name + "::" + doc_info.description);
-				} else {
-					ep->set_tooltip_text(property_prefix + p.name);
-				}
+				// `|` separator used in `make_help_bit()` for formatting.
+				ep->set_tooltip_text(property_prefix + p.name + "|" + doc_info.description);
 				ep->set_doc_path(doc_info.path);
 				ep->update_property();
 				ep->_update_pin_flags();
