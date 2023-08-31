@@ -1834,7 +1834,7 @@ void ThemeItemEditorDialog::_edit_theme_item_gui_input(const Ref<InputEvent> &p_
 			return;
 		}
 
-		if (k->is_action_pressed(SNAME("ui_accept"), false, true)) {
+		if (k->is_action_pressed(SNAME("ui_text_submit"), false, true)) {
 			_confirm_edit_theme_item();
 			edit_theme_item_dialog->hide();
 			edit_theme_item_dialog->set_input_as_handled();
