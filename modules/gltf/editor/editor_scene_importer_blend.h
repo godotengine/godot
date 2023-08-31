@@ -43,6 +43,9 @@ class ConfirmationDialog;
 class EditorSceneFormatImporterBlend : public EditorSceneFormatImporter {
 	GDCLASS(EditorSceneFormatImporterBlend, EditorSceneFormatImporter);
 
+	int blender_major_version = -1;
+	int blender_minor_version = -1;
+
 public:
 	enum {
 		BLEND_VISIBLE_ALL,
