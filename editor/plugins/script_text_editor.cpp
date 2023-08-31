@@ -480,16 +480,18 @@ void ScriptTextEditor::_validate_script() {
 
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
 		for (List<ScriptLanguage::ScriptError>::Element *E = errors.front(); E; E = E->next()) {
-			if (E->get().path.is_empty() || E->get().path != script->get_path()) {
+			if ((E->get().path.is_empty() && !script->get_path().is_empty()) || E->get().path != script->get_path()) {
 				depended_errors[E->get().path].push_back(E->get());
 				E->erase();
 			}
 		}
 
-		// TRANSLATORS: Script error pointing to a line and column number.
-		String error_text = vformat(TTR("Error at (%d, %d):"), errors[0].line, errors[0].column) + " " + errors[0].message;
-		code_editor->set_error(error_text);
-		code_editor->set_error_pos(errors[0].line - 1, errors[0].column - 1);
+		if (errors.size() > 0) {
+			// TRANSLATORS: Script error pointing to a line and column number.
+			String error_text = vformat(TTR("Error at (%d, %d):"), errors[0].line, errors[0].column) + " " + errors[0].message;
+			code_editor->set_error(error_text);
+			code_editor->set_error_pos(errors[0].line - 1, errors[0].column - 1);
+		}
 		script_is_valid = false;
 	} else {
 		code_editor->set_error("");
