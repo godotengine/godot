@@ -1003,20 +1003,20 @@ void ScriptEditor::_scene_saved_callback(const String &p_path) {
 	}
 }
 
-void ScriptEditor::_format_code(ScriptEditorBase *se) {
+void ScriptEditor::_format_code(ScriptEditorBase *p_script_editor) {
 	if (!format_on_save) {
 		if (trim_trailing_whitespace_on_save) {
-			se->trim_trailing_whitespace();
+			p_script_editor->trim_trailing_whitespace();
 		}
 
-		se->insert_final_newline();
+		p_script_editor->insert_final_newline();
 
 		if (convert_indent_on_save) {
-			se->convert_indent();
+			p_script_editor->convert_indent();
 		}
 
 	} else {
-		se->format_code();
+		p_script_editor->format_code();
 	}
 }
 
