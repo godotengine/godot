@@ -45,6 +45,9 @@ struct VariantUtilityFunctions {
 	static double acos(double arg);
 	static double atan(double arg);
 	static double atan2(double y, double x);
+	static double asinh(double arg);
+	static double acosh(double arg);
+	static double atanh(double arg);
 	static double sqrt(double x);
 	static double fmod(double b, double r);
 	static double fposmod(double b, double r);
