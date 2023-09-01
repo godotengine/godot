@@ -39,6 +39,7 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		_close_pressed();
 	}
+	Window::_input_from_window(p_event);
 }
 
 void Popup::_initialize_visible_parents() {
@@ -204,8 +205,6 @@ Popup::Popup() {
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
 	set_flag(FLAG_POPUP, true);
-
-	connect("window_input", callable_mp(this, &Popup::_input_from_window));
 }
 
 Popup::~Popup() {

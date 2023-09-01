@@ -239,6 +239,7 @@ protected:
 	virtual void _post_popup() {}
 
 	virtual void _update_theme_item_cache();
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) {}
 
 	void _notification(int p_what);
 	static void _bind_methods();
