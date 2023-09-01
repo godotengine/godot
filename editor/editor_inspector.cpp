@@ -2824,7 +2824,7 @@ void EditorInspector::update_tree() {
 
 					// Find the icon corresponding to the script.
 					if (script_name != StringName()) {
-						category->icon = EditorNode::get_singleton()->get_class_icon(script_name, "Object");
+						category->icon = EditorNode::get_singleton()->get_class_icon(script_name);
 					} else {
 						category->icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
 					}
@@ -2832,7 +2832,7 @@ void EditorInspector::update_tree() {
 			}
 
 			if (category->icon.is_null() && !type.is_empty()) {
-				category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
+				category->icon = EditorNode::get_singleton()->get_class_icon(type);
 			}
 
 			// Set the category label.

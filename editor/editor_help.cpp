@@ -367,7 +367,7 @@ void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &
 	Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(p_type, p_fallback);
 	Vector2i size = Vector2i(icon->get_width(), icon->get_height());
 	if (p_size > 0) {
-		// Ensures icon scales proportionally on both axis, based on icon height.
+		// Ensures icon scales proportionally on both axes, based on icon height.
 		float ratio = p_size / float(size.height);
 		size.width *= ratio;
 		size.height *= ratio;

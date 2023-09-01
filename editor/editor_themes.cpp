@@ -81,10 +81,13 @@ void EditorColorMap::create() {
 	add_conversion_color_pair("#f9f9f9", "#606060"); // Scrollbar grabber highlight color
 
 	add_conversion_color_pair("#c38ef1", "#a85de9"); // Animation
-	add_conversion_color_pair("#fc7f7f", "#cd3838"); // Spatial
 	add_conversion_color_pair("#8da5f3", "#3d64dd"); // 2D
 	add_conversion_color_pair("#4b70ea", "#1a3eac"); // 2D Dark
-	add_conversion_color_pair("#8eef97", "#2fa139"); // Control
+	add_conversion_color_pair("#7582a8", "#6d83c8"); // 2D Abstract
+	add_conversion_color_pair("#fc7f7f", "#cd3838"); // 3D
+	add_conversion_color_pair("#b56d6d", "#be6a6a"); // 3D Abstract
+	add_conversion_color_pair("#8eef97", "#2fa139"); // GUI Control
+	add_conversion_color_pair("#76ad7b", "#64a66a"); // GUI Control Abstract
 
 	add_conversion_color_pair("#5fb2ff", "#0079f0"); // Selection (blue)
 	add_conversion_color_pair("#003e7a", "#2b74bb"); // Selection (darker blue)
