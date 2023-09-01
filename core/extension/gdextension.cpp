@@ -281,7 +281,40 @@ public:
 	}
 };
 
+#ifndef DISABLE_DEPRECATED
 void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo *p_extension_funcs) {
+	const GDExtensionClassCreationInfo2 class_info2 = {
+		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
+		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
+		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
+		p_extension_funcs->get_func, // GDExtensionClassGet get_func;
+		p_extension_funcs->get_property_list_func, // GDExtensionClassGetPropertyList get_property_list_func;
+		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
+		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
+		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
+		nullptr, // GDExtensionClassNotification2 notification_func;
+		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
+		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
+		p_extension_funcs->unreference_func, // GDExtensionClassUnreference unreference_func;
+		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
+		p_extension_funcs->free_instance_func, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
+		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
+		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid;
+		p_extension_funcs->class_userdata, // void *class_userdata;
+	};
+
+	const ClassCreationDeprecatedInfo legacy = {
+		p_extension_funcs->notification_func,
+	};
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info2, &legacy);
+}
+#endif // DISABLE_DEPRECATED
+
+void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs) {
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, p_extension_funcs);
+}
+
+void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
@@ -325,7 +358,12 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 	extension->gdextension.free_property_list = p_extension_funcs->free_property_list_func;
 	extension->gdextension.property_can_revert = p_extension_funcs->property_can_revert_func;
 	extension->gdextension.property_get_revert = p_extension_funcs->property_get_revert_func;
-	extension->gdextension.notification = p_extension_funcs->notification_func;
+#ifndef DISABLE_DEPRECATED
+	if (p_deprecated_funcs) {
+		extension->gdextension.notification = p_deprecated_funcs->notification_func;
+	}
+#endif // DISABLE_DEPRECATED
+	extension->gdextension.notification2 = p_extension_funcs->notification_func;
 	extension->gdextension.to_string = p_extension_funcs->to_string_func;
 	extension->gdextension.reference = p_extension_funcs->reference_func;
 	extension->gdextension.unreference = p_extension_funcs->unreference_func;
@@ -337,6 +375,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 
 	ClassDB::register_extension_class(&extension->gdextension);
 }
+
 void GDExtension::_register_extension_class_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassMethodInfo *p_method_info) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
 
@@ -485,6 +524,13 @@ void GDExtension::close_library() {
 	ERR_FAIL_COND(library == nullptr);
 	OS::get_singleton()->close_dynamic_library(library);
 
+#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+	// Delete temporary copy of library if it exists.
+	if (!temp_lib_path.is_empty() && Engine::get_singleton()->is_editor_hint()) {
+		DirAccess::remove_absolute(temp_lib_path);
+	}
+#endif
+
 	library = nullptr;
 }
 
@@ -541,7 +587,10 @@ GDExtension::~GDExtension() {
 void GDExtension::initialize_gdextensions() {
 	gdextension_setup_interface();
 
+#ifndef DISABLE_DEPRECATED
 	register_interface_function("classdb_register_extension_class", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class);
+#endif // DISABLE_DEPRECATED
+	register_interface_function("classdb_register_extension_class2", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class2);
 	register_interface_function("classdb_register_extension_class_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_method);
 	register_interface_function("classdb_register_extension_class_integer_constant", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_integer_constant);
 	register_interface_function("classdb_register_extension_class_property", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property);
@@ -607,12 +656,13 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 	}
 
 	bool compatible = true;
-	if (VERSION_MAJOR < compatibility_minimum[0]) {
-		compatible = false;
-	} else if (VERSION_MINOR < compatibility_minimum[1]) {
-		compatible = false;
-	} else if (VERSION_PATCH < compatibility_minimum[2]) {
-		compatible = false;
+	// Check version lexicographically.
+	if (VERSION_MAJOR != compatibility_minimum[0]) {
+		compatible = VERSION_MAJOR > compatibility_minimum[0];
+	} else if (VERSION_MINOR != compatibility_minimum[1]) {
+		compatible = VERSION_MINOR > compatibility_minimum[1];
+	} else {
+		compatible = VERSION_PATCH >= compatibility_minimum[2];
 	}
 	if (!compatible) {
 		if (r_error) {
@@ -640,6 +690,40 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 	Ref<GDExtension> lib;
 	lib.instantiate();
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(library_path);
+
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
+	// If running on the editor on Windows, we copy the library and open the copy.
+	// This is so the original file isn't locked and can be updated by a compiler.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!FileAccess::exists(abs_path)) {
+			if (r_error) {
+				*r_error = ERR_FILE_NOT_FOUND;
+			}
+			ERR_PRINT("GDExtension library not found: " + library_path);
+			return Ref<Resource>();
+		}
+
+		// Copy the file to the same directory as the original with a prefix in the name.
+		// This is so relative path to dependencies are satisfied.
+		String copy_path = abs_path.get_base_dir().path_join("~" + abs_path.get_file());
+
+		Error copy_err = DirAccess::copy_absolute(abs_path, copy_path);
+		if (copy_err) {
+			if (r_error) {
+				*r_error = ERR_CANT_CREATE;
+			}
+			ERR_PRINT("Error copying GDExtension library: " + library_path);
+			return Ref<Resource>();
+		}
+		FileAccess::set_hidden_attribute(copy_path, true);
+
+		// Save the copied path so it can be deleted later.
+		lib->set_temp_library_path(copy_path);
+
+		// Use the copy to open the library.
+		abs_path = copy_path;
+	}
+#endif
 	err = lib->open_library(abs_path, entry_symbol);
 
 	if (r_error) {
@@ -647,6 +731,12 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 	}
 
 	if (err != OK) {
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
+		// If the DLL fails to load, make sure that temporary DLL copies are cleaned up.
+		if (Engine::get_singleton()->is_editor_hint()) {
+			DirAccess::remove_absolute(lib->get_temp_library_path());
+		}
+#endif
 		// Errors already logged in open_library()
 		return Ref<Resource>();
 	}

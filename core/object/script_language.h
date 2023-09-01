@@ -141,6 +141,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;
+	virtual String get_class_icon_path() const = 0;
 	virtual PropertyInfo get_class_category() const;
 #endif // TOOLS_ENABLED
 
@@ -179,6 +180,7 @@ public:
 	virtual bool get(const StringName &p_name, Variant &r_ret) const = 0;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const = 0;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const = 0;
+	virtual void validate_property(PropertyInfo &p_property) const = 0;
 
 	virtual bool property_can_revert(const StringName &p_name) const = 0;
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const = 0;
@@ -203,7 +205,7 @@ public:
 	}
 
 	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error); // implement if language supports const functions
-	virtual void notification(int p_notification) = 0;
+	virtual void notification(int p_notification, bool p_reversed = false) = 0;
 	virtual String to_string(bool *r_valid) {
 		if (r_valid) {
 			*r_valid = false;
@@ -462,6 +464,7 @@ public:
 	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const override;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
+	virtual void validate_property(PropertyInfo &p_property) const override {}
 
 	virtual bool property_can_revert(const StringName &p_name) const override { return false; };
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override { return false; };
@@ -473,7 +476,7 @@ public:
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
-	virtual void notification(int p_notification) override {}
+	virtual void notification(int p_notification, bool p_reversed = false) override {}
 
 	virtual Ref<Script> get_script() const override { return script; }
 

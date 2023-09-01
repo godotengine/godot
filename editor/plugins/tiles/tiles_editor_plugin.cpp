@@ -325,6 +325,7 @@ void TileMapEditorPlugin::_tile_map_changed() {
 }
 
 void TileMapEditorPlugin::_update_tile_map() {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map) {
 		Ref<TileSet> tile_set = tile_map->get_tileset();
 		if (tile_set.is_valid() && edited_tileset != tile_set->get_instance_id()) {
@@ -347,11 +348,17 @@ void TileMapEditorPlugin::_notification(int p_notification) {
 }
 
 void TileMapEditorPlugin::edit(Object *p_object) {
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (tile_map) {
 		tile_map->disconnect("changed", callable_mp(this, &TileMapEditorPlugin::_tile_map_changed));
 	}
 
 	tile_map = Object::cast_to<TileMap>(p_object);
+	if (tile_map) {
+		tile_map_id = tile_map->get_instance_id();
+	} else {
+		tile_map_id = ObjectID();
+	}
 
 	editor->edit(tile_map);
 	if (tile_map) {
@@ -362,6 +369,13 @@ void TileMapEditorPlugin::edit(Object *p_object) {
 			tile_set_plugin_singleton->make_visible(true);
 			edited_tileset = tile_map->get_tileset()->get_instance_id();
 		}
+	} else if (edited_tileset.is_valid()) {
+		// Hide the TileSet editor, unless another TileSet is being edited.
+		if (tile_set_plugin_singleton->get_edited_tileset() == edited_tileset) {
+			tile_set_plugin_singleton->edit(nullptr);
+			tile_set_plugin_singleton->make_visible(false);
+		}
+		edited_tileset = ObjectID();
 	}
 }
 
@@ -419,6 +433,11 @@ TileMapEditorPlugin::~TileMapEditorPlugin() {
 
 void TileSetEditorPlugin::edit(Object *p_object) {
 	editor->edit(Ref<TileSet>(p_object));
+	if (p_object) {
+		edited_tileset = p_object->get_instance_id();
+	} else {
+		edited_tileset = ObjectID();
+	}
 }
 
 bool TileSetEditorPlugin::handles(Object *p_object) const {
@@ -437,6 +456,10 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 	}
+}
+
+ObjectID TileSetEditorPlugin::get_edited_tileset() const {
+	return edited_tileset;
 }
 
 TileSetEditorPlugin::TileSetEditorPlugin() {

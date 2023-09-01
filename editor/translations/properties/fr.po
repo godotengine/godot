@@ -112,21 +112,23 @@
 # Rémy Lapointe <remy-lapointe@hotmail.ca>, 2023.
 # Dimitri <dimitripilot3@gmail.com>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
+# Varthore <moutcho57@gmail.com>, 2023.
+# Chloe Lee-Hone <chloe.leehone@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-13 15:35+0000\n"
-"Last-Translator: Perrier Mathis <mathis.perrier73@gmail.com>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
-"godot-properties/fr/>\n"
+"PO-Revision-Date: 2023-08-13 09:01+0000\n"
+"Last-Translator: Chloe Lee-Hone <chloe.leehone@gmail.com>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
+"properties/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Application"
 msgstr "Application"
@@ -317,6 +319,9 @@ msgstr "Matching longue distance"
 msgid "Compression Level"
 msgstr "Niveau de compression"
 
+msgid "Window Log Size"
+msgstr "Taille du journal de la fenêtre"
+
 msgid "Zlib"
 msgstr "Zlib"
 
@@ -340,6 +345,9 @@ msgstr "Mémoire"
 
 msgid "Limits"
 msgstr "Limites"
+
+msgid "Multithreaded Server"
+msgstr "Serveur multi-thread"
 
 msgid "Internationalization"
 msgstr "Internationalisation"
@@ -5367,7 +5375,7 @@ msgid "Light Mask"
 msgstr "Masque de lumières"
 
 msgid "Z Index"
-msgstr "Z Index"
+msgstr "Index Z"
 
 msgid "Repeat"
 msgstr "Répéter"
@@ -6473,8 +6481,17 @@ msgstr "La caméra est active"
 msgid "Default Font"
 msgstr "Police par défaut"
 
+msgid "Custom Data"
+msgstr "Données Personnalisées"
+
 msgid "Transpose"
 msgstr "Transposer"
+
+msgid "Texture Origin"
+msgstr "Origine de la Texture"
+
+msgid "Probability"
+msgstr "Probabilité"
 
 msgid "Modes"
 msgstr "Modes"

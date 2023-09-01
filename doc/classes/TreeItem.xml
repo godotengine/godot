@@ -339,6 +339,13 @@
 				Returns item's text base writing direction.
 			</description>
 		</method>
+		<method name="get_text_overrun_behavior" qualifiers="const">
+			<return type="int" enum="TextServer.OverrunBehavior" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the clipping behavior when the text exceeds the item's bounding rectangle in the given [param column]. By default it is [constant TextServer.OVERRUN_TRIM_ELLIPSIS].
+			</description>
+		</method>
 		<method name="get_tooltip_text" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="column" type="int" />
@@ -726,6 +733,14 @@
 			<param index="1" name="direction" type="int" enum="Control.TextDirection" />
 			<description>
 				Sets item's text base writing direction.
+			</description>
+		</method>
+		<method name="set_text_overrun_behavior">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="overrun_behavior" type="int" enum="TextServer.OverrunBehavior" />
+			<description>
+				Sets the clipping behavior when the text exceeds the item's bounding rectangle in the given [param column].
 			</description>
 		</method>
 		<method name="set_tooltip_text">

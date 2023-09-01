@@ -308,14 +308,14 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
 	add_interaction_profile(profile);
 
-	// Create our Pico 4 / Neo 3 controller profile
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/pico/neo3_controller");
+	// Create our Pico 4 controller profile.
+	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/bytedance/pico4_controller");
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
 	profile->add_new_binding(select_button, "/user/hand/left/input/system/click,/user/hand/right/input/system/click"); // system click may not be available
-	profile->add_new_binding(menu_button, "/user/hand/left/input/back/click,/user/hand/right/input/back/click"); // right hand back click may not be available
+	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand
 	profile->add_new_binding(ax_touch, "/user/hand/left/input/x/touch,/user/hand/right/input/a/touch");
 	profile->add_new_binding(by_button, "/user/hand/left/input/y/click,/user/hand/right/input/b/click"); // y on left hand, b on right hand
@@ -547,7 +547,7 @@ PackedStringArray OpenXRActionMap::get_top_level_paths(const Ref<OpenXRAction> p
 
 	for (int i = 0; i < interaction_profiles.size(); i++) {
 		Ref<OpenXRInteractionProfile> ip = interaction_profiles[i];
-		const OpenXRInteractionProfileMetaData::InteractionProfile *profile = OpenXRInteractionProfileMetaData::get_singleton()->get_profile(ip->get_interaction_profile_path());
+		const OpenXRInteractionProfileMetadata::InteractionProfile *profile = OpenXRInteractionProfileMetadata::get_singleton()->get_profile(ip->get_interaction_profile_path());
 
 		if (profile != nullptr) {
 			for (int j = 0; j < ip->get_binding_count(); j++) {
@@ -556,7 +556,7 @@ PackedStringArray OpenXRActionMap::get_top_level_paths(const Ref<OpenXRAction> p
 					PackedStringArray paths = binding->get_paths();
 
 					for (int k = 0; k < paths.size(); k++) {
-						const OpenXRInteractionProfileMetaData::IOPath *io_path = profile->get_io_path(paths[k]);
+						const OpenXRInteractionProfileMetadata::IOPath *io_path = profile->get_io_path(paths[k]);
 						if (io_path != nullptr) {
 							String top_path = io_path->top_level_path;
 

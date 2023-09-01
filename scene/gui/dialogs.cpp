@@ -38,8 +38,7 @@
 // AcceptDialog
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
-	Ref<InputEventKey> key = p_event;
-	if (close_on_escape && key.is_valid() && key->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+	if (close_on_escape && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		_cancel_pressed();
 	}
 }

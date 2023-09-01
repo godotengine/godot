@@ -216,7 +216,7 @@ bool OpenXRAPI::is_extension_enabled(const String &p_extension) const {
 }
 
 bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
-	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_top_level_extension(p_toplevel_path);
+	String required_extension = OpenXRInteractionProfileMetadata::get_singleton()->get_top_level_extension(p_toplevel_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
 	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported toplevel path " + p_toplevel_path);
@@ -236,7 +236,7 @@ bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
 }
 
 bool OpenXRAPI::is_interaction_profile_supported(const String &p_ip_path) {
-	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_interaction_profile_extension(p_ip_path);
+	String required_extension = OpenXRInteractionProfileMetadata::get_singleton()->get_interaction_profile_extension(p_ip_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
 	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported interaction profile " + p_ip_path);
@@ -260,9 +260,9 @@ bool OpenXRAPI::interaction_profile_supports_io_path(const String &p_ip_path, co
 		return false;
 	}
 
-	const OpenXRInteractionProfileMetaData::IOPath *io_path = OpenXRInteractionProfileMetaData::get_singleton()->get_io_path(p_ip_path, p_io_path);
+	const OpenXRInteractionProfileMetadata::IOPath *io_path = OpenXRInteractionProfileMetadata::get_singleton()->get_io_path(p_ip_path, p_io_path);
 
-	// If the io_path is not part of our meta data we've likely got a misspelled name or a bad action map, report
+	// If the io_path is not part of our metadata we've likely got a misspelled name or a bad action map, report
 	ERR_FAIL_NULL_V_MSG(io_path, false, "OpenXR: Unsupported io path " + String(p_ip_path) + String(p_io_path));
 
 	if (io_path->openxr_extension_name == "") {
@@ -2274,33 +2274,42 @@ String OpenXRAPI::action_set_get_name(RID p_action_set) {
 	return action_set->name;
 }
 
-bool OpenXRAPI::action_set_attach(RID p_action_set) {
-	ActionSet *action_set = action_set_owner.get_or_null(p_action_set);
-	ERR_FAIL_NULL_V(action_set, false);
-
-	if (action_set->is_attached) {
-		// already attached
-		return true;
-	}
-
+bool OpenXRAPI::attach_action_sets(const Vector<RID> &p_action_sets) {
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
+
+	Vector<XrActionSet> action_handles;
+	action_handles.resize(p_action_sets.size());
+	for (int i = 0; i < p_action_sets.size(); i++) {
+		ActionSet *action_set = action_set_owner.get_or_null(p_action_sets[i]);
+		ERR_FAIL_NULL_V(action_set, false);
+
+		if (action_set->is_attached) {
+			return false;
+		}
+
+		action_handles.set(i, action_set->handle);
+	}
 
 	// So according to the docs, once we attach our action set to our session it becomes read only..
 	// https://www.khronos.org/registry/OpenXR/specs/1.0/man/html/xrAttachSessionActionSets.html
 	XrSessionActionSetsAttachInfo attach_info = {
 		XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO, // type
 		nullptr, // next
-		1, // countActionSets,
-		&action_set->handle // actionSets
+		(uint32_t)p_action_sets.size(), // countActionSets,
+		action_handles.ptr() // actionSets
 	};
 
 	XrResult result = xrAttachSessionActionSets(session, &attach_info);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to attach action set! [", get_error_string(result), "]");
+		print_line("OpenXR: failed to attach action sets! [", get_error_string(result), "]");
 		return false;
 	}
 
-	action_set->is_attached = true;
+	for (int i = 0; i < p_action_sets.size(); i++) {
+		ActionSet *action_set = action_set_owner.get_or_null(p_action_sets[i]);
+		ERR_FAIL_NULL_V(action_set, false);
+		action_set->is_attached = true;
+	}
 
 	/* For debugging:
 	print_verbose("Attached set " + action_set->name);

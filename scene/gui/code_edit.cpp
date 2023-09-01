@@ -3128,6 +3128,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		}
 
 		String target_lower = option.display.to_lower();
+		int long_option = target_lower.size() > 50;
 		const char32_t *string_to_complete_char_lower = &string_to_complete_lower[0];
 		const char32_t *target_char_lower = &target_lower[0];
 
@@ -3142,27 +3143,34 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		for (int i = 1; *string_to_complete_char_lower && (all_possible_subsequence_matches.size() > 0); i++, string_to_complete_char_lower++) {
 			// find all occurrences of ssq_lower to avoid looking everywhere each time
 			Vector<int> all_ocurence;
-			for (int j = i; j < target_lower.length(); j++) {
-				if (target_lower[j] == *string_to_complete_char_lower) {
-					all_ocurence.push_back(j);
+			if (long_option) {
+				all_ocurence.push_back(target_lower.find_char(*string_to_complete_char_lower));
+			} else {
+				for (int j = i; j < target_lower.length(); j++) {
+					if (target_lower[j] == *string_to_complete_char_lower) {
+						all_ocurence.push_back(j);
+					}
 				}
 			}
 			Vector<Vector<Pair<int, int>>> next_subsequence_matches;
-			for (Vector<Pair<int, int>> &subsequence_matches : all_possible_subsequence_matches) {
-				Pair<int, int> match_last_segment = subsequence_matches[subsequence_matches.size() - 1];
+			for (Vector<Pair<int, int>> &subsequence_match : all_possible_subsequence_matches) {
+				Pair<int, int> match_last_segment = subsequence_match[subsequence_match.size() - 1];
 				int next_index = match_last_segment.first + match_last_segment.second;
 				// get the last index from current sequence
 				// and look for next char starting from that index
 				if (target_lower[next_index] == *string_to_complete_char_lower) {
-					Vector<Pair<int, int>> new_matches = subsequence_matches;
-					new_matches.write[new_matches.size() - 1].second++;
-					next_subsequence_matches.push_back(new_matches);
+					Vector<Pair<int, int>> new_match = subsequence_match;
+					new_match.write[new_match.size() - 1].second++;
+					next_subsequence_matches.push_back(new_match);
+					if (long_option) {
+						continue;
+					}
 				}
 				for (int index : all_ocurence) {
 					if (index > next_index) {
-						Vector<Pair<int, int>> new_matches = subsequence_matches;
-						new_matches.push_back({ index, 1 });
-						next_subsequence_matches.push_back(new_matches);
+						Vector<Pair<int, int>> new_match = subsequence_match;
+						new_match.push_back({ index, 1 });
+						next_subsequence_matches.push_back(new_match);
 					}
 				}
 			}

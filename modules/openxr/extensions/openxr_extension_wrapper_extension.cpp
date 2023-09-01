@@ -126,7 +126,7 @@ void OpenXRExtensionWrapperExtension::on_before_instance_created() {
 }
 
 void OpenXRExtensionWrapperExtension::on_instance_created(const XrInstance p_instance) {
-	uint64_t instance = reinterpret_cast<uint64_t>(p_instance);
+	uint64_t instance = (uint64_t)p_instance;
 	GDVIRTUAL_CALL(_on_instance_created, instance);
 }
 
@@ -135,7 +135,7 @@ void OpenXRExtensionWrapperExtension::on_instance_destroyed() {
 }
 
 void OpenXRExtensionWrapperExtension::on_session_created(const XrSession p_session) {
-	uint64_t session = reinterpret_cast<uint64_t>(p_session);
+	uint64_t session = (uint64_t)p_session;
 	GDVIRTUAL_CALL(_on_session_created, session);
 }
 

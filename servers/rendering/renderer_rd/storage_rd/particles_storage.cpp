@@ -666,6 +666,19 @@ RID ParticlesStorage::particles_get_draw_pass_mesh(RID p_particles, int p_pass) 
 	return particles->draw_passes[p_pass];
 }
 
+void ParticlesStorage::particles_update_dependency(RID p_particles, DependencyTracker *p_instance) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_COND(!particles);
+	p_instance->update_dependency(&particles->dependency);
+}
+
+void ParticlesStorage::particles_get_instance_buffer_motion_vectors_offsets(RID p_particles, uint32_t &r_current_offset, uint32_t &r_prev_offset) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_COND(!particles);
+	r_current_offset = particles->instance_motion_vectors_current_offset;
+	r_prev_offset = particles->instance_motion_vectors_previous_offset;
+}
+
 void ParticlesStorage::particles_add_collision(RID p_particles, RID p_particles_collision_instance) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_COND(!particles);
@@ -1185,6 +1198,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	copy_push_constant.order_by_lifetime = (particles->draw_order == RS::PARTICLES_DRAW_ORDER_LIFETIME || particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME);
 	copy_push_constant.lifetime_split = (MIN(int(particles->amount * particles->phase), particles->amount - 1) + 1) % particles->amount;
 	copy_push_constant.lifetime_reverse = particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME;
+	copy_push_constant.motion_vectors_current_offset = particles->instance_motion_vectors_current_offset;
 
 	copy_push_constant.frame_remainder = particles->interpolate ? particles->frame_remainder : 0.0;
 	copy_push_constant.total_particles = particles->amount;
@@ -1252,28 +1266,50 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		userdata_count = particle_shader_data->userdata_count;
 	}
 
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	bool index_draw_order = particles->draw_order == RS::ParticlesDrawOrder::PARTICLES_DRAW_ORDER_INDEX;
+	bool enable_motion_vectors = uses_motion_vectors && index_draw_order && !particles->instance_motion_vectors_enabled;
+	bool only_instances_changed = false;
+
 	if (userdata_count != particles->userdata_count) {
-		// Mismatch userdata, re-create buffers.
+		// Mismatch userdata, re-create all buffers.
 		_particles_free_data(particles);
+	} else if (enable_motion_vectors) {
+		// Only motion vectors are required, release the transforms buffer and uniform set.
+		if (particles->particle_instance_buffer.is_valid()) {
+			RD::get_singleton()->free(particles->particle_instance_buffer);
+			particles->particle_instance_buffer = RID();
+		}
+
+		particles->particles_transforms_buffer_uniform_set = RID();
+		only_instances_changed = true;
+	} else if (!particles->particle_buffer.is_null()) {
+		// No operation is required because a buffer already exists, return early.
+		return;
 	}
 
-	if (particles->amount > 0 && particles->particle_buffer.is_null()) {
+	if (particles->amount > 0) {
 		int total_amount = particles->amount;
 		if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
 			total_amount *= particles->trail_bind_poses.size();
 		}
 
 		uint32_t xform_size = particles->mode == RS::PARTICLES_MODE_2D ? 2 : 3;
-
-		particles->particle_buffer = RD::get_singleton()->storage_buffer_create((sizeof(ParticleData) + userdata_count * sizeof(float) * 4) * total_amount);
-
-		particles->userdata_count = userdata_count;
+		if (particles->particle_buffer.is_null()) {
+			particles->particle_buffer = RD::get_singleton()->storage_buffer_create((sizeof(ParticleData) + userdata_count * sizeof(float) * 4) * total_amount);
+			particles->userdata_count = userdata_count;
+		}
 
 		PackedByteArray data;
-		data.resize_zeroed(sizeof(float) * 4 * (xform_size + 1 + 1) * total_amount);
+		uint32_t particle_instance_buffer_size = total_amount * (xform_size + 1 + 1) * sizeof(float) * 4;
+		if (uses_motion_vectors) {
+			particle_instance_buffer_size *= 2;
+			particles->instance_motion_vectors_enabled = true;
+		}
 
-		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * 4 * (xform_size + 1 + 1) * total_amount, data);
-		//needs to clear it
+		data.resize_zeroed(particle_instance_buffer_size);
+
+		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(particle_instance_buffer_size, data);
 
 		{
 			Vector<RD::Uniform> uniforms;
@@ -1295,9 +1331,20 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 
 			particles->particles_copy_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 0);
 		}
+
+		particles->instance_motion_vectors_current_offset = 0;
+		particles->instance_motion_vectors_previous_offset = 0;
+		particles->instance_motion_vectors_last_change = -1;
+
+		if (only_instances_changed) {
+			// Notify the renderer the instances uniform must be retrieved again, as it's the only element that has been changed because motion vectors were enabled.
+			particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES_INSTANCES);
+		}
 	}
 }
 void ParticlesStorage::update_particles() {
+	uint32_t frame = RSG::rasterizer->get_frame_number();
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
 	while (particle_update_list) {
 		//use transform feedback to process particles
 
@@ -1461,15 +1508,24 @@ void ParticlesStorage::update_particles() {
 		// Ensure that memory is initialized (the code above should ensure that _particles_process is always called at least once upon clearing).
 		DEV_ASSERT(!particles->clear);
 
+		int total_amount = particles->amount;
+		if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+			total_amount *= particles->trail_bind_poses.size();
+		}
+
+		// Swap offsets for motion vectors. Motion vectors can only be used when the draw order keeps the indices consistent across frames.
+		bool index_draw_order = particles->draw_order == RS::ParticlesDrawOrder::PARTICLES_DRAW_ORDER_INDEX;
+		particles->instance_motion_vectors_previous_offset = particles->instance_motion_vectors_current_offset;
+		if (uses_motion_vectors && index_draw_order && particles->instance_motion_vectors_enabled && (frame - particles->instance_motion_vectors_last_change) == 1) {
+			particles->instance_motion_vectors_current_offset = total_amount - particles->instance_motion_vectors_current_offset;
+		}
+
+		particles->instance_motion_vectors_last_change = frame;
+
 		// Copy particles to instance buffer.
 		if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
 			//does not need view dependent operation, do copy here
 			ParticlesShader::CopyPushConstant copy_push_constant;
-
-			int total_amount = particles->amount;
-			if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
-				total_amount *= particles->trail_bind_poses.size();
-			}
 
 			// Affect 2D only.
 			if (particles->use_local_coords) {
@@ -1506,6 +1562,7 @@ void ParticlesStorage::update_particles() {
 			copy_push_constant.order_by_lifetime = (particles->draw_order == RS::PARTICLES_DRAW_ORDER_LIFETIME || particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME);
 			copy_push_constant.lifetime_split = (MIN(int(particles->amount * particles->phase), particles->amount - 1) + 1) % particles->amount;
 			copy_push_constant.lifetime_reverse = particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME;
+			copy_push_constant.motion_vectors_current_offset = particles->instance_motion_vectors_current_offset;
 
 			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 			copy_push_constant.copy_mode_2d = particles->mode == RS::PARTICLES_MODE_2D ? 1 : 0;

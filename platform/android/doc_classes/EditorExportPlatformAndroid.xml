@@ -8,6 +8,7 @@
 	<tutorials>
 		<link title="Exporting for Android">$DOCS_URL/tutorials/export/exporting_for_android.html</link>
 		<link title="Custom builds for Android">$DOCS_URL/tutorials/export/android_custom_build.html</link>
+		<link title="Android plugins documentation index">$DOCS_URL/tutorials/platform/index.html</link>
 	</tutorials>
 	<members>
 		<member name="apk_expansion/SALT" type="String" setter="" getter="">
@@ -109,6 +110,10 @@
 		</member>
 		<member name="package/show_in_android_tv" type="bool" setter="" getter="">
 			If [code]true[/code], this app will show in Android TV launcher UI.
+		</member>
+		<member name="package/show_in_app_library" type="bool" setter="" getter="">
+			If [code]true[/code], this app will show in the device's app library.
+			[b]Note:[/b] This is [code]true[/code] by default.
 		</member>
 		<member name="package/signed" type="bool" setter="" getter="">
 			If [code]true[/code], package signing is enabled.

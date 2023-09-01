@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="BaseMaterial3D" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Default 3D rendering material.
+		Abstract base class for defining the 3D rendering properties of meshes.
 	</brief_description>
 	<description>
-		This provides a default material with a wide variety of rendering features and properties without the need to write shader code. See the tutorial below for details.
+		This class serves as a default material with a wide variety of rendering features and properties without the need to write shader code. See the tutorial below for details.
 	</description>
 	<tutorials>
-		<link title="Standard Material 3D">$DOCS_URL/tutorials/3d/standard_material_3d.html</link>
+		<link title="Standard Material 3D and ORM Material 3D">$DOCS_URL/tutorials/3d/standard_material_3d.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_feature" qualifiers="const">

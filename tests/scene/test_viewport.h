@@ -226,7 +226,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 	SUBCASE("[Viewport][GuiInputEvent] nullptr as argument doesn't lead to a crash.") {
 		ERR_PRINT_OFF;
-		CHECK_NOTHROW(root->push_input(nullptr));
+		root->push_input(nullptr);
 		ERR_PRINT_ON;
 	}
 

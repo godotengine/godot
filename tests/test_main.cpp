@@ -95,6 +95,7 @@
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_color_picker.h"
+#include "tests/scene/test_control.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_curve_3d.h"
@@ -106,6 +107,7 @@
 #include "tests/scene/test_navigation_region_2d.h"
 #include "tests/scene/test_navigation_region_3d.h"
 #include "tests/scene/test_node.h"
+#include "tests/scene/test_node_2d.h"
 #include "tests/scene/test_packed_scene.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_3d.h"
@@ -115,6 +117,7 @@
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_viewport.h"
 #include "tests/scene/test_visual_shader.h"
+#include "tests/scene/test_window.h"
 #include "tests/servers/rendering/test_shader_preprocessor.h"
 #include "tests/servers/test_navigation_server_2d.h"
 #include "tests/servers/test_navigation_server_3d.h"
@@ -241,8 +244,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 			physics_server_2d->init();
 
+			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			navigation_server_2d = memnew(NavigationServer2D);
+			ERR_PRINT_ON;
 
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
@@ -268,8 +273,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 		if (suite_name.find("[Navigation]") != -1 && navigation_server_2d == nullptr && navigation_server_3d == nullptr) {
+			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			navigation_server_2d = memnew(NavigationServer2D);
+			ERR_PRINT_ON;
 			return;
 		}
 	}

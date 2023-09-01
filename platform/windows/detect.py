@@ -185,6 +185,7 @@ def get_opts():
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
+        BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
     ]
 
 
@@ -354,6 +355,10 @@ def configure_msvc(env, vcvars_msvc_config):
             env.AppendUnique(CCFLAGS=["/MT"])
         else:
             env.AppendUnique(CCFLAGS=["/MD"])
+
+    # MSVC incremental linking is broken and may _increase_ link time (GH-77968).
+    if not env["incremental_link"]:
+        env.Append(LINKFLAGS=["/INCREMENTAL:NO"])
 
     if env["arch"] == "x86_32":
         env["x86_libtheora_opt_vc"] = True

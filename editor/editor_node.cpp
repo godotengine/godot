@@ -56,7 +56,6 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
-#include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
 #include "scene/main/window.h"
 #include "scene/property_utils.h"
@@ -105,6 +104,7 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_run_bar.h"
+#include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/history_dock.h"
@@ -271,90 +271,6 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 	}
 }
 
-// TODO: This REALLY should be done in a better way than replacing all tabs after almost EVERY action.
-void EditorNode::_update_scene_tabs() {
-	bool show_rb = EDITOR_GET("interface/scene_tabs/show_script_button");
-
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-		DisplayServer::get_singleton()->global_menu_clear("_dock");
-	}
-
-	// Get all scene names, which may be ambiguous.
-	Vector<String> disambiguated_scene_names;
-	Vector<String> full_path_names;
-	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		disambiguated_scene_names.append(editor_data.get_scene_title(i));
-		full_path_names.append(editor_data.get_scene_path(i));
-	}
-
-	disambiguate_filenames(full_path_names, disambiguated_scene_names);
-
-	// Workaround to ignore the tab_changed signal from the first added tab.
-	scene_tabs->disconnect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
-
-	scene_tabs->clear_tabs();
-	Ref<Texture2D> script_icon = gui_base->get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
-	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		Node *type_node = editor_data.get_edited_scene_root(i);
-		Ref<Texture2D> icon;
-		if (type_node) {
-			icon = EditorNode::get_singleton()->get_object_icon(type_node, "Node");
-		}
-
-		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(i));
-		scene_tabs->add_tab(disambiguated_scene_names[i] + (unsaved ? "(*)" : ""), icon);
-
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-			DisplayServer::get_singleton()->global_menu_add_item("_dock", editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), callable_mp(this, &EditorNode::_global_menu_scene), Callable(), i);
-		}
-
-		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
-			scene_tabs->set_tab_button_icon(i, script_icon);
-		}
-	}
-
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
-		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &EditorNode::_global_menu_new_window));
-	}
-
-	if (scene_tabs->get_tab_count() > 0) {
-		scene_tabs->set_current_tab(editor_data.get_edited_scene());
-	}
-
-	const Size2 add_button_size = Size2(scene_tab_add->get_size().x, scene_tabs->get_size().y);
-	if (scene_tabs->get_offset_buttons_visible()) {
-		// Move the add button to a fixed position.
-		if (scene_tab_add->get_parent() == scene_tabs) {
-			scene_tabs->remove_child(scene_tab_add);
-			scene_tab_add_ph->add_child(scene_tab_add);
-			scene_tab_add->set_rect(Rect2(Point2(), add_button_size));
-		}
-	} else {
-		// Move the add button to be after the last tab.
-		if (scene_tab_add->get_parent() == scene_tab_add_ph) {
-			scene_tab_add_ph->remove_child(scene_tab_add);
-			scene_tabs->add_child(scene_tab_add);
-		}
-
-		if (scene_tabs->get_tab_count() == 0) {
-			scene_tab_add->set_rect(Rect2(Point2(), add_button_size));
-			return;
-		}
-
-		Rect2 last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
-		int hsep = scene_tabs->get_theme_constant(SNAME("h_separation"));
-		if (scene_tabs->is_layout_rtl()) {
-			scene_tab_add->set_rect(Rect2(Point2(last_tab.position.x - add_button_size.x - hsep, last_tab.position.y), add_button_size));
-		} else {
-			scene_tab_add->set_rect(Rect2(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y), add_button_size));
-		}
-	}
-
-	// Reconnect after everything is done.
-	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
-}
-
 void EditorNode::_version_control_menu_option(int p_idx) {
 	switch (vcs_actions_menu->get_item_id(p_idx)) {
 		case RUN_VCS_METADATA: {
@@ -391,16 +307,6 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 	if ((k.is_valid() && k->is_pressed() && !k->is_echo()) || Object::cast_to<InputEventShortcut>(*p_event)) {
 		EditorPlugin *old_editor = editor_plugin_screen;
 
-		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
-			int next_tab = editor_data.get_edited_scene() + 1;
-			next_tab %= editor_data.get_edited_scene_count();
-			_scene_tab_changed(next_tab);
-		}
-		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
-			int next_tab = editor_data.get_edited_scene() - 1;
-			next_tab = next_tab >= 0 ? next_tab : editor_data.get_edited_scene_count() - 1;
-			_scene_tab_changed(next_tab);
-		}
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			FileSystemDock::get_singleton()->focus_on_filter();
 		}
@@ -431,6 +337,8 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorNode::_update_from_settings() {
+	_update_title();
+
 	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
 	if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
 		Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
@@ -509,6 +417,8 @@ void EditorNode::_update_from_settings() {
 	tree->set_debug_collisions_color(GLOBAL_GET("debug/shapes/collision/shape_color"));
 	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
 
+	ResourceImporterTexture::get_singleton()->update_imports();
+
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/edge_connection_color"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/geometry_edge_color"));
@@ -558,7 +468,7 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			if (editor_data.is_scene_changed(-1)) {
-				_update_scene_tabs();
+				scene_tabs->update_scene_tabs();
 			}
 
 			// Update the animation frame of the update spinner.
@@ -581,18 +491,6 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			editor_selection->update();
-
-			ResourceImporterTexture::get_singleton()->update_imports();
-
-			if (settings_changed) {
-				_update_title();
-			}
-
-			if (settings_changed) {
-				_update_from_settings();
-				settings_changed = false;
-				emit_signal(SNAME("project_settings_changed"));
-			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();
 
@@ -655,6 +553,7 @@ void EditorNode::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			{
+				started_timestamp = Time::get_singleton()->get_unix_time_from_system();
 				_initializing_plugins = true;
 				Vector<String> addons;
 				if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
@@ -715,7 +614,6 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
 			FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 			EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 			EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
@@ -745,17 +643,10 @@ void EditorNode::_notification(int p_what) {
 				main_vbox->add_theme_constant_override("separation", gui_base->get_theme_constant(SNAME("top_bar_separation"), SNAME("Editor")));
 				scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), SNAME("EditorStyles")));
 				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
-				tabbar_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
-
-				scene_tabs->add_theme_constant_override("icon_max_width", gui_base->get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
-				scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
-
 				main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
 			}
 
-			scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
-			_update_scene_tabs();
-
+			scene_tabs->update_scene_tabs();
 			recent_scenes->reset_size();
 
 			// Update debugger area.
@@ -780,7 +671,6 @@ void EditorNode::_notification(int p_what) {
 
 			prev_scene->set_icon(gui_base->get_theme_icon(SNAME("PrevScene"), SNAME("EditorIcons")));
 			distraction_free->set_icon(gui_base->get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
-			scene_tab_add->set_icon(gui_base->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 
 			bottom_panel_raise->set_icon(gui_base->get_theme_icon(SNAME("ExpandBottomDock"), SNAME("EditorIcons")));
 
@@ -1139,14 +1029,13 @@ void EditorNode::_reload_modified_scenes() {
 		}
 	}
 
-	set_current_scene(current_idx);
-	_update_scene_tabs();
+	_set_current_scene(current_idx);
+	scene_tabs->update_scene_tabs();
 	disk_changed->hide();
 }
 
 void EditorNode::_reload_project_settings() {
 	ProjectSettings::get_singleton()->setup(ProjectSettings::get_singleton()->get_resource_path(), String(), true);
-	settings_changed = true;
 }
 
 void EditorNode::_vp_resized() {
@@ -1385,6 +1274,10 @@ void EditorNode::_menu_option(int p_option) {
 
 void EditorNode::_menu_confirm_current() {
 	_menu_option_confirm(current_menu_option, true);
+}
+
+void EditorNode::trigger_menu_option(int p_option, bool p_confirmed) {
+	_menu_option_confirm(p_option, p_confirmed);
 }
 
 void EditorNode::_dialog_display_save_error(String p_file, Error p_error) {
@@ -1822,7 +1715,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		editor_folding.save_scene_folding(scene, p_file);
 
 		_update_title();
-		_update_scene_tabs();
+		scene_tabs->update_scene_tabs();
 	} else {
 		_dialog_display_save_error(p_file, err);
 	}
@@ -1937,7 +1830,7 @@ void EditorNode::_mark_unsaved_scenes() {
 	}
 
 	_update_title();
-	_update_scene_tabs();
+	scene_tabs->update_scene_tabs();
 }
 
 void EditorNode::_dialog_action(String p_file) {
@@ -2145,52 +2038,61 @@ bool EditorNode::_is_class_editor_disabled_by_feature_profile(const StringName &
 void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	ERR_FAIL_NULL(p_editing_owner);
 
-	if (p_object && _is_class_editor_disabled_by_feature_profile(p_object->get_class())) {
+	// Editing for this type of object may be disabled by user's feature profile.
+	if (!p_object || _is_class_editor_disabled_by_feature_profile(p_object->get_class())) {
+		// Nothing to edit, clean up the owner context and return.
+		hide_unused_editors(p_editing_owner);
 		return;
 	}
 
-	Vector<EditorPlugin *> item_plugins;
-	if (p_object) {
-		item_plugins = editor_data.get_subeditors(p_object);
+	// Get a list of editor plugins that can handle this type of object.
+	Vector<EditorPlugin *> available_plugins = editor_data.get_handling_sub_editors(p_object);
+	if (available_plugins.is_empty()) {
+		// None, clean up the owner context and return.
+		hide_unused_editors(p_editing_owner);
+		return;
 	}
 
-	if (!item_plugins.is_empty()) {
-		ObjectID owner_id = p_editing_owner->get_instance_id();
+	ObjectID owner_id = p_editing_owner->get_instance_id();
 
-		List<EditorPlugin *> to_remove;
-		for (EditorPlugin *plugin : active_plugins[owner_id]) {
-			if (!item_plugins.has(plugin)) {
-				// Remove plugins no longer used by this editing owner.
-				to_remove.push_back(plugin);
-				_plugin_over_edit(plugin, nullptr);
-			}
+	// Remove editor plugins no longer used by this editing owner. Keep the ones that can
+	// still be reused by the new edited object.
+
+	List<EditorPlugin *> to_remove;
+	for (EditorPlugin *plugin : active_plugins[owner_id]) {
+		if (!available_plugins.has(plugin)) {
+			to_remove.push_back(plugin);
+			_plugin_over_edit(plugin, nullptr);
+		}
+	}
+
+	for (EditorPlugin *plugin : to_remove) {
+		active_plugins[owner_id].erase(plugin);
+	}
+
+	// Send the edited object to the plugins.
+	for (EditorPlugin *plugin : available_plugins) {
+		if (active_plugins[owner_id].has(plugin)) {
+			// Plugin was already active, just change the object.
+			plugin->edit(p_object);
+			continue;
 		}
 
-		for (EditorPlugin *plugin : to_remove) {
-			active_plugins[owner_id].erase(plugin);
-		}
-
-		for (EditorPlugin *plugin : item_plugins) {
-			if (active_plugins[owner_id].has(plugin)) {
-				plugin->edit(p_object);
-				continue;
-			}
-
-			for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
-				if (kv.key != owner_id) {
-					EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
-					if (epres && kv.value.has(plugin)) {
-						// If it's resource property editing the same resource type, fold it.
-						epres->fold_resource();
-					}
-					kv.value.erase(plugin);
+		// If plugin is already associated with another owner, remove it from there first.
+		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
+			if (kv.key != owner_id) {
+				EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
+				if (epres && kv.value.has(plugin)) {
+					// If it's resource property editing the same resource type, fold it.
+					epres->fold_resource();
 				}
+				kv.value.erase(plugin);
 			}
-			active_plugins[owner_id].insert(plugin);
-			_plugin_over_edit(plugin, p_object);
 		}
-	} else {
-		hide_unused_editors(p_editing_owner);
+
+		// Activate previously inactive plugin and edit the object.
+		active_plugins[owner_id].insert(plugin);
+		_plugin_over_edit(plugin, p_object);
 	}
 }
 
@@ -2277,7 +2179,8 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 
 	Ref<Resource> res = Object::cast_to<Resource>(current_obj);
 	if (p_skip_foreign && res.is_valid()) {
-		if (res->get_path().find("::") > -1 && res->get_path().get_slice("::", 0) != editor_data.get_scene_path(get_current_tab())) {
+		const int current_tab = scene_tabs->get_current_tab();
+		if (res->get_path().find("::") > -1 && res->get_path().get_slice("::", 0) != editor_data.get_scene_path(current_tab)) {
 			// Trying to edit resource that belongs to another scene; abort.
 			current_obj = nullptr;
 		}
@@ -2291,15 +2194,16 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		InspectorDock::get_inspector_singleton()->edit(nullptr);
 		NodeDock::get_singleton()->set_node(nullptr);
 		InspectorDock::get_singleton()->update(nullptr);
-
 		hide_unused_editors();
-
 		return;
 	}
 
-	Object *prev_inspected_object = InspectorDock::get_inspector_singleton()->get_edited_object();
-
+	// Update the use folding setting and state.
 	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
+	if (InspectorDock::get_inspector_singleton()->is_using_folding() == disable_folding) {
+		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding, false);
+	}
+
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 	bool stay_in_script_editor_on_node_selected = bool(EDITOR_GET("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected"));
@@ -2317,6 +2221,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	if (is_resource) {
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
 		ERR_FAIL_COND(!current_res);
+
 		InspectorDock::get_inspector_singleton()->edit(current_res);
 		SceneTreeDock::get_singleton()->set_selected(nullptr);
 		NodeDock::get_singleton()->set_node(nullptr);
@@ -2357,7 +2262,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 			SceneTreeDock::get_singleton()->set_selected(current_node);
 			InspectorDock::get_singleton()->update(current_node);
 			if (!inspector_only && !skip_main_plugin) {
-				skip_main_plugin = stay_in_script_editor_on_node_selected && ScriptEditor::get_singleton()->is_visible_in_tree();
+				skip_main_plugin = stay_in_script_editor_on_node_selected && !ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree();
 			}
 		} else {
 			NodeDock::get_singleton()->set_node(nullptr);
@@ -2406,19 +2311,10 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		InspectorDock::get_singleton()->update(nullptr);
 	}
 
-	if (current_obj == prev_inspected_object) {
-		// Make sure inspected properties are restored.
-		InspectorDock::get_inspector_singleton()->update_tree();
-	}
-
 	InspectorDock::get_singleton()->set_info(
 			info_is_warning ? TTR("Changes may be lost!") : TTR("This object is read-only."),
 			editable_info,
 			info_is_warning);
-
-	if (InspectorDock::get_inspector_singleton()->is_using_folding() == disable_folding) {
-		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding);
-	}
 
 	Object *editor_owner = is_node ? (Object *)SceneTreeDock::get_singleton() : is_resource ? (Object *)InspectorDock::get_inspector_singleton()
 																							: (Object *)this;
@@ -2426,7 +2322,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	// Take care of the main editor plugin.
 
 	if (!inspector_only) {
-		EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
+		EditorPlugin *main_plugin = editor_data.get_handling_main_editor(current_obj);
 
 		int plugin_index = 0;
 		for (; plugin_index < editor_table.size(); plugin_index++) {
@@ -3110,7 +3006,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 			// Don't close tabs when exiting the editor (required for "restore_scenes_on_load" setting).
 			if (!_is_closing_editor()) {
 				_remove_scene(tab_closing_idx);
-				_update_scene_tabs();
+				scene_tabs->update_scene_tabs();
 			}
 			_proceed_closing_scene_tabs();
 		} break;
@@ -3448,16 +3344,16 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	}
 
 	if (p_change_tab) {
-		_scene_tab_changed(new_index);
+		_set_current_scene(new_index);
 	}
 	editor_data.remove_scene(old_index);
 	_update_title();
-	_update_scene_tabs();
+	scene_tabs->update_scene_tabs();
 }
 
 void EditorNode::_remove_scene(int index, bool p_change_tab) {
 	// Clear icon cache in case some scripts are no longer needed.
-	// FIXME: Perfectly the cache should never be cleared and only updated on per-script basis, when an icon changes.
+	// FIXME: Ideally the cache should never be cleared and only updated on per-script basis, when an icon changes.
 	editor_data.clear_script_icon_cache();
 
 	if (editor_data.get_edited_scene() == index) {
@@ -3574,7 +3470,15 @@ bool EditorNode::is_changing_scene() const {
 	return changing_scene;
 }
 
-void EditorNode::set_current_scene(int p_idx) {
+void EditorNode::_set_current_scene(int p_idx) {
+	if (p_idx == editor_data.get_edited_scene()) {
+		return; // Pointless.
+	}
+
+	_set_current_scene_nocheck(p_idx);
+}
+
+void EditorNode::_set_current_scene_nocheck(int p_idx) {
 	// Save the folding in case the scene gets reloaded.
 	if (editor_data.get_scene_path(p_idx) != "" && editor_data.get_edited_scene_root(p_idx)) {
 		editor_folding.save_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
@@ -3621,7 +3525,7 @@ void EditorNode::set_current_scene(int p_idx) {
 	_edit_current(true);
 
 	_update_title();
-	_update_scene_tabs();
+	scene_tabs->update_scene_tabs();
 
 	if (tabs_to_close.is_empty()) {
 		call_deferred(SNAME("_set_main_scene_state"), state, get_edited_scene()); // Do after everything else is done setting up.
@@ -3664,9 +3568,9 @@ int EditorNode::new_scene() {
 	}
 	idx = MAX(idx, 0);
 
-	_scene_tab_changed(idx);
+	_set_current_scene(idx);
 	editor_data.clear_editor_states();
-	_update_scene_tabs();
+	scene_tabs->update_scene_tabs();
 	return idx;
 }
 
@@ -3679,7 +3583,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (!p_set_inherited) {
 		for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 			if (editor_data.get_scene_path(i) == p_scene) {
-				_scene_tab_changed(i);
+				_set_current_scene(i);
 				return OK;
 			}
 		}
@@ -3710,10 +3614,10 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	if (!editor_data.get_edited_scene_root() && editor_data.get_edited_scene_count() == 2) {
 		_remove_edited_scene();
-	} else if (!p_silent_change_tab) {
-		_scene_tab_changed(idx);
+	} else if (p_silent_change_tab) {
+		_set_current_scene_nocheck(idx);
 	} else {
-		set_current_scene(idx);
+		_set_current_scene(idx);
 	}
 
 	dependency_errors.clear();
@@ -3725,7 +3629,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		opening_prev = false;
 
 		if (prev != -1) {
-			set_current_scene(prev);
+			_set_current_scene(prev);
 			editor_data.remove_scene(idx);
 		}
 		return ERR_FILE_NOT_FOUND;
@@ -3741,7 +3645,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		opening_prev = false;
 
 		if (prev != -1) {
-			set_current_scene(prev);
+			_set_current_scene(prev);
 			editor_data.remove_scene(idx);
 		}
 		return ERR_FILE_MISSING_DEPENDENCIES;
@@ -3777,7 +3681,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		_dialog_display_load_error(lpath, ERR_FILE_CORRUPT);
 		opening_prev = false;
 		if (prev != -1) {
-			set_current_scene(prev);
+			_set_current_scene(prev);
 			editor_data.remove_scene(idx);
 		}
 		return ERR_FILE_CORRUPT;
@@ -3803,7 +3707,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	}
 
 	_update_title();
-	_update_scene_tabs();
+	scene_tabs->update_scene_tabs();
 	_add_to_recent_scenes(lpath);
 
 	if (editor_folding.has_folding_data(lpath)) {
@@ -3815,11 +3719,14 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	prev_scene->set_disabled(previous_scenes.size() == 0);
 	opening_prev = false;
-	SceneTreeDock::get_singleton()->set_selected(new_scene);
 
 	EditorDebuggerNode::get_singleton()->update_live_edit_root();
 
-	push_item(new_scene);
+	// Tell everything to edit this object, unless we're in the process of restoring scenes.
+	// If we are, we'll edit it after the restoration is done.
+	if (!restoring_scenes) {
+		push_item(new_scene);
+	}
 
 	// Load the selected nodes.
 	if (editor_state_cf->has_section_key("editor_states", "selected_nodes")) {
@@ -3998,6 +3905,10 @@ void EditorNode::open_request(const String &p_path) {
 	load_scene(p_path); // As it will be opened in separate tab.
 }
 
+bool EditorNode::has_previous_scenes() const {
+	return !previous_scenes.is_empty();
+}
+
 void EditorNode::edit_foreign_resource(Ref<Resource> p_resource) {
 	load_scene(p_resource->get_path().get_slice("::", 0));
 	InspectorDock::get_singleton()->call_deferred("edit_resource", p_resource);
@@ -4115,11 +4026,7 @@ void EditorNode::_quick_opened() {
 	bool open_scene_dialog = quick_open->get_base_type() == "PackedScene";
 	for (int i = 0; i < files.size(); i++) {
 		String res_path = files[i];
-
-		List<String> scene_extensions;
-		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
-
-		if (open_scene_dialog || scene_extensions.find(files[i].get_extension().to_lower())) {
+		if (open_scene_dialog || ClassDB::is_parent_class(ResourceLoader::get_resource_type(res_path), "PackedScene")) {
 			open_request(res_path);
 		} else {
 			load_resource(res_path);
@@ -5408,7 +5315,7 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
 		String current_scene = p_layout->get_value(EDITOR_NODE_CONFIG_SECTION, "current_scene");
 		int current_scene_idx = scenes.find(current_scene);
 		if (current_scene_idx >= 0) {
-			set_current_scene(current_scene_idx);
+			_set_current_scene(current_scene_idx);
 		}
 	}
 
@@ -5500,14 +5407,6 @@ void EditorNode::cleanup() {
 	_init_callbacks.clear();
 }
 
-int EditorNode::get_current_tab() {
-	return scene_tabs->get_current_tab();
-}
-
-void EditorNode::set_current_tab(int p_tab) {
-	scene_tabs->set_current_tab(p_tab);
-}
-
 void EditorNode::_update_layouts_menu() {
 	editor_layouts->clear();
 	overridden_default_layout = -1;
@@ -5572,13 +5471,6 @@ void EditorNode::_layout_menu_option(int p_id) {
 	}
 }
 
-void EditorNode::_scene_tab_script_edited(int p_tab) {
-	Ref<Script> scr = editor_data.get_scene_root_script(p_tab);
-	if (scr.is_valid()) {
-		InspectorDock::get_singleton()->edit_resource(scr);
-	}
-}
-
 void EditorNode::_proceed_closing_scene_tabs() {
 	List<String>::Element *E = tabs_to_close.front();
 	if (!E) {
@@ -5610,8 +5502,8 @@ bool EditorNode::_is_closing_editor() const {
 	return tab_closing_menu_option == FILE_QUIT || tab_closing_menu_option == RUN_PROJECT_MANAGER || tab_closing_menu_option == RELOAD_CURRENT_PROJECT;
 }
 
-void EditorNode::_scene_tab_closed(int p_tab, int p_option) {
-	current_menu_option = p_option;
+void EditorNode::_scene_tab_closed(int p_tab) {
+	current_menu_option = SCENE_TAB_CLOSE;
 	tab_closing_idx = p_tab;
 	Node *scene = editor_data.get_edited_scene_root(p_tab);
 	if (!scene) {
@@ -5626,7 +5518,19 @@ void EditorNode::_scene_tab_closed(int p_tab, int p_option) {
 		if (scene_filename.is_empty()) {
 			unsaved_message = TTR("This scene was never saved.");
 		} else {
-			unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes."), scene_filename);
+			// Consider editor startup to be a point of saving, so that when you
+			// close and reopen the editor, you don't get an excessively long
+			// "modified X hours ago".
+			const uint64_t last_modified_seconds = Time::get_singleton()->get_unix_time_from_system() - MAX(started_timestamp, FileAccess::get_modified_time(scene->get_scene_file_path()));
+			String last_modified_string;
+			if (last_modified_seconds < 120) {
+				last_modified_string = vformat(TTRN("%d second ago", "%d seconds ago", last_modified_seconds), last_modified_seconds);
+			} else if (last_modified_seconds < 7200) {
+				last_modified_string = vformat(TTRN("%d minute ago", "%d minutes ago", last_modified_seconds / 60), last_modified_seconds / 60);
+			} else {
+				last_modified_string = vformat(TTRN("%d hour ago", "%d hours ago", last_modified_seconds / 3600), last_modified_seconds / 3600);
+			}
+			unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes.\nLast saved: %s."), scene_filename, last_modified_string);
 		}
 	} else {
 		// Check if any plugin has unsaved changes in that scene.
@@ -5639,17 +5543,12 @@ void EditorNode::_scene_tab_closed(int p_tab, int p_option) {
 	}
 
 	if (!unsaved_message.is_empty()) {
-		if (get_current_tab() != p_tab) {
-			set_current_scene(p_tab);
+		if (scene_tabs->get_current_tab() != p_tab) {
+			_set_current_scene(p_tab);
 		}
 
-		if (current_menu_option == RELOAD_CURRENT_PROJECT) {
-			save_confirmation->set_ok_button_text(TTR("Save & Reload"));
-			save_confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading?"));
-		} else {
-			save_confirmation->set_ok_button_text(TTR("Save & Close"));
-			save_confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before closing?"));
-		}
+		save_confirmation->set_ok_button_text(TTR("Save & Close"));
+		save_confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before closing?"));
 		save_confirmation->reset_size();
 		save_confirmation->popup_centered();
 	} else {
@@ -5657,106 +5556,7 @@ void EditorNode::_scene_tab_closed(int p_tab, int p_option) {
 	}
 
 	save_editor_layout_delayed();
-	_update_scene_tabs();
-}
-
-void EditorNode::_scene_tab_hovered(int p_tab) {
-	if (!bool(EDITOR_GET("interface/scene_tabs/show_thumbnail_on_hover"))) {
-		return;
-	}
-	int current_tab = scene_tabs->get_current_tab();
-
-	if (p_tab == current_tab || p_tab < 0) {
-		tab_preview_panel->hide();
-	} else {
-		String path = editor_data.get_scene_path(p_tab);
-		if (!path.is_empty()) {
-			EditorResourcePreview::get_singleton()->queue_resource_preview(path, this, "_thumbnail_done", p_tab);
-		}
-	}
-}
-
-void EditorNode::_scene_tab_exit() {
-	tab_preview_panel->hide();
-}
-
-void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
-	Ref<InputEventMouseButton> mb = p_input;
-
-	if (mb.is_valid()) {
-		if (scene_tabs->get_hovered_tab() >= 0) {
-			if (mb->get_button_index() == MouseButton::MIDDLE && mb->is_pressed()) {
-				_scene_tab_closed(scene_tabs->get_hovered_tab());
-			}
-		} else if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
-			int tab_buttons = 0;
-			if (scene_tabs->get_offset_buttons_visible()) {
-				tab_buttons = theme->get_icon(SNAME("increment"), SNAME("TabBar"))->get_width() + theme->get_icon(SNAME("decrement"), SNAME("TabBar"))->get_width();
-			}
-
-			if ((gui_base->is_layout_rtl() && mb->get_position().x > tab_buttons) || (!gui_base->is_layout_rtl() && mb->get_position().x < scene_tabs->get_size().width - tab_buttons)) {
-				_menu_option_confirm(FILE_NEW_SCENE, true);
-			}
-		}
-
-		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-			// Context menu.
-			scene_tabs_context_menu->clear();
-			scene_tabs_context_menu->reset_size();
-
-			scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_scene"), FILE_NEW_SCENE);
-			if (scene_tabs->get_hovered_tab() >= 0) {
-				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene"), FILE_SAVE_SCENE);
-				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene_as"), FILE_SAVE_AS_SCENE);
-			}
-			scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_all_scenes"), FILE_SAVE_ALL_SCENES);
-			if (scene_tabs->get_hovered_tab() >= 0) {
-				scene_tabs_context_menu->add_separator();
-				scene_tabs_context_menu->add_item(TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
-				scene_tabs_context_menu->add_item(TTR("Play This Scene"), FILE_RUN_SCENE);
-
-				scene_tabs_context_menu->add_separator();
-				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_scene"), FILE_CLOSE);
-				scene_tabs_context_menu->set_item_text(scene_tabs_context_menu->get_item_index(FILE_CLOSE), TTR("Close Tab"));
-				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/reopen_closed_scene"), FILE_OPEN_PREV);
-				scene_tabs_context_menu->set_item_text(scene_tabs_context_menu->get_item_index(FILE_OPEN_PREV), TTR("Undo Close Tab"));
-				if (previous_scenes.is_empty()) {
-					scene_tabs_context_menu->set_item_disabled(scene_tabs_context_menu->get_item_index(FILE_OPEN_PREV), true);
-				}
-				scene_tabs_context_menu->add_item(TTR("Close Other Tabs"), FILE_CLOSE_OTHERS);
-				scene_tabs_context_menu->add_item(TTR("Close Tabs to the Right"), FILE_CLOSE_RIGHT);
-				scene_tabs_context_menu->add_item(TTR("Close All Tabs"), FILE_CLOSE_ALL);
-			}
-			scene_tabs_context_menu->set_position(scene_tabs->get_screen_position() + mb->get_position());
-			scene_tabs_context_menu->reset_size();
-			scene_tabs_context_menu->popup();
-		}
-	}
-}
-
-void EditorNode::_reposition_active_tab(int idx_to) {
-	editor_data.move_edited_scene_to_index(idx_to);
-	_update_scene_tabs();
-}
-
-void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
-	int p_tab = p_udata.operator signed int();
-	if (p_preview.is_valid()) {
-		Rect2 rect = scene_tabs->get_tab_rect(p_tab);
-		rect.position += scene_tabs->get_global_position();
-		tab_preview->set_texture(p_preview);
-		tab_preview_panel->set_position(rect.position + Vector2(0, rect.size.height));
-		tab_preview_panel->show();
-	}
-}
-
-void EditorNode::_scene_tab_changed(int p_tab) {
-	tab_preview_panel->hide();
-
-	if (p_tab == editor_data.get_edited_scene()) {
-		return; // Pointless.
-	}
-	set_current_scene(p_tab);
+	scene_tabs->update_scene_tabs();
 }
 
 Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
@@ -6069,19 +5869,6 @@ void EditorNode::remove_tool_menu_item(const String &p_name) {
 
 PopupMenu *EditorNode::get_export_as_menu() {
 	return export_as_menu;
-}
-
-void EditorNode::_global_menu_scene(const Variant &p_tag) {
-	int idx = (int)p_tag;
-	scene_tabs->set_current_tab(idx);
-}
-
-void EditorNode::_global_menu_new_window(const Variant &p_tag) {
-	if (OS::get_singleton()->get_main_loop()) {
-		List<String> args;
-		args.push_back("-p");
-		OS::get_singleton()->create_instance(args);
-	}
 }
 
 void EditorNode::_dropped_files(const Vector<String> &p_files) {
@@ -6701,9 +6488,6 @@ void EditorNode::_feature_profile_changed() {
 }
 
 void EditorNode::_bind_methods() {
-	ClassDB::bind_method("edit_current", &EditorNode::edit_current);
-	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
-
 	ClassDB::bind_method(D_METHOD("push_item", "object", "property", "inspector_only"), &EditorNode::push_item, DEFVAL(""), DEFVAL(false));
 
 	ClassDB::bind_method("set_edited_scene", &EditorNode::set_edited_scene);
@@ -6713,18 +6497,13 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
 
-	ClassDB::bind_method("set_current_scene", &EditorNode::set_current_scene);
-	ClassDB::bind_method("_thumbnail_done", &EditorNode::_thumbnail_done);
 	ClassDB::bind_method("_set_main_scene_state", &EditorNode::_set_main_scene_state);
 	ClassDB::bind_method("_update_recent_scenes", &EditorNode::_update_recent_scenes);
-
-	ClassDB::bind_method(D_METHOD("get_gui_base"), &EditorNode::get_gui_base);
 
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
-	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
 }
@@ -6810,10 +6589,6 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 	return eta.exitcode;
 }
 
-void EditorNode::notify_settings_changed() {
-	settings_changed = true;
-}
-
 EditorNode::EditorNode() {
 	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
 	add_child(epnp);
@@ -6861,6 +6636,7 @@ EditorNode::EditorNode() {
 
 	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// Load settings.
@@ -7261,62 +7037,13 @@ EditorNode::EditorNode() {
 
 	VBoxContainer *srt = memnew(VBoxContainer);
 	srt->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	top_split->add_child(srt);
 	srt->add_theme_constant_override("separation", 0);
+	top_split->add_child(srt);
 
-	tab_preview_panel = memnew(Panel);
-	tab_preview_panel->set_size(Size2(100, 100) * EDSCALE);
-	tab_preview_panel->hide();
-	tab_preview_panel->set_self_modulate(Color(1, 1, 1, 0.7));
-	gui_base->add_child(tab_preview_panel);
-
-	tab_preview = memnew(TextureRect);
-	tab_preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	tab_preview->set_size(Size2(96, 96) * EDSCALE);
-	tab_preview->set_position(Point2(2, 2) * EDSCALE);
-	tab_preview_panel->add_child(tab_preview);
-
-	tabbar_panel = memnew(PanelContainer);
-	tabbar_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
-	srt->add_child(tabbar_panel);
-	tabbar_container = memnew(HBoxContainer);
-	tabbar_panel->add_child(tabbar_container);
-
-	scene_tabs = memnew(TabBar);
-	scene_tabs->set_select_with_rmb(true);
-	scene_tabs->add_tab("unsaved");
-	scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
-	scene_tabs->add_theme_constant_override("icon_max_width", gui_base->get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
-	scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
-	scene_tabs->set_drag_to_rearrange_enabled(true);
-	scene_tabs->set_auto_translate(false);
-	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
-	scene_tabs->connect("tab_button_pressed", callable_mp(this, &EditorNode::_scene_tab_script_edited));
-	scene_tabs->connect("tab_close_pressed", callable_mp(this, &EditorNode::_scene_tab_closed).bind(SCENE_TAB_CLOSE));
-	scene_tabs->connect("tab_hovered", callable_mp(this, &EditorNode::_scene_tab_hovered));
-	scene_tabs->connect("mouse_exited", callable_mp(this, &EditorNode::_scene_tab_exit));
-	scene_tabs->connect("gui_input", callable_mp(this, &EditorNode::_scene_tab_input));
-	scene_tabs->connect("active_tab_rearranged", callable_mp(this, &EditorNode::_reposition_active_tab));
-	scene_tabs->connect("resized", callable_mp(this, &EditorNode::_update_scene_tabs));
-	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	tabbar_container->add_child(scene_tabs);
-
-	scene_tabs_context_menu = memnew(PopupMenu);
-	tabbar_container->add_child(scene_tabs_context_menu);
-	scene_tabs_context_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
-
-	scene_tab_add = memnew(Button);
-	scene_tab_add->set_flat(true);
-	scene_tab_add->set_tooltip_text(TTR("Add a new scene."));
-	scene_tab_add->set_icon(gui_base->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-	scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
-	scene_tabs->add_child(scene_tab_add);
-	scene_tab_add->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(FILE_NEW_SCENE));
-
-	scene_tab_add_ph = memnew(Control);
-	scene_tab_add_ph->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
-	tabbar_container->add_child(scene_tab_add_ph);
+	scene_tabs = memnew(EditorSceneTabs);
+	srt->add_child(scene_tabs);
+	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_set_current_scene));
+	scene_tabs->connect("tab_closed", callable_mp(this, &EditorNode::_scene_tab_closed));
 
 	distraction_free = memnew(Button);
 	distraction_free->set_flat(true);
@@ -7324,10 +7051,10 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/distraction_free_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::D);
 	distraction_free->set_shortcut(ED_GET_SHORTCUT("editor/distraction_free_mode"));
 	distraction_free->set_tooltip_text(TTR("Toggle distraction-free mode."));
-	distraction_free->connect("pressed", callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 	distraction_free->set_icon(gui_base->get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
 	distraction_free->set_toggle_mode(true);
-	tabbar_container->add_child(distraction_free);
+	scene_tabs->add_extra_button(distraction_free);
+	distraction_free->connect("pressed", callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
@@ -7472,8 +7199,8 @@ EditorNode::EditorNode() {
 	export_as_menu->connect("index_pressed", callable_mp(this, &EditorNode::_export_as_menu_option));
 
 	file_menu->add_separator();
-	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO, true);
-	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO, true);
+	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO, true, true);
+	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO, true, true);
 
 	file_menu->add_separator();
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTR("Reload Saved Scene")), EDIT_RELOAD_SAVED_SCENE);
@@ -8150,7 +7877,7 @@ EditorNode::EditorNode() {
 
 	editor_data.add_edited_scene(-1);
 	editor_data.set_edited_scene(0);
-	_update_scene_tabs();
+	scene_tabs->update_scene_tabs();
 
 	ImportDock::get_singleton()->initialize_import_options();
 

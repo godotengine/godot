@@ -45,6 +45,15 @@ static inline bool mathEqual(float a, float b)
     return (fabsf(a - b) < FLT_EPSILON);
 }
 
+static inline bool mathEqual(const Matrix& a, const Matrix& b)
+{
+    if (!mathEqual(a.e11, b.e11) || !mathEqual(a.e12, b.e12) || !mathEqual(a.e13, b.e13) ||
+        !mathEqual(a.e21, b.e21) || !mathEqual(a.e22, b.e22) || !mathEqual(a.e23, b.e23) ||
+        !mathEqual(a.e31, b.e31) || !mathEqual(a.e32, b.e32) || !mathEqual(a.e33, b.e33)) {
+       return false;
+    }
+    return true;
+}
 
 static inline bool mathRightAngle(const Matrix* m)
 {
@@ -109,17 +118,17 @@ static inline void mathIdentity(Matrix* m)
 }
 
 
-static inline void mathScale(Matrix* m, float scale)
+static inline void mathScale(Matrix* m, float sx, float sy)
 {
-    m->e11 = scale;
-    m->e22 = scale;
+    m->e11 *= sx;
+    m->e22 *= sy;
 }
 
 
 static inline void mathTranslate(Matrix* m, float x, float y)
 {
-    m->e13 = x;
-    m->e23 = y;
+    m->e13 += x;
+    m->e23 += y;
 }
 
 
@@ -162,6 +171,31 @@ static inline Matrix mathMultiply(const Matrix* lhs, const Matrix* rhs)
     m.e33 = lhs->e31 * rhs->e13 + lhs->e32 * rhs->e23 + lhs->e33 * rhs->e33;
 
     return m;
+}
+
+
+static inline Point operator-(const Point& lhs, const Point& rhs)
+{
+    return {lhs.x - rhs.x, lhs.y - rhs.y};
+}
+
+
+static inline Point operator+(const Point& lhs, const Point& rhs)
+{
+    return {lhs.x + rhs.x, lhs.y + rhs.y};
+}
+
+
+static inline Point operator*(const Point& lhs, float rhs)
+{
+    return {lhs.x * rhs, lhs.y * rhs};
+}
+
+
+template <typename T>
+static inline T mathLerp(const T &start, const T &end, float t)
+{
+    return static_cast<T>(start + (end - start) * t);
 }
 
 

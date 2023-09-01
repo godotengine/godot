@@ -69,9 +69,6 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/lib/tvgShape.cpp",
         "src/lib/tvgSwCanvas.cpp",
         "src/lib/tvgTaskScheduler.cpp",
-        "src/loaders/external_png/tvgPngLoader.cpp",
-        "src/loaders/jpg/tvgJpgd.cpp",
-        "src/loaders/jpg/tvgJpgLoader.cpp",
         "src/loaders/raw/tvgRawLoader.cpp",
         "src/loaders/svg/tvgSvgCssStyle.cpp",
         "src/loaders/svg/tvgSvgLoader.cpp",
@@ -79,9 +76,6 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/loaders/svg/tvgSvgSceneBuilder.cpp",
         "src/loaders/svg/tvgSvgUtil.cpp",
         "src/loaders/svg/tvgXmlParser.cpp",
-        "src/loaders/tvg/tvgTvgBinInterpreter.cpp",
-        "src/loaders/tvg/tvgTvgLoader.cpp",
-        "src/savers/tvg/tvgTvgSaver.cpp",
     ]
     thirdparty_tvg_sources = [thirdparty_tvg_dir + file for file in thirdparty_tvg_sources]
 
@@ -90,15 +84,15 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
             "../../../thirdparty/thorvg/inc",
             "../../../thirdparty/thorvg/src/lib",
             "../../../thirdparty/thorvg/src/lib/sw_engine",
-            "../../../thirdparty/thorvg/src/loaders/external_png",
-            "../../../thirdparty/thorvg/src/loaders/jpg",
             "../../../thirdparty/thorvg/src/loaders/raw",
             "../../../thirdparty/thorvg/src/loaders/svg",
-            "../../../thirdparty/thorvg/src/loaders/tvg",
-            "../../../thirdparty/thorvg/src/savers/tvg",
             "../../../thirdparty/libpng",
         ]
     )
+
+    # Enable ThorVG static object linking.
+    env_tvg.Append(CPPDEFINES=["TVG_STATIC"])
+
     env.Append(CPPPATH=["../../../thirdparty/thorvg/inc", "../../../thirdparty/thorvg/src/lib"])
     env.Append(CPPDEFINES=["MODULE_SVG_ENABLED"])
 

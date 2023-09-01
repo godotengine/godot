@@ -30,7 +30,10 @@
 
 #include "gpu_particles_2d.h"
 
+#include "scene/2d/cpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/curve_texture.h"
+#include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
 #include "scene/scene_string_names.h"
 
@@ -435,6 +438,97 @@ void GPUParticles2D::restart() {
 	}
 }
 
+void GPUParticles2D::convert_from_particles(Node *p_particles) {
+	CPUParticles2D *cpu_particles = Object::cast_to<CPUParticles2D>(p_particles);
+	ERR_FAIL_NULL_MSG(cpu_particles, "Only CPUParticles2D nodes can be converted to GPUParticles2D.");
+
+	set_emitting(cpu_particles->is_emitting());
+	set_amount(cpu_particles->get_amount());
+	set_lifetime(cpu_particles->get_lifetime());
+	set_one_shot(cpu_particles->get_one_shot());
+	set_pre_process_time(cpu_particles->get_pre_process_time());
+	set_explosiveness_ratio(cpu_particles->get_explosiveness_ratio());
+	set_randomness_ratio(cpu_particles->get_randomness_ratio());
+	set_use_local_coordinates(cpu_particles->get_use_local_coordinates());
+	set_fixed_fps(cpu_particles->get_fixed_fps());
+	set_fractional_delta(cpu_particles->get_fractional_delta());
+	set_speed_scale(cpu_particles->get_speed_scale());
+	set_draw_order(DrawOrder(cpu_particles->get_draw_order()));
+	set_texture(cpu_particles->get_texture());
+
+	Ref<Material> mat = cpu_particles->get_material();
+	if (mat.is_valid()) {
+		set_material(mat);
+	}
+
+	Ref<ParticleProcessMaterial> proc_mat = memnew(ParticleProcessMaterial);
+	set_process_material(proc_mat);
+	Vector2 dir = cpu_particles->get_direction();
+	proc_mat->set_direction(Vector3(dir.x, dir.y, 0));
+	proc_mat->set_spread(cpu_particles->get_spread());
+	proc_mat->set_color(cpu_particles->get_color());
+
+	Ref<Gradient> color_grad = cpu_particles->get_color_ramp();
+	if (color_grad.is_valid()) {
+		Ref<GradientTexture1D> tex = memnew(GradientTexture1D);
+		tex->set_gradient(color_grad);
+		proc_mat->set_color_ramp(tex);
+	}
+
+	Ref<Gradient> color_init_grad = cpu_particles->get_color_initial_ramp();
+	if (color_init_grad.is_valid()) {
+		Ref<GradientTexture1D> tex = memnew(GradientTexture1D);
+		tex->set_gradient(color_init_grad);
+		proc_mat->set_color_initial_ramp(tex);
+	}
+
+	proc_mat->set_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY, cpu_particles->get_particle_flag(CPUParticles2D::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY));
+
+	proc_mat->set_emission_shape(ParticleProcessMaterial::EmissionShape(cpu_particles->get_emission_shape()));
+	proc_mat->set_emission_sphere_radius(cpu_particles->get_emission_sphere_radius());
+
+	Vector2 rect_extents = cpu_particles->get_emission_rect_extents();
+	proc_mat->set_emission_box_extents(Vector3(rect_extents.x, rect_extents.y, 0));
+
+	if (cpu_particles->get_split_scale()) {
+		Ref<CurveXYZTexture> scale3D = memnew(CurveXYZTexture);
+		scale3D->set_curve_x(cpu_particles->get_scale_curve_x());
+		scale3D->set_curve_y(cpu_particles->get_scale_curve_y());
+		proc_mat->set_param_texture(ParticleProcessMaterial::PARAM_SCALE, scale3D);
+	}
+
+	Vector2 gravity = cpu_particles->get_gravity();
+	proc_mat->set_gravity(Vector3(gravity.x, gravity.y, 0));
+	proc_mat->set_lifetime_randomness(cpu_particles->get_lifetime_randomness());
+
+#define CONVERT_PARAM(m_param)                                                                                        \
+	proc_mat->set_param_min(ParticleProcessMaterial::m_param, cpu_particles->get_param_min(CPUParticles2D::m_param)); \
+	{                                                                                                                 \
+		Ref<Curve> curve = cpu_particles->get_param_curve(CPUParticles2D::m_param);                                   \
+		if (curve.is_valid()) {                                                                                       \
+			Ref<CurveTexture> tex = memnew(CurveTexture);                                                             \
+			tex->set_curve(curve);                                                                                    \
+			proc_mat->set_param_texture(ParticleProcessMaterial::m_param, tex);                                       \
+		}                                                                                                             \
+	}                                                                                                                 \
+	proc_mat->set_param_max(ParticleProcessMaterial::m_param, cpu_particles->get_param_max(CPUParticles2D::m_param));
+
+	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
+	CONVERT_PARAM(PARAM_ANGULAR_VELOCITY);
+	CONVERT_PARAM(PARAM_ORBIT_VELOCITY);
+	CONVERT_PARAM(PARAM_LINEAR_ACCEL);
+	CONVERT_PARAM(PARAM_RADIAL_ACCEL);
+	CONVERT_PARAM(PARAM_TANGENTIAL_ACCEL);
+	CONVERT_PARAM(PARAM_DAMPING);
+	CONVERT_PARAM(PARAM_ANGLE);
+	CONVERT_PARAM(PARAM_SCALE);
+	CONVERT_PARAM(PARAM_HUE_VARIATION);
+	CONVERT_PARAM(PARAM_ANIM_SPEED);
+	CONVERT_PARAM(PARAM_ANIM_OFFSET);
+
+#undef CONVERT_PARAM
+}
+
 void GPUParticles2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -679,6 +773,8 @@ void GPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_trail_section_subdivisions", "subdivisions"), &GPUParticles2D::set_trail_section_subdivisions);
 	ClassDB::bind_method(D_METHOD("get_trail_section_subdivisions"), &GPUParticles2D::get_trail_section_subdivisions);
+
+	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &GPUParticles2D::convert_from_particles);
 
 	ADD_SIGNAL(MethodInfo("finished"));
 

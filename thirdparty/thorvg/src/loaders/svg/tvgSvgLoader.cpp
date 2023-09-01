@@ -392,15 +392,8 @@ static char* _idFromUrl(const char* url)
 
     int i = 0;
     while (url[i] > ' ' && url[i] != ')' && url[i] != '\'') ++i;
-
-    //custom strndup() for portability
-    int len = strlen(url);
-    if (i < len) len = i;
-
-    auto ret = (char*) malloc(len + 1);
-    if (!ret) return 0;
-    ret[len] = '\0';
-    return (char*) memcpy(ret, url, len);
+    
+    return svgUtilStrndup(url, i);
 }
 
 
@@ -983,6 +976,22 @@ static void _handleStrokeLineJoinAttr(TVG_UNUSED SvgLoaderData* loader, SvgNode*
     node->style->stroke.join = _toLineJoin(value);
 }
 
+static void _handleStrokeMiterlimitAttr(SvgLoaderData* loader, SvgNode* node, const char* value)
+{
+    char* end = nullptr;
+    const float miterlimit = svgUtilStrtof(value, &end);
+
+    // https://www.w3.org/TR/SVG2/painting.html#LineJoin
+    // - A negative value for stroke-miterlimit must be treated as an illegal value.
+    if (miterlimit < 0.0f) {
+        TVGERR("SVG", "A stroke-miterlimit change (%f <- %f) with a negative value is omitted.",
+            node->style->stroke.miterlimit, miterlimit);
+        return;
+    }
+
+    node->style->stroke.flags = (node->style->stroke.flags | SvgStrokeFlags::Miterlimit);
+    node->style->stroke.miterlimit = miterlimit;
+}
 
 static void _handleFillRuleAttr(TVG_UNUSED SvgLoaderData* loader, SvgNode* node, const char* value)
 {
@@ -1099,6 +1108,7 @@ static constexpr struct
     STYLE_DEF(stroke, Stroke, SvgStyleFlags::Stroke),
     STYLE_DEF(stroke-width, StrokeWidth, SvgStyleFlags::StrokeWidth),
     STYLE_DEF(stroke-linejoin, StrokeLineJoin, SvgStyleFlags::StrokeLineJoin),
+    STYLE_DEF(stroke-miterlimit, StrokeMiterlimit, SvgStyleFlags::StrokeMiterlimit),
     STYLE_DEF(stroke-linecap, StrokeLineCap, SvgStyleFlags::StrokeLineCap),
     STYLE_DEF(stroke-opacity, StrokeOpacity, SvgStyleFlags::StrokeOpacity),
     STYLE_DEF(stroke-dasharray, StrokeDashArray, SvgStyleFlags::StrokeDashArray),
@@ -1125,11 +1135,26 @@ static bool _parseStyleAttr(void* data, const char* key, const char* value, bool
     sz = strlen(key);
     for (unsigned int i = 0; i < sizeof(styleTags) / sizeof(styleTags[0]); i++) {
         if (styleTags[i].sz - 1 == sz && !strncmp(styleTags[i].tag, key, sz)) {
+            bool importance = false;
+            if (auto ptr = strstr(value, "!important")) {
+                size_t size = ptr - value;
+                while (size > 0 && isspace(value[size - 1])) {
+                    size--;
+                }
+                value = svgUtilStrndup(value, size);
+                importance = true;
+            }
             if (style) {
-                styleTags[i].tagHandler(loader, node, value);
-                node->style->flags = (node->style->flags | styleTags[i].flag);
+                if (importance || !(node->style->flagsImportance & styleTags[i].flag)) {
+                    styleTags[i].tagHandler(loader, node, value);
+                    node->style->flags = (node->style->flags | styleTags[i].flag);
+                }
             } else if (!(node->style->flags & styleTags[i].flag)) {
                 styleTags[i].tagHandler(loader, node, value);
+            }
+            if (importance) {
+                node->style->flagsImportance = (node->style->flags | styleTags[i].flag);
+                free(const_cast<char*>(value));
             }
             return true;
         }
@@ -1307,6 +1332,7 @@ static SvgNode* _createNode(SvgNode* parent, SvgNodeType type)
     node->style->stroke.cap = StrokeCap::Butt;
     //Default line join is miter
     node->style->stroke.join = StrokeJoin::Miter;
+    node->style->stroke.miterlimit = 4.0f;
     node->style->stroke.scale = 1.0;
 
     node->style->paintOrder = _toPaintOrder("fill stroke");
@@ -1593,39 +1619,11 @@ static SvgNode* _createEllipseNode(SvgLoaderData* loader, SvgNode* parent, const
 }
 
 
-static bool _attrParsePolygonPoints(const char* str, float** points, int* ptCount)
+static bool _attrParsePolygonPoints(const char* str, SvgPolygonNode* polygon)
 {
-    float tmp[50];
-    int tmpCount = 0;
-    int count = 0;
     float num;
-    float *pointArray = nullptr, *tmpArray;
-
-    while (_parseNumber(&str, &num)) {
-        tmp[tmpCount++] = num;
-        if (tmpCount == 50) {
-            tmpArray = (float*)realloc(pointArray, (count + tmpCount) * sizeof(float));
-            if (!tmpArray) goto error_alloc;
-            pointArray = tmpArray;
-            memcpy(&pointArray[count], tmp, tmpCount * sizeof(float));
-            count += tmpCount;
-            tmpCount = 0;
-        }
-    }
-
-    if (tmpCount > 0) {
-        tmpArray = (float*)realloc(pointArray, (count + tmpCount) * sizeof(float));
-        if (!tmpArray) goto error_alloc;
-        pointArray = tmpArray;
-        memcpy(&pointArray[count], tmp, tmpCount * sizeof(float));
-        count += tmpCount;
-    }
-    *ptCount = count;
-    *points = pointArray;
+    while (_parseNumber(&str, &num)) polygon->pts.push(num);
     return true;
-
-error_alloc:
-    return false;
 }
 
 
@@ -1642,7 +1640,7 @@ static bool _attrParsePolygonNode(void* data, const char* key, const char* value
     else polygon = &(node->node.polyline);
 
     if (!strcmp(key, "points")) {
-        return _attrParsePolygonPoints(value, &polygon->points, &polygon->pointsCount);
+        return _attrParsePolygonPoints(value, polygon);
     } else if (!strcmp(key, "style")) {
         return simpleXmlParseW3CAttribute(value, strlen(value), _parseStyleAttr, loader);
     } else if (!strcmp(key, "clip-path")) {
@@ -1903,6 +1901,7 @@ static SvgNode* _getDefsNode(SvgNode* node)
     }
 
     if (node->type == SvgNodeType::Doc) return node->node.doc.defs;
+    if (node->type == SvgNodeType::Defs) return node;
 
     return nullptr;
 }
@@ -2680,7 +2679,7 @@ static void _inheritGradient(SvgLoaderData* loader, SvgStyleGradient* to, SvgSty
         }
     }
 
-    if (to->stops.count == 0) _cloneGradStops(to->stops, from->stops);
+    if (to->stops.empty()) _cloneGradStops(to->stops, from->stops);
 }
 
 
@@ -2784,6 +2783,9 @@ static void _styleInherit(SvgStyleProperty* child, const SvgStyleProperty* paren
     if (!(child->stroke.flags & SvgStrokeFlags::Join)) {
         child->stroke.join = parent->stroke.join;
     }
+    if (!(child->stroke.flags & SvgStrokeFlags::Miterlimit)) {
+        child->stroke.miterlimit = parent->stroke.miterlimit;
+    }
 }
 
 
@@ -2846,6 +2848,10 @@ static void _styleCopy(SvgStyleProperty* to, const SvgStyleProperty* from)
     }
     if (from->stroke.flags & SvgStrokeFlags::Join) {
         to->stroke.join = from->stroke.join;
+    }
+
+    if (from->stroke.flags & SvgStrokeFlags::Miterlimit) {
+        to->stroke.miterlimit = from->stroke.miterlimit;
     }
 }
 
@@ -2910,16 +2916,14 @@ static void _copyAttr(SvgNode* to, const SvgNode* from)
             break;
         }
         case SvgNodeType::Polygon: {
-            if ((to->node.polygon.pointsCount = from->node.polygon.pointsCount)) {
-                to->node.polygon.points = (float*)malloc(to->node.polygon.pointsCount * sizeof(float));
-                memcpy(to->node.polygon.points, from->node.polygon.points, to->node.polygon.pointsCount * sizeof(float));
+            if ((to->node.polygon.pts.count = from->node.polygon.pts.count)) {
+                to->node.polygon.pts = from->node.polygon.pts;
             }
             break;
         }
         case SvgNodeType::Polyline: {
-            if ((to->node.polyline.pointsCount = from->node.polyline.pointsCount)) {
-                to->node.polyline.points = (float*)malloc(to->node.polyline.pointsCount * sizeof(float));
-                memcpy(to->node.polyline.points, from->node.polyline.points, to->node.polyline.pointsCount * sizeof(float));
+            if ((to->node.polyline.pts.count = from->node.polyline.pts.count)) {
+                to->node.polyline.pts = from->node.polyline.pts;
             }
             break;
         }
@@ -2932,6 +2936,16 @@ static void _copyAttr(SvgNode* to, const SvgNode* from)
                 if (to->node.image.href) free(to->node.image.href);
                 to->node.image.href = strdup(from->node.image.href);
             }
+            break;
+        }
+        case SvgNodeType::Use: {
+            to->node.use.x = from->node.use.x;
+            to->node.use.y = from->node.use.y;
+            to->node.use.w = from->node.use.w;
+            to->node.use.h = from->node.use.h;
+            to->node.use.isWidthSet = from->node.use.isWidthSet;
+            to->node.use.isHeightSet = from->node.use.isHeightSet;
+            to->node.use.symbol = from->node.use.symbol;
             break;
         }
         default: {
@@ -3200,7 +3214,7 @@ static void _inefficientNodeCheck(TVG_UNUSED SvgNode* node)
         }
         case SvgNodeType::Polygon:
         case SvgNodeType::Polyline: {
-            if (node->node.polygon.pointsCount < 2) TVGLOG("SVG", "Inefficient elements used [Invalid Polygon][Node Type : %s]", type);
+            if (node->node.polygon.pts.count < 2) TVGLOG("SVG", "Inefficient elements used [Invalid Polygon][Node Type : %s]", type);
             break;
         }
         case SvgNodeType::Circle: {
@@ -3356,11 +3370,11 @@ static void _freeNode(SvgNode* node)
              break;
          }
          case SvgNodeType::Polygon: {
-             free(node->node.polygon.points);
+             free(node->node.polygon.pts.data);
              break;
          }
          case SvgNodeType::Polyline: {
-             free(node->node.polyline.points);
+             free(node->node.polyline.pts.data);
              break;
          }
          case SvgNodeType::Doc: {
@@ -3497,6 +3511,7 @@ void SvgLoader::run(unsigned tid)
         if (defs) _updateComposite(loaderData.doc, defs);
 
         _updateStyle(loaderData.doc, nullptr);
+        if (defs) _updateStyle(defs, nullptr);
 
         if (loaderData.gradients.count > 0) _updateGradient(&loaderData, loaderData.doc, &loaderData.gradients);
         if (defs) _updateGradient(&loaderData, loaderData.doc, &defs->node.defs.gradients);
@@ -3683,6 +3698,5 @@ bool SvgLoader::close()
 unique_ptr<Paint> SvgLoader::paint()
 {
     this->done();
-    if (root) return move(root);
-    else return nullptr;
+    return std::move(root);
 }

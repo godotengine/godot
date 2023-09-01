@@ -41,6 +41,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For svg and regex.
@@ -2124,16 +2125,12 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 	// Check the texture formats, which vary depending on the target architecture.
 	String architecture = p_preset->get("binary_format/architecture");
 	if (architecture == "universal" || architecture == "x86_64") {
-		const String bc_error = test_bc();
-		if (!bc_error.is_empty()) {
+		if (!ResourceImporterTextureSettings::should_import_s3tc_bptc()) {
 			valid = false;
-			err += bc_error;
 		}
 	} else if (architecture == "arm64") {
-		const String etc_error = test_etc2();
-		if (!etc_error.is_empty()) {
+		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 			valid = false;
-			err += etc_error;
 		}
 	} else {
 		ERR_PRINT("Invalid architecture");

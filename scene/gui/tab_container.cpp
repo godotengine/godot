@@ -162,6 +162,7 @@ void TabContainer::_update_theme_item_cache() {
 	theme_cache.drop_mark_color = get_theme_color(SNAME("drop_mark_color"));
 
 	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
+	theme_cache.font_hovered_color = get_theme_color(SNAME("font_hovered_color"));
 	theme_cache.font_unselected_color = get_theme_color(SNAME("font_unselected_color"));
 	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
 	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
@@ -240,6 +241,7 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("drop_mark_color"), theme_cache.drop_mark_color);
 
 	tab_bar->add_theme_color_override(SNAME("font_selected_color"), theme_cache.font_selected_color);
+	tab_bar->add_theme_color_override(SNAME("font_hovered_color"), theme_cache.font_hovered_color);
 	tab_bar->add_theme_color_override(SNAME("font_unselected_color"), theme_cache.font_unselected_color);
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), theme_cache.font_disabled_color);
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);

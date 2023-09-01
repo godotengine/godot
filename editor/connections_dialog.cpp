@@ -31,6 +31,7 @@
 #include "connections_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/templates/hash_set.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
@@ -991,12 +992,15 @@ void ConnectionsDock::_tree_item_selected() {
 	TreeItem *item = tree->get_selected();
 	if (!item) { // Unlikely. Disable button just in case.
 		connect_button->set_text(TTR("Connect..."));
+		connect_button->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 		connect_button->set_disabled(true);
 	} else if (_is_item_signal(*item)) {
 		connect_button->set_text(TTR("Connect..."));
+		connect_button->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 		connect_button->set_disabled(false);
 	} else {
 		connect_button->set_text(TTR("Disconnect"));
+		connect_button->set_icon(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 		connect_button->set_disabled(false);
 	}
 }
@@ -1104,32 +1108,44 @@ void ConnectionsDock::_handle_signal_menu_option(int p_option) {
 		return;
 	}
 
+	Dictionary meta = item->get_metadata(0);
+
 	switch (p_option) {
 		case CONNECT: {
 			_open_connection_dialog(*item);
 		} break;
 		case DISCONNECT_ALL: {
-			StringName signal_name = item->get_metadata(0).operator Dictionary()["name"];
-			disconnect_all_dialog->set_text(vformat(TTR("Are you sure you want to remove all connections from the \"%s\" signal?"), signal_name));
+			disconnect_all_dialog->set_text(vformat(TTR("Are you sure you want to remove all connections from the \"%s\" signal?"), meta["name"]));
 			disconnect_all_dialog->popup_centered();
 		} break;
 		case COPY_NAME: {
-			DisplayServer::get_singleton()->clipboard_set(item->get_metadata(0).operator Dictionary()["name"]);
+			DisplayServer::get_singleton()->clipboard_set(meta["name"]);
+		} break;
+		case OPEN_DOCUMENTATION: {
+			ScriptEditor::get_singleton()->goto_help("class_signal:" + String(meta["class"]) + ":" + String(meta["name"]));
+			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 		} break;
 	}
 }
 
 void ConnectionsDock::_signal_menu_about_to_popup() {
-	TreeItem *signal_item = tree->get_selected();
+	TreeItem *item = tree->get_selected();
+
+	if (!item) {
+		return;
+	}
+
+	Dictionary meta = item->get_metadata(0);
 
 	bool disable_disconnect_all = true;
-	for (int i = 0; i < signal_item->get_child_count(); i++) {
-		if (!signal_item->get_child(i)->has_meta("_inherited_connection")) {
+	for (int i = 0; i < item->get_child_count(); i++) {
+		if (!item->get_child(i)->has_meta("_inherited_connection")) {
 			disable_disconnect_all = false;
 		}
 	}
 
-	signal_menu->set_item_disabled(slot_menu->get_item_index(DISCONNECT_ALL), disable_disconnect_all);
+	signal_menu->set_item_disabled(signal_menu->get_item_index(DISCONNECT_ALL), disable_disconnect_all);
+	signal_menu->set_item_disabled(signal_menu->get_item_index(OPEN_DOCUMENTATION), String(meta["class"]).is_empty());
 }
 
 void ConnectionsDock::_handle_slot_menu_option(int p_option) {
@@ -1210,6 +1226,15 @@ void ConnectionsDock::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+
+			signal_menu->set_item_icon(signal_menu->get_item_index(CONNECT), get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(DISCONNECT_ALL), get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(COPY_NAME), get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+			signal_menu->set_item_icon(signal_menu->get_item_index(OPEN_DOCUMENTATION), get_theme_icon(SNAME("Help"), SNAME("EditorIcons")));
+
+			slot_menu->set_item_icon(slot_menu->get_item_index(EDIT), get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			slot_menu->set_item_icon(slot_menu->get_item_index(GO_TO_SCRIPT), get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons")));
+			slot_menu->set_item_icon(slot_menu->get_item_index(DISCONNECT), get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1239,60 +1264,111 @@ void ConnectionsDock::update_tree() {
 	}
 
 	TreeItem *root = tree->create_item();
+	DocTools *doc_data = EditorHelp::get_doc_data();
+	EditorData &editor_data = EditorNode::get_editor_data();
+	StringName native_base = selected_node->get_class();
+	Ref<Script> script_base = selected_node->get_script();
 
-	List<MethodInfo> node_signals;
+	while (native_base != StringName()) {
+		String class_name;
+		String doc_class_name;
+		Ref<Texture2D> class_icon;
+		List<MethodInfo> class_signals;
 
-	selected_node->get_signal_list(&node_signals);
+		if (script_base.is_valid()) {
+			class_name = script_base->get_global_name();
+			if (class_name.is_empty()) {
+				class_name = script_base->get_path().get_file();
+			}
 
-	bool did_script = false;
-	StringName base = selected_node->get_class();
+			doc_class_name = script_base->get_global_name();
+			if (doc_class_name.is_empty()) {
+				doc_class_name = script_base->get_path().trim_prefix("res://").quote();
+			}
 
-	while (base) {
-		List<MethodInfo> node_signals2;
-		Ref<Texture2D> icon;
-		String name;
-
-		if (!did_script) {
-			// Get script signals (including signals from any base scripts).
-			Ref<Script> scr = selected_node->get_script();
-			if (scr.is_valid()) {
-				scr->get_script_signal_list(&node_signals2);
-				if (scr->get_path().is_resource_file()) {
-					name = scr->get_path().get_file();
+			// For a script class, the cache is filled each time.
+			if (!doc_class_name.is_empty()) {
+				if (descr_cache.has(doc_class_name)) {
+					descr_cache[doc_class_name].clear();
+				}
+				HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(doc_class_name);
+				if (F) {
+					for (int i = 0; i < F->value.signals.size(); i++) {
+						descr_cache[doc_class_name][F->value.signals[i].name] = F->value.signals[i].description;
+					}
 				} else {
-					name = scr->get_class();
+					doc_class_name = String();
 				}
+			}
 
-				if (has_theme_icon(scr->get_class(), SNAME("EditorIcons"))) {
-					icon = get_theme_icon(scr->get_class(), SNAME("EditorIcons"));
+			class_icon = editor_data.get_script_icon(script_base);
+			if (class_icon.is_null() && has_theme_icon(native_base, SNAME("EditorIcons"))) {
+				class_icon = get_theme_icon(native_base, SNAME("EditorIcons"));
+			}
+
+			script_base->get_script_signal_list(&class_signals);
+
+			// TODO: Core: Add optional parameter to ignore base classes (no_inheritance like in ClassDB).
+			Ref<Script> base = script_base->get_base_script();
+			if (base.is_valid()) {
+				List<MethodInfo> base_signals;
+				base->get_script_signal_list(&base_signals);
+				HashSet<String> base_signal_names;
+				for (List<MethodInfo>::Element *F = base_signals.front(); F; F = F->next()) {
+					base_signal_names.insert(F->get().name);
+				}
+				for (List<MethodInfo>::Element *F = class_signals.front(); F; F = F->next()) {
+					if (base_signal_names.has(F->get().name)) {
+						class_signals.erase(F);
+					}
 				}
 			}
+
+			script_base = base;
 		} else {
-			ClassDB::get_signal_list(base, &node_signals2, true);
-			if (has_theme_icon(base, SNAME("EditorIcons"))) {
-				icon = get_theme_icon(base, SNAME("EditorIcons"));
+			class_name = native_base;
+			doc_class_name = class_name;
+
+			// For a native class, the cache is filled once.
+			if (!descr_cache.has(doc_class_name)) {
+				HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(doc_class_name);
+				if (F) {
+					for (int i = 0; i < F->value.signals.size(); i++) {
+						descr_cache[doc_class_name][F->value.signals[i].name] = DTR(F->value.signals[i].description);
+					}
+				} else {
+					doc_class_name = String();
+				}
 			}
-			name = base;
+
+			if (has_theme_icon(native_base, SNAME("EditorIcons"))) {
+				class_icon = get_theme_icon(native_base, SNAME("EditorIcons"));
+			}
+
+			ClassDB::get_signal_list(native_base, &class_signals, true);
+
+			native_base = ClassDB::get_parent_class(native_base);
 		}
 
-		if (icon.is_null()) {
-			icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+		if (class_icon.is_null()) {
+			class_icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 		}
 
 		TreeItem *section_item = nullptr;
 
 		// Create subsections.
-		if (node_signals2.size()) {
+		if (!class_signals.is_empty()) {
+			class_signals.sort();
+
 			section_item = tree->create_item(root);
-			section_item->set_text(0, name);
-			section_item->set_icon(0, icon);
+			section_item->set_text(0, class_name);
+			section_item->set_icon(0, class_icon);
 			section_item->set_selectable(0, false);
 			section_item->set_editable(0, false);
 			section_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			node_signals2.sort();
 		}
 
-		for (MethodInfo &mi : node_signals2) {
+		for (MethodInfo &mi : class_signals) {
 			const StringName signal_name = mi.name;
 			if (!search_box->get_text().is_subsequence_ofn(signal_name)) {
 				continue;
@@ -1310,6 +1386,7 @@ void ConnectionsDock::update_tree() {
 			}
 
 			Dictionary sinfo;
+			sinfo["class"] = doc_class_name;
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
 			signal_item->set_metadata(0, sinfo);
@@ -1318,34 +1395,13 @@ void ConnectionsDock::update_tree() {
 			// Set tooltip with the signal's documentation.
 			{
 				String descr;
-				bool found = false;
 
-				HashMap<StringName, HashMap<StringName, String>>::Iterator G = descr_cache.find(base);
+				HashMap<StringName, HashMap<StringName, String>>::ConstIterator G = descr_cache.find(doc_class_name);
 				if (G) {
-					HashMap<StringName, String>::Iterator F = G->value.find(signal_name);
+					HashMap<StringName, String>::ConstIterator F = G->value.find(signal_name);
 					if (F) {
-						found = true;
 						descr = F->value;
 					}
-				}
-
-				if (!found) {
-					DocTools *dd = EditorHelp::get_doc_data();
-					HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(base);
-					while (F && descr.is_empty()) {
-						for (int i = 0; i < F->value.signals.size(); i++) {
-							if (F->value.signals[i].name == signal_name.operator String()) {
-								descr = DTR(F->value.signals[i].description);
-								break;
-							}
-						}
-						if (!F->value.inherits.is_empty()) {
-							F = dd->class_list.find(F->value.inherits);
-						} else {
-							break;
-						}
-					}
-					descr_cache[base][signal_name] = descr;
 				}
 
 				// "::" separators used in make_custom_tooltip for formatting.
@@ -1400,15 +1456,10 @@ void ConnectionsDock::update_tree() {
 				}
 			}
 		}
-
-		if (!did_script) {
-			did_script = true;
-		} else {
-			base = ClassDB::get_parent_class(base);
-		}
 	}
 
 	connect_button->set_text(TTR("Connect..."));
+	connect_button->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 	connect_button->set_disabled(true);
 }
 
@@ -1456,6 +1507,8 @@ ConnectionsDock::ConnectionsDock() {
 	signal_menu->add_item(TTR("Connect..."), CONNECT);
 	signal_menu->add_item(TTR("Disconnect All"), DISCONNECT_ALL);
 	signal_menu->add_item(TTR("Copy Name"), COPY_NAME);
+	signal_menu->add_separator();
+	signal_menu->add_item(TTR("Open Documentation"), OPEN_DOCUMENTATION);
 
 	slot_menu = memnew(PopupMenu);
 	add_child(slot_menu);

@@ -137,6 +137,9 @@ private:
 		OVERWRITE_RENAME,
 	};
 
+	HashMap<String, Color> folder_colors;
+	Dictionary assigned_folder_colors;
+
 	FileSortOption file_sort = FILE_SORT_NAME;
 
 	VBoxContainer *scanning_vb = nullptr;
@@ -194,6 +197,8 @@ private:
 	CreateDialog *new_resource_dialog = nullptr;
 
 	bool always_show_folders = false;
+
+	bool editor_is_dark_theme = false;
 
 	class FileOrFolder {
 	public:
@@ -299,6 +304,7 @@ private:
 	MenuButton *_create_file_menu_button();
 	void _file_sort_popup(int p_id);
 
+	void _folder_color_index_pressed(int p_index, PopupMenu *p_menu);
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
 	void _tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);

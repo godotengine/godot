@@ -77,6 +77,7 @@ public:
 	EXBIND1R(Error, reload, bool)
 
 	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_documentation)
+	GDVIRTUAL0RC(String, _get_class_icon_path)
 #ifdef TOOLS_ENABLED
 	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		TypedArray<Dictionary> doc;
@@ -88,6 +89,12 @@ public:
 		}
 
 		return class_doc;
+	}
+
+	virtual String get_class_icon_path() const override {
+		String ret;
+		GDVIRTUAL_CALL(_get_class_icon_path, ret);
+		return ret;
 	}
 #endif // TOOLS_ENABLED
 
@@ -623,7 +630,11 @@ VARIANT_ENUM_CAST(ScriptLanguageExtension::CodeCompletionLocation)
 
 class ScriptInstanceExtension : public ScriptInstance {
 public:
-	const GDExtensionScriptInstanceInfo *native_info;
+	const GDExtensionScriptInstanceInfo2 *native_info;
+	struct {
+		GDExtensionClassNotification notification_func;
+	} deprecated_native_info;
+
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
 // There should not be warnings on explicit casts.
@@ -674,6 +685,9 @@ public:
 			return Variant::Type(type);
 		}
 		return Variant::NIL;
+	}
+	virtual void validate_property(PropertyInfo &p_property) const override {
+		// TODO
 	}
 
 	virtual bool property_can_revert(const StringName &p_name) const override {
@@ -736,11 +750,16 @@ public:
 		return ret;
 	}
 
-	virtual void notification(int p_notification) override {
+	virtual void notification(int p_notification, bool p_reversed = false) override {
 		if (native_info->notification_func) {
-			native_info->notification_func(instance, p_notification);
+			native_info->notification_func(instance, p_notification, p_reversed);
+#ifndef DISABLE_DEPRECATED
+		} else if (deprecated_native_info.notification_func) {
+			deprecated_native_info.notification_func(instance, p_notification);
+#endif // DISABLE_DEPRECATED
 		}
 	}
+
 	virtual String to_string(bool *r_valid) override {
 		if (native_info->to_string_func) {
 			GDExtensionBool valid;

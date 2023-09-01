@@ -30,7 +30,7 @@
 
 #include "openxr_htc_vive_tracker_extension.h"
 
-#include "../action_map/openxr_interaction_profile_meta_data.h"
+#include "../action_map/openxr_interaction_profile_metadata.h"
 
 #include "core/string/print_string.h"
 
@@ -47,7 +47,7 @@ bool OpenXRHTCViveTrackerExtension::is_available() {
 }
 
 void OpenXRHTCViveTrackerExtension::on_register_metadata() {
-	OpenXRInteractionProfileMetaData *metadata = OpenXRInteractionProfileMetaData::get_singleton();
+	OpenXRInteractionProfileMetadata *metadata = OpenXRInteractionProfileMetadata::get_singleton();
 	ERR_FAIL_NULL(metadata);
 
 	// HTC Vive tracker

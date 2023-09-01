@@ -1839,6 +1839,17 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 		ERR_FAIL_COND(!Q);
 		TileMapQuadrant &q = Q->value;
 
+		// Find node in scenes and remove it.
+		HashMap<Vector2i, String>::Iterator entry = q.scenes.find(pk);
+		if (entry != q.scenes.end()) {
+			String scene_name = entry->value;
+			Node *scene = tile_map_node->get_node_or_null(scene_name);
+			if (scene) {
+				scene->queue_free();
+				instantiated_scenes.erase(Vector2i(pk.x, pk.y));
+			}
+		}
+
 		q.cells.erase(pk);
 
 		// Remove or make the quadrant dirty.
@@ -4083,7 +4094,7 @@ TypedArray<Vector2i> TileMap::get_used_cells(int p_layer) const {
 }
 
 TypedArray<Vector2i> TileMap::get_used_cells_by_id(int p_layer, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) const {
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, TypedArray<Vector2i>(), get_used_cells_by_id);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, TypedArray<Vector2i>(), get_used_cells_by_id, p_source_id, p_atlas_coords, p_alternative_tile);
 }
 
 Rect2i TileMap::get_used_rect() const {

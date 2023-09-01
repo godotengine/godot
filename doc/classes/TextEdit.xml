@@ -1100,7 +1100,7 @@
 		<member name="caret_draw_when_editable_disabled" type="bool" setter="set_draw_caret_when_editable_disabled" getter="is_drawing_caret_when_editable_disabled" default="false">
 			If [code]true[/code], caret will be visible when [member editable] is disabled.
 		</member>
-		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="true">
+		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
 			[b]Note:[/b] [kbd]Backspace[/kbd] is always removing individual composite character components.
 		</member>

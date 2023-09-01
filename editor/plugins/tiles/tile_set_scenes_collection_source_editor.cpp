@@ -36,6 +36,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/plugins/tiles/tile_set_editor.h"
 
 #include "scene/gui/button.h"
@@ -239,10 +240,26 @@ void TileSetScenesCollectionSourceEditor::_scenes_list_item_activated(int p_inde
 }
 
 void TileSetScenesCollectionSourceEditor::_source_add_pressed() {
+	if (!scene_select_dialog) {
+		scene_select_dialog = memnew(EditorFileDialog);
+		add_child(scene_select_dialog);
+		scene_select_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		scene_select_dialog->connect("file_selected", callable_mp(this, &TileSetScenesCollectionSourceEditor::_scene_file_selected));
+
+		for (const String &E : Vector<String>{ "tscn", "scn" }) {
+			scene_select_dialog->add_filter("*." + E, E.to_upper());
+		}
+	}
+	scene_select_dialog->popup_file_dialog();
+}
+
+void TileSetScenesCollectionSourceEditor::_scene_file_selected(const String &p_path) {
+	Ref<PackedScene> scene = ResourceLoader::load(p_path);
+
 	int scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add a Scene Tile"));
-	undo_redo->add_do_method(tile_set_scenes_collection_source, "create_scene_tile", Ref<PackedScene>(), scene_id);
+	undo_redo->add_do_method(tile_set_scenes_collection_source, "create_scene_tile", scene, scene_id);
 	undo_redo->add_undo_method(tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
 	undo_redo->commit_action();
 	_update_scenes_list();
@@ -323,6 +340,10 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 			to_reselect = i;
 		}
 	}
+	if (scene_tiles_list->get_item_count() == 0) {
+		scene_tiles_list->add_item(TTR("Drag and drop scenes here or use the Add button."));
+		scene_tiles_list->set_item_disabled(-1, true);
+	}
 
 	// Reselect if needed.
 	if (to_reselect >= 0) {
@@ -336,7 +357,6 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 
 void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			scene_tile_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			scene_tile_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));

@@ -1551,6 +1551,9 @@ void Curve3D::_bake() const {
 	baked_cache_dirty = false;
 
 	if (points.size() == 0) {
+#ifdef TOOLS_ENABLED
+		points_in_cache.clear();
+#endif
 		baked_point_cache.clear();
 		baked_tilt_cache.clear();
 		baked_dist_cache.clear();
@@ -1561,6 +1564,11 @@ void Curve3D::_bake() const {
 	}
 
 	if (points.size() == 1) {
+#ifdef TOOLS_ENABLED
+		points_in_cache.resize(1);
+		points_in_cache.set(0, 0);
+#endif
+
 		baked_point_cache.resize(1);
 		baked_point_cache.set(0, points[0].position);
 		baked_tilt_cache.resize(1);
@@ -1584,10 +1592,18 @@ void Curve3D::_bake() const {
 	{
 		Vector<RBMap<real_t, Vector3>> midpoints = _tessellate_even_length(10, bake_interval);
 
+#ifdef TOOLS_ENABLED
+		points_in_cache.resize(points.size());
+		points_in_cache.set(0, 0);
+#endif
+
 		int pc = 1;
 		for (int i = 0; i < points.size() - 1; i++) {
 			pc++;
 			pc += midpoints[i].size();
+#ifdef TOOLS_ENABLED
+			points_in_cache.set(i + 1, pc - 1);
+#endif
 		}
 
 		baked_point_cache.resize(pc);
@@ -1791,6 +1807,22 @@ real_t Curve3D::_sample_baked_tilt(Interval p_interval) const {
 	return Math::lerp(r[idx], r[idx + 1], frac);
 }
 
+// Internal method for getting posture at a baked point. Assuming caller
+// make all sanity checks.
+Basis Curve3D::_compose_posture(int p_index) const {
+	Vector3 forward = baked_forward_vector_cache[p_index];
+
+	Vector3 up;
+	if (up_vector_enabled) {
+		up = baked_up_vector_cache[p_index];
+	} else {
+		up = Vector3(0.0, 1.0, 0.0);
+	}
+
+	const Basis frame = Basis::looking_at(forward, up);
+	return frame;
+}
+
 Basis Curve3D::_sample_posture(Interval p_interval, bool p_apply_tilt) const {
 	// Assuming that p_interval is valid.
 	ERR_FAIL_INDEX_V_MSG(p_interval.idx, baked_point_cache.size(), Basis(), "Invalid interval");
@@ -1801,22 +1833,9 @@ Basis Curve3D::_sample_posture(Interval p_interval, bool p_apply_tilt) const {
 	int idx = p_interval.idx;
 	real_t frac = p_interval.frac;
 
-	Vector3 forward_begin = baked_forward_vector_cache[idx];
-	Vector3 forward_end = baked_forward_vector_cache[idx + 1];
-
-	Vector3 up_begin;
-	Vector3 up_end;
-	if (up_vector_enabled) {
-		up_begin = baked_up_vector_cache[idx];
-		up_end = baked_up_vector_cache[idx + 1];
-	} else {
-		up_begin = Vector3(0.0, 1.0, 0.0);
-		up_end = Vector3(0.0, 1.0, 0.0);
-	}
-
-	// Build frames at both ends of the interval, then interpolate.
-	const Basis frame_begin = Basis::looking_at(forward_begin, up_begin);
-	const Basis frame_end = Basis::looking_at(forward_end, up_end);
+	// Get frames at both ends of the interval, then interpolate.
+	const Basis frame_begin = _compose_posture(idx);
+	const Basis frame_end = _compose_posture(idx + 1);
 	const Basis frame = frame_begin.slerp(frame_end, frac).orthonormalized();
 
 	if (!p_apply_tilt) {
@@ -1825,11 +1844,37 @@ Basis Curve3D::_sample_posture(Interval p_interval, bool p_apply_tilt) const {
 
 	// Applying tilt.
 	const real_t tilt = _sample_baked_tilt(p_interval);
-	Vector3 forward = frame.get_column(2);
+	Vector3 tangent = -frame.get_column(2);
 
-	const Basis twist(forward, tilt);
+	const Basis twist(tangent, tilt);
 	return twist * frame;
 }
+
+#ifdef TOOLS_ENABLED
+// Get posture at a control point. Needed for Gizmo implementation.
+Basis Curve3D::get_point_baked_posture(int p_index, bool p_apply_tilt) const {
+	if (baked_cache_dirty) {
+		_bake();
+	}
+
+	// Assuming that p_idx is valid.
+	ERR_FAIL_INDEX_V_MSG(p_index, points_in_cache.size(), Basis(), "Invalid control point index");
+
+	int baked_idx = points_in_cache[p_index];
+	Basis frame = _compose_posture(baked_idx);
+
+	if (!p_apply_tilt) {
+		return frame;
+	}
+
+	// Applying tilt.
+	const real_t tilt = points[p_index].tilt;
+	Vector3 tangent = -frame.get_column(2);
+	const Basis twist(tangent, tilt);
+
+	return twist * frame;
+}
+#endif
 
 Vector3 Curve3D::sample_baked(real_t p_offset, bool p_cubic) const {
 	if (baked_cache_dirty) {

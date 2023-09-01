@@ -1953,13 +1953,13 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					return err;
 				}
 
-				gen->write_for_assignment(iterator, list);
+				gen->write_for_assignment(list);
 
 				if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
 
-				gen->write_for();
+				gen->write_for(iterator, for_n->use_conversion_assign);
 
 				err = _parse_block(codegen, for_n->loop);
 				if (err) {
@@ -2928,6 +2928,7 @@ void GDScriptCompiler::convert_to_initializer_type(Variant &p_variant, const GDS
 void GDScriptCompiler::make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 	p_script->fully_qualified_name = p_class->fqcn;
 	p_script->name = p_class->identifier ? p_class->identifier->name : "";
+	p_script->simplified_icon_path = p_class->simplified_icon_path;
 
 	HashMap<StringName, Ref<GDScript>> old_subclasses;
 

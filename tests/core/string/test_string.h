@@ -1609,6 +1609,11 @@ TEST_CASE("[String] Repeat") {
 	CHECK(t == s);
 }
 
+TEST_CASE("[String] Reverse") {
+	String s = "Abcd";
+	CHECK(s.reverse() == "dcbA");
+}
+
 TEST_CASE("[String] SHA1/SHA256/MD5") {
 	String s = "Godot";
 	String sha1 = "a1e91f39b9fce6a9998b14bdbe2aa2b39dc2d201";

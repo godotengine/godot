@@ -74,17 +74,17 @@ private:
 	};
 
 	struct GLDisplay {
-		GLDisplay() { context = nullptr; }
+		GLDisplay() {}
 		~GLDisplay();
 		GLManager_X11_Private *context = nullptr;
-		::Display *x11_display;
-		XVisualInfo x_vi;
+		::Display *x11_display = nullptr;
+		XVisualInfo x_vi = {};
 	};
 
 	// just for convenience, window and display struct
 	struct XWinDisp {
 		::Window x11_window;
-		::Display *x11_display;
+		::Display *x11_display = nullptr;
 	} _x_windisp;
 
 	LocalVector<GLWindow> _windows;

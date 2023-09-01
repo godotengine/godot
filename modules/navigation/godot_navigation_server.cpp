@@ -930,7 +930,7 @@ COMMAND_2(obstacle_set_avoidance_layers, RID, p_obstacle, uint32_t, p_layers) {
 	obstacle->set_avoidance_layers(p_layers);
 }
 
-void GodotNavigationServer::parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
+void GodotNavigationServer::parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
 #ifndef _3D_DISABLED
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "The SceneTree can only be parsed on the main thread. Call this function from the main thread or use call_deferred().");
 	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
@@ -942,23 +942,23 @@ void GodotNavigationServer::parse_source_geometry_data(const Ref<NavigationMesh>
 #endif // _3D_DISABLED
 }
 
-void GodotNavigationServer::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
+void GodotNavigationServer::bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
 #ifndef _3D_DISABLED
 	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
 	ERR_FAIL_COND_MSG(!p_source_geometry_data.is_valid(), "Invalid NavigationMeshSourceGeometryData3D.");
 
-	if (!p_source_geometry_data->has_data()) {
-		p_navigation_mesh->clear();
-		if (p_callback.is_valid()) {
-			Callable::CallError ce;
-			Variant result;
-			p_callback.callp(nullptr, 0, result, ce);
-		}
-		return;
-	}
-
 	ERR_FAIL_NULL(NavMeshGenerator3D::get_singleton());
 	NavMeshGenerator3D::get_singleton()->bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_callback);
+#endif // _3D_DISABLED
+}
+
+void GodotNavigationServer::bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
+	ERR_FAIL_COND_MSG(!p_source_geometry_data.is_valid(), "Invalid NavigationMeshSourceGeometryData3D.");
+
+	ERR_FAIL_NULL(NavMeshGenerator3D::get_singleton());
+	NavMeshGenerator3D::get_singleton()->bake_from_source_geometry_data_async(p_navigation_mesh, p_source_geometry_data, p_callback);
 #endif // _3D_DISABLED
 }
 
@@ -1092,6 +1092,16 @@ void GodotNavigationServer::process(real_t p_delta_time) {
 	if (!active) {
 		return;
 	}
+
+#ifndef _3D_DISABLED
+	// Sync finished navmesh bakes before doing NavMap updates.
+	if (navmesh_generator_3d) {
+		navmesh_generator_3d->sync();
+		// Finished bakes emit callbacks and users might have reacted to those.
+		// Flush queue again so users do not have to wait for the next sync.
+		flush_queries();
+	}
+#endif // _3D_DISABLED
 
 	int _new_pm_region_count = 0;
 	int _new_pm_agent_count = 0;

@@ -264,6 +264,8 @@ void EditorFileDialog::update_dir() {
 	}
 	dir->set_text(dir_access->get_current_dir(false));
 
+	file->set_text("");
+
 	// Disable "Open" button only when selecting file(s) mode.
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 	switch (mode) {
@@ -271,10 +273,10 @@ void EditorFileDialog::update_dir() {
 		case FILE_MODE_OPEN_FILES:
 			set_ok_button_text(TTR("Open"));
 			break;
+		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_OPEN_DIR:
 			set_ok_button_text(TTR("Select Current Folder"));
 			break;
-		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_SAVE_FILE:
 			// FIXME: Implement, or refactor to avoid duplication with set_mode
 			break;
@@ -522,7 +524,11 @@ void EditorFileDialog::_item_selected(int p_item) {
 	if (!d["dir"]) {
 		file->set_text(d["name"]);
 		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
-	} else if (mode == FILE_MODE_OPEN_DIR) {
+
+		// FILE_MODE_OPEN_ANY can alternate this text depending on what's selected.
+		set_ok_button_text(TTR("Open"));
+	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
+		file->set_text("");
 		set_ok_button_text(TTR("Select This Folder"));
 	}
 
@@ -560,12 +566,13 @@ void EditorFileDialog::_items_clear_selection(const Vector2 &p_pos, MouseButton 
 			get_ok_button()->set_disabled(!item_list->is_anything_selected());
 			break;
 
+		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_OPEN_DIR:
+			file->set_text("");
 			get_ok_button()->set_disabled(false);
 			set_ok_button_text(TTR("Select Current Folder"));
 			break;
 
-		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_SAVE_FILE:
 			// FIXME: Implement, or refactor to avoid duplication with set_mode
 			break;

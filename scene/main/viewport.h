@@ -70,6 +70,8 @@ class ViewportTexture : public Texture2D {
 protected:
 	static void _bind_methods();
 
+	virtual void reset_local_to_scene() override;
+
 public:
 	void set_viewport_path_in_scene(const NodePath &p_path);
 	NodePath get_viewport_path_in_scene() const;
@@ -468,7 +470,8 @@ private:
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
 	void _update_mouse_over();
-	void _update_mouse_over(Vector2 p_pos);
+	virtual void _update_mouse_over(Vector2 p_pos);
+	virtual void _mouse_leave_viewport();
 
 	virtual bool _can_consume_input_events() const { return true; }
 	uint64_t event_count = 0;
@@ -481,8 +484,6 @@ protected:
 	Size2i _get_size() const;
 	Size2i _get_size_2d_override() const;
 	bool _is_size_allocated() const;
-
-	void _mouse_leave_viewport();
 
 	void _notification(int p_what);
 	void _process_picking();
@@ -654,6 +655,7 @@ public:
 
 	void set_embedding_subwindows(bool p_embed);
 	bool is_embedding_subwindows() const;
+	TypedArray<Window> get_embedded_subwindows() const;
 	void subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
 	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 

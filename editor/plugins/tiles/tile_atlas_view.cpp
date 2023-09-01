@@ -632,7 +632,7 @@ TileAtlasView::TileAtlasView() {
 	panel->add_child(center_container);
 
 	missing_source_label = memnew(Label);
-	missing_source_label->set_text(TTR("No atlas source with a valid texture selected."));
+	missing_source_label->set_text(TTR("The selected atlas source has no valid texture. Assign a texture in the TileSet bottom tab."));
 	center_container->add_child(missing_source_label);
 
 	margin_container = memnew(MarginContainer);

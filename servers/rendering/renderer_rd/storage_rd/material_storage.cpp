@@ -1821,14 +1821,16 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 			if (gvtype >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
 				//textire
 				if (!p_load_textures) {
-					value = RID();
 					continue;
 				}
 
 				String path = value;
-				Ref<Resource> resource = ResourceLoader::load(path);
-				ERR_CONTINUE(resource.is_null());
-				value = resource;
+				if (path.is_empty()) {
+					value = RID();
+				} else {
+					Ref<Resource> resource = ResourceLoader::load(path);
+					value = resource;
+				}
 			}
 
 			if (global_shader_uniforms.variables.has(name)) {

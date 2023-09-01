@@ -36,7 +36,7 @@ struct Saver::Impl
     SaveModule* saveModule = nullptr;
     ~Impl()
     {
-        if (saveModule) delete(saveModule);
+        delete(saveModule);
     }
 };
 

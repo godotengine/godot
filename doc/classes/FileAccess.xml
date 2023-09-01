@@ -202,7 +202,7 @@
 			<return type="int" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns the last time the [param file] was modified in Unix timestamp format or returns a [String] "ERROR IN [param file]". This Unix timestamp can be converted to another format using the [Time] singleton.
+				Returns the last time the [param file] was modified in Unix timestamp format, or [code]0[/code] on error. This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_open_error" qualifiers="static">

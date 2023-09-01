@@ -42,10 +42,25 @@ class MenuButton;
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
 
+	// Map handle id to control point id and handle type.
+	enum HandleType {
+		HANDLE_TYPE_IN,
+		HANDLE_TYPE_OUT,
+		HANDLE_TYPE_TILT,
+	};
+
+	struct HandleInfo {
+		int point_idx; // Index of control point.
+		HandleType type; // Type of this handle.
+	};
+
 	Path3D *path = nullptr;
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
+
+	// Cache information of secondary handles.
+	Vector<HandleInfo> _secondary_handles_info;
 
 public:
 	virtual String get_handle_name(int p_id, bool p_secondary) const override;
