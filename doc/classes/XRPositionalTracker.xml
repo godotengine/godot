@@ -112,6 +112,12 @@
 				Emitted when the state of a pose tracked by this tracker changes.
 			</description>
 		</signal>
+		<signal name="pose_lost_tracking">
+			<param index="0" name="pose" type="XRPose" />
+			<description>
+				Emitted when a pose tracked by this tracker stops getting updated tracking data.
+			</description>
+		</signal>
 		<signal name="profile_changed">
 			<param index="0" name="role" type="String" />
 			<description>
