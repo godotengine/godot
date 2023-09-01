@@ -5565,10 +5565,10 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 			return (b.operator Quaternion()).inverse() * (a.operator Quaternion());
 		}
 		case Variant::TRANSFORM2D: {
-			return (b.operator Transform2D()).inverse() * (a.operator Transform2D());
+			return (b.operator Transform2D()).affine_inverse() * (a.operator Transform2D());
 		}
 		case Variant::TRANSFORM3D: {
-			return (b.operator Transform3D()).inverse() * (a.operator Transform3D());
+			return (b.operator Transform3D()).affine_inverse() * (a.operator Transform3D());
 		}
 		default: {
 			return Variant::evaluate(Variant::OP_SUBTRACT, a, b);

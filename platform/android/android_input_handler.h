@@ -101,7 +101,7 @@ public:
 	void process_magnify(Point2 p_pos, float p_factor);
 	void process_pan(Point2 p_pos, Vector2 p_delta);
 	void process_joy_event(JoypadEvent p_event);
-	void process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed);
+	void process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed, bool p_echo);
 };
 
 #endif // ANDROID_INPUT_HANDLER_H

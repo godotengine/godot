@@ -426,7 +426,7 @@
     memory = manager->memory;
 
     /* now discard all caches */
-    for (idx = manager->num_caches; idx-- > 0; )
+    for ( idx = manager->num_caches; idx-- > 0; )
     {
       FTC_Cache  cache = manager->caches[idx];
 
@@ -537,7 +537,7 @@
   FT_LOCAL_DEF( void )
   FTC_Manager_Compress( FTC_Manager  manager )
   {
-    FTC_Node   node, first;
+    FTC_Node   node, prev, first;
 
 
     if ( !manager )
@@ -557,20 +557,16 @@
       return;
 
     /* go to last node -- it's a circular list */
-    node = FTC_NODE_PREV( first );
+    prev = FTC_NODE_PREV( first );
     do
     {
-      FTC_Node  prev;
-
-
-      prev = ( node == first ) ? NULL : FTC_NODE_PREV( node );
+      node = prev;
+      prev = FTC_NODE_PREV( node );
 
       if ( node->ref_count <= 0 )
         ftc_node_destroy( node, manager );
 
-      node = prev;
-
-    } while ( node && manager->cur_weight > manager->max_weight );
+    } while ( node != first && manager->cur_weight > manager->max_weight );
   }
 
 
@@ -633,20 +629,20 @@
                       FT_UInt      count )
   {
     FTC_Node  first = manager->nodes_list;
-    FTC_Node  node;
-    FT_UInt   result;
+    FTC_Node  prev, node;
+    FT_UInt   result = 0;
 
 
     /* try to remove `count' nodes from the list */
-    if ( !first )  /* empty list! */
-      return 0;
+    if ( !first || !count )
+      return result;
 
-    /* go to last node - it's a circular list */
-    node = FTC_NODE_PREV(first);
-    for ( result = 0; result < count; )
+    /* go to last node -- it's a circular list */
+    prev = FTC_NODE_PREV( first );
+    do
     {
-      FTC_Node  prev = FTC_NODE_PREV( node );
-
+      node = prev;
+      prev = FTC_NODE_PREV( node );
 
       /* don't touch locked nodes */
       if ( node->ref_count <= 0 )
@@ -654,13 +650,9 @@
         ftc_node_destroy( node, manager );
         result++;
       }
+    } while ( node != first && result < count );
 
-      if ( node == first )
-        break;
-
-      node = prev;
-    }
-    return  result;
+    return result;
   }
 
 

@@ -946,8 +946,25 @@ public:
 
 #undef server_name
 #undef ServerName
+	/* STATUS INFORMATION */
+#define ServerName RendererUtilities
+#define server_name RSG::utilities
+	FUNC0RC(String, get_video_adapter_name)
+	FUNC0RC(String, get_video_adapter_vendor)
+	FUNC0RC(String, get_video_adapter_api_version)
+#undef server_name
+#undef ServerName
 #undef WRITE_ACTION
 #undef SYNC_DEBUG
+
+	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
+	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
+
+	virtual void set_frame_profiling_enabled(bool p_enable) override;
+	virtual Vector<FrameProfileArea> get_frame_profile() override;
+	virtual uint64_t get_frame_profile_frame() override;
+
+	virtual RID get_test_cube() override;
 
 	/* FREE */
 
@@ -969,20 +986,6 @@ public:
 	virtual bool has_changed() const override;
 	virtual void init() override;
 	virtual void finish() override;
-
-	/* STATUS INFORMATION */
-
-	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
-	virtual String get_video_adapter_name() const override;
-	virtual String get_video_adapter_vendor() const override;
-	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
-	virtual String get_video_adapter_api_version() const override;
-
-	virtual void set_frame_profiling_enabled(bool p_enable) override;
-	virtual Vector<FrameProfileArea> get_frame_profile() override;
-	virtual uint64_t get_frame_profile_frame() override;
-
-	virtual RID get_test_cube() override;
 
 	/* TESTING */
 

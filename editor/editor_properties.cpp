@@ -772,7 +772,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 		const int flag_index = flags.size(); // Index of the next element (added by the code below).
 
 		// Value for a flag can be explicitly overridden.
-		Vector<String> text_split = p_options[i].split(":");
+		Vector<String> text_split = option.split(":");
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
 		} else {
@@ -782,7 +782,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 
 		// Create a CheckBox for the current flag.
 		CheckBox *cb = memnew(CheckBox);
-		cb->set_text(option);
+		cb->set_text(text_split[0]);
 		cb->set_clip_text(true);
 		cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(flag_index));
 		add_focusable(cb);

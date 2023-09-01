@@ -535,6 +535,10 @@ int enet_socket_receive(ENetSocket socket, ENetAddress *address, ENetBuffer *buf
 	if (err == ERR_BUSY) {
 		return 0;
 	}
+	if (err == ERR_OUT_OF_MEMORY) {
+		// A packet above the ENET_PROTOCOL_MAXIMUM_MTU was received.
+		return -2;
+	}
 
 	if (err != OK) {
 		return -1;

@@ -21,11 +21,6 @@
 #ifndef XR_LINEAR_H_
 #define XR_LINEAR_H_
 
-#if defined(OS_LINUX_XCB) || defined(OS_LINUX_XCB_GLX) || defined(OS_LINUX_WAYLAND)
-#pragma GCC diagnostic ignored "-Wunused-function"
-#pragma clang diagnostic ignored "-Wunused-function"
-#endif
-
 #include <openxr/openxr.h>
 
 /*
@@ -51,6 +46,7 @@ XrVector2f
 XrVector3f
 XrVector4f
 XrQuaternionf
+XrPosef
 XrMatrix4x4f
 
 inline static void XrVector3f_Set(XrVector3f* v, const float value);
@@ -64,8 +60,18 @@ inline static void XrVector3f_Scale(XrVector3f* result, const XrVector3f* a, con
 inline static void XrVector3f_Normalize(XrVector3f* v);
 inline static float XrVector3f_Length(const XrVector3f* v);
 
+inline static void XrQuaternionf_CreateIdentity(XrQuaternionf* q);
+inline static void XrQuaternionf_CreateFromAxisAngle(XrQuaternionf* result, const XrVector3f* axis, const float angleInRadians);
 inline static void XrQuaternionf_Lerp(XrQuaternionf* result, const XrQuaternionf* a, const XrQuaternionf* b, const float fraction);
-inline static void XrQuaternionf_Multiply(XrQuaternionf* result, const XrQuaternionf* a, const XrQuaternionf* b;
+inline static void XrQuaternionf_Multiply(XrQuaternionf* result, const XrQuaternionf* a, const XrQuaternionf* b);
+inline static void XrQuaternionf_Invert(XrQuaternionf* result, const XrQuaternionf* q);
+inline static void XrQuaternionf_Normalize(XrQuaternionf* q);
+inline static void XrQuaternionf_RotateVector3f(XrVector3f* result, const XrQuaternionf* a, const XrVector3f* v);
+
+inline static void XrPosef_CreateIdentity(XrPosef* result);
+inline static void XrPosef_TransformVector3f(XrVector3f* result, const XrPosef* a, const XrVector3f* v);
+inline static void XrPosef_Multiply(XrPosef* result, const XrPosef* a, const XrPosef* b);
+inline static void XrPosef_Invert(XrPosef* result, const XrPosef* a);
 
 inline static void XrMatrix4x4f_CreateIdentity(XrMatrix4x4f* result);
 inline static void XrMatrix4x4f_CreateTranslation(XrMatrix4x4f* result, const float x, const float y, const float z);
@@ -74,13 +80,13 @@ inline static void XrMatrix4x4f_CreateRotation(XrMatrix4x4f* result, const float
 inline static void XrMatrix4x4f_CreateScale(XrMatrix4x4f* result, const float x, const float y, const float z);
 inline static void XrMatrix4x4f_CreateTranslationRotationScale(XrMatrix4x4f* result, const XrVector3f* translation,
                                                                const XrQuaternionf* rotation, const XrVector3f* scale);
-inline static void XrMatrix4x4f_CreateProjection(XrMatrix4x4f* result, const float tanAngleLeft, const float tanAngleRight,
-                                                 const float tanAngleUp, float const tanAngleDown, const float nearZ,
-                                                 const float farZ);
-inline static void XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f* result, const float fovDegreesLeft, const float fovDegreesRight,
-                                                    const float fovDegreeUp, const float fovDegreesDown, const float nearZ,
-                                                    const float farZ);
-inline static void XrMatrix4x4f_CreateFromQuaternion(XrMatrix4x4f* result, const XrQuaternionf* src);
+inline static void XrMatrix4x4f_CreateFromRigidTransform(XrMatrix4x4f* result, const XrPosef* s);
+inline static void XrMatrix4x4f_CreateProjection(XrMatrix4x4f* result, GraphicsAPI graphicsApi, const float tanAngleLeft,
+                                                 const float tanAngleRight, const float tanAngleUp, float const tanAngleDown,
+                                                 const float nearZ, const float farZ);
+inline static void XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f* result, GraphicsAPI graphicsApi, const XrFovf fov,
+                                                    const float nearZ, const float farZ);
+inline static void XrMatrix4x4f_CreateFromQuaternion(XrMatrix4x4f* result, const XrQuaternionf* quat);
 inline static void XrMatrix4x4f_CreateOffsetScaleForBounds(XrMatrix4x4f* result, const XrMatrix4x4f* matrix, const XrVector3f* mins,
                                                            const XrVector3f* maxs);
 
@@ -207,6 +213,13 @@ inline static void XrVector3f_Normalize(XrVector3f* v) {
 
 inline static float XrVector3f_Length(const XrVector3f* v) { return sqrtf(v->x * v->x + v->y * v->y + v->z * v->z); }
 
+inline static void XrQuaternionf_CreateIdentity(XrQuaternionf* q) {
+    q->x = 0.0f;
+    q->y = 0.0f;
+    q->z = 0.0f;
+    q->w = 1.0f;
+}
+
 inline static void XrQuaternionf_CreateFromAxisAngle(XrQuaternionf* result, const XrVector3f* axis, const float angleInRadians) {
     float s = sinf(angleInRadians / 2.0f);
     float lengthRcp = XrRcpSqrt(axis->x * axis->x + axis->y * axis->y + axis->z * axis->z);
@@ -236,6 +249,58 @@ inline static void XrQuaternionf_Multiply(XrQuaternionf* result, const XrQuatern
     result->y = (b->w * a->y) - (b->x * a->z) + (b->y * a->w) + (b->z * a->x);
     result->z = (b->w * a->z) + (b->x * a->y) - (b->y * a->x) + (b->z * a->w);
     result->w = (b->w * a->w) - (b->x * a->x) - (b->y * a->y) - (b->z * a->z);
+}
+
+inline static void XrQuaternionf_Invert(XrQuaternionf* result, const XrQuaternionf* q) {
+    result->x = -q->x;
+    result->y = -q->y;
+    result->z = -q->z;
+    result->w = q->w;
+}
+
+inline static void XrQuaternionf_Normalize(XrQuaternionf* q) {
+    const float lengthRcp = XrRcpSqrt(q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w);
+    q->x *= lengthRcp;
+    q->y *= lengthRcp;
+    q->z *= lengthRcp;
+    q->w *= lengthRcp;
+}
+
+inline static void XrQuaternionf_RotateVector3f(XrVector3f* result, const XrQuaternionf* a, const XrVector3f* v) {
+    XrQuaternionf q = {v->x, v->y, v->z, 0.0f};
+    XrQuaternionf aq;
+    XrQuaternionf_Multiply(&aq, &q, a);
+    XrQuaternionf aInv;
+    XrQuaternionf_Invert(&aInv, a);
+    XrQuaternionf aqaInv;
+    XrQuaternionf_Multiply(&aqaInv, &aInv, &aq);
+
+    result->x = aqaInv.x;
+    result->y = aqaInv.y;
+    result->z = aqaInv.z;
+}
+
+inline static void XrPosef_CreateIdentity(XrPosef* result) {
+    XrQuaternionf_CreateIdentity(&result->orientation);
+    XrVector3f_Set(&result->position, 0);
+}
+
+inline static void XrPosef_TransformVector3f(XrVector3f* result, const XrPosef* a, const XrVector3f* v) {
+    XrVector3f r0;
+    XrQuaternionf_RotateVector3f(&r0, &a->orientation, v);
+    XrVector3f_Add(result, &r0, &a->position);
+}
+
+inline static void XrPosef_Multiply(XrPosef* result, const XrPosef* a, const XrPosef* b) {
+    XrQuaternionf_Multiply(&result->orientation, &b->orientation, &a->orientation);
+    XrPosef_TransformVector3f(&result->position, a, &b->position);
+}
+
+inline static void XrPosef_Invert(XrPosef* result, const XrPosef* a) {
+    XrQuaternionf_Invert(&result->orientation, &a->orientation);
+    XrVector3f aPosNeg;
+    XrVector3f_Scale(&aPosNeg, &a->position, -1.0f);
+    XrQuaternionf_RotateVector3f(&result->position, &result->orientation, &aPosNeg);
 }
 
 // Use left-multiplication to accumulate transformations.
@@ -379,21 +444,29 @@ inline static void XrMatrix4x4f_CreateTranslation(XrMatrix4x4f* result, const fl
 }
 
 // Creates a rotation matrix.
-// If -Z=forward, +Y=up, +X=right, then degreesX=pitch, degreesY=yaw, degreesZ=roll.
-inline static void XrMatrix4x4f_CreateRotation(XrMatrix4x4f* result, const float degreesX, const float degreesY,
-                                               const float degreesZ) {
-    const float sinX = sinf(degreesX * (MATH_PI / 180.0f));
-    const float cosX = cosf(degreesX * (MATH_PI / 180.0f));
+// If -Z=forward, +Y=up, +X=right, then radiansX=pitch, radiansY=yaw, radiansZ=roll.
+inline static void XrMatrix4x4f_CreateRotationRadians(XrMatrix4x4f* result, const float radiansX, const float radiansY,
+                                                      const float radiansZ) {
+    const float sinX = sinf(radiansX);
+    const float cosX = cosf(radiansX);
     const XrMatrix4x4f rotationX = {{1, 0, 0, 0, 0, cosX, sinX, 0, 0, -sinX, cosX, 0, 0, 0, 0, 1}};
-    const float sinY = sinf(degreesY * (MATH_PI / 180.0f));
-    const float cosY = cosf(degreesY * (MATH_PI / 180.0f));
+    const float sinY = sinf(radiansY);
+    const float cosY = cosf(radiansY);
     const XrMatrix4x4f rotationY = {{cosY, 0, -sinY, 0, 0, 1, 0, 0, sinY, 0, cosY, 0, 0, 0, 0, 1}};
-    const float sinZ = sinf(degreesZ * (MATH_PI / 180.0f));
-    const float cosZ = cosf(degreesZ * (MATH_PI / 180.0f));
+    const float sinZ = sinf(radiansZ);
+    const float cosZ = cosf(radiansZ);
     const XrMatrix4x4f rotationZ = {{cosZ, sinZ, 0, 0, -sinZ, cosZ, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}};
     XrMatrix4x4f rotationXY;
     XrMatrix4x4f_Multiply(&rotationXY, &rotationY, &rotationX);
     XrMatrix4x4f_Multiply(result, &rotationZ, &rotationXY);
+}
+
+// Creates a rotation matrix.
+// If -Z=forward, +Y=up, +X=right, then degreesX=pitch, degreesY=yaw, degreesZ=roll.
+inline static void XrMatrix4x4f_CreateRotation(XrMatrix4x4f* result, const float degreesX, const float degreesY,
+                                               const float degreesZ) {
+    XrMatrix4x4f_CreateRotationRadians(result, degreesX * (MATH_PI / 180.0f), degreesY * (MATH_PI / 180.0f),
+                                       degreesZ * (MATH_PI / 180.0f));
 }
 
 // Creates a scale matrix.
@@ -469,6 +542,11 @@ inline static void XrMatrix4x4f_CreateTranslationRotationScale(XrMatrix4x4f* res
     XrMatrix4x4f combinedMatrix;
     XrMatrix4x4f_Multiply(&combinedMatrix, &rotationMatrix, &scaleMatrix);
     XrMatrix4x4f_Multiply(result, &translationMatrix, &combinedMatrix);
+}
+
+inline static void XrMatrix4x4f_CreateFromRigidTransform(XrMatrix4x4f* result, const XrPosef* s) {
+    const XrVector3f identityScale = {1.0f, 1.0f, 1.0f};
+    XrMatrix4x4f_CreateTranslationRotationScale(result, &s->position, &s->orientation, &identityScale);
 }
 
 // Creates a projection matrix based on the specified dimensions.

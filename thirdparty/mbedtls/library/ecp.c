@@ -20,13 +20,15 @@
 /*
  * References:
  *
- * SEC1 http://www.secg.org/index.php?action=secg,docs_secg
+ * SEC1 https://www.secg.org/sec1-v2.pdf
  * GECC = Guide to Elliptic Curve Cryptography - Hankerson, Menezes, Vanstone
  * FIPS 186-3 http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
  * RFC 4492 for the related TLS structures and constants
+ * - https://www.rfc-editor.org/rfc/rfc4492
  * RFC 7748 for the Curve448 and Curve25519 curve definitions
+ * - https://www.rfc-editor.org/rfc/rfc7748
  *
- * [Curve25519] http://cr.yp.to/ecdh/curve25519-20060209.pdf
+ * [Curve25519] https://cr.yp.to/ecdh/curve25519-20060209.pdf
  *
  * [2] CORON, Jean-S'ebastien. Resistance against differential power analysis
  *     for elliptic curve cryptosystems. In : Cryptographic Hardware and
@@ -2591,6 +2593,7 @@ static int ecp_mul_mxz(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                        void *p_rng)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    int have_rng = 1;
     size_t i;
     unsigned char b;
     mbedtls_ecp_point RP;
@@ -2623,9 +2626,8 @@ static int ecp_mul_mxz(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     /* RP.X might be slightly larger than P, so reduce it */
     MOD_ADD(RP.X);
 
-    /* Randomize coordinates of the starting point */
-    int have_rng = 1;
 #if defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
+    /* Derandomize coordinates of the starting point */
     if (f_rng == NULL) {
         have_rng = 0;
     }

@@ -494,6 +494,7 @@
 
 /* Dummy type used only for its size */
 union mbedtls_ssl_premaster_secret {
+    unsigned char dummy; /* Make the union non-empty even with SSL disabled */
 #if defined(MBEDTLS_KEY_EXCHANGE_RSA_ENABLED)
     unsigned char _pms_rsa[48];                         /* RFC 5246 8.1.1 */
 #endif
@@ -1746,10 +1747,10 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
  * \param own_cid     The address of the readable buffer holding the CID we want
  *                    the peer to use when sending encrypted messages to us.
  *                    This may be \c NULL if \p own_cid_len is \c 0.
- *                    This parameter is unused if \p enabled is set to
+ *                    This parameter is unused if \p enable is set to
  *                    MBEDTLS_SSL_CID_DISABLED.
  * \param own_cid_len The length of \p own_cid.
- *                    This parameter is unused if \p enabled is set to
+ *                    This parameter is unused if \p enable is set to
  *                    MBEDTLS_SSL_CID_DISABLED.
  *
  * \note              The value of \p own_cid_len must match the value of the
@@ -2573,8 +2574,8 @@ int mbedtls_ssl_session_load(mbedtls_ssl_session *session,
  *
  * \param session  The session structure to be saved.
  * \param buf      The buffer to write the serialized data to. It must be a
- *                 writeable buffer of at least \p len bytes, or may be \c
- *                 NULL if \p len is \c 0.
+ *                 writeable buffer of at least \p buf_len bytes, or may be \c
+ *                 NULL if \p buf_len is \c 0.
  * \param buf_len  The number of bytes available for writing in \p buf.
  * \param olen     The size in bytes of the data that has been or would have
  *                 been written. It must point to a valid \c size_t.
@@ -2659,7 +2660,7 @@ void mbedtls_ssl_conf_ciphersuites(mbedtls_ssl_config *conf,
  *                      record headers.
  *
  * \return              \c 0 on success.
- * \return              #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if \p own_cid_len
+ * \return              #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if \p len
  *                      is too large.
  */
 int mbedtls_ssl_conf_cid(mbedtls_ssl_config *conf, size_t len,
