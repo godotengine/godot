@@ -64,11 +64,11 @@ void GradientTexture1D::set_gradient(Ref<Gradient> p_gradient) {
 		return;
 	}
 	if (gradient.is_valid()) {
-		gradient->disconnect_changed(callable_mp(this, &GradientTexture1D::_update));
+		gradient->disconnect_changed(callable_mp(this, &GradientTexture1D::_queue_update));
 	}
 	gradient = p_gradient;
 	if (gradient.is_valid()) {
-		gradient->connect_changed(callable_mp(this, &GradientTexture1D::_update));
+		gradient->connect_changed(callable_mp(this, &GradientTexture1D::_queue_update));
 	}
 	_queue_update();
 	emit_changed();
@@ -162,6 +162,13 @@ void GradientTexture1D::set_use_hdr(bool p_enabled) {
 
 bool GradientTexture1D::is_using_hdr() const {
 	return use_hdr;
+}
+
+RID GradientTexture1D::get_rid() const {
+	if (!texture.is_valid()) {
+		texture = RS::get_singleton()->texture_2d_placeholder_create();
+	}
+	return texture;
 }
 
 Ref<Image> GradientTexture1D::get_image() const {
