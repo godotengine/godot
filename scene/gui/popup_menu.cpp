@@ -1908,10 +1908,12 @@ void PopupMenu::activate_item(int p_idx) {
 	bool need_hide = true;
 
 	if (items[p_idx].checkable_type) {
+		toggle_item_checked(p_idx);
 		if (!hide_on_checkable_item_selection) {
 			need_hide = false;
 		}
 	} else if (0 < items[p_idx].max_states) {
+		toggle_item_multistate(p_idx);
 		if (!hide_on_multistate_item_selection) {
 			need_hide = false;
 		}
