@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_KHR_wayland_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_wayland_surface 1
 #define VK_KHR_WAYLAND_SURFACE_SPEC_VERSION 6
 #define VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME "VK_KHR_wayland_surface"

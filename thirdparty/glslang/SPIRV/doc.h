@@ -156,6 +156,7 @@ enum OperandClass {
     OperandKernelEnqueueFlags,
     OperandKernelProfilingInfo,
     OperandCapability,
+    OperandCooperativeMatrixOperands,
 
     OperandOpcode,
 
@@ -197,7 +198,7 @@ public:
 // Parameterize a set of enumerants that form an enum
 class EnumDefinition : public EnumParameters {
 public:
-    EnumDefinition() : 
+    EnumDefinition() :
         ceiling(0), bitmask(false), getName(nullptr), enumParams(nullptr), operandParams(nullptr) { }
     void set(int ceil, const char* (*name)(int), EnumParameters* ep, bool mask = false)
     {

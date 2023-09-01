@@ -1,10 +1,10 @@
 diff --git a/thirdparty/vulkan/vk_enum_string_helper.h b/thirdparty/vulkan/vk_enum_string_helper.h
-index 65b3322c07..e8c61aaf15 100644
+index 8c77dd3ee5..be968c091d 100644
 --- a/thirdparty/vulkan/vk_enum_string_helper.h
 +++ b/thirdparty/vulkan/vk_enum_string_helper.h
-@@ -37,7 +37,11 @@
- #endif
- 
+@@ -23,7 +23,11 @@
+ // NOLINTBEGIN
+ #pragma once
  #include <string>
 -#include <vulkan/vulkan.h>
 +#ifdef USE_VOLK
@@ -13,5 +13,5 @@ index 65b3322c07..e8c61aaf15 100644
 +    #include <vulkan/vulkan.h>
 +#endif
  
- 
- static inline const char* string_VkResult(VkResult input_value)
+ static inline bool IsDuplicatePnext(VkStructureType input_value) {
+     switch (input_value) {
