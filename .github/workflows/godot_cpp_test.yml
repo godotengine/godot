@@ -4,8 +4,10 @@ on:
 
 # Global Settings
 env:
-  # Used for the cache key, and godot-cpp checkout. Add version suffix to force clean build.
+  # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
+  # Used for the godot-cpp checkout.
+  GODOT_CPP_BRANCH: '4.1'
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-cpp-tests
@@ -26,7 +28,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: godotengine/godot-cpp
-          ref: ${{ env.GODOT_BASE_BRANCH }}
+          ref: ${{ env.GODOT_CPP_BRANCH }}
           submodules: 'recursive'
           path: 'godot-cpp'
 
