@@ -462,9 +462,58 @@ void ImageTexture3D::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 }
 
+TypedArray<Image> ImageTexture3D::_get_images() const {
+	TypedArray<Image> images;
+	if (texture.is_valid()) {
+		Vector<Ref<Image>> raw_images = get_data();
+		ERR_FAIL_COND_V(raw_images.is_empty(), TypedArray<Image>());
+
+		for (int i = 0; i < raw_images.size(); i++) {
+			images.push_back(raw_images[i]);
+		}
+	}
+	return images;
+}
+
+void ImageTexture3D::_set_images(const TypedArray<Image> &p_images) {
+	int new_layers = p_images.size();
+	ERR_FAIL_COND(new_layers == 0);
+	Ref<Image> img_base = p_images[0];
+	ERR_FAIL_COND(img_base.is_null());
+
+	Image::Format new_format = img_base->get_format();
+	int new_width = img_base->get_width();
+	int new_height = img_base->get_height();
+	int new_depth = 0;
+	bool new_mipmaps = false;
+
+	for (int i = 1; i < p_images.size(); i++) {
+		Ref<Image> img = p_images[i];
+		ERR_FAIL_COND(img.is_null());
+		ERR_FAIL_COND_MSG(img->get_format() != new_format, "All images must share the same format.");
+
+		if (img->get_width() != new_width || img->get_height() != new_height) {
+			new_mipmaps = true;
+			if (new_depth == 0) {
+				new_depth = i;
+			}
+		}
+	}
+
+	if (new_depth == 0) {
+		new_depth = p_images.size();
+	}
+
+	Error err = _create(new_format, new_width, new_height, new_depth, new_mipmaps, p_images);
+	ERR_FAIL_COND(err != OK);
+}
+
 void ImageTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create", "format", "width", "height", "depth", "use_mipmaps", "data"), &ImageTexture3D::_create);
 	ClassDB::bind_method(D_METHOD("update", "data"), &ImageTexture3D::_update);
+	ClassDB::bind_method(D_METHOD("_get_images"), &ImageTexture3D::_get_images);
+	ClassDB::bind_method(D_METHOD("_set_images", "images"), &ImageTexture3D::_set_images);
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_images", PROPERTY_HINT_ARRAY_TYPE, "Image", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT), "_set_images", "_get_images");
 }
 
 ImageTexture3D::ImageTexture3D() {

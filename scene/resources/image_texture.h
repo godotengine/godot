@@ -137,6 +137,9 @@ class ImageTexture3D : public Texture3D {
 	int depth = 1;
 	bool mipmaps = false;
 
+	TypedArray<Image> _get_images() const;
+	void _set_images(const TypedArray<Image> &p_images);
+
 protected:
 	static void _bind_methods();
 
