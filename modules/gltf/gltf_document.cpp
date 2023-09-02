@@ -563,17 +563,17 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> p_state) {
 
 	if (scenes.size()) {
 		ERR_FAIL_COND_V(loaded_scene >= scenes.size(), ERR_FILE_CORRUPT);
-		const Dictionary &s = scenes[loaded_scene];
-		ERR_FAIL_COND_V(!s.has("nodes"), ERR_UNAVAILABLE);
-		const Array &nodes = s["nodes"];
+		const Dictionary &scene_dict = scenes[loaded_scene];
+		ERR_FAIL_COND_V(!scene_dict.has("nodes"), ERR_UNAVAILABLE);
+		const Array &nodes = scene_dict["nodes"];
 		for (int j = 0; j < nodes.size(); j++) {
 			p_state->root_nodes.push_back(nodes[j]);
 		}
-
-		if (s.has("name") && !String(s["name"]).is_empty() && !((String)s["name"]).begins_with("Scene")) {
-			p_state->scene_name = _gen_unique_name(p_state, s["name"]);
+		// Determine what to use for the scene name.
+		if (scene_dict.has("name") && !String(scene_dict["name"]).is_empty() && !((String)scene_dict["name"]).begins_with("Scene")) {
+			p_state->scene_name = scene_dict["name"];
 		} else {
-			p_state->scene_name = _gen_unique_name(p_state, p_state->filename);
+			p_state->scene_name = p_state->filename;
 		}
 	}
 
@@ -5271,23 +5271,21 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
 	for (int i = 0; i < p_state->nodes.size(); i++) {
 		Ref<GLTFNode> gltf_node = p_state->nodes[i];
-
 		// Any joints get unique names generated when the skeleton is made, unique to the skeleton
 		if (gltf_node->skeleton >= 0) {
 			continue;
 		}
-
-		if (gltf_node->get_name().is_empty()) {
+		String gltf_node_name = gltf_node->get_name();
+		if (gltf_node_name.is_empty()) {
 			if (gltf_node->mesh >= 0) {
-				gltf_node->set_name(_gen_unique_name(p_state, "Mesh"));
+				gltf_node_name = "Mesh";
 			} else if (gltf_node->camera >= 0) {
-				gltf_node->set_name(_gen_unique_name(p_state, "Camera3D"));
+				gltf_node_name = "Camera3D";
 			} else {
-				gltf_node->set_name(_gen_unique_name(p_state, "Node"));
+				gltf_node_name = "Node";
 			}
 		}
-
-		gltf_node->set_name(_gen_unique_name(p_state, gltf_node->get_name()));
+		gltf_node->set_name(_gen_unique_name(p_state, gltf_node_name));
 	}
 }
 
