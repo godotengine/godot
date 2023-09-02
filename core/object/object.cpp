@@ -809,7 +809,7 @@ void Object::notification(int p_notification, bool p_reversed) {
 
 	if (_extension) {
 		if (_extension->notification2) {
-			_extension->notification2(_extension_instance, p_notification, p_reversed);
+			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(p_reversed));
 #ifndef DISABLE_DEPRECATED
 		} else if (_extension->notification) {
 			_extension->notification(_extension_instance, p_notification);
