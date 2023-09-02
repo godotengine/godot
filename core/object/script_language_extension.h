@@ -631,6 +631,7 @@ VARIANT_ENUM_CAST(ScriptLanguageExtension::CodeCompletionLocation)
 class ScriptInstanceExtension : public ScriptInstance {
 public:
 	const GDExtensionScriptInstanceInfo2 *native_info;
+	bool free_native_info = false;
 	struct {
 		GDExtensionClassNotification notification_func;
 	} deprecated_native_info;
@@ -830,6 +831,9 @@ public:
 	virtual ~ScriptInstanceExtension() {
 		if (native_info->free_func) {
 			native_info->free_func(instance);
+		}
+		if (free_native_info) {
+			memfree(const_cast<GDExtensionScriptInstanceInfo2 *>(native_info));
 		}
 	}
 
