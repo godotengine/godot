@@ -80,6 +80,7 @@ namespace Godot.SourceGenerators
                 MarshalType.GodotArray => VariantType.Array,
                 MarshalType.GodotGenericDictionary => VariantType.Dictionary,
                 MarshalType.GodotGenericArray => VariantType.Array,
+                MarshalType.IntPtr => VariantType.Int,
                 _ => null
             };
 
@@ -118,6 +119,9 @@ namespace Godot.SourceGenerators
                 default:
                 {
                     var typeKind = type.TypeKind;
+
+                    if (typeKind == TypeKind.Pointer)
+                        return MarshalType.IntPtr;
 
                     if (typeKind == TypeKind.Enum)
                         return MarshalType.Enum;
@@ -319,6 +323,15 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".ConvertToArray<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ">(",
                         inputExpr, ")"),
+                MarshalType.IntPtr =>
+                         (typeSymbol is IPointerTypeSymbol pointer) ?
+                         source.Append("(",
+                            pointer.PointedAtType.FullQualifiedNameIncludeGlobal(), "*)", VariantUtils, ".ConvertToIntPtr(",
+                            inputExpr, ")")
+                        :
+                        source.Append("ref Godot.NativeInterop.InteropUtils.AsRef<",
+                            ((INamedTypeSymbol)typeSymbol).FullQualifiedNameIncludeGlobal(), ">(", VariantUtils, ".ConvertToIntPtr(",
+                            inputExpr, "))"),
                 _ => source.Append(VariantUtils, ".ConvertTo<",
                     typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr, ")"),
             };
@@ -337,6 +350,13 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".CreateFromDictionary(", inputExpr, ")"),
                 MarshalType.GodotGenericArray =>
                     source.Append(VariantUtils, ".CreateFromArray(", inputExpr, ")"),
+                // Todo find better way to get unsafe access to read pointer values
+                MarshalType.IntPtr =>
+                    (typeSymbol is IPointerTypeSymbol pointer) ?
+                     source.Append("(()=> { unsafe { return ", VariantUtils, ".CreateFromIntPtr((nint)", inputExpr, "); } })()")
+                                     :
+                    source.Append(VariantUtils, ".CreateFromIntPtr(Godot.NativeInterop.InteropUtils.AsIntPtr(",
+                        inputExpr, "))"),
                 _ => source.Append(VariantUtils, ".CreateFrom<",
                     typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr, ")"),
             };

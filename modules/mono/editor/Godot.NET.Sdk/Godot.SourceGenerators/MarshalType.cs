@@ -69,5 +69,7 @@ namespace Godot.SourceGenerators
         GodotArray,
         GodotGenericDictionary,
         GodotGenericArray,
+
+        IntPtr,
     }
 }
