@@ -1037,6 +1037,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Vector<String> breakpoints;
 	bool delta_smoothing_override = false;
+	bool load_shell_env = false;
 
 	String default_renderer = "";
 	String default_renderer_mobile = "";
@@ -2642,12 +2643,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
 
+	load_shell_env = GLOBAL_DEF("application/run/load_shell_environment", false);
+
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed.
 		OS::get_singleton()->_allow_hidpi = true;
+		load_shell_env = true;
 	}
 #endif
+	if (load_shell_env) {
+		OS::get_singleton()->load_shell_environment();
+	}
 
 	if (separate_thread_render == -1) {
 		separate_thread_render = (int)GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE) == OS::RENDER_SEPARATE_THREAD;
