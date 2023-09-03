@@ -68,6 +68,8 @@ public:
 	virtual void tag_used_streams();
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+
+	int run_mix(uint64_t p_buffer, float p_rate_scale, int p_frames);
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {

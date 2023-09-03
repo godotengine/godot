@@ -76,6 +76,10 @@ int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_fra
 	return ret;
 }
 
+int AudioStreamPlayback::run_mix(uint64_t p_buffer, float p_rate_scale, int p_frames) {
+	return mix((AudioFrame *)p_buffer, p_rate_scale, p_frames);
+}
+
 void AudioStreamPlayback::tag_used_streams() {
 	GDVIRTUAL_CALL(_tag_used_streams);
 }
@@ -89,6 +93,8 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_seek, "position")
 	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
 	GDVIRTUAL_BIND(_tag_used_streams);
+
+	ClassDB::bind_method(D_METHOD("run_mix", "buffer", "rate_scale", "frames"), &AudioStreamPlayback::run_mix);
 }
 //////////////////////////////
 
