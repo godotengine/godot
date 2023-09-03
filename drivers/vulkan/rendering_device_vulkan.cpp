@@ -8208,7 +8208,9 @@ void RenderingDeviceVulkan::compute_list_dispatch_threads(ComputeListID p_list, 
 
 #endif
 
-	compute_list_dispatch(p_list, (p_x_threads - 1) / cl->state.local_group_size[0] + 1, (p_y_threads - 1) / cl->state.local_group_size[1] + 1, (p_z_threads - 1) / cl->state.local_group_size[2] + 1);
+	compute_list_dispatch(p_list, Math::divide_round_up(p_x_threads, cl->state.local_group_size[0]),
+			Math::divide_round_up(p_y_threads, cl->state.local_group_size[1]),
+			Math::divide_round_up(p_z_threads, cl->state.local_group_size[2]));
 }
 
 void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset) {

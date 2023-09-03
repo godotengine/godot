@@ -1347,7 +1347,7 @@ void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 }
 
-#define MULTIMESH_DIRTY_REGION_SIZE 512
+#define MULTIMESH_DIRTY_REGION_SIZE 512u
 
 void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 	if (multimesh->data_cache.size() > 0 || multimesh->instances == 0) {
@@ -1371,7 +1371,7 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 			memset(w, 0, (size_t)multimesh->instances * multimesh->stride_cache * sizeof(float));
 		}
 	}
-	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+	uint32_t data_cache_dirty_region_count = Math::divide_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 	multimesh->data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
 	for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
 		multimesh->data_cache_dirty_regions[i] = false;
@@ -1382,7 +1382,7 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 void MeshStorage::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb) {
 	uint32_t region_index = p_index / MULTIMESH_DIRTY_REGION_SIZE;
 #ifdef DEBUG_ENABLED
-	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+	uint32_t data_cache_dirty_region_count = Math::divide_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 	ERR_FAIL_UNSIGNED_INDEX(region_index, data_cache_dirty_region_count); //bug
 #endif
 	if (!multimesh->data_cache_dirty_regions[region_index]) {
@@ -1403,7 +1403,7 @@ void MeshStorage::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool 
 
 void MeshStorage::_multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb) {
 	if (p_data) {
-		uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+		uint32_t data_cache_dirty_region_count = Math::divide_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 
 		for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
 			if (!multimesh->data_cache_dirty_regions[i]) {
@@ -1750,7 +1750,7 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 		multimesh->data_cache = multimesh->data_cache;
 		{
 			//clear dirty since nothing will be dirty anymore
-			uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+			uint32_t data_cache_dirty_region_count = Math::divide_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 			for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
 				multimesh->data_cache_dirty_regions[i] = false;
 			}
@@ -1877,8 +1877,8 @@ void MeshStorage::_update_dirty_multimeshes() {
 			uint32_t visible_instances = multimesh->visible_instances >= 0 ? multimesh->visible_instances : multimesh->instances;
 
 			if (multimesh->data_cache_used_dirty_regions) {
-				uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
-				uint32_t visible_region_count = visible_instances == 0 ? 0 : (visible_instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+				uint32_t data_cache_dirty_region_count = Math::divide_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
+				uint32_t visible_region_count = Math::divide_round_up(visible_instances, uint32_t(MULTIMESH_DIRTY_REGION_SIZE));
 
 				GLint region_size = multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * sizeof(float);
 

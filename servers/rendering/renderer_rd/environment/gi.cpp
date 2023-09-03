@@ -2966,7 +2966,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 						push_constant.cell_offset = mipmaps[i].cell_offset;
 						push_constant.cell_count = mipmaps[i].cell_count;
 
-						int64_t wg_todo = (mipmaps[i].cell_count + wg_size - 1) / wg_size;
+						int64_t wg_todo = Math::divide_round_up(mipmaps[i].cell_count, wg_size);
 						while (wg_todo) {
 							int64_t wg_count = MIN(wg_todo, wg_limit_x);
 							RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIPushConstant));
@@ -2987,7 +2987,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					push_constant.cell_offset = mipmaps[i].cell_offset;
 					push_constant.cell_count = mipmaps[i].cell_count;
 
-					int64_t wg_todo = (mipmaps[i].cell_count + wg_size - 1) / wg_size;
+					int64_t wg_todo = Math::divide_round_up(mipmaps[i].cell_count, wg_size);
 					while (wg_todo) {
 						int64_t wg_count = MIN(wg_todo, wg_limit_x);
 						RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIPushConstant));
@@ -3138,7 +3138,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING]);
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dynamic_maps[0].uniform_set, 0);
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIDynamicPushConstant));
-				RD::get_singleton()->compute_list_dispatch(compute_list, (rect.size.x - 1) / 8 + 1, (rect.size.y - 1) / 8 + 1, 1);
+				RD::get_singleton()->compute_list_dispatch(compute_list, Math::divide_round_up(rect.size.x, 8u), Math::divide_round_up(rect.size.y, 8u), 1);
 				//print_line("rect: " + itos(i) + ": " + rect);
 
 				for (int k = 1; k < dynamic_maps.size(); k++) {
@@ -3200,7 +3200,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					}
 					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dynamic_maps[k].uniform_set, 0);
 					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIDynamicPushConstant));
-					RD::get_singleton()->compute_list_dispatch(compute_list, (rect.size.x - 1) / 8 + 1, (rect.size.y - 1) / 8 + 1, 1);
+					RD::get_singleton()->compute_list_dispatch(compute_list, Math::divide_round_up(rect.size.x, 8u), Math::divide_round_up(rect.size.y, 8u), 1);
 				}
 
 				RD::get_singleton()->compute_list_end();

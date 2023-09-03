@@ -711,6 +711,22 @@ public:
 		}
 		return p_target;
 	}
+
+	// Divides num / dem and the result is rounded up:
+	// Examples:
+	//		0 / 64 = 0
+	//		63 / 64 = 1
+	//		64 / 64 = 1
+	//		65 / 64 = 2
+	//
+	// Will not work correctly if numerator + denominator - 1u results in an overflow.
+	static _ALWAYS_INLINE_ uint32_t divide_round_up(uint32_t p_numerator, uint32_t p_denominator) {
+		return (p_numerator + p_denominator - 1u) / p_denominator;
+	}
+
+	static _ALWAYS_INLINE_ uint64_t divide_round_up(uint64_t p_numerator, uint64_t p_denominator) {
+		return (p_numerator + p_denominator - 1u) / p_denominator;
+	}
 };
 
 #endif // MATH_FUNCS_H

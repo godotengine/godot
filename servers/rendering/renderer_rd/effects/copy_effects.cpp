@@ -1018,8 +1018,8 @@ void CopyEffects::cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, c
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_source_cubemap), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_dest_cubemap), 1);
 
-	int x_groups = (p_size.x - 1) / 8 + 1;
-	int y_groups = (p_size.y - 1) / 8 + 1;
+	int x_groups = Math::divide_round_up(p_size.x, 8u);
+	int y_groups = Math::divide_round_up(p_size.y, 8u);
 
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &cubemap_downsampler.push_constant, sizeof(CubemapDownsamplerPushConstant));
 
