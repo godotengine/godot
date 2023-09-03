@@ -85,7 +85,7 @@ void DebugEffects::_create_frustum_arrays() {
 	}
 
 	if (frustum.index_buffer.is_null()) {
-		uint32_t indices[6 * 2 * 3] = {
+		uint16_t indices[6 * 2 * 3] = {
 			// Far
 			0, 1, 2, // FLT, FLB, FRT
 			1, 3, 2, // FLB, FRB, FRT
@@ -111,19 +111,19 @@ void DebugEffects::_create_frustum_arrays() {
 		data.resize(6 * 2 * 3 * 4);
 		{
 			uint8_t *w = data.ptrw();
-			int *p32 = (int *)w;
+			uint16_t *p16 = (uint16_t *)w;
 			for (int i = 0; i < 6 * 2 * 3; i++) {
-				*p32 = indices[i];
-				p32++;
+				*p16 = indices[i];
+				p16++;
 			}
 		}
 
-		frustum.index_buffer = RD::get_singleton()->index_buffer_create(6 * 2 * 3, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, data);
+		frustum.index_buffer = RD::get_singleton()->index_buffer_create(6 * 2 * 3, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, data);
 		frustum.index_array = RD::get_singleton()->index_array_create(frustum.index_buffer, 0, 6 * 2 * 3);
 	}
 
 	if (frustum.lines_buffer.is_null()) {
-		uint32_t indices[12 * 2] = {
+		uint16_t indices[12 * 2] = {
 			0, 1, // FLT - FLB
 			1, 3, // FLB - FRB
 			3, 2, // FRB - FRT
@@ -145,14 +145,14 @@ void DebugEffects::_create_frustum_arrays() {
 		data.resize(12 * 2 * 4);
 		{
 			uint8_t *w = data.ptrw();
-			int *p32 = (int *)w;
+			uint16_t *p16 = (uint16_t *)w;
 			for (int i = 0; i < 12 * 2; i++) {
-				*p32 = indices[i];
-				p32++;
+				*p16 = indices[i];
+				p16++;
 			}
 		}
 
-		frustum.lines_buffer = RD::get_singleton()->index_buffer_create(12 * 2, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, data);
+		frustum.lines_buffer = RD::get_singleton()->index_buffer_create(12 * 2, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, data);
 		frustum.lines_array = RD::get_singleton()->index_array_create(frustum.lines_buffer, 0, 12 * 2);
 	}
 }
