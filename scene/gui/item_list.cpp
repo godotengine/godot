@@ -1615,7 +1615,14 @@ bool ItemList::get_allow_search() const {
 
 void ItemList::set_icon_scale(real_t p_scale) {
 	ERR_FAIL_COND(!Math::is_finite(p_scale));
+
+	if (icon_scale == p_scale) {
+		return;
+	}
+
 	icon_scale = p_scale;
+	queue_redraw();
+	shape_changed = true;
 }
 
 real_t ItemList::get_icon_scale() const {
