@@ -618,6 +618,22 @@ void EditorNode::_notification(int p_what) {
 			EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 			EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("system/environment_variables")) {
+				const Dictionary &env_vars = EDITOR_GET("system/environment_variables");
+				for (const Variant *E = env_vars.next(nullptr); E; E = env_vars.next(E)) {
+					const String &var_name = *E;
+					if (!var_name.is_empty()) {
+						const Variant var_value_raw = env_vars[*E];
+						if (var_value_raw.get_type() == Variant::NIL) {
+							OS::get_singleton()->unset_environment(var_name);
+						} else {
+							const String &var_value = var_value_raw;
+							OS::get_singleton()->set_environment(var_name, var_value);
+						}
+					}
+				}
+			}
+
 			bool theme_changed =
 					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/font") ||
@@ -6867,7 +6883,23 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle", PROPERTY_USAGE_DEFAULT));
 
+	EDITOR_DEF("system/environment_variables", Dictionary());
+
 	ED_SHORTCUT("canvas_item_editor/pan_view", TTR("Pan View"), Key::SPACE);
+
+	const Dictionary &env_vars = EDITOR_GET("system/environment_variables");
+	for (const Variant *E = env_vars.next(nullptr); E; E = env_vars.next(E)) {
+		const String &var_name = *E;
+		if (!var_name.is_empty()) {
+			const Variant var_value_raw = env_vars[*E];
+			if (var_value_raw.get_type() == Variant::NIL) {
+				OS::get_singleton()->unset_environment(var_name);
+			} else {
+				const String &var_value = var_value_raw;
+				OS::get_singleton()->set_environment(var_name, var_value);
+			}
+		}
+	}
 
 	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (const String &E : textfile_ext) {
