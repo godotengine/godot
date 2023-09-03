@@ -3066,9 +3066,8 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 	if (over != gui.mouse_over) {
 		if (gui.mouse_over) {
 			_drop_mouse_over();
-		} else {
-			_drop_physics_mouseover();
 		}
+		_drop_physics_mouseover();
 
 		gui.mouse_over = over;
 		if (over) {
