@@ -157,6 +157,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="cell_shape" type="int" setter="set_cell_shape" getter="get_cell_shape" enum="AStarGrid2D.CellShape" default="0">
+			The cell shape. Affects how the positions are placed in the grid. If changed, [method update] needs to be called before finding the next path.
+		</member>
 		<member name="cell_size" type="Vector2" setter="set_cell_size" getter="get_cell_size" default="Vector2(1, 1)">
 			The size of the point cell which will be applied to calculate the resulting point position returned by [method get_point_path]. If changed, [method update] needs to be called before finding the next path.
 		</member>
@@ -237,6 +240,18 @@
 		</constant>
 		<constant name="DIAGONAL_MODE_MAX" value="4" enum="DiagonalMode">
 			Represents the size of the [enum DiagonalMode] enum.
+		</constant>
+		<constant name="CELL_SHAPE_SQUARE" value="0" enum="CellShape">
+			Rectangular cell shape.
+		</constant>
+		<constant name="CELL_SHAPE_ISOMETRIC_RIGHT" value="1" enum="CellShape">
+			Diamond cell shape (for isometric look). Cell coordinates layout where the horizontal axis goes up-right, and the vertical one goes down-right.
+		</constant>
+		<constant name="CELL_SHAPE_ISOMETRIC_DOWN" value="2" enum="CellShape">
+			Diamond cell shape (for isometric look). Cell coordinates layout where the horizontal axis goes down-right, and the vertical one goes down-left.
+		</constant>
+		<constant name="CELL_SHAPE_MAX" value="3" enum="CellShape">
+			Represents the size of the [enum CellShape] enum.
 		</constant>
 	</constants>
 </class>
