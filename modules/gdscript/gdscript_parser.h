@@ -1540,6 +1540,10 @@ public:
 	int get_last_line_number() const { return current.end_line; }
 #endif
 
+#ifdef TOOLS_ENABLED
+	static HashMap<String, String> theme_color_names;
+#endif // TOOLS_ENABLED
+
 	GDScriptParser();
 	~GDScriptParser();
 

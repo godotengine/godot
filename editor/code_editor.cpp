@@ -938,7 +938,9 @@ void CodeTextEditor::_complete_request() {
 
 	for (const ScriptLanguage::CodeCompletionOption &e : entries) {
 		Color font_color = completion_font_color;
-		if (e.insert_text.begins_with("\"") || e.insert_text.begins_with("\'")) {
+		if (!e.theme_color_name.is_empty() && EDITOR_GET("text_editor/completion/colorize_suggestions")) {
+			font_color = get_theme_color(e.theme_color_name, SNAME("Editor"));
+		} else if (e.insert_text.begins_with("\"") || e.insert_text.begins_with("\'")) {
 			font_color = completion_string_color;
 		} else if (e.insert_text.begins_with("#") || e.insert_text.begins_with("//")) {
 			font_color = completion_comment_color;
