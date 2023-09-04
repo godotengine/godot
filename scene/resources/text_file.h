@@ -41,6 +41,9 @@ private:
 	String text;
 	String path;
 
+protected:
+	virtual bool editor_can_reload_from_file() override { return false; }
+
 public:
 	virtual bool has_text() const;
 	virtual String get_text() const;
