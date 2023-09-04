@@ -570,8 +570,14 @@ Error Main::test_setup() {
 
 	ResourceLoader::load_path_remaps();
 
+	// Initialize ThemeDB early so that scene types can register their theme items.
+	// Default theme will be initialized later, after modules and ScriptServer are ready.
+	initialize_theme_db();
+
 	register_scene_types();
 	register_driver_types();
+
+	register_scene_singletons();
 
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SCENE);
@@ -588,9 +594,7 @@ Error Main::test_setup() {
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
-	initialize_theme_db();
-	theme_db->initialize_theme();
-	register_scene_singletons();
+	theme_db->initialize_theme_noproject();
 
 	initialize_navigation_server();
 
@@ -2561,8 +2565,14 @@ Error Main::setup2() {
 
 	OS::get_singleton()->benchmark_begin_measure("scene");
 
+	// Initialize ThemeDB early so that scene types can register their theme items.
+	// Default theme will be initialized later, after modules and ScriptServer are ready.
+	initialize_theme_db();
+
 	register_scene_types();
 	register_driver_types();
+
+	register_scene_singletons();
 
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SCENE);
@@ -2580,11 +2590,6 @@ Error Main::setup2() {
 	MAIN_PRINT("Main: Load Modules");
 
 	register_platform_apis();
-
-	// Theme needs modules to be initialized so that sub-resources can be loaded.
-	// Default theme is initialized later, after ScriptServer is ready.
-	initialize_theme_db();
-	register_scene_singletons();
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.webp"), String());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());

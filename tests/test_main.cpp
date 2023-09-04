@@ -212,7 +212,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	PhysicsServer2D *physics_server_2d = nullptr;
 	NavigationServer3D *navigation_server_3d = nullptr;
 	NavigationServer2D *navigation_server_2d = nullptr;
-	ThemeDB *theme_db = nullptr;
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
 		reinitialize();
@@ -238,6 +237,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			RenderingServerDefault::get_singleton()->init();
 			RenderingServerDefault::get_singleton()->set_render_loop_enabled(false);
 
+			// ThemeDB requires RenderingServer to initialize the default theme.
+			// So we have to do this for each test case.
+			ThemeDB::get_singleton()->initialize_theme_noproject();
+
 			physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 			physics_server_3d->init();
 
@@ -251,9 +254,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
-
-			theme_db = memnew(ThemeDB);
-			theme_db->initialize_theme_noproject();
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();
@@ -294,11 +294,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memdelete(SceneTree::get_singleton());
 		}
 
-		if (theme_db) {
-			memdelete(theme_db);
-			theme_db = nullptr;
-		}
-
 		if (navigation_server_3d) {
 			memdelete(navigation_server_3d);
 			navigation_server_3d = nullptr;
@@ -326,6 +321,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 		if (RenderingServer::get_singleton()) {
+			// ThemeDB requires RenderingServer to finalize the default theme.
+			// So we have to do this for each test case.
+			ThemeDB::get_singleton()->finalize_theme();
+
 			RenderingServer::get_singleton()->sync();
 			RenderingServer::get_singleton()->global_shader_parameters_clear();
 			RenderingServer::get_singleton()->finish();

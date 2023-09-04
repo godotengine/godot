@@ -43,8 +43,8 @@
 
 namespace TestViewport {
 
-class NotificationControl : public Control {
-	GDCLASS(NotificationControl, Control);
+class NotificationControlViewport : public Control {
+	GDCLASS(NotificationControlViewport, Control);
 
 protected:
 	void _notification(int p_what) {
@@ -63,11 +63,11 @@ public:
 	bool mouse_over = false;
 };
 
-// `NotificationControl`-derived class that additionally
+// `NotificationControlViewport`-derived class that additionally
 // - allows start Dragging
 // - stores mouse information of last event
-class DragStart : public NotificationControl {
-	GDCLASS(DragStart, NotificationControl);
+class DragStart : public NotificationControlViewport {
+	GDCLASS(DragStart, NotificationControlViewport);
 
 public:
 	MouseButton last_mouse_button;
@@ -93,9 +93,9 @@ public:
 	}
 };
 
-// `NotificationControl`-derived class that acts as a Drag and Drop target.
-class DragTarget : public NotificationControl {
-	GDCLASS(DragTarget, NotificationControl);
+// `NotificationControlViewport`-derived class that acts as a Drag and Drop target.
+class DragTarget : public NotificationControlViewport {
+	GDCLASS(DragTarget, NotificationControlViewport);
 
 public:
 	Variant drag_data;
