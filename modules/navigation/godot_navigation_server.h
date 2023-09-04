@@ -56,7 +56,9 @@
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
 class GodotNavigationServer;
+#ifndef _3D_DISABLED
 class NavMeshGenerator3D;
+#endif // _3D_DISABLED
 
 struct SetCommand {
 	virtual ~SetCommand() {}
@@ -80,7 +82,9 @@ class GodotNavigationServer : public NavigationServer3D {
 	LocalVector<NavMap *> active_maps;
 	LocalVector<uint32_t> active_maps_update_id;
 
+#ifndef _3D_DISABLED
 	NavMeshGenerator3D *navmesh_generator_3d = nullptr;
+#endif // _3D_DISABLED
 
 	// Performance Monitor
 	int pm_region_count = 0;
