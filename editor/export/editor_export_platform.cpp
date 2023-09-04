@@ -236,7 +236,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 
 	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
 	for (int i = 0; i < pad; i++) {
-		pd->f->store_8(Math::rand() % 256);
+		pd->f->store_8(0);
 	}
 
 	// Store MD5 of original file.
@@ -1659,7 +1659,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	int header_padding = _get_pad(PCK_PADDING, f->get_position());
 	for (int i = 0; i < header_padding; i++) {
-		f->store_8(Math::rand() % 256);
+		f->store_8(0);
 	}
 
 	uint64_t file_base = f->get_position();
