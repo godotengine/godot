@@ -62,7 +62,7 @@ void PluginConfigDialog::_on_confirmed() {
 	int lang_idx = script_option_edit->get_selected();
 	String ext = ScriptServer::get_language(lang_idx)->get_extension();
 	String script_name = script_edit->get_text().is_empty() ? _get_subfolder() : script_edit->get_text();
-	if (script_name.get_extension().is_empty()) {
+	if (script_name.get_extension() != ext) {
 		script_name += "." + ext;
 	}
 	String script_path = path.path_join(script_name);
@@ -152,7 +152,7 @@ void PluginConfigDialog::config(const String &p_config_path) {
 		ERR_FAIL_COND_MSG(err != OK, "Cannot load config file from path '" + p_config_path + "'.");
 
 		name_edit->set_text(cf->get_value("plugin", "name", ""));
-		subfolder_edit->set_text(p_config_path.get_base_dir().get_basename().get_file());
+		subfolder_edit->set_text(p_config_path.get_base_dir().get_file());
 		desc_edit->set_text(cf->get_value("plugin", "description", ""));
 		author_edit->set_text(cf->get_value("plugin", "author", ""));
 		version_edit->set_text(cf->get_value("plugin", "version", ""));
