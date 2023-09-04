@@ -18,14 +18,14 @@ jobs:
     runs-on: "ubuntu-20.04"
     name: "Build and test Godot CPP"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
       # Checkout godot-cpp
       - name: Checkout godot-cpp
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: godotengine/godot-cpp
           ref: ${{ env.GODOT_CPP_BRANCH }}
