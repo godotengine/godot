@@ -154,25 +154,68 @@ Files extracted from upstream source:
 
 ## fonts
 
-- `NotoSans*.woff2`, `NotoNaskhArabicUI_*.woff2`:
-  * Upstream: https://github.com/googlefonts/noto-fonts
-  * Version: v2017-10-24-phase3-second-cleanup
-  * License: OFL-1.1
-  * Comment: Use UI font variant if available, because it has tight vertical metrics and
-    good for UI.
-- `JetBrainsMono_Regular.woff2`:
-	* Upstream: https://github.com/JetBrains/JetBrainsMono
-  * Version: 2.242
-  * License: OFL-1.1
 - `DroidSans*.woff2`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
   * License: Apache 2.0
+- `JetBrainsMono_Regular.woff2`:
+  * Upstream: https://github.com/JetBrains/JetBrainsMono
+  * Version: 2.304 (cd5227bd1f61dff3bbd6c814ceaf7ffd95e947d9, 2023)
+  * License: OFL-1.1
+- `NotoNaskhArabicUI*.woff2`:
+  * Upstream: https://github.com/notofonts/arabic
+  * Version: 2.014 (133ccaebf922ca080a7eef22998611ac3c242df9, 2022)
+  * License: OFL-1.1
+- `NotoSans*.woff2`:
+  * Upstream: https://github.com/notofonts/latin-greek-cyrillic
+  * Version: 2.012 (9ea0c8d37bff0c0067b03777f40aa04f2bf78f99, 2023)
+  * License: OFL-1.1
+- `NotoSansBengali*.woff2`:
+  * Upstream: https://github.com/notofonts/bengali
+  * Version: 2.003 (020a5701f6fc6a363d5eccbae45e37714c0ad686, 2022)
+  * License: OFL-1.1
+- `NotoSansDevanagari*.woff2`:
+  * Upstream: https://github.com/notofonts/devanagari
+  * Version: 2.004 (f8f27e49da0ec9e5e38ecf3628671f05b24dd955, 2023)
+  * License: OFL-1.1
+- `NotoSansGeorgian*.woff2`:
+  * Upstream: https://github.com/notofonts/georgian
+  * Version: 2.002 (243ec9aa1d4ec58cc42120d30faac1a102fbfeb9, 2022)
+  * License: OFL-1.1
+- `NotoSansHebrew*.woff2`:
+  * Upstream: https://github.com/notofonts/hebrew
+  * Version: 2.003 (caa7ab0614fb5b37cc003d9bf3d7d3e765331110, 2022)
+  * License: OFL-1.1
+- `NotoSansMalayalam*.woff2`:
+  * Upstream: https://github.com/notofonts/malayalam
+  * Version: 2.104 (0fd65e553a6af3dc1c09ed39dfe8933e01c17b32, 2023)
+  * License: OFL-1.1
+- `NotoSansOriya*.woff2`:
+  * Upstream: https://github.com/notofonts/oriya
+  * Version: 2.005 (9377f242b247df12d0bf4cecd93b9c4b18036fbd, 2023)
+  * License: OFL-1.1
+- `NotoSansSinhala*.woff2`:
+  * Upstream: https://github.com/notofonts/sinhala
+  * Version: 2.006 (66e5a2ed9797e575222d6e7c5b3710c7bf68be79, 2022)
+  * License: OFL-1.1
+- `NotoSansTamil*.woff2`:
+  * Upstream: https://github.com/notofonts/tamil
+  * Version: 2.004 (f34a08d1ae3fa810581f63410296d971bdcd62dc, 2023)
+  * License: OFL-1.1
+- `NotoSansTelugu*.woff2`:
+  * Upstream: https://github.com/notofonts/telugu
+  * Version: 2.004 (68a6a8170cba5b2e9b45029ef36994961e8f614c, 2023)
+  * License: OFL-1.1
+- `NotoSansThai*.woff2`:
+  * Upstream: https://github.com/notofonts/thai
+  * Version: 2.001 (09af528011390f35abf15cf86068dae208f512c4, 2022)
+  * License: OFL-1.1
 - `OpenSans_SemiBold.woff2`:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
-- All fonts are converted from the `.ttf` sources using `https://github.com/google/woff2` tool.
+- All fonts are converted from the unhinted `.ttf` sources using `https://github.com/google/woff2` tool.
+- Comment: Use UI font variant if available, because it has tight vertical metrics and good for UI.
 
 
 ## freetype

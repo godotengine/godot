@@ -157,11 +157,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontFile> georgian_font = load_internal_font(_font_NotoSansGeorgian_Regular, _font_NotoSansGeorgian_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> hebrew_font = load_internal_font(_font_NotoSansHebrew_Regular, _font_NotoSansHebrew_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> malayalam_font = load_internal_font(_font_NotoSansMalayalamUI_Regular, _font_NotoSansMalayalamUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
-	Ref<FontFile> oriya_font = load_internal_font(_font_NotoSansOriyaUI_Regular, _font_NotoSansOriyaUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	Ref<FontFile> oriya_font = load_internal_font(_font_NotoSansOriya_Regular, _font_NotoSansOriya_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> sinhala_font = load_internal_font(_font_NotoSansSinhalaUI_Regular, _font_NotoSansSinhalaUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> tamil_font = load_internal_font(_font_NotoSansTamilUI_Regular, _font_NotoSansTamilUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> telugu_font = load_internal_font(_font_NotoSansTeluguUI_Regular, _font_NotoSansTeluguUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
-	Ref<FontFile> thai_font = load_internal_font(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	Ref<FontFile> thai_font = load_internal_font(_font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> fallback_font = load_internal_font(_font_DroidSansFallback, _font_DroidSansFallback_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> japanese_font = load_internal_font(_font_DroidSansJapanese, _font_DroidSansJapanese_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	default_font->set_fallbacks(fallbacks);
@@ -177,11 +177,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontFile> georgian_font_bold = load_internal_font(_font_NotoSansGeorgian_Bold, _font_NotoSansGeorgian_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> hebrew_font_bold = load_internal_font(_font_NotoSansHebrew_Bold, _font_NotoSansHebrew_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> malayalam_font_bold = load_internal_font(_font_NotoSansMalayalamUI_Bold, _font_NotoSansMalayalamUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
-	Ref<FontFile> oriya_font_bold = load_internal_font(_font_NotoSansOriyaUI_Bold, _font_NotoSansOriyaUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
+	Ref<FontFile> oriya_font_bold = load_internal_font(_font_NotoSansOriya_Bold, _font_NotoSansOriya_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> sinhala_font_bold = load_internal_font(_font_NotoSansSinhalaUI_Bold, _font_NotoSansSinhalaUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> tamil_font_bold = load_internal_font(_font_NotoSansTamilUI_Bold, _font_NotoSansTamilUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> telugu_font_bold = load_internal_font(_font_NotoSansTeluguUI_Bold, _font_NotoSansTeluguUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
-	Ref<FontFile> thai_font_bold = load_internal_font(_font_NotoSansThaiUI_Bold, _font_NotoSansThaiUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
+	Ref<FontFile> thai_font_bold = load_internal_font(_font_NotoSansThai_Bold, _font_NotoSansThai_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontVariation> fallback_font_bold = make_bold_font(fallback_font, embolden_strength, &fallbacks_bold);
 	Ref<FontVariation> japanese_font_bold = make_bold_font(japanese_font, embolden_strength, &fallbacks_bold);
 
