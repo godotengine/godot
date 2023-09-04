@@ -5579,8 +5579,8 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
 	if (a.get_type() != b.get_type()) {
 		if (a.is_num() && b.is_num()) {
-			real_t va = a;
-			real_t vb = b;
+			double va = a;
+			double vb = b;
 			return va + vb * c;
 		}
 		return a;
@@ -5591,7 +5591,7 @@ Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
 			return Variant();
 		}
 		case Variant::INT: {
-			return int((a.operator int64_t()) + (b.operator int64_t()) * c + 0.5);
+			return int64_t((a.operator int64_t()) + (b.operator int64_t()) * c + 0.5);
 		}
 		case Variant::FLOAT: {
 			return (a.operator double()) + (b.operator double()) * c;
@@ -5664,8 +5664,8 @@ Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
 Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float c) {
 	if (a.get_type() != b.get_type()) {
 		if (a.is_num() && b.is_num()) {
-			real_t va = a;
-			real_t vb = b;
+			double va = a;
+			double vb = b;
 			return va + (vb - va) * c;
 		}
 		return a;
@@ -5677,11 +5677,11 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 		}
 		case Variant::INT: {
 			const int64_t va = a.operator int64_t();
-			return int(va + ((b.operator int64_t()) - va) * c);
+			return int64_t(va + ((b.operator int64_t()) - va) * c);
 		}
 		case Variant::FLOAT: {
-			const real_t va = a.operator real_t();
-			return va + ((b.operator real_t()) - va) * c;
+			const double va = a.operator double();
+			return va + ((b.operator double()) - va) * c;
 		}
 		case Variant::VECTOR2: {
 			return (a.operator Vector2()).lerp(b.operator Vector2(), c);
@@ -5783,7 +5783,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 		case Variant::PACKED_INT32_ARRAY: {
 			const Vector<int32_t> arr_a = a;
 			const Vector<int32_t> arr_b = b;
-			int32_t sz = arr_a.size();
+			int sz = arr_a.size();
 			if (sz == 0 || arr_b.size() != sz) {
 				return a;
 			} else {
@@ -5795,7 +5795,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 					const int32_t *br = arr_b.ptr();
 
 					Variant va;
-					for (int32_t i = 0; i < sz; i++) {
+					for (int i = 0; i < sz; i++) {
 						va = interpolate_variant(ar[i], br[i], c);
 						vw[i] = va;
 					}
@@ -5806,7 +5806,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 		case Variant::PACKED_INT64_ARRAY: {
 			const Vector<int64_t> arr_a = a;
 			const Vector<int64_t> arr_b = b;
-			int64_t sz = arr_a.size();
+			int sz = arr_a.size();
 			if (sz == 0 || arr_b.size() != sz) {
 				return a;
 			} else {
@@ -5818,7 +5818,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 					const int64_t *br = arr_b.ptr();
 
 					Variant va;
-					for (int64_t i = 0; i < sz; i++) {
+					for (int i = 0; i < sz; i++) {
 						va = interpolate_variant(ar[i], br[i], c);
 						vw[i] = va;
 					}
