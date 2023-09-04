@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PCKReader" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Allows reading the content of a pck file.
+	</brief_description>
+	<description>
+		This class implements a reader that can extract the content of individual files inside a pack file.
+		[codeblock]
+		func read_pck_file():
+		    var reader := PCKReader.new()
+		    var err := reader.open("user://pack.pck")
+		    if err != OK:
+		        return PackedByteArray()
+		    var res := reader.read_file("hello.txt")
+		    reader.close()
+		    return res
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="close">
+			<return type="int" enum="Error" />
+			<description>
+				Closes the underlying resources used by this instance.
+			</description>
+		</method>
+		<method name="file_exists">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="case_sensitive" type="bool" default="true" />
+			<description>
+				Returns [code]true[/code] if the file exists in the loaded pack file.
+				Must be called after [method open].
+			</description>
+		</method>
+		<method name="get_files">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of names of all files in the loaded pack file.
+				Must be called after [method open].
+			</description>
+		</method>
+		<method name="open">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="offset" type="int" default="0" />
+			<param index="2" name="key" type="PackedByteArray" default="PackedByteArray()" />
+			<description>
+				Opens the pack file at the given [param path] and [param offset] within the file and reads its file list.
+				If the pack file has encrypted contents, you can specify a custom [param key] for decryption. If not supplied, [method open] uses the default encryption key.
+			</description>
+		</method>
+		<method name="read_file">
+			<return type="PackedByteArray" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="case_sensitive" type="bool" default="true" />
+			<description>
+				Loads the whole content of a file in the loaded pack file into memory and returns it.
+				Must be called after [method open].
+			</description>
+		</method>
+	</methods>
+</class>

@@ -134,7 +134,27 @@ public:
 	virtual ~PackSource() {}
 };
 
+class PCKFile {
+	Ref<FileAccess> file;
+	PackedByteArray user_key;
+	HashMap<String, PackedData::PackedFile> files;
+	HashMap<String, String> case_insensitive_filenames;
+	bool process_pck(const String &p_path, Ref<FileAccess> f, uint64_t p_offset, const PackedByteArray &p_key);
+
+public:
+	bool try_open_pack(const String &p_path, uint64_t p_offset, const PackedByteArray &p_key = PackedByteArray());
+	bool try_open_embedded(const String &p_path);
+	Vector<Pair<String, PackedData::PackedFile>> get_files();
+	Ref<FileAccess> get_file(const String &p_path, bool p_case_sensitive);
+	bool file_exists(const String &p_path, bool p_case_sensitive);
+
+	bool is_open();
+	void close();
+};
+
 class PackedSourcePCK : public PackSource {
+	PCKFile file;
+
 public:
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
 	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
@@ -185,7 +205,7 @@ public:
 
 	virtual void close() override;
 
-	FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file);
+	FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file, const PackedByteArray &p_key);
 };
 
 Ref<FileAccess> PackedData::try_open_path(const String &p_path) {

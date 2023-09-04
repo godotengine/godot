@@ -33,6 +33,7 @@
 
 #include "core/io/file_access_pack.h"
 #include "core/io/pck_packer.h"
+#include "core/io/pck_reader.h"
 #include "core/os/os.h"
 
 #include "tests/test_utils.h"
@@ -80,6 +81,22 @@ TEST_CASE("[PCKPacker] Pack empty with invalid key") {
 	ERR_PRINT_ON;
 }
 
+static bool check_file(PCKReader &p_pck_reader, const String &p_source_path, const String &p_pack_path) {
+	const PackedByteArray data = p_pck_reader.read_file(p_pack_path, true);
+
+	Error err = OK;
+	Ref<FileAccess> source_file = FileAccess::open(p_source_path, FileAccess::READ, &err);
+	CHECK_MESSAGE(
+			err == OK,
+			"[BUG] Cannot open source file.");
+
+	PackedByteArray srcdata;
+	srcdata.resize(source_file->get_length());
+	source_file->get_buffer((uint8_t *)srcdata.ptr(), srcdata.size());
+
+	return data == srcdata;
+}
+
 TEST_CASE("[PCKPacker] Pack a PCK file with some files and directories") {
 	PCKPacker pck_packer;
 	const String output_pck_path = OS::get_singleton()->get_cache_path().path_join("output_with_files.pck");
@@ -116,6 +133,25 @@ TEST_CASE("[PCKPacker] Pack a PCK file with some files and directories") {
 	CHECK_MESSAGE(
 			f->get_length() <= 27000,
 			"The generated non-empty PCK file shouldn't be too large.");
+
+	// Now check the contents of the generated file with PCKReader.
+	PCKReader pck_reader;
+	CHECK_MESSAGE(
+			pck_reader.open(output_pck_path, 0) == OK,
+			"Opening a PCK file should return an OK error code.");
+
+	PackedStringArray expected_files = { "version.py", "some/directories with spaces/to/create/icon.png", "some/directories with spaces/to/create/icon.svg" };
+	CHECK_MESSAGE(pck_reader.get_files() == expected_files, "PCK file has unexpected file list.");
+
+	CHECK_MESSAGE(
+			check_file(pck_reader, base_dir.path_join("../version.py"), "version.py"),
+			"File \"version.py\" in the pack does not match source.");
+	CHECK_MESSAGE(
+			check_file(pck_reader, base_dir.path_join("../icon.svg"), "some/directories with spaces/to/create/icon.svg"),
+			"File \"some/directories with spaces/to/create/icon.svg\" in the pack does not match source.");
+	CHECK_MESSAGE(
+			check_file(pck_reader, base_dir.path_join("../logo.png"), "some/directories with spaces/to/create/icon.png"),
+			"File \"some/directories with spaces/to/create/logo.png\" in the pack does not match source.");
 }
 } // namespace TestPCKPacker
 

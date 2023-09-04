@@ -127,75 +127,10 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	if (f.is_null()) {
-		return false;
-	}
+bool PCKFile::process_pck(const String &p_path, Ref<FileAccess> f, uint64_t p_offset, const PackedByteArray &p_key) {
+	ERR_FAIL_COND_V_MSG(!p_key.is_empty() && p_key.size() != 32, false, "Encryption key must be 32 bytes.");
 
-	bool pck_header_found = false;
-
-	// Search for the header at the start offset - standalone PCK file.
-	f->seek(p_offset);
-	uint32_t magic = f->get_32();
-	if (magic == PACK_HEADER_MAGIC) {
-		pck_header_found = true;
-	}
-
-	// Search for the header in the executable "pck" section - self contained executable.
-	if (!pck_header_found) {
-		// Loading with offset feature not supported for self contained exe files.
-		if (p_offset != 0) {
-			ERR_FAIL_V_MSG(false, "Loading self-contained executable with offset not supported.");
-		}
-
-		int64_t pck_off = OS::get_singleton()->get_embedded_pck_offset();
-		if (pck_off != 0) {
-			// Search for the header, in case PCK start and section have different alignment.
-			for (int i = 0; i < 8; i++) {
-				f->seek(pck_off);
-				magic = f->get_32();
-				if (magic == PACK_HEADER_MAGIC) {
-#ifdef DEBUG_ENABLED
-					print_verbose("PCK header found in executable pck section, loading from offset 0x" + String::num_int64(pck_off - 4, 16));
-#endif
-					pck_header_found = true;
-					break;
-				}
-				pck_off++;
-			}
-		}
-	}
-
-	// Search for the header at the end of file - self contained executable.
-	if (!pck_header_found) {
-		// Loading with offset feature not supported for self contained exe files.
-		if (p_offset != 0) {
-			ERR_FAIL_V_MSG(false, "Loading self-contained executable with offset not supported.");
-		}
-
-		f->seek_end();
-		f->seek(f->get_position() - 4);
-		magic = f->get_32();
-
-		if (magic == PACK_HEADER_MAGIC) {
-			f->seek(f->get_position() - 12);
-			uint64_t ds = f->get_64();
-			f->seek(f->get_position() - ds - 8);
-			magic = f->get_32();
-			if (magic == PACK_HEADER_MAGIC) {
-#ifdef DEBUG_ENABLED
-				print_verbose("PCK header found at the end of executable, loading from offset 0x" + String::num_int64(f->get_position() - 4, 16));
-#endif
-				pck_header_found = true;
-			}
-		}
-	}
-
-	if (!pck_header_found) {
-		return false;
-	}
-
+	file = f;
 	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -223,8 +158,14 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 		Vector<uint8_t> key;
 		key.resize(32);
-		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
+		if (!p_key.is_empty()) {
+			for (int i = 0; i < key.size(); i++) {
+				key.write[i] = p_key[i];
+			}
+		} else {
+			for (int i = 0; i < key.size(); i++) {
+				key.write[i] = script_encryption_key[i];
+			}
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
@@ -248,14 +189,152 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		f->get_buffer(md5, 16);
 		uint32_t flags = f->get_32();
 
-		PackedData::get_singleton()->add_path(p_path, path, ofs + p_offset, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
+		PackedData::PackedFile pf;
+		pf.encrypted = flags & PACK_FILE_ENCRYPTED;
+		pf.pack = p_path;
+		pf.offset = ofs + p_offset;
+		pf.size = size;
+		for (int j = 0; j < 16; j++) {
+			pf.md5[j] = md5[j];
+		}
+		files[path] = pf;
+		case_insensitive_filenames[path.to_lower()] = path;
 	}
 
+	user_key = p_key;
+	return true;
+}
+
+bool PCKFile::try_open_embedded(const String &p_path) {
+	if (is_open()) {
+		close();
+	}
+
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return false;
+	}
+	bool pck_header_found = false;
+
+	// Search for the header in the executable "pck" section - self contained executable.
+	int64_t pck_off = OS::get_singleton()->get_embedded_pck_offset();
+	uint32_t magic;
+	if (pck_off != 0) {
+		// Search for the header, in case PCK start and section have different alignment.
+		for (int i = 0; i < 8; i++) {
+			f->seek(pck_off);
+			magic = f->get_32();
+			if (magic == PACK_HEADER_MAGIC) {
+#ifdef DEBUG_ENABLED
+				print_verbose("PCK header found in executable pck section, loading from offset 0x" + String::num_int64(pck_off - 4, 16));
+#endif
+				pck_header_found = true;
+				break;
+			}
+			pck_off++;
+		}
+	}
+
+	// Search for the header at the end of file - self contained executable.
+	if (!pck_header_found) {
+		f->seek_end();
+		f->seek(f->get_position() - 4);
+		magic = f->get_32();
+
+		if (magic == PACK_HEADER_MAGIC) {
+			f->seek(f->get_position() - 12);
+			uint64_t ds = f->get_64();
+			f->seek(f->get_position() - ds - 8);
+			magic = f->get_32();
+			if (magic == PACK_HEADER_MAGIC) {
+#ifdef DEBUG_ENABLED
+				print_verbose("PCK header found at the end of executable, loading from offset 0x" + String::num_int64(f->get_position() - 4, 16));
+#endif
+				pck_header_found = true;
+			}
+		}
+	}
+
+	if (!pck_header_found) {
+		return false;
+	}
+
+	return process_pck(p_path, f, 0, PackedByteArray());
+}
+
+bool PCKFile::try_open_pack(const String &p_path, uint64_t p_offset, const PackedByteArray &p_key) {
+	if (is_open()) {
+		close();
+	}
+
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return false;
+	}
+
+	// Search for the header at the start offset - standalone PCK file.
+	f->seek(p_offset);
+	uint32_t magic = f->get_32();
+	if (magic != PACK_HEADER_MAGIC) {
+		return false;
+	}
+
+	return process_pck(p_path, f, p_offset, p_key);
+}
+
+bool PCKFile::is_open() {
+	if (file.is_valid()) {
+		return file->is_open();
+	} else {
+		return false;
+	}
+}
+
+void PCKFile::close() {
+	files.clear();
+	file = Ref<FileAccess>();
+}
+
+Vector<Pair<String, PackedData::PackedFile>> PCKFile::get_files() {
+	Vector<Pair<String, PackedData::PackedFile>> result;
+	for (const KeyValue<String, PackedData::PackedFile> &pair : files) {
+		result.append({ pair.key, pair.value });
+	}
+	return result;
+}
+
+Ref<FileAccess> PCKFile::get_file(const String &p_path, bool p_case_sensitive) {
+	if (!p_case_sensitive) {
+		String filepath = case_insensitive_filenames[p_path.to_lower()];
+		return memnew(FileAccessPack(filepath, files[filepath], user_key));
+	}
+
+	return memnew(FileAccessPack(p_path, files[p_path], user_key));
+}
+
+bool PCKFile::file_exists(const String &p_path, bool p_case_sensitive) {
+	return p_case_sensitive ? files.has(p_path) : case_insensitive_filenames.has(p_path.to_lower());
+}
+
+//////////////////////////////////////////////////////////////////
+
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+	if (!file.try_open_pack(p_path, p_offset)) {
+		if (!file.try_open_embedded(p_path)) {
+			return false;
+		}
+	}
+
+	for (const Pair<String, PackedData::PackedFile> &pair : file.get_files()) {
+		const String &path = pair.first;
+		const PackedData::PackedFile &pf = pair.second;
+		PackedData::get_singleton()->add_path(p_path, path, pf.offset, pf.size, pf.md5, this, p_replace_files, pf.encrypted);
+	}
 	return true;
 }
 
 Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file) {
-	return memnew(FileAccessPack(p_path, *p_file));
+	return file.get_file(p_path, true);
 }
 
 //////////////////////////////////////////////////////////////////
@@ -371,7 +450,7 @@ void FileAccessPack::close() {
 	f = Ref<FileAccess>();
 }
 
-FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) :
+FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file, const PackedByteArray &p_key) :
 		pf(p_file),
 		f(FileAccess::open(pf.pack, FileAccess::READ)) {
 	ERR_FAIL_COND_MSG(f.is_null(), "Can't open pack-referenced file '" + String(pf.pack) + "'.");
@@ -386,8 +465,17 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 
 		Vector<uint8_t> key;
 		key.resize(32);
-		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
+
+		if (!p_key.is_empty()) {
+			ERR_FAIL_COND_MSG(key.size() != 32, "Encryption key must be 32 bytes.");
+
+			for (int i = 0; i < key.size(); i++) {
+				key.write[i] = p_key[i];
+			}
+		} else {
+			for (int i = 0; i < key.size(); i++) {
+				key.write[i] = script_encryption_key[i];
+			}
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
