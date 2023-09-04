@@ -20,7 +20,7 @@ jobs:
     name: Template (target=template_release)
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Emscripten latest
         uses: mymindstorm/setup-emsdk@v12

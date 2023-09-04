@@ -33,7 +33,7 @@ jobs:
             sconsflags: debug_symbols=no
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
