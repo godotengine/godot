@@ -482,7 +482,6 @@ TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_characteristics
 	}
 	charac.push_back(matches.size());
 	charac.push_back((matches[0].first == 0) ? 0 : 1);
-	charac.push_back(location);
 	const char32_t *target_char = &p_base[0];
 	int bad_case = 0;
 	for (const Pair<int, int> &match_segment : matches) {
@@ -494,6 +493,7 @@ TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_characteristics
 		}
 	}
 	charac.push_back(bad_case);
+	charac.push_back(location);
 	charac.push_back(matches[0].first);
 	last_matches = matches;
 	return charac;
