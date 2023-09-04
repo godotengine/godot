@@ -543,8 +543,11 @@ void ImportDock::_reimport_and_cleanup() {
 		Ref<Resource> old_res = old_resources[path];
 		Ref<Resource> new_res = ResourceLoader::load(path);
 
-		for (int j = 0; j < EditorNode::get_editor_data().get_edited_scene_count(); j++) {
-			_replace_resource_in_object(EditorNode::get_editor_data().get_edited_scene_root(j), old_res, new_res);
+		for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
+			Node *edited_scene_root = EditorNode::get_editor_data().get_edited_scene_root(i);
+			if (likely(edited_scene_root)) {
+				_replace_resource_in_object(edited_scene_root, old_res, new_res);
+			}
 		}
 		for (Ref<Resource> res : external_resources) {
 			_replace_resource_in_object(res.ptr(), old_res, new_res);
