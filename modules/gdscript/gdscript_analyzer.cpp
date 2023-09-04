@@ -231,7 +231,7 @@ bool GDScriptAnalyzer::has_member_name_conflict_in_native_type(const StringName 
 	if (ClassDB::has_integer_constant(p_native_type_string, p_member_name)) {
 		return true;
 	}
-	if (p_member_name == CoreStringNames::get_singleton()->_script) {
+	if (p_member_name == CoreStringName(script)) {
 		return true;
 	}
 
@@ -2172,7 +2172,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			List<GDScriptParser::DataType> par_types;
 			int default_arg_count = 0;
 			BitField<MethodFlags> method_flags;
-			if (get_function_signature(p_for->list, false, list_type, CoreStringNames::get_singleton()->_iter_get, return_type, par_types, default_arg_count, method_flags)) {
+			if (get_function_signature(p_for->list, false, list_type, CoreStringName(_iter_get), return_type, par_types, default_arg_count, method_flags)) {
 				variable_type = return_type;
 				variable_type.type_source = list_type.type_source;
 			} else if (!list_type.is_hard_type()) {

@@ -196,7 +196,7 @@ SceneStringNames::SceneStringNames() {
 	// Audio bus name.
 	Master = StaticCString::create("Master");
 
-	_default = StaticCString::create("default");
+	default_ = StaticCString::create("default");
 
 	_window_group = StaticCString::create("_window_group");
 	_window_input = StaticCString::create("_window_input");

@@ -79,7 +79,7 @@ void MultiMeshInstance2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}
 	texture = p_texture;
 	queue_redraw();
-	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+	emit_signal(SceneStringName(texture_changed));
 }
 
 Ref<Texture2D> MultiMeshInstance2D::get_texture() const {

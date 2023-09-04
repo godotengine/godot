@@ -1384,7 +1384,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
+			Variant ret = _get_obj().obj->callp(CoreStringName(_iter_init), refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
@@ -1619,7 +1619,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
+			Variant ret = _get_obj().obj->callp(CoreStringName(_iter_next), refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
@@ -1811,7 +1811,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
 			const Variant *refp[] = { &r_iter };
-			Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
+			Variant ret = _get_obj().obj->callp(CoreStringName(_iter_get), refp, 1, ce);
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_valid = false;

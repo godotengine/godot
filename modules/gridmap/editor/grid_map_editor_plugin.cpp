@@ -949,7 +949,7 @@ void GridMapEditor::_update_mesh_library() {
 void GridMapEditor::edit(GridMap *p_gridmap) {
 	if (node) {
 		node->disconnect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
-		node->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GridMapEditor::_update_mesh_library));
+		node->disconnect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
 		if (mesh_library.is_valid()) {
 			mesh_library->disconnect_changed(callable_mp(this, &GridMapEditor::update_palette));
 			mesh_library = Ref<MeshLibrary>();
@@ -987,7 +987,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	update_grid();
 
 	node->connect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
-	node->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GridMapEditor::_update_mesh_library));
+	node->connect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
 	_update_mesh_library();
 }
 

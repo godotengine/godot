@@ -997,7 +997,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 	}
 	if (!Math::is_equal_approx(time, 0.0) && active && !should_be_active) {
 		active = false;
-		emit_signal(SceneStringNames::get_singleton()->finished);
+		emit_signal(SceneStringName(finished));
 	}
 }
 

@@ -328,7 +328,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
 
-					if (snames[nprops[j].name] == CoreStringNames::get_singleton()->_script) {
+					if (snames[nprops[j].name] == CoreStringName(script)) {
 						//work around to avoid old script variables from disappearing, should be the proper fix to:
 						//https://github.com/godotengine/godot/issues/2958
 

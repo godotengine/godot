@@ -57,7 +57,7 @@ SceneReplicationInterface::TrackedNode &SceneReplicationInterface::_track(const 
 	if (!tracked_nodes.has(p_id)) {
 		tracked_nodes[p_id] = TrackedNode(p_id);
 		Node *node = get_id_as<Node>(p_id);
-		node->connect(SceneStringNames::get_singleton()->tree_exited, callable_mp(this, &SceneReplicationInterface::_untrack).bind(p_id), Node::CONNECT_ONE_SHOT);
+		node->connect(SceneStringName(tree_exited), callable_mp(this, &SceneReplicationInterface::_untrack).bind(p_id), Node::CONNECT_ONE_SHOT);
 	}
 	return tracked_nodes[p_id];
 }
@@ -135,8 +135,8 @@ void SceneReplicationInterface::on_network_process() {
 		for (const ObjectID &oid : spawn_queue) {
 			Node *node = get_id_as<Node>(oid);
 			ERR_CONTINUE(!node);
-			if (node->is_connected(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneReplicationInterface::_node_ready))) {
-				node->disconnect(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneReplicationInterface::_node_ready));
+			if (node->is_connected(SceneStringName(ready), callable_mp(this, &SceneReplicationInterface::_node_ready))) {
+				node->disconnect(SceneStringName(ready), callable_mp(this, &SceneReplicationInterface::_node_ready));
 			}
 		}
 		spawn_queue.clear();
@@ -168,7 +168,7 @@ Error SceneReplicationInterface::on_spawn(Object *p_obj, Variant p_config) {
 	ERR_FAIL_COND_V(tobj.spawner != ObjectID(), ERR_ALREADY_IN_USE);
 	tobj.spawner = spawner->get_instance_id();
 	spawn_queue.insert(oid);
-	node->connect(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneReplicationInterface::_node_ready).bind(oid), Node::CONNECT_ONE_SHOT);
+	node->connect(SceneStringName(ready), callable_mp(this, &SceneReplicationInterface::_node_ready).bind(oid), Node::CONNECT_ONE_SHOT);
 	return OK;
 }
 

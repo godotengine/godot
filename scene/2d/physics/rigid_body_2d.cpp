@@ -44,10 +44,10 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	contact_monitor->locked = true;
 
 	E->value.in_scene = true;
-	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
+	emit_signal(SceneStringName(body_entered), node);
 
 	for (int i = 0; i < E->value.shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
+		emit_signal(SceneStringName(body_shape_entered), E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -65,10 +65,10 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 
 	contact_monitor->locked = true;
 
-	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
+	emit_signal(SceneStringName(body_exited), node);
 
 	for (int i = 0; i < E->value.shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
+		emit_signal(SceneStringName(body_shape_exited), E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -93,10 +93,10 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 			//E->value.rc=0;
 			E->value.in_scene = node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree).bind(objid));
-				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree).bind(objid));
+				node->connect(SceneStringName(tree_entered), callable_mp(this, &RigidBody2D::_body_enter_tree).bind(objid));
+				node->connect(SceneStringName(tree_exiting), callable_mp(this, &RigidBody2D::_body_exit_tree).bind(objid));
 				if (E->value.in_scene) {
-					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
+					emit_signal(SceneStringName(body_entered), node);
 				}
 			}
 
@@ -108,7 +108,7 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 		}
 
 		if (E->value.in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, node, p_body_shape, p_local_shape);
+			emit_signal(SceneStringName(body_shape_entered), p_body, node, p_body_shape, p_local_shape);
 		}
 
 	} else {
@@ -122,17 +122,17 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 
 		if (E->value.shapes.is_empty()) {
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
+				node->disconnect(SceneStringName(tree_entered), callable_mp(this, &RigidBody2D::_body_enter_tree));
+				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &RigidBody2D::_body_exit_tree));
 				if (in_scene) {
-					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
+					emit_signal(SceneStringName(body_exited), node);
 				}
 			}
 
 			contact_monitor->body_map.remove(E);
 		}
 		if (node && in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, node, p_body_shape, p_local_shape);
+			emit_signal(SceneStringName(body_shape_exited), p_body, node, p_body_shape, p_local_shape);
 		}
 	}
 }
@@ -158,7 +158,7 @@ void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 
 	if (sleeping != p_state->is_sleeping()) {
 		sleeping = p_state->is_sleeping();
-		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
+		emit_signal(SceneStringName(sleeping_state_changed));
 	}
 }
 
@@ -605,8 +605,8 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
+				node->disconnect(SceneStringName(tree_entered), callable_mp(this, &RigidBody2D::_body_enter_tree));
+				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &RigidBody2D::_body_exit_tree));
 			}
 		}
 

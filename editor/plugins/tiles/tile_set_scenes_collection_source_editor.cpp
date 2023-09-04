@@ -117,7 +117,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::ed
 
 	// Disconnect to changes.
 	if (tile_set_scenes_collection_source) {
-		tile_set_scenes_collection_source->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		tile_set_scenes_collection_source->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 
 	tile_set = p_tile_set;
@@ -126,8 +126,8 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::ed
 
 	// Connect to changes.
 	if (tile_set_scenes_collection_source) {
-		if (!tile_set_scenes_collection_source->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
-			tile_set_scenes_collection_source->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		if (!tile_set_scenes_collection_source->is_connected(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed))) {
+			tile_set_scenes_collection_source->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 		}
 	}
 

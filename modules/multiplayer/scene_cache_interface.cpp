@@ -42,7 +42,7 @@ SceneCacheInterface::NodeCache &SceneCacheInterface::_track(Node *p_node) {
 	NodeCache *nc = nodes_cache.getptr(oid);
 	if (!nc) {
 		nodes_cache[oid] = NodeCache();
-		p_node->connect(SceneStringNames::get_singleton()->tree_exited, callable_mp(this, &SceneCacheInterface::_remove_node_cache).bind(oid), Object::CONNECT_ONE_SHOT);
+		p_node->connect(SceneStringName(tree_exited), callable_mp(this, &SceneCacheInterface::_remove_node_cache).bind(oid), Object::CONNECT_ONE_SHOT);
 	}
 	return nodes_cache[oid];
 }
@@ -286,7 +286,7 @@ void SceneCacheInterface::clear() {
 	for (KeyValue<ObjectID, NodeCache> &E : nodes_cache) {
 		Object *obj = ObjectDB::get_instance(E.key);
 		ERR_CONTINUE(!obj);
-		obj->disconnect(SceneStringNames::get_singleton()->tree_exited, callable_mp(this, &SceneCacheInterface::_remove_node_cache));
+		obj->disconnect(SceneStringName(tree_exited), callable_mp(this, &SceneCacheInterface::_remove_node_cache));
 	}
 	peers_info.clear();
 	nodes_cache.clear();

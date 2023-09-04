@@ -119,7 +119,7 @@ String AnimationNodeStateMachineEditor::_get_root_playback_path(String &r_node_d
 		if (node_directory_path.size()) {
 			r_node_directory += "/";
 		}
-		base_path = !edited_path.size() ? String(SceneStringNames::get_singleton()->parameters_base_path) + "playback" : String(SceneStringNames::get_singleton()->parameters_base_path) + base_path + "/playback";
+		base_path = !edited_path.size() ? String(SceneStringName(parameters_base_path)) + "playback" : String(SceneStringName(parameters_base_path)) + base_path + "/playback";
 	} else {
 		// Hmmm, we have to return Grouped state machine playback...
 		// It will give the user the error that Root/Nested state machine should be retrieved, that would be kind :-)

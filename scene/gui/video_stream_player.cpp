@@ -163,7 +163,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 					play();
 					return;
 				}
-				emit_signal(SceneStringNames::get_singleton()->finished);
+				emit_signal(SceneStringName(finished));
 			}
 		} break;
 
@@ -460,7 +460,7 @@ StringName VideoStreamPlayer::get_bus() const {
 			return bus;
 		}
 	}
-	return SceneStringNames::get_singleton()->Master;
+	return SceneStringName(Master);
 }
 
 void VideoStreamPlayer::_validate_property(PropertyInfo &p_property) const {

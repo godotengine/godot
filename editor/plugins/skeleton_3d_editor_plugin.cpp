@@ -410,8 +410,8 @@ void Skeleton3DEditor::create_physical_skeleton() {
 							ur->add_do_method(physical_bone, "set_joint_type", PhysicalBone3D::JOINT_TYPE_PIN);
 						}
 
-						ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, physical_bone);
-						ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, collision_shape);
+						ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), physical_bone);
+						ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), collision_shape);
 
 						ur->add_do_reference(physical_bone);
 						ur->add_undo_method(simulator, "remove_child", physical_bone);
@@ -842,10 +842,10 @@ void Skeleton3DEditor::_notification(int p_what) {
 			joint_tree->connect("item_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_selection_changed));
 			joint_tree->connect("item_mouse_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_rmb_select));
 #ifdef TOOLS_ENABLED
-			skeleton->connect(SceneStringNames::get_singleton()->pose_updated, callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
-			skeleton->connect(SceneStringNames::get_singleton()->pose_updated, callable_mp(this, &Skeleton3DEditor::_update_properties));
-			skeleton->connect(SceneStringNames::get_singleton()->bone_enabled_changed, callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
-			skeleton->connect(SceneStringNames::get_singleton()->show_rest_only_changed, callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
+			skeleton->connect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
+			skeleton->connect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties));
+			skeleton->connect(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
+			skeleton->connect(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
 #endif
 
 			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONE_SHOT);
@@ -870,10 +870,10 @@ void Skeleton3DEditor::_notification(int p_what) {
 			if (skeleton) {
 				select_bone(-1); // Requires that the joint_tree has not been deleted.
 #ifdef TOOLS_ENABLED
-				skeleton->disconnect(SceneStringNames::get_singleton()->show_rest_only_changed, callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
-				skeleton->disconnect(SceneStringNames::get_singleton()->bone_enabled_changed, callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
-				skeleton->disconnect(SceneStringNames::get_singleton()->pose_updated, callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
-				skeleton->disconnect(SceneStringNames::get_singleton()->pose_updated, callable_mp(this, &Skeleton3DEditor::_update_properties));
+				skeleton->disconnect(SceneStringName(show_rest_only_changed), callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
+				skeleton->disconnect(SceneStringName(bone_enabled_changed), callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
+				skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
+				skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties));
 				skeleton->set_transform_gizmo_visible(true);
 #endif
 				if (handles_mesh_instance->get_parent()) {

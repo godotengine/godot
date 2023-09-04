@@ -519,27 +519,27 @@ bool CollisionObject2D::is_pickable() const {
 
 void CollisionObject2D::_input_event_call(Viewport *p_viewport, const Ref<InputEvent> &p_input_event, int p_shape) {
 	GDVIRTUAL_CALL(_input_event, p_viewport, p_input_event, p_shape);
-	emit_signal(SceneStringNames::get_singleton()->input_event, p_viewport, p_input_event, p_shape);
+	emit_signal(SceneStringName(input_event), p_viewport, p_input_event, p_shape);
 }
 
 void CollisionObject2D::_mouse_enter() {
 	GDVIRTUAL_CALL(_mouse_enter);
-	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+	emit_signal(SceneStringName(mouse_entered));
 }
 
 void CollisionObject2D::_mouse_exit() {
 	GDVIRTUAL_CALL(_mouse_exit);
-	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+	emit_signal(SceneStringName(mouse_exited));
 }
 
 void CollisionObject2D::_mouse_shape_enter(int p_shape) {
 	GDVIRTUAL_CALL(_mouse_shape_enter, p_shape);
-	emit_signal(SceneStringNames::get_singleton()->mouse_shape_entered, p_shape);
+	emit_signal(SceneStringName(mouse_shape_entered), p_shape);
 }
 
 void CollisionObject2D::_mouse_shape_exit(int p_shape) {
 	GDVIRTUAL_CALL(_mouse_shape_exit, p_shape);
-	emit_signal(SceneStringNames::get_singleton()->mouse_shape_exited, p_shape);
+	emit_signal(SceneStringName(mouse_shape_exited), p_shape);
 }
 
 void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {

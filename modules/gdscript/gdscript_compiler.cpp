@@ -346,7 +346,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							scr = scr->_base;
 						}
 
-						if (nc && (identifier == CoreStringNames::get_singleton()->_free || ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
+						if (nc && (identifier == CoreStringName(free_) || ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
 							// Get like it was a property.
 							GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
 							GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);

@@ -627,7 +627,7 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		for (int i = 0; i < p_track_count; i++) {
 			src_blendsw[i] = 1.0; // By default all go to 1 for the root input.
 		}
-		root_animation_node->node_state.base_path = SceneStringNames::get_singleton()->parameters_base_path;
+		root_animation_node->node_state.base_path = SceneStringName(parameters_base_path);
 		root_animation_node->node_state.parent = nullptr;
 	}
 
@@ -788,7 +788,7 @@ void AnimationTree::_update_properties() {
 	input_activity_map_get.clear();
 
 	if (root_animation_node.is_valid()) {
-		_update_properties_for_node(SceneStringNames::get_singleton()->parameters_base_path, root_animation_node);
+		_update_properties_for_node(SceneStringName(parameters_base_path), root_animation_node);
 	}
 
 	properties_dirty = false;
@@ -810,7 +810,7 @@ void AnimationTree::_notification(int p_what) {
 void AnimationTree::set_animation_player(const NodePath &p_path) {
 	animation_player = p_path;
 	if (p_path.is_empty()) {
-		set_root_node(SceneStringNames::get_singleton()->path_pp);
+		set_root_node(SceneStringName(path_pp));
 		while (animation_libraries.size()) {
 			remove_animation_library(animation_libraries[0].name);
 		}
