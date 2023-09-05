@@ -4950,7 +4950,7 @@ Rect2 TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 
 	int first_visible_char = cache_entry.first_visible_char[wrap_index];
 	int last_visible_char = cache_entry.last_visible_char[wrap_index];
-	if (p_column < first_visible_char || p_column > last_visible_char) {
+	if (p_column < first_visible_char || p_column > (last_visible_char + 1)) {
 		// Character is outside of the viewing area, no point calculating its position.
 		return Rect2i(-1, -1, 0, 0);
 	}
