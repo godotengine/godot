@@ -50,6 +50,7 @@
 #include "hb-ot-name-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
+#include "hb-ot-var-avar-table.hh"
 #include "hb-ot-var-cvar-table.hh"
 #include "hb-ot-var-fvar-table.hh"
 #include "hb-ot-var-gvar-table.hh"
@@ -273,7 +274,7 @@ _try_subset (const TableType *table,
              hb_vector_t<char>* buf,
              hb_subset_context_t* c /* OUT */)
 {
-  c->serializer->start_serialize<TableType> ();
+  c->serializer->start_serialize ();
   if (c->serializer->in_error ()) return false;
 
   bool needed = table->subset (c);
@@ -516,10 +517,11 @@ _subset_table (hb_subset_plan_t *plan,
   case HB_OT_TAG_fvar:
     if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
     return _subset<const OT::fvar> (plan, buf);
+  case HB_OT_TAG_avar:
+    if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
+    return _subset<const OT::avar> (plan, buf);
   case HB_OT_TAG_STAT:
-    /*TODO(qxliu): change the condition as we support more complex
-     * instancing operation*/
-    if (plan->all_axes_pinned) return _subset<const OT::STAT> (plan, buf);
+    if (!plan->user_axes_location.is_empty ()) return _subset<const OT::STAT> (plan, buf);
     else return _passthrough (plan, tag);
 
   case HB_TAG ('c', 'v', 't', ' '):
