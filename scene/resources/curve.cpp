@@ -1046,6 +1046,10 @@ real_t Curve2D::get_bake_interval() const {
 	return bake_interval;
 }
 
+PackedVector2Array Curve2D::get_points() const {
+	return _get_data()["points"];
+}
+
 Vector2 Curve2D::get_closest_point(const Vector2 &p_to_point) const {
 	// Brute force method.
 
