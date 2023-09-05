@@ -1826,6 +1826,15 @@ void FileSystemDock::_duplicate_operation_confirm() {
 		base_dir = base_dir.get_base_dir();
 	}
 
+	if (is_creating_image) {
+		if (new_name.get_extension().is_empty()) {
+			new_name += ".png";
+		} else if (new_name.get_extension() != "png") {
+			EditorNode::get_singleton()->show_warning(TTR("Wrong image extension. Must be PNG."));
+			return;
+		}
+	}
+
 	String new_path = base_dir.path_join(new_name);
 
 	// Present a more user friendly warning for name conflict
@@ -1835,11 +1844,25 @@ void FileSystemDock::_duplicate_operation_confirm() {
 		return;
 	}
 
-	_try_duplicate_item(to_duplicate, new_path);
+	if (is_creating_image) {
+		if (!DisplayServer::get_singleton()->clipboard_has_image()) {
+			// The image may disappear while the dialog is visible.
+			EditorNode::get_singleton()->show_warning(TTR("No image in the clipboard."));
+			return;
+		}
+		_create_image(new_path);
+	} else {
+		_try_duplicate_item(to_duplicate, new_path);
+	}
 
 	// Rescan everything.
 	print_verbose("FileSystem: calling rescan.");
 	_rescan();
+}
+
+void FileSystemDock::_create_image(const String &p_path) {
+	Ref<Image> image = DisplayServer::get_singleton()->clipboard_get_image();
+	image->save_png(p_path);
 }
 
 void FileSystemDock::_overwrite_dialog_action(bool p_overwrite) {
@@ -1930,7 +1953,6 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 
 			if (!to_move[i].is_file) {
 				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-				print_line(new_path);
 			}
 
 			if (old_path != new_path) {
@@ -2250,12 +2272,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					duplicate_dialog_text->set_text(name);
 					duplicate_dialog_text->select(0, name.length());
 				}
+				is_creating_image = false;
+				duplicate_dialog->set_ok_button_text(TTR("Duplicate"));
 				duplicate_dialog->popup_centered(Size2(250, 80) * EDSCALE);
 				duplicate_dialog_text->grab_focus();
 			}
-		} break;
-
-		case FILE_INFO: {
 		} break;
 
 		case FILE_REIMPORT: {
@@ -2309,6 +2330,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_NEW_RESOURCE: {
 			new_resource_dialog->popup_create(true);
 		} break;
+
 		case FILE_NEW_TEXTFILE: {
 			String fpath = current_path;
 			if (!fpath.ends_with("/")) {
@@ -2316,6 +2338,23 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 			ScriptEditor::get_singleton()->open_text_file_create_dialog(dir);
+		} break;
+
+		case FILE_PASTE_IMAGE: {
+			if (!DisplayServer::get_singleton()->clipboard_has_image() || p_selected.is_empty()) {
+				return;
+			}
+			to_duplicate.path = p_selected[0].get_base_dir().path_join("new image");
+			to_duplicate.is_file = true;
+
+			duplicate_dialog->set_title(TTR("Creating Image from Clipboard"));
+			duplicate_dialog_text->set_text(TTR("new image"));
+			duplicate_dialog_text->select();
+
+			is_creating_image = true;
+			duplicate_dialog->set_ok_button_text(TTR("Create Image"));
+			duplicate_dialog->popup_centered(Size2(250, 80) * EDSCALE);
+			duplicate_dialog_text->grab_focus();
 		} break;
 	}
 }
@@ -2880,6 +2919,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		new_menu->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("Script..."), FILE_NEW_SCRIPT);
 		new_menu->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("Resource..."), FILE_NEW_RESOURCE);
 		new_menu->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("TextFile..."), FILE_NEW_TEXTFILE);
+		if (DisplayServer::get_singleton()->clipboard_has_image()) {
+			new_menu->add_icon_item(get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")), TTR("Image from Clipboard..."), FILE_PASTE_IMAGE);
+		}
 		p_popup->add_separator();
 	}
 
@@ -3027,6 +3069,9 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
+	if (DisplayServer::get_singleton()->clipboard_has_image()) {
+		tree_popup->add_icon_item(get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")), TTR("Create Image from Clipboard..."), FILE_PASTE_IMAGE);
+	}
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
@@ -3655,7 +3700,6 @@ FileSystemDock::FileSystemDock() {
 
 	duplicate_dialog_text = memnew(LineEdit);
 	duplicate_dialog_vb->add_margin_child(TTR("Name:"), duplicate_dialog_text);
-	duplicate_dialog->set_ok_button_text(TTR("Duplicate"));
 	add_child(duplicate_dialog);
 	duplicate_dialog->register_text_enter(duplicate_dialog_text);
 	duplicate_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_duplicate_operation_confirm));
