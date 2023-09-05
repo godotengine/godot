@@ -561,6 +561,12 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 	class_type.native_type = result.native_type;
 	p_class->set_datatype(class_type);
 
+	// Apply annotations.
+	for (GDScriptParser::AnnotationNode *&E : p_class->annotations) {
+		resolve_annotation(E);
+		E->apply(parser, p_class, p_class->outer);
+	}
+
 	parser->current_class = previous_class;
 
 	return OK;
@@ -1422,6 +1428,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::NONE:
 			break; // Unreachable.
 		case GDScriptParser::Node::CLASS:
+			// NOTE: Currently this route is never executed, `resolve_class_*()` is called directly.
 			if (OK == resolve_class_inheritance(static_cast<GDScriptParser::ClassNode *>(p_node), true)) {
 				resolve_class_interface(static_cast<GDScriptParser::ClassNode *>(p_node), true);
 				resolve_class_body(static_cast<GDScriptParser::ClassNode *>(p_node), true);
@@ -1837,7 +1844,7 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 		// Apply annotations.
 		for (GDScriptParser::AnnotationNode *&E : stmt->annotations) {
 			resolve_annotation(E);
-			E->apply(parser, stmt, nullptr);
+			E->apply(parser, stmt, nullptr); // TODO: Provide `p_class`.
 		}
 
 #ifdef DEBUG_ENABLED
@@ -2924,6 +2931,16 @@ const char *check_for_renamed_identifier(String identifier, GDScriptParser::Node
 }
 #endif // SUGGEST_GODOT4_RENAMES
 
+static bool _is_type_abstract_class(GDScriptParser::DataType *p_data_type) {
+	if (p_data_type->kind == GDScriptParser::DataType::CLASS) {
+		return p_data_type->class_type->is_abstract;
+	}
+	if (p_data_type->kind == GDScriptParser::DataType::SCRIPT) {
+		return p_data_type->script_type.is_valid() && p_data_type->script_type->is_abstract();
+	}
+	return false;
+}
+
 void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await, bool p_is_root) {
 	bool all_is_constant = true;
 	HashMap<int, GDScriptParser::ArrayNode *> arrays; // For array literal to potentially type when passing.
@@ -3289,10 +3306,15 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 	bool is_constructor = (base_type.is_meta_type || (p_call->callee && p_call->callee->type == GDScriptParser::Node::IDENTIFIER)) && p_call->function_name == SNAME("new");
 
-	if (is_constructor && Engine::get_singleton()->has_singleton(base_type.native_type)) {
-		push_error(vformat(R"(Cannot construct native class "%s" because it is an engine singleton.)", base_type.native_type), p_call);
-		p_call->set_datatype(call_type);
-		return;
+	if (is_constructor) {
+		if (Engine::get_singleton()->has_singleton(base_type.native_type)) {
+			push_error(vformat(R"(Cannot construct native class "%s" because it is an engine singleton.)", base_type.native_type), p_call);
+			p_call->set_datatype(call_type);
+			return;
+		}
+		if (_is_type_abstract_class(&base_type)) {
+			push_error(vformat(R"*(Cannot call constructor on abstract class "%s".)*", base_type.to_string()), p_call);
+		}
 	}
 
 	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags)) {
@@ -5546,12 +5568,6 @@ Error GDScriptAnalyzer::analyze() {
 	err = resolve_inheritance();
 	if (err) {
 		return err;
-	}
-
-	// Apply annotations.
-	for (GDScriptParser::AnnotationNode *&E : parser->head->annotations) {
-		resolve_annotation(E);
-		E->apply(parser, parser->head, nullptr);
 	}
 
 	resolve_interface();
