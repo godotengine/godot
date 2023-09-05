@@ -61,6 +61,7 @@ protected:
 public:
 	void initialize_theme();
 	void initialize_theme_noproject();
+	void finalize_theme();
 
 	// Universal Theme resources
 

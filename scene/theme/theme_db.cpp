@@ -91,6 +91,18 @@ void ThemeDB::initialize_theme_noproject() {
 	}
 }
 
+void ThemeDB::finalize_theme() {
+	if (!RenderingServer::get_singleton()) {
+		WARN_PRINT("Finalizing theme when there is no RenderingServer is an error; check the order of operations.");
+	}
+
+	default_theme.unref();
+
+	fallback_font.unref();
+	fallback_icon.unref();
+	fallback_stylebox.unref();
+}
+
 // Universal fallback Theme resources.
 
 void ThemeDB::set_default_theme(const Ref<Theme> &p_default) {
