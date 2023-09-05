@@ -2833,10 +2833,8 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 }
 
 void FontVariation::set_variation_opentype(const Dictionary &p_coords) {
-	if (variation.opentype != p_coords) {
-		variation.opentype = p_coords;
-		_invalidate_rids();
-	}
+	variation.opentype = p_coords;
+	_invalidate_rids();
 }
 
 Dictionary FontVariation::get_variation_opentype() const {
@@ -2877,10 +2875,8 @@ int FontVariation::get_variation_face_index() const {
 }
 
 void FontVariation::set_opentype_features(const Dictionary &p_features) {
-	if (opentype_features != p_features) {
-		opentype_features = p_features;
-		_invalidate_rids();
-	}
+	opentype_features = p_features;
+	_invalidate_rids();
 }
 
 Dictionary FontVariation::get_opentype_features() const {

@@ -2383,10 +2383,8 @@ void TextServerAdvanced::_font_set_variation_coordinates(const RID &p_font_rid, 
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	if (fd->variation_coordinates != p_variation_coordinates) {
-		_font_clear_cache(fd);
-		fd->variation_coordinates = p_variation_coordinates;
-	}
+	_font_clear_cache(fd);
+	fd->variation_coordinates = p_variation_coordinates;
 }
 
 Dictionary TextServerAdvanced::_font_get_variation_coordinates(const RID &p_font_rid) const {
