@@ -85,7 +85,7 @@ jobs:
             artifact: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Need newer mesa for lavapipe to work properly.
       - name: Linux dependencies for tests
@@ -111,7 +111,7 @@ jobs:
         uses: ./.github/actions/godot-deps
 
       - name: Set up .NET Sdk
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v3
         if: ${{ matrix.build-mono }}
         with:
           dotnet-version: '6.0.x'
