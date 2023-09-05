@@ -111,6 +111,10 @@ def configure(env):
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
+        # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
+        cc_semver = tuple(get_compiler_version(env))
+        if cc_semver >= (3, 1, 42):
+            env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
 
     # Sanitizers
     if env["use_ubsan"]:
