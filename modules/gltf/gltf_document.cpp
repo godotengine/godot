@@ -5802,10 +5802,14 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
 	if (!current_node) {
 		if (gltf_node->skin >= 0 && gltf_node->mesh >= 0 && !gltf_node->children.is_empty()) {
+			// GLTF specifies that skinned meshes should ignore their node transforms,
+			// only being controlled by the skeleton, so Godot will reparent a skinned
+			// mesh to its skeleton. However, we still need to ensure any child nodes
+			// keep their place in the tree, so if there are any child nodes, the skinned
+			// mesh must not be the base node, so generate an empty spatial base.
 			current_node = _generate_spatial(p_state, p_node_index);
 			Node3D *mesh_inst = _generate_mesh_instance(p_state, p_node_index);
 			mesh_inst->set_name(gltf_node->get_name());
-
 			current_node->add_child(mesh_inst, true);
 		} else if (gltf_node->mesh >= 0) {
 			current_node = _generate_mesh_instance(p_state, p_node_index);
