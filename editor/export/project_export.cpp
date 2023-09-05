@@ -334,7 +334,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	}
 
 	custom_features->set_text(current->get_custom_features());
-	_update_feature_list();
+	_update_feature_list_compiled();
 	_update_export_all();
 	child_controls_changed();
 
@@ -385,7 +385,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	updating = false;
 }
 
-void ProjectExportDialog::_update_feature_list() {
+void ProjectExportDialog::_update_feature_list_compiled() {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
@@ -431,11 +431,11 @@ void ProjectExportDialog::_custom_features_changed(const String &p_text) {
 	ERR_FAIL_COND(current.is_null());
 
 	current->set_custom_features(p_text);
-	_update_feature_list();
+	_update_feature_list_compiled();
 }
 
 void ProjectExportDialog::_tab_changed(int) {
-	_update_feature_list();
+	_update_feature_list_compiled();
 }
 
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {

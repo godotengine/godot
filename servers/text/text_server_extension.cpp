@@ -208,7 +208,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_opentype_feature_overrides, "font_rid", "overrides");
 	GDVIRTUAL_BIND(_font_get_opentype_feature_overrides, "font_rid");
 
-	GDVIRTUAL_BIND(_font_supported_feature_list, "font_rid");
+	GDVIRTUAL_BIND(_font_supported_feature_list_compiled, "font_rid");
 	GDVIRTUAL_BIND(_font_supported_variation_list, "font_rid");
 
 	GDVIRTUAL_BIND(_font_get_global_oversampling);
@@ -948,9 +948,9 @@ Dictionary TextServerExtension::font_get_opentype_feature_overrides(const RID &p
 	return ret;
 }
 
-Dictionary TextServerExtension::font_supported_feature_list(const RID &p_font_rid) const {
+Dictionary TextServerExtension::font_supported_feature_list_compiled(const RID &p_font_rid) const {
 	Dictionary ret;
-	GDVIRTUAL_CALL(_font_supported_feature_list, p_font_rid, ret);
+	GDVIRTUAL_CALL(_font_supported_feature_list_compiled, p_font_rid, ret);
 	return ret;
 }
 

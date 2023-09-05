@@ -861,7 +861,7 @@ public:
 	MODBIND2(font_set_opentype_feature_overrides, const RID &, const Dictionary &);
 	MODBIND1RC(Dictionary, font_get_opentype_feature_overrides, const RID &);
 
-	MODBIND1RC(Dictionary, font_supported_feature_list, const RID &);
+	MODBIND1RC(Dictionary, font_supported_feature_list_compiled, const RID &);
 	MODBIND1RC(Dictionary, font_supported_variation_list, const RID &);
 
 	MODBIND0RC(double, font_get_global_oversampling);

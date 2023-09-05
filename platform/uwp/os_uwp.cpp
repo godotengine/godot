@@ -809,8 +809,9 @@ String OS_UWP::get_user_data_dir() const {
 	return String(data_folder->Path->Data()).replace("\\", "/");
 }
 
-bool OS_UWP::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc";
+void OS_UWP::_register_compiled_feature() {
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::UWP);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::PC);
 }
 
 OS_UWP::OS_UWP() {

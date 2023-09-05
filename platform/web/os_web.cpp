@@ -132,13 +132,25 @@ int OS_Web::get_processor_count() const {
 	return godot_js_os_hw_concurrency_get();
 }
 
-bool OS_Web::_check_internal_feature_support(const String &p_feature) {
-	if (p_feature == "web") {
-		return true;
+void OS_Web::_register_compiled_feature() {
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::WEB);
+
+	const String web_features[] = {
+		OS::FEATURES[OS::Feature::WEB_IOS],
+		OS::FEATURES[OS::Feature::WEB_LINUXBSD],
+		OS::FEATURES[OS::Feature::WEB_ANDROID],
+		OS::FEATURES[OS::Feature::WEB_MACOS],
+		OS::FEATURES[OS::Feature::WEB_WINDOWS],
+	};
+
+	for (const String &feature : web_features) {
+		if (godot_js_os_has_feature(feature.utf8().get_data())) {
+			OS::get_singleton()->register_compile_time_feature(feature);
+		}
 	}
-	if (godot_js_os_has_feature(p_feature.utf8().get_data())) {
-		return true;
-	}
+}
+
+bool OS_Web::_check_dynamic_feature(const String &p_feature) {
 	return false;
 }
 

@@ -170,7 +170,7 @@ private:
 	void _export_all_dialog_action(const String &p_str);
 	void _export_all(bool p_debug);
 
-	void _update_feature_list();
+	void _update_feature_list_compiled();
 	void _custom_features_changed(const String &p_text);
 
 	bool updating_script_key = false;

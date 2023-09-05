@@ -95,7 +95,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_language_supported", "language"), &Font::is_language_supported);
 	ClassDB::bind_method(D_METHOD("is_script_supported", "script"), &Font::is_script_supported);
 
-	ClassDB::bind_method(D_METHOD("get_supported_feature_list"), &Font::get_supported_feature_list);
+	ClassDB::bind_method(D_METHOD("get_supported_feature_list_compiled"), &Font::get_supported_feature_list_compiled);
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &Font::get_supported_variation_list);
 	ClassDB::bind_method(D_METHOD("get_face_count"), &Font::get_face_count);
 
@@ -525,8 +525,8 @@ bool Font::is_script_supported(const String &p_script) const {
 	return TS->font_is_script_supported(_get_rid(), p_script);
 }
 
-Dictionary Font::get_supported_feature_list() const {
-	return TS->font_supported_feature_list(_get_rid());
+Dictionary Font::get_supported_feature_list_compiled() const {
+	return TS->font_supported_feature_list_compiled(_get_rid());
 }
 
 Dictionary Font::get_supported_variation_list() const {

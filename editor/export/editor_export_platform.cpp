@@ -462,12 +462,12 @@ void EditorExportPlatform::_edit_filter_list(HashSet<String> &r_list, const Stri
 
 HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const {
 	Ref<EditorExportPlatform> platform = p_preset->get_platform();
-	List<String> feature_list;
-	platform->get_platform_features(&feature_list);
-	platform->get_preset_features(p_preset, &feature_list);
+	List<String> feature_list_compiled;
+	platform->get_platform_features(&feature_list_compiled);
+	platform->get_preset_features(p_preset, &feature_list_compiled);
 
 	HashSet<String> result;
-	for (const String &E : feature_list) {
+	for (const String &E : feature_list_compiled) {
 		result.insert(E);
 	}
 

@@ -220,7 +220,8 @@ public:
 
 	void run();
 
-	virtual bool _check_internal_feature_support(const String &p_feature) override;
+	virtual void _register_compiled_feature() override;
+	virtual bool _check_dynamic_feature(const String &p_feature) override;
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;

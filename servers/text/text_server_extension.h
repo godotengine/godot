@@ -346,9 +346,9 @@ public:
 	GDVIRTUAL2(_font_set_opentype_feature_overrides, RID, const Dictionary &);
 	GDVIRTUAL1RC(Dictionary, _font_get_opentype_feature_overrides, RID);
 
-	virtual Dictionary font_supported_feature_list(const RID &p_font_rid) const override;
+	virtual Dictionary font_supported_feature_list_compiled(const RID &p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(const RID &p_font_rid) const override;
-	GDVIRTUAL1RC(Dictionary, _font_supported_feature_list, RID);
+	GDVIRTUAL1RC(Dictionary, _font_supported_feature_list_compiled, RID);
 	GDVIRTUAL1RC(Dictionary, _font_supported_variation_list, RID);
 
 	virtual double font_get_global_oversampling() const override;

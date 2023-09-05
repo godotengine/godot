@@ -3685,7 +3685,7 @@ Dictionary TextServerAdvanced::_font_get_opentype_feature_overrides(const RID &p
 	return fd->feature_overrides;
 }
 
-Dictionary TextServerAdvanced::_font_supported_feature_list(const RID &p_font_rid) const {
+Dictionary TextServerAdvanced::_font_supported_feature_list_compiled(const RID &p_font_rid) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND_V(!fd, Dictionary());
 

@@ -370,129 +370,142 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 	has_server_feature_callback = p_callback;
 }
 
-bool OS::has_feature(const String &p_feature) {
-	// Feature tags are always lowercase for consistency.
-	if (p_feature == get_identifier()) {
-		return true;
+void OS::register_compiled_features() {
+	//Register all features
+	int index = 0;
+	for (const String &feature : FEATURES) {
+		feature_list_compiled[feature] = index;
+		feature_compiled |= 0 << index;
+		index++;
 	}
 
-	if (p_feature == "movie") {
-		return _writing_movie;
-	}
+	register_compile_time_feature(get_identifier()); // Current Operating System.
 
 #ifdef DEBUG_ENABLED
-	if (p_feature == "debug") {
-		return true;
-	}
+	register_compile_time_feature(Feature::DEBUG);
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
-	if (p_feature == "editor") {
-		return true;
-	}
+	register_compile_time_feature(Feature::EDITOR);
 #else
-	if (p_feature == "template") {
-		return true;
-	}
+	register_compile_time_feature(Feature::TEMPLATE);
 #ifdef DEBUG_ENABLED
-	if (p_feature == "template_debug") {
-		return true;
-	}
+	register_compile_time_feature(Feature::TEMPLATE_DEBUG);
 #else
-	if (p_feature == "template_release" || p_feature == "release") {
-		return true;
-	}
+	register_compile_time_feature(Feature::TEMPLATE_RELEASE);
+	register_compile_time_feature(Feature::RELEASE);
 #endif // DEBUG_ENABLED
 #endif // TOOLS_ENABLED
 
 #ifdef REAL_T_IS_DOUBLE
-	if (p_feature == "double") {
-		return true;
-	}
+	register_compile_time_feature(Feature::DOUBLE);
 #else
-	if (p_feature == "single") {
-		return true;
-	}
+	register_compile_time_feature(Feature::SINGLE);
 #endif // REAL_T_IS_DOUBLE
 
-	if (sizeof(void *) == 8 && p_feature == "64") {
-		return true;
+	if (sizeof(void *) == 8) {
+		register_compile_time_feature(Feature::_64);
 	}
-	if (sizeof(void *) == 4 && p_feature == "32") {
-		return true;
+	if (sizeof(void *) == 4) {
+		register_compile_time_feature(Feature::_32);
 	}
+
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
-	if (p_feature == "x86_64") {
-		return true;
-	}
+	register_compile_time_feature(Feature::X86_64);
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
-	if (p_feature == "x86_32") {
-		return true;
-	}
+	feature_compiled |= feature_list_compiled[FEATURES[Feature::X86_32]];
 #endif
-	if (p_feature == "x86") {
-		return true;
-	}
+	register_compile_time_feature(Feature::X86);
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 #if defined(__aarch64__) || defined(_M_ARM64)
-	if (p_feature == "arm64") {
-		return true;
-	}
+	register_compile_time_feature(Feature::ARM64);
 #elif defined(__arm__) || defined(_M_ARM)
-	if (p_feature == "arm32") {
-		return true;
-	}
+	register_compile_time_feature(Feature::ARM32);
 #endif
 #if defined(__ARM_ARCH_7A__)
-	if (p_feature == "armv7a" || p_feature == "armv7") {
-		return true;
-	}
+	register_compile_time_feature(Feature::ARMV7A);
+	register_compile_time_feature(Feature::ARMV7);
 #endif
 #if defined(__ARM_ARCH_7S__)
-	if (p_feature == "armv7s" || p_feature == "armv7") {
-		return true;
-	}
+	register_compile_time_feature(Feature::ARMV7);
+	register_compile_time_feature(Feature::ARMV7S);
 #endif
-	if (p_feature == "arm") {
-		return true;
-	}
+	register_compile_time_feature(Feature::ARM);
 #elif defined(__riscv)
 #if __riscv_xlen == 8
-	if (p_feature == "rv64") {
-		return true;
-	}
+	register_compile_time_feature(Feature::RV64);
 #endif
-	if (p_feature == "riscv") {
-		return true;
-	}
+	register_compile_time_feature(Feature::RISCV);
 #elif defined(__powerpc__)
+	register_compile_time_feature(Feature::PPC);
 #if defined(__powerpc64__)
-	if (p_feature == "ppc64") {
-		return true;
-	}
+	register_compile_time_feature(Feature::PPC64);
 #endif
-	if (p_feature == "ppc") {
-		return true;
-	}
+#if defined(__powerpc32__)
+	register_compile_time_feature(Feature::PPC32);
+#endif
 #elif defined(__wasm__)
 #if defined(__wasm64__)
-	if (p_feature == "wasm64") {
-		return true;
-	}
+	register_compile_time_feature(Feature::WASM64);
 #elif defined(__wasm32__)
-	if (p_feature == "wasm32") {
-		return true;
-	}
+	register_compile_time_feature(Feature::WASM32);
 #endif
-	if (p_feature == "wasm") {
-		return true;
-	}
+	register_compile_time_feature(Feature::WASM);
 #endif
 
-	if (_check_internal_feature_support(p_feature)) {
-		return true;
+	_register_compiled_feature();
+}
+
+void OS::register_compile_time_feature(Feature feature) {
+	ERR_FAIL_COND_MSG(feature >= Feature::FEATURE_MAX, "Invalid Compiled feature.");
+	feature_compiled |= 1 << feature_list_compiled[FEATURES[feature]];
+}
+
+void OS::register_compile_time_feature(const String &p_feature) {
+	bool has_feat = false;
+	for (int i = 0; i < FEATURES->size(); i++) {
+		if (FEATURES[i] == p_feature)
+			has_feat = true;
 	}
+	ERR_FAIL_COND_MSG(has_feat, "Non existent feature: " + p_feature);
+
+	feature_compiled |= 1 << feature_list_compiled[p_feature];
+}
+
+bool OS::has_feature(const String &p_feature) {
+	// Populate the features; (called only once)
+
+	if (feature_list_compiled.size() == 0) {
+		register_compiled_features();
+	}
+
+	if (feature_list_dynamic.size() == 0) {
+		int index = 0;
+		for (const String &feature : FEATURES_DYNAMIC) {
+			feature_list_dynamic[feature] = index;
+			feature_dynamic |= 0 << index;
+			index++;
+		}
+	}
+
+	// ==========
+
+	// Check for "compiled" features;
+	if (feature_list_compiled.has(p_feature)) {
+		return feature_compiled & (1 << feature_list_compiled[p_feature]);
+	}
+
+	// Check for "dynamic" features;
+	if (feature_list_dynamic.has(p_feature)) {
+		if (p_feature == FEATURES_DYNAMIC[FeatureDynamic::MOVIE]) {
+			return true;
+		}
+
+		return _check_dynamic_feature(p_feature);
+	}
+
+	// Check for "custom" features.
 
 	if (has_server_feature_callback && has_server_feature_callback(p_feature)) {
 		return true;
@@ -648,6 +661,64 @@ void OS::benchmark_dump() {
 	}
 #endif
 }
+
+const String OS::FEATURES[OS::Feature::FEATURE_MAX] = {
+	"android",
+	"system_fonts",
+	"linux",
+	"macos",
+	"ios",
+	"uwp",
+	"windows",
+	"linuxbsd",
+	"mobile"
+	"debug",
+	"editor",
+	"template",
+	"template_debug",
+	"template_release",
+	"release",
+	"double",
+	"single",
+	"64",
+	"32",
+	"x86_64",
+	"x86_32",
+	"x86",
+	"arm",
+	"arm64",
+	"arm64-v8a",
+	"armeabi"
+	"armeabi-v7a",
+	"arm32",
+	"armv7a",
+	"armv7",
+	"armv7s",
+	"rv64",
+	"riscv",
+	"ppc64",
+	"ppc32",
+	"ppc",
+	"wasm64",
+	"wasm32",
+	"wasm",
+	"bsd",
+	"pc",
+	"web",
+	"web_android",
+	"web_ios",
+	"web_linuxbsd",
+	"web_macos",
+	"web_windows"
+	"etc",
+	"etc2",
+	"s3tc"
+};
+
+const String OS::FEATURES_DYNAMIC[OS::FeatureDynamic::FEATURE_DYNAMIC_MAX] = {
+	"movie",
+	"system_fonts"
+};
 
 OS::OS() {
 	singleton = this;

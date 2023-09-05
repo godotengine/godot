@@ -819,6 +819,7 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		base = _find_node_for_script(base, base, script);
 	}
 	String hint;
+
 	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
 
 	if (err == OK) {
@@ -1236,6 +1237,18 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 			emit_signal(SNAME("go_to_help"), "class_method:" + base_class_split[1] + ":" + method);
 		}
 	}
+}
+
+void ScriptTextEditor::_list_features() {
+	features_menu->get_popup()->clear();
+
+	for (const String &feature : OS::FEATURES) {
+		features_menu->get_popup()->add_check_item(feature);
+	}
+}
+
+void ScriptTextEditor::_features_update(int p_id) {
+	print_line("Selected feature: " + features_menu->get_popup()->get_item_text(p_id));
 }
 
 void ScriptTextEditor::_edit_option(int p_op) {
@@ -2242,6 +2255,13 @@ void ScriptTextEditor::_enable_code_editor() {
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_breakpoint_item_pressed));
 
 	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+
+	edit_hb->add_child(features_menu);
+	features_menu->get_popup()->set_hide_on_checkable_item_selection(false);
+	features_menu->get_popup()->set_hide_on_item_selection(false);
+
+	features_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_list_features));
+	features_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_features_update));
 }
 
 ScriptTextEditor::ScriptTextEditor() {
@@ -2326,6 +2346,11 @@ ScriptTextEditor::ScriptTextEditor() {
 	breakpoints_menu = memnew(PopupMenu);
 	breakpoints_menu->set_name("Breakpoints");
 
+	features_menu = memnew(MenuButton);
+	features_menu->set_text(TTR("Features"));
+	features_menu->set_switch_on_hover(true);
+	features_menu->set_shortcut_context(this);
+
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
 	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
@@ -2347,6 +2372,7 @@ ScriptTextEditor::~ScriptTextEditor() {
 		memdelete(goto_menu);
 		memdelete(bookmarks_menu);
 		memdelete(breakpoints_menu);
+		memdelete(features_menu);
 		memdelete(connection_info_dialog);
 	}
 }

@@ -163,7 +163,7 @@ public:
 	virtual bool is_language_supported(const String &p_language) const;
 	virtual bool is_script_supported(const String &p_script) const;
 
-	virtual Dictionary get_supported_feature_list() const;
+	virtual Dictionary get_supported_feature_list_compiled() const;
 	virtual Dictionary get_supported_variation_list() const;
 	virtual int64_t get_face_count() const;
 

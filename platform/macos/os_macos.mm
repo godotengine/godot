@@ -682,17 +682,6 @@ String OS_MacOS::get_unique_id() const {
 	return serial_number;
 }
 
-bool OS_MacOS::_check_internal_feature_support(const String &p_feature) {
-	if (p_feature == "system_fonts") {
-		return true;
-	}
-	if (p_feature == "pc") {
-		return true;
-	}
-
-	return false;
-}
-
 void OS_MacOS::disable_crash_handler() {
 	crash_handler.disable();
 }
@@ -772,6 +761,16 @@ void OS_MacOS::run() {
 	}
 
 	main_loop->finalize();
+}
+
+void OS_MacOS::_register_compiled_feature() {
+	// I'm using mobile system fonts but string is still "system_fonts" when coding.
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::MOBILE_SYSTEM_FONTS);
+	OS::get_singleton()->register_compile_time_feature(OS::Feature::PC);
+}
+
+bool OS_MacOS::_check_dynamic_feature(const String &p_feature) {
+	return false;
 }
 
 OS_MacOS::OS_MacOS() {

@@ -32,6 +32,7 @@
 #define GDSCRIPT_PARSER_H
 
 #include "gdscript_cache.h"
+#include "gdscript_preprocessor.h"
 #include "gdscript_tokenizer.h"
 
 #ifdef DEBUG_ENABLED
@@ -1315,6 +1316,7 @@ private:
 	HashSet<int> unsafe_lines;
 #endif
 
+	GDScriptPreprocessor preprocessor;
 	GDScriptTokenizer tokenizer;
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
@@ -1407,6 +1409,8 @@ private:
 	}
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
+	void push_error(const String &p_message, int line, int column);
+
 #ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
 	template <typename... Symbols>
