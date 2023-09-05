@@ -549,6 +549,9 @@
 		<member name="debug/gdscript/warnings/unsafe_void_return" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when returning a call from a [code]void[/code] function when such call cannot be guaranteed to be also [code]void[/code].
 		</member>
+		<member name="debug/gdscript/warnings/untyped_declaration" type="int" setter="" getter="" default="0">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable or parameter has no static type, or if a function has no static return type.
+		</member>
 		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local constant is never used.
 		</member>
