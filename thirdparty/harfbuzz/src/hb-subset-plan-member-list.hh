@@ -105,6 +105,8 @@ HB_SUBSET_PLAN_MEMBER (hb_vector_t<int>, normalized_coords)
 
 //user specified axes range map
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, Triple>), user_axes_location)
+//axis->TripleDistances map (distances in the pre-normalized space)
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, TripleDistances>), axes_triple_distances)
 
 //retained old axis index -> new axis index mapping in fvar axis array
 HB_SUBSET_PLAN_MEMBER (hb_map_t, axes_index_map)

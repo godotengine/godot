@@ -773,7 +773,7 @@ struct subr_subsetter_t
 	}
       }
 
-      /* Doing this here one by one instead of compacting all at the en
+      /* Doing this here one by one instead of compacting all at the end
        * has massive peak-memory saving.
        *
        * The compacting both saves memory and makes further operations
