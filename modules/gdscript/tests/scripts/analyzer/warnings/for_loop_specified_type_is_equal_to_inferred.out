@@ -1,5 +1,0 @@
-GDTEST_OK
->> WARNING
->> Line: 3
->> REDUNDANT_FOR_VARIABLE_TYPE
->> The for loop iterator "node" already has inferred type "Node", the specified type is redundant.

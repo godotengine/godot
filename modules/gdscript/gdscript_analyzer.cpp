@@ -2142,15 +2142,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 					}
 				} else if (!is_type_compatible(specified_type, variable_type)) {
 					p_for->use_conversion_assign = true;
-#ifdef DEBUG_ENABLED
-				} else {
-					parser->push_warning(p_for->datatype_specifier, GDScriptWarning::REDUNDANT_FOR_VARIABLE_TYPE, p_for->variable->name, variable_type.to_string(), specified_type.to_string());
-#endif
 				}
-#ifdef DEBUG_ENABLED
-			} else if (variable_type.is_hard_type()) {
-				parser->push_warning(p_for->datatype_specifier, GDScriptWarning::REDUNDANT_FOR_VARIABLE_TYPE, p_for->variable->name, variable_type.to_string(), specified_type.to_string());
-#endif
 			}
 			p_for->variable->set_datatype(specified_type);
 		} else {
