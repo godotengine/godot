@@ -623,7 +623,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (get_caret_column(caret) > 0) {
+					if (get_caret_column(caret) > 0 && get_caret_column(caret) <= text[get_caret_line(caret)].length()) {
 						char32_t c = text[get_caret_line(caret)][get_caret_column(caret) - 1];
 						char32_t closec = 0;
 
