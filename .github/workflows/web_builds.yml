@@ -7,7 +7,7 @@ env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no
-  EM_VERSION: 3.1.18
+  EM_VERSION: 3.1.45
   EM_CACHE_FOLDER: "emsdk-cache"
 
 concurrency:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   web-template:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     name: Template (target=template_release)
 
     steps:
