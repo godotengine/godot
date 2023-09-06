@@ -482,6 +482,10 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		}
 	}
 
+	if (CanvasItemEditor::get_singleton()->get_theme_preview() == CanvasItemEditor::THEME_PREVIEW_EDITOR) {
+		update_preview_themes(CanvasItemEditor::THEME_PREVIEW_EDITOR);
+	}
+
 	gui_base->add_theme_style_override("panel", theme->get_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
 	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, theme->get_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
 	main_vbox->add_theme_constant_override("separation", theme->get_constant(SNAME("top_bar_separation"), EditorStringName(Editor)));
@@ -531,6 +535,36 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		} else if (theme->has_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
 			tb->set_icon(theme->get_icon(p_editor->get_name(), EditorStringName(EditorIcons)));
 		}
+	}
+}
+
+void EditorNode::update_preview_themes(int p_mode) {
+	if (!scene_root->is_inside_tree()) {
+		return; // Too early.
+	}
+
+	List<Ref<Theme>> preview_themes;
+
+	switch (p_mode) {
+		case CanvasItemEditor::THEME_PREVIEW_PROJECT:
+			preview_themes.push_back(ThemeDB::get_singleton()->get_project_theme());
+			break;
+
+		case CanvasItemEditor::THEME_PREVIEW_EDITOR:
+			preview_themes.push_back(get_editor_theme());
+			break;
+
+		default:
+			break;
+	}
+
+	preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
+
+	ThemeContext *preview_context = ThemeDB::get_singleton()->get_theme_context(scene_root);
+	if (preview_context) {
+		preview_context->set_themes(preview_themes);
+	} else {
+		ThemeDB::get_singleton()->create_theme_context(scene_root, preview_themes);
 	}
 }
 
@@ -668,11 +702,9 @@ void EditorNode::_notification(int p_what) {
 
 			_titlebar_resized();
 
-			// Set up a theme context for the 2D preview viewport using the project theme.
-			List<Ref<Theme>> preview_themes;
-			preview_themes.push_back(ThemeDB::get_singleton()->get_project_theme());
-			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
-			ThemeDB::get_singleton()->create_theme_context(scene_root, preview_themes);
+			// Set up a theme context for the 2D preview viewport using the stored preview theme.
+			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
+			update_preview_themes(theme_preview_mode);
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
