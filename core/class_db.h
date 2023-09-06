@@ -170,6 +170,7 @@ public:
 	template <class T>
 	static void register_class() {
 		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
@@ -182,6 +183,7 @@ public:
 	template <class T>
 	static void register_virtual_class() {
 		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
@@ -198,6 +200,7 @@ public:
 	template <class T>
 	static void register_custom_instance_class() {
 		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
