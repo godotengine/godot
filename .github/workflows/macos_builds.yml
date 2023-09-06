@@ -1,5 +1,6 @@
 name: 🍎 macOS Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
@@ -31,7 +32,7 @@ jobs:
             tools: false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache

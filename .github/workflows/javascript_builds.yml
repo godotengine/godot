@@ -1,5 +1,6 @@
 name: 🌐 JavaScript Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
@@ -19,7 +20,7 @@ jobs:
     name: Template (target=release, tools=no)
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Emscripten latest
         uses: mymindstorm/setup-emsdk@v12
