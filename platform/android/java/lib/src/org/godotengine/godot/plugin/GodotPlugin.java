@@ -61,12 +61,15 @@ import javax.microedition.khronos.opengles.GL10;
  * <p>
  * A Godot Android plugin is an Android library with the following requirements:
  * <p>
- * - The library must have a 'compileOnly' dependency on the Godot Android library: `compileOnly "org.godotengine:godot:<godotLibVersion>"`
+ * - The plugin must have a dependency on the Godot Android library: `implementation "org.godotengine:godot:<godotLibVersion>"`
  * <p>
- * - The library must include a <meta-data> tag in its Android manifest with the following format:
+ * - The plugin must include a <meta-data> tag in its Android manifest with the following format:
  * <meta-data android:name="org.godotengine.plugin.v2.[PluginName]" android:value="[plugin.init.ClassFullName]" />
+ * <p>
  * Where:
+ * <p>
  * - 'PluginName' is the name of the plugin.
+ * <p>
  * - 'plugin.init.ClassFullName' is the full name (package + class name) of the plugin init class
  * extending {@link GodotPlugin}.
  * <p>
@@ -83,6 +86,10 @@ public abstract class GodotPlugin {
 	private final Godot godot;
 	private final ConcurrentHashMap<String, SignalInfo> registeredSignals = new ConcurrentHashMap<>();
 
+	/**
+	 * Base constructor passing a {@link Godot} instance through which the plugin can access Godot's
+	 * APIs and lifecycle events.
+	 */
 	public GodotPlugin(Godot godot) {
 		this.godot = godot;
 	}
@@ -109,11 +116,11 @@ public abstract class GodotPlugin {
 	 */
 	public final void onRegisterPluginWithGodotNative() {
 		registeredSignals.putAll(
-				registerPluginWithGodotNative(this, getPluginName(), getPluginSignals()));
+				registerPluginWithGodotNative(this, getPluginName(), getPluginMethods(), getPluginSignals()));
 	}
 
 	private static Map<String, SignalInfo> registerPluginWithGodotNative(Object pluginObject,
-			String pluginName, Set<SignalInfo> pluginSignals) {
+			String pluginName, List<String> pluginMethods, Set<SignalInfo> pluginSignals) {
 		nativeRegisterSingleton(pluginName, pluginObject);
 
 		Set<Method> filteredMethods = new HashSet<>();
@@ -124,6 +131,14 @@ public abstract class GodotPlugin {
 			// Check if the method is annotated with {@link UsedByGodot}.
 			if (method.getAnnotation(UsedByGodot.class) != null) {
 				filteredMethods.add(method);
+			} else {
+				// For backward compatibility, process the methods from the given <pluginMethods> argument.
+				for (String methodName : pluginMethods) {
+					if (methodName.equals(method.getName())) {
+						filteredMethods.add(method);
+						break;
+					}
+				}
 			}
 		}
 
@@ -259,6 +274,17 @@ public abstract class GodotPlugin {
 	 */
 	@NonNull
 	public abstract String getPluginName();
+
+	/**
+	 * Returns the list of methods to be exposed to Godot.
+	 *
+	 * @deprecated Use the {@link UsedByGodot} annotation instead.
+	 */
+	@NonNull
+	@Deprecated
+	public List<String> getPluginMethods() {
+		return Collections.emptyList();
+	}
 
 	/**
 	 * Returns the list of signals to be exposed to Godot.
