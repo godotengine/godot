@@ -23,7 +23,7 @@
 			<param index="0" name="point" type="Vector2" />
 			<description>
 				Returns the angle between the node and the [param point] in radians.
-				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/node2d_get_angle_to.png]Illustration of the returned angle.[/url]
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/4.1/img/node2d_get_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
 		<method name="get_relative_transform_to_parent" qualifiers="const">
