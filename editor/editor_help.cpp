@@ -642,7 +642,7 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods)
 	class_desc->add_newline();
 }
 
-void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, const String &p_method_type) {
+void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type) {
 	String link_color_text = theme_cache.title_color.to_html(false);
 
 	class_desc->add_newline();
@@ -700,11 +700,24 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
+
+				String message;
 				if (p_classdoc.is_script_doc) {
-					class_desc->append_text(vformat(TTR("There is currently no description for this %s."), p_method_type));
+					static const char *messages_by_type[METHOD_TYPE_MAX] = {
+						TTRC("There is currently no description for this method."),
+						TTRC("There is currently no description for this constructor."),
+						TTRC("There is currently no description for this operator."),
+					};
+					message = TTRGET(messages_by_type[p_method_type]);
 				} else {
-					class_desc->append_text(vformat(TTR("There is currently no description for this %s. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), p_method_type).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					static const char *messages_by_type[METHOD_TYPE_MAX] = {
+						TTRC("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
+						TTRC("There is currently no description for this constructor. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
+						TTRC("There is currently no description for this operator. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
+					};
+					message = TTRGET(messages_by_type[p_method_type]).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
 				}
+				class_desc->append_text(message);
 				class_desc->pop();
 			}
 
@@ -1843,7 +1856,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Constructor Descriptions"));
 		_pop_title_font();
 
-		_update_method_descriptions(cd, cd.constructors, "constructor");
+		_update_method_descriptions(cd, cd.constructors, METHOD_TYPE_CONSTRUCTOR);
 	}
 
 	// Method descriptions
@@ -1853,7 +1866,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Method Descriptions"));
 		_pop_title_font();
 
-		_update_method_descriptions(cd, methods, "method");
+		_update_method_descriptions(cd, methods, METHOD_TYPE_METHOD);
 	}
 
 	// Operator descriptions
@@ -1863,7 +1876,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Operator Descriptions"));
 		_pop_title_font();
 
-		_update_method_descriptions(cd, cd.operators, "operator");
+		_update_method_descriptions(cd, cd.operators, METHOD_TYPE_OPERATOR);
 	}
 
 	// Free the scroll.
