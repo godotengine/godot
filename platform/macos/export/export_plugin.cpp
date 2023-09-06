@@ -41,6 +41,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "scene/resources/image_texture.h"
 
@@ -2460,7 +2461,7 @@ EditorExportPlatformMacOS::EditorExportPlatformMacOS() {
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
-			stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
+			stop_icon = theme->get_icon(SNAME("Stop"), EditorStringName(EditorIcons));
 		} else {
 			stop_icon.instantiate();
 		}

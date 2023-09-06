@@ -38,6 +38,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
@@ -600,7 +601,7 @@ void EditorBuildProfileManager::_fill_classes_from(TreeItem *p_parent, const Str
 
 	bool disabled = edited->is_class_disabled(p_class);
 	if (disabled) {
-		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	}
 
 	class_item->set_text(0, text);

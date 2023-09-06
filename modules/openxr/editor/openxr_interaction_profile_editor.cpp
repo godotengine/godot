@@ -30,6 +30,7 @@
 
 #include "openxr_interaction_profile_editor.h"
 
+#include "editor/editor_string_names.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -220,7 +221,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 	path_hb->add_child(type_label);
 
 	Button *path_add = memnew(Button);
-	path_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+	path_add->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 	path_add->set_flat(true);
 	path_add->connect("pressed", callable_mp(this, &OpenXRInteractionProfileEditor::select_action_for).bind(String(p_io_path->openxr_path)));
 	path_hb->add_child(path_add);
@@ -248,7 +249,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 
 				Button *action_rem = memnew(Button);
 				action_rem->set_flat(true);
-				action_rem->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+				action_rem->set_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 				action_rem->connect("pressed", callable_mp((OpenXRInteractionProfileEditor *)this, &OpenXRInteractionProfileEditor::_on_remove_pressed).bind(action->get_name_with_set(), String(p_io_path->openxr_path)));
 				action_hb->add_child(action_rem);
 			}

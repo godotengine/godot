@@ -2129,6 +2129,12 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_the
 	return constant;
 }
 
+#ifdef TOOLS_ENABLED
+Ref<Texture2D> Window::get_editor_theme_icon(const StringName &p_name) const {
+	return get_theme_icon(p_name, SNAME("EditorIcons"));
+}
+#endif
+
 bool Window::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!initialized) {

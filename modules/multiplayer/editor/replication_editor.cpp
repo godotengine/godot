@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
@@ -359,8 +360,8 @@ void ReplicationEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
-			add_pick_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			pin->set_icon(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")));
+			add_pick_button->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+			pin->set_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
 		} break;
 	}
 }
@@ -524,10 +525,10 @@ void ReplicationEditor::edit(MultiplayerSynchronizer *p_sync) {
 }
 
 Ref<Texture2D> ReplicationEditor::_get_class_icon(const Node *p_node) {
-	if (!p_node || !has_theme_icon(p_node->get_class(), "EditorIcons")) {
-		return get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
+	if (!p_node || !has_theme_icon(p_node->get_class(), EditorStringName(EditorIcons))) {
+		return get_theme_icon(SNAME("ImportFail"), EditorStringName(EditorIcons));
 	}
-	return get_theme_icon(p_node->get_class(), "EditorIcons");
+	return get_theme_icon(p_node->get_class(), EditorStringName(EditorIcons));
 }
 
 static bool can_sync(const Variant &p_var) {
@@ -571,7 +572,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 		bool valid = false;
 		Variant value = node->get(subpath, &valid);
 		if (valid && !can_sync(value)) {
-			item->set_icon(0, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+			item->set_icon(0, get_theme_icon(SNAME("StatusWarning"), EditorStringName(EditorIcons)));
 			item->set_tooltip_text(0, TTR("Property of this type not supported."));
 		} else {
 			item->set_icon(0, icon);
@@ -579,7 +580,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	} else {
 		item->set_icon(0, icon);
 	}
-	item->add_button(3, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+	item->add_button(3, get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 	item->set_text_alignment(1, HORIZONTAL_ALIGNMENT_CENTER);
 	item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
 	item->set_checked(1, p_spawn);

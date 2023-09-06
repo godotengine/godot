@@ -132,7 +132,7 @@ void EditorPropertyRootMotion::_node_assign() {
 		if (skeleton) {
 			HashMap<int, TreeItem *> items;
 			items.insert(-1, ti);
-			Ref<Texture> bone_icon = get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons"));
+			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("BoneAttachment3D"));
 			Vector<int> bones_to_process = skeleton->get_parentless_bones();
 			while (bones_to_process.size() > 0) {
 				int current_bone_idx = bones_to_process[0];
@@ -190,7 +190,7 @@ void EditorPropertyRootMotion::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			Ref<Texture2D> t = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
+			Ref<Texture2D> t = get_editor_theme_icon(SNAME("Clear"));
 			clear->set_icon(t);
 		} break;
 	}

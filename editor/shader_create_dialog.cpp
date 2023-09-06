@@ -74,22 +74,22 @@ void ShaderCreateDialog::_notification(int p_what) {
 }
 
 void ShaderCreateDialog::_update_theme() {
-	Ref<Texture2D> shader_icon = gc->get_theme_icon(SNAME("Shader"), SNAME("EditorIcons"));
+	Ref<Texture2D> shader_icon = gc->get_editor_theme_icon(SNAME("Shader"));
 	if (shader_icon.is_valid()) {
 		type_menu->set_item_icon(0, shader_icon);
 	}
 
-	Ref<Texture2D> visual_shader_icon = gc->get_theme_icon(SNAME("VisualShader"), SNAME("EditorIcons"));
+	Ref<Texture2D> visual_shader_icon = gc->get_editor_theme_icon(SNAME("VisualShader"));
 	if (visual_shader_icon.is_valid()) {
 		type_menu->set_item_icon(1, visual_shader_icon);
 	}
 
-	Ref<Texture2D> include_icon = gc->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+	Ref<Texture2D> include_icon = gc->get_editor_theme_icon(SNAME("TextFile"));
 	if (include_icon.is_valid()) {
 		type_menu->set_item_icon(2, include_icon);
 	}
 
-	path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+	path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 }
 
 void ShaderCreateDialog::_update_language_info() {

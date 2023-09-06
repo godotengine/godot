@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
@@ -69,7 +70,7 @@ void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_n
 
 			node_item->set_text(1, connection.signal.get_name());
 			Control *p = Object::cast_to<Control>(get_parent());
-			node_item->set_icon(1, p->get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
+			node_item->set_icon(1, p->get_editor_theme_icon(SNAME("Slot")));
 			node_item->set_selectable(1, false);
 			node_item->set_editable(1, false);
 
@@ -457,10 +458,10 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 			icon_name += "Internal";
 		}
 
-		if (get_parent_control()->has_theme_icon(icon_name, SNAME("EditorIcons"))) {
-			return get_parent_control()->get_theme_icon(icon_name, SNAME("EditorIcons"));
-		} else if (get_parent_control()->has_theme_icon(script->get_class(), SNAME("EditorIcons"))) {
-			return get_parent_control()->get_theme_icon(script->get_class(), SNAME("EditorIcons"));
+		if (get_parent_control()->has_theme_icon(icon_name, EditorStringName(EditorIcons))) {
+			return get_parent_control()->get_editor_theme_icon(icon_name);
+		} else if (get_parent_control()->has_theme_icon(script->get_class(), EditorStringName(EditorIcons))) {
+			return get_parent_control()->get_editor_theme_icon(script->get_class());
 		}
 	}
 
@@ -532,7 +533,7 @@ void ScriptTextEditor::_update_warnings() {
 				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.callable.get_object()));
 
 				warnings_panel->push_cell();
-				warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+				warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 				warnings_panel->add_text(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."), connection.callable.get_method(), connection.signal.get_name(), source_path, target_path));
 				warnings_panel->pop(); // Color.
 				warnings_panel->pop(); // Cell.
@@ -558,7 +559,7 @@ void ScriptTextEditor::_update_warnings() {
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(ignore_meta);
 		warnings_panel->push_color(
-				warnings_panel->get_theme_color(SNAME("accent_color"), SNAME("Editor")).lerp(warnings_panel->get_theme_color(SNAME("mono_color"), SNAME("Editor")), 0.5f));
+				warnings_panel->get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).lerp(warnings_panel->get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.5f));
 		warnings_panel->add_text(TTR("[Ignore]"));
 		warnings_panel->pop(); // Color.
 		warnings_panel->pop(); // Meta ignore.
@@ -566,7 +567,7 @@ void ScriptTextEditor::_update_warnings() {
 
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(w.start_line - 1);
-		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		warnings_panel->add_text(TTR("Line") + " " + itos(w.start_line));
 		warnings_panel->add_text(" (" + w.string_code + "):");
 		warnings_panel->pop(); // Color.
@@ -593,7 +594,7 @@ void ScriptTextEditor::_update_errors() {
 
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
-		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
 		errors_panel->pop(); // Color.
 		errors_panel->pop(); // Meta goto.
@@ -627,7 +628,7 @@ void ScriptTextEditor::_update_errors() {
 
 			errors_panel->push_cell();
 			errors_panel->push_meta(click_meta);
-			errors_panel->push_color(errors_panel->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			errors_panel->push_color(errors_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
 			errors_panel->pop(); // Color.
 			errors_panel->pop(); // Meta goto.
@@ -1092,7 +1093,7 @@ void ScriptTextEditor::_update_connected_methods() {
 						line_meta["method"] = method;
 						line = functions[j].get_slice(":", 1).to_int() - 1;
 						text_edit->set_line_gutter_metadata(line, connection_gutter, line_meta);
-						text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
+						text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_editor_theme_icon(SNAME("Slot")));
 						text_edit->set_line_gutter_clickable(line, connection_gutter, true);
 						methods_found.insert(method);
 						break;
@@ -1171,11 +1172,11 @@ void ScriptTextEditor::_update_connected_methods() {
 				line_meta["type"] = "inherits";
 				line_meta["method"] = name;
 				line_meta["base_class"] = found_base_class;
-				text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon(SNAME("MethodOverride"), SNAME("EditorIcons")));
+				text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_editor_theme_icon(SNAME("MethodOverride")));
 				text_edit->set_line_gutter_clickable(line, connection_gutter, true);
 			} else {
 				// If method is also connected to signal, then merge icons and keep the click behavior of the slot.
-				text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon(SNAME("MethodOverrideAndSlot"), SNAME("EditorIcons")));
+				text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_editor_theme_icon(SNAME("MethodOverrideAndSlot")));
 			}
 
 			methods_found.insert(name);
@@ -2111,16 +2112,16 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	editor_box->add_child(warnings_panel);
 	warnings_panel->add_theme_font_override(
-			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
+			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 	warnings_panel->add_theme_font_size_override(
-			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
+			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	warnings_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_warning_clicked));
 
 	editor_box->add_child(errors_panel);
 	errors_panel->add_theme_font_override(
-			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
+			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 	errors_panel->add_theme_font_size_override(
-			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
+			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
 
 	add_child(context_menu);

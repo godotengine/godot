@@ -36,6 +36,7 @@
 #include "core/templates/pair.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/font.h"
 
@@ -93,11 +94,11 @@ void FindReplaceBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
-			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
-			hide_button->set_texture_normal(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_texture_hover(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			hide_button->set_texture_pressed(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			find_prev->set_icon(get_editor_theme_icon(SNAME("MoveUp")));
+			find_next->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
+			hide_button->set_texture_normal(get_editor_theme_icon(SNAME("Close")));
+			hide_button->set_texture_hover(get_editor_theme_icon(SNAME("Close")));
+			hide_button->set_texture_pressed(get_editor_theme_icon(SNAME("Close")));
 			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
 		} break;
 
@@ -106,7 +107,7 @@ void FindReplaceBar::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
@@ -311,7 +312,7 @@ void FindReplaceBar::_replace_all() {
 	}
 
 	text_editor->set_v_scroll(vsval);
-	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
 	text_editor->call_deferred(SNAME("connect"), "text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
@@ -407,7 +408,7 @@ void FindReplaceBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 		if (results_count == 0) {
 			matches_label->set_text(TTR("No match"));
@@ -954,41 +955,41 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 	Ref<Texture2D> tex;
 	switch (p_option.kind) {
 		case ScriptLanguage::CODE_COMPLETION_KIND_CLASS: {
-			if (has_theme_icon(p_option.display, SNAME("EditorIcons"))) {
-				tex = get_theme_icon(p_option.display, SNAME("EditorIcons"));
+			if (has_theme_icon(p_option.display, EditorStringName(EditorIcons))) {
+				tex = get_editor_theme_icon(p_option.display);
 			} else {
-				tex = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+				tex = get_editor_theme_icon(SNAME("Object"));
 			}
 		} break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
-			tex = get_theme_icon(SNAME("Enum"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("Enum"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
-			tex = get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("File"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
-			tex = get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("NodePath"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
-			tex = get_theme_icon(SNAME("Variant"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("Variant"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
-			tex = get_theme_icon(SNAME("MemberConstant"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("MemberConstant"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
-			tex = get_theme_icon(SNAME("MemberProperty"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("MemberProperty"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
-			tex = get_theme_icon(SNAME("MemberSignal"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("MemberSignal"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
-			tex = get_theme_icon(SNAME("MemberMethod"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("MemberMethod"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
-			tex = get_theme_icon(SNAME("BoxMesh"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("BoxMesh"));
 			break;
 		default:
-			tex = get_theme_icon(SNAME("String"), SNAME("EditorIcons"));
+			tex = get_editor_theme_icon(SNAME("String"));
 			break;
 	}
 	return tex;
@@ -1679,12 +1680,12 @@ void CodeTextEditor::_update_text_editor_theme() {
 	emit_signal(SNAME("load_theme_settings"));
 
 	error->begin_bulk_theme_override();
-	error->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	error->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-	error->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	error->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
+	error->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
+	error->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
-	Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
-	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts"));
+	Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
+	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
 	error->add_theme_font_override("font", status_bar_font);
 	error->add_theme_font_size_override("font_size", status_bar_font_size);
 	int count = status_bar->get_child_count();
@@ -1802,18 +1803,18 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 }
 
 void CodeTextEditor::_update_status_bar_theme() {
-	error_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
-	error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-	error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+	error_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
+	error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+	error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
+	error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
 
-	warning_button->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
-	warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-	warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+	warning_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+	warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
+	warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
 
-	line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+	line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
+	line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
 }
 
 void CodeTextEditor::_notification(int p_what) {
@@ -1949,9 +1950,9 @@ void CodeTextEditor::show_toggle_scripts_button() {
 
 void CodeTextEditor::update_toggle_scripts_button() {
 	if (is_layout_rtl()) {
-		toggle_scripts_button->set_icon(get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Forward") : SNAME("Back"), SNAME("EditorIcons")));
+		toggle_scripts_button->set_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Forward") : SNAME("Back")));
 	} else {
-		toggle_scripts_button->set_icon(get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward"), SNAME("EditorIcons")));
+		toggle_scripts_button->set_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward")));
 	}
 	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
 }

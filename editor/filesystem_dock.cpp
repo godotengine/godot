@@ -44,6 +44,7 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_dir_dialog.h"
 #include "editor/gui/editor_scene_tabs.h"
 #include "editor/import/resource_importer_scene.h"
@@ -170,9 +171,9 @@ FileSystemDock *FileSystemDock::singleton = nullptr;
 Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_file_type) {
 	Ref<Texture2D> file_icon;
 	if (!p_is_valid) {
-		file_icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
+		file_icon = get_editor_theme_icon(SNAME("ImportFail"));
 	} else {
-		file_icon = (has_theme_icon(p_file_type, SNAME("EditorIcons"))) ? get_theme_icon(p_file_type, SNAME("EditorIcons")) : get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
+		file_icon = (has_theme_icon(p_file_type, EditorStringName(EditorIcons))) ? get_editor_theme_icon(p_file_type) : get_editor_theme_icon(SNAME("File"));
 	}
 	return file_icon;
 }
@@ -212,7 +213,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
-	subdirectory_item->set_icon(0, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+	subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
 	subdirectory_item->set_selectable(0, true);
 	subdirectory_item->set_metadata(0, lpath);
 	if (!p_select_in_favorites && (current_path == lpath || ((display_mode == DISPLAY_MODE_SPLIT) && current_path.get_base_dir() == lpath))) {
@@ -294,7 +295,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->set_as_cursor(0);
 			}
 			if (main_scene == file_metadata) {
-				file_item->set_custom_color(0, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
+				file_item->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 			}
 			Array udata;
 			udata.push_back(tree_update_id);
@@ -362,7 +363,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 
 	// Handles the favorites.
 	TreeItem *favorites_item = tree->create_item(root);
-	favorites_item->set_icon(0, get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
+	favorites_item->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
 	favorites_item->set_text(0, TTR("Favorites:"));
 	favorites_item->set_metadata(0, "Favorites");
 	favorites_item->set_collapsed(p_uncollapsed_paths.find("Favorites") < 0);
@@ -382,7 +383,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		EditorSettings::get_singleton()->set_favorites(favorite_paths);
 	}
 
-	Ref<Texture2D> folder_icon = get_theme_icon(SNAME("Folder"), SNAME("EditorIcons"));
+	Ref<Texture2D> folder_icon = get_editor_theme_icon(SNAME("Folder"));
 	const Color default_folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
 	for (int i = 0; i < favorite_paths.size(); i++) {
@@ -409,7 +410,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			if (dir) {
 				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_type(index));
 			} else {
-				icon = get_theme_icon(SNAME("File"), SNAME("EditorIcons"));
+				icon = get_editor_theme_icon(SNAME("File"));
 			}
 			color = Color(1, 1, 1);
 		}
@@ -498,28 +499,28 @@ void FileSystemDock::_notification(int p_what) {
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &FileSystemDock::_fs_changed));
 			EditorResourcePreview::get_singleton()->connect("preview_invalidated", callable_mp(this, &FileSystemDock::_preview_invalidated));
 
-			button_reload->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-			button_toggle_display_mode->set_icon(get_theme_icon(SNAME("Panels2"), SNAME("EditorIcons")));
+			button_reload->set_icon(get_editor_theme_icon(SNAME("Reload")));
+			button_toggle_display_mode->set_icon(get_editor_theme_icon(SNAME("Panels2")));
 			button_file_list_display_mode->connect("pressed", callable_mp(this, &FileSystemDock::_toggle_file_display));
 
 			files->connect("item_activated", callable_mp(this, &FileSystemDock::_file_list_activate_file));
 			button_hist_next->connect("pressed", callable_mp(this, &FileSystemDock::_fw_history));
 			button_hist_prev->connect("pressed", callable_mp(this, &FileSystemDock::_bw_history));
 
-			tree_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			tree_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			tree_search_box->set_clear_button_enabled(true);
-			tree_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
+			tree_button_sort->set_icon(get_editor_theme_icon(SNAME("Sort")));
 
-			file_list_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			file_list_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			file_list_search_box->set_clear_button_enabled(true);
-			file_list_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
+			file_list_button_sort->set_icon(get_editor_theme_icon(SNAME("Sort")));
 
 			if (is_layout_rtl()) {
-				button_hist_next->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
-				button_hist_prev->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				button_hist_next->set_icon(get_editor_theme_icon(SNAME("Back")));
+				button_hist_prev->set_icon(get_editor_theme_icon(SNAME("Forward")));
 			} else {
-				button_hist_next->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
-				button_hist_prev->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
+				button_hist_next->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				button_hist_prev->set_icon(get_editor_theme_icon(SNAME("Back")));
 			}
 			file_list_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_list_rmb_option));
 			tree_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
@@ -585,28 +586,28 @@ void FileSystemDock::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			// Update icons.
-			button_reload->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-			button_toggle_display_mode->set_icon(get_theme_icon(SNAME("Panels2"), SNAME("EditorIcons")));
+			button_reload->set_icon(get_editor_theme_icon(SNAME("Reload")));
+			button_toggle_display_mode->set_icon(get_editor_theme_icon(SNAME("Panels2")));
 			if (is_layout_rtl()) {
-				button_hist_next->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
-				button_hist_prev->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				button_hist_next->set_icon(get_editor_theme_icon(SNAME("Back")));
+				button_hist_prev->set_icon(get_editor_theme_icon(SNAME("Forward")));
 			} else {
-				button_hist_next->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
-				button_hist_prev->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
+				button_hist_next->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				button_hist_prev->set_icon(get_editor_theme_icon(SNAME("Back")));
 			}
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
-				button_file_list_display_mode->set_icon(get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
+				button_file_list_display_mode->set_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
 			} else {
-				button_file_list_display_mode->set_icon(get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
+				button_file_list_display_mode->set_icon(get_editor_theme_icon(SNAME("FileList")));
 			}
 
-			tree_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			tree_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			tree_search_box->set_clear_button_enabled(true);
-			tree_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
+			tree_button_sort->set_icon(get_editor_theme_icon(SNAME("Sort")));
 
-			file_list_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			file_list_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			file_list_search_box->set_clear_button_enabled(true);
-			file_list_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
+			file_list_button_sort->set_icon(get_editor_theme_icon(SNAME("Sort")));
 
 			// Update editor dark theme & always show folders states from editor settings, redraw if needed.
 			bool do_redraw = false;
@@ -775,11 +776,11 @@ void FileSystemDock::_toggle_file_display() {
 void FileSystemDock::_set_file_display(bool p_active) {
 	if (p_active) {
 		file_list_display_mode = FILE_LIST_DISPLAY_LIST;
-		button_file_list_display_mode->set_icon(get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
+		button_file_list_display_mode->set_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
 		button_file_list_display_mode->set_tooltip_text(TTR("View items as a grid of thumbnails."));
 	} else {
 		file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
-		button_file_list_display_mode->set_icon(get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
+		button_file_list_display_mode->set_icon(get_editor_theme_icon(SNAME("FileList")));
 		button_file_list_display_mode->set_tooltip_text(TTR("View items as a list."));
 	}
 
@@ -922,13 +923,13 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		files->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
 		if (thumbnail_size < 64) {
-			folder_thumbnail = get_theme_icon(SNAME("FolderMediumThumb"), SNAME("EditorIcons"));
-			file_thumbnail = get_theme_icon(SNAME("FileMediumThumb"), SNAME("EditorIcons"));
-			file_thumbnail_broken = get_theme_icon(SNAME("FileDeadMediumThumb"), SNAME("EditorIcons"));
+			folder_thumbnail = get_editor_theme_icon(SNAME("FolderMediumThumb"));
+			file_thumbnail = get_editor_theme_icon(SNAME("FileMediumThumb"));
+			file_thumbnail_broken = get_editor_theme_icon(SNAME("FileDeadMediumThumb"));
 		} else {
-			folder_thumbnail = get_theme_icon(SNAME("FolderBigThumb"), SNAME("EditorIcons"));
-			file_thumbnail = get_theme_icon(SNAME("FileBigThumb"), SNAME("EditorIcons"));
-			file_thumbnail_broken = get_theme_icon(SNAME("FileDeadBigThumb"), SNAME("EditorIcons"));
+			folder_thumbnail = get_editor_theme_icon(SNAME("FolderBigThumb"));
+			file_thumbnail = get_editor_theme_icon(SNAME("FileBigThumb"));
+			file_thumbnail_broken = get_editor_theme_icon(SNAME("FileDeadBigThumb"));
 		}
 	} else {
 		// No thumbnails.
@@ -1087,10 +1088,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 		// Select the icons.
 		if (!finfo->import_broken) {
-			type_icon = (has_theme_icon(ftype, SNAME("EditorIcons"))) ? get_theme_icon(ftype, SNAME("EditorIcons")) : get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+			type_icon = (has_theme_icon(ftype, EditorStringName(EditorIcons))) ? get_editor_theme_icon(ftype) : get_editor_theme_icon(SNAME("Object"));
 			big_icon = file_thumbnail;
 		} else {
-			type_icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
+			type_icon = get_editor_theme_icon(SNAME("ImportFail"));
 			big_icon = file_thumbnail_broken;
 			tooltip += "\n" + TTR("Status: Import of file failed. Please fix file and reimport manually.");
 		}
@@ -1110,7 +1111,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		}
 
 		if (fpath == main_scene) {
-			files->set_item_custom_fg_color(item_index, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
+			files->set_item_custom_fg_color(item_index, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 		}
 
 		// Generate the preview.
@@ -2844,18 +2845,18 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	if (all_files) {
 		if (all_files_scenes) {
 			if (filenames.size() == 1) {
-				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scene"), FILE_OPEN);
-				p_popup->add_icon_item(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), TTR("New Inherited Scene"), FILE_INHERIT);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scene"), FILE_OPEN);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("New Inherited Scene"), FILE_INHERIT);
 				if (GLOBAL_GET("application/run/main_scene") != filenames[0]) {
-					p_popup->add_icon_item(get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
+					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
 				}
 			} else {
-				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scenes"), FILE_OPEN);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scenes"), FILE_OPEN);
 			}
-			p_popup->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instantiate"), FILE_INSTANTIATE);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTR("Instantiate"), FILE_INSTANTIATE);
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
-			p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_OPEN);
 			p_popup->add_separator();
 		}
 
@@ -2873,22 +2874,22 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 		p_popup->add_child(new_menu);
 		p_popup->add_submenu_item(TTR("Create New"), "New", FILE_NEW);
-		p_popup->set_item_icon(p_popup->get_item_index(FILE_NEW), get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		p_popup->set_item_icon(p_popup->get_item_index(FILE_NEW), get_editor_theme_icon(SNAME("Add")));
 
-		new_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("Folder..."), FILE_NEW_FOLDER);
-		new_menu->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("Scene..."), FILE_NEW_SCENE);
-		new_menu->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("Script..."), FILE_NEW_SCRIPT);
-		new_menu->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("Resource..."), FILE_NEW_RESOURCE);
-		new_menu->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("TextFile..."), FILE_NEW_TEXTFILE);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("Folder..."), FILE_NEW_FOLDER);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTR("Scene..."), FILE_NEW_SCENE);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTR("Script..."), FILE_NEW_SCRIPT);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTR("Resource..."), FILE_NEW_RESOURCE);
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTR("TextFile..."), FILE_NEW_TEXTFILE);
 		p_popup->add_separator();
 	}
 
 	if (all_folders && foldernames.size() > 0) {
-		p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Expand Folder"), FILE_OPEN);
+		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Expand Folder"), FILE_OPEN);
 
 		if (foldernames.size() == 1) {
-			p_popup->add_icon_item(get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")), TTR("Expand Hierarchy"), FOLDER_EXPAND_ALL);
-			p_popup->add_icon_item(get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")), TTR("Collapse Hierarchy"), FOLDER_COLLAPSE_ALL);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTR("Expand Hierarchy"), FOLDER_EXPAND_ALL);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTR("Collapse Hierarchy"), FOLDER_COLLAPSE_ALL);
 		}
 
 		p_popup->add_separator();
@@ -2900,14 +2901,14 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 			p_popup->add_child(folder_colors_menu);
 			p_popup->add_submenu_item(TTR("Set Folder Color..."), "FolderColor");
-			p_popup->set_item_icon(-1, get_theme_icon(SNAME("CanvasItem"), SNAME("EditorIcons")));
+			p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("CanvasItem")));
 
-			folder_colors_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("Default (Reset)"));
+			folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("Default (Reset)"));
 			folder_colors_menu->set_item_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
 			folder_colors_menu->add_separator();
 
 			for (const KeyValue<String, Color> &E : folder_colors) {
-				folder_colors_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR(E.key.capitalize()));
+				folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR(E.key.capitalize()));
 
 				folder_colors_menu->set_item_icon_modulate(-1, editor_is_dark_theme ? E.value : E.value * 2);
 				folder_colors_menu->set_item_metadata(-1, E.key);
@@ -2916,29 +2917,29 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	}
 
 	if (p_paths.size() == 1) {
-		p_popup->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_COPY_PATH);
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_COPY_PATH);
 		if (ResourceLoader::get_resource_uid(p_paths[0]) != ResourceUID::INVALID_ID) {
-			p_popup->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/copy_uid"), FILE_COPY_UID);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("filesystem_dock/copy_uid"), FILE_COPY_UID);
 		}
 		if (p_paths[0] != "res://") {
-			p_popup->add_icon_shortcut(get_theme_icon(SNAME("Rename"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/rename"), FILE_RENAME);
-			p_popup->add_icon_shortcut(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/duplicate"), FILE_DUPLICATE);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("filesystem_dock/rename"), FILE_RENAME);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Duplicate")), ED_GET_SHORTCUT("filesystem_dock/duplicate"), FILE_DUPLICATE);
 		}
 	}
 
 	if (p_paths.size() > 1 || p_paths[0] != "res://") {
-		p_popup->add_icon_item(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")), TTR("Move/Duplicate To..."), FILE_MOVE);
-		p_popup->add_icon_shortcut(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/delete"), FILE_REMOVE);
+		p_popup->add_icon_item(get_editor_theme_icon(SNAME("MoveUp")), TTR("Move/Duplicate To..."), FILE_MOVE);
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("filesystem_dock/delete"), FILE_REMOVE);
 	}
 
 	p_popup->add_separator();
 
 	if (p_paths.size() >= 1) {
 		if (!all_favorites) {
-			p_popup->add_icon_item(get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")), TTR("Add to Favorites"), FILE_ADD_FAVORITE);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Favorites")), TTR("Add to Favorites"), FILE_ADD_FAVORITE);
 		}
 		if (!all_not_favorites) {
-			p_popup->add_icon_item(get_theme_icon(SNAME("NonFavorite"), SNAME("EditorIcons")), TTR("Remove from Favorites"), FILE_REMOVE_FAVORITE);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("NonFavorite")), TTR("Remove from Favorites"), FILE_REMOVE_FAVORITE);
 		}
 
 		{
@@ -2968,7 +2969,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			}
 
 			if (resource_valid) {
-				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Reimport"), FILE_REIMPORT);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Reimport"), FILE_REIMPORT);
 			}
 		}
 	}
@@ -2982,10 +2983,10 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		// Opening the system file manager is not supported on the Android and web editors.
 		const bool is_directory = fpath.ends_with("/");
 		const String item_text = is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager");
-		p_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), item_text);
 		if (!is_directory) {
-			p_popup->add_icon_shortcut(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_OPEN_EXTERNAL);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_OPEN_EXTERNAL);
 		}
 #endif
 
@@ -3022,15 +3023,15 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	current_path = "res://";
 	tree_popup->clear();
 	tree_popup->reset_size();
-	tree_popup->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("New Folder..."), FILE_NEW_FOLDER);
-	tree_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
-	tree_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
-	tree_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
-	tree_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("New Folder..."), FILE_NEW_FOLDER);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTR("New Scene..."), FILE_NEW_SCENE);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTR("New Script..."), FILE_NEW_SCRIPT);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTR("New Resource..."), FILE_NEW_RESOURCE);
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
-	tree_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 #endif
 
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
@@ -3086,13 +3087,13 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->clear();
 	file_list_popup->reset_size();
 
-	file_list_popup->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("New Folder..."), FILE_NEW_FOLDER);
-	file_list_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
-	file_list_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
-	file_list_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
-	file_list_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("New Folder..."), FILE_NEW_FOLDER);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTR("New Scene..."), FILE_NEW_SCENE);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTR("New Script..."), FILE_NEW_SCRIPT);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTR("New Resource..."), FILE_NEW_RESOURCE);
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	file_list_popup->add_separator();
-	file_list_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();

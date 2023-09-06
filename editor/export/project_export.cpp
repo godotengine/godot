@@ -37,6 +37,7 @@
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/resource_importer_texture_settings.h"
@@ -66,7 +67,7 @@ void ProjectExportTextureFormatError::_bind_methods() {
 void ProjectExportTextureFormatError::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			texture_format_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			texture_format_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -90,8 +91,8 @@ ProjectExportTextureFormatError::ProjectExportTextureFormatError() {
 }
 
 void ProjectExportDialog::_theme_changed() {
-	duplicate_preset->set_icon(presets->get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
-	delete_preset->set_icon(presets->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+	duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
+	delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 }
 
 void ProjectExportDialog::_notification(int p_what) {
@@ -103,8 +104,8 @@ void ProjectExportDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			duplicate_preset->set_icon(presets->get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
-			delete_preset->set_icon(presets->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
+			delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
 		} break;
@@ -812,7 +813,7 @@ void ProjectExportDialog::_setup_item_for_file_mode(TreeItem *p_item, EditorExpo
 		p_item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
 		p_item->set_editable(1, false);
 		p_item->set_selectable(1, false);
-		p_item->set_custom_color(1, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		p_item->set_custom_color(1, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	} else {
 		p_item->set_checked(0, true);
 		p_item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
@@ -1327,7 +1328,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_key->connect("text_changed", callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
 	script_key_error->set_text(String::utf8("•  ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
-	script_key_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	script_key_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hexadecimal):"), script_key);
 	sec_vb->add_child(script_key_error);
 	sections->add_child(sec_vb);
@@ -1412,12 +1413,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error = memnew(Label);
 	main_vb->add_child(export_error);
 	export_error->hide();
-	export_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	export_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 	export_warning = memnew(Label);
 	main_vb->add_child(export_warning);
 	export_warning->hide();
-	export_warning->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	export_warning->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 	export_templates_error = memnew(HBoxContainer);
 	main_vb->add_child(export_templates_error);
@@ -1425,7 +1426,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	Label *export_error2 = memnew(Label);
 	export_templates_error->add_child(export_error2);
-	export_error2->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	export_error2->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	export_error2->set_text(String::utf8("•  ") + TTR("Export templates for this platform are missing:") + " ");
 
 	result_dialog = memnew(AcceptDialog);

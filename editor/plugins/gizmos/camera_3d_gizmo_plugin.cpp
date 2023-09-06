@@ -41,7 +41,7 @@ Camera3DGizmoPlugin::Camera3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
 
 	create_material("camera_material", gizmo_color);
-	create_icon_material("camera_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoCamera3D", "EditorIcons"));
+	create_icon_material("camera_icon", Node3DEditor::get_singleton()->get_editor_theme_icon("GizmoCamera3D"));
 	create_handle_material("handles");
 }
 

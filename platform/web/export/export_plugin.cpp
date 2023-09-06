@@ -36,6 +36,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "scene/resources/image_texture.h"
@@ -683,7 +684,7 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
-			stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
+			stop_icon = theme->get_icon(SNAME("Stop"), EditorStringName(EditorIcons));
 		} else {
 			stop_icon.instantiate();
 		}

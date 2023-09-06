@@ -37,6 +37,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
@@ -89,12 +90,12 @@ Size2 EditorProperty::get_minimum_size() const {
 	}
 
 	if (keying) {
-		Ref<Texture2D> key = get_theme_icon(SNAME("Key"), SNAME("EditorIcons"));
+		Ref<Texture2D> key = get_editor_theme_icon(SNAME("Key"));
 		ms.width += key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 	}
 
 	if (deletable) {
-		Ref<Texture2D> key = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
+		Ref<Texture2D> key = get_editor_theme_icon(SNAME("Close"));
 		ms.width += key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 	}
 
@@ -180,9 +181,9 @@ void EditorProperty::_notification(int p_what) {
 					Ref<Texture2D> key;
 
 					if (use_keying_next()) {
-						key = get_theme_icon(SNAME("KeyNext"), SNAME("EditorIcons"));
+						key = get_editor_theme_icon(SNAME("KeyNext"));
 					} else {
-						key = get_theme_icon(SNAME("Key"), SNAME("EditorIcons"));
+						key = get_editor_theme_icon(SNAME("Key"));
 					}
 
 					rect.size.x -= key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
@@ -198,7 +199,7 @@ void EditorProperty::_notification(int p_what) {
 				if (deletable) {
 					Ref<Texture2D> close;
 
-					close = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
+					close = get_editor_theme_icon(SNAME("Close"));
 
 					rect.size.x -= close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 
@@ -278,9 +279,9 @@ void EditorProperty::_notification(int p_what) {
 			if (checkable) {
 				Ref<Texture2D> checkbox;
 				if (checked) {
-					checkbox = get_theme_icon(SNAME("GuiChecked"), SNAME("EditorIcons"));
+					checkbox = get_editor_theme_icon(SNAME("GuiChecked"));
 				} else {
-					checkbox = get_theme_icon(SNAME("GuiUnchecked"), SNAME("EditorIcons"));
+					checkbox = get_editor_theme_icon(SNAME("GuiUnchecked"));
 				}
 
 				Color color2(1, 1, 1);
@@ -303,7 +304,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			if (can_revert && !is_read_only()) {
-				Ref<Texture2D> reload_icon = get_theme_icon(SNAME("ReloadSmall"), SNAME("EditorIcons"));
+				Ref<Texture2D> reload_icon = get_editor_theme_icon(SNAME("ReloadSmall"));
 				text_limit -= reload_icon->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 				revert_rect = Rect2(ofs + text_limit, (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
 
@@ -323,7 +324,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			if (!pin_hidden && pinned) {
-				Ref<Texture2D> pinned_icon = get_theme_icon(SNAME("Pin"), SNAME("EditorIcons"));
+				Ref<Texture2D> pinned_icon = get_editor_theme_icon(SNAME("Pin"));
 				int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 				int total_icon_w = margin_w + pinned_icon->get_width();
 				int text_w = font->get_string_size(label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w, font_size).x;
@@ -349,9 +350,9 @@ void EditorProperty::_notification(int p_what) {
 				Ref<Texture2D> key;
 
 				if (use_keying_next()) {
-					key = get_theme_icon(SNAME("KeyNext"), SNAME("EditorIcons"));
+					key = get_editor_theme_icon(SNAME("KeyNext"));
 				} else {
-					key = get_theme_icon(SNAME("Key"), SNAME("EditorIcons"));
+					key = get_editor_theme_icon(SNAME("Key"));
 				}
 
 				ofs -= key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
@@ -376,7 +377,7 @@ void EditorProperty::_notification(int p_what) {
 			if (deletable) {
 				Ref<Texture2D> close;
 
-				close = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
+				close = get_editor_theme_icon(SNAME("Close"));
 
 				ofs -= close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 
@@ -757,10 +758,10 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 
 const Color *EditorProperty::_get_property_colors() {
 	static Color c[4];
-	c[0] = get_theme_color(SNAME("property_color_x"), SNAME("Editor"));
-	c[1] = get_theme_color(SNAME("property_color_y"), SNAME("Editor"));
-	c[2] = get_theme_color(SNAME("property_color_z"), SNAME("Editor"));
-	c[3] = get_theme_color(SNAME("property_color_w"), SNAME("Editor"));
+	c[0] = get_theme_color(SNAME("property_color_x"), EditorStringName(Editor));
+	c[1] = get_theme_color(SNAME("property_color_y"), EditorStringName(Editor));
+	c[2] = get_theme_color(SNAME("property_color_z"), EditorStringName(Editor));
+	c[3] = get_theme_color(SNAME("property_color_w"), EditorStringName(Editor));
 	return c;
 }
 
@@ -1047,17 +1048,17 @@ void EditorProperty::_update_popup() {
 		add_child(menu);
 		menu->connect("id_pressed", callable_mp(this, &EditorProperty::menu_option));
 	}
-	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_value"), MENU_COPY_VALUE);
-	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
-	menu->add_icon_shortcut(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
+	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("property_editor/copy_value"), MENU_COPY_VALUE);
+	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
+	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("CopyNodePath")), ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
 	menu->set_item_disabled(MENU_PASTE_VALUE, is_read_only());
 	if (!pin_hidden) {
 		menu->add_separator();
 		if (can_pin) {
-			menu->add_icon_check_item(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")), TTR("Pin Value"), MENU_PIN_VALUE);
+			menu->add_icon_check_item(get_editor_theme_icon(SNAME("Pin")), TTR("Pin Value"), MENU_PIN_VALUE);
 			menu->set_item_checked(menu->get_item_index(MENU_PIN_VALUE), pinned);
 		} else {
-			menu->add_icon_check_item(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")), vformat(TTR("Pin Value [Disabled because '%s' is editor-only]"), property), MENU_PIN_VALUE);
+			menu->add_icon_check_item(get_editor_theme_icon(SNAME("Pin")), vformat(TTR("Pin Value [Disabled because '%s' is editor-only]"), property), MENU_PIN_VALUE);
 			menu->set_item_disabled(menu->get_item_index(MENU_PIN_VALUE), true);
 		}
 		menu->set_item_tooltip(menu->get_item_index(MENU_PIN_VALUE), TTR("Pinning a value forces it to be saved even if it's equal to the default."));
@@ -1065,7 +1066,7 @@ void EditorProperty::_update_popup() {
 
 	if (!doc_path.is_empty()) {
 		menu->add_separator();
-		menu->add_icon_item(get_theme_icon(SNAME("Help"), SNAME("EditorIcons")), TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
+		menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
 	}
 }
 
@@ -1142,18 +1143,18 @@ void EditorInspectorCategory::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			menu->set_item_icon(menu->get_item_index(MENU_OPEN_DOCS), get_theme_icon(SNAME("Help"), SNAME("EditorIcons")));
+			menu->set_item_icon(menu->get_item_index(MENU_OPEN_DOCS), get_editor_theme_icon(SNAME("Help")));
 		} break;
 		case NOTIFICATION_DRAW: {
 			Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
 
 			draw_style_box(sb, Rect2(Vector2(), get_size()));
 
-			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+			Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
+			int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 
 			int hs = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
-			int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 			int w = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 			if (icon.is_valid()) {
@@ -1181,8 +1182,8 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
-	Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-	int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+	Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
+	int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 
 	Size2 ms;
 	ms.height = font->get_height(font_size);
@@ -1255,8 +1256,8 @@ Ref<Texture2D> EditorInspectorSection::_get_arrow() {
 }
 
 int EditorInspectorSection::_get_header_height() {
-	Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-	int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+	Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
+	int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 
 	int header_height = font->get_height(font_size);
 	Ref<Texture2D> arrow = _get_arrow();
@@ -1279,7 +1280,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				return;
 			}
 
-			int inspector_margin = get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
+			int inspector_margin = get_theme_constant(SNAME("inspector_margin"), EditorStringName(Editor));
 			int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
 			if (indent_depth > 0 && section_indent_size > 0) {
 				inspector_margin += indent_depth * section_indent_size;
@@ -1362,16 +1363,16 @@ void EditorInspectorSection::_notification(int p_what) {
 
 				bool folded = foldable && !object->editor_is_section_unfolded(section);
 
-				Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-				int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
-				Color font_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+				Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
+				int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+				Color font_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 
 				if (folded && revertable_properties.size()) {
 					int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available, font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
 
-					Ref<Font> light_font = get_theme_font(SNAME("main"), SNAME("EditorFonts"));
-					int light_font_size = get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts"));
-					Color light_font_color = get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"));
+					Ref<Font> light_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+					int light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
+					Color light_font_color = get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor));
 
 					// Can we fit the long version of the revertable count text?
 					num_revertable_str = vformat(TTRN("(%d change)", "(%d changes)", revertable_properties.size()), revertable_properties.size());
@@ -1406,7 +1407,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 			// Draw dropping highlight.
 			if (dropping && !vbox->is_visible_in_tree()) {
-				Color accent_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 				draw_rect(Rect2(Point2(), get_size()), accent_color, false);
 			}
 
@@ -1467,7 +1468,7 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 	ms.height += font->get_height(font_size) + get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
-	ms.width += get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
+	ms.width += get_theme_constant(SNAME("inspector_margin"), EditorStringName(Editor));
 
 	int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
 	if (indent_depth > 0 && section_indent_size > 0) {
@@ -1686,7 +1687,7 @@ void EditorInspectorArray::_control_dropping_draw() {
 			from = xform.xform(Vector2(0, child->get_size().y));
 			to = xform.xform(Vector2(elements_vbox->get_size().x, child->get_size().y));
 		}
-		Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		control_dropping->draw_line(from, to, color, 2);
 	}
 }
@@ -1698,7 +1699,7 @@ void EditorInspectorArray::_vbox_visibility_changed() {
 void EditorInspectorArray::_panel_draw(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)array_elements.size());
 
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"));
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles));
 	if (!style.is_valid()) {
 		return;
 	}
@@ -2103,7 +2104,7 @@ void EditorInspectorArray::_setup() {
 	int numbers_min_w = 0;
 
 	if (numbered) {
-		numbers_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+		numbers_font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 		int digits_found = count;
 		String test;
 		while (digits_found) {
@@ -2133,7 +2134,7 @@ void EditorInspectorArray::_setup() {
 		ae.margin = memnew(MarginContainer);
 		ae.margin->set_mouse_filter(MOUSE_FILTER_PASS);
 		if (is_inside_tree()) {
-			Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
+			Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
 			ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 			ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 			ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
@@ -2156,7 +2157,7 @@ void EditorInspectorArray::_setup() {
 
 			if (element_position > 0) {
 				ae.move_up = memnew(Button);
-				ae.move_up->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
+				ae.move_up->set_icon(get_editor_theme_icon(SNAME("MoveUp")));
 				ae.move_up->connect("pressed", callable_mp(this, &EditorInspectorArray::_move_element).bind(element_position, element_position - 1));
 				move_vbox->add_child(ae.move_up);
 			}
@@ -2166,13 +2167,13 @@ void EditorInspectorArray::_setup() {
 			ae.move_texture_rect->set_default_cursor_shape(Control::CURSOR_MOVE);
 
 			if (is_inside_tree()) {
-				ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
+				ae.move_texture_rect->set_texture(get_editor_theme_icon(SNAME("TripleBar")));
 			}
 			move_vbox->add_child(ae.move_texture_rect);
 
 			if (element_position < _get_array_count() - 1) {
 				ae.move_down = memnew(Button);
-				ae.move_down->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
+				ae.move_down->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
 				ae.move_down->connect("pressed", callable_mp(this, &EditorInspectorArray::_move_element).bind(element_position, element_position + 2));
 				move_vbox->add_child(ae.move_down);
 			}
@@ -2195,7 +2196,7 @@ void EditorInspectorArray::_setup() {
 		ae.hbox->add_child(ae.vbox);
 
 		ae.erase = memnew(Button);
-		ae.erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+		ae.erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
 		ae.erase->set_v_size_flags(SIZE_SHRINK_CENTER);
 		ae.erase->connect("pressed", callable_mp(this, &EditorInspectorArray::_remove_item).bind(begin_array_index + i));
 		ae.hbox->add_child(ae.erase);
@@ -2268,32 +2269,32 @@ void EditorInspectorArray::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			Color color = get_theme_color(SNAME("dark_color_1"), SNAME("Editor"));
+			Color color = get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor));
 			odd_style->set_bg_color(color.darkened(-0.08));
 			even_style->set_bg_color(color.darkened(0.08));
 
 			for (ArrayElement &ae : array_elements) {
 				if (ae.move_texture_rect) {
-					ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
+					ae.move_texture_rect->set_texture(get_editor_theme_icon(SNAME("TripleBar")));
 				}
 				if (ae.move_up) {
-					ae.move_up->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
+					ae.move_up->set_icon(get_editor_theme_icon(SNAME("MoveUp")));
 				}
 				if (ae.move_down) {
-					ae.move_down->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
+					ae.move_down->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
 				}
-				Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
+				Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
 				ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 				ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 				ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
 				ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
 
 				if (ae.erase) {
-					ae.erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+					ae.erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
 				}
 			}
 
-			add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
 			update_minimum_size();
 		} break;
 
@@ -2462,10 +2463,10 @@ void EditorPaginator::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			first_page_button->set_icon(get_theme_icon(SNAME("PageFirst"), SNAME("EditorIcons")));
-			prev_page_button->set_icon(get_theme_icon(SNAME("PagePrevious"), SNAME("EditorIcons")));
-			next_page_button->set_icon(get_theme_icon(SNAME("PageNext"), SNAME("EditorIcons")));
-			last_page_button->set_icon(get_theme_icon(SNAME("PageLast"), SNAME("EditorIcons")));
+			first_page_button->set_icon(get_editor_theme_icon(SNAME("PageFirst")));
+			prev_page_button->set_icon(get_editor_theme_icon(SNAME("PagePrevious")));
+			next_page_button->set_icon(get_editor_theme_icon(SNAME("PageNext")));
+			last_page_button->set_icon(get_editor_theme_icon(SNAME("PageLast")));
 		} break;
 	}
 }
@@ -2748,7 +2749,7 @@ void EditorInspector::update_tree() {
 	HashMap<VBoxContainer *, HashMap<String, VBoxContainer *>> vbox_per_path;
 	HashMap<String, EditorInspectorArray *> editor_inspector_array_per_prefix;
 
-	Color sscolor = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
+	Color sscolor = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 
 	// Get the lists of editors to add the beginning.
 	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
@@ -3417,7 +3418,7 @@ void EditorInspector::update_tree() {
 		main_vbox->add_child(spacer);
 
 		Button *add_md = EditorInspector::create_inspector_action_button(TTR("Add Metadata"));
-		add_md->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		add_md->set_icon(get_editor_theme_icon(SNAME("Add")));
 		add_md->connect(SNAME("pressed"), callable_mp(this, &EditorInspector::_show_add_meta_dialog));
 		main_vbox->add_child(add_md);
 		if (all_read_only) {
@@ -3679,7 +3680,7 @@ void EditorInspector::_update_inspector_bg() {
 			n = n->get_parent();
 		}
 		count_subinspectors = MIN(15, count_subinspectors);
-		add_theme_style_override("panel", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), SNAME("Editor")));
+		add_theme_style_override("panel", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), EditorStringName(Editor)));
 	} else {
 		add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 	}
@@ -4200,7 +4201,7 @@ void EditorInspector::_show_add_meta_dialog() {
 			}
 			String type = i == Variant::OBJECT ? String("Resource") : Variant::get_type_name(Variant::Type(i));
 
-			add_meta_type->add_icon_item(get_theme_icon(type, "EditorIcons"), type, i);
+			add_meta_type->add_icon_item(get_editor_theme_icon(type), type, i);
 		}
 		hbc->add_child(add_meta_type);
 

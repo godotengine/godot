@@ -44,6 +44,7 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/version.h"
+#include "editor/editor_string_names.h"
 #include "main/main.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
@@ -486,7 +487,7 @@ void EditorNode::_notification(int p_what) {
 
 				// Update the icon itself only when the spinner is visible.
 				if (EDITOR_GET("interface/editor/show_update_spinner")) {
-					update_spinner->set_icon(gui_base->get_theme_icon("Progress" + itos(update_spinner_step + 1), SNAME("EditorIcons")));
+					update_spinner->set_icon(gui_base->get_editor_theme_icon("Progress" + itos(update_spinner_step + 1)));
 				}
 			}
 
@@ -632,18 +633,18 @@ void EditorNode::_notification(int p_what) {
 
 			if (theme_changed) {
 				theme = create_custom_theme(theme_base->get_theme());
-				DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), SNAME("Editor")));
+				DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
 				theme_base->set_theme(theme);
 				gui_base->set_theme(theme);
 				get_window()->set_theme(theme);
 
-				gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
-				main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, gui_base->get_theme_constant(SNAME("window_border_margin"), SNAME("Editor")));
-				main_vbox->add_theme_constant_override("separation", gui_base->get_theme_constant(SNAME("top_bar_separation"), SNAME("Editor")));
-				scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), SNAME("EditorStyles")));
-				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
-				main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+				gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
+				main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, gui_base->get_theme_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
+				main_vbox->add_theme_constant_override("separation", gui_base->get_theme_constant(SNAME("top_bar_separation"), EditorStringName(Editor)));
+				scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
+				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+				main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
 			}
 
 			scene_tabs->update_scene_tabs();
@@ -651,7 +652,7 @@ void EditorNode::_notification(int p_what) {
 
 			// Update debugger area.
 			if (EditorDebuggerNode::get_singleton()->is_visible()) {
-				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles")));
+				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
 			}
 
 			// Update icons.
@@ -662,40 +663,40 @@ void EditorNode::_notification(int p_what) {
 
 				if (icon.is_valid()) {
 					tb->set_icon(icon);
-				} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), SNAME("EditorIcons"))) {
-					tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), SNAME("EditorIcons")));
+				} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
+					tb->set_icon(singleton->gui_base->get_editor_theme_icon(p_editor->get_name()));
 				}
 			}
 
 			_build_icon_type_cache();
 
-			prev_scene->set_icon(gui_base->get_theme_icon(SNAME("PrevScene"), SNAME("EditorIcons")));
-			distraction_free->set_icon(gui_base->get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
+			prev_scene->set_icon(gui_base->get_editor_theme_icon(SNAME("PrevScene")));
+			distraction_free->set_icon(gui_base->get_editor_theme_icon(SNAME("DistractionFree")));
 
-			bottom_panel_raise->set_icon(gui_base->get_theme_icon(SNAME("ExpandBottomDock"), SNAME("EditorIcons")));
+			bottom_panel_raise->set_icon(gui_base->get_editor_theme_icon(SNAME("ExpandBottomDock")));
 
 			if (gui_base->is_layout_rtl()) {
-				dock_tab_move_left->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
-				dock_tab_move_right->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
+				dock_tab_move_left->set_icon(theme->get_icon(SNAME("Forward"), EditorStringName(EditorIcons)));
+				dock_tab_move_right->set_icon(theme->get_icon(SNAME("Back"), EditorStringName(EditorIcons)));
 			} else {
-				dock_tab_move_left->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
-				dock_tab_move_right->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				dock_tab_move_left->set_icon(theme->get_icon(SNAME("Back"), EditorStringName(EditorIcons)));
+				dock_tab_move_right->set_icon(theme->get_icon(SNAME("Forward"), EditorStringName(EditorIcons)));
 			}
 
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), gui_base->get_theme_icon(SNAME("HelpSearch"), SNAME("EditorIcons")));
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_DOCS), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_QA), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_REPORT_A_BUG), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), gui_base->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_SUGGEST_A_FEATURE), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_SEND_DOCS_FEEDBACK), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_COMMUNITY), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), gui_base->get_theme_icon(SNAME("Godot"), SNAME("EditorIcons")));
-			help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), gui_base->get_theme_icon(SNAME("Heart"), SNAME("EditorIcons")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), gui_base->get_editor_theme_icon(SNAME("HelpSearch")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_DOCS), gui_base->get_editor_theme_icon(SNAME("ExternalLink")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_QA), gui_base->get_editor_theme_icon(SNAME("ExternalLink")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_REPORT_A_BUG), gui_base->get_editor_theme_icon(SNAME("ExternalLink")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), gui_base->get_editor_theme_icon(SNAME("ActionCopy")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_SUGGEST_A_FEATURE), gui_base->get_editor_theme_icon(SNAME("ExternalLink")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_SEND_DOCS_FEEDBACK), gui_base->get_editor_theme_icon(SNAME("ExternalLink")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_COMMUNITY), gui_base->get_editor_theme_icon(SNAME("ExternalLink")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), gui_base->get_editor_theme_icon(SNAME("Godot")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), gui_base->get_editor_theme_icon(SNAME("Heart")));
 
 			for (int i = 0; i < main_editor_buttons.size(); i++) {
-				main_editor_buttons.write[i]->add_theme_font_override("font", gui_base->get_theme_font(SNAME("main_button_font"), SNAME("EditorFonts")));
-				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
+				main_editor_buttons.write[i]->add_theme_font_override("font", gui_base->get_theme_font(SNAME("main_button_font"), EditorStringName(EditorFonts)));
+				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("main_button_font_size"), EditorStringName(EditorFonts)));
 			}
 
 			HashSet<String> updated_textfile_extensions;
@@ -735,7 +736,7 @@ void EditorNode::_update_update_spinner() {
 		// On a light theme, icons are dark, so we need to modulate them with an even brighter color.
 		const bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 		update_spinner->set_self_modulate(
-				gui_base->get_theme_color(SNAME("error_color"), SNAME("Editor")) * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
+				gui_base->get_theme_color(SNAME("error_color"), EditorStringName(Editor)) * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
 	} else {
 		update_spinner->set_tooltip_text(TTR("Spins when the editor window redraws."));
 		update_spinner->set_self_modulate(Color(1, 1, 1));
@@ -3130,12 +3131,12 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 			tb->set_icon(icon);
 			// Make sure the control is updated if the icon is reimported.
 			icon->connect_changed(callable_mp((Control *)tb, &Control::update_minimum_size));
-		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), SNAME("EditorIcons"))) {
-			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), SNAME("EditorIcons")));
+		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
+			tb->set_icon(singleton->gui_base->get_editor_theme_icon(p_editor->get_name()));
 		}
 
-		tb->add_theme_font_override("font", singleton->gui_base->get_theme_font(SNAME("main_button_font"), SNAME("EditorFonts")));
-		tb->add_theme_font_size_override("font_size", singleton->gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
+		tb->add_theme_font_override("font", singleton->gui_base->get_theme_font(SNAME("main_button_font"), EditorStringName(EditorFonts)));
+		tb->add_theme_font_size_override("font_size", singleton->gui_base->get_theme_font_size(SNAME("main_button_font_size"), EditorStringName(EditorFonts)));
 
 		singleton->main_editor_buttons.push_back(tb);
 		singleton->main_editor_button_hb->add_child(tb);
@@ -4066,14 +4067,14 @@ void EditorNode::notify_all_debug_sessions_exited() {
 
 void EditorNode::add_io_error(const String &p_error) {
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
-	singleton->load_errors->add_image(singleton->gui_base->get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+	singleton->load_errors->add_image(singleton->gui_base->get_editor_theme_icon(SNAME("Error")));
 	singleton->load_errors->add_text(p_error + "\n");
 	EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
 }
 
 void EditorNode::add_io_warning(const String &p_warning) {
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
-	singleton->load_errors->add_image(singleton->gui_base->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+	singleton->load_errors->add_image(singleton->gui_base->get_editor_theme_icon(SNAME("Warning")));
 	singleton->load_errors->add_text(p_warning + "\n");
 	EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
 }
@@ -4211,8 +4212,8 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 			// This is only relevant for built-in classes.
 			String base_type;
 			p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
-			if (gui_base && gui_base->has_theme_icon(base_type, SNAME("EditorIcons"))) {
-				return gui_base->get_theme_icon(base_type, SNAME("EditorIcons"));
+			if (gui_base && gui_base->has_theme_icon(base_type, EditorStringName(EditorIcons))) {
+				return gui_base->get_editor_theme_icon(base_type);
 			}
 		}
 	}
@@ -4236,21 +4237,21 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 	// Look up the class name or the fallback name in the editor theme.
 	// This is only relevant for built-in classes.
 	if (gui_base) {
-		if (gui_base->has_theme_icon(p_class, SNAME("EditorIcons"))) {
-			return gui_base->get_theme_icon(p_class, SNAME("EditorIcons"));
+		if (gui_base->has_theme_icon(p_class, EditorStringName(EditorIcons))) {
+			return gui_base->get_editor_theme_icon(p_class);
 		}
 
-		if (!p_fallback.is_empty() && gui_base->has_theme_icon(p_fallback, SNAME("EditorIcons"))) {
-			return gui_base->get_theme_icon(p_fallback, SNAME("EditorIcons"));
+		if (!p_fallback.is_empty() && gui_base->has_theme_icon(p_fallback, EditorStringName(EditorIcons))) {
+			return gui_base->get_editor_theme_icon(p_fallback);
 		}
 
 		// If the fallback is empty or wasn't found, use the default fallback.
 		if (ClassDB::class_exists(p_class)) {
 			bool instantiable = !ClassDB::is_virtual(p_class) && ClassDB::can_instantiate(p_class);
 			if (ClassDB::is_parent_class(p_class, SNAME("Node"))) {
-				return gui_base->get_theme_icon(instantiable ? "Node" : "NodeDisabled", SNAME("EditorIcons"));
+				return gui_base->get_editor_theme_icon(instantiable ? "Node" : "NodeDisabled");
 			} else {
-				return gui_base->get_theme_icon(instantiable ? "Object" : "ObjectDisabled", SNAME("EditorIcons"));
+				return gui_base->get_editor_theme_icon(instantiable ? "Object" : "ObjectDisabled");
 			}
 		}
 	}
@@ -4463,12 +4464,12 @@ Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
 
 void EditorNode::_build_icon_type_cache() {
 	List<StringName> tl;
-	theme_base->get_theme()->get_icon_list(SNAME("EditorIcons"), &tl);
+	theme_base->get_theme()->get_icon_list(EditorStringName(EditorIcons), &tl);
 	for (const StringName &E : tl) {
 		if (!ClassDB::class_exists(E)) {
 			continue;
 		}
-		icon_type_cache[E] = theme_base->get_theme()->get_icon(E, SNAME("EditorIcons"));
+		icon_type_cache[E] = theme_base->get_theme()->get_icon(E, EditorStringName(EditorIcons));
 	}
 }
 
@@ -4727,7 +4728,7 @@ void EditorNode::_dock_select_draw() {
 
 	Color used = Color(0.6, 0.6, 0.6, 0.8);
 	Color used_selected = Color(0.8, 0.8, 0.8, 0.8);
-	Color tab_selected = theme_base->get_theme_color(SNAME("mono_color"), SNAME("Editor"));
+	Color tab_selected = theme_base->get_theme_color(SNAME("mono_color"), EditorStringName(Editor));
 	Color unused = used;
 	unused.a = 0.4;
 	Color unusable = unused;
@@ -5665,9 +5666,9 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 		}
 		if (EditorDebuggerNode::get_singleton() == bottom_panel_items[p_idx].control) {
 			// This is the debug panel which uses tabs, so the top section should be smaller.
-			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles")));
+			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
 		} else {
-			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
+			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		}
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
 		center_split->set_collapsed(false);
@@ -5676,7 +5677,7 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 		}
 		bottom_panel_raise->show();
 	} else {
-		bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
+		bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		bottom_panel_items[p_idx].button->set_pressed(false);
 		bottom_panel_items[p_idx].control->set_visible(false);
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
@@ -5765,7 +5766,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 
 	{
 		// TODO: make proper previews
-		Ref<ImageTexture> texture = gui_base->get_theme_icon(SNAME("FileBigThumb"), SNAME("EditorIcons"));
+		Ref<ImageTexture> texture = gui_base->get_editor_theme_icon(SNAME("FileBigThumb"));
 		Ref<Image> img = texture->get_image();
 		img = img->duplicate();
 		img->resize(48, 48); // meh
@@ -5815,10 +5816,10 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 
 		if (p_paths[i].ends_with("/")) {
 			label->set_text(p_paths[i].substr(0, p_paths[i].length() - 1).get_file());
-			icon->set_texture(gui_base->get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+			icon->set_texture(gui_base->get_editor_theme_icon(SNAME("Folder")));
 		} else {
 			label->set_text(p_paths[i].get_file());
-			icon->set_texture(gui_base->get_theme_icon(SNAME("File"), SNAME("EditorIcons")));
+			icon->set_texture(gui_base->get_editor_theme_icon(SNAME("File")));
 		}
 		icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 		icon->set_size(Size2(16, 16));
@@ -6834,7 +6835,7 @@ EditorNode::EditorNode() {
 	// Exporters might need the theme.
 	EditorColorMap::create();
 	theme = create_custom_theme();
-	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), SNAME("Editor")));
+	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
 	register_exporters();
 
@@ -6884,7 +6885,7 @@ EditorNode::EditorNode() {
 
 	theme_base->set_theme(theme);
 	gui_base->set_theme(theme);
-	gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
+	gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
 
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
@@ -6898,8 +6899,8 @@ EditorNode::EditorNode() {
 
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
-	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, gui_base->get_theme_constant(SNAME("window_border_margin"), SNAME("Editor")));
-	main_vbox->add_theme_constant_override("separation", gui_base->get_theme_constant(SNAME("top_bar_separation"), SNAME("Editor")));
+	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, gui_base->get_theme_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
+	main_vbox->add_theme_constant_override("separation", gui_base->get_theme_constant(SNAME("top_bar_separation"), EditorStringName(Editor)));
 
 	title_bar = memnew(EditorTitleBar);
 	main_vbox->add_child(title_bar);
@@ -6978,9 +6979,9 @@ EditorNode::EditorNode() {
 	dock_tab_move_left = memnew(Button);
 	dock_tab_move_left->set_flat(true);
 	if (gui_base->is_layout_rtl()) {
-		dock_tab_move_left->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
+		dock_tab_move_left->set_icon(theme->get_icon(SNAME("Forward"), EditorStringName(EditorIcons)));
 	} else {
-		dock_tab_move_left->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
+		dock_tab_move_left->set_icon(theme->get_icon(SNAME("Back"), EditorStringName(EditorIcons)));
 	}
 	dock_tab_move_left->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_left->connect("pressed", callable_mp(this, &EditorNode::_dock_move_left));
@@ -6995,9 +6996,9 @@ EditorNode::EditorNode() {
 	dock_tab_move_right = memnew(Button);
 	dock_tab_move_right->set_flat(true);
 	if (gui_base->is_layout_rtl()) {
-		dock_tab_move_right->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
+		dock_tab_move_right->set_icon(theme->get_icon(SNAME("Back"), EditorStringName(EditorIcons)));
 	} else {
-		dock_tab_move_right->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
+		dock_tab_move_right->set_icon(theme->get_icon(SNAME("Forward"), EditorStringName(EditorIcons)));
 	}
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_right->connect("pressed", callable_mp(this, &EditorNode::_dock_move_right));
@@ -7015,7 +7016,7 @@ EditorNode::EditorNode() {
 
 	if (!SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && !EDITOR_GET("interface/editor/single_window_mode") && EDITOR_GET("interface/multi_window/enable")) {
 		dock_float = memnew(Button);
-		dock_float->set_icon(theme->get_icon("MakeFloating", "EditorIcons"));
+		dock_float->set_icon(theme->get_icon("MakeFloating", EditorStringName(EditorIcons)));
 		dock_float->set_text(TTR("Make Floating"));
 		dock_float->set_focus_mode(Control::FOCUS_NONE);
 		dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
@@ -7064,14 +7065,14 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/distraction_free_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::D);
 	distraction_free->set_shortcut(ED_GET_SHORTCUT("editor/distraction_free_mode"));
 	distraction_free->set_tooltip_text(TTR("Toggle distraction-free mode."));
-	distraction_free->set_icon(gui_base->get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
+	distraction_free->set_icon(gui_base->get_editor_theme_icon(SNAME("DistractionFree")));
 	distraction_free->set_toggle_mode(true);
 	scene_tabs->add_extra_button(distraction_free);
 	distraction_free->connect("pressed", callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
-	scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), SNAME("EditorStyles")));
+	scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
 	scene_root_parent->set_draw_behind_parent(true);
 	srt->add_child(scene_root_parent);
 	scene_root_parent->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -7102,7 +7103,7 @@ EditorNode::EditorNode() {
 	main_menu = memnew(MenuBar);
 	title_bar->add_child(main_menu);
 
-	main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+	main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
 	main_menu->set_flat(true);
 	main_menu->set_start_index(0); // Main menu, add to the start of global menu.
 	main_menu->set_prefer_global_menu(global_menu);
@@ -7115,7 +7116,7 @@ EditorNode::EditorNode() {
 
 	prev_scene = memnew(Button);
 	prev_scene->set_flat(true);
-	prev_scene->set_icon(gui_base->get_theme_icon(SNAME("PrevScene"), SNAME("EditorIcons")));
+	prev_scene->set_icon(gui_base->get_editor_theme_icon(SNAME("PrevScene")));
 	prev_scene->set_tooltip_text(TTR("Go to previously opened scene."));
 	prev_scene->set_disabled(true);
 	prev_scene->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(FILE_OPEN_PREV));
@@ -7276,8 +7277,8 @@ EditorNode::EditorNode() {
 
 	if (can_expand && global_menu) {
 		project_title = memnew(Label);
-		project_title->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
-		project_title->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
+		project_title->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+		project_title->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts)));
 		project_title->set_focus_mode(Control::FOCUS_NONE);
 		project_title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		project_title->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
@@ -7353,22 +7354,22 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT_AND_COMMAND("editor/editor_help", TTR("Search Help"), Key::F1);
 	ED_SHORTCUT_OVERRIDE("editor/editor_help", "macos", KeyModifierMask::ALT | Key::SPACE);
-	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("HelpSearch"), SNAME("EditorIcons")), ED_GET_SHORTCUT("editor/editor_help"), HELP_SEARCH);
+	help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("HelpSearch")), ED_GET_SHORTCUT("editor/editor_help"), HELP_SEARCH);
 	help_menu->add_separator();
-	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
-	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/q&a", TTR("Questions & Answers")), HELP_QA);
-	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/report_a_bug", TTR("Report a Bug")), HELP_REPORT_A_BUG);
-	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/copy_system_info", TTR("Copy System Info")), HELP_COPY_SYSTEM_INFO);
+	help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("ExternalLink")), ED_SHORTCUT_AND_COMMAND("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
+	help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("ExternalLink")), ED_SHORTCUT_AND_COMMAND("editor/q&a", TTR("Questions & Answers")), HELP_QA);
+	help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("ExternalLink")), ED_SHORTCUT_AND_COMMAND("editor/report_a_bug", TTR("Report a Bug")), HELP_REPORT_A_BUG);
+	help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("ActionCopy")), ED_SHORTCUT_AND_COMMAND("editor/copy_system_info", TTR("Copy System Info")), HELP_COPY_SYSTEM_INFO);
 	help_menu->set_item_tooltip(-1, TTR("Copies the system info as a single-line text into the clipboard."));
-	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/suggest_a_feature", TTR("Suggest a Feature")), HELP_SUGGEST_A_FEATURE);
-	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/send_docs_feedback", TTR("Send Docs Feedback")), HELP_SEND_DOCS_FEEDBACK);
-	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/community", TTR("Community")), HELP_COMMUNITY);
+	help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("ExternalLink")), ED_SHORTCUT_AND_COMMAND("editor/suggest_a_feature", TTR("Suggest a Feature")), HELP_SUGGEST_A_FEATURE);
+	help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("ExternalLink")), ED_SHORTCUT_AND_COMMAND("editor/send_docs_feedback", TTR("Send Docs Feedback")), HELP_SEND_DOCS_FEEDBACK);
+	help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("ExternalLink")), ED_SHORTCUT_AND_COMMAND("editor/community", TTR("Community")), HELP_COMMUNITY);
 	help_menu->add_separator();
 	if (!global_menu || !OS::get_singleton()->has_feature("macos")) {
 		// On macOS  "Quit" and "About" options are in the "app" menu.
-		help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("Godot"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/about", TTR("About Godot")), HELP_ABOUT);
+		help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("Godot")), ED_SHORTCUT_AND_COMMAND("editor/about", TTR("About Godot")), HELP_ABOUT);
 	}
-	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("Heart"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/support_development", TTR("Support Godot Development")), HELP_SUPPORT_GODOT_DEVELOPMENT);
+	help_menu->add_icon_shortcut(gui_base->get_editor_theme_icon(SNAME("Heart")), ED_SHORTCUT_AND_COMMAND("editor/support_development", TTR("Support Godot Development")), HELP_SUPPORT_GODOT_DEVELOPMENT);
 
 	// Spacer to center 2D / 3D / Script buttons.
 	Control *right_spacer = memnew(Control);
@@ -7390,8 +7391,8 @@ EditorNode::EditorNode() {
 	renderer->set_fit_to_longest_item(false);
 	renderer->set_focus_mode(Control::FOCUS_NONE);
 	renderer->connect("item_selected", callable_mp(this, &EditorNode::_renderer_selected));
-	renderer->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
-	renderer->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
+	renderer->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+	renderer->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts)));
 	renderer->set_tooltip_text(TTR("Choose a renderer."));
 
 	right_menu_hb->add_child(renderer);
@@ -7452,7 +7453,7 @@ EditorNode::EditorNode() {
 
 	update_spinner = memnew(MenuButton);
 	right_menu_hb->add_child(update_spinner);
-	update_spinner->set_icon(gui_base->get_theme_icon(SNAME("Progress1"), SNAME("EditorIcons")));
+	update_spinner->set_icon(gui_base->get_editor_theme_icon(SNAME("Progress1")));
 	update_spinner->get_popup()->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
 	PopupMenu *p = update_spinner->get_popup();
 	p->add_radio_check_item(TTR("Update Continuously"), SETTINGS_UPDATE_CONTINUOUSLY);
@@ -7535,7 +7536,7 @@ EditorNode::EditorNode() {
 	// Bottom panels.
 
 	bottom_panel = memnew(PanelContainer);
-	bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
+	bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
@@ -7581,7 +7582,7 @@ EditorNode::EditorNode() {
 
 	bottom_panel_raise = memnew(Button);
 	bottom_panel_raise->set_flat(true);
-	bottom_panel_raise->set_icon(gui_base->get_theme_icon(SNAME("ExpandBottomDock"), SNAME("EditorIcons")));
+	bottom_panel_raise->set_icon(gui_base->get_editor_theme_icon(SNAME("ExpandBottomDock")));
 
 	bottom_panel_raise->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
 

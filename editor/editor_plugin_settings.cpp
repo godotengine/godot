@@ -123,7 +123,7 @@ void EditorPluginSettings::update_plugins() {
 				bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(path);
 				item->set_checked(3, is_active);
 				item->set_editable(3, true);
-				item->add_button(4, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
+				item->add_button(4, get_editor_theme_icon(SNAME("Edit")), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
 			}
 		}
 	}

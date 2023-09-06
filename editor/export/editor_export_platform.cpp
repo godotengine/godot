@@ -42,6 +42,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_export_plugin.h"
@@ -72,12 +73,12 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	p_log->add_text(" - ");
 	if (p_err == OK) {
 		if (get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
-			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
+			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("StatusWarning")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
 			p_log->add_text(TTR("Completed with warnings."));
 			has_messages = true;
 		} else {
-			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
+			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("StatusSuccess")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
 			p_log->add_text(TTR("Completed successfully."));
 			if (msg_count > 0) {
@@ -85,7 +86,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 			}
 		}
 	} else {
-		p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
+		p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("StatusError")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 		p_log->add_text(" ");
 		p_log->add_text(TTR("Failed."));
 		has_messages = true;
@@ -103,15 +104,15 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 
 			switch (msg.msg_type) {
 				case EditorExportPlatform::EXPORT_MESSAGE_INFO: {
-					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
+					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_WARNING: {
-					icon = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
-					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
+					icon = EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("Warning"));
+					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_ERROR: {
-					icon = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
-					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor"));
+					icon = EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("Error"));
+					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 				} break;
 				default:
 					break;
@@ -293,9 +294,9 @@ Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
 	if (EditorNode::get_singleton()->get_main_screen_control()->is_layout_rtl()) {
-		return theme->get_icon(SNAME("PlayBackwards"), SNAME("EditorIcons"));
+		return theme->get_icon(SNAME("PlayBackwards"), EditorStringName(EditorIcons));
 	} else {
-		return theme->get_icon(SNAME("Play"), SNAME("EditorIcons"));
+		return theme->get_icon(SNAME("Play"), EditorStringName(EditorIcons));
 	}
 }
 

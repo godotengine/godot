@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -69,7 +70,7 @@ void EditorAudioBus::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			Ref<Texture2D> active_bus_texture = get_theme_icon(SNAME("BusVuActive"), SNAME("EditorIcons"));
+			Ref<Texture2D> active_bus_texture = get_editor_theme_icon(SNAME("BusVuActive"));
 			for (int i = 0; i < CHANNELS_MAX; i++) {
 				channel[i].vu_l->set_under_texture(active_bus_texture);
 				channel[i].vu_l->set_tint_under(Color(0.75, 0.75, 0.75));
@@ -81,20 +82,20 @@ void EditorAudioBus::_notification(int p_what) {
 				channel[i].prev_active = true;
 			}
 
-			disabled_vu = get_theme_icon(SNAME("BusVuFrozen"), SNAME("EditorIcons"));
+			disabled_vu = get_editor_theme_icon(SNAME("BusVuFrozen"));
 
 			Color solo_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.0, 0.92, 0.44);
 			Color mute_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(1.0, 0.44, 0.44);
 			Color bypass_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
 
-			solo->set_icon(get_theme_icon(SNAME("AudioBusSolo"), SNAME("EditorIcons")));
+			solo->set_icon(get_editor_theme_icon(SNAME("AudioBusSolo")));
 			solo->add_theme_color_override("icon_pressed_color", solo_color);
-			mute->set_icon(get_theme_icon(SNAME("AudioBusMute"), SNAME("EditorIcons")));
+			mute->set_icon(get_editor_theme_icon(SNAME("AudioBusMute")));
 			mute->add_theme_color_override("icon_pressed_color", mute_color);
-			bypass->set_icon(get_theme_icon(SNAME("AudioBusBypass"), SNAME("EditorIcons")));
+			bypass->set_icon(get_editor_theme_icon(SNAME("AudioBusBypass")));
 			bypass->add_theme_color_override("icon_pressed_color", bypass_color);
 
-			bus_options->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			bus_options->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			audio_value_preview_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("TooltipLabel")));
 			audio_value_preview_label->add_theme_color_override("font_shadow_color", get_theme_color(SNAME("font_shadow_color"), SNAME("TooltipLabel")));
@@ -122,7 +123,7 @@ void EditorAudioBus::_notification(int p_what) {
 			}
 
 			if (get_index() != 0 && hovering_drop) {
-				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 				accent.a *= 0.7;
 				draw_rect(Rect2(Point2(), get_size()), accent, false);
 			}
@@ -970,7 +971,7 @@ void EditorAudioBusDrop::_notification(int p_what) {
 			draw_style_box(get_theme_stylebox(SNAME("normal"), SNAME("Button")), Rect2(Vector2(), get_size()));
 
 			if (hovering_drop) {
-				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 				accent.a *= 0.7;
 				draw_rect(Rect2(Point2(), get_size()), accent, false);
 			}
@@ -1443,7 +1444,7 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 void EditorAudioMeterNotches::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
-	theme_cache.notch_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+	theme_cache.notch_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 
 	theme_cache.font = get_theme_font(SNAME("font"), SNAME("Label"));
 	theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));

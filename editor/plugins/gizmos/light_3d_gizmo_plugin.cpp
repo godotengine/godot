@@ -43,9 +43,9 @@ Light3DGizmoPlugin::Light3DGizmoPlugin() {
 	create_material("lines_secondary", Color(1, 1, 1, 0.35), false, false, true);
 	create_material("lines_billboard", Color(1, 1, 1), true, false, true);
 
-	create_icon_material("light_directional_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoDirectionalLight"), SNAME("EditorIcons")));
-	create_icon_material("light_omni_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoLight"), SNAME("EditorIcons")));
-	create_icon_material("light_spot_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoSpotLight"), SNAME("EditorIcons")));
+	create_icon_material("light_directional_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoDirectionalLight")));
+	create_icon_material("light_omni_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoLight")));
+	create_icon_material("light_spot_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoSpotLight")));
 
 	create_handle_material("handles");
 	create_handle_material("handles_billboard", true);

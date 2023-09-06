@@ -43,7 +43,7 @@ void Texture3DEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+			Ref<Texture2D> checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 			Size2 size = get_size();
 
 			draw_texture_rect(checkerboard, Rect2(Point2(), size), true);

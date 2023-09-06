@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
 #include "editor/project_settings_editor.h"
 #include "scene/gui/split_container.h"
@@ -319,8 +320,8 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	if (warnings_panel) {
 		// Warnings panel.
-		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
-		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
+		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
+		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	}
 }
 
@@ -586,7 +587,7 @@ void ShaderTextEditor::_update_warning_panel() {
 
 		// First cell.
 		warnings_panel->push_cell();
-		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		if (line != -1) {
 			warnings_panel->push_meta(line - 1);
 			warnings_panel->add_text(TTR("Line") + " " + itos(line));
@@ -717,7 +718,7 @@ void TextShaderEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			PopupMenu *popup = help_menu->get_popup();
-			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
+			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_editor_theme_icon(SNAME("ExternalLink")));
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
@@ -1159,7 +1160,7 @@ TextShaderEditor::TextShaderEditor() {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);

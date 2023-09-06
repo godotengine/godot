@@ -63,13 +63,13 @@ void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 void MaterialEditor::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
-	theme_cache.light_1_icon = get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons"));
-	theme_cache.light_2_icon = get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons"));
+	theme_cache.light_1_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
+	theme_cache.light_2_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
 
-	theme_cache.sphere_icon = get_theme_icon(SNAME("MaterialPreviewSphere"), SNAME("EditorIcons"));
-	theme_cache.box_icon = get_theme_icon(SNAME("MaterialPreviewCube"), SNAME("EditorIcons"));
+	theme_cache.sphere_icon = get_editor_theme_icon(SNAME("MaterialPreviewSphere"));
+	theme_cache.box_icon = get_editor_theme_icon(SNAME("MaterialPreviewCube"));
 
-	theme_cache.checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+	theme_cache.checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 }
 
 void MaterialEditor::_notification(int p_what) {

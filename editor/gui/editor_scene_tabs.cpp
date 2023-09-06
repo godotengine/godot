@@ -34,6 +34,7 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector_dock.h"
 #include "scene/gui/box_container.h"
@@ -50,9 +51,9 @@ void EditorSceneTabs::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tabbar_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
-			scene_tabs->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
+			scene_tabs->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 
-			scene_tab_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			scene_tab_add->set_icon(get_editor_theme_icon(SNAME("Add")));
 			scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
 
 			scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
@@ -213,7 +214,7 @@ void EditorSceneTabs::update_scene_tabs() {
 	scene_tabs->disconnect("tab_changed", callable_mp(this, &EditorSceneTabs::_scene_tab_changed));
 
 	scene_tabs->clear_tabs();
-	Ref<Texture2D> script_icon = get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
+	Ref<Texture2D> script_icon = get_editor_theme_icon(SNAME("Script"));
 	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
 		Node *type_node = EditorNode::get_editor_data().get_edited_scene_root(i);
 		Ref<Texture2D> icon;

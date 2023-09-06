@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
@@ -226,19 +227,19 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	item->set_metadata(0, p_node->get_path());
 
 	if (connect_to_script_mode) {
-		Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
 		Ref<Script> scr = p_node->get_script();
 		if (!scr.is_null() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) != scr) {
 			//has script
-			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT);
+			item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
 		} else {
 			//has no script (or script is a custom type)
-			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 			item->set_selectable(0, false);
 
 			if (!scr.is_null()) { // make sure to mark the script if a custom type
-				item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT);
+				item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
 				item->set_button_disabled(0, item->get_button_count(0) - 1, true);
 			}
 
@@ -255,7 +256,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 	} else if (part_of_subscene) {
 		if (valid_types.size() == 0) {
-			_set_item_custom_color(item, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			_set_item_custom_color(item, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		}
 	} else if (marked.has(p_node)) {
 		String node_name = p_node->get_name();
@@ -264,15 +265,15 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 		item->set_text(0, node_name);
 		item->set_selectable(0, marked_selectable);
-		_set_item_custom_color(item, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
+		_set_item_custom_color(item, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 	} else if (!p_node->can_process()) {
-		_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	} else if (!marked_selectable && !marked_children_selectable) {
 		Node *node = p_node;
 		while (node) {
 			if (marked.has(node)) {
 				item->set_selectable(0, false);
-				_set_item_custom_color(item, get_theme_color(SNAME("error_color"), SNAME("Editor")));
+				_set_item_custom_color(item, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 				break;
 			}
 			node = node->get_parent();
@@ -305,11 +306,11 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 			String newline = (num_warnings == 1 ? "\n" : "\n\n");
 
-			item->add_button(0, get_theme_icon(warning_icon, SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + newline + conf_warning);
+			item->add_button(0, get_editor_theme_icon(warning_icon), BUTTON_WARNING, false, TTR("Node configuration warning:") + newline + conf_warning);
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
-			item->add_button(0, get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons")), BUTTON_UNIQUE, false, vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
+			item->add_button(0, get_editor_theme_icon(SNAME("SceneUniqueName")), BUTTON_UNIQUE, false, vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
 		}
 
 		int num_connections = p_node->get_persistent_signal_connection_count();
@@ -345,11 +346,11 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		Ref<Texture2D> icon_temp;
 		SceneTreeEditorButton signal_temp = BUTTON_SIGNALS;
 		if (num_connections >= 1 && num_groups >= 1) {
-			icon_temp = get_theme_icon(SNAME("SignalsAndGroups"), SNAME("EditorIcons"));
+			icon_temp = get_editor_theme_icon(SNAME("SignalsAndGroups"));
 		} else if (num_connections >= 1) {
-			icon_temp = get_theme_icon(SNAME("Signals"), SNAME("EditorIcons"));
+			icon_temp = get_editor_theme_icon(SNAME("Signals"));
 		} else if (num_groups >= 1) {
-			icon_temp = get_theme_icon(SNAME("Groups"), SNAME("EditorIcons"));
+			icon_temp = get_editor_theme_icon(SNAME("Groups"));
 			signal_temp = BUTTON_GROUPS;
 		}
 
@@ -364,10 +365,10 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		String tooltip = String(p_node->get_name());
 
 		if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
-			item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+			item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 			tooltip += String("\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path());
 		} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
-			item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+			item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 			tooltip += String("\n" + TTR("Instance:") + " " + p_node->get_scene_file_path());
 		}
 
@@ -400,30 +401,30 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			// Can't set tooltip after adding button, need to do it before.
 			if (scr->is_tool()) {
 				additional_notes += "\n" + TTR("This script is currently running in the editor.");
-				button_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				button_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			}
 			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {
 				additional_notes += "\n" + TTR("This script is a custom type.");
 				button_color.a = 0.5;
 			}
-			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + scr->get_path() + additional_notes);
+			item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + scr->get_path() + additional_notes);
 			item->set_button_color(0, item->get_button_count(0) - 1, button_color);
 		}
 
 		if (p_node->is_class("CanvasItem")) {
 			if (p_node->has_meta("_edit_lock_")) {
-				item->add_button(0, get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
+				item->add_button(0, get_editor_theme_icon(SNAME("Lock")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
 			}
 
 			if (p_node->has_meta("_edit_group_")) {
-				item->add_button(0, get_theme_icon(SNAME("Group"), SNAME("EditorIcons")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
+				item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
 			}
 
 			bool v = p_node->call("is_visible");
 			if (v) {
-				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityVisible")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			} else {
-				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityHidden")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			}
 
 			if (!p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
@@ -434,9 +435,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		} else if (p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
 			bool v = p_node->call("is_visible");
 			if (v) {
-				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityVisible")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			} else {
-				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityHidden")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			}
 
 			if (!p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
@@ -444,18 +445,18 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			}
 		} else if (p_node->is_class("Node3D")) {
 			if (p_node->has_meta("_edit_lock_")) {
-				item->add_button(0, get_theme_icon(SNAME("Lock"), SNAME("EditorIcons")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
+				item->add_button(0, get_editor_theme_icon(SNAME("Lock")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
 			}
 
 			if (p_node->has_meta("_edit_group_")) {
-				item->add_button(0, get_theme_icon(SNAME("Group"), SNAME("EditorIcons")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
+				item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
 			}
 
 			bool v = p_node->call("is_visible");
 			if (v) {
-				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityVisible")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			} else {
-				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityHidden")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			}
 
 			if (!p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
@@ -467,7 +468,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_player() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
 
 			if (is_pinned) {
-				item->add_button(0, get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")), BUTTON_PIN, false, TTR("AnimationPlayer is pinned.\nClick to unpin."));
+				item->add_button(0, get_editor_theme_icon(SNAME("Pin")), BUTTON_PIN, false, TTR("AnimationPlayer is pinned.\nClick to unpin."));
 			}
 		}
 	}
@@ -500,7 +501,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		if (!valid) {
-			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 			item->set_selectable(0, false);
 		}
 	}
@@ -530,9 +531,9 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 	}
 
 	if (node_visible) {
-		item->set_button(0, idx, get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
+		item->set_button(0, idx, get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
 	} else {
-		item->set_button(0, idx, get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")));
+		item->set_button(0, idx, get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
 	}
 
 	_update_visibility_color(p_node, item);
@@ -674,7 +675,7 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		}
 		p_parent->set_selectable(0, true);
 	} else if (keep_for_children) {
-		p_parent->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		p_parent->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 		p_parent->set_selectable(0, false);
 		p_parent->deselect(0);
 	}
@@ -905,7 +906,7 @@ void SceneTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
+			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 
 			_update_tree();
 		} break;
@@ -1238,7 +1239,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		if (i < list_max) {
 			HBoxContainer *hb = memnew(HBoxContainer);
 			TextureRect *tf = memnew(TextureRect);
-			int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			tf->set_custom_minimum_size(Size2(icon_size, icon_size));
 			tf->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 			tf->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
@@ -1563,9 +1564,9 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 }
 
 void SceneTreeDialog::_update_theme() {
-	filter->set_right_icon(tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	filter->set_right_icon(tree->get_editor_theme_icon(SNAME("Search")));
 	for (TextureRect *trect : valid_type_icons) {
-		trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")), 0));
+		trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
 		trect->set_texture(EditorNode::get_singleton()->get_class_icon(trect->get_meta("type")));
 	}
 }

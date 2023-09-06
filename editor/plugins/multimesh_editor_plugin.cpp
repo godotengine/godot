@@ -272,7 +272,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MultiMeshInstance3D"), SNAME("EditorIcons")));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("MultiMeshInstance3D")));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
 	options->get_popup()->connect("id_pressed", callable_mp(this, &MultiMeshEditor::_menu_option));

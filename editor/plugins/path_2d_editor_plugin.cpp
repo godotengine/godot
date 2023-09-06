@@ -43,11 +43,11 @@ void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			curve_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
-			curve_edit_curve->set_icon(get_theme_icon(SNAME("CurveCurve"), SNAME("EditorIcons")));
-			curve_create->set_icon(get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
-			curve_del->set_icon(get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
-			curve_close->set_icon(get_theme_icon(SNAME("CurveClose"), SNAME("EditorIcons")));
+			curve_edit->set_icon(get_editor_theme_icon(SNAME("CurveEdit")));
+			curve_edit_curve->set_icon(get_editor_theme_icon(SNAME("CurveCurve")));
+			curve_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
+			curve_del->set_icon(get_editor_theme_icon(SNAME("CurveDelete")));
+			curve_close->set_icon(get_editor_theme_icon(SNAME("CurveClose")));
 		} break;
 	}
 }
@@ -370,12 +370,12 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	const Ref<Texture2D> path_sharp_handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
-	const Ref<Texture2D> path_smooth_handle = get_theme_icon(SNAME("EditorPathSmoothHandle"), SNAME("EditorIcons"));
+	const Ref<Texture2D> path_sharp_handle = get_editor_theme_icon(SNAME("EditorPathSharpHandle"));
+	const Ref<Texture2D> path_smooth_handle = get_editor_theme_icon(SNAME("EditorPathSmoothHandle"));
 	// Both handle icons must be of the same size
 	const Size2 handle_size = path_sharp_handle->get_size();
 
-	const Ref<Texture2D> curve_handle = get_theme_icon(SNAME("EditorCurveHandle"), SNAME("EditorIcons"));
+	const Ref<Texture2D> curve_handle = get_editor_theme_icon(SNAME("EditorCurveHandle"));
 	const Size2 curve_handle_size = curve_handle->get_size();
 
 	Ref<Curve2D> curve = node->get_curve();
@@ -417,7 +417,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	if (on_edge) {
-		Ref<Texture2D> add_handle = get_theme_icon(SNAME("EditorHandleAdd"), SNAME("EditorIcons"));
+		Ref<Texture2D> add_handle = get_editor_theme_icon(SNAME("EditorHandleAdd"));
 		p_overlay->draw_texture(add_handle, edge_point - add_handle->get_size() * 0.5);
 	}
 }

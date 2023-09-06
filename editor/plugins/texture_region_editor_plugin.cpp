@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/option_button.h"
@@ -73,7 +74,7 @@ void TextureRegionEditor::_texture_overlay_draw() {
 	}
 
 	Transform2D mtx = _get_offset_transform();
-	const Color color = get_theme_color(SNAME("mono_color"), SNAME("Editor"));
+	const Color color = get_theme_color(SNAME("mono_color"), EditorStringName(Editor));
 
 	if (snap_mode == SNAP_GRID) {
 		const Color grid_color = Color(color.r, color.g, color.b, color.a * 0.15);
@@ -146,7 +147,7 @@ void TextureRegionEditor::_texture_overlay_draw() {
 		}
 	}
 
-	Ref<Texture2D> select_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> select_handle = get_editor_theme_icon(SNAME("EditorHandle"));
 
 	Rect2 scroll_rect(Point2(), object_texture->get_size());
 
@@ -264,7 +265,7 @@ void TextureRegionEditor::_draw_margin_line(Vector2 p_from, Vector2 p_to) {
 
 	Vector2 dash_size = (p_to - p_from).normalized() * 10;
 	const int dash_thickness = Math::round(2 * EDSCALE);
-	const Color dash_color = get_theme_color(SNAME("mono_color"), SNAME("Editor"));
+	const Color dash_color = get_theme_color(SNAME("mono_color"), EditorStringName(Editor));
 	const Color dash_bg_color = dash_color.inverted() * Color(1, 1, 1, 0.5);
 	const int line_threshold = 200;
 
@@ -822,12 +823,12 @@ void TextureRegionEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			texture_preview->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewBG"), SNAME("EditorStyles")));
-			texture_overlay->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewFG"), SNAME("EditorStyles")));
+			texture_preview->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewBG"), EditorStringName(EditorStyles)));
+			texture_overlay->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewFG"), EditorStringName(EditorStyles)));
 
-			zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
-			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
-			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
+			zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1226,7 +1227,7 @@ bool EditorInspectorPluginTextureRegion::parse_property(Object *p_object, const 
 	if ((p_type == Variant::RECT2 || p_type == Variant::RECT2I)) {
 		if (((Object::cast_to<Sprite2D>(p_object) || Object::cast_to<Sprite3D>(p_object) || Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object)) && p_path == "region_rect") || (Object::cast_to<AtlasTexture>(p_object) && p_path == "region")) {
 			Button *button = EditorInspector::create_inspector_action_button(TTR("Edit Region"));
-			button->set_icon(texture_region_editor->get_theme_icon(SNAME("RegionEdit"), SNAME("EditorIcons")));
+			button->set_icon(texture_region_editor->get_editor_theme_icon(SNAME("RegionEdit")));
 			button->connect("pressed", callable_mp(this, &EditorInspectorPluginTextureRegion::_region_edit).bind(p_object));
 			add_property_editor(p_path, button, true);
 		}

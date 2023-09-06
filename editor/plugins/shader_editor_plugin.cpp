@@ -33,6 +33,7 @@
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/inspector_dock.h"
@@ -74,10 +75,10 @@ void ShaderEditorPlugin::_update_shader_list() {
 		}
 
 		String _class = shader->get_class();
-		if (!shader_list->has_theme_icon(_class, SNAME("EditorIcons"))) {
+		if (!shader_list->has_theme_icon(_class, EditorStringName(EditorIcons))) {
 			_class = "TextFile";
 		}
-		Ref<Texture2D> icon = shader_list->get_theme_icon(_class, SNAME("EditorIcons"));
+		Ref<Texture2D> icon = shader_list->get_editor_theme_icon(_class);
 
 		shader_list->add_item(text, icon);
 		shader_list->set_item_tooltip(shader_list->get_item_count() - 1, path);
@@ -101,7 +102,7 @@ void ShaderEditorPlugin::_update_shader_list_status() {
 			if (se->was_compilation_successful()) {
 				shader_list->set_item_tag_icon(i, Ref<Texture2D>());
 			} else {
-				shader_list->set_item_tag_icon(i, shader_list->get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+				shader_list->set_item_tag_icon(i, shader_list->get_editor_theme_icon(SNAME("Error")));
 			}
 		}
 	}

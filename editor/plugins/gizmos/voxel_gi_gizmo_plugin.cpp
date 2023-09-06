@@ -47,7 +47,7 @@ VoxelGIGizmoPlugin::VoxelGIGizmoPlugin() {
 	gizmo_color.a = 0.05;
 	create_material("voxel_gi_solid_material", gizmo_color);
 
-	create_icon_material("voxel_gi_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoVoxelGI"), SNAME("EditorIcons")));
+	create_icon_material("voxel_gi_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoVoxelGI")));
 	create_handle_material("handles");
 }
 
