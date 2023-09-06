@@ -205,7 +205,9 @@ const GodotJSWrapper = {
 				return;
 			}
 			const args = Array.from(arguments);
-			func(p_ref, GodotJSWrapper.get_proxied(args), args.length);
+			const argsProxy = new GodotJSWrapper.MyProxy(args);
+			func(p_ref, argsProxy.get_id(), args.length);
+			argsProxy.unref();
 		};
 		id = GodotJSWrapper.get_proxied(cb);
 		return id;
