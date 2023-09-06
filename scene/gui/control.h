@@ -42,6 +42,7 @@ class Viewport;
 class Label;
 class Panel;
 class ThemeOwner;
+class ThemeContext;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
@@ -552,6 +553,8 @@ public:
 	void set_theme_owner_node(Node *p_node);
 	Node *get_theme_owner_node() const;
 	bool has_theme_owner_node() const;
+
+	void set_theme_context(ThemeContext *p_context, bool p_propagate = true);
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
