@@ -160,6 +160,8 @@ def run(target, source, env):
 #ifndef GDVIRTUAL_GEN_H
 #define GDVIRTUAL_GEN_H
 
+#include "core/object/script_instance.h"
+
 
 """
 

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
+#include "core/object/script_language.h"
 #include "core/os/condition_variable.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
