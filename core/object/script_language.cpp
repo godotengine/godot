@@ -731,3 +731,13 @@ PlaceHolderScriptInstance::~PlaceHolderScriptInstance() {
 		script->_placeholder_erased(this);
 	}
 }
+
+const String Script::get_display_name() const {
+	if (is_built_in() && !get_name().is_empty()) {
+		return vformat("%s (%s)", get_name(), get_path().get_slice("::", 0));
+	} else if (get_global_name() != StringName()) {
+		return vformat("%s (%s)", get_global_name(), get_path());
+	} else {
+		return get_path();
+	}
+}

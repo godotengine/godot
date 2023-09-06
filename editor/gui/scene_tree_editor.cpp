@@ -406,7 +406,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 				additional_notes += "\n" + TTR("This script is a custom type.");
 				button_color.a = 0.5;
 			}
-			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + scr->get_path() + additional_notes);
+			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + scr->get_display_name() + additional_notes);
 			item->set_button_color(0, item->get_button_count(0) - 1, button_color);
 		}
 

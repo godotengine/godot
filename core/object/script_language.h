@@ -171,6 +171,8 @@ public:
 
 	virtual const Variant get_rpc_config() const = 0;
 
+	const String get_display_name() const;
+
 	Script() {}
 };
 
