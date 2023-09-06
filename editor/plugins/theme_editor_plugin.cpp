@@ -1217,7 +1217,7 @@ void ThemeItemEditorDialog::_dialog_about_to_show() {
 	import_default_theme_items->reset_item_tree();
 
 	import_editor_theme_items->set_edited_theme(edited_theme);
-	import_editor_theme_items->set_base_theme(EditorNode::get_singleton()->get_theme_base()->get_theme());
+	import_editor_theme_items->set_base_theme(EditorNode::get_singleton()->get_editor_theme());
 	import_editor_theme_items->reset_item_tree();
 
 	import_other_theme_items->set_edited_theme(edited_theme);

@@ -108,6 +108,7 @@ public:
 	ThemeContext *create_theme_context(Node *p_node, List<Ref<Theme>> &p_themes);
 	void destroy_theme_context(Node *p_node);
 
+	ThemeContext *get_theme_context(Node *p_node) const;
 	ThemeContext *get_default_theme_context() const;
 	ThemeContext *get_nearest_theme_context(Node *p_for_node) const;
 

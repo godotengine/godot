@@ -272,7 +272,17 @@ void ThemeDB::_init_default_theme_context() {
 	default_theme_context = memnew(ThemeContext);
 
 	List<Ref<Theme>> themes;
+
+	// Only add the project theme to the default context when running projects.
+
+#ifdef TOOLS_ENABLED
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		themes.push_back(project_theme);
+	}
+#else
 	themes.push_back(project_theme);
+#endif
+
 	themes.push_back(default_theme);
 	default_theme_context->set_themes(themes);
 }
@@ -287,6 +297,14 @@ void ThemeDB::_finalize_theme_contexts() {
 		memdelete(E->value);
 		theme_contexts.remove(E);
 	}
+}
+
+ThemeContext *ThemeDB::get_theme_context(Node *p_node) const {
+	if (!theme_contexts.has(p_node)) {
+		return nullptr;
+	}
+
+	return theme_contexts[p_node];
 }
 
 ThemeContext *ThemeDB::get_default_theme_context() const {

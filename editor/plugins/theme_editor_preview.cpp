@@ -202,8 +202,14 @@ void ThemeEditorPreview::_notification(int p_what) {
 			}
 
 			connect("visibility_changed", callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
-			[[fallthrough]];
-		}
+		} break;
+
+		case NOTIFICATION_READY: {
+			List<Ref<Theme>> preview_themes;
+			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
+			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_editor_theme_icon(SNAME("ColorPick")));
 
@@ -247,9 +253,8 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_container = memnew(ScrollContainer);
 	preview_body->add_child(preview_container);
 
-	MarginContainer *preview_root = memnew(MarginContainer);
+	preview_root = memnew(MarginContainer);
 	preview_container->add_child(preview_root);
-	preview_root->set_theme(ThemeDB::get_singleton()->get_default_theme());
 	preview_root->set_clip_contents(true);
 	preview_root->set_custom_minimum_size(Size2(450, 0) * EDSCALE);
 	preview_root->set_v_size_flags(SIZE_EXPAND_FILL);
