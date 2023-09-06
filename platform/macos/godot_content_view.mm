@@ -40,6 +40,7 @@
 - (id)init {
 	self = [super init];
 	window_id = DisplayServer::INVALID_WINDOW_ID;
+	need_redraw = false;
 	return self;
 }
 
@@ -47,13 +48,18 @@
 	window_id = wid;
 }
 
+- (void)setNeedRedraw:(bool)redraw {
+	need_redraw = redraw;
+}
+
 - (void)displayLayer:(CALayer *)layer {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing()) {
+	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing() && need_redraw) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
 		}
+		need_redraw = false;
 	}
 }
 
@@ -93,6 +99,7 @@
 	}
 
 	[super setFrameSize:newSize];
+	[layer_delegate setNeedRedraw:true];
 	[self.layer setNeedsDisplay]; // Force "drawRect" call.
 }
 
