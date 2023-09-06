@@ -1692,10 +1692,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 				} else if (mb->is_alt_pressed()) {
 					// Scroll 5 times as fast as normal (like in Visual Studio Code).
-					_scroll_up(15 * mb->get_factor());
+					_scroll_up(15 * mb->get_factor(), true);
 				} else if (v_scroll->is_visible()) {
 					// Scroll 3 lines.
-					_scroll_up(3 * mb->get_factor());
+					_scroll_up(3 * mb->get_factor(), true);
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
@@ -1703,10 +1703,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 				} else if (mb->is_alt_pressed()) {
 					// Scroll 5 times as fast as normal (like in Visual Studio Code).
-					_scroll_down(15 * mb->get_factor());
+					_scroll_down(15 * mb->get_factor(), true);
 				} else if (v_scroll->is_visible()) {
 					// Scroll 3 lines.
-					_scroll_down(3 * mb->get_factor());
+					_scroll_down(3 * mb->get_factor(), true);
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
@@ -1924,9 +1924,9 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	if (pan_gesture.is_valid()) {
 		const real_t delta = pan_gesture->get_delta().y;
 		if (delta < 0) {
-			_scroll_up(-delta);
+			_scroll_up(-delta, false);
 		} else {
-			_scroll_down(delta);
+			_scroll_down(delta, false);
 		}
 		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
@@ -5487,9 +5487,8 @@ void TextEdit::set_line_as_last_visible(int p_line, int p_wrap_index) {
 		set_v_scroll(0);
 		return;
 	}
-	set_v_scroll(get_scroll_pos_for_line(first_line, next_line.y) + _get_visible_lines_offset());
+	set_v_scroll(round(get_scroll_pos_for_line(first_line, next_line.y) + _get_visible_lines_offset()));
 }
-
 int TextEdit::get_last_full_visible_line() const {
 	int first_vis_line = get_first_visible_line();
 	int last_vis_line = 0;
@@ -7330,11 +7329,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->show();
 		v_scroll->set_max(total_rows + _get_visible_lines_offset());
 		v_scroll->set_page(visible_rows + _get_visible_lines_offset());
-		if (smooth_scroll_enabled) {
-			v_scroll->set_step(0.25);
-		} else {
-			v_scroll->set_step(1);
-		}
+
 		set_v_scroll(get_v_scroll());
 
 	} else {
@@ -7428,7 +7423,7 @@ double TextEdit::_get_v_scroll_offset() const {
 	return CLAMP(val, 0, 1);
 }
 
-void TextEdit::_scroll_up(real_t p_delta) {
+void TextEdit::_scroll_up(real_t p_delta, bool p_animate) {
 	if (scrolling && smooth_scroll_enabled && SIGN(target_v_scroll - v_scroll->get_value()) != SIGN(-p_delta)) {
 		scrolling = false;
 		minimap_clicked = false;
@@ -7444,7 +7439,7 @@ void TextEdit::_scroll_up(real_t p_delta) {
 		if (target_v_scroll <= 0) {
 			target_v_scroll = 0;
 		}
-		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0 || !p_animate) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
@@ -7455,7 +7450,7 @@ void TextEdit::_scroll_up(real_t p_delta) {
 	}
 }
 
-void TextEdit::_scroll_down(real_t p_delta) {
+void TextEdit::_scroll_down(real_t p_delta, bool p_animate) {
 	if (scrolling && smooth_scroll_enabled && SIGN(target_v_scroll - v_scroll->get_value()) != SIGN(p_delta)) {
 		scrolling = false;
 		minimap_clicked = false;
@@ -7472,7 +7467,7 @@ void TextEdit::_scroll_down(real_t p_delta) {
 		if (target_v_scroll > max_v_scroll) {
 			target_v_scroll = max_v_scroll;
 		}
-		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0 || !p_animate) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
@@ -7578,9 +7573,9 @@ void TextEdit::_update_minimap_click() {
 	int first_line = row - next_line.x + 1;
 	double delta = get_scroll_pos_for_line(first_line, next_line.y) - get_v_scroll();
 	if (delta < 0) {
-		_scroll_up(-delta);
+		_scroll_up(-delta, true);
 	} else {
-		_scroll_down(delta);
+		_scroll_down(delta, true);
 	}
 }
 
