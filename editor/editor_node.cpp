@@ -4208,10 +4208,10 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 		}
 
 		if (p_fallback_script_to_theme) {
-			// Look for the base type in the editor theme.
-			// This is only relevant for built-in classes.
-			String base_type;
-			p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
+			// Look for the native base type in the editor theme. This is relevant for
+			// scripts extending other scripts and for built-in classes.
+			String script_class_name = p_script->get_language()->get_global_class_name(p_script->get_path());
+			String base_type = ScriptServer::get_global_class_native_base(script_class_name);
 			if (gui_base && gui_base->has_theme_icon(base_type, EditorStringName(EditorIcons))) {
 				return gui_base->get_editor_theme_icon(base_type);
 			}
