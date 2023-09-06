@@ -3701,6 +3701,7 @@ FileSystemDock::FileSystemDock() {
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
 	add_resource_tooltip_plugin(memnew(EditorTextureTooltipPlugin));
+	add_resource_tooltip_plugin(memnew(EditorAudioStreamTooltipPlugin));
 }
 
 FileSystemDock::~FileSystemDock() {
