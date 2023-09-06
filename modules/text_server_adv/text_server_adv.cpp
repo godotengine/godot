@@ -5880,8 +5880,11 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 				sd->para_direction = (direction == UBIDI_RTL) ? DIRECTION_RTL : DIRECTION_LTR;
 				sd->base_para_direction = direction;
 			} else {
-				sd->para_direction = DIRECTION_LTR;
-				sd->base_para_direction = UBIDI_DEFAULT_LTR;
+				const String &lang = (sd->spans.is_empty() || sd->spans[0].language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : sd->spans[0].language;
+				bool lang_rtl = _is_locale_right_to_left(lang);
+
+				sd->para_direction = lang_rtl ? DIRECTION_RTL : DIRECTION_LTR;
+				sd->base_para_direction = lang_rtl ? UBIDI_DEFAULT_RTL : UBIDI_DEFAULT_LTR;
 			}
 		} break;
 	}
