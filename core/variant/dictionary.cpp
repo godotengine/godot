@@ -45,14 +45,29 @@ struct DictionaryPrivate {
 	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> variant_map;
 };
 
-void Dictionary::get_key_list(List<Variant> *p_keys) const {
+void Dictionary::get_key_list(List<Variant> *p_keys, const int from, const int amount) const {
 	if (_p->variant_map.is_empty()) {
 		return;
 	}
 
+	int index = 0;
+	int size = 0;
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
+		if (index < from) {
+			index++;
+			continue;
+		}
+		if (size == amount) {
+			break;
+		}
 		p_keys->push_back(E.key);
+		size++;
 	}
+}
+
+bool Dictionary::set_key_at_index(int p_index, const Variant &new_key) {
+	Variant old_key = get_key_at_index(p_index);
+	return _p->variant_map.replace(old_key, new_key);
 }
 
 Variant Dictionary::get_key_at_index(int p_index) const {

@@ -51,6 +51,11 @@
 				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin._parse_property]), then this will return the property.
 			</description>
 		</method>
+		<method name="request_popup_refresh">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 		<method name="set_bottom_editor">
 			<return type="void" />
 			<param index="0" name="editor" type="Control" />
@@ -101,6 +106,12 @@
 			<param index="1" name="id" type="int" />
 			<description>
 				Used by sub-inspectors. Emit it if what was selected was an Object ID.
+			</description>
+		</signal>
+		<signal name="popup_refresh_requested">
+			<param index="0" name="menu" type="PopupMenu" />
+			<description>
+				Do not emit this manually, use the [method request_popup_refresh] method instead.
 			</description>
 		</signal>
 		<signal name="property_can_revert_changed">

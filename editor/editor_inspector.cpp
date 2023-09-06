@@ -725,7 +725,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
-		_update_popup();
+		request_popup_refresh();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
 		menu->reset_size();
 		menu->popup();
@@ -999,6 +999,7 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_focusable", "control"), &EditorProperty::add_focusable);
 	ClassDB::bind_method(D_METHOD("set_bottom_editor", "editor"), &EditorProperty::set_bottom_editor);
 
+	ClassDB::bind_method(D_METHOD("request_popup_refresh"), &EditorProperty::request_popup_refresh);
 	ClassDB::bind_method(D_METHOD("emit_changed", "property", "value", "field", "changing"), &EditorProperty::emit_changed, DEFVAL(StringName()), DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
@@ -1020,7 +1021,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
-
+	ADD_SIGNAL(MethodInfo("popup_refresh_requested", PropertyInfo(Variant::OBJECT, "menu", PROPERTY_HINT_RESOURCE_TYPE, "PopupMenu")));
 	GDVIRTUAL_BIND(_update_property)
 	GDVIRTUAL_BIND(_set_read_only, "read_only")
 
@@ -1037,14 +1038,27 @@ EditorProperty::EditorProperty() {
 	bottom_editor = nullptr;
 	menu = nullptr;
 	set_process_shortcut_input(true);
+
+	connect(SNAME("popup_refresh_requested"), callable_mp(this, &EditorProperty::_update_popup).unbind(1));
 }
 
-void EditorProperty::_update_popup() {
+void EditorProperty::request_popup_refresh() {
 	if (menu) {
 		menu->clear();
 	} else {
 		menu = memnew(PopupMenu);
 		add_child(menu);
+	}
+	emit_signal("popup_refresh_requested", menu);
+}
+
+void EditorProperty::_update_popup() {
+	List<Connection> p_connections;
+	get_signal_connection_list(SNAME("popup_refresh_requested"), &p_connections);
+	if (p_connections.size() > 1) {
+		return;
+	}
+	if (!menu->is_connected("id_pressed", callable_mp(this, &EditorProperty::menu_option))) {
 		menu->connect("id_pressed", callable_mp(this, &EditorProperty::menu_option));
 	}
 	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_value"), MENU_COPY_VALUE);
