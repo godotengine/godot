@@ -176,6 +176,9 @@
 		<member name="disable_ambient_light" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no ambient light.
 		</member>
+		<member name="disable_fog" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object will not be affected by fog (neither volumetric nor depth fog). This is useful for unshaded or transparent materials (e.g. particles), which without this setting will be affected even if fully transparent.
+		</member>
 		<member name="disable_receive_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it.
 		</member>
@@ -697,7 +700,10 @@
 		<constant name="FLAG_ALBEDO_TEXTURE_MSDF" value="20" enum="Flags">
 			Enables multichannel signed distance field rendering shader.
 		</constant>
-		<constant name="FLAG_MAX" value="21" enum="Flags">
+		<constant name="FLAG_DISABLE_FOG" value="21" enum="Flags">
+			Disables receiving depth-based or volumetric fog.
+		</constant>
+		<constant name="FLAG_MAX" value="22" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">

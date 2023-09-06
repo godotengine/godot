@@ -802,7 +802,9 @@ void fragment_shader(in SceneData scene_data) {
 	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
+#ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0);
+#endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance = vec4(0.0);
 #endif
@@ -962,6 +964,7 @@ void fragment_shader(in SceneData scene_data) {
 	/////////////////////// FOG //////////////////////
 #ifndef MODE_RENDER_DEPTH
 
+#ifndef FOG_DISABLED
 #ifndef CUSTOM_FOG_USED
 	// fog must be processed as early as possible and then packed.
 	// to maximize VGPR usage
@@ -997,6 +1000,7 @@ void fragment_shader(in SceneData scene_data) {
 	uint fog_rg = packHalf2x16(fog.rg);
 	uint fog_ba = packHalf2x16(fog.ba);
 
+#endif //!FOG_DISABLED
 #endif //!MODE_RENDER_DEPTH
 
 	/////////////////////// DECALS ////////////////////////////////
@@ -2250,8 +2254,10 @@ void fragment_shader(in SceneData scene_data) {
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
 
+#ifndef FOG_DISABLED
 	//restore fog
 	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+#endif //!FOG_DISABLED
 
 #ifdef MODE_SEPARATE_SPECULAR
 
@@ -2268,8 +2274,10 @@ void fragment_shader(in SceneData scene_data) {
 	specular_buffer = vec4(specular_light, metallic);
 #endif
 
+#ifndef FOG_DISABLED
 	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
 	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
+#endif //!FOG_DISABLED
 
 #else //MODE_SEPARATE_SPECULAR
 
@@ -2280,8 +2288,10 @@ void fragment_shader(in SceneData scene_data) {
 //frag_color = vec4(1.0);
 #endif //USE_NO_SHADING
 
+#ifndef FOG_DISABLED
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+#endif //!FOG_DISABLED
 
 #endif //MODE_SEPARATE_SPECULAR
 
