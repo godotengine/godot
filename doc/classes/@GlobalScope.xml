@@ -1393,6 +1393,7 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include executable code). Deserialization can be done with [method bytes_to_var_with_objects].
+				[b]Note:[/b] When serializing objects, not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object.get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags. In GDScript, [code]@export[/code]ed variables automatically have the [constant PROPERTY_USAGE_STORAGE] flag.
 			</description>
 		</method>
 		<method name="var_to_str">
@@ -1418,6 +1419,7 @@
 				}
 				[/codeblock]
 				[b]Note:[/b] Converting [Signal] or [Callable] is not supported and will result in an empty value for these types, regardless of their data.
+				[b]Note:[/b] When serializing objects, not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object.get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags. In GDScript, [code]@export[/code]ed variables automatically have the [constant PROPERTY_USAGE_STORAGE] flag.
 			</description>
 		</method>
 		<method name="weakref">
