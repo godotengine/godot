@@ -391,6 +391,8 @@ void ScriptCreateDialog::_create_new() {
 
 	if (is_built_in) {
 		scr->set_name(internal_name->get_text());
+		// Make sure the script is compiled to make its type recognizable.
+		scr->reload();
 	} else {
 		String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 		scr->set_path(lpath);
