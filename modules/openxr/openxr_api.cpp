@@ -300,32 +300,31 @@ bool OpenXRAPI::create_instance() {
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_requested_extensions();
 
-		// requested_extensions.insert(wrapper_request_extensions.begin(), wrapper_request_extensions.end());
-		for (auto &requested_extension : wrapper_request_extensions) {
+		for (const KeyValue<String, bool *> &requested_extension : wrapper_request_extensions) {
 			requested_extensions[requested_extension.key] = requested_extension.value;
 		}
 	}
 
-	// Check which extensions are supported
+	// Check which extensions are supported.
 	enabled_extensions.clear();
 
-	for (auto &requested_extension : requested_extensions) {
+	for (KeyValue<String, bool *> &requested_extension : requested_extensions) {
 		if (!is_extension_supported(requested_extension.key)) {
 			if (requested_extension.value == nullptr) {
-				// nullptr means this is a manditory extension so we fail
+				// Null means this is a manditory extension so we fail.
 				ERR_FAIL_V_MSG(false, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.key + String(" extension!"));
 			} else {
-				// set this extension as not supported
+				// Set this extension as not supported.
 				*requested_extension.value = false;
 			}
 		} else if (requested_extension.value != nullptr) {
-			// set this extension as supported
+			// Set this extension as supported.
 			*requested_extension.value = true;
 
-			// and record that we want to enable it
+			// And record that we want to enable it.
 			enabled_extensions.push_back(requested_extension.key.ascii());
 		} else {
-			// record that we want to enable this
+			// Record that we want to enable this.
 			enabled_extensions.push_back(requested_extension.key.ascii());
 		}
 	}
@@ -2077,7 +2076,7 @@ XRPose::TrackingConfidence _transform_from_location(const T &p_location, Transfo
 	Basis basis;
 	Vector3 origin;
 	XRPose::TrackingConfidence confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
-	const auto &pose = p_location.pose;
+	const XrPosef &pose = p_location.pose;
 
 	// Check orientation
 	if (p_location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
