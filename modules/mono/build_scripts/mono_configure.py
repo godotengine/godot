@@ -3,7 +3,7 @@ import os.path
 
 
 def is_desktop(platform):
-    return platform in ["windows", "macos", "linuxbsd", "uwp", "haiku"]
+    return platform in ["windows", "macos", "linuxbsd", "haiku"]
 
 
 def is_unix_like(platform):

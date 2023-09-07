@@ -592,7 +592,6 @@ MONO_AOT_MODE_LAST = 1000,
             switch (platform)
             {
                 case OS.Platforms.Windows:
-                case OS.Platforms.UWP:
                 {
                     return $"windows-{arch}";
                 }
