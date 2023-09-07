@@ -4936,7 +4936,11 @@ void VisualShaderNodeVectorCompose::set_op_type(OpType p_op_type) {
 		default:
 			break;
 	}
+	bool ports_removed = p_op_type < op_type;
 	op_type = p_op_type;
+	if (ports_removed) {
+		emit_signal("node_ports_removed");
+	}
 	emit_changed();
 }
 
@@ -5100,7 +5104,11 @@ void VisualShaderNodeVectorDecompose::set_op_type(OpType p_op_type) {
 		default:
 			break;
 	}
+	bool ports_removed = p_op_type < op_type;
 	op_type = p_op_type;
+	if (ports_removed) {
+		emit_signal("node_ports_removed");
+	}
 	emit_changed();
 }
 
