@@ -288,7 +288,8 @@ File extracted from upstream release tarball:
 - The `LICENSE` file.
 - Applied the patch in `patches/1453.diff` to fix UWP build (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
-  Applied the patch in `patches/windows-arm64-hardclock.diff`
+  Applied the patch in `patches/windows-arm64-hardclock.diff`.
+  Applied the patch in `aesni-no-arm-intrinsics.patch` also to fix UWP build.
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 
