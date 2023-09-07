@@ -1535,7 +1535,7 @@ void EditorFileDialog::_recent_selected(int p_idx) {
 }
 
 void EditorFileDialog::_go_up() {
-	dir_access->change_dir(get_current_dir().get_base_dir());
+	dir_access->change_dir(get_current_dir().trim_suffix("/").get_base_dir());
 	update_file_list();
 	update_dir();
 	_push_history();
