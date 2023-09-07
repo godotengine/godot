@@ -1055,6 +1055,7 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 	info_2->get_method_list_func = p_info->get_method_list_func;
 	info_2->free_method_list_func = p_info->free_method_list_func;
 	info_2->get_property_type_func = p_info->get_property_type_func;
+	info_2->validate_property_func = nullptr;
 	info_2->has_method_func = p_info->has_method_func;
 	info_2->call_func = p_info->call_func;
 	info_2->notification_func = nullptr;
