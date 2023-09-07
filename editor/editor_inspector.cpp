@@ -2331,6 +2331,7 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_object_id_selected", &EditorInspector::_object_id_selected);
 	ClassDB::bind_method("_vscroll_changed", &EditorInspector::_vscroll_changed);
 	ClassDB::bind_method("_feature_profile_changed", &EditorInspector::_feature_profile_changed);
+	ClassDB::bind_method("get_edited_object", &EditorInspector::get_edited_object);
 
 	ClassDB::bind_method("refresh", &EditorInspector::refresh);
 
