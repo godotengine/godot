@@ -38,8 +38,8 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 
-class SymbolTooltip : public PopupPanel {
-	GDCLASS(SymbolTooltip, PopupPanel);
+class SymbolTooltip : public PanelContainer {
+	GDCLASS(SymbolTooltip, PanelContainer);
 
 	Ref<Script> script = nullptr;
 	CodeTextEditor *code_editor = nullptr;
@@ -62,6 +62,7 @@ class SymbolTooltip : public PopupPanel {
 
 public:
 	void _on_tooltip_delay_timeout();
+	void close_tooltip();
 	void update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script);
 	String _get_symbol_word(const Vector2 &mouse_position);
 	Vector2 _calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position);

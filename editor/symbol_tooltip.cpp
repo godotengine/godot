@@ -46,34 +46,36 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 	// Set the tooltip's theme (PanelContainer's theme)
 	//set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
 
-	//set_min_size(Vector2(100, 50));
-	set_transient(true);
-	set_flag(Window::FLAG_NO_FOCUS, true);
-	set_flag(Window::FLAG_POPUP, false);
-	set_flag(Window::FLAG_MOUSE_PASSTHROUGH, false);
-	set_theme(_create_popup_panel_theme());
-
-	// Create PanelContainer for styling the tooltip.
-	panel_container = memnew(PanelContainer);
-	panel_container->set_theme(_create_panel_theme());
-	add_child(panel_container);
+	set_as_top_level(true); // Prevents the tooltip from affecting the editor's layout.
+	hide();
+	/*set_v_size_flags(0);
+	set_h_size_flags(0);*/
+	set_z_index(1000);
+	set_theme(_create_panel_theme());
+	set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	//set_clip_contents(true);
 
 	// Create VBoxContainer to hold the tooltip's header and body.
 	layout_container = memnew(VBoxContainer);
-	panel_container->add_child(layout_container);
+	layout_container->add_theme_constant_override("separation", 0);
+	layout_container->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	add_child(layout_container);
 
 	// Create RichTextLabel for the tooltip's header.
 	header_label = memnew(TextEdit);
-	//header_label->set_editable(false); // WARNING!! - Enabling this will mess with the theme.
 	header_label->set_focus_mode(Control::FOCUS_ALL);
 	header_label->set_context_menu_enabled(false);
 	header_label->set_h_scroll_visibility(false);
 	header_label->set_v_scroll_visibility(false);
 	header_label->set_syntax_highlighter(highlighter);
-	//header_label->set_selection_enabled(true);
 	header_label->set_custom_minimum_size(Size2(50, 45));
-	//header_label->set_line_wrapping_mode(TextEdit::LINE_WRAPPING_BOUNDARY);
-	//header_label->set_fit_content_height_enabled(true);
+
+	header_label->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	header_label->set_line_wrapping_mode(TextEdit::LINE_WRAPPING_BOUNDARY);
+	header_label->set_fit_content_height_enabled(true);
+
+	//header_label->set_editable(false); // WARNING!! - Enabling this will mess with the theme.
+	//header_label->set_selection_enabled(true);
 	header_label->set_theme(_create_header_label_theme());
 	layout_container->add_child(header_label);
 
@@ -81,10 +83,11 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 	body_label = memnew(RichTextLabel);
 	body_label->set_use_bbcode(true);
 	body_label->set_selection_enabled(true);
-	body_label->set_custom_minimum_size(Size2(400, 100));
+	body_label->set_custom_minimum_size(Size2(400, 45));
 	body_label->set_focus_mode(Control::FOCUS_ALL);
-	body_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	//body_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	body_label->set_theme(_create_body_label_theme());
+	//body_label->set_fit_content(true); // WARNING!! - Enabling this will cause issues in _update_tooltip_size().
 	body_label->hide();
 	layout_container->add_child(body_label);
 
@@ -105,15 +108,30 @@ SymbolTooltip::~SymbolTooltip() {
 }
 
 void SymbolTooltip::_on_tooltip_delay_timeout() {
+	print_line("size: " + get_size() + ", vbox_size: " + layout_container->get_size() + ", header_size: " + header_label->get_size() + ", body_size: " + body_label->get_size());
+
 	show();
 }
 
+void SymbolTooltip::close_tooltip() {
+	tooltip_delay->stop();
+	hide();
+}
+
 void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script) {
+	//Rect2 tooltip_rect_1 = Rect2(get_position(), get_size());
+	//bool is_mouse_over_tooltip = tooltip_rect_1.has_point(mouse_position);
+	//print_line("local_mouse_position: " + get_local_mouse_position() + ", mouse_position: " + mouse_position + ", is_mouse_over_tooltip: " + String::num(is_mouse_over_tooltip));
+	//print_line("mouse_position: " + mouse_position);
+	/*if (mouse_position == Vector2(-1, -1)) { // If position is invalid.
+		close_tooltip();
+		return;
+	}*/
+
 	String symbol_word = _get_symbol_word(mouse_position);
 	if (symbol_word.is_empty()) {
-		tooltip_delay->stop();
 		last_symbol_word = "";
-		hide();
+		close_tooltip();
 		return;
 	}
 
@@ -121,7 +139,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 		return;
 	} else {
 		// Symbol has changed, reset the timer.
-		tooltip_delay->stop();
+		close_tooltip();
 		last_symbol_word = symbol_word;
 	}
 
@@ -130,8 +148,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 	const lsp::DocumentSymbol *member_symbol = get_member_symbol(members, symbol_word);
 
 	if (member_symbol == nullptr) { // Symbol is not a member of the script.
-		tooltip_delay->stop();
-		hide();
+		close_tooltip();
 		return;
 	}
 
@@ -150,18 +167,17 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 	if (!mouse_over_tooltip) {
 		Vector2 tooltip_position = _calculate_tooltip_position(symbol_word, mouse_position);
 		if (tooltip_position == Vector2(-1, -1)) { // If position is invalid.
-			tooltip_delay->stop();
-			hide();
+			close_tooltip();
 			return;
 		} else {
-			//Vector2 symbol_position = tooltip_position - text_editor->get_screen_position();
-			//Vector2 temp_line_col = text_editor->get_line_column_at_pos(symbol_position);
 			set_position(tooltip_position);
 		}
 	}
 
 	// Start the timer to show the tooltip after a delay.
-	tooltip_delay->start();
+	if (!is_visible()) {
+		tooltip_delay->start();
+	}
 }
 
 String SymbolTooltip::_get_symbol_word(const Vector2 &mouse_position) {
@@ -179,13 +195,181 @@ Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, co
 		int symbol_col = _get_word_pos_under_mouse(symbol_word, line, col);
 		if (symbol_col >= 0) {
 			Vector2 symbol_position = text_editor->get_pos_at_line_column(row, symbol_col);
-			return text_editor->get_screen_position() + symbol_position;
+			return text_editor->get_global_position() + symbol_position;
 		}
 	}
 	return Vector2(-1, -1); // Indicates an invalid position.
 }
 
+/*void SymbolTooltip::_update_tooltip_size() {
+	// Calculate and set the tooltip's size.
+	//queue_redraw();
+
+	// Constants and References
+	const int MAX_WIDTH = 800;
+	const int MAX_HEIGHT = 450;
+
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Editor"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
+	Size2 header_content_size = font->get_string_size(header_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+
+	//Size2 header_size = header_label->get_size();
+	//Size2 body_size = body_label->is_visible() ? body_label->get_size() : Size2(0, 0);
+
+	real_t lines_after_wrapping = header_content_size.width / MIN(MAX_WIDTH, header_content_size.width + 30);
+	real_t line_height = font->get_height(font_size);
+	real_t wrapped_height = line_height * lines_after_wrapping;
+	real_t calculated_header_height = wrapped_height + 20;
+	print_line("lines_after_wrapping: " + String::num(lines_after_wrapping) + ", line_height: " + String::num(line_height) + ", wrapped_height: " + String::num(wrapped_height) + ", calculated_header_height: " + String::num(calculated_header_height));
+
+	Size2 body_content_size = font->get_string_size(body_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+	real_t lines_after_wrapping = header_content_size.width / MIN(MAX_WIDTH, header_content_size.width + 30);
+	real_t line_height = font->get_height(font_size);
+	real_t wrapped_height = line_height * lines_after_wrapping;
+	real_t calculated_header_height = wrapped_height + 20;
+
+	Size2 content_size = Size2(MAX(header_content_size.width, body_size.width) + 32, header_size.height + body_size.height);
+	Size2 panel_size = Size2(MIN(MAX_WIDTH, content_size.width), MIN(MAX_HEIGHT, content_size.height));
+	print_line("font_size: " + String::num(font_size) + ", header_content_size: " + header_content_size + ", header_size: " + header_size + ", body_size: " + body_size + ", content_size: " + content_size + ", panel_size: " + panel_size);
+	// real_t tooltip_width = MAX(MIN(MAX_WIDTH, header_width), MIN(body_label->is_visible() ? body_width : 0, header_width));
+
+	set_size(panel_size);
+}
+
+void SymbolTooltip::compute_height_based_on_content(String content, real_t vertical_padding, real_t max_width) {
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Editor"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
+	Size2 content_size = font->get_string_size(content, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+	real_t line_height = font->get_height(font_size);
+	real_t lines_after_wrapping = content_size.width / MIN(max_width, content_size.width + 30);
+	real_t wrapped_height = line_height * lines_after_wrapping;
+	real_t calculated_height = wrapped_height + vertical_padding;
+	print_line("lines_after_wrapping: " + String::num(lines_after_wrapping) + ", line_height: " + String::num(line_height) + ", wrapped_height: " + String::num(wrapped_height) + ", calculated_height: " + String::num(calculated_height));
+}*/
+
+/*void SymbolTooltip::_update_tooltip_size() {
+	// Calculate and set the tooltip's size.
+	//queue_redraw();
+
+	// Constants and References
+	const int MAX_WIDTH = 800;
+	const int MAX_HEIGHT = 450;
+
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Editor"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
+	Size2 header_content_size = font->get_string_size(header_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+
+	Size2 header_size = header_label->get_size();
+	Size2 body_size = body_label->is_visible() ? body_label->get_size() : Size2(0, 0);
+	Size2 content_size = Size2(MAX(header_content_size.width, body_size.width) + 32, header_size.height + body_size.height);
+	Size2 panel_size = Size2(MIN(MAX_WIDTH, content_size.width), MIN(MAX_HEIGHT, content_size.height));
+	print_line("font_size: " + String::num(font_size) + ", header_content_size: " + header_content_size + ", header_size: " + header_size + ", body_size: " + body_size + ", content_size: " + content_size + ", panel_size: " + panel_size);
+	// real_t tooltip_width = MAX(MIN(MAX_WIDTH, header_width), MIN(body_label->is_visible() ? body_width : 0, header_width));
+
+	header_label->set_size(Size2(panel_size.width, MIN(150, header_size.height)));
+	body_label->set_size(Size2(panel_size.width, MIN(300, body_size.height)));
+	set_size(panel_size);
+}*/
+
 void SymbolTooltip::_update_tooltip_size() {
+	// Constants and References
+	const int MAX_WIDTH = 800;
+	Ref<Theme> header_theme = header_label->get_theme();
+	Ref<StyleBox> header_style_box = header_theme->get_stylebox("normal", "TextEdit");
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Editor"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
+	String header_text = header_label->get_text();
+	Ref<Theme> body_theme = body_label->get_theme();
+	Ref<StyleBox> body_style_box = body_theme->get_stylebox("normal", "RichTextLabel");
+
+	// Calculate content size and style box paddings
+	Size2 header_content_size = font->get_string_size(header_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+	real_t header_h_padding = header_style_box->get_content_margin(SIDE_LEFT) + header_style_box->get_content_margin(SIDE_RIGHT);
+	//real_t header_v_padding = header_style_box->get_content_margin(SIDE_TOP) + header_style_box->get_content_margin(SIDE_BOTTOM);
+	real_t body_h_padding = body_style_box->get_content_margin(SIDE_LEFT) + body_style_box->get_content_margin(SIDE_RIGHT);
+	real_t body_v_padding = body_style_box->get_content_margin(SIDE_TOP) + body_style_box->get_content_margin(SIDE_BOTTOM);
+
+	// Determine tooltip width based on max width, header width, and body visibility
+	real_t header_width = header_content_size.width + header_h_padding;
+	real_t body_width = body_label->get_content_width() + body_h_padding;
+	real_t tooltip_width = MIN(MAX_WIDTH, MAX(header_width, body_label->is_visible() ? body_width : 0) + 10); // TODO: Should be +2, but +10 is needed and I'm not sure why.
+
+	// Set sizes
+	header_label->set_custom_minimum_size(Size2(tooltip_width, -1)); // TODO: Calculate this accurately instead of using -1.
+	body_label->set_custom_minimum_size(Size2(tooltip_width, MIN(body_label->get_content_height() + body_v_padding, 400)));
+	set_size(Vector2(tooltip_width, -1));
+}
+
+// BEST SO FAR. Issue is that body doesn't have max height.
+/*void SymbolTooltip::_update_tooltip_size() {
+	// Constants and References
+	const int MAX_WIDTH = 800;
+	Ref<Theme> header_theme = header_label->get_theme();
+	Ref<StyleBox> header_style_box = header_theme->get_stylebox("normal", "TextEdit");
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Editor"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
+	String header_text = header_label->get_text();
+	Ref<Theme> body_theme = body_label->get_theme();
+	Ref<StyleBox> body_style_box = body_theme->get_stylebox("normal", "RichTextLabel");
+
+	// Calculate content size and style box paddings
+	Size2 header_content_size = font->get_string_size(header_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+	real_t header_h_padding = header_style_box->get_content_margin(SIDE_LEFT) + header_style_box->get_content_margin(SIDE_RIGHT);
+	real_t header_v_padding = header_style_box->get_content_margin(SIDE_TOP) + header_style_box->get_content_margin(SIDE_BOTTOM);
+	real_t body_h_padding = body_style_box->get_content_margin(SIDE_LEFT) + body_style_box->get_content_margin(SIDE_RIGHT);
+	real_t body_v_padding = body_style_box->get_content_margin(SIDE_TOP) + body_style_box->get_content_margin(SIDE_BOTTOM);
+
+	// Determine tooltip width based on max width, header width, and body visibility
+	Vector2 body_size = body_label->get_size();
+	real_t header_width = header_content_size.width + header_h_padding;
+	print_line("body_content_width: " + String::num(body_label->get_content_width()) + ", is_visible: " + String::num(body_label->is_visible()));
+	real_t body_width = body_label->get_content_width() + body_h_padding;
+
+	real_t tooltip_width = MIN(MAX_WIDTH, MAX(header_width, body_label->is_visible() ? body_width : 0));
+	//real_t tooltip_width = MAX(MIN(MAX_WIDTH, header_width), MIN(body_label->is_visible() ? body_width : 0, header_width));
+
+	header_label->set_custom_minimum_size(Size2(tooltip_width, -1));
+
+	// Check if line wrapping is required and apply if necessary
+	bool need_to_wrap = header_content_size.width > tooltip_width;
+	TextEdit::LineWrappingMode line_wrapping_mode = need_to_wrap ? TextEdit::LINE_WRAPPING_BOUNDARY : TextEdit::LINE_WRAPPING_NONE;
+	if (header_label->get_line_wrapping_mode() != line_wrapping_mode) {
+		header_label->set_line_wrapping_mode(line_wrapping_mode);
+		header_label->set_fit_content_height_enabled(true);
+	}
+
+	print_line("header_label->get_line_wrap_count(0): " + String::num(header_label->get_line_wrap_count(0)) + ", header_label->get_last_full_visible_line_wrap_index(): " + String::num(header_label->get_last_full_visible_line_wrap_index()));
+	print_line("header_content_size: " + header_content_size + ", tooltip_width: " + String::num(tooltip_width) + ", need_to_wrap: " + String::num(need_to_wrap));
+
+	// Calculate header height based on wrapping
+	//real_t lines_after_wrapping = round(header_content_size.width / (tooltip_width - header_h_padding)); // Must account for margins.
+	real_t lines_after_wrapping = header_label->get_line_wrap_count(0);
+	real_t line_height = header_label->get_line_height();
+	real_t wrapped_height = line_height * lines_after_wrapping;
+	real_t header_height = need_to_wrap ? wrapped_height : header_content_size.height;
+	print_line("lines_after_wrapping: " + String::num(lines_after_wrapping) + ", line_height: " + String::num(line_height) + ", wrapped_height: " + String::num(wrapped_height) + ", header_height: " + String::num(header_height));
+
+	// Update total height for tooltip if body label is visible
+	real_t height = header_height;
+	if (body_label->is_visible()) {
+		height += body_size.height;
+		//v_padding += 1;
+	}
+	real_t tooltip_height = height + header_v_padding;
+
+	// Set sizes
+	//Size2 new_header_size = Size2(tooltip_width, MAX(header_height + header_v_padding, 45));
+	//header_label->set_custom_minimum_size(new_header_size);
+	//header_label->set_size(new_header_size);
+	//body_label->set_size(Vector2(tooltip_width, body_size.height));
+	Size2 new_body_size = Size2(tooltip_width, body_label->get_content_height() + body_v_padding);
+	body_label->set_custom_minimum_size(new_body_size);
+	//layout_container->set_size(Vector2(tooltip_width, tooltip_height));
+ 	//update_minimum_size();
+	set_size(Vector2(tooltip_width, -1));
+}*/
+
+/*void SymbolTooltip::_update_tooltip_size() {
 	// Calculate and set the tooltip's size.
 	int max_width = 800;
 	Ref<Theme> header_theme = header_label->get_theme();
@@ -196,33 +380,54 @@ void SymbolTooltip::_update_tooltip_size() {
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
 	Size2 header_content_size = font->get_string_size(header_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 
-	bool need_to_wrap = header_content_size.width > max_width;
+	real_t h_padding = header_style_box->get_content_margin(SIDE_LEFT) + header_style_box->get_content_margin(SIDE_RIGHT) + 2;
+	real_t v_padding = header_style_box->get_content_margin(SIDE_TOP) + header_style_box->get_content_margin(SIDE_BOTTOM) + 2;
+
+	Vector2 body_size = body_label->get_size();
+	real_t header_width = header_content_size.width + h_padding;
+	real_t tooltip_width = MAX(MIN(max_width, header_width), MIN(body_label->is_visible() ? body_size.width : 0, header_width) );
+
+	print_line("header_label_before: " + header_label->get_size() + ", header_content_size: " + header_content_size);
+	bool need_to_wrap = header_content_size.width > tooltip_width;
 	TextEdit::LineWrappingMode line_wrapping_mode = need_to_wrap ? TextEdit::LINE_WRAPPING_BOUNDARY : TextEdit::LINE_WRAPPING_NONE;
 	if (header_label->get_line_wrapping_mode() != line_wrapping_mode) {
 		header_label->set_line_wrapping_mode(line_wrapping_mode);
-		header_label->set_fit_content_height_enabled(need_to_wrap); // TODO: Fix issue where the tooltip height renders incorrectly when this is enabled and line wrapping is occurring.
+		//header_label->set_fit_content_height_enabled(need_to_wrap); // TODO: Fix issue where the tooltip height renders incorrectly when this is enabled and line wrapping is occurring.
+		header_label->set_fit_content_height_enabled(false);
 	}
+	print_line("header_label_after: " + header_label->get_size());
 
-	real_t lines_after_wrapping = header_content_size.width / max_width;
+	real_t lines_after_wrapping = header_content_size.width / tooltip_width;
 	real_t line_height = font->get_height(font_size);
 	real_t wrapped_height = line_height * lines_after_wrapping;
+	print_line("lines_after_wrapping: " + String::num(lines_after_wrapping) + ", line_height: " + String::num(line_height) + ", wrapped_height: " + String::num(wrapped_height));
 
-	real_t h_padding = header_style_box->get_content_margin(SIDE_LEFT) + header_style_box->get_content_margin(SIDE_RIGHT) + 2;
-	real_t v_padding = header_style_box->get_content_margin(SIDE_TOP) + header_style_box->get_content_margin(SIDE_BOTTOM) + 2;
 	real_t header_height = need_to_wrap ? wrapped_height : header_content_size.height;
 	real_t height = header_height;
 
-	Vector2 body_size = body_label->get_size();
 	if (body_label->is_visible()) {
 		height += body_size.height;
 		v_padding += 1;
 	}
 
-	real_t header_width = header_content_size.width + h_padding;
-	real_t tooltip_width = MAX(MIN(max_width, header_width), MIN(body_label->is_visible() ? body_size.width : 0, header_width) );
 	real_t tooltip_height = height + v_padding;
-	set_size(Vector2(tooltip_width, tooltip_height));
-}
+	print_line("header_width: " + String::num(header_width) + ", header_height: " + String::num(header_height) + ", body_width: " + String::num(body_size.width) + ", body_height: " + String::num(body_size.height) + ", header_content_size: " + header_content_size + ", tooltip_width: " + String::num(tooltip_width) + ", tooltip_height: " + String::num(tooltip_height));
+
+	Size2 new_header_size = Size2(tooltip_width, MAX(header_height + v_padding, 45));
+	header_label->set_custom_minimum_size(new_header_size);
+	header_label->set_size(new_header_size);
+	layout_container->set_size(Vector2(tooltip_width, tooltip_height));
+	TypedArray<Node> children = layout_container->get_children();
+	print_line("num_children: " + String::num(children.size()));
+	for (int i = 0; i < children.size(); i++) {
+		Node *child = Object::cast_to<Node>(children[i]);
+		print_line("child: " + child->get_name());
+	}
+	print_line("Header Label Minimum Size: " + header_label->get_combined_minimum_size());
+	//header_label->set_size(Vector2(header_width, header_height));
+	//set_size(Vector2(tooltip_width, tooltip_height));
+	//layout_container->queue_redraw();
+}*/
 
 void SymbolTooltip::_update_tooltip_content(const String &header_content, const String &body_content) {
 	// Update the tooltip's header and body.
@@ -232,7 +437,6 @@ void SymbolTooltip::_update_tooltip_content(const String &header_content, const 
 
 void SymbolTooltip::_update_header_label(const String &header_content) {
 	// Set the tooltip's header text.
-	//Ref<SyntaxHighlighter> highlighter = code_editor->get_text_editor()->get_syntax_highlighter();
 	header_label->set_text(header_content);
 }
 
@@ -313,8 +517,6 @@ Ref<Theme> SymbolTooltip::_create_header_label_theme() {
 	Ref<StyleBoxFlat> style_box = memnew(StyleBoxFlat);
 	style_box->set_draw_center(false);
 	style_box->set_content_margin_individual(15, 10, 15, 10);
-	// TODO: The horizontal scrollbar may still be taking up space even when invisible??  Something is adding unwanted bottom margin.
-	// TODO: Besides the small bottom unwanted margin, there is still a large unwanted margin that doesn't appear to come from the header.
 
 	// Set the style boxes for the TextEdit
 	theme->set_stylebox("normal", "TextEdit", style_box);
