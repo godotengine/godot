@@ -495,6 +495,9 @@ void PopupMenu::_draw_items() {
 			has_check = true;
 		}
 	}
+	if (icon_ofs > 0.0) {
+		icon_ofs += hseparation;
+	}
 
 	float check_ofs = 0.0;
 	if (has_check) {
