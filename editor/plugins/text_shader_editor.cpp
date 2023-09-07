@@ -179,7 +179,14 @@ void ShaderTextEditor::set_edited_code(const String &p_code) {
 }
 
 void ShaderTextEditor::reload_text() {
-	ERR_FAIL_COND(shader.is_null());
+	ERR_FAIL_COND(shader.is_null() && shader_inc.is_null());
+
+	String code;
+	if (shader.is_valid()) {
+		code = shader->get_code();
+	} else {
+		code = shader_inc->get_code();
+	}
 
 	CodeEdit *te = get_text_editor();
 	int column = te->get_caret_column();
@@ -187,7 +194,7 @@ void ShaderTextEditor::reload_text() {
 	int h = te->get_h_scroll();
 	int v = te->get_v_scroll();
 
-	te->set_text(shader->get_code());
+	te->set_text(code);
 	te->set_caret_line(row);
 	te->set_caret_column(column);
 	te->set_h_scroll(h);
