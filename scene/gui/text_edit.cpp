@@ -2943,7 +2943,11 @@ void TextEdit::_update_placeholder() {
 	placeholder_data_buf->clear();
 	placeholder_data_buf->set_width(text.get_width());
 	placeholder_data_buf->set_break_flags(text.get_brk_flags());
-	placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
+	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
+		placeholder_data_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+	} else {
+		placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
+	}
 	placeholder_data_buf->set_preserve_control(draw_control_chars);
 	placeholder_data_buf->add_string(placeholder_text, theme_cache.font, theme_cache.font_size, language);
 
