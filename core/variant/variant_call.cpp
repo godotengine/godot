@@ -2076,6 +2076,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, basis_xform, sarray("v"), varray());
 	bind_method(Transform2D, basis_xform_inv, sarray("v"), varray());
 	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());
+	bind_method(Transform2D, is_conformal, sarray(), varray());
 	bind_method(Transform2D, is_equal_approx, sarray("xform"), varray());
 	bind_method(Transform2D, is_finite, sarray(), varray());
 	// Do not bind functions like set_rotation, set_scale, set_skew, etc because this type is immutable and can't be modified.
@@ -2095,6 +2096,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, tdoty, sarray("with"), varray());
 	bind_method(Basis, tdotz, sarray("with"), varray());
 	bind_method(Basis, slerp, sarray("to", "weight"), varray());
+	bind_method(Basis, is_conformal, sarray(), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, is_finite, sarray(), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
