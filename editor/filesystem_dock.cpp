@@ -1777,7 +1777,7 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	// Present a more user friendly warning for name conflict.
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-#if defined(WINDOWS_ENABLED) || defined(UWP_ENABLED)
+#if defined(WINDOWS_ENABLED)
 	// Workaround case insensitivity on Windows.
 	if ((da->file_exists(new_path) || da->dir_exists(new_path)) && new_path.to_lower() != old_path.to_lower()) {
 #else

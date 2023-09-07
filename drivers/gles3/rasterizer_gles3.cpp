@@ -63,7 +63,7 @@
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
 #ifndef GLAPIENTRY
-#if defined(WINDOWS_ENABLED) && !defined(UWP_ENABLED)
+#if defined(WINDOWS_ENABLED)
 #define GLAPIENTRY APIENTRY
 #else
 #define GLAPIENTRY

@@ -80,7 +80,7 @@ SOFTWARE.
 namespace {
 
 String get_hostfxr_file_name() {
-#if defined(WINDOWS_ENABLED) || defined(UWP_ENABLED)
+#if defined(WINDOWS_ENABLED)
 	return "hostfxr.dll";
 #elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	return "libhostfxr.dylib";
