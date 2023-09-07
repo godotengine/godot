@@ -82,6 +82,8 @@ public:
 	EditorSceneFormatImporter() {}
 };
 
+VARIANT_ENUM_CAST(EditorSceneFormatImporter::ImportFlags)
+
 class EditorScenePostImport : public RefCounted {
 	GDCLASS(EditorScenePostImport, RefCounted);
 

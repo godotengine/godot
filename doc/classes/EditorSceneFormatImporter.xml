@@ -44,17 +44,17 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="IMPORT_SCENE" value="1">
+		<constant name="IMPORT_SCENE" value="1" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_ANIMATION" value="2">
+		<constant name="IMPORT_ANIMATION" value="2" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_FAIL_ON_MISSING_DEPENDENCIES" value="4">
+		<constant name="IMPORT_FAIL_ON_MISSING_DEPENDENCIES" value="4" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="8">
+		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="8" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_USE_NAMED_SKIN_BINDS" value="16">
+		<constant name="IMPORT_USE_NAMED_SKIN_BINDS" value="16" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_DISCARD_MESHES_AND_MATERIALS" value="32">
+		<constant name="IMPORT_DISCARD_MESHES_AND_MATERIALS" value="32" enum="ImportFlags">
 		</constant>
 	</constants>
 </class>
