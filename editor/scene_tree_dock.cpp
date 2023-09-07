@@ -493,7 +493,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				// Preserve ownership relations ready for pasting.
 				List<Node *> owned;
-				node->get_owned_by(node->get_owner(), &owned);
+				node->get_owned_by(node->get_owner() ? node->get_owner() : node, &owned);
 
 				for (Node *F : owned) {
 					if (!duplimap.has(F) || F == node) {
@@ -3394,7 +3394,11 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 	}
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(vformat(p_paste_as_sibling ? TTR("Paste Node(s) as Sibling of %s") : TTR("Paste Node(s) as Child of %s"), paste_parent->get_name()), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+	if (paste_parent) {
+		ur->create_action(vformat(p_paste_as_sibling ? TTR("Paste Node(s) as Sibling of %s") : TTR("Paste Node(s) as Child of %s"), paste_parent->get_name()), UndoRedo::MERGE_DISABLE, edited_scene);
+	} else {
+		ur->create_action(TTR("Paste Node(s) as Root"), UndoRedo::MERGE_DISABLE, edited_scene);
+	}
 	ur->add_do_method(editor_selection, "clear");
 
 	HashMap<Ref<Resource>, Ref<Resource>> resource_remap;
