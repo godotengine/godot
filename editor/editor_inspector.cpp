@@ -2122,8 +2122,10 @@ void EditorInspectorArray::_setup() {
 		ae.panel->set_focus_mode(FOCUS_ALL);
 		ae.panel->set_mouse_filter(MOUSE_FILTER_PASS);
 		SET_DRAG_FORWARDING_GCD(ae.panel, EditorInspectorArray);
-		ae.panel->set_meta("index", begin_array_index + i);
-		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
+
+		int element_position = begin_array_index + i;
+		ae.panel->set_meta("index", element_position);
+		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), element_position, array_element_prefix, element_position));
 		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
 		ae.panel->connect("focus_exited", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
 		ae.panel->connect("draw", callable_mp(this, &EditorInspectorArray::_panel_draw).bind(i));
@@ -2149,7 +2151,6 @@ void EditorInspectorArray::_setup() {
 
 		// Move button.
 		if (movable) {
-			int element_position = begin_array_index + i;
 			VBoxContainer *move_vbox = memnew(VBoxContainer);
 			move_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 			move_vbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
@@ -2185,7 +2186,7 @@ void EditorInspectorArray::_setup() {
 			ae.number->set_custom_minimum_size(Size2(numbers_min_w, 0));
 			ae.number->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 			ae.number->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-			ae.number->set_text(itos(begin_array_index + i));
+			ae.number->set_text(itos(element_position));
 			ae.hbox->add_child(ae.number);
 		}
 
@@ -2198,7 +2199,7 @@ void EditorInspectorArray::_setup() {
 		ae.erase = memnew(Button);
 		ae.erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
 		ae.erase->set_v_size_flags(SIZE_SHRINK_CENTER);
-		ae.erase->connect("pressed", callable_mp(this, &EditorInspectorArray::_remove_item).bind(begin_array_index + i));
+		ae.erase->connect("pressed", callable_mp(this, &EditorInspectorArray::_remove_item).bind(element_position));
 		ae.hbox->add_child(ae.erase);
 	}
 
