@@ -603,10 +603,6 @@ MONO_AOT_MODE_LAST = 1000,
                 {
                     return $"linux-{arch}";
                 }
-                case OS.Platforms.Haiku:
-                {
-                    return $"{platform}-{arch}";
-                }
                 default:
                     throw new NotSupportedException($"Platform not supported: {platform}");
             }

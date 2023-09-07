@@ -26,7 +26,6 @@ namespace GodotTools.Utils
             public const string FreeBSD = "FreeBSD";
             public const string NetBSD = "NetBSD";
             public const string BSD = "BSD";
-            public const string Haiku = "Haiku";
             public const string Android = "Android";
             public const string iOS = "iOS";
             public const string Web = "Web";
@@ -40,7 +39,6 @@ namespace GodotTools.Utils
             public const string Windows = "windows";
             public const string MacOS = "macos";
             public const string LinuxBSD = "linuxbsd";
-            public const string Haiku = "haiku";
             public const string Android = "android";
             public const string iOS = "ios";
             public const string Web = "web";
@@ -69,7 +67,6 @@ namespace GodotTools.Utils
             ["Windows"] = Platforms.Windows,
             ["macOS"] = Platforms.MacOS,
             ["Linux"] = Platforms.LinuxBSD,
-            ["Haiku"] = Platforms.Haiku,
             ["Android"] = Platforms.Android,
             ["iOS"] = Platforms.iOS,
             ["Web"] = Platforms.Web
@@ -83,7 +80,6 @@ namespace GodotTools.Utils
             [Names.FreeBSD] = Platforms.LinuxBSD,
             [Names.NetBSD] = Platforms.LinuxBSD,
             [Names.BSD] = Platforms.LinuxBSD,
-            [Names.Haiku] = Platforms.Haiku,
             [Names.Android] = Platforms.Android,
             [Names.iOS] = Platforms.iOS,
             [Names.Web] = Platforms.Web
@@ -127,13 +123,12 @@ namespace GodotTools.Utils
             new[] { Names.Linux, Names.FreeBSD, Names.NetBSD, Names.BSD };
 
         private static readonly IEnumerable<string> UnixLikePlatforms =
-            new[] { Names.MacOS, Names.Haiku, Names.Android, Names.iOS }
+            new[] { Names.MacOS, Names.Android, Names.iOS }
                 .Concat(LinuxBSDPlatforms).ToArray();
 
         private static readonly Lazy<bool> _isWindows = new(() => IsOS(Names.Windows));
         private static readonly Lazy<bool> _isMacOS = new(() => IsOS(Names.MacOS));
         private static readonly Lazy<bool> _isLinuxBSD = new(() => IsAnyOS(LinuxBSDPlatforms));
-        private static readonly Lazy<bool> _isHaiku = new(() => IsOS(Names.Haiku));
         private static readonly Lazy<bool> _isAndroid = new(() => IsOS(Names.Android));
         private static readonly Lazy<bool> _isiOS = new(() => IsOS(Names.iOS));
         private static readonly Lazy<bool> _isWeb = new(() => IsOS(Names.Web));
@@ -144,8 +139,6 @@ namespace GodotTools.Utils
         [SupportedOSPlatformGuard("osx")] public static bool IsMacOS => _isMacOS.Value;
 
         [SupportedOSPlatformGuard("linux")] public static bool IsLinuxBSD => _isLinuxBSD.Value;
-
-        public static bool IsHaiku => _isHaiku.Value;
 
         [SupportedOSPlatformGuard("android")] public static bool IsAndroid => _isAndroid.Value;
 
