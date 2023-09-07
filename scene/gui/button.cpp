@@ -554,10 +554,8 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 }
 
 void Button::_texture_changed() {
-	if (icon.is_valid()) {
-		queue_redraw();
-		update_minimum_size();
-	}
+	queue_redraw();
+	update_minimum_size();
 }
 
 Ref<Texture2D> Button::get_icon() const {
