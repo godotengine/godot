@@ -1931,7 +1931,6 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 
 			if (!to_move[i].is_file) {
 				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-				print_line(new_path);
 			}
 
 			if (old_path != new_path) {
