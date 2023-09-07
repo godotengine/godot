@@ -38,15 +38,17 @@ bool GodotAreaPair2D::setup(real_t p_step) {
 	}
 
 	process_collision = false;
+
 	has_space_override = false;
+	if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+		has_space_override = true;
+	} else if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+		has_space_override = true;
+	} else if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+		has_space_override = true;
+	}
+
 	if (result != colliding) {
-		if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
-			has_space_override = true;
-		} else if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
-			has_space_override = true;
-		} else if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
-			has_space_override = true;
-		}
 		process_collision = has_space_override;
 
 		if (area->has_monitor_callback()) {
