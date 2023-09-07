@@ -64,6 +64,9 @@ private:
 	bool hflip;
 	bool vflip;
 
+	void _set_texture(Ref<Texture> *p_destination, const Ref<Texture> &p_texture);
+	void _texture_changed();
+
 protected:
 	virtual Size2 get_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
