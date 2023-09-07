@@ -32,6 +32,7 @@
 #define OPENXR_HAND_TRACKING_EXTENSION_H
 
 #include "../util.h"
+#include "core/math/quaternion.h"
 #include "openxr_extension_wrapper.h"
 
 #define MAX_OPENXR_TRACKED_HANDS 2
@@ -72,6 +73,13 @@ public:
 
 	XrHandJointsMotionRangeEXT get_motion_range(uint32_t p_hand) const;
 	void set_motion_range(uint32_t p_hand, XrHandJointsMotionRangeEXT p_motion_range);
+
+	Quaternion get_hand_joint_rotation(uint32_t p_hand, XrHandJointEXT p_joint) const;
+	Vector3 get_hand_joint_position(uint32_t p_hand, XrHandJointEXT p_joint) const;
+	float get_hand_joint_radius(uint32_t p_hand, XrHandJointEXT p_joint) const;
+
+	Vector3 get_hand_joint_linear_velocity(uint32_t p_hand, XrHandJointEXT p_joint) const;
+	Vector3 get_hand_joint_angular_velocity(uint32_t p_hand, XrHandJointEXT p_joint) const;
 
 private:
 	static OpenXRHandTrackingExtension *singleton;
