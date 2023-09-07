@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_format_binary.h"
+#include "core/object/script_language.h"
 #include "core/version.h"
 
 // Version 2: changed names for Basis, AABB, Vectors, etc.

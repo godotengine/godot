@@ -37,7 +37,6 @@
 #include "servers/audio_server.h"
 
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 
 class AudioStream;

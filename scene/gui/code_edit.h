@@ -31,6 +31,7 @@
 #ifndef CODE_EDIT_H
 #define CODE_EDIT_H
 
+#include "core/object/script_language.h"
 #include "scene/gui/text_edit.h"
 
 class CodeEdit : public TextEdit {

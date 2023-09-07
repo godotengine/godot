@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/message_queue.h"
+#include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"

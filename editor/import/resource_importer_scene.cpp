@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/resource_saver.h"
+#include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/import/scene_import_settings.h"

@@ -31,6 +31,7 @@
 #ifndef ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 #define ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 
+#include "core/object/script_language.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"

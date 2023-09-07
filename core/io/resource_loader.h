@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"

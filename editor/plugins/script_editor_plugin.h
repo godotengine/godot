@@ -31,6 +31,7 @@
 #ifndef SCRIPT_EDITOR_PLUGIN_H
 #define SCRIPT_EDITOR_PLUGIN_H
 
+#include "core/object/script_language.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"

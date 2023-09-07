@@ -388,40 +388,6 @@ String ScriptServer::get_global_class_cache_file_path() {
 
 ////////////////////
 
-Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	return callp(p_method, p_args, p_argcount, r_error);
-}
-
-void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) {
-	List<PropertyInfo> pinfo;
-	get_property_list(&pinfo);
-	for (const PropertyInfo &E : pinfo) {
-		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			Pair<StringName, Variant> p;
-			p.first = E.name;
-			if (get(p.first, p.second)) {
-				state.push_back(p);
-			}
-		}
-	}
-}
-
-void ScriptInstance::property_set_fallback(const StringName &, const Variant &, bool *r_valid) {
-	if (r_valid) {
-		*r_valid = false;
-	}
-}
-
-Variant ScriptInstance::property_get_fallback(const StringName &, bool *r_valid) {
-	if (r_valid) {
-		*r_valid = false;
-	}
-	return Variant();
-}
-
-ScriptInstance::~ScriptInstance() {
-}
-
 ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
 ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
 	singleton = this;
