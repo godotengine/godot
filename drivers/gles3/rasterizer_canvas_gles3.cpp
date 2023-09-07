@@ -2115,7 +2115,7 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 
 	if (render_target && render_target->clear_requested) {
 		const Color &col = render_target->clear_color;
-		glClearColor(col.r, col.g, col.b, col.a);
+		glClearColor(col.r, col.g, col.b, render_target->is_transparent ? col.a : 1.0f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		render_target->clear_requested = false;
