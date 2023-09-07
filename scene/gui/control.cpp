@@ -2465,6 +2465,11 @@ bool Control::has_theme_owner_node() const {
 	return data.theme_owner->has_owner_node();
 }
 
+void Control::set_theme_context(ThemeContext *p_context, bool p_propagate) {
+	ERR_MAIN_THREAD_GUARD;
+	data.theme_owner->set_owner_context(p_context, p_propagate);
+}
+
 void Control::set_theme(const Ref<Theme> &p_theme) {
 	ERR_MAIN_THREAD_GUARD;
 	if (data.theme == p_theme) {
@@ -3124,7 +3129,9 @@ void Control::_notification(int p_notification) {
 				notification(NOTIFICATION_TRANSLATION_CHANGED);
 			}
 #endif
-			notification(NOTIFICATION_THEME_CHANGED);
+
+			// Emits NOTIFICATION_THEME_CHANGED internally.
+			set_theme_context(ThemeDB::get_singleton()->get_nearest_theme_context(this));
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
@@ -3134,6 +3141,7 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			set_theme_context(nullptr, false);
 			release_focus();
 			get_viewport()->_gui_remove_control(this);
 		} break;
@@ -3632,7 +3640,7 @@ void Control::_bind_methods() {
 }
 
 Control::Control() {
-	data.theme_owner = memnew(ThemeOwner);
+	data.theme_owner = memnew(ThemeOwner(this));
 }
 
 Control::~Control() {

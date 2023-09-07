@@ -1034,6 +1034,22 @@ void CanvasItemEditor::_on_grid_menu_id_pressed(int p_id) {
 	viewport->queue_redraw();
 }
 
+void CanvasItemEditor::_switch_theme_preview(int p_mode) {
+	view_menu->get_popup()->hide();
+
+	if (theme_preview == p_mode) {
+		return;
+	}
+	theme_preview = (ThemePreviewMode)p_mode;
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "theme_preview", theme_preview);
+
+	for (int i = 0; i < THEME_PREVIEW_MAX; i++) {
+		theme_menu->set_item_checked(i, i == theme_preview);
+	}
+
+	EditorNode::get_singleton()->update_preview_themes(theme_preview);
+}
+
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	Ref<InputEventMouseButton> b = p_event;
@@ -5321,6 +5337,20 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/clear_guides", TTR("Clear Guides")), CLEAR_GUIDES);
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale")), PREVIEW_CANVAS_SCALE);
+
+	theme_menu = memnew(PopupMenu);
+	theme_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_switch_theme_preview));
+	theme_menu->set_name("ThemeMenu");
+	theme_menu->add_radio_check_item(TTR("Project theme"), THEME_PREVIEW_PROJECT);
+	theme_menu->add_radio_check_item(TTR("Editor theme"), THEME_PREVIEW_EDITOR);
+	theme_menu->add_radio_check_item(TTR("Default theme"), THEME_PREVIEW_DEFAULT);
+	p->add_child(theme_menu);
+	p->add_submenu_item(TTR("Preview Theme"), "ThemeMenu");
+
+	theme_preview = (ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", THEME_PREVIEW_PROJECT);
+	for (int i = 0; i < THEME_PREVIEW_MAX; i++) {
+		theme_menu->set_item_checked(i, i == theme_preview);
+	}
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
