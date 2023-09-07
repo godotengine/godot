@@ -3446,7 +3446,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 	}
 
 	SUBCASE("[CodeEdit] autocomplete suggestion order") {
-		/* Favorize less fragmented suggestion. */
+		/* Prefer less fragmented suggestion. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3456,7 +3456,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize suggestion starting from the string to complete (matching start). */
+		/* Prefer suggestion starting with the string to complete (matching start). */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3466,7 +3466,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize less fragment to matching start. */
+		/* Prefer less fragment over matching start. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3476,27 +3476,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "stest");
 
-		/* Favorize closer location. */
-		code_edit->clear();
-		code_edit->insert_text_at_caret("te");
-		code_edit->set_caret_column(2);
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test", "test");
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test_bis", "test_bis", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
-		code_edit->update_code_completion_options();
-		code_edit->confirm_code_completion();
-		CHECK(code_edit->get_line(0) == "test_bis");
-
-		/* Favorize matching start to location. */
-		code_edit->clear();
-		code_edit->insert_text_at_caret("te");
-		code_edit->set_caret_column(2);
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test", "test");
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "stest_bis", "test_bis", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
-		code_edit->update_code_completion_options();
-		code_edit->confirm_code_completion();
-		CHECK(code_edit->get_line(0) == "test");
-
-		/* Favorize good capitalization. */
+		/* Prefer good capitalization. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3506,7 +3486,27 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize location to good capitalization. */
+		/* Prefer matching start over good capitalization. */
+		code_edit->clear();
+		code_edit->insert_text_at_caret("te");
+		code_edit->set_caret_column(2);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "Test", "Test");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "stest_bis", "test_bis");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "Test");
+
+		/* Prefer closer location. */
+		code_edit->clear();
+		code_edit->insert_text_at_caret("te");
+		code_edit->set_caret_column(2);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test", "test");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test_bis", "test_bis", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "test_bis");
+
+		/* Prefer good capitalization over location. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3514,9 +3514,9 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "Test", "Test", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
-		CHECK(code_edit->get_line(0) == "Test");
+		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize string to complete being closest to the start of the suggestion (closest to start). */
+		/* Prefer the start of the string to complete being closest to the start of the suggestion (closest to start). */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3526,12 +3526,12 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "stest");
 
-		/* Favorize good capitalization to closest to start. */
+		/* Prefer location over closest to start. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "sTest", "stest");
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "sstest", "sstest");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "stest", "stest");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "sstest", "sstest", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "sstest");
