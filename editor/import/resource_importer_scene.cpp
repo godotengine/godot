@@ -80,9 +80,9 @@ Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_f
 	for (const KeyValue<StringName, Variant> &elem : p_options) {
 		options_dict[elem.key] = elem.value;
 	}
-	Object *ret = nullptr;
+	Node *ret = nullptr;
 	if (GDVIRTUAL_CALL(_import_scene, p_path, p_flags, options_dict, ret)) {
-		return Object::cast_to<Node>(ret);
+		return ret;
 	}
 
 	ERR_FAIL_V_MSG(nullptr, "Unimplemented _import_scene in add-on.");

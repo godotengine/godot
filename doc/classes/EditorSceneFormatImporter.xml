@@ -35,7 +35,7 @@
 			</description>
 		</method>
 		<method name="_import_scene" qualifiers="virtual">
-			<return type="Object" />
+			<return type="Node" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="flags" type="int" />
 			<param index="2" name="options" type="Dictionary" />
