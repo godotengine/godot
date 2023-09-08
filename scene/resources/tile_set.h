@@ -50,7 +50,6 @@
 #endif
 
 class TileMap;
-struct TileMapQuadrant;
 class TileSetSource;
 class TileSetAtlasSource;
 class TileData;
