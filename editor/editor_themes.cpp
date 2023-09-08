@@ -1830,8 +1830,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// GraphEdit
 	theme->set_stylebox("panel", "GraphEdit", style_tree_bg);
 	if (dark_theme) {
-		theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.15));
-		theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.07));
+		theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.1));
+		theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.05));
 	} else {
 		theme->set_color("grid_major", "GraphEdit", Color(0.0, 0.0, 0.0, 0.15));
 		theme->set_color("grid_minor", "GraphEdit", Color(0.0, 0.0, 0.0, 0.07));
@@ -1866,6 +1866,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		style_minimap_node = make_flat_stylebox(Color(0, 0, 0), 0, 0, 0, 0);
 	}
 	style_minimap_camera->set_border_width_all(1);
+	style_minimap_node->set_anti_aliased(false);
 	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
 	theme->set_stylebox("node", "GraphEditMinimap", style_minimap_node);
 
@@ -1879,38 +1880,43 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
 
 	// GraphNode
+
+	const int gn_margin_top = 2;
 	const int gn_margin_side = 2;
 	const int gn_margin_bottom = 2;
-
-	// StateMachine
-	const int sm_margin_side = 10;
 
 	Color graphnode_bg = dark_color_3;
 	if (!dark_theme) {
 		graphnode_bg = prop_section_color;
 	}
+	const Color graph_node_selected_border_color = graphnode_bg.lerp(accent_color, 0.275);
 
-	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(graphnode_bg.lerp(style_tree_bg->get_bg_color(), 0.3), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
-	graphsb->set_border_width_all(border_width);
-	graphsb->set_border_color(graphnode_bg);
-	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 1), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
-	graphsbselected->set_border_width_all(2 * EDSCALE + border_width);
-	graphsbselected->set_border_color(Color(accent_color.r, accent_color.g, accent_color.b, 0.6));
-	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.3), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
-	graphsbcomment->set_border_width_all(border_width);
-	graphsbcomment->set_border_color(graphnode_bg);
-	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.4), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
-	graphsbcommentselected->set_border_width_all(border_width);
-	graphsbcommentselected->set_border_color(graphnode_bg);
-	Ref<StyleBoxFlat> graphsbbreakpoint = graphsbselected->duplicate();
-	graphsbbreakpoint->set_draw_center(false);
-	graphsbbreakpoint->set_border_color(warning_color);
-	graphsbbreakpoint->set_shadow_color(warning_color * Color(1.0, 1.0, 1.0, 0.1));
-	Ref<StyleBoxFlat> graphsbposition = graphsbselected->duplicate();
-	graphsbposition->set_draw_center(false);
-	graphsbposition->set_border_color(error_color);
-	graphsbposition->set_shadow_color(error_color * Color(1.0, 1.0, 1.0, 0.2));
-	Ref<StyleBoxEmpty> graphsbslot = make_empty_stylebox(12, 0, 12, 0);
+	const Color graphnode_frame_bg = graphnode_bg.lerp(style_tree_bg->get_bg_color(), 0.3);
+
+	Ref<StyleBoxFlat> graphn_sb_panel = make_flat_stylebox(graphnode_frame_bg, gn_margin_side, gn_margin_top, gn_margin_side, gn_margin_bottom, corner_width);
+	graphn_sb_panel->set_border_width_all(border_width);
+	graphn_sb_panel->set_border_color(graphnode_bg);
+	graphn_sb_panel->set_corner_radius_individual(0, 0, corner_radius * EDSCALE, corner_radius * EDSCALE);
+	graphn_sb_panel->set_expand_margin(SIDE_TOP, 17 * EDSCALE);
+
+	Ref<StyleBoxFlat> graphn_sb_panel_selected = make_flat_stylebox(graphnode_frame_bg, gn_margin_side, gn_margin_top, gn_margin_side, gn_margin_bottom, corner_width);
+	graphn_sb_panel_selected->set_border_width_all(2 * EDSCALE + border_width);
+	graphn_sb_panel_selected->set_border_color(graph_node_selected_border_color);
+	graphn_sb_panel_selected->set_corner_radius_individual(0, 0, corner_radius * EDSCALE, corner_radius * EDSCALE);
+	graphn_sb_panel_selected->set_expand_margin(SIDE_TOP, 17 * EDSCALE);
+
+	const int gn_titlebar_margin_side = 12;
+	Ref<StyleBoxFlat> graphn_sb_titlebar = make_flat_stylebox(graphnode_bg, gn_titlebar_margin_side, gn_margin_top, gn_titlebar_margin_side, 0, corner_width);
+	graphn_sb_titlebar->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
+	graphn_sb_titlebar->set_corner_radius_individual(corner_radius * EDSCALE, corner_radius * EDSCALE, 0, 0);
+
+	Ref<StyleBoxFlat> graphn_sb_titlebar_selected = make_flat_stylebox(graph_node_selected_border_color, gn_titlebar_margin_side, gn_margin_top, gn_titlebar_margin_side, 0, corner_width);
+	graphn_sb_titlebar_selected->set_corner_radius_individual(corner_radius * EDSCALE, corner_radius * EDSCALE, 0, 0);
+	graphn_sb_titlebar_selected->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
+	Ref<StyleBoxEmpty> graphn_sb_slot = make_empty_stylebox(12, 0, 12, 0);
+
+	// StateMachine.
+	const int sm_margin_side = 10;
 	Ref<StyleBoxFlat> smgraphsb = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), sm_margin_side, 24, sm_margin_side, gn_margin_bottom, corner_width);
 	smgraphsb->set_border_width_all(border_width);
 	smgraphsb->set_border_color(graphnode_bg);
@@ -1920,45 +1926,42 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	smgraphsbselected->set_shadow_size(8 * EDSCALE);
 	smgraphsbselected->set_shadow_color(shadow_color);
 
-	graphsb->set_border_width(SIDE_TOP, 24 * EDSCALE);
-	graphsbselected->set_border_width(SIDE_TOP, 24 * EDSCALE);
-	graphsbcomment->set_border_width(SIDE_TOP, 24 * EDSCALE);
-	graphsbcommentselected->set_border_width(SIDE_TOP, 24 * EDSCALE);
+	theme->set_stylebox("panel", "GraphElement", graphn_sb_panel);
+	theme->set_stylebox("panel_selected", "GraphElement", graphn_sb_panel_selected);
+	theme->set_stylebox("titlebar", "GraphElement", graphn_sb_titlebar);
+	theme->set_stylebox("titlebar_selected", "GraphElement", graphn_sb_titlebar_selected);
 
-	graphsb->set_corner_detail(corner_radius * EDSCALE);
-	graphsbselected->set_corner_detail(corner_radius * EDSCALE);
-	graphsbcomment->set_corner_detail(corner_radius * EDSCALE);
-	graphsbcommentselected->set_corner_detail(corner_radius * EDSCALE);
+	// GraphNode's title Label.
+	theme->set_type_variation("GraphNodeTitleLabel", "Label");
 
-	theme->set_stylebox("frame", "GraphNode", graphsb);
-	theme->set_stylebox("selected_frame", "GraphNode", graphsbselected);
-	theme->set_stylebox("breakpoint", "GraphNode", graphsbbreakpoint);
-	theme->set_stylebox("position", "GraphNode", graphsbposition);
-	theme->set_stylebox("slot", "GraphNode", graphsbslot);
-	theme->set_stylebox("state_machine_frame", "GraphNode", smgraphsb);
-	theme->set_stylebox("state_machine_selected_frame", "GraphNode", smgraphsbselected);
+	theme->set_stylebox("normal", "GraphNodeTitleLabel", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_color("font_color", "GraphNodeTitleLabel", font_color);
+	theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * EDSCALE);
 
-	Color node_decoration_color = dark_color_1.inverted();
-	theme->set_color("title_color", "GraphNode", node_decoration_color);
-	node_decoration_color.a = 0.7;
-	theme->set_color("close_color", "GraphNode", node_decoration_color);
-	theme->set_color("resizer_color", "GraphNode", node_decoration_color);
+	Color graphnode_decoration_color = dark_color_1.inverted();
 
-	theme->set_constant("port_offset", "GraphNode", 0);
-	theme->set_constant("title_h_offset", "GraphNode", 12 * EDSCALE);
-	theme->set_constant("title_offset", "GraphNode", 21 * EDSCALE);
-	theme->set_constant("close_h_offset", "GraphNode", -2 * EDSCALE);
-	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
+	theme->set_color("resizer_color", "GraphElement", graphnode_decoration_color);
+	theme->set_icon("resizer", "GraphElement", theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons)));
+
+	// GraphNode.
+	theme->set_stylebox("panel", "GraphNode", graphn_sb_panel);
+	theme->set_stylebox("panel_selected", "GraphNode", graphn_sb_panel_selected);
+	theme->set_stylebox("titlebar", "GraphNode", graphn_sb_titlebar);
+	theme->set_stylebox("titlebar_selected", "GraphNode", graphn_sb_titlebar_selected);
+	theme->set_stylebox("slot", "GraphNode", graphn_sb_slot);
+
+	theme->set_color("resizer_color", "GraphNode", graphnode_decoration_color);
+
+	theme->set_constant("port_h_offset", "GraphNode", 0);
 	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
 
-	theme->set_icon("close", "GraphNode", theme->get_icon(SNAME("GuiCloseCustomizable"), EditorStringName(EditorIcons)));
-	theme->set_icon("resizer", "GraphNode", theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons)));
 	Ref<ImageTexture> port_icon = theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
 	// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
 	port_icon->set_size_override(Size2(12, 12));
 	theme->set_icon("port", "GraphNode", port_icon);
 
-	theme->set_font("title_font", "GraphNode", theme->get_font(SNAME("main_bold_msdf"), EditorStringName(EditorFonts)));
+	theme->set_stylebox("state_machine_frame", "GraphNode", smgraphsb);
+	theme->set_stylebox("state_machine_selected_frame", "GraphNode", smgraphsbselected);
 
 	// GridContainer
 	theme->set_constant("v_separation", "GridContainer", Math::round(widget_default_margin.y - 2 * EDSCALE));
