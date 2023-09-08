@@ -2819,12 +2819,14 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 }
 
 void FontVariation::set_variation_opentype(const Dictionary &p_coords) {
-	variation.opentype = p_coords;
-	_invalidate_rids();
+	if (!variation.opentype.recursive_equal(p_coords, 1)) {
+		variation.opentype = p_coords.duplicate();
+		_invalidate_rids();
+	}
 }
 
 Dictionary FontVariation::get_variation_opentype() const {
-	return variation.opentype;
+	return variation.opentype.duplicate();
 }
 
 void FontVariation::set_variation_embolden(float p_strength) {
@@ -2861,12 +2863,14 @@ int FontVariation::get_variation_face_index() const {
 }
 
 void FontVariation::set_opentype_features(const Dictionary &p_features) {
-	opentype_features = p_features;
-	_invalidate_rids();
+	if (!opentype_features.recursive_equal(p_features, 1)) {
+		opentype_features = p_features.duplicate();
+		_invalidate_rids();
+	}
 }
 
 Dictionary FontVariation::get_opentype_features() const {
-	return opentype_features;
+	return opentype_features.duplicate();
 }
 
 void FontVariation::set_spacing(TextServer::SpacingType p_spacing, int p_value) {
