@@ -55,7 +55,6 @@ class SymbolTooltip : public PanelContainer {
 	String _get_doc_of_word(const String &symbol_word);
 	void _update_header_label(const String &symbol_word);
 	void _update_body_label(const String &documentation);
-	Ref<Theme> _create_popup_panel_theme();
 	Ref<Theme> _create_panel_theme();
 	Ref<Theme> _create_header_label_theme();
 	Ref<Theme> _create_body_label_theme();
