@@ -4201,9 +4201,6 @@ msgstr ""
 "Si [code]true[/code], la lecture commence dès que le AudioStreamPlayer3D est "
 "ajouté à la scène."
 
-msgid "Sets the absolute maximum of the soundlevel, in decibels."
-msgstr "Définit le maximum absolu du niveau sonore, en décibels."
-
 msgid "The [AudioStream] resource to be played."
 msgstr "La ressource [AudioStream] à jouer."
 
@@ -19637,15 +19634,6 @@ msgid ""
 msgstr ""
 "Retourne un nouveau vecteur avec tous les composants en valeurs absolues "
 "(c'est-à-dire toujours positif)."
-
-msgid ""
-"Returns the angle to the given vector, in radians.\n"
-"[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/"
-"vector2_angle_to.png]Illustration of the returned angle.[/url]"
-msgstr ""
-"Retourne l'angle au vecteur donné, en radians.\n"
-"[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/"
-"vector2_angle_to.png]Illustration de l'angle retourné.[/url]"
 
 msgid ""
 "Returns the aspect ratio of this vector, the ratio of [member x] to [member "

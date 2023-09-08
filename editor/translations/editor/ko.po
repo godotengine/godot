@@ -52,13 +52,14 @@
 # asdfer-1234 <sh__lv@naver.com>, 2023.
 # Overdue - <kaameo12@gmail.com>, 2023.
 # 최시현 <hihyun1234@ajou.ac.kr>, 2023.
+# Zinccccc <velocity2772@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-31 18:39+0000\n"
-"Last-Translator: 이정희 <daemul72@gmail.com>\n"
+"PO-Revision-Date: 2023-09-05 08:33+0000\n"
+"Last-Translator: Zinccccc <velocity2772@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -66,7 +67,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "설정 해제"
@@ -163,6 +164,9 @@ msgstr "뒤로, 소니 셀렉트, 엑스박스 뒤로, 닌텐도 -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "가이드, 소니 PS, Xbox 홈"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "시작, Xbox 메뉴, 닌텐도 +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "왼쪽 스틱, 소니 L3, Xbox L/LS"
@@ -1192,6 +1196,9 @@ msgstr "행 번호:"
 
 msgid "%d replaced."
 msgstr "%d개를 찾아 바꿨습니다."
+
+msgid "No match"
+msgstr "일치하는 것 없음"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -3014,6 +3021,9 @@ msgstr "'%s' 구문 분석 중 오류가 발생했습니다."
 
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "씬 파일 '%s'이(가) 잘못되었거나 손상된 것 같습니다."
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "파일 '%s' 또는 이것의 종속 항목이 누락되어 있습니다."
 
 msgid "Error while loading file '%s'."
 msgstr "파일 '%s'을(를) 불러오는 중 오류가 발생했습니다."
@@ -11550,14 +11560,116 @@ msgid ""
 "Returns the result of bitwise XOR (a ^ b) operation on the unsigned integer."
 msgstr "부호 없는 정수에 대한 비트 단위 XOR (a ^ b) 연산의 결과값을 반환합니다."
 
+msgid "Divides two floating-point scalars."
+msgstr "두 부동소수점 스칼라를 나눕니다."
+
+msgid "Divides two integer scalars."
+msgstr "두 정수 스칼라를 나눕니다."
+
+msgid "Divides two unsigned integer scalars."
+msgstr "두 부호 없는 정수 스칼라를 나눕니다."
+
+msgid "Multiplies two floating-point scalars."
+msgstr "두 부동소수점 스칼라를 곱합니다."
+
+msgid "Multiplies two integer scalars."
+msgstr "두 정수 스칼라를 곱합니다."
+
+msgid "Multiplies two unsigned integer scalars."
+msgstr "부호 없는 두 스칼라를 곱합니다."
+
+msgid "Returns the remainder of the two floating-point scalars."
+msgstr "두 부동소수점 스칼라의 나머지를 반환합니다."
+
+msgid "Returns the remainder of the two integer scalars."
+msgstr "두 정수 스칼라의 나머지를 반환합니다."
+
+msgid "Returns the remainder of the two unsigned integer scalars."
+msgstr "두 부호 없는 정수 스칼라의 나머지를 반환합니다."
+
+msgid "Subtracts two floating-point scalars."
+msgstr "두 부동소수점 스칼라를 뺍니다."
+
+msgid "Subtracts two integer scalars."
+msgstr "두 정수 스칼라를 뺍니다."
+
+msgid "Subtracts two unsigned integer scalars."
+msgstr "두 부호 없는 정수 스칼라를 뺍니다."
+
+msgid "Scalar floating-point constant."
+msgstr "부동소수점 스칼라 상수."
+
+msgid "Scalar integer constant."
+msgstr "정수 스칼라 상수."
+
+msgid "Scalar unsigned integer constant."
+msgstr "부호 없는 정수 스칼라 상수."
+
+msgid "Scalar floating-point parameter."
+msgstr "부동소수점 스칼라 매개변수."
+
+msgid "Scalar integer parameter."
+msgstr "정수 스칼라 매개변수."
+
+msgid "Scalar unsigned integer parameter."
+msgstr "부호 없는 정수 스칼라 매개변수."
+
 msgid "Converts screen UV to a SDF."
 msgstr "스크린 UV를 SDF로 변환합니다."
+
+msgid "Casts a ray against the screen SDF and returns the distance travelled."
+msgstr "스크린 SDF에 광선을 발사하고 이동 거리를 반환합니다."
+
+msgid "Converts a SDF to screen UV."
+msgstr "SDF를 스크린 UV로 변환합니다."
+
+msgid "Performs a SDF texture lookup."
+msgstr "SDF 텍스처 룩업을 수행합니다."
+
+msgid "Performs a SDF normal texture lookup."
+msgstr "SDF 노멀 텍스처 룩업을 수행합니다."
+
+msgid "Function to be applied on texture coordinates."
+msgstr "텍스처 좌표에 적용할 함수입니다."
 
 msgid "Perform the cubic texture lookup."
 msgstr "세제곱 텍스처 룩업을 수행합니다."
 
+msgid "Perform the curve texture lookup."
+msgstr "커브 텍스처 룩업을 수행합니다."
+
+msgid "Perform the three components curve texture lookup."
+msgstr "세제곱 커브 텍스처 룩업을 수행합니다."
+
+msgid "Perform the 2D texture lookup."
+msgstr "2D 텍스처 룩업을 수행합니다."
+
+msgid "Perform the 2D-array texture lookup."
+msgstr "2D 배열 텍스처 룩업을 수행합니다."
+
+msgid "Perform the 3D texture lookup."
+msgstr "3D 텍스처 룩업을 수행합니다."
+
+msgid "Cubic texture parameter lookup."
+msgstr "세제곱 텍스처 매개변수 룩업."
+
+msgid "2D texture parameter lookup."
+msgstr "2D 텍스처 매개변수 룩업."
+
+msgid "2D texture parameter lookup with triplanar."
+msgstr "Triplanar가 적용된 2D 텍스처 매개변수 룩업 ."
+
+msgid "2D array of textures parameter lookup."
+msgstr "2D 텍스처 배열 매개변수 룩업."
+
+msgid "3D texture parameter lookup."
+msgstr "3D 텍스처 매개변수 룩업."
+
 msgid "Transform function."
 msgstr "변형 함수."
+
+msgid "Transform operator."
+msgstr "변형 연산자."
 
 msgid ""
 "Calculate the outer product of a pair of vectors.\n"
@@ -11593,6 +11705,12 @@ msgstr "변형의 전치를 계산합니다."
 msgid "Sums two transforms."
 msgstr "두 개의 Transform을 더합니다."
 
+msgid "Divides two transforms."
+msgstr "두 변형을 나눕니다."
+
+msgid "Multiplies two transforms."
+msgstr "두 변형을 곱합니다."
+
 msgid "Subtracts two transforms."
 msgstr "두 Transform을 뺍니다."
 
@@ -11602,11 +11720,38 @@ msgstr "변형에 벡터를 곱합니다."
 msgid "Transform constant."
 msgstr "변형 상수."
 
+msgid "Transform parameter."
+msgstr "변형 매개변수."
+
 msgid "Vector function."
 msgstr "벡터 함수."
 
 msgid "Vector operator."
 msgstr "벡터 연산자."
+
+msgid "Composes vector from scalars."
+msgstr "스칼라로 벡터를 합성합니다."
+
+msgid "Decomposes vector to scalars."
+msgstr "벡터를 스칼라로 분해합니다."
+
+msgid "Composes 2D vector from two scalars."
+msgstr "두 개의 스칼라로 2D 벡터를 합성합니다."
+
+msgid "Decomposes 2D vector to two scalars."
+msgstr "2D 벡터를 두 개의 스칼라로 분해합니다."
+
+msgid "Composes 3D vector from three scalars."
+msgstr "세 개의 스칼라로 3D 벡터를 합성합니다."
+
+msgid "Decomposes 3D vector to three scalars."
+msgstr "3D 벡터를 세 개의 스칼라로 분해합니다."
+
+msgid "Composes 4D vector from four scalars."
+msgstr "네 개의 스칼라로 4D 벡터를 합성합니다."
+
+msgid "Decomposes 4D vector to four scalars."
+msgstr "4D 벡터를 네 개의 스칼라로 분해합니다."
 
 msgid "Calculates the cross product of two vectors."
 msgstr "두 벡터의 벡터곱 값을 계산합니다."
@@ -11717,6 +11862,69 @@ msgstr ""
 msgid ""
 "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'."
 msgstr "(프래그먼트/라이트 모드만 가능) (벡터) 'x'와 'y'의 절대 미분 값의 합."
+
+msgid "Adds 2D vector to 2D vector."
+msgstr "2D 벡터에 2D 벡터를 더합니다."
+
+msgid "Adds 3D vector to 3D vector."
+msgstr "3D 벡터에 3D 벡터를 더합니다."
+
+msgid "Adds 4D vector to 4D vector."
+msgstr "4D 벡터에 4D 벡터를 더합니다."
+
+msgid "Divides 2D vector by 2D vector."
+msgstr "2D 벡터를 2D 벡터로 나눕니다."
+
+msgid "Divides 3D vector by 3D vector."
+msgstr "3D 벡터를 3D 벡터로 나눕니다."
+
+msgid "Divides 4D vector by 4D vector."
+msgstr "4D 벡터를 4D 벡터로 나눕니다."
+
+msgid "Multiplies 2D vector by 2D vector."
+msgstr "2D 벡터를 2D 벡터로 곱합니다."
+
+msgid "Multiplies 3D vector by 3D vector."
+msgstr "3D 벡터를 3D 벡터로 곱합니다."
+
+msgid "Multiplies 4D vector by 4D vector."
+msgstr "4D 벡터를 4D 벡터로 곱합니다."
+
+msgid "Returns the remainder of the two 2D vectors."
+msgstr "두 2D 벡터의 나머지를 반환합니다."
+
+msgid "Returns the remainder of the two 3D vectors."
+msgstr "두 3D 벡터의 나머지를 반환합니다."
+
+msgid "Returns the remainder of the two 4D vectors."
+msgstr "두 4D 벡터의 나머지를 반환합니다."
+
+msgid "Subtracts 2D vector from 2D vector."
+msgstr "2D 벡터에서 2D 벡터를 뺍니다."
+
+msgid "Subtracts 3D vector from 3D vector."
+msgstr "3D 벡터에서 3D 벡터를 뺍니다."
+
+msgid "Subtracts 4D vector from 4D vector."
+msgstr "4D 벡터에서 4D 벡터를 뺍니다."
+
+msgid "2D vector constant."
+msgstr "2D 벡터 상수."
+
+msgid "2D vector parameter."
+msgstr "2D 벡터 매개변수."
+
+msgid "3D vector constant."
+msgstr "3D 벡터 상수."
+
+msgid "3D vector parameter."
+msgstr "3D 벡터 매개변수."
+
+msgid "4D vector constant."
+msgstr "4D 벡터 상수."
+
+msgid "4D vector parameter."
+msgstr "4D 벡터 매개변수."
 
 msgid ""
 "A rectangular area with a description string for better graph organization."
@@ -11950,6 +12158,9 @@ msgstr "버전 컨트롤 메타데이터:"
 msgid "Git"
 msgstr "Git"
 
+msgid "This project uses features unsupported by the current build:"
+msgstr "이 프로젝트는 현재 빌드에서는 지원하지 않는 기능을 사용합니다:"
+
 msgid "Error: Project is missing on the filesystem."
 msgstr "오류: 프로젝트가 파일시스템에서 누락되었습니다."
 
@@ -12087,6 +12298,15 @@ msgid ""
 msgstr ""
 "경고: 이 프로젝트는 C#을 사용하지만, 이 빌드의 Godot은 Mono 모듈을\n"
 "지원하지 않습니다. 계속 진행할 경우 C# 스크립트를 사용할 수 없습니다.\n"
+"\n"
+
+msgid ""
+"Warning: This project was last edited in Godot %s. Opening will change it to "
+"Godot %s.\n"
+"\n"
+msgstr ""
+"경고: 이 프로젝트는 Godot %s에서 최종 편집되었습니다.\n"
+"프로젝트를 열면 Godot %s로 변경됩니다.\n"
 "\n"
 
 msgid ""
@@ -12229,6 +12449,27 @@ msgstr "프로젝트 콘텐츠도 삭제 (되돌릴 수 없습니다!)"
 
 msgid "Convert Full Project"
 msgstr "프로젝트 전체 변환"
+
+msgid ""
+"This option will perform full project conversion, updating scenes, resources "
+"and scripts from Godot 3 to work in Godot 4.\n"
+"\n"
+"Note that this is a best-effort conversion, i.e. it makes upgrading the "
+"project easier, but it will not open out-of-the-box and will still require "
+"manual adjustments.\n"
+"\n"
+"IMPORTANT: Make sure to backup your project before converting, as this "
+"operation makes it impossible to open it in older versions of Godot."
+msgstr ""
+"이것은 씬이나 리소스, 스크립트를 포함한 프로젝트 전체를 Godot 3에서 Godot 4에 "
+"맞게 변환합니다.\n"
+"\n"
+"이것은 가장 힘이 덜 드는 선택지이지만, 그렇다고 해도 프로젝트가 아무 문제 없"
+"이 작동하지는 않을 것이며 여전히 여러 것들을 수동으로 조정해주어야 할 것입니"
+"다.\n"
+"\n"
+"중요: 반드시 변환하기 전에 프로젝트를 어딘가에 백업해 두세요. 변환을 수행하면 "
+"이전 버전의 Godot에서 프로젝트를 열지 못하게 됩니다."
 
 msgid "Can't run project"
 msgstr "프로젝트를 실행할 수 없습니다"
@@ -13571,6 +13812,11 @@ msgstr ""
 "\"최소 SDK\"는 \"Gradle 빌드 사용\"가 활성화된 경우에만 오버라이드할 수 있습니"
 "다."
 
+msgid ""
+"\"Target SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
+msgstr ""
+"\"대상 SDK\"는 \"Use Gradle Build\"가 활성화된 경우에만 재정의할 수 있습니다."
+
 msgid "Select device from the list"
 msgstr "목록에서 기기 선택"
 
@@ -13872,14 +14118,62 @@ msgstr "프로젝트 시작 중..."
 msgid "Can't get filesystem access."
 msgstr "파일시스템 접근 권한을 얻지 못했습니다."
 
+msgid "Invalid Info.plist, no exe name."
+msgstr "잘못된 Info.plist. exe 이름이 없습니다."
+
+msgid "Invalid Info.plist, can't load."
+msgstr "잘못된 Info.plist. 로드할 수 없습니다."
+
 msgid "Failed to create \"%s\" subfolder."
 msgstr "서브폴더 \"%s\"을(를) 만들 수 없습니다."
+
+msgid "Invalid binary format."
+msgstr "잘못된 바이너리 포맷."
+
+msgid "Failed to process nested resources."
+msgstr "중첩된 리소스를 처리하지 못했습니다."
+
+msgid "Failed to get CodeResources hash."
+msgstr "CodeResources 해시를 가져오지 못했습니다."
+
+msgid "Invalid entitlements file."
+msgstr "잘못된 자격 파일."
+
+msgid "Invalid executable file."
+msgstr "잘못된 실행 파일."
 
 msgid "Invalid bundle identifier:"
 msgstr "잘못된 bundle 식별자:"
 
+msgid "Apple Team ID is required for notarization."
+msgstr "공증을 위해서 Apple Team ID가 필요합니다."
+
+msgid "Installer signing identity is required for App Store distribution."
+msgstr "App Store 배포를 위해 설치 프로그램 서명 ID가 필요합니다."
+
+msgid "Code signing is required for App Store distribution."
+msgstr "App Store 배포를 위해 코드 서명이 필요합니다."
+
+msgid "Code signing is required for notarization."
+msgstr "공증을 위해서 코드 서명이 필요합니다."
+
+msgid "Apple ID password not specified."
+msgstr "Apple ID 비밀번호가 지정되지 않았습니다."
+
+msgid "App Store Connect issuer ID name not specified."
+msgstr "App Store Connect 발급자 ID 이름이 지정되지 않았습니다."
+
+msgid "Icon Creation"
+msgstr "아이콘 생성"
+
 msgid "Could not open icon file \"%s\"."
 msgstr "아이콘 파일 \"%s\"를 열 수 없습니다."
+
+msgid "Notarization"
+msgstr "공증"
+
+msgid "Could not start rcodesign executable."
+msgstr "rcodesign 실행 파일을 시작할 수 없습니다."
 
 msgid "Could not start xcrun executable."
 msgstr "xcrun 실행 파일을 시작하지 못했습니다."
@@ -13887,8 +14181,20 @@ msgstr "xcrun 실행 파일을 시작하지 못했습니다."
 msgid "Cannot sign file %s."
 msgstr "파일 %s를 서명할 수 없습니다."
 
+msgid "PKG Creation"
+msgstr "PKG 생성"
+
+msgid "Could not start productbuild executable."
+msgstr "productbuild 실행 파일을 시작할 수 없었습니다."
+
+msgid "DMG Creation"
+msgstr "DMG 생성"
+
 msgid "Could not start hdiutil executable."
 msgstr "hdiutil 실행 파일을 시작할 수 없었습니다."
+
+msgid "Creating app bundle"
+msgstr "앱 번들 생성"
 
 msgid "Could not find template app to export: \"%s\"."
 msgstr "내보낼 템플릿 앱을 찾을 수 없음: \"%s\"."
@@ -13896,8 +14202,26 @@ msgstr "내보낼 템플릿 앱을 찾을 수 없음: \"%s\"."
 msgid "Invalid export format."
 msgstr "잘못된 내보내기 템플릿입니다."
 
+msgid "Could not create directory: \"%s\"."
+msgstr "디렉토리를 만들 수 없음: \"%s\"."
+
+msgid "Could not create directory \"%s\"."
+msgstr "디렉토리를 만들 수 없음: \"%s\"."
+
 msgid "Could not created symlink \"%s\" -> \"%s\"."
 msgstr "바로가기 파일 \"%s\" -> \"%s\"를 만들 수 없습니다."
+
+msgid "Could not open \"%s\"."
+msgstr "\"%s\"를 열 수 없습니다."
+
+msgid "Entitlements Modified"
+msgstr "수정된 자격"
+
+msgid "Could not create entitlements file."
+msgstr "자격 파일을 만들 수 없습니다."
+
+msgid "Could not create helper entitlements file."
+msgstr "도우미 자격 파일을 생성할 수 없습니다."
 
 msgid "Invalid package short name."
 msgstr "잘못된 패키지 단축 이름."
@@ -14625,6 +14949,13 @@ msgstr ""
 "서 지원될 예정입니다."
 
 msgid ""
+"The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
+"node to work."
+msgstr ""
+"\"원격 경로(Remote Path)\" 속성이 작동하려면 유효한 Node3D 또는 Node3D 파생 노"
+"드를 가리켜야 합니다."
+
+msgid ""
 "This node cannot interact with other objects unless a Shape3D is assigned."
 msgstr ""
 "이 노드는 Shape3D를 할당하지 않는 이상 다른 오브젝트와 상호작용하지 못합니다."
@@ -14677,9 +15008,33 @@ msgstr ""
 "를 구워서 GI를 활성화하세요."
 
 msgid ""
+"To have any visible effect, WorldEnvironment requires its \"Environment\" "
+"property to contain an Environment, its \"Camera Attributes\" property to "
+"contain a CameraAttributes resource, or both."
+msgstr ""
+"가시적인 효과를 가지려면 WorldEnvironment에는 환경을 포함하는 \"Environment\" "
+"속성, CameraAttributes 리소스를 포함하는 \"Camera Attributes\" 속성, 또는 두 "
+"가지 모두가 필요합니다."
+
+msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instantiated "
 "scenes)."
 msgstr "씬(또는 인스턴스된 씬들마다) 당 WorldEnvironment는 하나만 허용됩니다."
+
+msgid "XRCamera3D must have an XROrigin3D node as its parent."
+msgstr "XRCamera3D의 부모 노드는 반드시 XROrigin3D이어야 합니다."
+
+msgid "XRController3D must have an XROrigin3D node as its parent."
+msgstr "XRController3D의 부모 노드는 반드시 XROrigin3D 노드여야 합니다."
+
+msgid "No tracker name is set."
+msgstr "트래커 이름이 설정되지 않았습니다."
+
+msgid "No pose is set."
+msgstr "설정된 포즈가 없습니다."
+
+msgid "XROrigin3D requires an XRCamera3D child node."
+msgstr "XROrigin3D는 자식으로 XRCamera3D 노드가 필요합니다."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "BlendTree 노드 '%s'에서, 애니메이션을 찾을 수 없음: '%s'"
@@ -14990,6 +15345,9 @@ msgstr "미리보기에 잘못된 소스."
 msgid "Invalid source for shader."
 msgstr "셰이더에 잘못된 소스."
 
+msgid "Invalid operator for that type."
+msgstr "해당 타입에 잘못된 연산자."
+
 msgid "Default Color"
 msgstr "기본 색"
 
@@ -15002,6 +15360,18 @@ msgstr "반복"
 msgid "Invalid comparison function for that type."
 msgstr "해당 타입에 잘못된 비교 함수."
 
+msgid "2D Mode"
+msgstr "2D 모드"
+
+msgid "Use All Surfaces"
+msgstr "모든 서피스 사용"
+
+msgid "Surface Index"
+msgstr "서피스 인덱스"
+
+msgid "Varyings cannot be passed for the '%s' parameter."
+msgstr "Varying은 '%s' 매개변수로 전달될 수 없습니다."
+
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "내장 함수에 잘못된 인수가 들어감: \"%s(%s)\"."
 
@@ -15013,6 +15383,18 @@ msgstr "상수 표현식이 와야 합니다."
 
 msgid "Varying may not be assigned in the '%s' function."
 msgstr "Varying은 '%s' 함수에서 할당되지 않을 수 있습니다."
+
+msgid ""
+"Varying with '%s' data type may only be assigned in the 'fragment' function."
+msgstr ""
+"'%s' 데이터 타입으로 변경하는 것은 'fragment' 함수에서만 할당될 수 있습니다."
+
+msgid ""
+"Varyings which assigned in 'vertex' function may not be reassigned in "
+"'fragment' or 'light'."
+msgstr ""
+"'vertex' 함수에서 할당된 Varying은 'fragment' 또는 'light'에서 재할당되지 않"
+"을 수 있습니다."
 
 msgid "Assignment to function."
 msgstr "함수에 대입할 수 없습니다."
@@ -15364,6 +15746,13 @@ msgstr "인스턴스 인덱스는 음수일 수 없습니다."
 
 msgid "Allowed instance uniform indices must be within [0..%d] range."
 msgstr "허용되는 인스턴스 균일 인덱스는 [0..%d] 범위 내에 있어야 합니다."
+
+msgid ""
+"'hint_normal_roughness_texture' is only available when using the Forward+ "
+"backend."
+msgstr ""
+"'hint_normal_roughness_texture'은 Forward+ 백엔드를 사용할 때만 사용할 수 있습"
+"니다."
 
 msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
 msgstr "'hint_normal_roughness_texture'는 '%s' 셰이더에서 지원되지 않습니다."
