@@ -135,12 +135,14 @@
 # John Donne <akheron@zaclys.net>, 2023.
 # Chloe Lee-Hone <chloe.leehone@gmail.com>, 2023.
 # Freyja <aerandil@gmail.com>, 2023.
+# Florian Charpentier <florian.charpentier67@gmail.com>, 2023.
+# Aya Ichrak <ayaichrack@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-17 11:10+0000\n"
+"PO-Revision-Date: 2023-09-06 09:23+0000\n"
 "Last-Translator: Chloe Lee-Hone <chloe.leehone@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
@@ -149,7 +151,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "Non défini"
@@ -246,6 +248,9 @@ msgstr "Retour, Select Sony, Back Xbox, - Nintendo"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Guide, PS Sony, Home Xbox"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Start, Menu Xbox, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Stick gauche, L3 Sony, L/LS Xbox"
@@ -1292,6 +1297,9 @@ msgstr "Numéro de ligne :"
 msgid "%d replaced."
 msgstr "%d remplacé."
 
+msgid "No match"
+msgstr "Aucune concordance"
+
 msgid "%d match"
 msgid_plural "%d matches"
 msgstr[0] "%d correspondance trouvée"
@@ -1551,6 +1559,9 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Basculer la visibilité"
+
+msgid "Syncing headers"
+msgstr "Préparation de l'environnement"
 
 msgid "Getting remote file system"
 msgstr "Obtenir le système de fichier distant"
@@ -1901,6 +1912,9 @@ msgstr "Possède"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Ressources sans propriété explicite :"
 
+msgid "Folder name cannot be empty."
+msgstr "Un nom de métadonnée ne peut être vide."
+
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "Utiliser des barres obliques (slash) dans les noms de dossiers créera des "
@@ -1908,6 +1922,9 @@ msgstr ""
 
 msgid "Could not create folder."
 msgstr "Impossible de créer le dossier."
+
+msgid "Create new folder in %s:"
+msgstr "Créer un nouveau fichier dans %s :"
 
 msgid "Create Folder"
 msgstr "Créer un dossier"
@@ -4484,6 +4501,9 @@ msgstr "Ressources à exporter :"
 msgid "Delete preset '%s'?"
 msgstr "Supprimer le préréglage « %s » ?"
 
+msgid "(Inherited)"
+msgstr "(Hérité)"
+
 msgid "%s Export"
 msgstr "Export %s"
 
@@ -5236,6 +5256,9 @@ msgstr "Cliquez pour afficher le dock des signaux."
 
 msgid "Open in Editor"
 msgstr "Ouvrir dans l'éditeur"
+
+msgid "This script is a custom type."
+msgstr "Ce script est un type personnalisé."
 
 msgid "Open Script:"
 msgstr "Ouvrir le script :"
@@ -10463,6 +10486,9 @@ msgstr "Redimensionner une tuile"
 msgid "Remove tile"
 msgstr "Retirer la tuile"
 
+msgid "Create tile alternatives"
+msgstr "Créer des tuiles alternatives"
+
 msgid "Create tiles in non-transparent texture regions"
 msgstr "Créer des tuiles dans les régions de textures non transparentes"
 
@@ -10485,8 +10511,22 @@ msgstr "Sélectionner tuiles."
 msgid "No tiles selected."
 msgstr "Aucune tuiles sélectionnées."
 
+msgid "Create Tiles in Non-Transparent Texture Regions"
+msgstr "Créer des Tuiles dans les Régions de Textures Non Transparentes"
+
+msgid "Remove Tiles in Fully Transparent Texture Regions"
+msgstr "Retirer des Tuiles dans les Régions de Textures Non Transparentes"
+
+msgid "Create an Alternative Tile"
+msgstr "Créer une Tuile Alternative"
+
 msgid "Create a Tile"
 msgstr "Créer une Tuile"
+
+msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
+msgstr ""
+"Création Automatique de tuiles dans les Régions de Textures Non "
+"Transparentes ?"
 
 msgid ""
 "The atlas's texture was modified.\n"
@@ -10504,6 +10544,24 @@ msgstr "Non"
 msgid "Add a new atlas source"
 msgstr "Ajouter une nouvelle source d'atlas"
 
+msgid "Open Atlas Merging Tool"
+msgstr "Ouvrir l'outil de fusion d'Atlas"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"Aucune source d'Ensemble de Tuiles sélectionnée. Sélectionnez ou créez une "
+"source d'Ensemble de Tuiles.\n"
+"Vous pouvez créer une nouvelle source en utilisant le bouton Créer sur la "
+"gauche ou en glissant une texture d'Ensemble de Tuiles sur la liste des "
+"sources."
+
+msgid "Add new patterns in the TileMap editing mode."
+msgstr ""
+"Ajouter des nouveaux motifs dans le mode édition de l'Ensemble de Tuiles."
+
 msgid "Add a Scene Tile"
 msgstr "Ajouter une tuile de scène"
 
@@ -10515,6 +10573,13 @@ msgstr "Filtrer les propriétés :"
 
 msgid "TileSet"
 msgstr "TileSet"
+
+msgid ""
+"No VCS plugins are available in the project. Install a VCS plugin to use VCS "
+"integration features."
+msgstr ""
+"Aucune extension VCS disponible pour le projet. Installez une extension VCS "
+"pour utiliser les fonctionnalités d'intégration VCS."
 
 msgid "Error"
 msgstr "Erreur"
@@ -10548,6 +10613,9 @@ msgstr "Voulez-vous retirer la branche %s ?"
 
 msgid "Do you want to remove the %s remote?"
 msgstr "Voulez-vous vraiment retirer le dépôt distant %s ?"
+
+msgid "Existing VCS metadata files will be overwritten."
+msgstr "Les fichiers de métadonnées VCS existants seront écrasés."
 
 msgid "Apply"
 msgstr "Appliquer"
@@ -10712,11 +10780,17 @@ msgstr "Supprimer le port d'entrée"
 msgid "Remove Output Port"
 msgstr "Supprimer le port de sortie"
 
+msgid "Set Comment Node Title"
+msgstr "Définir le Titre du Noeud Commentaire"
+
 msgid "Set Input Default Port"
 msgstr "Définir le port d'entrée par défaut"
 
 msgid "Add Node to Visual Shader"
 msgstr "Ajouter un nœud au Visual Shader"
+
+msgid "Remove Varying from Visual Shader: %s"
+msgstr "Retirer Varying du Visual Shader : %s"
 
 msgid "Node(s) Moved"
 msgstr "Nœud(s) déplacé(s)"
@@ -10747,6 +10821,9 @@ msgstr "Ajouter un nœud"
 
 msgid "Create Shader Node"
 msgstr "Créer un nœud Shader"
+
+msgid "Delete Shader Varying"
+msgstr "Supprimer Shader Varying"
 
 msgid "Color function."
 msgstr "Fonction de coloration."
@@ -10871,6 +10948,14 @@ msgstr "'%s' paramètre d'entrée pour le mode de shader light."
 
 msgid "'%s' input parameter for vertex shader mode."
 msgstr "'%s' paramètre d'entrée pour le mode de shader vertex."
+
+msgid ""
+"A node for help to multiply a position input vector by rotation using "
+"specific axis. Intended to work with emitters."
+msgstr ""
+"Un noeud pour aider à multiplier un vecteur d'entrée de position par une "
+"rotation utilisant un axe spécifique. Destiné à fonctionner avec des "
+"émetteurs."
 
 msgid "Returns the absolute value of the parameter."
 msgstr "Renvoie la valeur absolue du paramètre."
@@ -11031,6 +11116,12 @@ msgstr "Renvoie la tangente hyperbolique du paramètre."
 
 msgid "Finds the truncated value of the parameter."
 msgstr "Recherche la valeur tronquée du paramètre."
+
+msgid "Sums two floating-point scalars."
+msgstr "Somme de deux scalaires à virgule flottante."
+
+msgid "Sums two unsigned integer scalars."
+msgstr "Somme de deux scalaires entiers non signés."
 
 msgid "Converts screen UV to a SDF."
 msgstr "Convertir l'écran UV en SDF."
@@ -12239,6 +12330,13 @@ msgstr "Exporter la scène vers un fichier glTF 2.0"
 msgid "Path to Blender installation is valid."
 msgstr "Le chemin d'accès vers l'installation de Blender est valide."
 
+msgid ""
+"Disables Blender '.blend' files import for this project. Can be re-enabled in "
+"Project Settings."
+msgstr ""
+"Désactive l'importation de fichiers Blender '.blend' pour ce projet. Peut-"
+"être réactivé dans les préférences du projet."
+
 msgid "Next Plane"
 msgstr "Plan suivant"
 
@@ -12327,6 +12425,12 @@ msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Donnez une ressource MeshLibrary à cette GridMap pour utiliser ses maillages."
 
+msgid "Determining optimal atlas size"
+msgstr "Détermine la taille optimale de l'atlas"
+
+msgid "Optimizing acceleration structure"
+msgstr "Optimise la structure d'accélération"
+
 msgid "Begin Bake"
 msgstr "Commencer le précalcul"
 
@@ -12390,12 +12494,50 @@ msgstr "Compte"
 msgid "Network Profiler"
 msgstr "Profileur réseau"
 
+msgid "Select a replicator node in order to pick a property to add to it."
+msgstr ""
+"Choisir un noeud réplicateur afin de sélectionner une propriété à lui ajouter."
+
 msgid "Not possible to add a new property to synchronize without a root."
 msgstr ""
 "Impossible d'ajouter une nouvelle propriété pour synchroniser sans racine."
 
+msgid "Property is already being synchronized."
+msgstr "Cette propriété est déjà en voie de synchronisation."
+
+msgid "Add property to synchronizer"
+msgstr "Ajouter propriété au synchroniseur"
+
+msgid "Pick a node to synchronize:"
+msgstr "Choisir un noeud à synchroniser :"
+
+msgid "Add property to sync..."
+msgstr "Ajouter une propriété pour synchroniser..."
+
+msgid "Spawn"
+msgstr "Point d'apparition"
+
+msgid ""
+"Add properties using the buttons above or\n"
+"drag them them from the inspector and drop them here."
+msgstr ""
+"Ajouter des propriétés utilisant les boutons ci-haut ou\n"
+"traînez-les de l'inspecteur et laissez-les tomber ici."
+
+msgid "The MultiplayerSynchronizer needs a root path."
+msgstr "Le MultiplayerSynchronizer nécessite un chemin racine."
+
+msgid ""
+"Each MultiplayerSynchronizer can have no more than 64 watched properties."
+msgstr ""
+"Chaque MultiplayerSynchronizer ne peut pas avoir plus de 64 propriétés "
+"surveillées."
+
 msgid "Delete Property?"
 msgstr "Supprimer la propriété ?"
+
+msgid "Property of this type not supported."
+msgstr "Ce type de propriété n'est pas supporté."
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
@@ -13458,6 +13600,14 @@ msgstr ""
 "disponible lorsque cette scène fut chargée."
 
 msgid ""
+"Data from the original node is kept as a placeholder until this type of node "
+"is available again. It can hence be safely re-saved without risk of data loss."
+msgstr ""
+"Les données du noeud original sont gardées en tant que remplacement jusqu'à "
+"ce que ce type de noeud soit à nouveau disponible. Elles peuvent alors être "
+"réenregistrées sans risque de pertes de données."
+
+msgid ""
 "Setting node name '%s' to be unique within scene for '%s', but it's already "
 "claimed by '%s'.\n"
 "'%s' is no longer set as having a unique name."
@@ -13483,6 +13633,13 @@ msgstr ""
 "suppression ou de changements majeurs dans les versions futures."
 
 msgid ""
+"ShaderGlobalsOverride is not active because another node of the same type is "
+"in the scene."
+msgstr ""
+"ShaderGlobalOverride n'est pas actif, car autre noeud du même type est "
+"présent dans la scène."
+
+msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "
 "different ways depending on the rendered or physics frame rate.\n"
 "Consider using a script's process loop instead of relying on a Timer for very "
@@ -13500,6 +13657,12 @@ msgstr ""
 "La taille de la fenêtre d'affichage doit être supérieure ou égale à 2 pixels "
 "dans les deux sens pour que le rendu soit possible."
 
+msgid "Version %d of BMFont is not supported (should be 3)."
+msgstr "Version %d de BMFont n'est pas supportée (devrait être 3)."
+
+msgid "Can't load font texture: %s."
+msgstr "Ne peut charger la texture de la police de caractère : %s."
+
 msgid "Unsupported BMFont texture format."
 msgstr "Format de texture BMFont non pris en charge."
 
@@ -13510,6 +13673,23 @@ msgstr ""
 "Les mots-clés de shader ne peuvent pas être utilisés comme noms de "
 "paramètres.\n"
 "Choisissez un autre nom."
+
+msgid "This parameter type does not support the '%s' qualifier."
+msgstr "Ce type de paramètre ne supporte pas le qualificatif '%s'."
+
+msgid ""
+"Global parameter '%s' does not exist.\n"
+"Create it in the Project Settings."
+msgstr ""
+"Paramètre global '%s' n'existe pas.\n"
+"Créez-le dans les réglages du projet."
+
+msgid ""
+"Global parameter '%s' has an incompatible type for this kind of node.\n"
+"Change it in the Project Settings."
+msgstr ""
+"Le paramètre global '%s' a un type incompatible pour cette sorte de noeud.\n"
+"Changez-le dans les réglages du projet."
 
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
@@ -13624,6 +13804,9 @@ msgstr "Méthode '%s' doit être du type de retour '%s'."
 
 msgid "Expected a '{' to begin function."
 msgstr "Attendait un '{' pour commencer une méthode."
+
+msgid "Expected at least one '%s' statement in a non-void function."
+msgstr "Attendait au moins une déclaration '%s' dans une méthode non void."
 
 msgid "Expected a '%s'."
 msgstr "Un '%s' est attendu."

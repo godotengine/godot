@@ -30,13 +30,14 @@
 # Schuetzer <minhtuvn@gmail.com>, 2023.
 # Phạm Minh Tấn <phamtiens289@gmail.com>, 2023.
 # Long Phan <phangg255@gmail.com>, 2023.
+# duong cfa <duongcfa1@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-17 11:10+0000\n"
-"Last-Translator: Long Phan <phangg255@gmail.com>\n"
+"PO-Revision-Date: 2023-08-22 15:34+0000\n"
+"Last-Translator: duong cfa <duongcfa1@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -248,6 +249,18 @@ msgstr "Nhân đôi các khoá đã chọn"
 
 msgid "Delete Selected Key(s)"
 msgstr "Xoá các khoá được chọn"
+
+msgid "Make Handles Balanced"
+msgstr "Làm cho tay cầm cân bằng"
+
+msgid "Make Handles Mirrored"
+msgstr "Làm cho tay cầm phản chiếu"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Làm cho tay cầm cân bằng (tiếp tục tự động)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Làm cho tay cầm phản chiếu (tiếp tục tự động)"
 
 msgid "Add Bezier Point"
 msgstr "Thêm điểm Bezier"
@@ -4594,6 +4607,18 @@ msgstr "Xóa mục Lớp"
 
 msgid "Remove All Items"
 msgstr "Xóa tất cả các mục"
+
+msgid "Override All Default Theme Items"
+msgstr "Ghi đè tất cả các mục chủ đề mặc định"
+
+msgid "Set Font Size Item in Theme"
+msgstr "Đặt kích thước phông chữ trong chủ đề"
+
+msgid "Set Font Item in Theme"
+msgstr "Đặt mục phông chữ trong chủ đề"
+
+msgid "Set Icon Item in Theme"
+msgstr "Đặt mục biểu tượng trong chủ đề"
 
 msgid "Base Type"
 msgstr "loại cơ sở"

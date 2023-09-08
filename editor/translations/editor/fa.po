@@ -40,13 +40,14 @@
 # "Shahab Baradaran Dilmaghani (bdshahab)" <bdshahab@gmail.com>, 2023.
 # محمد ایرانی <mohamadir10g01@gmail.com>, 2023.
 # "P. A." <thekhanxp@gmail.com>, 2023.
+# MohammadSaleh Kamyab <mskf1383@envs.net>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-10 05:12+0000\n"
-"Last-Translator: \"LordProfo (Nima)\" <nimaentity30@gmail.com>\n"
+"PO-Revision-Date: 2023-08-27 17:53+0000\n"
+"Last-Translator: MohammadSaleh Kamyab <mskf1383@envs.net>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -54,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "تنظیم نشده"
@@ -965,7 +966,7 @@ msgid "Instance:"
 msgstr "نمونه:"
 
 msgid "Updating assets on target device:"
-msgstr "به‌روزرسانی دارایی‌ها در دستگاه هدف:"
+msgstr "به‌روزرسانی دارایی‌ها در افزارهٔ هدف:"
 
 msgid "ms"
 msgstr "میلی ثانیه"
@@ -1233,28 +1234,28 @@ msgid "Licenses"
 msgstr "گواهینامه"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "خطا در بازکردن فایل دارایی برای \"%s\" (فرمت ZIP نمی‌باشد)."
+msgstr "خطا در گشودن پروندهٔ دارایی برای «%s» (در قالب ZIP نمی‌باشد)."
 
 msgid "%s (already exists)"
 msgstr "\"%s\" (در حال حاضر موجود است)"
 
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr "محتوای دارایی \"%s\" - %d فایل(ها) با پروژه شما تضاد دارد:"
+msgstr "محتویات دارایی «%s»‏ - %d پرونده با پروژهٔ شما ناسازگار است:"
 
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr "محتویات دارایی \"%s\" - هیچ فایلی با پروژه شما مغایرت ندارد:"
+msgstr "محتویات دارایی «%s» - هیچ پرونده‌ای با پروژهٔ شما ناسازگار نیست:"
 
 msgid "Uncompressing Assets"
-msgstr "خارج کردن دارایی‌ها از حالت فشرده"
+msgstr "استخراج دارایی‌ها"
 
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "فایل‌های زیر از دارایی \"%s\" استخراج نشدند:"
+msgstr "استخراج پرونده‌های زیر از دارایی «%s» شکست خورد:"
 
 msgid "(and %s more files)"
 msgstr "(و %s دیگر فایل ها)"
 
 msgid "Asset \"%s\" installed successfully!"
-msgstr "دارایی \"%s\" با موفقیت نصب شد!"
+msgstr "دارایی «%s» با موفقیت نصب شد!"
 
 msgid "Success!"
 msgstr "موفقیت!"
@@ -1263,7 +1264,7 @@ msgid "Install"
 msgstr "نصب کردن"
 
 msgid "Asset Installer"
-msgstr "نصب کننده دارایی"
+msgstr "نصب‌کنندهٔ دارایی"
 
 msgid "Speakers"
 msgstr "بلندگوها"
@@ -1500,7 +1501,7 @@ msgid "Script Editor"
 msgstr "ویرایشگر اسکریپت"
 
 msgid "Asset Library"
-msgstr "کتابخانه دارایی"
+msgstr "کتابخانهٔ دارایی"
 
 msgid "Scene Tree Editing"
 msgstr "ویرایش درخت صحنه"
@@ -1521,7 +1522,7 @@ msgid "Allows to edit scripts using the integrated script editor."
 msgstr "اجازهٔ ویرایش اسکریپت‌ها با استفاده از ویرایشگر اسکریپت داخلی را می‌دهد."
 
 msgid "Provides built-in access to the Asset Library."
-msgstr "دسترسی داخلی به کتابخانهٔ دارایی را فراهم می‌کند."
+msgstr "دسترسی توکار به کتابخانهٔ دارایی را فراهم می‌کند."
 
 msgid ""
 "Allows to work with signals and groups of the node selected in the Scene dock."
@@ -1535,8 +1536,8 @@ msgid ""
 "Allows to configure import settings for individual assets. Requires the "
 "FileSystem dock to function."
 msgstr ""
-"به پیکربندی تنظیمات Import برای دارایی های فردی اجازه می دهد. برای عملکرد به "
-"داک FileSystem نیاز دارد."
+"اجازهٔ پیکربندی درون‌ریزی تنظیمات دارایی‌های مستقل را می‌دهد. برای عملکرد به داک "
+"پرونده‌سامانه نیاز دارد."
 
 msgid "(current)"
 msgstr "(کنونی)"
@@ -1599,10 +1600,10 @@ msgid "Make Current"
 msgstr "ساختن جریان"
 
 msgid "Import"
-msgstr "وارد کردن"
+msgstr "درون‌ریزی"
 
 msgid "Export"
-msgstr "خروجی"
+msgstr "برون‌ریزی"
 
 msgid "Configure Selected Profile:"
 msgstr "پیکربندی پروفایل انتخاب شده:"
@@ -1642,7 +1643,7 @@ msgstr ""
 "کردن لغو شد"
 
 msgid "(Re)Importing Assets"
-msgstr "(در حال) وارد کردن دوباره دارایی‌ها"
+msgstr "(باز)درون‌ریزی دارایی‌ها"
 
 msgid "Import resources of type: %s"
 msgstr "وارد کردن منابع از نوع: %s"
@@ -2216,7 +2217,7 @@ msgid "Open Script Editor"
 msgstr "باز کردن ویرایشگر اسکریپت"
 
 msgid "Open Asset Library"
-msgstr "گشودن کتابخانه دارایی"
+msgstr "گشودن کتابخانهٔ دارایی"
 
 msgid "Open the next Editor"
 msgstr "گشودن ویرایشگر متن"
@@ -2397,6 +2398,9 @@ msgstr "خطای اتصال"
 
 msgid "Importing:"
 msgstr "وارد کردن:"
+
+msgid "Uncompressing Android Build Sources"
+msgstr "استخراج منابع ساخت اندروید"
 
 msgid "Current Version:"
 msgstr "نسخه اخیر:"
@@ -2813,7 +2817,7 @@ msgstr "پیشرفته..."
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
-"هشدار: دارایی‌هایی وجود دارند که از این منبع استفاده می‌کنند، ممکن است بارگیری "
+"هشدار: دارایی‌هایی وجود دارند که از این منبع استفاده می‌کنند. ممکن است بار کردن "
 "درست را متوقف کنند."
 
 msgid "Mouse Buttons"
@@ -3146,7 +3150,7 @@ msgid "Search Templates, Projects, and Demos"
 msgstr "جستجوی قالب‌ها، پروژه‌ها و دموها"
 
 msgid "Search Assets (Excluding Templates, Projects, and Demos)"
-msgstr "جستجوی دارایی‌ها (به استثنای قالب‌ها، پروژه‌ها و دموها)"
+msgstr "جست‌وجوی دارایی‌ها (به استثنای قالب‌ها، پروژه‌ها و دموها)"
 
 msgid "Import..."
 msgstr "وارد کردن..."
@@ -3167,7 +3171,7 @@ msgid "Support"
 msgstr "پشتیبانی"
 
 msgid "Assets ZIP File"
-msgstr "فایل ZIP‌ دارایی‌های بازی"
+msgstr "پروندهٔ ZIP‌ دارایی‌ها"
 
 msgid "Preview"
 msgstr "پیش نمایش"
@@ -3404,7 +3408,7 @@ msgid "Sort"
 msgstr "مرتب‌سازی"
 
 msgid "File"
-msgstr "فایل"
+msgstr "پرونده"
 
 msgid "Open..."
 msgstr "بار کردن..."
@@ -3996,8 +4000,8 @@ msgid ""
 "Can't run project: Assets need to be imported.\n"
 "Please edit the project to trigger the initial import."
 msgstr ""
-"پروژه اجرا نمی‌شود: دارایی ها باید وارد شوند.\n"
-"لطفاً پروژه را ویرایش کنید تا وارد کردن اولیه آغاز شود."
+"نمی‌توان پروژه را اجرا کرد: دارایی‌ها باید درون‌ریزی شوند.\n"
+"لطفاً پروژه را ویرایش کنید تا درون‌ریزی اولیه آغاز شود."
 
 msgid "Are you sure to run %d projects at once?"
 msgstr "آیا مطمئن هستید که %d پروژه را همزمان اجرا می‌کنید؟"
@@ -4066,8 +4070,8 @@ msgid ""
 "You currently don't have any projects.\n"
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
-"شما درحال حاضر هیچ پروژه‌ای ندارید.\n"
-"آیا می خواهید پروژه‌های نمونه رسمی را در کتابخانه دارایی کاوش کنید؟"
+"شما هم‌اکنون هیچ پروژه‌ای ندارید.\n"
+"آیا می خواهید پروژه‌های نمونهٔ رسمی را در کتابخانهٔ دارایی کاوش کنید؟"
 
 msgid "Manage Project Tags"
 msgstr "مدیریت برچسب‌های پروژه"
