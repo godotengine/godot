@@ -190,10 +190,9 @@ class PopupMenu : public Popup {
 	void _menu_changed();
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;

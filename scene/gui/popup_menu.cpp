@@ -38,6 +38,7 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "scene/gui/menu_bar.h"
+#include "scene/theme/theme_db.h"
 
 String PopupMenu::_get_accel_text(const Item &p_item) const {
 	if (p_item.shortcut.is_valid()) {
@@ -837,52 +838,6 @@ void PopupMenu::remove_child_notify(Node *p_child) {
 	}
 	p_child->disconnect("menu_changed", callable_mp(this, &PopupMenu::_menu_changed));
 	_menu_changed();
-}
-
-void PopupMenu::_update_theme_item_cache() {
-	Popup::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
-	theme_cache.hover_style = get_theme_stylebox(SNAME("hover"));
-
-	theme_cache.separator_style = get_theme_stylebox(SNAME("separator"));
-	theme_cache.labeled_separator_left = get_theme_stylebox(SNAME("labeled_separator_left"));
-	theme_cache.labeled_separator_right = get_theme_stylebox(SNAME("labeled_separator_right"));
-
-	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.indent = get_theme_constant(SNAME("indent"));
-	theme_cache.item_start_padding = get_theme_constant(SNAME("item_start_padding"));
-	theme_cache.item_end_padding = get_theme_constant(SNAME("item_end_padding"));
-	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
-
-	theme_cache.checked = get_theme_icon(SNAME("checked"));
-	theme_cache.checked_disabled = get_theme_icon(SNAME("checked_disabled"));
-	theme_cache.unchecked = get_theme_icon(SNAME("unchecked"));
-	theme_cache.unchecked_disabled = get_theme_icon(SNAME("unchecked_disabled"));
-	theme_cache.radio_checked = get_theme_icon(SNAME("radio_checked"));
-	theme_cache.radio_checked_disabled = get_theme_icon(SNAME("radio_checked_disabled"));
-	theme_cache.radio_unchecked = get_theme_icon(SNAME("radio_unchecked"));
-	theme_cache.radio_unchecked_disabled = get_theme_icon(SNAME("radio_unchecked_disabled"));
-
-	theme_cache.submenu = get_theme_icon(SNAME("submenu"));
-	theme_cache.submenu_mirrored = get_theme_icon(SNAME("submenu_mirrored"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.font_separator = get_theme_font(SNAME("font_separator"));
-	theme_cache.font_separator_size = get_theme_font_size(SNAME("font_separator_size"));
-
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
-	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-	theme_cache.font_accelerator_color = get_theme_color(SNAME("font_accelerator_color"));
-	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.font_separator_color = get_theme_color(SNAME("font_separator_color"));
-	theme_cache.font_separator_outline_size = get_theme_constant(SNAME("separator_outline_size"));
-	theme_cache.font_separator_outline_color = get_theme_color(SNAME("font_separator_outline_color"));
 }
 
 void PopupMenu::_notification(int p_what) {
@@ -2308,6 +2263,48 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("menu_changed"));
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, panel_style, "panel");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, hover_style, "hover");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, separator_style, "separator");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, labeled_separator_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, labeled_separator_right);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, v_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, indent);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, item_start_padding);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, item_end_padding);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, icon_max_width);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, unchecked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, unchecked_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, radio_checked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, radio_checked_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, radio_unchecked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, radio_unchecked_disabled);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, submenu);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, submenu_mirrored);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, PopupMenu, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, PopupMenu, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, PopupMenu, font_separator);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, PopupMenu, font_separator_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_hover_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_accelerator_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, PopupMenu, font_outline_size, "outline_size");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, PopupMenu, font_separator_outline_size, "separator_outline_size");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_outline_color);
 }
 
 void PopupMenu::popup(const Rect2i &p_bounds) {

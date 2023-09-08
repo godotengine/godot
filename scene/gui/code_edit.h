@@ -293,8 +293,6 @@ protected:
 	static void _bind_compatibility_methods();
 #endif
 
-	virtual void _update_theme_item_cache() override;
-
 	/* Text manipulation */
 
 	// Overridable actions
