@@ -676,6 +676,8 @@ public:
 	virtual void particles_request_process(RID p_particles) = 0;
 	virtual void particles_restart(RID p_particles) = 0;
 
+	virtual void particles_set_instance_uniform_offset(RID p_particles, int32_t p_offset) = 0;
+
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 
 	enum ParticlesEmitFlags {

@@ -335,7 +335,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 
 	// uniform qualifiers
 
-	{ TK_INSTANCE, "instance", CF_GLOBAL_SPACE | CF_UNIFORM_QUALIFIER, {}, {} },
+	{ TK_INSTANCE, "instance", CF_GLOBAL_SPACE | CF_UNIFORM_QUALIFIER, { "canvas_item", "sky", "fog" }, {} },
 	{ TK_GLOBAL, "global", CF_GLOBAL_SPACE | CF_UNIFORM_QUALIFIER, {}, {} },
 
 	// block keywords
@@ -8333,7 +8333,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						}
 					}
 #endif // DEBUG_ENABLED
-					if (String(shader_type_identifier) != "spatial") {
+					if (String(shader_type_identifier) != "spatial" && String(shader_type_identifier) != "particles") {
 						_set_error(vformat(RTR("Uniform instances are not yet implemented for '%s' shaders."), shader_type_identifier));
 						return ERR_PARSE_ERROR;
 					}

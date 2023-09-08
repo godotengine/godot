@@ -230,6 +230,8 @@ private:
 		uint64_t instance_motion_vectors_last_change = -1;
 		bool instance_motion_vectors_enabled = false;
 
+		int32_t shader_uniforms_offset;
+
 		bool clear = true;
 
 		bool force_sub_emit = false;
@@ -270,6 +272,9 @@ private:
 			uint32_t sub_emitter_mode;
 			uint32_t can_emit;
 			uint32_t trail_pass;
+
+			uint32_t pad[3];
+			uint32_t instance_uniforms_ofs;
 		};
 
 		ParticlesShaderRD shader;
@@ -468,6 +473,8 @@ public:
 	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) override;
 
 	virtual bool particles_is_inactive(RID p_particles) const override;
+
+	virtual void particles_set_instance_uniform_offset(RID p_particles, int32_t p_offset) override;
 
 	_FORCE_INLINE_ RS::ParticlesMode particles_get_mode(RID p_particles) {
 		Particles *particles = particles_owner.get_or_null(p_particles);

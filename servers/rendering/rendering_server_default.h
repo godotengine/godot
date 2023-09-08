@@ -505,6 +505,7 @@ public:
 	FUNC1R(bool, particles_is_inactive, RID)
 	FUNC3(particles_set_trails, RID, bool, float)
 	FUNC2(particles_set_trail_bind_poses, RID, const Vector<Transform3D> &)
+	FUNC2(particles_set_instance_uniform_offset, RID, int32_t)
 
 	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)

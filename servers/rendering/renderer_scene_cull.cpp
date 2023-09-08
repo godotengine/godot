@@ -3882,6 +3882,13 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 					int dp = RSG::particles_storage->particles_get_draw_passes(p_instance->base);
 
+					RID process_material = RSG::particles_storage->particles_get_process_material(p_instance->base);
+					if (process_material.is_valid()) {
+						_update_instance_shader_uniforms_from_material(isparams, p_instance->instance_shader_uniforms, process_material);
+
+						RSG::material_storage->material_update_dependency(process_material, &p_instance->dependency_tracker);
+					}
+
 					for (int i = 0; i < dp; i++) {
 						RID mesh = RSG::particles_storage->particles_get_draw_pass_mesh(p_instance->base, i);
 						if (!mesh.is_valid()) {
@@ -3941,6 +3948,9 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 					p_instance->instance_allocated_shader_uniforms_offset = RSG::material_storage->global_shader_parameters_instance_allocate(p_instance->self);
 					ERR_FAIL_NULL(geom->geometry_instance);
 					geom->geometry_instance->set_instance_shader_uniforms_offset(p_instance->instance_allocated_shader_uniforms_offset);
+					if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
+						RSG::particles_storage->particles_set_instance_uniform_offset(p_instance->base, p_instance->instance_allocated_shader_uniforms_offset);
+					}
 
 					for (const KeyValue<StringName, Instance::InstanceShaderParameter> &E : p_instance->instance_shader_uniforms) {
 						if (E.value.value.get_type() != Variant::NIL) {
@@ -3967,6 +3977,9 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 					p_instance->instance_allocated_shader_uniforms_offset = -1;
 					ERR_FAIL_NULL(geom->geometry_instance);
 					geom->geometry_instance->set_instance_shader_uniforms_offset(-1);
+					if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
+						RSG::particles_storage->particles_set_instance_uniform_offset(p_instance->base, -1);
+					}
 				}
 			}
 		}
