@@ -269,8 +269,10 @@ private:
 	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames) const;
 	void _save_scenes_after_move(const HashMap<String, String> &p_renames) const;
 	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
-	void _update_project_settings_after_move(const HashMap<String, String> &p_renames) const;
+	void _update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames);
 	String _get_unique_name(const FileOrFolder &p_entry, const String &p_at_path);
+
+	void _update_folder_colors_setting();
 
 	void _resource_removed(const Ref<Resource> &p_resource);
 	void _file_removed(String p_file);

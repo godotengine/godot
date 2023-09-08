@@ -1599,7 +1599,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 	}
 }
 
-void FileSystemDock::_update_project_settings_after_move(const HashMap<String, String> &p_renames) const {
+void FileSystemDock::_update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames) {
 	// Find all project settings of type FILE and replace them if needed.
 	const HashMap<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
 	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
@@ -1625,6 +1625,14 @@ void FileSystemDock::_update_project_settings_after_move(const HashMap<String, S
 			} else if (autoload.begins_with("*") && p_renames.has(autoload_singleton)) {
 				ProjectSettings::get_singleton()->set_setting(E.name, "*" + p_renames[autoload_singleton]);
 			}
+		}
+	}
+
+	// Update folder colors.
+	for (const KeyValue<String, String> &rename : p_folders_renames) {
+		if (assigned_folder_colors.has(rename.key)) {
+			assigned_folder_colors[rename.value] = assigned_folder_colors[rename.key];
+			assigned_folder_colors.erase(rename.key);
 		}
 	}
 	ProjectSettings::get_singleton()->save();
@@ -1721,6 +1729,11 @@ void FileSystemDock::_folder_removed(String p_folder) {
 		current_path = current_path.get_base_dir();
 	}
 
+	if (assigned_folder_colors.has(p_folder)) {
+		assigned_folder_colors.erase(p_folder);
+		_update_folder_colors_setting();
+	}
+
 	current_path_line_edit->set_text(current_path);
 	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(current_path);
 	if (efd) {
@@ -1796,7 +1809,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	_save_scenes_after_move(file_renames); // save scenes before updating
 	_update_dependencies_after_move(file_renames);
 	_update_resource_paths_after_move(file_renames);
-	_update_project_settings_after_move(file_renames);
+	_update_project_settings_after_move(file_renames, folder_renames);
 	_update_favorites_list_after_move(file_renames, folder_renames);
 
 	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
@@ -1947,7 +1960,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			_save_scenes_after_move(file_renames); // Save scenes before updating.
 			_update_dependencies_after_move(file_renames);
 			_update_resource_paths_after_move(file_renames);
-			_update_project_settings_after_move(file_renames);
+			_update_project_settings_after_move(file_renames, folder_renames);
 			_update_favorites_list_after_move(file_renames, folder_renames);
 
 			EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
@@ -2767,6 +2780,15 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 	}
 }
 
+void FileSystemDock::_update_folder_colors_setting() {
+	if (!ProjectSettings::get_singleton()->has_setting("file_customization/folder_colors")) {
+		ProjectSettings::get_singleton()->set_setting("file_customization/folder_colors", assigned_folder_colors);
+	} else if (assigned_folder_colors.is_empty()) {
+		ProjectSettings::get_singleton()->set_setting("file_customization/folder_colors", Variant());
+	}
+	ProjectSettings::get_singleton()->save();
+}
+
 void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu) {
 	Variant chosen_color_name = p_menu->get_item_metadata(p_index);
 	Vector<String> selected;
@@ -2797,13 +2819,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 		}
 	}
 
-	if (!ProjectSettings::get_singleton()->has_setting("file_customization/folder_colors")) {
-		ProjectSettings::get_singleton()->set_setting("file_customization/folder_colors", assigned_folder_colors);
-	} else if (assigned_folder_colors.is_empty()) {
-		ProjectSettings::get_singleton()->set_setting("file_customization/folder_colors", Variant());
-	}
-
-	ProjectSettings::get_singleton()->save();
+	_update_folder_colors_setting();
 
 	_update_tree(get_uncollapsed_paths());
 	_update_file_list(true);
