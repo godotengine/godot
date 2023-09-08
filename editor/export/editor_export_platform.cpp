@@ -1972,5 +1972,9 @@ Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const Strin
 	return OK;
 }
 
+void EditorExportPlatform::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_os_name"), &EditorExportPlatform::get_os_name);
+}
+
 EditorExportPlatform::EditorExportPlatform() {
 }
