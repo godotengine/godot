@@ -480,7 +480,7 @@ void EditorAssetLibraryItemDownload::install() {
 	}
 
 	asset_installer->set_asset_name(title->get_text());
-	asset_installer->open(file, 1);
+	asset_installer->open_asset(file, true);
 }
 
 void EditorAssetLibraryItemDownload::_make_request() {
@@ -1377,9 +1377,9 @@ void EditorAssetLibrary::_asset_file_selected(const String &p_file) {
 	}
 
 	asset_installer = memnew(EditorAssetInstaller);
-	asset_installer->set_asset_name(p_file.get_basename());
+	asset_installer->set_asset_name(p_file);
 	add_child(asset_installer);
-	asset_installer->open(p_file);
+	asset_installer->open_asset(p_file);
 }
 
 void EditorAssetLibrary::_asset_open() {

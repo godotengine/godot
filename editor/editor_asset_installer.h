@@ -33,25 +33,49 @@
 
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+
+class CheckBox;
+class Label;
+
 class EditorAssetInstaller : public ConfirmationDialog {
 	GDCLASS(EditorAssetInstaller, ConfirmationDialog);
 
 	Tree *tree = nullptr;
-	Label *asset_contents = nullptr;
+	Label *asset_title_label = nullptr;
+	Label *asset_conflicts_label = nullptr;
+	CheckBox *skip_toplevel_check = nullptr;
+
 	String package_path;
 	String asset_name;
-	AcceptDialog *error = nullptr;
-	HashMap<String, TreeItem *> status_map;
+	HashSet<String> asset_files;
+	HashMap<String, TreeItem *> file_item_map;
+
+	Ref<Texture2D> generic_extension_icon;
+	HashMap<String, Ref<Texture2D>> extension_icon_map;
+
 	bool updating = false;
-	void _item_edited();
+	String toplevel_prefix;
+	bool skip_toplevel = false;
+
+	void _check_has_toplevel();
+	void _set_skip_toplevel(bool p_checked);
+
+	void _rebuild_tree();
+	TreeItem *_create_dir_item(TreeItem *p_parent, const String &p_path, HashMap<String, TreeItem *> &p_item_map);
+	TreeItem *_create_file_item(TreeItem *p_parent, const String &p_path, int *r_conflicts);
+
+	void _item_checked();
 	void _check_propagated_to_item(Object *p_obj, int column);
+
+	void _install_asset();
 	virtual void ok_pressed() override;
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void open(const String &p_path, int p_depth = 0);
+	void open_asset(const String &p_path, bool p_autoskip_toplevel = false);
 
 	void set_asset_name(const String &p_asset_name);
 	String get_asset_name() const;
