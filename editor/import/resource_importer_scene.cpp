@@ -72,7 +72,7 @@ void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const
 		return;
 	}
 
-	ERR_FAIL();
+	ERR_FAIL_MSG("Unimplemented _get_extensions in add-on.");
 }
 
 Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
@@ -85,7 +85,7 @@ Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_f
 		return Object::cast_to<Node>(ret);
 	}
 
-	ERR_FAIL_V(nullptr);
+	ERR_FAIL_V_MSG(nullptr, "Unimplemented _import_scene in add-on.");
 }
 
 void EditorSceneFormatImporter::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
