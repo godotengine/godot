@@ -104,6 +104,8 @@ void SceneCreateDialog::update_dialog() {
 
 	if (validation_panel->is_valid() && !scene_name.is_valid_filename()) {
 		validation_panel->set_message(MSG_ID_PATH, TTR("File name invalid."), EditorValidationPanel::MSG_ERROR);
+	} else if (validation_panel->is_valid() && scene_name[0] == '.') {
+		validation_panel->set_message(MSG_ID_PATH, TTR("File name begins with a dot."), EditorValidationPanel::MSG_ERROR);
 	}
 
 	if (validation_panel->is_valid()) {

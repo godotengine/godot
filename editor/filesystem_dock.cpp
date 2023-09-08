@@ -1747,7 +1747,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		rename_error = true;
-	} else if (new_name.begins_with(".")) {
+	} else if (new_name[0] == '.') {
 		EditorNode::get_singleton()->show_warning(TTR("This filename begins with a dot rendering the file invisible to the editor.\nIf you want to rename it anyway, use your operating system's file manager."));
 		rename_error = true;
 	} else if (to_rename.is_file && to_rename.path.get_extension() != new_name.get_extension()) {
@@ -1818,6 +1818,9 @@ void FileSystemDock::_duplicate_operation_confirm() {
 		return;
 	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
+		return;
+	} else if (new_name[0] == '.') {
+		EditorNode::get_singleton()->show_warning(TTR("Name begins with a dot."));
 		return;
 	}
 
