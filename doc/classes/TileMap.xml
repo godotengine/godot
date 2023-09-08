@@ -173,6 +173,14 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
+		<method name="get_layer_texture_offset" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns a TileMap layer's texture offset.
+				If [param layer] is negative, the layers are accessed from the last one.
+			</description>
+		</method>
 		<method name="get_layer_y_sort_origin" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="layer" type="int" />
@@ -387,6 +395,16 @@
 				Assigns a [NavigationServer2D] navigation map [RID] to the specified TileMap [param layer].
 				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
 				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_layer_navigation_map].
+				If [param layer] is negative, the layers are accessed from the last one.
+			</description>
+		</method>
+		<method name="set_layer_texture_offset">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="texture_offset" type="Vector2i" />
+			<description>
+				Sets a layer's texture offset. All tile textures in this layer are drawn at an offset position.
+				Does not affect the position of other properties like physics, navigation or occlusion masks.
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>

@@ -173,6 +173,7 @@ private:
 	Color modulate = Color(1, 1, 1, 1);
 	bool y_sort_enabled = false;
 	int y_sort_origin = 0;
+	Vector2i texture_offset;
 	int z_index = 0;
 	RID navigation_map;
 	bool uses_world_navigation_map = false;
@@ -305,6 +306,8 @@ public:
 	bool is_y_sort_enabled() const;
 	void set_y_sort_origin(int p_y_sort_origin);
 	int get_y_sort_origin() const;
+	void set_texture_offset(Vector2i p_texture_offset);
+	Vector2i get_texture_offset() const;
 	void set_z_index(int p_z_index);
 	int get_z_index() const;
 	void set_navigation_map(RID p_map);
@@ -410,6 +413,8 @@ public:
 	bool is_layer_y_sort_enabled(int p_layer) const;
 	void set_layer_y_sort_origin(int p_layer, int p_y_sort_origin);
 	int get_layer_y_sort_origin(int p_layer) const;
+	void set_layer_texture_offset(int p_layer, Vector2i p_texture_offset);
+	Vector2i get_layer_texture_offset(int p_layer) const;
 	void set_layer_z_index(int p_layer, int p_z_index);
 	int get_layer_z_index(int p_layer) const;
 	void set_layer_navigation_map(int p_layer, RID p_map);
