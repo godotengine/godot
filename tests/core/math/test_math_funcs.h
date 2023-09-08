@@ -54,6 +54,8 @@ TEST_CASE("[Math] C++ macros") {
 	CHECK(SIGN(-5) == -1.0);
 	CHECK(SIGN(0) == 0.0);
 	CHECK(SIGN(5) == 1.0);
+	// check that SIGN(NAN) returns NAN.
+	CHECK(Math::is_nan(SIGN(NAN)));
 }
 
 TEST_CASE("[Math] Power of two functions") {

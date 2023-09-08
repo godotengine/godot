@@ -1168,11 +1168,12 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Returns the same type of [Variant] as [param x], with [code]-1[/code] for negative values, [code]1[/code] for positive values, and [code]0[/code] for zeros. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
+				Returns the same type of [Variant] as [param x], with [code]-1[/code] for negative values, [code]1[/code] for positive values, [code]0[/code] for zeros, and [code]nan[/code] for NaN values. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				sign(-6.0) # Returns -1
 				sign(0.0)  # Returns 0
 				sign(6.0)  # Returns 1
+				sign(NAN)  # Returns NaN
 
 				sign(Vector3(-6.0, 0.0, 6.0)) # Returns (-1, 0, 1)
 				[/codeblock]
@@ -1183,11 +1184,12 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if [param x] is zero.
+				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, [code]0.0[/code] if [param x] is zero, and [code]nan[/code] if [param x] is NaN.
 				[codeblock]
 				signf(-6.5) # Returns -1.0
 				signf(0.0)  # Returns 0.0
 				signf(6.5)  # Returns 1.0
+				sign(NAN)  # Returns NaN
 				[/codeblock]
 			</description>
 		</method>

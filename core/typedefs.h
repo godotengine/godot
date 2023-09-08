@@ -109,7 +109,8 @@ constexpr T ABS(T m_v) {
 
 template <typename T>
 constexpr const T SIGN(const T m_v) {
-	return m_v == 0 ? 0.0f : (m_v < 0 ? -1.0f : +1.0f);
+	// Sign of NAN is NAN.
+	return m_v > 0 ? +1.0f : (m_v < 0 ? -1.0f : (m_v == 0 ? 0.0f : m_v));
 }
 
 template <typename T, typename T2>
