@@ -22,9 +22,10 @@
 			</description>
 		</method>
 		<method name="_get_import_options" qualifiers="virtual">
-			<return type="void" />
+			<return type="Dictionary[]" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Gets the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: [code]name[/code], [code]default_value[/code], [code]property_hint[/code] (optional), [code]hint_string[/code] (optional), [code]usage[/code] (optional).
 			</description>
 		</method>
 		<method name="_get_option_visibility" qualifiers="virtual const">

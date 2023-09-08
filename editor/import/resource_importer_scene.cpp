@@ -89,7 +89,36 @@ Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_f
 }
 
 void EditorSceneFormatImporter::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
-	GDVIRTUAL_CALL(_get_import_options, p_path);
+	Array needed;
+	needed.push_back("name");
+	needed.push_back("default_value");
+	TypedArray<Dictionary> options;
+	GDVIRTUAL_CALL(_get_import_options, p_path, options);
+
+	for (int i = 0; i < options.size(); i++) {
+		Dictionary d = options[i];
+		ERR_FAIL_COND(!d.has_all(needed));
+		String name = d["name"];
+		Variant default_value = d["default_value"];
+
+		PropertyHint hint = PROPERTY_HINT_NONE;
+		if (d.has("property_hint")) {
+			hint = (PropertyHint)d["property_hint"].operator int64_t();
+		}
+
+		String hint_string;
+		if (d.has("hint_string")) {
+			hint_string = d["hint_string"];
+		}
+
+		uint32_t usage = PROPERTY_USAGE_DEFAULT;
+		if (d.has("usage")) {
+			usage = d["usage"];
+		}
+
+		ResourceImporter::ImportOption option(PropertyInfo(default_value.get_type(), name, hint, hint_string, usage), default_value);
+		r_options->push_back(option);
+	}
 }
 
 Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options) {

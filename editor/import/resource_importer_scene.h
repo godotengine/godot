@@ -60,7 +60,7 @@ protected:
 	GDVIRTUAL0RC(uint32_t, _get_import_flags)
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
 	GDVIRTUAL3R(Node *, _import_scene, String, uint32_t, Dictionary)
-	GDVIRTUAL1(_get_import_options, String)
+	GDVIRTUAL1R(TypedArray<Dictionary>, _get_import_options, String)
 	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
 
 public:
