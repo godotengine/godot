@@ -1513,11 +1513,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	text = text.left(p_from_column) + text.substr(p_to_column);
 	_shape();
 
-	caret_column -= CLAMP(caret_column - p_from_column, 0, p_to_column - p_from_column);
-
-	if (caret_column >= text.length()) {
-		caret_column = text.length();
-	}
+	set_caret_column(caret_column - CLAMP(caret_column - p_from_column, 0, p_to_column - p_from_column));
 
 	if (!text_changed_dirty) {
 		if (is_inside_tree()) {
