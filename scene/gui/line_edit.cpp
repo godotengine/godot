@@ -483,7 +483,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (k->is_action("ui_cancel")) {
-			release_focus();
+			callable_mp((Control *)this, &Control::release_focus).call_deferred();
 			return;
 		}
 
