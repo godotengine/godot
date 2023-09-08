@@ -13,6 +13,7 @@
 		<method name="_get_extensions" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
+				Get the list of file extensions supported by this importer.
 			</description>
 		</method>
 		<method name="_get_import_flags" qualifiers="virtual const">
