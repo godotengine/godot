@@ -214,6 +214,9 @@
 		<member name="emission_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that specifies how much surface emits light at a given point.
 		</member>
+		<member name="enable_wireframe" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object is rendered in wireframe mode.
+		</member>
 		<member name="fixed_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object is rendered at the same size regardless of distance.
 		</member>
@@ -703,7 +706,10 @@
 		<constant name="FLAG_DISABLE_FOG" value="21" enum="Flags">
 			Disables receiving depth-based or volumetric fog.
 		</constant>
-		<constant name="FLAG_MAX" value="22" enum="Flags">
+		<constant name="FLAG_ENABLE_WIREFRAME" value="22" enum="Flags">
+			Enables the wireframe mode.
+		</constant>
+		<constant name="FLAG_MAX" value="23" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
