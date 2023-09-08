@@ -50,6 +50,7 @@ class SymbolTooltip : public PanelContainer {
 	RichTextLabel *body_label = nullptr;
 	Timer *tooltip_delay = nullptr;
 	String last_symbol_word;
+	bool mouse_inside;
 
 	String _get_doc_of_word(const String &symbol_word);
 	void _update_header_label(const String &symbol_word);
@@ -59,15 +60,18 @@ class SymbolTooltip : public PanelContainer {
 	Ref<Theme> _create_header_label_theme();
 	Ref<Theme> _create_body_label_theme();
 	int _get_word_pos_under_mouse(const String &symbol_word, const String &p_search, int mouse_x) const;
-
-public:
 	void _on_tooltip_delay_timeout();
-	void close_tooltip();
-	void update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script);
+	void _close_tooltip();
 	String _get_symbol_word(const Vector2 &mouse_position);
 	Vector2 _calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position);
 	void _update_tooltip_size();
 	void _update_tooltip_content(const String &header_content, const String &body_content);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script);
 	SymbolTooltip(CodeTextEditor *code_editor);
 	~SymbolTooltip();
 };

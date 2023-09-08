@@ -53,6 +53,9 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 	set_z_index(1000);
 	set_theme(_create_panel_theme());
 	set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	//set_size(Size2(400, 400));
+	//set_position(Size2(800, 800));
+	set_process(true);
 	//set_clip_contents(true);
 
 	// Create VBoxContainer to hold the tooltip's header and body.
@@ -99,6 +102,8 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 
 	tooltip_delay->connect("timeout", callable_mp(this, &SymbolTooltip::_on_tooltip_delay_timeout));
 
+	mouse_inside = false;
+
 	// Connect the tooltip's update function to the mouse motion signal.
 	// connect("mouse_motion", callable_mp(this, &SymbolTooltip::_update_symbol_tooltip));
 }
@@ -107,31 +112,49 @@ SymbolTooltip::~SymbolTooltip() {
 	memdelete(tooltip_delay);
 }
 
+void SymbolTooltip::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			// Note: Child components prevent NOTIFICATION_MOUSE_ENTER and NOTIFICATION_MOUSE_EXIT from working properly.
+			// Get the local mouse position
+			Vector2 local_mouse_position = get_global_mouse_position() - get_global_position();
+
+			// Check if it's within the rect of the PanelContainer
+			Rect2 tooltip_rect = Rect2(Vector2(0, 0), get_size());
+			if (tooltip_rect.has_point(local_mouse_position)) {
+				if (is_visible() && !mouse_inside) {
+					// Mouse just entered
+					mouse_inside = true;
+				}
+			} else {
+				if (mouse_inside) {
+					// Mouse just exited
+					mouse_inside = false;
+					if (is_visible()) {
+						_close_tooltip();
+					}
+				}
+			}
+		} break;
+	}
+}
+
 void SymbolTooltip::_on_tooltip_delay_timeout() {
 	print_line("size: " + get_size() + ", vbox_size: " + layout_container->get_size() + ", header_size: " + header_label->get_size() + ", body_size: " + body_label->get_size());
 
 	show();
 }
 
-void SymbolTooltip::close_tooltip() {
+void SymbolTooltip::_close_tooltip() {
 	tooltip_delay->stop();
 	hide();
 }
 
 void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script) {
-	//Rect2 tooltip_rect_1 = Rect2(get_position(), get_size());
-	//bool is_mouse_over_tooltip = tooltip_rect_1.has_point(mouse_position);
-	//print_line("local_mouse_position: " + get_local_mouse_position() + ", mouse_position: " + mouse_position + ", is_mouse_over_tooltip: " + String::num(is_mouse_over_tooltip));
-	//print_line("mouse_position: " + mouse_position);
-	/*if (mouse_position == Vector2(-1, -1)) { // If position is invalid.
-		close_tooltip();
-		return;
-	}*/
-
 	String symbol_word = _get_symbol_word(mouse_position);
 	if (symbol_word.is_empty()) {
 		last_symbol_word = "";
-		close_tooltip();
+		_close_tooltip();
 		return;
 	}
 
@@ -139,7 +162,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 		return;
 	} else {
 		// Symbol has changed, reset the timer.
-		close_tooltip();
+		_close_tooltip();
 		last_symbol_word = symbol_word;
 	}
 
@@ -148,7 +171,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 	const lsp::DocumentSymbol *member_symbol = get_member_symbol(members, symbol_word);
 
 	if (member_symbol == nullptr) { // Symbol is not a member of the script.
-		close_tooltip();
+		_close_tooltip();
 		return;
 	}
 
@@ -162,12 +185,11 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 	_update_tooltip_content(header_content, body_content);
 	_update_tooltip_size();
 
-	Rect2 tooltip_rect = Rect2(get_position(), get_size());
-	bool mouse_over_tooltip = tooltip_rect.has_point(mouse_position);
+	bool mouse_over_tooltip = get_rect().has_point(mouse_position);
 	if (!mouse_over_tooltip) {
 		Vector2 tooltip_position = _calculate_tooltip_position(symbol_word, mouse_position);
 		if (tooltip_position == Vector2(-1, -1)) { // If position is invalid.
-			close_tooltip();
+			_close_tooltip();
 			return;
 		} else {
 			set_position(tooltip_position);
