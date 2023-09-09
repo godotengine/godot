@@ -2223,11 +2223,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		if (gui.key_focus) {
 			gui.key_event_accepted = false;
-			if (gui.key_focus->can_process()) {
-				gui.key_focus->_call_gui_input(p_event);
-			}
+			bool stopped = gui.key_focus->can_process() && _gui_call_input(gui.key_focus, p_event);
 
-			if (gui.key_event_accepted) {
+			if (stopped) {
 				set_input_as_handled();
 				return;
 			}
