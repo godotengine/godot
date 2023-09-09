@@ -608,7 +608,7 @@ static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_po
 	}
 
 	GenerateContactsFunc contacts_func = generate_contacts_func_table[version_A][version_B];
-	ERR_FAIL_COND(!contacts_func);
+	ERR_FAIL_NULL(contacts_func);
 	contacts_func(points_A, pointcount_A, points_B, pointcount_B, p_callback);
 }
 
@@ -2409,7 +2409,7 @@ bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D 
 	} else {
 		collision_func = collision_table[type_A - 2][type_B - 2];
 	}
-	ERR_FAIL_COND_V(!collision_func, false);
+	ERR_FAIL_NULL_V(collision_func, false);
 
 	collision_func(A, *transform_A, B, *transform_B, &callback, margin_A, margin_B);
 

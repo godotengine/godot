@@ -364,7 +364,7 @@ SceneShaderForwardMobile::ShaderData::ShaderData() :
 
 SceneShaderForwardMobile::ShaderData::~ShaderData() {
 	SceneShaderForwardMobile *shader_singleton = (SceneShaderForwardMobile *)SceneShaderForwardMobile::singleton;
-	ERR_FAIL_COND(!shader_singleton);
+	ERR_FAIL_NULL(shader_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
 		shader_singleton->shader.version_free(version);

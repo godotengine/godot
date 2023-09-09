@@ -87,7 +87,7 @@ public:
 
 	void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override {
 		GeometryInstanceDummy *ginstance = static_cast<GeometryInstanceDummy *>(p_geometry_instance);
-		ERR_FAIL_COND(!ginstance);
+		ERR_FAIL_NULL(ginstance);
 
 		geometry_instance_alloc.free(ginstance);
 	}

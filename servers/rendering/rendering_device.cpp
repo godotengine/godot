@@ -73,7 +73,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 		}
 	}
 
-	ERR_FAIL_COND_V(!compile_to_spirv_function, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(compile_to_spirv_function, Vector<uint8_t>());
 
 	return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, this);
 }

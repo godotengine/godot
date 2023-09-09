@@ -3716,7 +3716,7 @@ void RenderForwardClustered::_geometry_instance_add_surface(GeometryInstanceForw
 		m_src = scene_shader.default_material;
 	}
 
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	_geometry_instance_add_surface_with_material_chain(ginstance, p_surface, material, m_src, p_mesh);
 
@@ -3979,7 +3979,7 @@ void RenderForwardClustered::GeometryInstanceForwardClustered::set_lightmap_capt
 
 void RenderForwardClustered::geometry_instance_free(RenderGeometryInstance *p_geometry_instance) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
+	ERR_FAIL_NULL(ginstance);
 	if (ginstance->lightmap_sh != nullptr) {
 		geometry_instance_lightmap_sh.free(ginstance->lightmap_sh);
 	}

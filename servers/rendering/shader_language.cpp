@@ -5297,7 +5297,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								}
 							}
 
-							ERR_FAIL_COND_V(!base_function, nullptr); //bug, wtf
+							ERR_FAIL_NULL_V(base_function, nullptr); // Bug, wtf.
 
 							for (int i = 0; i < call_function->arguments.size(); i++) {
 								int argidx = i + 1;
@@ -5729,7 +5729,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			}
 		}
 
-		ERR_FAIL_COND_V(!expr, nullptr);
+		ERR_FAIL_NULL_V(expr, nullptr);
 
 		/* OK now see what's NEXT to the operator.. */
 
