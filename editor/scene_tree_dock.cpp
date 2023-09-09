@@ -2894,10 +2894,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			}
 		}
 		if (all_owned) {
-			// Group "toggle_unique_name" with "copy_node_path", if it is available.
-			if (menu->get_item_index(TOOL_COPY_NODE_PATH) == -1) {
-				menu->add_separator();
-			}
 			Node *node = full_selection[0];
 			menu->add_icon_shortcut(get_icon("SceneUniqueName", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/toggle_unique_name"), TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 			menu->set_item_text(menu->get_item_index(TOOL_TOGGLE_SCENE_UNIQUE_NAME), node->is_unique_name_in_owner() ? TTR("Revoke Unique Name") : TTR("Access as Unique Name"));
