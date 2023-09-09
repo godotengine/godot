@@ -575,7 +575,29 @@ void PropertySelector::set_type_filter(const Vector<Variant::Type> &p_type_filte
 	type_filter = p_type_filter;
 }
 
+//Variant::Type isn't exposed, so need a version that takes int
+void PropertySelector::set_type_filter_exposable(const Vector<int> &p_type_filter) {
+	int n_types = p_type_filter.size();
+	type_filter.clear();
+	type_filter.resize(n_types);
+	for (int i = 0; i < n_types; i++) {
+		type_filter.push_back(static_cast<Variant::Type>(p_type_filter[i]));
+	}
+}
+
 void PropertySelector::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("select_method_from_base_type", "base", "current", "virtuals_only"), &PropertySelector::select_method_from_base_type);
+	ClassDB::bind_method(D_METHOD("select_method_from_script", "script", "current"), &PropertySelector::select_method_from_script);
+	ClassDB::bind_method(D_METHOD("select_method_from_basic_type", "type", "current"), &PropertySelector::select_method_from_basic_type);
+	ClassDB::bind_method(D_METHOD("select_method_from_instance", "instance", "current"), &PropertySelector::select_method_from_instance);
+
+	ClassDB::bind_method(D_METHOD("select_property_from_base_type", "base", "current"), &PropertySelector::select_property_from_base_type);
+	ClassDB::bind_method(D_METHOD("select_property_from_script", "script", "current"), &PropertySelector::select_property_from_instance);
+	ClassDB::bind_method(D_METHOD("select_property_from_basic_type", "type", "current"), &PropertySelector::select_property_from_basic_type);
+	ClassDB::bind_method(D_METHOD("select_property_from_instance", "instance", "current"), &PropertySelector::select_property_from_instance);
+
+	ClassDB::bind_method(D_METHOD("set_type_filter", "type_filter"), &PropertySelector::set_type_filter_exposable);
+
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "name")));
 }
 
