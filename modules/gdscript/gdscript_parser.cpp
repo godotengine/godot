@@ -170,7 +170,7 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 
 #ifdef DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
-	ERR_FAIL_COND(p_source == nullptr);
+	ERR_FAIL_NULL(p_source);
 	if (is_ignoring_warnings) {
 		return;
 	}

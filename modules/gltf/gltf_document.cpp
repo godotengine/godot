@@ -5594,7 +5594,7 @@ void GLTFDocument::_create_gltf_node(Ref<GLTFState> p_state, Node *p_scene_paren
 }
 
 void GLTFDocument::_convert_animation_player_to_gltf(AnimationPlayer *p_animation_player, Ref<GLTFState> p_state, GLTFNodeIndex p_gltf_current, GLTFNodeIndex p_gltf_root_index, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent) {
-	ERR_FAIL_COND(!p_animation_player);
+	ERR_FAIL_NULL(p_animation_player);
 	p_state->animation_players.push_back(p_animation_player);
 	print_verbose(String("glTF: Converting animation player: ") + p_animation_player->get_name());
 }
@@ -5613,7 +5613,7 @@ void GLTFDocument::_check_visibility(Node *p_node, bool &r_retflag) {
 }
 
 void GLTFDocument::_convert_camera_to_gltf(Camera3D *camera, Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node) {
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 	GLTFCameraIndex camera_index = _convert_camera(p_state, camera);
 	if (camera_index != -1) {
 		p_gltf_node->camera = camera_index;
@@ -5621,7 +5621,7 @@ void GLTFDocument::_convert_camera_to_gltf(Camera3D *camera, Ref<GLTFState> p_st
 }
 
 void GLTFDocument::_convert_light_to_gltf(Light3D *light, Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node) {
-	ERR_FAIL_COND(!light);
+	ERR_FAIL_NULL(light);
 	GLTFLightIndex light_index = _convert_light(p_state, light);
 	if (light_index != -1) {
 		p_gltf_node->light = light_index;
@@ -5663,7 +5663,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 		GLTFNodeIndex p_parent_node_index,
 		GLTFNodeIndex p_root_node_index,
 		Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state) {
-	ERR_FAIL_COND(!p_multi_mesh_instance);
+	ERR_FAIL_NULL(p_multi_mesh_instance);
 	Ref<MultiMesh> multi_mesh = p_multi_mesh_instance->get_multimesh();
 	if (multi_mesh.is_null()) {
 		return;
@@ -6141,7 +6141,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		const Ref<GLTFNode> gltf_node = p_state->nodes[track_i.key];
 
 		Node *root = p_animation_player->get_parent();
-		ERR_FAIL_COND(root == nullptr);
+		ERR_FAIL_NULL(root);
 		HashMap<GLTFNodeIndex, Node *>::Iterator node_element = p_state->scene_nodes.find(node_index);
 		ERR_CONTINUE_MSG(!node_element, vformat("Unable to find node %d for animation.", node_index));
 		node_path = root->get_path_to(node_element->value);
@@ -6154,7 +6154,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 
 		if (gltf_node->skeleton >= 0) {
 			const Skeleton3D *sk = p_state->skeletons[gltf_node->skeleton]->godot_skeleton;
-			ERR_FAIL_COND(sk == nullptr);
+			ERR_FAIL_NULL(sk);
 
 			const String path = p_animation_player->get_parent()->get_path_to(sk);
 			const String bone = gltf_node->get_name();

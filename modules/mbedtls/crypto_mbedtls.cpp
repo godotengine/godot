@@ -256,7 +256,7 @@ Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PackedByte
 }
 
 Error HMACContextMbedTLS::update(PackedByteArray p_data) {
-	ERR_FAIL_COND_V_MSG(ctx == nullptr, ERR_INVALID_DATA, "Start must be called before update.");
+	ERR_FAIL_NULL_V_MSG(ctx, ERR_INVALID_DATA, "Start must be called before update.");
 
 	ERR_FAIL_COND_V_MSG(p_data.is_empty(), ERR_INVALID_PARAMETER, "Src must not be empty.");
 
@@ -265,7 +265,7 @@ Error HMACContextMbedTLS::update(PackedByteArray p_data) {
 }
 
 PackedByteArray HMACContextMbedTLS::finish() {
-	ERR_FAIL_COND_V_MSG(ctx == nullptr, PackedByteArray(), "Start must be called before finish.");
+	ERR_FAIL_NULL_V_MSG(ctx, PackedByteArray(), "Start must be called before finish.");
 	ERR_FAIL_COND_V_MSG(hash_len == 0, PackedByteArray(), "Unsupported hash type.");
 
 	PackedByteArray out;
@@ -342,7 +342,7 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 	ERR_FAIL_COND(default_certs != nullptr);
 
 	default_certs = memnew(X509CertificateMbedTLS);
-	ERR_FAIL_COND(default_certs == nullptr);
+	ERR_FAIL_NULL(default_certs);
 
 	if (!p_path.is_empty()) {
 		// Use certs defined in project settings.

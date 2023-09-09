@@ -156,7 +156,7 @@ public:
 		}
 
 		_FORCE_INLINE_ DataType get_container_element_type() const {
-			ERR_FAIL_COND_V(container_element_type == nullptr, DataType());
+			ERR_FAIL_NULL_V(container_element_type, DataType());
 			return *container_element_type;
 		}
 

@@ -1887,7 +1887,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, window->surface, &presentModeCount, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	VkPresentModeKHR *presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
-	ERR_FAIL_COND_V(!presentModes, ERR_CANT_CREATE);
+	ERR_FAIL_NULL_V(presentModes, ERR_CANT_CREATE);
 	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, window->surface, &presentModeCount, presentModes);
 	if (err) {
 		free(presentModes);
@@ -2062,7 +2062,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	}
 
 	VkImage *swapchainImages = (VkImage *)malloc(swapchainImageCount * sizeof(VkImage));
-	ERR_FAIL_COND_V(!swapchainImages, ERR_CANT_CREATE);
+	ERR_FAIL_NULL_V(swapchainImages, ERR_CANT_CREATE);
 	err = fpGetSwapchainImagesKHR(device, window->swapchain, &swapchainImageCount, swapchainImages);
 	if (err) {
 		free(swapchainImages);

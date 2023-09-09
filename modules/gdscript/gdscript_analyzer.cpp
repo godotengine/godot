@@ -1419,7 +1419,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, bo
 }
 
 void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root) {
-	ERR_FAIL_COND_MSG(p_node == nullptr, "Trying to resolve type of a null node.");
+	ERR_FAIL_NULL_MSG(p_node, "Trying to resolve type of a null node.");
 
 	switch (p_node->type) {
 		case GDScriptParser::Node::NONE:
