@@ -1619,6 +1619,13 @@ void SceneTreeDialog::_filter_changed(const String &p_filter) {
 }
 
 void SceneTreeDialog::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("popup_scenetree_dialog"), &SceneTreeDialog::popup_scenetree_dialog);
+	// TODO: fix bind_method error with set_valid_types
+	//ClassDB::bind_method(D_METHOD("set_valid_types", "valid"), &SceneTreeDialog::set_valid_types);
+
+	ClassDB::bind_method(D_METHOD("get_scene_tree"), &SceneTreeDialog::get_scene_tree);
+	ClassDB::bind_method(D_METHOD("get_filter_line_edit"), &SceneTreeDialog::get_filter_line_edit);
+
 	ClassDB::bind_method("_cancel", &SceneTreeDialog::_cancel);
 
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::NODE_PATH, "path")));
