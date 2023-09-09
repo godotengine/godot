@@ -43,7 +43,7 @@ class SkeletonModification2DCCDIK : public SkeletonModification2D {
 
 private:
 	struct CCDIK_Joint_Data2D {
-		int bone_idx = -1;
+		int bone_idx = 0;
 		NodePath bone2d_node;
 		ObjectID bone2d_node_cache;
 		bool rotate_from_joint = false;
