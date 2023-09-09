@@ -50,11 +50,11 @@ private:
 
 	NodePath joint_one_bone2d_node;
 	ObjectID joint_one_bone2d_node_cache;
-	int joint_one_bone_idx = -1;
+	int joint_one_bone_idx = 0;
 
 	NodePath joint_two_bone2d_node;
 	ObjectID joint_two_bone2d_node_cache;
-	int joint_two_bone_idx = -1;
+	int joint_two_bone_idx = 0;
 
 #ifdef TOOLS_ENABLED
 	bool editor_draw_min_max = false;
