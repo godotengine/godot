@@ -261,6 +261,8 @@ public:
 
 	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
+	void version_load(RID p_version);
+
 	void initialize(const String &p_general_defines = "", int p_base_texture_index = 0);
 	virtual ~ShaderGLES3();
 };

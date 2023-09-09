@@ -2151,6 +2151,12 @@ void MaterialStorage::shader_free(RID p_rid) {
 	shader_owner.free(p_rid);
 }
 
+void MaterialStorage::shader_load(RID p_shader) {
+	GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_COND(!shader || !shader->data);
+	shader->data->load();
+}
+
 void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
@@ -2614,6 +2620,10 @@ RS::ShaderNativeSourceCode CanvasShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.canvas_shader.version_get_native_source_code(version);
 }
 
+void CanvasShaderData::load() {
+	MaterialStorage::get_singleton()->shaders.canvas_shader.version_load(version);
+}
+
 CanvasShaderData::CanvasShaderData() {
 	valid = false;
 	uses_screen_texture = false;
@@ -2779,6 +2789,10 @@ bool SkyShaderData::casts_shadows() const {
 
 RS::ShaderNativeSourceCode SkyShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.sky_shader.version_get_native_source_code(version);
+}
+
+void SkyShaderData::load() {
+	MaterialStorage::get_singleton()->shaders.sky_shader.version_load(version);
 }
 
 SkyShaderData::SkyShaderData() {
@@ -3038,6 +3052,10 @@ RS::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.scene_shader.version_get_native_source_code(version);
 }
 
+void SceneShaderData::load() {
+	MaterialStorage::get_singleton()->shaders.scene_shader.version_load(version);
+}
+
 SceneShaderData::SceneShaderData() {
 	valid = false;
 	uses_screen_texture = false;
@@ -3148,6 +3166,10 @@ bool ParticlesShaderData::casts_shadows() const {
 
 RS::ShaderNativeSourceCode ParticlesShaderData::get_native_source_code() const {
 	return MaterialStorage::get_singleton()->shaders.particles_process_shader.version_get_native_source_code(version);
+}
+
+void ParticlesShaderData::load() {
+	MaterialStorage::get_singleton()->shaders.particles_process_shader.version_load(version);
 }
 
 ParticlesShaderData::~ParticlesShaderData() {

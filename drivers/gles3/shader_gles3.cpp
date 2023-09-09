@@ -486,6 +486,15 @@ RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_ver
 	return source_code;
 }
 
+void ShaderGLES3::version_load(RID p_version) {
+	Version *version = version_owner.get_or_null(p_version);
+	ERR_FAIL_NULL(version);
+	if (!version->variants.is_empty()) {
+		return; // already loaded.
+	}
+	_initialize_version(version);
+}
+
 String ShaderGLES3::_version_get_sha1(Version *p_version) const {
 	StringBuilder hash_build;
 

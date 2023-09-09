@@ -383,6 +383,8 @@ public:
 	virtual void shader_initialize(RID p_shader) override;
 	virtual void shader_free(RID p_rid) override;
 
+	virtual void shader_load(RID p_shader) override;
+
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) override;
 	virtual String shader_get_code(RID p_shader) const override;

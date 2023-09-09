@@ -69,6 +69,8 @@ struct ShaderData {
 	virtual bool casts_shadows() const = 0;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
 
+	virtual void load() = 0;
+
 	virtual ~ShaderData() {}
 };
 
@@ -170,6 +172,8 @@ struct CanvasShaderData : public ShaderData {
 	virtual bool casts_shadows() const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
+	virtual void load();
+
 	CanvasShaderData();
 	virtual ~CanvasShaderData();
 };
@@ -211,6 +215,9 @@ struct SkyShaderData : public ShaderData {
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
+	virtual void load();
+
 	SkyShaderData();
 	virtual ~SkyShaderData();
 };
@@ -326,6 +333,8 @@ struct SceneShaderData : public ShaderData {
 	virtual bool casts_shadows() const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
+	virtual void load();
+
 	SceneShaderData();
 	virtual ~SceneShaderData();
 };
@@ -374,6 +383,8 @@ struct ParticlesShaderData : public ShaderData {
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
+	virtual void load();
 
 	ParticlesShaderData() {}
 	virtual ~ParticlesShaderData();
@@ -571,6 +582,8 @@ public:
 	virtual RID shader_allocate() override;
 	virtual void shader_initialize(RID p_rid) override;
 	virtual void shader_free(RID p_rid) override;
+
+	virtual void shader_load(RID p_shader) override;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) override;

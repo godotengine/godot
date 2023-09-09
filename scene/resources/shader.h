@@ -88,6 +88,8 @@ public:
 
 	virtual RID get_rid() const override;
 
+	void load();
+
 	Shader();
 	~Shader();
 };

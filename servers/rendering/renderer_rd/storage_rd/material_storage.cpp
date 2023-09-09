@@ -2088,6 +2088,10 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	}
 }
 
+void MaterialStorage::shader_load(RID p_shader) {
+	// Nothing to do, shaders are async loaded in set_code in vulkan.
+}
+
 void MaterialStorage::shader_set_path_hint(RID p_shader, const String &p_path) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
