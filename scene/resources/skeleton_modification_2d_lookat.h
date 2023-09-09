@@ -42,7 +42,7 @@ class SkeletonModification2DLookAt : public SkeletonModification2D {
 	GDCLASS(SkeletonModification2DLookAt, SkeletonModification2D);
 
 private:
-	int bone_idx = -1;
+	int bone_idx = 0;
 	NodePath bone2d_node;
 	ObjectID bone2d_node_cache;
 
