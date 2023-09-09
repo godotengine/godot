@@ -1356,18 +1356,13 @@ Error OS_Windows::shell_open(String p_uri) {
 }
 
 Error OS_Windows::shell_show_in_file_manager(String p_path, bool p_open_folder) {
-	p_path = p_path.trim_suffix("file://");
-
 	bool open_folder = false;
 	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
 		open_folder = true;
 	}
 
-	if (p_path.begins_with("\"")) {
-		p_path = String("\"") + p_path;
-	}
-	if (p_path.ends_with("\"")) {
-		p_path = p_path + String("\"");
+	if (!p_path.is_quoted()) {
+		p_path = p_path.quote();
 	}
 	p_path = p_path.replace("/", "\\");
 
@@ -1714,7 +1709,7 @@ String OS_Windows::get_system_ca_certificates() {
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
 
-	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);

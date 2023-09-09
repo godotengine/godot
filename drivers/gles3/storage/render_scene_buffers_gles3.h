@@ -58,8 +58,6 @@ public:
 	//bool use_debanding = false;
 	uint32_t view_count = 1;
 
-	bool is_transparent = false;
-
 	RID render_target;
 
 	//built-in textures used for ping pong image processing and blurring
@@ -81,7 +79,7 @@ public:
 private:
 public:
 	virtual ~RenderSceneBuffersGLES3();
-	virtual void configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, RS::ViewportScaling3DMode p_scaling_3d_mode, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) override;
+	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
 
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override{};
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override{};

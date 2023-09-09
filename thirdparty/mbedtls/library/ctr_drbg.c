@@ -30,6 +30,7 @@
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
 
+#include <limits.h>
 #include <string.h>
 
 #if defined(MBEDTLS_FS_IO)

@@ -786,8 +786,19 @@ void _err_flush_stdout();
 		((void)0)
 
 /**
- * This should be a 'free' assert for program flow and should not be needed in any releases,
- *  only used in dev builds.
+ * Note: IN MOST CASES YOU SHOULD NOT USE THIS MACRO.
+ * Do not use unless you understand the trade-offs.
+ *
+ * DEV macros will be compiled out in releases, they are wrapped in DEV_ENABLED.
+ *
+ * Prefer WARNINGS / ERR_FAIL macros (which fail without crashing) - ERR_FAIL should be used in most cases.
+ * Then CRASH_NOW_MSG macros (on rare occasions where error cannot be recovered).
+ *
+ * DEV_ASSERT should generally only be used when both of the following conditions are met:
+ * 1) Bottleneck code where a check in release would be too expensive.
+ * 2) Situations where the check would fail obviously and straight away during the maintenance of the code
+ *    (i.e. strict conditions that should be true no matter what)
+ *    and that can't fail for other contributors once the code is finished and merged.
  */
 #ifdef DEV_ENABLED
 #define DEV_ASSERT(m_cond)                                                                                              \

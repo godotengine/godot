@@ -175,32 +175,27 @@ void FileAccessWindows::_close() {
 	f = nullptr;
 
 	if (!save_path.is_empty()) {
+		// This workaround of trying multiple times is added to deal with paranoid Windows
+		// antiviruses that love reading just written files even if they are not executable, thus
+		// locking the file and preventing renaming from happening.
+
 		bool rename_error = true;
-		int attempts = 4;
-		while (rename_error && attempts) {
-			// This workaround of trying multiple times is added to deal with paranoid Windows
-			// antiviruses that love reading just written files even if they are not executable, thus
-			// locking the file and preventing renaming from happening.
-
-#ifdef UWP_ENABLED
-			// UWP has no PathFileExists, so we check attributes instead
-			DWORD fileAttr;
-
-			fileAttr = GetFileAttributesW((LPCWSTR)(save_path.utf16().get_data()));
-			if (INVALID_FILE_ATTRIBUTES == fileAttr) {
-#else
-			if (!PathFileExistsW((LPCWSTR)(save_path.utf16().get_data()))) {
-#endif
-				// Creating new file
-				rename_error = _wrename((LPCWSTR)(path.utf16().get_data()), (LPCWSTR)(save_path.utf16().get_data())) != 0;
+		const Char16String &path_utf16 = path.utf16();
+		const Char16String &save_path_utf16 = save_path.utf16();
+		for (int i = 0; i < 1000; i++) {
+			if (ReplaceFileW((LPCWSTR)(save_path_utf16.get_data()), (LPCWSTR)(path_utf16.get_data()), nullptr, REPLACEFILE_IGNORE_MERGE_ERRORS | REPLACEFILE_IGNORE_ACL_ERRORS, nullptr, nullptr)) {
+				rename_error = false;
 			} else {
-				// Atomic replace for existing file
-				rename_error = !ReplaceFileW((LPCWSTR)(save_path.utf16().get_data()), (LPCWSTR)(path.utf16().get_data()), nullptr, 2 | 4, nullptr, nullptr);
+				// Either the target exists and is locked (temporarily, hopefully)
+				// or it doesn't exist; let's assume the latter before re-trying.
+				rename_error = _wrename((LPCWSTR)(path_utf16.get_data()), (LPCWSTR)(save_path_utf16.get_data())) != 0;
 			}
-			if (rename_error) {
-				attempts--;
-				OS::get_singleton()->delay_usec(100000); // wait 100msec and try again
+
+			if (!rename_error) {
+				break;
 			}
+
+			OS::get_singleton()->delay_usec(1000);
 		}
 
 		if (rename_error) {
@@ -381,12 +376,60 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	}
 }
 
-uint32_t FileAccessWindows::_get_unix_permissions(const String &p_file) {
+BitField<FileAccess::UnixPermissionFlags> FileAccessWindows::_get_unix_permissions(const String &p_file) {
 	return 0;
 }
 
-Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+Error FileAccessWindows::_set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
 	return ERR_UNAVAILABLE;
+}
+
+bool FileAccessWindows::_get_hidden_attribute(const String &p_file) {
+	String file = fix_path(p_file);
+
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, false, "Failed to get attributes for: " + p_file);
+	return (attrib & FILE_ATTRIBUTE_HIDDEN);
+}
+
+Error FileAccessWindows::_set_hidden_attribute(const String &p_file, bool p_hidden) {
+	String file = fix_path(p_file);
+
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, "Failed to get attributes for: " + p_file);
+	BOOL ok;
+	if (p_hidden) {
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib | FILE_ATTRIBUTE_HIDDEN);
+	} else {
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib & ~FILE_ATTRIBUTE_HIDDEN);
+	}
+	ERR_FAIL_COND_V_MSG(!ok, FAILED, "Failed to set attributes for: " + p_file);
+
+	return OK;
+}
+
+bool FileAccessWindows::_get_read_only_attribute(const String &p_file) {
+	String file = fix_path(p_file);
+
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, false, "Failed to get attributes for: " + p_file);
+	return (attrib & FILE_ATTRIBUTE_READONLY);
+}
+
+Error FileAccessWindows::_set_read_only_attribute(const String &p_file, bool p_ro) {
+	String file = fix_path(p_file);
+
+	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, "Failed to get attributes for: " + p_file);
+	BOOL ok;
+	if (p_ro) {
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib | FILE_ATTRIBUTE_READONLY);
+	} else {
+		ok = SetFileAttributesW((LPCWSTR)file.utf16().get_data(), attrib & ~FILE_ATTRIBUTE_READONLY);
+	}
+	ERR_FAIL_COND_V_MSG(!ok, FAILED, "Failed to set attributes for: " + p_file);
+
+	return OK;
 }
 
 void FileAccessWindows::close() {

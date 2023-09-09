@@ -35,11 +35,12 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/message_queue.h"
-#include "core/variant/variant_utility.cpp"
+#include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/resources/image_texture.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
@@ -341,7 +342,8 @@ void EditorResourcePreview::_thread() {
 
 void EditorResourcePreview::_update_thumbnail_sizes() {
 	if (small_thumbnail_size == -1) {
-		small_thumbnail_size = EditorNode::get_singleton()->get_theme_base()->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"))->get_width(); // Kind of a workaround to retrieve the default icon size
+		// Kind of a workaround to retrieve the default icon size.
+		small_thumbnail_size = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Object"), EditorStringName(EditorIcons))->get_width();
 	}
 }
 

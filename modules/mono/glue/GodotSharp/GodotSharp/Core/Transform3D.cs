@@ -156,7 +156,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this transform is finite, by calling
-        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
         /// </summary>
         /// <returns>Whether this vector is finite or not.</returns>
         public readonly bool IsFinite()
@@ -613,7 +613,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the transform is exactly equal
-        /// to the given object (<see paramref="obj"/>).
+        /// to the given object (<paramref name="obj"/>).
         /// Note: Due to floating-point precision errors, consider using
         /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>

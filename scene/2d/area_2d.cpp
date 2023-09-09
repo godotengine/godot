@@ -510,7 +510,7 @@ StringName Area2D::get_audio_bus_name() const {
 			return audio_bus;
 		}
 	}
-	return "Master";
+	return SceneStringNames::get_singleton()->Master;
 }
 
 void Area2D::_validate_property(PropertyInfo &p_property) const {

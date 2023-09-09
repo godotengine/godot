@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
@@ -132,12 +133,12 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		return;
 	}
 
-	Color accent = get_theme_color("accent_color", "Editor");
+	Color accent = get_theme_color("accent_color", EditorStringName(Editor));
 
 	_sheet_sort_frames();
 
-	Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-	int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+	Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
+	int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 
 	for (int i = 0; i < frames_ordered.size(); ++i) {
 		const int idx = frames_ordered[i].second;
@@ -494,9 +495,9 @@ void SpriteFramesEditor::_toggle_show_settings() {
 
 void SpriteFramesEditor::_update_show_settings() {
 	if (is_layout_rtl()) {
-		toggle_settings_button->set_icon(get_theme_icon(split_sheet_settings_vb->is_visible() ? SNAME("Back") : SNAME("Forward"), SNAME("EditorIcons")));
+		toggle_settings_button->set_icon(get_editor_theme_icon(split_sheet_settings_vb->is_visible() ? SNAME("Back") : SNAME("Forward")));
 	} else {
-		toggle_settings_button->set_icon(get_theme_icon(split_sheet_settings_vb->is_visible() ? SNAME("Forward") : SNAME("Back"), SNAME("EditorIcons")));
+		toggle_settings_button->set_icon(get_editor_theme_icon(split_sheet_settings_vb->is_visible() ? SNAME("Forward") : SNAME("Back")));
 	}
 }
 
@@ -550,36 +551,36 @@ void SpriteFramesEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			autoplay_icon = get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons"));
-			stop_icon = get_theme_icon(SNAME("Stop"), SNAME("EditorIcons"));
-			pause_icon = get_theme_icon(SNAME("Pause"), SNAME("EditorIcons"));
+			autoplay_icon = get_editor_theme_icon(SNAME("AutoPlay"));
+			stop_icon = get_editor_theme_icon(SNAME("Stop"));
+			pause_icon = get_editor_theme_icon(SNAME("Pause"));
 			_update_stop_icon();
 
-			autoplay->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
-			anim_loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
-			play->set_icon(get_theme_icon(SNAME("PlayStart"), SNAME("EditorIcons")));
-			play_from->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
-			play_bw->set_icon(get_theme_icon(SNAME("PlayStartBackwards"), SNAME("EditorIcons")));
-			play_bw_from->set_icon(get_theme_icon(SNAME("PlayBackwards"), SNAME("EditorIcons")));
+			autoplay->set_icon(get_editor_theme_icon(SNAME("AutoPlay")));
+			anim_loop->set_icon(get_editor_theme_icon(SNAME("Loop")));
+			play->set_icon(get_editor_theme_icon(SNAME("PlayStart")));
+			play_from->set_icon(get_editor_theme_icon(SNAME("Play")));
+			play_bw->set_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
+			play_bw_from->set_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
 
-			load->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
-			load_sheet->set_icon(get_theme_icon(SNAME("SpriteSheet"), SNAME("EditorIcons")));
-			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-			paste->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
-			empty_before->set_icon(get_theme_icon(SNAME("InsertBefore"), SNAME("EditorIcons")));
-			empty_after->set_icon(get_theme_icon(SNAME("InsertAfter"), SNAME("EditorIcons")));
-			move_up->set_icon(get_theme_icon(SNAME("MoveLeft"), SNAME("EditorIcons")));
-			move_down->set_icon(get_theme_icon(SNAME("MoveRight"), SNAME("EditorIcons")));
-			delete_frame->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-			zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
-			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
-			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
-			add_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
-			delete_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-			anim_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
-			split_sheet_zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
-			split_sheet_zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
+			load->set_icon(get_editor_theme_icon(SNAME("Load")));
+			load_sheet->set_icon(get_editor_theme_icon(SNAME("SpriteSheet")));
+			copy->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+			paste->set_icon(get_editor_theme_icon(SNAME("ActionPaste")));
+			empty_before->set_icon(get_editor_theme_icon(SNAME("InsertBefore")));
+			empty_after->set_icon(get_editor_theme_icon(SNAME("InsertAfter")));
+			move_up->set_icon(get_editor_theme_icon(SNAME("MoveLeft")));
+			move_down->set_icon(get_editor_theme_icon(SNAME("MoveRight")));
+			delete_frame->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			add_anim->set_icon(get_editor_theme_icon(SNAME("New")));
+			delete_anim->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			anim_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			split_sheet_zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			split_sheet_zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			split_sheet_zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 			split_sheet_scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 
 			_update_show_settings();
@@ -949,13 +950,16 @@ void SpriteFramesEditor::_animation_name_edited() {
 	String name = new_name;
 	int counter = 0;
 	while (frames->has_animation(name)) {
+		if (name == String(edited_anim)) {
+			edited->set_text(0, name); // The name didn't change, just updated the column text to name.
+			return;
+		}
 		counter++;
 		name = new_name + "_" + itos(counter);
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Rename Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
-	_rename_node_animation(undo_redo, false, edited_anim, "", "");
 	undo_redo->add_do_method(frames.ptr(), "rename_animation", edited_anim, name);
 	undo_redo->add_undo_method(frames.ptr(), "rename_animation", name, edited_anim);
 	_rename_node_animation(undo_redo, false, edited_anim, name, name);
@@ -1209,29 +1213,28 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		bool searching = anim_search_box->get_text().size();
 		String searched_string = searching ? anim_search_box->get_text().to_lower() : String();
 
+		TreeItem *selected = nullptr;
 		for (const StringName &E : anim_names) {
 			String name = E;
-
 			if (searching && name.to_lower().find(searched_string) < 0) {
 				continue;
 			}
-
 			TreeItem *it = animations->create_item(anim_root);
-
 			it->set_metadata(0, name);
-
 			it->set_text(0, name);
 			it->set_editable(0, true);
-
 			if (animated_sprite) {
 				if (name == String(animated_sprite->call("get_autoplay"))) {
 					it->set_icon(0, autoplay_icon);
 				}
 			}
-
 			if (E == edited_anim) {
 				it->select(0);
+				selected = it;
 			}
+		}
+		if (selected) {
+			animations->scroll_to_item(selected);
 		}
 	}
 
@@ -1280,7 +1283,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 			// Frame is often saved as an AtlasTexture subresource within a scene/resource file,
 			// thus its path might be not what the user is looking for. So we're also showing
 			// subsequent source texture paths.
-			String prefix = String::utf8("┖╴");
+			String prefix = U"┖╴";
 			Ref<AtlasTexture> at = texture;
 			while (at.is_valid() && at->get_atlas().is_valid()) {
 				tooltip += "\n" + prefix + at->get_atlas()->get_path();

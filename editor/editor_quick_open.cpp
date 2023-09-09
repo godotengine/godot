@@ -257,7 +257,7 @@ void EditorQuickOpen::_notification(int p_what) {
 }
 
 void EditorQuickOpen::_theme_changed() {
-	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
 }
 
 void EditorQuickOpen::_bind_methods() {

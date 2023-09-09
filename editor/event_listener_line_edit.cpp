@@ -215,7 +215,7 @@ void EventListenerLineEdit::_notification(int p_what) {
 			connect("text_changed", callable_mp(this, &EventListenerLineEdit::_on_text_changed));
 			connect("focus_entered", callable_mp(this, &EventListenerLineEdit::_on_focus));
 			connect("focus_exited", callable_mp(this, &EventListenerLineEdit::_on_unfocus));
-			set_right_icon(get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
+			set_right_icon(get_editor_theme_icon(SNAME("Keyboard")));
 			set_clear_button_enabled(true);
 		} break;
 	}

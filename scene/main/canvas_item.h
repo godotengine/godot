@@ -132,7 +132,6 @@ private:
 	virtual void _top_level_changed_on_parent();
 
 	void _redraw_callback();
-	void _invalidate_global_transform();
 
 	void _enter_canvas();
 	void _exit_canvas();
@@ -152,11 +151,8 @@ private:
 
 protected:
 	_FORCE_INLINE_ void _notify_transform() {
-		if (!is_inside_tree()) {
-			return;
-		}
 		_notify_transform(this);
-		if (!block_transform_notify && notify_local_transform) {
+		if (is_inside_tree() && !block_transform_notify && notify_local_transform) {
 			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 		}
 	}
@@ -170,6 +166,7 @@ protected:
 	_FORCE_INLINE_ void set_hide_clip_children(bool p_value) { hide_clip_children = p_value; }
 
 	GDVIRTUAL0(_draw)
+
 public:
 	enum {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED, //unique
@@ -179,7 +176,6 @@ public:
 		NOTIFICATION_EXIT_CANVAS = 33,
 		NOTIFICATION_LOCAL_TRANSFORM_CHANGED = 35,
 		NOTIFICATION_WORLD_2D_CHANGED = 36,
-
 	};
 
 	/* EDITOR */
@@ -189,7 +185,7 @@ public:
 
 	// Save and restore a CanvasItem state
 	virtual void _edit_set_state(const Dictionary &p_state) {}
-	virtual Dictionary _edit_get_state() const { return Dictionary(); };
+	virtual Dictionary _edit_get_state() const { return Dictionary(); }
 
 	// Used to move the node
 	virtual void _edit_set_position(const Point2 &p_position) = 0;

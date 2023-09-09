@@ -150,7 +150,7 @@ double AnimationNodeAnimation::_process(double p_time, bool p_seek, bool p_is_ex
 
 		// Emit start & finish signal. Internally, the detections are the same for backward.
 		// We should use call_deferred since the track keys are still being prosessed.
-		if (state->tree) {
+		if (state->tree && !p_test_only) {
 			// AnimationTree uses seek to 0 "internally" to process the first key of the animation, which is used as the start detection.
 			if (p_seek && !p_is_external_seeking && cur_time == 0) {
 				state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation);
@@ -1010,6 +1010,7 @@ double AnimationNodeTransition::_process(double p_time, bool p_seek, bool p_is_e
 	}
 
 	double rem = 0.0;
+	double abs_time = Math::abs(p_time);
 
 	if (sync) {
 		for (int i = 0; i < get_input_count(); i++) {
@@ -1024,9 +1025,9 @@ double AnimationNodeTransition::_process(double p_time, bool p_seek, bool p_is_e
 		rem = blend_input(cur_current_index, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
 
 		if (p_seek) {
-			cur_time = p_time;
+			cur_time = abs_time;
 		} else {
-			cur_time += p_time;
+			cur_time += abs_time;
 		}
 
 		if (input_data[cur_current_index].auto_advance && rem <= xfade_time) {
@@ -1058,10 +1059,10 @@ double AnimationNodeTransition::_process(double p_time, bool p_seek, bool p_is_e
 
 		blend_input(cur_prev_index, p_time, use_blend && p_seek, p_is_external_seeking, blend, FILTER_IGNORE, true, p_test_only);
 		if (p_seek) {
-			cur_time = p_time;
+			cur_time = abs_time;
 		} else {
-			cur_time += p_time;
-			cur_prev_xfading -= p_time;
+			cur_time += abs_time;
+			cur_prev_xfading -= abs_time;
 			if (cur_prev_xfading < 0) {
 				set_parameter(prev_index, -1);
 			}
@@ -1177,8 +1178,6 @@ void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	for (const KeyValue<StringName, Node> &E : nodes) {
 		ns.push_back(E.key);
 	}
-
-	ns.sort_custom<StringName::AlphCompare>();
 
 	for (int i = 0; i < ns.size(); i++) {
 		ChildNode cn;
@@ -1435,7 +1434,6 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 	for (const KeyValue<StringName, Node> &E : nodes) {
 		names.push_back(E.key);
 	}
-	names.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &E : names) {
 		String prop_name = E;

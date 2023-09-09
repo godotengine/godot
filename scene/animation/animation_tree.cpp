@@ -384,6 +384,14 @@ bool AnimationNode::is_filter_enabled() const {
 	return filter_enabled;
 }
 
+void AnimationNode::set_closable(bool p_closable) {
+	closable = p_closable;
+}
+
+bool AnimationNode::is_closable() const {
+	return closable;
+}
+
 bool AnimationNode::is_path_filtered(const NodePath &p_path) const {
 	return filter.has(p_path);
 }

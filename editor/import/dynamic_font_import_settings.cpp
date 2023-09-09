@@ -38,6 +38,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
 /*************************************************************************/
@@ -499,7 +500,7 @@ void DynamicFontImportSettings::_variation_add() {
 
 	vars_item->set_text(0, TTR("New Configuration"));
 	vars_item->set_editable(0, true);
-	vars_item->add_button(1, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
+	vars_item->add_button(1, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
 	vars_item->set_button_color(1, 0, Color(1, 1, 1, 0.75));
 
 	Ref<DynamicFontImportSettingsData> import_variation_data;
@@ -726,8 +727,8 @@ void DynamicFontImportSettings::_glyph_selected() {
 	TreeItem *item = glyph_table->get_selected();
 	ERR_FAIL_NULL(item);
 
-	Color scol = glyph_table->get_theme_color(SNAME("box_selection_fill_color"), SNAME("Editor"));
-	Color fcol = glyph_table->get_theme_color(SNAME("font_selected_color"), SNAME("Editor"));
+	Color scol = glyph_table->get_theme_color(SNAME("box_selection_fill_color"), EditorStringName(Editor));
+	Color fcol = glyph_table->get_theme_color(SNAME("font_selected_color"), EditorStringName(Editor));
 	scol.a = 1.f;
 
 	int32_t c = item->get_metadata(glyph_table->get_selected_column());
@@ -798,8 +799,8 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 	TreeItem *root = glyph_table->create_item();
 	ERR_FAIL_NULL(root);
 
-	Color scol = glyph_table->get_theme_color(SNAME("box_selection_fill_color"), SNAME("Editor"));
-	Color fcol = glyph_table->get_theme_color(SNAME("font_selected_color"), SNAME("Editor"));
+	Color scol = glyph_table->get_theme_color(SNAME("box_selection_fill_color"), EditorStringName(Editor));
+	Color fcol = glyph_table->get_theme_color(SNAME("font_selected_color"), EditorStringName(Editor));
 	scol.a = 1.f;
 
 	TreeItem *item = nullptr;
@@ -814,7 +815,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 			item->set_text(0, _pad_zeros(String::num_int64(c, 16)));
 			item->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 			item->set_selectable(0, false);
-			item->set_custom_bg_color(0, glyph_table->get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
+			item->set_custom_bg_color(0, glyph_table->get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
 		}
 		if (font_main->has_char(c)) {
 			item->set_text(col + 1, String::chr(c));
@@ -827,7 +828,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 				item->clear_custom_bg_color(col + 1);
 			}
 		} else {
-			item->set_custom_bg_color(col + 1, glyph_table->get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
+			item->set_custom_bg_color(col + 1, glyph_table->get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 		}
 		item->set_metadata(col + 1, c);
 		item->set_text_alignment(col + 1, HORIZONTAL_ALIGNMENT_CENTER);
@@ -925,8 +926,8 @@ void DynamicFontImportSettings::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			add_var->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			label_warn->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			add_var->set_icon(get_editor_theme_icon(SNAME("Add")));
+			label_warn->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -1082,7 +1083,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	}
 	font_preview_label->set_text(sample);
 
-	Ref<Font> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+	Ref<Font> bold_font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 	if (bold_font.is_valid()) {
 		font_name_label->add_theme_font_override("bold_font", bold_font);
 	}
@@ -1159,7 +1160,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 
 					vars_item->set_text(0, cfg_name);
 					vars_item->set_editable(0, true);
-					vars_item->add_button(1, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
+					vars_item->add_button(1, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
 					vars_item->set_button_color(1, 0, Color(1, 1, 1, 0.75));
 
 					Ref<DynamicFontImportSettingsData> import_variation_data_custom;

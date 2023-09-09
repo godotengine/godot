@@ -285,10 +285,20 @@ namespace Godot.SourceGenerators
             {
                 source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-                string dictionaryType =
+                const string dictionaryType =
                     "global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>";
 
                 source.Append("#if TOOLS\n");
+
+                source.Append("    /// <summary>\n")
+                    .Append("    /// Get the default values for all properties declared in this class.\n")
+                    .Append("    /// This method is used by Godot to determine the value that will be\n")
+                    .Append("    /// used by the inspector when resetting properties.\n")
+                    .Append("    /// Do not call this method.\n")
+                    .Append("    /// </summary>\n");
+
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+
                 source.Append("    internal new static ");
                 source.Append(dictionaryType);
                 source.Append(" GetGodotPropertyDefaultValues()\n    {\n");
@@ -320,7 +330,8 @@ namespace Godot.SourceGenerators
 
                 source.Append("        return values;\n");
                 source.Append("    }\n");
-                source.Append("#endif\n");
+
+                source.Append("#endif // TOOLS\n");
 
                 source.Append("#pragma warning restore CS0109\n");
             }

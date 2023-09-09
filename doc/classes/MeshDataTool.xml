@@ -49,6 +49,7 @@
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>
+		<link title="Using the MeshDataTool">$DOCS_URL/tutorials/3d/procedural_geometry/meshdatatool.html</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -136,8 +137,21 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="vertex" type="int" />
 			<description>
-				Returns the specified vertex of the given face.
+				Returns the specified vertex index of the given face.
 				Vertex argument must be either 0, 1, or 2 because faces contain three vertices.
+				[b]Example:[/b]
+				[codeblocks]
+				[gdscript]
+				var index = mesh_data_tool.get_face_vertex(0, 1) # Gets the index of the second vertex of the first face.
+				var position = mesh_data_tool.get_vertex(index)
+				var normal = mesh_data_tool.get_vertex_normal(index)
+				[/gdscript]
+				[csharp]
+				int index = meshDataTool.GetFaceVertex(0, 1); // Gets the index of the second vertex of the first face.
+				Vector3 position = meshDataTool.GetVertex(index);
+				Vector3 normal = meshDataTool.GetVertexNormal(index);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
@@ -157,7 +171,7 @@
 			<return type="Vector3" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the vertex at given index.
+				Returns the position of the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_bones" qualifiers="const">

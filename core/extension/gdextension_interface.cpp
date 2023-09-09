@@ -726,6 +726,11 @@ static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_se
 	*self += p_b;
 }
 
+static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDExtensionInt p_length) {
+	String *self = (String *)p_self;
+	return (*self).resize(p_length);
+}
+
 static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
 	XMLParser *xml = (XMLParser *)p_instance;
 	return (GDExtensionInt)xml->_open_buffer(p_buffer, p_size);
@@ -1036,11 +1041,102 @@ static void gdextension_ref_set_object(GDExtensionRefPtr p_ref, GDExtensionObjec
 	ref->reference_ptr(o);
 }
 
+#ifndef DISABLE_DEPRECATED
 static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
+	GDExtensionScriptInstanceInfo2 *info_2 = memnew(GDExtensionScriptInstanceInfo2);
+	info_2->set_func = p_info->set_func;
+	info_2->get_func = p_info->get_func;
+	info_2->get_property_list_func = p_info->get_property_list_func;
+	info_2->free_property_list_func = p_info->free_property_list_func;
+	info_2->property_can_revert_func = p_info->property_can_revert_func;
+	info_2->property_get_revert_func = p_info->property_get_revert_func;
+	info_2->get_owner_func = p_info->get_owner_func;
+	info_2->get_property_state_func = p_info->get_property_state_func;
+	info_2->get_method_list_func = p_info->get_method_list_func;
+	info_2->free_method_list_func = p_info->free_method_list_func;
+	info_2->get_property_type_func = p_info->get_property_type_func;
+	info_2->validate_property_func = nullptr;
+	info_2->has_method_func = p_info->has_method_func;
+	info_2->call_func = p_info->call_func;
+	info_2->notification_func = nullptr;
+	info_2->to_string_func = p_info->to_string_func;
+	info_2->refcount_incremented_func = p_info->refcount_incremented_func;
+	info_2->refcount_decremented_func = p_info->refcount_decremented_func;
+	info_2->get_script_func = p_info->get_script_func;
+	info_2->is_placeholder_func = p_info->is_placeholder_func;
+	info_2->set_fallback_func = p_info->set_fallback_func;
+	info_2->get_fallback_func = p_info->get_fallback_func;
+	info_2->get_language_func = p_info->get_language_func;
+	info_2->free_func = p_info->free_func;
+
+	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
+	script_instance_extension->instance = p_instance_data;
+	script_instance_extension->native_info = info_2;
+	script_instance_extension->free_native_info = true;
+	script_instance_extension->deprecated_native_info.notification_func = p_info->notification_func;
+	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
+}
+#endif // DISABLE_DEPRECATED
+
+static GDExtensionScriptInstancePtr gdextension_script_instance_create2(const GDExtensionScriptInstanceInfo2 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
 	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
 	script_instance_extension->instance = p_instance_data;
 	script_instance_extension->native_info = p_info;
 	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
+}
+
+static GDExtensionScriptInstancePtr gdextension_placeholder_script_instance_create(GDExtensionObjectPtr p_language, GDExtensionObjectPtr p_script, GDExtensionObjectPtr p_owner) {
+	ScriptLanguage *language = (ScriptLanguage *)p_language;
+	Ref<Script> script;
+	script.reference_ptr((Script *)p_script);
+	Object *owner = (Object *)p_owner;
+
+	PlaceHolderScriptInstance *placeholder = memnew(PlaceHolderScriptInstance(language, script, owner));
+	return reinterpret_cast<GDExtensionScriptInstancePtr>(placeholder);
+}
+
+static void gdextension_placeholder_script_instance_update(GDExtensionScriptInstancePtr p_placeholder, GDExtensionConstTypePtr p_properties, GDExtensionConstTypePtr p_values) {
+	PlaceHolderScriptInstance *placeholder = dynamic_cast<PlaceHolderScriptInstance *>(reinterpret_cast<ScriptInstance *>(p_placeholder));
+	ERR_FAIL_COND_MSG(!placeholder, "Unable to update placeholder, expected a PlaceHolderScriptInstance but received an invalid type.");
+
+	const Array &properties = *reinterpret_cast<const Array *>(p_properties);
+	const Dictionary &values = *reinterpret_cast<const Dictionary *>(p_values);
+
+	List<PropertyInfo> properties_list;
+	HashMap<StringName, Variant> values_map;
+
+	for (int i = 0; i < properties.size(); i++) {
+		Dictionary d = properties[i];
+		properties_list.push_back(PropertyInfo::from_dict(d));
+	}
+
+	List<Variant> keys;
+	values.get_key_list(&keys);
+
+	for (const Variant &E : keys) {
+		values_map.insert(E, values[E]);
+	}
+
+	placeholder->update(properties_list, values_map);
+}
+
+static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExtensionConstObjectPtr p_object, GDExtensionConstObjectPtr p_language) {
+	if (!p_object || !p_language) {
+		return nullptr;
+	}
+
+	const Object *o = (const Object *)p_object;
+	ScriptInstanceExtension *script_instance_extension = reinterpret_cast<ScriptInstanceExtension *>(o->get_script_instance());
+	if (!script_instance_extension) {
+		return nullptr;
+	}
+
+	const ScriptLanguage *language = script_instance_extension->get_language();
+	if (language != p_language) {
+		return nullptr;
+	}
+
+	return script_instance_extension->instance;
 }
 
 static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash) {
@@ -1167,6 +1263,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_cstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_wcstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_c32str);
+	REGISTER_INTERFACE_FUNC(string_resize);
 	REGISTER_INTERFACE_FUNC(xml_parser_open_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_store_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_get_buffer);
@@ -1209,7 +1306,13 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(object_get_instance_id);
 	REGISTER_INTERFACE_FUNC(ref_get_object);
 	REGISTER_INTERFACE_FUNC(ref_set_object);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(script_instance_create);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(script_instance_create2);
+	REGISTER_INTERFACE_FUNC(placeholder_script_instance_create);
+	REGISTER_INTERFACE_FUNC(placeholder_script_instance_update);
+	REGISTER_INTERFACE_FUNC(object_get_script_instance);
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
 	REGISTER_INTERFACE_FUNC(classdb_get_class_tag);

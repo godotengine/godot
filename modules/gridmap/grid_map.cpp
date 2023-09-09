@@ -30,6 +30,7 @@
 
 #include "grid_map.h"
 
+#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/object/message_queue.h"
 #include "scene/3d/light_3d.h"
@@ -905,13 +906,14 @@ void GridMap::_notification(int p_what) {
 			}
 		} break;
 
-#ifdef DEBUG_ENABLED
 		case NOTIFICATION_ENTER_TREE: {
+#ifdef DEBUG_ENABLED
 			if (bake_navigation && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 				_update_navigation_debug_edge_connections();
 			}
-		} break;
 #endif // DEBUG_ENABLED
+			_update_visibility();
+		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D new_xform = get_global_transform();
@@ -1122,6 +1124,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
 }
 
 void GridMap::set_cell_scale(float p_scale) {

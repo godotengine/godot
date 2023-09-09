@@ -194,6 +194,38 @@ real_t AStarGrid2D::get_point_weight_scale(const Vector2i &p_id) const {
 	return GET_POINT_UNCHECKED(p_id).weight_scale;
 }
 
+void AStarGrid2D::fill_solid_region(const Rect2i &p_region, bool p_solid) {
+	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
+
+	Rect2i safe_region = p_region.intersection(region);
+	int from_x = safe_region.get_position().x;
+	int from_y = safe_region.get_position().y;
+	int end_x = safe_region.get_end().x;
+	int end_y = safe_region.get_end().y;
+
+	for (int x = from_x; x < end_x; x++) {
+		for (int y = from_y; y < end_y; y++) {
+			GET_POINT_UNCHECKED(Vector2i(x, y)).solid = p_solid;
+		}
+	}
+}
+
+void AStarGrid2D::fill_weight_scale_region(const Rect2i &p_region, real_t p_weight_scale) {
+	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
+
+	Rect2i safe_region = p_region.intersection(region);
+	int from_x = safe_region.get_position().x;
+	int from_y = safe_region.get_position().y;
+	int end_x = safe_region.get_end().x;
+	int end_y = safe_region.get_end().y;
+	for (int x = from_x; x < end_x; x++) {
+		for (int y = from_y; y < end_y; y++) {
+			GET_POINT_UNCHECKED(Vector2i(x, y)).weight_scale = p_weight_scale;
+		}
+	}
+}
+
 AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 	if (!p_to || p_to->solid) {
 		return nullptr;
@@ -606,6 +638,8 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_solid", "id"), &AStarGrid2D::is_point_solid);
 	ClassDB::bind_method(D_METHOD("set_point_weight_scale", "id", "weight_scale"), &AStarGrid2D::set_point_weight_scale);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStarGrid2D::get_point_weight_scale);
+	ClassDB::bind_method(D_METHOD("fill_solid_region", "region", "solid"), &AStarGrid2D::fill_solid_region, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("fill_weight_scale_region", "region", "weight_scale"), &AStarGrid2D::fill_weight_scale_region);
 	ClassDB::bind_method(D_METHOD("clear"), &AStarGrid2D::clear);
 
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStarGrid2D::get_point_position);

@@ -45,6 +45,7 @@ class RayCast3D : public Node3D {
 	int against_shape = 0;
 	Vector3 collision_point;
 	Vector3 collision_normal;
+	int collision_face_index = -1;
 
 	Vector3 target_position = Vector3(0, -1, 0);
 	HashSet<RID> exclude;
@@ -122,6 +123,7 @@ public:
 	int get_collider_shape() const;
 	Vector3 get_collision_point() const;
 	Vector3 get_collision_normal() const;
+	int get_collision_face_index() const;
 
 	void add_exception_rid(const RID &p_rid);
 	void add_exception(const CollisionObject3D *p_node);

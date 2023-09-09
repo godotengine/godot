@@ -31,6 +31,7 @@
 #ifndef ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 #define ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 
+#include "core/object/script_language.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
@@ -108,8 +109,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _node_selected(Object *p_node);
 	void _open_in_editor(const String &p_which);
 	void _anim_selected(int p_index, Array p_options, const String &p_node);
-	void _delete_request(const String &p_which);
-	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
+	void _close_request(const String &p_which);
+	void _close_nodes_request(const TypedArray<StringName> &p_nodes);
 
 	bool _update_filters(const Ref<AnimationNode> &anode);
 	void _inspect_filters(const String &p_which);

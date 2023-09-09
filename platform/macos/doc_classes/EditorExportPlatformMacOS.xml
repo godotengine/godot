@@ -23,7 +23,7 @@
 			Copyright notice for the bundle visible to the user (localized).
 		</member>
 		<member name="application/icon" type="String" setter="" getter="">
-			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/macos_native_icon], and  then to [member ProjectSettings.application/config/icon].
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/macos_native_icon], and then to [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
@@ -32,13 +32,13 @@
 			Minimum version of macOS required for this application to run in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
 		<member name="application/short_version" type="String" setter="" getter="">
-			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.
 		</member>
 		<member name="application/signature" type="String" setter="" getter="">
 			A four-character creator code that is specific to the bundle. Optional.
 		</member>
 		<member name="application/version" type="String" setter="" getter="">
-			Machine-readable application version, in the [code]major.minor.patch[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+			Machine-readable application version, in the [code]major.minor.patch[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). This must be incremented on every new release pushed to the App Store.
 		</member>
 		<member name="binary_format/architecture" type="String" setter="" getter="">
 			Application executable architecture.
@@ -63,7 +63,7 @@
 			Array of the additional command line arguments passed to the code signing tool.
 		</member>
 		<member name="codesign/entitlements/address_book" type="bool" setter="" getter="">
-			Enable to allow access to contacts in the user's address book, if it's enabled you should also provide usage message in the [code]privacy/address_book_usage_description[/code] option.	See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_addressbook]com.apple.security.personal-information.addressbook[/url].
+			Enable to allow access to contacts in the user's address book, if it's enabled you should also provide usage message in the [code]privacy/address_book_usage_description[/code] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_addressbook]com.apple.security.personal-information.addressbook[/url].
 		</member>
 		<member name="codesign/entitlements/allow_dyld_environment_variables" type="bool" setter="" getter="">
 			Allows app to use dynamic linker environment variables to inject code. If you are using add-ons with dynamic or self-modifying native code, enable them according to the add-on documentation. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-dyld-environment-variables]com.apple.security.cs.allow-dyld-environment-variables[/url].
@@ -155,7 +155,7 @@
 			If enabled, a wrapper that can be used to run the application with console output is created alongside the exported application.
 		</member>
 		<member name="display/high_res" type="bool" setter="" getter="">
-			If [code]true[/code], the application is rendered at native display resolution, otherwise it is always rendered at loHPI resolution and upscaled by OS when required.
+			If [code]true[/code], the application is rendered at native display resolution, otherwise it is always rendered at loDPI resolution and upscaled by OS when required.
 		</member>
 		<member name="export/distribution_type" type="int" setter="" getter="">
 			Application distribution target.

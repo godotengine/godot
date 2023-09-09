@@ -867,7 +867,7 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
 	 */
 	public interface EGLConfigChooser {
 		/**
-		 * Choose a configuration from the list. Implementors typically
+		 * Choose a configuration from the list. Implementers typically
 		 * implement this method by calling
 		 * {@link EGL10#eglChooseConfig} and iterating through the results. Please consult the
 		 * EGL specification available from The Khronos Group to learn how to call eglChooseConfig.

@@ -150,7 +150,7 @@ namespace Godot
         /// <summary>
         /// Returns a new vector with all components rounded up (towards positive infinity).
         /// </summary>
-        /// <returns>A vector with <see cref="Mathf.Ceil"/> called on each component.</returns>
+        /// <returns>A vector with <see cref="Mathf.Ceil(real_t)"/> called on each component.</returns>
         public readonly Vector3 Ceil()
         {
             return new Vector3(Mathf.Ceil(X), Mathf.Ceil(Y), Mathf.Ceil(Z));
@@ -315,7 +315,7 @@ namespace Godot
         /// <summary>
         /// Returns a new vector with all components rounded down (towards negative infinity).
         /// </summary>
-        /// <returns>A vector with <see cref="Mathf.Floor"/> called on each component.</returns>
+        /// <returns>A vector with <see cref="Mathf.Floor(real_t)"/> called on each component.</returns>
         public readonly Vector3 Floor()
         {
             return new Vector3(Mathf.Floor(X), Mathf.Floor(Y), Mathf.Floor(Z));
@@ -332,7 +332,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this vector is finite, by calling
-        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
         /// </summary>
         /// <returns>Whether this vector is finite or not.</returns>
         public readonly bool IsFinite()
@@ -1050,7 +1050,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the vector is exactly equal
-        /// to the given object (<see paramref="obj"/>).
+        /// to the given object (<paramref name="obj"/>).
         /// Note: Due to floating-point precision errors, consider using
         /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>

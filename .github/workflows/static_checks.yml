@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
@@ -40,6 +40,11 @@ jobs:
           cat changed.txt
           files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "./{}"' | tr '\n' ' ')
           echo "CHANGED_FILES=$files" >> $GITHUB_ENV
+
+      # This needs to happen before Python and npm execution; it must happen before any extra files are written.
+      - name: .gitignore checks (gitignore_check.sh)
+        run: |
+          bash ./misc/scripts/gitignore_check.sh
 
       - name: File formatting checks (file_format.sh)
         run: |

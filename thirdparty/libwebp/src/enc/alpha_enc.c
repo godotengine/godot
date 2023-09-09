@@ -13,6 +13,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "src/enc/vp8i_enc.h"
 #include "src/dsp/dsp.h"
@@ -140,6 +141,11 @@ static int EncodeAlphaInternal(const uint8_t* const data, int width, int height,
                               !reduce_levels, &tmp_bw, &result->stats);
     if (ok) {
       output = VP8LBitWriterFinish(&tmp_bw);
+      if (tmp_bw.error_) {
+        VP8LBitWriterWipeOut(&tmp_bw);
+        memset(&result->bw, 0, sizeof(result->bw));
+        return 0;
+      }
       output_size = VP8LBitWriterNumBytes(&tmp_bw);
       if (output_size > data_size) {
         // compressed size is larger than source! Revert to uncompressed mode.
@@ -148,6 +154,7 @@ static int EncodeAlphaInternal(const uint8_t* const data, int width, int height,
       }
     } else {
       VP8LBitWriterWipeOut(&tmp_bw);
+      memset(&result->bw, 0, sizeof(result->bw));
       return 0;
     }
   }
@@ -162,7 +169,7 @@ static int EncodeAlphaInternal(const uint8_t* const data, int width, int height,
   header = method | (filter << 2);
   if (reduce_levels) header |= ALPHA_PREPROCESSED_LEVELS << 4;
 
-  VP8BitWriterInit(&result->bw, ALPHA_HEADER_LEN + output_size);
+  if (!VP8BitWriterInit(&result->bw, ALPHA_HEADER_LEN + output_size)) ok = 0;
   ok = ok && VP8BitWriterAppend(&result->bw, &header, ALPHA_HEADER_LEN);
   ok = ok && VP8BitWriterAppend(&result->bw, output, output_size);
 
@@ -312,11 +319,11 @@ static int EncodeAlpha(VP8Encoder* const enc,
   assert(filter >= WEBP_FILTER_NONE && filter <= WEBP_FILTER_FAST);
 
   if (quality < 0 || quality > 100) {
-    return 0;
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_INVALID_CONFIGURATION);
   }
 
   if (method < ALPHA_NO_COMPRESSION || method > ALPHA_LOSSLESS_COMPRESSION) {
-    return 0;
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_INVALID_CONFIGURATION);
   }
 
   if (method == ALPHA_NO_COMPRESSION) {
@@ -326,7 +333,7 @@ static int EncodeAlpha(VP8Encoder* const enc,
 
   quant_alpha = (uint8_t*)WebPSafeMalloc(1ULL, data_size);
   if (quant_alpha == NULL) {
-    return 0;
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
   }
 
   // Extract alpha data (width x height) from raw_data (stride x height).
@@ -346,6 +353,9 @@ static int EncodeAlpha(VP8Encoder* const enc,
     ok = ApplyFiltersAndEncode(quant_alpha, width, height, data_size, method,
                                filter, reduce_levels, effort_level, output,
                                output_size, pic->stats);
+    if (!ok) {
+      WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);  // imprecise
+    }
 #if !defined(WEBP_DISABLE_STATS)
     if (pic->stats != NULL) {  // need stats?
       pic->stats->coded_size += (int)(*output_size);
@@ -405,7 +415,7 @@ int VP8EncStartAlpha(VP8Encoder* const enc) {
       WebPWorker* const worker = &enc->alpha_worker_;
       // Makes sure worker is good to go.
       if (!WebPGetWorkerInterface()->Reset(worker)) {
-        return 0;
+        return WebPEncodingSetError(enc->pic_, VP8_ENC_ERROR_OUT_OF_MEMORY);
       }
       WebPGetWorkerInterface()->Launch(worker);
       return 1;

@@ -325,6 +325,7 @@ private:
 	Button *override_camera_button = nullptr;
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
+	PopupMenu *theme_menu = nullptr;
 	HBoxContainer *animation_hb = nullptr;
 	MenuButton *animation_menu = nullptr;
 
@@ -403,6 +404,19 @@ private:
 	bool _is_grid_visible() const;
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
+
+public:
+	enum ThemePreviewMode {
+		THEME_PREVIEW_PROJECT,
+		THEME_PREVIEW_EDITOR,
+		THEME_PREVIEW_DEFAULT,
+
+		THEME_PREVIEW_MAX // The number of options for enumerating.
+	};
+
+private:
+	ThemePreviewMode theme_preview = THEME_PREVIEW_PROJECT;
+	void _switch_theme_preview(int p_mode);
 
 	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true) const;
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
@@ -558,6 +572,8 @@ public:
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
+	ThemePreviewMode get_theme_preview() const { return theme_preview; }
+
 	EditorSelection *editor_selection = nullptr;
 
 	CanvasItemEditor();
@@ -613,7 +629,6 @@ class CanvasItemEditorViewport : public Control {
 	void _on_select_type(Object *selected);
 	void _on_change_type_confirmed();
 	void _on_change_type_closed();
-	Node *_make_texture_node_type(String texture_node_type);
 
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();

@@ -131,6 +131,7 @@ public:
 	void set_mode(Mode p_mode);
 	void set_project_path(const String &p_path);
 
+	void ask_for_path_and_show();
 	void show_dialog();
 
 	ProjectDialog();
@@ -349,7 +350,7 @@ class ProjectManager : public Control {
 	Button *erase_missing_btn = nullptr;
 	Button *about_btn = nullptr;
 
-	HBoxContainer *local_projects_hb = nullptr;
+	VBoxContainer *local_projects_vb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
 
 	Ref<StyleBox> tag_stylebox;

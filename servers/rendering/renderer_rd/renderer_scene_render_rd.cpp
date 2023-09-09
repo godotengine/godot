@@ -368,7 +368,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				buffers.base_texture = rb->get_internal_texture(i);
 				buffers.depth_texture = rb->get_depth_texture(i);
 
-				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustrum
+				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustum.
 				float z_near = p_render_data->scene_data->view_projection[i].get_z_near();
 				float z_far = p_render_data->scene_data->view_projection[i].get_z_far();
 				bokeh_dof->bokeh_dof_compute(buffers, p_render_data->camera_attributes, z_near, z_far, p_render_data->scene_data->cam_orthogonal);
@@ -391,7 +391,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				buffers.depth_texture = rb->get_depth_texture(i);
 				buffers.base_fb = FramebufferCacheRD::get_singleton()->get_cache(buffers.base_texture); // TODO move this into bokeh_dof_raster, we can do this internally
 
-				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustrum
+				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustum.
 				float z_near = p_render_data->scene_data->view_projection[i].get_z_near();
 				float z_far = p_render_data->scene_data->view_projection[i].get_z_far();
 				bokeh_dof->bokeh_dof_raster(buffers, p_render_data->camera_attributes, z_near, z_far, p_render_data->scene_data->cam_orthogonal);
@@ -552,6 +552,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		tonemap.view_count = rb->get_view_count();
 
+		tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(render_target);
+
 		RID dest_fb;
 		if (fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
 			// If we use FSR to upscale we need to write our result into an intermediate buffer.
@@ -647,6 +649,8 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 	tonemap.view_count = rb->get_view_count();
 
+	tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(rb->get_render_target());
+
 	tone_mapper->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
 
 	RD::get_singleton()->draw_command_end_label();
@@ -697,7 +701,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 
 			copy_effects->copy_to_fb_rect(shadow_atlas_texture, dest_fb, Rect2i(Vector2(), size), false, true);
 
-			// Visualise our view frustum to show coverage.
+			// Visualize our view frustum to show coverage.
 			for (int i = 0; i < p_render_data->render_shadow_count; i++) {
 				RID light = p_render_data->render_shadows[i].light;
 				RID base = light_storage->light_instance_get_base_light(light);
@@ -741,8 +745,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS && _render_buffers_get_velocity_texture(rb).is_valid()) {
-		Size2i rtsize = texture_storage->render_target_get_size(render_target);
-		copy_effects->copy_to_fb_rect(_render_buffers_get_velocity_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false);
+		debug_effects->draw_motion_vectors(_render_buffers_get_velocity_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), rb->get_internal_size());
 	}
 }
 

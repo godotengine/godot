@@ -481,6 +481,8 @@ void DocTools::generate(bool p_basic_types) {
 							default_value_valid = true;
 						}
 					}
+				} else if (name == "EditorSettings") {
+					// Special case for editor settings, to prevent hardware or OS specific settings to affect the result.
 				} else if (import_option) {
 					default_value = import_options_default[E.name];
 					default_value_valid = true;

@@ -59,6 +59,7 @@ complete -c godot -l render-thread -d "Set the render thread mode" -x -a "unsafe
 complete -c godot -l remote-fs -d "Use a remote filesystem (<host/IP>[:<port>] address)" -x
 complete -c godot -l remote-fs-password -d "Password for remote filesystem" -x
 complete -c godot -l audio-driver -d "Set the audio driver" -x
+complete -c godot -l audio-output-latency -d "Override audio output latency in milliseconds (default is 15 ms)" -x
 complete -c godot -l display-driver -d "Set the display driver" -x
 complete -c godot -l rendering-method -d "Set the renderer" -x -a "(godot_rendering_method_args)"
 complete -c godot -l rendering-driver -d "Set the rendering driver" -x -a "(godot_rendering_driver_args)"
@@ -89,6 +90,7 @@ complete -c godot -l remote-debug -d "Enable remote debugging"
 complete -c godot -l debug-collisions -d "Show collision shapes when running the scene"
 complete -c godot -l debug-navigation -d "Show navigation polygons when running the scene"
 complete -c godot -l debug-stringnames -d "Print all StringName allocations to stdout when the engine quits"
+complete -c godot -l max-fps -d "Set a maximum number of frames per second rendered (can be used to limit power usage), a value of 0 results in unlimited framerate" -x
 complete -c godot -l frame-delay -d "Simulate high CPU load (delay each frame by the given number of milliseconds)" -x
 complete -c godot -l time-scale -d "Force time scale (higher values are faster, 1.0 is normal speed)" -x
 complete -c godot -l disable-render-loop -d "Disable render loop so rendering only occurs when called explicitly from script"

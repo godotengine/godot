@@ -247,29 +247,30 @@ void TreeItem::_propagate_check_through_parents(int p_column, bool p_emit_signal
 		return;
 	}
 
-	bool all_unchecked_and_not_indeterminate = true;
-	bool any_unchecked_or_indeterminate = false;
+	bool any_checked = false;
+	bool any_unchecked = false;
+	bool any_indeterminate = false;
 
 	TreeItem *child_item = current->get_first_child();
 	while (child_item) {
 		if (!child_item->is_checked(p_column)) {
-			any_unchecked_or_indeterminate = true;
+			any_unchecked = true;
 			if (child_item->is_indeterminate(p_column)) {
-				all_unchecked_and_not_indeterminate = false;
+				any_indeterminate = true;
 				break;
 			}
 		} else {
-			all_unchecked_and_not_indeterminate = false;
+			any_checked = true;
 		}
 		child_item = child_item->get_next();
 	}
 
-	if (all_unchecked_and_not_indeterminate) {
-		current->set_checked(p_column, false);
-	} else if (any_unchecked_or_indeterminate) {
+	if (any_indeterminate || (any_checked && any_unchecked)) {
 		current->set_indeterminate(p_column, true);
+	} else if (current->is_indeterminate(p_column) && !any_checked) {
+		current->set_indeterminate(p_column, false);
 	} else {
-		current->set_checked(p_column, true);
+		current->set_checked(p_column, any_checked);
 	}
 
 	if (p_emit_signal) {
@@ -349,6 +350,24 @@ void TreeItem::set_autowrap_mode(int p_column, TextServer::AutowrapMode p_mode) 
 TextServer::AutowrapMode TreeItem::get_autowrap_mode(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), TextServer::AUTOWRAP_OFF);
 	return cells[p_column].autowrap_mode;
+}
+
+void TreeItem::set_text_overrun_behavior(int p_column, TextServer::OverrunBehavior p_behavior) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
+	if (cells[p_column].text_buf->get_text_overrun_behavior() == p_behavior) {
+		return;
+	}
+
+	cells.write[p_column].text_buf->set_text_overrun_behavior(p_behavior);
+	cells.write[p_column].dirty = true;
+	_changed_notify(p_column);
+	cells.write[p_column].cached_minimum_size_dirty = true;
+}
+
+TextServer::OverrunBehavior TreeItem::get_text_overrun_behavior(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), TextServer::OVERRUN_TRIM_ELLIPSIS);
+	return cells[p_column].text_buf->get_text_overrun_behavior();
 }
 
 void TreeItem::set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser) {
@@ -1511,6 +1530,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "column", "autowrap_mode"), &TreeItem::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode", "column"), &TreeItem::get_autowrap_mode);
 
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "column", "overrun_behavior"), &TreeItem::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior", "column"), &TreeItem::get_text_overrun_behavior);
+
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "column", "parser"), &TreeItem::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override", "column"), &TreeItem::get_structured_text_bidi_override);
 
@@ -1921,7 +1943,8 @@ void Tree::update_column(int p_col) {
 		columns.write[p_col].text_buf->set_direction((TextServer::Direction)columns[p_col].text_direction);
 	}
 
-	columns.write[p_col].text_buf->add_string(columns[p_col].title, theme_cache.font, theme_cache.font_size, columns[p_col].language);
+	columns.write[p_col].text_buf->add_string(columns[p_col].title, theme_cache.tb_font, theme_cache.tb_font_size, columns[p_col].language);
+	columns.write[p_col].cached_minimum_width_dirty = true;
 }
 
 void Tree::update_item_cell(TreeItem *p_item, int p_col) {
@@ -2014,7 +2037,7 @@ void Tree::update_item_cache(TreeItem *p_item) {
 	}
 }
 
-int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int *r_self_height) {
+int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height) {
 	if (p_pos.y - theme_cache.offset.y > (p_draw_size.height)) {
 		return -1; //draw no more!
 	}
@@ -2094,13 +2117,19 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				buttons_width += button_size.width + theme_cache.button_margin;
 			}
 
-			p_item->cells.write[i].text_buf->set_width(item_width);
-
-			label_h = compute_item_height(p_item);
-			if (r_self_height != nullptr) {
-				*r_self_height = label_h;
+			int text_width = item_width - theme_cache.inner_item_margin_left - theme_cache.inner_item_margin_right;
+			if (p_item->cells[i].icon.is_valid()) {
+				text_width -= p_item->cells[i].get_icon_size().x + theme_cache.h_separation;
 			}
-			label_h += theme_cache.v_separation;
+
+			p_item->cells.write[i].text_buf->set_width(text_width);
+
+			r_self_height = compute_item_height(p_item);
+			label_h = r_self_height + theme_cache.v_separation;
+
+			if (p_pos.y + label_h - theme_cache.offset.y < 0) {
+				continue; // No need to draw.
+			}
 
 			Rect2i item_rect = Rect2i(Point2i(ofs, p_pos.y) - theme_cache.offset + p_draw_ofs, Size2i(item_width, label_h));
 			Rect2i cell_rect = item_rect;
@@ -2221,7 +2250,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			Point2i text_pos = item_rect.position;
 			text_pos.y += Math::floor(p_draw_ofs.y) - _get_title_button_height();
-			int text_width = p_item->cells[i].text_buf->get_size().x;
 
 			switch (p_item->cells[i].mode) {
 				case TreeItem::CELL_MODE_STRING: {
@@ -2383,6 +2411,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (rtl) {
 					button_ofs.x = get_size().width - button_ofs.x - button_texture->get_width();
 				}
+				p_item->cells.write[i].buttons.write[j].rect = Rect2i(button_ofs, button_size);
 				button_texture->draw(ci, button_ofs, p_item->cells[i].buttons[j].disabled ? Color(1, 1, 1, 0.5) : p_item->cells[i].buttons[j].color);
 				item_width_with_buttons -= button_size.width + theme_cache.button_margin;
 			}
@@ -2449,7 +2478,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			int child_h = -1;
 			int child_self_height = 0;
 			if (htotal >= 0) {
-				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c, &child_self_height);
+				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c, child_self_height);
 				child_self_height += theme_cache.v_separation;
 			}
 
@@ -4105,7 +4134,7 @@ void Tree::update_scrollbars() {
 }
 
 int Tree::_get_title_button_height() const {
-	ERR_FAIL_COND_V(theme_cache.font.is_null() || theme_cache.title_button.is_null(), 0);
+	ERR_FAIL_COND_V(theme_cache.tb_font.is_null() || theme_cache.title_button.is_null(), 0);
 	int h = 0;
 	if (show_column_titles) {
 		for (int i = 0; i < columns.size(); i++) {
@@ -4231,7 +4260,8 @@ void Tree::_notification(int p_what) {
 			cache.rtl = is_layout_rtl();
 
 			if (root && get_size().x > 0 && get_size().y > 0) {
-				draw_item(Point2(), draw_ofs, draw_size, root);
+				int self_height = 0; // Just to pass a reference, we don't need the root's `self_height`.
+				draw_item(Point2(), draw_ofs, draw_size, root, self_height);
 			}
 
 			if (show_column_titles) {
@@ -4239,7 +4269,6 @@ void Tree::_notification(int p_what) {
 				int ofs2 = theme_cache.panel_style->get_margin(SIDE_LEFT);
 				for (int i = 0; i < columns.size(); i++) {
 					Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? theme_cache.title_button_pressed : ((cache.hover_type == Cache::CLICK_TITLE && cache.hover_index == i) ? theme_cache.title_button_hover : theme_cache.title_button);
-					Ref<Font> f = theme_cache.tb_font;
 					Rect2 tbrect = Rect2(ofs2 - theme_cache.offset.x, bg->get_margin(SIDE_TOP), get_column_width(i), tbh);
 					if (cache.rtl) {
 						tbrect.position.x = get_size().width - tbrect.size.x - tbrect.position.x;
@@ -4249,6 +4278,7 @@ void Tree::_notification(int p_what) {
 					//text
 					int clip_w = tbrect.size.width - sb->get_minimum_size().width;
 					columns.write[i].text_buf->set_width(clip_w);
+					columns.write[i].cached_minimum_width_dirty = true;
 
 					Vector2 text_pos = Point2i(tbrect.position.x, tbrect.position.y + (tbrect.size.height - columns[i].text_buf->get_size().y) / 2);
 					switch (columns[i].title_alignment) {
@@ -4386,6 +4416,7 @@ void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mous
 void Tree::item_changed(int p_column, TreeItem *p_item) {
 	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
 		p_item->cells.write[p_column].dirty = true;
+		columns.write[p_column].cached_minimum_width_dirty = true;
 	}
 	queue_redraw();
 }
@@ -4517,6 +4548,7 @@ void Tree::set_column_custom_minimum_width(int p_column, int p_min_width) {
 		return;
 	}
 	columns.write[p_column].custom_min_width = p_min_width;
+	columns.write[p_column].cached_minimum_width_dirty = true;
 	queue_redraw();
 }
 
@@ -4528,6 +4560,7 @@ void Tree::set_column_expand(int p_column, bool p_expand) {
 	}
 
 	columns.write[p_column].expand = p_expand;
+	columns.write[p_column].cached_minimum_width_dirty = true;
 	queue_redraw();
 }
 
@@ -4539,6 +4572,7 @@ void Tree::set_column_expand_ratio(int p_column, int p_ratio) {
 	}
 
 	columns.write[p_column].expand_ratio = p_ratio;
+	columns.write[p_column].cached_minimum_width_dirty = true;
 	queue_redraw();
 }
 
@@ -4550,6 +4584,7 @@ void Tree::set_column_clip_content(int p_column, bool p_fit) {
 	}
 
 	columns.write[p_column].clip_content = p_fit;
+	columns.write[p_column].cached_minimum_width_dirty = true;
 	queue_redraw();
 }
 
@@ -4632,46 +4667,51 @@ TreeItem *Tree::get_next_selected(TreeItem *p_item) {
 int Tree::get_column_minimum_width(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, columns.size(), -1);
 
-	// Use the custom minimum width.
-	int min_width = columns[p_column].custom_min_width;
+	if (columns[p_column].cached_minimum_width_dirty) {
+		// Use the custom minimum width.
+		int min_width = columns[p_column].custom_min_width;
 
-	// Check if the visible title of the column is wider.
-	if (show_column_titles) {
-		min_width = MAX(theme_cache.font->get_string_size(columns[p_column].title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT), min_width);
-	}
+		// Check if the visible title of the column is wider.
+		if (show_column_titles) {
+			min_width = MAX(theme_cache.font->get_string_size(columns[p_column].title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT), min_width);
+		}
 
-	if (!columns[p_column].clip_content) {
-		int depth = 0;
-		TreeItem *next;
-		for (TreeItem *item = get_root(); item; item = next) {
-			next = item->get_next_visible();
-			// Compute the depth in tree.
-			if (next && p_column == 0) {
-				if (next->get_parent() == item) {
-					depth += 1;
-				} else {
-					TreeItem *common_parent = item->get_parent();
-					while (common_parent != next->get_parent() && common_parent) {
-						common_parent = common_parent->get_parent();
-						depth -= 1;
+		if (!columns[p_column].clip_content) {
+			int depth = 0;
+			TreeItem *next;
+			for (TreeItem *item = get_root(); item; item = next) {
+				next = item->get_next_visible();
+				// Compute the depth in tree.
+				if (next && p_column == 0) {
+					if (next->get_parent() == item) {
+						depth += 1;
+					} else {
+						TreeItem *common_parent = item->get_parent();
+						while (common_parent != next->get_parent() && common_parent) {
+							common_parent = common_parent->get_parent();
+							depth -= 1;
+						}
 					}
 				}
-			}
 
-			// Get the item minimum size.
-			Size2 item_size = item->get_minimum_size(p_column);
-			if (p_column == 0) {
-				item_size.width += theme_cache.item_margin * depth;
-			} else {
-				item_size.width += theme_cache.h_separation;
-			}
+				// Get the item minimum size.
+				Size2 item_size = item->get_minimum_size(p_column);
+				if (p_column == 0) {
+					item_size.width += theme_cache.item_margin * depth;
+				} else {
+					item_size.width += theme_cache.h_separation;
+				}
 
-			// Check if the item is wider.
-			min_width = MAX(min_width, item_size.width);
+				// Check if the item is wider.
+				min_width = MAX(min_width, item_size.width);
+			}
 		}
+
+		columns.get(p_column).cached_minimum_width = min_width;
+		columns.get(p_column).cached_minimum_width_dirty = false;
 	}
 
-	return min_width;
+	return columns[p_column].cached_minimum_width;
 }
 
 int Tree::get_column_width(int p_column) const {
@@ -5311,6 +5351,7 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 			return Control::get_tooltip(p_pos);
 		}
 
+		Point2 button_pos = pos;
 		if (h_scroll->is_visible_in_tree()) {
 			pos.x += h_scroll->get_value();
 		}
@@ -5323,22 +5364,13 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 
 		if (it) {
 			const TreeItem::Cell &c = it->cells[col];
-			int col_width = get_column_width(col);
-
-			for (int i = 0; i < col; i++) {
-				pos.x -= get_column_width(i);
-			}
-
 			for (int j = c.buttons.size() - 1; j >= 0; j--) {
-				Ref<Texture2D> b = c.buttons[j].texture;
-				Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
-				if (pos.x > col_width - size.width) {
+				if (c.buttons[j].rect.has_point(button_pos)) {
 					String tooltip = c.buttons[j].tooltip;
 					if (!tooltip.is_empty()) {
 						return tooltip;
 					}
 				}
-				col_width -= size.width;
 			}
 			String ret;
 			if (it->get_tooltip_text(col) == "") {

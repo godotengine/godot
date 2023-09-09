@@ -51,7 +51,6 @@ extern int godot_js_fetch_read_headers(int p_id, void (*parse_callback)(int p_si
 extern int godot_js_fetch_read_chunk(int p_id, uint8_t *p_buf, int p_buf_size);
 extern void godot_js_fetch_free(int p_id);
 extern godot_js_fetch_state_t godot_js_fetch_state_get(int p_id);
-extern int godot_js_fetch_body_length_get(int p_id);
 extern int godot_js_fetch_http_status_get(int p_id);
 extern int godot_js_fetch_is_chunked(int p_id);
 

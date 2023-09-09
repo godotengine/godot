@@ -46,7 +46,7 @@ ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 	gizmo_color.a = 0.1;
 	create_material("reflection_probe_solid_material", gizmo_color);
 
-	create_icon_material("reflection_probe_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoReflectionProbe"), SNAME("EditorIcons")));
+	create_icon_material("reflection_probe_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoReflectionProbe")));
 	create_handle_material("handles");
 }
 

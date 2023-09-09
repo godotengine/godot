@@ -683,11 +683,13 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	pos.z = 0.0;\n";
 	}
 	code += "	// apply linear acceleration\n";
-	code += "	force += length(VELOCITY) > 0.0 ? normalize(VELOCITY) * tex_linear_accel * mix(linear_accel_min, linear_accel_max, rand_from_seed(alt_seed)) : vec3(0.0);\n";
+	code += "	float linear_accel_rand = rand_from_seed(alt_seed);\n";
+	code += "	force += length(VELOCITY) > 0.0 ? normalize(VELOCITY) * tex_linear_accel * mix(linear_accel_min, linear_accel_max, linear_accel_rand) : vec3(0.0);\n";
 	code += "	// apply radial acceleration\n";
 	code += "	vec3 org = EMISSION_TRANSFORM[3].xyz;\n";
 	code += "	vec3 diff = pos - org;\n";
-	code += "	force += length(diff) > 0.0 ? normalize(diff) * tex_radial_accel * mix(radial_accel_min, radial_accel_max, rand_from_seed(alt_seed)) : vec3(0.0);\n";
+	code += "	float radial_accel_rand = rand_from_seed(alt_seed);\n";
+	code += "	force += length(diff) > 0.0 ? normalize(diff) * tex_radial_accel * mix(radial_accel_min, radial_accel_max, radial_accel_rand) : vec3(0.0);\n";
 	code += "	// apply tangential acceleration;\n";
 	code += "	float tangent_accel_val = tex_tangent_accel * mix(tangent_accel_min, tangent_accel_max, rand_from_seed(alt_seed));\n";
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
@@ -760,7 +762,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	float base_angle = (tex_angle) * mix(initial_angle_min, initial_angle_max, angle_rand);\n";
 	code += "	base_angle += CUSTOM.y * LIFETIME * (tex_angular_velocity) * mix(angular_velocity_min,angular_velocity_max, rand_from_seed(alt_seed));\n";
 	code += "	CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
-	code += "	CUSTOM.z = (tex_anim_offset) * mix(anim_offset_min, anim_offset_max, rand_from_seed(alt_seed)) + tv * tex_anim_speed * mix(anim_speed_min, anim_speed_max, rand_from_seed(alt_seed));\n"; // angle
+	code += "	CUSTOM.z = (tex_anim_offset) * mix(anim_offset_min, anim_offset_max, anim_offset_rand) + tv * tex_anim_speed * mix(anim_speed_min, anim_speed_max, rand_from_seed(alt_seed));\n"; // angle
 
 	// apply color
 	// apply hue rotation

@@ -16,6 +16,12 @@
 				Returns the user's clipboard as a string if possible.
 			</description>
 		</method>
+		<method name="clipboard_get_image" qualifiers="const">
+			<return type="Image" />
+			<description>
+				Returns the user's clipboard as an image if possible.
+			</description>
+		</method>
 		<method name="clipboard_get_primary" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -26,7 +32,13 @@
 		<method name="clipboard_has" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if there is content on the user's clipboard.
+				Returns [code]true[/code] if there is a text content on the user's clipboard.
+			</description>
+		</method>
+		<method name="clipboard_has_image" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if there is an image content on the user's clipboard.
 			</description>
 		</method>
 		<method name="clipboard_set">
@@ -109,7 +121,9 @@
 				Displays OS native dialog for selecting files or directories in the file system.
 				Callbacks have the following arguments: [code]bool status, PackedStringArray selected_paths[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [code]FEATURE_NATIVE_DIALOG[/code] feature.
-				[b]Note:[/b] This method is implemented on Windows and macOS.
+				[b]Note:[/b] This method is implemented on Linux, Windows and macOS.
+				[b]Note:[/b] [param current_directory] might be ignored.
+				[b]Note:[/b] On Linux, [param show_hidden] is ignored.
 				[b]Note:[/b] On macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
 			</description>
@@ -176,7 +190,7 @@
 		<method name="get_swap_cancel_ok">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if positions of [b]OK[/b] and [b]Cancel[/b] buttons are swapped in dialogs. This is enabled by default on Windows and UWP to follow interface conventions, and be toggled by changing [member ProjectSettings.gui/common/swap_cancel_ok].
+				Returns [code]true[/code] if positions of [b]OK[/b] and [b]Cancel[/b] buttons are swapped in dialogs. This is enabled by default on Windows to follow interface conventions, and be toggled by changing [member ProjectSettings.gui/common/swap_cancel_ok].
 				[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 			</description>
 		</method>
@@ -775,7 +789,7 @@
 		<method name="is_touchscreen_available" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if touch events are available (Android or iOS), the capability is detected on the Webplatform or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
+				Returns [code]true[/code] if touch events are available (Android or iOS), the capability is detected on the Web platform or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
 			</description>
 		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">

@@ -180,7 +180,19 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			// to compensate for the loss of sharpness.
 			const float texture_mipmap_bias = log2f(MIN(scaling_3d_scale, 1.0)) + p_viewport->texture_mipmap_bias;
 
-			p_viewport->render_buffers->configure(p_viewport->render_target, Size2i(render_width, render_height), Size2(width, height), scaling_3d_mode, p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa_3d, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->view_count);
+			RenderSceneBuffersConfiguration rb_config;
+			rb_config.set_render_target(p_viewport->render_target);
+			rb_config.set_internal_size(Size2i(render_width, render_height));
+			rb_config.set_target_size(Size2(width, height));
+			rb_config.set_view_count(p_viewport->view_count);
+			rb_config.set_scaling_3d_mode(scaling_3d_mode);
+			rb_config.set_msaa_3d(p_viewport->msaa_3d);
+			rb_config.set_screen_space_aa(p_viewport->screen_space_aa);
+			rb_config.set_fsr_sharpness(p_viewport->fsr_sharpness);
+			rb_config.set_texture_mipmap_bias(texture_mipmap_bias);
+			rb_config.set_use_taa(p_viewport->use_taa);
+
+			p_viewport->render_buffers->configure(&rb_config);
 		}
 	}
 }
@@ -1151,6 +1163,17 @@ void RendererViewport::viewport_set_msaa_3d(RID p_viewport, RS::ViewportMSAA p_m
 	_configure_3d_render_buffers(viewport);
 }
 
+void RendererViewport::viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr_2d) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	if (viewport->use_hdr_2d == p_use_hdr_2d) {
+		return;
+	}
+	viewport->use_hdr_2d = p_use_hdr_2d;
+	RSG::texture_storage->render_target_set_use_hdr(viewport->render_target, p_use_hdr_2d);
+}
+
 void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -1171,6 +1194,7 @@ void RendererViewport::viewport_set_use_taa(RID p_viewport, bool p_use_taa) {
 		return;
 	}
 	viewport->use_taa = p_use_taa;
+	num_viewports_with_motion_vectors += p_use_taa ? 1 : -1;
 	_configure_3d_render_buffers(viewport);
 }
 
@@ -1355,6 +1379,10 @@ bool RendererViewport::free(RID p_rid) {
 			RendererSceneOcclusionCull::get_singleton()->remove_buffer(p_rid);
 		}
 
+		if (viewport->use_taa) {
+			num_viewports_with_motion_vectors--;
+		}
+
 		viewport_owner.free(p_rid);
 
 		return true;
@@ -1408,6 +1436,10 @@ int RendererViewport::get_total_primitives_drawn() const {
 }
 int RendererViewport::get_total_draw_calls_used() const {
 	return total_draw_calls_used;
+}
+
+int RendererViewport::get_num_viewports_with_motion_vectors() const {
+	return num_viewports_with_motion_vectors;
 }
 
 RendererViewport::RendererViewport() {

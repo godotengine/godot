@@ -439,6 +439,16 @@ struct MarkGlyphSetsFormat1
   bool covers (unsigned int set_index, hb_codepoint_t glyph_id) const
   { return (this+coverage[set_index]).get_coverage (glyph_id) != NOT_COVERED; }
 
+  template <typename set_t>
+  void collect_coverage (hb_vector_t<set_t> &sets) const
+  {
+     for (const auto &offset : coverage)
+     {
+       const auto &cov = this+offset;
+       cov.collect_coverage (sets.push ());
+     }
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -489,6 +499,15 @@ struct MarkGlyphSets
     switch (u.format) {
     case 1: return u.format1.covers (set_index, glyph_id);
     default:return false;
+    }
+  }
+
+  template <typename set_t>
+  void collect_coverage (hb_vector_t<set_t> &sets) const
+  {
+    switch (u.format) {
+    case 1: u.format1.collect_coverage (sets); return;
+    default:return;
     }
   }
 
@@ -856,6 +875,10 @@ struct GDEF
 	hb_blob_destroy (table.get_blob ());
 	table = hb_blob_get_empty ();
       }
+
+#ifndef HB_NO_GDEF_CACHE
+      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_set_digests);
+#endif
     }
     ~accelerator_t () { table.destroy (); }
 
@@ -879,8 +902,18 @@ struct GDEF
 
     }
 
+    bool mark_set_covers (unsigned int set_index, hb_codepoint_t glyph_id) const
+    {
+      return
+#ifndef HB_NO_GDEF_CACHE
+	     mark_glyph_set_digests[set_index].may_have (glyph_id) &&
+#endif
+	     table->mark_set_covers (set_index, glyph_id);
+    }
+
     hb_blob_ptr_t<GDEF> table;
 #ifndef HB_NO_GDEF_CACHE
+    hb_vector_t<hb_set_digest_t> mark_glyph_set_digests;
     mutable hb_cache_t<21, 3, 8> glyph_props_cache;
 #endif
   };

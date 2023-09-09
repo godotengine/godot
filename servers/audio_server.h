@@ -138,8 +138,6 @@ class AudioDriverManager {
 		MAX_DRIVERS = 10
 	};
 
-	static const int DEFAULT_OUTPUT_LATENCY = 15;
-
 	static AudioDriver *drivers[MAX_DRIVERS];
 	static int driver_count;
 

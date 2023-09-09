@@ -53,7 +53,7 @@ MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint3
 #endif
 
 ClassDB::APIType ClassDB::current_api = API_CORE;
-HashMap<ClassDB::APIType, uint64_t> ClassDB::api_hashes_cache;
+HashMap<ClassDB::APIType, uint32_t> ClassDB::api_hashes_cache;
 
 void ClassDB::set_current_api(APIType p_api) {
 	DEV_ASSERT(!api_hashes_cache.has(p_api)); // This API type may not be suitable for caching of hash if it can change later.
@@ -163,7 +163,7 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 	return ti->api;
 }
 
-uint64_t ClassDB::get_api_hash(APIType p_api) {
+uint32_t ClassDB::get_api_hash(APIType p_api) {
 	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -1661,7 +1661,15 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 	c.name = p_extension->class_name;
 	c.is_virtual = p_extension->is_virtual;
 	if (!p_extension->is_abstract) {
-		c.creation_func = parent->creation_func;
+		// Find the closest ancestor which is either non-abstract or native (or both).
+		ClassInfo *concrete_ancestor = parent;
+		while (concrete_ancestor->creation_func == nullptr &&
+				concrete_ancestor->inherits_ptr != nullptr &&
+				concrete_ancestor->gdextension != nullptr) {
+			concrete_ancestor = concrete_ancestor->inherits_ptr;
+		}
+		ERR_FAIL_NULL_MSG(concrete_ancestor->creation_func, "Extension class " + String(p_extension->class_name) + " cannot extend native abstract class " + String(concrete_ancestor->name));
+		c.creation_func = concrete_ancestor->creation_func;
 	}
 	c.inherits = parent->name;
 	c.class_ptr = parent->class_ptr;

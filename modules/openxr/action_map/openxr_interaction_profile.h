@@ -32,7 +32,7 @@
 #define OPENXR_INTERACTION_PROFILE_H
 
 #include "openxr_action.h"
-#include "openxr_interaction_profile_meta_data.h"
+#include "openxr_interaction_profile_metadata.h"
 
 #include "core/io/resource.h"
 

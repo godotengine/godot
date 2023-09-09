@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/control.h"
 #include "scene/gui/tree.h"
 
@@ -127,8 +128,8 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 			section->set_text(0, item_name);
 			section->set_selectable(0, false);
 			section->set_selectable(1, false);
-			section->set_custom_bg_color(0, search_options->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			section->set_custom_bg_color(1, search_options->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+			section->set_custom_bg_color(0, search_options->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+			section->set_custom_bg_color(1, search_options->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 			sections[section_name] = section;
 		}
@@ -139,7 +140,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		ti->set_metadata(0, entries[i].key_name);
 		ti->set_text_alignment(1, HORIZONTAL_ALIGNMENT_RIGHT);
 		ti->set_text(1, shortcut_text);
-		Color c = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5);
+		Color c = get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.5);
 		ti->set_custom_color(1, c);
 	}
 
@@ -294,7 +295,7 @@ Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command
 }
 
 void EditorCommandPalette::_theme_changed() {
-	command_search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	command_search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
 }
 
 void EditorCommandPalette::_save_history() const {

@@ -34,7 +34,7 @@
 #include "core/io/dir_access.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "scene/resources/default_theme/default_theme.h"
+#include "editor/editor_string_names.h"
 #include "scene/resources/font.h"
 
 Ref<FontFile> load_external_font(const String &p_path, TextServer::Hinting p_hinting, TextServer::FontAntialiasing p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_msdf = false, TypedArray<Font> *r_fallbacks = nullptr) {
@@ -158,11 +158,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontFile> georgian_font = load_internal_font(_font_NotoSansGeorgian_Regular, _font_NotoSansGeorgian_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> hebrew_font = load_internal_font(_font_NotoSansHebrew_Regular, _font_NotoSansHebrew_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> malayalam_font = load_internal_font(_font_NotoSansMalayalamUI_Regular, _font_NotoSansMalayalamUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
-	Ref<FontFile> oriya_font = load_internal_font(_font_NotoSansOriyaUI_Regular, _font_NotoSansOriyaUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	Ref<FontFile> oriya_font = load_internal_font(_font_NotoSansOriya_Regular, _font_NotoSansOriya_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> sinhala_font = load_internal_font(_font_NotoSansSinhalaUI_Regular, _font_NotoSansSinhalaUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> tamil_font = load_internal_font(_font_NotoSansTamilUI_Regular, _font_NotoSansTamilUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> telugu_font = load_internal_font(_font_NotoSansTeluguUI_Regular, _font_NotoSansTeluguUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
-	Ref<FontFile> thai_font = load_internal_font(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	Ref<FontFile> thai_font = load_internal_font(_font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> fallback_font = load_internal_font(_font_DroidSansFallback, _font_DroidSansFallback_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> japanese_font = load_internal_font(_font_DroidSansJapanese, _font_DroidSansJapanese_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	default_font->set_fallbacks(fallbacks);
@@ -178,11 +178,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontFile> georgian_font_bold = load_internal_font(_font_NotoSansGeorgian_Bold, _font_NotoSansGeorgian_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> hebrew_font_bold = load_internal_font(_font_NotoSansHebrew_Bold, _font_NotoSansHebrew_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> malayalam_font_bold = load_internal_font(_font_NotoSansMalayalamUI_Bold, _font_NotoSansMalayalamUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
-	Ref<FontFile> oriya_font_bold = load_internal_font(_font_NotoSansOriyaUI_Bold, _font_NotoSansOriyaUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
+	Ref<FontFile> oriya_font_bold = load_internal_font(_font_NotoSansOriya_Bold, _font_NotoSansOriya_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> sinhala_font_bold = load_internal_font(_font_NotoSansSinhalaUI_Bold, _font_NotoSansSinhalaUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> tamil_font_bold = load_internal_font(_font_NotoSansTamilUI_Bold, _font_NotoSansTamilUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> telugu_font_bold = load_internal_font(_font_NotoSansTeluguUI_Bold, _font_NotoSansTeluguUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
-	Ref<FontFile> thai_font_bold = load_internal_font(_font_NotoSansThaiUI_Bold, _font_NotoSansThaiUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
+	Ref<FontFile> thai_font_bold = load_internal_font(_font_NotoSansThai_Bold, _font_NotoSansThai_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontVariation> fallback_font_bold = make_bold_font(fallback_font, embolden_strength, &fallbacks_bold);
 	Ref<FontVariation> japanese_font_bold = make_bold_font(japanese_font, embolden_strength, &fallbacks_bold);
 
@@ -378,21 +378,21 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	// Main font.
 
-	p_theme->set_font("main", "EditorFonts", default_fc);
-	p_theme->set_font("main_msdf", "EditorFonts", default_fc_msdf);
-	p_theme->set_font_size("main_size", "EditorFonts", default_font_size);
+	p_theme->set_font("main", EditorStringName(EditorFonts), default_fc);
+	p_theme->set_font("main_msdf", EditorStringName(EditorFonts), default_fc_msdf);
+	p_theme->set_font_size("main_size", EditorStringName(EditorFonts), default_font_size);
 
-	p_theme->set_font("bold", "EditorFonts", bold_fc);
-	p_theme->set_font("main_bold_msdf", "EditorFonts", bold_fc_msdf);
-	p_theme->set_font_size("bold_size", "EditorFonts", default_font_size);
+	p_theme->set_font("bold", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font("main_bold_msdf", EditorStringName(EditorFonts), bold_fc_msdf);
+	p_theme->set_font_size("bold_size", EditorStringName(EditorFonts), default_font_size);
 
 	// Title font.
 
-	p_theme->set_font("title", "EditorFonts", bold_fc);
-	p_theme->set_font_size("title_size", "EditorFonts", default_font_size + 1 * EDSCALE);
+	p_theme->set_font("title", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font_size("title_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
 
-	p_theme->set_font("main_button_font", "EditorFonts", bold_fc);
-	p_theme->set_font_size("main_button_font_size", "EditorFonts", default_font_size + 1 * EDSCALE);
+	p_theme->set_font("main_button_font", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font_size("main_button_font_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
 
 	p_theme->set_font("font", "Label", default_fc);
 
@@ -409,41 +409,41 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font_size("font_size", "HeaderLarge", default_font_size + 3 * EDSCALE);
 
 	// Documentation fonts
-	p_theme->set_font_size("doc_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
-	p_theme->set_font("doc", "EditorFonts", default_fc);
-	p_theme->set_font("doc_bold", "EditorFonts", bold_fc);
-	p_theme->set_font("doc_italic", "EditorFonts", italic_fc);
-	p_theme->set_font_size("doc_title_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
-	p_theme->set_font("doc_title", "EditorFonts", bold_fc);
-	p_theme->set_font_size("doc_source_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
-	p_theme->set_font("doc_source", "EditorFonts", mono_fc);
-	p_theme->set_font_size("doc_keyboard_size", "EditorFonts", (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
-	p_theme->set_font("doc_keyboard", "EditorFonts", mono_fc);
+	p_theme->set_font_size("doc_size", EditorStringName(EditorFonts), int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
+	p_theme->set_font("doc", EditorStringName(EditorFonts), default_fc);
+	p_theme->set_font("doc_bold", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font("doc_italic", EditorStringName(EditorFonts), italic_fc);
+	p_theme->set_font_size("doc_title_size", EditorStringName(EditorFonts), int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
+	p_theme->set_font("doc_title", EditorStringName(EditorFonts), bold_fc);
+	p_theme->set_font_size("doc_source_size", EditorStringName(EditorFonts), int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
+	p_theme->set_font("doc_source", EditorStringName(EditorFonts), mono_fc);
+	p_theme->set_font_size("doc_keyboard_size", EditorStringName(EditorFonts), (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
+	p_theme->set_font("doc_keyboard", EditorStringName(EditorFonts), mono_fc);
 
 	// Ruler font
-	p_theme->set_font_size("rulers_size", "EditorFonts", 8 * EDSCALE);
-	p_theme->set_font("rulers", "EditorFonts", default_fc);
+	p_theme->set_font_size("rulers_size", EditorStringName(EditorFonts), 8 * EDSCALE);
+	p_theme->set_font("rulers", EditorStringName(EditorFonts), default_fc);
 
 	// Rotation widget font
-	p_theme->set_font_size("rotation_control_size", "EditorFonts", 14 * EDSCALE);
-	p_theme->set_font("rotation_control", "EditorFonts", default_fc);
+	p_theme->set_font_size("rotation_control_size", EditorStringName(EditorFonts), 14 * EDSCALE);
+	p_theme->set_font("rotation_control", EditorStringName(EditorFonts), default_fc);
 
 	// Code font
-	p_theme->set_font_size("source_size", "EditorFonts", int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
-	p_theme->set_font("source", "EditorFonts", mono_fc);
+	p_theme->set_font_size("source_size", EditorStringName(EditorFonts), int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
+	p_theme->set_font("source", EditorStringName(EditorFonts), mono_fc);
 
-	p_theme->set_font_size("expression_size", "EditorFonts", (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
-	p_theme->set_font("expression", "EditorFonts", mono_other_fc);
+	p_theme->set_font_size("expression_size", EditorStringName(EditorFonts), (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
+	p_theme->set_font("expression", EditorStringName(EditorFonts), mono_other_fc);
 
-	p_theme->set_font_size("output_source_size", "EditorFonts", int(EDITOR_GET("run/output/font_size")) * EDSCALE);
-	p_theme->set_font("output_source", "EditorFonts", mono_other_fc);
-	p_theme->set_font("output_source_bold", "EditorFonts", mono_other_fc_bold);
-	p_theme->set_font("output_source_italic", "EditorFonts", mono_other_fc_italic);
-	p_theme->set_font("output_source_bold_italic", "EditorFonts", mono_other_fc_bold_italic);
-	p_theme->set_font("output_source_mono", "EditorFonts", mono_other_fc_mono);
+	p_theme->set_font_size("output_source_size", EditorStringName(EditorFonts), int(EDITOR_GET("run/output/font_size")) * EDSCALE);
+	p_theme->set_font("output_source", EditorStringName(EditorFonts), mono_other_fc);
+	p_theme->set_font("output_source_bold", EditorStringName(EditorFonts), mono_other_fc_bold);
+	p_theme->set_font("output_source_italic", EditorStringName(EditorFonts), mono_other_fc_italic);
+	p_theme->set_font("output_source_bold_italic", EditorStringName(EditorFonts), mono_other_fc_bold_italic);
+	p_theme->set_font("output_source_mono", EditorStringName(EditorFonts), mono_other_fc_mono);
 
-	p_theme->set_font_size("status_source_size", "EditorFonts", default_font_size);
-	p_theme->set_font("status_source", "EditorFonts", mono_other_fc);
+	p_theme->set_font_size("status_source_size", EditorStringName(EditorFonts), default_font_size);
+	p_theme->set_font("status_source", EditorStringName(EditorFonts), mono_other_fc);
 
 	OS::get_singleton()->benchmark_end_measure("editor_register_fonts");
 }

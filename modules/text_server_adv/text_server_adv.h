@@ -316,6 +316,7 @@ class TextServerAdvanced : public TextServerExtension {
 		String style_name;
 		int weight = 400;
 		int stretch = 100;
+		int extra_spacing[4] = { 0, 0, 0, 0 };
 
 		HashMap<Vector2i, FontForSizeAdvanced *, VariantHasher, VariantComparator> cache;
 
@@ -509,9 +510,11 @@ class TextServerAdvanced : public TextServerExtension {
 
 		HashMap<int, bool> jstops;
 		HashMap<int, bool> breaks;
+		PackedInt32Array chars;
 		int break_inserts = 0;
 		bool break_ops_valid = false;
 		bool js_ops_valid = false;
+		bool chars_valid = false;
 
 		~ShapedTextDataAdvanced() {
 			for (int i = 0; i < bidi_iter.size(); i++) {
@@ -552,9 +555,10 @@ class TextServerAdvanced : public TextServerExtension {
 		double oversampling = 0.0;
 		double embolden = 0.0;
 		Transform2D transform;
+		int extra_spacing[4] = { 0, 0, 0, 0 };
 
 		bool operator==(const SystemFontKey &p_b) const {
-			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform);
+			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]);
 		}
 
 		SystemFontKey(const String &p_font_name, bool p_italic, int p_weight, int p_stretch, RID p_font, const TextServerAdvanced *p_fb) {
@@ -575,6 +579,10 @@ class TextServerAdvanced : public TextServerExtension {
 			oversampling = p_fb->_font_get_oversampling(p_font);
 			embolden = p_fb->_font_get_embolden(p_font);
 			transform = p_fb->_font_get_transform(p_font);
+			extra_spacing[SPACING_TOP] = p_fb->_font_get_spacing(p_font, SPACING_TOP);
+			extra_spacing[SPACING_BOTTOM] = p_fb->_font_get_spacing(p_font, SPACING_BOTTOM);
+			extra_spacing[SPACING_SPACE] = p_fb->_font_get_spacing(p_font, SPACING_SPACE);
+			extra_spacing[SPACING_GLYPH] = p_fb->_font_get_spacing(p_font, SPACING_GLYPH);
 		}
 	};
 
@@ -603,12 +611,18 @@ class TextServerAdvanced : public TextServerExtension {
 			hash = hash_murmur3_one_real(p_a.transform[0].y, hash);
 			hash = hash_murmur3_one_real(p_a.transform[1].x, hash);
 			hash = hash_murmur3_one_real(p_a.transform[1].y, hash);
+			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_TOP], hash);
+			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_BOTTOM], hash);
+			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_SPACE], hash);
+			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_GLYPH], hash);
+
 			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12), hash));
 		}
 	};
 	mutable HashMap<SystemFontKey, SystemFontCache, SystemFontKeyHasher> system_fonts;
 	mutable HashMap<String, PackedByteArray> system_font_data;
 
+	void _update_chars(ShapedTextDataAdvanced *p_sd) const;
 	void _realign(ShapedTextDataAdvanced *p_sd) const;
 	int64_t _convert_pos(const String &p_utf32, const Char16String &p_utf16, int64_t p_pos) const;
 	int64_t _convert_pos(const ShapedTextDataAdvanced *p_sd, int64_t p_pos) const;
@@ -744,6 +758,9 @@ public:
 
 	MODBIND2(font_set_embolden, const RID &, double);
 	MODBIND1RC(double, font_get_embolden, const RID &);
+
+	MODBIND3(font_set_spacing, const RID &, SpacingType, int64_t);
+	MODBIND2RC(int64_t, font_get_spacing, const RID &, SpacingType);
 
 	MODBIND2(font_set_transform, const RID &, const Transform2D &);
 	MODBIND1RC(Transform2D, font_get_transform, const RID &);
@@ -920,11 +937,14 @@ public:
 	MODBIND1RC(double, shaped_text_get_underline_position, const RID &);
 	MODBIND1RC(double, shaped_text_get_underline_thickness, const RID &);
 
+	MODBIND1RC(PackedInt32Array, shaped_text_get_character_breaks, const RID &);
+
 	MODBIND2RC(String, format_number, const String &, const String &);
 	MODBIND2RC(String, parse_number, const String &, const String &);
 	MODBIND1RC(String, percent_sign, const String &);
 
 	MODBIND3RC(PackedInt32Array, string_get_word_breaks, const String &, const String &, int64_t);
+	MODBIND2RC(PackedInt32Array, string_get_character_breaks, const String &, const String &);
 
 	MODBIND2RC(int64_t, is_confusable, const String &, const PackedStringArray &);
 	MODBIND1RC(bool, spoof_check, const String &);

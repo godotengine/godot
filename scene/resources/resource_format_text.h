@@ -171,7 +171,7 @@ class ResourceFormatSaverTextInstance {
 		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }
 	};
 
-	RBMap<NonPersistentKey, Ref<Resource>> non_persistent_map;
+	RBMap<NonPersistentKey, Variant> non_persistent_map;
 
 	HashSet<Ref<Resource>> resource_set;
 	List<Ref<Resource>> saved_resources;

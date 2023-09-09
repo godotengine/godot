@@ -88,6 +88,17 @@ public:
 	static _ALWAYS_INLINE_ double atan2(double p_y, double p_x) { return ::atan2(p_y, p_x); }
 	static _ALWAYS_INLINE_ float atan2(float p_y, float p_x) { return ::atan2f(p_y, p_x); }
 
+	static _ALWAYS_INLINE_ double asinh(double p_x) { return ::asinh(p_x); }
+	static _ALWAYS_INLINE_ float asinh(float p_x) { return ::asinhf(p_x); }
+
+	// Always does clamping so always safe to use.
+	static _ALWAYS_INLINE_ double acosh(double p_x) { return p_x < 1 ? 0 : ::acosh(p_x); }
+	static _ALWAYS_INLINE_ float acosh(float p_x) { return p_x < 1 ? 0 : ::acoshf(p_x); }
+
+	// Always does clamping so always safe to use.
+	static _ALWAYS_INLINE_ double atanh(double p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanh(p_x)); }
+	static _ALWAYS_INLINE_ float atanh(float p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanhf(p_x)); }
+
 	static _ALWAYS_INLINE_ double sqrt(double p_x) { return ::sqrt(p_x); }
 	static _ALWAYS_INLINE_ float sqrt(float p_x) { return ::sqrtf(p_x); }
 

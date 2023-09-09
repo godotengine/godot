@@ -101,6 +101,8 @@ public:
 	HashMap<NodePath, bool> filter;
 	bool filter_enabled = false;
 
+	bool closable = false;
+
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
@@ -159,6 +161,9 @@ public:
 
 	void set_filter_enabled(bool p_enable);
 	bool is_filter_enabled() const;
+
+	void set_closable(bool p_closable);
+	bool is_closable() const;
 
 	virtual bool has_filter() const;
 

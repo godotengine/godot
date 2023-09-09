@@ -1,0 +1,2 @@
+[*.{gd,out}]
+trim_trailing_whitespace = false

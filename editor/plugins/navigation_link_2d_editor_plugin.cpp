@@ -147,7 +147,7 @@ void NavigationLink2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 	Vector2 global_end_position = gt.xform(node->get_end_position());
 
 	// Only drawing the handles here, since the debug rendering will fill in the rest.
-	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
+	const Ref<Texture2D> handle = get_editor_theme_icon(SNAME("EditorHandle"));
 	p_overlay->draw_texture(handle, global_start_position - handle->get_size() / 2);
 	p_overlay->draw_texture(handle, global_end_position - handle->get_size() / 2);
 }

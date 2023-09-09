@@ -583,7 +583,7 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	return mt;
 }
 
-uint32_t FileAccess::get_unix_permissions(const String &p_file) {
+BitField<FileAccess::UnixPermissionFlags> FileAccess::get_unix_permissions(const String &p_file) {
 	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
 		return 0;
 	}
@@ -591,11 +591,10 @@ uint32_t FileAccess::get_unix_permissions(const String &p_file) {
 	Ref<FileAccess> fa = create_for_path(p_file);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
 
-	uint32_t mt = fa->_get_unix_permissions(p_file);
-	return mt;
+	return fa->_get_unix_permissions(p_file);
 }
 
-Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+Error FileAccess::set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
 	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
 		return ERR_UNAVAILABLE;
 	}
@@ -604,6 +603,52 @@ Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissi
 	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	Error err = fa->_set_unix_permissions(p_file, p_permissions);
+	return err;
+}
+
+bool FileAccess::get_hidden_attribute(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return false;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	return fa->_get_hidden_attribute(p_file);
+}
+
+Error FileAccess::set_hidden_attribute(const String &p_file, bool p_hidden) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	Error err = fa->_set_hidden_attribute(p_file, p_hidden);
+	return err;
+}
+
+bool FileAccess::get_read_only_attribute(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return false;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	return fa->_get_read_only_attribute(p_file);
+}
+
+Error FileAccess::set_read_only_attribute(const String &p_file, bool p_ro) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	Error err = fa->_set_read_only_attribute(p_file, p_ro);
 	return err;
 }
 
@@ -865,6 +910,14 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("file_exists", "path"), &FileAccess::exists);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_modified_time", "file"), &FileAccess::get_modified_time);
 
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_unix_permissions", "file"), &FileAccess::get_unix_permissions);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_unix_permissions", "file", "permissions"), &FileAccess::set_unix_permissions);
+
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_hidden_attribute", "file"), &FileAccess::get_hidden_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_hidden_attribute", "file", "hidden"), &FileAccess::set_hidden_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "file", "ro"), &FileAccess::set_read_only_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "file"), &FileAccess::get_read_only_attribute);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
 
 	BIND_ENUM_CONSTANT(READ);
@@ -877,4 +930,17 @@ void FileAccess::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_ZSTD);
 	BIND_ENUM_CONSTANT(COMPRESSION_GZIP);
 	BIND_ENUM_CONSTANT(COMPRESSION_BROTLI);
+
+	BIND_BITFIELD_FLAG(UNIX_READ_OWNER);
+	BIND_BITFIELD_FLAG(UNIX_WRITE_OWNER);
+	BIND_BITFIELD_FLAG(UNIX_EXECUTE_OWNER);
+	BIND_BITFIELD_FLAG(UNIX_READ_GROUP);
+	BIND_BITFIELD_FLAG(UNIX_WRITE_GROUP);
+	BIND_BITFIELD_FLAG(UNIX_EXECUTE_GROUP);
+	BIND_BITFIELD_FLAG(UNIX_READ_OTHER);
+	BIND_BITFIELD_FLAG(UNIX_WRITE_OTHER);
+	BIND_BITFIELD_FLAG(UNIX_EXECUTE_OTHER);
+	BIND_BITFIELD_FLAG(UNIX_SET_USER_ID);
+	BIND_BITFIELD_FLAG(UNIX_SET_GROUP_ID);
+	BIND_BITFIELD_FLAG(UNIX_RESTRICTED_DELETE);
 }

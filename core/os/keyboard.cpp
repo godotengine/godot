@@ -146,6 +146,7 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::FAVORITES             ,"Favorites"},
 	{Key::SEARCH                ,"Search"},
 	{Key::STANDBY               ,"StandBy"},
+	{Key::OPENURL               ,"OpenURL"},
 	{Key::LAUNCHMAIL            ,"LaunchMail"},
 	{Key::LAUNCHMEDIA           ,"LaunchMedia"},
 	{Key::LAUNCH0               ,"Launch0"},
@@ -238,6 +239,8 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::BAR                   ,"Bar"},
 	{Key::BRACERIGHT            ,"BraceRight"},
 	{Key::ASCIITILDE            ,"AsciiTilde"},
+	{Key::YEN                   ,"Yen"},
+	{Key::SECTION               ,"Section"},
 	{Key::NONE                  ,nullptr}
 	/* clang-format on */
 };

@@ -136,8 +136,8 @@ void EditorPropertyVectorN::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			linked->set_texture_normal(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
-			linked->set_texture_pressed(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			linked->set_texture_normal(get_editor_theme_icon(SNAME("Unlinked")));
+			linked->set_texture_pressed(get_editor_theme_icon(SNAME("Instance")));
 
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < component_count; i++) {

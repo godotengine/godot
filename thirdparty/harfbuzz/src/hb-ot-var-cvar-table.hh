@@ -161,13 +161,14 @@ struct cvar
     const hb_tag_t cvt = HB_TAG('c','v','t',' ');
     hb_blob_t *cvt_blob = hb_face_reference_table (c->plan->source, cvt);
     unsigned point_count = hb_blob_get_length (cvt_blob) / FWORD::static_size;
+    hb_blob_destroy (cvt_blob);
 
     if (!decompile_tuple_variations (axis_count, point_count, false,
                                      &(c->plan->axes_old_index_tag_map),
                                      tuple_variations))
       return_trace (false);
 
-    tuple_variations.instantiate (c->plan->axes_location);
+    tuple_variations.instantiate (c->plan->axes_location, c->plan->axes_triple_distances);
     if (!tuple_variations.compile_bytes (c->plan->axes_index_map, c->plan->axes_old_index_tag_map))
       return_trace (false);
 

@@ -13,6 +13,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear_tiles_outside_texture">
+			<return type="void" />
+			<description>
+				Removes all tiles that don't fit the available texture area. This method iterates over all the source's tiles, so it's advised to use [method has_tiles_outside_texture] beforehand.
+			</description>
+		</method>
 		<method name="create_alternative_tile">
 			<return type="int" />
 			<param index="0" name="atlas_coords" type="Vector2i" />
@@ -158,6 +164,12 @@
 			<param index="5" name="ignored_tile" type="Vector2i" default="Vector2i(-1, -1)" />
 			<description>
 				Returns whether there is enough room in an atlas to create/modify a tile with the given properties. If [param ignored_tile] is provided, act as is the given tile was not present in the atlas. This may be used when you want to modify a tile's properties.
+			</description>
+		</method>
+		<method name="has_tiles_outside_texture" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Checks if the source has any tiles that don't fit the texture area (either partially or completely).
 			</description>
 		</method>
 		<method name="move_tile_in_atlas">

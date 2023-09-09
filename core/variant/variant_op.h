@@ -284,7 +284,7 @@ public:
 		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
 		if (b == 0) {
 			r_valid = false;
-			*r_ret = "Module by zero error";
+			*r_ret = "Modulo by zero error";
 			return;
 		}
 		*r_ret = a % b;
@@ -307,7 +307,7 @@ public:
 		const Vector2i &b = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_right);
 		if (unlikely(b.x == 0 || b.y == 0)) {
 			r_valid = false;
-			*r_ret = "Module by zero error";
+			*r_ret = "Modulo by zero error";
 			return;
 		}
 		*r_ret = a % b;
@@ -331,7 +331,7 @@ public:
 		const Vector3i &b = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_right);
 		if (unlikely(b.x == 0 || b.y == 0 || b.z == 0)) {
 			r_valid = false;
-			*r_ret = "Module by zero error";
+			*r_ret = "Modulo by zero error";
 			return;
 		}
 		*r_ret = a % b;
@@ -355,7 +355,7 @@ public:
 		const Vector4i &b = *VariantGetInternalPtr<Vector4i>::get_ptr(&p_right);
 		if (unlikely(b.x == 0 || b.y == 0 || b.z == 0 || b.w == 0)) {
 			r_valid = false;
-			*r_ret = "Module by zero error";
+			*r_ret = "Modulo by zero error";
 			return;
 		}
 		*r_ret = a % b;

@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/resource_saver.h"
+#include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/import/scene_import_settings.h"
@@ -1248,6 +1249,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								col->set_owner(p_node->get_owner());
 								col->set_transform(get_collision_shapes_transform(node_settings));
 								col->set_position(p_applied_root_scale * col->get_position());
+								const Ref<PhysicsMaterial> &pmo = node_settings["physics/physics_material_override"];
+								if (!pmo.is_null()) {
+									col->set_physics_material_override(pmo);
+								}
 								base = col;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
@@ -1260,6 +1265,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								mi->set_transform(Transform3D());
 								rigid_body->add_child(mi, true);
 								mi->set_owner(rigid_body->get_owner());
+								const Ref<PhysicsMaterial> &pmo = node_settings["physics/physics_material_override"];
+								if (!pmo.is_null()) {
+									rigid_body->set_physics_material_override(pmo);
+								}
 								base = rigid_body;
 							} break;
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
@@ -1271,6 +1280,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								p_node->set_owner(nullptr);
 								memdelete(p_node);
 								p_node = col;
+								const Ref<PhysicsMaterial> &pmo = node_settings["physics/physics_material_override"];
+								if (!pmo.is_null()) {
+									col->set_physics_material_override(pmo);
+								}
 								base = col;
 							} break;
 							case MESH_PHYSICS_AREA_ONLY: {
@@ -1286,6 +1299,9 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 							} break;
 						}
+
+						base->set_collision_layer(node_settings["physics/layer"]);
+						base->set_collision_mask(node_settings["physics/mask"]);
 
 						for (const Ref<Shape3D> &E : shapes) {
 							CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -1605,6 +1621,9 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 
 			// Decomposition
 			Ref<MeshConvexDecompositionSettings> decomposition_default = Ref<MeshConvexDecompositionSettings>();
@@ -1703,9 +1722,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 					p_options.has("generate/physics") &&
 					p_options["generate/physics"].operator bool();
 
-			if (
-					p_option == "physics/body_type" ||
-					p_option == "physics/shape_type") {
+			if (p_option.find("physics/") >= 0) {
 				// Show if need to generate collisions.
 				return generate_physics;
 			}
@@ -1853,8 +1870,8 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 }
 
 void ResourceImporterScene::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), "Node3D"));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), "Scene Root"));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), ""));
 
 	List<String> script_extentions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extentions);
@@ -2422,32 +2439,36 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	_post_fix_animations(scene, scene, node_data, animation_data, fps);
 
 	String root_type = p_options["nodes/root_type"];
-	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.
-
-	Ref<Script> root_script = nullptr;
-	if (ScriptServer::is_global_class(root_type)) {
-		root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
-		root_type = ScriptServer::get_global_class_base(root_type);
-	}
-
-	if (root_type != "Node3D") {
-		Node *base_node = Object::cast_to<Node>(ClassDB::instantiate(root_type));
-
-		if (base_node) {
-			scene->replace_by(base_node);
-			scene->set_owner(nullptr);
-			memdelete(scene);
-			scene = base_node;
+	if (!root_type.is_empty()) {
+		root_type = root_type.split(" ")[0]; // Full root_type is "ClassName (filename.gd)" for a script global class.
+		Ref<Script> root_script = nullptr;
+		if (ScriptServer::is_global_class(root_type)) {
+			root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
+			root_type = ScriptServer::get_global_class_base(root_type);
+		}
+		if (scene->get_class_name() != root_type) {
+			// If the user specified a Godot node type that does not match
+			// what the scene import gave us, replace the root node.
+			Node *base_node = Object::cast_to<Node>(ClassDB::instantiate(root_type));
+			if (base_node) {
+				scene->replace_by(base_node);
+				scene->set_owner(nullptr);
+				memdelete(scene);
+				scene = base_node;
+			}
+		}
+		if (root_script.is_valid()) {
+			scene->set_script(Variant(root_script));
 		}
 	}
 
-	if (root_script.is_valid()) {
-		scene->set_script(Variant(root_script));
-	}
-
-	if (p_options["nodes/root_name"] != "Scene Root") {
-		scene->set_name(p_options["nodes/root_name"]);
-	} else {
+	String root_name = p_options["nodes/root_name"];
+	if (!root_name.is_empty() && root_name != "Scene Root") {
+		// TODO: Remove `&& root_name != "Scene Root"` for Godot 5.0.
+		// For backwards compatibility with existing .import files,
+		// treat "Scene Root" as having no root name override.
+		scene->set_name(root_name);
+	} else if (String(scene->get_name()).is_empty()) {
 		scene->set_name(p_save_path.get_file().get_basename());
 	}
 
@@ -2587,13 +2608,26 @@ void ResourceImporterScene::ResourceImporterScene::show_advanced_options(const S
 	SceneImportSettings::get_singleton()->open_settings(p_path, animation_importer);
 }
 
-ResourceImporterScene::ResourceImporterScene(bool p_animation_import) {
-	if (p_animation_import) {
-		animation_singleton = this;
-	} else {
-		scene_singleton = this;
+ResourceImporterScene::ResourceImporterScene(bool p_animation_import, bool p_singleton) {
+	// This should only be set through the EditorNode.
+	if (p_singleton) {
+		if (p_animation_import) {
+			animation_singleton = this;
+		} else {
+			scene_singleton = this;
+		}
 	}
+
 	animation_importer = p_animation_import;
+}
+
+ResourceImporterScene::~ResourceImporterScene() {
+	if (animation_singleton == this) {
+		animation_singleton = nullptr;
+	}
+	if (scene_singleton == this) {
+		scene_singleton = nullptr;
+	}
 }
 
 void ResourceImporterScene::add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority) {

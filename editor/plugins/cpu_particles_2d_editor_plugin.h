@@ -49,7 +49,8 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 	enum {
 		MENU_LOAD_EMISSION_MASK,
 		MENU_CLEAR_EMISSION_MASK,
-		MENU_RESTART
+		MENU_RESTART,
+		MENU_CONVERT_TO_GPU_PARTICLES,
 	};
 
 	enum EmissionMode {
@@ -69,6 +70,7 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 
 	ConfirmationDialog *emission_mask = nullptr;
 	OptionButton *emission_mask_mode = nullptr;
+	CheckBox *emission_mask_centered = nullptr;
 	CheckBox *emission_colors = nullptr;
 
 	String source_emission_file;

@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 
 class Translation : public Resource {
 	GDCLASS(Translation, Resource);
@@ -46,6 +45,8 @@ class Translation : public Resource {
 	virtual Vector<String> _get_message_list() const;
 	virtual Dictionary _get_messages() const;
 	virtual void _set_messages(const Dictionary &p_messages);
+
+	void _notify_translation_changed_if_applies();
 
 protected:
 	static void _bind_methods();

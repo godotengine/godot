@@ -42,6 +42,7 @@ class Viewport;
 class Label;
 class Panel;
 class ThemeOwner;
+class ThemeContext;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
@@ -553,6 +554,8 @@ public:
 	Node *get_theme_owner_node() const;
 	bool has_theme_owner_node() const;
 
+	void set_theme_context(ThemeContext *p_context, bool p_propagate = true);
+
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
 
@@ -582,6 +585,9 @@ public:
 	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+#ifdef TOOLS_ENABLED
+	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
+#endif
 
 	bool has_theme_icon_override(const StringName &p_name) const;
 	bool has_theme_stylebox_override(const StringName &p_name) const;

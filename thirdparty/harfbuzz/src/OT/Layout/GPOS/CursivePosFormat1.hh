@@ -91,7 +91,13 @@ struct CursivePosFormat1
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (coverage.sanitize (c, this) && entryExitRecord.sanitize (c, this));
+    if (unlikely (!coverage.sanitize (c, this)))
+      return_trace (false);
+
+    if (c->lazy_some_gpos)
+      return_trace (entryExitRecord.sanitize_shallow (c));
+    else
+      return_trace (entryExitRecord.sanitize (c, this));
   }
 
   bool intersects (const hb_set_t *glyphs) const
@@ -119,10 +125,11 @@ struct CursivePosFormat1
     hb_buffer_t *buffer = c->buffer;
 
     const EntryExitRecord &this_record = entryExitRecord[(this+coverage).get_coverage  (buffer->cur().codepoint)];
-    if (!this_record.entryAnchor) return_trace (false);
+    if (!this_record.entryAnchor ||
+	unlikely (!this_record.entryAnchor.sanitize (&c->sanitizer, this))) return_trace (false);
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset_fast (buffer->idx, 1);
+    skippy_iter.reset_fast (buffer->idx);
     unsigned unsafe_from;
     if (unlikely (!skippy_iter.prev (&unsafe_from)))
     {
@@ -131,7 +138,8 @@ struct CursivePosFormat1
     }
 
     const EntryExitRecord &prev_record = entryExitRecord[(this+coverage).get_coverage  (buffer->info[skippy_iter.idx].codepoint)];
-    if (!prev_record.exitAnchor)
+    if (!prev_record.exitAnchor ||
+	unlikely (!prev_record.exitAnchor.sanitize (&c->sanitizer, this)))
     {
       buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
       return_trace (false);
@@ -200,8 +208,8 @@ struct CursivePosFormat1
      * Arabic. */
     unsigned int child  = i;
     unsigned int parent = j;
-    hb_position_t x_offset = entry_x - exit_x;
-    hb_position_t y_offset = entry_y - exit_y;
+    hb_position_t x_offset = roundf (entry_x - exit_x);
+    hb_position_t y_offset = roundf (entry_y - exit_y);
     if  (!(c->lookup_props & LookupFlag::RightToLeft))
     {
       unsigned int k = child;

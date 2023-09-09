@@ -181,9 +181,17 @@ public:
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
 		List<String> list;
-		list.push_back("ipa");
+		if (p_preset.is_valid()) {
+			bool project_only = p_preset->get("application/export_project_only");
+			if (project_only) {
+				list.push_back("xcodeproj");
+			} else {
+				list.push_back("ipa");
+			}
+		}
 		return list;
 	}
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;

@@ -2622,7 +2622,7 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 
 					vkCmdCopyBufferToImage(command_buffer, staging_buffer_blocks[staging_buffer_current].buffer, texture->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
 
-					staging_buffer_blocks.write[staging_buffer_current].fill_amount += alloc_size;
+					staging_buffer_blocks.write[staging_buffer_current].fill_amount = alloc_offset + alloc_size;
 				}
 			}
 		}
@@ -2891,6 +2891,29 @@ bool RenderingDeviceVulkan::texture_is_shared(RID p_texture) {
 
 bool RenderingDeviceVulkan::texture_is_valid(RID p_texture) {
 	return texture_owner.owns(p_texture);
+}
+
+RD::TextureFormat RenderingDeviceVulkan::texture_get_format(RID p_texture) {
+	_THREAD_SAFE_METHOD_
+
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!tex, TextureFormat());
+
+	TextureFormat tf;
+
+	tf.format = tex->format;
+	tf.width = tex->width;
+	tf.height = tex->height;
+	tf.depth = tex->depth;
+	tf.array_layers = tex->layers;
+	tf.mipmaps = tex->mipmaps;
+	tf.texture_type = tex->type;
+	tf.samples = tex->samples;
+	tf.usage_bits = tex->usage_flags;
+	tf.shareable_formats = tex->allowed_shared_formats;
+	tf.is_resolve_buffer = tex->is_resolve_buffer;
+
+	return tf;
 }
 
 Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
@@ -4664,7 +4687,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 			"Number of uniform sets is larger than what is supported by the hardware (" + itos(limits.maxBoundDescriptorSets) + ").");
 
 	// Collect reflection data into binary data.
-	RenderingDeviceVulkanShaderBinaryData binary_data;
+	RenderingDeviceVulkanShaderBinaryData binary_data{};
 	Vector<Vector<RenderingDeviceVulkanShaderBinaryDataBinding>> uniform_info; // Set bindings.
 	Vector<RenderingDeviceVulkanShaderBinarySpecializationConstant> specialization_constants;
 	{
@@ -4789,11 +4812,14 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 		offset += sizeof(uint32_t);
 		memcpy(binptr + offset, &binary_data, sizeof(RenderingDeviceVulkanShaderBinaryData));
 		offset += sizeof(RenderingDeviceVulkanShaderBinaryData);
-		memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
-		offset += binary_data.shader_name_len;
 
-		if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-			offset += 4 - (binary_data.shader_name_len % 4);
+		if (binary_data.shader_name_len > 0) {
+			memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
+			offset += binary_data.shader_name_len;
+
+			if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
+				offset += 4 - (binary_data.shader_name_len % 4);
+			}
 		}
 
 		for (int i = 0; i < uniform_info.size(); i++) {
@@ -4835,7 +4861,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 	return ret;
 }
 
-RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary) {
+RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder) {
 	const uint8_t *binptr = p_shader_binary.ptr();
 	uint32_t binsize = p_shader_binary.size();
 
@@ -5020,17 +5046,24 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 
 	_THREAD_SAFE_METHOD_
 
-	Shader shader;
+	RID id;
+	if (p_placeholder.is_null()) {
+		id = shader_owner.make_rid();
+	} else {
+		id = p_placeholder;
+	}
 
-	shader.vertex_input_mask = vertex_input_mask;
-	shader.fragment_output_mask = fragment_output_mask;
-	shader.push_constant = push_constant;
-	shader.is_compute = is_compute;
-	shader.compute_local_size[0] = compute_local_size[0];
-	shader.compute_local_size[1] = compute_local_size[1];
-	shader.compute_local_size[2] = compute_local_size[2];
-	shader.specialization_constants = specialization_constants;
-	shader.name = name;
+	Shader *shader = shader_owner.get_or_null(id);
+
+	shader->vertex_input_mask = vertex_input_mask;
+	shader->fragment_output_mask = fragment_output_mask;
+	shader->push_constant = push_constant;
+	shader->is_compute = is_compute;
+	shader->compute_local_size[0] = compute_local_size[0];
+	shader->compute_local_size[1] = compute_local_size[1];
+	shader->compute_local_size[2] = compute_local_size[2];
+	shader->specialization_constants = specialization_constants;
+	shader->name = name;
 
 	String error_text;
 
@@ -5062,7 +5095,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		shader_stage.pName = "main";
 		shader_stage.pSpecializationInfo = nullptr;
 
-		shader.pipeline_stages.push_back(shader_stage);
+		shader->pipeline_stages.push_back(shader_stage);
 	}
 	// Proceed to create descriptor sets.
 
@@ -5105,8 +5138,8 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 				}
 			}
 
-			shader.sets.push_back(set);
-			shader.set_formats.push_back(format);
+			shader->sets.push_back(set);
+			shader->set_formats.push_back(format);
 		}
 	}
 
@@ -5116,13 +5149,13 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipeline_layout_create_info.pNext = nullptr;
 		pipeline_layout_create_info.flags = 0;
-		pipeline_layout_create_info.setLayoutCount = shader.sets.size();
+		pipeline_layout_create_info.setLayoutCount = shader->sets.size();
 
 		Vector<VkDescriptorSetLayout> layouts;
-		layouts.resize(shader.sets.size());
+		layouts.resize(shader->sets.size());
 
 		for (int i = 0; i < layouts.size(); i++) {
-			layouts.write[i] = shader.sets[i].descriptor_set_layout;
+			layouts.write[i] = shader->sets[i].descriptor_set_layout;
 		}
 
 		pipeline_layout_create_info.pSetLayouts = layouts.ptr();
@@ -5141,7 +5174,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 			pipeline_layout_create_info.pPushConstantRanges = nullptr;
 		}
 
-		VkResult err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &shader.pipeline_layout);
+		VkResult err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &shader->pipeline_layout);
 
 		if (err) {
 			error_text = "Error (" + itos(err) + ") creating pipeline layout.";
@@ -5151,22 +5184,28 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 
 	if (!success) {
 		// Clean up if failed.
-		for (int i = 0; i < shader.pipeline_stages.size(); i++) {
-			vkDestroyShaderModule(device, shader.pipeline_stages[i].module, nullptr);
+		for (int i = 0; i < shader->pipeline_stages.size(); i++) {
+			vkDestroyShaderModule(device, shader->pipeline_stages[i].module, nullptr);
 		}
 
-		for (int i = 0; i < shader.sets.size(); i++) {
-			vkDestroyDescriptorSetLayout(device, shader.sets[i].descriptor_set_layout, nullptr);
+		for (int i = 0; i < shader->sets.size(); i++) {
+			vkDestroyDescriptorSetLayout(device, shader->sets[i].descriptor_set_layout, nullptr);
 		}
+
+		shader_owner.free(id);
 
 		ERR_FAIL_V_MSG(RID(), error_text);
 	}
 
-	RID id = shader_owner.make_rid(shader);
 #ifdef DEV_ENABLED
 	set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
 	return id;
+}
+
+RID RenderingDeviceVulkan::shader_create_placeholder() {
+	Shader shader;
+	return shader_owner.make_rid(shader);
 }
 
 uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
@@ -5867,6 +5906,64 @@ void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_
 	ERR_FAIL_COND(!us);
 	us->invalidated_callback = p_callback;
 	us->invalidated_callback_userdata = p_userdata;
+}
+
+Error RenderingDeviceVulkan::buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
+			"Copying buffers is forbidden during creation of a draw list");
+	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
+			"Copying buffers is forbidden during creation of a compute list");
+
+	// This method assumes the barriers have been pushed prior to being called, therefore no barriers are pushed
+	// for the source or destination buffers before performing the copy. These masks are effectively ignored.
+	VkPipelineShaderStageCreateFlags src_stage_mask = 0;
+	VkAccessFlags src_access_mask = 0;
+	Buffer *src_buffer = _get_buffer_from_owner(p_src_buffer, src_stage_mask, src_access_mask, BARRIER_MASK_NO_BARRIER);
+	if (!src_buffer) {
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Source buffer argument is not a valid buffer of any type.");
+	}
+
+	VkPipelineStageFlags dst_stage_mask = 0;
+	VkAccessFlags dst_access = 0;
+	if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
+		// If the post barrier mask defines it, we indicate the destination buffer will require a barrier with these flags set
+		// after the copy command is queued.
+		dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
+	}
+
+	Buffer *dst_buffer = _get_buffer_from_owner(p_dst_buffer, dst_stage_mask, dst_access, p_post_barrier);
+	if (!dst_buffer) {
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Destination buffer argument is not a valid buffer of any type.");
+	}
+
+	// Validate the copy's dimensions for both buffers.
+	ERR_FAIL_COND_V_MSG((p_size + p_src_offset) > src_buffer->size, ERR_INVALID_PARAMETER, "Size is larger than the source buffer.");
+	ERR_FAIL_COND_V_MSG((p_size + p_dst_offset) > dst_buffer->size, ERR_INVALID_PARAMETER, "Size is larger than the destination buffer.");
+
+	// Perform the copy.
+	VkBufferCopy region;
+	region.srcOffset = p_src_offset;
+	region.dstOffset = p_dst_offset;
+	region.size = p_size;
+	vkCmdCopyBuffer(frames[frame].draw_command_buffer, src_buffer->buffer, dst_buffer->buffer, 1, &region);
+
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(true);
+#else
+	if (dst_stage_mask == 0) {
+		dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	}
+
+	// As indicated by the post barrier mask, push a new barrier.
+	if (p_post_barrier != RD::BARRIER_MASK_NO_BARRIER) {
+		_buffer_memory_barrier(dst_buffer->buffer, p_dst_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, true);
+	}
+#endif
+
+	return OK;
 }
 
 Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier) {
@@ -7709,8 +7806,10 @@ void RenderingDeviceVulkan::draw_list_end(BitField<BarrierMask> p_post_barrier) 
 		image_barriers = (VkImageMemoryBarrier *)alloca(sizeof(VkImageMemoryBarrier) * draw_list_storage_textures.size());
 	}
 
-	uint32_t src_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-	uint32_t src_access = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	uint32_t src_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+	uint32_t src_access =
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 	if (image_barrier_count) {
 		src_stage |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
@@ -7766,6 +7865,8 @@ void RenderingDeviceVulkan::draw_list_end(BitField<BarrierMask> p_post_barrier) 
 /***********************/
 
 RenderingDevice::ComputeListID RenderingDeviceVulkan::compute_list_begin(bool p_allow_draw_overlap) {
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V_MSG(!p_allow_draw_overlap && draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 
@@ -7780,6 +7881,8 @@ RenderingDevice::ComputeListID RenderingDeviceVulkan::compute_list_begin(bool p_
 }
 
 void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline) {
+	// Must be called within a compute list, the class mutex is locked during that time
+
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
 
@@ -7844,6 +7947,8 @@ void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_l
 }
 
 void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index) {
+	// Must be called within a compute list, the class mutex is locked during that time
+
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
 
@@ -8018,6 +8123,8 @@ void RenderingDeviceVulkan::compute_list_set_push_constant(ComputeListID p_list,
 }
 
 void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
+	// Must be called within a compute list, the class mutex is locked during that time
+
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
 
@@ -8161,6 +8268,8 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 }
 
 void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
+	// Must be called within a compute list, the class mutex is locked during that time
+
 	uint32_t barrier_flags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 	uint32_t access_flags = VK_ACCESS_SHADER_READ_BIT;
 	_compute_list_add_barrier(BARRIER_MASK_COMPUTE, barrier_flags, access_flags);
@@ -8267,8 +8376,11 @@ void RenderingDeviceVulkan::barrier(BitField<BarrierMask> p_from, BitField<Barri
 			src_access_flags |= VK_ACCESS_SHADER_WRITE_BIT;
 		}
 		if (p_from.has_flag(BARRIER_MASK_FRAGMENT)) {
-			src_barrier_flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-			src_access_flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			src_barrier_flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+					VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+					VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			src_access_flags |=
+					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		}
 		if (p_from.has_flag(BARRIER_MASK_TRANSFER)) {
 			src_barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -8649,6 +8761,8 @@ void RenderingDeviceVulkan::swap_buffers() {
 }
 
 void RenderingDeviceVulkan::submit() {
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_MSG(local_device.is_null(), "Only local devices can submit and sync.");
 	ERR_FAIL_COND_MSG(local_device_processing, "device already submitted, call sync to wait until done.");
 
@@ -8660,6 +8774,8 @@ void RenderingDeviceVulkan::submit() {
 }
 
 void RenderingDeviceVulkan::sync() {
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_MSG(local_device.is_null(), "Only local devices can submit and sync.");
 	ERR_FAIL_COND_MSG(!local_device_processing, "sync can only be called after a submit");
 
@@ -9019,12 +9135,32 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	draw_list_split = false;
 
 	compute_list = nullptr;
+
+	pipelines_cache.file_path = "user://vulkan/pipelines";
+	pipelines_cache.file_path += "." + context->get_device_name().validate_filename().replace(" ", "_").to_lower();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		pipelines_cache.file_path += ".editor";
+	}
+	pipelines_cache.file_path += ".cache";
+
+	// Prepare most fields now.
+	VkPhysicalDeviceProperties props;
+	vkGetPhysicalDeviceProperties(context->get_physical_device(), &props);
+	pipelines_cache.header.magic = 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE;
+	pipelines_cache.header.device_id = props.deviceID;
+	pipelines_cache.header.vendor_id = props.vendorID;
+	pipelines_cache.header.driver_version = props.driverVersion;
+	memcpy(pipelines_cache.header.uuid, props.pipelineCacheUUID, VK_UUID_SIZE);
+	pipelines_cache.header.driver_abi = sizeof(void *);
+
 	_load_pipeline_cache();
 	print_verbose(vformat("Startup PSO cache (%.1f MiB)", pipelines_cache.buffer.size() / (1024.0f * 1024.0f)));
 	VkPipelineCacheCreateInfo cache_info = {};
 	cache_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	cache_info.pNext = nullptr;
-	cache_info.flags = 0;
+	if (context->is_device_extension_enabled(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
+		cache_info.flags = VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+	}
 	cache_info.initialDataSize = pipelines_cache.buffer.size();
 	cache_info.pInitialData = pipelines_cache.buffer.ptr();
 	VkResult err = vkCreatePipelineCache(device, &cache_info, nullptr, &pipelines_cache.cache_object);
@@ -9035,111 +9171,106 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 }
 
 void RenderingDeviceVulkan::_load_pipeline_cache() {
-	if (!DirAccess::exists("user://vulkan/")) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_USERDATA);
+	DirAccess::make_dir_recursive_absolute(pipelines_cache.file_path.get_base_dir());
 
-		if (da.is_valid()) {
-			da->make_dir_recursive("user://vulkan/");
-		}
-	}
-
-	if (FileAccess::exists("user://vulkan/pipelines.cache")) {
+	if (FileAccess::exists(pipelines_cache.file_path)) {
 		Error file_error;
-		Vector<uint8_t> file_data = FileAccess::get_file_as_bytes("user://vulkan/pipelines.cache", &file_error);
+		Vector<uint8_t> file_data = FileAccess::get_file_as_bytes(pipelines_cache.file_path, &file_error);
 		if (file_error != OK || file_data.size() <= (int)sizeof(PipelineCacheHeader)) {
 			WARN_PRINT("Invalid/corrupt pipelines cache.");
 			return;
 		}
-		PipelineCacheHeader header = {};
-		memcpy((char *)&header, file_data.ptr(), sizeof(PipelineCacheHeader));
-		if (header.magic != 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE) {
+		const PipelineCacheHeader *header = reinterpret_cast<const PipelineCacheHeader *>(file_data.ptr());
+		if (header->magic != 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE) {
 			WARN_PRINT("Invalid pipelines cache magic number.");
 			return;
 		}
-		pipelines_cache.buffer.resize(file_data.size() - sizeof(PipelineCacheHeader));
-		memcpy(pipelines_cache.buffer.ptrw(), file_data.ptr() + sizeof(PipelineCacheHeader), pipelines_cache.buffer.size());
-		VkPhysicalDeviceProperties props;
-		vkGetPhysicalDeviceProperties(context->get_physical_device(), &props);
-		bool invalid_uuid = false;
-		for (size_t i = 0; i < VK_UUID_SIZE; i++) {
-			if (header.uuid[i] != props.pipelineCacheUUID[i]) {
-				invalid_uuid = true;
-				break;
-			}
-		}
-		if (header.data_hash != hash_murmur3_buffer(pipelines_cache.buffer.ptr(), pipelines_cache.buffer.size()) || header.data_size != (uint32_t)pipelines_cache.buffer.size() || header.vendor_id != props.vendorID || header.device_id != props.deviceID || header.driver_abi != sizeof(void *) || invalid_uuid) {
+		const uint8_t *loaded_buffer_start = file_data.ptr() + sizeof(PipelineCacheHeader);
+		uint32_t loaded_buffer_size = file_data.size() - sizeof(PipelineCacheHeader);
+		if (header->data_hash != hash_murmur3_buffer(loaded_buffer_start, loaded_buffer_size) ||
+				header->data_size != loaded_buffer_size ||
+				header->vendor_id != pipelines_cache.header.vendor_id ||
+				header->device_id != pipelines_cache.header.device_id ||
+				header->driver_version != pipelines_cache.header.driver_version ||
+				memcmp(header->uuid, pipelines_cache.header.uuid, VK_UUID_SIZE) != 0 ||
+				header->driver_abi != pipelines_cache.header.driver_abi) {
 			WARN_PRINT("Invalid pipelines cache header.");
 			pipelines_cache.current_size = 0;
 			pipelines_cache.buffer.clear();
 		} else {
-			pipelines_cache.current_size = pipelines_cache.buffer.size();
+			pipelines_cache.current_size = loaded_buffer_size;
+			pipelines_cache.buffer.resize(loaded_buffer_size);
+			memcpy(pipelines_cache.buffer.ptr(), loaded_buffer_start, pipelines_cache.buffer.size());
 		}
 	}
 }
 
 void RenderingDeviceVulkan::_update_pipeline_cache(bool p_closing) {
-	size_t pso_blob_size = 0;
-	float save_interval = GLOBAL_GET("rendering/rendering_device/pipeline_cache/save_chunk_size_mb");
-	VkResult vr = vkGetPipelineCacheData(device, pipelines_cache.cache_object, &pso_blob_size, nullptr);
-	ERR_FAIL_COND(vr);
-	size_t difference = (pso_blob_size - pipelines_cache.current_size) / (1024 * 1024);
-	if (p_closing && Engine::get_singleton()->is_editor_hint()) {
-		// This is mostly for the editor to check if after playing the game, game's pipeline cache size still matches with editor's cache.
-		_load_pipeline_cache();
-		if (pipelines_cache.current_size > pso_blob_size) {
-			pso_blob_size = pipelines_cache.current_size;
-			if (pipelines_cache_save_task != WorkerThreadPool::INVALID_TASK_ID || !WorkerThreadPool::get_singleton()->is_task_completed(pipelines_cache_save_task)) {
+	{
+		bool still_saving = pipelines_cache_save_task != WorkerThreadPool::INVALID_TASK_ID && !WorkerThreadPool::get_singleton()->is_task_completed(pipelines_cache_save_task);
+		if (still_saving) {
+			if (p_closing) {
 				WorkerThreadPool::get_singleton()->wait_for_task_completion(pipelines_cache_save_task);
+				pipelines_cache_save_task = WorkerThreadPool::INVALID_TASK_ID;
+			} else {
+				// We can't save until the currently running save is done. We'll retry next time; worst case, we'll save when exiting.
+				return;
 			}
 		}
 	}
-	if (pso_blob_size == pipelines_cache.current_size) {
-		return;
-	} else if (difference < save_interval && !p_closing) {
-		return;
+
+	{
+		// FIXME:
+		// We're letting the cache grow unboundedly. We may want to set at limit and see if implementations use LRU or the like.
+		// If we do, we won't be able to assume any longer that the cache is dirty if, and only if, it has grown.
+		size_t pso_blob_size = 0;
+		VkResult vr = vkGetPipelineCacheData(device, pipelines_cache.cache_object, &pso_blob_size, nullptr);
+		ERR_FAIL_COND(vr);
+		size_t difference = pso_blob_size - pipelines_cache.current_size;
+
+		bool must_save = false;
+
+		if (p_closing) {
+			must_save = difference > 0;
+		} else {
+			float save_interval = GLOBAL_GET("rendering/rendering_device/pipeline_cache/save_chunk_size_mb");
+			must_save = difference > 0 && difference / (1024.0f * 1024.0f) >= save_interval;
+		}
+
+		if (must_save) {
+			pipelines_cache.current_size = pso_blob_size;
+		} else {
+			return;
+		}
 	}
 
 	if (p_closing) {
-		if (pipelines_cache_save_task == WorkerThreadPool::INVALID_TASK_ID || WorkerThreadPool::get_singleton()->is_task_completed(pipelines_cache_save_task)) {
-			pipelines_cache_save_task = WorkerThreadPool::get_singleton()->add_template_task(this, &RenderingDeviceVulkan::_save_pipeline_cache_threaded, pso_blob_size, false, "PipelineCacheSave");
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(pipelines_cache_save_task);
-		} else {
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(pipelines_cache_save_task);
-			pipelines_cache_save_task = WorkerThreadPool::get_singleton()->add_template_task(this, &RenderingDeviceVulkan::_save_pipeline_cache_threaded, pso_blob_size, false, "PipelineCacheSave");
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(pipelines_cache_save_task);
-		}
+		_save_pipeline_cache(this);
 	} else {
-		if (pipelines_cache_save_task == WorkerThreadPool::INVALID_TASK_ID || WorkerThreadPool::get_singleton()->is_task_completed(pipelines_cache_save_task)) {
-			pipelines_cache_save_task = WorkerThreadPool::get_singleton()->add_template_task(this, &RenderingDeviceVulkan::_save_pipeline_cache_threaded, pso_blob_size, false, "PipelineCacheSave");
-		}
+		pipelines_cache_save_task = WorkerThreadPool::get_singleton()->add_native_task(&_save_pipeline_cache, this, false, "PipelineCacheSave");
 	}
 }
 
-void RenderingDeviceVulkan::_save_pipeline_cache_threaded(size_t p_pso_blob_size) {
-	pipelines_cache.current_size = p_pso_blob_size;
-	pipelines_cache.buffer.clear();
-	pipelines_cache.buffer.resize(p_pso_blob_size);
-	VkResult vr = vkGetPipelineCacheData(device, pipelines_cache.cache_object, &p_pso_blob_size, pipelines_cache.buffer.ptrw());
-	ERR_FAIL_COND(vr);
-	print_verbose(vformat("Updated PSO cache (%.1f MiB)", p_pso_blob_size / (1024.0f * 1024.0f)));
+void RenderingDeviceVulkan::_save_pipeline_cache(void *p_data) {
+	RenderingDeviceVulkan *self = static_cast<RenderingDeviceVulkan *>(p_data);
 
-	VkPhysicalDeviceProperties props;
-	vkGetPhysicalDeviceProperties(context->get_physical_device(), &props);
-	PipelineCacheHeader header = {};
-	header.magic = 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE;
-	header.data_size = pipelines_cache.buffer.size();
-	header.data_hash = hash_murmur3_buffer(pipelines_cache.buffer.ptr(), pipelines_cache.buffer.size());
-	header.device_id = props.deviceID;
-	header.vendor_id = props.vendorID;
-	header.driver_version = props.driverVersion;
-	for (size_t i = 0; i < VK_UUID_SIZE; i++) {
-		header.uuid[i] = props.pipelineCacheUUID[i];
-	}
-	header.driver_abi = sizeof(void *);
-	Ref<FileAccess> f = FileAccess::open("user://vulkan/pipelines.cache", FileAccess::WRITE, nullptr);
+	self->pipelines_cache.buffer.resize(self->pipelines_cache.current_size);
+
+	self->_thread_safe_.lock();
+	VkResult vr = vkGetPipelineCacheData(self->device, self->pipelines_cache.cache_object, &self->pipelines_cache.current_size, self->pipelines_cache.buffer.ptr());
+	self->_thread_safe_.unlock();
+	ERR_FAIL_COND(vr != VK_SUCCESS && vr != VK_INCOMPLETE); // Incomplete is OK because the cache may have grown since the size was queried (unless when exiting).
+	print_verbose(vformat("Updated PSO cache (%.1f MiB)", self->pipelines_cache.current_size / (1024.0f * 1024.0f)));
+
+	// The real buffer size may now be bigger than the updated current_size.
+	// We take into account the new size but keep the buffer resized in a worst-case fashion.
+
+	self->pipelines_cache.header.data_size = self->pipelines_cache.current_size;
+	self->pipelines_cache.header.data_hash = hash_murmur3_buffer(self->pipelines_cache.buffer.ptr(), self->pipelines_cache.current_size);
+	Ref<FileAccess> f = FileAccess::open(self->pipelines_cache.file_path, FileAccess::WRITE, nullptr);
 	if (f.is_valid()) {
-		f->store_buffer((const uint8_t *)&header, sizeof(PipelineCacheHeader));
-		f->store_buffer(pipelines_cache.buffer);
+		f->store_buffer((const uint8_t *)&self->pipelines_cache.header, sizeof(PipelineCacheHeader));
+		f->store_buffer(self->pipelines_cache.buffer.ptr(), self->pipelines_cache.current_size);
 	}
 }
 

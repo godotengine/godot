@@ -32,8 +32,7 @@
 /***********************************************************************
  * Return the next byte in the pseudo-random sequence
  */
-static int decrypt_byte(unsigned long* pkeys, const z_crc_t* pcrc_32_tab)
-{
+static int decrypt_byte(unsigned long* pkeys, const z_crc_t* pcrc_32_tab) {
     unsigned temp;  /* POTENTIAL BUG:  temp*(temp^1) may overflow in an
                      * unpredictable manner on 16-bit systems; not a problem
                      * with any known compiler so far, though */
@@ -46,8 +45,7 @@ static int decrypt_byte(unsigned long* pkeys, const z_crc_t* pcrc_32_tab)
 /***********************************************************************
  * Update the encryption keys with the next byte of plain text
  */
-static int update_keys(unsigned long* pkeys,const z_crc_t* pcrc_32_tab,int c)
-{
+static int update_keys(unsigned long* pkeys, const z_crc_t* pcrc_32_tab, int c) {
     (*(pkeys+0)) = CRC32((*(pkeys+0)), c);
     (*(pkeys+1)) += (*(pkeys+0)) & 0xff;
     (*(pkeys+1)) = (*(pkeys+1)) * 134775813L + 1;
@@ -63,8 +61,7 @@ static int update_keys(unsigned long* pkeys,const z_crc_t* pcrc_32_tab,int c)
  * Initialize the encryption keys and the random header according to
  * the given password.
  */
-static void init_keys(const char* passwd,unsigned long* pkeys,const z_crc_t* pcrc_32_tab)
-{
+static void init_keys(const char* passwd, unsigned long* pkeys, const z_crc_t* pcrc_32_tab) {
     *(pkeys+0) = 305419896L;
     *(pkeys+1) = 591751049L;
     *(pkeys+2) = 878082192L;
@@ -93,8 +90,7 @@ static unsigned crypthead(const char* passwd,       /* password string */
                           int bufSize,
                           unsigned long* pkeys,
                           const z_crc_t* pcrc_32_tab,
-                          unsigned long crcForCrypting)
-{
+                          unsigned long crcForCrypting) {
     unsigned n;                  /* index in random header */
     int t;                       /* temporary */
     int c;                       /* random byte */

@@ -342,6 +342,25 @@ Point2i Window::get_position() const {
 	return position;
 }
 
+void Window::move_to_center() {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_COND(!is_inside_tree());
+
+	Rect2 parent_rect;
+
+	if (is_embedded()) {
+		parent_rect = get_embedder()->get_visible_rect();
+	} else {
+		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
+		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
+		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
+	}
+
+	if (parent_rect != Rect2()) {
+		set_position(parent_rect.position + (parent_rect.size - get_size()) / 2);
+	}
+}
+
 void Window::set_size(const Size2i &p_size) {
 	ERR_MAIN_THREAD_GUARD;
 
@@ -618,12 +637,6 @@ void Window::_clear_window() {
 
 	bool had_focus = has_focus();
 
-	DisplayServer::get_singleton()->window_set_rect_changed_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_window_event_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_input_event_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_input_text_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_drop_files_callback(Callable(), window_id);
-
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
@@ -676,17 +689,32 @@ void Window::_propagate_window_notification(Node *p_node, int p_notification) {
 void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 	switch (p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
+			Window *root = get_tree()->get_root();
+			if (root->gui.windowmanager_window_over) {
+#ifdef DEV_ENABLED
+				WARN_PRINT_ONCE("Entering a window while a window is hovered should never happen in DisplayServer.");
+#endif // DEV_ENABLED
+				root->gui.windowmanager_window_over->_event_callback(DisplayServer::WINDOW_EVENT_MOUSE_EXIT);
+			}
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
-			emit_signal(SNAME("mouse_entered"));
-			notification(NOTIFICATION_VP_MOUSE_ENTER);
+			root->gui.windowmanager_window_over = this;
+			mouse_in_window = true;
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
 				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
 			}
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
-			notification(NOTIFICATION_VP_MOUSE_EXIT);
+			Window *root = get_tree()->get_root();
+			if (!root->gui.windowmanager_window_over) {
+#ifdef DEV_ENABLED
+				WARN_PRINT_ONCE("Exiting a window while no window is hovered should never happen in DisplayServer.");
+#endif // DEV_ENABLED
+				return;
+			}
+			mouse_in_window = false;
+			root->gui.windowmanager_window_over->_mouse_leave_viewport();
+			root->gui.windowmanager_window_over = nullptr;
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
-			emit_signal(SNAME("mouse_exited"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
@@ -993,6 +1021,17 @@ void Window::_update_viewport_size() {
 	float font_oversampling = 1.0;
 	window_transform = Transform2D();
 
+	if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_INTEGER) {
+		// We always want to make sure that the content scale factor is a whole
+		// number, else there will be pixel wobble no matter what.
+		content_scale_factor = Math::floor(content_scale_factor);
+
+		// A content scale factor of zero is pretty useless.
+		if (content_scale_factor < 1) {
+			content_scale_factor = 1;
+		}
+	}
+
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
 		font_oversampling = content_scale_factor;
 		final_size = size;
@@ -1046,13 +1085,26 @@ void Window::_update_viewport_size() {
 		screen_size = screen_size.floor();
 		viewport_size = viewport_size.floor();
 
+		if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_INTEGER) {
+			Size2i screen_scale = (screen_size / viewport_size).floor();
+			int scale_factor = MIN(screen_scale.x, screen_scale.y);
+
+			if (scale_factor < 1) {
+				scale_factor = 1;
+			}
+
+			screen_size = viewport_size * scale_factor;
+		}
+
 		Size2 margin;
 		Size2 offset;
 
-		if (content_scale_aspect != CONTENT_SCALE_ASPECT_EXPAND && screen_size.x < video_mode.x) {
+		if (screen_size.x < video_mode.x) {
 			margin.x = Math::round((video_mode.x - screen_size.x) / 2.0);
 			offset.x = Math::round(margin.x * viewport_size.y / screen_size.y);
-		} else if (content_scale_aspect != CONTENT_SCALE_ASPECT_EXPAND && screen_size.y < video_mode.y) {
+		}
+
+		if (screen_size.y < video_mode.y) {
 			margin.y = Math::round((video_mode.y - screen_size.y) / 2.0);
 			offset.y = Math::round(margin.y * viewport_size.x / screen_size.x);
 		}
@@ -1217,7 +1269,9 @@ void Window::_notification(int p_what) {
 				notification(NOTIFICATION_TRANSLATION_CHANGED);
 			}
 #endif
-			notification(NOTIFICATION_THEME_CHANGED);
+
+			// Emits NOTIFICATION_THEME_CHANGED internally.
+			set_theme_context(ThemeDB::get_singleton()->get_nearest_theme_context(this));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1261,6 +1315,8 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			set_theme_context(nullptr, false);
+
 			if (transient) {
 				_clear_transient();
 			}
@@ -1282,6 +1338,14 @@ void Window::_notification(int p_what) {
 			}
 
 			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+		} break;
+
+		case NOTIFICATION_VP_MOUSE_ENTER: {
+			emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+		} break;
+
+		case NOTIFICATION_VP_MOUSE_EXIT: {
+			emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 		} break;
 	}
 }
@@ -1319,6 +1383,15 @@ void Window::set_content_scale_aspect(ContentScaleAspect p_aspect) {
 Window::ContentScaleAspect Window::get_content_scale_aspect() const {
 	ERR_READ_THREAD_GUARD_V(CONTENT_SCALE_ASPECT_IGNORE);
 	return content_scale_aspect;
+}
+
+void Window::set_content_scale_stretch(ContentScaleStretch p_stretch) {
+	content_scale_stretch = p_stretch;
+	_update_viewport_size();
+}
+
+Window::ContentScaleStretch Window::get_content_scale_stretch() const {
+	return content_scale_stretch;
 }
 
 void Window::set_content_scale_factor(real_t p_factor) {
@@ -1742,6 +1815,10 @@ Rect2i Window::fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) co
 
 Size2 Window::get_contents_minimum_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
+	Vector2 ms;
+	if (GDVIRTUAL_CALL(_get_contents_minimum_size, ms)) {
+		return ms;
+	}
 	return _get_contents_minimum_size();
 }
 
@@ -1814,6 +1891,11 @@ Node *Window::get_theme_owner_node() const {
 bool Window::has_theme_owner_node() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return theme_owner->has_owner_node();
+}
+
+void Window::set_theme_context(ThemeContext *p_context, bool p_propagate) {
+	ERR_MAIN_THREAD_GUARD;
+	theme_owner->set_owner_context(p_context, p_propagate);
 }
 
 void Window::set_theme(const Ref<Theme> &p_theme) {
@@ -2055,6 +2137,12 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_the
 	theme_constant_cache[p_theme_type][p_name] = constant;
 	return constant;
 }
+
+#ifdef TOOLS_ENABLED
+Ref<Texture2D> Window::get_editor_theme_icon(const StringName &p_name) const {
+	return get_theme_icon(p_name, SNAME("EditorIcons"));
+}
+#endif
 
 bool Window::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -2495,6 +2583,45 @@ bool Window::is_directly_attached_to_screen() const {
 	return is_inside_tree();
 }
 
+bool Window::is_attached_in_viewport() const {
+	return get_embedder();
+}
+
+void Window::_update_mouse_over(Vector2 p_pos) {
+	if (!mouse_in_window) {
+		if (is_embedded()) {
+			mouse_in_window = true;
+			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
+		} else {
+			// Prevent update based on delayed InputEvents from DisplayServer.
+			return;
+		}
+	}
+
+	bool new_in = get_visible_rect().has_point(p_pos);
+	if (new_in == gui.mouse_in_viewport) {
+		if (new_in) {
+			Viewport::_update_mouse_over(p_pos);
+		}
+		return;
+	}
+
+	if (new_in) {
+		notification(NOTIFICATION_VP_MOUSE_ENTER);
+		Viewport::_update_mouse_over(p_pos);
+	} else {
+		Viewport::_mouse_leave_viewport();
+	}
+}
+
+void Window::_mouse_leave_viewport() {
+	Viewport::_mouse_leave_viewport();
+	if (is_embedded()) {
+		mouse_in_window = false;
+		_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
+	}
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
@@ -2509,6 +2636,7 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Window::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &Window::get_position);
+	ClassDB::bind_method(D_METHOD("move_to_center"), &Window::move_to_center);
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Window::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
@@ -2568,6 +2696,9 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_content_scale_aspect", "aspect"), &Window::set_content_scale_aspect);
 	ClassDB::bind_method(D_METHOD("get_content_scale_aspect"), &Window::get_content_scale_aspect);
+
+	ClassDB::bind_method(D_METHOD("set_content_scale_stretch", "stretch"), &Window::set_content_scale_stretch);
+	ClassDB::bind_method(D_METHOD("get_content_scale_stretch"), &Window::get_content_scale_stretch);
 
 	ClassDB::bind_method(D_METHOD("set_content_scale_factor", "factor"), &Window::set_content_scale_factor);
 	ClassDB::bind_method(D_METHOD("get_content_scale_factor"), &Window::get_content_scale_factor);
@@ -2687,7 +2818,8 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Canvas Items,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor"), "set_content_scale_factor", "get_content_scale_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_stretch", PROPERTY_HINT_ENUM, "Fractional,Integer"), "set_content_scale_stretch", "get_content_scale_stretch");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
 
 	ADD_GROUP("Localization", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
@@ -2739,6 +2871,9 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP_HEIGHT);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_EXPAND);
 
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_STRETCH_FRACTIONAL);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_STRETCH_INTEGER);
+
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_INHERITED);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LTR);
@@ -2750,6 +2885,8 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN);
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS);
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS);
+
+	GDVIRTUAL_BIND(_get_contents_minimum_size);
 }
 
 Window::Window() {
@@ -2759,7 +2896,7 @@ Window::Window() {
 		max_size_used = max_size; // Update max_size_used.
 	}
 
-	theme_owner = memnew(ThemeOwner);
+	theme_owner = memnew(ThemeOwner(this));
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }
 

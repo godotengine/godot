@@ -121,22 +121,22 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			stop_icon = get_theme_icon(SNAME("Stop"), SNAME("EditorIcons"));
-			pause_icon = get_theme_icon(SNAME("Pause"), SNAME("EditorIcons"));
+			stop_icon = get_editor_theme_icon(SNAME("Stop"));
+			pause_icon = get_editor_theme_icon(SNAME("Pause"));
 			if (player && player->is_playing()) {
 				stop->set_icon(pause_icon);
 			} else {
 				stop->set_icon(stop_icon);
 			}
 
-			autoplay->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
-			play->set_icon(get_theme_icon(SNAME("PlayStart"), SNAME("EditorIcons")));
-			play_from->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
-			play_bw->set_icon(get_theme_icon(SNAME("PlayStartBackwards"), SNAME("EditorIcons")));
-			play_bw_from->set_icon(get_theme_icon(SNAME("PlayBackwards"), SNAME("EditorIcons")));
+			autoplay->set_icon(get_editor_theme_icon(SNAME("AutoPlay")));
+			play->set_icon(get_editor_theme_icon(SNAME("PlayStart")));
+			play_from->set_icon(get_editor_theme_icon(SNAME("Play")));
+			play_bw->set_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
+			play_bw_from->set_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
 
-			autoplay_icon = get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons"));
-			reset_icon = get_theme_icon(SNAME("Reload"), SNAME("EditorIcons"));
+			autoplay_icon = get_editor_theme_icon(SNAME("AutoPlay"));
+			reset_icon = get_editor_theme_icon(SNAME("Reload"));
 			{
 				Ref<Image> autoplay_img = autoplay_icon->get_image();
 				Ref<Image> reset_img = reset_icon->get_image();
@@ -147,15 +147,15 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				autoplay_reset_icon = ImageTexture::create_from_image(autoplay_reset_img);
 			}
 
-			onion_toggle->set_icon(get_theme_icon(SNAME("Onion"), SNAME("EditorIcons")));
-			onion_skinning->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			onion_toggle->set_icon(get_editor_theme_icon(SNAME("Onion")));
+			onion_skinning->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
-			pin->set_icon(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")));
+			pin->set_icon(get_editor_theme_icon(SNAME("Pin")));
 
 			tool_anim->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
 			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
 
-#define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_theme_icon(SNAME(m_icon), SNAME("EditorIcons")))
+#define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_editor_theme_icon(SNAME(m_icon)))
 
 			ITEM_ICON(TOOL_NEW_ANIM, "New");
 			ITEM_ICON(TOOL_ANIM_LIBRARY, "AnimationLibrary");

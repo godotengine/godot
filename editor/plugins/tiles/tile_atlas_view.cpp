@@ -572,8 +572,8 @@ void TileAtlasView::queue_redraw() {
 void TileAtlasView::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
-	theme_cache.center_view_icon = get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons"));
-	theme_cache.checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+	theme_cache.center_view_icon = get_editor_theme_icon(SNAME("CenterView"));
+	theme_cache.checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 }
 
 void TileAtlasView::_notification(int p_what) {
@@ -632,7 +632,7 @@ TileAtlasView::TileAtlasView() {
 	panel->add_child(center_container);
 
 	missing_source_label = memnew(Label);
-	missing_source_label->set_text(TTR("No atlas source with a valid texture selected."));
+	missing_source_label->set_text(TTR("The selected atlas source has no valid texture. Assign a texture in the TileSet bottom tab."));
 	center_container->add_child(missing_source_label);
 
 	margin_container = memnew(MarginContainer);

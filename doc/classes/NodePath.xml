@@ -4,7 +4,7 @@
 		A pre-parsed scene tree path.
 	</brief_description>
 	<description>
-		A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For example, [code]"Path2D/PathFollow2D/Sprite2D:texture:size"[/code] would refer to the [code]size[/code] property of the [code]texture[/code] resource on the node named [code]"Sprite2D"[/code] which is a child of the other named nodes in the path.
+		A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For example, [code]"Path2D/PathFollow2D/Sprite2D:texture:size"[/code] would refer to the [code]size[/code] property of the [code]texture[/code] resource on the node named [code]"Sprite2D"[/code], which is a child of the other named nodes in the path.
 		You will usually just pass a string to [method Node.get_node] and it will be automatically converted, but you may occasionally want to parse a path ahead of time with [NodePath] or the literal syntax [code]^"path"[/code]. Exporting a [NodePath] variable will give you a node selection widget in the properties panel of the editor, which can often be useful.
 		A [NodePath] is composed of a list of slash-separated node names (like a filesystem path) and an optional colon-separated list of "subnames" which can be resources or properties.
 		Some examples of NodePaths include the following:
@@ -101,12 +101,12 @@
 				Returns all subnames concatenated with a colon character ([code]:[/code]) as separator, i.e. the right side of the first colon in a node path.
 				[codeblocks]
 				[gdscript]
-				var nodepath = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")
-				print(nodepath.get_concatenated_subnames()) # texture:load_path
+				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")
+				print(node_path.get_concatenated_subnames()) # texture:load_path
 				[/gdscript]
 				[csharp]
-				var nodepath = new NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path");
-				GD.Print(nodepath.GetConcatenatedSubnames()); // texture:load_path
+				var nodePath = new NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path");
+				GD.Print(nodePath.GetConcatenatedSubnames()); // texture:load_path
 				[/csharp]
 				[/codeblocks]
 			</description>

@@ -10,6 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_contents_minimum_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Overrides the value returned by [method get_contents_minimum_size].
+			</description>
+		</method>
 		<method name="add_theme_color_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -92,6 +98,7 @@
 			<return type="Vector2" />
 			<description>
 				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when children nodes have changed.
+				The value returned by this method can be overridden with [method _get_contents_minimum_size].
 			</description>
 		</method>
 		<method name="get_flag" qualifiers="const">
@@ -344,6 +351,12 @@
 				Returns [code]true[/code] if font oversampling is enabled. See [method set_use_font_oversampling].
 			</description>
 		</method>
+		<method name="move_to_center">
+			<return type="void" />
+			<description>
+				Centers a native window on the current screen and an embedded window on its embedder [Viewport].
+			</description>
+		</method>
 		<method name="move_to_foreground">
 			<return type="void" />
 			<description>
@@ -562,6 +575,9 @@
 		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">
 			Base size of the content (i.e. nodes that are drawn inside the window). If non-zero, [Window]'s content will be scaled when the window is resized to a different size.
 		</member>
+		<member name="content_scale_stretch" type="int" setter="set_content_scale_stretch" getter="get_content_scale_stretch" enum="Window.ContentScaleStretch" default="0">
+			The policy to use to determine the final scale factor for 2D elements. This affects how [member content_scale_factor] is applied, in addition to the automatic scale factor determined by [member content_scale_size].
+		</member>
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
 			The screen the window is currently on.
 		</member>
@@ -626,7 +642,6 @@
 		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
-			[b]Note:[/b] This property only works with native windows.
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
@@ -719,12 +734,12 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse cursor enters the [Window]'s area, regardless if it's currently focused or not.
+				Emitted when the mouse cursor enters the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse cursor exits the [Window]'s area (including when it's hovered over another window on top of this one).
+				Emitted when the mouse cursor leaves the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 			</description>
 		</signal>
 		<signal name="theme_changed">
@@ -833,6 +848,12 @@
 		</constant>
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
 			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the top-left corner and add an extra visible area in the stretched space.
+		</constant>
+		<constant name="CONTENT_SCALE_STRETCH_FRACTIONAL" value="0" enum="ContentScaleStretch">
+			The content will be stretched according to a fractional factor. This fills all the space available in the window, but allows "pixel wobble" to occur due to uneven pixel scaling.
+		</constant>
+		<constant name="CONTENT_SCALE_STRETCH_INTEGER" value="1" enum="ContentScaleStretch">
+			The content will be stretched only according to an integer factor, preserving sharp pixels. This may leave a black background visible on the window's edges depending on the window size.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent window layout direction.

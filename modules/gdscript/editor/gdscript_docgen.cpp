@@ -36,19 +36,19 @@ using GDP = GDScriptParser;
 using GDType = GDP::DataType;
 
 static String _get_script_path(const String &p_path) {
-	return vformat(R"("%s")", p_path.get_slice("://", 1));
+	return p_path.trim_prefix("res://").quote();
 }
 
 static String _get_class_name(const GDP::ClassNode &p_class) {
 	const GDP::ClassNode *curr_class = &p_class;
-	if (!curr_class->identifier) { // All inner classes have a identifier, so this is the outer class
+	if (!curr_class->identifier) { // All inner classes have an identifier, so this is the outer class.
 		return _get_script_path(curr_class->fqcn);
 	}
 
 	String full_name = curr_class->identifier->name;
 	while (curr_class->outer) {
 		curr_class = curr_class->outer;
-		if (!curr_class->identifier) { // All inner classes have a identifier, so this is the outer class
+		if (!curr_class->identifier) { // All inner classes have an identifier, so this is the outer class.
 			return vformat("%s.%s", _get_script_path(curr_class->fqcn), full_name);
 		}
 		full_name = vformat("%s.%s", curr_class->identifier->name, full_name);
@@ -56,20 +56,71 @@ static String _get_class_name(const GDP::ClassNode &p_class) {
 	return full_name;
 }
 
-static PropertyInfo _property_info_from_datatype(const GDType &p_type) {
-	PropertyInfo pi;
-	pi.type = p_type.builtin_type;
-	if (p_type.kind == GDType::CLASS) {
-		pi.class_name = _get_class_name(*p_type.class_type);
-	} else if (p_type.kind == GDType::ENUM && p_type.enum_type != StringName()) {
-		pi.type = Variant::INT; // Only int types are recognized as enums by the EditorHelp
-		pi.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
-		// Replace :: from enum's use of fully qualified class names with regular .
-		pi.class_name = String(p_type.native_type).replace("::", ".");
-	} else if (p_type.kind == GDType::NATIVE) {
-		pi.class_name = p_type.native_type;
+static void _doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String &r_enum, bool p_is_return = false) {
+	if (!p_gdtype.is_hard_type()) {
+		r_type = "Variant";
+		return;
 	}
-	return pi;
+	switch (p_gdtype.kind) {
+		case GDType::BUILTIN:
+			if (p_gdtype.builtin_type == Variant::NIL) {
+				r_type = p_is_return ? "void" : "null";
+				return;
+			}
+			if (p_gdtype.builtin_type == Variant::ARRAY && p_gdtype.has_container_element_type()) {
+				_doctype_from_gdtype(p_gdtype.get_container_element_type(), r_type, r_enum);
+				if (!r_enum.is_empty()) {
+					r_type = "int[]";
+					r_enum += "[]";
+					return;
+				}
+				if (!r_type.is_empty() && r_type != "Variant") {
+					r_type += "[]";
+					return;
+				}
+			}
+			r_type = Variant::get_type_name(p_gdtype.builtin_type);
+			return;
+		case GDType::NATIVE:
+			r_type = p_gdtype.native_type;
+			return;
+		case GDType::SCRIPT:
+			if (p_gdtype.script_type.is_valid()) {
+				if (p_gdtype.script_type->get_global_name() != StringName()) {
+					r_type = _get_script_path(p_gdtype.script_type->get_global_name());
+					return;
+				}
+				if (!p_gdtype.script_type->get_path().is_empty()) {
+					r_type = _get_script_path(p_gdtype.script_type->get_path());
+					return;
+				}
+			}
+			if (!p_gdtype.script_path.is_empty()) {
+				r_type = _get_script_path(p_gdtype.script_path);
+				return;
+			}
+			r_type = "Object";
+			return;
+		case GDType::CLASS:
+			r_type = _get_class_name(*p_gdtype.class_type);
+			return;
+		case GDType::ENUM:
+			r_type = "int";
+			r_enum = String(p_gdtype.native_type).replace("::", ".");
+			if (r_enum.begins_with("res://")) {
+				r_enum = r_enum.trim_prefix("res://");
+				int dot_pos = r_enum.rfind(".");
+				if (dot_pos >= 0) {
+					r_enum = r_enum.left(dot_pos).quote() + r_enum.substr(dot_pos);
+				}
+			}
+			return;
+		case GDType::VARIANT:
+		case GDType::RESOLVING:
+		case GDType::UNRESOLVED:
+			r_type = "Variant";
+			return;
+	}
 }
 
 void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
@@ -101,14 +152,16 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 		doc.inherits = p_script->native->get_name();
 	}
 
-	doc.brief_description = p_class->doc_brief_description;
-	doc.description = p_class->doc_description;
-	for (const Pair<String, String> &p : p_class->doc_tutorials) {
+	doc.brief_description = p_class->doc_data.brief;
+	doc.description = p_class->doc_data.description;
+	for (const Pair<String, String> &p : p_class->doc_data.tutorials) {
 		DocData::TutorialDoc td;
 		td.title = p.first;
 		td.link = p.second;
 		doc.tutorials.append(td);
 	}
+	doc.is_deprecated = p_class->doc_data.is_deprecated;
+	doc.is_experimental = p_class->doc_data.is_experimental;
 
 	for (const GDP::ClassNode::Member &member : p_class->members) {
 		switch (member.type) {
@@ -118,8 +171,8 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				p_script->member_lines[class_name] = inner_class->start_line;
 
-				// Recursively generate inner class docs
-				// Needs inner GDScripts to exist: previously generated in GDScriptCompiler::make_scripts()
+				// Recursively generate inner class docs.
+				// Needs inner GDScripts to exist: previously generated in GDScriptCompiler::make_scripts().
 				GDScriptDocGen::generate_docs(*p_script->subclasses[class_name], inner_class);
 			} break;
 
@@ -130,7 +183,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				p_script->member_lines[const_name] = m_const->start_line;
 
 				DocData::ConstantDoc const_doc;
-				DocData::constant_doc_from_variant(const_doc, const_name, m_const->initializer->reduced_value, m_const->doc_description);
+				DocData::constant_doc_from_variant(const_doc, const_name, m_const->initializer->reduced_value, m_const->doc_data.description);
+				const_doc.is_deprecated = m_const->doc_data.is_deprecated;
+				const_doc.is_experimental = m_const->doc_data.is_experimental;
 				doc.constants.push_back(const_doc);
 			} break;
 
@@ -140,20 +195,33 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				p_script->member_lines[func_name] = m_func->start_line;
 
-				MethodInfo mi;
-				mi.name = func_name;
+				DocData::MethodDoc method_doc;
+				method_doc.name = func_name;
+				method_doc.description = m_func->doc_data.description;
+				method_doc.is_deprecated = m_func->doc_data.is_deprecated;
+				method_doc.is_experimental = m_func->doc_data.is_experimental;
+				method_doc.qualifiers = m_func->is_static ? "static" : "";
 
 				if (m_func->return_type) {
-					mi.return_val = _property_info_from_datatype(m_func->return_type->get_datatype());
-				}
-				for (const GDScriptParser::ParameterNode *p : m_func->parameters) {
-					PropertyInfo pi = _property_info_from_datatype(p->get_datatype());
-					pi.name = p->identifier->name;
-					mi.arguments.push_back(pi);
+					_doctype_from_gdtype(m_func->return_type->get_datatype(), method_doc.return_type, method_doc.return_enum, true);
+				} else {
+					method_doc.return_type = "Variant";
 				}
 
-				DocData::MethodDoc method_doc;
-				DocData::method_doc_from_methodinfo(method_doc, mi, m_func->doc_description);
+				for (const GDScriptParser::ParameterNode *p : m_func->parameters) {
+					DocData::ArgumentDoc arg_doc;
+					arg_doc.name = p->identifier->name;
+					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
+					if (p->initializer != nullptr) {
+						if (p->initializer->is_constant) {
+							arg_doc.default_value = p->initializer->reduced_value.get_construct_string().replace("\n", "\\n");
+						} else {
+							arg_doc.default_value = "<unknown>";
+						}
+					}
+					method_doc.arguments.push_back(arg_doc);
+				}
+
 				doc.methods.push_back(method_doc);
 			} break;
 
@@ -163,16 +231,19 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				p_script->member_lines[signal_name] = m_signal->start_line;
 
-				MethodInfo mi;
-				mi.name = signal_name;
+				DocData::MethodDoc signal_doc;
+				signal_doc.name = signal_name;
+				signal_doc.description = m_signal->doc_data.description;
+				signal_doc.is_deprecated = m_signal->doc_data.is_deprecated;
+				signal_doc.is_experimental = m_signal->doc_data.is_experimental;
+
 				for (const GDScriptParser::ParameterNode *p : m_signal->parameters) {
-					PropertyInfo pi = _property_info_from_datatype(p->get_datatype());
-					pi.name = p->identifier->name;
-					mi.arguments.push_back(pi);
+					DocData::ArgumentDoc arg_doc;
+					arg_doc.name = p->identifier->name;
+					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
+					signal_doc.arguments.push_back(arg_doc);
 				}
 
-				DocData::MethodDoc signal_doc;
-				DocData::signal_doc_from_methodinfo(signal_doc, mi, m_signal->doc_description);
 				doc.signals.push_back(signal_doc);
 			} break;
 
@@ -183,46 +254,39 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				p_script->member_lines[var_name] = m_var->start_line;
 
 				DocData::PropertyDoc prop_doc;
-
 				prop_doc.name = var_name;
-				prop_doc.description = m_var->doc_description;
+				prop_doc.description = m_var->doc_data.description;
+				prop_doc.is_deprecated = m_var->doc_data.is_deprecated;
+				prop_doc.is_experimental = m_var->doc_data.is_experimental;
+				_doctype_from_gdtype(m_var->get_datatype(), prop_doc.type, prop_doc.enumeration);
 
-				GDType dt = m_var->get_datatype();
-				switch (dt.kind) {
-					case GDType::CLASS:
-						prop_doc.type = _get_class_name(*dt.class_type);
+				switch (m_var->property) {
+					case GDP::VariableNode::PROP_NONE:
 						break;
-					case GDType::VARIANT:
-						prop_doc.type = "Variant";
+					case GDP::VariableNode::PROP_INLINE:
+						if (m_var->setter != nullptr) {
+							prop_doc.setter = m_var->setter->identifier->name;
+						}
+						if (m_var->getter != nullptr) {
+							prop_doc.getter = m_var->getter->identifier->name;
+						}
 						break;
-					case GDType::ENUM:
-						prop_doc.type = Variant::get_type_name(dt.builtin_type);
-						// Replace :: from enum's use of fully qualified class names with regular .
-						prop_doc.enumeration = String(dt.native_type).replace("::", ".");
-						break;
-					case GDType::NATIVE:;
-						prop_doc.type = dt.native_type;
-						break;
-					case GDType::BUILTIN:
-						prop_doc.type = Variant::get_type_name(dt.builtin_type);
-						break;
-					default:
-						// SCRIPT: can be preload()'d and perhaps used as types directly?
-						// RESOLVING & UNRESOLVED should never happen since docgen requires analyzing w/o errors
+					case GDP::VariableNode::PROP_SETGET:
+						if (m_var->setter_pointer != nullptr) {
+							prop_doc.setter = m_var->setter_pointer->name;
+						}
+						if (m_var->getter_pointer != nullptr) {
+							prop_doc.getter = m_var->getter_pointer->name;
+						}
 						break;
 				}
 
-				if (m_var->property == GDP::VariableNode::PROP_SETGET) {
-					if (m_var->setter_pointer != nullptr) {
-						prop_doc.setter = m_var->setter_pointer->name;
+				if (m_var->initializer) {
+					if (m_var->initializer->is_constant) {
+						prop_doc.default_value = m_var->initializer->reduced_value.get_construct_string().replace("\n", "\\n");
+					} else {
+						prop_doc.default_value = "<unknown>";
 					}
-					if (m_var->getter_pointer != nullptr) {
-						prop_doc.getter = m_var->getter_pointer->name;
-					}
-				}
-
-				if (m_var->initializer && m_var->initializer->is_constant) {
-					prop_doc.default_value = m_var->initializer->reduced_value.get_construct_string().replace("\n", "");
 				}
 
 				prop_doc.overridden = false;
@@ -236,15 +300,21 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				p_script->member_lines[name] = m_enum->start_line;
 
-				doc.enums[name] = m_enum->doc_description;
+				DocData::EnumDoc enum_doc;
+				enum_doc.description = m_enum->doc_data.description;
+				enum_doc.is_deprecated = m_enum->doc_data.is_deprecated;
+				enum_doc.is_experimental = m_enum->doc_data.is_experimental;
+				doc.enums[name] = enum_doc;
 
 				for (const GDP::EnumNode::Value &val : m_enum->values) {
 					DocData::ConstantDoc const_doc;
 					const_doc.name = val.identifier->name;
 					const_doc.value = String(Variant(val.value));
 					const_doc.is_value_valid = true;
-					const_doc.description = val.doc_description;
 					const_doc.enumeration = name;
+					const_doc.description = val.doc_data.description;
+					const_doc.is_deprecated = val.doc_data.is_deprecated;
+					const_doc.is_experimental = val.doc_data.is_experimental;
 
 					doc.constants.push_back(const_doc);
 				}
@@ -257,13 +327,14 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				p_script->member_lines[name] = m_enum_val.identifier->start_line;
 
-				DocData::ConstantDoc constant_doc;
-				constant_doc.enumeration = "@unnamed_enums";
-				DocData::constant_doc_from_variant(constant_doc, name, m_enum_val.value, m_enum_val.doc_description);
-				doc.constants.push_back(constant_doc);
+				DocData::ConstantDoc const_doc;
+				DocData::constant_doc_from_variant(const_doc, name, m_enum_val.value, m_enum_val.doc_data.description);
+				const_doc.enumeration = "@unnamed_enums";
+				const_doc.is_deprecated = m_enum_val.doc_data.is_deprecated;
+				const_doc.is_experimental = m_enum_val.doc_data.is_experimental;
+				doc.constants.push_back(const_doc);
 			} break;
-			case GDP::ClassNode::Member::GROUP:
-			case GDP::ClassNode::Member::UNDEFINED:
+
 			default:
 				break;
 		}

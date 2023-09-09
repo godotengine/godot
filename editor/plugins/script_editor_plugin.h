@@ -31,6 +31,7 @@
 #ifndef SCRIPT_EDITOR_PLUGIN_H
 #define SCRIPT_EDITOR_PLUGIN_H
 
+#include "core/object/script_language.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
@@ -274,6 +275,7 @@ class ScriptEditor : public PanelContainer {
 	Button *help_search = nullptr;
 	Button *site_search = nullptr;
 	Button *make_floating = nullptr;
+	bool is_floating = false;
 	EditorHelpSearch *help_search_dialog = nullptr;
 
 	ItemList *script_list = nullptr;
@@ -506,6 +508,8 @@ public:
 	Ref<Resource> open_file(const String &p_file);
 
 	void ensure_select_current();
+
+	bool is_editor_floating();
 
 	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);

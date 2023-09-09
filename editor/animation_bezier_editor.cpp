@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
@@ -220,9 +221,9 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			bezier_icon = get_theme_icon(SNAME("KeyBezierPoint"), SNAME("EditorIcons"));
-			bezier_handle_icon = get_theme_icon(SNAME("KeyBezierHandle"), SNAME("EditorIcons"));
-			selected_icon = get_theme_icon(SNAME("KeyBezierSelected"), SNAME("EditorIcons"));
+			bezier_icon = get_editor_theme_icon(SNAME("KeyBezierPoint"));
+			bezier_handle_icon = get_editor_theme_icon(SNAME("KeyBezierHandle"));
+			selected_icon = get_editor_theme_icon(SNAME("KeyBezierSelected"));
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -233,7 +234,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			int limit = timeline->get_name_limit();
 
 			if (has_focus()) {
-				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 				accent.a *= 0.7;
 				draw_rect(Rect2(Point2(), get_size()), accent, false, Math::round(EDSCALE));
 			}
@@ -330,20 +331,20 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
-				Color dc = get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"));
+				Color dc = get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor));
 
-				Ref<Texture2D> remove = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
+				Ref<Texture2D> remove = get_editor_theme_icon(SNAME("Remove"));
 				float remove_hpos = limit - hsep - remove->get_width();
 
-				Ref<Texture2D> lock = get_theme_icon(SNAME("Lock"), SNAME("EditorIcons"));
-				Ref<Texture2D> unlock = get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons"));
+				Ref<Texture2D> lock = get_editor_theme_icon(SNAME("Lock"));
+				Ref<Texture2D> unlock = get_editor_theme_icon(SNAME("Unlock"));
 				float lock_hpos = remove_hpos - hsep - lock->get_width();
 
-				Ref<Texture2D> visibility_visible = get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons"));
-				Ref<Texture2D> visibility_hidden = get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons"));
+				Ref<Texture2D> visibility_visible = get_editor_theme_icon(SNAME("GuiVisibilityVisible"));
+				Ref<Texture2D> visibility_hidden = get_editor_theme_icon(SNAME("GuiVisibilityHidden"));
 				float visibility_hpos = lock_hpos - hsep - visibility_visible->get_width();
 
-				Ref<Texture2D> solo = get_theme_icon(SNAME("AudioBusSolo"), SNAME("EditorIcons"));
+				Ref<Texture2D> solo = get_editor_theme_icon(SNAME("AudioBusSolo"));
 				float solo_hpos = visibility_hpos - hsep - solo->get_width();
 
 				float buttons_width = remove->get_width() + lock->get_width() + visibility_visible->get_width() + solo->get_width() + hsep * 3;
@@ -391,7 +392,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 						subtracks[current_track] = rect;
 					} else {
-						Color ac = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+						Color ac = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 						ac.a = 0.5;
 						draw_rect(rect, ac);
 						if (locked_tracks.has(selected_track)) {
@@ -441,7 +442,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				}
 			}
 
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
 			{ //guides
 				float min_left_scale = font->get_height(font_size) + vsep;
@@ -482,7 +483,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			{ //draw OTHER curves
 
 				float scale = timeline->get_zoom_scale();
-				Ref<Texture2D> point = get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons"));
+				Ref<Texture2D> point = get_editor_theme_icon(SNAME("KeyValue"));
 				for (const KeyValue<int, Color> &E : subtrack_colors) {
 					if (hidden_tracks.has(E.key)) {
 						continue;
@@ -630,10 +631,10 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				}
 				draw_rect(
 						Rect2(bs_from, bs_to - bs_from),
-						get_theme_color(SNAME("box_selection_fill_color"), SNAME("Editor")));
+						get_theme_color(SNAME("box_selection_fill_color"), EditorStringName(Editor)));
 				draw_rect(
 						Rect2(bs_from, bs_to - bs_from),
-						get_theme_color(SNAME("box_selection_stroke_color"), SNAME("Editor")),
+						get_theme_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor)),
 						false,
 						Math::round(EDSCALE));
 			}
@@ -681,7 +682,7 @@ void AnimationBezierTrackEdit::_play_position_draw() {
 	int px = (-timeline->get_value() + play_position_pos) * scale + limit;
 
 	if (px >= limit && px < (get_size().width)) {
-		Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 	}
 }
@@ -945,17 +946,17 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_icon_item(bezier_icon, TTR("Insert Key Here"), MENU_KEY_INSERT);
 				if (selection.size()) {
 					menu->add_separator();
-					menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Duplicate Selected Key(s)"), MENU_KEY_DUPLICATE);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Duplicate Selected Key(s)"), MENU_KEY_DUPLICATE);
 					menu->add_separator();
-					menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete Selected Key(s)"), MENU_KEY_DELETE);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Selected Key(s)"), MENU_KEY_DELETE);
 					menu->add_separator();
-					menu->add_icon_item(get_theme_icon(SNAME("BezierHandlesFree"), SNAME("EditorIcons")), TTR("Make Handles Free"), MENU_KEY_SET_HANDLE_FREE);
-					menu->add_icon_item(get_theme_icon(SNAME("BezierHandlesLinear"), SNAME("EditorIcons")), TTR("Make Handles Linear"), MENU_KEY_SET_HANDLE_LINEAR);
-					menu->add_icon_item(get_theme_icon(SNAME("BezierHandlesBalanced"), SNAME("EditorIcons")), TTR("Make Handles Balanced"), MENU_KEY_SET_HANDLE_BALANCED);
-					menu->add_icon_item(get_theme_icon(SNAME("BezierHandlesMirror"), SNAME("EditorIcons")), TTR("Make Handles Mirrored"), MENU_KEY_SET_HANDLE_MIRRORED);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("BezierHandlesFree")), TTR("Make Handles Free"), MENU_KEY_SET_HANDLE_FREE);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("BezierHandlesLinear")), TTR("Make Handles Linear"), MENU_KEY_SET_HANDLE_LINEAR);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("BezierHandlesBalanced")), TTR("Make Handles Balanced"), MENU_KEY_SET_HANDLE_BALANCED);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("BezierHandlesMirror")), TTR("Make Handles Mirrored"), MENU_KEY_SET_HANDLE_MIRRORED);
 					menu->add_separator();
-					menu->add_icon_item(get_theme_icon(SNAME("BezierHandlesBalanced"), SNAME("EditorIcons")), TTR("Make Handles Balanced (Auto Tangent)"), MENU_KEY_SET_HANDLE_AUTO_BALANCED);
-					menu->add_icon_item(get_theme_icon(SNAME("BezierHandlesMirror"), SNAME("EditorIcons")), TTR("Make Handles Mirrored (Auto Tangent)"), MENU_KEY_SET_HANDLE_AUTO_MIRRORED);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("BezierHandlesBalanced")), TTR("Make Handles Balanced (Auto Tangent)"), MENU_KEY_SET_HANDLE_AUTO_BALANCED);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("BezierHandlesMirror")), TTR("Make Handles Mirrored (Auto Tangent)"), MENU_KEY_SET_HANDLE_AUTO_MIRRORED);
 				}
 
 				if (menu->get_item_count()) {

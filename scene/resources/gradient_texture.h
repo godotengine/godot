@@ -39,7 +39,7 @@ class GradientTexture1D : public Texture2D {
 private:
 	Ref<Gradient> gradient;
 	bool update_pending = false;
-	RID texture;
+	mutable RID texture;
 	int width = 256;
 	bool use_hdr = false;
 
@@ -59,11 +59,12 @@ public:
 	void set_use_hdr(bool p_enabled);
 	bool is_using_hdr() const;
 
-	virtual RID get_rid() const override { return texture; }
+	virtual RID get_rid() const override;
 	virtual int get_height() const override { return 1; }
 	virtual bool has_alpha() const override { return true; }
 
 	virtual Ref<Image> get_image() const override;
+	void update_now();
 
 	GradientTexture1D();
 	virtual ~GradientTexture1D();
@@ -133,6 +134,7 @@ public:
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override { return true; }
 	virtual Ref<Image> get_image() const override;
+	void update_now();
 
 	GradientTexture2D();
 	virtual ~GradientTexture2D();

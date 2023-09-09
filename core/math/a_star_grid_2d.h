@@ -33,7 +33,6 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
-#include "core/object/script_language.h"
 #include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 
@@ -176,6 +175,9 @@ public:
 
 	void set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale);
 	real_t get_point_weight_scale(const Vector2i &p_id) const;
+
+	void fill_solid_region(const Rect2i &p_region, bool p_solid = true);
+	void fill_weight_scale_region(const Rect2i &p_region, real_t p_weight_scale);
 
 	void clear();
 

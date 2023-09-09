@@ -155,7 +155,7 @@ public:
 #endif
 
 	static APIType current_api;
-	static HashMap<APIType, uint64_t> api_hashes_cache;
+	static HashMap<APIType, uint32_t> api_hashes_cache;
 
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 
@@ -187,6 +187,7 @@ public:
 	template <class T>
 	static void register_class(bool p_virtual = false) {
 		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
@@ -201,6 +202,7 @@ public:
 	template <class T>
 	static void register_abstract_class() {
 		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
@@ -221,6 +223,7 @@ public:
 	template <class T>
 	static void register_custom_instance_class() {
 		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
@@ -246,7 +249,7 @@ public:
 
 	static APIType get_api_type(const StringName &p_class);
 
-	static uint64_t get_api_hash(APIType p_api);
+	static uint32_t get_api_hash(APIType p_api);
 
 	template <typename>
 	struct member_function_traits;
