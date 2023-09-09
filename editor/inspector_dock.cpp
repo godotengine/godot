@@ -205,7 +205,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		default: {
 			if (p_option >= OBJECT_METHOD_BASE) {
-				ERR_FAIL_COND(!current);
+				ERR_FAIL_NULL(current);
 
 				int idx = p_option - OBJECT_METHOD_BASE;
 
@@ -373,7 +373,7 @@ void InspectorDock::_resource_created() {
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);
-	ERR_FAIL_COND(!r);
+	ERR_FAIL_NULL(r);
 
 	EditorNode::get_singleton()->push_item(r);
 }

@@ -480,7 +480,7 @@ void EditorInterface::create() {
 }
 
 void EditorInterface::free() {
-	ERR_FAIL_COND(singleton == nullptr);
+	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
 }
 

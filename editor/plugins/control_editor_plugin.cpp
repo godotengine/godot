@@ -817,7 +817,7 @@ void ControlEditorToolbar::_container_flags_selected(int p_flags, bool p_vertica
 }
 
 Vector2 ControlEditorToolbar::_position_to_anchor(const Control *p_control, Vector2 position) {
-	ERR_FAIL_COND_V(!p_control, Vector2());
+	ERR_FAIL_NULL_V(p_control, Vector2());
 
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
 

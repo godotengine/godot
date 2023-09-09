@@ -708,9 +708,9 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 		String type = menu->get_item_metadata(p_index);
 
 		Object *obj = ClassDB::instantiate(type);
-		ERR_FAIL_COND(!obj);
+		ERR_FAIL_NULL(obj);
 		AnimationNode *an = Object::cast_to<AnimationNode>(obj);
-		ERR_FAIL_COND(!an);
+		ERR_FAIL_NULL(an);
 
 		node = Ref<AnimationNode>(an);
 		base_name = type.replace_first("AnimationNode", "");

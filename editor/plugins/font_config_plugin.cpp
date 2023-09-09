@@ -970,7 +970,7 @@ bool EditorInspectorPluginFontPreview::can_handle(Object *p_object) {
 
 void EditorInspectorPluginFontPreview::parse_begin(Object *p_object) {
 	Font *fd = Object::cast_to<Font>(p_object);
-	ERR_FAIL_COND(!fd);
+	ERR_FAIL_NULL(fd);
 
 	FontPreview *editor = memnew(FontPreview);
 	editor->set_data(fd);

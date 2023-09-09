@@ -855,7 +855,7 @@ void SpriteFramesEditor::_animation_selected() {
 	}
 
 	TreeItem *selected = animations->get_selected();
-	ERR_FAIL_COND(!selected);
+	ERR_FAIL_NULL(selected);
 	edited_anim = selected->get_text(0);
 
 	if (animated_sprite) {

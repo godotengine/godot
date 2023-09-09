@@ -95,7 +95,7 @@ void Polygon3DEditor::_menu_option(int p_option) {
 
 void Polygon3DEditor::_wip_close() {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_COND_MSG(!obj, "Edited object is not valid.");
+	ERR_FAIL_NULL_MSG(obj, "Edited object is not valid.");
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Polygon3D"));
 	undo_redo->add_undo_method(obj, "set_polygon", obj->call("get_polygon"));
@@ -349,7 +349,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 
 float Polygon3DEditor::_get_depth() {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_COND_V_MSG(!obj, 0.0f, "Edited object is not valid.");
+	ERR_FAIL_NULL_V_MSG(obj, 0.0f, "Edited object is not valid.");
 
 	if (bool(obj->call("_has_editable_3d_polygon_no_depth"))) {
 		return 0.0f;
@@ -360,13 +360,13 @@ float Polygon3DEditor::_get_depth() {
 
 PackedVector2Array Polygon3DEditor::_get_polygon() {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_COND_V_MSG(!obj, PackedVector2Array(), "Edited object is not valid.");
+	ERR_FAIL_NULL_V_MSG(obj, PackedVector2Array(), "Edited object is not valid.");
 	return PackedVector2Array(obj->call("get_polygon"));
 }
 
 void Polygon3DEditor::_set_polygon(PackedVector2Array p_poly) {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_COND_MSG(!obj, "Edited object is not valid.");
+	ERR_FAIL_NULL_MSG(obj, "Edited object is not valid.");
 	obj->call("set_polygon", p_poly);
 }
 

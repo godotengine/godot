@@ -500,7 +500,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		return;
 	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_COND_MSG(!ti, "Object passed is not a TreeItem");
+	ERR_FAIL_NULL_MSG(ti, "Object passed is not a TreeItem.");
 
 	ShortcutButton button_idx = (ShortcutButton)p_idx;
 

@@ -2376,7 +2376,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			break;
 		}
 	}
-	ERR_FAIL_COND_V(!se, false);
+	ERR_FAIL_NULL_V(se, false);
 
 	se->set_edited_resource(p_resource);
 
@@ -2695,7 +2695,7 @@ void ScriptEditor::_editor_stop() {
 }
 
 void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
-	ERR_FAIL_COND(!p_obj);
+	ERR_FAIL_NULL(p_obj);
 	Ref<Script> scr = p_obj->get_script();
 	ERR_FAIL_COND(!scr.is_valid());
 
