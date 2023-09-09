@@ -95,7 +95,7 @@ void RasterizerSceneGLES3::GeometryInstanceGLES3::pair_light_instances(const RID
 
 void RasterizerSceneGLES3::geometry_instance_free(RenderGeometryInstance *p_geometry_instance) {
 	GeometryInstanceGLES3 *ginstance = static_cast<GeometryInstanceGLES3 *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
+	ERR_FAIL_NULL(ginstance);
 	GeometryInstanceSurface *surf = ginstance->surface_caches;
 	while (surf) {
 		GeometryInstanceSurface *next = surf->next;
@@ -300,7 +300,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface(GeometryInstanceGLES3 
 		m_src = scene_globals.default_material;
 	}
 
-	ERR_FAIL_COND(!material_data);
+	ERR_FAIL_NULL(material_data);
 
 	_geometry_instance_add_surface_with_material_chain(ginstance, p_surface, material_data, m_src, p_mesh);
 
@@ -462,7 +462,7 @@ void RasterizerSceneGLES3::sky_initialize(RID p_rid) {
 
 void RasterizerSceneGLES3::sky_set_radiance_size(RID p_sky, int p_radiance_size) {
 	Sky *sky = sky_owner.get_or_null(p_sky);
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 	ERR_FAIL_COND_MSG(p_radiance_size < 32 || p_radiance_size > 2048, "Sky radiance size must be between 32 and 2048");
 
 	if (sky->radiance_size == p_radiance_size) {
@@ -477,7 +477,7 @@ void RasterizerSceneGLES3::sky_set_radiance_size(RID p_sky, int p_radiance_size)
 
 void RasterizerSceneGLES3::sky_set_mode(RID p_sky, RS::SkyMode p_mode) {
 	Sky *sky = sky_owner.get_or_null(p_sky);
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 
 	if (sky->mode == p_mode) {
 		return;
@@ -489,7 +489,7 @@ void RasterizerSceneGLES3::sky_set_mode(RID p_sky, RS::SkyMode p_mode) {
 
 void RasterizerSceneGLES3::sky_set_material(RID p_sky, RID p_material) {
 	Sky *sky = sky_owner.get_or_null(p_sky);
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 
 	if (sky->material == p_material) {
 		return;
@@ -501,7 +501,7 @@ void RasterizerSceneGLES3::sky_set_material(RID p_sky, RID p_material) {
 
 float RasterizerSceneGLES3::sky_get_baked_exposure(RID p_sky) const {
 	Sky *sky = sky_owner.get_or_null(p_sky);
-	ERR_FAIL_COND_V(!sky, 1.0);
+	ERR_FAIL_NULL_V(sky, 1.0);
 
 	return sky->baked_exposure;
 }
@@ -615,11 +615,11 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 		material = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 	}
 
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	shader_data = material->shader_data;
 
-	ERR_FAIL_COND(!shader_data);
+	ERR_FAIL_NULL(shader_data);
 
 	if (sky) {
 		if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
@@ -757,7 +757,7 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	ERR_FAIL_COND(p_env.is_null());
 
 	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 
 	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
@@ -788,12 +788,12 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 	}
 
-	ERR_FAIL_COND(!material_data);
+	ERR_FAIL_NULL(material_data);
 	material_data->bind_uniforms();
 
 	GLES3::SkyShaderData *shader_data = material_data->shader_data;
 
-	ERR_FAIL_COND(!shader_data);
+	ERR_FAIL_NULL(shader_data);
 
 	// Camera
 	Projection camera;
@@ -836,7 +836,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	ERR_FAIL_COND(p_env.is_null());
 
 	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 
 	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
@@ -844,7 +844,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	RS::EnvironmentBG background = environment_get_background(p_env);
 
 	if (sky) {
-		ERR_FAIL_COND(!sky);
+		ERR_FAIL_NULL(sky);
 		sky_material = sky->material;
 
 		if (sky_material.is_valid()) {
@@ -863,12 +863,12 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 	}
 
-	ERR_FAIL_COND(!material_data);
+	ERR_FAIL_NULL(material_data);
 	material_data->bind_uniforms();
 
 	GLES3::SkyShaderData *shader_data = material_data->shader_data;
 
-	ERR_FAIL_COND(!shader_data);
+	ERR_FAIL_NULL(shader_data);
 
 	bool update_single_frame = sky->mode == RS::SKY_MODE_REALTIME || sky->mode == RS::SKY_MODE_QUALITY;
 	RS::SkyMode sky_mode = sky->mode;
@@ -1731,7 +1731,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 
 	GLES3::RenderTarget *rt = texture_storage->get_render_target(rb->render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	// Assign render data
 	// Use the format from rendererRD
@@ -2584,7 +2584,7 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 		environment_free(p_rid);
 	} else if (sky_owner.owns(p_rid)) {
 		Sky *sky = sky_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!sky, false);
+		ERR_FAIL_NULL_V(sky, false);
 		_free_sky_data(sky);
 		sky_owner.free(p_rid);
 	} else if (GLES3::LightStorage::get_singleton()->owns_light_instance(p_rid)) {

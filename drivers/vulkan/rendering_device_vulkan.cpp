@@ -2038,12 +2038,12 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
-	ERR_FAIL_COND_V(!src_texture, RID());
+	ERR_FAIL_NULL_V(src_texture, RID());
 
 	if (src_texture->owner.is_valid()) { // Ahh this is a share.
 		p_with_texture = src_texture->owner;
 		src_texture = texture_owner.get_or_null(src_texture->owner);
-		ERR_FAIL_COND_V(!src_texture, RID()); // This is a bug.
+		ERR_FAIL_NULL_V(src_texture, RID()); // This is a bug.
 	}
 
 	// Create view.
@@ -2313,12 +2313,12 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
-	ERR_FAIL_COND_V(!src_texture, RID());
+	ERR_FAIL_NULL_V(src_texture, RID());
 
 	if (src_texture->owner.is_valid()) { // Ahh this is a share.
 		p_with_texture = src_texture->owner;
 		src_texture = texture_owner.get_or_null(src_texture->owner);
-		ERR_FAIL_COND_V(!src_texture, RID()); // This is a bug.
+		ERR_FAIL_NULL_V(src_texture, RID()); // This is a bug.
 	}
 
 	ERR_FAIL_COND_V_MSG(p_slice_type == TEXTURE_SLICE_CUBEMAP && (src_texture->type != TEXTURE_TYPE_CUBE && src_texture->type != TEXTURE_TYPE_CUBE_ARRAY), RID(),
@@ -2469,12 +2469,12 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 			"Updating textures is forbidden during creation of a draw or compute list");
 
 	Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!texture, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(texture, ERR_INVALID_PARAMETER);
 
 	if (texture->owner != RID()) {
 		p_texture = texture->owner;
 		texture = texture_owner.get_or_null(texture->owner);
-		ERR_FAIL_COND_V(!texture, ERR_BUG); // This is a bug.
+		ERR_FAIL_NULL_V(texture, ERR_BUG); // This is a bug.
 	}
 
 	ERR_FAIL_COND_V_MSG(texture->bound, ERR_CANT_ACQUIRE_RESOURCE,
@@ -2755,7 +2755,7 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(tex, Vector<uint8_t>());
 
 	ERR_FAIL_COND_V_MSG(tex->bound, Vector<uint8_t>(),
 			"Texture can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to retrieve this texture.");
@@ -2885,7 +2885,7 @@ bool RenderingDeviceVulkan::texture_is_shared(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, false);
+	ERR_FAIL_NULL_V(tex, false);
 	return tex->owner.is_valid();
 }
 
@@ -2897,7 +2897,7 @@ RD::TextureFormat RenderingDeviceVulkan::texture_get_format(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, TextureFormat());
+	ERR_FAIL_NULL_V(tex, TextureFormat());
 
 	TextureFormat tf;
 
@@ -2920,7 +2920,7 @@ Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, Size2i());
+	ERR_FAIL_NULL_V(tex, Size2i());
 	return Size2i(tex->width, tex->height);
 }
 
@@ -2928,7 +2928,7 @@ uint64_t RenderingDeviceVulkan::texture_get_native_handle(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, 0);
+	ERR_FAIL_NULL_V(tex, 0);
 
 	return (uint64_t)tex->image;
 }
@@ -2937,7 +2937,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_tex = texture_owner.get_or_null(p_from_texture);
-	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
 			"Source texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
@@ -2958,7 +2958,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	ERR_FAIL_COND_V(p_src_layer >= src_layer_count, ERR_INVALID_PARAMETER);
 
 	Texture *dst_tex = texture_owner.get_or_null(p_to_texture);
-	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(dst_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
 			"Destination texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
@@ -3136,7 +3136,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_tex = texture_owner.get_or_null(p_from_texture);
-	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
 			"Source texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
@@ -3147,7 +3147,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	ERR_FAIL_COND_V_MSG(src_tex->samples == TEXTURE_SAMPLES_1, ERR_INVALID_PARAMETER, "Source texture must be multisampled.");
 
 	Texture *dst_tex = texture_owner.get_or_null(p_to_texture);
-	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(dst_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(dst_tex->bound, ERR_INVALID_PARAMETER,
 			"Destination texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to copy this texture.");
@@ -3311,7 +3311,7 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(src_tex, ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V_MSG(src_tex->bound, ERR_INVALID_PARAMETER,
 			"Source texture can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to clear this texture.");
@@ -4299,7 +4299,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_get_form
 	_THREAD_SAFE_METHOD_
 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
-	ERR_FAIL_COND_V(!framebuffer, INVALID_ID);
+	ERR_FAIL_NULL_V(framebuffer, INVALID_ID);
 
 	return framebuffer->format_id;
 }
@@ -4314,7 +4314,7 @@ void RenderingDeviceVulkan::framebuffer_set_invalidation_callback(RID p_framebuf
 	_THREAD_SAFE_METHOD_
 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
-	ERR_FAIL_COND(!framebuffer);
+	ERR_FAIL_NULL(framebuffer);
 
 	framebuffer->invalidated_callback = p_callback;
 	framebuffer->invalidated_callback_userdata = p_userdata;
@@ -4619,7 +4619,7 @@ static VkShaderStageFlagBits shader_stage_masks[RenderingDevice::SHADER_STAGE_MA
 String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 	String ret;
 	const Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, String());
+	ERR_FAIL_NULL_V(shader, String());
 	for (int i = 0; i < shader->sets.size(); i++) {
 		if (p_set >= 0 && i != p_set) {
 			continue;
@@ -5212,7 +5212,7 @@ uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_sha
 	_THREAD_SAFE_METHOD_
 
 	const Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, 0);
+	ERR_FAIL_NULL_V(shader, 0);
 	return shader->vertex_input_mask;
 }
 
@@ -5429,7 +5429,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	ERR_FAIL_COND_V(p_uniforms.size() == 0, RID());
 
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, RID());
+	ERR_FAIL_NULL_V(shader, RID());
 
 	ERR_FAIL_COND_V_MSG(p_shader_set >= (uint32_t)shader->sets.size() || shader->sets[p_shader_set].uniform_info.size() == 0, RID(),
 			"Desired set (" + itos(p_shader_set) + ") not used by shader.");
@@ -5498,7 +5498,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
 					VkSampler *sampler = sampler_owner.get_or_null(uniform.get_id(j));
-					ERR_FAIL_COND_V_MSG(!sampler, RID(), "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
+					ERR_FAIL_NULL_V_MSG(sampler, RID(), "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
 
 					VkDescriptorImageInfo img_info;
 					img_info.sampler = *sampler;
@@ -5531,10 +5531,10 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j += 2) {
 					VkSampler *sampler = sampler_owner.get_or_null(uniform.get_id(j + 0));
-					ERR_FAIL_COND_V_MSG(!sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
+					ERR_FAIL_NULL_V_MSG(sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
 					Texture *texture = texture_owner.get_or_null(uniform.get_id(j + 1));
-					ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
+					ERR_FAIL_NULL_V_MSG(texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
@@ -5585,7 +5585,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
 					Texture *texture = texture_owner.get_or_null(uniform.get_id(j));
-					ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
+					ERR_FAIL_NULL_V_MSG(texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
@@ -5636,7 +5636,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
 					Texture *texture = texture_owner.get_or_null(uniform.get_id(j));
 
-					ERR_FAIL_COND_V_MSG(!texture, RID(),
+					ERR_FAIL_NULL_V_MSG(texture, RID(),
 							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_STORAGE_BIT), RID(),
@@ -5682,7 +5682,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
 					TextureBuffer *buffer = texture_buffer_owner.get_or_null(uniform.get_id(j));
-					ERR_FAIL_COND_V_MSG(!buffer, RID(), "Texture Buffer (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture buffer.");
+					ERR_FAIL_NULL_V_MSG(buffer, RID(), "Texture Buffer (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture buffer.");
 
 					buffer_info.push_back(buffer->buffer.buffer_info);
 					buffer_view.push_back(buffer->view);
@@ -5713,7 +5713,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j += 2) {
 					VkSampler *sampler = sampler_owner.get_or_null(uniform.get_id(j + 0));
-					ERR_FAIL_COND_V_MSG(!sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
+					ERR_FAIL_NULL_V_MSG(sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
 					TextureBuffer *buffer = texture_buffer_owner.get_or_null(uniform.get_id(j + 1));
 
@@ -5724,7 +5724,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 					image_info.push_back(img_info);
 
-					ERR_FAIL_COND_V_MSG(!buffer, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid texture buffer.");
+					ERR_FAIL_NULL_V_MSG(buffer, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid texture buffer.");
 
 					buffer_info.push_back(buffer->buffer.buffer_info);
 					buffer_view.push_back(buffer->view);
@@ -5748,7 +5748,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.get_id_count()) + " provided).");
 
 				Buffer *buffer = uniform_buffer_owner.get_or_null(uniform.get_id(0));
-				ERR_FAIL_COND_V_MSG(!buffer, RID(), "Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
+				ERR_FAIL_NULL_V_MSG(buffer, RID(), "Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
 				ERR_FAIL_COND_V_MSG(buffer->size != (uint32_t)set_uniform.length, RID(),
 						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
@@ -5774,7 +5774,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 					ERR_FAIL_COND_V_MSG(!(buffer->usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT), RID(), "Vertex buffer supplied (binding: " + itos(uniform.binding) + ") was not created with storage flag.");
 				}
-				ERR_FAIL_COND_V_MSG(!buffer, RID(), "Storage buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
+				ERR_FAIL_NULL_V_MSG(buffer, RID(), "Storage buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
 				// If 0, then it's sized on link time.
 				ERR_FAIL_COND_V_MSG(set_uniform.length > 0 && buffer->size != (uint32_t)set_uniform.length, RID(),
@@ -5803,7 +5803,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
 					Texture *texture = texture_owner.get_or_null(uniform.get_id(j));
 
-					ERR_FAIL_COND_V_MSG(!texture, RID(),
+					ERR_FAIL_NULL_V_MSG(texture, RID(),
 							"InputAttachment (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
@@ -5843,7 +5843,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	// Need a descriptor pool.
 	DescriptorPool *pool = _descriptor_pool_allocate(pool_key);
 
-	ERR_FAIL_COND_V(!pool, RID());
+	ERR_FAIL_NULL_V(pool, RID());
 
 	VkDescriptorSetAllocateInfo descriptor_set_allocate_info;
 
@@ -5903,7 +5903,7 @@ bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
 
 void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata) {
 	UniformSet *us = uniform_set_owner.get_or_null(p_uniform_set);
-	ERR_FAIL_COND(!us);
+	ERR_FAIL_NULL(us);
 	us->invalidated_callback = p_callback;
 	us->invalidated_callback_userdata = p_userdata;
 }
@@ -6118,7 +6118,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 	// Needs a shader.
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, RID());
+	ERR_FAIL_NULL_V(shader, RID());
 
 	ERR_FAIL_COND_V_MSG(shader->is_compute, RID(),
 			"Compute shaders can't be used in render pipelines");
@@ -6590,7 +6590,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 
 	// Needs a shader.
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, RID());
+	ERR_FAIL_NULL_V(shader, RID());
 
 	ERR_FAIL_COND_V_MSG(!shader->is_compute, RID(),
 			"Non-compute shaders can't be used in compute pipelines");
@@ -7004,7 +7004,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr && !compute_list->state.allow_draw_overlap, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
-	ERR_FAIL_COND_V(!framebuffer, INVALID_ID);
+	ERR_FAIL_NULL_V(framebuffer, INVALID_ID);
 
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
@@ -7112,7 +7112,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 	ERR_FAIL_COND_V(p_splits < 1, ERR_INVALID_DECLARATION);
 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
-	ERR_FAIL_COND_V(!framebuffer, ERR_INVALID_DECLARATION);
+	ERR_FAIL_NULL_V(framebuffer, ERR_INVALID_DECLARATION);
 
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
@@ -7242,7 +7242,7 @@ RenderingDeviceVulkan::DrawList *RenderingDeviceVulkan::_get_draw_list_ptr(DrawL
 
 void RenderingDeviceVulkan::draw_list_set_blend_constants(DrawListID p_list, const Color &p_color) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
@@ -7252,13 +7252,13 @@ void RenderingDeviceVulkan::draw_list_set_blend_constants(DrawListID p_list, con
 
 void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
 
 	const RenderPipeline *pipeline = render_pipeline_owner.get_or_null(p_render_pipeline);
-	ERR_FAIL_COND(!pipeline);
+	ERR_FAIL_NULL(pipeline);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(pipeline->validation.framebuffer_format != draw_list_framebuffer_format && pipeline->validation.render_pass != draw_list_current_subpass);
 #endif
@@ -7326,14 +7326,14 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(DrawListID p_list, RID p_
 			"Attempting to bind a descriptor set (" + itos(p_index) + ") greater than what the hardware supports (" + itos(limits.maxBoundDescriptorSets) + ").");
 #endif
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
 
 	const UniformSet *uniform_set = uniform_set_owner.get_or_null(p_uniform_set);
-	ERR_FAIL_COND(!uniform_set);
+	ERR_FAIL_NULL(uniform_set);
 
 	if (p_index > dl->state.set_count) {
 		dl->state.set_count = p_index;
@@ -7375,13 +7375,13 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(DrawListID p_list, RID p_
 
 void RenderingDeviceVulkan::draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
 
 	const VertexArray *vertex_array = vertex_array_owner.get_or_null(p_vertex_array);
-	ERR_FAIL_COND(!vertex_array);
+	ERR_FAIL_NULL(vertex_array);
 
 	if (dl->state.vertex_array == p_vertex_array) {
 		return; // Already set.
@@ -7399,13 +7399,13 @@ void RenderingDeviceVulkan::draw_list_bind_vertex_array(DrawListID p_list, RID p
 
 void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_index_array) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
 
 	const IndexArray *index_array = index_array_owner.get_or_null(p_index_array);
-	ERR_FAIL_COND(!index_array);
+	ERR_FAIL_NULL(index_array);
 
 	if (dl->state.index_array == p_index_array) {
 		return; // Already set.
@@ -7423,7 +7423,7 @@ void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_
 
 void RenderingDeviceVulkan::draw_list_set_line_width(DrawListID p_list, float p_width) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
@@ -7433,7 +7433,7 @@ void RenderingDeviceVulkan::draw_list_set_line_width(DrawListID p_list, float p_
 
 void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, const void *p_data, uint32_t p_data_size) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
@@ -7451,7 +7451,7 @@ void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, const
 
 void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances, uint32_t p_procedural_vertices) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
@@ -7557,7 +7557,7 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
@@ -7580,7 +7580,7 @@ void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Re
 
 void RenderingDeviceVulkan::draw_list_disable_scissor(DrawListID p_list) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
+	ERR_FAIL_NULL(dl);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 #endif
@@ -7599,7 +7599,7 @@ uint32_t RenderingDeviceVulkan::draw_list_get_current_pass() {
 
 RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_switch_to_next_pass() {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V(draw_list == nullptr, INVALID_ID);
+	ERR_FAIL_NULL_V(draw_list, INVALID_ID);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, INVALID_FORMAT_ID);
 
 	draw_list_current_subpass++;
@@ -7615,7 +7615,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_switch_to_next_pass
 }
 Error RenderingDeviceVulkan::draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V(draw_list == nullptr, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(draw_list, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, ERR_INVALID_PARAMETER);
 
 	draw_list_current_subpass++;
@@ -7756,7 +7756,7 @@ void RenderingDeviceVulkan::_draw_list_free(Rect2i *r_last_viewport) {
 void RenderingDeviceVulkan::draw_list_end(BitField<BarrierMask> p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_MSG(!draw_list, "Immediate draw list is already inactive.");
+	ERR_FAIL_NULL_MSG(draw_list, "Immediate draw list is already inactive.");
 
 	_draw_list_free();
 
@@ -7884,12 +7884,12 @@ void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_l
 	// Must be called within a compute list, the class mutex is locked during that time
 
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
-	ERR_FAIL_COND(!compute_list);
+	ERR_FAIL_NULL(compute_list);
 
 	ComputeList *cl = compute_list;
 
 	const ComputePipeline *pipeline = compute_pipeline_owner.get_or_null(p_compute_pipeline);
-	ERR_FAIL_COND(!pipeline);
+	ERR_FAIL_NULL(pipeline);
 
 	if (p_compute_pipeline == cl->state.pipeline) {
 		return; // Redundant state, return.
@@ -7950,7 +7950,7 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 	// Must be called within a compute list, the class mutex is locked during that time
 
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
-	ERR_FAIL_COND(!compute_list);
+	ERR_FAIL_NULL(compute_list);
 
 	ComputeList *cl = compute_list;
 
@@ -7964,7 +7964,7 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 #endif
 
 	UniformSet *uniform_set = uniform_set_owner.get_or_null(p_uniform_set);
-	ERR_FAIL_COND(!uniform_set);
+	ERR_FAIL_NULL(uniform_set);
 
 	if (p_index > cl->state.set_count) {
 		cl->state.set_count = p_index;
@@ -8104,7 +8104,7 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 
 void RenderingDeviceVulkan::compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
-	ERR_FAIL_COND(!compute_list);
+	ERR_FAIL_NULL(compute_list);
 
 	ComputeList *cl = compute_list;
 
@@ -8126,7 +8126,7 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 	// Must be called within a compute list, the class mutex is locked during that time
 
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
-	ERR_FAIL_COND(!compute_list);
+	ERR_FAIL_NULL(compute_list);
 
 	ComputeList *cl = compute_list;
 
@@ -8186,7 +8186,7 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 
 void RenderingDeviceVulkan::compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
-	ERR_FAIL_COND(!compute_list);
+	ERR_FAIL_NULL(compute_list);
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(p_x_threads == 0, "Dispatch amount of X compute threads (" + itos(p_x_threads) + ") is zero.");
@@ -8213,11 +8213,11 @@ void RenderingDeviceVulkan::compute_list_dispatch_threads(ComputeListID p_list, 
 
 void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
-	ERR_FAIL_COND(!compute_list);
+	ERR_FAIL_NULL(compute_list);
 
 	ComputeList *cl = compute_list;
 	Buffer *buffer = storage_buffer_owner.get_or_null(p_buffer);
-	ERR_FAIL_COND(!buffer);
+	ERR_FAIL_NULL(buffer);
 
 	ERR_FAIL_COND_MSG(!(buffer->usage & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT), "Buffer provided was not created to do indirect dispatch.");
 
@@ -8276,7 +8276,7 @@ void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
 }
 
 void RenderingDeviceVulkan::_compute_list_add_barrier(BitField<BarrierMask> p_post_barrier, uint32_t p_barrier_flags, uint32_t p_access_flags) {
-	ERR_FAIL_COND(!compute_list);
+	ERR_FAIL_NULL(compute_list);
 
 	VkImageMemoryBarrier *image_barriers = nullptr;
 
@@ -8335,7 +8335,7 @@ void RenderingDeviceVulkan::_compute_list_add_barrier(BitField<BarrierMask> p_po
 }
 
 void RenderingDeviceVulkan::compute_list_end(BitField<BarrierMask> p_post_barrier) {
-	ERR_FAIL_COND(!compute_list);
+	ERR_FAIL_NULL(compute_list);
 
 	uint32_t barrier_flags = 0;
 	uint32_t access_flags = 0;
@@ -8425,7 +8425,7 @@ void RenderingDeviceVulkan::full_barrier() {
 #if 0
 void RenderingDeviceVulkan::draw_list_render_secondary_to_framebuffer(ID p_framebuffer, ID *p_draw_lists, uint32_t p_draw_list_count, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Variant> &p_clear_colors) {
 	VkCommandBuffer frame_cmdbuf = frames[frame].frame_buffer;
-	ERR_FAIL_COND(!frame_cmdbuf);
+	ERR_FAIL_NULL(frame_cmdbuf);
 
 	VkRenderPassBeginInfo render_pass_begin;
 	render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
