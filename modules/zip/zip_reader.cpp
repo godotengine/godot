@@ -33,7 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/zip_io.h"
 
-Error ZIPReader::open(String p_path) {
+Error ZIPReader::open(const String &p_path) {
 	if (fa.is_valid()) {
 		close();
 	}
@@ -81,7 +81,7 @@ PackedStringArray ZIPReader::get_files() {
 	return arr;
 }
 
-PackedByteArray ZIPReader::read_file(String p_path, bool p_case_sensitive) {
+PackedByteArray ZIPReader::read_file(const String &p_path, bool p_case_sensitive) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), "ZIPReader must be opened before use.");
 
 	int err = UNZ_OK;
@@ -118,7 +118,7 @@ PackedByteArray ZIPReader::read_file(String p_path, bool p_case_sensitive) {
 	return data;
 }
 
-bool ZIPReader::file_exists(String p_path, bool p_case_sensitive) {
+bool ZIPReader::file_exists(const String &p_path, bool p_case_sensitive) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "ZIPReader must be opened before use.");
 
 	int cs = p_case_sensitive ? 1 : 2;
