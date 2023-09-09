@@ -119,7 +119,7 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 	ERR_FAIL_COND_V(world_2d.is_null(), SceneStringNames::get_singleton()->Master);
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
-	ERR_FAIL_COND_V(space_state == nullptr, SceneStringNames::get_singleton()->Master);
+	ERR_FAIL_NULL_V(space_state, SceneStringNames::get_singleton()->Master);
 	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 	PhysicsDirectSpaceState2D::PointParameters point_params;

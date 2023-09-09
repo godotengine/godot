@@ -303,7 +303,7 @@ void CanvasItem::_notification(int p_what) {
 							parent = parent->get_parent();
 						}
 
-						ERR_FAIL_COND(!viewport);
+						ERR_FAIL_NULL(viewport);
 
 						window = Object::cast_to<Window>(viewport);
 						if (window) {

@@ -5500,13 +5500,13 @@ int TileData::get_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const
 }
 
 bool TileData::is_valid_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const {
-	ERR_FAIL_COND_V(!tile_set, false);
+	ERR_FAIL_NULL_V(tile_set, false);
 
 	return tile_set->is_valid_terrain_peering_bit(terrain_set, p_peering_bit);
 }
 
 TileSet::TerrainsPattern TileData::get_terrains_pattern() const {
-	ERR_FAIL_COND_V(!tile_set, TileSet::TerrainsPattern());
+	ERR_FAIL_NULL_V(tile_set, TileSet::TerrainsPattern());
 
 	TileSet::TerrainsPattern output(tile_set, terrain_set);
 	output.set_terrain(terrain);
@@ -5542,14 +5542,14 @@ float TileData::get_probability() const {
 
 // Custom data
 void TileData::set_custom_data(String p_layer_name, Variant p_value) {
-	ERR_FAIL_COND(!tile_set);
+	ERR_FAIL_NULL(tile_set);
 	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
 	ERR_FAIL_COND_MSG(p_layer_id < 0, vformat("TileSet has no layer with name: %s", p_layer_name));
 	set_custom_data_by_layer_id(p_layer_id, p_value);
 }
 
 Variant TileData::get_custom_data(String p_layer_name) const {
-	ERR_FAIL_COND_V(!tile_set, Variant());
+	ERR_FAIL_NULL_V(tile_set, Variant());
 	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
 	ERR_FAIL_COND_V_MSG(p_layer_id < 0, Variant(), vformat("TileSet has no layer with name: %s", p_layer_name));
 	return get_custom_data_by_layer_id(p_layer_id);

@@ -351,7 +351,7 @@ void ScrollContainer::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			Viewport *viewport = get_viewport();
-			ERR_FAIL_COND(!viewport);
+			ERR_FAIL_NULL(viewport);
 			viewport->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_gui_focus_changed));
 			_reposition_children();
 		} break;

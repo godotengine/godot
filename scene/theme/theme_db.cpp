@@ -353,7 +353,7 @@ void ThemeDB::bind_class_external_item(const StringName &p_class_name, const Str
 }
 
 void ThemeDB::update_class_instance_items(Node *p_instance) {
-	ERR_FAIL_COND(!p_instance);
+	ERR_FAIL_NULL(p_instance);
 
 	// Use the hierarchy to initialize all inherited theme caches. Setters carry the necessary
 	// context and will set the values appropriately.
