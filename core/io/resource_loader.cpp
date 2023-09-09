@@ -1114,7 +1114,7 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 
 	Object *obj = ClassDB::instantiate(ibt);
 
-	ERR_FAIL_COND_V_MSG(obj == nullptr, false, "Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt) + ".");
+	ERR_FAIL_NULL_V_MSG(obj, false, "Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt) + ".");
 
 	Ref<ResourceFormatLoader> crl = Object::cast_to<ResourceFormatLoader>(obj);
 	crl->set_script(s);

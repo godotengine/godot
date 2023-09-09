@@ -144,7 +144,7 @@ StringName ClassDB::get_compatibility_remapped_class(const StringName &p_class) 
 
 StringName ClassDB::_get_parent_class(const StringName &p_class) {
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V_MSG(!ti, StringName(), "Cannot get class '" + String(p_class) + "'.");
+	ERR_FAIL_NULL_V_MSG(ti, StringName(), "Cannot get class '" + String(p_class) + "'.");
 	return ti->inherits;
 }
 
@@ -159,7 +159,7 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 
 	ClassInfo *ti = classes.getptr(p_class);
 
-	ERR_FAIL_COND_V_MSG(!ti, API_NONE, "Cannot get class '" + String(p_class) + "'.");
+	ERR_FAIL_NULL_V_MSG(ti, API_NONE, "Cannot get class '" + String(p_class) + "'.");
 	return ti->api;
 }
 
@@ -180,7 +180,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 	for (const StringName &E : class_list) {
 		ClassInfo *t = classes.getptr(E);
-		ERR_FAIL_COND_V_MSG(!t, 0, "Cannot get class '" + String(E) + "'.");
+		ERR_FAIL_NULL_V_MSG(t, 0, "Cannot get class '" + String(E) + "'.");
 		if (t->api != p_api || !t->exposed) {
 			continue;
 		}
@@ -278,7 +278,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (const StringName &F : snames) {
 				PropertySetGet *psg = t->property_setget.getptr(F);
-				ERR_FAIL_COND_V(!psg, 0);
+				ERR_FAIL_NULL_V(psg, 0);
 
 				hash = hash_murmur3_one_64(F.hash(), hash);
 				hash = hash_murmur3_one_64(psg->setter.hash(), hash);
@@ -336,9 +336,9 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
 		}
-		ERR_FAIL_COND_V_MSG(!ti, nullptr, "Cannot get class '" + String(p_class) + "'.");
+		ERR_FAIL_NULL_V_MSG(ti, nullptr, "Cannot get class '" + String(p_class) + "'.");
 		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, "Class '" + String(p_class) + "' is disabled.");
-		ERR_FAIL_COND_V_MSG(!ti->creation_func, nullptr, "Class '" + String(p_class) + "' or its base class cannot be instantiated.");
+		ERR_FAIL_NULL_V_MSG(ti->creation_func, nullptr, "Class '" + String(p_class) + "' or its base class cannot be instantiated.");
 	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
@@ -354,7 +354,7 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 }
 
 void ClassDB::set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance) {
-	ERR_FAIL_COND(!p_object);
+	ERR_FAIL_NULL(p_object);
 	ClassInfo *ti;
 	{
 		OBJTYPE_RLOCK;
@@ -364,9 +364,9 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 				ti = classes.getptr(compat_classes[p_class]);
 			}
 		}
-		ERR_FAIL_COND_MSG(!ti, "Cannot get class '" + String(p_class) + "'.");
+		ERR_FAIL_NULL_MSG(ti, "Cannot get class '" + String(p_class) + "'.");
 		ERR_FAIL_COND_MSG(ti->disabled, "Class '" + String(p_class) + "' is disabled.");
-		ERR_FAIL_COND_MSG(!ti->gdextension, "Class '" + String(p_class) + "' has no native extension.");
+		ERR_FAIL_NULL_MSG(ti->gdextension, "Class '" + String(p_class) + "' has no native extension.");
 	}
 
 	p_object->_extension = ti->gdextension;
@@ -377,7 +377,7 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+	ERR_FAIL_NULL_V_MSG(ti, false, "Cannot get class '" + String(p_class) + "'.");
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
 		return false;
@@ -621,7 +621,7 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 
 	ClassInfo *type = classes.getptr(p_class);
 
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	if (type->constant_map.has(p_name)) {
 		ERR_FAIL();
@@ -790,7 +790,7 @@ void ClassDB::set_method_error_return_values(const StringName &p_class, const St
 #ifdef DEBUG_METHODS_ENABLED
 	ClassInfo *type = classes.getptr(p_class);
 
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	type->method_error_values[p_method] = p_values;
 #endif
@@ -800,7 +800,7 @@ Vector<Error> ClassDB::get_method_error_return_values(const StringName &p_class,
 #ifdef DEBUG_METHODS_ENABLED
 	ClassInfo *type = classes.getptr(p_class);
 
-	ERR_FAIL_COND_V(!type, Vector<Error>());
+	ERR_FAIL_NULL_V(type, Vector<Error>());
 
 	if (!type->method_error_values.has(p_method)) {
 		return Vector<Error>();
@@ -853,7 +853,7 @@ void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) 
 	OBJTYPE_WLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	StringName sname = p_signal.name;
 
@@ -872,7 +872,7 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	ClassInfo *check = type;
 
@@ -926,7 +926,7 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	String prefix = p_prefix;
 	if (p_indent_depth > 0) {
@@ -939,7 +939,7 @@ void ClassDB::add_property_group(const StringName &p_class, const String &p_name
 void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	String prefix = p_prefix;
 	if (p_indent_depth > 0) {
@@ -956,7 +956,7 @@ void ClassDB::add_property_array_count(const StringName &p_class, const String &
 void ClassDB::add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	type->property_list.push_back(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
 }
@@ -967,14 +967,14 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 	ClassInfo *type = classes.getptr(p_class);
 	lock.read_unlock();
 
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	MethodBind *mb_set = nullptr;
 	if (p_setter) {
 		mb_set = get_method(p_class, p_setter);
 #ifdef DEBUG_METHODS_ENABLED
 
-		ERR_FAIL_COND_MSG(!mb_set, "Invalid setter '" + p_class + "::" + p_setter + "' for property '" + p_pinfo.name + "'.");
+		ERR_FAIL_NULL_MSG(mb_set, "Invalid setter '" + p_class + "::" + p_setter + "' for property '" + p_pinfo.name + "'.");
 
 		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, "Invalid function for setter '" + p_class + "::" + p_setter + " for property '" + p_pinfo.name + "'.");
@@ -986,7 +986,7 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 		mb_get = get_method(p_class, p_getter);
 #ifdef DEBUG_METHODS_ENABLED
 
-		ERR_FAIL_COND_MSG(!mb_get, "Invalid getter '" + p_class + "::" + p_getter + "' for property '" + p_pinfo.name + "'.");
+		ERR_FAIL_NULL_MSG(mb_get, "Invalid getter '" + p_class + "::" + p_getter + "' for property '" + p_pinfo.name + "'.");
 
 		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, "Invalid function for getter '" + p_class + "::" + p_getter + "' for property: '" + p_pinfo.name + "'.");
@@ -1031,7 +1031,7 @@ void ClassDB::add_linked_property(const StringName &p_class, const String &p_pro
 #ifdef TOOLS_ENABLED
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	ERR_FAIL_COND(!type->property_map.has(p_property));
 	ERR_FAIL_COND(!type->property_map.has(p_linked_property));
@@ -1306,7 +1306,7 @@ void ClassDB::set_method_flags(const StringName &p_class, const StringName &p_me
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
-	ERR_FAIL_COND(!check);
+	ERR_FAIL_NULL(check);
 	ERR_FAIL_COND(!check->method_map.has(p_method));
 	check->method_map[p_method]->set_hint_flags(p_flags);
 }
@@ -1374,7 +1374,7 @@ MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p
 	ClassInfo *type = classes.getptr(instance_type);
 	if (!type) {
 		memdelete(bind);
-		ERR_FAIL_COND_V(!type, nullptr);
+		ERR_FAIL_NULL_V(type, nullptr);
 	}
 
 	if (p_compatibility) {
@@ -1406,7 +1406,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 #endif
 
 	OBJTYPE_WLOCK;
-	ERR_FAIL_COND_V(!p_bind, nullptr);
+	ERR_FAIL_NULL_V(p_bind, nullptr);
 	p_bind->set_name(mdname);
 
 	String instance_type = p_bind->get_instance_class();
@@ -1532,7 +1532,7 @@ bool ClassDB::is_class_enabled(const StringName &p_class) {
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+	ERR_FAIL_NULL_V_MSG(ti, false, "Cannot get class '" + String(p_class) + "'.");
 	return !ti->disabled;
 }
 
@@ -1540,7 +1540,7 @@ bool ClassDB::is_class_exposed(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+	ERR_FAIL_NULL_V_MSG(ti, false, "Cannot get class '" + String(p_class) + "'.");
 	return ti->exposed;
 }
 
@@ -1688,7 +1688,7 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 
 void ClassDB::unregister_extension_class(const StringName &p_class) {
 	ClassInfo *c = classes.getptr(p_class);
-	ERR_FAIL_COND_MSG(!c, "Class " + p_class + "does not exist");
+	ERR_FAIL_NULL_MSG(c, "Class '" + String(p_class) + "' does not exist.");
 	for (KeyValue<StringName, MethodBind *> &F : c->method_map) {
 		memdelete(F.value);
 	}

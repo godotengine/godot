@@ -2356,7 +2356,7 @@ void Image::initialize_data(const char **p_xpm) {
 					}
 
 					Color *colorptr = colormap.getptr(pixelstr);
-					ERR_FAIL_COND(!colorptr);
+					ERR_FAIL_NULL(colorptr);
 					uint8_t pixel[4];
 					for (uint32_t i = 0; i < pixel_size; i++) {
 						pixel[i] = CLAMP((*colorptr)[i] * 255, 0, 255);
@@ -2646,23 +2646,23 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
-			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
+			ERR_FAIL_NULL_V(_image_compress_bc_func, ERR_UNAVAILABLE);
 			_image_compress_bc_func(this, p_channels);
 		} break;
 		case COMPRESS_ETC: {
-			ERR_FAIL_COND_V(!_image_compress_etc1_func, ERR_UNAVAILABLE);
+			ERR_FAIL_NULL_V(_image_compress_etc1_func, ERR_UNAVAILABLE);
 			_image_compress_etc1_func(this);
 		} break;
 		case COMPRESS_ETC2: {
-			ERR_FAIL_COND_V(!_image_compress_etc2_func, ERR_UNAVAILABLE);
+			ERR_FAIL_NULL_V(_image_compress_etc2_func, ERR_UNAVAILABLE);
 			_image_compress_etc2_func(this, p_channels);
 		} break;
 		case COMPRESS_BPTC: {
-			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
+			ERR_FAIL_NULL_V(_image_compress_bptc_func, ERR_UNAVAILABLE);
 			_image_compress_bptc_func(this, p_channels);
 		} break;
 		case COMPRESS_ASTC: {
-			ERR_FAIL_COND_V(!_image_compress_astc_func, ERR_UNAVAILABLE);
+			ERR_FAIL_NULL_V(_image_compress_astc_func, ERR_UNAVAILABLE);
 			_image_compress_astc_func(this, p_astc_format);
 		} break;
 		case COMPRESS_MAX: {
@@ -3655,7 +3655,7 @@ void Image::bump_map_to_normal_map(float bump_scale) {
 		const uint8_t *rp = data.ptr();
 		uint8_t *wp = result_image.ptrw();
 
-		ERR_FAIL_COND(!rp);
+		ERR_FAIL_NULL(rp);
 
 		unsigned char *write_ptr = wp;
 		float *read_ptr = (float *)rp;
@@ -3916,7 +3916,7 @@ Error Image::_load_from_buffer(const Vector<uint8_t> &p_array, ImageMemLoadFunc 
 	int buffer_size = p_array.size();
 
 	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!p_loader, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(p_loader, ERR_INVALID_PARAMETER);
 
 	const uint8_t *r = p_array.ptr();
 

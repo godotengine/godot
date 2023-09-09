@@ -190,7 +190,7 @@ public:
 		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
 		t->is_virtual = p_virtual;
@@ -205,7 +205,7 @@ public:
 		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
@@ -218,7 +218,7 @@ public:
 		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
 		t->exposed = false;
 		t->is_virtual = false;
@@ -241,7 +241,7 @@ public:
 		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
@@ -347,7 +347,7 @@ public:
 		GLOBAL_LOCK_FUNCTION;
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
-		ERR_FAIL_COND_V(!bind, nullptr);
+		ERR_FAIL_NULL_V(bind, nullptr);
 
 		if constexpr (std::is_same<typename member_function_traits<M>::return_type, Object *>::value) {
 			bind->set_return_type_is_raw_object_ptr(true);
@@ -360,7 +360,7 @@ public:
 		GLOBAL_LOCK_FUNCTION;
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
-		ERR_FAIL_COND_V(!bind, nullptr);
+		ERR_FAIL_NULL_V(bind, nullptr);
 
 		if constexpr (std::is_same<typename member_function_traits<M>::return_type, Object *>::value) {
 			bind->set_return_type_is_raw_object_ptr(true);

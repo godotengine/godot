@@ -867,7 +867,7 @@ String Object::to_string() {
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
 	//this function is not meant to be used in any of these ways
 	ERR_FAIL_COND(p_script.is_null());
-	ERR_FAIL_COND(!p_instance);
+	ERR_FAIL_NULL(p_instance);
 	ERR_FAIL_COND(script_instance != nullptr || !script.is_null());
 
 	script = p_script;
@@ -1300,7 +1300,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is null.");
 
 	Object *target_object = p_callable.get_object();
-	ERR_FAIL_COND_V_MSG(!target_object, ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+	ERR_FAIL_NULL_V_MSG(target_object, ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1385,7 +1385,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot disconnect from '" + p_signal + "': the provided callable is null.");
 
 	Object *target_object = p_callable.get_object();
-	ERR_FAIL_COND_V_MSG(!target_object, false, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
+	ERR_FAIL_NULL_V_MSG(target_object, false, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1393,7 +1393,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
 		ERR_FAIL_COND_V_MSG(signal_is_valid, false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 	}
-	ERR_FAIL_COND_V_MSG(!s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
+	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
 	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 

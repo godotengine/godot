@@ -333,7 +333,7 @@ IP *(*IP::_create)() = nullptr;
 
 IP *IP::create() {
 	ERR_FAIL_COND_V_MSG(singleton, nullptr, "IP singleton already exist.");
-	ERR_FAIL_COND_V(!_create, nullptr);
+	ERR_FAIL_NULL_V(_create, nullptr);
 	return _create();
 }
 

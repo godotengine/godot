@@ -491,7 +491,7 @@ void GDExtension::register_interface_function(StringName p_function_name, GDExte
 
 GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(StringName p_function_name) {
 	GDExtensionInterfaceFunctionPtr *function = gdextension_interface_functions.getptr(p_function_name);
-	ERR_FAIL_COND_V_MSG(function == nullptr, nullptr, "Attempt to get non-existent interface function: " + p_function_name);
+	ERR_FAIL_NULL_V_MSG(function, nullptr, "Attempt to get non-existent interface function: " + String(p_function_name) + ".");
 	return *function;
 }
 
@@ -525,7 +525,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 }
 
 void GDExtension::close_library() {
-	ERR_FAIL_COND(library == nullptr);
+	ERR_FAIL_NULL(library);
 	OS::get_singleton()->close_dynamic_library(library);
 
 #if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
@@ -543,12 +543,12 @@ bool GDExtension::is_library_open() const {
 }
 
 GDExtension::InitializationLevel GDExtension::get_minimum_library_initialization_level() const {
-	ERR_FAIL_COND_V(library == nullptr, INITIALIZATION_LEVEL_CORE);
+	ERR_FAIL_NULL_V(library, INITIALIZATION_LEVEL_CORE);
 	return InitializationLevel(initialization.minimum_initialization_level);
 }
 
 void GDExtension::initialize_library(InitializationLevel p_level) {
-	ERR_FAIL_COND(library == nullptr);
+	ERR_FAIL_NULL(library);
 	ERR_FAIL_COND_MSG(p_level <= int32_t(level_initialized), vformat("Level '%d' must be higher than the current level '%d'", p_level, level_initialized));
 
 	level_initialized = int32_t(p_level);
@@ -558,7 +558,7 @@ void GDExtension::initialize_library(InitializationLevel p_level) {
 	initialization.initialize(initialization.userdata, GDExtensionInitializationLevel(p_level));
 }
 void GDExtension::deinitialize_library(InitializationLevel p_level) {
-	ERR_FAIL_COND(library == nullptr);
+	ERR_FAIL_NULL(library);
 	ERR_FAIL_COND(p_level > int32_t(level_initialized));
 
 	level_initialized = int32_t(p_level) - 1;
