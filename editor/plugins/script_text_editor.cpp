@@ -2336,7 +2336,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
 
-	symbol_tooltip = memnew(SymbolTooltip(code_editor));
+	symbol_tooltip = memnew(SymbolTooltip(code_editor->get_text_editor()));
 	add_child(symbol_tooltip);
 }
 

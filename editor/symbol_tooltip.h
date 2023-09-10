@@ -41,7 +41,6 @@
 class SymbolTooltip : public PanelContainer {
 	GDCLASS(SymbolTooltip, PanelContainer);
 
-	CodeTextEditor *code_editor = nullptr;
 	CodeEdit *text_editor = nullptr;
 	PanelContainer *panel_container = nullptr;
 	VBoxContainer *layout_container = nullptr;
@@ -72,7 +71,7 @@ protected:
 
 public:
 	void update_symbol_tooltip(const Vector2 &mouse_position, const Ref<Script> &script);
-	SymbolTooltip(CodeTextEditor *code_editor);
+	SymbolTooltip(CodeEdit *p_text_editor);
 	~SymbolTooltip();
 };
 

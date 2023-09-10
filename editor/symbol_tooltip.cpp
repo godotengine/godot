@@ -35,11 +35,8 @@
 #include "modules/gdscript/editor/gdscript_highlighter.h"
 #include <queue>
 
-SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
-		code_editor(code_editor) {
-	// Initialize the tooltip components.
-	text_editor = code_editor->get_text_editor();
-
+SymbolTooltip::SymbolTooltip(CodeEdit *p_text_editor) :
+		text_editor(p_text_editor) {
 	Ref<GDScriptSyntaxHighlighter> highlighter;
 	highlighter.instantiate();
 
@@ -150,7 +147,7 @@ void SymbolTooltip::_close_tooltip() {
 	hide();
 }
 
-void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, const Ref<Script> &script) {
+void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, const Ref<Script> &p_script) {
 	String symbol_word = _get_symbol_word(mouse_position);
 	if (symbol_word.is_empty()) {
 		last_symbol_word = "";
@@ -166,7 +163,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, const R
 		last_symbol_word = symbol_word;
 	}
 
-	ExtendGDScriptParser *parser = _get_script_parser(script);
+	ExtendGDScriptParser *parser = _get_script_parser(p_script);
 	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
 	const lsp::DocumentSymbol *member_symbol = _get_member_symbol(members, symbol_word);
 
