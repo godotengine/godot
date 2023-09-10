@@ -453,10 +453,9 @@ ExtendGDScriptParser *SymbolTooltip::_get_script_parser(const Ref<Script> &p_scr
 // TODO: Need to find the correct symbol instance instead of just the first match.
 const lsp::DocumentSymbol *SymbolTooltip::_get_member_symbol(
 		HashMap<String, const lsp::DocumentSymbol *> &members,
-		const String &symbol_word) {//,
-		//const Vector2 &symbol_position) {
+		const String &symbol_word) { // , const Vector2 &symbol_position) {
 	// Use a queue to implement breadth-first search.
-	std::queue<const lsp::DocumentSymbol*> queue;
+	std::queue<const lsp::DocumentSymbol *> queue;
 
 	// Add all members to the queue.
 	for (const KeyValue<String, const lsp::DocumentSymbol *> &E : members) {
@@ -480,5 +479,5 @@ const lsp::DocumentSymbol *SymbolTooltip::_get_member_symbol(
 		}
 	}
 
-	return nullptr;  // If the symbol is not found, return nullptr.
+	return nullptr; // If the symbol is not found, return nullptr.
 }
