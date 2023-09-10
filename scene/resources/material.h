@@ -238,6 +238,12 @@ public:
 		DEPTH_DRAW_MAX
 	};
 
+	enum DepthTest {
+		DEPTH_TEST_DEFAULT,
+		DEPTH_TEST_INVERTED,
+		DEPTH_TEST_MAX
+	};
+
 	enum CullMode {
 		CULL_BACK,
 		CULL_FRONT,
@@ -330,6 +336,7 @@ private:
 		uint64_t shading_mode : get_num_bits(SHADING_MODE_MAX - 1);
 		uint64_t blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
 		uint64_t depth_draw_mode : get_num_bits(DEPTH_DRAW_MAX - 1);
+		uint64_t depth_test : get_num_bits(DEPTH_TEST_MAX - 1);
 		uint64_t cull_mode : get_num_bits(CULL_MAX - 1);
 		uint64_t diffuse_mode : get_num_bits(DIFFUSE_MAX - 1);
 		uint64_t specular_mode : get_num_bits(SPECULAR_MAX - 1);
@@ -381,6 +388,7 @@ private:
 		mk.detail_uv = detail_uv;
 		mk.blend_mode = blend_mode;
 		mk.depth_draw_mode = depth_draw_mode;
+		mk.depth_test = depth_test;
 		mk.cull_mode = cull_mode;
 		mk.texture_filter = texture_filter;
 		mk.transparency = transparency;
@@ -553,6 +561,7 @@ private:
 	BlendMode blend_mode = BLEND_MODE_MIX;
 	BlendMode detail_blend_mode = BLEND_MODE_MIX;
 	DepthDrawMode depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
+	DepthTest depth_test = DEPTH_TEST_DEFAULT;
 	CullMode cull_mode = CULL_BACK;
 	bool flags[FLAG_MAX] = {};
 	SpecularMode specular_mode = SPECULAR_SCHLICK_GGX;
@@ -688,6 +697,9 @@ public:
 	void set_depth_draw_mode(DepthDrawMode p_mode);
 	DepthDrawMode get_depth_draw_mode() const;
 
+	void set_depth_test(DepthTest p_func);
+	DepthTest get_depth_test() const;
+
 	void set_cull_mode(CullMode p_mode);
 	CullMode get_cull_mode() const;
 
@@ -816,6 +828,7 @@ VARIANT_ENUM_CAST(BaseMaterial3D::DetailUV)
 VARIANT_ENUM_CAST(BaseMaterial3D::Feature)
 VARIANT_ENUM_CAST(BaseMaterial3D::BlendMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::DepthDrawMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::DepthTest)
 VARIANT_ENUM_CAST(BaseMaterial3D::CullMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::Flags)
 VARIANT_ENUM_CAST(BaseMaterial3D::DiffuseMode)

@@ -1886,6 +1886,29 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < rmodes.size(); i++) {
 		const ShaderLanguage::ModeInfo &info = rmodes[i];
 
+		// Special handling for depth_test.
+		if (info.name == "depth_test") {
+			toggles.insert("depth_test_disabled");
+
+			const String begin = String(info.name);
+
+			for (int j = 0; j < info.options.size(); j++) {
+				if (info.options[j] == "disabled") {
+					continue;
+				}
+
+				const String option = String(info.options[j]).capitalize();
+
+				if (!blend_mode_enums.has(begin)) {
+					blend_mode_enums[begin] = vformat("%s:%s", option, j);
+				} else {
+					blend_mode_enums[begin] += "," + vformat("%s:%s", option, j);
+				}
+			}
+
+			continue;
+		}
+
 		if (!info.options.is_empty()) {
 			const String begin = String(info.name);
 
@@ -2549,6 +2572,23 @@ void VisualShader::_update_shader() const {
 		for (int i = 0; i < rmodes.size(); i++) {
 			const ShaderLanguage::ModeInfo &info = rmodes[i];
 			const String temp = String(info.name);
+
+			// Special handling for depth_test.
+			if (temp == "depth_test") {
+				if (flags.has("depth_test_disabled")) {
+					flag_names.push_back("depth_test_disabled");
+				} else {
+					if (!render_mode.is_empty()) {
+						render_mode += ", ";
+					}
+					if (modes.has(temp) && modes[temp] < info.options.size()) {
+						render_mode += temp + "_" + info.options[modes[temp]];
+					} else {
+						render_mode += temp + "_" + info.options[0];
+					}
+				}
+				continue;
+			}
 
 			if (!info.options.is_empty()) {
 				if (!render_mode.is_empty()) {

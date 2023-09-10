@@ -150,7 +150,8 @@ public:
 
 		enum DepthTest {
 			DEPTH_TEST_DISABLED,
-			DEPTH_TEST_ENABLED
+			DEPTH_TEST_ENABLED,
+			DEPTH_TEST_ENABLED_INVERTED,
 		};
 
 		enum CullVariant {
@@ -213,7 +214,8 @@ public:
 		DepthTest depth_test;
 
 		int blend_mode = BLEND_MODE_MIX;
-		int depth_testi = DEPTH_TEST_ENABLED;
+		int depth_test_disabledi = 0;
+		int depth_test_invertedi = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 		int cull_mode = RS::CULL_MODE_BACK;
 
@@ -255,13 +257,13 @@ public:
 			bool has_blend_alpha = uses_blend_alpha;
 			bool has_alpha = has_base_alpha || has_blend_alpha;
 			bool no_depth_draw = depth_draw == DEPTH_DRAW_DISABLED;
-			bool no_depth_test = depth_test == DEPTH_TEST_DISABLED;
+			bool no_depth_test = depth_test != DEPTH_TEST_ENABLED;
 			return has_alpha || has_read_screen_alpha || no_depth_draw || no_depth_test;
 		}
 
 		_FORCE_INLINE_ bool uses_depth_in_alpha_pass() const {
 			bool no_depth_draw = depth_draw == DEPTH_DRAW_DISABLED;
-			bool no_depth_test = depth_test == DEPTH_TEST_DISABLED;
+			bool no_depth_test = depth_test != DEPTH_TEST_ENABLED;
 			return (uses_depth_prepass_alpha || uses_alpha_antialiasing) && !(no_depth_draw || no_depth_test);
 		}
 
