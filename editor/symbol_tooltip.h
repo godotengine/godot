@@ -51,7 +51,11 @@ class SymbolTooltip : public PanelContainer {
 	bool mouse_inside;
 
 	String _get_doc_of_word(const String &symbol_word);
+	String _get_header_content(String symbol_word, const lsp::DocumentSymbol *member_symbol);
+	String _get_body_content(const lsp::DocumentSymbol *member_symbol);
 	void _update_header_label(const String &symbol_word);
+	// String _get_header_content(String symbol_word, bool is_builtin, const lsp::DocumentSymbol *member_symbol);
+	// String _get_body_content(String official_documentation, bool is_builtin, const lsp::DocumentSymbol *member_symbol);
 	void _update_body_label(const String &documentation);
 	Ref<Theme> _create_panel_theme();
 	Ref<Theme> _create_header_label_theme();

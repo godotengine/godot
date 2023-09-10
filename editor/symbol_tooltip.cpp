@@ -172,13 +172,9 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, const R
 		return;
 	}
 
-	// Get the documentation of the word under the mouse cursor.
-	String official_documentation = _get_doc_of_word(symbol_word);
-	String comment_documentation = member_symbol->documentation;
-
 	// TODO: Improve header content. Add the ability to see documentation comments or official documentation.
-	String header_content = member_symbol->reduced_detail.is_empty() ? symbol_word : member_symbol->reduced_detail;
-	String body_content = comment_documentation.replace("\n ", " ");
+	String header_content = _get_header_content(symbol_word, member_symbol);
+	String body_content = _get_body_content(member_symbol);
 	_update_tooltip_content(header_content, body_content);
 	_update_tooltip_size();
 
@@ -197,6 +193,22 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, const R
 	if (!is_visible()) {
 		tooltip_delay->start();
 	}
+}
+
+String SymbolTooltip::_get_header_content(String symbol_word, const lsp::DocumentSymbol *member_symbol) {
+	if (member_symbol->reduced_detail.is_empty()) {
+		return symbol_word;
+	}
+	return member_symbol->reduced_detail;
+}
+
+String SymbolTooltip::_get_body_content(const lsp::DocumentSymbol *member_symbol) {
+	String body_content = "";
+	if (member_symbol != nullptr) {
+		// Append relevant docstrings.
+		body_content += member_symbol->documentation.replace("\n ", " ");
+	}
+	return body_content;
 }
 
 String SymbolTooltip::_get_symbol_word(const Vector2 &mouse_position) {
@@ -286,6 +298,9 @@ String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
 
 		if (class_doc.name == symbol_word) {
 			documentation = class_doc.brief_description.strip_edges(); //class_doc.brief_description + "\n\n" + class_doc.description;
+			if (documentation.is_empty()) {
+				documentation = class_doc.description.strip_edges();
+			}
 			break;
 		}
 
@@ -294,6 +309,17 @@ String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
 
 			if (method_doc.name == symbol_word) {
 				documentation = method_doc.description.strip_edges();
+				break;
+			}
+		}
+
+		for (int i = 0; i < class_doc.constants.size(); ++i) {
+			const DocData::ConstantDoc &constant_doc = class_doc.constants[i];
+
+			if (constant_doc.name == symbol_word) {
+				if (constant_doc.is_value_valid) {
+					documentation = constant_doc.value.strip_edges();
+				}
 				break;
 			}
 		}
