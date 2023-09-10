@@ -513,6 +513,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/file_dialog/display_mode", 0, "Thumbnails,List")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/file_dialog/thumbnail_size", 64, "32,128,16")
 
+	// Import (for glft module)
+	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_DIR, "filesystem/import/blender/blender3_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/import/blender/rpc_port", 6011, "0,65535,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "filesystem/import/blender/rpc_server_uptime", 5, "0,300,1,or_greater,suffix:s", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/import/fbx/fbx2gltf_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+
 	/* Docks */
 
 	// SceneTree
@@ -603,6 +609,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/completion/complete_file_paths", true);
 	_initial_set("text_editor/completion/add_type_hints", false);
 	_initial_set("text_editor/completion/use_single_quotes", false);
+	_initial_set("text_editor/completion/colorize_suggestions", true);
 
 	// Help
 	_initial_set("text_editor/help/show_help_index", true);
@@ -878,13 +885,6 @@ EditorSettings *EditorSettings::get_singleton() {
 	return singleton.ptr();
 }
 
-void EditorSettings::ensure_class_registered() {
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	GDREGISTER_CLASS(EditorSettings); // Otherwise it can't be unserialized.
-	ClassDB::set_current_api(prev_api);
-}
-
 void EditorSettings::create() {
 	// IMPORTANT: create() *must* create a valid EditorSettings singleton,
 	// as the rest of the engine code will assume it. As such, it should never
@@ -894,8 +894,6 @@ void EditorSettings::create() {
 		ERR_PRINT("Can't recreate EditorSettings as it already exists.");
 		return;
 	}
-
-	ensure_class_registered();
 
 	String config_file_path;
 	Ref<ConfigFile> extra_config = memnew(ConfigFile);

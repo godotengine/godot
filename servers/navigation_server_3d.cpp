@@ -155,6 +155,7 @@ void NavigationServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_mesh", "source_geometry_data", "root_node", "callback"), &NavigationServer3D::parse_source_geometry_data, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data, DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data_async", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data_async, DEFVAL(Callable()));
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer3D::free);
 
@@ -203,6 +204,9 @@ NavigationServer3D::NavigationServer3D() {
 
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);
+
+	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
+	GLOBAL_DEF("navigation/baking/thread_model/baking_use_high_priority_threads", true);
 
 #ifdef DEBUG_ENABLED
 	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));

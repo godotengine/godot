@@ -321,6 +321,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		bool used_normal_texture = false;
 		bool used_depth_texture = false;
 		bool used_sss = false;
+		bool used_lightmap = false;
 
 		struct ShadowPass {
 			uint32_t element_from;

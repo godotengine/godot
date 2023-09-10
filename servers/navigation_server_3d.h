@@ -34,7 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
 
-#include "scene/3d/navigation_region_3d.h"
+#include "scene/resources/navigation_mesh.h"
 #include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
@@ -301,14 +301,17 @@ public:
 	/// so this must be called in the main thread.
 	/// Note: This function is not thread safe.
 	virtual void process(real_t delta_time) = 0;
+	virtual void init() = 0;
+	virtual void finish() = 0;
 
 	/// Returns a customized navigation path using a query parameters object
 	virtual void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const;
 
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const = 0;
 
-	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) = 0;
-	virtual void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
+	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) = 0;
+	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
+	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 
 	NavigationServer3D();
 	~NavigationServer3D() override;

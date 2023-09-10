@@ -149,10 +149,10 @@ private:
 	Error _parse_meshes(Ref<GLTFState> p_state);
 	Error _serialize_textures(Ref<GLTFState> p_state);
 	Error _serialize_texture_samplers(Ref<GLTFState> p_state);
-	Error _serialize_images(Ref<GLTFState> p_state, const String &p_path);
+	Error _serialize_images(Ref<GLTFState> p_state);
 	Error _serialize_lights(Ref<GLTFState> p_state);
-	Ref<Image> _parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index);
-	void _parse_image_save_image(Ref<GLTFState> p_state, const String &p_mime_type, int p_index, Ref<Image> p_image);
+	Ref<Image> _parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index, String &r_file_extension);
+	void _parse_image_save_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_file_extension, int p_index, Ref<Image> p_image);
 	Error _parse_images(Ref<GLTFState> p_state, const String &p_base_path);
 	Error _parse_textures(Ref<GLTFState> p_state);
 	Error _parse_texture_samplers(Ref<GLTFState> p_state);
@@ -199,7 +199,7 @@ private:
 	Camera3D *_generate_camera(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	Light3D *_generate_light(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	Node3D *_generate_spatial(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
-	void _assign_scene_names(Ref<GLTFState> p_state);
+	void _assign_node_names(Ref<GLTFState> p_state);
 	template <class T>
 	T _interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values,
 			const float p_time,
@@ -272,7 +272,7 @@ private:
 	PackedByteArray _serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err);
 	Dictionary _serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material);
 	Dictionary _serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material);
-	Error _serialize_version(Ref<GLTFState> p_state);
+	Error _serialize_asset_header(Ref<GLTFState> p_state);
 	Error _serialize_file(Ref<GLTFState> p_state, const String p_path);
 	Error _serialize_gltf_extensions(Ref<GLTFState> p_state) const;
 
@@ -293,9 +293,9 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
-	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, String p_base_path = String());
-	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0);
-	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0);
+	Error append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String());
+	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0);
+	Error append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0);
 
 public:
 	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true);
@@ -304,12 +304,11 @@ public:
 
 public:
 	Error _parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path);
+	Error _parse_asset_header(Ref<GLTFState> p_state);
 	Error _parse_gltf_extensions(Ref<GLTFState> p_state);
 	void _process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root);
-	void _generate_scene_node(Ref<GLTFState> p_state, Node *p_scene_parent,
-			Node3D *p_scene_root,
-			const GLTFNodeIndex p_node_index);
-	void _generate_skeleton_bone_node(Ref<GLTFState> p_state, Node *p_scene_parent, Node3D *p_scene_root, const GLTFNodeIndex p_node_index);
+	void _generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
+	void _generate_skeleton_bone_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player,
 			const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming, const bool p_remove_immutable_tracks);
 	void _convert_mesh_instances(Ref<GLTFState> p_state);
@@ -367,7 +366,7 @@ public:
 	GLTFMeshIndex _convert_mesh_to_gltf(Ref<GLTFState> p_state,
 			MeshInstance3D *p_mesh_instance);
 	void _convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, String p_animation_track_name);
-	Error _serialize(Ref<GLTFState> p_state, const String &p_path);
+	Error _serialize(Ref<GLTFState> p_state);
 	Error _parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess> p_file);
 };
 

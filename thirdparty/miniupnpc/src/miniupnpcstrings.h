@@ -4,7 +4,7 @@
 #include "core/version.h"
 
 #define OS_STRING VERSION_NAME "/1.0"
-#define MINIUPNPC_VERSION_STRING "2.2.4"
+#define MINIUPNPC_VERSION_STRING "2.2.5"
 
 #if 0
 /* according to "UPnP Device Architecture 1.0" */

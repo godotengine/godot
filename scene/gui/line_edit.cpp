@@ -79,7 +79,7 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 		if (caret_mid_grapheme_enabled) {
 			set_caret_column(get_caret_column() - 1);
 		} else {
-			set_caret_column(TS->shaped_text_prev_grapheme_pos(text_rid, get_caret_column()));
+			set_caret_column(TS->shaped_text_prev_character_pos(text_rid, get_caret_column()));
 		}
 	}
 
@@ -112,7 +112,7 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 		if (caret_mid_grapheme_enabled) {
 			set_caret_column(get_caret_column() + 1);
 		} else {
-			set_caret_column(TS->shaped_text_next_grapheme_pos(text_rid, get_caret_column()));
+			set_caret_column(TS->shaped_text_next_character_pos(text_rid, get_caret_column()));
 		}
 	}
 
@@ -211,7 +211,7 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 			delete_char();
 		} else {
 			int cc = caret_column;
-			set_caret_column(TS->shaped_text_next_grapheme_pos(text_rid, caret_column));
+			set_caret_column(TS->shaped_text_next_character_pos(text_rid, caret_column));
 			delete_text(cc, caret_column);
 		}
 	}
@@ -341,13 +341,15 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				selection.drag_attempt = false;
-
-				if ((caret_column < selection.begin) || (caret_column > selection.end) || !selection.enabled) {
-					deselect();
-					selection.start_column = caret_column;
-					selection.creating = true;
-				} else if (selection.enabled && !selection.double_click) {
-					selection.drag_attempt = true;
+				if (!selection.double_click) {
+					bool is_inside_sel = selection.enabled && caret_column >= selection.begin && caret_column <= selection.end;
+					if (drag_and_drop_selection_enabled && is_inside_sel) {
+						selection.drag_attempt = true;
+					} else {
+						deselect();
+						selection.start_column = caret_column;
+						selection.creating = true;
+					}
 				}
 			}
 
@@ -477,6 +479,11 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
 			accept_event();
+			return;
+		}
+
+		if (k->is_action("ui_cancel")) {
+			callable_mp((Control *)this, &Control::release_focus).call_deferred();
 			return;
 		}
 
@@ -1324,6 +1331,9 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 	}
 
 	int ofs = ceil(TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset));
+	if (!caret_mid_grapheme_enabled) {
+		ofs = TS->shaped_text_closest_character_pos(text_rid, ofs);
+	}
 	set_caret_column(ofs);
 }
 
@@ -1503,11 +1513,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	text = text.left(p_from_column) + text.substr(p_to_column);
 	_shape();
 
-	caret_column -= CLAMP(caret_column - p_from_column, 0, p_to_column - p_from_column);
-
-	if (caret_column >= text.length()) {
-		caret_column = text.length();
-	}
+	set_caret_column(caret_column - CLAMP(caret_column - p_from_column, 0, p_to_column - p_from_column));
 
 	if (!text_changed_dirty) {
 		if (is_inside_tree()) {
@@ -2224,6 +2230,14 @@ bool LineEdit::is_deselect_on_focus_loss_enabled() const {
 	return deselect_on_focus_loss_enabled;
 }
 
+void LineEdit::set_drag_and_drop_selection_enabled(const bool p_enabled) {
+	drag_and_drop_selection_enabled = p_enabled;
+}
+
+bool LineEdit::is_drag_and_drop_selection_enabled() const {
+	return drag_and_drop_selection_enabled;
+}
+
 void LineEdit::set_right_icon(const Ref<Texture2D> &p_icon) {
 	if (right_icon == p_icon) {
 		return;
@@ -2301,9 +2315,6 @@ void LineEdit::_shape() {
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
-	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-	}
 	TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, t));
 
 	full_width = TS->shaped_text_get_size(text_rid).x;
@@ -2570,6 +2581,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &LineEdit::is_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &LineEdit::set_deselect_on_focus_loss_enabled);
 	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &LineEdit::is_deselect_on_focus_loss_enabled);
+	ClassDB::bind_method(D_METHOD("set_drag_and_drop_selection_enabled", "enable"), &LineEdit::set_drag_and_drop_selection_enabled);
+	ClassDB::bind_method(D_METHOD("is_drag_and_drop_selection_enabled"), &LineEdit::is_drag_and_drop_selection_enabled);
 	ClassDB::bind_method(D_METHOD("set_right_icon", "icon"), &LineEdit::set_right_icon);
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
@@ -2638,6 +2651,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");

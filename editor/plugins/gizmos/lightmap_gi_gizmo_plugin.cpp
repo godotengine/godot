@@ -48,7 +48,7 @@ LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 
 	add_material("lightmap_probe_material", mat);
 
-	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoLightmapGI"), SNAME("EditorIcons")));
+	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoLightmapGI")));
 }
 
 bool LightmapGIGizmoPlugin::has_gizmo(Node3D *p_spatial) {

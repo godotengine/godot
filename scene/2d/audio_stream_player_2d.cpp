@@ -116,10 +116,10 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 	//check if any area is diverting sound into a bus
 	Ref<World2D> world_2d = get_world_2d();
-	ERR_FAIL_COND_V(world_2d.is_null(), SNAME("Master"));
+	ERR_FAIL_COND_V(world_2d.is_null(), SceneStringNames::get_singleton()->Master);
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
-	ERR_FAIL_COND_V(space_state == nullptr, SNAME("Master"));
+	ERR_FAIL_COND_V(space_state == nullptr, SceneStringNames::get_singleton()->Master);
 	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 	PhysicsDirectSpaceState2D::PointParameters point_params;
@@ -316,7 +316,7 @@ StringName AudioStreamPlayer2D::get_bus() const {
 			return default_bus;
 		}
 	}
-	return SNAME("Master");
+	return SceneStringNames::get_singleton()->Master;
 }
 
 void AudioStreamPlayer2D::set_autoplay(bool p_enable) {

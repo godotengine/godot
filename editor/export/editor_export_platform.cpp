@@ -42,6 +42,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_export_plugin.h"
@@ -72,12 +73,12 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	p_log->add_text(" - ");
 	if (p_err == OK) {
 		if (get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
-			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
+			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("StatusWarning")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
 			p_log->add_text(TTR("Completed with warnings."));
 			has_messages = true;
 		} else {
-			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
+			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("StatusSuccess")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
 			p_log->add_text(TTR("Completed successfully."));
 			if (msg_count > 0) {
@@ -85,7 +86,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 			}
 		}
 	} else {
-		p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
+		p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("StatusError")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 		p_log->add_text(" ");
 		p_log->add_text(TTR("Failed."));
 		has_messages = true;
@@ -103,15 +104,15 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 
 			switch (msg.msg_type) {
 				case EditorExportPlatform::EXPORT_MESSAGE_INFO: {
-					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
+					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_WARNING: {
-					icon = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
-					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
+					icon = EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("Warning"));
+					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_ERROR: {
-					icon = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
-					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor"));
+					icon = EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("Error"));
+					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 				} break;
 				default:
 					break;
@@ -141,7 +142,9 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 	String host = EDITOR_GET("network/debug/remote_host");
 	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
 
-	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
+	if (EditorSettings::get_singleton()->has_setting("export/android/use_wifi_for_remote_debug") && EDITOR_GET("export/android/use_wifi_for_remote_debug")) {
+		host = EDITOR_GET("export/android/wifi_remote_debug_host");
+	} else if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
 		host = "localhost";
 	}
 
@@ -234,7 +237,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 
 	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
 	for (int i = 0; i < pad; i++) {
-		pd->f->store_8(Math::rand() % 256);
+		pd->f->store_8(0);
 	}
 
 	// Store MD5 of original file.
@@ -291,9 +294,9 @@ Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
 	if (EditorNode::get_singleton()->get_main_screen_control()->is_layout_rtl()) {
-		return theme->get_icon(SNAME("PlayBackwards"), SNAME("EditorIcons"));
+		return theme->get_icon(SNAME("PlayBackwards"), EditorStringName(EditorIcons));
 	} else {
-		return theme->get_icon(SNAME("Play"), SNAME("EditorIcons"));
+		return theme->get_icon(SNAME("Play"), EditorStringName(EditorIcons));
 	}
 }
 
@@ -498,7 +501,7 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 	//initial export plugin callback
 	for (int i = 0; i < export_plugins.size(); i++) {
 		export_plugins.write[i]->set_export_preset(p_preset);
-		if (export_plugins[i]->get_script_instance()) { //script based
+		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(export_plugins[i], _export_begin)) {
 			PackedStringArray features_psa;
 			for (const String &feature : features) {
 				features_psa.push_back(feature);
@@ -513,7 +516,7 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
-		if (export_plugins[i]->get_script_instance()) {
+		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(export_plugins[i], _export_end)) {
 			export_plugins.write[i]->_export_end_script();
 		}
 		export_plugins.write[i]->_export_end();
@@ -1223,7 +1226,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			bool do_export = true;
 			for (int i = 0; i < export_plugins.size(); i++) {
-				if (export_plugins[i]->get_script_instance()) { //script based
+				if (GDVIRTUAL_IS_OVERRIDDEN_PTR(export_plugins[i], _export_file)) {
 					export_plugins.write[i]->_export_file_script(path, type, features_psa);
 				} else {
 					export_plugins.write[i]->_export_file(path, type, features);
@@ -1657,7 +1660,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	int header_padding = _get_pad(PCK_PADDING, f->get_position());
 	for (int i = 0; i < header_padding; i++) {
-		f->store_8(Math::rand() % 256);
+		f->store_8(0);
 	}
 
 	uint64_t file_base = f->get_position();
@@ -1967,6 +1970,10 @@ Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const Strin
 		return FAILED;
 	}
 	return OK;
+}
+
+void EditorExportPlatform::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_os_name"), &EditorExportPlatform::get_os_name);
 }
 
 EditorExportPlatform::EditorExportPlatform() {

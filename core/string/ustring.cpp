@@ -1493,9 +1493,9 @@ String String::num(double p_num, int p_decimals) {
 
 	if (p_decimals < 0) {
 		p_decimals = 14;
-		const double abs_num = ABS(p_num);
+		const double abs_num = Math::abs(p_num);
 		if (abs_num > 10) {
-			// We want to align the digits to the above sane default, so we only
+			// We want to align the digits to the above reasonable default, so we only
 			// need to subtract log10 for numbers with a positive power of ten.
 			p_decimals -= (int)floor(log10(abs_num));
 		}
@@ -1750,7 +1750,7 @@ Vector<uint8_t> String::hex_decode() const {
 
 void String::print_unicode_error(const String &p_message, bool p_critical) const {
 	if (p_critical) {
-		print_error(vformat("Unicode parsing error, some characters were replaced with � (U+FFFD): %s", p_message));
+		print_error(vformat(U"Unicode parsing error, some characters were replaced with � (U+FFFD): %s", p_message));
 	} else {
 		print_error(vformat("Unicode parsing error: %s", p_message));
 	}
@@ -3635,6 +3635,23 @@ String String::repeat(int p_count) const {
 	return new_string;
 }
 
+String String::reverse() const {
+	int len = length();
+	if (len <= 1) {
+		return *this;
+	}
+	String new_string;
+	new_string.resize(len + 1);
+
+	const char32_t *src = ptr();
+	char32_t *dst = new_string.ptrw();
+	for (int i = 0; i < len; i++) {
+		dst[i] = src[len - i - 1];
+	}
+	dst[len] = _null;
+	return new_string;
+}
+
 String String::left(int p_len) const {
 	if (p_len < 0) {
 		p_len = length() + p_len;
@@ -3648,7 +3665,9 @@ String String::left(int p_len) const {
 		return *this;
 	}
 
-	return substr(0, p_len);
+	String s;
+	s.copy_from_unchecked(&get_data()[0], p_len);
+	return s;
 }
 
 String String::right(int p_len) const {
@@ -3664,7 +3683,9 @@ String String::right(int p_len) const {
 		return *this;
 	}
 
-	return substr(length() - p_len);
+	String s;
+	s.copy_from_unchecked(&get_data()[length() - p_len], p_len);
+	return s;
 }
 
 char32_t String::unicode_at(int p_idx) const {
@@ -4869,8 +4890,8 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					double value = values[value_index];
-					bool is_negative = (value < 0);
-					String str = String::num(ABS(value), min_decimals);
+					bool is_negative = signbit(value);
+					String str = String::num(Math::abs(value), min_decimals);
 					const bool is_finite = Math::is_finite(value);
 
 					// Pad decimals out.
@@ -4932,7 +4953,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					String str = "(";
 					for (int i = 0; i < count; i++) {
 						double val = vec[i];
-						String number_str = String::num(ABS(val), min_decimals);
+						String number_str = String::num(Math::abs(val), min_decimals);
 						const bool is_finite = Math::is_finite(val);
 
 						// Pad decimals out.

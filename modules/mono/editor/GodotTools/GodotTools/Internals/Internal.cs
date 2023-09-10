@@ -54,6 +54,9 @@ namespace GodotTools.Internals
 
         public static void EditorRunStop() => godot_icall_Internal_EditorRunStop();
 
+        public static void EditorPlugin_AddControlToEditorRunBar(Control control) =>
+            godot_icall_Internal_EditorPlugin_AddControlToEditorRunBar(control.NativeInstance);
+
         public static void ScriptEditorDebugger_ReloadScripts() =>
             godot_icall_Internal_ScriptEditorDebugger_ReloadScripts();
 
@@ -137,6 +140,8 @@ namespace GodotTools.Internals
 
         private static partial void godot_icall_Internal_EditorRunStop();
 
+        private static partial void godot_icall_Internal_EditorPlugin_AddControlToEditorRunBar(IntPtr p_control);
+
         private static partial void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts();
 
         private static partial void godot_icall_Internal_CodeCompletionRequest(int kind, in godot_string scriptFile,
@@ -151,7 +156,13 @@ namespace GodotTools.Internals
             bool restartIfChanged, out godot_variant result);
 
         public static partial void
-            godot_icall_Globals_EditorShortcut(in godot_string setting, out godot_variant result);
+            godot_icall_Globals_EditorDefShortcut(in godot_string setting, in godot_string name, Key keycode, godot_bool physical, out godot_variant result);
+
+        public static partial void
+            godot_icall_Globals_EditorGetShortcut(in godot_string setting, out godot_variant result);
+
+        public static partial void
+            godot_icall_Globals_EditorShortcutOverride(in godot_string setting, in godot_string feature, Key keycode, godot_bool physical);
 
         public static partial void godot_icall_Globals_TTR(in godot_string text, out godot_string dest);
 

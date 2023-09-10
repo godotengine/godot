@@ -482,6 +482,10 @@ void GDScript::_clear_doc() {
 	docs.clear();
 	doc = DocData::ClassDoc();
 }
+
+String GDScript::get_class_icon_path() const {
+	return simplified_icon_path;
+}
 #endif
 
 bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update) {
@@ -1728,6 +1732,25 @@ Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool
 	return Variant::NIL;
 }
 
+void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
+	Variant property = (Dictionary)p_property;
+	const Variant *args[1] = { &property };
+
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._validate_property);
+		if (E) {
+			Callable::CallError err;
+			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+			if (err.error == Callable::CallError::CALL_OK) {
+				p_property = PropertyInfo::from_dict(property);
+				return;
+			}
+		}
+		sptr = sptr->_base;
+	}
+}
+
 void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	// exported members, not done yet!
 
@@ -1793,7 +1816,8 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		p_properties->push_back(sptr->get_class_category());
 #endif // TOOLS_ENABLED
 
-		for (const PropertyInfo &prop : props) {
+		for (PropertyInfo &prop : props) {
+			validate_property(prop);
 			p_properties->push_back(prop);
 		}
 
@@ -1897,14 +1921,23 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 	return Variant();
 }
 
-void GDScriptInstance::notification(int p_notification) {
+void GDScriptInstance::notification(int p_notification, bool p_reversed) {
 	//notification is not virtual, it gets called at ALL levels just like in C.
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
 
+	List<GDScript *> pl;
 	GDScript *sptr = script.ptr();
 	while (sptr) {
-		HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._notification);
+		if (p_reversed) {
+			pl.push_back(sptr);
+		} else {
+			pl.push_front(sptr);
+		}
+		sptr = sptr->_base;
+	}
+	for (GDScript *sc : pl) {
+		HashMap<StringName, GDScriptFunction *>::Iterator E = sc->member_functions.find(GDScriptLanguage::get_singleton()->strings._notification);
 		if (E) {
 			Callable::CallError err;
 			E->value->call(this, args, 1, err);
@@ -1912,7 +1945,6 @@ void GDScriptInstance::notification(int p_notification) {
 				//print error about notification call
 			}
 		}
-		sptr = sptr->_base;
 	}
 }
 
@@ -2527,13 +2559,6 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	 * Before changing this function, please ask the current maintainer of EditorFileSystem.
 	 */
 
-	if (r_icon_path) {
-		if (c->icon_path.is_empty() || c->icon_path.is_absolute_path()) {
-			*r_icon_path = c->icon_path.simplify_path();
-		} else if (c->icon_path.is_relative_path()) {
-			*r_icon_path = p_path.get_base_dir().path_join(c->icon_path).simplify_path();
-		}
-	}
 	if (r_base_type) {
 		const GDScriptParser::ClassNode *subclass = c;
 		String path = p_path;
@@ -2601,6 +2626,9 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 			}
 		}
 	}
+	if (r_icon_path) {
+		*r_icon_path = c->simplified_icon_path;
+	}
 	return c->identifier != nullptr ? String(c->identifier->name) : String();
 }
 
@@ -2616,6 +2644,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._set = StaticCString::create("_set");
 	strings._get = StaticCString::create("_get");
 	strings._get_property_list = StaticCString::create("_get_property_list");
+	strings._validate_property = StaticCString::create("_validate_property");
 	strings._property_can_revert = StaticCString::create("_property_can_revert");
 	strings._property_get_revert = StaticCString::create("_property_get_revert");
 	strings._script_source = StaticCString::create("script/source");
@@ -2694,6 +2723,11 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Error err;
 	Ref<GDScript> scr = GDScriptCache::get_full_script(p_path, err, "", p_cache_mode == CACHE_MODE_IGNORE);
+
+	if (err && scr.is_valid()) {
+		// If !scr.is_valid(), the error was likely from scr->load_source_code(), which already generates an error.
+		ERR_PRINT_ED(vformat(R"(Failed to load script "%s" with error "%s".)", p_path, error_names[err]));
+	}
 
 	if (r_error) {
 		// Don't fail loading because of parsing error.

@@ -35,6 +35,7 @@
 #include "core/math/math_funcs.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -201,16 +202,22 @@ void ThemeEditorPreview::_notification(int p_what) {
 			}
 
 			connect("visibility_changed", callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
-			[[fallthrough]];
-		}
+		} break;
+
+		case NOTIFICATION_READY: {
+			List<Ref<Theme>> preview_themes;
+			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
+			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
-			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
+			picker_button->set_icon(get_editor_theme_icon(SNAME("ColorPick")));
 
 			theme_cache.preview_picker_overlay = get_theme_stylebox(SNAME("preview_picker_overlay"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_overlay_color = get_theme_color(SNAME("preview_picker_overlay_color"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_label = get_theme_stylebox(SNAME("preview_picker_label"), SNAME("ThemeEditor"));
-			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
-			theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("EditorFonts"));
+			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
+			theme_cache.font_size = get_theme_font_size(SNAME("font_size"), EditorStringName(EditorFonts));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -246,9 +253,8 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_container = memnew(ScrollContainer);
 	preview_body->add_child(preview_container);
 
-	MarginContainer *preview_root = memnew(MarginContainer);
+	preview_root = memnew(MarginContainer);
 	preview_container->add_child(preview_root);
-	preview_root->set_theme(ThemeDB::get_singleton()->get_default_theme());
 	preview_root->set_clip_contents(true);
 	preview_root->set_custom_minimum_size(Size2(450, 0) * EDSCALE);
 	preview_root->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -282,7 +288,7 @@ void DefaultThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
+			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 		} break;
 	}
 }
@@ -485,7 +491,7 @@ void SceneThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			reload_scene_button->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+			reload_scene_button->set_icon(get_editor_theme_icon(SNAME("Reload")));
 		} break;
 	}
 }

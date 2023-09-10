@@ -34,7 +34,7 @@
 #include "scene/3d/cpu_particles_3d.h"
 
 CPUParticles3DGizmoPlugin::CPUParticles3DGizmoPlugin() {
-	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoCPUParticles3D"), SNAME("EditorIcons")));
+	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoCPUParticles3D")));
 }
 
 bool CPUParticles3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {

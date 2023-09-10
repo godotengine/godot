@@ -113,6 +113,14 @@ String GDScriptWarning::get_message() const {
 			return R"(The "@static_unload" annotation is redundant because the file does not have a class with static variables.)";
 		case REDUNDANT_AWAIT:
 			return R"("await" keyword not needed in this case, because the expression isn't a coroutine nor a signal.)";
+		case REDUNDANT_FOR_VARIABLE_TYPE:
+			CHECK_SYMBOLS(3);
+			if (symbols[1] == symbols[2]) {
+				return vformat(R"(The for loop iterator "%s" already has inferred type "%s", the specified type is redundant.)", symbols[0], symbols[1]);
+			} else {
+				return vformat(R"(The for loop iterator "%s" has inferred type "%s" but its supertype "%s" is specified.)", symbols[0], symbols[1], symbols[2]);
+			}
+			break;
 		case ASSERT_ALWAYS_TRUE:
 			return "Assert statement is redundant because the expression is always true.";
 		case ASSERT_ALWAYS_FALSE:
@@ -136,6 +144,12 @@ String GDScriptWarning::get_message() const {
 		case CONFUSABLE_IDENTIFIER:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" has misleading characters and might be confused with something else.)", symbols[0]);
+		case CONFUSABLE_LOCAL_DECLARATION:
+			CHECK_SYMBOLS(2);
+			return vformat(R"(The %s "%s" is declared below in the parent block.)", symbols[0], symbols[1]);
+		case CONFUSABLE_LOCAL_USAGE:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The identifier "%s" will be shadowed below in the block.)", symbols[0]);
 		case INFERENCE_ON_VARIANT:
 			CHECK_SYMBOLS(1);
 			return vformat("The %s type is being inferred from a Variant value, so it will be typed as Variant.", symbols[0]);
@@ -203,6 +217,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"STATIC_CALLED_ON_INSTANCE",
 		"REDUNDANT_STATIC_UNLOAD",
 		"REDUNDANT_AWAIT",
+		"REDUNDANT_FOR_VARIABLE_TYPE",
 		"ASSERT_ALWAYS_TRUE",
 		"ASSERT_ALWAYS_FALSE",
 		"INTEGER_DIVISION",
@@ -213,6 +228,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"DEPRECATED_KEYWORD",
 		"RENAMED_IN_GODOT_4_HINT",
 		"CONFUSABLE_IDENTIFIER",
+		"CONFUSABLE_LOCAL_DECLARATION",
+		"CONFUSABLE_LOCAL_USAGE",
 		"INFERENCE_ON_VARIANT",
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",

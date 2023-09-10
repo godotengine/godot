@@ -75,7 +75,7 @@ bool VideoStreamPlayback::is_playing() const {
 }
 
 void VideoStreamPlayback::set_paused(bool p_paused) {
-	GDVIRTUAL_CALL(_is_playing, p_paused);
+	GDVIRTUAL_CALL(_set_paused, p_paused);
 }
 
 bool VideoStreamPlayback::is_paused() const {

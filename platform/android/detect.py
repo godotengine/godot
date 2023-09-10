@@ -170,10 +170,6 @@ def configure(env: "Environment"):
     env["RANLIB"] = compiler_path + "/llvm-ranlib"
     env["AS"] = compiler_path + "/clang"
 
-    # Disable exceptions on template builds
-    if not env.editor_build:
-        env.Append(CXXFLAGS=["-fno-exceptions"])
-
     env.Append(
         CCFLAGS=(
             "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()

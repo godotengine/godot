@@ -31,6 +31,7 @@
 #ifndef CODE_EDIT_H
 #define CODE_EDIT_H
 
+#include "core/object/script_language.h"
 #include "scene/gui/text_edit.h"
 
 class CodeEdit : public TextEdit {
@@ -286,6 +287,11 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	String _get_text_for_symbol_lookup_bind_compat_73196();
+	static void _bind_compatibility_methods();
+#endif
 
 	virtual void _update_theme_item_cache() override;
 

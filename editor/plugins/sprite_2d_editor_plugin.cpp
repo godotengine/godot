@@ -346,11 +346,8 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Convert to MeshInstance2D"));
-	ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, mesh_instance, true, false);
-	ur->add_do_reference(mesh_instance);
-	ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", mesh_instance, node, false, false);
-	ur->add_undo_reference(node);
-	ur->commit_action();
+	SceneTreeDock::get_singleton()->replace_node(node, mesh_instance);
+	ur->commit_action(false);
 }
 
 void Sprite2DEditor::_convert_to_polygon_2d_node() {
@@ -404,11 +401,8 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Convert to Polygon2D"));
-	ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, polygon_2d_instance, true, false);
-	ur->add_do_reference(polygon_2d_instance);
-	ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", polygon_2d_instance, node, false, false);
-	ur->add_undo_reference(node);
-	ur->commit_action();
+	SceneTreeDock::get_singleton()->replace_node(node, polygon_2d_instance);
+	ur->commit_action(false);
 }
 
 void Sprite2DEditor::_create_collision_polygon_2d_node() {
@@ -509,12 +503,12 @@ void Sprite2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_theme_icon(SNAME("Sprite2D"), SNAME("EditorIcons")));
+			options->set_icon(get_editor_theme_icon(SNAME("Sprite2D")));
 
-			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_theme_icon(SNAME("MeshInstance2D"), SNAME("EditorIcons")));
-			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_theme_icon(SNAME("Polygon2D"), SNAME("EditorIcons")));
-			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_COLLISION_POLY_2D, get_theme_icon(SNAME("CollisionPolygon2D"), SNAME("EditorIcons")));
-			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D, get_theme_icon(SNAME("LightOccluder2D"), SNAME("EditorIcons")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_editor_theme_icon(SNAME("MeshInstance2D")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_editor_theme_icon(SNAME("Polygon2D")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_COLLISION_POLY_2D, get_editor_theme_icon(SNAME("CollisionPolygon2D")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D, get_editor_theme_icon(SNAME("LightOccluder2D")));
 		} break;
 	}
 }

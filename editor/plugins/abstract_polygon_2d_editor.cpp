@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -157,9 +158,9 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			button_create->set_icon(get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
-			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
-			button_delete->set_icon(get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
+			button_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
+			button_edit->set_icon(get_editor_theme_icon(SNAME("CurveEdit")));
+			button_delete->set_icon(get_editor_theme_icon(SNAME("CurveDelete")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -498,7 +499,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
 	// All polygon points are sharp, so use the sharp handle icon
-	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
+	const Ref<Texture2D> handle = get_editor_theme_icon(SNAME("EditorPathSharpHandle"));
 
 	const Vertex active_point = get_active_point();
 	const int n_polygons = _get_polygon_count();
@@ -571,12 +572,12 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 			p_overlay->draw_texture(handle, point - handle->get_size() * 0.5, overlay_modulate);
 
 			if (vertex == hover_point) {
-				Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-				int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+				Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
+				int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 				String num = String::num(vertex.vertex);
 				Size2 num_size = font->get_string_size(num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 				const float outline_size = 4;
-				Color font_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+				Color font_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 				Color outline_color = font_color.inverted();
 				p_overlay->draw_string_outline(font, point - num_size * 0.5, num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 				p_overlay->draw_string(font, point - num_size * 0.5, num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
@@ -585,7 +586,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 	}
 
 	if (edge_point.valid()) {
-		Ref<Texture2D> add_handle = get_theme_icon(SNAME("EditorHandleAdd"), SNAME("EditorIcons"));
+		Ref<Texture2D> add_handle = get_editor_theme_icon(SNAME("EditorHandleAdd"));
 		p_overlay->draw_texture(add_handle, edge_point.pos - add_handle->get_size() * 0.5);
 	}
 }

@@ -1634,7 +1634,7 @@
 
     stem_edge->pos = base_edge->pos + fitted_width;
 
-    FT_TRACE5(( "  CJKLINK: edge %ld @%d (opos=%.2f) linked to %.2f,"
+    FT_TRACE5(( "  CJKLINK: edge %td @%d (opos=%.2f) linked to %.2f,"
                 " dist was %.2f, now %.2f\n",
                 stem_edge - hints->axis[dim].edges, stem_edge->fpos,
                 (double)stem_edge->opos / 64,
@@ -1858,7 +1858,7 @@
           continue;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
-        FT_TRACE5(( "  CJKBLUE: edge %ld @%d (opos=%.2f) snapped to %.2f,"
+        FT_TRACE5(( "  CJKBLUE: edge %td @%d (opos=%.2f) snapped to %.2f,"
                     " was %.2f\n",
                     edge1 - edges, edge1->fpos, (double)edge1->opos / 64,
                     (double)blue->fit / 64, (double)edge1->pos / 64 ));
@@ -1922,7 +1922,7 @@
       /* this should not happen, but it's better to be safe */
       if ( edge2->blue_edge )
       {
-        FT_TRACE5(( "ASSERTION FAILED for edge %ld\n", edge2-edges ));
+        FT_TRACE5(( "ASSERTION FAILED for edge %td\n", edge2 - edges ));
 
         af_cjk_align_linked_edge( hints, dim, edge2, edge );
         edge->flags |= AF_EDGE_DONE;

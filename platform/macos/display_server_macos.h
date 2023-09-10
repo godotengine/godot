@@ -171,6 +171,7 @@ private:
 	int current_layout = 0;
 	bool keyboard_layout_dirty = true;
 
+	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	float display_max_scale = 1.f;
@@ -240,6 +241,8 @@ public:
 	bool get_is_resizing() const;
 	void reparent_check(WindowID p_window);
 	WindowID _get_focused_window_or_popup() const;
+	void mouse_enter_window(WindowID p_window);
+	void mouse_exit_window(WindowID p_window);
 
 	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);

@@ -145,11 +145,14 @@ public:
 	void obstacle_set_position(RID p_obstacle, Vector3 p_position) override {}
 	void obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) override {}
 	void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) override {}
-	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override {}
-	void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
+	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override {}
+	void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
+	void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	void free(RID p_object) override {}
 	void set_active(bool p_active) override {}
 	void process(real_t delta_time) override {}
+	void init() override {}
+	void finish() override {}
 	NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override { return NavigationUtilities::PathQueryResult(); }
 	int get_process_info(ProcessInfo p_info) const override { return 0; }
 	void set_debug_enabled(bool p_enabled) {}

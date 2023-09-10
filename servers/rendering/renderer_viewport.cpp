@@ -1163,6 +1163,17 @@ void RendererViewport::viewport_set_msaa_3d(RID p_viewport, RS::ViewportMSAA p_m
 	_configure_3d_render_buffers(viewport);
 }
 
+void RendererViewport::viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr_2d) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	if (viewport->use_hdr_2d == p_use_hdr_2d) {
+		return;
+	}
+	viewport->use_hdr_2d = p_use_hdr_2d;
+	RSG::texture_storage->render_target_set_use_hdr(viewport->render_target, p_use_hdr_2d);
+}
+
 void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -1183,6 +1194,7 @@ void RendererViewport::viewport_set_use_taa(RID p_viewport, bool p_use_taa) {
 		return;
 	}
 	viewport->use_taa = p_use_taa;
+	num_viewports_with_motion_vectors += p_use_taa ? 1 : -1;
 	_configure_3d_render_buffers(viewport);
 }
 
@@ -1367,6 +1379,10 @@ bool RendererViewport::free(RID p_rid) {
 			RendererSceneOcclusionCull::get_singleton()->remove_buffer(p_rid);
 		}
 
+		if (viewport->use_taa) {
+			num_viewports_with_motion_vectors--;
+		}
+
 		viewport_owner.free(p_rid);
 
 		return true;
@@ -1420,6 +1436,10 @@ int RendererViewport::get_total_primitives_drawn() const {
 }
 int RendererViewport::get_total_draw_calls_used() const {
 	return total_draw_calls_used;
+}
+
+int RendererViewport::get_num_viewports_with_motion_vectors() const {
+	return num_viewports_with_motion_vectors;
 }
 
 RendererViewport::RendererViewport() {

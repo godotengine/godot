@@ -321,7 +321,10 @@ struct ObjectGDExtension {
 	GDExtensionClassFreePropertyList free_property_list;
 	GDExtensionClassPropertyCanRevert property_can_revert;
 	GDExtensionClassPropertyGetRevert property_get_revert;
+#ifndef DISABLE_DEPRECATED
 	GDExtensionClassNotification notification;
+#endif // DISABLE_DEPRECATED
+	GDExtensionClassNotification2 notification2;
 	GDExtensionClassToString to_string;
 	GDExtensionClassReference reference;
 	GDExtensionClassReference unreference;
@@ -382,6 +385,7 @@ private:                                                                        
 	friend class ::ClassDB;                                                                                                                      \
                                                                                                                                                  \
 public:                                                                                                                                          \
+	typedef m_class self_type;                                                                                                                   \
 	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;                  \
 	virtual String get_class() const override {                                                                                                  \
 		if (_get_extension()) {                                                                                                                  \
@@ -485,7 +489,7 @@ protected:                                                                      
 		if (!p_reversed) {                                                                                                                       \
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                                 \
 		}                                                                                                                                        \
-		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));                \
+		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY));      \
 		if (!_is_gpl_reversed()) {                                                                                                               \
 			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                          \
 		}                                                                                                                                        \
@@ -557,6 +561,8 @@ class ScriptInstance;
 
 class Object {
 public:
+	typedef Object self_type;
+
 	enum ConnectFlags {
 		CONNECT_DEFERRED = 1,
 		CONNECT_PERSIST = 2, // hint for scene to save this connection

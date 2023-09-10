@@ -9,7 +9,7 @@
 		Accessing the settings can be done using the following methods, such as:
 		[codeblocks]
 		[gdscript]
-		var settings = get_editor_interface().get_editor_settings()
+		var settings = EditorInterface.get_editor_settings()
 		# `settings.set("some/property", 10)` also works as this class overrides `_set()` internally.
 		settings.set_setting("some/property", 10)
 		# `settings.get("some/property")` also works as this class overrides `_get()` internally.
@@ -17,7 +17,7 @@
 		var list_of_settings = settings.get_property_list()
 		[/gdscript]
 		[csharp]
-		EditorSettings settings = GetEditorInterface().GetEditorSettings();
+		EditorSettings settings = EditorInterface.Singleton.GetEditorSettings();
 		// `settings.set("some/property", value)` also works as this class overrides `_set()` internally.
 		settings.SetSetting("some/property", Value);
 		// `settings.get("some/property", value)` also works as this class overrides `_get()` internally.
@@ -295,7 +295,7 @@
 			The grid division bias to use in the 3D editor. Negative values will cause small grid divisions to appear earlier, whereas positive values will cause small grid divisions to appear later.
 		</member>
 		<member name="editors/3d/grid_division_level_max" type="int" setter="" getter="">
-			The largest grid division to use in the 3D editor. Together with [member editors/3d/primary_grid_steps], this determines how large the grid divisions can be. The grid divisions will not be able to get larger than [code]primary_grid_steps ^ grid_division_level_max[/code] units. By default, when [member editors/3d/primary_grid_steps] is [code]8[/code], this means grid divisions cannot get larger than [code]64[/code] uints each (so primary grid lines are [code]512[/code] uints apart), no matter how far away the camera is from the grid.
+			The largest grid division to use in the 3D editor. Together with [member editors/3d/primary_grid_steps], this determines how large the grid divisions can be. The grid divisions will not be able to get larger than [code]primary_grid_steps ^ grid_division_level_max[/code] units. By default, when [member editors/3d/primary_grid_steps] is [code]8[/code], this means grid divisions cannot get larger than [code]64[/code] units each (so primary grid lines are [code]512[/code] units apart), no matter how far away the camera is from the grid.
 		</member>
 		<member name="editors/3d/grid_division_level_min" type="int" setter="" getter="">
 			The smallest grid division to use in the 3D editor. Together with [member editors/3d/primary_grid_steps], this determines how small the grid divisions can be. The grid divisions will not be able to get smaller than [code]primary_grid_steps ^ grid_division_level_min[/code] units. By default, this means grid divisions cannot get smaller than 1 unit each, no matter how close the camera is from the grid.
@@ -476,6 +476,22 @@
 		</member>
 		<member name="filesystem/file_dialog/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the editor's file dialogs (in pixels). See also [member docks/filesystem/thumbnail_size].
+		</member>
+		<member name="filesystem/import/blender/blender3_path" type="String" setter="" getter="">
+			The path to the directory containing the Blender executable used for converting the Blender 3D scene files [code].blend[/code] to glTF 2.0 format during import. Blender 3.0 or later is required.
+			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/blender/enabled].
+		</member>
+		<member name="filesystem/import/blender/rpc_port" type="int" setter="" getter="">
+			The port number used for Remote Procedure Call (RPC) communication with Godot's created process of the blender executable.
+			Setting this to 0 effectively disables communication with Godot and the blender process, making performance slower.
+		</member>
+		<member name="filesystem/import/blender/rpc_server_uptime" type="float" setter="" getter="">
+			The maximum idle uptime (in seconds) of the Blender process.
+			This prevents Godot from having to create a new process for each import within the given seconds.
+		</member>
+		<member name="filesystem/import/fbx/fbx2gltf_path" type="String" setter="" getter="">
+			The path to the FBX2glTF executable used for converting Autodesk FBX 3D scene files [code].fbx[/code] to glTF 2.0 format during import.
+			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/fbx/enabled].
 		</member>
 		<member name="filesystem/on_save/compress_binary_resources" type="bool" setter="" getter="">
 			If [code]true[/code], uses lossless compression for binary resources.
@@ -841,6 +857,9 @@
 		</member>
 		<member name="text_editor/completion/code_complete_enabled" type="bool" setter="" getter="">
 			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. If [code]false[/code], you can still trigger completion manually by pressing [kbd]Ctrl + Space[/kbd] ([kbd]Cmd + Space[/kbd] on macOS).
+		</member>
+		<member name="text_editor/completion/colorize_suggestions" type="bool" setter="" getter="">
+			If [code]true[/code] enables the coloring for some items in the autocompletion suggestions, like vector components.
 		</member>
 		<member name="text_editor/completion/complete_file_paths" type="bool" setter="" getter="">
 			If [code]true[/code], provides autocompletion suggestions for file paths in methods such as [code]load()[/code] and [code]preload()[/code].

@@ -75,37 +75,37 @@ VBoxContainer *EditorFileDialog::get_vbox() {
 void EditorFileDialog::_update_theme_item_cache() {
 	ConfirmationDialog::_update_theme_item_cache();
 
-	theme_cache.parent_folder = get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons"));
-	theme_cache.forward_folder = get_theme_icon(SNAME("Forward"), SNAME("EditorIcons"));
-	theme_cache.back_folder = get_theme_icon(SNAME("Back"), SNAME("EditorIcons"));
-	theme_cache.reload = get_theme_icon(SNAME("Reload"), SNAME("EditorIcons"));
-	theme_cache.toggle_hidden = get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons"));
-	theme_cache.favorite = get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons"));
-	theme_cache.mode_thumbnails = get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons"));
-	theme_cache.mode_list = get_theme_icon(SNAME("FileList"), SNAME("EditorIcons"));
-	theme_cache.favorites_up = get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons"));
-	theme_cache.favorites_down = get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons"));
+	theme_cache.parent_folder = get_editor_theme_icon(SNAME("ArrowUp"));
+	theme_cache.forward_folder = get_editor_theme_icon(SNAME("Forward"));
+	theme_cache.back_folder = get_editor_theme_icon(SNAME("Back"));
+	theme_cache.reload = get_editor_theme_icon(SNAME("Reload"));
+	theme_cache.toggle_hidden = get_editor_theme_icon(SNAME("GuiVisibilityVisible"));
+	theme_cache.favorite = get_editor_theme_icon(SNAME("Favorites"));
+	theme_cache.mode_thumbnails = get_editor_theme_icon(SNAME("FileThumbnail"));
+	theme_cache.mode_list = get_editor_theme_icon(SNAME("FileList"));
+	theme_cache.favorites_up = get_editor_theme_icon(SNAME("MoveUp"));
+	theme_cache.favorites_down = get_editor_theme_icon(SNAME("MoveDown"));
 
-	theme_cache.folder = get_theme_icon(SNAME("Folder"), SNAME("EditorIcons"));
+	theme_cache.folder = get_editor_theme_icon(SNAME("Folder"));
 	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
-	theme_cache.action_copy = get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons"));
-	theme_cache.action_delete = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
-	theme_cache.filesystem = get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons"));
+	theme_cache.action_copy = get_editor_theme_icon(SNAME("ActionCopy"));
+	theme_cache.action_delete = get_editor_theme_icon(SNAME("Remove"));
+	theme_cache.filesystem = get_editor_theme_icon(SNAME("Filesystem"));
 
-	theme_cache.folder_medium_thumbnail = get_theme_icon(SNAME("FolderMediumThumb"), SNAME("EditorIcons"));
-	theme_cache.file_medium_thumbnail = get_theme_icon(SNAME("FileMediumThumb"), SNAME("EditorIcons"));
-	theme_cache.folder_big_thumbnail = get_theme_icon(SNAME("FolderBigThumb"), SNAME("EditorIcons"));
-	theme_cache.file_big_thumbnail = get_theme_icon(SNAME("FileBigThumb"), SNAME("EditorIcons"));
+	theme_cache.folder_medium_thumbnail = get_editor_theme_icon(SNAME("FolderMediumThumb"));
+	theme_cache.file_medium_thumbnail = get_editor_theme_icon(SNAME("FileMediumThumb"));
+	theme_cache.folder_big_thumbnail = get_editor_theme_icon(SNAME("FolderBigThumb"));
+	theme_cache.file_big_thumbnail = get_editor_theme_icon(SNAME("FileBigThumb"));
 
-	theme_cache.progress[0] = get_theme_icon("Progress1", SNAME("EditorIcons"));
-	theme_cache.progress[1] = get_theme_icon("Progress2", SNAME("EditorIcons"));
-	theme_cache.progress[2] = get_theme_icon("Progress3", SNAME("EditorIcons"));
-	theme_cache.progress[3] = get_theme_icon("Progress4", SNAME("EditorIcons"));
-	theme_cache.progress[4] = get_theme_icon("Progress5", SNAME("EditorIcons"));
-	theme_cache.progress[5] = get_theme_icon("Progress6", SNAME("EditorIcons"));
-	theme_cache.progress[6] = get_theme_icon("Progress7", SNAME("EditorIcons"));
-	theme_cache.progress[7] = get_theme_icon("Progress8", SNAME("EditorIcons"));
+	theme_cache.progress[0] = get_editor_theme_icon("Progress1");
+	theme_cache.progress[1] = get_editor_theme_icon("Progress2");
+	theme_cache.progress[2] = get_editor_theme_icon("Progress3");
+	theme_cache.progress[3] = get_editor_theme_icon("Progress4");
+	theme_cache.progress[4] = get_editor_theme_icon("Progress5");
+	theme_cache.progress[5] = get_editor_theme_icon("Progress6");
+	theme_cache.progress[6] = get_editor_theme_icon("Progress7");
+	theme_cache.progress[7] = get_editor_theme_icon("Progress8");
 }
 
 void EditorFileDialog::_notification(int p_what) {
@@ -269,12 +269,14 @@ void EditorFileDialog::update_dir() {
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
 		case FILE_MODE_OPEN_FILES:
+			file->set_text("");
 			set_ok_button_text(TTR("Open"));
 			break;
+		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_OPEN_DIR:
+			file->set_text("");
 			set_ok_button_text(TTR("Select Current Folder"));
 			break;
-		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_SAVE_FILE:
 			// FIXME: Implement, or refactor to avoid duplication with set_mode
 			break;
@@ -522,7 +524,11 @@ void EditorFileDialog::_item_selected(int p_item) {
 	if (!d["dir"]) {
 		file->set_text(d["name"]);
 		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
-	} else if (mode == FILE_MODE_OPEN_DIR) {
+
+		// FILE_MODE_OPEN_ANY can alternate this text depending on what's selected.
+		set_ok_button_text(TTR("Open"));
+	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
+		file->set_text("");
 		set_ok_button_text(TTR("Select This Folder"));
 	}
 
@@ -560,12 +566,13 @@ void EditorFileDialog::_items_clear_selection(const Vector2 &p_pos, MouseButton 
 			get_ok_button()->set_disabled(!item_list->is_anything_selected());
 			break;
 
+		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_OPEN_DIR:
+			file->set_text("");
 			get_ok_button()->set_disabled(false);
 			set_ok_button_text(TTR("Select Current Folder"));
 			break;
 
-		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_SAVE_FILE:
 			// FIXME: Implement, or refactor to avoid duplication with set_mode
 			break;
@@ -823,7 +830,7 @@ void EditorFileDialog::update_file_list() {
 			}
 		} else if (!dir_access->current_is_hidden()) {
 			String full_path = cdir == "res://" ? item : dir_access->get_current_dir() + "/" + item;
-			if (dir_access->current_is_dir() && (!EditorFileSystem::_should_skip_directory(full_path) || Engine::get_singleton()->is_project_manager_hint())) {
+			if (dir_access->current_is_dir() && (Engine::get_singleton()->is_project_manager_hint() || !EditorFileSystem::_should_skip_directory(full_path))) {
 				dirs.push_back(item);
 			} else {
 				files.push_back(item);
@@ -1528,7 +1535,7 @@ void EditorFileDialog::_recent_selected(int p_idx) {
 }
 
 void EditorFileDialog::_go_up() {
-	dir_access->change_dir(get_current_dir().get_base_dir());
+	dir_access->change_dir(get_current_dir().trim_suffix("/").get_base_dir());
 	update_file_list();
 	update_dir();
 	_push_history();

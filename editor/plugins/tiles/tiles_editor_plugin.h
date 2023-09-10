@@ -101,6 +101,9 @@ public:
 	void set_sorting_option(int p_option);
 	List<int> get_sorted_sources(const Ref<TileSet> p_tile_set) const;
 
+	// Misc.
+	void display_tile_set_editor_panel();
+
 	static void draw_selection_rect(CanvasItem *p_ci, const Rect2 &p_rect, const Color &p_color = Color(1.0, 1.0, 1.0));
 
 	TilesEditorUtils();
@@ -112,9 +115,11 @@ class TileMapEditorPlugin : public EditorPlugin {
 
 	TileMapEditor *editor = nullptr;
 	Button *button = nullptr;
-	TileMap *tile_map = nullptr;
+	ObjectID tile_map_id;
 
 	bool tile_map_changed_needs_update = false;
+	ObjectID edited_tileset; // The TileSet associated with the TileMap.
+
 	void _tile_map_changed();
 	void _update_tile_map();
 
@@ -129,6 +134,7 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
+	void hide_editor();
 	bool is_editor_visible() const;
 
 	TileMapEditorPlugin();
@@ -141,12 +147,17 @@ class TileSetEditorPlugin : public EditorPlugin {
 	TileSetEditor *editor = nullptr;
 	Button *button = nullptr;
 
+	ObjectID edited_tileset;
+
 public:
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
+	ObjectID get_edited_tileset() const;
+
 	TileSetEditorPlugin();
+	~TileSetEditorPlugin();
 };
 
 #endif // TILES_EDITOR_PLUGIN_H

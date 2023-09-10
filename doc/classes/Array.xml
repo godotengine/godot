@@ -257,7 +257,7 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Removes the first occurrence of a value from the array. If the value does not exist in the array, nothing happens. To remove an element by index, use [method remove_at] instead.
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 				[b]Note:[/b] Do not erase entries while iterating over the array.
 			</description>
@@ -383,8 +383,8 @@
 			<param index="0" name="position" type="int" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]). Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 				[b]Note:[/b] On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.
 			</description>
 		</method>
@@ -462,7 +462,7 @@
 		<method name="pick_random" qualifiers="const">
 			<return type="Variant" />
 			<description>
-				Returns a random value from the target array.
+				Returns a random value from the target array. Prints an error and returns [code]null[/code] if the array is empty.
 				[codeblocks]
 				[gdscript]
 				var array: Array[int] = [1, 2, 3, 4]
@@ -534,7 +534,7 @@
 			<param index="0" name="position" type="int" />
 			<description>
 				Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use [method erase] instead.
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 				[b]Note:[/b] [param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array without returning the value, use [code]arr.resize(arr.size() - 1)[/code].
 			</description>
@@ -543,7 +543,8 @@
 			<return type="int" />
 			<param index="0" name="size" type="int" />
 			<description>
-				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code].
+				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code]. Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				[b]Note:[/b] This method acts in-place and doesn't return a modified array.
 			</description>
 		</method>
 		<method name="reverse">

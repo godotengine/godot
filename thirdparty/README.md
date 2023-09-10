@@ -154,38 +154,81 @@ Files extracted from upstream source:
 
 ## fonts
 
-- `NotoSans*.woff2`, `NotoNaskhArabicUI_*.woff2`:
-  * Upstream: https://github.com/googlefonts/noto-fonts
-  * Version: v2017-10-24-phase3-second-cleanup
-  * License: OFL-1.1
-  * Comment: Use UI font variant if available, because it has tight vertical metrics and
-    good for UI.
-- `JetBrainsMono_Regular.woff2`:
-	* Upstream: https://github.com/JetBrains/JetBrainsMono
-  * Version: 2.242
-  * License: OFL-1.1
 - `DroidSans*.woff2`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
   * License: Apache 2.0
+- `JetBrainsMono_Regular.woff2`:
+  * Upstream: https://github.com/JetBrains/JetBrainsMono
+  * Version: 2.304 (cd5227bd1f61dff3bbd6c814ceaf7ffd95e947d9, 2023)
+  * License: OFL-1.1
+- `NotoNaskhArabicUI*.woff2`:
+  * Upstream: https://github.com/notofonts/arabic
+  * Version: 2.014 (133ccaebf922ca080a7eef22998611ac3c242df9, 2022)
+  * License: OFL-1.1
+- `NotoSans*.woff2`:
+  * Upstream: https://github.com/notofonts/latin-greek-cyrillic
+  * Version: 2.012 (9ea0c8d37bff0c0067b03777f40aa04f2bf78f99, 2023)
+  * License: OFL-1.1
+- `NotoSansBengali*.woff2`:
+  * Upstream: https://github.com/notofonts/bengali
+  * Version: 2.003 (020a5701f6fc6a363d5eccbae45e37714c0ad686, 2022)
+  * License: OFL-1.1
+- `NotoSansDevanagari*.woff2`:
+  * Upstream: https://github.com/notofonts/devanagari
+  * Version: 2.004 (f8f27e49da0ec9e5e38ecf3628671f05b24dd955, 2023)
+  * License: OFL-1.1
+- `NotoSansGeorgian*.woff2`:
+  * Upstream: https://github.com/notofonts/georgian
+  * Version: 2.002 (243ec9aa1d4ec58cc42120d30faac1a102fbfeb9, 2022)
+  * License: OFL-1.1
+- `NotoSansHebrew*.woff2`:
+  * Upstream: https://github.com/notofonts/hebrew
+  * Version: 2.003 (caa7ab0614fb5b37cc003d9bf3d7d3e765331110, 2022)
+  * License: OFL-1.1
+- `NotoSansMalayalam*.woff2`:
+  * Upstream: https://github.com/notofonts/malayalam
+  * Version: 2.104 (0fd65e553a6af3dc1c09ed39dfe8933e01c17b32, 2023)
+  * License: OFL-1.1
+- `NotoSansOriya*.woff2`:
+  * Upstream: https://github.com/notofonts/oriya
+  * Version: 2.005 (9377f242b247df12d0bf4cecd93b9c4b18036fbd, 2023)
+  * License: OFL-1.1
+- `NotoSansSinhala*.woff2`:
+  * Upstream: https://github.com/notofonts/sinhala
+  * Version: 2.006 (66e5a2ed9797e575222d6e7c5b3710c7bf68be79, 2022)
+  * License: OFL-1.1
+- `NotoSansTamil*.woff2`:
+  * Upstream: https://github.com/notofonts/tamil
+  * Version: 2.004 (f34a08d1ae3fa810581f63410296d971bdcd62dc, 2023)
+  * License: OFL-1.1
+- `NotoSansTelugu*.woff2`:
+  * Upstream: https://github.com/notofonts/telugu
+  * Version: 2.004 (68a6a8170cba5b2e9b45029ef36994961e8f614c, 2023)
+  * License: OFL-1.1
+- `NotoSansThai*.woff2`:
+  * Upstream: https://github.com/notofonts/thai
+  * Version: 2.001 (09af528011390f35abf15cf86068dae208f512c4, 2022)
+  * License: OFL-1.1
 - `OpenSans_SemiBold.woff2`:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
-- All fonts are converted from the `.ttf` sources using `https://github.com/google/woff2` tool.
+- All fonts are converted from the unhinted `.ttf` sources using `https://github.com/google/woff2` tool.
+- Comment: Use UI font variant if available, because it has tight vertical metrics and good for UI.
 
 
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.13.1 (e4586d960f339cf75e2e0b34aee30a0ed8353c0d, 2023)
+- Version: 2.13.2 (920c5502cc3ddda88f6c7d85ee834ac611bb11cc, 2023)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
 
 - `src/` folder, minus the `dlg` and `tools` subfolders
   * These files can be removed: `.dat`, `.diff`, `.mk`, `.rc`, `README*`
-  * In `src/gzip/`, remove zlib files (everything but `ftgzip.c` and `ftzconf.h`)
+  * In `src/gzip/`, keep only `ftgzip.c`
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
@@ -250,7 +293,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 8.0.0 (b4305532a7746422e0b615eee6304119c1092fd8, 2023)
+- Version: 8.1.1 (1d665c2b521512cdd56964138fc601debd1f1177, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -299,6 +342,24 @@ Files extracted from upstream source:
 - `jpge*.{c,h}`
 
 
+## libktx
+
+- Upstream: https://github.com/KhronosGroup/KTX-Software
+- Version: 4.1.0 (d7255fe73cd53b856731ceb9f2c279181d0dbbca, 2023)
+- License: Apache-2.0
+
+Files extracted from upstream source:
+
+- `LICENSE.md`
+- `include/*`
+- `lib/dfdutils/{LICENSES/Apache-2.0.txt,KHR,*.c,*.h,*.inl}`
+- `lib/{basis_sgd.h,basis_transcode.cpp,checkheader.c,filestream.*,formatsize.h,gl_format.h,hashlist.c,ktxint.h,memstream.*,swap.c,texture*,uthash.h,vk_format.h,vkformat_enum.h}`
+- `utils/unused.h`
+- `other_include/KHR/*`
+
+Some Godot-specific changes are applied via `godot.patch`.
+
+
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
@@ -315,14 +376,14 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.38 (0a158f3506502dfa23edfc42790dfaed82efba17, 2022)
+- Version: 1.6.40 (f135775ad4e5d4408d2e12ffcc71bb36e6b48551, 2023)
 - License: libpng/zlib
 
 Files extracted from upstream source:
 
 - all .c and .h files of the main directory, except from
   `example.c` and `pngtest.c`
-- the arm/ folder
+- `arm/`, `intel/` and `powerpc/` folders
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
 - `LICENSE`
 
@@ -356,7 +417,7 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.3.0 (b557776962a3dcc985d83bd4ed94e1e2e50d0fa2, 2022)
+- Version: 1.3.1 (fd7bb21c0cb56e8a82e9bfa376164b842f433f3b, 2023)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -370,7 +431,7 @@ Patch `godot-node-debug-fix.patch` workarounds shadowing of godot's Node class i
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.18.3 (981743de6fcdbe672e482b6fd724d31d0a0d2476, 2023)
+- Version: 2.28.4 (aeb97a18913a86f051afab11b2c92c6be0c2eb83, 2023)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -378,9 +439,8 @@ File extracted from upstream release tarball:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/` except `config_psa.h` and `psa_util.h`.
 - All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
 - The `LICENSE` file.
-- Applied the patch in `patches/1453.diff` to fix UWP build (upstream PR:
-  https://github.com/ARMmbed/mbedtls/pull/1453).
-  Applied the patch in `patches/windows-arm64-hardclock.diff`
+- Applied the patch in `patches/windows-arm64-hardclock.diff`.
+  Applied the patch in `aesni-no-arm-intrinsics.patch` to fix MSVC ARM build.
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 - Added the file `godot_module_mbedtls_config.h` to customize the build configuration when bundling the full library.
@@ -422,7 +482,7 @@ to solve some MSVC warnings. See the patches in the `patches` directory.
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
-- Version: 2.2.4 (7d1d8bc3868b08ad003bad235eee57562b95b76d, 2022)
+- Version: 2.2.5 (58837ef586278d18cbebee50be758835ed4be79a, 2023)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -440,7 +500,7 @@ that file when upgrading.
 ## minizip
 
 - Upstream: https://www.zlib.net
-- Version: 1.2.13 (zlib contrib, 2022)
+- Version: 1.3 (zlib contrib, 2023)
 - License: zlib
 
 Files extracted from the upstream source:
@@ -713,7 +773,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.9.0 (a744006aa1edb918bacf0a415d0a57ca058e25f4, 2023)
+- Version: 0.10.0 (b8c605583fd7de73209a93a1238e1ba72cce2e8f, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -813,12 +873,12 @@ Files extracted from upstream source:
 ## zlib
 
 - Upstream: https://www.zlib.net
-- Version: 1.2.13 (2022)
+- Version: 1.3 (2023)
 - License: zlib
 
 Files extracted from upstream source:
 
-- All `*.c` and `*.h` files
+- All `*.c` and `*.h` files, minus `infback.c`
 - `LICENSE`
 
 

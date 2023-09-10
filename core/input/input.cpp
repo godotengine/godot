@@ -113,6 +113,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
 	ClassDB::bind_method(D_METHOD("get_joy_guid", "device"), &Input::get_joy_guid);
+	ClassDB::bind_method(D_METHOD("get_joy_info", "device"), &Input::get_joy_info);
 	ClassDB::bind_method(D_METHOD("should_ignore_device", "vendor_id", "product_id"), &Input::should_ignore_device);
 	ClassDB::bind_method(D_METHOD("get_connected_joypads"), &Input::get_connected_joypads);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
@@ -284,7 +285,7 @@ bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	return action_state.has(p_action) && action_state[p_action].pressed && (p_exact ? action_state[p_action].exact : true);
+	return action_state.has(p_action) && action_state[p_action].pressed > 0 && (p_exact ? action_state[p_action].exact : true);
 }
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
@@ -437,11 +438,12 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
-void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid) {
+void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid, Dictionary p_joypad_info) {
 	_THREAD_SAFE_METHOD_
 	Joypad js;
 	js.name = p_connected ? p_name : "";
 	js.uid = p_connected ? p_guid : "";
+	js.info = p_connected ? p_joypad_info : Dictionary();
 
 	if (p_connected) {
 		String uidname = p_guid;
@@ -473,7 +475,8 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 	}
 	joy_names[p_idx] = js;
 
-	emit_signal(SNAME("joy_connection_changed"), p_idx, p_connected);
+	// Ensure this signal is emitted on the main thread, as some platforms (e.g. Linux) call this from a different thread.
+	call_deferred("emit_signal", SNAME("joy_connection_changed"), p_idx, p_connected);
 }
 
 Vector3 Input::get_gravity() const {
@@ -694,23 +697,30 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
 		if (InputMap::get_singleton()->event_is_action(p_event, E.key)) {
 			Action &action = action_state[E.key];
-			// If not echo and action pressed state has changed
-			if (!p_event->is_echo() && is_action_pressed(E.key, false) != p_event->is_action_pressed(E.key)) {
+			bool is_pressed = false;
+
+			if (!p_event->is_echo()) {
 				if (p_event->is_action_pressed(E.key)) {
-					action.pressed = true;
-					action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
-					action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+					action.pressed++;
+					is_pressed = true;
+					if (action.pressed == 1) {
+						action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+						action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+					}
 				} else {
-					action.pressed = false;
-					action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
-					action.released_process_frame = Engine::get_singleton()->get_process_frames();
+					if (action.pressed == 1) {
+						action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+						action.released_process_frame = Engine::get_singleton()->get_process_frames();
+					}
+					action.pressed = MAX(action.pressed - 1, 0);
 				}
-				action.strength = 0.0f;
-				action.raw_strength = 0.0f;
 				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
 			}
-			action.strength = p_event->get_action_strength(E.key);
-			action.raw_strength = p_event->get_action_raw_strength(E.key);
+
+			if (is_pressed || action.pressed == 0) {
+				action.strength = p_event->get_action_strength(E.key);
+				action.raw_strength = p_event->get_action_raw_strength(E.key);
+			}
 		}
 	}
 
@@ -828,9 +838,11 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	// Create or retrieve existing action.
 	Action &action = action_state[p_action];
 
-	action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
-	action.pressed = true;
+	action.pressed++;
+	if (action.pressed == 1) {
+		action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+		action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+	}
 	action.strength = p_strength;
 	action.raw_strength = p_strength;
 	action.exact = true;
@@ -840,9 +852,11 @@ void Input::action_release(const StringName &p_action) {
 	// Create or retrieve existing action.
 	Action &action = action_state[p_action];
 
-	action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.released_process_frame = Engine::get_singleton()->get_process_frames();
-	action.pressed = false;
+	action.pressed--;
+	if (action.pressed == 0) {
+		action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+		action.released_process_frame = Engine::get_singleton()->get_process_frames();
+	}
 	action.strength = 0.0f;
 	action.raw_strength = 0.0f;
 	action.exact = true;
@@ -1003,8 +1017,10 @@ void Input::release_pressed_events() {
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
-	for (const KeyValue<StringName, Input::Action> &E : action_state) {
-		if (E.value.pressed) {
+	for (KeyValue<StringName, Input::Action> &E : action_state) {
+		if (E.value.pressed > 0) {
+			// Make sure the action is really released.
+			E.value.pressed = 1;
 			action_release(E.key);
 		}
 	}
@@ -1497,6 +1513,11 @@ bool Input::is_joy_known(int p_device) {
 String Input::get_joy_guid(int p_device) const {
 	ERR_FAIL_COND_V(!joy_names.has(p_device), "");
 	return joy_names[p_device].uid;
+}
+
+Dictionary Input::get_joy_info(int p_device) const {
+	ERR_FAIL_COND_V(!joy_names.has(p_device), Dictionary());
+	return joy_names[p_device].info;
 }
 
 bool Input::should_ignore_device(int p_vendor_id, int p_product_id) const {

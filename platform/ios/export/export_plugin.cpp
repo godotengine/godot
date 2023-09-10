@@ -38,7 +38,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 #include "modules/modules_enabled.gen.h" // For mono and svg.
@@ -177,7 +179,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/launch_screens_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
@@ -284,7 +286,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$short_version") != -1) {
 			strnew += lines[i].replace("$short_version", p_preset->get("application/short_version")) + "\n";
 		} else if (lines[i].find("$version") != -1) {
-			strnew += lines[i].replace("$version", p_preset->get("application/version")) + "\n";
+			strnew += lines[i].replace("$version", p_preset->get_version("application/version")) + "\n";
 		} else if (lines[i].find("$signature") != -1) {
 			strnew += lines[i].replace("$signature", p_preset->get("application/signature")) + "\n";
 		} else if (lines[i].find("$team_id") != -1) {
@@ -1984,10 +1986,8 @@ bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorEx
 		}
 	}
 
-	const String etc_error = test_etc2();
-	if (!etc_error.is_empty()) {
+	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 		valid = false;
-		err += etc_error;
 	}
 
 	if (!err.is_empty()) {
@@ -2014,11 +2014,11 @@ Ref<ImageTexture> EditorExportPlatformIOS::get_option_icon(int p_index) const {
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
 			if (devices[p_index].simulator) {
-				icon = theme->get_icon("IOSSimulator", "EditorIcons");
+				icon = theme->get_icon("IOSSimulator", EditorStringName(EditorIcons));
 			} else if (devices[p_index].wifi) {
-				icon = theme->get_icon("IOSDeviceWireless", "EditorIcons");
+				icon = theme->get_icon("IOSDeviceWireless", EditorStringName(EditorIcons));
 			} else {
-				icon = theme->get_icon("IOSDeviceWired", "EditorIcons");
+				icon = theme->get_icon("IOSDeviceWired", EditorStringName(EditorIcons));
 			}
 		}
 	}

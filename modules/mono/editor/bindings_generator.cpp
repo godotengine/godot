@@ -82,6 +82,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_STATIC_METHOD_GETINSTANCE "GetPtr"
 #define CS_METHOD_CALL "Call"
 #define CS_PROPERTY_SINGLETON "Singleton"
+#define CS_SINGLETON_INSTANCE_SUFFIX "Instance"
 #define CS_METHOD_INVOKE_GODOT_CLASS_METHOD "InvokeGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_METHOD "HasGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_SIGNAL "HasGodotClassSignal"
@@ -116,7 +117,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 // Types that will be ignored by the generator and won't be available in C#.
 // This must be kept in sync with `ignored_types` in csharp_script.cpp
-const Vector<String> ignored_types = { "PhysicsServer2DExtension", "PhysicsServer3DExtension" };
+const Vector<String> ignored_types = {};
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
@@ -147,7 +148,7 @@ static String fix_doc_description(const String &p_bbcode) {
 			.strip_edges();
 }
 
-String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype) {
+String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal) {
 	// Based on the version in EditorHelp
 
 	if (p_bbcode.is_empty()) {
@@ -304,11 +305,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				_append_xml_enum(xml_output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "constant") {
 				_append_xml_constant(xml_output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "param") {
+				_append_xml_param(xml_output, link_target, p_is_signal);
 			} else if (link_tag == "theme_item") {
 				// We do not declare theme_items in any way in C#, so there is nothing to reference
 				_append_xml_undeclared(xml_output, link_target);
-			} else if (link_tag == "param") {
-				_append_xml_undeclared(xml_output, snake_to_camel_case(link_target, false));
 			}
 
 			pos = brk_end + 1;
@@ -366,9 +367,19 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				}
 
 				if (target_itype) {
-					xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-					xml_output.append(target_itype->proxy_name);
-					xml_output.append("\"/>");
+					if ((!p_itype || p_itype->api_type == ClassDB::API_CORE) && target_itype->api_type == ClassDB::API_EDITOR) {
+						// Editor references in core documentation cannot be resolved,
+						// handle as standard codeblock.
+						_log("Cannot reference editor type '%s' in documentation for core type '%s'\n",
+								target_itype->proxy_name.utf8().get_data(), p_itype ? p_itype->proxy_name.utf8().get_data() : "@GlobalScope");
+						xml_output.append("<c>");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append("</c>");
+					} else {
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append("\"/>");
+					}
 				} else {
 					ERR_PRINT("Cannot resolve type reference in documentation: '" + tag + "'.");
 
@@ -522,7 +533,31 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_imethod->proxy_name);
-				p_xml_output.append("\"/>");
+				p_xml_output.append("(");
+				bool first_key = true;
+				for (const ArgumentInterface &iarg : target_imethod->arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+
+					if (first_key) {
+						first_key = false;
+					} else {
+						p_xml_output.append(", ");
+					}
+					if (!arg_type) {
+						ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
+						p_xml_output.append(iarg.type.cname);
+						continue;
+					}
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("Nullable{");
+					}
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					p_xml_output.append(arg_cs_type.replacen("<", "{").replacen(">", "}").replacen("params ", ""));
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("}");
+					}
+				}
+				p_xml_output.append(")\"/>");
 			} else {
 				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
@@ -653,6 +688,11 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	} else {
 		// Try to find the constant in the current class
+		if (p_target_itype->is_singleton_instance) {
+			// Constants and enums are declared in the static singleton class.
+			p_target_itype = &obj_types[p_target_itype->cname];
+		}
+
 		const ConstantInterface *target_iconst = find_constant_by_name(p_target_cname, p_target_itype->constants);
 
 		if (target_iconst) {
@@ -678,7 +718,7 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
-				p_xml_output.append(target_ienum->cname);
+				p_xml_output.append(target_ienum->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_iconst->proxy_name);
 				p_xml_output.append("\"/>");
@@ -719,7 +759,7 @@ void BindingsGenerator::_append_xml_constant_in_global_scope(StringBuilder &p_xm
 
 		if (target_iconst) {
 			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-			p_xml_output.append(target_ienum->cname);
+			p_xml_output.append(target_ienum->proxy_name);
 			p_xml_output.append(".");
 			p_xml_output.append(target_iconst->proxy_name);
 			p_xml_output.append("\"/>");
@@ -727,6 +767,21 @@ void BindingsGenerator::_append_xml_constant_in_global_scope(StringBuilder &p_xm
 			ERR_PRINT("Cannot resolve global constant reference in documentation: '" + p_link_target + "'.");
 			_append_xml_undeclared(p_xml_output, p_link_target);
 		}
+	}
+}
+
+void BindingsGenerator::_append_xml_param(StringBuilder &p_xml_output, const String &p_link_target, bool p_is_signal) {
+	const String link_target = snake_to_camel_case(p_link_target);
+
+	if (!p_is_signal) {
+		p_xml_output.append("<paramref name=\"");
+		p_xml_output.append(link_target);
+		p_xml_output.append("\"/>");
+	} else {
+		// Documentation in C# is added to an event, not the delegate itself;
+		// as such, we treat these parameters as codeblocks instead.
+		// See: https://github.com/godotengine/godot/pull/65529
+		_append_xml_undeclared(p_xml_output, link_target);
 	}
 }
 
@@ -975,7 +1030,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	for (const EnumInterface &ienum : global_enums) {
 		CRASH_COND(ienum.constants.is_empty());
 
-		String enum_proxy_name = ienum.cname.operator String();
+		String enum_proxy_name = ienum.proxy_name;
 
 		bool enum_in_static_class = false;
 
@@ -989,7 +1044,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			_log("Declaring global enum '%s' inside struct '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
 			p_output.append("\npublic partial struct ");
-			p_output.append(pascal_to_pascal_case(enum_class_name));
+			p_output.append(enum_class_name);
 			p_output.append("\n" OPEN_BLOCK);
 		}
 
@@ -998,7 +1053,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 		}
 
 		p_output.append("\npublic enum ");
-		p_output.append(pascal_to_pascal_case(enum_proxy_name));
+		p_output.append(enum_proxy_name);
 		p_output.append(" : long");
 		p_output.append("\n" OPEN_BLOCK);
 
@@ -1403,8 +1458,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	if (is_derived_type && !itype.is_singleton) {
 		if (obj_types.has(itype.base_name)) {
+			TypeInterface base_type = obj_types[itype.base_name];
 			output.append(" : ");
-			output.append(obj_types[itype.base_name].proxy_name);
+			output.append(base_type.proxy_name);
+			if (base_type.is_singleton) {
+				// If the type is a singleton, use the instance type.
+				output.append(CS_SINGLETON_INSTANCE_SUFFIX);
+			}
 		} else {
 			ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
 			return ERR_INVALID_DATA;
@@ -1458,7 +1518,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		output.append(MEMBER_BEGIN "public enum ");
-		output.append(pascal_to_pascal_case(ienum.cname.operator String()));
+		output.append(ienum.proxy_name);
 		output.append(" : long");
 		output.append(MEMBER_BEGIN OPEN_BLOCK);
 
@@ -1504,36 +1564,43 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 						"' for class '" + itype.name + "'.");
 	}
 
-	if (itype.is_singleton) {
-		// Add the type name and the singleton pointer as static fields
+	// Add native name static field and cached type.
 
-		output.append(MEMBER_BEGIN "private static GodotObject singleton;\n");
+	if (is_derived_type && !itype.is_singleton) {
+		output << MEMBER_BEGIN "private static readonly System.Type CachedType = typeof(" << itype.proxy_name << ");\n";
+	}
 
-		output << MEMBER_BEGIN "public static GodotObject " CS_PROPERTY_SINGLETON "\n" INDENT1 "{\n"
-			   << INDENT2 "get\n" INDENT2 "{\n" INDENT3 "if (singleton == null)\n"
-			   << INDENT4 "singleton = " C_METHOD_ENGINE_GET_SINGLETON "(\""
-			   << itype.name
-			   << "\");\n" INDENT3 "return singleton;\n" INDENT2 "}\n" INDENT1 "}\n";
+	output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
+	output.append(itype.name);
+	output.append("\";\n");
 
-		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.append(itype.name);
-		output.append("\";\n");
-	} else {
+	if (itype.is_singleton || itype.is_compat_singleton) {
+		// Add the Singleton static property.
+
+		String instance_type_name;
+
+		if (itype.is_singleton) {
+			StringName instance_name = itype.name + CS_SINGLETON_INSTANCE_SUFFIX;
+			instance_type_name = obj_types.has(instance_name)
+					? obj_types[instance_name].proxy_name
+					: "GodotObject";
+		} else {
+			instance_type_name = itype.proxy_name;
+		}
+
+		output.append(MEMBER_BEGIN "private static " + instance_type_name + " singleton;\n");
+
+		output << MEMBER_BEGIN "public static " + instance_type_name + " " CS_PROPERTY_SINGLETON " =>\n"
+			   << INDENT2 "singleton \?\?= (" + instance_type_name + ")"
+			   << C_METHOD_ENGINE_GET_SINGLETON "(\"" << itype.name << "\");\n";
+	}
+
+	if (!itype.is_singleton) {
 		// IMPORTANT: We also generate the static fields for GodotObject instead of declaring
 		// them manually in the `GodotObject.base.cs` partial class declaration, because they're
 		// required by other static fields in this generated partial class declaration.
 		// Static fields are initialized in order of declaration, but when they're in different
 		// partial class declarations then it becomes harder to tell (Rider warns about this).
-
-		// Add native name static field
-
-		if (is_derived_type) {
-			output << MEMBER_BEGIN "private static readonly System.Type CachedType = typeof(" << itype.proxy_name << ");\n";
-		}
-
-		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.append(itype.name);
-		output.append("\";\n");
 
 		if (itype.is_instantiable) {
 			// Add native constructor static field
@@ -1749,7 +1816,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << INDENT1 "/// This method is used by Godot to check if a signal exists before raising it.\n"
 			   << INDENT1 "/// Do not call or override this method.\n"
 			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
+			   << INDENT1 "/// <param name=\"signal\">Name of the signal to check for.</param>\n";
 
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
@@ -1894,7 +1961,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	const TypeReference &proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
 
-	const TypeInterface *prop_itype = _get_type_or_null(proptype_name);
+	const TypeInterface *prop_itype = _get_type_or_singleton_or_null(proptype_name);
 	ERR_FAIL_NULL_V(prop_itype, ERR_BUG); // Property type not found
 
 	ERR_FAIL_COND_V_MSG(prop_itype->is_singleton, ERR_BUG,
@@ -1983,7 +2050,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 }
 
 Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output) {
-	const TypeInterface *return_type = _get_type_or_null(p_imethod.return_type);
+	const TypeInterface *return_type = _get_type_or_singleton_or_null(p_imethod.return_type);
 	ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
 
 	ERR_FAIL_COND_V_MSG(return_type->is_singleton, ERR_BUG,
@@ -2004,12 +2071,17 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	String icall_params = method_bind_field;
 
 	if (!p_imethod.is_static) {
+		String self_reference = "this";
+		if (p_itype.is_singleton) {
+			self_reference = CS_PROPERTY_SINGLETON;
+		}
+
 		if (p_itype.cs_in.size()) {
-			cs_in_statements << sformat(p_itype.cs_in, p_itype.c_type, "this",
+			cs_in_statements << sformat(p_itype.cs_in, p_itype.c_type, self_reference,
 					String(), String(), String(), INDENT2);
 		}
 
-		icall_params += ", " + sformat(p_itype.cs_in_expr, "this");
+		icall_params += ", " + sformat(p_itype.cs_in_expr, self_reference);
 	}
 
 	StringBuilder default_args_doc;
@@ -2017,7 +2089,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	// Retrieve information from the arguments
 	const ArgumentInterface &first = p_imethod.arguments.front()->get();
 	for (const ArgumentInterface &iarg : p_imethod.arguments) {
-		const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
 		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
 
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
@@ -2126,6 +2198,11 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		cs_in_expr_is_unsafe |= arg_type->cs_in_expr_is_unsafe;
+	}
+
+	// Collect caller name for MethodBind
+	if (p_imethod.is_vararg) {
+		icall_params += ", (godot_string_name)MethodName." + p_imethod.proxy_name + ".NativeValue";
 	}
 
 	// Generate method
@@ -2270,7 +2347,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 	// Retrieve information from the arguments
 	const ArgumentInterface &first = p_isignal.arguments.front()->get();
 	for (const ArgumentInterface &iarg : p_isignal.arguments) {
-		const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
 		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
 
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
@@ -2302,31 +2379,31 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 	// Generate signal
 	{
-		p_output.append(MEMBER_BEGIN "/// <summary>\n");
-		p_output.append(INDENT1 "/// ");
-		p_output.append("Represents the method that handles the ");
-		p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "." + p_isignal.proxy_name + "\"/>");
-		p_output.append(" event of a ");
-		p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "\"/>");
-		p_output.append(" class.\n");
-		p_output.append(INDENT1 "/// </summary>");
-
-		if (p_isignal.is_deprecated) {
-			if (p_isignal.deprecation_message.is_empty()) {
-				WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
-			}
-
-			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
-			p_output.append(p_isignal.deprecation_message);
-			p_output.append("\")]");
-		}
-
 		bool is_parameterless = p_isignal.arguments.size() == 0;
 
 		// Delegate name is [SignalName]EventHandler
 		String delegate_name = is_parameterless ? "Action" : p_isignal.proxy_name + "EventHandler";
 
 		if (!is_parameterless) {
+			p_output.append(MEMBER_BEGIN "/// <summary>\n");
+			p_output.append(INDENT1 "/// ");
+			p_output.append("Represents the method that handles the ");
+			p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "." + p_isignal.proxy_name + "\"/>");
+			p_output.append(" event of a ");
+			p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "\"/>");
+			p_output.append(" class.\n");
+			p_output.append(INDENT1 "/// </summary>");
+
+			if (p_isignal.is_deprecated) {
+				if (p_isignal.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
+				}
+
+				p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+				p_output.append(p_isignal.deprecation_message);
+				p_output.append("\")]");
+			}
+
 			// Generate delegate
 			p_output.append(MEMBER_BEGIN "public delegate void ");
 			p_output.append(delegate_name);
@@ -2362,7 +2439,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_isignal.method_doc && p_isignal.method_doc->description.size()) {
-			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype);
+			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype, true);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 			if (summary_lines.size()) {
@@ -2501,6 +2578,11 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 		i++;
 	}
 
+	// Collect caller name for MethodBind
+	if (p_icall.is_vararg) {
+		c_func_sig << ", godot_string_name caller";
+	}
+
 	String icall_method = p_icall.name;
 
 	// Generate icall function
@@ -2566,7 +2648,12 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 			r_output << C_CLASS_NATIVE_FUNCS ".godotsharp_method_bind_call("
 					 << CS_PARAM_METHODBIND ", " << (p_icall.is_static ? "IntPtr.Zero" : CS_PARAM_INSTANCE)
 					 << ", " << (p_icall.get_arguments_count() ? "(godot_variant**)" C_LOCAL_PTRCALL_ARGS : "null")
-					 << ", total_length, out _);\n";
+					 << ", total_length, out godot_variant_call_error vcall_error);\n";
+
+			r_output << base_indent << "ExceptionUtils.DebugCheckCallError(caller"
+					 << ", " << (p_icall.is_static ? "IntPtr.Zero" : CS_PARAM_INSTANCE)
+					 << ", " << (p_icall.get_arguments_count() ? "(godot_variant**)" C_LOCAL_PTRCALL_ARGS : "null")
+					 << ", total_length, vcall_error);\n";
 
 			if (!ret_void) {
 				if (return_type->cname != name_cache.type_Variant) {
@@ -2687,6 +2774,20 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(con
 	return nullptr;
 }
 
+const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_singleton_or_null(const TypeReference &p_typeref) {
+	const TypeInterface *itype = _get_type_or_null(p_typeref);
+	if (itype == nullptr) {
+		return nullptr;
+	}
+
+	if (itype->is_singleton) {
+		StringName instance_type_name = itype->name + CS_SINGLETON_INSTANCE_SUFFIX;
+		itype = &obj_types.find(instance_type_name)->value;
+	}
+
+	return itype;
+}
+
 const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface &p_itype, const List<TypeReference> &p_generic_type_parameters) {
 	if (p_generic_type_parameters.is_empty()) {
 		return "";
@@ -2700,8 +2801,8 @@ const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface
 	int i = 0;
 	String params = "<";
 	for (const TypeReference &param_type : p_generic_type_parameters) {
-		const TypeInterface *param_itype = _get_type_or_null(param_type);
-		ERR_FAIL_NULL_V(param_itype, "");
+		const TypeInterface *param_itype = _get_type_or_singleton_or_null(param_type);
+		ERR_FAIL_NULL_V(param_itype, ""); // Parameter type not found
 
 		ERR_FAIL_COND_V_MSG(param_itype->is_singleton, "",
 				"Generic type parameter is a singleton: '" + param_itype->name + "'.");
@@ -2917,17 +3018,18 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.is_ref_counted = ClassDB::is_parent_class(type_cname, name_cache.type_RefCounted);
 		itype.memory_own = itype.is_ref_counted;
 
+		if (itype.is_singleton && compat_singletons.has(itype.cname)) {
+			itype.is_singleton = false;
+			itype.is_compat_singleton = true;
+		}
+
 		itype.c_out = "%5return ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
 		itype.c_out += itype.is_ref_counted ? "(%1.Reference);\n" : "(%1);\n";
 
 		itype.cs_type = itype.proxy_name;
 
-		if (itype.is_singleton) {
-			itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(" CS_PROPERTY_SINGLETON ")";
-		} else {
-			itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(%0)";
-		}
+		itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(%0)";
 
 		itype.cs_out = "%5return (%2)%0(%1);";
 
@@ -3263,8 +3365,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname);
-			ienum.is_flags = E.value.is_bitfield;
+			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, E.value.is_bitfield);
 			const List<StringName> &enum_constants = E.value.constants;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
@@ -3330,6 +3431,19 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		obj_types.insert(itype.cname, itype);
+
+		if (itype.is_singleton) {
+			// Add singleton instance type.
+			itype.proxy_name += CS_SINGLETON_INSTANCE_SUFFIX;
+			itype.is_singleton = false;
+			itype.is_singleton_instance = true;
+
+			// Remove constants and enums, those will remain in the static class.
+			itype.constants.clear();
+			itype.enums.clear();
+
+			obj_types.insert(itype.name + CS_SINGLETON_INSTANCE_SUFFIX, itype);
+		}
 
 		class_list.pop_front();
 	}
@@ -3806,7 +3920,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	builtin_types.insert(itype.cname, itype);
 
 	// Array_@generic
-	// Re-use Array's itype
+	// Reuse Array's itype
 	itype.name = "Array_@generic";
 	itype.cname = itype.name;
 	itype.cs_out = "%5return new %2(%0(%1));";
@@ -3833,7 +3947,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	builtin_types.insert(itype.cname, itype);
 
 	// Dictionary_@generic
-	// Re-use Dictionary's itype
+	// Reuse Dictionary's itype
 	itype.name = "Dictionary_@generic";
 	itype.cname = itype.name;
 	itype.cs_out = "%5return new %2(%0(%1));";
@@ -3884,8 +3998,7 @@ void BindingsGenerator::_populate_global_constants() {
 			iconstant.const_doc = const_doc;
 
 			if (enum_name != StringName()) {
-				EnumInterface ienum(enum_name);
-				ienum.is_flags = CoreConstants::is_global_constant_bitfield(i);
+				EnumInterface ienum(enum_name, pascal_to_pascal_case(enum_name.operator String()), CoreConstants::is_global_constant_bitfield(i));
 				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
 				if (enum_match) {
 					enum_match->get().constants.push_back(iconstant);
@@ -3903,7 +4016,7 @@ void BindingsGenerator::_populate_global_constants() {
 			enum_itype.is_enum = true;
 			enum_itype.name = ienum.cname.operator String();
 			enum_itype.cname = ienum.cname;
-			enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
+			enum_itype.proxy_name = ienum.proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
 			enum_types.insert(enum_itype.cname, enum_itype);
 
@@ -3947,6 +4060,10 @@ void BindingsGenerator::_initialize_blacklisted_methods() {
 	blacklisted_methods["Object"].push_back("_init"); // never called in C# (TODO: implement it)
 }
 
+void BindingsGenerator::_initialize_compat_singletons() {
+	compat_singletons.insert("EditorInterface");
+}
+
 void BindingsGenerator::_log(const char *p_format, ...) {
 	if (log_print_enabled) {
 		va_list list;
@@ -3965,6 +4082,8 @@ void BindingsGenerator::_initialize() {
 	enum_types.clear();
 
 	_initialize_blacklisted_methods();
+
+	_initialize_compat_singletons();
 
 	bool obj_type_ok = _populate_object_type_interfaces();
 	ERR_FAIL_COND_MSG(!obj_type_ok, "Failed to generate object type interfaces");

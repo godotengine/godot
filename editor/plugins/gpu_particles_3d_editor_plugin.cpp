@@ -237,7 +237,7 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 void GPUParticles3DEditor::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
-			options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
+			options->set_icon(options->get_popup()->get_editor_theme_icon(SNAME("GPUParticles3D")));
 			get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
 		} break;
 	}
@@ -277,11 +277,8 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
-			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, cpu_particles, true, false);
-			ur->add_do_reference(cpu_particles);
-			ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", cpu_particles, node, false, false);
-			ur->add_undo_reference(node);
-			ur->commit_action();
+			SceneTreeDock::get_singleton()->replace_node(node, cpu_particles);
+			ur->commit_action(false);
 
 		} break;
 		case MENU_OPTION_RESTART: {

@@ -73,7 +73,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [param enabled] the provided [param agent] calculates avoidance.
+				If [param enabled] is [code]true[/code], the provided [param agent] calculates avoidance.
 			</description>
 		</method>
 		<method name="agent_set_avoidance_layers">
@@ -216,6 +216,15 @@
 				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data]. After the process is finished the optional [param callback] will be called.
 			</description>
 		</method>
+		<method name="bake_from_source_geometry_data_async">
+			<return type="void" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<description>
+				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data] as an async task running on a background thread. After the process is finished the optional [param callback] will be called.
+			</description>
+		</method>
 		<method name="free_rid">
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
@@ -324,7 +333,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [param enabled] is [code]true[/code] the specified [param link] will contribute to its current navigation map.
+				If [param enabled] is [code]true[/code], the specified [param link] will contribute to its current navigation map.
 			</description>
 		</method>
 		<method name="link_set_end_position">
@@ -574,7 +583,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Set the navigation [param map] edge connection use. If [param enabled] the navigation map allows navigation regions to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+				Set the navigation [param map] edge connection use. If [param enabled] is [code]true[/code], the navigation map allows navigation regions to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 			</description>
 		</method>
 		<method name="obstacle_create">
@@ -616,7 +625,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [param enabled] the provided [param obstacle] affects avoidance using agents.
+				If [param enabled] is [code]true[/code], the provided [param obstacle] affects avoidance using agents.
 			</description>
 		</method>
 		<method name="obstacle_set_avoidance_layers">
@@ -813,7 +822,7 @@
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [param enabled] is [code]true[/code] the specified [param region] will contribute to its current navigation map.
+				If [param enabled] is [code]true[/code], the specified [param region] will contribute to its current navigation map.
 			</description>
 		</method>
 		<method name="region_set_enter_cost">
@@ -877,7 +886,7 @@
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [param enabled] the navigation [param region] will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+				If [param enabled] is [code]true[/code], the navigation [param region] will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 			</description>
 		</method>
 		<method name="set_active">

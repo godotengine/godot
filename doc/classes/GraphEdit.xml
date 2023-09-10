@@ -26,12 +26,12 @@
 			<param index="2" name="mouse_position" type="Vector2" />
 			<description>
 				Returns whether the [param mouse_position] is in the input hot zone.
-				By default, a hot zone is a [Rect2] positioned such that its center is at [param in_node].[method GraphNode.get_connection_input_position]([param in_port]) (For output's case, call [method GraphNode.get_connection_output_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
+				By default, a hot zone is a [Rect2] positioned such that its center is at [param in_node].[method GraphNode.get_input_port_position]([param in_port]) (For output's case, call [method GraphNode.get_output_port_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_input_hotzone(in_node, in_port, mouse_position):
 				    var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos: Vector2 = in_node.get_position() + in_node.get_connection_input_position(in_port) - port_size / 2
+				    var port_pos: Vector2 = in_node.get_position() + in_node.get_input_port_position(in_port) - port_size / 2
 				    var rect = Rect2(port_pos, port_size)
 
 				    return rect.has_point(mouse_position)
@@ -49,7 +49,7 @@
 				[codeblock]
 				func _is_in_output_hotzone(in_node, in_port, mouse_position):
 				    var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos: Vector2 = in_node.get_position() + in_node.get_connection_output_position(in_port) - port_size / 2
+				    var port_pos: Vector2 = in_node.get_position() + in_node.get_output_port_position(in_port) - port_size / 2
 				    var rect = Rect2(port_pos, port_size)
 
 				    return rect.has_point(mouse_position)
@@ -289,6 +289,12 @@
 				Emitted at the beginning of a GraphNode movement.
 			</description>
 		</signal>
+		<signal name="close_nodes_request">
+			<param index="0" name="nodes" type="StringName[]" />
+			<description>
+				Emitted when attempting to remove a GraphNode from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
+			</description>
+		</signal>
 		<signal name="connection_drag_ended">
 			<description>
 				Emitted at the end of a connection drag.
@@ -330,12 +336,6 @@
 		<signal name="copy_nodes_request">
 			<description>
 				Emitted when the user presses [kbd]Ctrl + C[/kbd].
-			</description>
-		</signal>
-		<signal name="delete_nodes_request">
-			<param index="0" name="nodes" type="StringName[]" />
-			<description>
-				Emitted when a GraphNode is attempted to be removed from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
 			</description>
 		</signal>
 		<signal name="disconnection_request">

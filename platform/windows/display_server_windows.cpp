@@ -278,7 +278,12 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		pfd->SetFileTypes(filters.size(), filters.ptr());
 		pfd->SetFileTypeIndex(0);
 
-		hr = pfd->Show(nullptr);
+		WindowID window_id = _get_focused_window_or_popup();
+		if (!windows.has(window_id)) {
+			window_id = MAIN_WINDOW_ID;
+		}
+
+		hr = pfd->Show(windows[window_id].hWnd);
 		if (SUCCEEDED(hr)) {
 			Vector<String> file_names;
 
@@ -1187,7 +1192,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
 	if (windows[p_window].mpass || windows[p_window].mpath.size() == 0) {
-		SetWindowRgn(windows[p_window].hWnd, nullptr, TRUE);
+		SetWindowRgn(windows[p_window].hWnd, nullptr, FALSE);
 	} else {
 		POINT *points = (POINT *)memalloc(sizeof(POINT) * windows[p_window].mpath.size());
 		for (int i = 0; i < windows[p_window].mpath.size(); i++) {
@@ -1201,8 +1206,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 		}
 
 		HRGN region = CreatePolygonRgn(points, windows[p_window].mpath.size(), ALTERNATE);
-		SetWindowRgn(windows[p_window].hWnd, region, TRUE);
-		DeleteObject(region);
+		SetWindowRgn(windows[p_window].hWnd, region, FALSE);
 		memfree(points);
 	}
 }
@@ -2736,7 +2740,7 @@ LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) 
 				// Find top popup to close.
 				while (E) {
 					// Popup window area.
-					Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
+					Rect2i win_rect = Rect2i(window_get_position_with_decorations(E->get()), window_get_size_with_decorations(E->get()));
 					// Area of the parent window, which responsible for opening sub-menu.
 					Rect2i safe_rect = window_get_popup_safe_rect(E->get());
 					if (win_rect.has_point(pos)) {
@@ -3838,6 +3842,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_DESTROY: {
 			Input::get_singleton()->flush_buffered_events();
+			if (window_mouseover_id == window_id) {
+				window_mouseover_id = INVALID_WINDOW_ID;
+				_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+			}
 		} break;
 		case WM_SETCURSOR: {
 			if (LOWORD(lParam) == HTCLIENT) {

@@ -165,7 +165,7 @@ void LightmapGIEditorPlugin::_bind_methods() {
 LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("Bake")));
 	bake->set_text(TTR("Bake Lightmaps"));
 	bake->hide();
 	bake->connect("pressed", Callable(this, "_bake"));

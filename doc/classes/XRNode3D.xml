@@ -7,6 +7,7 @@
 		This node can be bound to a specific pose of a [XRPositionalTracker] and will automatically have its [member Node3D.transform] updated by the [XRServer]. Nodes of this type must be added as children of the [XROrigin3D] node.
 	</description>
 	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_has_tracking_data" qualifiers="const">
@@ -50,4 +51,12 @@
 			Godot defines a number of standard trackers such as [code]left_hand[/code] and [code]right_hand[/code] but others may be configured within a given [XRInterface].
 		</member>
 	</members>
+	<signals>
+		<signal name="tracking_changed">
+			<param index="0" name="tracking" type="bool" />
+			<description>
+				Emitted when the [member tracker] starts or stops receiving updated tracking data for the [member pose] being tracked. The [param tracking] argument indicates whether the tracker is getting updated tracking data.
+			</description>
+		</signal>
+	</signals>
 </class>

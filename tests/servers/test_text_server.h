@@ -70,7 +70,7 @@ TEST_SUITE("[TextServer]") {
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 				ts->font_set_allow_system_fallback(font1, false);
 				RID font2 = ts->create_font();
-				ts->font_set_data_ptr(font2, _font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
+				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
 				ts->font_set_allow_system_fallback(font2, false);
 
 				Array font;
@@ -175,15 +175,95 @@ TEST_SUITE("[TextServer]") {
 
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				ts->font_set_allow_system_fallback(font1, false);
 				RID font2 = ts->create_font();
-				ts->font_set_data_ptr(font2, _font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
+				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
+				ts->font_set_allow_system_fallback(font2, false);
 				RID font3 = ts->create_font();
 				ts->font_set_data_ptr(font3, _font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
+				ts->font_set_allow_system_fallback(font3, false);
 
 				Array font;
 				font.push_back(font1);
 				font.push_back(font2);
 				font.push_back(font3);
+
+				{
+					RID ctx = ts->create_shaped_text();
+					CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
+					ts->shaped_text_add_string(ctx, U"Xtest", font, 10);
+					ts->shaped_text_add_string(ctx, U"xs", font, 10);
+					RID sctx = ts->shaped_text_substr(ctx, 1, 5);
+					CHECK_FALSE_MESSAGE(sctx == RID(), "Creating substring text buffer failed.");
+					PackedInt32Array sbrk = ts->shaped_text_get_character_breaks(sctx);
+					CHECK_FALSE_MESSAGE(sbrk.size() != 5, "Invalid substring char breaks number.");
+					if (sbrk.size() == 5) {
+						CHECK_FALSE_MESSAGE(sbrk[0] != 2, "Invalid substring char break position.");
+						CHECK_FALSE_MESSAGE(sbrk[1] != 3, "Invalid substring char break position.");
+						CHECK_FALSE_MESSAGE(sbrk[2] != 4, "Invalid substring char break position.");
+						CHECK_FALSE_MESSAGE(sbrk[3] != 5, "Invalid substring char break position.");
+						CHECK_FALSE_MESSAGE(sbrk[4] != 6, "Invalid substring char break position.");
+					}
+					PackedInt32Array fbrk = ts->shaped_text_get_character_breaks(ctx);
+					CHECK_FALSE_MESSAGE(fbrk.size() != 7, "Invalid char breaks number.");
+					if (fbrk.size() == 7) {
+						CHECK_FALSE_MESSAGE(fbrk[0] != 1, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(fbrk[1] != 2, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(fbrk[2] != 3, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(fbrk[3] != 4, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(fbrk[4] != 5, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(fbrk[5] != 6, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(fbrk[6] != 7, "Invalid char break position.");
+					}
+					PackedInt32Array rbrk = ts->string_get_character_breaks(U"Xtestxs");
+					CHECK_FALSE_MESSAGE(rbrk.size() != 7, "Invalid char breaks number.");
+					if (rbrk.size() == 7) {
+						CHECK_FALSE_MESSAGE(rbrk[0] != 1, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(rbrk[1] != 2, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(rbrk[2] != 3, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(rbrk[3] != 4, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(rbrk[4] != 5, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(rbrk[5] != 6, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(rbrk[6] != 7, "Invalid char break position.");
+					}
+
+					ts->free_rid(sctx);
+					ts->free_rid(ctx);
+				}
+
+				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) {
+					RID ctx = ts->create_shaped_text();
+					CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
+					ts->shaped_text_add_string(ctx, U"X❤️‍🔥", font, 10);
+					ts->shaped_text_add_string(ctx, U"xs", font, 10);
+					RID sctx = ts->shaped_text_substr(ctx, 1, 5);
+					CHECK_FALSE_MESSAGE(sctx == RID(), "Creating substring text buffer failed.");
+					PackedInt32Array sbrk = ts->shaped_text_get_character_breaks(sctx);
+					CHECK_FALSE_MESSAGE(sbrk.size() != 2, "Invalid substring char breaks number.");
+					if (sbrk.size() == 2) {
+						CHECK_FALSE_MESSAGE(sbrk[0] != 5, "Invalid substring char break position.");
+						CHECK_FALSE_MESSAGE(sbrk[1] != 6, "Invalid substring char break position.");
+					}
+					PackedInt32Array fbrk = ts->shaped_text_get_character_breaks(ctx);
+					CHECK_FALSE_MESSAGE(fbrk.size() != 4, "Invalid char breaks number.");
+					if (fbrk.size() == 4) {
+						CHECK_FALSE_MESSAGE(fbrk[0] != 1, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(fbrk[1] != 5, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(fbrk[2] != 6, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(fbrk[3] != 7, "Invalid char break position.");
+					}
+					PackedInt32Array rbrk = ts->string_get_character_breaks(U"X❤️‍🔥xs");
+					CHECK_FALSE_MESSAGE(rbrk.size() != 4, "Invalid char breaks number.");
+					if (rbrk.size() == 4) {
+						CHECK_FALSE_MESSAGE(rbrk[0] != 1, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(rbrk[1] != 5, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(rbrk[2] != 6, "Invalid char break position.");
+						CHECK_FALSE_MESSAGE(rbrk[3] != 7, "Invalid char break position.");
+					}
+
+					ts->free_rid(sctx);
+					ts->free_rid(ctx);
+				}
 
 				{
 					String test = U"Test test long text long text\n";
@@ -431,7 +511,7 @@ TEST_SUITE("[TextServer]") {
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 				RID font2 = ts->create_font();
-				ts->font_set_data_ptr(font2, _font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
+				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
 
 				Array font;
 				font.push_back(font1);
@@ -634,6 +714,54 @@ TEST_SUITE("[TextServer]") {
 						CHECK(breaks[15] == 33);
 						CHECK(breaks[16] == 33);
 						CHECK(breaks[17] == 42);
+					}
+				}
+
+				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) {
+					String text2 = U"U+2764 U+FE0F U+200D U+1F525 ; 13.1 # ❤️‍🔥";
+
+					PackedInt32Array breaks = ts->string_get_character_breaks(text2, "en");
+					CHECK(breaks.size() == 39);
+					if (breaks.size() == 39) {
+						CHECK(breaks[0] == 1);
+						CHECK(breaks[1] == 2);
+						CHECK(breaks[2] == 3);
+						CHECK(breaks[3] == 4);
+						CHECK(breaks[4] == 5);
+						CHECK(breaks[5] == 6);
+						CHECK(breaks[6] == 7);
+						CHECK(breaks[7] == 8);
+						CHECK(breaks[8] == 9);
+						CHECK(breaks[9] == 10);
+						CHECK(breaks[10] == 11);
+						CHECK(breaks[11] == 12);
+						CHECK(breaks[12] == 13);
+						CHECK(breaks[13] == 14);
+						CHECK(breaks[14] == 15);
+						CHECK(breaks[15] == 16);
+						CHECK(breaks[16] == 17);
+						CHECK(breaks[17] == 18);
+						CHECK(breaks[18] == 19);
+						CHECK(breaks[19] == 20);
+						CHECK(breaks[20] == 21);
+						CHECK(breaks[21] == 22);
+						CHECK(breaks[22] == 23);
+						CHECK(breaks[23] == 24);
+						CHECK(breaks[24] == 25);
+						CHECK(breaks[25] == 26);
+						CHECK(breaks[26] == 27);
+						CHECK(breaks[27] == 28);
+						CHECK(breaks[28] == 29);
+						CHECK(breaks[29] == 30);
+						CHECK(breaks[30] == 31);
+						CHECK(breaks[31] == 32);
+						CHECK(breaks[32] == 33);
+						CHECK(breaks[33] == 34);
+						CHECK(breaks[34] == 35);
+						CHECK(breaks[35] == 36);
+						CHECK(breaks[36] == 37);
+						CHECK(breaks[37] == 38);
+						CHECK(breaks[38] == 42);
 					}
 				}
 			}

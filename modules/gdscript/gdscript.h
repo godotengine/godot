@@ -144,6 +144,7 @@ class GDScript : public Script {
 	String path;
 	String name;
 	String fully_qualified_name;
+	String simplified_icon_path;
 	SelfList<GDScript> script_list;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
@@ -250,6 +251,7 @@ public:
 	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		return docs;
 	}
+	virtual String get_class_icon_path() const override;
 #endif // TOOLS_ENABLED
 
 	virtual Error reload(bool p_keep_state = false) override;
@@ -319,6 +321,7 @@ public:
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
+	virtual void validate_property(PropertyInfo &p_property) const;
 
 	virtual bool property_can_revert(const StringName &p_name) const;
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const;
@@ -329,7 +332,7 @@ public:
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
-	virtual void notification(int p_notification);
+	virtual void notification(int p_notification, bool p_reversed = false);
 	String to_string(bool *r_valid);
 
 	virtual Ref<Script> get_script() const;
@@ -466,6 +469,7 @@ public:
 		StringName _set;
 		StringName _get;
 		StringName _get_property_list;
+		StringName _validate_property;
 		StringName _property_can_revert;
 		StringName _property_get_revert;
 		StringName _script_source;

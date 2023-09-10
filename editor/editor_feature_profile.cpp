@@ -37,6 +37,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
@@ -495,14 +496,14 @@ void EditorFeatureProfileManager::_profile_selected(int p_what) {
 void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
 	TreeItem *class_item = class_list->create_item(p_parent);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class, "Node"));
+	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class));
 	String text = p_class;
 
 	bool disabled = edited->is_class_disabled(p_class);
 	bool disabled_editor = edited->is_class_editor_disabled(p_class);
 	bool disabled_properties = edited->has_class_properties_disabled(p_class);
 	if (disabled) {
-		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	} else if (disabled_editor && disabled_properties) {
 		text += " " + TTR("(Editor Disabled, Properties Disabled)");
 	} else if (disabled_properties) {
@@ -522,11 +523,11 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 		class_item->select(0);
 	}
 	if (disabled) {
-		//class disabled, do nothing else (do not show further)
+		// Class disabled, do nothing else (do not show further).
 		return;
 	}
 
-	class_item->set_checked(0, true); // if its not disabled, its checked
+	class_item->set_checked(0, true); // If it's not disabled, it's checked.
 
 	List<StringName> child_classes;
 	ClassDB::get_direct_inheriters_from_class(p_class, &child_classes);

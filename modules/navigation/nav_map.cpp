@@ -431,6 +431,17 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	if (p_optimize) {
 		// Set the apex poly/point to the end point
 		gd::NavigationPoly *apex_poly = &navigation_polys[least_cost_id];
+
+		Vector3 back_pathway[2] = { apex_poly->back_navigation_edge_pathway_start, apex_poly->back_navigation_edge_pathway_end };
+		const Vector3 back_edge_closest_point = Geometry3D::get_closest_point_to_segment(end_point, back_pathway);
+		if (end_point.is_equal_approx(back_edge_closest_point)) {
+			// The end point is basically on top of the last crossed edge, funneling around the corners would at best do nothing.
+			// At worst it would add an unwanted path point before the last point due to precision issues so skip to the next polygon.
+			if (apex_poly->back_navigation_poly_id != -1) {
+				apex_poly = &navigation_polys[apex_poly->back_navigation_poly_id];
+			}
+		}
+
 		Vector3 apex_point = end_point;
 
 		gd::NavigationPoly *left_poly = apex_poly;
@@ -1049,7 +1060,8 @@ void NavMap::sync() {
 		}
 
 		// Update the update ID.
-		map_update_id = (map_update_id + 1) % 9999999;
+		// Some code treats 0 as a failure case, so we avoid returning 0.
+		map_update_id = map_update_id % 9999999 + 1;
 	}
 
 	// Do we have modified obstacle positions?

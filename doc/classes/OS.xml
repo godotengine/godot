@@ -298,7 +298,7 @@
 			<return type="String" />
 			<description>
 				Returns the name of the host OS.
-				On Windows, this is [code]"Windows"[/code] or [code]"UWP"[/code] if exported on Universal Windows Platform.
+				On Windows, this is [code]"Windows"[/code].
 				On macOS, this is [code]"macOS"[/code].
 				On Linux-based operating systems, this is [code]"Linux"[/code].
 				On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
@@ -309,7 +309,7 @@
 				[codeblocks]
 				[gdscript]
 				match OS.get_name():
-				    "Windows", "UWP":
+				    "Windows":
 				        print("Windows")
 				    "macOS":
 				        print("macOS")
@@ -326,7 +326,6 @@
 				switch (OS.GetName())
 				{
 				    case "Windows":
-				    case "UWP":
 				        GD.Print("Windows");
 				        break;
 				    case "macOS":
@@ -370,7 +369,7 @@
 			<return type="String" />
 			<description>
 				Returns the name of the CPU model on the host machine (e.g. "Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz").
-				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android, Web and UWP, [method get_processor_name] returns an empty string.
+				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android and Web, [method get_processor_name] returns an empty string.
 			</description>
 		</method>
 		<method name="get_restart_on_exit_arguments" qualifiers="const">
@@ -450,7 +449,7 @@
 			<description>
 				Returns a string that is unique to the device.
 				[b]Note:[/b] This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.
-				[b]Note:[/b] Returns an empty string on Web and UWP, as this method isn't implemented on those platforms yet.
+				[b]Note:[/b] Returns an empty string on Web, as this method isn't implemented on this platform yet.
 			</description>
 		</method>
 		<method name="get_user_data_dir" qualifiers="const">
@@ -473,7 +472,6 @@
 				For Windows, the major and minor version are returned, as well as the build number. For example, the returned string can look like [code]10.0.9926[/code] for a build of Windows 10, and it can look like [code]6.1.7601[/code] for a build of Windows 7 SP1.
 				For rolling distributions, such as Arch Linux, an empty string is returned.
 				For macOS and iOS, the major and minor version are returned, as well as the patch number.
-				For UWP, the device family version is returned.
 				For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
 				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
 			</description>
@@ -538,7 +536,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if application is running in the sandbox.
-				[b]Note:[/b] This method is implemented on macOS.
+				[b]Note:[/b] This method is implemented on macOS and Linux.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">

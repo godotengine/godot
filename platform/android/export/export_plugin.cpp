@@ -47,6 +47,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
@@ -904,7 +905,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	uint32_t string_table_ends = 0;
 	Vector<uint8_t> stable_extra;
 
-	String version_name = p_preset->get("version/name");
+	String version_name = p_preset->get_version("version/name");
 	int version_code = p_preset->get("version/code");
 	String package_name = p_preset->get("package/unique_name");
 
@@ -1829,7 +1830,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_password", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "org.godotengine.$genname", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
@@ -1838,6 +1839,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/retain_data_on_uninstall"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/exclude_from_recents"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_in_android_tv"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_in_app_library"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_as_launcher_app"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
@@ -1952,8 +1954,9 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 		return ERR_SKIP;
 	}
 
+	const bool use_wifi_for_remote_debug = EDITOR_GET("export/android/use_wifi_for_remote_debug");
 	const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
-	const bool use_reverse = devices[p_device].api_level >= 21;
+	const bool use_reverse = devices[p_device].api_level >= 21 && !use_wifi_for_remote_debug;
 
 	if (use_reverse) {
 		p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
@@ -1980,7 +1983,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	String output;
 
 	bool remove_prev = EDITOR_GET("export/android/one_click_deploy_clear_previous_install");
-	String version_name = p_preset->get("version/name");
+	String version_name = p_preset->get_version("version/name");
 	String package_name = p_preset->get("package/unique_name");
 
 	if (remove_prev) {
@@ -2066,7 +2069,10 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 				print_line("Reverse result2: " + itos(rv));
 			}
 		} else {
-			static const char *const msg = "--- Device API < 21; debugging over Wi-Fi ---";
+			static const char *const api_version_msg = "--- Device API < 21; debugging over Wi-Fi ---";
+			static const char *const manual_override_msg = "--- Wi-Fi remote debug enabled in project settings; debugging over Wi-Fi ---";
+
+			const char *const msg = use_wifi_for_remote_debug ? manual_override_msg : api_version_msg;
 			EditorNode::get_singleton()->get_log()->add_message(msg, EditorLog::MSG_TYPE_EDITOR);
 			print_line(String(msg).to_upper());
 		}
@@ -2225,16 +2231,14 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 }
 
 bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
-#ifdef MODULE_MONO_ENABLED
-	// Don't check for additional errors, as this particular error cannot be resolved.
-	r_error += TTR("Exporting to Android is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Android with C#/Mono instead.") + "\n";
-	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
-	return false;
-#else
-
 	String err;
 	bool valid = false;
 	const bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+
+#ifdef MODULE_MONO_ENABLED
+	// Android export is still a work in progress, keep a message as a warning.
+	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
+#endif
 
 	// Look for export templates (first official, and if defined custom templates).
 
@@ -2365,7 +2369,6 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 	}
 
 	return valid;
-#endif // !MODULE_MONO_ENABLED
 }
 
 bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
@@ -2386,10 +2389,8 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		}
 	}
 
-	String etc_error = test_etc2();
-	if (!etc_error.is_empty()) {
+	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 		valid = false;
-		err += etc_error;
 	}
 
 	String min_sdk_str = p_preset->get("gradle_build/min_sdk");
@@ -2893,7 +2894,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		String package_name = get_package_name(p_preset->get("package/unique_name"));
 		String version_code = itos(p_preset->get("version/code"));
-		String version_name = p_preset->get("version/name");
+		String version_name = p_preset->get_version("version/name");
 		String min_sdk_version = p_preset->get("gradle_build/min_sdk");
 		if (!min_sdk_version.is_valid_int()) {
 			min_sdk_version = itos(VULKAN_MIN_SDK_VERSION);
@@ -3111,7 +3112,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	String cmdline = p_preset->get("command_line/extra_args");
 
-	String version_name = p_preset->get("version/name");
+	String version_name = p_preset->get_version("version/name");
 	String package_name = p_preset->get("package/unique_name");
 
 	String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");

@@ -141,6 +141,11 @@ private:
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	RID _shader_create_from_bytecode_bind_compat_79606(const Vector<uint8_t> &p_shader_binary);
+	static void _bind_compatibility_methods();
+#endif
+
 	Capabilities device_capabilities;
 
 public:
@@ -394,13 +399,13 @@ public:
 
 	enum BarrierMask {
 		BARRIER_MASK_VERTEX = 1,
-		BARRIER_MASK_FRAGMENT = 2,
-		BARRIER_MASK_COMPUTE = 4,
-		BARRIER_MASK_TRANSFER = 8,
+		BARRIER_MASK_FRAGMENT = 8,
+		BARRIER_MASK_COMPUTE = 2,
+		BARRIER_MASK_TRANSFER = 4,
 
-		BARRIER_MASK_RASTER = BARRIER_MASK_VERTEX | BARRIER_MASK_FRAGMENT, // 3,
-		BARRIER_MASK_ALL_BARRIERS = BARRIER_MASK_RASTER | BARRIER_MASK_COMPUTE | BARRIER_MASK_TRANSFER, // 7
-		BARRIER_MASK_NO_BARRIER = 16,
+		BARRIER_MASK_RASTER = BARRIER_MASK_VERTEX | BARRIER_MASK_FRAGMENT, // 9,
+		BARRIER_MASK_ALL_BARRIERS = 0x7FFF, // all flags set
+		BARRIER_MASK_NO_BARRIER = 0x8000,
 	};
 
 	/*****************/
@@ -734,7 +739,8 @@ public:
 	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "") = 0;
 
 	virtual RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
-	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary) = 0;
+	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID()) = 0;
+	virtual RID shader_create_placeholder() = 0;
 
 	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
 
@@ -834,6 +840,7 @@ public:
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata) = 0;
 
+	virtual Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0) = 0; // This causes stall, only use to retrieve large buffers for saving.

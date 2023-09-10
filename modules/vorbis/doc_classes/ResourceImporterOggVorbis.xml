@@ -9,7 +9,7 @@
 		Ogg Vorbis requires more CPU to decode than [ResourceImporterWAV]. If you need to play a lot of simultaneous sounds, it's recommended to use WAV for those sounds instead, especially if targeting low-end devices.
 	</description>
 	<tutorials>
-		<link title="Importing audio samples">https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/importing_audio_samples.html</link>
+		<link title="Importing audio samples">$DOCS_URL/tutorials/assets_pipeline/importing_audio_samples.html</link>
 	</tutorials>
 	<methods>
 		<method name="load_from_buffer" qualifiers="static">

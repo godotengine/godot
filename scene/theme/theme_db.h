@@ -35,25 +35,38 @@
 #include "core/object/ref_counted.h"
 
 class Font;
+class Node;
 class StyleBox;
 class Texture2D;
 class Theme;
+class ThemeContext;
 
 class ThemeDB : public Object {
 	GDCLASS(ThemeDB, Object);
 
 	static ThemeDB *singleton;
 
-	// Universal Theme resources used when no other theme has the item.
+	// Global Theme resources used by the default theme context.
+
 	Ref<Theme> default_theme;
 	Ref<Theme> project_theme;
 
 	// Universal default values, final fallback for every theme.
-	float fallback_base_scale;
+
+	float fallback_base_scale = 1.0;
 	Ref<Font> fallback_font;
-	int fallback_font_size;
+	int fallback_font_size = 16;
 	Ref<Texture2D> fallback_icon;
 	Ref<StyleBox> fallback_stylebox;
+
+	// Global theme contexts used to scope global Theme resources.
+
+	ThemeContext *default_theme_context = nullptr;
+	HashMap<Node *, ThemeContext *> theme_contexts;
+
+	void _propagate_theme_context(Node *p_from_node, ThemeContext *p_context);
+	void _init_default_theme_context();
+	void _finalize_theme_contexts();
 
 protected:
 	static void _bind_methods();
@@ -61,8 +74,9 @@ protected:
 public:
 	void initialize_theme();
 	void initialize_theme_noproject();
+	void finalize_theme();
 
-	// Universal Theme resources
+	// Global Theme resources.
 
 	void set_default_theme(const Ref<Theme> &p_default);
 	Ref<Theme> get_default_theme();
@@ -70,7 +84,7 @@ public:
 	void set_project_theme(const Ref<Theme> &p_project_default);
 	Ref<Theme> get_project_theme();
 
-	// Universal default values.
+	// Universal fallback values.
 
 	void set_fallback_base_scale(float p_base_scale);
 	float get_fallback_base_scale();
@@ -87,9 +101,46 @@ public:
 	void set_fallback_stylebox(const Ref<StyleBox> &p_stylebox);
 	Ref<StyleBox> get_fallback_stylebox();
 
+	void get_native_type_dependencies(const StringName &p_base_type, List<StringName> *p_list);
+
+	// Global theme contexts.
+
+	ThemeContext *create_theme_context(Node *p_node, List<Ref<Theme>> &p_themes);
+	void destroy_theme_context(Node *p_node);
+
+	ThemeContext *get_theme_context(Node *p_node) const;
+	ThemeContext *get_default_theme_context() const;
+	ThemeContext *get_nearest_theme_context(Node *p_for_node) const;
+
+	// Memory management, reference, and initialization.
+
 	static ThemeDB *get_singleton();
 	ThemeDB();
 	~ThemeDB();
+};
+
+class ThemeContext : public Object {
+	GDCLASS(ThemeContext, Object);
+
+	friend class ThemeDB;
+
+	Node *node = nullptr;
+	ThemeContext *parent = nullptr;
+
+	// Themes are stacked in the order of relevance, for easy iteration.
+	// This means that the first theme is the one you should check first,
+	// and the last theme is the fallback theme where every lookup ends.
+	List<Ref<Theme>> themes;
+
+	void _emit_changed();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_themes(List<Ref<Theme>> &p_themes);
+	List<Ref<Theme>> get_themes() const;
+	Ref<Theme> get_fallback_theme() const;
 };
 
 #endif // THEME_DB_H

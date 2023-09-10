@@ -31,6 +31,8 @@
 #include "editor/action_map_editor.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 #include "scene/gui/check_button.h"
@@ -224,6 +226,7 @@ void ActionMapEditor::_tree_item_activated() {
 void ActionMapEditor::set_show_builtin_actions(bool p_show) {
 	show_builtin_actions = p_show;
 	show_builtin_actions_checkbutton->set_pressed(p_show);
+	EditorSettings::get_singleton()->set_project_metadata("project_settings", "show_builtin_actions", show_builtin_actions);
 
 	// Prevent unnecessary updates of action list when cache is empty.
 	if (!actions_cache.is_empty()) {
@@ -353,7 +356,7 @@ void ActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			action_list_search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}
@@ -440,13 +443,13 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			bool events_eq = Shortcut::is_event_array_equal(action_info.action_initial["events"], action_info.action["events"]);
 			bool action_eq = deadzone_eq && events_eq;
 			action_item->set_meta("__action_initial", action_info.action_initial);
-			action_item->add_button(2, action_tree->get_theme_icon(SNAME("ReloadSmall"), SNAME("EditorIcons")), BUTTON_REVERT_ACTION, action_eq, action_eq ? TTR("Cannot Revert - Action is same as initial") : TTR("Revert Action"));
+			action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("ReloadSmall")), BUTTON_REVERT_ACTION, action_eq, action_eq ? TTR("Cannot Revert - Action is same as initial") : TTR("Revert Action"));
 		}
-		action_item->add_button(2, action_tree->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), BUTTON_ADD_EVENT, false, TTR("Add Event"));
-		action_item->add_button(2, action_tree->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? TTR("Remove Action") : TTR("Cannot Remove Action"));
+		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Add")), BUTTON_ADD_EVENT, false, TTR("Add Event"));
+		action_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? TTR("Remove Action") : TTR("Cannot Remove Action"));
 
-		action_item->set_custom_bg_color(0, action_tree->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-		action_item->set_custom_bg_color(1, action_tree->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+		action_item->set_custom_bg_color(0, action_tree->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		action_item->set_custom_bg_color(1, action_tree->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 		for (int evnt_idx = 0; evnt_idx < events.size(); evnt_idx++) {
 			Ref<InputEvent> event = events[evnt_idx];
@@ -465,34 +468,34 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
 				if (k->get_physical_keycode() == Key::NONE && k->get_keycode() == Key::NONE && k->get_key_label() != Key::NONE) {
-					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("KeyboardLabel"), SNAME("EditorIcons")));
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("KeyboardLabel")));
 				} else if (k->get_keycode() != Key::NONE) {
-					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("Keyboard")));
 				} else if (k->get_physical_keycode() != Key::NONE) {
-					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("KeyboardPhysical"), SNAME("EditorIcons")));
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("KeyboardPhysical")));
 				} else {
-					event_item->set_icon(0, action_tree->get_theme_icon(SNAME("KeyboardError"), SNAME("EditorIcons")));
+					event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("KeyboardError")));
 				}
 			}
 
 			Ref<InputEventMouseButton> mb = event;
 			if (mb.is_valid()) {
-				event_item->set_icon(0, action_tree->get_theme_icon(SNAME("Mouse"), SNAME("EditorIcons")));
+				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("Mouse")));
 			}
 
 			Ref<InputEventJoypadButton> jb = event;
 			if (jb.is_valid()) {
-				event_item->set_icon(0, action_tree->get_theme_icon(SNAME("JoyButton"), SNAME("EditorIcons")));
+				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("JoyButton")));
 			}
 
 			Ref<InputEventJoypadMotion> jm = event;
 			if (jm.is_valid()) {
-				event_item->set_icon(0, action_tree->get_theme_icon(SNAME("JoyAxis"), SNAME("EditorIcons")));
+				event_item->set_icon(0, action_tree->get_editor_theme_icon(SNAME("JoyAxis")));
 			}
 
 			// Third Column - Buttons
-			event_item->add_button(2, action_tree->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), BUTTON_EDIT_EVENT, false, TTR("Edit Event"));
-			event_item->add_button(2, action_tree->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_EVENT, false, TTR("Remove Event"));
+			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Edit")), BUTTON_EDIT_EVENT, false, TTR("Edit Event"));
+			event_item->add_button(2, action_tree->get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_EVENT, false, TTR("Remove Event"));
 			event_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 			event_item->set_button_color(2, 1, Color(1, 1, 1, 0.75));
 		}
@@ -568,10 +571,12 @@ ActionMapEditor::ActionMapEditor() {
 	_add_edit_text_changed(add_edit->get_text());
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
-	show_builtin_actions_checkbutton->set_pressed(false);
 	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
 	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
 	add_hbox->add_child(show_builtin_actions_checkbutton);
+
+	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
+	show_builtin_actions_checkbutton->set_pressed(show_builtin_actions);
 
 	main_vbox->add_child(add_hbox);
 

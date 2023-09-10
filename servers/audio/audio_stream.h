@@ -37,7 +37,6 @@
 #include "servers/audio_server.h"
 
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 
 class AudioStream;
@@ -223,8 +222,8 @@ private:
 
 	HashSet<AudioStreamPlaybackRandomizer *> playbacks;
 	Vector<PoolEntry> audio_stream_pool;
-	float random_pitch_scale = 1.1f;
-	float random_volume_offset_db = 5.0f;
+	float random_pitch_scale = 1.0f;
+	float random_volume_offset_db = 0.0f;
 
 	Ref<AudioStreamPlayback> instance_playback_random();
 	Ref<AudioStreamPlayback> instance_playback_no_repeats();

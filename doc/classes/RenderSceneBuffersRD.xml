@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This object manages all 3D rendering buffers for the rendering device based renderers. An instance of this object is created for every viewport that has 3D rendering enabled.
-		All buffers are organised in [b]contexts[/b]. The default context is called [b]render_buffers[/b] and can contain amongst others the color buffer, depth buffer, velocity buffers, VRS density map and MSAA variants of these buffers.
+		All buffers are organized in [b]contexts[/b]. The default context is called [b]render_buffers[/b] and can contain amongst others the color buffer, depth buffer, velocity buffers, VRS density map and MSAA variants of these buffers.
 		Buffers are only guaranteed to exist during rendering of the viewport.
 		[b]Note:[/b] this is an internal rendering server object only exposed for GDExtension plugins.
 	</description>
@@ -133,7 +133,7 @@
 		<method name="get_use_taa" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [b]true[/b] if TAA is enabled.
+				Returns [code]true[/code] if TAA is enabled.
 			</description>
 		</method>
 		<method name="get_velocity_layer">
@@ -160,7 +160,7 @@
 			<param index="0" name="context" type="StringName" />
 			<param index="1" name="name" type="StringName" />
 			<description>
-				Returns [b]true[/b] if a cached texture exists for this name.
+				Returns [code]true[/code] if a cached texture exists for this name.
 			</description>
 		</method>
 	</methods>

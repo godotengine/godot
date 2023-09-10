@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_device.h"
+#include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
 
@@ -537,15 +538,15 @@ Error RenderingDevice::_reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spir
 							if (r_reflection_data.uniforms[set][k].binding == (uint32_t)info.binding) {
 								// Already exists, verify that it's the same type.
 								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].type != info.type, FAILED,
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform type.");
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform type.");
 
 								// Also, verify that it's the same size.
 								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].length != info.length, FAILED,
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
 
 								// Also, verify that it has the same writability.
 								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].writable != info.writable, FAILED,
-										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
 
 								// Just append stage mask and return.
 								r_reflection_data.uniforms.write[set].write[k].stages_mask.set_flag(stage_flag);
@@ -754,7 +755,9 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_compile_binary_from_spirv, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_create_from_spirv, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::shader_create_from_bytecode);
+	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data", "placeholder_rid"), &RenderingDevice::shader_create_from_bytecode, DEFVAL(RID()));
+	ClassDB::bind_method(D_METHOD("shader_create_placeholder"), &RenderingDevice::shader_create_placeholder);
+
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
 	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data"), &RenderingDevice::uniform_buffer_create, DEFVAL(Vector<uint8_t>()));

@@ -60,6 +60,7 @@ class BindingsGenerator {
 
 	struct EnumInterface {
 		StringName cname;
+		String proxy_name;
 		List<ConstantInterface> constants;
 		bool is_flags = false;
 
@@ -69,8 +70,10 @@ class BindingsGenerator {
 
 		EnumInterface() {}
 
-		EnumInterface(const StringName &p_cname) {
+		EnumInterface(const StringName &p_cname, const String &p_proxy_name, bool p_is_flags) {
 			cname = p_cname;
+			proxy_name = p_proxy_name;
+			is_flags = p_is_flags;
 		}
 	};
 
@@ -227,7 +230,16 @@ class BindingsGenerator {
 		bool is_enum = false;
 		bool is_object_type = false;
 		bool is_singleton = false;
+		bool is_singleton_instance = false;
 		bool is_ref_counted = false;
+
+		/**
+		 * Class is a singleton, but can't be declared as a static class as that would
+		 * break backwards compatibility. As such, instead of going with a static class,
+		 * we use the actual singleton pattern (private constructor with instance property),
+		 * which doesn't break compatibility.
+		 */
+		bool is_compat_singleton = false;
 
 		/**
 		 * Determines whether the native return value of this type must be disposed
@@ -614,8 +626,10 @@ class BindingsGenerator {
 	HashMap<const MethodInterface *, const InternalCall *> method_icalls_map;
 
 	HashMap<StringName, List<StringName>> blacklisted_methods;
+	HashSet<StringName> compat_singletons;
 
 	void _initialize_blacklisted_methods();
+	void _initialize_compat_singletons();
 
 	struct NameCache {
 		StringName type_void = StaticCString::create("void");
@@ -740,7 +754,7 @@ class BindingsGenerator {
 		return p_type->name;
 	}
 
-	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype);
+	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal = false);
 
 	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
@@ -748,6 +762,7 @@ class BindingsGenerator {
 	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_constant(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_constant_in_global_scope(StringBuilder &p_xml_output, const String &p_target_cname, const String &p_link_target);
+	void _append_xml_param(StringBuilder &p_xml_output, const String &p_link_target, bool p_is_signal);
 	void _append_xml_undeclared(StringBuilder &p_xml_output, const String &p_link_target);
 
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
@@ -756,6 +771,7 @@ class BindingsGenerator {
 	Error _populate_method_icalls_table(const TypeInterface &p_itype);
 
 	const TypeInterface *_get_type_or_null(const TypeReference &p_typeref);
+	const TypeInterface *_get_type_or_singleton_or_null(const TypeReference &p_typeref);
 
 	const String _get_generic_type_parameters(const TypeInterface &p_itype, const List<TypeReference> &p_generic_type_parameters);
 

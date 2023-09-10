@@ -10,6 +10,7 @@
 		[b]Note:[/b] Depth of field blur is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 	</description>
 	<tutorials>
+		<link title="Physical light and camera units">$DOCS_URL/tutorials/3d/physical_light_and_camera_units.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_fov" qualifiers="const">

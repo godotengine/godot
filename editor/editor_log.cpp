@@ -37,6 +37,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -65,27 +66,27 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 }
 
 void EditorLog::_update_theme() {
-	const Ref<Font> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
+	const Ref<Font> normal_font = get_theme_font(SNAME("output_source"), EditorStringName(EditorFonts));
 	if (normal_font.is_valid()) {
 		log->add_theme_font_override("normal_font", normal_font);
 	}
 
-	const Ref<Font> bold_font = get_theme_font(SNAME("output_source_bold"), SNAME("EditorFonts"));
+	const Ref<Font> bold_font = get_theme_font(SNAME("output_source_bold"), EditorStringName(EditorFonts));
 	if (bold_font.is_valid()) {
 		log->add_theme_font_override("bold_font", bold_font);
 	}
 
-	const Ref<Font> italics_font = get_theme_font(SNAME("output_source_italic"), SNAME("EditorFonts"));
+	const Ref<Font> italics_font = get_theme_font(SNAME("output_source_italic"), EditorStringName(EditorFonts));
 	if (italics_font.is_valid()) {
 		log->add_theme_font_override("italics_font", italics_font);
 	}
 
-	const Ref<Font> bold_italics_font = get_theme_font(SNAME("output_source_bold_italic"), SNAME("EditorFonts"));
+	const Ref<Font> bold_italics_font = get_theme_font(SNAME("output_source_bold_italic"), EditorStringName(EditorFonts));
 	if (bold_italics_font.is_valid()) {
 		log->add_theme_font_override("bold_italics_font", bold_italics_font);
 	}
 
-	const Ref<Font> mono_font = get_theme_font(SNAME("output_source_mono"), SNAME("EditorFonts"));
+	const Ref<Font> mono_font = get_theme_font(SNAME("output_source_mono"), EditorStringName(EditorFonts));
 	if (mono_font.is_valid()) {
 		log->add_theme_font_override("mono_font", mono_font);
 	}
@@ -95,33 +96,33 @@ void EditorLog::_update_theme() {
 	log->add_theme_constant_override("text_highlight_h_padding", 0);
 	log->add_theme_constant_override("text_highlight_v_padding", 0);
 
-	const int font_size = get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts"));
+	const int font_size = get_theme_font_size(SNAME("output_source_size"), EditorStringName(EditorFonts));
 	log->add_theme_font_size_override("normal_font_size", font_size);
 	log->add_theme_font_size_override("bold_font_size", font_size);
 	log->add_theme_font_size_override("italics_font_size", font_size);
 	log->add_theme_font_size_override("mono_font_size", font_size);
 
-	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Popup")));
+	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
+	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusWarning")));
+	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 
-	clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
-	copy_button->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-	collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
-	show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+	copy_button->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+	collapse_button->set_icon(get_editor_theme_icon(SNAME("CombineLines")));
+	show_search_button->set_icon(get_editor_theme_icon(SNAME("Search")));
+	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-	theme_cache.error_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
-	theme_cache.error_icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
-	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
-	theme_cache.warning_icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
-	theme_cache.message_color = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
+	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+	theme_cache.error_icon = get_editor_theme_icon(SNAME("Error"));
+	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
+	theme_cache.message_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 }
 
 void EditorLog::_notification(int p_what) {
@@ -212,7 +213,7 @@ void EditorLog::clear() {
 	_clear_request();
 }
 
-void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
+void EditorLog::_process_message(const String &p_msg, MessageType p_type, bool p_clear) {
 	if (messages.size() > 0 && messages[messages.size() - 1].text == p_msg && messages[messages.size() - 1].type == p_type) {
 		// If previous message is the same as the new one, increase previous count rather than adding another
 		// instance to the messages list.
@@ -222,7 +223,7 @@ void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
 		_add_log_line(previous, collapse);
 	} else {
 		// Different message to the previous one received.
-		LogMessage message(p_msg, p_type);
+		LogMessage message(p_msg, p_type, p_clear);
 		_add_log_line(message);
 		messages.push_back(message);
 	}
@@ -237,9 +238,10 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	// search functionality (see the comments on the PR above for more details). This behavior
 	// also matches that of other IDE's.
 	Vector<String> lines = p_msg.split("\n", true);
+	int line_count = lines.size();
 
-	for (int i = 0; i < lines.size(); i++) {
-		_process_message(lines[i], p_type);
+	for (int i = 0; i < line_count; i++) {
+		_process_message(lines[i], p_type, i == line_count - 1);
 	}
 }
 
@@ -338,7 +340,9 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	} else {
 		log->add_text(p_message.text);
 	}
-	log->pop_all(); // Pop all unclosed tags.
+	if (p_message.clear || p_message.type != MSG_TYPE_STD_RICH) {
+		log->pop_all(); // Pop all unclosed tags.
+	}
 	log->add_newline();
 
 	if (p_replace_previous) {

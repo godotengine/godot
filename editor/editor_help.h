@@ -86,14 +86,11 @@ public:
 class EditorHelp : public VBoxContainer {
 	GDCLASS(EditorHelp, VBoxContainer);
 
-	enum Page {
-		PAGE_CLASS_LIST,
-		PAGE_CLASS_DESC,
-		PAGE_CLASS_PREV,
-		PAGE_CLASS_NEXT,
-		PAGE_SEARCH,
-		CLASS_SEARCH,
-
+	enum MethodType {
+		METHOD_TYPE_METHOD,
+		METHOD_TYPE_CONSTRUCTOR,
+		METHOD_TYPE_OPERATOR,
+		METHOD_TYPE_MAX
 	};
 
 	bool select_locked = false;
@@ -181,7 +178,7 @@ class EditorHelp : public VBoxContainer {
 	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
 	void _update_method_list(const Vector<DocData::MethodDoc> p_methods);
-	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, const String &p_method_type);
+	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
 	void _update_doc();
 
 	void _request_help(const String &p_string);

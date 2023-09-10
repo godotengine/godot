@@ -166,6 +166,7 @@ bool Paint::Impl::render(RenderMethod& renderer)
         Create a composition image. */
     if (compData && compData->method != CompositeMethod::ClipPath && !(compData->target->pImpl->ctxFlag & ContextFlag::FastTrack)) {
         auto region = smethod->bounds(renderer);
+        if (MASK_OPERATION(compData->method)) region.add(compData->target->pImpl->smethod->bounds(renderer));
         if (region.w == 0 || region.h == 0) return true;
         cmp = renderer.target(region, COMPOSITE_TO_COLORSPACE(renderer, compData->method));
         if (renderer.beginComposite(cmp, CompositeMethod::None, 255)) {
@@ -175,6 +176,7 @@ bool Paint::Impl::render(RenderMethod& renderer)
 
     if (cmp) renderer.beginComposite(cmp, compData->method, compData->target->pImpl->opacity);
 
+    renderer.blend(blendMethod);
     auto ret = smethod->render(renderer);
 
     if (cmp) renderer.endComposite(cmp);
@@ -183,7 +185,7 @@ bool Paint::Impl::render(RenderMethod& renderer)
 }
 
 
-RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pTransform, uint32_t opacity, Array<RenderData>& clips, uint32_t pFlag, bool clipper)
+RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
 {
     if (renderFlag & RenderUpdateFlag::Transform) {
         if (!rTransform) return nullptr;
@@ -209,11 +211,18 @@ RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pT
         auto tryFastTrack = false;
         if (target->identifier() == TVG_CLASS_ID_SHAPE) {
             if (method == CompositeMethod::ClipPath) tryFastTrack = true;
+            //OPTIMIZE HERE: Actually, this condition AlphaMask is useless. We can skip it?
             else if (method == CompositeMethod::AlphaMask) {
                 auto shape = static_cast<Shape*>(target);
                 uint8_t a;
                 shape->fillColor(nullptr, nullptr, nullptr, &a);
                 if (a == 255 && shape->opacity() == 255 && !shape->fill()) tryFastTrack = true;
+            //OPTIMIZE HERE: Actually, this condition InvAlphaMask is useless. We can skip it?
+            } else if (method == CompositeMethod::InvAlphaMask) {
+                auto shape = static_cast<Shape*>(target);
+                uint8_t a;
+                shape->fillColor(nullptr, nullptr, nullptr, &a);
+                if ((a == 0 || shape->opacity() == 0) && !shape->fill()) tryFastTrack = true;
             }
             if (tryFastTrack) {
                 RenderRegion viewport2;
@@ -227,7 +236,7 @@ RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pT
         }
         if (!compFastTrack) {
             childClipper = compData->method == CompositeMethod::ClipPath ? true : false;
-            trd = target->pImpl->update(renderer, pTransform, 255, clips, pFlag, childClipper);
+            trd = target->pImpl->update(renderer, pTransform, clips, 255, pFlag, childClipper);
             if (childClipper) clips.push(trd);
         }
     }
@@ -236,14 +245,14 @@ RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pT
     RenderData rd = nullptr;
     auto newFlag = static_cast<RenderUpdateFlag>(pFlag | renderFlag);
     renderFlag = RenderUpdateFlag::None;
-    opacity = (opacity * this->opacity) / 255;
+    opacity = MULTIPLY(opacity, this->opacity);
 
     if (rTransform && pTransform) {
         RenderTransform outTransform(pTransform, rTransform);
-        rd = smethod->update(renderer, &outTransform, opacity, clips, newFlag, clipper);
+        rd = smethod->update(renderer, &outTransform, clips, opacity, newFlag, clipper);
     } else {
         auto outTransform = pTransform ? pTransform : rTransform;
-        rd = smethod->update(renderer, outTransform, opacity, clips, newFlag, clipper);
+        rd = smethod->update(renderer, outTransform, clips, opacity, newFlag, clipper);
     }
 
     /* 3. Composition Post Processing */
@@ -371,7 +380,7 @@ Result Paint::composite(std::unique_ptr<Paint> target, CompositeMethod method) n
 {
     auto p = target.release();
     if (pImpl->composite(this, p, method)) return Result::Success;
-    if (p) delete(p);
+    delete(p);
     return Result::InvalidArguments;
 }
 
@@ -408,4 +417,18 @@ uint8_t Paint::opacity() const noexcept
 uint32_t Paint::identifier() const noexcept
 {
     return pImpl->id;
+}
+
+
+Result Paint::blend(BlendMethod method) const noexcept
+{
+    pImpl->blendMethod = method;
+
+    return Result::Success;
+}
+
+
+BlendMethod Paint::blend() const noexcept
+{
+    return pImpl->blendMethod;
 }

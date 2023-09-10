@@ -8,6 +8,7 @@
 	<tutorials>
 		<link title="Exporting for Android">$DOCS_URL/tutorials/export/exporting_for_android.html</link>
 		<link title="Custom builds for Android">$DOCS_URL/tutorials/export/android_custom_build.html</link>
+		<link title="Android plugins documentation index">$DOCS_URL/tutorials/platform/index.html</link>
 	</tutorials>
 	<members>
 		<member name="apk_expansion/SALT" type="String" setter="" getter="">
@@ -110,6 +111,10 @@
 		<member name="package/show_in_android_tv" type="bool" setter="" getter="">
 			If [code]true[/code], this app will show in Android TV launcher UI.
 		</member>
+		<member name="package/show_in_app_library" type="bool" setter="" getter="">
+			If [code]true[/code], this app will show in the device's app library.
+			[b]Note:[/b] This is [code]true[/code] by default.
+		</member>
 		<member name="package/signed" type="bool" setter="" getter="">
 			If [code]true[/code], package signing is enabled.
 		</member>
@@ -150,7 +155,7 @@
 			Allows an application to act as an AccountAuthenticator for the AccountManager.
 		</member>
 		<member name="permissions/battery_stats" type="bool" setter="" getter="">
-			Allows an application to collect battery statistics. Sett [url=https://developer.android.com/reference/android/Manifest.permission#BATTERY_STATS]BATTERY_STATS[/url].
+			Allows an application to collect battery statistics. See [url=https://developer.android.com/reference/android/Manifest.permission#BATTERY_STATS]BATTERY_STATS[/url].
 		</member>
 		<member name="permissions/bind_accessibility_service" type="bool" setter="" getter="">
 			Must be required by an AccessibilityService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_ACCESSIBILITY_SERVICE]BIND_ACCESSIBILITY_SERVICE[/url].
@@ -579,10 +584,10 @@
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.
 		</member>
 		<member name="version/code" type="int" setter="" getter="">
-			Machine-readable application version.
+			Machine-readable application version. This must be incremented for every new release pushed to the Play Store.
 		</member>
 		<member name="version/name" type="String" setter="" getter="">
-			Application version visible to the user.
+			Application version visible to the user. Falls back to [member ProjectSettings.application/config/version] if left empty.
 		</member>
 		<member name="xr_features/xr_mode" type="int" setter="" getter="">
 		</member>

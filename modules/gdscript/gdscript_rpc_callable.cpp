@@ -30,6 +30,7 @@
 
 #include "gdscript_rpc_callable.h"
 
+#include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
 #include "scene/main/node.h"
 
@@ -61,6 +62,10 @@ CallableCustom::CompareLessFunc GDScriptRPCCallable::get_compare_less_func() con
 
 ObjectID GDScriptRPCCallable::get_object() const {
 	return object->get_instance_id();
+}
+
+StringName GDScriptRPCCallable::get_method() const {
+	return method;
 }
 
 void GDScriptRPCCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

@@ -80,7 +80,7 @@ protected:
 		float upscale;
 		float aspect_ratio;
 		uint32_t layer;
-		uint32_t pad1;
+		uint32_t convert_to_srgb;
 	};
 
 	struct Blit {

@@ -123,6 +123,8 @@ public:
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;
 
+	virtual bool is_sandboxed() const override;
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;

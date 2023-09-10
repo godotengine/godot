@@ -499,11 +499,11 @@ hb_buffer_t::set_masks (hb_mask_t    value,
 			unsigned int cluster_start,
 			unsigned int cluster_end)
 {
-  hb_mask_t not_mask = ~mask;
-  value &= mask;
-
   if (!mask)
     return;
+
+  hb_mask_t not_mask = ~mask;
+  value &= mask;
 
   unsigned int count = len;
   for (unsigned int i = 0; i < count; i++)

@@ -348,7 +348,7 @@ void RendererCanvasRenderRD::free_polygon(PolygonID p_polygon) {
 
 ////////////////////
 
-void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size) {
+void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size, bool p_texture_is_data) {
 	if (p_texture == RID()) {
 		p_texture = default_canvas_texture;
 	}
@@ -363,7 +363,7 @@ void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RI
 	bool use_normal;
 	bool use_specular;
 
-	bool success = RendererRD::TextureStorage::get_singleton()->canvas_texture_get_uniform_set(p_texture, p_base_filter, p_base_repeat, shader.default_version_rd_shader, CANVAS_TEXTURE_UNIFORM_SET, uniform_set, size, specular_shininess, use_normal, use_specular);
+	bool success = RendererRD::TextureStorage::get_singleton()->canvas_texture_get_uniform_set(p_texture, p_base_filter, p_base_repeat, shader.default_version_rd_shader, CANVAS_TEXTURE_UNIFORM_SET, bool(push_constant.flags & FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR), uniform_set, size, specular_shininess, use_normal, use_specular, p_texture_is_data);
 	//something odd happened
 	if (!success) {
 		_bind_canvas_texture(p_draw_list, default_canvas_texture, p_base_filter, p_base_repeat, r_last_texture, push_constant, r_texpixel_size);
@@ -421,6 +421,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 	_update_transform_2d_to_mat2x3(base_transform, push_constant.world);
 
 	Color base_color = p_item->final_modulate;
+	bool use_linear_colors = texture_storage->render_target_is_using_hdr(p_render_target);
 
 	for (int i = 0; i < 4; i++) {
 		push_constant.modulation[i] = 0;
@@ -441,6 +442,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 	push_constant.lights[3] = 0;
 
 	uint32_t base_flags = 0;
+	base_flags |= use_linear_colors ? FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR : 0;
 
 	uint16_t light_count = 0;
 	PipelineLightMode light_mode;
@@ -505,7 +507,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 				//bind textures
 
-				_bind_canvas_texture(p_draw_list, rect->texture, current_filter, current_repeat, last_texture, push_constant, texpixel_size);
+				_bind_canvas_texture(p_draw_list, rect->texture, current_filter, current_repeat, last_texture, push_constant, texpixel_size, bool(rect->flags & CANVAS_RECT_MSDF));
 
 				Rect2 src_rect;
 				Rect2 dst_rect;
@@ -566,10 +568,15 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					push_constant.flags |= FLAGS_USE_LCD;
 				}
 
-				push_constant.modulation[0] = rect->modulate.r * base_color.r;
-				push_constant.modulation[1] = rect->modulate.g * base_color.g;
-				push_constant.modulation[2] = rect->modulate.b * base_color.b;
-				push_constant.modulation[3] = rect->modulate.a * base_color.a;
+				Color modulated = rect->modulate * base_color;
+				if (use_linear_colors) {
+					modulated = modulated.srgb_to_linear();
+				}
+
+				push_constant.modulation[0] = modulated.r;
+				push_constant.modulation[1] = modulated.g;
+				push_constant.modulation[2] = modulated.b;
+				push_constant.modulation[3] = modulated.a;
 
 				push_constant.src_rect[0] = src_rect.position.x;
 				push_constant.src_rect[1] = src_rect.position.y;
@@ -618,10 +625,15 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					}
 				}
 
-				push_constant.modulation[0] = np->color.r * base_color.r;
-				push_constant.modulation[1] = np->color.g * base_color.g;
-				push_constant.modulation[2] = np->color.b * base_color.b;
-				push_constant.modulation[3] = np->color.a * base_color.a;
+				Color modulated = np->color * base_color;
+				if (use_linear_colors) {
+					modulated = modulated.srgb_to_linear();
+				}
+
+				push_constant.modulation[0] = modulated.r;
+				push_constant.modulation[1] = modulated.g;
+				push_constant.modulation[2] = modulated.b;
+				push_constant.modulation[3] = modulated.a;
 
 				push_constant.src_rect[0] = src_rect.position.x;
 				push_constant.src_rect[1] = src_rect.position.y;
@@ -676,10 +688,15 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 				_bind_canvas_texture(p_draw_list, polygon->texture, current_filter, current_repeat, last_texture, push_constant, texpixel_size);
 
-				push_constant.modulation[0] = base_color.r;
-				push_constant.modulation[1] = base_color.g;
-				push_constant.modulation[2] = base_color.b;
-				push_constant.modulation[3] = base_color.a;
+				Color color = base_color;
+				if (use_linear_colors) {
+					color = color.srgb_to_linear();
+				}
+
+				push_constant.modulation[0] = color.r;
+				push_constant.modulation[1] = color.g;
+				push_constant.modulation[2] = color.b;
+				push_constant.modulation[3] = color.a;
 
 				for (int j = 0; j < 4; j++) {
 					push_constant.src_rect[j] = 0;
@@ -718,6 +735,9 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					push_constant.uvs[j * 2 + 0] = primitive->uvs[j].x;
 					push_constant.uvs[j * 2 + 1] = primitive->uvs[j].y;
 					Color col = primitive->colors[j] * base_color;
+					if (use_linear_colors) {
+						col = col.srgb_to_linear();
+					}
 					push_constant.colors[j * 2 + 0] = (uint32_t(Math::make_half_float(col.g)) << 16) | Math::make_half_float(col.r);
 					push_constant.colors[j * 2 + 1] = (uint32_t(Math::make_half_float(col.a)) << 16) | Math::make_half_float(col.b);
 				}
@@ -732,6 +752,9 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 						push_constant.uvs[j * 2 + 0] = primitive->uvs[j + 1].x;
 						push_constant.uvs[j * 2 + 1] = primitive->uvs[j + 1].y;
 						Color col = primitive->colors[j + 1] * base_color;
+						if (use_linear_colors) {
+							col = col.srgb_to_linear();
+						}
 						push_constant.colors[j * 2 + 0] = (uint32_t(Math::make_half_float(col.g)) << 16) | Math::make_half_float(col.r);
 						push_constant.colors[j * 2 + 1] = (uint32_t(Math::make_half_float(col.a)) << 16) | Math::make_half_float(col.b);
 					}
@@ -849,10 +872,15 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 				uint32_t surf_count = mesh_storage->mesh_get_surface_count(mesh);
 				static const PipelineVariant variant[RS::PRIMITIVE_MAX] = { PIPELINE_VARIANT_ATTRIBUTE_POINTS, PIPELINE_VARIANT_ATTRIBUTE_LINES, PIPELINE_VARIANT_ATTRIBUTE_LINES_STRIP, PIPELINE_VARIANT_ATTRIBUTE_TRIANGLES, PIPELINE_VARIANT_ATTRIBUTE_TRIANGLE_STRIP };
 
-				push_constant.modulation[0] = base_color.r * modulate.r;
-				push_constant.modulation[1] = base_color.g * modulate.g;
-				push_constant.modulation[2] = base_color.b * modulate.b;
-				push_constant.modulation[3] = base_color.a * modulate.a;
+				Color modulated = modulate * base_color;
+				if (use_linear_colors) {
+					modulated = modulated.srgb_to_linear();
+				}
+
+				push_constant.modulation[0] = modulated.r;
+				push_constant.modulation[1] = modulated.g;
+				push_constant.modulation[2] = modulated.b;
+				push_constant.modulation[3] = modulated.a;
 
 				for (int j = 0; j < 4; j++) {
 					push_constant.src_rect[j] = 0;
@@ -872,9 +900,9 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					RD::VertexFormatID vertex_format = RD::INVALID_FORMAT_ID;
 
 					if (mesh_instance.is_valid()) {
-						mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, vertex_array, vertex_format);
+						mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, false, vertex_array, vertex_format);
 					} else {
-						mesh_storage->mesh_surface_get_vertex_arrays_and_format(surface, input_mask, vertex_array, vertex_format);
+						mesh_storage->mesh_surface_get_vertex_arrays_and_format(surface, input_mask, false, vertex_array, vertex_format);
 					}
 
 					RID pipeline = pipeline_variants->variants[light_mode][variant[primitive]].get_render_pipeline(vertex_format, p_framebuffer_format);
@@ -1113,8 +1141,9 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 				if (material_data->shader_data->version.is_valid() && material_data->shader_data->valid) {
 					pipeline_variants = &material_data->shader_data->pipeline_variants;
 					// Update uniform set.
-					if (material_data->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(material_data->uniform_set)) { // Material may not have a uniform set.
-						RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_data->uniform_set, MATERIAL_UNIFORM_SET);
+					RID uniform_set = texture_storage->render_target_is_using_hdr(p_to_render_target) ? material_data->uniform_set : material_data->uniform_set_srgb;
+					if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) { // Material may not have a uniform set.
+						RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set, MATERIAL_UNIFORM_SET);
 						material_data->set_as_used();
 					}
 				} else {
@@ -2235,12 +2264,14 @@ RendererRD::MaterialStorage::ShaderData *RendererCanvasRenderRD::_create_shader_
 
 bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
-
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false);
+	bool uniform_set_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, true, false, RD::BARRIER_MASK_ALL_BARRIERS);
+	bool uniform_set_srgb_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set_srgb, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false, false, RD::BARRIER_MASK_ALL_BARRIERS);
+	return uniform_set_changed || uniform_set_srgb_changed;
 }
 
 RendererCanvasRenderRD::CanvasMaterialData::~CanvasMaterialData() {
 	free_parameters_uniform_set(uniform_set);
+	free_parameters_uniform_set(uniform_set_srgb);
 }
 
 RendererRD::MaterialStorage::MaterialData *RendererCanvasRenderRD::_create_material_func(CanvasShaderData *p_shader) {
@@ -2396,7 +2427,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
 		actions.renames["SHADOW_VERTEX"] = "shadow_vertex";
 		actions.renames["UV"] = "uv";
-		actions.renames["POINT_SIZE"] = "gl_PointSize";
+		actions.renames["POINT_SIZE"] = "point_size";
 
 		actions.renames["MODEL_MATRIX"] = "model_matrix";
 		actions.renames["CANVAS_MATRIX"] = "canvas_data.canvas_transform";
@@ -2444,6 +2475,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
 		actions.usage_defines["LIGHT"] = "#define LIGHT_SHADER_CODE_USED\n";
 		actions.usage_defines["SPECULAR_SHININESS"] = "#define SPECULAR_SHININESS_USED\n";
+		actions.usage_defines["POINT_SIZE"] = "#define USE_POINT_SIZE\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
@@ -2555,18 +2587,18 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 	{ // default index buffer
 
 		Vector<uint8_t> pv;
-		pv.resize(6 * 4);
+		pv.resize(6 * 2);
 		{
 			uint8_t *w = pv.ptrw();
-			int *p32 = (int *)w;
-			p32[0] = 0;
-			p32[1] = 1;
-			p32[2] = 2;
-			p32[3] = 0;
-			p32[4] = 2;
-			p32[5] = 3;
+			uint16_t *p16 = (uint16_t *)w;
+			p16[0] = 0;
+			p16[1] = 1;
+			p16[2] = 2;
+			p16[3] = 0;
+			p16[4] = 2;
+			p16[5] = 3;
 		}
-		shader.quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
+		shader.quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, pv);
 		shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 6);
 	}
 

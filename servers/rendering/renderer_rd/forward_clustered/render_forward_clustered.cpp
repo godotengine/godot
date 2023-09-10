@@ -252,6 +252,7 @@ bool RenderForwardClustered::free(RID p_rid) {
 template <RenderForwardClustered::PassMode p_pass_mode, uint32_t p_color_pass_flags>
 void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	RendererRD::ParticlesStorage *particles_storage = RendererRD::ParticlesStorage::get_singleton();
 	RD::DrawListID draw_list = p_draw_list;
 	RD::FramebufferFormatID framebuffer_format = p_framebuffer_Format;
 
@@ -433,10 +434,11 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		RID index_array_rd;
 
 		//skeleton and blend shape
+		bool pipeline_motion_vectors = pipeline_color_pass_flags & SceneShaderForwardClustered::PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS;
 		if (surf->owner->mesh_instance.is_valid()) {
-			mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
+			mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, pipeline->get_vertex_input_mask(), pipeline_motion_vectors, vertex_array_rd, vertex_format);
 		} else {
-			mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, pipeline->get_vertex_input_mask(), vertex_array_rd, vertex_format);
+			mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, pipeline->get_vertex_input_mask(), pipeline_motion_vectors, vertex_array_rd, vertex_format);
 		}
 
 		index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);
@@ -476,7 +478,9 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			prev_material_uniform_set = material_uniform_set;
 		}
 
-		if ((surf->owner->base_flags & (INSTANCE_DATA_FLAG_MULTIMESH | INSTANCE_DATA_FLAG_PARTICLES)) == INSTANCE_DATA_FLAG_MULTIMESH) {
+		if (surf->owner->base_flags & INSTANCE_DATA_FLAG_PARTICLES) {
+			particles_storage->particles_get_instance_buffer_motion_vectors_offsets(surf->owner->data->base, push_constant.multimesh_motion_vectors_current_offset, push_constant.multimesh_motion_vectors_previous_offset);
+		} else if (surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH) {
 			mesh_storage->_multimesh_get_motion_vectors_offsets(surf->owner->data->base, push_constant.multimesh_motion_vectors_current_offset, push_constant.multimesh_motion_vectors_previous_offset);
 		} else {
 			push_constant.multimesh_motion_vectors_current_offset = 0;
@@ -779,6 +783,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 		scene_state.used_screen_texture = false;
 		scene_state.used_normal_texture = false;
 		scene_state.used_depth_texture = false;
+		scene_state.used_lightmap = false;
 	}
 	uint32_t lightmap_captures_used = 0;
 
@@ -994,6 +999,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 
 				if (uses_lightmap) {
 					surf->sort.uses_lightmap = 1;
+					scene_state.used_lightmap = true;
 				}
 
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING) {
@@ -1008,13 +1014,6 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DEPTH_TEXTURE) {
 					scene_state.used_depth_texture = true;
 				}
-
-				if (p_color_pass_flags & COLOR_PASS_FLAG_MOTION_VECTORS) {
-					if ((flags & (INSTANCE_DATA_FLAG_MULTIMESH | INSTANCE_DATA_FLAG_PARTICLES)) == INSTANCE_DATA_FLAG_MULTIMESH && RendererRD::MeshStorage::get_singleton()->_multimesh_enable_motion_vectors(inst->data->base)) {
-						inst->transforms_uniform_set = mesh_storage->multimesh_get_3d_uniform_set(inst->data->base, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
-					}
-				}
-
 			} else if (p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) {
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW) {
 					rl->add_element(surf);
@@ -1433,7 +1432,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		// Note: when rendering stereoscopic (multiview) we are using our combined frustum projection to create
 		// our cluster data. We use reprojection in the shader to adjust for our left/right eye.
 		// This only works as we don't filter our cluster by depth buffer.
-		// If we ever make this optimisation we should make it optional and only use it in mono.
+		// If we ever make this optimization we should make it optional and only use it in mono.
 		// What we win by filtering out a few lights, we loose by having to do the work double for stereo.
 		current_cluster_builder->begin(p_render_data->scene_data->cam_transform, p_render_data->scene_data->cam_projection, !p_render_data->reflection_probe.is_valid());
 	}
@@ -1628,6 +1627,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		if (rb->get_use_taa() || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
 			color_pass_flags |= COLOR_PASS_FLAG_MOTION_VECTORS;
+			scene_shader.enable_advanced_shader_group();
 		}
 
 		if (p_render_data->voxel_gi_instances->size() > 0) {
@@ -1647,6 +1647,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		if (p_render_data->scene_data->view_count > 1) {
 			color_pass_flags |= COLOR_PASS_FLAG_MULTIVIEW;
+			// Try enabling here in case is_xr_enabled() returns false.
+			scene_shader.shader.enable_group(SceneShaderForwardClustered::SHADER_GROUP_MULTIVIEW);
 		}
 
 		color_framebuffer = rb_data->get_color_pass_fb(color_pass_flags);
@@ -1712,6 +1714,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		color_pass_flags |= COLOR_PASS_FLAG_SEPARATE_SPECULAR;
 		color_framebuffer = rb_data->get_color_pass_fb(color_pass_flags);
 	}
+
+	if (using_sss || using_separate_specular || scene_state.used_lightmap || using_voxelgi) {
+		scene_shader.enable_advanced_shader_group(p_render_data->scene_data->view_count > 1);
+	}
+
 	RID radiance_texture;
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
@@ -1759,7 +1766,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			case RS::ENV_BG_CANVAS: {
 				if (!is_reflection_probe) {
 					RID texture = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(rb->get_render_target());
-					copy_effects->copy_to_fb_rect(texture, color_only_framebuffer, Rect2i(), false, false, false, false, RID(), false, false, true);
+					bool convert_to_linear = !RendererRD::TextureStorage::get_singleton()->render_target_is_using_hdr(rb->get_render_target());
+					copy_effects->copy_to_fb_rect(texture, color_only_framebuffer, Rect2i(), false, false, false, false, RID(), false, false, convert_to_linear);
 				}
 				keep_color = true;
 			} break;
@@ -1837,7 +1845,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, nullptr, RID());
 
-		bool finish_depth = using_ssao || using_sdfgi || using_voxelgi;
+		bool finish_depth = using_ssao || using_ssil || using_sdfgi || using_voxelgi;
 		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, depth_pass_mode, 0, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 		_render_list_with_threads(&render_list_params, depth_framebuffer, needs_pre_resolve ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, needs_pre_resolve ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_CLEAR, finish_depth ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, needs_pre_resolve ? Vector<Color>() : depth_pass_clear);
 
@@ -2484,6 +2492,8 @@ void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform
 	render_data.cluster_max_elements = 32;
 	render_data.instances = &p_instances;
 
+	scene_shader.enable_advanced_shader_group();
+
 	_update_render_base_uniform_set();
 
 	_setup_environment(&render_data, true, Vector2(1, 1), false, Color());
@@ -2532,6 +2542,8 @@ void RenderForwardClustered::_render_uv2(const PagedArray<RenderGeometryInstance
 	render_data.cluster_size = 1;
 	render_data.cluster_max_elements = 32;
 	render_data.instances = &p_instances;
+
+	scene_shader.enable_advanced_shader_group();
 
 	_update_render_base_uniform_set();
 
@@ -3321,6 +3333,10 @@ void RenderForwardClustered::sdfgi_update(const Ref<RenderSceneBuffers> &p_rende
 		return;
 	}
 
+	// Ensure advanced shaders are available if SDFGI is used.
+	// Call here as this is the first entry point for SDFGI.
+	scene_shader.enable_advanced_shader_group();
+
 	static const uint32_t history_frames_to_converge[RS::ENV_SDFGI_CONVERGE_MAX] = { 5, 10, 15, 20, 25, 30 };
 	uint32_t requested_history_size = history_frames_to_converge[gi.sdfgi_frames_to_converge];
 
@@ -3703,6 +3719,10 @@ void RenderForwardClustered::_geometry_instance_update(RenderGeometryInstance *p
 			// Particles haven't been cleared or updated, update once now to ensure they are ready to render.
 			particles_storage->update_particles();
 		}
+
+		if (ginstance->data->dirty_dependencies) {
+			particles_storage->particles_update_dependency(ginstance->data->base, &ginstance->data->dependency_tracker);
+		}
 	} else if (ginstance->data->base_type == RS::INSTANCE_MESH) {
 		if (mesh_storage->skeleton_is_valid(ginstance->data->skeleton)) {
 			ginstance->transforms_uniform_set = mesh_storage->skeleton_get_3d_uniform_set(ginstance->data->skeleton, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
@@ -3742,6 +3762,7 @@ void RenderForwardClustered::_geometry_instance_dependency_changed(Dependency::D
 		case Dependency::DEPENDENCY_CHANGED_MATERIAL:
 		case Dependency::DEPENDENCY_CHANGED_MESH:
 		case Dependency::DEPENDENCY_CHANGED_PARTICLES:
+		case Dependency::DEPENDENCY_CHANGED_PARTICLES_INSTANCES:
 		case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
 		case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA: {
 			static_cast<RenderGeometryInstance *>(p_tracker->userdata)->_mark_dirty();

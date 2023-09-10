@@ -283,8 +283,8 @@ HB_FUNCOBJ (hb_bool);
 // Compression function for Merkle-Damgard construction.
 // This function is generated using the framework provided.
 #define mix(h) (					\
-			(h) ^= (h) >> 23,		\
-			(h) *= 0x2127599bf4325c37ULL,	\
+			(void) ((h) ^= (h) >> 23),		\
+			(void) ((h) *= 0x2127599bf4325c37ULL),	\
 			(h) ^= (h) >> 47)
 
 static inline uint64_t fasthash64(const void *buf, size_t len, uint64_t seed)
@@ -362,10 +362,10 @@ struct
   // https://github.com/harfbuzz/harfbuzz/pull/4228#issuecomment-1565079537
   template <typename T,
 	    hb_enable_if (std::is_integral<T>::value && sizeof (T) <= sizeof (uint32_t))> constexpr auto
-  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, v * 2654435761u /* Knuh's multiplicative hash */)
+  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, (uint32_t) v * 2654435761u /* Knuh's multiplicative hash */)
   template <typename T,
 	    hb_enable_if (std::is_integral<T>::value && sizeof (T) > sizeof (uint32_t))> constexpr auto
-  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, (v ^ (v >> 32)) * 2654435761u /* Knuth's multiplicative hash */)
+  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, (uint32_t) (v ^ (v >> 32)) * 2654435761u /* Knuth's multiplicative hash */)
 
   template <typename T> constexpr auto
   impl (const T& v, hb_priority<0>) const HB_RETURN (uint32_t, std::hash<hb_decay<decltype (hb_deref (v))>>{} (hb_deref (v)))

@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GPUParticles3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		3D particle emitter.
+		A 3D particle emitter.
 	</brief_description>
 	<description>
 		3D particle node used to create a variety of particle systems and effects. [GPUParticles3D] features an emitter that generates some number of particles at a given rate.
 		Use the [code]process_material[/code] property to add a [ParticleProcessMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
+		<link title="Particle systems (3D)">$DOCS_URL/tutorials/3d/particles/index.html</link>
 		<link title="Controlling thousands of fish with Particles">$DOCS_URL/tutorials/performance/vertex_animation/controlling_thousands_of_fish.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
@@ -16,6 +17,13 @@
 			<return type="AABB" />
 			<description>
 				Returns the axis-aligned bounding box that contains all the particles that are active in the current frame.
+			</description>
+		</method>
+		<method name="convert_from_particles">
+			<return type="void" />
+			<param index="0" name="particles" type="Node" />
+			<description>
+				Sets this node's properties to match a given [CPUParticles3D] node.
 			</description>
 		</method>
 		<method name="emit_particle">
@@ -59,6 +67,7 @@
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles3D.DrawOrder" default="0">
 			Particle draw order. Uses [enum DrawOrder] values.
+			[b]Note:[/b] [constant DRAW_ORDER_INDEX] is the only option that supports motion vectors for effects like TAA. It is suggested to use this draw order if the particles are opaque to fix ghosting artifacts.
 		</member>
 		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
 			[Mesh] that is drawn for the first draw pass.

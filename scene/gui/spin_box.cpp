@@ -210,6 +210,11 @@ void SpinBox::_line_edit_focus_exit() {
 	if (line_edit->is_menu_visible()) {
 		return;
 	}
+	// Discontinue because the focus_exit was caused by canceling.
+	if (Input::get_singleton()->is_action_pressed("ui_cancel")) {
+		_update_text();
+		return;
+	}
 
 	_text_submitted(line_edit->get_text());
 }

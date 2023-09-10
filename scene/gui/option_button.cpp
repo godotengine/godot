@@ -30,9 +30,25 @@
 
 #include "option_button.h"
 
+#include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 
 static const int NONE_SELECTED = -1;
+
+void OptionButton::shortcut_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (disable_shortcuts) {
+		return;
+	}
+
+	if (p_event->is_pressed() && !p_event->is_echo() && !is_disabled() && is_visible_in_tree() && popup->activate_item_by_event(p_event, false)) {
+		accept_event();
+		return;
+	}
+
+	Button::shortcut_input(p_event);
+}
 
 Size2 OptionButton::get_minimum_size() const {
 	Size2 minsize;
@@ -78,6 +94,7 @@ void OptionButton::_update_theme_item_cache() {
 void OptionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			_refresh_size_cache();
 			if (has_theme_icon(SNAME("arrow"))) {
 				if (is_layout_rtl()) {
 					_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
@@ -446,7 +463,7 @@ void OptionButton::_refresh_size_cache() {
 	cache_refresh_pending = false;
 
 	if (fit_to_longest_item) {
-		_cached_size = Vector2();
+		_cached_size = theme_cache.normal->get_minimum_size();
 		for (int i = 0; i < get_item_count(); i++) {
 			_cached_size = _cached_size.max(get_minimum_size_for_text_and_icon(popup->get_item_xl_text(i), get_item_icon(i)));
 		}
@@ -573,6 +590,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_fit_to_longest_item"), &OptionButton::is_fit_to_longest_item);
 	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &OptionButton::set_allow_reselect);
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &OptionButton::get_allow_reselect);
+	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &OptionButton::set_disable_shortcuts);
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
@@ -583,9 +601,14 @@ void OptionButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
 }
 
+void OptionButton::set_disable_shortcuts(bool p_disabled) {
+	disable_shortcuts = p_disabled;
+}
+
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
+	set_process_shortcut_input(true);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
@@ -595,7 +618,6 @@ OptionButton::OptionButton(const String &p_text) :
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed).bind(false));
-	_refresh_size_cache();
 }
 
 OptionButton::~OptionButton() {

@@ -289,11 +289,11 @@ const GodotDisplayScreen = {
 			const isFullscreen = GodotDisplayScreen.isFullscreen();
 			const wantsFullWindow = GodotConfig.canvas_resize_policy === 2;
 			const noResize = GodotConfig.canvas_resize_policy === 0;
-			const wwidth = GodotDisplayScreen.desired_size[0];
-			const wheight = GodotDisplayScreen.desired_size[1];
+			const dWidth = GodotDisplayScreen.desired_size[0];
+			const dHeight = GodotDisplayScreen.desired_size[1];
 			const canvas = GodotConfig.canvas;
-			let width = wwidth;
-			let height = wheight;
+			let width = dWidth;
+			let height = dHeight;
 			if (noResize) {
 				// Don't resize canvas, just update GL if needed.
 				if (canvas.width !== width || canvas.height !== height) {

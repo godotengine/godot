@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
 #include "scene/gui/check_button.h"
@@ -70,7 +71,6 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 }
 
 void ProjectSettingsEditor::queue_save() {
-	EditorNode::get_singleton()->notify_settings_changed();
 	timer->start();
 }
 
@@ -502,7 +502,7 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
-	const Ref<Texture2D> builtin_icon = get_theme_icon(SNAME("PinPressed"), SNAME("EditorIcons"));
+	const Ref<Texture2D> builtin_icon = get_editor_theme_icon(SNAME("PinPressed"));
 	for (const PropertyInfo &E : props) {
 		const String property_name = E.name;
 
@@ -534,11 +534,11 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 }
 
 void ProjectSettingsEditor::_update_theme() {
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-	restart_close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+	restart_close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
 	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-	restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	restart_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
+	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 	type_box->clear();
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -547,7 +547,7 @@ void ProjectSettingsEditor::_update_theme() {
 			continue;
 		}
 		String type = Variant::get_type_name(Variant::Type(i));
-		type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+		type_box->add_icon_item(get_editor_theme_icon(type), type, i);
 	}
 }
 
@@ -734,7 +734,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	import_defaults_editor = memnew(ImportDefaultsEditor);
 	import_defaults_editor->set_name(TTR("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
-	import_defaults_editor->connect("project_settings_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 
 	MovieWriter::set_extensions_hint(); // ensure extensions are properly displayed.
 }

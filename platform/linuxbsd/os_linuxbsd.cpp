@@ -164,6 +164,27 @@ String OS_LinuxBSD::get_processor_name() const {
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name from `/proc/cpuinfo`. Returning an empty string."));
 }
 
+bool OS_LinuxBSD::is_sandboxed() const {
+	// This function is derived from SDL:
+	// https://github.com/libsdl-org/SDL/blob/main/src/core/linux/SDL_sandbox.c#L28-L45
+
+	if (access("/.flatpak-info", F_OK) == 0) {
+		return true;
+	}
+
+	// For Snap, we check multiple variables because they might be set for
+	// unrelated reasons. This is the same thing WebKitGTK does.
+	if (has_environment("SNAP") && has_environment("SNAP_NAME") && has_environment("SNAP_REVISION")) {
+		return true;
+	}
+
+	if (access("/run/host/container-manager", F_OK) == 0) {
+		return true;
+	}
+
+	return false;
+}
+
 void OS_LinuxBSD::finalize() {
 	if (main_loop) {
 		memdelete(main_loop);

@@ -423,7 +423,7 @@ private:
 
 	bool move_caret_on_right_click = true;
 
-	bool caret_mid_grapheme_enabled = true;
+	bool caret_mid_grapheme_enabled = false;
 
 	bool multi_carets_enabled = true;
 

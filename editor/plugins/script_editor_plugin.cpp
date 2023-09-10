@@ -48,10 +48,12 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_script.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
 #include "editor/find_in_files.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_run_bar.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
@@ -381,7 +383,7 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -662,7 +664,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	}
 	if (Object::cast_to<EditorHelp>(c)) {
 		script_name_label->set_text(Object::cast_to<EditorHelp>(c)->get_class());
-		script_icon->set_texture(get_theme_icon(SNAME("Help"), SNAME("EditorIcons")));
+		script_icon->set_texture(get_editor_theme_icon(SNAME("Help")));
 		if (is_visible_in_tree()) {
 			Object::cast_to<EditorHelp>(c)->set_focused();
 		}
@@ -1347,27 +1349,40 @@ void ScriptEditor::_menu_option(int p_option) {
 				scr->reload(true);
 
 			} break;
+
 			case FILE_RUN: {
 				Ref<Script> scr = current->get_edited_resource();
 				if (scr == nullptr || scr.is_null()) {
-					EditorNode::get_singleton()->show_warning(TTR("Can't obtain the script for running."));
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the edited file because it's not a script."), EditorToaster::SEVERITY_WARNING);
 					break;
-				}
-				if (!scr->is_tool()) {
-					EditorNode::get_singleton()->show_warning(TTR("Script is not in tool mode, will not be able to run."));
-					return;
 				}
 
 				current->apply_code();
-				Error err = scr->reload(false); //hard reload script before running always
 
-				if (err != OK) {
-					EditorNode::get_singleton()->show_warning(TTR("Script failed reloading, check console for errors."));
+				Error err = scr->reload(false); // Always hard reload the script before running.
+				if (err != OK || !scr->is_valid()) {
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it contains errors, check the output log."), EditorToaster::SEVERITY_WARNING);
 					return;
 				}
 
+				// Perform additional checks on the script to evaluate if it's runnable.
+
+				bool is_runnable = true;
 				if (!ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
-					EditorNode::get_singleton()->show_warning(TTR("To run this script, it must inherit EditorScript and be set to tool mode."));
+					is_runnable = false;
+
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it doesn't extend EditorScript."), EditorToaster::SEVERITY_WARNING);
+				}
+				if (!scr->is_tool()) {
+					is_runnable = false;
+
+					if (scr->get_class() == "GDScript") {
+						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script (add the @tool annotation at the top)."), EditorToaster::SEVERITY_WARNING);
+					} else {
+						EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it's not a tool script."), EditorToaster::SEVERITY_WARNING);
+					}
+				}
+				if (!is_runnable) {
 					return;
 				}
 
@@ -1375,6 +1390,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				es->set_script(scr);
 				es->run();
 			} break;
+
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
 					_ask_close_current_unsaved_tab(current);
@@ -1596,23 +1612,25 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			help_search->set_icon(get_theme_icon(SNAME("HelpSearch"), SNAME("EditorIcons")));
-			site_search->set_icon(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
+			tab_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
+
+			help_search->set_icon(get_editor_theme_icon(SNAME("HelpSearch")));
+			site_search->set_icon(get_editor_theme_icon(SNAME("ExternalLink")));
 
 			if (is_layout_rtl()) {
-				script_forward->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
-				script_back->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				script_forward->set_icon(get_editor_theme_icon(SNAME("Back")));
+				script_back->set_icon(get_editor_theme_icon(SNAME("Forward")));
 			} else {
-				script_forward->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
-				script_back->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
+				script_forward->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				script_back->set_icon(get_editor_theme_icon(SNAME("Back")));
 			}
 
-			members_overview_alphabeta_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
+			members_overview_alphabeta_sort_button->set_icon(get_editor_theme_icon(SNAME("Sort")));
 
-			filter_scripts->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			filter_methods->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			filter_scripts->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			filter_methods->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			filename->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 
 			recent_scripts->reset_size();
 
@@ -1623,6 +1641,9 @@ void ScriptEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			// Can't set own styles in NOTIFICATION_THEME_CHANGED, so for now this will do.
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+
 			get_tree()->connect("tree_changed", callable_mp(this, &ScriptEditor::_tree_changed));
 			InspectorDock::get_singleton()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
 			EditorNode::get_singleton()->connect("request_help_search", callable_mp(this, &ScriptEditor::_help_search));
@@ -1791,6 +1812,10 @@ void ScriptEditor::ensure_select_current() {
 	_update_selected_editor_menu();
 }
 
+bool ScriptEditor::is_editor_floating() {
+	return is_floating;
+}
+
 void ScriptEditor::_find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &used) {
 	if (p_current != p_base && p_current->get_owner() != p_base) {
 		return;
@@ -1938,9 +1963,9 @@ void ScriptEditor::_update_script_colors() {
 	bool script_temperature_enabled = EDITOR_GET("text_editor/script_list/script_temperature_enabled");
 
 	int hist_size = EDITOR_GET("text_editor/script_list/script_temperature_history_size");
-	Color hot_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	Color hot_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	hot_color.set_s(hot_color.get_s() * 0.9);
-	Color cold_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+	Color cold_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 
 	for (int i = 0; i < script_list->get_item_count(); i++) {
 		int c = script_list->get_item_metadata(i);
@@ -2080,7 +2105,7 @@ void ScriptEditor::_update_script_names() {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
 		if (eh) {
 			String name = eh->get_class();
-			Ref<Texture2D> icon = get_theme_icon(SNAME("Help"), SNAME("EditorIcons"));
+			Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Help"));
 			String tooltip = vformat(TTR("%s Class Reference"), name);
 
 			_ScriptEditorItemData sd;
@@ -2131,7 +2156,7 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	Color tool_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	Color tool_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	tool_color.set_s(tool_color.get_s() * 1.5);
 	for (int i = 0; i < sedata_filtered.size(); i++) {
 		script_list->add_item(sedata_filtered[i].name, sedata_filtered[i].icon);
@@ -2332,7 +2357,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 				}
 
 				if (p_line > 0) {
-					se->goto_line(p_line - 1);
+					se->goto_line(p_line);
 				}
 			}
 			_update_script_names();
@@ -2427,8 +2452,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	_test_script_times_on_disk(p_resource);
 	_update_modified_scripts_for_external_editor(p_resource);
 
-	if (p_line > 0) {
-		se->goto_line(p_line - 1);
+	if (p_line >= 0) {
+		se->goto_line(p_line);
 	}
 
 	notify_script_changed(p_resource);
@@ -2866,7 +2891,7 @@ Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	EditorHelp *eh = Object::cast_to<EditorHelp>(cur_node);
 	if (eh) {
 		preview_name = eh->get_class();
-		preview_icon = get_theme_icon(SNAME("Help"), SNAME("EditorIcons"));
+		preview_icon = get_editor_theme_icon(SNAME("Help"));
 	}
 
 	if (!preview_icon.is_null()) {
@@ -3623,7 +3648,7 @@ void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_numb
 		Ref<Resource> res = ResourceLoader::load(fpath);
 
 		if (fpath.get_extension() == "gdshader") {
-			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor("Shader"));
+			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
 			shader_editor->edit(res.ptr());
 			shader_editor->make_visible(true);
 			shader_editor->get_shader_editor(res)->goto_line_selection(line_number - 1, begin, end);
@@ -3747,6 +3772,7 @@ void ScriptEditor::_on_find_in_files_modified_files(PackedStringArray paths) {
 
 void ScriptEditor::_window_changed(bool p_visible) {
 	make_floating->set_visible(!p_visible);
+	is_floating = p_visible;
 }
 
 void ScriptEditor::_filter_scripts_text_changed(const String &p_newtext) {
@@ -4118,9 +4144,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	ScriptServer::edit_request_func = _open_script_request;
 
-	add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
-	tab_container->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditor"), SNAME("EditorStyles")));
-
 	Ref<EditorJSONSyntaxHighlighter> json_syntax_highlighter;
 	json_syntax_highlighter.instantiate();
 	register_syntax_highlighter(json_syntax_highlighter);
@@ -4146,9 +4169,9 @@ void ScriptEditorPlugin::_save_last_editor(String p_editor) {
 void ScriptEditorPlugin::_window_visibility_changed(bool p_visible) {
 	_focus_another_editor();
 	if (p_visible) {
-		script_editor->add_theme_style_override("panel", script_editor->get_theme_stylebox("ScriptEditorPanelFloating", "EditorStyles"));
+		script_editor->add_theme_style_override("panel", script_editor->get_theme_stylebox("ScriptEditorPanelFloating", EditorStringName(EditorStyles)));
 	} else {
-		script_editor->add_theme_style_override("panel", script_editor->get_theme_stylebox("ScriptEditorPanel", "EditorStyles"));
+		script_editor->add_theme_style_override("panel", script_editor->get_theme_stylebox("ScriptEditorPanel", EditorStringName(EditorStyles)));
 	}
 }
 

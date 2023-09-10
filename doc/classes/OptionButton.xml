@@ -6,9 +6,7 @@
 	<description>
 		[OptionButton] is a type of button that brings up a dropdown with selectable items when pressed. The item selected becomes the "current" item and is displayed as the button text.
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] Properties [member Button.text] and [member Button.icon] are automatically set based on the selected item. They shouldn't be changed manually.
 		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
-		[b]Note:[/b] The ID values used for items are 32-bit, unlike [int] which is always 64-bit. They go from [code]-2147483648[/code] to [code]2147483647[/code].
 		[b]Note:[/b] The [member Button.text] and [member Button.icon] properties are set automatically based on the selected item. They shouldn't be changed manually.
 	</description>
 	<tutorials>
@@ -148,6 +146,13 @@
 				Passing [code]-1[/code] as the index deselects any currently selected item.
 			</description>
 		</method>
+		<method name="set_disable_shortcuts">
+			<return type="void" />
+			<param index="0" name="disabled" type="bool" />
+			<description>
+				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
+			</description>
+		</method>
 		<method name="set_item_disabled">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
@@ -262,7 +267,7 @@
 		<theme_item name="arrow_margin" data_type="constant" type="int" default="4">
 			The horizontal space between the arrow icon and the right edge of the button.
 		</theme_item>
-		<theme_item name="h_separation" data_type="constant" type="int" default="2">
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between [OptionButton]'s icon and text. Negative values will be treated as [code]0[/code] when used.
 		</theme_item>
 		<theme_item name="modulate_arrow" data_type="constant" type="int" default="0">

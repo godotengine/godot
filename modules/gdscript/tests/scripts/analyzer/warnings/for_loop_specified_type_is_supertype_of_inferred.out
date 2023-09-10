@@ -1,0 +1,5 @@
+GDTEST_OK
+>> WARNING
+>> Line: 3
+>> REDUNDANT_FOR_VARIABLE_TYPE
+>> The for loop iterator "node" has inferred type "Node2D" but its supertype "Node" is specified.

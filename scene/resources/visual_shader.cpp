@@ -330,6 +330,14 @@ void VisualShaderNode::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
 }
 
+bool VisualShaderNode::is_closable() const {
+	return closable;
+}
+
+void VisualShaderNode::set_closable(bool p_closable) {
+	closable = p_closable;
+}
+
 Vector<VisualShader::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	return Vector<VisualShader::DefaultTextureParam>();
 }

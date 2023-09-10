@@ -70,9 +70,6 @@ public:
 private:
 	RD::DataFormat texture_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 
-	RID index_buffer;
-	RID index_array;
-
 	enum SkyTextureSetVersion {
 		SKY_TEXTURE_SET_BACKGROUND,
 		SKY_TEXTURE_SET_HALF_RES,

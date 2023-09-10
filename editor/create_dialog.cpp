@@ -37,11 +37,12 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
 	_fill_type_list();
 
-	icon_fallback = search_options->has_theme_icon(base_type, SNAME("EditorIcons")) ? base_type : "Object";
+	icon_fallback = search_options->has_theme_icon(base_type, EditorStringName(EditorIcons)) ? base_type : "Object";
 
 	if (p_dont_clear) {
 		search_box->select_all();
@@ -170,7 +171,7 @@ void CreateDialog::_update_search() {
 
 	TreeItem *root = search_options->create_item();
 	root->set_text(0, base_type);
-	root->set_icon(0, search_options->get_theme_icon(icon_fallback, SNAME("EditorIcons")));
+	root->set_icon(0, search_options->get_editor_theme_icon(icon_fallback));
 	search_options_types[base_type] = root;
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
 
@@ -289,24 +290,22 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
 			p_type_category == TypeCategory::OTHER_TYPE;
-	bool is_virtual = ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type);
+	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
 
-	r_item->set_meta(SNAME("__instantiable"), can_instantiate && !is_virtual);
+	r_item->set_meta(SNAME("__instantiable"), instantiable);
 
-	if (can_instantiate && !is_virtual) {
-		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
-	} else {
-		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
-		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type));
+	if (!instantiable) {
+		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	}
 
 	bool is_deprecated = EditorHelp::get_doc_data()->class_list[p_type].is_deprecated;
 	bool is_experimental = EditorHelp::get_doc_data()->class_list[p_type].is_experimental;
 
 	if (is_deprecated) {
-		r_item->add_button(0, get_theme_icon("StatusError", SNAME("EditorIcons")), 0, false, TTR("This class is marked as deprecated."));
+		r_item->add_button(0, get_editor_theme_icon("StatusError"), 0, false, TTR("This class is marked as deprecated."));
 	} else if (is_experimental) {
-		r_item->add_button(0, get_theme_icon("NodeWarning", SNAME("EditorIcons")), 0, false, TTR("This class is marked as experimental."));
+		r_item->add_button(0, get_editor_theme_icon("NodeWarning"), 0, false, TTR("This class is marked as experimental."));
 	}
 
 	if (!search_box->get_text().is_empty()) {
@@ -452,8 +451,8 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 }
 
 void CreateDialog::_update_theme() {
-	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-	favorite->set_icon(search_options->get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
+	search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
+	favorite->set_icon(search_options->get_editor_theme_icon(SNAME("Favorites")));
 }
 
 void CreateDialog::_notification(int p_what) {
@@ -477,7 +476,7 @@ void CreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			const int icon_width = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			search_options->add_theme_constant_override("icon_max_width", icon_width);
 			favorites->add_theme_constant_override("icon_max_width", icon_width);
 			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
@@ -714,7 +713,7 @@ void CreateDialog::_save_and_update_favorite_list() {
 
 				TreeItem *ti = favorites->create_item(root);
 				ti->set_text(0, l);
-				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
 	}
@@ -731,7 +730,7 @@ void CreateDialog::_load_favorites_and_history() {
 			String name = l.get_slicec(' ', 0);
 
 			if (EditorNode::get_editor_data().is_type_recognized(name) && !_is_class_disabled_by_feature_profile(name)) {
-				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
 	}

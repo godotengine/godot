@@ -228,6 +228,11 @@
 				Emitted when [member cell_size] changes.
 			</description>
 		</signal>
+		<signal name="changed">
+			<description>
+				Emitted when the [MeshLibrary] of this GridMap changes.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="INVALID_CELL_ITEM" value="-1">

@@ -929,6 +929,17 @@ Geometry3D *Geometry3D::get_singleton() {
 	return singleton;
 }
 
+Vector<Vector3> Geometry3D::compute_convex_mesh_points(const TypedArray<Plane> &p_planes) {
+	Vector<Plane> planes_vec;
+	int size = p_planes.size();
+	planes_vec.resize(size);
+	for (int i = 0; i < size; ++i) {
+		planes_vec.set(i, p_planes[i]);
+	}
+	Variant ret = ::Geometry3D::compute_convex_mesh_points(planes_vec.ptr(), size);
+	return ret;
+}
+
 TypedArray<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
 	Variant ret = ::Geometry3D::build_box_planes(p_extents);
 	return ret;
@@ -959,6 +970,11 @@ Vector3 Geometry3D::get_closest_point_to_segment(const Vector3 &p_point, const V
 Vector3 Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
 	Vector3 s[2] = { p_a, p_b };
 	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, s);
+}
+
+Vector3 Geometry3D::get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
+	Vector3 res = ::Geometry3D::triangle_get_barycentric_coords(p_v0, p_v1, p_v2, p_point);
+	return res;
 }
 
 Variant Geometry3D::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
@@ -1024,6 +1040,7 @@ Vector<Vector3> Geometry3D::clip_polygon(const Vector<Vector3> &p_points, const 
 }
 
 void Geometry3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("compute_convex_mesh_points", "planes"), &Geometry3D::compute_convex_mesh_points);
 	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &Geometry3D::build_box_planes);
 	ClassDB::bind_method(D_METHOD("build_cylinder_planes", "radius", "height", "sides", "axis"), &Geometry3D::build_cylinder_planes, DEFVAL(Vector3::AXIS_Z));
 	ClassDB::bind_method(D_METHOD("build_capsule_planes", "radius", "height", "sides", "lats", "axis"), &Geometry3D::build_capsule_planes, DEFVAL(Vector3::AXIS_Z));
@@ -1033,6 +1050,8 @@ void Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "point", "s1", "s2"), &Geometry3D::get_closest_point_to_segment);
 
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &Geometry3D::get_closest_point_to_segment_uncapped);
+
+	ClassDB::bind_method(D_METHOD("get_triangle_barycentric_coords", "point", "a", "b", "c"), &Geometry3D::get_triangle_barycentric_coords);
 
 	ClassDB::bind_method(D_METHOD("ray_intersects_triangle", "from", "dir", "a", "b", "c"), &Geometry3D::ray_intersects_triangle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_triangle", "from", "to", "a", "b", "c"), &Geometry3D::segment_intersects_triangle);

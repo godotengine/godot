@@ -70,7 +70,7 @@ struct hb_kern_machine_t
 	continue;
       }
 
-      skippy_iter.reset (idx, 1);
+      skippy_iter.reset (idx);
       unsigned unsafe_to;
       if (!skippy_iter.next (&unsafe_to))
       {

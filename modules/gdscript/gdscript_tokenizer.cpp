@@ -579,6 +579,24 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 		return make_identifier(name);
 	}
 
+	if (!only_ascii) {
+		// Kept here in case the order with push_error matters.
+		Token id = make_identifier(name);
+
+#ifdef DEBUG_ENABLED
+		// Additional checks for identifiers but only in debug and if it's available in TextServer.
+		if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY)) {
+			int64_t confusable = TS->is_confusable(name, keyword_list);
+			if (confusable >= 0) {
+				push_error(vformat(R"(Identifier "%s" is visually similar to the GDScript keyword "%s" and thus not allowed.)", name, keyword_list[confusable]));
+			}
+		}
+#endif // DEBUG_ENABLED
+
+		// Cannot be a keyword, as keywords are ASCII only.
+		return id;
+	}
+
 	// Define some helper macros for the switch case.
 #define KEYWORD_GROUP_CASE(char) \
 	break;                       \
@@ -614,19 +632,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 	}
 
 	// Not a keyword, so must be an identifier.
-	Token id = make_identifier(name);
-
-#ifdef DEBUG_ENABLED
-	// Additional checks for identifiers but only in debug and if it's available in TextServer.
-	if (!only_ascii && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY)) {
-		int64_t confusable = TS->is_confusable(name, keyword_list);
-		if (confusable >= 0) {
-			push_error(vformat(R"(Identifier "%s" is visually similar to the GDScript keyword "%s" and thus not allowed.)", name, keyword_list[confusable]));
-		}
-	}
-#endif // DEBUG_ENABLED
-
-	return id;
+	return make_identifier(name);
 
 #undef KEYWORD_GROUP_CASE
 #undef KEYWORD
@@ -1156,15 +1162,6 @@ void GDScriptTokenizer::check_indent() {
 			_advance();
 		}
 
-		if (mixed && !(line_continuation || multiline_mode)) {
-			Token error = make_error("Mixed use of tabs and spaces for indentation.");
-			error.start_line = line;
-			error.start_column = 1;
-			error.leftmost_column = 1;
-			error.rightmost_column = column;
-			push_error(error);
-		}
-
 		if (_is_at_end()) {
 			// Reached the end with an empty line, so just dedent as much as needed.
 			pending_indents -= indent_level();
@@ -1206,6 +1203,15 @@ void GDScriptTokenizer::check_indent() {
 			_advance(); // Consume '\n'.
 			newline(false);
 			continue;
+		}
+
+		if (mixed && !line_continuation && !multiline_mode) {
+			Token error = make_error("Mixed use of tabs and spaces for indentation.");
+			error.start_line = line;
+			error.start_column = 1;
+			error.leftmost_column = 1;
+			error.rightmost_column = column;
+			push_error(error);
 		}
 
 		if (line_continuation || multiline_mode) {

@@ -90,6 +90,7 @@
 			<return type="Tween" />
 			<description>
 				Creates and returns a new [Tween]. The Tween will start automatically on the next process frame or physics frame (depending on [enum Tween.TweenProcessMode]).
+				[b]Note:[/b] When creating a [Tween] using this method, the [Tween] will not be tied to the [Node] that called it. It will continue to animate even if the [Node] is freed, but it will automatically finish if there's nothing left to animate. If you want the [Tween] to be automatically killed when the [Node] is freed, use [method Node.create_tween] or [method Tween.bind_node].
 			</description>
 		</method>
 		<method name="get_first_node_in_group">
@@ -137,6 +138,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given group exists.
+				A group exists if any [Node] in the tree belongs to it (see [method Node.add_to_group]). Groups without nodes are removed automatically.
 			</description>
 		</method>
 		<method name="notify_group">
@@ -225,7 +227,8 @@
 			For mobile platforms, see [member quit_on_go_back].
 		</member>
 		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">
-			The current scene.
+			Returns the root node of the currently running scene, regardless of its structure.
+			[b]Warning:[/b] Setting this directly might not work as expected, and will [i]not[/i] add or remove any nodes from the tree, consider using [method change_scene_to_file] or [method change_scene_to_packed] instead.
 		</member>
 		<member name="debug_collisions_hint" type="bool" setter="set_debug_collisions_hint" getter="is_debugging_collisions_hint" default="false">
 			If [code]true[/code], collision shapes will be visible when running the game from the editor for debugging purposes.

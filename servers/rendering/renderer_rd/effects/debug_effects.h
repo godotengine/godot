@@ -32,6 +32,7 @@
 #define DEBUG_EFFECTS_RD_H
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/motion_vectors.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/shadow_frustum.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
@@ -70,6 +71,18 @@ private:
 		PipelineCacheRD pipelines[SFP_MAX];
 	} shadow_frustum;
 
+	struct MotionVectorsPushConstant {
+		float velocity_resolution[2];
+		float pad[2];
+	};
+
+	struct {
+		MotionVectorsShaderRD shader;
+		RID shader_version;
+		PipelineCacheRD pipeline;
+		MotionVectorsPushConstant push_constant;
+	} motion_vectors;
+
 	void _create_frustum_arrays();
 
 protected:
@@ -78,6 +91,7 @@ public:
 	~DebugEffects();
 
 	void draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect);
+	void draw_motion_vectors(RID p_velocity, RID p_dest_fb, Size2i p_velocity_size);
 };
 
 } // namespace RendererRD

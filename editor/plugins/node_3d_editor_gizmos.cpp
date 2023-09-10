@@ -115,6 +115,15 @@ Variant EditorNode3DGizmo::get_handle_value(int p_id, bool p_secondary) const {
 	return gizmo_plugin->get_handle_value(this, p_id, p_secondary);
 }
 
+void EditorNode3DGizmo::begin_handle_action(int p_id, bool p_secondary) {
+	if (GDVIRTUAL_CALL(_begin_handle_action, p_id, p_secondary)) {
+		return;
+	}
+
+	ERR_FAIL_COND(!gizmo_plugin);
+	gizmo_plugin->begin_handle_action(this, p_id, p_secondary);
+}
+
 void EditorNode3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
 	if (GDVIRTUAL_CALL(_set_handle, p_id, p_secondary, p_camera, p_point)) {
 		return;
@@ -931,7 +940,7 @@ void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool 
 
 	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
-	Ref<Texture2D> handle_t = p_icon != nullptr ? p_icon : Node3DEditor::get_singleton()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> handle_t = p_icon != nullptr ? p_icon : Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("Editor3DHandle"));
 	handle_material->set_point_size(handle_t->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle_t);
 	handle_material->set_albedo(Color(1, 1, 1));
@@ -1093,6 +1102,10 @@ Variant EditorNode3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_giz
 	Variant ret;
 	GDVIRTUAL_CALL(_get_handle_value, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret);
 	return ret;
+}
+
+void EditorNode3DGizmoPlugin::begin_handle_action(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) {
+	GDVIRTUAL_CALL(_begin_handle_action, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary);
 }
 
 void EditorNode3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {

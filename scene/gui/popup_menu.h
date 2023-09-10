@@ -74,6 +74,7 @@ class PopupMenu : public Popup {
 		Ref<Shortcut> shortcut;
 		bool shortcut_is_global = false;
 		bool shortcut_is_disabled = false;
+		bool allow_echo = false;
 
 		// Returns (0,0) if icon is null.
 		Size2 get_icon_size() const {
@@ -199,6 +200,12 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void _add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
 	// this value should be updated to reflect the new size.
@@ -215,8 +222,8 @@ public:
 
 	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, Key p_accel = Key::NONE);
 
-	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false, bool p_allow_echo = false);
+	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false, bool p_allow_echo = false);
 	void add_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);

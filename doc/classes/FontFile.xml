@@ -130,6 +130,14 @@
 				Returns embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
+		<method name="get_extra_spacing" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+			</description>
+		</method>
 		<method name="get_face_index" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="cache_index" type="int" />
@@ -436,6 +444,15 @@
 				Sets embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
+		<method name="set_extra_spacing">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="int" />
+			<description>
+				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+			</description>
+		</method>
 		<method name="set_face_index">
 			<return type="void" />
 			<param index="0" name="cache_index" type="int" />
@@ -567,9 +584,6 @@
 		</member>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contents of the dynamic font source file.
-		</member>
-		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
-			Array of fallback [Font]s.
 		</member>
 		<member name="fixed_size" type="int" setter="set_fixed_size" getter="get_fixed_size" default="0">
 			Font size, used only for the bitmap fonts.

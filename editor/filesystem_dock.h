@@ -137,6 +137,9 @@ private:
 		OVERWRITE_RENAME,
 	};
 
+	HashMap<String, Color> folder_colors;
+	Dictionary assigned_folder_colors;
+
 	FileSortOption file_sort = FILE_SORT_NAME;
 
 	VBoxContainer *scanning_vb = nullptr;
@@ -194,6 +197,8 @@ private:
 	CreateDialog *new_resource_dialog = nullptr;
 
 	bool always_show_folders = false;
+
+	bool editor_is_dark_theme = false;
 
 	class FileOrFolder {
 	public:
@@ -264,8 +269,10 @@ private:
 	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames) const;
 	void _save_scenes_after_move(const HashMap<String, String> &p_renames) const;
 	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
-	void _update_project_settings_after_move(const HashMap<String, String> &p_renames) const;
+	void _update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames);
 	String _get_unique_name(const FileOrFolder &p_entry, const String &p_at_path);
+
+	void _update_folder_colors_setting();
 
 	void _resource_removed(const Ref<Resource> &p_resource);
 	void _file_removed(String p_file);
@@ -299,6 +306,7 @@ private:
 	MenuButton *_create_file_menu_button();
 	void _file_sort_popup(int p_id);
 
+	void _folder_color_index_pressed(int p_index, PopupMenu *p_menu);
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
 	void _tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);

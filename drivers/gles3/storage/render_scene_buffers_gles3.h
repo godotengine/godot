@@ -58,8 +58,6 @@ public:
 	//bool use_debanding = false;
 	uint32_t view_count = 1;
 
-	bool is_transparent = false;
-
 	RID render_target;
 
 	//built-in textures used for ping pong image processing and blurring

@@ -76,6 +76,10 @@ FT_BEGIN_HEADER
   cff_parse_num( CFF_Parser  parser,
                  FT_Byte**   d );
 
+  FT_LOCAL( FT_Fixed )
+  cff_parse_fixed( CFF_Parser  parser,
+                   FT_Byte**   d );
+
   FT_LOCAL( FT_Error )
   cff_parser_init( CFF_Parser  parser,
                    FT_UInt     code,

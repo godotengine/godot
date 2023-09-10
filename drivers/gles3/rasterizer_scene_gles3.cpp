@@ -1738,7 +1738,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	RenderDataGLES3 render_data;
 	{
 		render_data.render_buffers = rb;
-		render_data.transparent_bg = rb.is_valid() ? rb->is_transparent : false;
+		render_data.transparent_bg = rb.is_valid() ? rt->is_transparent : false;
 		// Our first camera is used by default
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
@@ -1984,6 +1984,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 
 	if (!keep_color) {
+		clear_color.a = render_data.transparent_bg ? 0.0f : 1.0f;
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
 	}
 	RENDER_TIMESTAMP("Render Opaque Pass");
@@ -2170,7 +2171,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		if (scene_state.current_depth_draw != shader->depth_draw) {
 			switch (shader->depth_draw) {
 				case GLES3::SceneShaderData::DEPTH_DRAW_OPAQUE: {
-					glDepthMask(p_pass_mode == PASS_MODE_COLOR);
+					glDepthMask((p_pass_mode == PASS_MODE_COLOR && !GLES3::Config::get_singleton()->use_depth_prepass) ||
+							p_pass_mode == PASS_MODE_DEPTH ||
+							p_pass_mode == PASS_MODE_SHADOW);
 				} break;
 				case GLES3::SceneShaderData::DEPTH_DRAW_ALWAYS: {
 					glDepthMask(GL_TRUE);

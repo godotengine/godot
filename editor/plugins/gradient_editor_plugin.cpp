@@ -40,7 +40,7 @@
 void GradientReverseButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			Ref<Texture2D> icon = get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons"));
+			Ref<Texture2D> icon = get_editor_theme_icon(SNAME("ReverseGradient"));
 			if (is_pressed()) {
 				draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()), false, get_theme_color(SNAME("icon_pressed_color"), SNAME("Button")));
 			} else {
@@ -51,7 +51,7 @@ void GradientReverseButton::_notification(int p_what) {
 }
 
 Size2 GradientReverseButton::get_minimum_size() const {
-	return (get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons"))->get_size() + Size2(margin * 2, margin * 2));
+	return (get_editor_theme_icon(SNAME("ReverseGradient"))->get_size() + Size2(margin * 2, margin * 2));
 }
 
 ///////////////////////

@@ -30,8 +30,6 @@
 
 #include "gltf_document_extension_texture_webp.h"
 
-#include "scene/3d/area_3d.h"
-
 // Import process.
 Error GLTFDocumentExtensionTextureWebP::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
 	if (!p_extensions.has("EXT_texture_webp")) {
@@ -51,6 +49,10 @@ Error GLTFDocumentExtensionTextureWebP::parse_image_data(Ref<GLTFState> p_state,
 		return r_image->load_webp_from_buffer(p_image_data);
 	}
 	return OK;
+}
+
+String GLTFDocumentExtensionTextureWebP::get_image_file_extension() {
+	return ".webp";
 }
 
 Error GLTFDocumentExtensionTextureWebP::parse_texture_json(Ref<GLTFState> p_state, const Dictionary &p_texture_json, Ref<GLTFTexture> r_gltf_texture) {

@@ -27,6 +27,13 @@
 				Bakes the material data of the Mesh passed in the [param base] parameter with optional [param material_overrides] to a set of [Image]s of size [param image_size]. Returns an array of [Image]s containing material properties as specified in [enum BakeChannels].
 			</description>
 		</method>
+		<method name="call_on_render_thread">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				As the RenderingServer actual logic may run on an separate thread, accessing its internals from the main (or any other) thread will result in errors. To make it easier to run code that can safely access the rendering internals (such as [RenderingDevice] and similar RD classes), push a callable via this function so it will be executed on the render thread.
+			</description>
+		</method>
 		<method name="camera_attributes_create">
 			<return type="RID" />
 			<description>
@@ -1368,7 +1375,7 @@
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RendeeringServer directly.
+				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RenderingServer directly.
 			</description>
 		</method>
 		<method name="get_default_clear_color">
@@ -1443,6 +1450,7 @@
 			<description>
 				Returns the name of the video adapter (e.g. "GeForce GTX 1080/PCIe/SSE2").
 				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
+				[b]Note:[/b] On the web platform, some browsers such as Firefox may report a different, fixed GPU name such as "GeForce GTX 980" (regardless of the user's actual GPU model). This is done to make fingerprinting more difficult.
 			</description>
 		</method>
 		<method name="get_video_adapter_type" qualifiers="const">
@@ -3749,6 +3757,15 @@
 				If [code]true[/code], enables debanding on the specified viewport. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
 			</description>
 		</method>
+		<method name="viewport_set_use_hdr_2d">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be a [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be a [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
+				[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
+			</description>
+		</method>
 		<method name="viewport_set_use_occlusion_culling">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -4167,7 +4184,7 @@
 		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat" is_bitfield="true">
 		</constant>
 		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark that the array uses 8 bone weighs instead of 4.
+			Flag used to mark that the array uses 8 bone weights instead of 4.
 		</constant>
 		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
 		</constant>

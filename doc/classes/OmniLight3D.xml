@@ -10,6 +10,7 @@
 	</description>
 	<tutorials>
 		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
+		<link title="Faking global illumination">$DOCS_URL/tutorials/3d/global_illumination/faking_global_illumination.html</link>
 	</tutorials>
 	<members>
 		<member name="omni_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">

@@ -41,6 +41,8 @@
 #if MBEDTLS_AESNI_HAVE_CODE == 2
 #if !defined(_WIN32)
 #include <cpuid.h>
+#else
+#include <intrin.h>
 #endif
 #include <immintrin.h>
 #endif

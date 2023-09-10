@@ -97,12 +97,9 @@ def configure(env: "Environment"):
     if env["use_assertions"]:
         env.Append(LINKFLAGS=["-s", "ASSERTIONS=1"])
 
-    if env.editor_build:
-        if env["initial_memory"] < 64:
-            print('Note: Forcing "initial_memory=64" as it is required for the web editor.')
-            env["initial_memory"] = 64
-    else:
-        env.Append(CPPFLAGS=["-fno-exceptions"])
+    if env.editor_build and env["initial_memory"] < 64:
+        print('Note: Forcing "initial_memory=64" as it is required for the web editor.')
+        env["initial_memory"] = 64
 
     env.Append(LINKFLAGS=["-s", "INITIAL_MEMORY=%sMB" % env["initial_memory"]])
 
@@ -121,6 +118,11 @@ def configure(env: "Environment"):
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
+        # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
+        cc_version = get_compiler_version(env)
+        cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
+        if cc_semver >= (3, 1, 42):
+            env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
 
     # Sanitizers
     if env["use_ubsan"]:
@@ -211,6 +213,8 @@ def configure(env: "Environment"):
 
         env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])
+        env.Append(CCFLAGS=["-fvisibility=hidden"])
+        env.Append(LINKFLAGS=["-fvisibility=hidden"])
         env.extra_suffix = ".dlink" + env.extra_suffix
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).

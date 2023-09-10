@@ -36,6 +36,7 @@
 #include "core/io/image.h"
 #include "core/io/marshalls.h"
 #include "core/io/missing_resource.h"
+#include "core/object/script_language.h"
 #include "core/version.h"
 
 //#define print_bl(m_what) print_line(m_what)

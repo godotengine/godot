@@ -159,7 +159,6 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/cylinder_shape_3d.h"
-#include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient.h"
@@ -440,6 +439,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HSplitContainer);
 	GDREGISTER_CLASS(VSplitContainer);
 
+	GDREGISTER_CLASS(GraphElement);
 	GDREGISTER_CLASS(GraphNode);
 	GDREGISTER_CLASS(GraphEdit);
 

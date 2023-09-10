@@ -605,11 +605,14 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
 
     /* Add gids which where requested, but not mapped in cmap */
     unsigned num_glyphs = plan->source->get_num_glyphs ();
-    for (hb_codepoint_t gid : *glyphs)
+    hb_codepoint_t first = HB_SET_VALUE_INVALID, last = HB_SET_VALUE_INVALID;
+    for (; glyphs->next_range (&first, &last); )
     {
-      if (gid >= num_glyphs)
+      if (first >= num_glyphs)
 	break;
-      plan->_glyphset_gsub.add (gid);
+      if (last >= num_glyphs)
+        last = num_glyphs - 1;
+      plan->_glyphset_gsub.add_range (first, last);
     }
   }
 
@@ -927,12 +930,14 @@ _normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
       new_axis_idx++;
     }
 
-    if (plan->user_axes_location.has (axis_tag))
+    Triple *axis_range;
+    if (plan->user_axes_location.has (axis_tag, &axis_range))
     {
-      Triple axis_range = plan->user_axes_location.get (axis_tag);
-      int normalized_min = axis.normalize_axis_value (axis_range.minimum);
-      int normalized_default = axis.normalize_axis_value (axis_range.middle);
-      int normalized_max = axis.normalize_axis_value (axis_range.maximum);
+      plan->axes_triple_distances.set (axis_tag, axis.get_triple_distances ());
+
+      int normalized_min = axis.normalize_axis_value (axis_range->minimum);
+      int normalized_default = axis.normalize_axis_value (axis_range->middle);
+      int normalized_max = axis.normalize_axis_value (axis_range->maximum);
 
       if (has_avar && old_axis_idx < avar_axis_count)
       {
@@ -940,9 +945,9 @@ _normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
         normalized_default = seg_maps->map (normalized_default);
         normalized_max = seg_maps->map (normalized_max);
       }
-      plan->axes_location.set (axis_tag, Triple (static_cast<float> (normalized_min),
-                                                 static_cast<float> (normalized_default),
-                                                 static_cast<float> (normalized_max)));
+      plan->axes_location.set (axis_tag, Triple (static_cast<float> (normalized_min / 16384.f),
+                                                 static_cast<float> (normalized_default / 16384.f),
+                                                 static_cast<float> (normalized_max / 16384.f)));
 
       if (normalized_default != 0)
         plan->pinned_at_default = false;

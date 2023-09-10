@@ -127,9 +127,6 @@ void Label::_shape() {
 				TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
 			}
 		}
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-		}
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, txt));
 		if (!tab_stops.is_empty()) {
 			TS->shaped_text_tab_align(text_rid, tab_stops);
@@ -299,9 +296,6 @@ void Label::_update_visible() {
 	int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
 	for (int64_t i = lines_skipped; i < last_line; i++) {
 		minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
-		if (minsize.height > (get_size().height - style->get_minimum_size().height + line_spacing)) {
-			break;
-		}
 	}
 	if (minsize.height > 0) {
 		minsize.height -= line_spacing;

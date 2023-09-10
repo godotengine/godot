@@ -244,7 +244,7 @@ EditorSelectionHistory::EditorSelectionHistory() {
 
 ////////////////////////////////////////////////////////////
 
-EditorPlugin *EditorData::get_editor(Object *p_object) {
+EditorPlugin *EditorData::get_handling_main_editor(Object *p_object) {
 	// We need to iterate backwards so that we can check user-created plugins first.
 	// Otherwise, it would not be possible for plugins to handle CanvasItem and Spatial nodes.
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
@@ -256,7 +256,7 @@ EditorPlugin *EditorData::get_editor(Object *p_object) {
 	return nullptr;
 }
 
-Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
+Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 	Vector<EditorPlugin *> sub_plugins;
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (!editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
@@ -266,7 +266,7 @@ Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
 	return sub_plugins;
 }
 
-EditorPlugin *EditorData::get_editor(String p_name) {
+EditorPlugin *EditorData::get_editor_by_name(String p_name) {
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (editor_plugins[i]->get_name() == p_name) {
 			return editor_plugins[i];
@@ -1122,8 +1122,14 @@ Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 	Ref<Script> base_scr = p_script;
 	while (base_scr.is_valid()) {
 		// Check for scripted classes.
+		String icon_path;
 		StringName class_name = script_class_get_name(base_scr->get_path());
-		String icon_path = script_class_get_icon_path(class_name);
+		if (base_scr->is_built_in() || class_name == StringName()) {
+			icon_path = base_scr->get_class_icon_path();
+		} else {
+			icon_path = script_class_get_icon_path(class_name);
+		}
+
 		Ref<Texture2D> icon = _load_script_icon(icon_path);
 		if (icon.is_valid()) {
 			_script_icon_cache[p_script] = icon;

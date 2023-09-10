@@ -362,6 +362,7 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 	Dictionary d;
 	d["position"] = result.position;
 	d["normal"] = result.normal;
+	d["face_index"] = result.face_index;
 	d["collider_id"] = result.collider_id;
 	d["collider"] = result.collider;
 	d["shape"] = result.shape;

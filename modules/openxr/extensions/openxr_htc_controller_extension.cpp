@@ -30,7 +30,7 @@
 
 #include "openxr_htc_controller_extension.h"
 
-#include "../action_map/openxr_interaction_profile_meta_data.h"
+#include "../action_map/openxr_interaction_profile_metadata.h"
 
 HashMap<String, bool *> OpenXRHTCControllerExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
@@ -46,7 +46,7 @@ bool OpenXRHTCControllerExtension::is_available(HTCControllers p_type) {
 }
 
 void OpenXRHTCControllerExtension::on_register_metadata() {
-	OpenXRInteractionProfileMetaData *metadata = OpenXRInteractionProfileMetaData::get_singleton();
+	OpenXRInteractionProfileMetadata *metadata = OpenXRInteractionProfileMetadata::get_singleton();
 	ERR_FAIL_NULL(metadata);
 
 	// HTC Vive Cosmos controller

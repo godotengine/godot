@@ -22,7 +22,7 @@ struct PairValueRecord
   ValueRecord   values;                 /* Positioning data for the first glyph
                                          * followed by for second glyph */
   public:
-  DEFINE_SIZE_ARRAY (Types::size, values);
+  DEFINE_SIZE_ARRAY (Types::HBGlyphID::static_size, values);
 
   int cmp (hb_codepoint_t k) const
   { return secondGlyph.cmp (k); }

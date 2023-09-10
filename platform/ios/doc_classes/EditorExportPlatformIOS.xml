@@ -7,6 +7,7 @@
 	</description>
 	<tutorials>
 		<link title="Exporting for iOS">$DOCS_URL/tutorials/export/exporting_for_ios.html</link>
+		<link title="iOS plugins documentation index">$DOCS_URL/tutorials/platform/ios/index.html</link>
 	</tutorials>
 	<members>
 		<member name="application/app_store_team_id" type="String" setter="" getter="">
@@ -45,7 +46,7 @@
 			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_RELEASE[/code].
 		</member>
 		<member name="application/short_version" type="String" setter="" getter="">
-			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.
 		</member>
 		<member name="application/signature" type="String" setter="" getter="">
 			A four-character creator code that is specific to the bundle. Optional.
@@ -54,7 +55,7 @@
 			Supported device family.
 		</member>
 		<member name="application/version" type="String" setter="" getter="">
-			Machine-readable application version, in the [code]major.minor.patch[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+			Machine-readable application version, in the [code]major.minor.patch[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). This must be incremented on every new release pushed to the App Store.
 		</member>
 		<member name="architectures/arm64" type="bool" setter="" getter="">
 			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.

@@ -380,6 +380,13 @@
 				Adds a [code][font][/code] tag with an italics font to the tag stack. This is the same as adding an [code][i][/code] tag if not currently in a [code][b][/code] tag.
 			</description>
 		</method>
+		<method name="push_language">
+			<return type="void" />
+			<param index="0" name="language" type="String" />
+			<description>
+				Adds language code used for text shaping algorithm and Open-Type font features.
+			</description>
+		</method>
 		<method name="push_list">
 			<return type="void" />
 			<param index="0" name="level" type="int" />
@@ -550,6 +557,9 @@
 		</member>
 		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
 			If [code]true[/code], the selected text will be deselected when focus is lost.
+		</member>
+		<member name="drag_and_drop_selection_enabled" type="bool" setter="set_drag_and_drop_selection_enabled" getter="is_drag_and_drop_selection_enabled" default="true">
+			If [code]true[/code], allow drag and drop of selected text.
 		</member>
 		<member name="fit_content" type="bool" setter="set_fit_content" getter="is_fit_content_enabled" default="false">
 			If [code]true[/code], the label's minimum size will be automatically updated to fit its content, matching the behavior of [Label].

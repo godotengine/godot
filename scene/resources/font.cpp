@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "font.h"
+#include "font.compat.inc"
 
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
@@ -50,7 +51,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallbacks"), &Font::get_fallbacks);
 
 	// Output.
-	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()));
+	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_rids"), &Font::get_rids);
 
 	// Font metrics.
@@ -97,6 +98,8 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_feature_list"), &Font::get_supported_feature_list);
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &Font::get_supported_variation_list);
 	ClassDB::bind_method(D_METHOD("get_face_count"), &Font::get_face_count);
+
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 }
 
 void Font::_update_rids_fb(const Ref<Font> &p_f, int p_depth) const {
@@ -914,6 +917,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "cache_index", "transform"), &FontFile::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform", "cache_index"), &FontFile::get_transform);
 
+	ClassDB::bind_method(D_METHOD("set_extra_spacing", "cache_index", "spacing", "value"), &FontFile::set_extra_spacing);
+	ClassDB::bind_method(D_METHOD("get_extra_spacing", "cache_index", "spacing"), &FontFile::get_extra_spacing);
+
 	ClassDB::bind_method(D_METHOD("set_face_index", "cache_index", "face_index"), &FontFile::set_face_index);
 	ClassDB::bind_method(D_METHOD("get_face_index", "cache_index"), &FontFile::get_face_index);
 
@@ -1006,7 +1012,12 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size", "get_fixed_size");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_opentype_feature_overrides", "get_opentype_feature_overrides");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font"), PROPERTY_USAGE_STORAGE), "set_fallbacks", "get_fallbacks");
+}
+
+void FontFile::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "fallbacks") {
+		p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+	}
 }
 
 bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
@@ -1119,6 +1130,18 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (tokens.size() == 3 && tokens[2] == "transform") {
 			set_transform(cache_index, p_value);
 			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_top") {
+			set_extra_spacing(cache_index, TextServer::SPACING_TOP, p_value);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_bottom") {
+			set_extra_spacing(cache_index, TextServer::SPACING_BOTTOM, p_value);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_space") {
+			set_extra_spacing(cache_index, TextServer::SPACING_SPACE, p_value);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_glyph") {
+			set_extra_spacing(cache_index, TextServer::SPACING_GLYPH, p_value);
+			return true;
 		}
 		if (tokens.size() >= 5) {
 			Vector2i sz = Vector2i(tokens[2].to_int(), tokens[3].to_int());
@@ -1198,6 +1221,18 @@ bool FontFile::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (tokens.size() == 3 && tokens[2] == "transform") {
 			r_ret = get_transform(cache_index);
 			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_top") {
+			r_ret = get_extra_spacing(cache_index, TextServer::SPACING_TOP);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_bottom") {
+			r_ret = get_extra_spacing(cache_index, TextServer::SPACING_BOTTOM);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_space") {
+			r_ret = get_extra_spacing(cache_index, TextServer::SPACING_SPACE);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_glyph") {
+			r_ret = get_extra_spacing(cache_index, TextServer::SPACING_GLYPH);
+			return true;
 		}
 		if (tokens.size() >= 5) {
 			Vector2i sz = Vector2i(tokens[2].to_int(), tokens[3].to_int());
@@ -1269,6 +1304,10 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "face_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM2D, prefix + "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_top", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_bottom", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_glyph", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 
 		for (int j = 0; j < sizes.size(); j++) {
 			Vector2i sz = sizes[j];
@@ -2176,7 +2215,7 @@ real_t FontFile::get_oversampling() const {
 	return oversampling;
 }
 
-RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform) const {
+RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
 	for (int i = 0; i < cache.size(); i++) {
@@ -2186,6 +2225,10 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 			match = match && (TS->font_get_face_index(cache[i]) == p_face_index);
 			match = match && (TS->font_get_embolden(cache[i]) == p_strength);
 			match = match && (TS->font_get_transform(cache[i]) == p_transform);
+			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_TOP) == p_spacing_top);
+			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_BOTTOM) == p_spacing_bottom);
+			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing_space);
+			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_GLYPH) == p_spacing_glyph);
 			for (const Variant *V = supported_coords.next(nullptr); V && match; V = supported_coords.next(V)) {
 				const Vector3 &def = supported_coords[*V];
 
@@ -2224,6 +2267,10 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 	TS->font_set_face_index(cache[idx], p_face_index);
 	TS->font_set_embolden(cache[idx], p_strength);
 	TS->font_set_transform(cache[idx], p_transform);
+	TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
+	TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
+	TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
+	TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
 	return cache[idx];
 }
 
@@ -2303,6 +2350,18 @@ Transform2D FontFile::get_transform(int p_cache_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Transform2D());
 	_ensure_rid(p_cache_index);
 	return TS->font_get_transform(cache[p_cache_index]);
+}
+
+void FontFile::set_extra_spacing(int p_cache_index, TextServer::SpacingType p_spacing, int64_t p_value) {
+	ERR_FAIL_COND(p_cache_index < 0);
+	_ensure_rid(p_cache_index);
+	TS->font_set_spacing(cache[p_cache_index], p_spacing, p_value);
+}
+
+int64_t FontFile::get_extra_spacing(int p_cache_index, TextServer::SpacingType p_spacing) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0);
+	_ensure_rid(p_cache_index);
+	return TS->font_get_spacing(cache[p_cache_index], p_spacing);
 }
 
 void FontFile::set_face_index(int p_cache_index, int64_t p_index) {
@@ -2634,7 +2693,6 @@ void FontVariation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spacing", "spacing", "value"), &FontVariation::set_spacing);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_base_font", "get_base_font");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 
 	ADD_GROUP("Variation", "variation_");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "variation_opentype"), "set_variation_opentype", "get_variation_opentype");
@@ -2721,48 +2779,25 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 		return base_font;
 	}
 
-	// Check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_project_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
+	StringName theme_name = "font";
+	List<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
-		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f == this) {
-					continue;
-				}
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
-				}
-				return f;
-			}
-		}
-	}
-
-	// Lastly, fall back on the items defined in the default Theme, if they exist.
-	if (ThemeDB::get_singleton()->get_default_theme().is_valid()) {
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
-
-		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f == this) {
-					continue;
-				}
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
-				}
-				return f;
-			}
+	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_null()) {
+			continue;
 		}
 
-		// If they don't exist, use any type to return the default/empty value.
-		Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
-		if (f != this) {
+		for (const StringName &E : theme_types) {
+			if (!theme->has_font(theme_name, E)) {
+				continue;
+			}
+
+			Ref<Font> f = theme->get_font(theme_name, E);
+			if (f == this) {
+				continue;
+			}
 			if (f.is_valid()) {
 				theme_font = f;
 				theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -2771,18 +2806,27 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 		}
 	}
 
+	Ref<Font> f = global_context->get_fallback_theme()->get_font(theme_name, StringName());
+	if (f != this) {
+		if (f.is_valid()) {
+			theme_font = f;
+			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+		}
+		return f;
+	}
+
 	return Ref<Font>();
 }
 
 void FontVariation::set_variation_opentype(const Dictionary &p_coords) {
-	if (variation.opentype != p_coords) {
-		variation.opentype = p_coords;
+	if (!variation.opentype.recursive_equal(p_coords, 1)) {
+		variation.opentype = p_coords.duplicate();
 		_invalidate_rids();
 	}
 }
 
 Dictionary FontVariation::get_variation_opentype() const {
-	return variation.opentype;
+	return variation.opentype.duplicate();
 }
 
 void FontVariation::set_variation_embolden(float p_strength) {
@@ -2819,14 +2863,14 @@ int FontVariation::get_variation_face_index() const {
 }
 
 void FontVariation::set_opentype_features(const Dictionary &p_features) {
-	if (opentype_features != p_features) {
-		opentype_features = p_features;
+	if (!opentype_features.recursive_equal(p_features, 1)) {
+		opentype_features = p_features.duplicate();
 		_invalidate_rids();
 	}
 }
 
 Dictionary FontVariation::get_opentype_features() const {
-	return opentype_features;
+	return opentype_features.duplicate();
 }
 
 void FontVariation::set_spacing(TextServer::SpacingType p_spacing, int p_value) {
@@ -2842,10 +2886,10 @@ int FontVariation::get_spacing(TextServer::SpacingType p_spacing) const {
 	return extra_spacing[p_spacing];
 }
 
-RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform) const {
+RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform);
+		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph);
 	}
 	return RID();
 }
@@ -2853,7 +2897,7 @@ RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int
 RID FontVariation::_get_rid() const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform);
+		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH]);
 	}
 	return RID();
 }
@@ -2924,7 +2968,6 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range"), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size"), "set_msdf_size", "get_msdf_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), "set_oversampling", "get_oversampling");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 }
 
 void SystemFont::_update_rids() const {
@@ -3078,54 +3121,40 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 		return base_font;
 	}
 
-	// Check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_project_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
+	StringName theme_name = "font";
+	List<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
-		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f == this) {
-					continue;
-				}
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
-				}
-				return f;
-			}
-		}
-	}
-
-	// Lastly, fall back on the items defined in the default Theme, if they exist.
-	if (ThemeDB::get_singleton()->get_default_theme().is_valid()) {
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
-
-		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f == this) {
-					continue;
-				}
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
-				}
-				return f;
-			}
+	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_null()) {
+			continue;
 		}
 
-		// If they don't exist, use any type to return the default/empty value.
-		Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
-		if (f != this) {
+		for (const StringName &E : theme_types) {
+			if (!theme->has_font(theme_name, E)) {
+				continue;
+			}
+
+			Ref<Font> f = theme->get_font(theme_name, E);
+			if (f == this) {
+				continue;
+			}
 			if (f.is_valid()) {
 				theme_font = f;
 				theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 			}
 			return f;
 		}
+	}
+
+	Ref<Font> f = global_context->get_fallback_theme()->get_font(theme_name, StringName());
+	if (f != this) {
+		if (f.is_valid()) {
+			theme_font = f;
+			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+		}
+		return f;
 	}
 
 	return Ref<Font>();
@@ -3323,7 +3352,7 @@ int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
 	}
 }
 
-RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform) const {
+RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
 		Dictionary var = p_variation_coordinates;
@@ -3339,9 +3368,9 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 
 		if (!face_indeces.is_empty()) {
 			int face_index = CLAMP(p_face_index, 0, face_indeces.size() - 1);
-			return f->find_variation(var, face_indeces[face_index], p_strength, p_transform);
+			return f->find_variation(var, face_indeces[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph);
 		} else {
-			return f->find_variation(var, 0, p_strength, p_transform);
+			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph);
 		}
 	}
 	return RID();

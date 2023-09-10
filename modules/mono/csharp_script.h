@@ -164,6 +164,9 @@ public:
 		Vector<DocData::ClassDoc> docs;
 		return docs;
 	}
+	virtual String get_class_icon_path() const override {
+		return icon_path;
+	}
 #endif // TOOLS_ENABLED
 
 	Error reload(bool p_keep_state = false) override;
@@ -255,6 +258,7 @@ public:
 	bool get(const StringName &p_name, Variant &r_ret) const override;
 	void get_property_list(List<PropertyInfo> *p_properties) const override;
 	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override;
+	virtual void validate_property(PropertyInfo &p_property) const override;
 
 	bool property_can_revert(const StringName &p_name) const override;
 	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override;
@@ -279,8 +283,8 @@ public:
 
 	const Variant get_rpc_config() const override;
 
-	void notification(int p_notification) override;
-	void _call_notification(int p_notification);
+	void notification(int p_notification, bool p_reversed = false) override;
+	void _call_notification(int p_notification, bool p_reversed = false);
 
 	String to_string(bool *r_valid) override;
 
@@ -331,14 +335,6 @@ class CSharpLanguage : public ScriptLanguage {
 
 	ManagedCallableMiddleman *managed_callable_middleman = memnew(ManagedCallableMiddleman);
 
-	struct StringNameCache {
-		StringName _property_can_revert;
-		StringName _property_get_revert;
-		StringName _script_source;
-
-		StringNameCache();
-	};
-
 	int lang_idx = -1;
 
 	// For debug_break and debug_break_parse
@@ -366,8 +362,6 @@ public:
 	static void set_instance_binding(Object *p_object, void *p_binding);
 	static bool has_instance_binding(Object *p_object);
 
-	StringNameCache string_names;
-
 	const Mutex &get_language_bind_mutex() {
 		return language_bind_mutex;
 	}
@@ -379,10 +373,6 @@ public:
 		return lang_idx;
 	}
 	void set_language_index(int p_idx);
-
-	_FORCE_INLINE_ const StringNameCache &get_string_names() {
-		return string_names;
-	}
 
 	_FORCE_INLINE_ static CSharpLanguage *get_singleton() {
 		return singleton;

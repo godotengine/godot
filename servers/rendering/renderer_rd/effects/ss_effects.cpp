@@ -1429,7 +1429,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 			push_constant.camera_z_far = p_projections[v].get_z_far();
 			push_constant.camera_z_near = p_projections[v].get_z_near();
 			push_constant.orthogonal = p_projections[v].is_orthogonal();
-			push_constant.filter = false; //enabling causes arctifacts
+			push_constant.filter = false; // Enabling causes artifacts.
 			push_constant.screen_size[0] = p_ssr_buffers.size.x;
 			push_constant.screen_size[1] = p_ssr_buffers.size.y;
 

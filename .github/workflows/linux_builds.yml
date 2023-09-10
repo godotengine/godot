@@ -4,11 +4,12 @@ on:
 
 # Global Settings
 env:
-  # Used for the cache key, and godot-cpp checkout. Add version suffix to force clean build.
+  # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+  TSAN_OPTIONS: suppressions=misc/error_suppressions/tsan.txt
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
@@ -25,35 +26,44 @@ jobs:
           - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono
             target: editor
-            tests: false # Disabled due freeze caused by mix Mono build and CI
             sconsflags: module_mono_enabled=yes
-            doc-test: true
             bin: "./bin/godot.linuxbsd.editor.x86_64.mono"
             build-mono: true
+            tests: false # Disabled due freeze caused by mix Mono build and CI
+            doc-test: true
             proj-conv: true
+            api-compat: true
             artifact: true
-            compat: true
 
           - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
             target: editor
-            tests: true
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
             sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=gold
-            proj-test: true
-            # Can be turned off for PRs that intentionally break compat with godot-cpp,
-            # until both the upstream PR and the matching godot-cpp changes are merged.
-            godot-cpp-test: true
             bin: "./bin/godot.linuxbsd.editor.dev.double.x86_64.san"
             build-mono: false
+            tests: true
+            proj-test: true
+            # Generate an API dump for godot-cpp tests.
+            api-dump: true
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
           - name: Editor with clang sanitizers (target=editor, tests=yes, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
             target: editor
-            tests: true
             sconsflags: dev_build=yes use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
+            bin: "./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san"
+            build-mono: false
+            tests: true
+            # Skip 2GiB artifact speeding up action.
+            artifact: false
+
+          - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
+            cache-name: linux-editor-thread-sanitizer
+            target: editor
+            tests: true
+            sconsflags: dev_build=yes use_tsan=yes use_llvm=yes linker=lld
             bin: "./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
@@ -62,20 +72,20 @@ jobs:
           - name: Template w/ Mono (target=template_release)
             cache-name: linux-template-mono
             target: template_release
-            tests: false
             sconsflags: module_mono_enabled=yes
             build-mono: false
+            tests: false
             artifact: true
 
           - name: Minimal template (target=template_release, everything disabled)
             cache-name: linux-template-minimal
             target: template_release
-            tests: false
             sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no
+            tests: false
             artifact: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Need newer mesa for lavapipe to work properly.
       - name: Linux dependencies for tests
@@ -84,6 +94,12 @@ jobs:
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo add-apt-repository ppa:kisak/kisak-mesa
           sudo apt-get install -qq mesa-vulkan-drivers
+
+      - name: Free disk space on runner
+        run: |
+          echo "Disk usage before:" && df -h
+          sudo rm -rf /usr/local/lib/android
+          echo "Disk usage after:" && df -h
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
@@ -95,7 +111,7 @@ jobs:
         uses: ./.github/actions/godot-deps
 
       - name: Set up .NET Sdk
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v3
         if: ${{ matrix.build-mono }}
         with:
           dotnet-version: '6.0.x'
@@ -114,12 +130,30 @@ jobs:
       - name: Generate C# glue
         if: ${{ matrix.build-mono }}
         run: |
-          ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue || true
+          ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue
 
       - name: Build .NET solutions
         if: ${{ matrix.build-mono }}
         run: |
           ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd
+
+      - name: Prepare artifact
+        if: ${{ matrix.artifact }}
+        run: |
+          strip bin/godot.*
+          chmod +x bin/godot.*
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        if: ${{ matrix.artifact }}
+        with:
+          name: ${{ matrix.cache-name }}
+
+      - name: Dump Godot API
+        uses: ./.github/actions/godot-api-dump
+        if: ${{ matrix.api-dump }}
+        with:
+          bin: ${{ matrix.bin }}
 
       # Execute unit tests for the editor
       - name: Unit tests
@@ -138,84 +172,22 @@ jobs:
           ${{ matrix.bin }} --doctool --headless 2>&1 > /dev/null || true
           git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
-      # Test 3.x -> 4.x project converter
-      - name: Test project converter
-        if: ${{ matrix.proj-conv }}
-        run: |
-          mkdir converter_test
-          cd converter_test
-          touch project.godot
-          ../${{ matrix.bin }} --headless --validate-conversion-3to4
-          cd ..
-          rm converter_test -rf
-
-      # Download and extract zip archive with project, folder is renamed to be able to easy change used project
-      - name: Download test project
-        if: ${{ matrix.proj-test }}
-        run: |
-          wget https://github.com/godotengine/regression-test-project/archive/4.0.zip
-          unzip 4.0.zip
-          mv "regression-test-project-4.0" "test_project"
-
-      # Editor is quite complicated piece of software, so it is easy to introduce bug here
-      - name: Open and close editor (Vulkan)
-        if: ${{ matrix.proj-test }}
-        run: |
-          xvfb-run ${{ matrix.bin }} --audio-driver Dummy --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
-          misc/scripts/check_ci_log.py sanitizers_log.txt
-
-      - name: Open and close editor (GLES3)
-        if: ${{ matrix.proj-test }}
-        run: |
-          DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy --rendering-driver opengl3 --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
-          misc/scripts/check_ci_log.py sanitizers_log.txt
-
-      # Run test project
-      - name: Run project
-        if: ${{ matrix.proj-test }}
-        run: |
-          xvfb-run ${{ matrix.bin }} 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
-          misc/scripts/check_ci_log.py sanitizers_log.txt
-
-      # Checkout godot-cpp
-      - name: Checkout godot-cpp
-        if: ${{ matrix.godot-cpp-test }}
-        uses: actions/checkout@v3
-        with:
-          repository: godotengine/godot-cpp
-          ref: ${{ env.GODOT_BASE_BRANCH }}
-          submodules: 'recursive'
-          path: 'godot-cpp'
-
-      # Dump GDExtension interface and API
-      - name: Dump GDExtension interface and API for godot-cpp build
-        if: ${{ matrix.godot-cpp-test }}
-        run: |
-          ${{ matrix.bin }} --headless --dump-gdextension-interface --dump-extension-api
-          cp -f gdextension_interface.h godot-cpp/gdextension/
-          cp -f extension_api.json godot-cpp/gdextension/
-
-      # Build godot-cpp test extension
-      - name: Build godot-cpp test extension
-        if: ${{ matrix.godot-cpp-test }}
-        run: |
-          cd godot-cpp/test
-          scons target=template_debug dev_build=yes
-          cd ../..
-
+      # Check API backwards compatibility
       - name: Check for GDExtension compatibility
-        if: ${{ matrix.compat }}
+        if: ${{ matrix.api-compat }}
         run: |
-          ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}" || true # don't fail the CI for now
+          ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}"
 
-      - name: Prepare artifact
-        if: ${{ matrix.artifact }}
-        run: |
-          strip bin/godot.*
-          chmod +x bin/godot.*
-
-      - name: Upload artifact
-        uses: ./.github/actions/upload-artifact
-        if: ${{ matrix.artifact }}
+      # Download and run the test project
+      - name: Test Godot project
+        uses: ./.github/actions/godot-project-test
+        if: ${{ matrix.proj-test }}
         with:
-          name: ${{ matrix.cache-name }}
+          bin: ${{ matrix.bin }}
+
+      # Test the project converter
+      - name: Test project converter
+        uses: ./.github/actions/godot-converter-test
+        if: ${{ matrix.proj-conv }}
+        with:
+          bin: ${{ matrix.bin }}

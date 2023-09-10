@@ -98,7 +98,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton2D"), SNAME("EditorIcons")));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("Skeleton2D")));
 
 	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_SET_REST);
 	options->get_popup()->add_separator();

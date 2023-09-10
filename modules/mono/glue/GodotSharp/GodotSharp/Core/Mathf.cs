@@ -104,6 +104,36 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) cosine of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's cosine in hyperbolic space if
+        /// <paramref name="s"/> is larger or equal to 1.
+        /// </summary>
+        /// <param name="s">The input hyperbolic cosine value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic cosine value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Acosh(float s)
+        {
+            return MathF.Acosh(s);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) cosine of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's cosine in hyperbolic space if
+        /// <paramref name="s"/> is larger or equal to 1.
+        /// </summary>
+        /// <param name="s">The input hyperbolic cosine value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic cosine value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Acosh(double s)
+        {
+            return Math.Acosh(s);
+        }
+
+        /// <summary>
         /// Returns the arc sine of <paramref name="s"/> in radians.
         /// Use to get the angle of sine <paramref name="s"/>.
         /// </summary>
@@ -129,6 +159,36 @@ namespace Godot
         public static double Asin(double s)
         {
             return Math.Asin(s);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's sine in hyperbolic space if
+        /// <paramref name="s"/> is larger or equal to 1.
+        /// </summary>
+        /// <param name="s">The input hyperbolic sine value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic sine value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Asinh(float s)
+        {
+            return MathF.Asinh(s);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's sine in hyperbolic space if
+        /// <paramref name="s"/> is larger or equal to 1.
+        /// </summary>
+        /// <param name="s">The input hyperbolic sine value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic sine value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Asinh(double s)
+        {
+            return Math.Asinh(s);
         }
 
         /// <summary>
@@ -199,6 +259,36 @@ namespace Godot
         public static double Atan2(double y, double x)
         {
             return Math.Atan2(y, x);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) tangent of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's tangent in hyperbolic space if
+        /// <paramref name="s"/> is between -1 and 1 (non-inclusive).
+        /// </summary>
+        /// <param name="s">The input hyperbolic tangent value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic tangent value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Atanh(float s)
+        {
+            return MathF.Atanh(s);
+        }
+
+        /// <summary>
+        /// Returns the hyperbolic arc (also called inverse) tangent of <paramref name="s"/> in radians.
+        /// Use it to get the angle from an angle's tangent in hyperbolic space if
+        /// <paramref name="s"/> is between -1 and 1 (non-inclusive).
+        /// </summary>
+        /// <param name="s">The input hyperbolic tangent value.</param>
+        /// <returns>
+        /// An angle that would result in the given hyperbolic tangent value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Atanh(double s)
+        {
+            return Math.Atanh(s);
         }
 
         /// <summary>

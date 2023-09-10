@@ -72,6 +72,19 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="acosh">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the hyperbolic arc (also called inverse) cosine of [param x], returning a value in radians. Use it to get the angle from an angle's cosine in hyperbolic space if [param x] is larger or equal to 1. For values of [param x] lower than 1, it will return 0, in order to prevent [method acosh] from returning [constant @GDScript.NAN].
+				[codeblock]
+				var a = acosh(2) # Returns 1.31695789692482
+				cosh(a) # Returns 2
+
+				var b = acosh(-1) # Returns 0
+				[/codeblock]
+			</description>
+		</method>
 		<method name="asin">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
@@ -80,6 +93,17 @@
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad_to_deg(s)
 				var s = asin(0.5)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="asinh">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the hyperbolic arc (also called inverse) sine of [param x], returning a value in radians. Use it to get the angle from an angle's sine in hyperbolic space.
+				[codeblock]
+				var a = asinh(0.9) # Returns 0.8088669356527824
+				sinh(a) # Returns 0.9
 				[/codeblock]
 			</description>
 		</method>
@@ -104,6 +128,21 @@
 				Important note: The Y coordinate comes first, by convention.
 				[codeblock]
 				var a = atan2(0, -1) # a is 3.141593
+				[/codeblock]
+			</description>
+		</method>
+		<method name="atanh">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the hyperbolic arc (also called inverse) tangent of [param x], returning a value in radians. Use it to get the angle from an angle's tangent in hyperbolic space if [param x] is between -1 and 1 (non-inclusive).
+				In mathematics, the inverse hyperbolic tangent is only defined for -1 &lt; [param x] &lt; 1 in the real set, so values equal or lower to -1 for [param x] return negative [constant @GDScript.INF] and values equal or higher than 1 return positive [constant @GDScript.INF] in order to prevent [method atanh] from returning [constant @GDScript.NAN].
+				[codeblock]
+				var a = atanh(0.9) # Returns 1.47221948958322
+				tanh(a) # Returns 0.9
+
+				var b = atanh(-2) # Returns -inf
+				tanh(b) # Returns -1
 				[/codeblock]
 			</description>
 		</method>
@@ -362,8 +401,8 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [param x] and returns it.
-				[b]e[/b] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
+				The natural exponential function. It raises the mathematical constant [i]e[/i] to the power of [param x] and returns it.
+				[i]e[/i] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
 				For exponents to other bases use the method [method pow].
 				[codeblock]
 				var a = exp(2) # Approximately 7.39
@@ -739,8 +778,7 @@
 			<return type="int" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Returns the nearest equal or larger power of 2 for the integer [param value].
-				In other words, returns the smallest value [code]a[/code] where [code]a = pow(2, n)[/code] such that [code]value &lt;= a[/code] for some non-negative integer [code]n[/code].
+				Returns the smallest integer power of 2 that is greater than or equal to [param value].
 				[codeblock]
 				nearest_po2(3) # Returns 4
 				nearest_po2(4) # Returns 4
@@ -749,7 +787,7 @@
 				nearest_po2(0)  # Returns 0 (this may not be expected)
 				nearest_po2(-1) # Returns 0 (this may not be expected)
 				[/codeblock]
-				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for negative values of [param value] (in reality, 1 is the smallest integer power of 2).
+				[b]Warning:[/b] Due to its implementation, this method returns [code]0[/code] rather than [code]1[/code] for values less than or equal to [code]0[/code], with an exception for [param value] being the smallest negative 64-bit integer ([code]-9223372036854775808[/code]) in which case the [param value] is returned unchanged.
 			</description>
 		</method>
 		<method name="pingpong">
@@ -1464,6 +1502,10 @@
 		<member name="DisplayServer" type="DisplayServer" setter="" getter="">
 			The [DisplayServer] singleton.
 		</member>
+		<member name="EditorInterface" type="EditorInterface" setter="" getter="">
+			The [EditorInterface] singleton.
+			[b]Note:[/b] Only available in editor builds.
+		</member>
 		<member name="Engine" type="Engine" setter="" getter="">
 			The [Engine] singleton.
 		</member>
@@ -2032,6 +2074,18 @@
 		<constant name="KEY_LAUNCHF" value="4194415" enum="Key">
 			Launch Shortcut F key.
 		</constant>
+		<constant name="KEY_GLOBE" value="4194416" enum="Key">
+			"Globe" key on Mac / iPad keyboard.
+		</constant>
+		<constant name="KEY_KEYBOARD" value="4194417" enum="Key">
+			"On-screen keyboard" key on iPad keyboard.
+		</constant>
+		<constant name="KEY_JIS_EISU" value="4194418" enum="Key">
+			英数 key on Mac keyboard.
+		</constant>
+		<constant name="KEY_JIS_KANA" value="4194419" enum="Key">
+			かな key on Mac keyboard.
+		</constant>
 		<constant name="KEY_UNKNOWN" value="8388607" enum="Key">
 			Unknown key.
 		</constant>
@@ -2247,18 +2301,6 @@
 		</constant>
 		<constant name="KEY_SECTION" value="167" enum="Key">
 			§ key.
-		</constant>
-		<constant name="KEY_GLOBE" value="4194416" enum="Key">
-			"Globe" key on Mac / iPad keyboard.
-		</constant>
-		<constant name="KEY_KEYBOARD" value="4194417" enum="Key">
-			"On-screen keyboard" key iPad keyboard.
-		</constant>
-		<constant name="KEY_JIS_EISU" value="4194418" enum="Key">
-			英数 key on Mac keyboard.
-		</constant>
-		<constant name="KEY_JIS_KANA" value="4194419" enum="Key">
-			かな key on Mac keyboard.
 		</constant>
 		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask" is_bitfield="true">
 			Key Code mask.

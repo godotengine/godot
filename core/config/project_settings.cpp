@@ -146,29 +146,29 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 #endif // TOOLS_ENABLED
 
 String ProjectSettings::localize_path(const String &p_path) const {
-	if (resource_path.is_empty() || (p_path.is_absolute_path() && !p_path.begins_with(resource_path))) {
-		return p_path.simplify_path();
+	String path = p_path.simplify_path();
+
+	if (resource_path.is_empty() || (path.is_absolute_path() && !path.begins_with(resource_path))) {
+		return path;
 	}
 
 	// Check if we have a special path (like res://) or a protocol identifier.
-	int p = p_path.find("://");
+	int p = path.find("://");
 	bool found = false;
 	if (p > 0) {
 		found = true;
 		for (int i = 0; i < p; i++) {
-			if (!is_ascii_alphanumeric_char(p_path[i])) {
+			if (!is_ascii_alphanumeric_char(path[i])) {
 				found = false;
 				break;
 			}
 		}
 	}
 	if (found) {
-		return p_path.simplify_path();
+		return path;
 	}
 
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-
-	String path = p_path.replace("\\", "/").simplify_path();
 
 	if (dir->change_dir(path) == OK) {
 		String cwd = dir->get_current_dir();
@@ -187,7 +187,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		cwd = cwd.path_join("");
 
 		if (!cwd.begins_with(res_path)) {
-			return p_path;
+			return path;
 		}
 
 		return cwd.replace_first(res_path, "res://");
@@ -249,6 +249,11 @@ bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
 #endif
 }
 
+void ProjectSettings::add_hidden_prefix(const String &p_prefix) {
+	ERR_FAIL_COND_MSG(hidden_prefixes.find(p_prefix) > -1, vformat("Hidden prefix '%s' already exists.", p_prefix));
+	hidden_prefixes.push_back(p_prefix);
+}
+
 String ProjectSettings::globalize_path(const String &p_path) const {
 	if (p_path.begins_with("res://")) {
 		if (!resource_path.is_empty()) {
@@ -283,6 +288,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			for (int i = 0; i < custom_feature_array.size(); i++) {
 				custom_features.insert(custom_feature_array[i]);
 			}
+			_queue_changed();
 			return true;
 		}
 
@@ -324,6 +330,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	}
 
+	_queue_changed();
 	return true;
 }
 
@@ -386,7 +393,18 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vc.name = E.key;
 		vc.order = v->order;
 		vc.type = v->variant.get_type();
-		if (v->internal || vc.name.begins_with("input/") || vc.name.begins_with("importer_defaults/") || vc.name.begins_with("import/") || vc.name.begins_with("autoload/") || vc.name.begins_with("editor_plugins/") || vc.name.begins_with("shader_globals/")) {
+
+		bool internal = v->internal;
+		if (!internal) {
+			for (const String &F : hidden_prefixes) {
+				if (vc.name.begins_with(F)) {
+					internal = true;
+					break;
+				}
+			}
+		}
+
+		if (internal) {
 			vc.flags = PROPERTY_USAGE_STORAGE;
 		} else {
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
@@ -422,6 +440,22 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(E.type, E.name, PROPERTY_HINT_NONE, "", E.flags));
 		}
 	}
+}
+
+void ProjectSettings::_queue_changed() {
+	if (is_changed || !MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
+		return;
+	}
+	is_changed = true;
+	callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
+}
+
+void ProjectSettings::_emit_changed() {
+	if (!is_changed) {
+		return;
+	}
+	is_changed = false;
+	emit_signal("settings_changed");
 }
 
 bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
@@ -1225,6 +1259,8 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
+
+	ADD_SIGNAL(MethodInfo("settings_changed"));
 }
 
 void ProjectSettings::_add_builtin_input_map() {
@@ -1260,6 +1296,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("application/config/name", "");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
+	GLOBAL_DEF_BASIC("application/config/version", "");
 	GLOBAL_DEF_INTERNAL(PropertyInfo(Variant::STRING, "application/config/tags"), PackedStringArray());
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res"), "");
 	GLOBAL_DEF("application/run/disable_stdout", false);
@@ -1328,6 +1365,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,canvas_items,viewport"), "disabled");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"), "keep");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "display/window/stretch/scale", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), 1.0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/scale_mode", PROPERTY_HINT_ENUM, "fractional,integer"), "fractional");
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1"), 16384);
 
@@ -1360,11 +1398,13 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
 
-	// These properties will not show up in the dialog nor in the documentation. If you want to exclude whole groups, see _get_property_list() method.
+	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_remaps", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations_pot_files", PackedStringArray());
+
+	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }
 
 ProjectSettings::~ProjectSettings() {

@@ -138,7 +138,8 @@ namespace GodotTools.Build
             {
                 var script = (Script)ResourceLoader.Load(file, typeHint: Internal.CSharpLanguageType);
 
-                if (script != null && Internal.ScriptEditorEdit(script, issue.Line, issue.Column))
+                // Godot's ScriptEditor.Edit is 0-based but the issue lines are 1-based.
+                if (script != null && Internal.ScriptEditorEdit(script, issue.Line - 1, issue.Column - 1))
                     Internal.EditorNodeShowScriptScreen();
             }
         }
