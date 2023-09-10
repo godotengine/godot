@@ -228,11 +228,13 @@ void SymbolTooltip::_update_tooltip_size() {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Editor"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
 	String header_text = header_label->get_text();
+	String body_text = body_label->get_parsed_text();
 	Ref<Theme> body_theme = body_label->get_theme();
 	Ref<StyleBox> body_style_box = body_theme->get_stylebox("normal", "RichTextLabel");
 
 	// Calculate content size and style box paddings
 	Size2 header_content_size = font->get_string_size(header_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+	Size2 body_content_size = font->get_string_size(body_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 	real_t header_h_padding = header_style_box->get_content_margin(SIDE_LEFT) + header_style_box->get_content_margin(SIDE_RIGHT);
 	//real_t header_v_padding = header_style_box->get_content_margin(SIDE_TOP) + header_style_box->get_content_margin(SIDE_BOTTOM);
 	real_t body_h_padding = body_style_box->get_content_margin(SIDE_LEFT) + body_style_box->get_content_margin(SIDE_RIGHT);
@@ -240,7 +242,7 @@ void SymbolTooltip::_update_tooltip_size() {
 
 	// Determine tooltip width based on max width, header width, and body visibility
 	real_t header_width = header_content_size.width + header_h_padding;
-	real_t body_width = body_label->get_content_width() + body_h_padding;
+	real_t body_width = body_content_size.width + body_h_padding;
 	real_t tooltip_width = MIN(MAX_WIDTH, MAX(header_width, body_label->is_visible() ? body_width : 0) + 10); // TODO: Should be +2, but +10 is needed and I'm not sure why.
 
 	// Set sizes
