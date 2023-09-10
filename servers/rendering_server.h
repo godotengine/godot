@@ -1013,6 +1013,7 @@ public:
 	virtual void viewport_set_clear_mode(RID p_viewport, ViewportClearMode p_clear_mode) = 0;
 
 	virtual RID viewport_get_render_target(RID p_viewport) const = 0;
+	virtual RID viewport_get_for_render_target(RID p_render_target) const = 0;
 	virtual RID viewport_get_texture(RID p_viewport) const = 0;
 
 	enum ViewportEnvironmentMode {
@@ -1028,6 +1029,7 @@ public:
 
 	virtual void viewport_attach_camera(RID p_viewport, RID p_camera) = 0;
 	virtual void viewport_set_scenario(RID p_viewport, RID p_scenario) = 0;
+	virtual RID viewport_get_scenario(RID p_viewport) const = 0;
 	virtual void viewport_attach_canvas(RID p_viewport, RID p_canvas) = 0;
 	virtual void viewport_remove_canvas(RID p_viewport, RID p_canvas) = 0;
 	virtual void viewport_set_canvas_transform(RID p_viewport, RID p_canvas, const Transform2D &p_offset) = 0;

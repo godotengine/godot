@@ -221,6 +221,26 @@ void OpenXROpenGLExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_d
 	p_usable_depth_formats.push_back(GL_DEPTH_COMPONENT24);
 }
 
+/*
+bool OpenXROpenGLExtension::on_pre_draw_viewport(RID p_render_target) {
+	if (srgb_ext_is_available) {
+		hw_linear_to_srgb_is_enabled = glIsEnabled(GL_FRAMEBUFFER_SRGB);
+		if (hw_linear_to_srgb_is_enabled) {
+			// Disable this.
+			glDisable(GL_FRAMEBUFFER_SRGB);
+		}
+	}
+	return true;
+}
+
+void OpenXROpenGLExtension::on_post_draw_viewport(RID p_render_target) {
+	if (srgb_ext_is_available && hw_linear_to_srgb_is_enabled) {
+		// Re-enable this.
+		glEnable(GL_FRAMEBUFFER_SRGB);
+	}
+}
+*/
+
 bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	ERR_FAIL_NULL_V(texture_storage, false);

@@ -269,8 +269,12 @@ void OpenXRExtensionWrapper::on_session_destroyed() {
 	GDVIRTUAL_CALL(_on_session_destroyed);
 }
 
-void OpenXRExtensionWrapper::on_pre_draw_viewport(RID p_render_target) {
+bool OpenXRExtensionWrapper::on_pre_draw_viewport(RID p_render_target) {
+	// TODO introduce _on_pre_draw_viewport2 that has a return boolean!
+	
 	GDVIRTUAL_CALL(_on_pre_draw_viewport, p_render_target);
+
+	return false;
 }
 
 void OpenXRExtensionWrapper::on_post_draw_viewport(RID p_render_target) {

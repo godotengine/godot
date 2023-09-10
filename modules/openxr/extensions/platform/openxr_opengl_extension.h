@@ -48,6 +48,11 @@ public:
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
 
+	/*
+	virtual bool on_pre_draw_viewport(RID p_render_target) override;
+	virtual void on_post_draw_viewport(RID p_render_target) override;
+	*/
+
 	virtual void get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) override;
 	virtual void get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) override;
 	virtual String get_swapchain_format_name(int64_t p_swapchain_format) const override;
