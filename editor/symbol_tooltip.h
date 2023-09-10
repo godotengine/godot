@@ -41,7 +41,6 @@
 class SymbolTooltip : public PanelContainer {
 	GDCLASS(SymbolTooltip, PanelContainer);
 
-	Ref<Script> script = nullptr;
 	CodeTextEditor *code_editor = nullptr;
 	CodeEdit *text_editor = nullptr;
 	PanelContainer *panel_container = nullptr;
@@ -65,19 +64,21 @@ class SymbolTooltip : public PanelContainer {
 	Vector2 _calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position);
 	void _update_tooltip_size();
 	void _update_tooltip_content(const String &header_content, const String &body_content);
+	ExtendGDScriptParser *_get_script_parser(const Ref<Script> &p_script);
+	const lsp::DocumentSymbol *_get_member_symbol(HashMap<String, const lsp::DocumentSymbol *> &members, const String &symbol_word);
 
 protected:
 	void _notification(int p_what);
 
 public:
-	void update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script);
+	void update_symbol_tooltip(const Vector2 &mouse_position, const Ref<Script> &script);
 	SymbolTooltip(CodeTextEditor *code_editor);
 	~SymbolTooltip();
 };
 
-static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script);
-static const GDScriptParser::ClassNode *get_ast_tree(const Ref<Script> &p_script);
-static ExtendGDScriptParser *get_script_parser(const Ref<Script> &p_script);
-const lsp::DocumentSymbol *get_member_symbol(HashMap<String, const lsp::DocumentSymbol *> &members, const String &symbol_word);
+// static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script);
+// static const GDScriptParser::ClassNode *get_ast_tree(const Ref<Script> &p_script);
+// static ExtendGDScriptParser *get_script_parser(const Ref<Script> &p_script);
+// const lsp::DocumentSymbol *get_member_symbol(HashMap<String, const lsp::DocumentSymbol *> &members, const String &symbol_word);
 
 #endif // SYMBOL_TOOLTIP_H

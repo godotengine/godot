@@ -150,7 +150,7 @@ void SymbolTooltip::_close_tooltip() {
 	hide();
 }
 
-void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script) {
+void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, const Ref<Script> &script) {
 	String symbol_word = _get_symbol_word(mouse_position);
 	if (symbol_word.is_empty()) {
 		last_symbol_word = "";
@@ -166,9 +166,9 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 		last_symbol_word = symbol_word;
 	}
 
-	ExtendGDScriptParser *parser = get_script_parser(script);
+	ExtendGDScriptParser *parser = _get_script_parser(script);
 	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
-	const lsp::DocumentSymbol *member_symbol = get_member_symbol(members, symbol_word);
+	const lsp::DocumentSymbol *member_symbol = _get_member_symbol(members, symbol_word);
 
 	if (member_symbol == nullptr) { // Symbol is not a member of the script.
 		_close_tooltip();
@@ -385,7 +385,7 @@ int SymbolTooltip::_get_word_pos_under_mouse(const String &symbol_word, const St
 }
 
 // Copied from script_text_editor.cpp
-static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
+/*static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
 	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return nullptr;
 	}
@@ -401,7 +401,7 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	}
 
 	return nullptr;
-}
+}*/
 
 const GDScriptParser::ClassNode::Member *find_symbol(const GDScriptParser::ClassNode *node, const String &symbol_word) {
 	for (int i = 0; i < node->members.size(); ++i) {
@@ -437,7 +437,7 @@ const GDScriptParser::ClassNode::Member *find_symbol(const GDScriptParser::Class
 	return ast_tree;
 }*/
 
-static ExtendGDScriptParser *get_script_parser(const Ref<Script> &p_script) {
+ExtendGDScriptParser *SymbolTooltip::_get_script_parser(const Ref<Script> &p_script) {
 	// Create and initialize the parser.
 	ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
 	Error err = parser->parse(p_script->get_source_code(), p_script->get_path());
@@ -451,7 +451,7 @@ static ExtendGDScriptParser *get_script_parser(const Ref<Script> &p_script) {
 }
 
 // TODO: Need to find the correct symbol instance instead of just the first match.
-const lsp::DocumentSymbol *get_member_symbol(
+const lsp::DocumentSymbol *SymbolTooltip::_get_member_symbol(
 		HashMap<String, const lsp::DocumentSymbol *> &members,
 		const String &symbol_word) {//,
 		//const Vector2 &symbol_position) {
