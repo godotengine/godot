@@ -257,7 +257,8 @@ struct SceneShaderData : public ShaderData {
 
 	enum DepthTest {
 		DEPTH_TEST_DISABLED,
-		DEPTH_TEST_ENABLED
+		DEPTH_TEST_ENABLED,
+		DEPTH_TEST_ENABLED_INVERTED,
 	};
 
 	enum AlphaAntiAliasing {

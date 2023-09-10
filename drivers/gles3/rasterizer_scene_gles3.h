@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "platform_gl.h"
 #ifdef GLES3_ENABLED
 
 #include "core/math/projection.h"
@@ -462,6 +463,7 @@ private:
 
 		GLES3::SceneShaderData::BlendMode current_blend_mode = GLES3::SceneShaderData::BLEND_MODE_MIX;
 		RS::CullMode cull_mode = RS::CULL_MODE_BACK;
+		GLenum current_depth_function = GL_GEQUAL;
 
 		bool current_blend_enabled = false;
 		bool current_depth_draw_enabled = false;
@@ -483,6 +485,9 @@ private:
 			current_depth_draw_enabled = false;
 			glDisable(GL_DEPTH_TEST);
 			current_depth_test_enabled = false;
+
+			glDepthFunc(GL_GEQUAL);
+			current_depth_function = GL_GEQUAL;
 		}
 
 		void set_gl_cull_mode(RS::CullMode p_mode) {
@@ -537,6 +542,13 @@ private:
 					glDisable(GL_DEPTH_TEST);
 				}
 				current_depth_test_enabled = p_enabled;
+			}
+		}
+
+		void set_gl_depth_func(GLenum p_depth_func) {
+			if (current_depth_function != p_depth_func) {
+				glDepthFunc(p_depth_func);
+				current_depth_function = p_depth_func;
 			}
 		}
 

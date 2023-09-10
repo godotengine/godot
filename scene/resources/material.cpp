@@ -861,6 +861,17 @@ void BaseMaterial3D::_update_shader() {
 	}
 	if (flags[FLAG_DISABLE_DEPTH_TEST]) {
 		code += ", depth_test_disabled";
+	} else {
+		switch (depth_test) {
+			case DEPTH_TEST_DEFAULT:
+				// depth_test_default is the default behavior, no need to emit it here.
+				break;
+			case DEPTH_TEST_INVERTED:
+				code += ", depth_test_inverted";
+				break;
+			case DEPTH_TEST_MAX:
+				break; // Internal value, skip.
+		}
 	}
 	if (flags[FLAG_PARTICLE_TRAILS_MODE]) {
 		code += ", particle_trails";
@@ -2354,6 +2365,19 @@ BaseMaterial3D::DepthDrawMode BaseMaterial3D::get_depth_draw_mode() const {
 	return depth_draw_mode;
 }
 
+void BaseMaterial3D::set_depth_test(DepthTest p_func) {
+	if (depth_test == p_func) {
+		return;
+	}
+
+	depth_test = p_func;
+	_queue_shader_change();
+}
+
+BaseMaterial3D::DepthTest BaseMaterial3D::get_depth_test() const {
+	return depth_test;
+}
+
 void BaseMaterial3D::set_cull_mode(CullMode p_mode) {
 	if (cull_mode == p_mode) {
 		return;
@@ -2410,7 +2434,8 @@ void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 			p_flag == FLAG_UV1_USE_TRIPLANAR ||
 			p_flag == FLAG_UV2_USE_TRIPLANAR ||
 			p_flag == FLAG_USE_Z_CLIP_SCALE ||
-			p_flag == FLAG_USE_FOV_OVERRIDE) {
+			p_flag == FLAG_USE_FOV_OVERRIDE ||
+			p_flag == FLAG_DISABLE_DEPTH_TEST) {
 		notify_property_list_changed();
 	}
 
@@ -2562,6 +2587,10 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if ((p_property.name == "heightmap_min_layers" || p_property.name == "heightmap_max_layers") && !deep_parallax) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (p_property.name == "depth_test" && flags[FLAG_DISABLE_DEPTH_TEST]) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -3133,6 +3162,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_depth_draw_mode", "depth_draw_mode"), &BaseMaterial3D::set_depth_draw_mode);
 	ClassDB::bind_method(D_METHOD("get_depth_draw_mode"), &BaseMaterial3D::get_depth_draw_mode);
 
+	ClassDB::bind_method(D_METHOD("set_depth_test", "depth_test"), &BaseMaterial3D::set_depth_test);
+	ClassDB::bind_method(D_METHOD("get_depth_test"), &BaseMaterial3D::get_depth_test);
+
 	ClassDB::bind_method(D_METHOD("set_cull_mode", "cull_mode"), &BaseMaterial3D::set_cull_mode);
 	ClassDB::bind_method(D_METHOD("get_cull_mode"), &BaseMaterial3D::get_cull_mode);
 
@@ -3269,6 +3301,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_test", PROPERTY_HINT_ENUM, "Default,Inverted"), "set_depth_test", "get_depth_test");
 
 	ADD_GROUP("Shading", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shading_mode", PROPERTY_HINT_ENUM, "Unshaded,Per-Pixel,Per-Vertex"), "set_shading_mode", "get_shading_mode");
@@ -3517,6 +3550,9 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_OPAQUE_ONLY);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_ALWAYS);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_DISABLED);
+
+	BIND_ENUM_CONSTANT(DEPTH_TEST_DEFAULT);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_INVERTED);
 
 	BIND_ENUM_CONSTANT(CULL_BACK);
 	BIND_ENUM_CONSTANT(CULL_FRONT);
