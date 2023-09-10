@@ -177,6 +177,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	}
 
 	if (Main::start()) {
+		os.set_exit_code(EXIT_SUCCESS);
 		os.run();
 	}
 	Main::cleanup();
