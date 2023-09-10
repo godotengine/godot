@@ -137,27 +137,27 @@ private:
 public:
 	struct SkySceneState {
 		struct UBO {
-			float combined_reprojection[RendererSceneRender::MAX_RENDER_VIEWS][16]; // 2 x 64 - 128
-			float view_inv_projections[RendererSceneRender::MAX_RENDER_VIEWS][16]; // 2 x 64 - 256
-			float view_eye_offsets[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 2 x 16 - 288
+			float combined_reprojection[RendererSceneRender::MAX_RENDER_VIEWS][16]; // 4 x 64 - 256
+			float view_inv_projections[RendererSceneRender::MAX_RENDER_VIEWS][16]; // 4 x 64 - 512
+			float view_eye_offsets[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 4 x 16 - 768
 
-			uint32_t volumetric_fog_enabled; // 4 - 292
-			float volumetric_fog_inv_length; // 4 - 296
-			float volumetric_fog_detail_spread; // 4 - 300
-			float volumetric_fog_sky_affect; // 4 - 304
+			uint32_t volumetric_fog_enabled; // 4 - 772
+			float volumetric_fog_inv_length; // 4 - 776
+			float volumetric_fog_detail_spread; // 4 - 780
+			float volumetric_fog_sky_affect; // 4 - 784
 
-			uint32_t fog_enabled; // 4 - 308
-			float fog_sky_affect; // 4 - 312
-			float fog_density; // 4 - 316
-			float fog_sun_scatter; // 4 - 320
+			uint32_t fog_enabled; // 4 - 788
+			float fog_sky_affect; // 4 - 792
+			float fog_density; // 4 - 796
+			float fog_sun_scatter; // 4 - 800
 
-			float fog_light_color[3]; // 12 - 332
-			float fog_aerial_perspective; // 4 - 336
+			float fog_light_color[3]; // 12 - 812
+			float fog_aerial_perspective; // 4 - 816
 
-			float z_far; // 4 - 340
-			uint32_t directional_light_count; // 4 - 344
-			uint32_t pad1; // 4 - 348
-			uint32_t pad2; // 4 - 352
+			float z_far; // 4 - 820
+			uint32_t directional_light_count; // 4 - 824
+			uint32_t pad1; // 4 - 828
+			uint32_t pad2; // 4 - 832
 		};
 
 		UBO ubo;

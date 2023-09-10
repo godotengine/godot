@@ -1,5 +1,5 @@
 #define M_PI 3.14159265359
-#define MAX_VIEWS 2
+#define MAX_VIEWS 4
 
 #if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
 #extension GL_EXT_multiview : enable

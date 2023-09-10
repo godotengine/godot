@@ -21,7 +21,7 @@
 #VERSION_DEFINES
 
 #define MAX_CASCADES 8
-#define MAX_VIEWS 2
+#define MAX_VIEWS 4
 
 layout(push_constant, std430) uniform Params {
 	uint band_power;
@@ -192,7 +192,7 @@ void main() {
 
 #VERSION_DEFINES
 
-#define MAX_VIEWS 2
+#define MAX_VIEWS 4
 
 layout(location = 0) out vec4 frag_color;
 
