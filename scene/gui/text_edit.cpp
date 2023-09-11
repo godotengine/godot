@@ -1752,10 +1752,26 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				const int triple_click_tolerance = 5;
 				bool is_triple_click = (!mb->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && mb->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance);
 
-				if (!is_mouse_over_selection() && !mb->is_double_click() && !is_triple_click) {
+				if (!mb->is_double_click() && !is_triple_click) {
 					if (mb->is_alt_pressed()) {
 						prev_line = row;
 						prev_col = col;
+
+						// Remove caret at clicked location.
+						if (carets.size() > 1) {
+							for (int i = 0; i < carets.size(); i++) {
+								// Deselect if clicked on caret or its selection.
+								if ((get_caret_column(i) == col && get_caret_line(i) == row) || is_mouse_over_selection(true, i)) {
+									remove_caret(i);
+									last_dblclk = 0;
+									return;
+								}
+							}
+						}
+
+						if (is_mouse_over_selection()) {
+							return;
+						}
 
 						caret = add_caret(row, col);
 						if (caret == -1) {
@@ -1766,7 +1782,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						carets.write[caret].selection.selecting_column = col;
 
 						last_dblclk = 0;
-					} else if (!mb->is_shift_pressed()) {
+					} else if (!mb->is_shift_pressed() && !is_mouse_over_selection()) {
 						caret = 0;
 						remove_secondary_carets();
 					}
