@@ -752,6 +752,90 @@ int64_t VariantUtilityFunctions::_typeof(const Variant &obj) {
 	return obj.get_type();
 }
 
+Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Variant::Type p_type) {
+	switch (p_type) {
+		case Variant::Type::NIL:
+			return Variant();
+		case Variant::Type::BOOL:
+			return p_variant.operator bool();
+		case Variant::Type::INT:
+			return p_variant.operator int64_t();
+		case Variant::Type::FLOAT:
+			return p_variant.operator double();
+		case Variant::Type::STRING:
+			return p_variant.operator String();
+		case Variant::Type::VECTOR2:
+			return p_variant.operator Vector2();
+		case Variant::Type::VECTOR2I:
+			return p_variant.operator Vector2i();
+		case Variant::Type::RECT2:
+			return p_variant.operator Rect2();
+		case Variant::Type::RECT2I:
+			return p_variant.operator Rect2i();
+		case Variant::Type::VECTOR3:
+			return p_variant.operator Vector3();
+		case Variant::Type::VECTOR3I:
+			return p_variant.operator Vector3i();
+		case Variant::Type::TRANSFORM2D:
+			return p_variant.operator Transform2D();
+		case Variant::Type::VECTOR4:
+			return p_variant.operator Vector4();
+		case Variant::Type::VECTOR4I:
+			return p_variant.operator Vector4i();
+		case Variant::Type::PLANE:
+			return p_variant.operator Plane();
+		case Variant::Type::QUATERNION:
+			return p_variant.operator Quaternion();
+		case Variant::Type::AABB:
+			return p_variant.operator ::AABB();
+		case Variant::Type::BASIS:
+			return p_variant.operator Basis();
+		case Variant::Type::TRANSFORM3D:
+			return p_variant.operator Transform3D();
+		case Variant::Type::PROJECTION:
+			return p_variant.operator Projection();
+		case Variant::Type::COLOR:
+			return p_variant.operator Color();
+		case Variant::Type::STRING_NAME:
+			return p_variant.operator StringName();
+		case Variant::Type::NODE_PATH:
+			return p_variant.operator NodePath();
+		case Variant::Type::RID:
+			return p_variant.operator ::RID();
+		case Variant::Type::OBJECT:
+			return p_variant.operator Object *();
+		case Variant::Type::CALLABLE:
+			return p_variant.operator Callable();
+		case Variant::Type::SIGNAL:
+			return p_variant.operator Signal();
+		case Variant::Type::DICTIONARY:
+			return p_variant.operator Dictionary();
+		case Variant::Type::ARRAY:
+			return p_variant.operator Array();
+		case Variant::Type::PACKED_BYTE_ARRAY:
+			return p_variant.operator PackedByteArray();
+		case Variant::Type::PACKED_INT32_ARRAY:
+			return p_variant.operator PackedInt32Array();
+		case Variant::Type::PACKED_INT64_ARRAY:
+			return p_variant.operator PackedInt64Array();
+		case Variant::Type::PACKED_FLOAT32_ARRAY:
+			return p_variant.operator PackedFloat32Array();
+		case Variant::Type::PACKED_FLOAT64_ARRAY:
+			return p_variant.operator PackedFloat64Array();
+		case Variant::Type::PACKED_STRING_ARRAY:
+			return p_variant.operator PackedStringArray();
+		case Variant::Type::PACKED_VECTOR2_ARRAY:
+			return p_variant.operator PackedVector2Array();
+		case Variant::Type::PACKED_VECTOR3_ARRAY:
+			return p_variant.operator PackedVector3Array();
+		case Variant::Type::PACKED_COLOR_ARRAY:
+			return p_variant.operator PackedColorArray();
+		case Variant::Type::VARIANT_MAX:
+			ERR_PRINT("Invalid type argument to type_convert(), use the TYPE_* constants. Returning the unconverted Variant.");
+	}
+	return p_variant;
+}
+
 String VariantUtilityFunctions::str(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 	if (p_arg_count < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -1615,6 +1699,7 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDVR(weakref, sarray("obj"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(_typeof, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(type_convert, sarray("variant", "type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
