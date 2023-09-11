@@ -91,6 +91,13 @@ VBoxContainer *FileDialog::get_vbox() {
 	return vbox;
 }
 
+void FileDialog::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "dialog_text") {
+		// File dialogs have a custom layout, and dialog nodes can't have both a text and a layout.
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void FileDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
