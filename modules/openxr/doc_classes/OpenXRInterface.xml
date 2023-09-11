@@ -106,6 +106,13 @@
 				[b]Note:[/b] This feature is only available on the compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
 			</description>
 		</method>
+		<method name="is_hand_interaction_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OpenXR's hand interaction profile is supported and enabled.
+				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
+			</description>
+		</method>
 		<method name="is_hand_tracking_supported">
 			<return type="bool" />
 			<description>

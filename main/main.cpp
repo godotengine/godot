@@ -2405,6 +2405,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// OpenXR project extensions settings.
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking", true);
+	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 
 #ifdef TOOLS_ENABLED
