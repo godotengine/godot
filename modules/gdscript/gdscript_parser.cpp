@@ -4112,6 +4112,8 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				}
 
 				variable->export_info.hint_string = enum_hint_string;
+				variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+				variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
 			} break;
 			default:
 				push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", variable);
@@ -4368,6 +4370,104 @@ String GDScriptParser::DataType::to_string() const {
 	}
 
 	ERR_FAIL_V_MSG("<unresolved type>", "Kind set outside the enum range.");
+}
+
+PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) const {
+	PropertyInfo result;
+	result.name = p_name;
+	result.usage = PROPERTY_USAGE_NONE;
+
+	if (!is_hard_type()) {
+		result.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		return result;
+	}
+
+	switch (kind) {
+		case BUILTIN:
+			result.type = builtin_type;
+			if (builtin_type == Variant::ARRAY && has_container_element_type()) {
+				const DataType *elem_type = container_element_type;
+				switch (elem_type->kind) {
+					case BUILTIN:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						result.hint_string = Variant::get_type_name(elem_type->builtin_type);
+						break;
+					case NATIVE:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						result.hint_string = elem_type->native_type;
+						break;
+					case SCRIPT:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						if (elem_type->script_type.is_valid() && elem_type->script_type->get_global_name() != StringName()) {
+							result.hint_string = elem_type->script_type->get_global_name();
+						} else {
+							result.hint_string = elem_type->native_type;
+						}
+						break;
+					case CLASS:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						if (elem_type->class_type != nullptr && elem_type->class_type->get_global_name() != StringName()) {
+							result.hint_string = elem_type->class_type->get_global_name();
+						} else {
+							result.hint_string = elem_type->native_type;
+						}
+						break;
+					case ENUM:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						result.hint_string = String(elem_type->native_type).replace("::", ".");
+						break;
+					case VARIANT:
+					case RESOLVING:
+					case UNRESOLVED:
+						break;
+				}
+			}
+			break;
+		case NATIVE:
+			result.type = Variant::OBJECT;
+			if (is_meta_type) {
+				result.class_name = GDScriptNativeClass::get_class_static();
+			} else {
+				result.class_name = native_type;
+			}
+			break;
+		case SCRIPT:
+			result.type = Variant::OBJECT;
+			if (is_meta_type) {
+				result.class_name = script_type.is_valid() ? script_type->get_class() : Script::get_class_static();
+			} else if (script_type.is_valid() && script_type->get_global_name() != StringName()) {
+				result.class_name = script_type->get_global_name();
+			} else {
+				result.class_name = native_type;
+			}
+			break;
+		case CLASS:
+			result.type = Variant::OBJECT;
+			if (is_meta_type) {
+				result.class_name = GDScript::get_class_static();
+			} else if (class_type != nullptr && class_type->get_global_name() != StringName()) {
+				result.class_name = class_type->get_global_name();
+			} else {
+				result.class_name = native_type;
+			}
+			break;
+		case ENUM:
+			if (is_meta_type) {
+				result.type = Variant::DICTIONARY;
+			} else {
+				result.type = Variant::INT;
+				result.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+				result.class_name = String(native_type).replace("::", ".");
+			}
+			break;
+		case VARIANT:
+		case RESOLVING:
+		case UNRESOLVED:
+			result.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			break;
+	}
+
+	return result;
 }
 
 static Variant::Type _variant_type_to_typed_array_element_type(Variant::Type p_type) {

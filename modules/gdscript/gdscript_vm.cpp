@@ -466,8 +466,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			err_file = "<built-in>";
 		}
 		String err_func = name;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->name.is_empty()) {
-			err_func = p_instance->script->name + "." + err_func;
+		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && p_instance->script->local_name != StringName()) {
+			err_func = p_instance->script->local_name.operator String() + "." + err_func;
 		}
 		int err_line = _initial_line;
 		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
@@ -3649,8 +3649,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			err_file = "<built-in>";
 		}
 		String err_func = name;
-		if (instance_valid_with_script && !p_instance->script->name.is_empty()) {
-			err_func = p_instance->script->name + "." + err_func;
+		if (instance_valid_with_script && p_instance->script->local_name != StringName()) {
+			err_func = p_instance->script->local_name.operator String() + "." + err_func;
 		}
 		int err_line = line;
 		if (err_text.is_empty()) {

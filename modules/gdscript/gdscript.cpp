@@ -254,7 +254,7 @@ Ref<Script> GDScript::get_base_script() const {
 }
 
 StringName GDScript::get_global_name() const {
-	return name;
+	return global_name;
 }
 
 StringName GDScript::get_instance_base_type() const {
@@ -284,27 +284,9 @@ void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_
 	const GDScript *current = this;
 	while (current) {
 		for (const KeyValue<StringName, GDScriptFunction *> &E : current->member_functions) {
-			GDScriptFunction *func = E.value;
-			MethodInfo mi;
-			mi.name = E.key;
-
-			if (func->is_static()) {
-				mi.flags |= METHOD_FLAG_STATIC;
-			}
-
-			for (int i = 0; i < func->get_argument_count(); i++) {
-				PropertyInfo arginfo = func->get_argument_type(i);
-#ifdef TOOLS_ENABLED
-				arginfo.name = func->get_argument_name(i);
-#endif
-				mi.arguments.push_back(arginfo);
-			}
-#ifdef TOOLS_ENABLED
-			mi.default_arguments.append_array(func->get_default_arg_values());
-#endif
-			mi.return_val = func->get_return_type();
-			r_list->push_back(mi);
+			r_list->push_back(E.value->get_method_info());
 		}
+
 		if (!p_include_base) {
 			return;
 		}
@@ -323,10 +305,9 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 
 	while (sptr) {
 		Vector<_GDScriptMemberSort> msort;
-		for (const KeyValue<StringName, PropertyInfo> &E : sptr->member_info) {
+		for (const KeyValue<StringName, MemberInfo> &E : sptr->member_indices) {
 			_GDScriptMemberSort ms;
-			ERR_CONTINUE(!sptr->member_indices.has(E.key));
-			ms.index = sptr->member_indices[E.key].index;
+			ms.index = E.value.index;
 			ms.name = E.key;
 			msort.push_back(ms);
 		}
@@ -334,7 +315,7 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 		msort.sort();
 		msort.reverse();
 		for (int i = 0; i < msort.size(); i++) {
-			props.push_front(sptr->member_info[msort[i].name]);
+			props.push_front(sptr->member_indices[msort[i].name].property_info);
 		}
 
 #ifdef TOOLS_ENABLED
@@ -368,15 +349,7 @@ MethodInfo GDScript::get_method_info(const StringName &p_method) const {
 		return MethodInfo();
 	}
 
-	GDScriptFunction *func = E->value;
-	MethodInfo mi;
-	mi.name = E->key;
-	for (int i = 0; i < func->get_argument_count(); i++) {
-		mi.arguments.push_back(func->get_argument_type(i));
-	}
-
-	mi.return_val = func->get_return_type();
-	return mi;
+	return E->value->get_method_info();
 }
 
 bool GDScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
@@ -557,13 +530,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						member_default_values_cache[member.variable->identifier->name] = default_value;
 					} break;
 					case GDScriptParser::ClassNode::Member::SIGNAL: {
-						// TODO: Cache this in parser to avoid loops like this.
-						Vector<StringName> parameters_names;
-						parameters_names.resize(member.signal->parameters.size());
-						for (int j = 0; j < member.signal->parameters.size(); j++) {
-							parameters_names.write[j] = member.signal->parameters[j]->identifier->name;
-						}
-						_signals[member.signal->identifier->name] = parameters_names;
+						_signals[member.signal->identifier->name] = member.signal->method_info;
 					} break;
 					case GDScriptParser::ClassNode::Member::GROUP: {
 						members_cache.push_back(member.annotation->export_info);
@@ -977,22 +944,26 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 	p_properties->push_back(PropertyInfo(Variant::STRING, "script/source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 
-	List<PropertyInfo> property_list;
-
+	List<const GDScript *> classes;
 	const GDScript *top = this;
 	while (top) {
-		for (const KeyValue<StringName, MemberInfo> &E : top->static_variables_indices) {
-			PropertyInfo pi = PropertyInfo(E.value.data_type);
-			pi.name = E.key;
-			pi.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE; // For the script (as a class) it is a non-static property.
-			property_list.push_back(pi);
-		}
-
+		classes.push_back(top);
 		top = top->_base;
 	}
 
-	for (const List<PropertyInfo>::Element *E = property_list.back(); E; E = E->prev()) {
-		p_properties->push_back(E->get());
+	for (const List<const GDScript *>::Element *E = classes.back(); E; E = E->prev()) {
+		Vector<_GDScriptMemberSort> msort;
+		for (const KeyValue<StringName, MemberInfo> &F : E->get()->static_variables_indices) {
+			_GDScriptMemberSort ms;
+			ms.index = F.value.index;
+			ms.name = F.key;
+			msort.push_back(ms);
+		}
+		msort.sort();
+
+		for (int i = 0; i < msort.size(); i++) {
+			p_properties->push_back(E->get()->static_variables_indices[msort[i].name].property_info);
+		}
 	}
 }
 
@@ -1110,7 +1081,7 @@ GDScript *GDScript::find_class(const String &p_qualified_name) {
 	Vector<String> class_names;
 	GDScript *result = nullptr;
 	// Empty initial name means start here.
-	if (first.is_empty() || first == name) {
+	if (first.is_empty() || first == global_name) {
 		class_names = p_qualified_name.split("::");
 		result = this;
 	} else if (p_qualified_name.begins_with(get_root_script()->path)) {
@@ -1245,15 +1216,8 @@ bool GDScript::has_script_signal(const StringName &p_signal) const {
 }
 
 void GDScript::_get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const {
-	for (const KeyValue<StringName, Vector<StringName>> &E : _signals) {
-		MethodInfo mi;
-		mi.name = E.key;
-		for (int i = 0; i < E.value.size(); i++) {
-			PropertyInfo arg;
-			arg.name = E.value[i];
-			mi.arguments.push_back(arg);
-		}
-		r_list->push_back(mi);
+	for (const KeyValue<StringName, MethodInfo> &E : _signals) {
+		r_list->push_back(E.value);
 	}
 
 	if (!p_include_base) {
@@ -1272,21 +1236,6 @@ void GDScript::_get_script_signal_list(List<MethodInfo> *r_list, bool p_include_
 
 void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	_get_script_signal_list(r_signals, true);
-}
-
-String GDScript::_get_gdscript_reference_class_name(const GDScript *p_gdscript) {
-	ERR_FAIL_NULL_V(p_gdscript, String());
-
-	String class_name;
-	while (p_gdscript) {
-		if (class_name.is_empty()) {
-			class_name = p_gdscript->get_script_class_name();
-		} else {
-			class_name = p_gdscript->get_script_class_name() + "." + class_name;
-		}
-		p_gdscript = p_gdscript->_owner;
-	}
-	return class_name;
 }
 
 GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {
@@ -1420,8 +1369,8 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 	if (p_script.is_valid()) {
 		Ref<GDScript> gdscript = p_script;
 		if (gdscript.is_valid()) {
-			if (!gdscript->get_script_class_name().is_empty()) {
-				return gdscript->get_script_class_name();
+			if (gdscript->get_local_name() != StringName()) {
+				return gdscript->get_local_name();
 			}
 			return gdscript->get_fully_qualified_name().get_file();
 		}
@@ -1667,7 +1616,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		{
-			HashMap<StringName, Vector<StringName>>::ConstIterator E = sptr->_signals.find(p_name);
+			HashMap<StringName, MethodInfo>::ConstIterator E = sptr->_signals.find(p_name);
 			if (E) {
 				r_ret = Signal(this->owner, E->key);
 				return true;
@@ -1717,11 +1666,11 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
-		if (sptr->member_info.has(p_name)) {
+		if (sptr->member_indices.has(p_name)) {
 			if (r_is_valid) {
 				*r_is_valid = true;
 			}
-			return sptr->member_info[p_name].type;
+			return sptr->member_indices[p_name].property_info.type;
 		}
 		sptr = sptr->_base;
 	}
@@ -1798,10 +1747,9 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		//instance a fake script for editing the values
 
 		Vector<_GDScriptMemberSort> msort;
-		for (const KeyValue<StringName, PropertyInfo> &F : sptr->member_info) {
+		for (const KeyValue<StringName, GDScript::MemberInfo> &F : sptr->member_indices) {
 			_GDScriptMemberSort ms;
-			ERR_CONTINUE(!sptr->member_indices.has(F.key));
-			ms.index = sptr->member_indices[F.key].index;
+			ms.index = F.value.index;
 			ms.name = F.key;
 			msort.push_back(ms);
 		}
@@ -1809,7 +1757,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		msort.sort();
 		msort.reverse();
 		for (int i = 0; i < msort.size(); i++) {
-			props.push_front(sptr->member_info[msort[i].name]);
+			props.push_front(sptr->member_indices[msort[i].name].property_info);
 		}
 
 #ifdef TOOLS_ENABLED
@@ -1872,12 +1820,7 @@ void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
 		for (const KeyValue<StringName, GDScriptFunction *> &E : sptr->member_functions) {
-			MethodInfo mi;
-			mi.name = E.key;
-			for (int i = 0; i < E.value->get_argument_count(); i++) {
-				mi.arguments.push_back(PropertyInfo(Variant::NIL, "arg" + itos(i)));
-			}
-			p_list->push_back(mi);
+			p_list->push_back(E.value->get_method_info());
 		}
 		sptr = sptr->_base;
 	}

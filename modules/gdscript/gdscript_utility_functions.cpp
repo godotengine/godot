@@ -279,7 +279,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				Vector<StringName> sname;
 
 				while (p->_owner) {
-					sname.push_back(p->name);
+					sname.push_back(p->local_name);
 					p = p->_owner;
 				}
 				sname.reverse();
