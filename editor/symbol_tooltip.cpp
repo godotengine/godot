@@ -163,7 +163,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &p_mouse_position, const
 		last_symbol_word = symbol_word;
 	}
 
-	if(!_update_tooltip_content(p_script, symbol_word)) {
+	if (!_update_tooltip_content(p_script, symbol_word)) {
 		_close_tooltip();
 		return;
 	}
@@ -198,7 +198,7 @@ bool SymbolTooltip::_update_tooltip_content(const Ref<Script> &p_script, const S
 	bool is_built_in = false;
 	String built_in_header = "";
 	String built_in_body = "";
-	Vector<const DocData::ClassDoc*> class_docs = _get_built_in_class_docs();
+	Vector<const DocData::ClassDoc *> class_docs = _get_built_in_class_docs();
 	for (const DocData::ClassDoc *class_doc : class_docs) {
 		const DocData::ConstantDoc *constant_doc = _get_class_constant_doc(class_doc, p_symbol_word);
 		if (constant_doc) {
@@ -287,9 +287,9 @@ Vector2 SymbolTooltip::_calculate_tooltip_position(const String &p_symbol_word, 
 	return Vector2(-1, -1); // Indicates an invalid position.
 }
 
-Vector<const DocData::ClassDoc*> SymbolTooltip::_get_built_in_class_docs() {
+Vector<const DocData::ClassDoc *> SymbolTooltip::_get_built_in_class_docs() {
 	const HashMap<String, DocData::ClassDoc> &class_list = EditorHelp::get_doc_data()->class_list;
-	Vector<const DocData::ClassDoc*> class_docs;
+	Vector<const DocData::ClassDoc *> class_docs;
 	class_docs.append(&class_list["@GDScript"]);
 	class_docs.append(&class_list["@GlobalScope"]);
 	return class_docs;
@@ -527,47 +527,43 @@ Ref<Theme> SymbolTooltip::_create_body_label_theme() {
 /*String SymbolTooltip::_get_doc_of_word(const String &p_symbol_word) {
 	String documentation;
 
-const HashMap<String, DocData::ClassDoc> &class_list = EditorHelp::get_doc_data()->class_list;
-for (const KeyValue<String, DocData::ClassDoc> &E : class_list) {
-	const DocData::ClassDoc &class_doc = E.value;
+	const HashMap<String, DocData::ClassDoc> &class_list = EditorHelp::get_doc_data()->class_list;
+	for (const KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		const DocData::ClassDoc &class_doc = E.value;
 
-	if (class_doc.name == p_symbol_word) {
-		documentation = class_doc.brief_description.strip_edges(); //class_doc.brief_description + "\n\n" + class_doc.description;
-		if (documentation.is_empty()) {
-			documentation = class_doc.description.strip_edges();
-		}
-		break;
-	}
-
-	for (int i = 0; i < class_doc.methods.size(); ++i) {
-		const DocData::MethodDoc &method_doc = class_doc.methods[i];
-
-		if (method_doc.name == p_symbol_word) {
-			documentation = method_doc.description.strip_edges();
-			break;
-		}
-	}
-
-	for (int i = 0; i < class_doc.constants.size(); ++i) {
-		const DocData::ConstantDoc &constant_doc = class_doc.constants[i];
-
-		if (constant_doc.name == p_symbol_word) {
-			if (constant_doc.is_value_valid) {
-				documentation = constant_doc.value.strip_edges();
+		if (class_doc.name == p_symbol_word) {
+			documentation = class_doc.brief_description.strip_edges(); //class_doc.brief_description + "\n\n" + class_doc.description;
+			if (documentation.is_empty()) {
+				documentation = class_doc.description.strip_edges();
 			}
 			break;
 		}
-	}
 
-	if (!documentation.is_empty()) {
-		break;
-	}
-}
+		for (int i = 0; i < class_doc.methods.size(); ++i) {
+			const DocData::MethodDoc &method_doc = class_doc.methods[i];
 
-*//*if (!documentation.is_empty()) {
-		print_line(vformat("Documentation for %s:\n%s", p_symbol_word, documentation));
-}*//*
-		return documentation;
+			if (method_doc.name == p_symbol_word) {
+				documentation = method_doc.description.strip_edges();
+				break;
+			}
+		}
+
+		for (int i = 0; i < class_doc.constants.size(); ++i) {
+			const DocData::ConstantDoc &constant_doc = class_doc.constants[i];
+
+			if (constant_doc.name == p_symbol_word) {
+				if (constant_doc.is_value_valid) {
+					documentation = constant_doc.value.strip_edges();
+				}
+				break;
+			}
+		}
+
+		if (!documentation.is_empty()) {
+			break;
+		}
+	}
+	return documentation;
 }*/
 
 // Copied from script_text_editor.cpp

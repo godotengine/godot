@@ -56,7 +56,7 @@ class SymbolTooltip : public PanelContainer {
 	bool _update_tooltip_content(const Ref<Script> &p_script, const String &p_symbol_word);
 	void _update_tooltip_size();
 	Vector2 _calculate_tooltip_position(const String &p_symbol_word, const Vector2 &p_mouse_position);
-	Vector<const DocData::ClassDoc*> _get_built_in_class_docs();
+	Vector<const DocData::ClassDoc *> _get_built_in_class_docs();
 	ExtendGDScriptParser *_get_script_parser(const Ref<Script> &p_script);
 	const lsp::DocumentSymbol *_get_member_symbol(HashMap<String, const lsp::DocumentSymbol *> &p_members, const String &p_symbol_word);
 	const DocData::MethodDoc *_get_class_method_doc(const DocData::ClassDoc *p_class_doc, const String &p_symbol_word);
