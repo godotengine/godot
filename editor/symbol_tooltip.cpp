@@ -600,4 +600,3 @@ if (err != OK) {
 const GDScriptParser::ClassNode *ast_tree = parser->get_tree();
 return ast_tree;
 }*/
-
