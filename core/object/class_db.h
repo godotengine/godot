@@ -184,47 +184,21 @@ public:
 		_add_class2(T::get_class_static(), T::get_parent_class_static());
 	}
 
-	template <class T>
-	static void register_class(bool p_virtual = false) {
+	template <class T, bool is_virtual = false, bool is_abstract = false, bool is_exposed = true>
+	static void register_class() {
 		GLOBAL_LOCK_FUNCTION;
 		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
-		t->creation_func = &creator<T>;
-		t->exposed = true;
-		t->is_virtual = p_virtual;
+		t->exposed = is_exposed;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
-		T::register_custom_data_to_otdb();
-	}
-
-	template <class T>
-	static void register_abstract_class() {
-		GLOBAL_LOCK_FUNCTION;
-		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		t->exposed = true;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		//nothing
-	}
-
-	template <class T>
-	static void register_internal_class() {
-		GLOBAL_LOCK_FUNCTION;
-		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		t->creation_func = &creator<T>;
-		t->exposed = false;
-		t->is_virtual = false;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		T::register_custom_data_to_otdb();
+		if constexpr (!is_abstract) {
+			t->creation_func = &creator<T>;
+			t->is_virtual = is_virtual;
+			T::register_custom_data_to_otdb();
+		}
 	}
 
 	static void register_extension_class(ObjectGDExtension *p_extension);
@@ -490,17 +464,17 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	if (m_class::_class_is_enabled) {         \
 		::ClassDB::register_class<m_class>(); \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)         \
-	if (m_class::_class_is_enabled) {             \
-		::ClassDB::register_class<m_class>(true); \
+#define GDREGISTER_VIRTUAL_CLASS(m_class)           \
+	if (m_class::_class_is_enabled) {               \
+		::ClassDB::register_class<m_class, true>(); \
 	}
-#define GDREGISTER_ABSTRACT_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
-		::ClassDB::register_abstract_class<m_class>(); \
+#define GDREGISTER_ABSTRACT_CLASS(m_class)                 \
+	if (m_class::_class_is_enabled) {                      \
+		::ClassDB::register_class<m_class, false, true>(); \
 	}
-#define GDREGISTER_INTERNAL_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
-		::ClassDB::register_internal_class<m_class>(); \
+#define GDREGISTER_INTERNAL_CLASS(m_class)                         \
+	if (m_class::_class_is_enabled) {                              \
+		::ClassDB::register_class<m_class, false, false, false>(); \
 	}
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
