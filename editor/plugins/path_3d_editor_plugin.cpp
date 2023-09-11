@@ -623,21 +623,9 @@ bool Path3DEditorPlugin::handles(Object *p_object) const {
 
 void Path3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		curve_create->show();
-		curve_edit->show();
-		curve_edit_curve->show();
-		curve_del->show();
-		curve_close->show();
-		handle_menu->show();
-		sep->show();
+		topmenu_bar->show();
 	} else {
-		curve_create->hide();
-		curve_edit->hide();
-		curve_edit_curve->hide();
-		curve_del->hide();
-		curve_close->hide();
-		handle_menu->hide();
-		sep->hide();
+		topmenu_bar->hide();
 
 		{
 			Path3D *pre = path;
@@ -736,55 +724,49 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	gizmo_plugin.instantiate();
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 
-	sep = memnew(VSeparator);
-	sep->hide();
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(sep);
+	topmenu_bar = memnew(HBoxContainer);
+	topmenu_bar->hide();
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(topmenu_bar);
 
 	curve_edit = memnew(Button);
 	curve_edit->set_flat(true);
 	curve_edit->set_toggle_mode(true);
-	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
+	topmenu_bar->add_child(curve_edit);
 
 	curve_edit_curve = memnew(Button);
 	curve_edit_curve->set_flat(true);
 	curve_edit_curve->set_toggle_mode(true);
-	curve_edit_curve->hide();
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip_text(TTR("Select Control Points (Shift+Drag)"));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit_curve);
+	topmenu_bar->add_child(curve_edit_curve);
 
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);
 	curve_create->set_toggle_mode(true);
-	curve_create->hide();
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Split Segment (in curve)"));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_create);
+	topmenu_bar->add_child(curve_create);
 
 	curve_del = memnew(Button);
 	curve_del->set_flat(true);
 	curve_del->set_toggle_mode(true);
-	curve_del->hide();
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip_text(TTR("Delete Point"));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_del);
+	topmenu_bar->add_child(curve_del);
 
 	curve_close = memnew(Button);
 	curve_close->set_flat(true);
-	curve_close->hide();
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip_text(TTR("Close Curve"));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_close);
+	topmenu_bar->add_child(curve_close);
 
 	PopupMenu *menu;
 
 	handle_menu = memnew(MenuButton);
 	handle_menu->set_text(TTR("Options"));
-	handle_menu->hide();
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(handle_menu);
+	topmenu_bar->add_child(handle_menu);
 
 	menu = handle_menu->get_popup();
 	menu->add_check_item(TTR("Mirror Handle Angles"));

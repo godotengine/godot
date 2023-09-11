@@ -7581,7 +7581,7 @@ void Node3DEditor::_update_theme() {
 	environ_sky_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 	environ_ground_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 
-	context_menu_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
+	context_toolbar_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 }
 
 void Node3DEditor::_notification(int p_what) {
@@ -7679,11 +7679,51 @@ Vector<int> Node3DEditor::get_subgizmo_selection() {
 }
 
 void Node3DEditor::add_control_to_menu_panel(Control *p_control) {
-	context_menu_hbox->add_child(p_control);
+	ERR_FAIL_NULL(p_control);
+	ERR_FAIL_COND(p_control->get_parent());
+
+	VSeparator *sep = memnew(VSeparator);
+	context_toolbar_hbox->add_child(sep);
+	context_toolbar_hbox->add_child(p_control);
+	context_toolbar_separators[p_control] = sep;
+
+	p_control->connect("visibility_changed", callable_mp(this, &Node3DEditor::_update_context_toolbar));
+
+	_update_context_toolbar();
 }
 
 void Node3DEditor::remove_control_from_menu_panel(Control *p_control) {
-	context_menu_hbox->remove_child(p_control);
+	ERR_FAIL_NULL(p_control);
+	ERR_FAIL_COND(p_control->get_parent() != context_toolbar_hbox);
+
+	p_control->disconnect("visibility_changed", callable_mp(this, &Node3DEditor::_update_context_toolbar));
+
+	context_toolbar_hbox->remove_child(context_toolbar_separators[p_control]);
+	context_toolbar_hbox->remove_child(p_control);
+	context_toolbar_separators.erase(p_control);
+
+	_update_context_toolbar();
+}
+
+void Node3DEditor::_update_context_toolbar() {
+	bool has_visible = false;
+	bool first_visible = false;
+
+	for (int i = 0; i < context_toolbar_hbox->get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(context_toolbar_hbox->get_child(i));
+		if (!child || !context_toolbar_separators.has(child)) {
+			continue;
+		}
+		if (child->is_visible()) {
+			first_visible = !has_visible;
+			has_visible = true;
+		}
+
+		VSeparator *sep = context_toolbar_separators[child];
+		sep->set_visible(!first_visible && child->is_visible());
+	}
+
+	context_toolbar_panel->set_visible(has_visible);
 }
 
 void Node3DEditor::set_can_preview(Camera3D *p_preview) {
@@ -8161,22 +8201,23 @@ Node3DEditor::Node3DEditor() {
 
 	camera_override_viewport_id = 0;
 
+	// Add some margin to the sides for better aesthetics.
+	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
+	// which looks ugly.
+	MarginContainer *toolbar_margin = memnew(MarginContainer);
+	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
+	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	vbc->add_child(toolbar_margin);
+
 	// A fluid container for all toolbars.
 	HFlowContainer *main_flow = memnew(HFlowContainer);
-	vbc->add_child(main_flow);
+	toolbar_margin->add_child(main_flow);
 
 	// Main toolbars.
 	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
 	main_flow->add_child(main_menu_hbox);
 
 	String sct;
-
-	// Add some margin to the left for better esthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
-	Control *margin_left = memnew(Control);
-	main_menu_hbox->add_child(margin_left);
-	margin_left->set_custom_minimum_size(Size2(2, 0) * EDSCALE);
 
 	tool_button[TOOL_MODE_SELECT] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
@@ -8365,10 +8406,10 @@ Node3DEditor::Node3DEditor() {
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
-	context_menu_panel = memnew(PanelContainer);
-	context_menu_hbox = memnew(HBoxContainer);
-	context_menu_panel->add_child(context_menu_hbox);
-	main_flow->add_child(context_menu_panel);
+	context_toolbar_panel = memnew(PanelContainer);
+	context_toolbar_hbox = memnew(HBoxContainer);
+	context_toolbar_panel->add_child(context_toolbar_hbox);
+	main_flow->add_child(context_toolbar_panel);
 
 	// Get the view menu popup and have it stay open when a checkable item is selected
 	p = view_menu->get_popup();

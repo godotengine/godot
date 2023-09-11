@@ -536,7 +536,6 @@ void Polygon3DEditor::_bind_methods() {
 Polygon3DEditor::Polygon3DEditor() {
 	node = nullptr;
 
-	add_child(memnew(VSeparator));
 	button_create = memnew(Button);
 	button_create->set_flat(true);
 	add_child(button_create);

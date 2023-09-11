@@ -369,8 +369,6 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
 	toolbar->hide();
 
-	toolbar->add_child(memnew(VSeparator));
-
 	menu = memnew(MenuButton);
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Generate Visibility Rect"), MENU_GENERATE_VISIBILITY_RECT);
