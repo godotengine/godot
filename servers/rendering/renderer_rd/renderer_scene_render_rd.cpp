@@ -1007,6 +1007,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		// degradation visibility. Conversely, allow upwards scaling, too, for increased mesh detail at high res.
 		const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
 		scene_data.lod_distance_multiplier = lod_distance_multiplier * (1.0 / scaling_3d_scale);
+		scene_data.lod_camera_plane = Plane(-p_camera_data->main_transform.basis.get_column(Vector3::AXIS_Z), p_camera_data->main_transform.get_origin());
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 			scene_data.screen_mesh_lod_threshold = 0.0;

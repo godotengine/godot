@@ -113,6 +113,7 @@ struct RenderDataGLES3 {
 	int reflection_probe_pass = 0;
 
 	float lod_distance_multiplier = 0.0;
+	Plane lod_camera_plane;
 	float screen_mesh_lod_threshold = 0.0;
 
 	uint32_t directional_light_count = 0;
