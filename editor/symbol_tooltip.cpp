@@ -203,6 +203,10 @@ bool SymbolTooltip::_update_tooltip_content(const Ref<Script> &p_script, const S
 		const DocData::ConstantDoc *constant_doc = _get_class_constant_doc(class_doc, p_symbol_word);
 		if (constant_doc) {
 			built_in_header = constant_doc->name + " = " + constant_doc->value;
+			if (!constant_doc->enumeration.is_empty()) {
+				built_in_header = constant_doc->enumeration + "." + built_in_header;
+				built_in_body = constant_doc->description.strip_edges();
+			}
 			is_built_in = true;
 			break;
 		} else {
