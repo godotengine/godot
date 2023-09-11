@@ -1674,7 +1674,14 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 	c.inherits = parent->name;
 	c.class_ptr = parent->class_ptr;
 	c.inherits_ptr = parent;
-	c.exposed = true;
+	c.exposed = p_extension->is_exposed;
+	if (c.exposed) {
+		// The parent classes should be exposed if it has an exposed child class.
+		while (parent && !parent->exposed) {
+			parent->exposed = true;
+			parent = classes.getptr(parent->name);
+		}
+	}
 
 	classes[p_extension->class_name] = c;
 }

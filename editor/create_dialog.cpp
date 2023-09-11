@@ -136,6 +136,10 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true; // Wrong inheritance.
 		}
 
+		if (!ClassDB::is_class_exposed(p_type)) {
+			return true; // Unexposed types.
+		}
+
 		for (const StringName &E : type_blacklist) {
 			if (ClassDB::is_parent_class(p_type, E)) {
 				return true; // Parent type is blacklisted.
