@@ -23,6 +23,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, IntPtr, godot_bool> ScriptManagerBridge_ScriptIsOrInherits;
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool> ScriptManagerBridge_AddScriptBridge;
         public delegate* unmanaged<godot_string*, godot_ref*, void> ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
+        public delegate* unmanaged<godot_string*, godot_ref*, godot_bool> ScriptManagerBridge_GetExistingScriptBridgeForPath;
         public delegate* unmanaged<IntPtr, void> ScriptManagerBridge_RemoveScriptBridge;
         public delegate* unmanaged<IntPtr, godot_bool> ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool*, godot_bool*, godot_bool*, godot_string*, godot_array*, godot_dictionary*, godot_dictionary*, godot_ref*, void> ScriptManagerBridge_UpdateScriptClassInfo;
@@ -65,6 +66,7 @@ namespace Godot.Bridge
                 ScriptManagerBridge_ScriptIsOrInherits = &ScriptManagerBridge.ScriptIsOrInherits,
                 ScriptManagerBridge_AddScriptBridge = &ScriptManagerBridge.AddScriptBridge,
                 ScriptManagerBridge_GetOrCreateScriptBridgeForPath = &ScriptManagerBridge.GetOrCreateScriptBridgeForPath,
+                ScriptManagerBridge_GetExistingScriptBridgeForPath = &ScriptManagerBridge.GetExistingScriptBridgeForPath,
                 ScriptManagerBridge_RemoveScriptBridge = &ScriptManagerBridge.RemoveScriptBridge,
                 ScriptManagerBridge_TryReloadRegisteredScriptWithClass = &ScriptManagerBridge.TryReloadRegisteredScriptWithClass,
                 ScriptManagerBridge_UpdateScriptClassInfo = &ScriptManagerBridge.UpdateScriptClassInfo,

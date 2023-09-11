@@ -977,12 +977,24 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 
 		if (!scr->get_path().is_empty()) {
-			scr->reload(p_soft_reload);
+			// Constructing default properties while reloading the assembly can lead to their scripts being created and registered by this point
+			// Check if a script was created that way and let it take over the path rather than trying to reload this script which would fail
+			Ref<CSharpScript> existing_script;
+			String script_path = scr->get_path();
 
-			if (!scr->valid) {
-				scr->pending_reload_instances.clear();
-				scr->pending_reload_state.clear();
-				continue;
+			if (GDMonoCache::godot_api_cache_updated && GDMonoCache::managed_callbacks.ScriptManagerBridge_GetExistingScriptBridgeForPath(&script_path, &existing_script)) {
+				existing_script->pending_reload_instances = scr->pending_reload_instances;
+				existing_script->pending_reload_state = scr->pending_reload_state;
+				existing_script->_take_over_path(script_path);
+				scr = existing_script;
+			} else {
+				scr->reload(p_soft_reload);
+
+				if (!scr->valid) {
+					scr->pending_reload_instances.clear();
+					scr->pending_reload_state.clear();
+					continue;
+				}
 			}
 		} else {
 			bool success = GDMonoCache::managed_callbacks.ScriptManagerBridge_TryReloadRegisteredScriptWithClass(scr.ptr());

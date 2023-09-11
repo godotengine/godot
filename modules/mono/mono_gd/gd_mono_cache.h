@@ -89,6 +89,7 @@ struct ManagedCallbacks {
 	using FuncScriptManagerBridge_ScriptIsOrInherits = bool(GD_CLR_STDCALL *)(const CSharpScript *, const CSharpScript *);
 	using FuncScriptManagerBridge_AddScriptBridge = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *);
 	using FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath = void(GD_CLR_STDCALL *)(const String *, Ref<CSharpScript> *);
+	using FuncScriptManagerBridge_GetExistingScriptBridgeForPath = bool(GD_CLR_STDCALL *)(const String *, Ref<CSharpScript> *);
 	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
 	using FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass = bool(GD_CLR_STDCALL *)(const CSharpScript *);
 	using FuncScriptManagerBridge_UpdateScriptClassInfo = void(GD_CLR_STDCALL *)(const CSharpScript *, String *, bool *, bool *, bool *, String *, Array *, Dictionary *, Dictionary *, Ref<CSharpScript> *);
@@ -125,6 +126,7 @@ struct ManagedCallbacks {
 	FuncScriptManagerBridge_ScriptIsOrInherits ScriptManagerBridge_ScriptIsOrInherits;
 	FuncScriptManagerBridge_AddScriptBridge ScriptManagerBridge_AddScriptBridge;
 	FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
+	FuncScriptManagerBridge_GetExistingScriptBridgeForPath ScriptManagerBridge_GetExistingScriptBridgeForPath;
 	FuncScriptManagerBridge_RemoveScriptBridge ScriptManagerBridge_RemoveScriptBridge;
 	FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
 	FuncScriptManagerBridge_UpdateScriptClassInfo ScriptManagerBridge_UpdateScriptClassInfo;
