@@ -166,11 +166,9 @@ private:
 	virtual void _post_popup() override;
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int p_what);
 	static void _bind_methods();
-	//bind helpers
+
 public:
 	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 

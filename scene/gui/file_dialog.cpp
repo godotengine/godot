@@ -33,6 +33,7 @@
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 #include "scene/gui/label.h"
+#include "scene/theme/theme_db.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;
 
@@ -88,28 +89,6 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
 
 VBoxContainer *FileDialog::get_vbox() {
 	return vbox;
-}
-
-void FileDialog::_update_theme_item_cache() {
-	ConfirmationDialog::_update_theme_item_cache();
-
-	theme_cache.parent_folder = get_theme_icon(SNAME("parent_folder"));
-	theme_cache.forward_folder = get_theme_icon(SNAME("forward_folder"));
-	theme_cache.back_folder = get_theme_icon(SNAME("back_folder"));
-	theme_cache.reload = get_theme_icon(SNAME("reload"));
-	theme_cache.toggle_hidden = get_theme_icon(SNAME("toggle_hidden"));
-	theme_cache.folder = get_theme_icon(SNAME("folder"));
-	theme_cache.file = get_theme_icon(SNAME("file"));
-
-	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"));
-	theme_cache.file_icon_color = get_theme_color(SNAME("file_icon_color"));
-	theme_cache.file_disabled_color = get_theme_color(SNAME("file_disabled_color"));
-
-	// TODO: Define own colors?
-	theme_cache.icon_normal_color = get_theme_color(SNAME("font_color"), SNAME("Button"));
-	theme_cache.icon_hover_color = get_theme_color(SNAME("font_hover_color"), SNAME("Button"));
-	theme_cache.icon_focus_color = get_theme_color(SNAME("font_focus_color"), SNAME("Button"));
-	theme_cache.icon_pressed_color = get_theme_color(SNAME("font_pressed_color"), SNAME("Button"));
 }
 
 void FileDialog::_notification(int p_what) {
@@ -1042,6 +1021,24 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(ACCESS_RESOURCES);
 	BIND_ENUM_CONSTANT(ACCESS_USERDATA);
 	BIND_ENUM_CONSTANT(ACCESS_FILESYSTEM);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, forward_folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, back_folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, reload);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, toggle_hidden);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, file);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, folder_icon_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, file_icon_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, file_disabled_color);
+
+	// TODO: Define own colors?
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_normal_color, "font_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_hover_color, "font_hover_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_focus_color, "font_focus_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_pressed_color, "font_pressed_color", "Button");
 }
 
 void FileDialog::set_show_hidden_files(bool p_show) {

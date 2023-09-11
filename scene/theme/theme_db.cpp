@@ -326,6 +326,50 @@ ThemeContext *ThemeDB::get_nearest_theme_context(Node *p_for_node) const {
 	return nullptr;
 }
 
+// Theme item binding.
+
+void ThemeDB::bind_class_item(const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter) {
+	ERR_FAIL_COND_MSG(theme_item_binds[p_class_name].has(p_prop_name), vformat("Failed to bind theme item '%s' in class '%s': already bound", p_prop_name, p_class_name));
+
+	ThemeItemBind bind;
+	bind.class_name = p_class_name;
+	bind.item_name = p_item_name;
+	bind.setter = p_setter;
+
+	theme_item_binds[p_class_name][p_prop_name] = bind;
+}
+
+void ThemeDB::bind_class_external_item(const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter) {
+	ERR_FAIL_COND_MSG(theme_item_binds[p_class_name].has(p_prop_name), vformat("Failed to bind theme item '%s' in class '%s': already bound", p_prop_name, p_class_name));
+
+	ThemeItemBind bind;
+	bind.class_name = p_class_name;
+	bind.item_name = p_item_name;
+	bind.type_name = p_type_name;
+	bind.external = true;
+	bind.setter = p_setter;
+
+	theme_item_binds[p_class_name][p_prop_name] = bind;
+}
+
+void ThemeDB::update_class_instance_items(Node *p_instance) {
+	ERR_FAIL_COND(!p_instance);
+
+	// Use the hierarchy to initialize all inherited theme caches. Setters carry the necessary
+	// context and will set the values appropriately.
+	StringName class_name = p_instance->get_class();
+	while (class_name != StringName()) {
+		HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(class_name);
+		if (E) {
+			for (const KeyValue<StringName, ThemeItemBind> &F : E->value) {
+				F.value.setter(p_instance);
+			}
+		}
+
+		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	}
+}
+
 // Object methods.
 
 void ThemeDB::_bind_methods() {

@@ -30,6 +30,8 @@
 
 #include "flow_container.h"
 
+#include "scene/theme/theme_db.h"
+
 struct _LineData {
 	int child_count = 0;
 	int min_line_height = 0;
@@ -269,13 +271,6 @@ Vector<int> FlowContainer::get_allowed_size_flags_vertical() const {
 	return flags;
 }
 
-void FlowContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
-}
-
 void FlowContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
@@ -345,4 +340,7 @@ void FlowContainer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FlowContainer, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FlowContainer, v_separation);
 }

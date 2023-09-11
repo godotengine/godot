@@ -30,8 +30,9 @@
 
 #include "split_container.h"
 
-#include "label.h"
-#include "margin_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
+#include "scene/theme/theme_db.h"
 
 void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
@@ -292,17 +293,6 @@ void SplitContainer::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void SplitContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.separation = get_theme_constant(SNAME("separation"));
-	theme_cache.minimum_grab_thickness = get_theme_constant(SNAME("minimum_grab_thickness"));
-	theme_cache.autohide = get_theme_constant(SNAME("autohide"));
-	theme_cache.grabber_icon = get_theme_icon(SNAME("grabber"));
-	theme_cache.grabber_icon_h = get_theme_icon(SNAME("h_grabber"));
-	theme_cache.grabber_icon_v = get_theme_icon(SNAME("v_grabber"));
-}
-
 void SplitContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -428,6 +418,13 @@ void SplitContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAGGER_VISIBLE);
 	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN);
 	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN_COLLAPSED);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, minimum_grab_thickness);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, autohide);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, grabber_icon, "grabber");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, grabber_icon_h, "h_grabber");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, grabber_icon_v, "v_grabber");
 }
 
 SplitContainer::SplitContainer(bool p_vertical) {

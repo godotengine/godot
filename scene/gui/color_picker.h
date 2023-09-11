@@ -67,9 +67,8 @@ class ColorPresetButton : public BaseButton {
 	} theme_cache;
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int);
+	static void _bind_methods();
 
 public:
 	void set_preset_color(const Color &p_color);
@@ -393,8 +392,6 @@ class ColorPickerButton : public Button {
 	void _update_picker();
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int);
 	static void _bind_methods();
 

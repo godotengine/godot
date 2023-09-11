@@ -36,13 +36,15 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
-#include "label.h"
+#include "scene/gui/label.h"
+#include "scene/main/window.h"
+#include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
 #include "servers/text_server.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
-#include "scene/main/window.h"
 
 void LineEdit::_swap_current_input_direction() {
 	if (input_direction == TEXT_DIRECTION_LTR) {
@@ -732,27 +734,6 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 
 void LineEdit::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
-
-	theme_cache.normal = get_theme_stylebox(SNAME("normal"));
-	theme_cache.read_only = get_theme_stylebox(SNAME("read_only"));
-	theme_cache.focus = get_theme_stylebox(SNAME("focus"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_uneditable_color = get_theme_color(SNAME("font_uneditable_color"));
-	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
-	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-	theme_cache.font_placeholder_color = get_theme_color(SNAME("font_placeholder_color"));
-	theme_cache.caret_width = get_theme_constant(SNAME("caret_width"));
-	theme_cache.caret_color = get_theme_color(SNAME("caret_color"));
-	theme_cache.minimum_character_width = get_theme_constant(SNAME("minimum_character_width"));
-	theme_cache.selection_color = get_theme_color(SNAME("selection_color"));
-
-	theme_cache.clear_icon = get_theme_icon(SNAME("clear"));
-	theme_cache.clear_button_color = get_theme_color(SNAME("clear_button_color"));
-	theme_cache.clear_button_color_pressed = get_theme_color(SNAME("clear_button_color_pressed"));
 
 	theme_cache.base_scale = get_theme_default_base_scale();
 }
@@ -2669,6 +2650,27 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, LineEdit, normal);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, LineEdit, read_only);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, LineEdit, focus);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, LineEdit, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, LineEdit, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_uneditable_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_selected_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, LineEdit, font_outline_size, "outline_size");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_outline_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_placeholder_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LineEdit, caret_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, caret_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LineEdit, minimum_character_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, selection_color);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, LineEdit, clear_icon, "clear");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, clear_button_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, clear_button_color_pressed);
 }
 
 LineEdit::LineEdit(const String &p_placeholder) {

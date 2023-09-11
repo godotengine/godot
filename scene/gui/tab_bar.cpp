@@ -36,6 +36,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/viewport.h"
+#include "scene/theme/theme_db.h"
 
 Size2 TabBar::get_minimum_size() const {
 	Size2 ms;
@@ -302,39 +303,6 @@ void TabBar::_shape(int p_tab) {
 	}
 
 	tabs.write[p_tab].text_buf->add_string(tabs[p_tab].xl_text, theme_cache.font, theme_cache.font_size, tabs[p_tab].language);
-}
-
-void TabBar::_update_theme_item_cache() {
-	Control::_update_theme_item_cache();
-
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
-
-	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
-	theme_cache.tab_hovered_style = get_theme_stylebox(SNAME("tab_hovered"));
-	theme_cache.tab_selected_style = get_theme_stylebox(SNAME("tab_selected"));
-	theme_cache.tab_disabled_style = get_theme_stylebox(SNAME("tab_disabled"));
-
-	theme_cache.increment_icon = get_theme_icon(SNAME("increment"));
-	theme_cache.increment_hl_icon = get_theme_icon(SNAME("increment_highlight"));
-	theme_cache.decrement_icon = get_theme_icon(SNAME("decrement"));
-	theme_cache.decrement_hl_icon = get_theme_icon(SNAME("decrement_highlight"));
-	theme_cache.drop_mark_icon = get_theme_icon(SNAME("drop_mark"));
-	theme_cache.drop_mark_color = get_theme_color(SNAME("drop_mark_color"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-
-	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
-	theme_cache.font_hovered_color = get_theme_color(SNAME("font_hovered_color"));
-	theme_cache.font_unselected_color = get_theme_color(SNAME("font_unselected_color"));
-	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.close_icon = get_theme_icon(SNAME("close"));
-	theme_cache.button_pressed_style = get_theme_stylebox(SNAME("button_pressed"));
-	theme_cache.button_hl_style = get_theme_stylebox(SNAME("button_highlight"));
 }
 
 void TabBar::_notification(int p_what) {
@@ -1698,6 +1666,35 @@ void TabBar::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_SHOW_ACTIVE_ONLY);
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_MAX);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, icon_max_width);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_unselected_style, "tab_unselected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_hovered_style, "tab_hovered");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_selected_style, "tab_selected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_disabled_style, "tab_disabled");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, increment_icon, "increment");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, increment_hl_icon, "increment_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, decrement_icon, "decrement");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, decrement_hl_icon, "decrement_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, drop_mark_icon, "drop_mark");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, drop_mark_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, font_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, font_hovered_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, font_unselected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, font_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, TabBar, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, TabBar, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, outline_size);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, close_icon, "close");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_pressed_style, "button_pressed");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_hl_style, "button_highlight");
 }
 
 TabBar::TabBar() {

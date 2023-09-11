@@ -34,6 +34,7 @@
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
+#include "scene/theme/theme_db.h"
 
 void CodeEdit::_notification(int p_what) {
 	switch (p_what) {
@@ -226,55 +227,6 @@ void CodeEdit::_notification(int p_what) {
 			queue_redraw();
 		} break;
 	}
-}
-
-void CodeEdit::_update_theme_item_cache() {
-	TextEdit::_update_theme_item_cache();
-
-	/* Gutters */
-	theme_cache.code_folding_color = get_theme_color(SNAME("code_folding_color"));
-	theme_cache.can_fold_icon = get_theme_icon(SNAME("can_fold"));
-	theme_cache.folded_icon = get_theme_icon(SNAME("folded"));
-	theme_cache.folded_eol_icon = get_theme_icon(SNAME("folded_eol_icon"));
-
-	theme_cache.breakpoint_color = get_theme_color(SNAME("breakpoint_color"));
-	theme_cache.breakpoint_icon = get_theme_icon(SNAME("breakpoint"));
-
-	theme_cache.bookmark_color = get_theme_color(SNAME("bookmark_color"));
-	theme_cache.bookmark_icon = get_theme_icon(SNAME("bookmark"));
-
-	theme_cache.executing_line_color = get_theme_color(SNAME("executing_line_color"));
-	theme_cache.executing_line_icon = get_theme_icon(SNAME("executing_line"));
-
-	theme_cache.line_number_color = get_theme_color(SNAME("line_number_color"));
-
-	/* Code Completion */
-	theme_cache.code_completion_style = get_theme_stylebox(SNAME("completion"));
-	theme_cache.code_completion_icon_separation = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
-
-	theme_cache.code_completion_max_width = get_theme_constant(SNAME("completion_max_width"));
-	theme_cache.code_completion_max_lines = get_theme_constant(SNAME("completion_lines"));
-	theme_cache.code_completion_scroll_width = get_theme_constant(SNAME("completion_scroll_width"));
-	theme_cache.code_completion_scroll_color = get_theme_color(SNAME("completion_scroll_color"));
-	theme_cache.code_completion_scroll_hovered_color = get_theme_color(SNAME("completion_scroll_hovered_color"));
-	theme_cache.code_completion_background_color = get_theme_color(SNAME("completion_background_color"));
-	theme_cache.code_completion_selected_color = get_theme_color(SNAME("completion_selected_color"));
-	theme_cache.code_completion_existing_color = get_theme_color(SNAME("completion_existing_color"));
-
-	/* Code hint */
-	theme_cache.code_hint_style = get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel"));
-	theme_cache.code_hint_color = get_theme_color(SNAME("font_color"), SNAME("TooltipLabel"));
-
-	/* Line length guideline */
-	theme_cache.line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
-
-	/* Other visuals */
-	theme_cache.style_normal = get_theme_stylebox(SNAME("normal"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-
-	theme_cache.line_spacing = get_theme_constant(SNAME("line_spacing"));
 }
 
 void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
@@ -2527,6 +2479,52 @@ void CodeEdit::_bind_methods() {
 	/* Symbol lookup */
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
+
+	/* Theme items */
+	/* Gutters */
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, code_folding_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, can_fold_icon, "can_fold");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, folded_icon, "folded");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CodeEdit, folded_eol_icon);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, breakpoint_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, breakpoint_icon, "breakpoint");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, bookmark_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, bookmark_icon, "bookmark");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, executing_line_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, executing_line_icon, "executing_line");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, line_number_color);
+
+	/* Code Completion */
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, code_completion_style, "completion");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_icon_separation, "h_separation", "ItemList");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_max_width, "completion_max_width");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_max_lines, "completion_lines");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_scroll_width, "completion_scroll_width");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_scroll_color, "completion_scroll_color");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_scroll_hovered_color, "completion_scroll_hovered_color");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_background_color, "completion_background_color");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_selected_color, "completion_selected_color");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_existing_color, "completion_existing_color");
+
+	/* Code hint */
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, CodeEdit, code_hint_style, "panel", "TooltipPanel");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, CodeEdit, code_hint_color, "font_color", "TooltipLabel");
+
+	/* Line length guideline */
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, line_length_guideline_color);
+
+	/* Other visuals */
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, style_normal, "normal");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, CodeEdit, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, CodeEdit, font_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CodeEdit, line_spacing);
 }
 
 /* Auto brace completion */
