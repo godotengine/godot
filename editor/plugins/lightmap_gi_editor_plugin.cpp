@@ -103,6 +103,9 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 			case LightmapGI::BAKE_ERROR_FOREIGN_DATA: {
 				EditorNode::get_singleton()->show_warning(TTR("Lightmap data is not local to the scene."));
 			} break;
+			case LightmapGI::BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL: {
+				EditorNode::get_singleton()->show_warning(TTR("Maximum texture size is too small for the lightmap images."));
+			} break;
 			default: {
 			} break;
 		}
