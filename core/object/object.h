@@ -322,6 +322,7 @@ struct ObjectGDExtension {
 	GDExtensionClassFreePropertyList free_property_list;
 	GDExtensionClassPropertyCanRevert property_can_revert;
 	GDExtensionClassPropertyGetRevert property_get_revert;
+	GDExtensionClassValidateProperty validate_property;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassNotification notification;
 #endif // DISABLE_DEPRECATED

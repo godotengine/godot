@@ -527,6 +527,27 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 void Object::validate_property(PropertyInfo &p_property) const {
 	_validate_propertyv(p_property);
 
+	if (_extension && _extension->validate_property) {
+		// GDExtension uses a StringName rather than a String for property name.
+		StringName prop_name = p_property.name;
+		GDExtensionPropertyInfo gdext_prop = {
+			(GDExtensionVariantType)p_property.type,
+			&prop_name,
+			&p_property.class_name,
+			(uint32_t)p_property.hint,
+			&p_property.hint_string,
+			p_property.usage,
+		};
+		if (_extension->validate_property(_extension_instance, &gdext_prop)) {
+			p_property.type = (Variant::Type)gdext_prop.type;
+			p_property.name = *reinterpret_cast<StringName *>(gdext_prop.name);
+			p_property.class_name = *reinterpret_cast<StringName *>(gdext_prop.class_name);
+			p_property.hint = (PropertyHint)gdext_prop.hint;
+			p_property.hint_string = *reinterpret_cast<String *>(gdext_prop.hint_string);
+			p_property.usage = gdext_prop.usage;
+		};
+	}
+
 	if (script_instance) { // Call it last to allow user altering already validated properties.
 		script_instance->validate_property(p_property);
 	}

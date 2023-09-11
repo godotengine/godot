@@ -258,6 +258,7 @@ typedef const GDExtensionPropertyInfo *(*GDExtensionClassGetPropertyList)(GDExte
 typedef void (*GDExtensionClassFreePropertyList)(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list);
 typedef GDExtensionBool (*GDExtensionClassPropertyCanRevert)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name);
 typedef GDExtensionBool (*GDExtensionClassPropertyGetRevert)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
+typedef GDExtensionBool (*GDExtensionClassValidateProperty)(GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property);
 typedef void (*GDExtensionClassNotification)(GDExtensionClassInstancePtr p_instance, int32_t p_what); // Deprecated. Use GDExtensionClassNotification2 instead.
 typedef void (*GDExtensionClassNotification2)(GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed);
 typedef void (*GDExtensionClassToString)(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr p_out);
@@ -298,6 +299,7 @@ typedef struct {
 	GDExtensionClassFreePropertyList free_property_list_func;
 	GDExtensionClassPropertyCanRevert property_can_revert_func;
 	GDExtensionClassPropertyGetRevert property_get_revert_func;
+	GDExtensionClassValidateProperty validate_property_func;
 	GDExtensionClassNotification2 notification_func;
 	GDExtensionClassToString to_string_func;
 	GDExtensionClassReference reference_func;

@@ -293,6 +293,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
 		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
+		nullptr, // GDExtensionClassValidateProperty validate_property_func;
 		nullptr, // GDExtensionClassNotification2 notification_func;
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
 		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
@@ -360,6 +361,7 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	extension->gdextension.free_property_list = p_extension_funcs->free_property_list_func;
 	extension->gdextension.property_can_revert = p_extension_funcs->property_can_revert_func;
 	extension->gdextension.property_get_revert = p_extension_funcs->property_get_revert_func;
+	extension->gdextension.validate_property = p_extension_funcs->validate_property_func;
 #ifndef DISABLE_DEPRECATED
 	if (p_deprecated_funcs) {
 		extension->gdextension.notification = p_deprecated_funcs->notification_func;
