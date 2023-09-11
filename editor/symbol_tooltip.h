@@ -50,12 +50,13 @@ class SymbolTooltip : public PanelContainer {
 	String last_symbol_word;
 	bool mouse_inside;
 
-	String _get_doc_of_word(const String &symbol_word);
-	String _get_header_content(String symbol_word, const lsp::DocumentSymbol *member_symbol);
-	String _get_body_content(const lsp::DocumentSymbol *member_symbol);
+	// String _get_doc_of_word(const String &symbol_word);
+	String _get_class_method_documentation(const DocData::ClassDoc &class_doc, const String &symbol_word);
+	String _get_class_constant_documentation(const DocData::ClassDoc &class_doc, const String &symbol_word);
+	String _get_built_in_documentation(const String &symbol_word);
+	String _get_header_content(String symbol_word, const lsp::DocumentSymbol *member_symbol, bool is_builtin);
+	String _get_body_content(const lsp::DocumentSymbol *member_symbol, String builtin_doc);
 	void _update_header_label(const String &symbol_word);
-	// String _get_header_content(String symbol_word, bool is_builtin, const lsp::DocumentSymbol *member_symbol);
-	// String _get_body_content(String official_documentation, bool is_builtin, const lsp::DocumentSymbol *member_symbol);
 	void _update_body_label(const String &documentation);
 	Ref<Theme> _create_panel_theme();
 	Ref<Theme> _create_header_label_theme();
@@ -66,7 +67,7 @@ class SymbolTooltip : public PanelContainer {
 	String _get_symbol_word(const Vector2 &mouse_position);
 	Vector2 _calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position);
 	void _update_tooltip_size();
-	void _update_tooltip_content(const String &header_content, const String &body_content);
+	void _update_tooltip_content(const Ref<Script> &p_script, const String &symbol_word);
 	ExtendGDScriptParser *_get_script_parser(const Ref<Script> &p_script);
 	const lsp::DocumentSymbol *_get_member_symbol(HashMap<String, const lsp::DocumentSymbol *> &members, const String &symbol_word);
 

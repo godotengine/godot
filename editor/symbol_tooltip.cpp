@@ -163,22 +163,11 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, const R
 		last_symbol_word = symbol_word;
 	}
 
-	ExtendGDScriptParser *parser = _get_script_parser(p_script);
-	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
-	const lsp::DocumentSymbol *member_symbol = _get_member_symbol(members, symbol_word);
-
-	if (member_symbol == nullptr) { // Symbol is not a member of the script.
-		_close_tooltip();
-		return;
-	}
-
-	// TODO: Improve header content. Add the ability to see documentation comments or official documentation.
-	String header_content = _get_header_content(symbol_word, member_symbol);
-	String body_content = _get_body_content(member_symbol);
-	_update_tooltip_content(header_content, body_content);
+	_update_tooltip_content(p_script, symbol_word);
 	_update_tooltip_size();
 
-	bool mouse_over_tooltip = get_rect().has_point(mouse_position);
+	Rect2 tooltip_rect = Rect2(get_position(), get_size());
+	bool mouse_over_tooltip = tooltip_rect.has_point(mouse_position) && is_visible();
 	if (!mouse_over_tooltip) {
 		Vector2 tooltip_position = _calculate_tooltip_position(symbol_word, mouse_position);
 		if (tooltip_position == Vector2(-1, -1)) { // If position is invalid.
@@ -195,18 +184,64 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, const R
 	}
 }
 
-String SymbolTooltip::_get_header_content(String symbol_word, const lsp::DocumentSymbol *member_symbol) {
-	if (member_symbol->reduced_detail.is_empty()) {
+String SymbolTooltip::_get_class_method_documentation(const DocData::ClassDoc &class_doc, const String &symbol_word) {
+	for (int i = 0; i < class_doc.methods.size(); ++i) {
+		const DocData::MethodDoc &method_doc = class_doc.methods[i];
+
+		if (method_doc.name == symbol_word) {
+			return method_doc.description.strip_edges();
+		}
+	}
+	return "";
+}
+
+String SymbolTooltip::_get_class_constant_documentation(const DocData::ClassDoc &class_doc, const String &symbol_word) {
+	for (int i = 0; i < class_doc.constants.size(); ++i) {
+		const DocData::ConstantDoc &constant_doc = class_doc.constants[i];
+
+		if (constant_doc.name == symbol_word) {
+			if (constant_doc.is_value_valid) {
+				return constant_doc.value.strip_edges();
+			}
+		}
+	}
+	return "";
+}
+
+String SymbolTooltip::_get_built_in_documentation(const String &symbol_word) {
+	String documentation;
+
+	const HashMap<String, DocData::ClassDoc> &class_list = EditorHelp::get_doc_data()->class_list;
+	for (const KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		const DocData::ClassDoc &class_doc = E.value;
+
+		if (class_doc.name == "@GDScript" || class_doc.name == "@GlobalScope") {
+			documentation = _get_class_method_documentation(class_doc, symbol_word);
+			if (!documentation.is_empty()) break;
+			documentation = _get_class_constant_documentation(class_doc, symbol_word);
+			if (!documentation.is_empty()) break;
+		}
+	}
+
+	return documentation;
+}
+
+String SymbolTooltip::_get_header_content(String symbol_word, const lsp::DocumentSymbol *member_symbol, bool is_builtin) {
+	if (is_builtin || member_symbol->reduced_detail.is_empty()) {
 		return symbol_word;
 	}
 	return member_symbol->reduced_detail;
 }
 
-String SymbolTooltip::_get_body_content(const lsp::DocumentSymbol *member_symbol) {
+String SymbolTooltip::_get_body_content(const lsp::DocumentSymbol *member_symbol, String builtin_doc) {
 	String body_content = "";
 	if (member_symbol != nullptr) {
 		// Append relevant docstrings.
 		body_content += member_symbol->documentation.replace("\n ", " ");
+	}
+	if (!builtin_doc.is_empty()) {
+		// Append official documentation.
+		body_content += builtin_doc;
 	}
 	return body_content;
 }
@@ -263,8 +298,27 @@ void SymbolTooltip::_update_tooltip_size() {
 	set_size(Vector2(tooltip_width, -1));
 }
 
-void SymbolTooltip::_update_tooltip_content(const String &header_content, const String &body_content) {
+void SymbolTooltip::_update_tooltip_content(const Ref<Script> &p_script, const String &symbol_word) {
 	// Update the tooltip's header and body.
+
+	// String official_documentation = _get_doc_of_word(symbol_word);
+	String builtin_doc = _get_built_in_documentation(symbol_word);
+	bool is_builtin = !builtin_doc.is_empty();
+
+	ExtendGDScriptParser *parser = _get_script_parser(p_script);
+	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
+	const lsp::DocumentSymbol *member_symbol = _get_member_symbol(members, symbol_word);
+
+	if (member_symbol == nullptr && !is_builtin) { // Symbol is not a member of the script.
+		_close_tooltip();
+		return;
+	}
+
+	// TODO: Improve header content. Add the ability to see documentation comments or official documentation.
+	// Add constant value to the header content. e.g. "PI" becomes "PI = 3.141592653589793" (similar to how we do with ENUMs)
+	String header_content = _get_header_content(symbol_word, member_symbol, is_builtin);
+	String body_content = _get_body_content(member_symbol, builtin_doc);
+
 	_update_header_label(header_content);
 	_update_body_label(body_content);
 }
@@ -289,7 +343,7 @@ void SymbolTooltip::_update_body_label(const String &body_content) {
 	}
 }
 
-String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
+/*String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
 	String documentation;
 
 	const HashMap<String, DocData::ClassDoc> &class_list = EditorHelp::get_doc_data()->class_list;
@@ -329,11 +383,11 @@ String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
 		}
 	}
 
-	/*if (!documentation.is_empty()) {
+	*//*if (!documentation.is_empty()) {
 		print_line(vformat("Documentation for %s:\n%s", symbol_word, documentation));
-	}*/
+	}*//*
 	return documentation;
-}
+}*/
 
 Ref<Theme> SymbolTooltip::_create_panel_theme() {
 	Ref<Theme> theme = memnew(Theme); // TODO: Get the global theme instead (e.g. dark mode, light mode).
