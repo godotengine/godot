@@ -2177,7 +2177,7 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 
 	Variant current = animation->track_get_key_value(get_track(), p_index);
 	Variant next = animation->track_get_key_value(get_track(), p_index + 1);
-	if (current != next) {
+	if (current != next || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_METHOD) {
 		return;
 	}
 
