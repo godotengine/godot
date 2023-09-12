@@ -2399,6 +2399,19 @@ void CodeEdit::set_symbol_lookup_word_as_valid(bool p_valid) {
 	}
 }
 
+/* Visual */
+Color CodeEdit::_get_brace_mismatch_color() const {
+	return theme_cache.brace_mismatch_color;
+}
+
+Color CodeEdit::_get_code_folding_color() const {
+	return theme_cache.code_folding_color;
+}
+
+Ref<Texture2D> CodeEdit::_get_folded_eol_icon() const {
+	return theme_cache.folded_eol_icon;
+}
+
 void CodeEdit::_bind_methods() {
 	/* Indent management */
 	ClassDB::bind_method(D_METHOD("set_indent_size", "size"), &CodeEdit::set_indent_size);
@@ -2644,7 +2657,7 @@ void CodeEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CodeEdit, folded_eol_icon);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, breakpoint_color);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, breakpoint_icon, "breakpoint");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, breakpoint_icon, "breakpoint");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, bookmark_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, bookmark_icon, "bookmark");
@@ -2676,6 +2689,8 @@ void CodeEdit::_bind_methods() {
 
 	/* Other visuals */
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, style_normal, "normal");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, brace_mismatch_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, CodeEdit, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, CodeEdit, font_size);

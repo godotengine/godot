@@ -1254,7 +1254,7 @@ void TextEdit::_notification(int p_what) {
 									if ((brace_matching[c].open_match_line == line && brace_matching[c].open_match_column == glyphs[j].start) ||
 											(get_caret_column(c) == glyphs[j].start && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index && (brace_matching[c].open_matching || brace_matching[c].open_mismatch))) {
 										if (brace_matching[c].open_mismatch) {
-											gl_color = theme_cache.brace_mismatch_color;
+											gl_color = _get_brace_mismatch_color();
 										}
 										Rect2 rect = Rect2(char_pos, ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size), glyphs[j].advance * glyphs[j].repeat, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size) * theme_cache.base_scale, 1));
 										draw_rect(rect, gl_color);
@@ -1263,7 +1263,7 @@ void TextEdit::_notification(int p_what) {
 									if ((brace_matching[c].close_match_line == line && brace_matching[c].close_match_column == glyphs[j].start) ||
 											(get_caret_column(c) == glyphs[j].start + 1 && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index && (brace_matching[c].close_matching || brace_matching[c].close_mismatch))) {
 										if (brace_matching[c].close_mismatch) {
-											gl_color = theme_cache.brace_mismatch_color;
+											gl_color = _get_brace_mismatch_color();
 										}
 										Rect2 rect = Rect2(char_pos, ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size), glyphs[j].advance * glyphs[j].repeat, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size) * theme_cache.base_scale, 1));
 										draw_rect(rect, gl_color);
@@ -1313,12 +1313,12 @@ void TextEdit::_notification(int p_what) {
 
 					// is_line_folded
 					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
-						int xofs = char_ofs + char_margin + ofs_x + (theme_cache.folded_eol_icon->get_width() / 2);
+						int xofs = char_ofs + char_margin + ofs_x + (_get_folded_eol_icon()->get_width() / 2);
 						if (xofs >= xmargin_beg && xofs < xmargin_end) {
-							int yofs = (text_height - theme_cache.folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-							Color eol_color = theme_cache.code_folding_color;
+							int yofs = (text_height - _get_folded_eol_icon()->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+							Color eol_color = _get_code_folding_color();
 							eol_color.a = 1;
-							theme_cache.folded_eol_icon->draw(ci, Point2(xofs, ofs_y + yofs), eol_color);
+							_get_folded_eol_icon()->draw(ci, Point2(xofs, ofs_y + yofs), eol_color);
 						}
 					}
 
@@ -3000,7 +3000,6 @@ void TextEdit::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
 	theme_cache.base_scale = get_theme_default_base_scale();
-	theme_cache.folded_code_region_color = get_theme_color(SNAME("folded_code_region_color"), SNAME("CodeEdit"));
 	use_selected_font_color = theme_cache.font_selected_color != Color(0, 0, 0, 0);
 
 	if (text.get_line_height() + theme_cache.line_spacing < 1) {
@@ -6474,12 +6473,6 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("gutter_removed"));
 
 	/* Theme items */
-	/* Internal API for CodeEdit */
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, TextEdit, brace_mismatch_color, "brace_mismatch_color", "CodeEdit");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, TextEdit, code_folding_color, "code_folding_color", "CodeEdit");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, TextEdit, folded_code_region_color, "folded_code_region_color", "CodeEdit");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, TextEdit, folded_eol_icon, "folded_eol_icon", "CodeEdit");
-
 	/* Search */
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, search_result_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, search_result_border_color);

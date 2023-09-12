@@ -73,7 +73,7 @@ private:
 	struct ThemeCache {
 		int separation = 0;
 		int minimum_grab_thickness = 0;
-		int autohide = 0;
+		bool autohide = false;
 		Ref<Texture2D> grabber_icon;
 		Ref<Texture2D> grabber_icon_h;
 		Ref<Texture2D> grabber_icon_v;
@@ -84,8 +84,6 @@ private:
 	Ref<Texture2D> _get_grabber_icon() const;
 	void _compute_middle_sep(bool p_clamp);
 	void _resort();
-
-	void _dragging_area_gui_input(const Ref<InputEvent> &p_event);
 
 protected:
 	bool is_fixed = false;

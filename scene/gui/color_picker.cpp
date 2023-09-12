@@ -673,7 +673,7 @@ ColorPicker::PickerShapeType ColorPicker::get_picker_shape() const {
 }
 
 inline int ColorPicker::_get_preset_size() {
-	return (int(get_minimum_size().width) - (preset_container->get_theme_constant(SNAME("h_separation")) * (PRESET_COLUMN_COUNT - 1))) / PRESET_COLUMN_COUNT;
+	return (int(get_minimum_size().width) - (preset_container->get_h_separation() * (PRESET_COLUMN_COUNT - 1))) / PRESET_COLUMN_COUNT;
 }
 
 void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
@@ -997,7 +997,7 @@ void ColorPicker::_sample_draw() {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 
 		if (old_color.a < 1.0) {
-			sample->draw_texture_rect(theme_cache.sample_background_icon, rect_old, true);
+			sample->draw_texture_rect(theme_cache.sample_bg, rect_old, true);
 		}
 
 		sample->draw_rect(rect_old, old_color);
@@ -1011,7 +1011,7 @@ void ColorPicker::_sample_draw() {
 	}
 
 	if (color.a < 1.0) {
-		sample->draw_texture_rect(theme_cache.sample_background_icon, rect_new, true);
+		sample->draw_texture_rect(theme_cache.sample_bg, rect_new, true);
 	}
 
 	sample->draw_rect(rect_new, color);
@@ -1125,7 +1125,7 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 	} else if (p_which == 1) {
 		if (actual_shape == SHAPE_HSV_RECTANGLE) {
 			c->draw_set_transform(Point2(), -Math_PI / 2, Size2(c->get_size().x, -c->get_size().y));
-			c->draw_texture_rect(theme_cache.color_hue_icon, Rect2(Point2(), Size2(1, 1)));
+			c->draw_texture_rect(theme_cache.color_hue, Rect2(Point2(), Size2(1, 1)));
 			c->draw_set_transform(Point2(), 0, Size2(1, 1));
 			int y = c->get_size().y - c->get_size().y * (1.0 - h);
 			Color col;
@@ -1703,10 +1703,11 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, shape_circle);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, bar_arrow);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ColorPicker, sample_background_icon, "sample_bg");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, sample_bg);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, overbright_indicator);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue_icon, "color_hue");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_okhsl_hue);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");

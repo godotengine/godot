@@ -559,8 +559,8 @@ void PopupMenu::_draw_items() {
 	RID ci = control->get_canvas_item();
 
 	Size2 margin_size;
-	margin_size.width = margin_container->get_theme_constant(SNAME("margin_right")) + margin_container->get_theme_constant(SNAME("margin_left"));
-	margin_size.height = margin_container->get_theme_constant(SNAME("margin_top")) + margin_container->get_theme_constant(SNAME("margin_bottom"));
+	margin_size.width = margin_container->get_margin_size(SIDE_LEFT) + margin_container->get_margin_size(SIDE_RIGHT);
+	margin_size.height = margin_container->get_margin_size(SIDE_TOP) + margin_container->get_margin_size(SIDE_BOTTOM);
 
 	// Space between the item content and the sides of popup menu.
 	bool rtl = control->is_layout_rtl();

@@ -80,6 +80,23 @@ Vector<int> MarginContainer::get_allowed_size_flags_vertical() const {
 	return flags;
 }
 
+int MarginContainer::get_margin_size(Side p_side) const {
+	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+
+	switch (p_side) {
+		case SIDE_LEFT:
+			return theme_cache.margin_left;
+		case SIDE_RIGHT:
+			return theme_cache.margin_right;
+		case SIDE_TOP:
+			return theme_cache.margin_top;
+		case SIDE_BOTTOM:
+			return theme_cache.margin_bottom;
+	}
+
+	return 0;
+}
+
 void MarginContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {

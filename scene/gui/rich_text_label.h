@@ -592,6 +592,9 @@ private:
 		Ref<Font> mono_font;
 		int mono_font_size;
 
+		int text_highlight_h_padding;
+		int text_highlight_v_padding;
+
 		int table_h_separation;
 		int table_v_separation;
 		Color table_odd_row_bg;
