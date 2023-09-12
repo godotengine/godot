@@ -724,7 +724,7 @@ Vector2 Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point
 	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, s);
 }
 
-bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
+bool Geometry2D::is_point_in_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
 	return ::Geometry2D::is_point_in_triangle(s, a, b, c);
 }
 
@@ -883,7 +883,7 @@ void Geometry2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &Geometry2D::get_closest_point_to_segment_uncapped);
 
-	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &Geometry2D::point_is_inside_triangle);
+	ClassDB::bind_method(D_METHOD("is_point_in_triangle", "point", "a", "b", "c"), &Geometry2D::is_point_in_triangle);
 
 	ClassDB::bind_method(D_METHOD("is_polygon_clockwise", "polygon"), &Geometry2D::is_polygon_clockwise);
 	ClassDB::bind_method(D_METHOD("is_point_in_polygon", "point", "polygon"), &Geometry2D::is_point_in_polygon);

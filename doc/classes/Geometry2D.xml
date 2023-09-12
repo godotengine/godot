@@ -184,7 +184,7 @@
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
-		<method name="point_is_inside_triangle" qualifiers="const">
+		<method name="is_point_in_triangle" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector2" />
 			<param index="1" name="a" type="Vector2" />
