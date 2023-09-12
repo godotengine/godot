@@ -136,22 +136,22 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 			if (name == "position" || name == "rotation" || name == "scale") {
 				Variant old = animation->track_get_key_value(track, key);
 				setting = true;
-				String chan;
+				String action_name;
 				switch (animation->track_get_type(track)) {
 					case Animation::TYPE_POSITION_3D:
-						chan = "Position3D";
+						action_name = TTR("Animation Change Position3D");
 						break;
 					case Animation::TYPE_ROTATION_3D:
-						chan = "Rotation3D";
+						action_name = TTR("Animation Change Rotation3D");
 						break;
 					case Animation::TYPE_SCALE_3D:
-						chan = "Scale3D";
+						action_name = TTR("Animation Change Scale3D");
 						break;
 					default: {
 					}
 				}
 
-				undo_redo->create_action(vformat(TTR("Animation Change %s"), chan));
+				undo_redo->create_action(action_name);
 				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, p_value);
 				undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
 				undo_redo->add_do_method(this, "_update_obj", animation);
@@ -730,23 +730,23 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 				case Animation::TYPE_SCALE_3D: {
 					Variant old = animation->track_get_key_value(track, key);
 					if (!setting) {
-						String chan;
+						String action_name;
 						switch (animation->track_get_type(track)) {
 							case Animation::TYPE_POSITION_3D:
-								chan = "Position3D";
+								action_name = TTR("Animation Multi Change Position3D");
 								break;
 							case Animation::TYPE_ROTATION_3D:
-								chan = "Rotation3D";
+								action_name = TTR("Animation Multi Change Rotation3D");
 								break;
 							case Animation::TYPE_SCALE_3D:
-								chan = "Scale3D";
+								action_name = TTR("Animation Multi Change Scale3D");
 								break;
 							default: {
 							}
 						}
 
 						setting = true;
-						undo_redo->create_action(vformat(TTR("Animation Multi Change %s"), chan));
+						undo_redo->create_action(action_name);
 					}
 					undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, p_value);
 					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
@@ -6052,7 +6052,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 		case EDIT_BAKE_ANIMATION_CONFIRM: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Bake Animation as Linear keys."));
+			undo_redo->create_action(TTR("Bake Animation as Linear Keys"));
 
 			int track_len = animation->get_track_count();
 			bool b_trs = bake_trs->is_pressed();
