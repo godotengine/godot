@@ -294,7 +294,7 @@ TEST_CASE("[ShaderPreprocessor] Concatenation sorting network") {
 	CHECK_SHADER_EQ(result, expected);
 }
 
-TEST_CASE("[ShaderPreprocessor] Undefined behaviour") {
+TEST_CASE("[ShaderPreprocessor] Undefined behavior") {
 	// None of these are valid concatenation, nor valid shader code.
 	// Don't care about results, just make sure there's no crash.
 	const String filename("somefile.gdshader");

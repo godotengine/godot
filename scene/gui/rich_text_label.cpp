@@ -968,7 +968,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		int gl_size = TS->shaped_text_get_glyph_count(rid);
 
 		Vector2 gloff = off;
-		// Draw oulines and shadow.
+		// Draw outlines and shadow.
 		int processed_glyphs_ol = r_processed_glyphs;
 		for (int i = 0; i < gl_size; i++) {
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);

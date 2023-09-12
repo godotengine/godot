@@ -4957,7 +4957,7 @@ void Node3DEditorViewport::update_transform_numeric() {
 	apply_transform(motion, extra);
 }
 
-// Perform cleanup after a transform operation is committed or cancelled.
+// Perform cleanup after a transform operation is committed or canceled.
 void Node3DEditorViewport::finish_transform() {
 	_edit.mode = TRANSFORM_NONE;
 	_edit.instant = false;

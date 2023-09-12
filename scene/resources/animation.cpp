@@ -4484,7 +4484,7 @@ struct AnimationCompressionDataState {
 
 	void commit_temp_packets() {
 		if (temp_packets.size() == 0) {
-			return; //nohing to do
+			return; // Nothing to do.
 		}
 //#define DEBUG_PACKET_PUSH
 #ifdef DEBUG_PACKET_PUSH
