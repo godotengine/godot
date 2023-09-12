@@ -1348,22 +1348,6 @@ void GDScript::_save_orphaned_subclasses(ClearData *p_clear_data) {
 	}
 }
 
-void GDScript::_init_rpc_methods_properties() {
-	// Copy the base rpc methods so we don't mask their IDs.
-	rpc_config.clear();
-	if (base.is_valid()) {
-		rpc_config = base->rpc_config.duplicate();
-	}
-
-	// RPC Methods
-	for (KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
-		Variant config = E.value->get_rpc_config();
-		if (config.get_type() != Variant::NIL) {
-			rpc_config[E.value->get_name()] = config;
-		}
-	}
-}
-
 #ifdef DEBUG_ENABLED
 String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 	if (p_script.is_valid()) {

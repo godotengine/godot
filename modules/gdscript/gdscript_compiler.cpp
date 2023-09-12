@@ -2513,7 +2513,10 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 	return err;
 }
 
-Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
+// Prepares given script, and inner class scripts, for compilation. It populates class members and initializes method
+// RPC info for its base classes first, then for itself, then for inner classes.
+// Warning: this function cannot initiate compilation of other classes, or it will result in cyclic dependency issues.
+Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 	if (parsed_classes.has(p_script)) {
 		return OK;
 	}
@@ -2571,6 +2574,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 	p_script->implicit_initializer = nullptr;
 	p_script->implicit_ready = nullptr;
 	p_script->static_initializer = nullptr;
+	p_script->rpc_config.clear();
 
 	p_script->clearing = false;
 
@@ -2601,7 +2605,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 			}
 
 			if (main_script->has_class(base.ptr())) {
-				Error err = _populate_class_members(base.ptr(), p_class->base_type.class_type, p_keep_state);
+				Error err = _prepare_compilation(base.ptr(), p_class->base_type.class_type, p_keep_state);
 				if (err) {
 					return err;
 				}
@@ -2620,7 +2624,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 					return ERR_COMPILATION_FAILED;
 				}
 
-				err = _populate_class_members(base.ptr(), p_class->base_type.class_type, p_keep_state);
+				err = _prepare_compilation(base.ptr(), p_class->base_type.class_type, p_keep_state);
 				if (err) {
 					_set_error(vformat(R"(Could not populate class members of base class "%s" in "%s".)", base->fully_qualified_name, base->path), nullptr);
 					return err;
@@ -2635,6 +2639,12 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 			_set_error("Parser bug: invalid inheritance.", nullptr);
 			return ERR_BUG;
 		} break;
+	}
+
+	// Duplicate RPC information from base GDScript
+	// Base script isn't valid because it should not have been compiled yet, but the reference contains relevant info.
+	if (base_type.kind == GDScriptDataType::GDSCRIPT && p_script->base.is_valid()) {
+		p_script->rpc_config = p_script->base->rpc_config.duplicate();
 	}
 
 	for (int i = 0; i < p_class->members.size(); i++) {
@@ -2748,6 +2758,14 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				p_script->members.insert(Variant());
 			} break;
 
+			case GDScriptParser::ClassNode::Member::FUNCTION: {
+				const GDScriptParser::FunctionNode *function_n = member.function;
+
+				Variant config = function_n->rpc_config;
+				if (config.get_type() != Variant::NIL) {
+					p_script->rpc_config[function_n->identifier->name] = config;
+				}
+			} break;
 			default:
 				break; // Nothing to do here.
 		}
@@ -2758,7 +2776,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 	parsed_classes.insert(p_script);
 	parsing_classes.erase(p_script);
 
-	// Populate sub-classes.
+	// Populate inner classes.
 	for (int i = 0; i < p_class->members.size(); i++) {
 		const GDScriptParser::ClassNode::Member &member = p_class->members[i];
 		if (member.type != member.CLASS) {
@@ -2771,7 +2789,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 
 		// Subclass might still be parsing, just skip it
 		if (!parsing_classes.has(subclass_ptr)) {
-			Error err = _populate_class_members(subclass_ptr, inner_class, p_keep_state);
+			Error err = _prepare_compilation(subclass_ptr, inner_class, p_keep_state);
 			if (err) {
 				return err;
 			}
@@ -2907,8 +2925,6 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 		has_static_data = has_static_data || inner_class->has_static_data;
 	}
 
-	p_script->_init_rpc_methods_properties();
-
 	p_script->valid = true;
 	return OK;
 }
@@ -2982,7 +2998,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	make_scripts(p_script, root, p_keep_state);
 
 	main_script->_owner = nullptr;
-	Error err = _populate_class_members(main_script, parser->get_tree(), p_keep_state);
+	Error err = _prepare_compilation(main_script, parser->get_tree(), p_keep_state);
 
 	if (err) {
 		return err;
