@@ -344,7 +344,9 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_create_script, ret);
 		return Object::cast_to<Script>(ret);
 	}
+#ifndef DISABLE_DEPRECATED
 	EXBIND0RC(bool, has_named_classes)
+#endif
 	EXBIND0RC(bool, supports_builtin_mode)
 	EXBIND0RC(bool, supports_documentation)
 	EXBIND0RC(bool, can_inherit_from_file)

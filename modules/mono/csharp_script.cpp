@@ -392,10 +392,6 @@ Script *CSharpLanguage::create_script() const {
 	return memnew(CSharpScript);
 }
 
-bool CSharpLanguage::has_named_classes() const {
-	return false;
-}
-
 bool CSharpLanguage::supports_builtin_mode() const {
 	return false;
 }
