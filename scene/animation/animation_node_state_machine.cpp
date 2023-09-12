@@ -1100,7 +1100,7 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 
 	if (transition->expression.is_valid()) {
 		AnimationTree *tree_base = state_machine->get_animation_tree();
-		ERR_FAIL_COND_V(tree_base == nullptr, false);
+		ERR_FAIL_NULL_V(tree_base, false);
 
 		NodePath advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
 		Node *expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);

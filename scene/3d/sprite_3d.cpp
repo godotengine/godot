@@ -1231,7 +1231,7 @@ void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool
 		name = animation;
 	}
 
-	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", name));
+	ERR_FAIL_NULL_MSG(frames, vformat("There is no animation with name '%s'.", name));
 	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(name), vformat("There is no animation with name '%s'.", name));
 
 	if (frames->get_frame_count(name) == 0) {

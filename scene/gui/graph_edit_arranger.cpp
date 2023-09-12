@@ -33,7 +33,7 @@
 #include "scene/gui/graph_edit.h"
 
 void GraphEditArranger::arrange_nodes() {
-	ERR_FAIL_COND(!graph_edit);
+	ERR_FAIL_NULL(graph_edit);
 
 	if (!arranging_graph) {
 		arranging_graph = true;

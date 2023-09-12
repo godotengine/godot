@@ -289,7 +289,7 @@ void initialize_physics() {
 		// Physics server not found, Use the default physics
 		physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 	}
-	ERR_FAIL_COND(!physics_server_3d);
+	ERR_FAIL_NULL(physics_server_3d);
 	physics_server_3d->init();
 
 	// 2D Physics server
@@ -299,7 +299,7 @@ void initialize_physics() {
 		// Physics server not found, Use the default physics
 		physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 	}
-	ERR_FAIL_COND(!physics_server_2d);
+	ERR_FAIL_NULL(physics_server_2d);
 	physics_server_2d->init();
 }
 
@@ -3022,7 +3022,7 @@ bool Main::start() {
 			return false;
 		} else {
 			Object *ml = ClassDB::instantiate(main_loop_type);
-			ERR_FAIL_COND_V_MSG(!ml, false, "Can't instance MainLoop type.");
+			ERR_FAIL_NULL_V_MSG(ml, false, "Can't instance MainLoop type.");
 
 			main_loop = Object::cast_to<MainLoop>(ml);
 			if (!main_loop) {
@@ -3302,7 +3302,7 @@ bool Main::start() {
 					scene = scenedata->instantiate();
 				}
 
-				ERR_FAIL_COND_V_MSG(!scene, false, "Failed loading scene: " + local_game_path);
+				ERR_FAIL_NULL_V_MSG(scene, false, "Failed loading scene: " + local_game_path + ".");
 				sml->add_current_scene(scene);
 
 #ifdef MACOS_ENABLED

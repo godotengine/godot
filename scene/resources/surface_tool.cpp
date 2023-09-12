@@ -1279,7 +1279,7 @@ SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_channel_index) co
 	return last_custom_format[p_channel_index];
 }
 void SurfaceTool::optimize_indices_for_cache() {
-	ERR_FAIL_COND(optimize_vertex_cache_func == nullptr);
+	ERR_FAIL_NULL(optimize_vertex_cache_func);
 	ERR_FAIL_COND(index_array.size() == 0);
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
 	ERR_FAIL_COND(index_array.size() % 3 != 0);
@@ -1308,7 +1308,7 @@ Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_coun
 
 	Vector<int> lod;
 
-	ERR_FAIL_COND_V(simplify_func == nullptr, lod);
+	ERR_FAIL_NULL_V(simplify_func, lod);
 	ERR_FAIL_COND_V(p_target_index_count < 0, lod);
 	ERR_FAIL_COND_V(vertex_array.size() == 0, lod);
 	ERR_FAIL_COND_V(index_array.size() == 0, lod);
