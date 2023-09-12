@@ -5,6 +5,8 @@ class MyClass:
 
 enum MyEnum {}
 
+const Utils = preload("../../utils.notest.gd")
+
 static var test_static_var_untyped
 static var test_static_var_weak_null = null
 static var test_static_var_weak_int = 1
@@ -58,68 +60,13 @@ func test():
 	var script: Script = get_script()
 	for property in script.get_property_list():
 		if str(property.name).begins_with("test_"):
-			if not (property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE):
-				print("Error: Missing `PROPERTY_USAGE_SCRIPT_VARIABLE` flag.")
-			print("static var ", property.name, ": ", get_type(property))
+			print(Utils.get_property_signature(property, true))
 	for property in get_property_list():
 		if str(property.name).begins_with("test_"):
-			if not (property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE):
-				print("Error: Missing `PROPERTY_USAGE_SCRIPT_VARIABLE` flag.")
-			print("var ", property.name, ": ", get_type(property))
+			print(Utils.get_property_signature(property))
 	for method in get_method_list():
 		if str(method.name).begins_with("test_"):
-			print(get_signature(method))
+			print(Utils.get_method_signature(method))
 	for method in get_signal_list():
 		if str(method.name).begins_with("test_"):
-			print(get_signature(method, true))
-
-func get_type(property: Dictionary, is_return: bool = false) -> String:
-	match property.type:
-		TYPE_NIL:
-			if property.usage & PROPERTY_USAGE_NIL_IS_VARIANT:
-				return "Variant"
-			return "void" if is_return else "null"
-		TYPE_BOOL:
-			return "bool"
-		TYPE_INT:
-			if property.usage & PROPERTY_USAGE_CLASS_IS_ENUM:
-				return property.class_name
-			return "int"
-		TYPE_STRING:
-			return "String"
-		TYPE_DICTIONARY:
-			return "Dictionary"
-		TYPE_ARRAY:
-			if property.hint == PROPERTY_HINT_ARRAY_TYPE:
-				return "Array[%s]" % property.hint_string
-			return "Array"
-		TYPE_OBJECT:
-			if not str(property.class_name).is_empty():
-				return property.class_name
-			return "Object"
-	return "<error>"
-
-func get_signature(method: Dictionary, is_signal: bool = false) -> String:
-	var result: String = ""
-	if method.flags & METHOD_FLAG_STATIC:
-		result += "static "
-	result += ("signal " if is_signal else "func ") + method.name + "("
-
-	var args: Array[Dictionary] = method.args
-	var default_args: Array = method.default_args
-	var mandatory_argc: int = args.size() - default_args.size()
-	for i in args.size():
-		if i > 0:
-			result += ", "
-		var arg: Dictionary = args[i]
-		result += arg.name + ": " + get_type(arg)
-		if i >= mandatory_argc:
-			result += " = " + var_to_str(default_args[i - mandatory_argc])
-
-	result += ")"
-	if is_signal:
-		if get_type(method.return, true) != "void":
-			print("Error: Signal return type must be `void`.")
-	else:
-		result += " -> " + get_type(method.return, true)
-	return result
+			print(Utils.get_method_signature(method, true))
