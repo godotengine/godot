@@ -1000,6 +1000,11 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					GDScriptParser::ParameterNode *param = member.signal->parameters[j];
 					GDScriptParser::DataType param_type = type_from_metatype(resolve_datatype(param->datatype_specifier));
 					param->set_datatype(param_type);
+#ifdef DEBUG_ENABLED
+					if (param->datatype_specifier == nullptr) {
+						parser->push_warning(param, GDScriptWarning::UNTYPED_DECLARATION, "Parameter", param->identifier->name);
+					}
+#endif
 					mi.arguments.push_back(param_type.to_property_info(param->identifier->name));
 					// Signals do not support parameter default values.
 				}
@@ -1279,17 +1284,15 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		} else if (member.type == GDScriptParser::ClassNode::Member::VARIABLE && member.variable->property != GDScriptParser::VariableNode::PROP_NONE) {
 			if (member.variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
 				if (member.variable->getter != nullptr) {
-					member.variable->getter->set_datatype(member.variable->datatype);
+					member.variable->getter->return_type = member.variable->datatype_specifier;
+					member.variable->getter->set_datatype(member.get_datatype());
 
 					resolve_function_body(member.variable->getter);
 				}
 				if (member.variable->setter != nullptr) {
-					resolve_function_signature(member.variable->setter);
-
-					if (member.variable->setter->parameters.size() > 0) {
-						member.variable->setter->parameters[0]->datatype_specifier = member.variable->datatype_specifier;
-						member.variable->setter->parameters[0]->set_datatype(member.get_datatype());
-					}
+					ERR_CONTINUE(member.variable->setter->parameters.is_empty());
+					member.variable->setter->parameters[0]->datatype_specifier = member.variable->datatype_specifier;
+					member.variable->setter->parameters[0]->set_datatype(member.get_datatype());
 
 					resolve_function_body(member.variable->setter);
 				}
@@ -1593,15 +1596,18 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	int default_value_count = 0;
 #endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
+	String function_visible_name = function_name;
+	if (function_name == StringName()) {
+		function_visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
+	}
+#endif
+
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
 #ifdef DEBUG_ENABLED
 		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
-			String visible_name = function_name;
-			if (function_name == StringName()) {
-				visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
-			}
-			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, visible_name, p_function->parameters[i]->identifier->name);
+			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
 #endif // DEBUG_ENABLED
@@ -1715,6 +1721,12 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		}
 #endif // TOOLS_ENABLED
 	}
+
+#ifdef DEBUG_ENABLED
+	if (p_function->return_type == nullptr) {
+		parser->push_warning(p_function, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
+	}
+#endif
 
 	if (p_function->get_datatype().is_resolving()) {
 		p_function->set_datatype(prev_datatype);
@@ -1918,6 +1930,13 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			}
 		}
 	}
+
+#ifdef DEBUG_ENABLED
+	if (!has_specified_type && !p_assignable->infer_datatype && !is_constant) {
+		const bool is_parameter = p_assignable->type == GDScriptParser::Node::PARAMETER;
+		parser->push_warning(p_assignable, GDScriptWarning::UNTYPED_DECLARATION, is_parameter ? "Parameter" : "Variable", p_assignable->identifier->name);
+	}
+#endif
 
 	type.is_constant = is_constant;
 	type.is_read_only = false;
@@ -2129,13 +2148,18 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 #endif
 				}
 #ifdef DEBUG_ENABLED
-			} else {
+			} else if (variable_type.is_hard_type()) {
 				parser->push_warning(p_for->datatype_specifier, GDScriptWarning::REDUNDANT_FOR_VARIABLE_TYPE, p_for->variable->name, variable_type.to_string(), specified_type.to_string());
 #endif
 			}
 			p_for->variable->set_datatype(specified_type);
 		} else {
 			p_for->variable->set_datatype(variable_type);
+#ifdef DEBUG_ENABLED
+			if (!variable_type.is_hard_type()) {
+				parser->push_warning(p_for->variable, GDScriptWarning::UNTYPED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
+			}
+#endif
 		}
 	}
 
