@@ -389,6 +389,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 
 	if (strcmp(interface, wl_output_interface.name) == 0) {
 		struct wl_output *wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 2);
+		wl_proxy_tag_godot((struct wl_proxy *)wl_output);
 
 		registry->wl_outputs.push_back(wl_output);
 
@@ -876,6 +877,12 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 }
 
 void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+	if (!wl_proxy_is_godot((struct wl_proxy *)wl_output)) {
+		// This won't have the right data bound to it. Not worth it and would probably
+		// just break everything.
+		return;
+	}
+
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
