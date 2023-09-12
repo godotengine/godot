@@ -3000,6 +3000,7 @@ void TextEdit::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
 	theme_cache.base_scale = get_theme_default_base_scale();
+	theme_cache.folded_code_region_color = get_theme_color(SNAME("folded_code_region_color"), SNAME("CodeEdit"));
 	use_selected_font_color = theme_cache.font_selected_color != Color(0, 0, 0, 0);
 
 	if (text.get_line_height() + theme_cache.line_spacing < 1) {
@@ -6476,6 +6477,7 @@ void TextEdit::_bind_methods() {
 	/* Internal API for CodeEdit */
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, TextEdit, brace_mismatch_color, "brace_mismatch_color", "CodeEdit");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, TextEdit, code_folding_color, "code_folding_color", "CodeEdit");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, TextEdit, folded_code_region_color, "folded_code_region_color", "CodeEdit");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, TextEdit, folded_eol_icon, "folded_eol_icon", "CodeEdit");
 
 	/* Search */
