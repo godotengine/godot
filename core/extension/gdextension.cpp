@@ -711,6 +711,11 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 		// This is so relative path to dependencies are satisfied.
 		String copy_path = abs_path.get_base_dir().path_join("~" + abs_path.get_file());
 
+		// If there's a left-over copy (possibly from a crash) then delete it first.
+		if (FileAccess::exists(copy_path)) {
+			DirAccess::remove_absolute(copy_path);
+		}
+
 		Error copy_err = DirAccess::copy_absolute(abs_path, copy_path);
 		if (copy_err) {
 			if (r_error) {
