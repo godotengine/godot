@@ -78,7 +78,8 @@ class SnapDialog : public ConfirmationDialog {
 	SpinBox *grid_offset_y;
 	SpinBox *grid_step_x;
 	SpinBox *grid_step_y;
-	SpinBox *primary_grid_steps;
+	SpinBox *primary_grid_step_x;
+	SpinBox *primary_grid_step_y;
 	SpinBox *rotation_offset;
 	SpinBox *rotation_step;
 	SpinBox *scale_step;
@@ -151,24 +152,30 @@ public:
 		grid_step_y->set_select_all_on_focus(true);
 		child_container->add_child(grid_step_y);
 
-		child_container = memnew(GridContainer);
-		child_container->set_columns(2);
-		container->add_child(child_container);
-
 		label = memnew(Label);
 		label->set_text(TTR("Primary Line Every:"));
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(label);
 
-		primary_grid_steps = memnew(SpinBox);
-		primary_grid_steps->set_min(0);
-		primary_grid_steps->set_step(1);
-		primary_grid_steps->set_max(100);
-		primary_grid_steps->set_allow_greater(true);
-		primary_grid_steps->set_suffix(TTR("steps"));
-		primary_grid_steps->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		primary_grid_steps->set_select_all_on_focus(true);
-		child_container->add_child(primary_grid_steps);
+		primary_grid_step_x = memnew(SpinBox);
+		primary_grid_step_x->set_min(1);
+		primary_grid_step_x->set_step(1);
+		primary_grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
+		primary_grid_step_x->set_allow_greater(true);
+		primary_grid_step_x->set_suffix("steps");
+		primary_grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		primary_grid_step_x->set_select_all_on_focus(true);
+		child_container->add_child(primary_grid_step_x);
+
+		primary_grid_step_y = memnew(SpinBox);
+		primary_grid_step_y->set_min(1);
+		primary_grid_step_y->set_step(1);
+		primary_grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
+		primary_grid_step_y->set_allow_greater(true);
+		primary_grid_step_y->set_suffix("steps");
+		primary_grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		primary_grid_step_y->set_select_all_on_focus(true);
+		child_container->add_child(primary_grid_step_y);
 
 		container->add_child(memnew(HSeparator));
 
@@ -224,21 +231,22 @@ public:
 		child_container->add_child(scale_step);
 	}
 
-	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const int p_primary_grid_steps, const real_t p_rotation_offset, const real_t p_rotation_step, const real_t p_scale_step) {
+	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const Vector2i p_primary_grid_step, const real_t p_rotation_offset, const real_t p_rotation_step, const real_t p_scale_step) {
 		grid_offset_x->set_value(p_grid_offset.x);
 		grid_offset_y->set_value(p_grid_offset.y);
 		grid_step_x->set_value(p_grid_step.x);
 		grid_step_y->set_value(p_grid_step.y);
-		primary_grid_steps->set_value(p_primary_grid_steps);
+		primary_grid_step_x->set_value(p_primary_grid_step.x);
+		primary_grid_step_y->set_value(p_primary_grid_step.y);
 		rotation_offset->set_value(Math::rad_to_deg(p_rotation_offset));
 		rotation_step->set_value(Math::rad_to_deg(p_rotation_step));
 		scale_step->set_value(p_scale_step);
 	}
 
-	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, int &p_primary_grid_steps, real_t &p_rotation_offset, real_t &p_rotation_step, real_t &p_scale_step) {
+	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, Vector2i &p_primary_grid_step, real_t &p_rotation_offset, real_t &p_rotation_step, real_t &p_scale_step) {
 		p_grid_offset = Point2(grid_offset_x->get_value(), grid_offset_y->get_value());
 		p_grid_step = Point2(grid_step_x->get_value(), grid_step_y->get_value());
-		p_primary_grid_steps = int(primary_grid_steps->get_value());
+		p_primary_grid_step = Vector2i(primary_grid_step_x->get_value(), primary_grid_step_y->get_value());
 		p_rotation_offset = Math::deg_to_rad(rotation_offset->get_value());
 		p_rotation_step = Math::deg_to_rad(rotation_step->get_value());
 		p_scale_step = scale_step->get_value();
@@ -894,11 +902,11 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 }
 
 void CanvasItemEditor::_snap_changed() {
-	static_cast<SnapDialog *>(snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
+	static_cast<SnapDialog *>(snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_step, snap_rotation_offset, snap_rotation_step, snap_scale_step);
 
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_offset", grid_offset);
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_step", grid_step);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "primary_grid_steps", primary_grid_steps);
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "primary_grid_step", primary_grid_step);
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_offset", snap_rotation_offset);
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_step", snap_rotation_step);
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_scale_step", snap_scale_step);
@@ -2925,10 +2933,10 @@ void CanvasItemEditor::_draw_grid() {
 
 				if (last_cell != cell) {
 					Color grid_color;
-					if (primary_grid_steps == 0) {
+					if (primary_grid_step.x <= 1) {
 						grid_color = secondary_grid_color;
 					} else {
-						grid_color = cell % primary_grid_steps == 0 ? primary_grid_color : secondary_grid_color;
+						grid_color = cell % primary_grid_step.x == 0 ? primary_grid_color : secondary_grid_color;
 					}
 
 					viewport->draw_line(Point2(i, 0), Point2(i, viewport_size.height), grid_color, Math::round(EDSCALE));
@@ -2948,10 +2956,10 @@ void CanvasItemEditor::_draw_grid() {
 
 				if (last_cell != cell) {
 					Color grid_color;
-					if (primary_grid_steps == 0) {
+					if (primary_grid_step.y <= 1) {
 						grid_color = secondary_grid_color;
 					} else {
-						grid_color = cell % primary_grid_steps == 0 ? primary_grid_color : secondary_grid_color;
+						grid_color = cell % primary_grid_step.y == 0 ? primary_grid_color : secondary_grid_color;
 					}
 
 					viewport->draw_line(Point2(0, i), Point2(viewport_size.width, i), grid_color, Math::round(EDSCALE));
@@ -4341,8 +4349,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_pixel);
 		} break;
 		case SNAP_CONFIGURE: {
-			static_cast<SnapDialog *>(snap_dialog)->set_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
-			snap_dialog->popup_centered(Size2(220, 160) * EDSCALE);
+			static_cast<SnapDialog *>(snap_dialog)->set_fields(grid_offset, grid_step, primary_grid_step, snap_rotation_offset, snap_rotation_step, snap_scale_step);
+			snap_dialog->popup_centered(Size2(320, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -4728,7 +4736,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["ofs"] = view_offset;
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
-	state["primary_grid_steps"] = primary_grid_steps;
+	state["primary_grid_step"] = primary_grid_step;
 	state["snap_rotation_offset"] = snap_rotation_offset;
 	state["snap_rotation_step"] = snap_rotation_step;
 	state["snap_scale_step"] = snap_scale_step;
@@ -4780,8 +4788,15 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		grid_step = state["grid_step"];
 	}
 
+#ifndef DISABLE_DEPRECATED
 	if (state.has("primary_grid_steps")) {
-		primary_grid_steps = state["primary_grid_steps"];
+		primary_grid_step.x = state["primary_grid_steps"];
+		primary_grid_step.y = state["primary_grid_steps"];
+	}
+#endif // DISABLE_DEPRECATED
+
+	if (state.has("primary_grid_step")) {
+		primary_grid_step = state["primary_grid_step"];
 	}
 
 	if (state.has("snap_rotation_step")) {
@@ -4934,7 +4949,7 @@ void CanvasItemEditor::clear() {
 
 	grid_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_offset", Vector2());
 	grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_step", Vector2(8, 8));
-	primary_grid_steps = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "primary_grid_steps", 8);
+	primary_grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "primary_grid_step", Vector2i(8, 8));
 	snap_rotation_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
 	snap_rotation_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
 	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_scale_step", 0.1);

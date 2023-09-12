@@ -216,7 +216,7 @@ private:
 	// Defaults are defined in clear().
 	Point2 grid_offset;
 	Point2 grid_step;
-	int primary_grid_steps = 0;
+	Vector2i primary_grid_step;
 	int grid_step_multiplier = 0;
 
 	real_t snap_rotation_step = 0.0;
