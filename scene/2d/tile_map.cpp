@@ -2288,21 +2288,14 @@ TypedArray<Vector2i> TileMapLayer::get_used_cells_by_id(int p_source_id, const V
 Rect2i TileMapLayer::get_used_rect() const {
 	// Return the rect of the currently used area.
 	if (used_rect_cache_dirty) {
-		bool first = true;
 		used_rect_cache = Rect2i();
 
 		if (tile_map.size() > 0) {
-			if (first) {
-				used_rect_cache = Rect2i(tile_map.begin()->key.x, tile_map.begin()->key.y, 0, 0);
-				first = false;
-			}
+			used_rect_cache = Rect2i(tile_map.begin()->key.x, tile_map.begin()->key.y, 0, 0);
 
 			for (const KeyValue<Vector2i, CellData> &E : tile_map) {
-				used_rect_cache.expand_to(Vector2i(E.key.x, E.key.y));
+				used_rect_cache.expand_to(E.key);
 			}
-		}
-
-		if (!first) { // first is true if every layer is empty.
 			used_rect_cache.size += Vector2i(1, 1); // The cache expands to top-left coordinate, so we add one full tile.
 		}
 		used_rect_cache_dirty = false;
@@ -4239,12 +4232,19 @@ TypedArray<Vector2i> TileMap::get_used_cells_by_id(int p_layer, int p_source_id,
 
 Rect2i TileMap::get_used_rect() const {
 	// Return the visible rect of the tilemap.
-	if (layers.is_empty()) {
-		return Rect2i();
-	}
-	Rect2 rect = layers[0]->get_used_rect();
-	for (unsigned int i = 1; i < layers.size(); i++) {
-		rect = rect.merge(layers[i]->get_used_rect());
+	bool first = true;
+	Rect2i rect = Rect2i();
+	for (const Ref<TileMapLayer> &layer : layers) {
+		Rect2i layer_rect = layer->get_used_rect();
+		if (layer_rect == Rect2i()) {
+			continue;
+		}
+		if (first) {
+			rect = layer_rect;
+			first = false;
+		} else {
+			rect = rect.merge(layer_rect);
+		}
 	}
 	return rect;
 }
