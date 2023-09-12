@@ -215,7 +215,7 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_s
 #ifdef BROTLI_ENABLED
 		BrotliDecoderResult ret;
 		BrotliDecoderState *state = BrotliDecoderCreateInstance(nullptr, nullptr, nullptr);
-		ERR_FAIL_COND_V(state == nullptr, Z_DATA_ERROR);
+		ERR_FAIL_NULL_V(state, Z_DATA_ERROR);
 
 		// Setup the stream inputs.
 		const uint8_t *next_in = p_src;

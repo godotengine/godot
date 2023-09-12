@@ -79,7 +79,7 @@ Error FileAccessMemory::open_custom(const uint8_t *p_data, uint64_t p_len) {
 }
 
 Error FileAccessMemory::open_internal(const String &p_path, int p_mode_flags) {
-	ERR_FAIL_COND_V(!files, ERR_FILE_NOT_FOUND);
+	ERR_FAIL_NULL_V(files, ERR_FILE_NOT_FOUND);
 
 	String name = fix_path(p_path);
 	//name = DirAccess::normalize_path(name);
@@ -99,22 +99,22 @@ bool FileAccessMemory::is_open() const {
 }
 
 void FileAccessMemory::seek(uint64_t p_position) {
-	ERR_FAIL_COND(!data);
+	ERR_FAIL_NULL(data);
 	pos = p_position;
 }
 
 void FileAccessMemory::seek_end(int64_t p_position) {
-	ERR_FAIL_COND(!data);
+	ERR_FAIL_NULL(data);
 	pos = length + p_position;
 }
 
 uint64_t FileAccessMemory::get_position() const {
-	ERR_FAIL_COND_V(!data, 0);
+	ERR_FAIL_NULL_V(data, 0);
 	return pos;
 }
 
 uint64_t FileAccessMemory::get_length() const {
-	ERR_FAIL_COND_V(!data, 0);
+	ERR_FAIL_NULL_V(data, 0);
 	return length;
 }
 
@@ -134,7 +134,7 @@ uint8_t FileAccessMemory::get_8() const {
 
 uint64_t FileAccessMemory::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
-	ERR_FAIL_COND_V(!data, -1);
+	ERR_FAIL_NULL_V(data, -1);
 
 	uint64_t left = length - pos;
 	uint64_t read = MIN(p_length, left);
@@ -154,11 +154,11 @@ Error FileAccessMemory::get_error() const {
 }
 
 void FileAccessMemory::flush() {
-	ERR_FAIL_COND(!data);
+	ERR_FAIL_NULL(data);
 }
 
 void FileAccessMemory::store_8(uint8_t p_byte) {
-	ERR_FAIL_COND(!data);
+	ERR_FAIL_NULL(data);
 	ERR_FAIL_COND(pos >= length);
 	data[pos++] = p_byte;
 }

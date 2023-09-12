@@ -190,7 +190,7 @@ private:
 		_FORCE_INLINE_ bool is_internal() const { return (!is_leaf()); }
 
 		_FORCE_INLINE_ int get_index_in_parent() const {
-			ERR_FAIL_COND_V(!parent, 0);
+			ERR_FAIL_NULL_V(parent, 0);
 			return (parent->children[1] == this) ? 1 : 0;
 		}
 		void get_max_depth(int depth, int &maxdepth) {

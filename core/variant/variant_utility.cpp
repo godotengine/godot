@@ -1873,7 +1873,7 @@ bool Variant::is_utility_function_vararg(const StringName &p_name) {
 
 uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
-	ERR_FAIL_COND_V(!bfi, 0);
+	ERR_FAIL_NULL_V(bfi, 0);
 
 	uint32_t hash = hash_murmur3_one_32(bfi->is_vararg);
 	hash = hash_murmur3_one_32(bfi->returns_value, hash);
