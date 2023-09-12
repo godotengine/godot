@@ -455,6 +455,10 @@ private:
 
 	void _tile_set_changed();
 
+	// Polygons.
+	HashMap<Pair<Ref<Resource>, int>, Ref<Resource>, PairHash<Ref<Resource>, int>> polygon_cache;
+	PackedVector2Array _get_transformed_vertices(const PackedVector2Array &p_vertices, int p_alternative_id);
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -595,6 +599,7 @@ public:
 	// Helpers?
 	TypedArray<Vector2i> get_surrounding_cells(const Vector2i &coords);
 	void draw_cells_outline(Control *p_control, const RBSet<Vector2i> &p_cells, Color p_color, Transform2D p_transform = Transform2D());
+	Ref<Resource> get_transformed_polygon(Ref<Resource> p_polygon, int p_alternative_id);
 
 	// Virtual function to modify the TileData at runtime.
 	GDVIRTUAL2R(bool, _use_tile_data_runtime_update, int, Vector2i);
