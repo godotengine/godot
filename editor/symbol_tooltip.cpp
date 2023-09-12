@@ -106,7 +106,6 @@ SymbolTooltip::SymbolTooltip(CodeEdit *p_text_editor) :
 }
 
 SymbolTooltip::~SymbolTooltip() {
-	memdelete(tooltip_delay);
 }
 
 void SymbolTooltip::_notification(int p_what) {
