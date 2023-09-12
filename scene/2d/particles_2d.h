@@ -48,7 +48,10 @@ public:
 private:
 	RID particles;
 
-	bool one_shot;
+	bool emitting = false;
+	bool active = false;
+	bool signal_canceled = false;
+	bool one_shot = false;
 	int amount;
 	float lifetime;
 	float pre_process_time;
@@ -72,6 +75,10 @@ private:
 	Ref<Texture> normal_map;
 
 	void _update_particle_emission_transform();
+
+	double time = 0.0;
+	double emission_time = 0.0;
+	double active_time = 0.0;
 
 protected:
 	static void _bind_methods();

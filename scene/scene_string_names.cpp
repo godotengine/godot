@@ -61,7 +61,6 @@ SceneStringNames::SceneStringNames() {
 	finished = StaticCString::create("finished");
 	loop_finished = StaticCString::create("loop_finished");
 	step_finished = StaticCString::create("step_finished");
-	emission_finished = StaticCString::create("emission_finished");
 	animation_finished = StaticCString::create("animation_finished");
 	animation_changed = StaticCString::create("animation_changed");
 	animation_started = StaticCString::create("animation_started");

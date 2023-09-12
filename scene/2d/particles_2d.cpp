@@ -39,13 +39,30 @@
 #endif
 
 void Particles2D::set_emitting(bool p_emitting) {
-	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
+	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
 
 	if (p_emitting && one_shot) {
+		if (!active && !emitting) {
+			// Last cycle ended.
+			active = true;
+			time = 0;
+			signal_canceled = false;
+			emission_time = lifetime;
+			active_time = lifetime * (2 - explosiveness_ratio);
+		} else {
+			signal_canceled = true;
+		}
 		set_process_internal(true);
 	} else if (!p_emitting) {
-		set_process_internal(false);
+		if (one_shot) {
+			set_process_internal(true);
+		} else {
+			set_process_internal(false);
+		}
 	}
+
+	emitting = p_emitting;
+	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
 }
 
 void Particles2D::set_amount(int p_amount) {
@@ -148,7 +165,7 @@ void Particles2D::set_show_visibility_rect(bool p_show_visibility_rect) {
 #endif
 
 bool Particles2D::is_emitting() const {
-	return VS::get_singleton()->particles_get_emitting(particles);
+	return emitting;
 }
 int Particles2D::get_amount() const {
 	return amount;
@@ -287,6 +304,16 @@ void Particles2D::_validate_property(PropertyInfo &property) const {
 void Particles2D::restart() {
 	VS::get_singleton()->particles_restart(particles);
 	VS::get_singleton()->particles_set_emitting(particles, true);
+
+	emitting = true;
+	active = true;
+	signal_canceled = false;
+	time = 0;
+	emission_time = lifetime;
+	active_time = lifetime * (2 - explosiveness_ratio);
+	if (one_shot) {
+		set_process_internal(true);
+	}
 }
 
 void Particles2D::_notification(int p_what) {
@@ -322,9 +349,23 @@ void Particles2D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (one_shot && !is_emitting()) {
-			_change_notify();
-			set_process_internal(false);
+		if (one_shot) {
+			time += get_process_delta_time();
+			if (time > emission_time) {
+				emitting = false;
+				if (!active) {
+					set_process_internal(false);
+				}
+			}
+			if (time > active_time) {
+				if (active && !signal_canceled) {
+					emit_signal(SceneStringNames::get_singleton()->finished);
+				}
+				active = false;
+				if (!emitting) {
+					set_process_internal(false);
+				}
+			}
 		}
 	}
 }
@@ -370,6 +411,8 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_rect"), &Particles2D::capture_rect);
 
 	ClassDB::bind_method(D_METHOD("restart"), &Particles2D::restart);
+
+	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_EXP_RANGE, "1,1000000,1"), "set_amount", "get_amount");
