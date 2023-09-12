@@ -1167,7 +1167,7 @@
 			Sets the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length. The default value of this parameter is [code]20.0[/code].
 		</constant>
 		<constant name="DAMPED_SPRING_DAMPING" value="2" enum="DampedSpringParam">
-			Sets the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping). The default value of this parameter is [code]1.5[/code].
+			Sets the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping). The default value of this parameter is [code]1[/code].
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Disables continuous collision detection. This is the fastest way to detect body collisions, but it can miss small and/or fast-moving objects.
