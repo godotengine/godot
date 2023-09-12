@@ -405,7 +405,9 @@ public:
 	void unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
 
 	const XrEnvironmentBlendMode *get_supported_environment_blend_modes(uint32_t &count);
-	bool set_environment_blend_mode(XrEnvironmentBlendMode mode);
+	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
+	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
+	XrEnvironmentBlendMode get_environment_blend_mode() const { return environment_blend_mode; }
 
 	OpenXRAPI();
 	~OpenXRAPI();

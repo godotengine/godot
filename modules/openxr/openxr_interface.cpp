@@ -985,6 +985,27 @@ Array OpenXRInterface::get_supported_environment_blend_modes() {
 	return modes;
 }
 
+XRInterface::EnvironmentBlendMode OpenXRInterface::get_environment_blend_mode() const {
+	if (openxr_api) {
+		XrEnvironmentBlendMode oxr_blend_mode = openxr_api->get_environment_blend_mode();
+		switch (oxr_blend_mode) {
+			case XR_ENVIRONMENT_BLEND_MODE_OPAQUE: {
+				return XR_ENV_BLEND_MODE_OPAQUE;
+			} break;
+			case XR_ENVIRONMENT_BLEND_MODE_ADDITIVE: {
+				return XR_ENV_BLEND_MODE_ADDITIVE;
+			} break;
+			case XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND: {
+				return XR_ENV_BLEND_MODE_ALPHA_BLEND;
+			} break;
+			default:
+				break;
+		}
+	}
+
+	return XR_ENV_BLEND_MODE_OPAQUE;
+}
+
 bool OpenXRInterface::set_environment_blend_mode(XRInterface::EnvironmentBlendMode mode) {
 	if (openxr_api) {
 		XrEnvironmentBlendMode oxr_blend_mode;
