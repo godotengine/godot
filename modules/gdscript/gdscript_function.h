@@ -147,6 +147,25 @@ public:
 		return false;
 	}
 
+	Variant get_default_value() const {
+		if (has_type && kind == BUILTIN) {
+			if (builtin_type == Variant::ARRAY) {
+				Array array;
+				if (has_container_element_type()) {
+					array.set_typed(container_element_type->builtin_type, container_element_type->native_type, container_element_type->script_type);
+				}
+				return array;
+			} else {
+				Variant variant;
+				Callable::CallError call_error;
+				Variant::construct(builtin_type, variant, nullptr, 0, call_error);
+				ERR_FAIL_COND_V(call_error.error != Callable::CallError::CALL_OK, Variant());
+				return variant;
+			}
+		}
+		return Variant();
+	}
+
 	void set_container_element_type(const GDScriptDataType &p_element_type) {
 		container_element_type = memnew(GDScriptDataType(p_element_type));
 	}
@@ -513,7 +532,6 @@ private:
 #endif
 
 	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
-	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
 public:
 	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.

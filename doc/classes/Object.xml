@@ -154,6 +154,7 @@
 				[/codeblocks]
 				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc.
 				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
+				[b]Note:[/b] [code]_get_property_list()[/code] is automatically called for [b]all[/b] base classes. Unlike most other methods, you don't need to call [code]super()[/code] (in GDScript).
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
@@ -185,6 +186,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] The base [Object] defines a few notifications ([constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE]). Inheriting classes such as [Node] define a lot more notifications, which are also received by this method.
+				[b]Note:[/b] [code]_notification()[/code] is automatically called for [b]all[/b] base classes. Unlike most other methods, you don't need to call [code]super()[/code] (in GDScript).
 			</description>
 		</method>
 		<method name="_property_can_revert" qualifiers="virtual">

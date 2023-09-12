@@ -628,9 +628,9 @@ String GDScript::_get_debug_path() const {
 
 Error GDScript::_static_init() {
 	if (static_initializer) {
-		Callable::CallError call_err;
-		static_initializer->call(nullptr, nullptr, 0, call_err);
-		if (call_err.error != Callable::CallError::CALL_OK) {
+		Callable::CallError call_error;
+		static_initializer->call(nullptr, nullptr, 0, call_error);
+		if (call_error.error != Callable::CallError::CALL_OK) {
 			return ERR_CANT_CREATE;
 		}
 	}
@@ -851,7 +851,7 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == GDScriptLanguage::get_singleton()->strings._script_source) {
 		r_ret = get_source_code();
-		return true;
+		return true; // The property is found.
 	}
 
 	const GDScript *top = this;
@@ -860,7 +860,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 			HashMap<StringName, Variant>::ConstIterator E = top->constants.find(p_name);
 			if (E) {
 				r_ret = E->value;
-				return true;
+				return true; // The property is found.
 			}
 		}
 
@@ -868,12 +868,15 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 			HashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
 			if (E) {
 				if (E->value.getter) {
-					Callable::CallError ce;
-					r_ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, ce);
-					return true;
+					Callable::CallError call_error;
+					r_ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, call_error);
+					if (call_error.error != Callable::CallError::CALL_OK) {
+						r_ret = E->value.data_type.get_default_value();
+					}
+					return true; // The property is found, even in case of an error.
 				}
 				r_ret = top->static_variables[E->value.index];
-				return true;
+				return true; // The property is found.
 			}
 		}
 
@@ -885,7 +888,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 				} else {
 					r_ret = Callable(const_cast<GDScript *>(top), E->key);
 				}
-				return true;
+				return true; // The property is found.
 			}
 		}
 
@@ -893,21 +896,21 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 			HashMap<StringName, Ref<GDScript>>::ConstIterator E = top->subclasses.find(p_name);
 			if (E) {
 				r_ret = E->value;
-				return true;
+				return true; // The property is found.
 			}
 		}
 
 		top = top->_base;
 	}
 
-	return false;
+	return false; // The property is not found.
 }
 
 bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == GDScriptLanguage::get_singleton()->strings._script_source) {
 		set_source_code(p_value);
 		reload();
-		return true;
+		return true; // The property is found.
 	}
 
 	GDScript *top = this;
@@ -917,28 +920,29 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 			const MemberInfo *member = &E->value;
 			Variant value = p_value;
 			if (member->data_type.has_type && !member->data_type.is_type(value)) {
+				// Try to convert the value (static variables allow implicit conversion).
 				const Variant *args = &p_value;
-				Callable::CallError err;
-				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
-					return false;
+				Callable::CallError call_error;
+				Variant::construct(member->data_type.builtin_type, value, &args, 1, call_error);
+				if (call_error.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+					return true; // The conversion failed, but the property is found.
 				}
 			}
 			if (member->setter) {
 				const Variant *args = &value;
-				Callable::CallError err;
-				callp(member->setter, &args, 1, err);
-				return err.error == Callable::CallError::CALL_OK;
+				Callable::CallError call_error;
+				callp(member->setter, &args, 1, call_error);
+				return true; // The property is found, even in case of an error.
 			} else {
 				top->static_variables.write[member->index] = value;
-				return true;
+				return true; // The property is found.
 			}
 		}
 
 		top = top->_base;
 	}
 
-	return false;
+	return false; // The property is not found.
 }
 
 void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
@@ -1494,21 +1498,22 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 			const GDScript::MemberInfo *member = &E->value;
 			Variant value = p_value;
 			if (member->data_type.has_type && !member->data_type.is_type(value)) {
+				// Try to convert the value (variables allow implicit conversion).
 				const Variant *args = &p_value;
-				Callable::CallError err;
-				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
-					return false;
+				Callable::CallError call_error;
+				Variant::construct(member->data_type.builtin_type, value, &args, 1, call_error);
+				if (call_error.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+					return true; // The conversion failed, but the property is found.
 				}
 			}
 			if (member->setter) {
 				const Variant *args = &value;
-				Callable::CallError err;
-				callp(member->setter, &args, 1, err);
-				return err.error == Callable::CallError::CALL_OK;
+				Callable::CallError call_error;
+				callp(member->setter, &args, 1, call_error);
+				return true; // The property is found, even in case of an error.
 			} else {
 				members.write[member->index] = value;
-				return true;
+				return true; // The property is found.
 			}
 		}
 	}
@@ -1521,21 +1526,22 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				const GDScript::MemberInfo *member = &E->value;
 				Variant value = p_value;
 				if (member->data_type.has_type && !member->data_type.is_type(value)) {
+					// Try to convert the value (static variables allow implicit conversion).
 					const Variant *args = &p_value;
-					Callable::CallError err;
-					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
-						return false;
+					Callable::CallError call_error;
+					Variant::construct(member->data_type.builtin_type, value, &args, 1, call_error);
+					if (call_error.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+						return true; // The conversion failed, but the property is found.
 					}
 				}
 				if (member->setter) {
 					const Variant *args = &value;
-					Callable::CallError err;
-					callp(member->setter, &args, 1, err);
-					return err.error == Callable::CallError::CALL_OK;
+					Callable::CallError call_error;
+					callp(member->setter, &args, 1, call_error);
+					return true; // The property is found, even in case of an error.
 				} else {
 					sptr->static_variables.write[member->index] = value;
-					return true;
+					return true; // The property is found.
 				}
 			}
 		}
@@ -1546,18 +1552,20 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				Variant name = p_name;
 				const Variant *args[2] = { &name, &p_value };
 
-				Callable::CallError err;
-				Variant ret = E->value->call(this, (const Variant **)args, 2, err);
-				if (err.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::BOOL && ret.operator bool()) {
-					return true;
+				Callable::CallError call_error;
+				Variant ret = E->value->call(this, (const Variant **)args, 2, call_error);
+				if (call_error.error != Callable::CallError::CALL_OK) {
+					return false; // Let's allow normal handling, since the property is not found.
 				}
+				return ret; // Return what the script's `_set()` method returned (booleanized).
+				// No multi-level calls!
 			}
 		}
 
 		sptr = sptr->_base;
 	}
 
-	return false;
+	return false; // The property is not found.
 }
 
 bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
@@ -1565,14 +1573,15 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = script->member_indices.find(p_name);
 		if (E) {
 			if (E->value.getter) {
-				Callable::CallError err;
-				r_ret = const_cast<GDScriptInstance *>(this)->callp(E->value.getter, nullptr, 0, err);
-				if (err.error == Callable::CallError::CALL_OK) {
-					return true;
+				Callable::CallError call_error;
+				r_ret = const_cast<GDScriptInstance *>(this)->callp(E->value.getter, nullptr, 0, call_error);
+				if (call_error.error != Callable::CallError::CALL_OK) {
+					r_ret = E->value.data_type.get_default_value();
 				}
+				return true; // The property is found, even in case of an error.
 			}
 			r_ret = members[E->value.index];
-			return true;
+			return true; // The property is found.
 		}
 	}
 
@@ -1582,7 +1591,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			HashMap<StringName, Variant>::ConstIterator E = sptr->constants.find(p_name);
 			if (E) {
 				r_ret = E->value;
-				return true;
+				return true; // The property is found.
 			}
 		}
 
@@ -1590,12 +1599,15 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
 			if (E) {
 				if (E->value.getter) {
-					Callable::CallError ce;
-					r_ret = const_cast<GDScript *>(sptr)->callp(E->value.getter, nullptr, 0, ce);
-					return true;
+					Callable::CallError call_error;
+					r_ret = const_cast<GDScript *>(sptr)->callp(E->value.getter, nullptr, 0, call_error);
+					if (call_error.error != Callable::CallError::CALL_OK) {
+						r_ret = E->value.data_type.get_default_value();
+					}
+					return true; // The property is found, even in case of an error.
 				}
 				r_ret = sptr->static_variables[E->value.index];
-				return true;
+				return true; // The property is found.
 			}
 		}
 
@@ -1603,7 +1615,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			HashMap<StringName, MethodInfo>::ConstIterator E = sptr->_signals.find(p_name);
 			if (E) {
 				r_ret = Signal(this->owner, E->key);
-				return true;
+				return true; // The property is found.
 			}
 		}
 
@@ -1615,7 +1627,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 				} else {
 					r_ret = Callable(this->owner, E->key);
 				}
-				return true;
+				return true; // The property is found.
 			}
 		}
 
@@ -1623,7 +1635,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			HashMap<StringName, Ref<GDScript>>::ConstIterator E = sptr->subclasses.find(p_name);
 			if (E) {
 				r_ret = E->value;
-				return true;
+				return true; // The property is found.
 			}
 		}
 
@@ -1633,18 +1645,24 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 				Variant name = p_name;
 				const Variant *args[1] = { &name };
 
-				Callable::CallError err;
-				Variant ret = const_cast<GDScriptFunction *>(E->value)->call(const_cast<GDScriptInstance *>(this), (const Variant **)args, 1, err);
-				if (err.error == Callable::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
-					r_ret = ret;
-					return true;
+				Callable::CallError call_error;
+				Variant ret = const_cast<GDScriptFunction *>(E->value)->call(const_cast<GDScriptInstance *>(this), (const Variant **)args, 1, call_error);
+				if (call_error.error != Callable::CallError::CALL_OK) {
+					return false; // Let's allow normal handling, since the property is not found.
 				}
+				if (ret.get_type() != Variant::NIL) { // The property is found if the method returned not `null`.
+					r_ret = ret; // The property value is what the script's `_get()` method returned.
+					return true; // The property is found.
+				}
+				return false; // The property is not found.
+				// No multi-level calls!
 			}
 		}
+
 		sptr = sptr->_base;
 	}
 
-	return false;
+	return false; // The property is not found.
 }
 
 Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
@@ -1673,29 +1691,32 @@ void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
 	while (sptr) {
 		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._validate_property);
 		if (E) {
-			Callable::CallError err;
-			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
-			if (err.error == Callable::CallError::CALL_OK) {
-				p_property = PropertyInfo::from_dict(property);
-				return;
+			Callable::CallError call_error;
+			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, call_error);
+			if (call_error.error != Callable::CallError::CALL_OK) {
+				return; // Don't change the property in case of an error.
 			}
+			p_property = PropertyInfo::from_dict(property);
+			return; // No multi-level calls!
 		}
 		sptr = sptr->_base;
 	}
 }
 
+// `_get_property_list()` uses multi-level calls collect properties from all base classes,
+// no matter if the function is overridden.
+// This behavior is an exception and is described in the documentation.
 void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-	// exported members, not done yet!
-
 	const GDScript *sptr = script.ptr();
 	List<PropertyInfo> props;
 
 	while (sptr) {
+		// Check that the method exists and call it at **all** levels!
 		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._get_property_list);
 		if (E) {
-			Callable::CallError err;
-			Variant ret = const_cast<GDScriptFunction *>(E->value)->call(const_cast<GDScriptInstance *>(this), nullptr, 0, err);
-			if (err.error == Callable::CallError::CALL_OK) {
+			Callable::CallError call_error;
+			Variant ret = const_cast<GDScriptFunction *>(E->value)->call(const_cast<GDScriptInstance *>(this), nullptr, 0, call_error);
+			if (call_error.error == Callable::CallError::CALL_OK) {
 				ERR_FAIL_COND_MSG(ret.get_type() != Variant::ARRAY, "Wrong type for _get_property_list, must be an array of dictionaries.");
 
 				Array arr = ret;
@@ -1727,8 +1748,6 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 				}
 			}
 		}
-
-		//instance a fake script for editing the values
 
 		Vector<_GDScriptMemberSort> msort;
 		for (const KeyValue<StringName, GDScript::MemberInfo> &F : sptr->member_indices) {
@@ -1767,16 +1786,18 @@ bool GDScriptInstance::property_can_revert(const StringName &p_name) const {
 	while (sptr) {
 		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._property_can_revert);
 		if (E) {
-			Callable::CallError err;
-			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
-			if (err.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::BOOL && ret.operator bool()) {
-				return true;
+			Callable::CallError call_error;
+			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, call_error);
+			if (call_error.error != Callable::CallError::CALL_OK) {
+				return false; // Let's allow normal handling, since the property reversibility is not found.
 			}
+			return ret; // Return what the script's `_property_can_revert()` method returned (booleanized).
+			// No multi-level calls!
 		}
 		sptr = sptr->_base;
 	}
 
-	return false;
+	return false; // The property reversibility is not found.
 }
 
 bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_ret) const {
@@ -1787,17 +1808,19 @@ bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_
 	while (sptr) {
 		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._property_get_revert);
 		if (E) {
-			Callable::CallError err;
-			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
-			if (err.error == Callable::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
-				r_ret = ret;
-				return true;
+			Callable::CallError call_error;
+			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, call_error);
+			if (call_error.error != Callable::CallError::CALL_OK) {
+				return false; // Let's allow normal handling, since the property reverted value is not found.
 			}
+			r_ret = ret; // The property reverted value is what the script's `_property_get_revert()` method returned.
+			return true; // The property reverted value is found.
+			// No multi-level calls!
 		}
 		sptr = sptr->_base;
 	}
 
-	return false;
+	return false; // The property reverted value is not found.
 }
 
 void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
@@ -1848,8 +1871,10 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 	return Variant();
 }
 
+// `_notification()` uses multi-level calls to ensure that all base classes receive notifications,
+// no matter if the function is overridden.
+// This behavior is an exception and is described in the documentation.
 void GDScriptInstance::notification(int p_notification, bool p_reversed) {
-	//notification is not virtual, it gets called at ALL levels just like in C.
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
 
@@ -1866,32 +1891,35 @@ void GDScriptInstance::notification(int p_notification, bool p_reversed) {
 	for (GDScript *sc : pl) {
 		HashMap<StringName, GDScriptFunction *>::Iterator E = sc->member_functions.find(GDScriptLanguage::get_singleton()->strings._notification);
 		if (E) {
-			Callable::CallError err;
-			E->value->call(this, args, 1, err);
-			if (err.error != Callable::CallError::CALL_OK) {
-				//print error about notification call
-			}
+			Callable::CallError call_error;
+			E->value->call(this, args, 1, call_error);
+			// No `return`, **do** multi-level calls!
 		}
 	}
 }
 
 String GDScriptInstance::to_string(bool *r_valid) {
-	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
-		Callable::CallError ce;
-		Variant ret = callp(CoreStringNames::get_singleton()->_to_string, nullptr, 0, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			if (ret.get_type() != Variant::STRING) {
-				if (r_valid) {
-					*r_valid = false;
-				}
-				ERR_FAIL_V_MSG(String(), "Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
+	GDScript *sptr = script.ptr();
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(CoreStringNames::get_singleton()->_to_string);
+		if (E) {
+			Callable::CallError call_error;
+			Variant ret = E->value->call(this, nullptr, 0, call_error);
+			if (call_error.error != Callable::CallError::CALL_OK) {
+				break;
+			}
+			if (ret.get_type() != Variant::STRING && ret.get_type() != Variant::STRING_NAME) {
+				ERR_PRINT(vformat(R"*(Wrong return type of "%s()", must be a String.)*", CoreStringNames::get_singleton()->_to_string));
+				break;
 			}
 			if (r_valid) {
 				*r_valid = true;
 			}
-			return ret.operator String();
+			return ret;
 		}
+		sptr = sptr->_base;
 	}
+
 	if (r_valid) {
 		*r_valid = false;
 	}
