@@ -1017,9 +1017,7 @@ void EditorAudioBuses::_set_renaming_buses(bool p_renaming) {
 
 void EditorAudioBuses::_update_buses() {
 	if (renaming_buses) {
-		// This case will be handled more gracefully, no need to trigger a full rebuild.
-		// This is possibly a mistake in the AudioServer, which fires bus_layout_changed
-		// on a rename. This may not be intended, but no way to tell at the moment.
+		// No need to trigger a full rebuild in this case, even though the layout changed.
 		return;
 	}
 
@@ -1102,8 +1100,6 @@ void EditorAudioBuses::_add_bus() {
 	ur->create_action(TTR("Add Audio Bus"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_count", AudioServer::get_singleton()->get_bus_count() + 1);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_count", AudioServer::get_singleton()->get_bus_count());
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
 	ur->commit_action();
 }
 
@@ -1144,8 +1140,6 @@ void EditorAudioBuses::_delete_bus(Object *p_which) {
 		ur->add_undo_method(AudioServer::get_singleton(), "add_bus_effect", index, AudioServer::get_singleton()->get_bus_effect(index, i));
 		ur->add_undo_method(AudioServer::get_singleton(), "set_bus_effect_enabled", index, i, AudioServer::get_singleton()->is_bus_effect_enabled(index, i));
 	}
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
 	ur->commit_action();
 }
 
@@ -1165,8 +1159,6 @@ void EditorAudioBuses::_duplicate_bus(int p_which) {
 		ur->add_do_method(AudioServer::get_singleton(), "set_bus_effect_enabled", add_at_pos, i, AudioServer::get_singleton()->is_bus_effect_enabled(p_which, i));
 	}
 	ur->add_undo_method(AudioServer::get_singleton(), "remove_bus", add_at_pos);
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
 	ur->commit_action();
 }
 
@@ -1178,8 +1170,8 @@ void EditorAudioBuses::_reset_bus_volume(Object *p_which) {
 	ur->create_action(TTR("Reset Bus Volume"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_volume_db", index, 0.f);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_volume_db", index, AudioServer::get_singleton()->get_bus_volume_db(index));
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
+	ur->add_do_method(this, "_update_bus", index);
+	ur->add_undo_method(this, "_update_bus", index);
 	ur->commit_action();
 }
 
@@ -1202,8 +1194,6 @@ void EditorAudioBuses::_drop_at_index(int p_bus, int p_index) {
 	int real_index = p_index > p_bus ? p_index - 1 : p_index;
 	ur->add_undo_method(AudioServer::get_singleton(), "move_bus", real_index, real_bus);
 
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
 	ur->commit_action();
 }
 
