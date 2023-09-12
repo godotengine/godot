@@ -1897,7 +1897,7 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 
 void EditorInspectorArray::_clear_array() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Clear property array with prefix %s."), array_element_prefix));
+	undo_redo->create_action(vformat(TTR("Clear Property Array with Prefix %s"), array_element_prefix));
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 		for (int i = count - 1; i >= 0; i--) {
 			// Call the function.
@@ -1950,7 +1950,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Resize property array with prefix %s."), array_element_prefix));
+	undo_redo->create_action(vformat(TTR("Resize Property Array with Prefix %s"), array_element_prefix));
 	if (p_size > count) {
 		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 			for (int i = count; i < p_size; i++) {
@@ -3856,7 +3856,8 @@ void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array
 		names += p_paths[i];
 	}
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set Multiple:") + " " + names, UndoRedo::MERGE_ENDS);
+	// TRANSLATORS: This is describing a change to multiple properties at once. The parameter is a list of property names.
+	undo_redo->create_action(vformat(TTR("Set Multiple: %s"), names), UndoRedo::MERGE_ENDS);
 	for (int i = 0; i < p_paths.size(); i++) {
 		_edit_set(p_paths[i], p_values[i], false, "");
 		if (restart_request_props.has(p_paths[i])) {

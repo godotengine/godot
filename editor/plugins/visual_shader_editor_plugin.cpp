@@ -6370,7 +6370,7 @@ public:
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 		updating = true;
-		undo_redo->create_action(TTR("Edit Visual Property:") + " " + p_property, UndoRedo::MERGE_ENDS);
+		undo_redo->create_action(vformat(TTR("Edit Visual Property: %s"), p_property), UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(node.ptr(), p_property, p_value);
 		undo_redo->add_undo_property(node.ptr(), p_property, node->get(p_property));
 

@@ -234,7 +234,7 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Edit Built-in Action") + " '" + p_name + "'");
+	undo_redo->create_action(vformat(TTR("Edit Built-in Action: %s"), p_name));
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
 	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
@@ -250,7 +250,7 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Edit Shortcut") + " '" + p_path + "'");
+	undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path));
 	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
 	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
