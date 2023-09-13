@@ -931,11 +931,11 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 						roughness_detect_texture = tex;
 						roughness_channel = RS::TextureDetectRoughnessChannel(p_texture_uniforms[i].hint - ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R);
 					}
+#endif // TOOLS_ENABLED
 					if (tex->render_target) {
 						tex->render_target->was_used = true;
 						render_target_cache.push_back(tex->render_target);
 					}
-#endif
 				}
 				if (rd_texture.is_null()) {
 					rd_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
