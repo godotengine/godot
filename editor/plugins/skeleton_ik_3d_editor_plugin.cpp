@@ -31,6 +31,7 @@
 #include "skeleton_ik_3d_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "scene/3d/skeleton_ik_3d.h"
 #include "scene/gui/button.h"
 
@@ -84,7 +85,7 @@ void SkeletonIK3DEditorPlugin::_bind_methods() {
 
 SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin() {
 	play_btn = memnew(Button);
-	play_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("Play")));
+	play_btn->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Play"), EditorStringName(EditorIcons)));
 	play_btn->set_text(TTR("Play IK"));
 	play_btn->set_toggle_mode(true);
 	play_btn->hide();

@@ -513,16 +513,19 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 	ur->commit_action();
 }
 
-void MeshInstance3DEditor::_bind_methods() {
+void MeshInstance3DEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			options->set_icon(get_editor_theme_icon(SNAME("MeshInstance3D")));
+		} break;
+	}
 }
 
 MeshInstance3DEditor::MeshInstance3DEditor() {
 	options = memnew(MenuButton);
+	options->set_text(TTR("Mesh"));
 	options->set_switch_on_hover(true);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
-
-	options->set_text(TTR("Mesh"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("MeshInstance3D")));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a StaticBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));

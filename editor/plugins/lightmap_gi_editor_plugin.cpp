@@ -31,6 +31,7 @@
 #include "lightmap_gi_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
 void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
@@ -168,7 +169,9 @@ void LightmapGIEditorPlugin::_bind_methods() {
 LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("Bake")));
+	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
+	// when the editor theme updates.
+	bake->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake Lightmaps"));
 	bake->hide();
 	bake->connect("pressed", Callable(this, "_bake"));
