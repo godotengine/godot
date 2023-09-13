@@ -711,9 +711,10 @@ public:
 		HashMap<StringName, Varying> varyings;
 		HashMap<StringName, Uniform> uniforms;
 		HashMap<StringName, Struct> structs;
+		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
 
-		Vector<Function> functions;
+		Vector<Function> vfunctions;
 		Vector<Constant> vconstants;
 		Vector<Struct> vstructs;
 
