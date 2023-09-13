@@ -285,17 +285,24 @@ class EditorInspectorSection : public Container {
 	bool vbox_added = false; // Optimization.
 	Color bg_color;
 	bool foldable = false;
+	bool checkable = false;
+	bool checked = false;
 	int indent_depth = 0;
+	String related_enable_property;
 
 	Timer *dropping_unfold_timer = nullptr;
 	bool dropping = false;
 	bool dropping_for_unfold = false;
+
+	Rect2 check_rect;
+	bool check_hover = false;
 
 	HashSet<StringName> revertable_properties;
 
 	void _test_unfold();
 	int _get_header_height();
 	Ref<Texture2D> _get_arrow();
+	Ref<Texture2D> _get_checkbox();
 
 protected:
 	Object *object = nullptr;
@@ -308,11 +315,13 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0);
+	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, const String &p_related_check_property = "");
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
 	void set_bg_color(const Color &p_bg_color);
+	void set_checked(bool p_checked);
+	String get_related_enable_property();
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
@@ -553,6 +562,8 @@ class EditorInspector : public ScrollContainer {
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
 	void _update_inspector_bg();
+
+	void _section_toggled_by_user(const String &p_path, bool p_value);
 
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;

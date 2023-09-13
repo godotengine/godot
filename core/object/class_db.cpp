@@ -923,7 +923,7 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 	return false;
 }
 
-void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
+void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth, const String &p_checkable) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL(type);
@@ -933,7 +933,13 @@ void ClassDB::add_property_group(const StringName &p_class, const String &p_name
 		prefix = vformat("%s,%d", p_prefix, p_indent_depth);
 	}
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_GROUP));
+	int checkable = 0;
+	if (!p_checkable.is_empty()) {
+		checkable = PROPERTY_USAGE_CHECKABLE;
+		prefix += "|" + p_checkable;
+	}
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_GROUP | checkable));
 }
 
 void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {

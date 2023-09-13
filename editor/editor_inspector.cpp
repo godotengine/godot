@@ -1255,6 +1255,20 @@ Ref<Texture2D> EditorInspectorSection::_get_arrow() {
 	return arrow;
 }
 
+Ref<Texture2D> EditorInspectorSection::_get_checkbox() {
+	Ref<Texture2D> checkbox;
+
+	if (checkable) {
+		if (checked) {
+			checkbox = get_editor_theme_icon(SNAME("GuiChecked"));
+		} else {
+			checkbox = get_editor_theme_icon(SNAME("GuiUnchecked"));
+		}
+	}
+
+	return checkbox;
+}
+
 int EditorInspectorSection::_get_header_height() {
 	Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 	int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
@@ -1353,6 +1367,28 @@ void EditorInspectorSection::_notification(int p_what) {
 					arrow_position.y = (header_height - arrow->get_height()) / 2;
 					draw_texture(arrow, arrow_position);
 					margin_start += arrow->get_width();
+				}
+
+				Ref<Texture2D> checkbox = _get_checkbox();
+
+				if (checkbox.is_valid()) {
+					Point2 checkbox_position;
+					if (rtl) {
+						checkbox_position.x = get_size().width - (margin_start + checkbox->get_width());
+					} else {
+						checkbox_position.x = margin_start;
+					}
+
+					Color color2(1, 1, 1);
+					if (check_hover) {
+						color2.r *= 1.2;
+						color2.g *= 1.2;
+						color2.b *= 1.2;
+					}
+					checkbox_position.y = (header_height - checkbox->get_height()) / 2;
+					check_rect = Rect2(checkbox_position.x, checkbox_position.y, checkbox->get_width(), checkbox->get_height());
+					draw_texture(checkbox, checkbox_position, color2);
+					margin_start += checkbox->get_width() + 4 * EDSCALE;
 				}
 
 				int available = get_size().width - (margin_start + margin_end);
@@ -1482,13 +1518,15 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 	return ms;
 }
 
-void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth) {
+void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, const String &p_related_check_property) {
 	section = p_section;
 	label = p_label;
 	object = p_object;
 	bg_color = p_bg_color;
 	foldable = p_foldable;
 	indent_depth = p_indent_depth;
+	checkable = !p_related_check_property.is_empty();
+	related_enable_property = p_related_check_property;
 
 	if (!foldable && !vbox_added) {
 		add_child(vbox);
@@ -1509,11 +1547,18 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!foldable) {
-		return;
+	Ref<InputEventMouse> me = p_event;
+
+	if (me.is_valid()) {
+		bool new_check_hover = check_rect.has_point(me->get_position());
+		if (new_check_hover != check_hover) {
+			check_hover = new_check_hover;
+			queue_redraw();
+		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
+
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (object->editor_is_section_unfolded(section)) {
 			int header_height = _get_header_height();
@@ -1525,11 +1570,16 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 		accept_event();
 
-		bool should_unfold = !object->editor_is_section_unfolded(section);
-		if (should_unfold) {
-			unfold();
-		} else {
-			fold();
+		if (check_rect.has_point(mb->get_position())) {
+			checked = !checked;
+			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
+		} else if (foldable) {
+			bool should_unfold = !object->editor_is_section_unfolded(section);
+			if (should_unfold) {
+				unfold();
+			} else {
+				fold();
+			}
 		}
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
@@ -1571,6 +1621,19 @@ void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
 	queue_redraw();
 }
 
+void EditorInspectorSection::set_checked(bool p_checked) {
+	if (checked == p_checked) {
+		return;
+	}
+
+	checked = p_checked;
+	queue_redraw();
+}
+
+String EditorInspectorSection::get_related_enable_property() {
+	return related_enable_property;
+}
+
 bool EditorInspectorSection::has_revertable_properties() const {
 	return !revertable_properties.is_empty();
 }
@@ -1592,6 +1655,8 @@ void EditorInspectorSection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vbox"), &EditorInspectorSection::get_vbox);
 	ClassDB::bind_method(D_METHOD("unfold"), &EditorInspectorSection::unfold);
 	ClassDB::bind_method(D_METHOD("fold"), &EditorInspectorSection::fold);
+
+	ADD_SIGNAL(MethodInfo("section_toggled_by_user", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "value")));
 }
 
 EditorInspectorSection::EditorInspectorSection() {
@@ -2738,6 +2803,7 @@ void EditorInspector::update_tree() {
 
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
+	String related_checkable_property;
 	String group_base;
 	String subgroup;
 	String subgroup_base;
@@ -2782,7 +2848,14 @@ void EditorInspector::update_tree() {
 			// Setup a property group.
 			group = p.name;
 
-			Vector<String> hint_parts = p.hint_string.split(",");
+			String hint = p.hint_string;
+
+			if (p.usage & PROPERTY_USAGE_CHECKABLE) {
+				related_checkable_property = hint.get_slice("|", 1);
+				hint = hint.get_slice("|", 0);
+			}
+
+			Vector<String> hint_parts = hint.split(",");
 			group_base = hint_parts[0];
 			if (hint_parts.size() > 1) {
 				section_depth = hint_parts[1].to_int();
@@ -3097,8 +3170,12 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth);
+				section->setup(acc_path, label, object, c, use_folding, section_depth, related_checkable_property);
 				section->set_tooltip_text(tooltip);
+
+				related_checkable_property = "";
+
+				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
 
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
@@ -3116,6 +3193,16 @@ void EditorInspector::update_tree() {
 		// If we did not find a section to add the property to, add it to the category vbox instead (the category vbox handles margins correctly).
 		if (current_vbox == main_vbox) {
 			current_vbox = category_vbox;
+		}
+
+		EditorInspectorSection *last_created_section = Object::cast_to<EditorInspectorSection>(current_vbox->get_parent());
+		if (last_created_section && last_created_section->get_related_enable_property() == p.name) {
+			bool valid = false;
+			Variant checked = object->get(p.name, &valid);
+
+			if (valid) {
+				last_created_section->set_checked(checked.operator bool());
+			}
 		}
 
 		// Check if the property is an array counter, if so create a dedicated array editor for the array.
@@ -3686,6 +3773,11 @@ void EditorInspector::_update_inspector_bg() {
 		add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 	}
 }
+
+void EditorInspector::_section_toggled_by_user(const String &p_path, bool p_value) {
+	_property_changed(p_path, p_value);
+}
+
 void EditorInspector::set_sub_inspector(bool p_enable) {
 	sub_inspector = p_enable;
 	if (!is_inside_tree()) {
