@@ -21,7 +21,8 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--scons-env", nargs="+", default=[])
     parser.add_argument("-f", "--fake-stamp", default="")
 
-    args = parser.parse_args()
+    args = [x for x in sys.argv[1:] if 'python.exe' not in x.lower()]
+    args = parser.parse_args(args)
 
     script = args.script
     if "MESON_SOURCE_ROOT" in os.environ:
