@@ -80,15 +80,43 @@ void AudioStreamPlayback::tag_used_streams() {
 	GDVIRTUAL_CALL(_tag_used_streams);
 }
 
+int AudioStreamPlayback::get_current_beat() const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_current_beat, ret);
+	return ret;
+}
+
+int AudioStreamPlayback::get_current_bar() const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_current_bar, ret);
+	return ret;
+}
+
+float AudioStreamPlayback::get_beat_progress() const {
+	float ret = 0;
+	GDVIRTUAL_CALL(_get_beat_progress, ret);
+	return ret;
+}
+
+float AudioStreamPlayback::get_bar_progress() const {
+	float ret = 0;
+	GDVIRTUAL_CALL(_get_bar_progress, ret);
+	return ret;
+}
+
 void AudioStreamPlayback::_bind_methods() {
-	GDVIRTUAL_BIND(_start, "from_pos")
-	GDVIRTUAL_BIND(_stop)
-	GDVIRTUAL_BIND(_is_playing)
-	GDVIRTUAL_BIND(_get_loop_count)
-	GDVIRTUAL_BIND(_get_playback_position)
-	GDVIRTUAL_BIND(_seek, "position")
+	GDVIRTUAL_BIND(_start, "from_pos");
+	GDVIRTUAL_BIND(_stop);
+	GDVIRTUAL_BIND(_is_playing);
+	GDVIRTUAL_BIND(_get_loop_count);
+	GDVIRTUAL_BIND(_get_playback_position);
+	GDVIRTUAL_BIND(_seek, "position");
 	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
 	GDVIRTUAL_BIND(_tag_used_streams);
+	GDVIRTUAL_BIND(_get_current_beat);
+	GDVIRTUAL_BIND(_get_current_bar);
+	GDVIRTUAL_BIND(_get_beat_progress);
+	GDVIRTUAL_BIND(_get_bar_progress);
 }
 //////////////////////////////
 
@@ -211,7 +239,7 @@ double AudioStream::get_bpm() const {
 }
 
 bool AudioStream::has_loop() const {
-	bool ret = 0;
+	bool ret = false;
 	GDVIRTUAL_CALL(_has_loop, ret);
 	return ret;
 }
@@ -257,8 +285,8 @@ void AudioStream::_bind_methods() {
 	GDVIRTUAL_BIND(_get_stream_name);
 	GDVIRTUAL_BIND(_get_length);
 	GDVIRTUAL_BIND(_is_monophonic);
-	GDVIRTUAL_BIND(_get_bpm)
-	GDVIRTUAL_BIND(_get_beat_count)
+	GDVIRTUAL_BIND(_get_bpm);
+	GDVIRTUAL_BIND(_get_beat_count);
 }
 
 ////////////////////////////////

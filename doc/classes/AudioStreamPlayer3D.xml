@@ -13,6 +13,34 @@
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_bar_progress" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns how far the playback has progressed from the last musical bar (usually 4 beats, depends on `bar_beats` in the stream import settings) to the next in range [code][0.0, 1.0][/code].
+				You need to set the BPM in the audio import settings for this to work.
+			</description>
+		</method>
+		<method name="get_beat_progress" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns how far the playback has progressed from the last musical beat to the next in range [code][0.0, 1.0][/code].
+				You need to set the BPM in the audio import settings for this to work.
+			</description>
+		</method>
+		<method name="get_current_bar" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the index of the current musical bar (usually 4 beats, depends on `bar_beats` in the stream import settings) from the start of the stream, starting at 0.
+				You need to set the BPM in the audio import settings for this to work.
+			</description>
+		</method>
+		<method name="get_current_beat" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the index of the current musical beat from the start of the bar in range [code][0, bar_beats - 1][/code].
+				You need to set the BPM in the audio import settings for this to work.
+			</description>
+		</method>
 		<method name="get_playback_position">
 			<return type="float" />
 			<description>

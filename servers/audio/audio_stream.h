@@ -54,6 +54,10 @@ protected:
 	GDVIRTUAL1(_seek, double)
 	GDVIRTUAL3R(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
+	GDVIRTUAL0RC(int, _get_current_beat)
+	GDVIRTUAL0RC(int, _get_current_bar)
+	GDVIRTUAL0RC(float, _get_beat_progress)
+	GDVIRTUAL0RC(float, _get_bar_progress)
 public:
 	virtual void start(double p_from_pos = 0.0);
 	virtual void stop();
@@ -65,6 +69,11 @@ public:
 	virtual void seek(double p_time);
 
 	virtual void tag_used_streams();
+
+	virtual int get_current_beat() const;
+	virtual int get_current_bar() const;
+	virtual float get_beat_progress() const;
+	virtual float get_bar_progress() const;
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
 };
