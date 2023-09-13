@@ -972,7 +972,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 				api["name"] = m.signal->identifier->name;
 				Array pars;
 				for (int j = 0; j < m.signal->parameters.size(); j++) {
-					pars.append(String(m.signal->parameters[i]->identifier->name));
+					pars.append(String(m.signal->parameters[j]->identifier->name));
 				}
 				api["arguments"] = pars;
 				if (const lsp::DocumentSymbol *symbol = get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.signal->start_line))) {
