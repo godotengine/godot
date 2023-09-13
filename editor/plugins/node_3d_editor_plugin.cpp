@@ -1460,14 +1460,10 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 			}
 
 			if (p_local) {
-				p_motion = p_original.basis.xform(p_motion);
+				return p_original_local.translated_local(p_motion);
 			}
 
-			// Apply translation
-			Transform3D t = p_original;
-			t.origin += p_motion;
-
-			return t;
+			return p_original.translated(p_motion);
 		}
 		case TRANSFORM_ROTATE: {
 			Transform3D r;
