@@ -73,6 +73,7 @@ void GDScriptRPCCallable::call(const Variant **p_arguments, int p_argcount, Vari
 }
 
 GDScriptRPCCallable::GDScriptRPCCallable(Object *p_object, const StringName &p_method) {
+	ERR_FAIL_NULL(p_object);
 	object = p_object;
 	method = p_method;
 	h = method.hash();
