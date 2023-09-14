@@ -151,55 +151,57 @@ void ReflectionProbeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo,
 }
 
 void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_node_3d());
-
 	p_gizmo->clear();
 
-	Vector<Vector3> lines;
-	Vector<Vector3> internal_lines;
-	Vector3 size = probe->get_size();
-
-	AABB aabb;
-	aabb.position = -size / 2;
-	aabb.size = size;
-
-	for (int i = 0; i < 12; i++) {
-		Vector3 a, b;
-		aabb.get_edge(i, a, b);
-		lines.push_back(a);
-		lines.push_back(b);
-	}
-
-	for (int i = 0; i < 8; i++) {
-		Vector3 ep = aabb.get_endpoint(i);
-		internal_lines.push_back(probe->get_origin_offset());
-		internal_lines.push_back(ep);
-	}
-
-	Vector<Vector3> handles = helper->box_get_handles(probe->get_size());
-
-	for (int i = 0; i < 3; i++) {
-		Vector3 orig_handle = probe->get_origin_offset();
-		orig_handle[i] -= 0.25;
-		lines.push_back(orig_handle);
-		handles.push_back(orig_handle);
-
-		orig_handle[i] += 0.5;
-		lines.push_back(orig_handle);
-	}
-
-	Ref<Material> material = get_material("reflection_probe_material", p_gizmo);
-	Ref<Material> material_internal = get_material("reflection_internal_material", p_gizmo);
-	Ref<Material> icon = get_material("reflection_probe_icon", p_gizmo);
-
-	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_lines(internal_lines, material_internal);
-
 	if (p_gizmo->is_selected()) {
-		Ref<Material> solid_material = get_material("reflection_probe_solid_material", p_gizmo);
-		p_gizmo->add_solid_box(solid_material, probe->get_size());
+		ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_node_3d());
+		Vector<Vector3> lines;
+		Vector<Vector3> internal_lines;
+		Vector3 size = probe->get_size();
+
+		AABB aabb;
+		aabb.position = -size / 2;
+		aabb.size = size;
+
+		for (int i = 0; i < 12; i++) {
+			Vector3 a, b;
+			aabb.get_edge(i, a, b);
+			lines.push_back(a);
+			lines.push_back(b);
+		}
+
+		for (int i = 0; i < 8; i++) {
+			Vector3 ep = aabb.get_endpoint(i);
+			internal_lines.push_back(probe->get_origin_offset());
+			internal_lines.push_back(ep);
+		}
+
+		Vector<Vector3> handles = helper->box_get_handles(probe->get_size());
+
+		for (int i = 0; i < 3; i++) {
+			Vector3 orig_handle = probe->get_origin_offset();
+			orig_handle[i] -= 0.25;
+			lines.push_back(orig_handle);
+			handles.push_back(orig_handle);
+
+			orig_handle[i] += 0.5;
+			lines.push_back(orig_handle);
+		}
+
+		Ref<Material> material = get_material("reflection_probe_material", p_gizmo);
+		Ref<Material> material_internal = get_material("reflection_internal_material", p_gizmo);
+
+		p_gizmo->add_lines(lines, material);
+		p_gizmo->add_lines(internal_lines, material_internal);
+
+		if (p_gizmo->is_selected()) {
+			Ref<Material> solid_material = get_material("reflection_probe_solid_material", p_gizmo);
+			p_gizmo->add_solid_box(solid_material, probe->get_size());
+		}
+
+		p_gizmo->add_handles(handles, get_material("handles"));
 	}
 
+	Ref<Material> icon = get_material("reflection_probe_icon", p_gizmo);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
-	p_gizmo->add_handles(handles, get_material("handles"));
 }
