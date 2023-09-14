@@ -775,7 +775,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						int type = graph_node->get_output_port_type(j);
 						if ((type == connecting_type ||
-									valid_connection_types.has(ConnectionType(connecting_type, type))) &&
+									valid_connection_types.has(ConnectionType(type, connecting_type))) &&
 								is_in_output_hotzone(graph_node, j, mpos, port_size)) {
 							if (!is_node_hover_valid(graph_node->get_name(), j, connecting_from, connecting_index)) {
 								continue;
