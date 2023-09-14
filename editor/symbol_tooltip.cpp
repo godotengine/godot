@@ -87,6 +87,8 @@ SymbolTooltip::SymbolTooltip(CodeEdit *p_text_editor) :
 	body_label->set_focus_mode(Control::FOCUS_ALL);
 	//body_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	body_label->set_theme(_create_body_label_theme());
+	body_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
+	body_label->set_context_menu_enabled(true);
 	//body_label->set_fit_content(true); // WARNING!! - Enabling this will cause issues in _update_tooltip_size().
 	body_label->hide();
 	layout_container->add_child(body_label);
