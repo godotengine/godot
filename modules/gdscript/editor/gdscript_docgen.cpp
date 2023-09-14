@@ -64,8 +64,8 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 				r_type = p_is_return ? "void" : "null";
 				return;
 			}
-			if (p_gdtype.builtin_type == Variant::ARRAY && p_gdtype.has_container_element_type()) {
-				_doctype_from_gdtype(p_gdtype.get_container_element_type(), r_type, r_enum);
+			if (p_gdtype.builtin_type == Variant::ARRAY && p_gdtype.has_container_element_type(0)) {
+				_doctype_from_gdtype(p_gdtype.get_container_element_type(0), r_type, r_enum);
 				if (!r_enum.is_empty()) {
 					r_type = "int[]";
 					r_enum += "[]";

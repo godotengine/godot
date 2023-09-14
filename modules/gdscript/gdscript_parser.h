@@ -101,11 +101,9 @@ public:
 	struct WhileNode;
 
 	class DataType {
-	private:
-		// Private access so we can control memory management.
-		DataType *container_element_type = nullptr;
-
 	public:
+		Vector<DataType> container_element_types;
+
 		enum Kind {
 			BUILTIN,
 			NATIVE,
@@ -152,24 +150,39 @@ public:
 		_FORCE_INLINE_ String to_string_strict() const { return is_hard_type() ? to_string() : "Variant"; }
 		PropertyInfo to_property_info(const String &p_name) const;
 
-		_FORCE_INLINE_ void set_container_element_type(const DataType &p_type) {
-			container_element_type = memnew(DataType(p_type));
+		_FORCE_INLINE_ static DataType get_variant_type() { // Default DataType for container elements.
+			DataType datatype;
+			datatype.kind = VARIANT;
+			datatype.type_source = INFERRED;
+			return datatype;
 		}
 
-		_FORCE_INLINE_ DataType get_container_element_type() const {
-			ERR_FAIL_NULL_V(container_element_type, DataType());
-			return *container_element_type;
+		_FORCE_INLINE_ void set_container_element_type(int p_index, const DataType &p_type) {
+			ERR_FAIL_COND(p_index < 0);
+			while (p_index >= container_element_types.size()) {
+				container_element_types.push_back(get_variant_type());
+			}
+			container_element_types.write[p_index] = DataType(p_type);
 		}
 
-		_FORCE_INLINE_ bool has_container_element_type() const {
-			return container_element_type != nullptr;
+		_FORCE_INLINE_ DataType get_container_element_type(int p_index) const {
+			ERR_FAIL_INDEX_V(p_index, container_element_types.size(), get_variant_type());
+			return container_element_types[p_index];
 		}
 
-		_FORCE_INLINE_ void unset_container_element_type() {
-			if (container_element_type) {
-				memdelete(container_element_type);
-			};
-			container_element_type = nullptr;
+		_FORCE_INLINE_ DataType get_container_element_type_or_variant(int p_index) const {
+			if (p_index < 0 || p_index >= container_element_types.size()) {
+				return get_variant_type();
+			}
+			return container_element_types[p_index];
+		}
+
+		_FORCE_INLINE_ bool has_container_element_type(int p_index) const {
+			return p_index >= 0 && p_index < container_element_types.size();
+		}
+
+		_FORCE_INLINE_ bool has_container_element_types() const {
+			return !container_element_types.is_empty();
 		}
 
 		bool is_typed_container_type() const;
@@ -229,10 +242,7 @@ public:
 			class_type = p_other.class_type;
 			method_info = p_other.method_info;
 			enum_values = p_other.enum_values;
-			unset_container_element_type();
-			if (p_other.has_container_element_type()) {
-				set_container_element_type(p_other.get_container_element_type());
-			}
+			container_element_types = p_other.container_element_types;
 		}
 
 		DataType() = default;
@@ -241,9 +251,7 @@ public:
 			*this = p_other;
 		}
 
-		~DataType() {
-			unset_container_element_type();
-		}
+		~DataType() {}
 	};
 
 	struct ParserError {
@@ -1183,7 +1191,11 @@ public:
 
 	struct TypeNode : public Node {
 		Vector<IdentifierNode *> type_chain;
-		TypeNode *container_type = nullptr;
+		Vector<TypeNode *> container_types;
+
+		TypeNode *get_container_type_or_null(int p_index) const {
+			return p_index >= 0 && p_index < container_types.size() ? container_types[p_index] : nullptr;
+		}
 
 		TypeNode() {
 			type = TYPE;
