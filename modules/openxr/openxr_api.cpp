@@ -1434,7 +1434,9 @@ Size2 OpenXRAPI::get_recommended_target_size() {
 XRPose::TrackingConfidence OpenXRAPI::get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity) {
 	XrResult result;
 
-	ERR_FAIL_COND_V(!running, XRPose::XR_TRACKING_CONFIDENCE_NONE);
+	if (!running) {
+		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
+	}
 
 	// xrWaitFrame not run yet
 	if (frame_state.predictedDisplayTime == 0) {
@@ -1487,7 +1489,9 @@ XRPose::TrackingConfidence OpenXRAPI::get_head_center(Transform3D &r_transform, 
 }
 
 bool OpenXRAPI::get_view_transform(uint32_t p_view, Transform3D &r_transform) {
-	ERR_FAIL_COND_V(!running, false);
+	if (!running) {
+		return false;
+	}
 
 	// xrWaitFrame not run yet
 	if (frame_state.predictedDisplayTime == 0) {
@@ -1506,8 +1510,11 @@ bool OpenXRAPI::get_view_transform(uint32_t p_view, Transform3D &r_transform) {
 }
 
 bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix) {
-	ERR_FAIL_COND_V(!running, false);
 	ERR_FAIL_NULL_V(graphics_extension, false);
+
+	if (!running) {
+		return false;
+	}
 
 	// xrWaitFrame not run yet
 	if (frame_state.predictedDisplayTime == 0) {
