@@ -3725,6 +3725,67 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->get_line(0) == "sstest");
 	}
 
+	SUBCASE("[CodeEdit] autocomplete currently selected option") {
+		code_edit->set_code_completion_enabled(true);
+		REQUIRE(code_edit->is_code_completion_enabled());
+
+		// Initially select item 0.
+		code_edit->insert_text_at_caret("te");
+		code_edit->set_caret_column(2);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te1", "te1");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te3", "te3");
+		code_edit->update_code_completion_options();
+		CHECK_MESSAGE(code_edit->get_code_completion_selected_index() == 0, "Initially selected item should be 0.");
+
+		// After adding later options shouldn't update selection.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te1", "te1");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te3", "te3");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te4", "te4"); // Added te4.
+		code_edit->update_code_completion_options();
+		CHECK_MESSAGE(code_edit->get_code_completion_selected_index() == 0, "Adding later options shouldn't update selection.");
+
+		code_edit->set_code_completion_selected_index(2);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te1", "te1");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te3", "te3");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te4", "te4");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te5", "te5"); // Added te5.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te6", "te6"); // Added te6.
+		code_edit->update_code_completion_options();
+		CHECK_MESSAGE(code_edit->get_code_completion_selected_index() == 2, "Adding later options shouldn't update selection.");
+
+		// Removing elements after selected element shouldn't update selection.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te1", "te1");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te3", "te3");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te4", "te4");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te5", "te5"); // Removed te6.
+		code_edit->update_code_completion_options();
+		CHECK_MESSAGE(code_edit->get_code_completion_selected_index() == 2, "Removing elements after selected element shouldn't update selection.");
+
+		// Changing elements after selected element shouldn't update selection.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te1", "te1");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te3", "te3");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te4", "te4");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te6", "te6"); // Changed te5->te6.
+		code_edit->update_code_completion_options();
+		CHECK_MESSAGE(code_edit->get_code_completion_selected_index() == 2, "Changing elements after selected element shouldn't update selection.");
+
+		// Changing elements before selected element should reset selection.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te2", "te2"); // Changed te1->te2.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te3", "te3");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te4", "te4");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te6", "te6");
+		code_edit->update_code_completion_options();
+		CHECK_MESSAGE(code_edit->get_code_completion_selected_index() == 0, "Changing elements before selected element should reset selection.");
+
+		// Removing elements before selected element should reset selection.
+		code_edit->set_code_completion_selected_index(2);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te3", "te3"); // Removed te2.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te4", "te4");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "te6", "te6");
+		code_edit->update_code_completion_options();
+		CHECK_MESSAGE(code_edit->get_code_completion_selected_index() == 0, "Removing elements before selected element should reset selection.");
+	}
+
 	memdelete(code_edit);
 }
 

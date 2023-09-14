@@ -222,6 +222,7 @@ private:
 
 	void _update_scroll_selected_line(float p_mouse_y);
 	void _filter_code_completion_candidates_impl();
+	bool _should_reset_selected_option_for_new_options(const Vector<ScriptLanguage::CodeCompletionOption> &p_new_options);
 
 	/* Line length guidelines */
 	TypedArray<int> line_length_guideline_columns;
