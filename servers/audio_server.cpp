@@ -857,14 +857,16 @@ int AudioServer::get_bus_count() const {
 void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 	ERR_FAIL_INDEX(p_bus, buses.size());
 	if (p_bus == 0 && p_name != "Master") {
-		return; //bus 0 is always master
+		return; // Bus 0 is always "Master".
 	}
 
 	MARK_EDITED
 
 	lock();
 
-	if (buses[p_bus]->name == p_name) {
+	StringName old_name = buses[p_bus]->name;
+
+	if (old_name == p_name) {
 		unlock();
 		return;
 	}
@@ -888,12 +890,12 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 		attempts++;
 		attempt = p_name + " " + itos(attempts);
 	}
-	bus_map.erase(buses[p_bus]->name);
+	bus_map.erase(old_name);
 	buses[p_bus]->name = attempt;
 	bus_map[attempt] = buses[p_bus];
 	unlock();
 
-	emit_signal(SNAME("bus_layout_changed"));
+	emit_signal(SNAME("bus_renamed"), p_bus, old_name, attempt);
 }
 
 String AudioServer::get_bus_name(int p_bus) const {
@@ -1751,6 +1753,7 @@ void AudioServer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed_scale"), "set_playback_speed_scale", "get_playback_speed_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
+	ADD_SIGNAL(MethodInfo("bus_renamed", PropertyInfo(Variant::INT, "bus_index"), PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
 
 	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_31);

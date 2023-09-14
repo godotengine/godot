@@ -97,7 +97,8 @@ private:
 	Area3D *_get_overriding_area();
 	Vector<AudioFrame> _update_panning();
 
-	void _bus_layout_changed();
+	void _on_bus_layout_changed();
+	void _on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name);
 
 	uint32_t area_mask = 1;
 
