@@ -23,8 +23,8 @@ public partial class _CLASS_ : _BASE_
         float f2 = dt*dt/2f;
         if (Decay>0f)
             f0 = Mathf.exp(-dt*Decay);
-            f1 = ( 1.0f - f0 ) / Decay;
-            f2 = ( delta - f1 ) / Decay;
+            f1 = ( 1f - f0 ) / Decay;
+            f2 = ( dt - f1 ) / Decay;
 
         // Add the gravity.
         if (!IsOnFloor())
