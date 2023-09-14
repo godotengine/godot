@@ -152,6 +152,7 @@ public:
 
 	/** environment blend mode. */
 	virtual Array get_supported_environment_blend_modes() override;
+	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const override;
 	virtual bool set_environment_blend_mode(XRInterface::EnvironmentBlendMode mode) override;
 
 	void on_state_ready();
