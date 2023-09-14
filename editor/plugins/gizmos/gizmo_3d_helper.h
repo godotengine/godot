@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  collision_shape_3d_gizmo_plugin.h                                     */
+/*  gizmo_3d_helper.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_SHAPE_3D_GIZMO_PLUGIN_H
-#define COLLISION_SHAPE_3D_GIZMO_PLUGIN_H
+#ifndef GIZMO_3D_HELPER_H
+#define GIZMO_3D_HELPER_H
 
-#include "editor/plugins/node_3d_editor_gizmos.h"
+#include "core/object/ref_counted.h"
 
-class Gizmo3DHelper;
+class Camera3D;
 
-class CollisionShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(CollisionShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class Gizmo3DHelper : public RefCounted {
+	GDCLASS(Gizmo3DHelper, RefCounted);
 
-	Ref<Gizmo3DHelper> helper;
+	int current_handle_id;
+	Variant initial_value;
+	Transform3D initial_transform;
 
 public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_gizmo_name() const override;
-	int get_priority() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
+	void initialize_handle_action(const Variant &p_initial_value, const Transform3D &p_initial_transform);
+	void get_segment(Camera3D *p_camera, const Point2 &p_point, Vector3 *r_segment);
 
-	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	void begin_handle_action(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) override;
-	void set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) override;
-	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
-
-	CollisionShape3DGizmoPlugin();
-	~CollisionShape3DGizmoPlugin();
+	Vector<Vector3> box_get_handles(const Vector3 &p_box_size);
+	String box_get_handle_name(int p_id) const;
+	void box_set_handle(const Vector3 p_segment[2], int p_id, Vector3 &r_box_size, Vector3 &r_box_position);
+	void box_commit_handle(const String &p_action_name, bool p_cancel, Object *p_position_object, Object *p_size_object = nullptr, const StringName &p_position_property = "global_position", const StringName &p_size_property = "size");
 };
 
-#endif // COLLISION_SHAPE_3D_GIZMO_PLUGIN_H
+#endif // GIZMO_3D_HELPER_H
