@@ -881,9 +881,19 @@ namespace Godot.Collections
         /// <returns>A string representation of this dictionary.</returns>
         public override string ToString() => _underlyingDict.ToString();
 
+        /// <summary>
+        /// Converts the provided <see cref="Dictionary{TKey, TValue}"/> to a Variant.
+        /// </summary>
+        /// <param name="from">The typed Godot Dictionary to convert.</param>
+        /// <returns>A Variant representation of this typed Godot Dictionary.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Variant(Dictionary<TKey, TValue> from) => Variant.CreateFrom(from);
 
+        /// <summary>
+        /// Converts the provided <see cref="Variant"/> to a typed Godot Dictionary.
+        /// </summary>
+        /// <param name="from">The Variant to convert.</param>
+        /// <returns>A typed Godot Dictionary representation of this Variant.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator Dictionary<TKey, TValue>(Variant from) =>
             from.AsGodotDictionary<TKey, TValue>();

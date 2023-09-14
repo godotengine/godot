@@ -1773,9 +1773,19 @@ namespace Godot.Collections
         /// <returns>A string representation of this array.</returns>
         public override string ToString() => _underlyingArray.ToString();
 
+        /// <summary>
+        /// Converts the provided <see cref="Array{T}"/> to a Variant.
+        /// </summary>
+        /// <param name="from">The typed Godot Array to convert.</param>
+        /// <returns>A Variant representation of this typed Godot Array.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Variant(Array<T> from) => Variant.CreateFrom(from);
 
+        /// <summary>
+        /// Converts the provided <see cref="Variant"/> to a typed Godot Array.
+        /// </summary>
+        /// <param name="from">The Variant to convert.</param>
+        /// <returns>A typed Godot Array representation of this Variant.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator Array<T>(Variant from) => from.AsGodotArray<T>();
 
