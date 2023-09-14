@@ -47,6 +47,7 @@ class GraphEditFilter : public Control {
 
 	friend class GraphEdit;
 	friend class GraphEditMinimap;
+
 	GraphEdit *ge = nullptr;
 
 	virtual bool has_point(const Point2 &p_point) const override;
@@ -63,24 +64,24 @@ class GraphEditMinimap : public Control {
 
 	GraphEdit *ge = nullptr;
 
-public:
-	GraphEditMinimap(GraphEdit *p_edit);
-
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
-
-	void update_minimap();
-	Rect2 get_camera_rect();
-
-private:
 	Vector2 minimap_padding;
 	Vector2 minimap_offset;
-	Vector2 graph_proportions;
-	Vector2 graph_padding;
-	Vector2 camera_position;
-	Vector2 camera_size;
+	Vector2 graph_proportions = Vector2(1, 1);
+	Vector2 graph_padding = Vector2(0, 0);
+	Vector2 camera_position = Vector2(100, 50);
+	Vector2 camera_size = Vector2(200, 200);
 
-	bool is_pressing;
-	bool is_resizing;
+	bool is_pressing = false;
+	bool is_resizing = false;
+
+	struct ThemeCache {
+		Ref<StyleBox> panel;
+		Ref<StyleBox> node_style;
+		Ref<StyleBox> camera_style;
+
+		Ref<Texture2D> resizer;
+		Color resizer_color;
+	} theme_cache;
 
 	Vector2 _get_render_size();
 	Vector2 _get_graph_offset();
@@ -92,6 +93,17 @@ private:
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
 	void _adjust_graph_scroll(const Vector2 &p_offset);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
+	void update_minimap();
+	Rect2 get_camera_rect();
+
+	GraphEditMinimap(GraphEdit *p_edit);
 };
 
 class GraphEdit : public Control {
@@ -149,9 +161,6 @@ private:
 
 	HScrollBar *h_scrollbar = nullptr;
 	VScrollBar *v_scrollbar = nullptr;
-
-	float port_hotzone_inner_extent = 0.0;
-	float port_hotzone_outer_extent = 0.0;
 
 	Ref<ViewPanner> panner;
 	bool warped_panning = true;
@@ -218,7 +227,30 @@ private:
 	HashSet<int> valid_left_disconnect_types;
 	HashSet<int> valid_right_disconnect_types;
 
-	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	struct ThemeCache {
+		float base_scale = 1.0;
+
+		Ref<StyleBox> panel;
+		Color grid_major;
+		Color grid_minor;
+
+		Color activity_color;
+		Color selection_fill;
+		Color selection_stroke;
+
+		Ref<Texture2D> zoom_in;
+		Ref<Texture2D> zoom_out;
+		Ref<Texture2D> zoom_reset;
+
+		Ref<Texture2D> snapping_toggle;
+		Ref<Texture2D> grid_toggle;
+		Ref<Texture2D> minimap_toggle;
+		Ref<Texture2D> layout;
+
+		float port_hotzone_inner_extent = 0.0;
+		float port_hotzone_outer_extent = 0.0;
+	} theme_cache;
+
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
@@ -262,12 +294,13 @@ private:
 	bool _check_clickable_control(Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset);
 
 protected:
-	static void _bind_methods();
+	virtual void _update_theme_item_cache() override;
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
 	void _notification(int p_what);
+	static void _bind_methods();
 
 	virtual bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
 	virtual bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);

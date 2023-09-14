@@ -42,7 +42,8 @@ class ThemeOwner;
 class ThemeContext;
 
 class Window : public Viewport {
-	GDCLASS(Window, Viewport)
+	GDCLASS(Window, Viewport);
+
 public:
 	// Keep synced with enum hint for `mode` property.
 	enum Mode {
@@ -191,6 +192,25 @@ private:
 	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
 
+	struct ThemeCache {
+		Ref<StyleBox> embedded_border;
+		Ref<StyleBox> embedded_unfocused_border;
+
+		Ref<Font> title_font;
+		int title_font_size = 0;
+		Color title_color;
+		int title_height = 0;
+		Color title_outline_modulate;
+		int title_outline_size = 0;
+
+		Ref<Texture2D> close;
+		Ref<Texture2D> close_pressed;
+		int close_h_offset = 0;
+		int close_v_offset = 0;
+
+		int resize_margin = 0;
+	} theme_cache;
+
 	Viewport *embedder = nullptr;
 
 	Transform2D window_transform;
@@ -212,12 +232,12 @@ private:
 
 protected:
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
+	virtual void _post_popup() {}
 
 	virtual void _update_theme_item_cache();
 
-	virtual void _post_popup() {}
-	static void _bind_methods();
 	void _notification(int p_what);
+	static void _bind_methods();
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;

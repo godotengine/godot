@@ -97,7 +97,7 @@ void SplitContainerDragger::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_ENTER: {
 			mouse_inside = true;
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
-			if (sc->get_theme_constant(SNAME("autohide"))) {
+			if (sc->theme_cache.autohide) {
 				queue_redraw();
 			}
 		} break;
@@ -105,14 +105,14 @@ void SplitContainerDragger::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_inside = false;
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
-			if (sc->get_theme_constant(SNAME("autohide"))) {
+			if (sc->theme_cache.autohide) {
 				queue_redraw();
 			}
 		} break;
 
 		case NOTIFICATION_DRAW: {
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
-			if (!dragging && !mouse_inside && sc->get_theme_constant(SNAME("autohide"))) {
+			if (!dragging && !mouse_inside && sc->theme_cache.autohide) {
 				return;
 			}
 

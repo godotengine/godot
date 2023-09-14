@@ -38,6 +38,8 @@ class HBoxContainer;
 class GraphNode : public GraphElement {
 	GDCLASS(GraphNode, GraphElement);
 
+	friend class GraphEdit;
+
 	struct Slot {
 		bool enable_left = false;
 		int type_left = 0;
@@ -74,8 +76,22 @@ class GraphNode : public GraphElement {
 	Vector<PortCache> right_port_cache;
 
 	HashMap<int, Slot> slot_table;
-
 	Vector<int> slot_y_cache;
+
+	struct ThemeCache {
+		Ref<StyleBox> panel;
+		Ref<StyleBox> panel_selected;
+		Ref<StyleBox> titlebar;
+		Ref<StyleBox> titlebar_selected;
+		Ref<StyleBox> slot;
+
+		int separation = 0;
+		int port_h_offset = 0;
+
+		Ref<Texture2D> port;
+		Ref<Texture2D> resizer;
+		Color resizer_color;
+	} theme_cache;
 
 	bool port_pos_dirty = true;
 

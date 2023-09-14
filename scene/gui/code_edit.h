@@ -278,10 +278,16 @@ private:
 		/* Other visuals */
 		Ref<StyleBox> style_normal;
 
+		Color brace_mismatch_color;
+
 		Ref<Font> font;
 		int font_size = 16;
 		int line_spacing = 1;
 	} theme_cache;
+
+	virtual Color _get_brace_mismatch_color() const override;
+	virtual Color _get_code_folding_color() const override;
+	virtual Ref<Texture2D> _get_folded_eol_icon() const override;
 
 	/* Callbacks */
 	int lines_edited_changed = 0;

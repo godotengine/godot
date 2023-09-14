@@ -38,6 +38,7 @@
 #include "scene/gui/graph_edit_arranger.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/style_box_flat.h"
+#include "scene/theme/theme_db.h"
 
 constexpr int MINIMAP_OFFSET = 12;
 constexpr int MINIMAP_PADDING = 5;
@@ -56,23 +57,8 @@ GraphEditFilter::GraphEditFilter(GraphEdit *p_edit) {
 	ge = p_edit;
 }
 
-GraphEditMinimap::GraphEditMinimap(GraphEdit *p_edit) {
-	ge = p_edit;
-
-	graph_proportions = Vector2(1, 1);
-	graph_padding = Vector2(0, 0);
-	camera_position = Vector2(100, 50);
-	camera_size = Vector2(200, 200);
-	minimap_padding = Vector2(MINIMAP_PADDING, MINIMAP_PADDING);
-	minimap_offset = minimap_padding + _convert_from_graph_position(graph_padding);
-
-	is_pressing = false;
-	is_resizing = false;
-}
-
 Control::CursorShape GraphEditMinimap::get_cursor_shape(const Point2 &p_pos) const {
-	Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
-	if (is_resizing || (p_pos.x < resizer->get_width() && p_pos.y < resizer->get_height())) {
+	if (is_resizing || (p_pos.x < theme_cache.resizer->get_width() && p_pos.y < theme_cache.resizer->get_height())) {
 		return CURSOR_FDIAGSIZE;
 	}
 
@@ -172,8 +158,7 @@ void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 		if (mb->is_pressed()) {
 			is_pressing = true;
 
-			Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
-			Rect2 resizer_hitbox = Rect2(Point2(), resizer->get_size());
+			Rect2 resizer_hitbox = Rect2(Point2(), theme_cache.resizer->get_size());
 			if (resizer_hitbox.has_point(mb->get_position())) {
 				is_resizing = true;
 			} else {
@@ -205,6 +190,21 @@ void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 void GraphEditMinimap::_adjust_graph_scroll(const Vector2 &p_offset) {
 	Vector2 graph_offset = _get_graph_offset();
 	ge->set_scroll_offset(p_offset + graph_offset - camera_size / 2);
+}
+
+void GraphEditMinimap::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphEditMinimap, panel);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, GraphEditMinimap, node_style, "node");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, GraphEditMinimap, camera_style, "camera");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEditMinimap, resizer);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEditMinimap, resizer_color);
+}
+
+GraphEditMinimap::GraphEditMinimap(GraphEdit *p_edit) {
+	ge = p_edit;
+
+	minimap_padding = Vector2(MINIMAP_PADDING, MINIMAP_PADDING);
+	minimap_offset = minimap_padding + _convert_from_graph_position(graph_padding);
 }
 
 Control::CursorShape GraphEdit::get_cursor_shape(const Point2 &p_pos) const {
@@ -493,22 +493,25 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	}
 }
 
+void GraphEdit::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	theme_cache.base_scale = get_theme_default_base_scale();
+}
+
 void GraphEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			port_hotzone_inner_extent = get_theme_constant("port_hotzone_inner_extent");
-			port_hotzone_outer_extent = get_theme_constant("port_hotzone_outer_extent");
+			zoom_minus_button->set_icon(theme_cache.zoom_out);
+			zoom_reset_button->set_icon(theme_cache.zoom_reset);
+			zoom_plus_button->set_icon(theme_cache.zoom_in);
 
-			zoom_minus_button->set_icon(get_theme_icon(SNAME("zoom_out")));
-			zoom_reset_button->set_icon(get_theme_icon(SNAME("zoom_reset")));
-			zoom_plus_button->set_icon(get_theme_icon(SNAME("zoom_in")));
+			toggle_snapping_button->set_icon(theme_cache.snapping_toggle);
+			show_grid_button->set_icon(theme_cache.grid_toggle);
+			minimap_button->set_icon(theme_cache.minimap_toggle);
+			layout_button->set_icon(theme_cache.layout);
 
-			toggle_snapping_button->set_icon(get_theme_icon(SNAME("snapping_toggle")));
-			show_grid_button->set_icon(get_theme_icon(SNAME("grid_toggle")));
-			minimap_button->set_icon(get_theme_icon(SNAME("minimap_toggle")));
-			layout_button->set_icon(get_theme_icon(SNAME("layout")));
-
-			zoom_label->set_custom_minimum_size(Size2(48, 0) * get_theme_default_base_scale());
+			zoom_label->set_custom_minimum_size(Size2(48, 0) * theme_cache.base_scale);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -528,7 +531,7 @@ void GraphEdit::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			// Draw background fill.
-			draw_style_box(get_theme_stylebox(SNAME("panel")), Rect2(Point2(), get_size()));
+			draw_style_box(theme_cache.panel, Rect2(Point2(), get_size()));
 
 			// Draw background grid.
 			if (show_grid) {
@@ -538,16 +541,13 @@ void GraphEdit::_notification(int p_what) {
 				Point2i from_pos = (offset / float(snapping_distance)).floor();
 				Point2i len = (size / float(snapping_distance)).floor() + Vector2(1, 1);
 
-				Color grid_minor = get_theme_color(SNAME("grid_minor"));
-				Color grid_major = get_theme_color(SNAME("grid_major"));
-
 				for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
 					Color color;
 
 					if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
-						color = grid_major;
+						color = theme_cache.grid_major;
 					} else {
-						color = grid_minor;
+						color = theme_cache.grid_minor;
 					}
 
 					float base_offset = i * snapping_distance * zoom - offset.x * zoom;
@@ -558,9 +558,9 @@ void GraphEdit::_notification(int p_what) {
 					Color color;
 
 					if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
-						color = grid_major;
+						color = theme_cache.grid_major;
 					} else {
-						color = grid_minor;
+						color = theme_cache.grid_minor;
 					}
 
 					float base_offset = i * snapping_distance * zoom - offset.y * zoom;
@@ -578,13 +578,13 @@ void GraphEdit::_notification(int p_what) {
 }
 
 bool GraphEdit::_filter_input(const Point2 &p_point) {
-	Ref<Texture2D> port_icon = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
-
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
 		if (!graph_node || !graph_node->is_visible_in_tree()) {
 			continue;
 		}
+
+		Ref<Texture2D> port_icon = graph_node->theme_cache.port;
 
 		for (int j = 0; j < graph_node->get_input_port_count(); j++) {
 			Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
@@ -620,8 +620,6 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-		Ref<Texture2D> port_icon = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
-
 		connecting_valid = false;
 		click_pos = mb->get_position() / zoom;
 		for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -629,6 +627,8 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			if (!graph_node || !graph_node->is_visible_in_tree()) {
 				continue;
 			}
+
+			Ref<Texture2D> port_icon = graph_node->theme_cache.port;
 
 			for (int j = 0; j < graph_node->get_output_port_count(); j++) {
 				Vector2 pos = graph_node->get_output_port_position(j) * zoom + graph_node->get_position();
@@ -756,11 +756,12 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		if (connecting_valid) {
 			Vector2 mpos = mm->get_position() / zoom;
 			for (int i = get_child_count() - 1; i >= 0; i--) {
-				Ref<Texture2D> port_icon = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
 				GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
 				if (!graph_node || !graph_node->is_visible_in_tree()) {
 					continue;
 				}
+
+				Ref<Texture2D> port_icon = graph_node->theme_cache.port;
 
 				if (!connecting_out) {
 					for (int j = 0; j < graph_node->get_output_port_count(); j++) {
@@ -877,7 +878,7 @@ bool GraphEdit::is_in_input_hotzone(GraphNode *p_graph_node, int p_port_idx, con
 
 bool GraphEdit::is_in_output_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size) {
 	if (p_graph_node->is_resizable()) {
-		Ref<Texture2D> resizer = p_graph_node->get_theme_icon(SNAME("resizer"));
+		Ref<Texture2D> resizer = p_graph_node->theme_cache.resizer;
 		Rect2 resizer_rect = Rect2(p_graph_node->get_position() / zoom + p_graph_node->get_size() - resizer->get_size(), resizer->get_size());
 		if (resizer_rect.has_point(p_mouse_pos)) {
 			return false;
@@ -895,9 +896,9 @@ bool GraphEdit::is_in_output_hotzone(GraphNode *p_graph_node, int p_port_idx, co
 
 bool GraphEdit::is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left) {
 	Rect2 hotzone = Rect2(
-			p_pos.x - (p_left ? port_hotzone_outer_extent : port_hotzone_inner_extent),
+			p_pos.x - (p_left ? theme_cache.port_hotzone_outer_extent : theme_cache.port_hotzone_inner_extent),
 			p_pos.y - p_port_size.height / 2.0,
-			port_hotzone_inner_extent + port_hotzone_outer_extent,
+			theme_cache.port_hotzone_inner_extent + theme_cache.port_hotzone_outer_extent,
 			p_port_size.height);
 
 	if (!hotzone.has_point(p_mouse_pos)) {
@@ -965,12 +966,10 @@ void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from
 	}
 
 	// Thickness below 0.5 doesn't look good on the graph or its minimap.
-	p_where->draw_polyline_colors(scaled_points, colors, MAX(0.5, Math::floor(p_width * get_theme_default_base_scale())), lines_antialiased);
+	p_where->draw_polyline_colors(scaled_points, colors, MAX(0.5, Math::floor(p_width * theme_cache.base_scale)), lines_antialiased);
 }
 
 void GraphEdit::_connections_layer_draw() {
-	Color activity_color = get_theme_color(SNAME("activity"));
-
 	// Draw connections.
 	List<List<Connection>::Element *> to_erase;
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
@@ -998,8 +997,8 @@ void GraphEdit::_connections_layer_draw() {
 		Color tocolor = gnode_to->get_input_port_color(c.to_port);
 
 		if (c.activity > 0) {
-			color = color.lerp(activity_color, c.activity);
-			tocolor = tocolor.lerp(activity_color, c.activity);
+			color = color.lerp(theme_cache.activity_color, c.activity);
+			tocolor = tocolor.lerp(theme_cache.activity_color, c.activity);
 		}
 		_draw_connection_line(connections_layer, frompos, topos, color, tocolor, lines_thickness, zoom);
 	}
@@ -1042,8 +1041,8 @@ void GraphEdit::_top_layer_draw() {
 	}
 
 	if (box_selecting) {
-		top_layer->draw_rect(box_selecting_rect, get_theme_color(SNAME("selection_fill")));
-		top_layer->draw_rect(box_selecting_rect, get_theme_color(SNAME("selection_stroke")), false);
+		top_layer->draw_rect(box_selecting_rect, theme_cache.selection_fill);
+		top_layer->draw_rect(box_selecting_rect, theme_cache.selection_stroke, false);
 	}
 }
 
@@ -1056,7 +1055,7 @@ void GraphEdit::_minimap_draw() {
 
 	// Draw the minimap background.
 	Rect2 minimap_rect = Rect2(Point2(), minimap->get_size());
-	minimap->draw_style_box(minimap->get_theme_stylebox(SNAME("panel")), minimap_rect);
+	minimap->draw_style_box(minimap->theme_cache.panel, minimap_rect);
 
 	Vector2 graph_offset = minimap->_get_graph_offset();
 	Vector2 minimap_offset = minimap->minimap_offset;
@@ -1072,10 +1071,10 @@ void GraphEdit::_minimap_draw() {
 		Vector2 node_size = minimap->_convert_from_graph_position(graph_node->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
-		Ref<StyleBoxFlat> sb_minimap = minimap->get_theme_stylebox(SNAME("node"))->duplicate();
+		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sb_frame = graph_node->get_theme_stylebox(graph_node->is_selected() ? "panel_selected" : "panel");
+		Ref<StyleBoxFlat> sb_frame = graph_node->is_selected() ? graph_node->theme_cache.panel_selected : graph_node->theme_cache.panel;
 		if (sb_frame.is_valid()) {
 			Color node_color = sb_frame->get_bg_color();
 			sb_minimap->set_bg_color(node_color);
@@ -1085,7 +1084,6 @@ void GraphEdit::_minimap_draw() {
 	}
 
 	// Draw node connections.
-	Color activity_color = get_theme_color(SNAME("activity"));
 	for (const Connection &E : connections) {
 		Node *from = get_node(NodePath(E.from_node));
 		GraphNode *graph_node_from = Object::cast_to<GraphNode>(from);
@@ -1107,19 +1105,19 @@ void GraphEdit::_minimap_draw() {
 		Color to_color = graph_node_to->get_input_port_color(E.to_port);
 
 		if (E.activity > 0) {
-			from_color = from_color.lerp(activity_color, E.activity);
-			to_color = to_color.lerp(activity_color, E.activity);
+			from_color = from_color.lerp(theme_cache.activity_color, E.activity);
+			to_color = to_color.lerp(theme_cache.activity_color, E.activity);
 		}
 		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.5, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
 	}
 
 	// Draw the "camera" viewport.
 	Rect2 camera_rect = minimap->get_camera_rect();
-	minimap->draw_style_box(minimap->get_theme_stylebox(SNAME("camera")), camera_rect);
+	minimap->draw_style_box(minimap->theme_cache.camera_style, camera_rect);
 
 	// Draw the resizer control.
-	Ref<Texture2D> resizer = minimap->get_theme_icon(SNAME("resizer"));
-	Color resizer_color = minimap->get_theme_color(SNAME("resizer_color"));
+	Ref<Texture2D> resizer = minimap->theme_cache.resizer;
+	Color resizer_color = minimap->theme_cache.resizer_color;
 	minimap->draw_texture(resizer, Point2(), resizer_color);
 }
 
@@ -1909,6 +1907,26 @@ void GraphEdit::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);
 	BIND_ENUM_CONSTANT(SCROLL_PANS);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphEdit, panel);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, grid_major);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, grid_minor);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, GraphEdit, activity_color, "activity");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, selection_fill);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, selection_stroke);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, zoom_in);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, zoom_out);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, zoom_reset);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, snapping_toggle);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, grid_toggle);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, minimap_toggle);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, layout);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphEdit, port_hotzone_inner_extent);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphEdit, port_hotzone_outer_extent);
 }
 
 GraphEdit::GraphEdit() {
