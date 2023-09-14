@@ -870,13 +870,10 @@ void SpriteFramesEditor::_sync_animation() {
 }
 
 void SpriteFramesEditor::_select_animation(const String &p_name, bool p_update_node) {
-	TreeItem *selected = nullptr;
-	selected = animations->get_item_with_text(p_name);
-	if (!selected) {
+	if (!frames->has_animation(p_name)) {
 		return;
-	};
-
-	edited_anim = selected->get_text(0);
+	}
+	edited_anim = p_name;
 
 	if (animated_sprite) {
 		if (p_update_node) {
@@ -951,6 +948,7 @@ void SpriteFramesEditor::_animation_name_edited() {
 		counter++;
 		name = new_name + "_" + itos(counter);
 	}
+	edited->set_text(0, name);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Rename Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
@@ -958,11 +956,12 @@ void SpriteFramesEditor::_animation_name_edited() {
 	undo_redo->add_undo_method(frames.ptr(), "rename_animation", name, edited_anim);
 	_rename_node_animation(undo_redo, false, edited_anim, name, name);
 	_rename_node_animation(undo_redo, true, edited_anim, edited_anim, edited_anim);
+	undo_redo->add_do_method(this, "_select_animation", name);
+	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 	undo_redo->commit_action();
 
-	_select_animation(name);
 	animations->grab_focus();
 }
 
@@ -1007,11 +1006,12 @@ void SpriteFramesEditor::_animation_add() {
 	undo_redo->create_action(TTR("Add Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
 	undo_redo->add_do_method(frames.ptr(), "add_animation", name);
 	undo_redo->add_undo_method(frames.ptr(), "remove_animation", name);
+	undo_redo->add_do_method(this, "_select_animation", name);
+	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 	undo_redo->commit_action();
 
-	_select_animation(name);
 	animations->grab_focus();
 }
 
@@ -1057,11 +1057,11 @@ void SpriteFramesEditor::_animation_remove_confirmed() {
 		float duration = frames->get_frame_duration(edited_anim, i);
 		undo_redo->add_undo_method(frames.ptr(), "add_frame", edited_anim, texture, duration);
 	}
+	undo_redo->add_do_method(this, "_select_animation", new_edited);
+	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 	undo_redo->commit_action();
-
-	_select_animation(new_edited);
 }
 
 void SpriteFramesEditor::_animation_search_text_changed(const String &p_text) {
@@ -1179,6 +1179,20 @@ void SpriteFramesEditor::_zoom_reset() {
 }
 
 void SpriteFramesEditor::_update_library(bool p_skip_selector) {
+	if (!p_skip_selector) {
+		animations_dirty = true;
+	}
+
+	if (pending_update) {
+		return;
+	}
+	pending_update = true;
+	callable_mp(this, &SpriteFramesEditor::_update_library_impl).call_deferred();
+}
+
+void SpriteFramesEditor::_update_library_impl() {
+	pending_update = false;
+
 	if (frames.is_null()) {
 		return;
 	}
@@ -1187,7 +1201,8 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 	frame_duration->set_value_no_signal(1.0); // Default.
 
-	if (!p_skip_selector) {
+	if (animations_dirty) {
+		animations_dirty = false;
 		animations->clear();
 
 		TreeItem *anim_root = animations->create_item();
@@ -1624,6 +1639,7 @@ void SpriteFramesEditor::_autoplay_pressed() {
 
 void SpriteFramesEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_library", "skipsel"), &SpriteFramesEditor::_update_library, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("_select_animation", "name", "update_node"), &SpriteFramesEditor::_select_animation, DEFVAL(true));
 }
 
 void SpriteFramesEditor::_node_removed(Node *p_node) {
