@@ -976,8 +976,6 @@ void ControlEditorToolbar::_notification(int p_what) {
 }
 
 ControlEditorToolbar::ControlEditorToolbar() {
-	add_child(memnew(VSeparator));
-
 	// Anchor and offset tools.
 	anchors_button = memnew(ControlEditorPopupButton);
 	anchors_button->set_tooltip_text(TTR("Presets for the anchor and offset values of a Control node."));

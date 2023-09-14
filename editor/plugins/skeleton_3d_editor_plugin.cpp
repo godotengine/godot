@@ -712,12 +712,12 @@ void Skeleton3DEditor::create_editors() {
 	add_child(file_dialog);
 
 	// Create Top Menu Bar.
-	separator = memnew(VSeparator);
-	ne->add_control_to_menu_panel(separator);
+	HBoxContainer *topmenu_bar = memnew(HBoxContainer);
+	ne->add_control_to_menu_panel(topmenu_bar);
 
 	// Create Skeleton Option in Top Menu Bar.
 	skeleton_options = memnew(MenuButton);
-	ne->add_control_to_menu_panel(skeleton_options);
+	topmenu_bar->add_child(skeleton_options);
 
 	skeleton_options->set_text(TTR("Skeleton3D"));
 
@@ -737,7 +737,7 @@ void Skeleton3DEditor::create_editors() {
 	button_binds.resize(1);
 
 	edit_mode_button = memnew(Button);
-	ne->add_control_to_menu_panel(edit_mode_button);
+	topmenu_bar->add_child(edit_mode_button);
 	edit_mode_button->set_flat(true);
 	edit_mode_button->set_toggle_mode(true);
 	edit_mode_button->set_focus_mode(FOCUS_NONE);
@@ -753,7 +753,7 @@ void Skeleton3DEditor::create_editors() {
 
 	// Keying buttons.
 	animation_hb = memnew(HBoxContainer);
-	ne->add_control_to_menu_panel(animation_hb);
+	topmenu_bar->add_child(animation_hb);
 	animation_hb->add_child(memnew(VSeparator));
 	animation_hb->hide();
 

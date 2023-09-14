@@ -53,8 +53,6 @@ PhysicalBone3DEditor::PhysicalBone3DEditor() {
 	spatial_editor_hb->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 
-	spatial_editor_hb->add_child(memnew(VSeparator));
-
 	button_transform_joint = memnew(Button);
 	button_transform_joint->set_flat(true);
 	spatial_editor_hb->add_child(button_transform_joint);

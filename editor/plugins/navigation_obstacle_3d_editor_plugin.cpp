@@ -521,7 +521,6 @@ void NavigationObstacle3DEditor::_bind_methods() {
 NavigationObstacle3DEditor::NavigationObstacle3DEditor() {
 	obstacle_node = nullptr;
 
-	add_child(memnew(VSeparator));
 	button_create = memnew(Button);
 	button_create->set_flat(true);
 	add_child(button_create);

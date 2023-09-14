@@ -846,13 +846,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// even though it may not be immediately obvious at first.
 	Ref<StyleBoxFlat> toolbar_stylebox = memnew(StyleBoxFlat);
 	toolbar_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
-	toolbar_stylebox->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
-	toolbar_stylebox->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
 	toolbar_stylebox->set_anti_aliased(false);
 	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
 	toolbar_stylebox->set_border_color(accent_color);
 	toolbar_stylebox->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
 	toolbar_stylebox->set_content_margin(SIDE_BOTTOM, 0);
+	toolbar_stylebox->set_expand_margin_all(2 * EDSCALE);
 	theme->set_stylebox("ContextualToolbar", EditorStringName(EditorStyles), toolbar_stylebox);
 
 	// Script Editor
