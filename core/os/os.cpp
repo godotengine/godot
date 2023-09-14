@@ -290,6 +290,29 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
+String OS::system_dir_to_string(SystemDir p_dir) {
+	switch (p_dir) {
+		case SYSTEM_DIR_DESKTOP:
+			return "SYSTEM_DIR_DESKTOP";
+		case SYSTEM_DIR_DCIM:
+			return "SYSTEM_DIR_DCIM";
+		case SYSTEM_DIR_DOCUMENTS:
+			return "SYSTEM_DIR_DOCUMENTS";
+		case SYSTEM_DIR_DOWNLOADS:
+			return "SYSTEM_DIR_DOWNLOADS";
+		case SYSTEM_DIR_MOVIES:
+			return "SYSTEM_DIR_MOVIES";
+		case SYSTEM_DIR_MUSIC:
+			return "SYSTEM_DIR_MUSIC";
+		case SYSTEM_DIR_PICTURES:
+			return "SYSTEM_DIR_PICTURES";
+		case SYSTEM_DIR_RINGTONES:
+			return "SYSTEM_DIR_RINGTONES";
+		default:
+			return String();
+	}
+}
+
 Error OS::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
 }

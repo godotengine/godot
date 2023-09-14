@@ -1599,7 +1599,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
-	ERR_FAIL_COND_V(res != S_OK, String());
+	ERR_FAIL_COND_V_MSG(res != S_OK, String(), vformat("Missing system directory: %s.", OS::system_dir_to_string(p_dir)));
 	String path = String::utf16((const char16_t *)szPath).replace("\\", "/");
 	CoTaskMemFree(szPath);
 	return path;
