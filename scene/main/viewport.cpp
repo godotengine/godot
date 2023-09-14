@@ -1489,6 +1489,9 @@ void Viewport::_gui_show_tooltip() {
 	PopupPanel *panel = memnew(PopupPanel);
 	panel->set_theme_type_variation(SNAME("TooltipPanel"));
 
+	// Ensure no opaque background behind the panel as its StyleBox can be partially transparent (e.g. corners).
+	panel->set_transparent_background(true);
+
 	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
 	// This should be a Control node which will be added as child to a TooltipPanel.
 	Control *base_tooltip = tooltip_owner->make_custom_tooltip(tooltip_text);
