@@ -749,6 +749,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				for (int i = 0; i < options->get_popup()->get_item_count(); ++i) {
 					const Ref<Shortcut> &shortcut = options->get_popup()->get_item_shortcut(i);
 					if (shortcut.is_valid() && shortcut->matches_event(p_event)) {
+						accept_event();
 						_menu_option(options->get_popup()->get_item_id(i));
 						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					}
