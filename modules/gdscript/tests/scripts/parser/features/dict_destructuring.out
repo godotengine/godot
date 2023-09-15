@@ -1,0 +1,16 @@
+GDTEST_OK
+Simple usage:
+123
+{ "bar": 1234 }
+Complex usage:
+hello!
+Typed usage:
+123
+(0, 0)
+Empty slot usage:
+{ "bar": 1234 }
+Multiple lines usage:
+1
+1
+Hi!
+yep

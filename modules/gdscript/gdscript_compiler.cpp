@@ -165,6 +165,163 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 	return result;
 }
 
+Error GDScriptCompiler::_parse_destructuring(CodeGen &codegen, Error &r_error, const GDScriptParser::DestructuringNode *p_target, GDScriptCodeGenerator::Address p_source) {
+	switch (p_target->type) {
+		case GDScriptParser::Node::ARRAY_DESTRUCTURING: {
+			return _parse_array_destructuring(codegen, r_error, static_cast<const GDScriptParser::ArrayDestructuringNode *>(p_target), p_source);
+		} break;
+		case GDScriptParser::Node::DICT_DESTRUCTURING: {
+			return _parse_dictionary_destructuring(codegen, r_error, static_cast<const GDScriptParser::DictDestructuringNode *>(p_target), p_source);
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(Error::FAILED, "Bug in bytecode compiler, unexpected node in parse tree while parsing expression."); // Unreachable code.
+		} break;
+	}
+}
+
+Error GDScriptCompiler::_parse_array_destructuring(CodeGen &codegen, Error &r_error, const GDScriptParser::ArrayDestructuringNode *p_target, GDScriptCodeGenerator::Address p_source) {
+	int idx = 0;
+	for (GDScriptParser::DestructuringNode *E : p_target->destructured) {
+		if (E->inner_type == GDScriptParser::DestructuringNode::NONE) {
+			// A "none" ("_") destructuring element doesn't need to be computed,
+			// but it does still count towards the next index access.
+			idx += 1;
+			continue;
+		}
+
+		if (E->is_spread) {
+			if (E->inner_type == GDScriptParser::DestructuringNode::DESTRUCTURE) {
+				// Create temp for sliced Array
+				GDScriptCodeGenerator::Address temp = codegen.add_temporary(p_source.type);
+
+				// Slice the Array
+				codegen.generator->write_call(temp, p_source, R"(slice)", { codegen.add_constant(idx) });
+				// Because this is an inner destructuring, Recursion time!
+				_parse_destructuring(codegen, r_error, E, temp);
+				codegen.generator->pop_temporary();
+				if (r_error) {
+					return r_error;
+				}
+			} else {
+				GDScriptCodeGenerator::Address var = codegen.locals[E->source->identifier->name];
+
+				// Slice the Array and store the result in the target variable
+				codegen.generator->write_call(var, p_source, R"(slice)", { codegen.add_constant(idx) });
+			}
+
+			continue;
+		} else {
+			// Index the source Array and store the result in temporary variable
+			GDScriptCodeGenerator::Address temp = codegen.add_temporary();
+			codegen.generator->write_get(temp, codegen.add_constant(idx), p_source);
+
+			if (E->inner_type == GDScriptParser::DestructuringNode::DESTRUCTURE) {
+				// Inner destructuring, recursion time!
+				_parse_destructuring(codegen, r_error, E, temp);
+				codegen.generator->pop_temporary();
+				if (r_error) {
+					return r_error;
+				}
+				idx += 1;
+				continue;
+			}
+
+			// Finally, store the temporary variable into the target var
+			GDScriptCodeGenerator::Address var = codegen.locals[E->source->identifier->name];
+			if (E->source->datatype_specifier || E->source->get_datatype().is_hard_type()) {
+				codegen.generator->write_assign_with_conversion(var, temp);
+			} else {
+				codegen.generator->write_assign(var, temp);
+			}
+			codegen.generator->pop_temporary();
+			idx += 1;
+		}
+	}
+
+	return r_error;
+}
+
+Error GDScriptCompiler::_parse_dictionary_destructuring(CodeGen &codegen, Error &r_error, const GDScriptParser::DictDestructuringNode *p_target, GDScriptCodeGenerator::Address p_source) {
+	// Inner element for ease of computing a spread.
+	struct Element {
+		GDScriptParser::IdentifierNode *key;
+		bool has_computed;
+	};
+	Vector<Element> keys;
+	for (const KeyValue<GDScriptParser::IdentifierNode *, GDScriptParser::DestructuringNode *> &E : p_target->destructured) {
+		if (E.value->inner_type == GDScriptParser::DestructuringNode::NONE) {
+			// A "none" ("_") destructuring element doesn't need to be computed,
+			// but we still store it in the keys Vector, so a spread can take it into account.
+			keys.append(Element{ E.key, E.value->has_computed_key });
+			continue;
+		}
+
+		if (E.value->is_spread) {
+			GDScriptCodeGenerator::Address var = codegen.locals[E.value->source->identifier->name];
+
+			// Duplicate and save the source Dictionary
+			GDScriptCodeGenerator::Address temp = codegen.add_temporary(p_source.type);
+			codegen.generator->write_call(temp, p_source, R"(duplicate)", {});
+
+			// Remove from the duplicate all the keys referenced in this destructuring
+			for (const Element &I : keys) {
+				GDScriptCodeGenerator::Address ret;
+				GDScriptCodeGenerator::Address expr = I.has_computed ? _parse_expression(codegen, r_error, I.key) : codegen.add_constant(I.key->name);
+				codegen.generator->write_call(ret, temp, R"(erase)", { expr });
+				if (expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
+				if (r_error) {
+					return r_error;
+				}
+			}
+
+			// Store the temporary variable into the target var
+			if (E.value->source->datatype_specifier) {
+				codegen.generator->write_assign_with_conversion(var, temp);
+			} else {
+				codegen.generator->write_assign(var, temp);
+			}
+			codegen.generator->pop_temporary();
+			continue;
+		} else {
+			// Index the source dictionary and store the result in temporary variable
+			GDScriptCodeGenerator::Address temp = codegen.add_temporary();
+			GDScriptCodeGenerator::Address expr = E.value->has_computed_key ? _parse_expression(codegen, r_error, E.key) : codegen.add_constant(E.key->name);
+			codegen.generator->write_get(temp, expr, p_source);
+			if (expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				codegen.generator->pop_temporary();
+			}
+			if (r_error) {
+				return r_error;
+			}
+			// Store this destructuring element, so we can reference it later in a spread, if needed
+			keys.append(Element{ E.key, E.value->has_computed_key });
+
+			if (E.value->inner_type == GDScriptParser::DestructuringNode::DESTRUCTURE) {
+				// Inner destructuring, recursion time!
+				_parse_destructuring(codegen, r_error, E.value, temp);
+				codegen.generator->pop_temporary();
+				if (r_error) {
+					return r_error;
+				}
+				continue;
+			}
+
+			// Finally, store the temporary variable into the target var
+			GDScriptCodeGenerator::Address var = codegen.locals[E.value->source->identifier->name];
+			if (E.value->source->datatype_specifier || E.value->source->get_datatype().is_hard_type()) {
+				codegen.generator->write_assign_with_conversion(var, temp);
+			} else {
+				codegen.generator->write_assign(var, temp);
+			}
+			codegen.generator->pop_temporary();
+		}
+	}
+
+	return r_error;
+}
+
 static bool _is_exact_type(const PropertyInfo &p_par_type, const GDScriptDataType &p_arg_type) {
 	if (!p_arg_type.has_type) {
 		return false;
@@ -2104,6 +2261,19 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			case GDScriptParser::Node::PASS:
 				// Nothing to do.
 				break;
+			case GDScriptParser::Node::ARRAY_DESTRUCTURING:
+			case GDScriptParser::Node::DICT_DESTRUCTURING: {
+				const GDScriptParser::DestructuringNode *lv = static_cast<const GDScriptParser::DestructuringNode *>(s);
+
+				GDScriptCodeGenerator::Address expr = _parse_expression(codegen, err, lv->initializer);
+				_parse_destructuring(codegen, err, lv, expr);
+				if (expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
+				if (err) {
+					return err;
+				}
+			} break;
 			default: {
 				// Expression.
 				if (s->is_expression()) {

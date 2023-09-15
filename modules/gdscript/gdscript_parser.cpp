@@ -1654,7 +1654,17 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			break;
 		case GDScriptTokenizer::Token::VAR:
 			advance();
-			result = parse_variable(false, false);
+			if (check(GDScriptTokenizer::Token::BRACKET_OPEN)) {
+				push_multiline(true);
+				advance();
+				result = parse_destructuring(alloc_node<ArrayDestructuringNode>());
+			} else if (check(GDScriptTokenizer::Token::BRACE_OPEN)) {
+				push_multiline(true);
+				advance();
+				result = parse_destructuring(alloc_node<DictDestructuringNode>());
+			} else {
+				result = parse_variable(false, false);
+			}
 			break;
 		case GDScriptTokenizer::Token::CONST:
 			advance();
@@ -2342,6 +2352,183 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 	}
 
 	return identifier;
+}
+
+GDScriptParser::DestructuringNode *GDScriptParser::parse_destructuring(GDScriptParser::DestructuringNode *p_destructuring, bool p_is_top_level) {
+	bool is_array = p_destructuring->type == Node::ARRAY_DESTRUCTURING;
+	GDScriptTokenizer::Token::Type closing = is_array ? GDScriptTokenizer::Token::BRACKET_CLOSE : GDScriptTokenizer::Token::BRACE_CLOSE;
+
+	bool has_spread = false;
+	p_destructuring->inner_type = DestructuringNode::DESTRUCTURE;
+	p_destructuring->is_top_level = p_is_top_level;
+	if (!check(closing)) {
+		do {
+			if (check(closing)) {
+				// Allow for trailing comma.
+				break;
+			}
+
+			// Try to match a key identifier (ie, foo = ...) only for Dictionaries
+			bool is_missing_identifier_key = true;
+			bool has_computed_key = false;
+			IdentifierNode *identifier_key = nullptr;
+			if (!is_array && check(GDScriptTokenizer::Token::IDENTIFIER)) {
+				advance();
+				identifier_key = parse_identifier();
+				is_missing_identifier_key = false;
+				if (match(GDScriptTokenizer::Token::EQUAL)) {
+					has_computed_key = false;
+				} else if (match(GDScriptTokenizer::Token::COLON)) {
+					has_computed_key = true;
+				} else {
+					push_error(R"(Expected "=" or ":" after destructuring identifier key.)");
+					continue;
+				}
+			}
+
+			// Try to match a spread (specifically, ..[])
+			if (is_array) {
+				has_spread = match(GDScriptTokenizer::Token::PERIOD_PERIOD);
+			}
+
+			// Try to match an inner destructuring (ie, var [foo, [bar]] or var { foo = { ... } })
+			if (match(GDScriptTokenizer::Token::BRACE_OPEN) || match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
+				GDScriptParser::DestructuringNode *destructured;
+				if (previous.type == GDScriptTokenizer::Token::BRACE_OPEN) {
+					destructured = alloc_node<DictDestructuringNode>();
+				} else {
+					destructured = alloc_node<ArrayDestructuringNode>();
+				}
+
+				destructured->has_computed_key = has_computed_key;
+				if (is_array) {
+					destructured->is_spread = has_spread;
+					static_cast<GDScriptParser::ArrayDestructuringNode *>(p_destructuring)->destructured.append(parse_destructuring(destructured, false));
+				} else {
+					if (is_missing_identifier_key) {
+						push_error(R"(Expected identifier for destructuring key.)", destructured);
+						complete_extents(destructured);
+						continue;
+					}
+					static_cast<GDScriptParser::DictDestructuringNode *>(p_destructuring)->destructured.insert(identifier_key, parse_destructuring(destructured, false));
+				}
+				continue;
+			}
+
+			// Check whether we have a destructured spread, but without the destructuring itself
+			if (has_spread) {
+				push_error(R"(Only the last element in a destructuring expression can have the spread qualifier ("..").)");
+				continue;
+			}
+
+			// Try to match a "none"
+			if (match(GDScriptTokenizer::Token::UNDERSCORE)) {
+				GDScriptParser::DestructuringNode *destructured = alloc_node<DestructuringNode>();
+				destructured->inner_type = DestructuringNode::NONE;
+				destructured->has_computed_key = has_computed_key;
+				if (is_array) {
+					static_cast<GDScriptParser::ArrayDestructuringNode *>(p_destructuring)->destructured.append(destructured);
+				} else {
+					static_cast<GDScriptParser::DictDestructuringNode *>(p_destructuring)->destructured.insert(identifier_key, destructured);
+				}
+				complete_extents(destructured);
+				continue;
+			}
+
+			// Generic destructuring
+			GDScriptParser::DestructuringNode *destructured = alloc_node<DestructuringNode>();
+			destructured->has_computed_key = has_computed_key;
+
+			// Try to match a variable (as opposed to just referencing an existing identifier)
+			bool is_variable = match(GDScriptTokenizer::Token::VAR);
+
+			// Try to match a spread (ie, var ..identifier)
+			has_spread = match(GDScriptTokenizer::Token::PERIOD_PERIOD);
+
+			// Try to match an identifier
+			advance();
+			IdentifierNode *identifier = previous.is_identifier() ? parse_identifier() : nullptr;
+			if (identifier == nullptr) {
+				push_error(R"(Expected identifier as a destructuring element.)", p_destructuring);
+				complete_extents(destructured);
+				continue;
+			}
+
+			// For dictionary destructuring, if the element has spread, it can't have a destructuring key, otherwise it must.
+			if (!is_array) {
+				if (!has_spread && is_missing_identifier_key) {
+					// Allows missing identifier keys to default to the identifier itself
+					identifier_key = identifier;
+				}
+				if (has_spread && !is_missing_identifier_key) {
+					push_error(vformat(
+									   R"(Unexpected identifier for destructuring element with spread qualifier (".."). Remove either the destructuring identifier "%s" or the spread qualifier.)",
+									   identifier_key->name),
+							destructured);
+					complete_extents(destructured);
+					continue;
+				}
+			}
+
+			destructured->source = alloc_node<VariableNode>();
+			destructured->source->identifier = identifier;
+			destructured->inner_type = is_variable ? DestructuringNode::VARIABLE : DestructuringNode::IDENTIFIER;
+
+			// Try to match a type for the previous identifier (ie, foo: String)
+			if (match(GDScriptTokenizer::Token::COLON)) {
+				if (!is_variable) {
+					push_error(R"(Invalid ":" for destructured identifier. Maybe you intended in creating a variable instead (var foo:<your type>)?)", identifier);
+					complete_extents(destructured->source);
+					complete_extents(destructured);
+					continue;
+				}
+				TypeNode *type = parse_type();
+				if (type) {
+					destructured->source->datatype_specifier = type;
+				} else {
+					destructured->source->infer_datatype = true;
+				}
+			}
+
+			if (is_variable) {
+				// Add this to the local variables, so it can be properly validated and compiled
+				const SuiteNode::Local &local = current_suite->get_local(identifier->name);
+				if (local.type != SuiteNode::Local::UNDEFINED) {
+					push_error(vformat(R"(There is already a variable named "%s" declared in this scope.)", identifier->name), identifier);
+				}
+				current_suite->add_local(destructured->source, current_function);
+			}
+
+			destructured->is_spread = has_spread;
+			if (is_array) {
+				static_cast<GDScriptParser::ArrayDestructuringNode *>(p_destructuring)->destructured.push_back(destructured);
+			} else {
+				static_cast<GDScriptParser::DictDestructuringNode *>(p_destructuring)->destructured.insert(identifier_key, destructured);
+			}
+
+			complete_extents(destructured->source);
+			complete_extents(destructured);
+		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end() && !has_spread);
+	}
+	if (p_is_top_level) {
+		pop_multiline();
+	}
+	consume(closing, vformat(has_spread ? R"(Expected closing "%s" after spread (..).)" : R"(Expected closing "%s" after destructuring.)", tokenizer.get_token_name(closing)));
+
+	if (p_is_top_level) {
+		consume(GDScriptTokenizer::Token::EQUAL, R"(Expected assignment ("=") after destructuring.)");
+
+		// For destructuring, an initializer is a must
+		p_destructuring->initializer = parse_expression(false);
+		if (p_destructuring->initializer == nullptr) {
+			push_error(R"(Expected expression for destructuring after "=".)");
+		}
+
+		end_statement("destructuring");
+	}
+
+	complete_extents(p_destructuring);
+	return p_destructuring;
 }
 
 GDScriptParser::LiteralNode *GDScriptParser::parse_literal() {
@@ -4210,7 +4397,7 @@ bool GDScriptParser::warning_annotations(const AnnotationNode *p_annotation, Nod
 	return !has_error;
 
 #else // ! DEBUG_ENABLED
-	// Only available in debug builds.
+	  // Only available in debug builds.
 	return true;
 #endif // DEBUG_ENABLED
 }

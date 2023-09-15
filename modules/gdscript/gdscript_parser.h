@@ -316,6 +316,8 @@ public:
 			TYPE_TEST,
 			UNARY_OPERATOR,
 			VARIABLE,
+			ARRAY_DESTRUCTURING,
+			DICT_DESTRUCTURING,
 			WHILE,
 		};
 
@@ -1247,6 +1249,40 @@ public:
 		}
 	};
 
+	struct DestructuringNode : public Node {
+		enum Type {
+			NONE,
+			VARIABLE,
+			IDENTIFIER,
+			DESTRUCTURE,
+		};
+
+		bool is_top_level = false;
+		bool is_spread = false;
+		bool has_computed_key = false;
+		Type inner_type = DESTRUCTURE;
+		union {
+			ExpressionNode *initializer = nullptr;
+			VariableNode *source;
+		};
+	};
+
+	struct ArrayDestructuringNode : DestructuringNode {
+		Vector<DestructuringNode *> destructured;
+
+		ArrayDestructuringNode() {
+			type = ARRAY_DESTRUCTURING;
+		}
+	};
+
+	struct DictDestructuringNode : DestructuringNode {
+		HashMap<IdentifierNode *, DestructuringNode *> destructured;
+
+		DictDestructuringNode() {
+			type = DICT_DESTRUCTURING;
+		}
+	};
+
 	struct WhileNode : public Node {
 		ExpressionNode *condition = nullptr;
 		SuiteNode *loop = nullptr;
@@ -1494,6 +1530,7 @@ private:
 	ExpressionNode *parse_self(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_identifier(ExpressionNode *p_previous_operand, bool p_can_assign);
 	IdentifierNode *parse_identifier();
+	DestructuringNode *parse_destructuring(GDScriptParser::DestructuringNode *p_destructuring, bool p_is_top_level = true);
 	ExpressionNode *parse_builtin_constant(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_unary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_binary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);

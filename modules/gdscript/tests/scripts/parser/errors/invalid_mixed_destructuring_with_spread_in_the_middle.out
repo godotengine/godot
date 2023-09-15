@@ -1,0 +1,2 @@
+GDTEST_PARSER_ERROR
+Only the last element in a destructuring expression can have the spread qualifier ("..").

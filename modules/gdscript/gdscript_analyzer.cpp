@@ -1441,6 +1441,10 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::VARIABLE:
 			resolve_variable(static_cast<GDScriptParser::VariableNode *>(p_node), true);
 			break;
+		case GDScriptParser::Node::ARRAY_DESTRUCTURING:
+		case GDScriptParser::Node::DICT_DESTRUCTURING:
+			resolve_destructuring(static_cast<GDScriptParser::DestructuringNode *>(p_node));
+			break;
 		case GDScriptParser::Node::WHILE:
 			resolve_while(static_cast<GDScriptParser::WhileNode *>(p_node));
 			break;
@@ -1959,6 +1963,159 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 #endif
 }
 
+void GDScriptAnalyzer::resolve_destructuring(GDScriptParser::DestructuringNode *p_destructuring) {
+	bool is_array = p_destructuring->type == GDScriptParser::Node::ARRAY_DESTRUCTURING;
+	if (p_destructuring->is_top_level) {
+		if (!p_destructuring->initializer) {
+			return;
+		}
+
+		reduce_expression(p_destructuring->initializer);
+		GDScriptParser::DataType type = p_destructuring->initializer->get_datatype();
+		if (is_array && !type.is_variant() && (type.kind != GDScriptParser::DataType::BUILTIN || type.builtin_type != Variant::ARRAY)) {
+			push_error(vformat(R"(Cannot apply destructuring to %s expression of type "%s")", is_array ? "non-array" : "non-dictionary", type.to_string()), p_destructuring->initializer);
+		}
+	}
+
+	switch (p_destructuring->inner_type) {
+		case GDScriptParser::DestructuringNode::IDENTIFIER: {
+			reduce_identifier(p_destructuring->source->identifier);
+			p_destructuring->source->set_datatype(p_destructuring->source->identifier->get_datatype());
+			if (p_destructuring->is_spread) {
+				GDScriptParser::DataType type = p_destructuring->source->get_datatype();
+				if (!type.is_variant() && (type.kind != GDScriptParser::DataType::BUILTIN || type.builtin_type != (is_array ? Variant::ARRAY : Variant::DICTIONARY))) {
+					push_error(vformat(R"(Cannot destructure %s identifier "%s" of type "%s", because it has the spread qualifier.)", is_array ? "non-array" : "non-dictionary", p_destructuring->source->identifier->name, type.to_string()), p_destructuring->source);
+				}
+			}
+		} break;
+		case GDScriptParser::DestructuringNode::VARIABLE: {
+			static constexpr const char *kind = "destructuring variable";
+			resolve_assignable(p_destructuring->source, kind);
+			if (p_destructuring->is_spread) {
+				GDScriptParser::DataType type = p_destructuring->source->get_datatype();
+				if (!type.is_variant() && (type.kind != GDScriptParser::DataType::BUILTIN || type.builtin_type != (is_array ? Variant::ARRAY : Variant::DICTIONARY))) {
+					push_error(vformat(R"(Cannot destructure %s identifier "%s" of type "%s", because it has the spread qualifier.)", is_array ? "non-array" : "non-dictionary", p_destructuring->source->identifier->name, type.to_string()), p_destructuring->source);
+				}
+			}
+		} break;
+		case GDScriptParser::DestructuringNode::DESTRUCTURE: {
+			if (p_destructuring->type == GDScriptParser::Node::ARRAY_DESTRUCTURING) {
+				int idx = 0;
+				for (GDScriptParser::DestructuringNode *inner_destructuring : static_cast<GDScriptParser::ArrayDestructuringNode *>(p_destructuring)->destructured) {
+					resolve_destructuring(inner_destructuring);
+					if (!p_destructuring->is_top_level) {
+						// TODO: Allow analyzing type mismatches in nested destructuring
+						continue;
+					}
+					if (inner_destructuring->is_spread) {
+						continue;
+					}
+					// Allow us to type check certain Array declarations against certain destructuring expressions
+					if (p_destructuring->initializer->type != GDScriptParser::Node::ARRAY) {
+						continue;
+					}
+					GDScriptParser::ArrayNode *initializer = static_cast<GDScriptParser::ArrayNode *>(p_destructuring->initializer);
+					if (initializer->elements.size() - 1 < idx) {
+						continue;
+					}
+					GDScriptParser::ExpressionNode *expression = initializer->elements[idx];
+					if (!expression->reduced || expression->get_datatype().kind != GDScriptParser::DataType::BUILTIN) {
+						continue;
+					}
+
+					switch (inner_destructuring->inner_type) {
+						case GDScriptParser::DestructuringNode::IDENTIFIER:
+						case GDScriptParser::DestructuringNode::VARIABLE: {
+							GDScriptParser::VariableNode *source = inner_destructuring->source;
+							if (source->get_datatype().is_hard_type() && source->get_datatype().kind == GDScriptParser::DataType::BUILTIN && expression->get_datatype().builtin_type != source->get_datatype().builtin_type) {
+								push_error(vformat(R"(Mismatched type "%s" at index %d in the destructuring expression, expected "%s".)", source->get_datatype().to_string(), idx, expression->get_datatype().to_string()), inner_destructuring);
+							}
+						} break;
+						case GDScriptParser::DestructuringNode::DESTRUCTURE: {
+							if (inner_destructuring->type == GDScriptParser::Node::ARRAY_DESTRUCTURING && expression->get_datatype().builtin_type != Variant::ARRAY) {
+								push_error(vformat(R"(Mismatched type "Array" at index %d in the destructuring expression, expected "%s".)", idx, expression->get_datatype().to_string()), inner_destructuring);
+							}
+						} break;
+						case GDScriptParser::DestructuringNode::NONE: {
+						} break;
+					}
+					idx += 1;
+				}
+			} else {
+				for (const KeyValue<GDScriptParser::IdentifierNode *, GDScriptParser::DestructuringNode *> &E : static_cast<GDScriptParser::DictDestructuringNode *>(p_destructuring)->destructured) {
+					if (E.value->has_computed_key) {
+						reduce_identifier(E.key);
+					}
+					resolve_destructuring(E.value);
+					if (!p_destructuring->is_top_level) {
+						// TODO: Allow analyzing type mismatches in nested destructuring
+						continue;
+					}
+					if (E.value->has_computed_key) {
+						// TODO: Allow computed key when analyzing type mismatches
+						continue;
+					}
+					// Allow us to type check certain Dictionary declarations against certain destructuring expressions
+					if (p_destructuring->initializer->type != GDScriptParser::Node::DICTIONARY) {
+						continue;
+					}
+					String key;
+					GDScriptParser::ExpressionNode *expression = nullptr;
+					GDScriptParser::DictionaryNode *initializer = static_cast<GDScriptParser::DictionaryNode *>(p_destructuring->initializer);
+					for (const GDScriptParser::DictionaryNode::Pair &pair : initializer->elements) {
+						if (!pair.value->reduced || pair.value->get_datatype().kind != GDScriptParser::DataType::BUILTIN || !E.key) {
+							continue;
+						}
+
+						switch (pair.key->type) {
+							case GDScriptParser::Node::IDENTIFIER: {
+								if (initializer->style == GDScriptParser::DictionaryNode::PYTHON_DICT) {
+									continue;
+								}
+								GDScriptParser::IdentifierNode *dict_key = static_cast<GDScriptParser::IdentifierNode *>(pair.key);
+								if (dict_key->name != E.key->name) {
+									continue;
+								}
+								key = dict_key->name;
+								expression = pair.value;
+							} break;
+							case GDScriptParser::Node::LITERAL: {
+								GDScriptParser::LiteralNode *dict_key = static_cast<GDScriptParser::LiteralNode *>(pair.key);
+								key = dict_key->value.stringify();
+								if (key != E.key->name) {
+									continue;
+								}
+								expression = pair.value;
+							} break;
+							default: {
+								continue;
+							}
+						}
+					}
+					switch (E.value->inner_type) {
+						case GDScriptParser::DestructuringNode::IDENTIFIER:
+						case GDScriptParser::DestructuringNode::VARIABLE: {
+							GDScriptParser::VariableNode *source = E.value->source;
+							if (expression && source->get_datatype().is_hard_type() && source->get_datatype().kind == GDScriptParser::DataType::BUILTIN && expression->get_datatype().builtin_type != source->get_datatype().builtin_type) {
+								push_error(vformat(R"(Mismatched type "%s" with key "%s" in the destructuring expression, expected "%s".)", source->get_datatype().to_string(), key, expression->get_datatype().to_string()), E.value);
+							}
+						} break;
+						case GDScriptParser::DestructuringNode::DESTRUCTURE: {
+							if (expression && E.value->type == GDScriptParser::Node::DICT_DESTRUCTURING && expression->get_datatype().builtin_type != Variant::DICTIONARY) {
+								push_error(vformat(R"(Mismatched type "Dictionary" with key "%s" in the destructuring expression, expected "%s".)", key, expression->get_datatype().to_string()), E.value);
+							}
+						} break;
+						case GDScriptParser::DestructuringNode::NONE: {
+						} break;
+					}
+				}
+			};
+		} break;
+		case GDScriptParser::DestructuringNode::NONE: {
+		} break;
+	}
+}
+
 void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant, bool p_is_local) {
 	static constexpr const char *kind = "constant";
 	resolve_assignable(p_constant, kind);
@@ -2456,6 +2613,8 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		case GDScriptParser::Node::TYPE:
 		case GDScriptParser::Node::VARIABLE:
 		case GDScriptParser::Node::WHILE:
+		case GDScriptParser::Node::ARRAY_DESTRUCTURING:
+		case GDScriptParser::Node::DICT_DESTRUCTURING:
 			ERR_FAIL_MSG("Reaching unreachable case");
 	}
 }

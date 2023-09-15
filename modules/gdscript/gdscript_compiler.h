@@ -125,6 +125,9 @@ class GDScriptCompiler {
 	Error _create_binary_operator(CodeGen &codegen, const GDScriptParser::ExpressionNode *p_left_operand, const GDScriptParser::ExpressionNode *p_right_operand, Variant::Operator op, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
 
 	GDScriptDataType _gdtype_from_datatype(const GDScriptParser::DataType &p_datatype, GDScript *p_owner);
+	Error _parse_destructuring(CodeGen &codegen, Error &r_error, const GDScriptParser::DestructuringNode *p_target, GDScriptCodeGenerator::Address p_source);
+	Error _parse_array_destructuring(CodeGen &codegen, Error &r_error, const GDScriptParser::ArrayDestructuringNode *p_target, GDScriptCodeGenerator::Address p_source);
+	Error _parse_dictionary_destructuring(CodeGen &codegen, Error &r_error, const GDScriptParser::DictDestructuringNode *p_target, GDScriptCodeGenerator::Address p_source);
 
 	GDScriptCodeGenerator::Address _parse_assign_right_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::AssignmentNode *p_assignmentint, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
 	GDScriptCodeGenerator::Address _parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root = false, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
