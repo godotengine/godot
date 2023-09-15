@@ -404,13 +404,6 @@ public:
 			return;
 		}
 
-		if (p_args[1]->get_type() != Variant::OBJECT && p_args[1]->get_type() != Variant::NIL) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = 1;
-			r_error.expected = Variant::OBJECT;
-			return;
-		}
-
 		const uint32_t initial_size = PtrToArg<uint32_t>::convert(p_args[0]);
 		const Variant &value = PtrToArg<Variant>::convert(p_args[1]);
 		r_ret = Array::create_filled_array(initial_size, value);
