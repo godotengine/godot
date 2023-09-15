@@ -151,49 +151,50 @@ void GPUParticles3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, 
 }
 
 void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_node_3d());
-
 	p_gizmo->clear();
 
-	Vector<Vector3> lines;
-	AABB aabb = particles->get_visibility_aabb();
-
-	for (int i = 0; i < 12; i++) {
-		Vector3 a, b;
-		aabb.get_edge(i, a, b);
-		lines.push_back(a);
-		lines.push_back(b);
-	}
-
-	Vector<Vector3> handles;
-
-	for (int i = 0; i < 3; i++) {
-		Vector3 ax;
-		ax[i] = aabb.position[i] + aabb.size[i];
-		ax[(i + 1) % 3] = aabb.position[(i + 1) % 3] + aabb.size[(i + 1) % 3] * 0.5;
-		ax[(i + 2) % 3] = aabb.position[(i + 2) % 3] + aabb.size[(i + 2) % 3] * 0.5;
-		handles.push_back(ax);
-	}
-
-	Vector3 center = aabb.get_center();
-	for (int i = 0; i < 3; i++) {
-		Vector3 ax;
-		ax[i] = 1.0;
-		handles.push_back(center + ax);
-		lines.push_back(center);
-		lines.push_back(center + ax);
-	}
-
-	Ref<Material> material = get_material("particles_material", p_gizmo);
-	Ref<Material> icon = get_material("particles_icon", p_gizmo);
-
-	p_gizmo->add_lines(lines, material);
-
 	if (p_gizmo->is_selected()) {
+		GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_node_3d());
+
+		Vector<Vector3> lines;
+		AABB aabb = particles->get_visibility_aabb();
+
+		for (int i = 0; i < 12; i++) {
+			Vector3 a, b;
+			aabb.get_edge(i, a, b);
+			lines.push_back(a);
+			lines.push_back(b);
+		}
+
+		Vector<Vector3> handles;
+
+		for (int i = 0; i < 3; i++) {
+			Vector3 ax;
+			ax[i] = aabb.position[i] + aabb.size[i];
+			ax[(i + 1) % 3] = aabb.position[(i + 1) % 3] + aabb.size[(i + 1) % 3] * 0.5;
+			ax[(i + 2) % 3] = aabb.position[(i + 2) % 3] + aabb.size[(i + 2) % 3] * 0.5;
+			handles.push_back(ax);
+		}
+
+		Vector3 center = aabb.get_center();
+		for (int i = 0; i < 3; i++) {
+			Vector3 ax;
+			ax[i] = 1.0;
+			handles.push_back(center + ax);
+			lines.push_back(center);
+			lines.push_back(center + ax);
+		}
+
+		Ref<Material> material = get_material("particles_material", p_gizmo);
+
+		p_gizmo->add_lines(lines, material);
+
 		Ref<Material> solid_material = get_material("particles_solid_material", p_gizmo);
 		p_gizmo->add_solid_box(solid_material, aabb.get_size(), aabb.get_center());
+
+		p_gizmo->add_handles(handles, get_material("handles"));
 	}
 
-	p_gizmo->add_handles(handles, get_material("handles"));
+	Ref<Material> icon = get_material("particles_icon", p_gizmo);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }

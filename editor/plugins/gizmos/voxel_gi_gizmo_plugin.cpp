@@ -100,74 +100,76 @@ void VoxelGIGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 }
 
 void VoxelGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_node_3d());
-
-	Ref<Material> material = get_material("voxel_gi_material", p_gizmo);
-	Ref<Material> icon = get_material("voxel_gi_icon", p_gizmo);
-	Ref<Material> material_internal = get_material("voxel_gi_internal_material", p_gizmo);
-
 	p_gizmo->clear();
 
-	Vector<Vector3> lines;
-	Vector3 size = probe->get_size();
+	if (p_gizmo->is_selected()) {
+		VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_node_3d());
+		Ref<Material> material = get_material("voxel_gi_material", p_gizmo);
+		Ref<Material> material_internal = get_material("voxel_gi_internal_material", p_gizmo);
 
-	static const int subdivs[VoxelGI::SUBDIV_MAX] = { 64, 128, 256, 512 };
+		Vector<Vector3> lines;
+		Vector3 size = probe->get_size();
 
-	AABB aabb = AABB(-size / 2, size);
-	int subdiv = subdivs[probe->get_subdiv()];
-	float cell_size = aabb.get_longest_axis_size() / subdiv;
+		static const int subdivs[VoxelGI::SUBDIV_MAX] = { 64, 128, 256, 512 };
 
-	for (int i = 0; i < 12; i++) {
-		Vector3 a, b;
-		aabb.get_edge(i, a, b);
-		lines.push_back(a);
-		lines.push_back(b);
-	}
+		AABB aabb = AABB(-size / 2, size);
+		int subdiv = subdivs[probe->get_subdiv()];
+		float cell_size = aabb.get_longest_axis_size() / subdiv;
 
-	p_gizmo->add_lines(lines, material);
+		for (int i = 0; i < 12; i++) {
+			Vector3 a, b;
+			aabb.get_edge(i, a, b);
+			lines.push_back(a);
+			lines.push_back(b);
+		}
 
-	lines.clear();
+		p_gizmo->add_lines(lines, material);
 
-	for (int i = 1; i < subdiv; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (cell_size * i > aabb.size[j]) {
-				continue;
-			}
+		lines.clear();
 
-			int j_n1 = (j + 1) % 3;
-			int j_n2 = (j + 2) % 3;
-
-			for (int k = 0; k < 4; k++) {
-				Vector3 from = aabb.position, to = aabb.position;
-				from[j] += cell_size * i;
-				to[j] += cell_size * i;
-
-				if (k & 1) {
-					to[j_n1] += aabb.size[j_n1];
-				} else {
-					to[j_n2] += aabb.size[j_n2];
+		for (int i = 1; i < subdiv; i++) {
+			for (int j = 0; j < 3; j++) {
+				if (cell_size * i > aabb.size[j]) {
+					continue;
 				}
 
-				if (k & 2) {
-					from[j_n1] += aabb.size[j_n1];
-					from[j_n2] += aabb.size[j_n2];
-				}
+				int j_n1 = (j + 1) % 3;
+				int j_n2 = (j + 2) % 3;
 
-				lines.push_back(from);
-				lines.push_back(to);
+				for (int k = 0; k < 4; k++) {
+					Vector3 from = aabb.position, to = aabb.position;
+					from[j] += cell_size * i;
+					to[j] += cell_size * i;
+
+					if (k & 1) {
+						to[j_n1] += aabb.size[j_n1];
+					} else {
+						to[j_n2] += aabb.size[j_n2];
+					}
+
+					if (k & 2) {
+						from[j_n1] += aabb.size[j_n1];
+						from[j_n2] += aabb.size[j_n2];
+					}
+
+					lines.push_back(from);
+					lines.push_back(to);
+				}
 			}
 		}
+
+		p_gizmo->add_lines(lines, material_internal);
+
+		Vector<Vector3> handles = helper->box_get_handles(probe->get_size());
+
+		if (p_gizmo->is_selected()) {
+			Ref<Material> solid_material = get_material("voxel_gi_solid_material", p_gizmo);
+			p_gizmo->add_solid_box(solid_material, aabb.get_size());
+		}
+
+		p_gizmo->add_handles(handles, get_material("handles"));
 	}
 
-	p_gizmo->add_lines(lines, material_internal);
-
-	Vector<Vector3> handles = helper->box_get_handles(probe->get_size());
-
-	if (p_gizmo->is_selected()) {
-		Ref<Material> solid_material = get_material("voxel_gi_solid_material", p_gizmo);
-		p_gizmo->add_solid_box(solid_material, aabb.get_size());
-	}
-
+	Ref<Material> icon = get_material("voxel_gi_icon", p_gizmo);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
-	p_gizmo->add_handles(handles, get_material("handles"));
 }

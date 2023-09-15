@@ -68,16 +68,16 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	LightmapGI *baker = Object::cast_to<LightmapGI>(p_gizmo->get_node_3d());
 	Ref<LightmapGIData> data = baker->get_light_data();
 
+	p_gizmo->clear();
+
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 
-	if (data.is_null()) {
+	if (data.is_null() || !p_gizmo->is_selected()) {
 		return;
 	}
 
 	Ref<Material> material_lines = get_material("lightmap_lines", p_gizmo);
 	Ref<Material> material_probes = get_material("lightmap_probe_material", p_gizmo);
-
-	p_gizmo->clear();
 
 	Vector<Vector3> lines;
 	HashSet<Vector2i> lines_found;
