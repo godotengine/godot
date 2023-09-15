@@ -2212,7 +2212,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, resize, sarray("size"), varray());
 	bind_method(Array, insert, sarray("position", "value"), varray());
 	bind_method(Array, remove_at, sarray("position"), varray());
-	bind_method(Array, fill, sarray("value"), varray());
+	bind_method(Array, fill, sarray("value", "from"), varray(0));
 	bind_method(Array, erase, sarray("value"), varray());
 	bind_method(Array, front, sarray(), varray());
 	bind_method(Array, back, sarray(), varray());
