@@ -30,7 +30,9 @@
 
 #include "voxel_gi_gizmo_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/gizmos/gizmo_3d_helper.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -50,7 +52,7 @@ VoxelGIGizmoPlugin::VoxelGIGizmoPlugin() {
 	gizmo_color.a = 0.05;
 	create_material("voxel_gi_solid_material", gizmo_color);
 
-	create_icon_material("voxel_gi_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoVoxelGI")));
+	create_icon_material("voxel_gi_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoVoxelGI"), EditorStringName(EditorIcons)));
 	create_handle_material("handles");
 }
 

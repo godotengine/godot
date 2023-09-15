@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/gui/grid_container.h"
@@ -193,7 +194,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 			String preset_name = option_name.trim_prefix("Preset");
 			String humanized_name = preset_name.capitalize();
 			String icon_name = "ControlAlign" + preset_name;
-			options->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(icon_name), humanized_name);
+			options->add_icon_item(EditorNode::get_singleton()->get_editor_theme()->get_icon(icon_name, EditorStringName(EditorIcons)), humanized_name);
 		} else {
 			options->add_item(option_name);
 		}

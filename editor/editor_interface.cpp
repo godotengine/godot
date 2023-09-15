@@ -45,6 +45,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/theme.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
@@ -195,6 +196,10 @@ bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
 }
 
 // Editor GUI.
+
+Ref<Theme> EditorInterface::get_editor_theme() const {
+	return EditorNode::get_singleton()->get_editor_theme();
+}
 
 Control *EditorInterface::get_base_control() const {
 	return EditorNode::get_singleton()->get_gui_base();
@@ -405,6 +410,7 @@ void EditorInterface::_bind_methods() {
 
 	// Editor GUI.
 
+	ClassDB::bind_method(D_METHOD("get_editor_theme"), &EditorInterface::get_editor_theme);
 	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
 	ClassDB::bind_method(D_METHOD("get_editor_main_screen"), &EditorInterface::get_editor_main_screen);
 	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);

@@ -35,6 +35,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/gui/menu_button.h"
@@ -684,11 +685,11 @@ void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
 void Path3DEditorPlugin::_update_theme() {
 	// TODO: Split the EditorPlugin instance from the UI instance and connect this properly.
 	// See the 2D path editor for inspiration.
-	curve_edit->set_icon(Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("CurveEdit")));
-	curve_edit_curve->set_icon(Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("CurveCurve")));
-	curve_create->set_icon(Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("CurveCreate")));
-	curve_del->set_icon(Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("CurveDelete")));
-	curve_close->set_icon(Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("CurveClose")));
+	curve_edit->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveEdit"), EditorStringName(EditorIcons)));
+	curve_edit_curve->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveCurve"), EditorStringName(EditorIcons)));
+	curve_create->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveCreate"), EditorStringName(EditorIcons)));
+	curve_del->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveDelete"), EditorStringName(EditorIcons)));
+	curve_close->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveClose"), EditorStringName(EditorIcons)));
 }
 
 void Path3DEditorPlugin::_notification(int p_what) {
@@ -804,6 +805,6 @@ Path3DGizmoPlugin::Path3DGizmoPlugin() {
 	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
 	create_material("path_material", path_color);
 	create_material("path_thin_material", Color(0.5, 0.5, 0.5));
-	create_handle_material("handles", false, Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("EditorPathSmoothHandle")));
-	create_handle_material("sec_handles", false, Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("EditorCurveHandle")));
+	create_handle_material("handles", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
+	create_handle_material("sec_handles", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorCurveHandle"), EditorStringName(EditorIcons)));
 }

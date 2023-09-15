@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/light_3d.h"
@@ -43,9 +44,9 @@ Light3DGizmoPlugin::Light3DGizmoPlugin() {
 	create_material("lines_secondary", Color(1, 1, 1, 0.35), false, false, true);
 	create_material("lines_billboard", Color(1, 1, 1), true, false, true);
 
-	create_icon_material("light_directional_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoDirectionalLight")));
-	create_icon_material("light_omni_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoLight")));
-	create_icon_material("light_spot_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoSpotLight")));
+	create_icon_material("light_directional_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoDirectionalLight"), EditorStringName(EditorIcons)));
+	create_icon_material("light_omni_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoLight"), EditorStringName(EditorIcons)));
+	create_icon_material("light_spot_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoSpotLight"), EditorStringName(EditorIcons)));
 
 	create_handle_material("handles");
 	create_handle_material("handles_billboard", true);

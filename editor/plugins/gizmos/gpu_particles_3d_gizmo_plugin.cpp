@@ -30,7 +30,9 @@
 
 #include "gpu_particles_3d_gizmo_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/gpu_particles_3d.h"
@@ -40,7 +42,7 @@ GPUParticles3DGizmoPlugin::GPUParticles3DGizmoPlugin() {
 	create_material("particles_material", gizmo_color);
 	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("particles_solid_material", gizmo_color);
-	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("GizmoGPUParticles3D")));
+	create_icon_material("particles_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoGPUParticles3D"), EditorStringName(EditorIcons)));
 	create_handle_material("handles");
 }
 

@@ -30,7 +30,9 @@
 
 #include "audio_stream_player_3d_gizmo_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/audio_stream_player_3d.h"
@@ -38,7 +40,7 @@
 AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
 
-	create_icon_material("stream_player_3d_icon", Node3DEditor::get_singleton()->get_editor_theme_icon(SNAME("Gizmo3DSamplePlayer")));
+	create_icon_material("stream_player_3d_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Gizmo3DSamplePlayer"), EditorStringName(EditorIcons)));
 	create_material("stream_player_3d_material_primary", gizmo_color);
 	create_material("stream_player_3d_material_secondary", gizmo_color * Color(1, 1, 1, 0.35));
 	// Enable vertex colors for the billboard material as the gizmo color depends on the
