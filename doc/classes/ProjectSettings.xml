@@ -1242,7 +1242,7 @@
 			Default map up vector for 3D navigation maps. See [method NavigationServer.map_set_up].
 		</member>
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="" default="2048">
-			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
+			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped with the message [code]"output overflow, print less text!"[/code]. This helps not to stall the debugger connection.
 		</member>
 		<member name="network/limits/debugger_stdout/max_errors_per_second" type="int" setter="" getter="" default="100">
 			Maximum number of errors allowed to be sent as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
