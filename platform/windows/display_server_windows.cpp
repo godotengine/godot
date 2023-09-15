@@ -184,37 +184,37 @@ void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window)
 }
 
 bool DisplayServerWindows::tts_is_speaking() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_speaking();
 }
 
 bool DisplayServerWindows::tts_is_paused() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
-	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->get_voices();
 }
 
 void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerWindows::tts_pause() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->pause();
 }
 
 void DisplayServerWindows::tts_resume() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->resume();
 }
 
 void DisplayServerWindows::tts_stop() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->stop();
 }
 
@@ -413,7 +413,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 
 	Char16String utf16 = text.utf16();
 	HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (utf16.length() + 1) * sizeof(WCHAR));
-	ERR_FAIL_COND_MSG(mem == nullptr, "Unable to allocate memory for clipboard contents.");
+	ERR_FAIL_NULL_MSG(mem, "Unable to allocate memory for clipboard contents.");
 
 	LPWSTR lptstrCopy = (LPWSTR)GlobalLock(mem);
 	memcpy(lptstrCopy, utf16.get_data(), (utf16.length() + 1) * sizeof(WCHAR));
@@ -424,7 +424,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 	// Set the CF_TEXT version (not needed?).
 	CharString utf8 = text.utf8();
 	mem = GlobalAlloc(GMEM_MOVEABLE, utf8.length() + 1);
-	ERR_FAIL_COND_MSG(mem == nullptr, "Unable to allocate memory for clipboard contents.");
+	ERR_FAIL_NULL_MSG(mem, "Unable to allocate memory for clipboard contents.");
 
 	LPTSTR ptr = (LPTSTR)GlobalLock(mem);
 	memcpy(ptr, utf8.get_data(), utf8.length());
@@ -2465,7 +2465,7 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 		}
 
 		HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
-		ERR_FAIL_COND(!hicon);
+		ERR_FAIL_NULL(hicon);
 
 		icon = img;
 

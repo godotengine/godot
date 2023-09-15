@@ -495,7 +495,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		}
 
 		FILE *f = popen(command.utf8().get_data(), "r");
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
+		ERR_FAIL_NULL_V_MSG(f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command + ".");
 		char buf[65535];
 		while (fgets(buf, 65535, f)) {
 			if (p_pipe_mutex) {
@@ -647,7 +647,7 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = path;
