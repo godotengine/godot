@@ -1757,6 +1757,8 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 						continue;
 					}
 
+					int tracks_removed = 0;
+
 					for (int i = 0; i < anim->get_track_count(); i++) {
 						NodePath track_np = anim->track_get_path(i);
 						Node *n = root->get_node_or_null(track_np);
@@ -1774,14 +1776,8 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 							if (found_path->value.is_empty()) {
 								//will be erased
 
-								int idx = 0;
-								HashSet<int>::Iterator EI = ran.begin();
-								ERR_FAIL_COND(!EI); //bug
-								while (*EI != i) {
-									idx++;
-									++EI;
-									ERR_FAIL_COND(!EI); //another bug
-								}
+								int idx = i - tracks_removed;
+								tracks_removed++;
 
 								undo_redo->add_do_method(anim.ptr(), "remove_track", idx);
 								undo_redo->add_undo_method(anim.ptr(), "add_track", anim->track_get_type(i), idx);
