@@ -74,7 +74,7 @@ public:
 
 	Error insert(int p_pos, const Variant &p_value);
 	void remove_at(int p_pos);
-	void fill(const Variant &p_value);
+	void fill(const Variant &p_value, int p_from = 0);
 
 	Variant front() const;
 	Variant back() const;
@@ -133,6 +133,8 @@ public:
 	Array(const Array &p_from);
 	Array();
 	~Array();
+
+	static Array create_filled_array(uint32_t p_initial_size, const Variant &p_value);
 };
 
 #endif // ARRAY_H

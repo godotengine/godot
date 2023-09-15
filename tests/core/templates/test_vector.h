@@ -147,6 +147,19 @@ TEST_CASE("[Vector] Fill large array and modify it") {
 	CHECK(vector.size() == 0);
 }
 
+TEST_CASE("[Vector] Fill array from position") {
+	Vector<int> vector;
+	vector.resize(1'000'000);
+	vector.fill(0x60d07);
+	vector.fill(0x70d06, 500'000);
+
+	CHECK(vector.size() == 1'000'000);
+	CHECK(vector[0] == 0x60d07);
+	CHECK(vector[499'999] == 0x60d07);
+	CHECK(vector[500'000] == 0x70d06);
+	CHECK(vector[999'999] == 0x70d06);
+}
+
 TEST_CASE("[Vector] Copy creation") {
 	Vector<int> vector;
 	vector.push_back(0);
