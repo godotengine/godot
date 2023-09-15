@@ -398,6 +398,9 @@
 		<member name="editors/3d/navigation_feel/translation_inertia" type="float" setter="" getter="">
 			The inertia to use when panning in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>
+		<member name="editors/3d/navigation_feel/translation_sensitivity" type="float" setter="" getter="">
+			The mouse sensitivity to use when panning in the 3D editor.
+		</member>
 		<member name="editors/3d/navigation_feel/zoom_inertia" type="float" setter="" getter="">
 			The inertia to use when zooming in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>

@@ -2501,8 +2501,9 @@ Node3DEditorViewport::NavigationMode Node3DEditorViewport::_get_nav_mode_from_sh
 
 void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
 	const NavigationScheme nav_scheme = (NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+	const real_t translation_sensitivity = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
 
-	real_t pan_speed = 1 / 150.0;
+	real_t pan_speed = translation_sensitivity / 150.0;
 	if (p_event.is_valid() && nav_scheme == NAVIGATION_MAYA && p_event->is_shift_pressed()) {
 		pan_speed *= 10;
 	}
