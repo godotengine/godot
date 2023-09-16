@@ -404,13 +404,13 @@ public:
 			return;
 		}
 
-		const uint32_t initial_size = PtrToArg<uint32_t>::convert(p_args[0]);
+		const uint32_t initial_size = p_args[0]->operator uint32_t();
 		const Variant &value = PtrToArg<Variant>::convert(p_args[1]);
 		r_ret = Array::create_filled_array(initial_size, value);
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		const uint32_t initial_size = PtrToArg<uint32_t>::convert(p_args[0]);
+		const uint32_t initial_size = p_args[0]->operator uint32_t();
 		const Variant &value = PtrToArg<Variant>::convert(p_args[1]);
 		*r_ret = Array::create_filled_array(initial_size, value);
 	}

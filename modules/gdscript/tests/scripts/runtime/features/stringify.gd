@@ -31,6 +31,7 @@ func test():
 	print({"hello":123})
 	print(["hello", 123])
 
+	print(Array(3, 1))
 	print(PackedByteArray([-1, 0, 1]))
 	print(PackedInt32Array([-1, 0, 1]))
 	print(PackedInt64Array([-1, 0, 1]))
