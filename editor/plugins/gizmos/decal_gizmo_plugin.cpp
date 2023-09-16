@@ -30,7 +30,9 @@
 
 #include "decal_gizmo_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/gizmos/gizmo_3d_helper.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -39,6 +41,8 @@
 DecalGizmoPlugin::DecalGizmoPlugin() {
 	helper.instantiate();
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/decal", Color(0.6, 0.5, 1.0));
+
+	create_icon_material("decal_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoDecal"), EditorStringName(EditorIcons)));
 
 	create_material("decal_material", gizmo_color);
 
@@ -124,7 +128,9 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Vector<Vector3> handles = helper->box_get_handles(decal->get_size());
 	Ref<Material> material = get_material("decal_material", p_gizmo);
+	const Ref<Material> icon = get_material("decal_icon", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
 	p_gizmo->add_handles(handles, get_material("handles"));
 }
