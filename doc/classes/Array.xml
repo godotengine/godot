@@ -69,6 +69,14 @@
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
+			<param index="0" name="initial_size" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Creates a filled array. The result should be identical to creating an empty array, calling resize with initial_size, and calling fill with value.
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
 			<param index="0" name="from" type="PackedByteArray" />
 			<description>
 				Constructs an array from a [PackedByteArray].
