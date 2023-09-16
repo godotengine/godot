@@ -116,6 +116,7 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 
 	if (p_err.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
 		int errorarg = p_err.argument;
+		ERR_FAIL_COND_V_MSG(errorarg < 0 || argptrs[errorarg] == nullptr, "GDScript bug (please report): Invalid CallError argument index or null pointer.", "Invalid CallError argument index or null pointer.");
 		// Handle the Object to Object case separately as we don't have further class details.
 #ifdef DEBUG_ENABLED
 		if (p_err.expected == Variant::OBJECT && argptrs[errorarg]->get_type() == p_err.expected) {
@@ -128,9 +129,9 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 			err_text = "Invalid type in " + p_where + ". Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(Variant::Type(p_err.expected)) + ".";
 		}
 	} else if (p_err.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Invalid call to " + p_where + ". Expected " + itos(p_err.argument) + " arguments.";
+		err_text = "Invalid call to " + p_where + ". Expected " + itos(p_err.expected) + " arguments.";
 	} else if (p_err.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Invalid call to " + p_where + ". Expected " + itos(p_err.argument) + " arguments.";
+		err_text = "Invalid call to " + p_where + ". Expected " + itos(p_err.expected) + " arguments.";
 	} else if (p_err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		err_text = "Invalid call. Nonexistent " + p_where + ".";
 	} else if (p_err.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
@@ -511,13 +512,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		if (p_argcount != _argument_count) {
 			if (p_argcount > _argument_count) {
 				r_err.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-				r_err.argument = _argument_count;
+				r_err.expected = _argument_count;
 
 				call_depth--;
 				return _get_default_variant_for_data_type(return_type);
 			} else if (p_argcount < _argument_count - _default_arg_count) {
 				r_err.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-				r_err.argument = _argument_count - _default_arg_count;
+				r_err.expected = _argument_count - _default_arg_count;
 				call_depth--;
 				return _get_default_variant_for_data_type(return_type);
 			} else {
