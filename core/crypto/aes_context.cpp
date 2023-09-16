@@ -43,11 +43,7 @@ Error AESContext::start(Mode p_mode, PackedByteArray p_key, PackedByteArray p_iv
 		iv.append_array(p_iv);
 	}
 	// Encryption/decryption key.
-	if (p_mode == MODE_CBC_ENCRYPT || p_mode == MODE_ECB_ENCRYPT) {
-		ctx.set_encode_key(p_key.ptr(), key_bits);
-	} else {
-		ctx.set_decode_key(p_key.ptr(), key_bits);
-	}
+	ctx.set_encode_key(p_key.ptr(), key_bits);
 	mode = p_mode;
 	return OK;
 }
