@@ -63,16 +63,21 @@
 			[b]Note:[/b] [Line2D] is not accelerated by batching when being anti-aliased.
 		</member>
 		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode" default="0">
-			The style of the beginning of the polyline. Use [enum LineCapMode] constants.
+			The style of the beginning of the polyline, if [member closed] is [code]false[/code]. Use [enum LineCapMode] constants.
+		</member>
+		<member name="closed" type="bool" setter="set_closed" getter="is_closed" default="false">
+			If [code]true[/code] and the polyline has more than 2 points, the last point and the first one will be connected by a segment.
+			[b]Note:[/b] The shape of the closing segment is not guaranteed to be seamless if a [member width_curve] is provided.
+			[b]Note:[/b] The joint between the closing segment and the first segment is drawn first and it samples the [member gradient] and the [member width_curve] at the beginning. This is an implementation detail that might change in a future version.
 		</member>
 		<member name="default_color" type="Color" setter="set_default_color" getter="get_default_color" default="Color(1, 1, 1, 1)">
 			The color of the polyline. Will not be used if a gradient is set.
 		</member>
 		<member name="end_cap_mode" type="int" setter="set_end_cap_mode" getter="get_end_cap_mode" enum="Line2D.LineCapMode" default="0">
-			The style of the end of the polyline. Use [enum LineCapMode] constants.
+			The style of the end of the polyline, if [member closed] is [code]false[/code]. Use [enum LineCapMode] constants.
 		</member>
 		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
-			The gradient is drawn through the whole line from start to finish. The default color will not be used if a gradient is set.
+			The gradient is drawn through the whole line from start to finish. The [member default_color] will not be used if this property is set.
 		</member>
 		<member name="joint_mode" type="int" setter="set_joint_mode" getter="get_joint_mode" enum="Line2D.LineJointMode" default="0">
 			The style of the connections between segments of the polyline. Use [enum LineJointMode] constants.
@@ -93,7 +98,7 @@
 			The style to render the [member texture] of the polyline. Use [enum LineTextureMode] constants.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="10.0">
-			The polyline's width
+			The polyline's width.
 		</member>
 		<member name="width_curve" type="Curve" setter="set_curve" getter="get_curve">
 			The polyline's width curve. The width of the polyline over its length will be equivalent to the value of the width curve over its domain.
