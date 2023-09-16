@@ -394,7 +394,7 @@ public:
 	}
 };
 
-class VariantConstructorToFilledArray {
+class VariantConstructorToValueFilledArray {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
 		if (p_args[0]->get_type() != Variant::INT) {
