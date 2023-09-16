@@ -220,7 +220,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path) {
 				return;
 			}
 
-			run_filename = GLOBAL_DEF_BASIC("application/run/main_scene", "");
+			run_filename = GLOBAL_GET("application/run/main_scene");
 		} break;
 	}
 
