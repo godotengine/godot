@@ -2349,7 +2349,7 @@ void FileSystemDock::_resource_created() {
 
 	ERR_FAIL_COND(!c);
 	Resource *r = Object::cast_to<Resource>(c);
-	ERR_FAIL_COND(!r);
+	ERR_FAIL_NULL(r);
 
 	PackedScene *scene = Object::cast_to<PackedScene>(r);
 	if (scene) {

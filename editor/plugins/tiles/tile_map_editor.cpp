@@ -367,7 +367,7 @@ void TileMapEditorTilesPlugin::_update_atlas_view() {
 	int source_id = sources_list->get_item_metadata(sources_list->get_current());
 	TileSetSource *source = *tile_set->get_source(source_id);
 	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-	ERR_FAIL_COND(!atlas_source);
+	ERR_FAIL_NULL(atlas_source);
 
 	tile_atlas_view->set_atlas_source(*tile_map->get_tileset(), atlas_source, source_id);
 	TilesEditorUtils::get_singleton()->synchronize_atlas_view(tile_atlas_view);
@@ -388,7 +388,7 @@ void TileMapEditorTilesPlugin::_update_scenes_collection_view() {
 	int source_id = sources_list->get_item_metadata(sources_list->get_current());
 	TileSetSource *source = *tile_set->get_source(source_id);
 	TileSetScenesCollectionSource *scenes_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
-	ERR_FAIL_COND(!scenes_collection_source);
+	ERR_FAIL_NULL(scenes_collection_source);
 
 	// Clear the list.
 	scene_tiles_list->clear();
@@ -448,7 +448,7 @@ void TileMapEditorTilesPlugin::_scenes_list_multi_selected(int p_index, bool p_s
 	int source_id = sources_list->get_item_metadata(sources_list->get_current());
 	TileSetSource *source = *tile_set->get_source(source_id);
 	TileSetScenesCollectionSource *scenes_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
-	ERR_FAIL_COND(!scenes_collection_source);
+	ERR_FAIL_NULL(scenes_collection_source);
 
 	TileMapCell selected = TileMapCell(source_id, Vector2i(), scene_id);
 
@@ -1028,7 +1028,7 @@ TileMapCell TileMapEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern> p_pa
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
 			TileData *tile_data = atlas_source->get_tile_data(atlas_coords, alternative_tile);
-			ERR_FAIL_COND_V(!tile_data, TileMapCell());
+			ERR_FAIL_NULL_V(tile_data, TileMapCell());
 			sum += tile_data->get_probability();
 		} else {
 			sum += 1.0;
@@ -3735,7 +3735,7 @@ void TileMapEditor::_update_bottom_panel() {
 }
 
 Vector<Vector2i> TileMapEditor::get_line(TileMap *p_tile_map, Vector2i p_from_cell, Vector2i p_to_cell) {
-	ERR_FAIL_COND_V(!p_tile_map, Vector<Vector2i>());
+	ERR_FAIL_NULL_V(p_tile_map, Vector<Vector2i>());
 
 	Ref<TileSet> tile_set = p_tile_map->get_tileset();
 	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector<Vector2i>());

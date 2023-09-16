@@ -82,7 +82,7 @@ void NavigationObstacle3DEditor::_menu_option(int p_option) {
 }
 
 void NavigationObstacle3DEditor::_wip_close() {
-	ERR_FAIL_COND_MSG(!obstacle_node, "Edited NavigationObstacle3D is not valid.");
+	ERR_FAIL_NULL_MSG(obstacle_node, "Edited NavigationObstacle3D is not valid.");
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set NavigationObstacle3D Vertices"));
 	undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_node->get_vertices());
@@ -344,12 +344,12 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 }
 
 PackedVector2Array NavigationObstacle3DEditor::_get_polygon() {
-	ERR_FAIL_COND_V_MSG(!obstacle_node, PackedVector2Array(), "Edited object is not valid.");
+	ERR_FAIL_NULL_V_MSG(obstacle_node, PackedVector2Array(), "Edited object is not valid.");
 	return PackedVector2Array(obstacle_node->call("get_polygon"));
 }
 
 void NavigationObstacle3DEditor::_set_polygon(PackedVector2Array p_poly) {
-	ERR_FAIL_COND_MSG(!obstacle_node, "Edited object is not valid.");
+	ERR_FAIL_NULL_MSG(obstacle_node, "Edited object is not valid.");
 	obstacle_node->call("set_polygon", p_poly);
 }
 

@@ -189,7 +189,7 @@ void SceneTreeDock::instantiate_scenes(const Vector<String> &p_files, Node *p_pa
 }
 
 void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, Node *parent, int p_pos) {
-	ERR_FAIL_COND(!parent);
+	ERR_FAIL_NULL(parent);
 
 	Vector<Node *> instances;
 
@@ -1255,7 +1255,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				ERR_FAIL_INDEX(idx, subresources.size());
 
 				Object *obj = ObjectDB::get_instance(subresources[idx]);
-				ERR_FAIL_COND(!obj);
+				ERR_FAIL_NULL(obj);
 
 				_push_item(obj);
 			}
@@ -1881,7 +1881,7 @@ bool SceneTreeDock::_validate_no_instance() {
 
 void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
 	Node *new_parent = scene_root->get_node(p_path);
-	ERR_FAIL_COND(!new_parent);
+	ERR_FAIL_NULL(new_parent);
 
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
@@ -1900,7 +1900,7 @@ void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
 
 void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform) {
 	Node *new_parent = p_new_parent;
-	ERR_FAIL_COND(!new_parent);
+	ERR_FAIL_NULL(new_parent);
 
 	if (p_nodes.size() == 0) {
 		return; // Nothing to reparent.
@@ -2297,7 +2297,7 @@ void SceneTreeDock::_selection_changed() {
 void SceneTreeDock::_do_create(Node *p_parent) {
 	Variant c = create_dialog->instantiate_selected();
 	Node *child = Object::cast_to<Node>(c);
-	ERR_FAIL_COND(!child);
+	ERR_FAIL_NULL(child);
 
 	String new_name = p_parent->validate_child_name(child);
 	if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
@@ -2365,7 +2365,7 @@ void SceneTreeDock::_create() {
 		} else {
 			// If no root exist in edited scene
 			parent = scene_root;
-			ERR_FAIL_COND(!parent);
+			ERR_FAIL_NULL(parent);
 		}
 
 		_do_create(parent);
@@ -2378,13 +2378,13 @@ void SceneTreeDock::_create() {
 		ur->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, selection.front()->get());
 
 		for (Node *n : selection) {
-			ERR_FAIL_COND(!n);
+			ERR_FAIL_NULL(n);
 
 			Variant c = create_dialog->instantiate_selected();
 
 			ERR_FAIL_COND(!c);
 			Node *new_node = Object::cast_to<Node>(c);
-			ERR_FAIL_COND(!new_node);
+			ERR_FAIL_NULL(new_node);
 			replace_node(n, new_node);
 		}
 
@@ -2397,13 +2397,13 @@ void SceneTreeDock::_create() {
 		bool only_one_top_node = true;
 
 		Node *first = selection.front()->get();
-		ERR_FAIL_COND(!first);
+		ERR_FAIL_NULL(first);
 		int smaller_path_to_top = first->get_path_to(scene_root).get_name_count();
 		Node *top_node = first;
 
 		for (List<Node *>::Element *E = selection.front()->next(); E; E = E->next()) {
 			Node *n = E->get();
-			ERR_FAIL_COND(!n);
+			ERR_FAIL_NULL(n);
 
 			int path_length = n->get_path_to(scene_root).get_name_count();
 
@@ -2759,7 +2759,7 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 
 void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_type) {
 	Node *node = get_node(p_to);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 
 	if (scene_tree->get_scene_tree()->get_drop_mode_flags() & Tree::DROP_MODE_INBETWEEN) {
 		// Dropped PackedScene, instance it.
@@ -3230,7 +3230,7 @@ void SceneTreeDock::save_branch_to_file(String p_directory) {
 
 void SceneTreeDock::_focus_node() {
 	Node *node = scene_tree->get_selected();
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 
 	if (node->is_class("CanvasItem")) {
 		CanvasItemEditorPlugin *editor = Object::cast_to<CanvasItemEditorPlugin>(editor_data->get_editor_by_name("2D"));
@@ -3754,7 +3754,7 @@ void SceneTreeDock::_edit_subresource(int p_idx, const PopupMenu *p_from_menu) {
 	const ObjectID &id = p_from_menu->get_item_metadata(p_idx);
 
 	Object *obj = ObjectDB::get_instance(id);
-	ERR_FAIL_COND(!obj);
+	ERR_FAIL_NULL(obj);
 
 	_push_item(obj);
 }

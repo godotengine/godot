@@ -59,7 +59,7 @@ class ShortcutBin : public Node {
 			return;
 		}
 		Window *grandparent_window = get_window()->get_parent_visible_window();
-		ERR_FAIL_COND(!grandparent_window);
+		ERR_FAIL_NULL(grandparent_window);
 
 		if (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventShortcut>(p_event.ptr())) {
 			// HACK: Propagate the window input to the editor main window to handle global shortcuts.

@@ -41,7 +41,7 @@
 #define HANDLE_HALF_SIZE 9.5
 
 bool EditorNode3DGizmo::is_editable() const {
-	ERR_FAIL_COND_V(!spatial_node, false);
+	ERR_FAIL_NULL_V(spatial_node, false);
 	Node *edited_root = spatial_node->get_tree()->get_edited_scene_root();
 	if (spatial_node == edited_root) {
 		return true;
@@ -77,7 +77,7 @@ void EditorNode3DGizmo::clear() {
 
 void EditorNode3DGizmo::redraw() {
 	if (!GDVIRTUAL_CALL(_redraw)) {
-		ERR_FAIL_COND(!gizmo_plugin);
+		ERR_FAIL_NULL(gizmo_plugin);
 		gizmo_plugin->redraw(this);
 	}
 
@@ -92,7 +92,7 @@ String EditorNode3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 		return ret;
 	}
 
-	ERR_FAIL_COND_V(!gizmo_plugin, "");
+	ERR_FAIL_NULL_V(gizmo_plugin, "");
 	return gizmo_plugin->get_handle_name(this, p_id, p_secondary);
 }
 
@@ -102,7 +102,7 @@ bool EditorNode3DGizmo::is_handle_highlighted(int p_id, bool p_secondary) const 
 		return success;
 	}
 
-	ERR_FAIL_COND_V(!gizmo_plugin, false);
+	ERR_FAIL_NULL_V(gizmo_plugin, false);
 	return gizmo_plugin->is_handle_highlighted(this, p_id, p_secondary);
 }
 
@@ -112,7 +112,7 @@ Variant EditorNode3DGizmo::get_handle_value(int p_id, bool p_secondary) const {
 		return value;
 	}
 
-	ERR_FAIL_COND_V(!gizmo_plugin, Variant());
+	ERR_FAIL_NULL_V(gizmo_plugin, Variant());
 	return gizmo_plugin->get_handle_value(this, p_id, p_secondary);
 }
 
@@ -121,7 +121,7 @@ void EditorNode3DGizmo::begin_handle_action(int p_id, bool p_secondary) {
 		return;
 	}
 
-	ERR_FAIL_COND(!gizmo_plugin);
+	ERR_FAIL_NULL(gizmo_plugin);
 	gizmo_plugin->begin_handle_action(this, p_id, p_secondary);
 }
 
@@ -130,7 +130,7 @@ void EditorNode3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camer
 		return;
 	}
 
-	ERR_FAIL_COND(!gizmo_plugin);
+	ERR_FAIL_NULL(gizmo_plugin);
 	gizmo_plugin->set_handle(this, p_id, p_secondary, p_camera, p_point);
 }
 
@@ -139,7 +139,7 @@ void EditorNode3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant 
 		return;
 	}
 
-	ERR_FAIL_COND(!gizmo_plugin);
+	ERR_FAIL_NULL(gizmo_plugin);
 	gizmo_plugin->commit_handle(this, p_id, p_secondary, p_restore, p_cancel);
 }
 
@@ -149,7 +149,7 @@ int EditorNode3DGizmo::subgizmos_intersect_ray(Camera3D *p_camera, const Vector2
 		return id;
 	}
 
-	ERR_FAIL_COND_V(!gizmo_plugin, -1);
+	ERR_FAIL_NULL_V(gizmo_plugin, -1);
 	return gizmo_plugin->subgizmos_intersect_ray(this, p_camera, p_point);
 }
 
@@ -164,7 +164,7 @@ Vector<int> EditorNode3DGizmo::subgizmos_intersect_frustum(const Camera3D *p_cam
 		return ret;
 	}
 
-	ERR_FAIL_COND_V(!gizmo_plugin, Vector<int>());
+	ERR_FAIL_NULL_V(gizmo_plugin, Vector<int>());
 	return gizmo_plugin->subgizmos_intersect_frustum(this, p_camera, p_frustum);
 }
 
@@ -174,7 +174,7 @@ Transform3D EditorNode3DGizmo::get_subgizmo_transform(int p_id) const {
 		return ret;
 	}
 
-	ERR_FAIL_COND_V(!gizmo_plugin, Transform3D());
+	ERR_FAIL_NULL_V(gizmo_plugin, Transform3D());
 	return gizmo_plugin->get_subgizmo_transform(this, p_id);
 }
 
@@ -183,7 +183,7 @@ void EditorNode3DGizmo::set_subgizmo_transform(int p_id, Transform3D p_transform
 		return;
 	}
 
-	ERR_FAIL_COND(!gizmo_plugin);
+	ERR_FAIL_NULL(gizmo_plugin);
 	gizmo_plugin->set_subgizmo_transform(this, p_id, p_transform);
 }
 
@@ -198,7 +198,7 @@ void EditorNode3DGizmo::commit_subgizmos(const Vector<int> &p_ids, const Vector<
 		return;
 	}
 
-	ERR_FAIL_COND(!gizmo_plugin);
+	ERR_FAIL_NULL(gizmo_plugin);
 	gizmo_plugin->commit_subgizmos(this, p_ids, p_restore, p_cancel);
 }
 
@@ -224,7 +224,7 @@ void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden)
 }
 
 void EditorNode3DGizmo::add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p_material, const Transform3D &p_xform, const Ref<SkinReference> &p_skin_reference) {
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
 	ERR_FAIL_COND_MSG(!p_mesh.is_valid(), "EditorNode3DGizmo.add_mesh() requires a valid Mesh resource.");
 
 	Instance ins;
@@ -253,7 +253,7 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 		return;
 	}
 
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
 	Instance ins;
 
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
@@ -300,7 +300,7 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 }
 
 void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, real_t p_scale, const Color &p_modulate) {
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
 	Instance ins;
 
 	Vector<Vector3> vs = {
@@ -454,7 +454,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 }
 
 void EditorNode3DGizmo::add_solid_box(const Ref<Material> &p_material, Vector3 p_size, Vector3 p_position, const Transform3D &p_xform) {
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
 
 	BoxMesh box_mesh;
 	box_mesh.set_size(p_size);
@@ -475,7 +475,7 @@ void EditorNode3DGizmo::add_solid_box(const Ref<Material> &p_material, Vector3 p
 }
 
 bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector<Plane> &p_frustum) {
-	ERR_FAIL_COND_V(!spatial_node, false);
+	ERR_FAIL_NULL_V(spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
 	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
@@ -556,7 +556,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 	r_id = -1;
 	r_secondary = false;
 
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
 	ERR_FAIL_COND(!valid);
 
 	if (hidden) {
@@ -615,7 +615,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 }
 
 bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal) {
-	ERR_FAIL_COND_V(!spatial_node, false);
+	ERR_FAIL_NULL_V(spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
 	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
@@ -739,7 +739,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 
 bool EditorNode3DGizmo::is_subgizmo_selected(int p_id) const {
 	Node3DEditor *ed = Node3DEditor::get_singleton();
-	ERR_FAIL_COND_V(!ed, false);
+	ERR_FAIL_NULL_V(ed, false);
 	return ed->is_current_selected_gizmo(this) && ed->is_subgizmo_selected(p_id);
 }
 
@@ -747,7 +747,7 @@ Vector<int> EditorNode3DGizmo::get_subgizmo_selection() const {
 	Vector<int> ret;
 
 	Node3DEditor *ed = Node3DEditor::get_singleton();
-	ERR_FAIL_COND_V(!ed, ret);
+	ERR_FAIL_NULL_V(ed, ret);
 
 	if (ed->is_current_selected_gizmo(this)) {
 		ret = ed->get_subgizmo_selection();
@@ -757,7 +757,7 @@ Vector<int> EditorNode3DGizmo::get_subgizmo_selection() const {
 }
 
 void EditorNode3DGizmo::create() {
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
 	ERR_FAIL_COND(valid);
 	valid = true;
 
@@ -769,7 +769,7 @@ void EditorNode3DGizmo::create() {
 }
 
 void EditorNode3DGizmo::transform() {
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
 	ERR_FAIL_COND(!valid);
 	for (int i = 0; i < instances.size(); i++) {
 		RS::get_singleton()->instance_set_transform(instances[i].instance, spatial_node->get_global_transform() * instances[i].xform);
@@ -778,7 +778,7 @@ void EditorNode3DGizmo::transform() {
 
 void EditorNode3DGizmo::free() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_NULL(spatial_node);
 	ERR_FAIL_COND(!valid);
 
 	for (int i = 0; i < instances.size(); i++) {

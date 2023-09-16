@@ -425,14 +425,14 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 
 			Object *obj = ClassDB::instantiate(ibt);
 
-			ERR_FAIL_COND_V_MSG(!obj, nullptr, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
+			ERR_FAIL_NULL_V_MSG(obj, nullptr, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
 
 			n = Object::cast_to<Node>(obj);
 			n->set_script(scr);
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(!n, nullptr, vformat("Path in Autoload not a node or script: %s.", p_path));
+	ERR_FAIL_NULL_V_MSG(n, nullptr, vformat("Path in Autoload not a node or script: %s.", p_path));
 
 	return n;
 }

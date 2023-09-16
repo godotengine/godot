@@ -7495,7 +7495,7 @@ void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 		SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 		base = get_tree()->get_edited_scene_root();
 	}
-	ERR_FAIL_COND(!base);
+	ERR_FAIL_NULL(base);
 	Node *new_sun = preview_sun->duplicate();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -7524,7 +7524,7 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 		SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 		base = get_tree()->get_edited_scene_root();
 	}
-	ERR_FAIL_COND(!base);
+	ERR_FAIL_NULL(base);
 
 	WorldEnvironment *new_env = memnew(WorldEnvironment);
 	new_env->set_environment(preview_environment->get_environment()->duplicate(true));

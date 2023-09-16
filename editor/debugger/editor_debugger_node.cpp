@@ -51,7 +51,7 @@ template <typename Func>
 void _for_all(TabContainer *p_node, const Func &p_func) {
 	for (int i = 0; i < p_node->get_tab_count(); i++) {
 		ScriptEditorDebugger *dbg = Object::cast_to<ScriptEditorDebugger>(p_node->get_tab_control(i));
-		ERR_FAIL_COND(!dbg);
+		ERR_FAIL_NULL(dbg);
 		p_func(dbg);
 	}
 }
@@ -133,7 +133,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 
 void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 	const ScriptEditorDebugger *dbg = get_debugger(p_debugger);
-	ERR_FAIL_COND(!dbg);
+	ERR_FAIL_NULL(dbg);
 	if (dbg != get_current_debugger()) {
 		return;
 	}
@@ -405,7 +405,7 @@ void EditorDebuggerNode::_update_errors() {
 
 void EditorDebuggerNode::_debugger_stopped(int p_id) {
 	ScriptEditorDebugger *dbg = get_debugger(p_id);
-	ERR_FAIL_COND(!dbg);
+	ERR_FAIL_NULL(dbg);
 
 	bool found = false;
 	_for_all(tabs, [&](ScriptEditorDebugger *p_debugger) {
@@ -603,7 +603,7 @@ void EditorDebuggerNode::_remote_tree_button_pressed(Object *p_item, int p_colum
 	}
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 
 	if (p_id == EditorDebuggerTree::BUTTON_SUBSCENE) {
 		remote_scene_tree->emit_signal(SNAME("open"), item->get_meta("scene_file_path"));

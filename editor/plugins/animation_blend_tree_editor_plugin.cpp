@@ -325,14 +325,14 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		base_name = anode->get_class();
 	} else if (!add_options[p_idx].type.is_empty()) {
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(add_options[p_idx].type));
-		ERR_FAIL_COND(!an);
+		ERR_FAIL_NULL(an);
 		anode = Ref<AnimationNode>(an);
 		base_name = add_options[p_idx].name;
 	} else {
 		ERR_FAIL_COND(add_options[p_idx].script.is_null());
 		StringName base_type = add_options[p_idx].script->get_instance_base_type();
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(base_type));
-		ERR_FAIL_COND(!an);
+		ERR_FAIL_NULL(an);
 		anode = Ref<AnimationNode>(an);
 		anode->set_script(add_options[p_idx].script);
 		base_name = add_options[p_idx].name;
@@ -568,7 +568,7 @@ void AnimationNodeBlendTreeEditor::_node_selected(Object *p_node) {
 	}
 
 	GraphNode *gn = Object::cast_to<GraphNode>(p_node);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	String name = gn->get_name();
 
@@ -598,7 +598,7 @@ void AnimationNodeBlendTreeEditor::_filter_toggled() {
 
 void AnimationNodeBlendTreeEditor::_filter_edited() {
 	TreeItem *edited = filters->get_edited();
-	ERR_FAIL_COND(!edited);
+	ERR_FAIL_NULL(edited);
 
 	NodePath edited_path = edited->get_metadata(0);
 	bool filtered = edited->is_checked(0);
@@ -966,7 +966,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	String prev_name = blend_tree->get_node_name(p_node);
 	ERR_FAIL_COND(prev_name.is_empty());
 	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(prev_name));
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	const String &new_name = p_text;
 

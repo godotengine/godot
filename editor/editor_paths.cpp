@@ -95,7 +95,7 @@ void EditorPaths::create() {
 }
 
 void EditorPaths::free() {
-	ERR_FAIL_COND(singleton == nullptr);
+	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
 }
 

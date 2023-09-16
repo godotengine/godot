@@ -137,7 +137,7 @@ void EditorPluginSettings::_plugin_activity_changed() {
 	}
 
 	TreeItem *ti = plugin_list->get_edited();
-	ERR_FAIL_COND(!ti);
+	ERR_FAIL_NULL(ti);
 	bool active = ti->is_checked(3);
 	String name = ti->get_metadata(0);
 

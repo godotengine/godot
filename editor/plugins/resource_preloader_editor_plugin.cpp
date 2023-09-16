@@ -225,7 +225,7 @@ void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column,
 	}
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 
 	if (p_id == BUTTON_OPEN_SCENE) {
 		String rpath = item->get_text(p_column);

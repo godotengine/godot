@@ -501,8 +501,8 @@ void FindInFilesDialog::custom_action(const String &p_action) {
 }
 
 void FindInFilesDialog::_on_search_text_modified(String text) {
-	ERR_FAIL_COND(!_find_button);
-	ERR_FAIL_COND(!_replace_button);
+	ERR_FAIL_NULL(_find_button);
+	ERR_FAIL_NULL(_replace_button);
 
 	_find_button->set_disabled(get_search_text().is_empty());
 	_replace_button->set_disabled(get_search_text().is_empty());

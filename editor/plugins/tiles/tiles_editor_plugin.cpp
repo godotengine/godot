@@ -164,8 +164,8 @@ void TilesEditorUtils::set_sources_lists_current(int p_current) {
 void TilesEditorUtils::synchronize_sources_list(Object *p_current_list, Object *p_current_sort_button) {
 	ItemList *item_list = Object::cast_to<ItemList>(p_current_list);
 	MenuButton *sorting_button = Object::cast_to<MenuButton>(p_current_sort_button);
-	ERR_FAIL_COND(!item_list);
-	ERR_FAIL_COND(!sorting_button);
+	ERR_FAIL_NULL(item_list);
+	ERR_FAIL_NULL(sorting_button);
 
 	if (sorting_button->is_visible_in_tree()) {
 		for (int i = 0; i != SOURCE_SORT_MAX; i++) {
@@ -196,7 +196,7 @@ void TilesEditorUtils::set_atlas_view_transform(float p_zoom, Vector2 p_scroll) 
 
 void TilesEditorUtils::synchronize_atlas_view(Object *p_current) {
 	TileAtlasView *tile_atlas_view = Object::cast_to<TileAtlasView>(p_current);
-	ERR_FAIL_COND(!tile_atlas_view);
+	ERR_FAIL_NULL(tile_atlas_view);
 
 	if (tile_atlas_view->is_visible_in_tree()) {
 		tile_atlas_view->set_transform(atlas_view_zoom, atlas_view_scroll);

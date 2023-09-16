@@ -1041,7 +1041,7 @@ bool EditorInspectorPluginCurve::can_handle(Object *p_object) {
 
 void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
 	Curve *curve = Object::cast_to<Curve>(p_object);
-	ERR_FAIL_COND(!curve);
+	ERR_FAIL_NULL(curve);
 	Ref<Curve> c(curve);
 
 	CurveEditor *editor = memnew(CurveEditor);

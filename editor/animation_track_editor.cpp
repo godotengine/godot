@@ -77,10 +77,10 @@ void AnimationTrackKeyEdit::_fix_node_path(Variant &value) {
 	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 
 	Node *np_node = root->get_node(np);
-	ERR_FAIL_COND(!np_node);
+	ERR_FAIL_NULL(np_node);
 
 	Node *edited_node = root->get_node(base);
-	ERR_FAIL_COND(!edited_node);
+	ERR_FAIL_NULL(edited_node);
 
 	value = edited_node->get_path_to(np_node);
 }
@@ -656,10 +656,10 @@ void AnimationMultiTrackKeyEdit::_fix_node_path(Variant &value, NodePath &base) 
 	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 
 	Node *np_node = root->get_node(np);
-	ERR_FAIL_COND(!np_node);
+	ERR_FAIL_NULL(np_node);
 
 	Node *edited_node = root->get_node(base);
-	ERR_FAIL_COND(!edited_node);
+	ERR_FAIL_NULL(edited_node);
 
 	value = edited_node->get_path_to(np_node);
 }
@@ -3703,7 +3703,7 @@ void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_bezi
 }
 
 void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value) {
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND_MSG(
 			(p_type != Animation::TYPE_POSITION_3D && p_type != Animation::TYPE_ROTATION_3D && p_type != Animation::TYPE_SCALE_3D),
 			"Track type must be Position/Rotation/Scale 3D.");
@@ -3746,7 +3746,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 }
 
 bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type) {
-	ERR_FAIL_COND_V(!root, false);
+	ERR_FAIL_NULL_V(root, false);
 	if (!keying) {
 		return false;
 	}
@@ -3802,7 +3802,7 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 }
 
 void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists) {
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 
 	// Let's build a node path.
 	Node *node = p_node;
@@ -3899,7 +3899,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 void AnimationTrackEditor::insert_value_key(const String &p_property, const Variant &p_value, bool p_advance) {
 	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
 
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND(history->get_path_size() == 0);
 	Object *obj = ObjectDB::get_instance(history->get_path_object(0));
 	ERR_FAIL_COND(!Object::cast_to<Node>(obj));
@@ -4685,9 +4685,9 @@ void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
 }
 
 void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 	Node *node = get_node(p_path);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 	NodePath path_to = root->get_path_to(node, true);
 
 	if (adding_track_type == Animation::TYPE_BLEND_SHAPE && !node->is_class("MeshInstance3D")) {

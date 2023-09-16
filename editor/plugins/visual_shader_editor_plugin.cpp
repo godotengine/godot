@@ -2152,7 +2152,7 @@ void VisualShaderEditor::_change_input_port_name(const String &p_text, Object *p
 	}
 
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
-	ERR_FAIL_COND(!line_edit);
+	ERR_FAIL_NULL(line_edit);
 
 	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, false);
 	if (validated_name.is_empty() || prev_name == validated_name) {
@@ -2179,7 +2179,7 @@ void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *
 	}
 
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
-	ERR_FAIL_COND(!line_edit);
+	ERR_FAIL_NULL(line_edit);
 
 	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, true);
 	if (validated_name.is_empty() || prev_name == validated_name) {
@@ -3036,7 +3036,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 
 	if (!is_custom && !add_options[p_idx].type.is_empty()) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(add_options[p_idx].type));
-		ERR_FAIL_COND(!vsn);
+		ERR_FAIL_NULL(vsn);
 		if (!p_ops.is_empty()) {
 			_setup_node(vsn, p_ops);
 		}
@@ -3074,13 +3074,13 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 			base_type = add_options[p_idx].script->get_instance_base_type();
 		}
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(base_type));
-		ERR_FAIL_COND(!vsn);
+		ERR_FAIL_NULL(vsn);
 		vsnode = Ref<VisualShaderNode>(vsn);
 		if (!is_native) {
 			vsnode->set_script(add_options[p_idx].script);
 		}
 		VisualShaderNodeCustom *custom_node = Object::cast_to<VisualShaderNodeCustom>(vsn);
-		ERR_FAIL_COND(!custom_node);
+		ERR_FAIL_NULL(custom_node);
 		custom_node->update_ports();
 	}
 
@@ -3846,7 +3846,7 @@ void VisualShaderEditor::_node_selected(Object *p_node) {
 	VisualShader::Type type = get_current_shader_type();
 
 	GraphElement *graph_element = Object::cast_to<GraphElement>(p_node);
-	ERR_FAIL_COND(!graph_element);
+	ERR_FAIL_NULL(graph_element);
 
 	int id = String(graph_element->get_name()).to_int();
 

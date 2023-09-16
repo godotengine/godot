@@ -858,7 +858,7 @@ void ConnectionsDock::_filter_changed(const String &p_text) {
 void ConnectionsDock::_make_or_edit_connection() {
 	NodePath dst_path = connect_dialog->get_dst_path();
 	Node *target = selected_node->get_node(dst_path);
-	ERR_FAIL_COND(!target);
+	ERR_FAIL_NULL(target);
 
 	ConnectDialog::ConnectionData cd;
 	cd.source = connect_dialog->get_source();
@@ -1066,7 +1066,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
  */
 void ConnectionsDock::_open_edit_connection_dialog(TreeItem &p_item) {
 	TreeItem *signal_item = p_item.get_parent();
-	ERR_FAIL_COND(!signal_item);
+	ERR_FAIL_NULL(signal_item);
 
 	Connection connection = p_item.get_metadata(0);
 	ConnectDialog::ConnectionData cd = connection;
