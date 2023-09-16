@@ -2578,7 +2578,7 @@
 		</member>
 		<member name="rendering/rendering_device/gpu_index" type="int" setter="" getter="" default="-1">
 			Set default Vulkan gpu to run, -1 will be default, requires restart for game or editor to apply
-			!!! DO NOT CHANGE THIS IF YOU DON'T KNOW WHAT IT DOING !!! It could set to not optimal GPU or software rendering
+			[b]Warning:[/b] Only change this if you know what you are doing, it could cause non-optimal GPU or software rendering.
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/save_chunk_size_mb" type="float" setter="" getter="" default="3.0">
 			Determines at which interval pipeline cache is saved to disk. The lower the value, the more often it is saved.
