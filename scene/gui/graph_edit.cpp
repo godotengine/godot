@@ -43,7 +43,7 @@
 constexpr int MINIMAP_OFFSET = 12;
 constexpr int MINIMAP_PADDING = 5;
 constexpr int MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION = 20;
-constexpr int MAX_CONNECTION_LINE_CURVE_TESSELATION_STAGES = 5;
+constexpr int MAX_CONNECTION_LINE_CURVE_TESSELLATION_STAGES = 5;
 constexpr int GRID_MINOR_STEPS_PER_MAJOR_LINE = 10;
 constexpr int GRID_MIN_SNAPPING_DISTANCE = 2;
 constexpr int GRID_MAX_SNAPPING_DISTANCE = 100;
@@ -948,7 +948,7 @@ PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const V
 	curve.set_point_in(1, Vector2(-cp_offset, 0));
 
 	if (lines_curvature > 0) {
-		return curve.tessellate(MAX_CONNECTION_LINE_CURVE_TESSELATION_STAGES, 2.0);
+		return curve.tessellate(MAX_CONNECTION_LINE_CURVE_TESSELLATION_STAGES, 2.0);
 	} else {
 		return curve.tessellate(1);
 	}

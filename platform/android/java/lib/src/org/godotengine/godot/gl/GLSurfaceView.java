@@ -464,7 +464,7 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
 	 * AndroidManifest.xml file.
 	 * <p>If this method is called, it must be called before {@link #setRenderer(Renderer)}
 	 * is called.
-	 * <p>This method only affects the behavior of the default EGLContexFactory and the
+	 * <p>This method only affects the behavior of the default EGLContextFactory and the
 	 * default EGLConfigChooser. If
 	 * {@link #setEGLContextFactory(EGLContextFactory)} has been called, then the supplied
 	 * EGLContextFactory is responsible for creating an OpenGL ES 2.0-compatible context.
@@ -813,7 +813,7 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
 				if (LOG_THREADS) {
 					Log.i("DefaultContextFactory", "tid=" + Thread.currentThread().getId());
 				}
-				EglHelper.throwEglException("eglDestroyContex", egl.eglGetError());
+				EglHelper.throwEglException("eglDestroyContext", egl.eglGetError());
 			}
 		}
 	}

@@ -545,7 +545,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				InstanceFogVolumeData *volume = static_cast<InstanceFogVolumeData *>(instance->base_data);
 				scene_render->free(volume->instance);
 			} break;
-			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
+			case RS::INSTANCE_VISIBILITY_NOTIFIER: {
 				//none
 			} break;
 			case RS::INSTANCE_REFLECTION_PROBE: {
@@ -677,7 +677,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				scene_render->fog_volume_instance_set_active(volume->instance, instance->visible);
 				instance->base_data = volume;
 			} break;
-			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
+			case RS::INSTANCE_VISIBILITY_NOTIFIER: {
 				InstanceVisibilityNotifierData *vnd = memnew(InstanceVisibilityNotifierData);
 				vnd->base = p_base;
 				instance->base_data = vnd;
@@ -1729,7 +1729,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 			case RS::INSTANCE_FOG_VOLUME: {
 				idata.instance_data_rid = static_cast<InstanceFogVolumeData *>(p_instance->base_data)->instance.get_id();
 			} break;
-			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
+			case RS::INSTANCE_VISIBILITY_NOTIFIER: {
 				idata.visibility_notifier = static_cast<InstanceVisibilityNotifierData *>(p_instance->base_data);
 			} break;
 			default: {
@@ -1943,7 +1943,7 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 		case RenderingServer::INSTANCE_FOG_VOLUME: {
 			new_aabb = RSG::fog->fog_volume_get_aabb(p_instance->base);
 		} break;
-		case RenderingServer::INSTANCE_VISIBLITY_NOTIFIER: {
+		case RenderingServer::INSTANCE_VISIBILITY_NOTIFIER: {
 			new_aabb = RSG::utilities->visibility_notifier_get_aabb(p_instance->base);
 		} break;
 		case RenderingServer::INSTANCE_LIGHT: {
@@ -2767,7 +2767,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					cull_result.lightmaps.push_back(RID::from_uint64(idata.instance_data_rid));
 				} else if (base_type == RS::INSTANCE_FOG_VOLUME) {
 					cull_result.fog_volumes.push_back(RID::from_uint64(idata.instance_data_rid));
-				} else if (base_type == RS::INSTANCE_VISIBLITY_NOTIFIER) {
+				} else if (base_type == RS::INSTANCE_VISIBILITY_NOTIFIER) {
 					InstanceVisibilityNotifierData *vnd = idata.visibility_notifier;
 					if (!vnd->list_element.in_list()) {
 						visible_notifier_list_lock.lock();

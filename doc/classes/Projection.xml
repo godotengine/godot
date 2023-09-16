@@ -246,7 +246,7 @@
 				Returns [code]true[/code] if this [Projection] performs an orthogonal projection.
 			</description>
 		</method>
-		<method name="jitter_offseted" qualifiers="const">
+		<method name="jitter_offsetted" qualifiers="const">
 			<return type="Projection" />
 			<param index="0" name="offset" type="Vector2" />
 			<description>

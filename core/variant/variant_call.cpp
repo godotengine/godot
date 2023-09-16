@@ -2163,7 +2163,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Projection, perspective_znear_adjusted, sarray("new_znear"), varray());
 	bind_method(Projection, get_projection_plane, sarray("plane"), varray());
 	bind_method(Projection, flipped_y, sarray(), varray());
-	bind_method(Projection, jitter_offseted, sarray("offset"), varray());
+	bind_method(Projection, jitter_offsetted, sarray("offset"), varray());
 
 	bind_static_method(Projection, get_fovy, sarray("fovx", "aspect"), varray());
 

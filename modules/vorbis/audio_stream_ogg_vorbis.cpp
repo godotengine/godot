@@ -158,7 +158,7 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 		err = vorbis_synthesis(&block, packet);
 		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis synthesis " + itos(err));
 
-		err = vorbis_synthesis_blockin(&dsp_state, &block);
+		err = vorbis_synthesis_blocking(&dsp_state, &block);
 		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis block processing " + itos(err));
 
 		have_packets_left = !packet->e_o_s;
@@ -298,7 +298,7 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 			err = vorbis_synthesis(&block, packet);
 			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis synthesis " + itos(err));
 
-			err = vorbis_synthesis_blockin(&dsp_state, &block);
+			err = vorbis_synthesis_blocking(&dsp_state, &block);
 			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis block processing " + itos(err));
 
 			int samples_out = vorbis_synthesis_pcmout(&dsp_state, nullptr);
@@ -353,7 +353,7 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 			err = vorbis_synthesis(&block, packet);
 			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis synthesis " + itos(err));
 
-			err = vorbis_synthesis_blockin(&dsp_state, &block);
+			err = vorbis_synthesis_blocking(&dsp_state, &block);
 			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis block processing " + itos(err));
 
 			int samples_out = vorbis_synthesis_pcmout(&dsp_state, nullptr);

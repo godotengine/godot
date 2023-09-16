@@ -488,7 +488,7 @@ Variant AnimationPlayer::_post_process_key_value(const Ref<Animation> &p_anim, i
 	return p_value;
 }
 
-void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double p_prev_time, double p_time, double p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started, Animation::LoopedFlag p_looped_flag) {
+void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double p_prev_time, double p_time, double p_delta, float p_interp, bool p_is_current, bool p_sought, bool p_started, Animation::LoopedFlag p_looped_flag) {
 	_ensure_node_caches(p_anim);
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
 
@@ -706,7 +706,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				} else {
 					List<int> indices;
 
-					if (p_seeked) {
+					if (p_sought) {
 						int found_key = a->track_find_key(i, p_time);
 						if (found_key >= 0) {
 							indices.push_back(found_key);
@@ -778,7 +778,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				List<int> indices;
 
-				if (p_seeked) {
+				if (p_sought) {
 					int found_key = a->track_find_key(i, p_time, Animation::FIND_MODE_EXACT);
 					if (found_key >= 0) {
 						indices.push_back(found_key);
@@ -832,7 +832,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					continue;
 				}
 #ifdef TOOLS_ENABLED
-				if (p_seeked && !can_call) {
+				if (p_sought && !can_call) {
 					continue; // To avoid spamming the preview in editor.
 				}
 #endif // TOOLS_ENABLED
@@ -857,7 +857,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				HashMap<int, TrackNodeCache::PlayingAudioStreamInfo> &map = aa->playing_streams;
 				// Find stream.
 				int idx = -1;
-				if (p_seeked || p_started) {
+				if (p_sought || p_started) {
 					idx = a->track_find_key(i, p_time);
 					// Discard previous stream when seeking.
 					if (map.has(idx)) {
@@ -883,7 +883,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					double end_ofs = a->audio_track_get_key_end_offset(i, idx);
 					double len = stream->get_length();
 
-					if (p_seeked || p_started) {
+					if (p_sought || p_started) {
 						start_ofs += p_time - a->track_get_key_time(i, idx);
 					}
 
@@ -927,7 +927,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					continue;
 				}
 
-				if (p_seeked) {
+				if (p_sought) {
 					//seek
 					int idx = a->track_find_key(i, p_time);
 					if (idx < 0) {
@@ -1005,7 +1005,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 	}
 }
 
-void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started) {
+void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_sought, bool p_started) {
 	double delta = p_delta * speed_scale * cd.speed_scale;
 	double next_pos = cd.pos + delta;
 	bool backwards = signbit(delta); // Negative zero means playing backwards too.
@@ -1053,7 +1053,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 	cd.pos = next_pos;
 
 	AnimationData *prev_from = cd.from;
-	_animation_process_animation(cd.from, prev_pos, cd.pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started, looped_flag);
+	_animation_process_animation(cd.from, prev_pos, cd.pos, delta, p_blend, &cd == &playback.current, p_sought, p_started, looped_flag);
 
 	// End detection.
 	if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
@@ -1078,10 +1078,10 @@ void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 
 	accum_pass++;
 
-	bool seeked = c.seeked; // The animation may be changed during process, so it is safer that the state is changed before process.
+	bool sought = c.sought; // The animation may be changed during process, so it is safer that the state is changed before process.
 
 	if (p_delta != 0) {
-		c.seeked = false;
+		c.sought = false;
 	}
 
 	float blend = 1.0; // First animation we play at 100% blend
@@ -1106,7 +1106,7 @@ void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 		}
 	}
 
-	_animation_process_data(c.current, p_delta, blend, seeked, p_started);
+	_animation_process_data(c.current, p_delta, blend, sought, p_started);
 }
 
 void AnimationPlayer::_animation_update_transforms() {
@@ -1735,7 +1735,7 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 
 	c.current.speed_scale = p_custom_scale;
 	c.assigned = name;
-	c.seeked = false;
+	c.sought = false;
 	c.started = true;
 
 	if (!end_reached) {
@@ -1829,7 +1829,7 @@ void AnimationPlayer::seek(double p_time, bool p_update) {
 		}
 	}
 
-	playback.seeked = true;
+	playback.sought = true;
 	if (p_update) {
 		_animation_process(0);
 	}
@@ -1871,7 +1871,7 @@ double AnimationPlayer::get_current_animation_length() const {
 void AnimationPlayer::_animation_changed(const StringName &p_name) {
 	clear_caches();
 	if (is_playing()) {
-		playback.seeked = true; //need to restart stuff, like audio
+		playback.sought = true; //need to restart stuff, like audio
 	}
 }
 

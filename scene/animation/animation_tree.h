@@ -70,7 +70,7 @@ public:
 		double delta = 0.0;
 		Vector<real_t> track_blends;
 		real_t blend = 0.0;
-		bool seeked = false;
+		bool sought = false;
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 	};
@@ -112,7 +112,7 @@ protected:
 	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false);
 	double process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false);
 
-	void blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
+	void blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_sought, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
 	double blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
 	double blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
 

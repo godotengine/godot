@@ -248,7 +248,7 @@ void GDScriptWorkspace::list_script_files(const String &p_root_dir, List<String>
 	}
 }
 
-ExtendGDScriptParser *GDScriptWorkspace::get_parse_successed_script(const String &p_path) {
+ExtendGDScriptParser *GDScriptWorkspace::get_parse_succeeded_script(const String &p_path) {
 	HashMap<String, ExtendGDScriptParser *>::Iterator S = scripts.find(p_path);
 	if (!S) {
 		parse_local_script(p_path);
@@ -783,7 +783,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const lsp::N
 }
 
 void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list) {
-	if (const ExtendGDScriptParser *parser = get_parse_successed_script(get_file_path(p_uri))) {
+	if (const ExtendGDScriptParser *parser = get_parse_succeeded_script(get_file_path(p_uri))) {
 		const List<lsp::DocumentLink> &links = parser->get_document_links();
 		for (const lsp::DocumentLink &E : links) {
 			r_list.push_back(E);
@@ -793,7 +793,7 @@ void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<lsp::Do
 
 Dictionary GDScriptWorkspace::generate_script_api(const String &p_path) {
 	Dictionary api;
-	if (const ExtendGDScriptParser *parser = get_parse_successed_script(p_path)) {
+	if (const ExtendGDScriptParser *parser = get_parse_succeeded_script(p_path)) {
 		api = parser->generate_api();
 	}
 	return api;

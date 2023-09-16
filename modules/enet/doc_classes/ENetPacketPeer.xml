@@ -187,10 +187,10 @@
 			The time at which throttle statistics were last updated (in milliseconds since the connection started). The interval for throttle statistics updates is [constant PEER_PACKET_THROTTLE_INTERVAL].
 		</constant>
 		<constant name="PEER_PACKET_THROTTLE_ACCELERATION" value="11" enum="PeerStatistic">
-			The throttle's acceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unrelaible packets to be sent [i]more[/i] often. The default value is [code]2[/code].
+			The throttle's acceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unreliable packets to be sent [i]more[/i] often. The default value is [code]2[/code].
 		</constant>
 		<constant name="PEER_PACKET_THROTTLE_DECELERATION" value="12" enum="PeerStatistic">
-			The throttle's deceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unrelaible packets to be sent [i]less[/i] often. The default value is [code]2[/code].
+			The throttle's deceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unreliable packets to be sent [i]less[/i] often. The default value is [code]2[/code].
 		</constant>
 		<constant name="PEER_PACKET_THROTTLE_INTERVAL" value="13" enum="PeerStatistic">
 			The interval over which the lowest mean round trip time should be measured for use by the throttle mechanism (in milliseconds). The default value is [code]5000[/code].

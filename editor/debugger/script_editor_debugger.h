@@ -213,7 +213,7 @@ private:
 	void _collapse_errors_list();
 
 	void _profiler_activate(bool p_enable, int p_profiler);
-	void _profiler_seeked();
+	void _profiler_sought();
 
 	void _clear_errors_list();
 

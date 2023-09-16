@@ -309,7 +309,7 @@
 			<param index="0" name="source_from" type="int" />
 			<param index="1" name="coords_from" type="Vector2i" />
 			<description>
-				Returns if there is a coodinates-level proxy for the given identifiers.
+				Returns if there is a coordinates-level proxy for the given identifiers.
 			</description>
 		</method>
 		<method name="has_source" qualifiers="const">

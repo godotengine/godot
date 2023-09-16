@@ -96,7 +96,7 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 				image->convert_rg_to_ra_rgba8();
 				decompress_format = BASIS_DECOMPRESS_RG_AS_RA;
 #else
-				params.m_seperate_rg_to_color_alpha = true;
+				params.m_separate_rg_to_color_alpha = true;
 				decompress_format = BASIS_DECOMPRESS_RG;
 #endif
 			} break;

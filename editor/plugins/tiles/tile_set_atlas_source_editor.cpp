@@ -211,15 +211,15 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 
 	// Animation.
 	// Check if all tiles have an alternative_id of 0.
-	bool all_alternatve_id_zero = true;
+	bool all_alternative_id_zero = true;
 	for (TileSelection tile : tiles) {
 		if (tile.alternative != 0) {
-			all_alternatve_id_zero = false;
+			all_alternative_id_zero = false;
 			break;
 		}
 	}
 
-	if (all_alternatve_id_zero) {
+	if (all_alternative_id_zero) {
 		Vector<String> components = String(p_name).split("/", true, 2);
 		if (p_name == "animation_columns") {
 			for (TileSelection tile : tiles) {
@@ -337,15 +337,15 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 
 	// Animation.
 	// Check if all tiles have an alternative_id of 0.
-	bool all_alternatve_id_zero = true;
+	bool all_alternative_id_zero = true;
 	for (TileSelection tile : tiles) {
 		if (tile.alternative != 0) {
-			all_alternatve_id_zero = false;
+			all_alternative_id_zero = false;
 			break;
 		}
 	}
 
-	if (all_alternatve_id_zero) {
+	if (all_alternative_id_zero) {
 		const Vector2i &coords = tiles.front()->get().tile;
 
 		Vector<String> components = String(p_name).split("/", true, 2);
@@ -416,15 +416,15 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 
 	// Animation.
 	// Check if all tiles have an alternative_id of 0.
-	bool all_alternatve_id_zero = true;
+	bool all_alternative_id_zero = true;
 	for (TileSelection tile : tiles) {
 		if (tile.alternative != 0) {
-			all_alternatve_id_zero = false;
+			all_alternative_id_zero = false;
 			break;
 		}
 	}
 
-	if (all_alternatve_id_zero) {
+	if (all_alternative_id_zero) {
 		p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Animation", "animation_"), PROPERTY_HINT_NONE, "animation_", PROPERTY_USAGE_GROUP));
 		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_columns")));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("animation_separation")));
@@ -443,10 +443,10 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 
 	// Get the list of properties common to all tiles (similar to what's done in MultiNodeEdit).
 	struct PropertyId {
-		int occurence_id = 0;
+		int occurrence_id = 0;
 		String property;
 		bool operator<(const PropertyId &p_other) const {
-			return occurence_id == p_other.occurence_id ? property < p_other.property : occurence_id < p_other.occurence_id;
+			return occurrence_id == p_other.occurrence_id ? property < p_other.property : occurrence_id < p_other.occurrence_id;
 		}
 	};
 	struct PLData {

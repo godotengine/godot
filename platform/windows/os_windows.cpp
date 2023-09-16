@@ -1660,7 +1660,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	sf.wFunc = FO_DELETE;
 	sf.pFrom = from;
 	sf.pTo = nullptr;
-	sf.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION;
+	sf.fFlags = FOR_ALLOWUNDO | FOR_NOCONFIRMATION;
 	sf.fAnyOperationsAborted = FALSE;
 	sf.hNameMappings = nullptr;
 	sf.lpszProgressTitle = nullptr;

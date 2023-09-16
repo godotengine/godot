@@ -610,7 +610,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) {
 }
 
-bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) {
+bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) {
 	return false;
 }
 
@@ -620,7 +620,7 @@ void LightStorage::shadow_atlas_update(RID p_atlas) {
 void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits) {
 }
 
-int LightStorage::get_directional_light_shadow_size(RID p_light_intance) {
+int LightStorage::get_directional_light_shadow_size(RID p_light_instance) {
 	return 0;
 }
 

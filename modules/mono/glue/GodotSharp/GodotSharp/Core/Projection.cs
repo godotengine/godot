@@ -653,7 +653,7 @@ namespace Godot
         /// </summary>
         /// <param name="offset">The offset to apply to the projection.</param>
         /// <returns>The offsetted projection.</returns>
-        public readonly Projection JitterOffseted(Vector2 offset)
+        public readonly Projection JitterOffsetted(Vector2 offset)
         {
             Projection proj = this;
             proj.W.X += offset.X;

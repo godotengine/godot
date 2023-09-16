@@ -4983,7 +4983,7 @@
 		<constant name="INSTANCE_OCCLUDER" value="10" enum="InstanceType">
 			The instance is an occlusion culling occluder.
 		</constant>
-		<constant name="INSTANCE_VISIBLITY_NOTIFIER" value="11" enum="InstanceType">
+		<constant name="INSTANCE_VISIBILITY_NOTIFIER" value="11" enum="InstanceType">
 			The instance is a visible on-screen notifier.
 		</constant>
 		<constant name="INSTANCE_FOG_VOLUME" value="12" enum="InstanceType">

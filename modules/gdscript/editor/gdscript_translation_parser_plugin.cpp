@@ -40,7 +40,7 @@ void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<Strin
 }
 
 Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
-	// Extract all translatable strings using the parsed tree from GDSriptParser.
+	// Extract all translatable strings using the parsed tree from GDScriptParser.
 	// The strategy is to find all ExpressionNode and AssignmentNode from the tree and extract strings if relevant, i.e
 	// Search strings in ExpressionNode -> CallNode -> tr(), set_text(), set_placeholder() etc.
 	// Search strings in AssignmentNode -> text = "__", tooltip_text = "__" etc.

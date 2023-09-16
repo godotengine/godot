@@ -57,7 +57,7 @@ Written by: Marcus Hennix
 
 // GodotConeTwistJoint3D can be used to simulate ragdoll joints (upper arm, leg etc).
 class GodotConeTwistJoint3D : public GodotJoint3D {
-#ifdef IN_PARALLELL_SOLVER
+#ifdef IN_PARALLEL_SOLVER
 public:
 #endif
 

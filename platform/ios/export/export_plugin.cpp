@@ -985,7 +985,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	String pbx_frameworks_refs;
 	String pbx_resources_build;
 	String pbx_resources_refs;
-	String pbx_embeded_frameworks;
+	String pbx_embedded_frameworks;
 
 	const String file_info_format = String("$build_id = {isa = PBXBuildFile; fileRef = $ref_id; };\n") +
 			"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = \"$name\"; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
@@ -1004,7 +1004,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 			if (asset.should_embed) {
 				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
 				framework_id = (++current_id).str();
-				pbx_embeded_frameworks += framework_id + ",\n";
+				pbx_embedded_frameworks += framework_id + ",\n";
 			}
 
 			type = "wrapper.framework";
@@ -1012,7 +1012,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 			if (asset.should_embed) {
 				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
 				framework_id = (++current_id).str();
-				pbx_embeded_frameworks += framework_id + ",\n";
+				pbx_embedded_frameworks += framework_id + ",\n";
 			}
 
 			type = "wrapper.xcframework";
@@ -1055,7 +1055,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	str = str.replace("$additional_pbx_frameworks_refs", pbx_frameworks_refs);
 	str = str.replace("$additional_pbx_resources_build", pbx_resources_build);
 	str = str.replace("$additional_pbx_resources_refs", pbx_resources_refs);
-	str = str.replace("$pbx_embeded_frameworks", pbx_embeded_frameworks);
+	str = str.replace("$pbx_embedded_frameworks", pbx_embedded_frameworks);
 
 	CharString cs = str.utf8();
 	p_project_data.resize(cs.size() - 1);
@@ -2151,7 +2151,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 							Dictionary device_info = os_devices[i];
 							if (device_info["isAvailable"].operator bool() && device_info["state"] == "Booted") {
 								Device nd;
-								nd.id = device_info["udid"];
+								nd.id = device_info["uuid"];
 								nd.name = device_info["name"].operator String() + " (simulator)";
 								nd.simulator = true;
 								ldevices.push_back(nd);

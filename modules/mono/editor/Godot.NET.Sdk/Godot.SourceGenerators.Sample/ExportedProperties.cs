@@ -15,14 +15,14 @@ namespace Godot.SourceGenerators.Sample
         // Do not generate default value
         private String _notGenerate_Property_String = new string("not generate");
         [Export]
-        public String NotGenerate_Complex_Lamda_Property
+        public String NotGenerate_Complex_Lambda_Property
         {
             get => _notGenerate_Property_String + Convert.ToInt32("1");
             set => _notGenerate_Property_String = value;
         }
 
         [Export]
-        public String NotGenerate_Lamda_NoField_Property
+        public String NotGenerate_Lambda_NoField_Property
         {
             get => new string("not generate");
             set => _notGenerate_Property_String = value;
@@ -92,12 +92,12 @@ namespace Godot.SourceGenerators.Sample
         }
 
         // Lambda Property
-        private String _lamdaProperty_String = "LamdaProperty_String";
+        private String _lambdaProperty_String = "LambdaProperty_String";
         [Export]
-        public String LamdaProperty_String
+        public String LambdaProperty_String
         {
-            get => _lamdaProperty_String;
-            set => _lamdaProperty_String = value;
+            get => _lambdaProperty_String;
+            set => _lambdaProperty_String = value;
         }
 
         // Auto Property

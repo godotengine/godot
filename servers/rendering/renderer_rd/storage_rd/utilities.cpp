@@ -82,7 +82,7 @@ RS::InstanceType Utilities::get_base_type(RID p_rid) const {
 		return RS::INSTANCE_FOG_VOLUME;
 	}
 	if (owns_visibility_notifier(p_rid)) {
-		return RS::INSTANCE_VISIBLITY_NOTIFIER;
+		return RS::INSTANCE_VISIBILITY_NOTIFIER;
 	}
 
 	return RS::INSTANCE_NONE;

@@ -95,7 +95,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	}
 }
 
-void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag) {
+void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_sought, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag) {
 	ERR_FAIL_NULL(state);
 	ERR_FAIL_COND(!state->player->has_animation(p_animation));
 
@@ -120,7 +120,7 @@ void AnimationNode::blend_animation(const StringName &p_animation, double p_time
 	anim_state.delta = p_delta;
 	anim_state.time = p_time;
 	anim_state.animation = animation;
-	anim_state.seeked = p_seeked;
+	anim_state.sought = p_sought;
 	anim_state.looped_flag = p_looped_flag;
 	anim_state.is_external_seeking = p_is_external_seeking;
 
@@ -461,7 +461,7 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
 
-	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "is_external_seeking", "blend", "looped_flag"), &AnimationNode::blend_animation, DEFVAL(Animation::LOOPED_FLAG_NONE));
+	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "sought", "is_external_seeking", "blend", "looped_flag"), &AnimationNode::blend_animation, DEFVAL(Animation::LOOPED_FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync", "test_only"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(false));
 
@@ -1110,12 +1110,12 @@ void AnimationTree::_process_graph(double p_delta) {
 			double time = as.time;
 			double delta = as.delta;
 			real_t weight = as.blend;
-			bool seeked = as.seeked;
+			bool sought = as.sought;
 			Animation::LoopedFlag looped_flag = as.looped_flag;
 			bool is_external_seeking = as.is_external_seeking;
 			bool backward = signbit(delta); // This flag is used by the root motion calculates or detecting the end of audio stream.
 #ifndef _3D_DISABLED
-			bool calc_root = !seeked || is_external_seeking;
+			bool calc_root = !sought || is_external_seeking;
 #endif // _3D_DISABLED
 
 			for (int i = 0; i < a->get_track_count(); i++) {
@@ -1492,7 +1492,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								}
 							}
 						} else {
-							if (seeked) {
+							if (sought) {
 								int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 								if (idx < 0) {
 									continue;
@@ -1523,7 +1523,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						}
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
-						if (seeked) {
+						if (sought) {
 							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							if (idx < 0) {
 								continue;
@@ -1577,7 +1577,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
 						// Find stream.
 						int idx = -1;
-						if (seeked) {
+						if (sought) {
 							idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							// Discard previous stream when seeking.
 							if (map.has(idx)) {
@@ -1602,7 +1602,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							double end_ofs = a->audio_track_get_key_end_offset(i, idx);
 							double len = stream->get_length();
 
-							if (seeked) {
+							if (sought) {
 								start_ofs += time - a->track_get_key_time(i, idx);
 							}
 
@@ -1648,7 +1648,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							continue;
 						}
 
-						if (seeked) {
+						if (sought) {
 							//seek
 							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							if (idx < 0) {
@@ -1680,7 +1680,7 @@ void AnimationTree::_process_graph(double p_delta) {
 									break;
 							}
 
-							if (player2->is_playing() || seeked) {
+							if (player2->is_playing() || sought) {
 								player2->seek(at_anim_pos);
 								player2->play(anim_name);
 								t->playing = true;

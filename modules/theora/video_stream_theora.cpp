@@ -453,7 +453,7 @@ void VideoStreamPlaybackTheora::update(double p_delta) {
 				/* no pending audio; is there a pending packet to decode? */
 				if (ogg_stream_packetout(&vo, &op) > 0) {
 					if (vorbis_synthesis(&vb, &op) == 0) { /* test for success! */
-						vorbis_synthesis_blockin(&vd, &vb);
+						vorbis_synthesis_blocking(&vd, &vb);
 					}
 				} else { /* we need more data; break out to suck in another page */
 					break;

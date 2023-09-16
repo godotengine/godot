@@ -309,8 +309,8 @@ _FORCE_INLINE_ bool is_tah(char32_t p_chr) {
 	return u_getIntPropertyValue(p_chr, UCHAR_JOINING_GROUP) == U_JG_TAH;
 }
 
-_FORCE_INLINE_ bool is_teh_marbuta(char32_t p_chr) {
-	return u_getIntPropertyValue(p_chr, UCHAR_JOINING_GROUP) == U_JG_TEH_MARBUTA;
+_FORCE_INLINE_ bool is_the_marbuta(char32_t p_chr) {
+	return u_getIntPropertyValue(p_chr, UCHAR_JOINING_GROUP) == U_JG_THE_MARBUTA;
 }
 
 _FORCE_INLINE_ bool is_yeh(char32_t p_chr) {
@@ -5116,7 +5116,7 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 	return sd->line_breaks_valid;
 }
 
-_FORCE_INLINE_ int64_t _generate_kashida_justification_opportunies(const String &p_data, int64_t p_start, int64_t p_end) {
+_FORCE_INLINE_ int64_t _generate_kashida_justification_opportunities(const String &p_data, int64_t p_start, int64_t p_end) {
 	int64_t kashida_pos = -1;
 	int8_t priority = 100;
 	int64_t i = p_start;
@@ -5141,7 +5141,7 @@ _FORCE_INLINE_ int64_t _generate_kashida_justification_opportunies(const String 
 			}
 		}
 		if (priority >= 2 && i > p_start) {
-			if (is_teh_marbuta(c) || is_dal(c) || (is_heh(c) && i == p_end - 1)) {
+			if (is_the_marbuta(c) || is_dal(c) || (is_heh(c) && i == p_end - 1)) {
 				if (is_connected_to_prev(c, pc)) {
 					kashida_pos = i - 1;
 					priority = 2;
@@ -5221,14 +5221,14 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 			int limit = 0;
 			for (int i = 0; i < sd->text.length(); i++) {
 				if (is_whitespace(data[i])) {
-					int ks = _generate_kashida_justification_opportunies(sd->text, limit, i) + sd->start;
+					int ks = _generate_kashida_justification_opportunities(sd->text, limit, i) + sd->start;
 					if (ks != -1) {
 						sd->jstops[ks] = true;
 					}
 					limit = i + 1;
 				}
 			}
-			int ks = _generate_kashida_justification_opportunies(sd->text, limit, sd->text.length()) + sd->start;
+			int ks = _generate_kashida_justification_opportunities(sd->text, limit, sd->text.length()) + sd->start;
 			if (ks != -1) {
 				sd->jstops[ks] = true;
 			}
@@ -5238,7 +5238,7 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 				if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) {
 					int i = _convert_pos(sd, ubrk_current(bi));
 					sd->jstops[i + sd->start] = false;
-					int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
+					int ks = _generate_kashida_justification_opportunities(sd->text, limit, i);
 					if (ks != -1) {
 						sd->jstops[ks + sd->start] = true;
 					}
@@ -6284,8 +6284,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		bn.lang.insert(StringName("bn_IN"));
 		bn.lang.insert(StringName("mni")); // Manipuri
 		bn.lang.insert(StringName("mni_IN"));
-		bn.lang.insert(StringName("mni_Beng"));
-		bn.lang.insert(StringName("mni_Beng_IN"));
+		bn.lang.insert(StringName("mni_Being"));
+		bn.lang.insert(StringName("mni_Being_IN"));
 		bn.digits = U"০১২৩৪৫৬৭৮৯.";
 		bn.percent_sign = U"%";
 		bn.exp = U"e";

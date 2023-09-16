@@ -700,7 +700,7 @@ public:
 		/*    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle */
 		/*       we do not even need to test these) */
 		/*    2) normal of the triangle */
-		/*    3) crossproduct(edge from tri, {x,y,z}-directin) */
+		/*    3) crossproduct(edge from tri, {x,y,z}-direction) */
 		/*       this gives 3x3=9 more tests */
 		Vector3 v0, v1, v2;
 		float min, max, d, p0, p1, p2, rad, fex, fey, fez;

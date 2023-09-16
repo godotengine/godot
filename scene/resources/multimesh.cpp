@@ -164,14 +164,14 @@ Vector<Color> MultiMesh::_get_color_array() const {
 }
 
 void MultiMesh::_set_custom_data_array(const Vector<Color> &p_array) {
-	const Vector<Color> &custom_datas = p_array;
-	int len = custom_datas.size();
+	const Vector<Color> &custom_data = p_array;
+	int len = custom_data.size();
 	if (len == 0) {
 		return;
 	}
 	ERR_FAIL_COND(len != instance_count);
 
-	const Color *r = custom_datas.ptr();
+	const Color *r = custom_data.ptr();
 
 	for (int i = 0; i < len; i++) {
 		set_instance_custom_data(i, r[i]);
@@ -183,14 +183,14 @@ Vector<Color> MultiMesh::_get_custom_data_array() const {
 		return Vector<Color>();
 	}
 
-	Vector<Color> custom_datas;
-	custom_datas.resize(instance_count);
+	Vector<Color> custom_data;
+	custom_data.resize(instance_count);
 
 	for (int i = 0; i < instance_count; i++) {
-		custom_datas.set(i, get_instance_custom_data(i));
+		custom_data.set(i, get_instance_custom_data(i));
 	}
 
-	return custom_datas;
+	return custom_data;
 }
 #endif // DISABLE_DEPRECATED
 

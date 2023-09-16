@@ -57,7 +57,7 @@
  definition of invalidation: NONE dirty, LOCAL dirty, GLOBAL dirty
 
  1) If a node sets a LOCAL, it must climb the tree and set it as GLOBAL dirty
- .  a) marking GLOBALs as dirty up all the tree must be done always
+ .  a) marking GLOBALLs as dirty up all the tree must be done always
  2) If a node sets a GLOBAL, it marks local as dirty, and that's all?
 
  //is clearing the dirty state correct in this case?

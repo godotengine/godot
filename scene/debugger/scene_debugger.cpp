@@ -1003,14 +1003,14 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 		if (!n->has_node(p_new_place)) {
 			continue;
 		}
-		Node *nto = n->get_node(p_new_place);
+		Node *not = n->get_node(p_new_place);
 
 		nfrom->get_parent()->remove_child(nfrom);
 		nfrom->set_name(p_new_name);
 
-		nto->add_child(nfrom);
+		not->add_child(nfrom);
 		if (p_at_pos >= 0) {
-			nto->move_child(nfrom, p_at_pos);
+			not->move_child(nfrom, p_at_pos);
 		}
 	}
 }

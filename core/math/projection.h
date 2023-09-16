@@ -94,7 +94,7 @@ struct _NO_DISCARD_ Projection {
 	Projection perspective_znear_adjusted(real_t p_new_znear) const;
 	Plane get_projection_plane(Planes p_plane) const;
 	Projection flipped_y() const;
-	Projection jitter_offseted(const Vector2 &p_offset) const;
+	Projection jitter_offsetted(const Vector2 &p_offset) const;
 
 	static real_t get_fovy(real_t p_fovx, real_t p_aspect) {
 		return Math::rad_to_deg(Math::atan(p_aspect * Math::tan(Math::deg_to_rad(p_fovx) * 0.5)) * 2.0);

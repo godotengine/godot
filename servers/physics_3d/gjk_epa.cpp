@@ -576,7 +576,7 @@ struct	GJK
 			InvalidHull,
 			OutOfFaces,
 			OutOfVertices,
-			AccuraryReached,
+			accuracyReached,
 			FallBack,
 			Failed		};};
 			/* Fields		*/
@@ -699,7 +699,7 @@ struct	GJK
 										best=findbest();
 										outer=*best;
 									} else { m_status=eStatus::InvalidHull;break; }
-								} else { m_status=eStatus::AccuraryReached;break; }
+								} else { m_status=eStatus::accuracyReached;break; }
 							} else { m_status=eStatus::OutOfVertices;break; }
 						}
 						const Vector3	projection=outer.n*outer.d;
@@ -975,7 +975,7 @@ bool Penetration(	const GodotShape3D*	shape0,
 /* Symbols cleanup		*/
 
 #undef GJK_MAX_ITERATIONS
-#undef GJK_ACCURARY
+#undef GJK_accuracy
 #undef GJK_MIN_DISTANCE
 #undef GJK_DUPLICATED_EPS
 #undef GJK_SIMPLEX2_EPS

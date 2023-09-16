@@ -58,7 +58,7 @@ protected:
 
 	void reload_all_workspace_scripts();
 
-	ExtendGDScriptParser *get_parse_successed_script(const String &p_path);
+	ExtendGDScriptParser *get_parse_succeeded_script(const String &p_path);
 	ExtendGDScriptParser *get_parse_result(const String &p_path);
 
 	void list_script_files(const String &p_root_dir, List<String> &r_files);

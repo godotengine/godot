@@ -1063,7 +1063,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	template <class T>
 	void _free_rids(T &p_owner, const char *p_type);
 
-	void _finalize_command_bufers();
+	void _finalize_command_buffers();
 	void _begin_frame();
 
 #ifdef DEV_ENABLED

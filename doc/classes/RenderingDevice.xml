@@ -1861,7 +1861,7 @@
 		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS" value="7" enum="RenderPrimitive">
 			Triangle strip rendering primitive. Triangles drawn are connected to the previous triangle.
 		</constant>
-		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_AJACENCY" value="8" enum="RenderPrimitive">
+		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_ADJACENCY" value="8" enum="RenderPrimitive">
 			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-triangle-strips-with-adjacency]Triangle strip rendering primitive with adjacency.[/url]
 			[b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
 		</constant>
@@ -1869,7 +1869,7 @@
 			Triangle strip rendering primitive with [i]primitive restart[/i] enabled. Triangles drawn are connected to the previous triangle, but a primitive restart index can be specified before drawing to create a second triangle strip after the specified index.
 			[b]Note:[/b] Only compatible with indexed draws.
 		</constant>
-		<constant name="RENDER_PRIMITIVE_TESSELATION_PATCH" value="10" enum="RenderPrimitive">
+		<constant name="RENDER_PRIMITIVE_TESSELLATION_PATCH" value="10" enum="RenderPrimitive">
 			Tessellation patch rendering primitive. Only useful with tessellation shaders, which can be used to deform these patches.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_MAX" value="11" enum="RenderPrimitive">
@@ -2126,10 +2126,10 @@
 		<constant name="SHADER_STAGE_FRAGMENT" value="1" enum="ShaderStage">
 			Fragment shader stage (called "pixel shader" in Direct3D). This can be used to manipulate pixels from a shader.
 		</constant>
-		<constant name="SHADER_STAGE_TESSELATION_CONTROL" value="2" enum="ShaderStage">
+		<constant name="SHADER_STAGE_TESSELLATION_CONTROL" value="2" enum="ShaderStage">
 			Tessellation control shader stage. This can be used to create additional geometry from a shader.
 		</constant>
-		<constant name="SHADER_STAGE_TESSELATION_EVALUATION" value="3" enum="ShaderStage">
+		<constant name="SHADER_STAGE_TESSELLATION_EVALUATION" value="3" enum="ShaderStage">
 			Tessellation evaluation shader stage. This can be used to create additional geometry from a shader.
 		</constant>
 		<constant name="SHADER_STAGE_COMPUTE" value="4" enum="ShaderStage">
@@ -2144,11 +2144,11 @@
 		<constant name="SHADER_STAGE_FRAGMENT_BIT" value="2" enum="ShaderStage">
 			Fragment shader stage bit (see also [constant SHADER_STAGE_FRAGMENT]).
 		</constant>
-		<constant name="SHADER_STAGE_TESSELATION_CONTROL_BIT" value="4" enum="ShaderStage">
-			Tessellation control shader stage bit (see also [constant SHADER_STAGE_TESSELATION_CONTROL]).
+		<constant name="SHADER_STAGE_TESSELLATION_CONTROL_BIT" value="4" enum="ShaderStage">
+			Tessellation control shader stage bit (see also [constant SHADER_STAGE_TESSELLATION_CONTROL]).
 		</constant>
-		<constant name="SHADER_STAGE_TESSELATION_EVALUATION_BIT" value="8" enum="ShaderStage">
-			Tessellation evaluation shader stage bit (see also [constant SHADER_STAGE_TESSELATION_EVALUATION]).
+		<constant name="SHADER_STAGE_TESSELLATION_EVALUATION_BIT" value="8" enum="ShaderStage">
+			Tessellation evaluation shader stage bit (see also [constant SHADER_STAGE_TESSELLATION_EVALUATION]).
 		</constant>
 		<constant name="SHADER_STAGE_COMPUTE_BIT" value="16" enum="ShaderStage">
 			Compute shader stage bit (see also [constant SHADER_STAGE_COMPUTE]).

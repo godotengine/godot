@@ -797,7 +797,7 @@
 			<param index="0" name="text" type="String" />
 			<param index="1" name="flags" type="int" />
 			<param index="2" name="from_line" type="int" />
-			<param index="3" name="from_colum" type="int" />
+			<param index="3" name="from_column" type="int" />
 			<description>
 				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
 				In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line. If no results are found, both are equal to [code]-1[/code].

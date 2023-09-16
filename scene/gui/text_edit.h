@@ -277,7 +277,7 @@ private:
 	int placeholder_line_height = -1;
 	int placeholder_max_width = -1;
 
-	Vector<String> placeholder_wraped_rows;
+	Vector<String> placeholder_wrapped_rows;
 
 	void _update_placeholder();
 

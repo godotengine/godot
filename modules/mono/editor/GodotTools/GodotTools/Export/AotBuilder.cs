@@ -65,7 +65,7 @@ namespace GodotTools.Export
 
             if (platform == OS.Platforms.iOS)
             {
-                string[] architectures = GetEnablediOSArchs(features).ToArray();
+                string[] architectures = GetEnabledOSArchs(features).ToArray();
                 CompileAssembliesForiOS(exporter, isDebug, architectures, aotOpts, aotTempDir, assembliesPrepared, bclDir);
             }
             else if (platform == OS.Platforms.Android)
@@ -549,7 +549,7 @@ MONO_AOT_MODE_LAST = 1000,
             }
         }
 
-        private static IEnumerable<string> GetEnablediOSArchs(string[] features)
+        private static IEnumerable<string> GetEnabledOSArchs(string[] features)
         {
             var iosArchs = new[]
             {

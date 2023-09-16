@@ -189,7 +189,7 @@ public:
 
 private:
 	void _make_cache_dirty();
-	void _update_cache_pin_points_datas();
+	void _update_cache_pin_points_data();
 
 	void _pin_point_on_physics_server(int p_point_index, bool pin);
 	void _add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path);

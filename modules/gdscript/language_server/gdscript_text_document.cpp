@@ -310,7 +310,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	} else if (data.get_type() == Variant::STRING) {
 		String query = data;
 
-		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
+		Vector<String> param_symbols = query.split(SYMBOL_SEPARATOR, false);
 
 		if (param_symbols.size() >= 2) {
 			String class_ = param_symbols[0];

@@ -243,7 +243,7 @@ Projection Projection::flipped_y() const {
 	return proj;
 }
 
-Projection Projection ::jitter_offseted(const Vector2 &p_offset) const {
+Projection Projection ::jitter_offsetted(const Vector2 &p_offset) const {
 	Projection proj = *this;
 	proj.add_jitter_offset(p_offset);
 	return proj;

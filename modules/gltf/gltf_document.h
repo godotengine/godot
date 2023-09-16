@@ -78,7 +78,7 @@ public:
 	static void unregister_all_gltf_document_extensions();
 
 private:
-	void _build_parent_hierachy(Ref<GLTFState> p_state);
+	void _build_parent_hierarchy(Ref<GLTFState> p_state);
 	double _filter_number(double p_float);
 	String _get_component_type_name(const uint32_t p_component);
 	int _get_component_type_size(const int p_component_type);

@@ -141,7 +141,7 @@
 #define snd_pcm_forward snd_pcm_forward_dylibloader_orig_asound
 #define snd_pcm_writei snd_pcm_writei_dylibloader_orig_asound
 #define snd_pcm_readi snd_pcm_readi_dylibloader_orig_asound
-#define snd_pcm_writen snd_pcm_writen_dylibloader_orig_asound
+#define snd_pcm_written snd_pcm_written_dylibloader_orig_asound
 #define snd_pcm_readn snd_pcm_readn_dylibloader_orig_asound
 #define snd_pcm_wait snd_pcm_wait_dylibloader_orig_asound
 #define snd_pcm_link snd_pcm_link_dylibloader_orig_asound
@@ -393,7 +393,7 @@
 #define snd_pcm_mmap_commit snd_pcm_mmap_commit_dylibloader_orig_asound
 #define snd_pcm_mmap_writei snd_pcm_mmap_writei_dylibloader_orig_asound
 #define snd_pcm_mmap_readi snd_pcm_mmap_readi_dylibloader_orig_asound
-#define snd_pcm_mmap_writen snd_pcm_mmap_writen_dylibloader_orig_asound
+#define snd_pcm_mmap_written snd_pcm_mmap_written_dylibloader_orig_asound
 #define snd_pcm_mmap_readn snd_pcm_mmap_readn_dylibloader_orig_asound
 #define snd_pcm_format_signed snd_pcm_format_signed_dylibloader_orig_asound
 #define snd_pcm_format_unsigned snd_pcm_format_unsigned_dylibloader_orig_asound
@@ -1413,7 +1413,7 @@
 #undef snd_pcm_forward
 #undef snd_pcm_writei
 #undef snd_pcm_readi
-#undef snd_pcm_writen
+#undef snd_pcm_written
 #undef snd_pcm_readn
 #undef snd_pcm_wait
 #undef snd_pcm_link
@@ -1665,7 +1665,7 @@
 #undef snd_pcm_mmap_commit
 #undef snd_pcm_mmap_writei
 #undef snd_pcm_mmap_readi
-#undef snd_pcm_mmap_writen
+#undef snd_pcm_mmap_written
 #undef snd_pcm_mmap_readn
 #undef snd_pcm_format_signed
 #undef snd_pcm_format_unsigned
@@ -2687,7 +2687,7 @@ extern "C" {
 #define snd_pcm_forward snd_pcm_forward_dylibloader_wrapper_asound
 #define snd_pcm_writei snd_pcm_writei_dylibloader_wrapper_asound
 #define snd_pcm_readi snd_pcm_readi_dylibloader_wrapper_asound
-#define snd_pcm_writen snd_pcm_writen_dylibloader_wrapper_asound
+#define snd_pcm_written snd_pcm_written_dylibloader_wrapper_asound
 #define snd_pcm_readn snd_pcm_readn_dylibloader_wrapper_asound
 #define snd_pcm_wait snd_pcm_wait_dylibloader_wrapper_asound
 #define snd_pcm_link snd_pcm_link_dylibloader_wrapper_asound
@@ -2939,7 +2939,7 @@ extern "C" {
 #define snd_pcm_mmap_commit snd_pcm_mmap_commit_dylibloader_wrapper_asound
 #define snd_pcm_mmap_writei snd_pcm_mmap_writei_dylibloader_wrapper_asound
 #define snd_pcm_mmap_readi snd_pcm_mmap_readi_dylibloader_wrapper_asound
-#define snd_pcm_mmap_writen snd_pcm_mmap_writen_dylibloader_wrapper_asound
+#define snd_pcm_mmap_written snd_pcm_mmap_written_dylibloader_wrapper_asound
 #define snd_pcm_mmap_readn snd_pcm_mmap_readn_dylibloader_wrapper_asound
 #define snd_pcm_format_signed snd_pcm_format_signed_dylibloader_wrapper_asound
 #define snd_pcm_format_unsigned snd_pcm_format_unsigned_dylibloader_wrapper_asound
@@ -3958,7 +3958,7 @@ extern snd_pcm_sframes_t (*snd_pcm_forwardable_dylibloader_wrapper_asound)( snd_
 extern snd_pcm_sframes_t (*snd_pcm_forward_dylibloader_wrapper_asound)( snd_pcm_t*, snd_pcm_uframes_t);
 extern snd_pcm_sframes_t (*snd_pcm_writei_dylibloader_wrapper_asound)( snd_pcm_t*,const void*, snd_pcm_uframes_t);
 extern snd_pcm_sframes_t (*snd_pcm_readi_dylibloader_wrapper_asound)( snd_pcm_t*, void*, snd_pcm_uframes_t);
-extern snd_pcm_sframes_t (*snd_pcm_writen_dylibloader_wrapper_asound)( snd_pcm_t*, void**, snd_pcm_uframes_t);
+extern snd_pcm_sframes_t (*snd_pcm_written_dylibloader_wrapper_asound)( snd_pcm_t*, void**, snd_pcm_uframes_t);
 extern snd_pcm_sframes_t (*snd_pcm_readn_dylibloader_wrapper_asound)( snd_pcm_t*, void**, snd_pcm_uframes_t);
 extern int (*snd_pcm_wait_dylibloader_wrapper_asound)( snd_pcm_t*, int);
 extern int (*snd_pcm_link_dylibloader_wrapper_asound)( snd_pcm_t*, snd_pcm_t*);
@@ -4210,7 +4210,7 @@ extern int (*snd_pcm_mmap_begin_dylibloader_wrapper_asound)( snd_pcm_t*,const sn
 extern snd_pcm_sframes_t (*snd_pcm_mmap_commit_dylibloader_wrapper_asound)( snd_pcm_t*, snd_pcm_uframes_t, snd_pcm_uframes_t);
 extern snd_pcm_sframes_t (*snd_pcm_mmap_writei_dylibloader_wrapper_asound)( snd_pcm_t*,const void*, snd_pcm_uframes_t);
 extern snd_pcm_sframes_t (*snd_pcm_mmap_readi_dylibloader_wrapper_asound)( snd_pcm_t*, void*, snd_pcm_uframes_t);
-extern snd_pcm_sframes_t (*snd_pcm_mmap_writen_dylibloader_wrapper_asound)( snd_pcm_t*, void**, snd_pcm_uframes_t);
+extern snd_pcm_sframes_t (*snd_pcm_mmap_written_dylibloader_wrapper_asound)( snd_pcm_t*, void**, snd_pcm_uframes_t);
 extern snd_pcm_sframes_t (*snd_pcm_mmap_readn_dylibloader_wrapper_asound)( snd_pcm_t*, void**, snd_pcm_uframes_t);
 extern int (*snd_pcm_format_signed_dylibloader_wrapper_asound)( snd_pcm_format_t);
 extern int (*snd_pcm_format_unsigned_dylibloader_wrapper_asound)( snd_pcm_format_t);

@@ -2342,7 +2342,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
 - **macOS:** <kbd>Command + Left</kbd> in TextEdit now moves the cursor to the first non-whitespace character.
 - **macOS:** Non-resizable windows are now allowed to enter fullscreen mode.
 - **macOS:** The editor's title bar now uses dark mode on Mojave.
-- **X11:** `OS.set_window_postion()` now takes window decorations into account.
+- **X11:** `OS.set_window_position()` now takes window decorations into account.
 
 ### Removed
 

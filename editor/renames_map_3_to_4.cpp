@@ -427,7 +427,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "intersect_polygons_2d", "intersect_polygons" }, // Geometry2D
 	{ "intersect_polyline_with_polygon_2d", "intersect_polyline_with_polygon" }, // Geometry2D
 	{ "is_a_parent_of", "is_ancestor_of" }, // Node
-	{ "is_commiting_action", "is_committing_action" }, // UndoRedo
+	{ "is_committing_action", "is_committing_action" }, // UndoRedo
 	{ "is_doubleclick", "is_double_click" }, // InputEventMouseButton
 	{ "is_draw_red", "is_draw_warning" }, // EditorProperty
 	{ "is_follow_smoothing_enabled", "is_position_smoothing_enabled" }, // Camera2D
@@ -848,7 +848,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "IntersectPolygons2d", "IntersectPolygons" }, // Geometry2D
 	{ "IntersectPolylineWithPolygon2d", "IntersectPolylineWithPolygon" }, // Geometry2D
 	{ "IsAParentOf", "IsAncestorOf" }, // Node
-	{ "IsCommitingAction", "IsCommittingAction" }, // UndoRedo
+	{ "IsCommittingAction", "IsCommittingAction" }, // UndoRedo
 	{ "IsDoubleclick", "IsDoubleClick" }, // InputEventMouseButton
 	{ "IsFollowSmoothingEnabled", "IsPositionSmoothingEnabled" }, // Camera2D
 	{ "IsHDragEnabled", "IsDragHorizontalEnabled" }, // Camera2D

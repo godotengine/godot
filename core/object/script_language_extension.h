@@ -151,11 +151,11 @@ public:
 
 	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_script_property_list)
 
-	virtual void get_script_property_list(List<PropertyInfo> *r_propertys) const override {
+	virtual void get_script_property_list(List<PropertyInfo> *r_properties) const override {
 		TypedArray<Dictionary> sl;
 		GDVIRTUAL_REQUIRED_CALL(_get_script_property_list, sl);
 		for (int i = 0; i < sl.size(); i++) {
-			r_propertys->push_back(PropertyInfo::from_dict(sl[i]));
+			r_properties->push_back(PropertyInfo::from_dict(sl[i]));
 		}
 	}
 

@@ -10,8 +10,8 @@ const OFFLINE_URL = "@GODOT_OFFLINE_PAGE@";
 // Files that will be cached on load.
 const CACHED_FILES = @GODOT_CACHE@;
 // Files that we might not want the user to preload, and will only be cached on first load.
-const CACHABLE_FILES = @GODOT_OPT_CACHE@;
-const FULL_CACHE = CACHED_FILES.concat(CACHABLE_FILES);
+const CACHEABLE_FILES = @GODOT_OPT_CACHE@;
+const FULL_CACHE = CACHED_FILES.concat(CACHEABLE_FILES);
 
 self.addEventListener("install", (event) => {
 	event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CACHED_FILES)));
@@ -29,14 +29,14 @@ self.addEventListener("activate", (event) => {
 	);
 });
 
-async function fetchAndCache(event, cache, isCachable) {
+async function fetchAndCache(event, cache, isCacheable) {
 	// Use the preloaded response, if it's there
 	let response = await event.preloadResponse;
 	if (!response) {
 		// Or, go over network.
 		response = await self.fetch(event.request);
 	}
-	if (isCachable) {
+	if (isCacheable) {
 		// And update the cache
 		cache.put(event.request, response.clone());
 	}
@@ -49,8 +49,8 @@ self.addEventListener("fetch", (event) => {
 	const referrer = event.request.referrer || "";
 	const base = referrer.slice(0, referrer.lastIndexOf("/") + 1);
 	const local = url.startsWith(base) ? url.replace(base, "") : "";
-	const isCachable = FULL_CACHE.some(v => v === local) || (base === referrer && base.endsWith(CACHED_FILES[0]));
-	if (isNavigate || isCachable) {
+	const isCacheable = FULL_CACHE.some(v => v === local) || (base === referrer && base.endsWith(CACHED_FILES[0]));
+	if (isNavigate || isCacheable) {
 		event.respondWith(async function () {
 			// Try to use cache first
 			const cache = await caches.open(CACHE_NAME);
@@ -61,7 +61,7 @@ self.addEventListener("fetch", (event) => {
 				if (missing) {
 					try {
 						// Try network if some cached file is missing (so we can display offline page in case).
-						return await fetchAndCache(event, cache, isCachable);
+						return await fetchAndCache(event, cache, isCacheable);
 					} catch (e) {
 						// And return the hopefully always cached offline page in case of network failure.
 						console.error("Network error: ", e);
@@ -74,7 +74,7 @@ self.addEventListener("fetch", (event) => {
 				return cached;
 			} else {
 				// Try network if don't have it in cache.
-				return await fetchAndCache(event, cache, isCachable);
+				return await fetchAndCache(event, cache, isCacheable);
 			}
 		}());
 	}

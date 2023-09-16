@@ -390,7 +390,7 @@ void SoftBody3D::_update_physics_server() {
 		return;
 	}
 
-	_update_cache_pin_points_datas();
+	_update_cache_pin_points_data();
 	// Submit bone attachment
 	const int pinned_points_indices_size = pinned_points.size();
 	const PinnedPoint *r = pinned_points.ptr();
@@ -703,7 +703,7 @@ void SoftBody3D::_make_cache_dirty() {
 	pinned_points_cache_dirty = true;
 }
 
-void SoftBody3D::_update_cache_pin_points_datas() {
+void SoftBody3D::_update_cache_pin_points_data() {
 	if (!pinned_points_cache_dirty) {
 		return;
 	}

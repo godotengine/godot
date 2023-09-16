@@ -520,17 +520,17 @@ void Voxelizer::_sort() {
 	{
 		reverse_map.resize(cell_count);
 		const CellSort *sort_cellsp = sorted_cells.ptr();
-		uint32_t *reverse_mapp = reverse_map.ptrw();
+		uint32_t *reverse_map = reverse_map.ptrw();
 
 		for (uint32_t i = 0; i < cell_count; i++) {
-			reverse_mapp[sort_cellsp[i].index] = i;
+			reverse_map[sort_cellsp[i].index] = i;
 		}
 	}
 
 	{
 		const CellSort *sort_cellsp = sorted_cells.ptr();
 		const Cell *bake_cellsp = bake_cells.ptr();
-		const uint32_t *reverse_mapp = reverse_map.ptr();
+		const uint32_t *reverse_map = reverse_map.ptr();
 		Cell *new_bake_cellsp = new_bake_cells.ptrw();
 
 		for (uint32_t i = 0; i < cell_count; i++) {
@@ -539,7 +539,7 @@ void Voxelizer::_sort() {
 			//remap children
 			for (uint32_t j = 0; j < 8; j++) {
 				if (new_bake_cellsp[i].children[j] != CHILD_EMPTY) {
-					new_bake_cellsp[i].children[j] = reverse_mapp[new_bake_cellsp[i].children[j]];
+					new_bake_cellsp[i].children[j] = reverse_map[new_bake_cellsp[i].children[j]];
 				}
 			}
 		}

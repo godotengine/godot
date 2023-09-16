@@ -26,7 +26,7 @@
 				dstPath = "";
 				dstSubfolderSpec = 10;
 				files = (
-					$pbx_embeded_frameworks
+					$pbx_embedded_frameworks
 				);
 				name = "Embed Frameworks";
 				runOnlyForDeploymentPostprocessing = 0;

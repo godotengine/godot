@@ -231,7 +231,7 @@ public abstract class DownloaderService extends CustomIntentService implements I
 
     /**
      * This download has successfully completed. Warning: there might be other
-     * status values that indicate success in the future. Use isSucccess() to
+     * status values that indicate success in the future. Use isSuccess() to
      * capture the entire category.
      *
      * @hide

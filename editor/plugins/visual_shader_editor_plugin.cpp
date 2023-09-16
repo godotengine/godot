@@ -6431,7 +6431,7 @@ public:
 		}
 	}
 
-	void setup(VisualShaderEditor *p_editor, Ref<Resource> p_parent_resource, Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, const HashMap<StringName, String> &p_overrided_names, Ref<VisualShaderNode> p_node) {
+	void setup(VisualShaderEditor *p_editor, Ref<Resource> p_parent_resource, Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, const HashMap<StringName, String> &p_overridden_names, Ref<VisualShaderNode> p_node) {
 		editor = p_editor;
 		parent_resource = p_parent_resource;
 		updating = false;
@@ -6448,8 +6448,8 @@ public:
 
 			Label *prop_name = memnew(Label);
 			String prop_name_str = p_names[i];
-			if (p_overrided_names.has(p_names[i])) {
-				prop_name_str = p_overrided_names[p_names[i]] + ":";
+			if (p_overridden_names.has(p_names[i])) {
+				prop_name_str = p_overridden_names[p_names[i]] + ":";
 			} else {
 				prop_name_str = prop_name_str.capitalize() + ":";
 			}

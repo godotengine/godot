@@ -1107,7 +1107,7 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 	}
 }
 
-void ScriptEditorDebugger::_profiler_seeked() {
+void ScriptEditorDebugger::_profiler_sought() {
 	if (is_breaked()) {
 		return;
 	}
@@ -1999,7 +1999,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		profiler->set_name(TTR("Profiler"));
 		tabs->add_child(profiler);
 		profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_SCRIPTS_SERVERS));
-		profiler->connect("break_request", callable_mp(this, &ScriptEditorDebugger::_profiler_seeked));
+		profiler->connect("break_request", callable_mp(this, &ScriptEditorDebugger::_profiler_sought));
 	}
 
 	{ //frame profiler

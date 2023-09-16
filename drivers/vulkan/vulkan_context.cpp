@@ -583,10 +583,10 @@ uint32_t VulkanContext::SubgroupCapabilities::supported_stages_flags_rd() const 
 		flags += RenderingDevice::ShaderStage::SHADER_STAGE_VERTEX_BIT;
 	}
 	if (supportedStages & VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT) {
-		flags += RenderingDevice::ShaderStage::SHADER_STAGE_TESSELATION_CONTROL_BIT;
+		flags += RenderingDevice::ShaderStage::SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 	}
 	if (supportedStages & VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) {
-		flags += RenderingDevice::ShaderStage::SHADER_STAGE_TESSELATION_EVALUATION_BIT;
+		flags += RenderingDevice::ShaderStage::SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 	}
 	// if (supportedStages & VK_SHADER_STAGE_GEOMETRY_BIT) {
 	// 	flags += RenderingDevice::ShaderStage::SHADER_STAGE_GEOMETRY_BIT;

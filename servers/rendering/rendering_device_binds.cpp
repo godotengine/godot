@@ -41,8 +41,8 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	static const char *stage_str[RD::SHADER_STAGE_MAX] = {
 		"vertex",
 		"fragment",
-		"tesselation_control",
-		"tesselation_evaluation",
+		"tessellation_control",
+		"tessellation_evaluation",
 		"compute",
 	};
 	String stage_code[RD::SHADER_STAGE_MAX];
