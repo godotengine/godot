@@ -5337,7 +5337,7 @@ void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
 			if (gltf_node->mesh >= 0) {
 				gltf_node_name = "Mesh";
 			} else if (gltf_node->camera >= 0) {
-				gltf_node_name = "Camera3D";
+				gltf_node_name = "Camera";
 			} else {
 				gltf_node_name = "Node";
 			}
