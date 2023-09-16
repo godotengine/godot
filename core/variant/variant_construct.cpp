@@ -211,8 +211,6 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructorToArray<PackedVector2Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedVector3Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedColorArray>>(sarray("from"));
-	add_constructor<VariantConstructorToNullFilledArray>(sarray("initial_size"));
-	add_constructor<VariantConstructorToValueFilledArray>(sarray("initial_size", "value"));
 
 	add_constructor<VariantConstructNoArgs<PackedByteArray>>(sarray());
 	add_constructor<VariantConstructor<PackedByteArray, PackedByteArray>>(sarray("from"));
