@@ -402,7 +402,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							String global_class_path = ScriptServer::get_global_class_path(identifier);
 							if (ResourceLoader::get_resource_type(global_class_path) == "GDScript") {
 								Error err = OK;
-								res = GDScriptCache::get_full_script(global_class_path, err);
+								// Should not need to pass p_owner since analyzer will already have done it.
+								res = GDScriptCache::get_shallow_script(global_class_path, err);
 								if (err != OK) {
 									_set_error("Can't load global class " + String(identifier), p_expression);
 									r_error = ERR_COMPILATION_FAILED;
