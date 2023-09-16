@@ -32,6 +32,7 @@
 
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
 void VoxelGIEditorPlugin::_bake() {
@@ -185,7 +186,9 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin() {
 	bake_hb->hide();
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("Bake")));
+	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
+	// when the editor theme updates.
+	bake->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake VoxelGI"));
 	bake->connect("pressed", callable_mp(this, &VoxelGIEditorPlugin::_bake));
 	bake_hb->add_child(bake);

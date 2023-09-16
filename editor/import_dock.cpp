@@ -709,7 +709,7 @@ ImportDock::ImportDock() {
 	content->hide();
 
 	imported = memnew(Label);
-	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("normal"), SNAME("LineEdit")));
 	imported->set_clip_text(true);
 	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);

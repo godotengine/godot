@@ -1259,7 +1259,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 			const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(state.canvas_instance_batches[p_index].command);
 
 			PolygonBuffers *pb = polygon_buffers.polygons.getptr(polygon->polygon.polygon_id);
-			ERR_FAIL_COND(!pb);
+			ERR_FAIL_NULL(pb);
 
 			glBindVertexArray(pb->vertex_array);
 			glBindBuffer(GL_ARRAY_BUFFER, state.canvas_instance_data_buffers[state.current_data_buffer_index].instance_buffers[state.canvas_instance_batches[p_index].instance_buffer_index]);
@@ -1515,7 +1515,7 @@ void RasterizerCanvasGLES3::light_set_texture(RID p_rid, RID p_texture) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
-	ERR_FAIL_COND(!cl);
+	ERR_FAIL_NULL(cl);
 	if (cl->texture == p_texture) {
 		return;
 	}
@@ -1534,7 +1534,7 @@ void RasterizerCanvasGLES3::light_set_texture(RID p_rid, RID p_texture) {
 
 void RasterizerCanvasGLES3::light_set_use_shadow(RID p_rid, bool p_enable) {
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
-	ERR_FAIL_COND(!cl);
+	ERR_FAIL_NULL(cl);
 
 	cl->shadow.enabled = p_enable;
 }
@@ -1868,7 +1868,7 @@ RID RasterizerCanvasGLES3::occluder_polygon_create() {
 
 void RasterizerCanvasGLES3::occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) {
 	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!oc);
+	ERR_FAIL_NULL(oc);
 
 	Vector<Vector2> lines;
 
@@ -2041,7 +2041,7 @@ void RasterizerCanvasGLES3::occluder_polygon_set_shape(RID p_occluder, const Vec
 
 void RasterizerCanvasGLES3::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
 	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!oc);
+	ERR_FAIL_NULL(oc);
 	oc->cull_mode = p_mode;
 }
 
@@ -2073,7 +2073,7 @@ void RasterizerCanvasGLES3::set_shadow_texture_size(int p_size) {
 bool RasterizerCanvasGLES3::free(RID p_rid) {
 	if (canvas_light_owner.owns(p_rid)) {
 		CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!cl, false);
+		ERR_FAIL_NULL_V(cl, false);
 		canvas_light_owner.free(p_rid);
 	} else if (occluder_polygon_owner.owns(p_rid)) {
 		occluder_polygon_set_shape(p_rid, Vector<Vector2>(), false);
@@ -2455,7 +2455,7 @@ RendererCanvasRender::PolygonID RasterizerCanvasGLES3::request_polygon(const Vec
 
 void RasterizerCanvasGLES3::free_polygon(PolygonID p_polygon) {
 	PolygonBuffers *pb_ptr = polygon_buffers.polygons.getptr(p_polygon);
-	ERR_FAIL_COND(!pb_ptr);
+	ERR_FAIL_NULL(pb_ptr);
 
 	PolygonBuffers &pb = *pb_ptr;
 

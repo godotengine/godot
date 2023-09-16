@@ -348,7 +348,6 @@ private:
 	PopupMenu *tool_menu = nullptr;
 	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
-	Button *prev_scene = nullptr;
 	Button *search_button = nullptr;
 	TextureProgressBar *audio_vu = nullptr;
 
