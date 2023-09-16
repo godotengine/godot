@@ -1028,7 +1028,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 			cd.to = target_id;
 			cd.method = _nm_get_string(base_callable.get_method(), name_map);
 			cd.signal = _nm_get_string(c.signal.get_name(), name_map);
-			cd.flags = c.flags;
+			cd.flags = c.flags & ~CONNECT_INHERITED; // Do not store inherited.
 			cd.unbinds = unbinds;
 
 			for (int i = 0; i < binds.size(); i++) {
