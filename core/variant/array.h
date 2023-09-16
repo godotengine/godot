@@ -74,7 +74,7 @@ public:
 
 	Error insert(int p_pos, const Variant &p_value);
 	void remove_at(int p_pos);
-	void fill(const Variant &p_value, int p_from = 0);
+	void fill(const Variant &p_value);
 
 	Variant front() const;
 	Variant back() const;

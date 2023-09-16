@@ -301,11 +301,11 @@ Error Array::insert(int p_pos, const Variant &p_value) {
 	return _p->array.insert(p_pos, value);
 }
 
-void Array::fill(const Variant &p_value, int p_from) {
+void Array::fill(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "fill"));
-	_p->array.fill(value, p_from);
+	_p->array.fill(value);
 }
 
 void Array::erase(const Variant &p_value) {

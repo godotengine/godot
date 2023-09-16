@@ -72,7 +72,7 @@
 			<param index="0" name="initial_size" type="int" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Creates a filled array. The result should be identical to creating an empty array, calling [method resize] with [param initial_size], and calling [method fill] with [param value].
+				Creates a filled array. The result should be identical to constructing an empty array, calling [method resize] with [param initial_size], and calling [method fill] with [param value].
 			</description>
 		</constructor>
 		<constructor name="Array">
@@ -273,7 +273,6 @@
 		<method name="fill">
 			<return type="void" />
 			<param index="0" name="value" type="Variant" />
-			<param index="1" name="from" type="int" default="0"/>
 			<description>
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements:
 				[codeblocks]
@@ -289,7 +288,6 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If [param value] is of a reference type ([Object]-derived, [Array], [Dictionary], etc.) then the array is filled with the references to the same object, i.e. no duplicates are created.
-				Optionally, [param from] can be used to limit the fill to elements at [param from] and higher. Elements at lower indexes will be left untouched. Negative values are treated as zero.
 			</description>
 		</method>
 		<method name="filter" qualifiers="const">
