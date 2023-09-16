@@ -241,15 +241,13 @@ bool Engine::is_abort_on_gpu_errors_enabled() const {
 
 int32_t Engine::get_gpu_index() const {
 	//check for cmd argument override, otherwise get index by config
-	if (gpu_idx != -1)
-		return gpu_idx;
-	else {
-		int gpu_index_from_config = GLOBAL_GET("rendering/rendering_device/gpu_index");
-		if (gpu_index_from_config == -1)
-			return gpu_idx;
-		else
+	if (gpu_idx == -1) {
+		const int gpu_index_from_config = GLOBAL_GET("rendering/rendering_device/gpu_index");
+		if (gpu_index_from_config != -1) {
 			return gpu_index_from_config;
+		}
 	}
+	return gpu_idx;
 }
 
 bool Engine::is_validation_layers_enabled() const {
