@@ -133,16 +133,16 @@
 		<constructor name="Array">
 			<return type="Array" />
 			<param index="0" name="initial_size" type="int" />
-			<param index="1" name="value" type="Variant" default="null" />
+			<param index="1" name="value" type="Variant"/>
 			<description>
-				Creates a filled array. The result should be identical to constructing an empty array, calling [method resize] with [param initial_size], and calling [method fill] with [param value].
-				If [param value] is not specified, null is used.
+				Creates a value-filled array. The result should be identical to constructing an empty array, calling [method resize] with [param initial_size], and calling [method fill] with [param value].
 			</description>
 		</constructor>
 		<constructor name="Array">
 			<return type="Array" />
 			<param index="0" name="initial_size" type="int" />
 			<description>
+				Creates a null-filled array. The result should be identical to constructing an empty array, calling [method resize] with [param initial_size], and calling [method fill] with [code]null[/code].
 			</description>
 		</constructor>
 	</constructors>
