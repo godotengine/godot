@@ -63,7 +63,7 @@
 			<param index="1" name="gltf_node" type="GLTFNode" />
 			<param index="2" name="scene_parent" type="Node" />
 			<description>
-				Part of the import process. This method is run after [method _parse_node_extensions] and before [method _import_post_parse].
+				Part of the import process. This method is run after [method _import_post_parse] and before [method _import_node].
 				Runs when generating a Godot scene node from a GLTFNode. The returned node will be added to the scene tree. Multiple nodes can be generated in this step if they are added as a child of the returned node.
 			</description>
 		</method>
@@ -94,7 +94,7 @@
 			<param index="2" name="json" type="Dictionary" />
 			<param index="3" name="node" type="Node" />
 			<description>
-				Part of the import process. This method is run after [method _import_post_parse] and before [method _import_post].
+				Part of the import process. This method is run after [method _generate_scene_node] and before [method _import_post].
 				This method can be used to make modifications to each of the generated Godot scene nodes.
 			</description>
 		</method>
@@ -111,7 +111,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<description>
-				Part of the import process. This method is run after [method _generate_scene_node] and before [method _import_node].
+				Part of the import process. This method is run after [method _parse_node_extensions] and before [method _generate_scene_node].
 				This method can be used to modify any of the data imported so far, including any scene nodes, before running the final per-node import step.
 			</description>
 		</method>
@@ -141,7 +141,7 @@
 			<param index="1" name="gltf_node" type="GLTFNode" />
 			<param index="2" name="extensions" type="Dictionary" />
 			<description>
-				Part of the import process. This method is run after [method _get_supported_extensions] and before [method _generate_scene_node].
+				Part of the import process. This method is run after [method _get_supported_extensions] and before [method _import_post_parse].
 				Runs when parsing the node extensions of a GLTFNode. This method can be used to process the extension JSON data into a format that can be used by [method _generate_scene_node]. The return value should be a member of the [enum Error] enum.
 			</description>
 		</method>

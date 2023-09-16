@@ -5878,6 +5878,10 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 			current_node = _generate_spatial(p_state, p_node_index);
 		}
 	}
+	String gltf_node_name = gltf_node->get_name();
+	if (!gltf_node_name.is_empty()) {
+		current_node->set_name(gltf_node_name);
+	}
 	// Add the node we generated and set the owner to the scene root.
 	p_scene_parent->add_child(current_node, true);
 	if (current_node != p_scene_root) {
@@ -5886,7 +5890,6 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 		current_node->propagate_call(StringName("set_owner"), args);
 	}
 	current_node->set_transform(gltf_node->xform);
-	current_node->set_name(gltf_node->get_name());
 
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
@@ -6500,7 +6503,7 @@ float GLTFDocument::get_max_component(const Color &p_color) {
 	return MAX(MAX(r, g), b);
 }
 
-void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root) {
+void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state) {
 	for (GLTFNodeIndex node_i = 0; node_i < p_state->nodes.size(); ++node_i) {
 		Ref<GLTFNode> node = p_state->nodes[node_i];
 
@@ -7331,15 +7334,28 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 	return OK;
 }
 
+Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
+	Node *single_root = memnew(Node3D);
+	for (int32_t root_i = 0; root_i < p_state->root_nodes.size(); root_i++) {
+		_generate_scene_node(p_state, p_state->root_nodes[root_i], single_root, single_root);
+	}
+	// Assign the scene name and single root name to each other
+	// if one is missing, or do nothing if both are already set.
+	if (unlikely(p_state->scene_name.is_empty())) {
+		p_state->scene_name = single_root->get_name();
+	} else if (single_root->get_name() == StringName()) {
+		single_root->set_name(_gen_unique_name(p_state, p_state->scene_name));
+	}
+	return single_root;
+}
+
 Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	ERR_FAIL_NULL_V(p_state, nullptr);
 	ERR_FAIL_INDEX_V(0, p_state->root_nodes.size(), nullptr);
 	Error err = OK;
-	GLTFNodeIndex gltf_root = p_state->root_nodes.write[0];
-	Node *gltf_root_node = p_state->get_scene_node(gltf_root);
-	Node *root = gltf_root_node->get_parent();
+	Node *root = _generate_scene_node_tree(p_state);
 	ERR_FAIL_NULL_V(root, nullptr);
-	_process_mesh_instances(p_state, root);
+	_process_mesh_instances(p_state);
 	if (p_state->get_create_animations() && p_state->animations.size()) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		root->add_child(ap, true);
@@ -7518,11 +7534,6 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 
 	/* ASSIGN SCENE NAMES */
 	_assign_node_names(p_state);
-
-	Node3D *root = memnew(Node3D);
-	for (int32_t root_i = 0; root_i < p_state->root_nodes.size(); root_i++) {
-		_generate_scene_node(p_state, p_state->root_nodes[root_i], root, root);
-	}
 
 	return OK;
 }
