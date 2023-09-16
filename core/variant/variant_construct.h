@@ -446,6 +446,52 @@ public:
 	}
 };
 
+class VariantConstructorToNullFilledArray {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::INT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::INT;
+			return;
+		}
+
+		const uint32_t initial_size = p_args[0]->operator uint32_t();
+		r_ret = Array::create_filled_array(initial_size, Variant());
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		const uint32_t initial_size = p_args[0]->operator uint32_t();
+		*r_ret = Array::create_filled_array(initial_size, Variant());
+	}
+
+	static void ptr_construct(void *base, const void **p_args) {
+		const uint32_t initial_size = PtrToArg<uint32_t>::convert(p_args[0]);
+		Array dst_arr = Array::create_filled_array(initial_size, Variant());
+
+		PtrConstruct<Array>::construct(dst_arr, base);
+	}
+
+	static int get_argument_count() {
+		return 1;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		switch (p_arg) {
+			case 0: {
+				return Variant::INT;
+			} break;
+			default: {
+				return Variant::NIL;
+			} break;
+		}
+	}
+
+	static Variant::Type get_base_type() {
+		return Variant::ARRAY;
+	}
+};
+
 class VariantConstructorTypedArray {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
