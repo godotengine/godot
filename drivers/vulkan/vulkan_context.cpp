@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/os/thread.h"
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
 #include "core/version.h"
@@ -47,6 +48,14 @@
 #define APP_SHORT_NAME "GodotEngine"
 
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
+
+static Thread::ID vulkan_thread_id = Thread::UNASSIGNED_ID;
+
+#define CHECK_THREAD_ID                                                                                  \
+	CRASH_COND_MSG(vulkan_thread_id != Thread::get_caller_id(),                                          \
+			"Function MUST be called from Vulkan's main thread. Or alternatively it may be missing a "   \
+			"_THREAD_SAFE_METHOD_ block. Please report this bug to "                                     \
+			"https://github.com/godotengine/godot/issues")
 
 Vector<VkAttachmentReference> VulkanContext::_convert_VkAttachmentReference2(uint32_t p_count, const VkAttachmentReference2 *p_refs) {
 	Vector<VkAttachmentReference> att_refs;
@@ -1727,6 +1736,7 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, Display
 }
 
 void VulkanContext::window_resize(DisplayServer::WindowID p_window, int p_width, int p_height) {
+	CHECK_THREAD_ID;
 	ERR_FAIL_COND(!windows.has(p_window));
 	windows[p_window].width = p_width;
 	windows[p_window].height = p_height;
@@ -1734,22 +1744,26 @@ void VulkanContext::window_resize(DisplayServer::WindowID p_window, int p_width,
 }
 
 int VulkanContext::window_get_width(DisplayServer::WindowID p_window) {
+	CHECK_THREAD_ID;
 	ERR_FAIL_COND_V(!windows.has(p_window), -1);
 	return windows[p_window].width;
 }
 
 int VulkanContext::window_get_height(DisplayServer::WindowID p_window) {
+	CHECK_THREAD_ID;
 	ERR_FAIL_COND_V(!windows.has(p_window), -1);
 	return windows[p_window].height;
 }
 
 bool VulkanContext::window_is_valid_swapchain(DisplayServer::WindowID p_window) {
+	CHECK_THREAD_ID;
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	Window *w = &windows[p_window];
 	return w->swapchain_image_resources != VK_NULL_HANDLE;
 }
 
 VkRenderPass VulkanContext::window_get_render_pass(DisplayServer::WindowID p_window) {
+	CHECK_THREAD_ID;
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
 	// Vulkan use of currentbuffer.
@@ -1757,6 +1771,7 @@ VkRenderPass VulkanContext::window_get_render_pass(DisplayServer::WindowID p_win
 }
 
 VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_window) {
+	CHECK_THREAD_ID;
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	ERR_FAIL_COND_V(!buffers_prepared, VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
@@ -1769,6 +1784,7 @@ VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_wi
 }
 
 void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
+	CHECK_THREAD_ID;
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	_clean_up_swap_chain(&windows[p_window_id]);
 
@@ -1777,6 +1793,8 @@ void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
 }
 
 Error VulkanContext::_clean_up_swap_chain(Window *window) {
+	CHECK_THREAD_ID;
+
 	if (!window->swapchain) {
 		return OK;
 	}
@@ -1815,6 +1833,8 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 }
 
 Error VulkanContext::_update_swap_chain(Window *window) {
+	CHECK_THREAD_ID;
+
 	VkResult err;
 
 	if (window->swapchain) {
@@ -2756,17 +2776,23 @@ String VulkanContext::get_device_pipeline_cache_uuid() const {
 }
 
 DisplayServer::VSyncMode VulkanContext::get_vsync_mode(DisplayServer::WindowID p_window) const {
+	CHECK_THREAD_ID;
 	ERR_FAIL_COND_V_MSG(!windows.has(p_window), DisplayServer::VSYNC_ENABLED, "Could not get V-Sync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
 	return windows[p_window].vsync_mode;
 }
 
 void VulkanContext::set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode) {
+	CHECK_THREAD_ID;
 	ERR_FAIL_COND_MSG(!windows.has(p_window), "Could not set V-Sync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
 	windows[p_window].vsync_mode = p_mode;
 	_update_swap_chain(&windows[p_window]);
 }
 
 VulkanContext::VulkanContext() {
+	if (vulkan_thread_id == Thread::UNASSIGNED_ID) {
+		vulkan_thread_id = Thread::get_caller_id();
+	}
+
 	command_buffer_queue.resize(1); // First one is always the setup command.
 	command_buffer_queue.write[0] = nullptr;
 }
