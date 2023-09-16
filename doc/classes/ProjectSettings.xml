@@ -2577,7 +2577,7 @@
 			Windows override for [member rendering/rendering_device/driver].
 		</member>
 		<member name="rendering/rendering_device/gpu_index" type="int" setter="" getter="" default="-1">
-			Set default Vulkan gpu to run, -1 will be default, requires restart for game or editor to apply
+			Set default Vulkan gpu to run, [code]-1[/code] will be default, requires restart for game or editor to apply.
 			[b]Warning:[/b] Only change this if you know what you are doing, it could cause non-optimal GPU or software rendering.
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/save_chunk_size_mb" type="float" setter="" getter="" default="3.0">
