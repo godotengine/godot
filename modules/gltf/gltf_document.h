@@ -42,6 +42,9 @@ class GLTFDocument : public Resource {
 
 private:
 	const float BAKE_FPS = 30.0f;
+	String _image_format = "PNG";
+	float _lossy_quality = 0.75f;
+	Ref<GLTFDocumentExtension> _image_save_extension;
 
 public:
 	const int32_t JOINT_GROUP_SIZE = 4;
@@ -76,6 +79,11 @@ public:
 	static void register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority = false);
 	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
 	static void unregister_all_gltf_document_extensions();
+
+	void set_image_format(const String &p_image_format);
+	String get_image_format() const;
+	void set_lossy_quality(float p_lossy_quality);
+	float get_lossy_quality() const;
 
 private:
 	void _build_parent_hierachy(Ref<GLTFState> p_state);

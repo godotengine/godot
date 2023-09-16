@@ -42,7 +42,6 @@
 #include "core/io/stream_peer.h"
 #include "core/math/disjoint_set.h"
 #include "core/version.h"
-#include "drivers/png/png_driver_common.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -3001,8 +3000,35 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+void GLTFDocument::set_image_format(const String &p_image_format) {
+	_image_format = p_image_format;
+}
+
+String GLTFDocument::get_image_format() const {
+	return _image_format;
+}
+
+void GLTFDocument::set_lossy_quality(float p_lossy_quality) {
+	_lossy_quality = p_lossy_quality;
+}
+
+float GLTFDocument::get_lossy_quality() const {
+	return _lossy_quality;
+}
+
 Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 	Array images;
+	// Check if any extension wants to be the image saver.
+	_image_save_extension = Ref<GLTFDocumentExtension>();
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Vector<String> image_formats = ext->get_saveable_image_formats();
+		if (image_formats.has(_image_format)) {
+			_image_save_extension = ext;
+			break;
+		}
+	}
+	// Serialize every image in the state's images array.
 	for (int i = 0; i < p_state->images.size(); i++) {
 		Dictionary image_dict;
 
@@ -3010,6 +3036,10 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 
 		Ref<Image> image = p_state->images[i]->get_image();
 		ERR_CONTINUE(image.is_null());
+		if (image->is_compressed()) {
+			image->decompress();
+			ERR_FAIL_COND_V_MSG(image->is_compressed(), ERR_INVALID_DATA, "GLTF: Image was compressed, but could not be decompressed.");
+		}
 
 		if (p_state->filename.to_lower().ends_with("gltf")) {
 			String img_name = p_state->images[i]->get_name();
@@ -3017,14 +3047,26 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 				img_name = itos(i);
 			}
 			img_name = _gen_unique_name(p_state, img_name);
-			img_name = img_name.pad_zeros(3) + ".png";
+			img_name = img_name.pad_zeros(3);
 			String relative_texture_dir = "textures";
 			String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
 			Ref<DirAccess> da = DirAccess::open(p_state->base_path);
 			if (!da->dir_exists(full_texture_dir)) {
 				da->make_dir(full_texture_dir);
 			}
-			image->save_png(full_texture_dir.path_join(img_name));
+			if (_image_save_extension.is_valid()) {
+				img_name = img_name + _image_save_extension->get_image_file_extension();
+				Error err = _image_save_extension->save_image_at_path(p_state, image, full_texture_dir.path_join(img_name), _image_format, _lossy_quality);
+				ERR_FAIL_COND_V_MSG(err != OK, err, "GLTF: Failed to save image in '" + _image_format + "' format as a separate file.");
+			} else if (_image_format == "PNG") {
+				img_name = img_name + ".png";
+				image->save_png(full_texture_dir.path_join(img_name));
+			} else if (_image_format == "JPEG") {
+				img_name = img_name + ".jpg";
+				image->save_jpg(full_texture_dir.path_join(img_name), _lossy_quality);
+			} else {
+				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "GLTF: Unknown image format '" + _image_format + "'.");
+			}
 			image_dict["uri"] = relative_texture_dir.path_join(img_name).uri_encode();
 		} else {
 			GLTFBufferViewIndex bvi;
@@ -3042,8 +3084,20 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 			if (img_tex.is_valid()) {
 				image = img_tex->get_image();
 			}
-			Error err = PNGDriverCommon::image_to_png(image, buffer);
-			ERR_FAIL_COND_V_MSG(err, err, "Can't convert image to PNG.");
+			// Save in various image formats. Note that if the format is "None",
+			// the state's images will be empty, so this code will not be reached.
+			if (_image_save_extension.is_valid()) {
+				buffer = _image_save_extension->serialize_image_to_bytes(p_state, image, image_dict, _image_format, _lossy_quality);
+			} else if (_image_format == "PNG") {
+				buffer = image->save_png_to_buffer();
+				image_dict["mimeType"] = "image/png";
+			} else if (_image_format == "JPEG") {
+				buffer = image->save_jpg_to_buffer(_lossy_quality);
+				image_dict["mimeType"] = "image/jpeg";
+			} else {
+				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "GLTF: Unknown image format '" + _image_format + "'.");
+			}
+			ERR_FAIL_COND_V_MSG(buffer.is_empty(), ERR_INVALID_DATA, "GLTF: Failed to save image in '" + _image_format + "' format.");
 
 			bv->byte_length = buffer.size();
 			p_state->buffers.write[bi].resize(p_state->buffers[bi].size() + bv->byte_length);
@@ -3053,7 +3107,6 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 			p_state->buffer_views.push_back(bv);
 			bvi = p_state->buffer_views.size() - 1;
 			image_dict["bufferView"] = bvi;
-			image_dict["mimeType"] = "image/png";
 		}
 		images.push_back(image_dict);
 	}
@@ -3332,9 +3385,13 @@ Error GLTFDocument::_serialize_textures(Ref<GLTFState> p_state) {
 	for (int32_t i = 0; i < p_state->textures.size(); i++) {
 		Dictionary texture_dict;
 		Ref<GLTFTexture> gltf_texture = p_state->textures[i];
-		ERR_CONTINUE(gltf_texture->get_src_image() == -1);
-		texture_dict["source"] = gltf_texture->get_src_image();
-
+		if (_image_save_extension.is_valid()) {
+			Error err = _image_save_extension->serialize_texture_json(p_state, texture_dict, gltf_texture, _image_format);
+			ERR_FAIL_COND_V(err != OK, err);
+		} else {
+			ERR_CONTINUE(gltf_texture->get_src_image() == -1);
+			texture_dict["source"] = gltf_texture->get_src_image();
+		}
 		GLTFTextureSamplerIndex sampler_index = gltf_texture->get_sampler();
 		if (sampler_index != -1) {
 			texture_dict["sampler"] = sampler_index;
@@ -3543,7 +3600,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			arr.push_back(c.a);
 			mr["baseColorFactor"] = arr;
 		}
-		{
+		if (_image_format != "None") {
 			Dictionary bct;
 			Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
 			GLTFTextureIndex gltf_texture_index = -1;
@@ -7157,6 +7214,14 @@ void GLTFDocument::_bind_methods() {
 			&GLTFDocument::generate_buffer);
 	ClassDB::bind_method(D_METHOD("write_to_filesystem", "state", "path"),
 			&GLTFDocument::write_to_filesystem);
+
+	ClassDB::bind_method(D_METHOD("set_image_format", "image_format"), &GLTFDocument::set_image_format);
+	ClassDB::bind_method(D_METHOD("get_image_format"), &GLTFDocument::get_image_format);
+	ClassDB::bind_method(D_METHOD("set_lossy_quality", "lossy_quality"), &GLTFDocument::set_lossy_quality);
+	ClassDB::bind_method(D_METHOD("get_lossy_quality"), &GLTFDocument::get_lossy_quality);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_format"), "set_image_format", "get_image_format");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
 
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("register_gltf_document_extension", "extension", "first_priority"),
 			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));
