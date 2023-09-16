@@ -2558,6 +2558,9 @@
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
 			Override for [member rendering/renderer/rendering_method] on web.
 		</member>
+		<member name="rendering/rendering_device/gpu_index" type="int" setter="" getter="" default="-1">
+			Set default Vulkan gpu to run, -1 will be default, requires restart for game or editor to apply
+		</member>
 		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the clustered renderer or the mobile renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
 		</member>

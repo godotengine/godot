@@ -1679,6 +1679,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		driver_hints = "vulkan";
 #endif
 
+		//Set default Vulkan gpu to run, -1 will be default
+		GLOBAL_DEF("rendering/rendering_device/gpu_index", -1);
+
 		String default_driver = driver_hints.get_slice(",", 0);
 
 		// For now everything defaults to vulkan when available. This can change in future updates.
