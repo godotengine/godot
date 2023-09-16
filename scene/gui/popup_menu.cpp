@@ -1016,6 +1016,24 @@ void PopupMenu::_notification(int p_what) {
 	}
 }
 
+/* Add an 'order' value to each item for sorting purposes.
+ * The higher the number, the higher it will be positioned in the list
+ */
+void PopupMenu::set_item_order(int p_id, int p_order) {
+	if (p_id >= 0 && items.size() > 0) {
+		Item *itemptr = items.ptrw();
+		for (int i = 0; i < items.size(); i++) {
+			if (itemptr->id == p_id) {
+				itemptr->order = p_order;
+				itemptr->dirty = true;
+				break;
+			}
+			itemptr++;
+		}
+		items.sort();
+	}
+}
+
 /* Methods to add items with or without icon, checkbox, shortcut.
  * Be sure to keep them in sync when adding new properties in the Item struct.
  */
@@ -1029,6 +1047,7 @@ void PopupMenu::_notification(int p_what) {
 void PopupMenu::add_item(const String &p_label, int p_id, Key p_accel) {
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1043,6 +1062,7 @@ void PopupMenu::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_labe
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.icon = p_icon;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1057,6 +1077,7 @@ void PopupMenu::add_check_item(const String &p_label, int p_id, Key p_accel) {
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1071,6 +1092,7 @@ void PopupMenu::add_icon_check_item(const Ref<Texture2D> &p_icon, const String &
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.icon = p_icon;
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1083,6 +1105,7 @@ void PopupMenu::add_radio_check_item(const String &p_label, int p_id, Key p_acce
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1097,6 +1120,7 @@ void PopupMenu::add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const St
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.icon = p_icon;
 	item.checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1111,6 +1135,7 @@ void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.max_states = p_max_states;
 	item.state = p_default_state;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1133,6 +1158,7 @@ void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int
 void PopupMenu::add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id, bool p_global, bool p_allow_echo) {
 	Item item;
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, p_allow_echo);
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1146,6 +1172,7 @@ void PopupMenu::add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortc
 	Item item;
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, p_allow_echo);
 	item.icon = p_icon;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1159,6 +1186,7 @@ void PopupMenu::add_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id, bo
 	Item item;
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, false); // Echo for check shortcuts doesn't make sense.
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1173,6 +1201,7 @@ void PopupMenu::add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, false);
 	item.icon = p_icon;
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1186,6 +1215,7 @@ void PopupMenu::add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_
 	Item item;
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, false);
 	item.checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1200,6 +1230,7 @@ void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, cons
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, false);
 	item.icon = p_icon;
 	item.checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1215,6 +1246,7 @@ void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu,
 	item.xl_text = atr(p_label);
 	item.id = p_id == -1 ? items.size() : p_id;
 	item.submenu = p_submenu;
+	item.order = 99 - items.size();
 	items.push_back(item);
 
 	_shape_item(items.size() - 1);
@@ -1903,6 +1935,7 @@ void PopupMenu::add_separator(const String &p_text, int p_id) {
 		sep.text = p_text;
 		sep.xl_text = atr(p_text);
 	}
+	sep.order = 99 - items.size();
 	items.push_back(sep);
 	control->queue_redraw();
 	_menu_changed();
@@ -2162,6 +2195,7 @@ void PopupMenu::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("activate_item_by_event", "event", "for_global_only"), &PopupMenu::activate_item_by_event, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_item_order", "id", "order"), &PopupMenu::set_item_order);
 
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id", "accel"), &PopupMenu::add_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_item, DEFVAL(-1), DEFVAL(0));

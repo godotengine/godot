@@ -64,6 +64,7 @@ class PopupMenu : public Popup {
 		bool disabled = false;
 		bool dirty = true;
 		int id = 0;
+		int order = 0;
 		Variant metadata;
 		String submenu;
 		String tooltip;
@@ -85,6 +86,10 @@ class PopupMenu : public Popup {
 			text_buf.instantiate();
 			accel_text_buf.instantiate();
 			checkable_type = CHECKABLE_TYPE_NONE;
+		}
+
+		bool operator<(const Item &p_other) const {
+			return order > p_other.order;
 		}
 	};
 
@@ -212,6 +217,7 @@ public:
 
 	virtual void _parent_focused() override;
 
+	void set_item_order(int p_id, int p_order);
 	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_check_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
