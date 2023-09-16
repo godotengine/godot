@@ -2246,7 +2246,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, get_typed_script, sarray(), varray());
 	bind_method(Array, make_read_only, sarray(), varray());
 	bind_method(Array, is_read_only, sarray(), varray());
-	bind_static_method(Array, create_filled_array, sarray("initialize_size", "value"), varray(Variant()));
+	bind_static_method(Array, create_filled_array, sarray("initial_size", "value"), varray(Variant()));
 
 	/* Byte Array */
 	bind_method(PackedByteArray, size, sarray(), varray());
