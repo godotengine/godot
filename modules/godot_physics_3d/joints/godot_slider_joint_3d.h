@@ -67,15 +67,6 @@ April 04, 2008
 
 class GodotSliderJoint3D : public GodotJoint3D {
 protected:
-	union {
-		struct {
-			GodotBody3D *A;
-			GodotBody3D *B;
-		};
-
-		GodotBody3D *_arr[2] = { nullptr, nullptr };
-	};
-
 	Transform3D m_frameInA;
 	Transform3D m_frameInB;
 

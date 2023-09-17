@@ -409,6 +409,9 @@ public:
 	EXBIND0R(RID, joint_create)
 	EXBIND1(joint_clear, RID)
 
+	EXBIND2(joint_set_enabled, RID, bool)
+	EXBIND1RC(bool, joint_is_enabled, RID)
+
 	EXBIND3(joint_set_param, RID, JointParam, real_t)
 	EXBIND2RC(real_t, joint_get_param, RID, JointParam)
 

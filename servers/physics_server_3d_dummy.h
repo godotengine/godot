@@ -364,6 +364,9 @@ public:
 
 	virtual void joint_clear(RID p_joint) override {}
 
+	virtual void joint_set_enabled(RID p_joint, bool p_enabled) override {}
+	virtual bool joint_is_enabled(RID p_joint) const override { return false; }
+
 	virtual JointType joint_get_type(RID p_joint) const override { return JointType::JOINT_TYPE_PIN; }
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override {}

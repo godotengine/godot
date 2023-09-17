@@ -801,6 +801,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_joint_is_enabled" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_joint_make_cone_twist" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
@@ -860,6 +866,13 @@
 			<param index="2" name="local_ref_A" type="Transform3D" />
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="local_ref_B" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_set_enabled" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 			</description>
 		</method>

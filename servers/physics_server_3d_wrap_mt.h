@@ -331,6 +331,9 @@ public:
 
 	FUNC1(joint_clear, RID)
 
+	FUNC2(joint_set_enabled, RID, bool)
+	FUNC1RC(bool, joint_is_enabled, RID)
+
 	FUNC5(joint_make_pin, RID, RID, const Vector3 &, RID, const Vector3 &)
 
 	FUNC3(pin_joint_set_param, RID, PinJointParam, real_t)

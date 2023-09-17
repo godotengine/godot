@@ -50,7 +50,7 @@ subject to the following restrictions:
 #include "godot_hinge_joint_3d.h"
 
 GodotHingeJoint3D::GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameA, const Transform3D &frameB) :
-		GodotJoint3D(_arr, 2) {
+		GodotJoint3D() {
 	A = rbA;
 	B = rbB;
 
@@ -61,13 +61,12 @@ GodotHingeJoint3D::GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const T
 	m_rbBFrame.basis[1][2] *= real_t(-1.);
 	m_rbBFrame.basis[2][2] *= real_t(-1.);
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	add_constraint_to_bodies();
 }
 
 GodotHingeJoint3D::GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB,
 		const Vector3 &axisInA, const Vector3 &axisInB) :
-		GodotJoint3D(_arr, 2) {
+		GodotJoint3D() {
 	A = rbA;
 	B = rbB;
 
@@ -102,8 +101,7 @@ GodotHingeJoint3D::GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const V
 			rbAxisB1.y, rbAxisB2.y, -axisInB.y,
 			rbAxisB1.z, rbAxisB2.z, -axisInB.z);
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	add_constraint_to_bodies();
 }
 
 bool GodotHingeJoint3D::setup(real_t p_step) {

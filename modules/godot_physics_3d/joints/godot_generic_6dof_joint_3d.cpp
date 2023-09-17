@@ -219,7 +219,7 @@ real_t GodotG6DOFTranslationalLimitMotor3D::solveLinearAxis(
 //////////////////////////// GodotGeneric6DOFJoint3D ////////////////////////////////////
 
 GodotGeneric6DOFJoint3D::GodotGeneric6DOFJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameInA, const Transform3D &frameInB, bool useLinearReferenceFrameA) :
-		GodotJoint3D(_arr, 2),
+		GodotJoint3D(),
 		m_frameInA(frameInA),
 		m_frameInB(frameInB),
 		m_useLinearReferenceFrameA(useLinearReferenceFrameA) {

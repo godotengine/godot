@@ -279,6 +279,9 @@ public:
 	FUNC3(joint_set_param, RID, JointParam, real_t);
 	FUNC2RC(real_t, joint_get_param, RID, JointParam);
 
+	FUNC2(joint_set_enabled, RID, bool);
+	FUNC1RC(bool, joint_is_enabled, RID);
+
 	FUNC2(joint_disable_collisions_between_bodies, RID, const bool);
 	FUNC1RC(bool, joint_is_disabled_collisions_between_bodies, RID);
 

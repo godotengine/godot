@@ -38,10 +38,38 @@ class GodotJoint2D : public GodotConstraint2D {
 	real_t bias = 0;
 	real_t max_bias = 3.40282e+38;
 	real_t max_force = 3.40282e+38;
+	bool enabled = true;
 
 protected:
 	bool dynamic_A = false;
 	bool dynamic_B = false;
+
+	union {
+		struct {
+			GodotBody2D *A;
+			GodotBody2D *B;
+		};
+
+		GodotBody2D *_arr[2] = { nullptr, nullptr };
+	};
+
+	void add_constraint_to_bodies() {
+		if (A) {
+			A->add_constraint(this, 0);
+		}
+		if (B) {
+			B->add_constraint(this, 1);
+		}
+	}
+
+	void remove_constraint_from_bodies() {
+		for (int i = 0; i < get_body_count(); i++) {
+			GodotBody2D *body = get_body_ptr()[i];
+			if (body) {
+				body->remove_constraint(this, i);
+			}
+		}
+	}
 
 public:
 	_FORCE_INLINE_ void set_max_force(real_t p_force) { max_force = p_force; }
@@ -53,6 +81,16 @@ public:
 	_FORCE_INLINE_ void set_max_bias(real_t p_bias) { max_bias = p_bias; }
 	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
 
+	_FORCE_INLINE_ void set_enabled(bool p_enabled) {
+		enabled = p_enabled;
+		if (enabled) {
+			add_constraint_to_bodies();
+		} else {
+			remove_constraint_from_bodies();
+		}
+	}
+	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
+
 	virtual bool setup(real_t p_step) override { return false; }
 	virtual bool pre_solve(real_t p_step) override { return false; }
 	virtual void solve(real_t p_step) override {}
@@ -60,29 +98,15 @@ public:
 	void copy_settings_from(GodotJoint2D *p_joint);
 
 	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_MAX; }
-	GodotJoint2D(GodotBody2D **p_body_ptr = nullptr, int p_body_count = 0) :
-			GodotConstraint2D(p_body_ptr, p_body_count) {}
+	GodotJoint2D(int p_body_count = 0) :
+			GodotConstraint2D(_arr, p_body_count) {}
 
 	virtual ~GodotJoint2D() {
-		for (int i = 0; i < get_body_count(); i++) {
-			GodotBody2D *body = get_body_ptr()[i];
-			if (body) {
-				body->remove_constraint(this, i);
-			}
-		}
+		remove_constraint_from_bodies();
 	}
 };
 
 class GodotPinJoint2D : public GodotJoint2D {
-	union {
-		struct {
-			GodotBody2D *A;
-			GodotBody2D *B;
-		};
-
-		GodotBody2D *_arr[2] = { nullptr, nullptr };
-	};
-
 	Transform2D M;
 	Vector2 rA, rB;
 	Vector2 anchor_A;
@@ -119,15 +143,6 @@ public:
 };
 
 class GodotGrooveJoint2D : public GodotJoint2D {
-	union {
-		struct {
-			GodotBody2D *A;
-			GodotBody2D *B;
-		};
-
-		GodotBody2D *_arr[2] = { nullptr, nullptr };
-	};
-
 	Vector2 A_groove_1;
 	Vector2 A_groove_2;
 	Vector2 A_groove_normal;
@@ -153,15 +168,6 @@ public:
 };
 
 class GodotDampedSpringJoint2D : public GodotJoint2D {
-	union {
-		struct {
-			GodotBody2D *A;
-			GodotBody2D *B;
-		};
-
-		GodotBody2D *_arr[2] = { nullptr, nullptr };
-	};
-
 	Vector2 anchor_A;
 	Vector2 anchor_B;
 

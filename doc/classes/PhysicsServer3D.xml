@@ -876,6 +876,13 @@
 				Returns whether the bodies attached to the [Joint3D] will collide with each other.
 			</description>
 		</method>
+		<method name="joint_is_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Gets the joint enabled state.
+			</description>
+		</method>
 		<method name="joint_make_cone_twist">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
@@ -925,6 +932,14 @@
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="local_ref_B" type="Transform3D" />
 			<description>
+			</description>
+		</method>
+		<method name="joint_set_enabled">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Enable or disable the joint.
 			</description>
 		</method>
 		<method name="joint_set_solver_priority">

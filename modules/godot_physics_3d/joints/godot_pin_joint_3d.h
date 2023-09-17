@@ -54,15 +54,6 @@ subject to the following restrictions:
 */
 
 class GodotPinJoint3D : public GodotJoint3D {
-	union {
-		struct {
-			GodotBody3D *A;
-			GodotBody3D *B;
-		};
-
-		GodotBody3D *_arr[2] = {};
-	};
-
 	real_t m_tau = 0.3; //bias
 	real_t m_damping = 1.0;
 	real_t m_impulseClamp = 0.0;

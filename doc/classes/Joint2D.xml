@@ -24,6 +24,9 @@
 		<member name="disable_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
 			If [code]true[/code], the two bodies bound together do not collide with each other.
 		</member>
+		<member name="disable_mode" type="int" setter="set_disable_mode" getter="get_disable_mode" enum="Joint2D.DisableMode" default="0">
+			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED]. See [enum DisableMode] for more details about the different modes.
+		</member>
 		<member name="node_a" type="NodePath" setter="set_node_a" getter="get_node_a" default="NodePath(&quot;&quot;)">
 			Path to the first body (A) attached to the joint. The node must inherit [PhysicsBody2D].
 		</member>
@@ -31,4 +34,13 @@
 			Path to the second body (B) attached to the joint. The node must inherit [PhysicsBody2D].
 		</member>
 	</members>
+	<constants>
+		<constant name="DISABLE_MODE_REMOVE" value="0" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], remove from the physics simulation to stop all physics interactions with this [Joint2D].
+			Automatically re-added to the physics simulation when the [Node] is processed again with initial transforms for bodies.
+		</constant>
+		<constant name="DISABLE_MODE_KEEP_ACTIVE" value="1" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], do not affect the physics simulation.
+		</constant>
+	</constants>
 </class>

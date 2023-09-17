@@ -36,6 +36,32 @@
 
 class GodotJoint3D : public GodotConstraint3D {
 protected:
+	union {
+		struct {
+			GodotBody3D *A;
+			GodotBody3D *B;
+		};
+
+		GodotBody3D *_arr[2] = { nullptr, nullptr };
+	};
+	bool enabled = true;
+	void remove_constraint_from_bodies() {
+		for (int i = 0; i < get_body_count(); i++) {
+			GodotBody3D *body = get_body_ptr()[i];
+			if (body) {
+				body->remove_constraint(this);
+			}
+		}
+	}
+
+	void add_constraint_to_bodies() {
+		if (A) {
+			A->add_constraint(this, 0);
+		}
+		if (B) {
+			B->add_constraint(this, 1);
+		}
+	}
 	bool dynamic_A = false;
 	bool dynamic_B = false;
 
@@ -73,6 +99,16 @@ protected:
 	}
 
 public:
+	_FORCE_INLINE_ void set_enabled(bool p_enabled) {
+		enabled = p_enabled;
+		if (enabled) {
+			add_constraint_to_bodies();
+		} else {
+			remove_constraint_from_bodies();
+		}
+	}
+	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
+
 	virtual bool setup(real_t p_step) override { return false; }
 	virtual bool pre_solve(real_t p_step) override { return true; }
 	virtual void solve(real_t p_step) override {}
@@ -81,20 +117,16 @@ public:
 		set_self(p_joint->get_self());
 		set_priority(p_joint->get_priority());
 		disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
+		set_enabled(p_joint->is_enabled());
 	}
 
 	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
-	_FORCE_INLINE_ GodotJoint3D(GodotBody3D **p_body_ptr = nullptr, int p_body_count = 0) :
-			GodotConstraint3D(p_body_ptr, p_body_count) {
+	_FORCE_INLINE_ GodotJoint3D() :
+			GodotConstraint3D(_arr, 2) {
 	}
 
 	virtual ~GodotJoint3D() {
-		for (int i = 0; i < get_body_count(); i++) {
-			GodotBody3D *body = get_body_ptr()[i];
-			if (body) {
-				body->remove_constraint(this);
-			}
-		}
+		remove_constraint_from_bodies();
 	}
 };
 

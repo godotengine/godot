@@ -862,6 +862,13 @@
 				Overridable version of [method PhysicsServer2D.joint_is_disabled_collisions_between_bodies].
 			</description>
 		</method>
+		<method name="_joint_is_enabled" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Overridable version of [method PhysicsServer2D.joint_is_enabled].
+			</description>
+		</method>
 		<method name="_joint_make_damped_spring" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
@@ -893,6 +900,14 @@
 			<param index="3" name="body_b" type="RID" />
 			<description>
 				Overridable version of [method PhysicsServer2D.joint_make_pin].
+			</description>
+		</method>
+		<method name="_joint_set_enabled" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Overridable version of [method PhysicsServer2D.joint_set_enabled].
 			</description>
 		</method>
 		<method name="_joint_set_param" qualifiers="virtual">

@@ -167,14 +167,13 @@ real_t GodotPinJoint3D::get_param(PhysicsServer3D::PinJointParam p_param) const 
 }
 
 GodotPinJoint3D::GodotPinJoint3D(GodotBody3D *p_body_a, const Vector3 &p_pos_a, GodotBody3D *p_body_b, const Vector3 &p_pos_b) :
-		GodotJoint3D(_arr, 2) {
+		GodotJoint3D() {
 	A = p_body_a;
 	B = p_body_b;
 	m_pivotInA = p_pos_a;
 	m_pivotInB = p_pos_b;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	add_constraint_to_bodies();
 }
 
 GodotPinJoint3D::~GodotPinJoint3D() {

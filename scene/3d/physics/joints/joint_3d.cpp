@@ -66,6 +66,11 @@ void Joint3D::_update_joint(bool p_only_free) {
 		warning = String();
 		return;
 	}
+	if (!is_enabled() && disable_mode == DISABLE_MODE_REMOVE) {
+		PhysicsServer3D::get_singleton()->joint_set_enabled(get_rid(), false);
+		warning = String();
+		return;
+	}
 
 	Node *node_a = get_node_or_null(a);
 	Node *node_b = get_node_or_null(b);
@@ -181,7 +186,66 @@ void Joint3D::_notification(int p_what) {
 			}
 			_update_joint(true);
 		} break;
+
+		case NOTIFICATION_DISABLED: {
+			_apply_disabled();
+		} break;
+
+		case NOTIFICATION_ENABLED: {
+			_apply_enabled();
+		} break;
 	}
+}
+void Joint3D::_apply_disabled() {
+	switch (disable_mode) {
+		case DISABLE_MODE_REMOVE: {
+			if (is_inside_tree()) {
+				PhysicsServer3D::get_singleton()->joint_set_enabled(get_rid(), false);
+			}
+		} break;
+
+		case DISABLE_MODE_KEEP_ACTIVE: {
+			// Nothing to do.
+		} break;
+	}
+}
+
+void Joint3D::_apply_enabled() {
+	switch (disable_mode) {
+		case DISABLE_MODE_REMOVE: {
+			if (is_inside_tree()) {
+				PhysicsServer3D::get_singleton()->joint_set_enabled(get_rid(), true);
+			}
+		} break;
+
+		case DISABLE_MODE_KEEP_ACTIVE: {
+			// Nothing to do.
+		} break;
+	}
+}
+
+void Joint3D::set_disable_mode(DisableMode p_mode) {
+	if (disable_mode == p_mode) {
+		return;
+	}
+
+	bool disabled = is_inside_tree() && !is_enabled();
+
+	if (disabled) {
+		// Cancel previous disable mode.
+		_apply_enabled();
+	}
+
+	disable_mode = p_mode;
+
+	if (disabled) {
+		// Apply new disable mode.
+		_apply_disabled();
+	}
+}
+
+Joint3D::DisableMode Joint3D::get_disable_mode() const {
+	return disable_mode;
 }
 
 void Joint3D::set_exclude_nodes_from_collision(bool p_enable) {
@@ -223,6 +287,9 @@ void Joint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint3D::set_exclude_nodes_from_collision);
 	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint3D::get_exclude_nodes_from_collision);
 
+	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &Joint3D::set_disable_mode);
+	ClassDB::bind_method(D_METHOD("get_disable_mode"), &Joint3D::get_disable_mode);
+
 	ClassDB::bind_method(D_METHOD("get_rid"), &Joint3D::get_rid);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_a", "get_node_a");
@@ -230,6 +297,10 @@ void Joint3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "solver_priority", PROPERTY_HINT_RANGE, "1,8,1"), "set_solver_priority", "get_solver_priority");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_nodes_from_collision"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,Keep Active"), "set_disable_mode", "get_disable_mode");
+
+	BIND_ENUM_CONSTANT(DISABLE_MODE_REMOVE);
+	BIND_ENUM_CONSTANT(DISABLE_MODE_KEEP_ACTIVE);
 }
 
 Joint3D::Joint3D() {

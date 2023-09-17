@@ -363,6 +363,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_joint_create);
 	GDVIRTUAL_BIND(_joint_clear, "joint");
 
+	GDVIRTUAL_BIND(_joint_set_enabled, "joint", "enabled");
+	GDVIRTUAL_BIND(_joint_is_enabled, "joint");
+
 	GDVIRTUAL_BIND(_joint_make_pin, "joint", "body_A", "local_A", "body_B", "local_B");
 
 	GDVIRTUAL_BIND(_pin_joint_set_param, "joint", "param", "value");

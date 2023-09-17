@@ -640,6 +640,9 @@ public:
 
 	virtual void joint_clear(RID p_joint) = 0;
 
+	virtual void joint_set_enabled(RID p_joint, bool p_enabled) = 0;
+	virtual bool joint_is_enabled(RID p_joint) const = 0;
+
 	virtual JointType joint_get_type(RID p_joint) const = 0;
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) = 0;

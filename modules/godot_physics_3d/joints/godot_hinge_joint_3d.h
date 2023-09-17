@@ -54,15 +54,6 @@ subject to the following restrictions:
 */
 
 class GodotHingeJoint3D : public GodotJoint3D {
-	union {
-		struct {
-			GodotBody3D *A;
-			GodotBody3D *B;
-		};
-
-		GodotBody3D *_arr[2] = {};
-	};
-
 	GodotJacobianEntry3D m_jac[3]; //3 orthogonal linear constraints
 	GodotJacobianEntry3D m_jacAng[3]; //2 orthogonal angular constraints+ 1 for limit/motor
 

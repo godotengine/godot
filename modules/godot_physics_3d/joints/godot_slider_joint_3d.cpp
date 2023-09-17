@@ -58,14 +58,13 @@ April 04, 2008
 //-----------------------------------------------------------------------------
 
 GodotSliderJoint3D::GodotSliderJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameInA, const Transform3D &frameInB) :
-		GodotJoint3D(_arr, 2),
+		GodotJoint3D(),
 		m_frameInA(frameInA),
 		m_frameInB(frameInB) {
 	A = rbA;
 	B = rbB;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	add_constraint_to_bodies();
 }
 
 //-----------------------------------------------------------------------------

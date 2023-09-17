@@ -37,6 +37,13 @@
 class Joint3D : public Node3D {
 	GDCLASS(Joint3D, Node3D);
 
+public:
+	enum DisableMode {
+		DISABLE_MODE_REMOVE,
+		DISABLE_MODE_KEEP_ACTIVE,
+	};
+
+private:
 	RID ba, bb;
 
 	RID joint;
@@ -49,6 +56,11 @@ class Joint3D : public Node3D {
 	String warning;
 	bool configured = false;
 
+	void _apply_disabled();
+	void _apply_enabled();
+
+	DisableMode disable_mode = DISABLE_MODE_REMOVE;
+
 protected:
 	void _disconnect_signals();
 	void _body_exit_tree();
@@ -57,6 +69,9 @@ protected:
 	void _notification(int p_what);
 
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) = 0;
+
+	void set_disable_mode(DisableMode p_mode);
+	DisableMode get_disable_mode() const;
 
 	static void _bind_methods();
 
@@ -82,4 +97,5 @@ public:
 	~Joint3D();
 };
 
+VARIANT_ENUM_CAST(Joint3D::DisableMode);
 #endif // JOINT_3D_H

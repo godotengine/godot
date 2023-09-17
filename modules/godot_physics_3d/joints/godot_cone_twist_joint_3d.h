@@ -60,16 +60,6 @@ class GodotConeTwistJoint3D : public GodotJoint3D {
 #ifdef IN_PARALLELL_SOLVER
 public:
 #endif
-
-	union {
-		struct {
-			GodotBody3D *A;
-			GodotBody3D *B;
-		};
-
-		GodotBody3D *_arr[2] = { nullptr, nullptr };
-	};
-
 	GodotJacobianEntry3D m_jac[3] = {}; //3 orthogonal linear constraints
 
 	real_t m_appliedImpulse = 0.0;

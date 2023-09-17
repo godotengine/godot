@@ -768,6 +768,9 @@ void PhysicsServer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("joint_clear", "joint"), &PhysicsServer2D::joint_clear);
 
+	ClassDB::bind_method(D_METHOD("joint_set_enabled", "joint", "enabled"), &PhysicsServer2D::joint_set_enabled);
+	ClassDB::bind_method(D_METHOD("joint_is_enabled", "joint"), &PhysicsServer2D::joint_is_enabled);
+
 	ClassDB::bind_method(D_METHOD("joint_set_param", "joint", "param", "value"), &PhysicsServer2D::joint_set_param);
 	ClassDB::bind_method(D_METHOD("joint_get_param", "joint", "param"), &PhysicsServer2D::joint_get_param);
 

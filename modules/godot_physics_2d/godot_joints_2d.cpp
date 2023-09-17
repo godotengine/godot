@@ -61,6 +61,7 @@ void GodotJoint2D::copy_settings_from(GodotJoint2D *p_joint) {
 	set_bias(p_joint->get_bias());
 	set_max_bias(p_joint->get_max_bias());
 	disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
+	set_enabled(p_joint->is_enabled());
 }
 
 static inline real_t k_scalar(GodotBody2D *a, GodotBody2D *b, const Vector2 &rA, const Vector2 &rB, const Vector2 &n) {
@@ -315,15 +316,14 @@ bool GodotPinJoint2D::get_flag(PhysicsServer2D::PinJointFlag p_flag) const {
 }
 
 GodotPinJoint2D::GodotPinJoint2D(const Vector2 &p_pos, GodotBody2D *p_body_a, GodotBody2D *p_body_b) :
-		GodotJoint2D(_arr, p_body_b ? 2 : 1) {
+		GodotJoint2D(p_body_b ? 2 : 1) {
 	A = p_body_a;
 	B = p_body_b;
 	anchor_A = p_body_a->get_inv_transform().xform(p_pos);
 	anchor_B = p_body_b ? p_body_b->get_inv_transform().xform(p_pos) : p_pos;
 
-	p_body_a->add_constraint(this, 0);
+	add_constraint_to_bodies();
 	if (p_body_b) {
-		p_body_b->add_constraint(this, 1);
 		initial_angle = A->get_transform().get_origin().angle_to_point(B->get_transform().get_origin());
 	}
 }
@@ -471,7 +471,7 @@ void GodotGrooveJoint2D::solve(real_t p_step) {
 }
 
 GodotGrooveJoint2D::GodotGrooveJoint2D(const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, GodotBody2D *p_body_a, GodotBody2D *p_body_b) :
-		GodotJoint2D(_arr, 2) {
+		GodotJoint2D(2) {
 	A = p_body_a;
 	B = p_body_b;
 
@@ -480,8 +480,7 @@ GodotGrooveJoint2D::GodotGrooveJoint2D(const Vector2 &p_a_groove1, const Vector2
 	B_anchor = B->get_inv_transform().xform(p_b_anchor);
 	A_groove_normal = -(A_groove_2 - A_groove_1).normalized().orthogonal();
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	add_constraint_to_bodies();
 }
 
 //////////////////////////////////////////////
@@ -582,14 +581,12 @@ real_t GodotDampedSpringJoint2D::get_param(PhysicsServer2D::DampedSpringParam p_
 }
 
 GodotDampedSpringJoint2D::GodotDampedSpringJoint2D(const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, GodotBody2D *p_body_a, GodotBody2D *p_body_b) :
-		GodotJoint2D(_arr, 2) {
+		GodotJoint2D(2) {
 	A = p_body_a;
 	B = p_body_b;
 	anchor_A = A->get_inv_transform().xform(p_anchor_a);
 	anchor_B = B->get_inv_transform().xform(p_anchor_b);
 
 	rest_length = p_anchor_a.distance_to(p_anchor_b);
-
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	add_constraint_to_bodies();
 }

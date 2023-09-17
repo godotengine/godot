@@ -316,6 +316,9 @@ public:
 
 	virtual void joint_clear(RID p_joint) override; //resets type
 
+	virtual void joint_set_enabled(RID p_joint, bool p_enabled) override;
+	virtual bool joint_is_enabled(RID p_joint) const override;
+
 	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override;
 
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) override;

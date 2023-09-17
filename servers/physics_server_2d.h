@@ -536,6 +536,9 @@ public:
 		JOINT_TYPE_MAX
 	};
 
+	virtual void joint_set_enabled(RID p_joint, bool p_enabled) = 0;
+	virtual bool joint_is_enabled(RID p_joint) const = 0;
+
 	enum JointParam {
 		JOINT_PARAM_BIAS,
 		JOINT_PARAM_MAX_BIAS,

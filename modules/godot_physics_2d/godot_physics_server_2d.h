@@ -265,6 +265,9 @@ public:
 
 	virtual void joint_clear(RID p_joint) override;
 
+	virtual void joint_set_enabled(RID p_joint, bool p_enabled) override;
+	virtual bool joint_is_enabled(RID p_joint) const override;
+
 	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value) override;
 	virtual real_t joint_get_param(RID p_joint, JointParam p_param) const override;
 

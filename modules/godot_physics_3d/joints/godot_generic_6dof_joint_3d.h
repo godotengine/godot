@@ -141,15 +141,6 @@ public:
 
 class GodotGeneric6DOFJoint3D : public GodotJoint3D {
 protected:
-	union {
-		struct {
-			GodotBody3D *A;
-			GodotBody3D *B;
-		};
-
-		GodotBody3D *_arr[2] = { nullptr, nullptr };
-	};
-
 	//! relative_frames
 	//!@{
 	Transform3D m_frameInA; //!< the constraint space w.r.t body A

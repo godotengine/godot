@@ -1042,6 +1042,20 @@ void GodotPhysicsServer2D::joint_clear(RID p_joint) {
 	}
 }
 
+void GodotPhysicsServer2D::joint_set_enabled(RID p_joint, bool p_enabled) {
+	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+
+	joint->set_enabled(p_enabled);
+}
+
+bool GodotPhysicsServer2D::joint_is_enabled(RID p_joint) const {
+	const GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, false);
+
+	return joint->is_enabled();
+}
+
 void GodotPhysicsServer2D::joint_set_param(RID p_joint, JointParam p_param, real_t p_value) {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);

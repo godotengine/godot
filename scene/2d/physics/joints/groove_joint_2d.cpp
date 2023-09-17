@@ -48,6 +48,14 @@ void GrooveJoint2D::_notification(int p_what) {
 			draw_line(Point2(0, 0), Point2(0, length), Color(0.7, 0.6, 0.0, 0.5), 3);
 			draw_line(Point2(-10, initial_offset), Point2(+10, initial_offset), Color(0.8, 0.8, 0.9, 0.5), 5);
 		} break;
+
+		case NOTIFICATION_DISABLED: {
+			_apply_disabled();
+		} break;
+
+		case NOTIFICATION_ENABLED: {
+			_apply_enabled();
+		} break;
 	}
 }
 
