@@ -354,10 +354,6 @@ void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void AudioStreamPlayer2D::_bus_layout_changed() {
-	notify_property_list_changed();
-}
-
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
 	ERR_FAIL_COND(p_pixels <= 0.0);
 	max_distance = p_pixels;
@@ -426,6 +422,14 @@ float AudioStreamPlayer2D::get_panning_strength() const {
 	return panning_strength;
 }
 
+void AudioStreamPlayer2D::_on_bus_layout_changed() {
+	notify_property_list_changed();
+}
+
+void AudioStreamPlayer2D::_on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name) {
+	notify_property_list_changed();
+}
+
 void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer2D::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer2D::get_stream);
@@ -490,7 +494,8 @@ void AudioStreamPlayer2D::_bind_methods() {
 }
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {
-	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer2D::_bus_layout_changed));
+	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer2D::_on_bus_layout_changed));
+	AudioServer::get_singleton()->connect("bus_renamed", callable_mp(this, &AudioStreamPlayer2D::_on_bus_renamed));
 	cached_global_panning_strength = GLOBAL_GET("audio/general/2d_panning_strength");
 	set_hide_clip_children(true);
 }

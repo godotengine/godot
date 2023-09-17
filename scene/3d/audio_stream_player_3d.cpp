@@ -674,10 +674,6 @@ void AudioStreamPlayer3D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void AudioStreamPlayer3D::_bus_layout_changed() {
-	notify_property_list_changed();
-}
-
 void AudioStreamPlayer3D::set_max_distance(float p_metres) {
 	ERR_FAIL_COND(p_metres < 0.0);
 	max_distance = p_metres;
@@ -814,6 +810,14 @@ float AudioStreamPlayer3D::get_panning_strength() const {
 	return panning_strength;
 }
 
+void AudioStreamPlayer3D::_on_bus_layout_changed() {
+	notify_property_list_changed();
+}
+
+void AudioStreamPlayer3D::_on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name) {
+	notify_property_list_changed();
+}
+
 void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer3D::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer3D::get_stream);
@@ -923,7 +927,8 @@ void AudioStreamPlayer3D::_bind_methods() {
 
 AudioStreamPlayer3D::AudioStreamPlayer3D() {
 	velocity_tracker.instantiate();
-	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer3D::_bus_layout_changed));
+	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer3D::_on_bus_layout_changed));
+	AudioServer::get_singleton()->connect("bus_renamed", callable_mp(this, &AudioStreamPlayer3D::_on_bus_renamed));
 	set_disable_scale(true);
 	cached_global_panning_strength = GLOBAL_GET("audio/general/3d_panning_strength");
 }
