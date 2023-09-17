@@ -1486,6 +1486,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::TERNARY_OPERATOR:
 		case GDScriptParser::Node::TYPE_TEST:
 		case GDScriptParser::Node::UNARY_OPERATOR:
+		case GDScriptParser::Node::COMPREHENSION:
 			reduce_expression(static_cast<GDScriptParser::ExpressionNode *>(p_node), p_is_root);
 			break;
 		case GDScriptParser::Node::BREAK:
@@ -1990,13 +1991,16 @@ void GDScriptAnalyzer::resolve_if(GDScriptParser::IfNode *p_if) {
 	}
 }
 
-void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
+void GDScriptAnalyzer::resolve_iteration(GDScriptParser::ExpressionNode *list,
+		GDScriptParser::IdentifierNode *variable,
+		bool *use_conversion_assign,
+		GDScriptParser::TypeNode *datatype_specifier) {
 	bool list_resolved = false;
 
 	// Optimize constant range() call to not allocate an array.
 	// Use int, Vector2i, Vector3i instead, which also can be used as range iterators.
-	if (p_for->list && p_for->list->type == GDScriptParser::Node::CALL) {
-		GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(p_for->list);
+	if (list && list->type == GDScriptParser::Node::CALL) {
+		GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(list);
 		GDScriptParser::Node::Type callee_type = call->get_callee_type();
 		if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 			GDScriptParser::IdentifierNode *callee = static_cast<GDScriptParser::IdentifierNode *>(call->callee);
@@ -2053,19 +2057,19 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 								reduced = Vector3i(args[0], args[1], args[2]);
 								break;
 						}
-						p_for->list->is_constant = true;
-						p_for->list->reduced_value = reduced;
+						list->is_constant = true;
+						list->reduced_value = reduced;
 					}
 				}
 
-				if (p_for->list->is_constant) {
-					p_for->list->set_datatype(type_from_variant(p_for->list->reduced_value, p_for->list));
+				if (list->is_constant) {
+					list->set_datatype(type_from_variant(list->reduced_value, list));
 				} else {
 					GDScriptParser::DataType list_type;
 					list_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 					list_type.kind = GDScriptParser::DataType::BUILTIN;
 					list_type.builtin_type = Variant::ARRAY;
-					p_for->list->set_datatype(list_type);
+					list->set_datatype(list_type);
 				}
 			}
 		}
@@ -2078,16 +2082,16 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 		variable_type.kind = GDScriptParser::DataType::BUILTIN;
 		variable_type.builtin_type = Variant::INT;
 		list_visible_type = "Array[int]"; // NOTE: `range()` has `Array` return type.
-	} else if (p_for->list) {
-		resolve_node(p_for->list, false);
-		GDScriptParser::DataType list_type = p_for->list->get_datatype();
+	} else if (list) {
+		resolve_node(list, false);
+		GDScriptParser::DataType list_type = list->get_datatype();
 		list_visible_type = list_type.to_string();
 		if (!list_type.is_hard_type()) {
-			mark_node_unsafe(p_for->list);
+			mark_node_unsafe(list);
 		}
 		if (list_type.is_variant()) {
 			variable_type.kind = GDScriptParser::DataType::VARIANT;
-			mark_node_unsafe(p_for->list);
+			mark_node_unsafe(list);
 		} else if (list_type.has_container_element_type()) {
 			variable_type = list_type.get_container_element_type();
 			variable_type.type_source = list_type.type_source;
@@ -2111,49 +2115,53 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			List<GDScriptParser::DataType> par_types;
 			int default_arg_count = 0;
 			BitField<MethodFlags> method_flags;
-			if (get_function_signature(p_for->list, false, list_type, CoreStringNames::get_singleton()->_iter_get, return_type, par_types, default_arg_count, method_flags)) {
+			if (get_function_signature(list, false, list_type, CoreStringNames::get_singleton()->_iter_get, return_type, par_types, default_arg_count, method_flags)) {
 				variable_type = return_type;
 				variable_type.type_source = list_type.type_source;
 			} else if (!list_type.is_hard_type()) {
 				variable_type.kind = GDScriptParser::DataType::VARIANT;
 			} else {
-				push_error(vformat(R"(Unable to iterate on object of type "%s".)", list_type.to_string()), p_for->list);
+				push_error(vformat(R"(Unable to iterate on object of type "%s".)", list_type.to_string()), list);
 			}
 		} else if (list_type.builtin_type == Variant::ARRAY || list_type.builtin_type == Variant::DICTIONARY || !list_type.is_hard_type()) {
 			variable_type.kind = GDScriptParser::DataType::VARIANT;
 		} else {
-			push_error(vformat(R"(Unable to iterate on value of type "%s".)", list_type.to_string()), p_for->list);
+			push_error(vformat(R"(Unable to iterate on value of type "%s".)", list_type.to_string()), list);
 		}
 	}
 
-	if (p_for->variable) {
-		if (p_for->datatype_specifier) {
-			GDScriptParser::DataType specified_type = type_from_metatype(resolve_datatype(p_for->datatype_specifier));
+	if (variable) {
+		if (datatype_specifier) {
+			GDScriptParser::DataType specified_type = type_from_metatype(resolve_datatype(datatype_specifier));
 			if (!specified_type.is_variant()) {
 				if (variable_type.is_variant() || !variable_type.is_hard_type()) {
-					mark_node_unsafe(p_for->variable);
-					p_for->use_conversion_assign = true;
-				} else if (!is_type_compatible(specified_type, variable_type, true, p_for->variable)) {
+					mark_node_unsafe(variable);
+					*use_conversion_assign = true;
+				} else if (!is_type_compatible(specified_type, variable_type, true, variable)) {
 					if (is_type_compatible(variable_type, specified_type)) {
-						mark_node_unsafe(p_for->variable);
-						p_for->use_conversion_assign = true;
+						mark_node_unsafe(variable);
+						*use_conversion_assign = true;
 					} else {
-						push_error(vformat(R"(Unable to iterate on value of type "%s" with variable of type "%s".)", list_visible_type, specified_type.to_string()), p_for->datatype_specifier);
+						push_error(vformat(R"(Unable to iterate on value of type "%s" with variable of type "%s".)", list_visible_type, specified_type.to_string()), datatype_specifier);
 					}
 				} else if (!is_type_compatible(specified_type, variable_type)) {
-					p_for->use_conversion_assign = true;
+					*use_conversion_assign = true;
 				}
 			}
-			p_for->variable->set_datatype(specified_type);
+			variable->set_datatype(specified_type);
 		} else {
-			p_for->variable->set_datatype(variable_type);
+			variable->set_datatype(variable_type);
 #ifdef DEBUG_ENABLED
 			if (!variable_type.is_hard_type()) {
-				parser->push_warning(p_for->variable, GDScriptWarning::UNTYPED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
+				parser->push_warning(variable, GDScriptWarning::UNTYPED_DECLARATION, R"("for" iterator variable)", variable->name);
 			}
 #endif
 		}
 	}
+}
+
+void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
+	resolve_iteration(p_for->list, p_for->variable, &p_for->use_conversion_assign, p_for->datatype_specifier);
 
 	resolve_suite(p_for->loop);
 	p_for->set_datatype(p_for->loop->get_datatype());
@@ -2399,6 +2407,9 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		case GDScriptParser::Node::CAST:
 			reduce_cast(static_cast<GDScriptParser::CastNode *>(p_expression));
 			break;
+		case GDScriptParser::Node::COMPREHENSION:
+			reduce_comprehension(static_cast<GDScriptParser::ComprehensionNode *>(p_expression));
+			break;
 		case GDScriptParser::Node::DICTIONARY:
 			reduce_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_expression));
 			break;
@@ -2474,6 +2485,41 @@ void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
 	arr_type.is_constant = true;
 
 	p_array->set_datatype(arr_type);
+}
+
+void GDScriptAnalyzer::reduce_comprehension(GDScriptParser::ComprehensionNode *p_comprehension) {
+	for (int i = 0; i < p_comprehension->for_ifs.size(); i++) {
+		comprehension_identifier_stack.push_back(p_comprehension->for_ifs[i].variable);
+	}
+
+	for (int i = p_comprehension->for_ifs.size() - 1; i >= 0; i--) {
+		GDScriptParser::ComprehensionNode::ForIf for_if = p_comprehension->for_ifs[i];
+		comprehension_identifier_stack.pop_back();
+
+		reduce_expression(for_if.list);
+		resolve_iteration(for_if.list, for_if.variable, &for_if.use_conversion_assign);
+	}
+
+	for (int i = p_comprehension->for_ifs.size() - 1; i >= 0; i--) {
+		comprehension_identifier_stack.push_back(p_comprehension->for_ifs[i].variable);
+	}
+
+	reduce_expression(p_comprehension->expression);
+
+	for (int i = p_comprehension->for_ifs.size() - 1; i >= 0; i--) {
+		GDScriptParser::ComprehensionNode::ForIf for_if = p_comprehension->for_ifs[i];
+
+		reduce_expression(for_if.condition);
+
+		comprehension_identifier_stack.pop_back();
+	}
+
+	GDScriptParser::DataType arr_type;
+	arr_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+	arr_type.kind = GDScriptParser::DataType::BUILTIN;
+	arr_type.builtin_type = Variant::ARRAY;
+	arr_type.is_constant = true;
+	p_comprehension->set_datatype(arr_type);
 }
 
 #ifdef DEBUG_ENABLED
@@ -3741,6 +3787,20 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 					push_error(R"(Cannot use another enum element before it was declared.)", p_identifier);
 				}
 				return; // Found anyway.
+			}
+		}
+	}
+
+	// Check if we are inside a comprehension. This allows the comprehension to access the variable it is iterating over.
+	if (comprehension_identifier_stack.size() > 0) {
+		for (int i = comprehension_identifier_stack.size() - 1; i >= 0; i--) {
+			GDScriptParser::IdentifierNode *current_identifier = comprehension_identifier_stack[i];
+
+			if (current_identifier->name == p_identifier->name) {
+				GDScriptParser::DataType variable_data_type = current_identifier->get_datatype();
+				p_identifier->set_datatype(variable_data_type);
+				p_identifier->source = GDScriptParser::IdentifierNode::LOCAL_ITERATOR;
+				return;
 			}
 		}
 	}

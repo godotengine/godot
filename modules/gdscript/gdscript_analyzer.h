@@ -45,6 +45,7 @@ class GDScriptAnalyzer {
 	const GDScriptParser::EnumNode *current_enum = nullptr;
 	GDScriptParser::LambdaNode *current_lambda = nullptr;
 	List<GDScriptParser::LambdaNode *> pending_body_resolution_lambdas;
+	List<GDScriptParser::IdentifierNode *> comprehension_identifier_stack; //?: could this be a Vector instead?
 	bool static_context = false;
 
 	// Tests for detecting invalid overloading of script members
@@ -60,6 +61,8 @@ class GDScriptAnalyzer {
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
 
 	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
+
+	void resolve_iteration(GDScriptParser::ExpressionNode *list, GDScriptParser::IdentifierNode *variable, bool *use_conversion_assign, GDScriptParser::TypeNode *datatype_specifier = nullptr);
 
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
 	void resolve_class_member(GDScriptParser::ClassNode *p_class, StringName p_name, const GDScriptParser::Node *p_source = nullptr);
@@ -93,6 +96,7 @@ class GDScriptAnalyzer {
 	void reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op);
 	void reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await = false, bool p_is_root = false);
 	void reduce_cast(GDScriptParser::CastNode *p_cast);
+	void reduce_comprehension(GDScriptParser::ComprehensionNode *p_comprehension);
 	void reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
 	void reduce_get_node(GDScriptParser::GetNodeNode *p_get_node);
 	void reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin = false);

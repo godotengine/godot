@@ -1373,6 +1373,69 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			return result;
 		} break;
+		case GDScriptParser::Node::COMPREHENSION: {
+			const GDScriptParser::ComprehensionNode *comprehension = static_cast<const GDScriptParser::ComprehensionNode *>(p_expression);
+			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(comprehension->get_datatype(), codegen.script));
+
+			Vector<GDScriptCodeGenerator::Address> values;
+
+			gen->write_construct_array(result, values);
+
+			for (const GDScriptParser::ComprehensionNode::ForIf &for_if : comprehension->for_ifs) {
+				codegen.start_block();
+
+				GDScriptCodeGenerator::Address list = _parse_expression(codegen, r_error, for_if.list);
+				if (r_error) {
+					return GDScriptCodeGenerator::Address();
+				}
+
+				GDScriptCodeGenerator::Address iterator = codegen.add_local(for_if.variable->name, _gdtype_from_datatype(for_if.variable->get_datatype(), codegen.script));
+
+				gen->start_for(iterator.type, _gdtype_from_datatype(for_if.list->get_datatype(), codegen.script));
+
+				gen->write_for_assignment(list);
+				if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
+
+				gen->write_for(iterator, for_if.use_conversion_assign);
+
+				if (for_if.condition != nullptr) {
+					GDScriptCodeGenerator::Address condition = _parse_expression(codegen, r_error, for_if.condition);
+					if (r_error) {
+						return GDScriptCodeGenerator::Address();
+					}
+
+					gen->write_if(condition);
+
+					if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						codegen.generator->pop_temporary();
+					}
+				}
+			}
+
+			GDScriptCodeGenerator::Address expression = _parse_expression(codegen, r_error, comprehension->expression);
+			if (r_error) {
+				return GDScriptCodeGenerator::Address();
+			}
+			values.push_back(expression);
+			if (expression.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				codegen.generator->pop_temporary();
+			}
+
+			gen->write_call_builtin_type(GDScriptCodeGenerator::Address(), result, Variant::Type::ARRAY, "push_back", values);
+
+			for (int i = comprehension->for_ifs.size() - 1; i >= 0; i--) {
+				if (comprehension->for_ifs[i].condition != nullptr) {
+					gen->write_endif();
+				}
+				gen->write_endfor();
+
+				codegen.end_block(false);
+			}
+
+			return result;
+		} break;
 		default: {
 			ERR_FAIL_V_MSG(GDScriptCodeGenerator::Address(), "Bug in bytecode compiler, unexpected node in parse tree while parsing expression."); // Unreachable code.
 		} break;

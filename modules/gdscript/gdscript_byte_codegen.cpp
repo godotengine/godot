@@ -1783,8 +1783,8 @@ void GDScriptByteCodeGenerator::start_block() {
 	push_stack_identifiers();
 }
 
-void GDScriptByteCodeGenerator::end_block() {
-	pop_stack_identifiers();
+void GDScriptByteCodeGenerator::end_block(bool expect_no_locals) {
+	pop_stack_identifiers(expect_no_locals);
 }
 
 void GDScriptByteCodeGenerator::clean_temporaries() {

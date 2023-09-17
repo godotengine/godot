@@ -108,10 +108,10 @@ class GDScriptCompiler {
 			generator->start_block();
 		}
 
-		void end_block() {
+		void end_block(bool expect_no_locals = true) {
 			locals = locals_stack.back()->get();
 			locals_stack.pop_back();
-			generator->end_block();
+			generator->end_block(expect_no_locals);
 		}
 	};
 

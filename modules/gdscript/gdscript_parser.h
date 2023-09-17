@@ -70,6 +70,7 @@ public:
 	struct CallNode;
 	struct CastNode;
 	struct ClassNode;
+	struct ComprehensionNode;
 	struct ConstantNode;
 	struct ContinueNode;
 	struct DictionaryNode;
@@ -289,6 +290,7 @@ public:
 			CALL,
 			CAST,
 			CLASS,
+			COMPREHENSION,
 			CONSTANT,
 			CONTINUE,
 			DICTIONARY,
@@ -782,6 +784,23 @@ public:
 
 		ClassNode() {
 			type = CLASS;
+		}
+	};
+
+	struct ComprehensionNode : public ExpressionNode {
+		ExpressionNode *expression = nullptr;
+
+		struct ForIf {
+			ExpressionNode *list = nullptr;
+			IdentifierNode *variable = nullptr;
+			ExpressionNode *condition = nullptr;
+			bool use_conversion_assign = false;
+		};
+
+		List<ForIf> for_ifs;
+
+		ComprehensionNode() {
+			type = COMPREHENSION;
 		}
 	};
 
@@ -1487,8 +1506,8 @@ private:
 	PatternNode *parse_match_pattern(PatternNode *p_root_pattern = nullptr);
 	WhileNode *parse_while();
 	// Expressions.
-	ExpressionNode *parse_expression(bool p_can_assign, bool p_stop_on_assign = false);
-	ExpressionNode *parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign = false);
+	ExpressionNode *parse_expression(bool p_can_assign, bool p_stop_on_assign = false, bool p_disallow_ternary = false);
+	ExpressionNode *parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign = false, bool p_disallow_ternary = false);
 	ExpressionNode *parse_literal(ExpressionNode *p_previous_operand, bool p_can_assign);
 	LiteralNode *parse_literal();
 	ExpressionNode *parse_self(ExpressionNode *p_previous_operand, bool p_can_assign);
@@ -1501,6 +1520,7 @@ private:
 	ExpressionNode *parse_ternary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_array(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ComprehensionNode *parse_comprehension(ExpressionNode *expression);
 	ExpressionNode *parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_call(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign);
@@ -1575,6 +1595,7 @@ public:
 		void print_call(CallNode *p_call);
 		void print_cast(CastNode *p_cast);
 		void print_class(ClassNode *p_class);
+		void print_comprehension(ComprehensionNode *p_comprehension);
 		void print_constant(ConstantNode *p_constant);
 		void print_dictionary(DictionaryNode *p_dictionary);
 		void print_expression(ExpressionNode *p_expression);

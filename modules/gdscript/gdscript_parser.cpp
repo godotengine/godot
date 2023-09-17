@@ -2227,7 +2227,7 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	return n_while;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign, bool p_disallow_ternary) {
 	// Switch multiline mode on for grouping tokens.
 	// Do this early to avoid the tokenizer generating whitespace tokens.
 	switch (current.type) {
@@ -2249,6 +2249,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 		// Allow keywords that can be treated as identifiers.
 		token_type = GDScriptTokenizer::Token::IDENTIFIER;
 	}
+
 	ParseFunction prefix_rule = get_rule(token_type)->prefix;
 
 	if (prefix_rule == nullptr) {
@@ -2264,6 +2265,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || lambda_ended) {
 			return previous_operand;
 		}
+
+		if (current.type == GDScriptTokenizer::Token::IF && p_disallow_ternary) {
+			return previous_operand;
+		}
+
 		// Also switch multiline mode on here for infix operators.
 		switch (current.type) {
 			// case GDScriptTokenizer::Token::BRACE_OPEN: // Not an infix operator.
@@ -2282,8 +2288,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	return previous_operand;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assign, bool p_stop_on_assign) {
-	return parse_precedence(PREC_ASSIGNMENT, p_can_assign, p_stop_on_assign);
+GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assign, bool p_stop_on_assign, bool p_disallow_ternary) {
+	return parse_precedence(PREC_ASSIGNMENT, p_can_assign, p_stop_on_assign, p_disallow_ternary);
 }
 
 GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
@@ -2734,8 +2740,40 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 	return await;
 }
 
+GDScriptParser::ComprehensionNode *GDScriptParser::parse_comprehension(ExpressionNode *expression) {
+	ComprehensionNode *comprehension = alloc_node<ComprehensionNode>();
+	comprehension->expression = expression;
+
+	do {
+		ComprehensionNode::ForIf for_if;
+
+		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected loop variable name in list comprehension)")) {
+			for_if.variable = parse_identifier();
+		}
+		consume(GDScriptTokenizer::Token::IN, R"(Expected "in" after list comprehension variable name.)");
+
+		for_if.list = parse_expression(false, false, true); // disallow ternary at this point
+
+		if (match(GDScriptTokenizer::Token::IF)) {
+			for_if.condition = parse_expression(false);
+
+			if (for_if.condition == nullptr) {
+				push_error(R"(Expected conditional expression after "if" in list comprehension.)");
+			}
+		}
+
+		comprehension->for_ifs.push_back(for_if);
+	} while (match(GDScriptTokenizer::Token::FOR) && !is_at_end());
+
+	pop_multiline();
+	consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after list comprehension.)");
+	complete_extents(comprehension);
+
+	return comprehension;
+}
+
 GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_previous_operand, bool p_can_assign) {
-	ArrayNode *array = alloc_node<ArrayNode>();
+	ArrayNode *array = nullptr;
 
 	if (!check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
 		do {
@@ -2745,13 +2783,25 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 			}
 
 			ExpressionNode *element = parse_expression(false);
+
+			if (array == nullptr && match(GDScriptTokenizer::Token::FOR)) {
+				return parse_comprehension(element);
+			}
+
+			// Since it's not a comprehension, we can now alloc the array.
+			if (array == nullptr)
+				array = alloc_node<ArrayNode>();
+
 			if (element == nullptr) {
 				push_error(R"(Expected expression as array element.)");
 			} else {
 				array->elements.push_back(element);
 			}
 		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
+	} else {
+		array = alloc_node<ArrayNode>();
 	}
+
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after array elements.)");
 	complete_extents(array);
@@ -4837,6 +4887,22 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 	decrease_indent();
 }
 
+void GDScriptParser::TreePrinter::print_comprehension(ComprehensionNode *p_comprehension) {
+	push_text("Comprehension ");
+	print_expression(p_comprehension->expression);
+
+	for (GDScriptParser::ComprehensionNode::ForIf &c : p_comprehension->for_ifs) {
+		push_text(" for ");
+		print_expression(c.variable);
+		push_text(" in ");
+		print_expression(c.list);
+		if (c.condition != nullptr) {
+			push_text(" if ");
+			print_expression(c.condition);
+		}
+	}
+}
+
 void GDScriptParser::TreePrinter::print_constant(ConstantNode *p_constant) {
 	push_text("Constant ");
 	print_identifier(p_constant->identifier);
@@ -4894,6 +4960,9 @@ void GDScriptParser::TreePrinter::print_expression(ExpressionNode *p_expression)
 			break;
 		case Node::CAST:
 			print_cast(static_cast<CastNode *>(p_expression));
+			break;
+		case Node::COMPREHENSION:
+			print_comprehension(static_cast<ComprehensionNode *>(p_expression));
 			break;
 		case Node::DICTIONARY:
 			print_dictionary(static_cast<DictionaryNode *>(p_expression));

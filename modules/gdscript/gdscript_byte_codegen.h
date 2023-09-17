@@ -86,7 +86,9 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	Vector<StackSlot> locals;
 	Vector<StackSlot> temporaries;
+
 	List<int> used_temporaries;
+
 	List<int> temporaries_pending_clear;
 	RBMap<Variant::Type, List<int>> temporaries_pool;
 
@@ -184,13 +186,13 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		}
 	}
 
-	void pop_stack_identifiers() {
+	void pop_stack_identifiers(bool expect_no_locals = true) {
 		int current_locals = stack_identifiers_counts.back()->get();
 		stack_identifiers_counts.pop_back();
 		stack_identifiers = stack_id_stack.back()->get();
 		stack_id_stack.pop_back();
 #ifdef DEBUG_ENABLED
-		if (!used_temporaries.is_empty()) {
+		if (!used_temporaries.is_empty() && expect_no_locals) {
 			ERR_PRINT("Leaving block with non-zero temporary variables: " + itos(used_temporaries.size()));
 		}
 #endif
@@ -468,7 +470,7 @@ public:
 	virtual void end_parameters() override;
 
 	virtual void start_block() override;
-	virtual void end_block() override;
+	virtual void end_block(bool expect_no_locals) override;
 
 	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) override;
 	virtual GDScriptFunction *write_end() override;
