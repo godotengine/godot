@@ -224,14 +224,17 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 	Vector<Char16String> filter_names;
 	Vector<Char16String> filter_exts;
 	for (const String &E : p_filters) {
+		String filter_ext_text;
 		Vector<String> tokens = E.split(";");
 		if (tokens.size() == 2) {
-			filter_exts.push_back(tokens[0].strip_edges().utf16());
+			filter_ext_text = tokens[0].strip_edges();
 			filter_names.push_back(tokens[1].strip_edges().utf16());
 		} else if (tokens.size() == 1) {
-			filter_exts.push_back(tokens[0].strip_edges().utf16());
+			filter_ext_text = tokens[0].strip_edges();
 			filter_names.push_back(tokens[0].strip_edges().utf16());
 		}
+		Vector<String> ext_tokens = filter_ext_text.split(",");
+		filter_exts.push_back(String(";").join(ext_tokens).utf16());
 	}
 
 	Vector<COMDLG_FILTERSPEC> filters;
