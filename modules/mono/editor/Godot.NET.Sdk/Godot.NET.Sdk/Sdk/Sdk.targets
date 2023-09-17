@@ -2,7 +2,7 @@
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition=" '$(GodotSdkImportsMicrosoftNetSdk)' == 'true' " />
 
   <PropertyGroup>
-    <EnableGodotProjectTypeGuid Condition=" '$(EnableGodotProjectTypeGuid)' == '' ">true</EnableGodotProjectTypeGuid>
+    <EnableGodotProjectTypeGuid Condition=" '$(EnableGodotProjectTypeGuid)' == '' And '$(VisualStudioVersion)' &lt; '17.0'">true</EnableGodotProjectTypeGuid>
     <ProjectTypeGuids Condition=" '$(EnableGodotProjectTypeGuid)' == 'true' ">$(GodotProjectTypeGuid);$(DefaultProjectTypeGuid)</ProjectTypeGuids>
   </PropertyGroup>
 
