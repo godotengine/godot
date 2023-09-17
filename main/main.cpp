@@ -1680,7 +1680,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 
 		//Set default Vulkan gpu to run, -1 will be default
-		GLOBAL_DEF("rendering/rendering_device/gpu_index", -1);
+		GLOBAL_DEF_RST("rendering/rendering_device/gpu_index", -1);
 
 		String default_driver = driver_hints.get_slice(",", 0);
 
