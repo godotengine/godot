@@ -38,26 +38,26 @@
 template <class T>
 struct PtrToArg {};
 
-#define MAKE_PTRARG(m_type)                                            \
-	template <>                                                        \
-	struct PtrToArg<m_type> {                                          \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
-			return *reinterpret_cast<const m_type *>(p_ptr);           \
-		}                                                              \
-		typedef m_type EncodeT;                                        \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                \
-		}                                                              \
-	};                                                                 \
-	template <>                                                        \
-	struct PtrToArg<const m_type &> {                                  \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
-			return *reinterpret_cast<const m_type *>(p_ptr);           \
-		}                                                              \
-		typedef m_type EncodeT;                                        \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                \
-		}                                                              \
+#define MAKE_PTRARG(m_type)                                              \
+	template <>                                                          \
+	struct PtrToArg<m_type> {                                            \
+		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) { \
+			return *reinterpret_cast<const m_type *>(p_ptr);             \
+		}                                                                \
+		typedef m_type EncodeT;                                          \
+		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {   \
+			*((m_type *)p_ptr) = p_val;                                  \
+		}                                                                \
+	};                                                                   \
+	template <>                                                          \
+	struct PtrToArg<const m_type &> {                                    \
+		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) { \
+			return *reinterpret_cast<const m_type *>(p_ptr);             \
+		}                                                                \
+		typedef m_type EncodeT;                                          \
+		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {   \
+			*((m_type *)p_ptr) = p_val;                                  \
+		}                                                                \
 	}
 
 #define MAKE_PTRARGCONV(m_type, m_conv)                                           \
@@ -85,7 +85,7 @@ struct PtrToArg {};
 #define MAKE_PTRARG_BY_REFERENCE(m_type)                                      \
 	template <>                                                               \
 	struct PtrToArg<m_type> {                                                 \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) {      \
 			return *reinterpret_cast<const m_type *>(p_ptr);                  \
 		}                                                                     \
 		typedef m_type EncodeT;                                               \
@@ -95,7 +95,7 @@ struct PtrToArg {};
 	};                                                                        \
 	template <>                                                               \
 	struct PtrToArg<const m_type &> {                                         \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) {      \
 			return *reinterpret_cast<const m_type *>(p_ptr);                  \
 		}                                                                     \
 		typedef m_type EncodeT;                                               \
