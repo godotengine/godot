@@ -435,6 +435,11 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		return "Collections.Dictionary";
 	}
 
+	if (p_var_type_name.begins_with(Variant::get_type_name(Variant::ARRAY) + "[")) {
+		String element_type = p_var_type_name.trim_prefix(Variant::get_type_name(Variant::ARRAY) + "[").trim_suffix("]");
+		return "Collections.Array<" + variant_type_to_managed_name(element_type) + ">";
+	}
+
 	if (p_var_type_name == Variant::get_type_name(Variant::ARRAY)) {
 		return "Collections.Array";
 	}
