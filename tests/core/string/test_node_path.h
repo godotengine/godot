@@ -167,6 +167,59 @@ TEST_CASE("[NodePath] Empty path") {
 			node_path_empty.is_empty(),
 			"The node path should be considered empty.");
 }
+
+TEST_CASE("[NodePath] Slice") {
+	const NodePath node_path_relative = NodePath("Parent/Child:prop");
+	const NodePath node_path_absolute = NodePath("/root/Parent/Child:prop");
+	CHECK_MESSAGE(
+			node_path_relative.slice(0, 2) == NodePath("Parent/Child"),
+			"The slice lower bound should be inclusive and the slice upper bound should be exclusive.");
+	CHECK_MESSAGE(
+			node_path_relative.slice(3) == NodePath(":prop"),
+			"Slicing on the length of the path should return the last entry.");
+	CHECK_MESSAGE(
+			node_path_relative.slice(1, 3) == NodePath("Child:prop"),
+			"Slicing should include names and subnames.");
+	CHECK_MESSAGE(
+			node_path_relative.slice(-1) == NodePath(":prop"),
+			"Slicing on -1 should return the last entry.");
+	CHECK_MESSAGE(
+			node_path_relative.slice(0, -1) == NodePath("Parent/Child"),
+			"Slicing up to -1 should include the second-to-last entry.");
+	CHECK_MESSAGE(
+			node_path_relative.slice(-2, -1) == NodePath("Child"),
+			"Slicing from negative to negative should treat lower bound as inclusive and upper bound as exclusive.");
+	CHECK_MESSAGE(
+			node_path_relative.slice(0, 10) == NodePath("Parent/Child:prop"),
+			"Slicing past the length of the path should work like slicing up to the last entry.");
+	CHECK_MESSAGE(
+			node_path_relative.slice(-10, 2) == NodePath("Parent/Child"),
+			"Slicing negatively past the length of the path should work like slicing from the first entry.");
+	CHECK_MESSAGE(
+			node_path_relative.slice(1, 1) == NodePath(""),
+			"Slicing with a lower bound equal to upper bound should return empty path.");
+
+	CHECK_MESSAGE(
+			node_path_absolute.slice(0, 2) == NodePath("/root/Parent"),
+			"Slice from beginning of an absolute path should be an absolute path.");
+	CHECK_MESSAGE(
+			node_path_absolute.slice(1, 4) == NodePath("Parent/Child:prop"),
+			"Slice of an absolute path that does not start at the beginning should be a relative path.");
+	CHECK_MESSAGE(
+			node_path_absolute.slice(3, 4) == NodePath(":prop"),
+			"Slice of an absolute path that does not start at the beginning should be a relative path.");
+
+	CHECK_MESSAGE(
+			NodePath("").slice(0, 1) == NodePath(""),
+			"Slice of an empty path should be an empty path.");
+	CHECK_MESSAGE(
+			NodePath("").slice(-1, 2) == NodePath(""),
+			"Slice of an empty path should be an empty path.");
+	CHECK_MESSAGE(
+			NodePath("/").slice(-1, 2) == NodePath("/"),
+			"Slice of an empty absolute path should be an empty absolute path.");
+}
+
 } // namespace TestNodePath
 
 #endif // TEST_NODE_PATH_H
