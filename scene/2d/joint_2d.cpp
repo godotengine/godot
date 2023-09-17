@@ -235,6 +235,8 @@ void Joint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint2D::set_exclude_nodes_from_collision);
 	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint2D::get_exclude_nodes_from_collision);
 
+	ClassDB::bind_method(D_METHOD("get_rid"), &Joint2D::get_rid);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_a", "get_node_a");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody2D"), "set_node_b", "get_node_b");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,0.9,0.001"), "set_bias", "get_bias");
@@ -281,7 +283,7 @@ void PinJoint2D::set_softness(real_t p_softness) {
 	softness = p_softness;
 	queue_redraw();
 	if (is_configured()) {
-		PhysicsServer2D::get_singleton()->pin_joint_set_param(get_joint(), PhysicsServer2D::PIN_JOINT_SOFTNESS, p_softness);
+		PhysicsServer2D::get_singleton()->pin_joint_set_param(get_rid(), PhysicsServer2D::PIN_JOINT_SOFTNESS, p_softness);
 	}
 }
 
@@ -410,7 +412,7 @@ void DampedSpringJoint2D::set_rest_length(real_t p_rest_length) {
 	rest_length = p_rest_length;
 	queue_redraw();
 	if (is_configured()) {
-		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_SPRING_REST_LENGTH, p_rest_length ? p_rest_length : length);
+		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_rid(), PhysicsServer2D::DAMPED_SPRING_REST_LENGTH, p_rest_length ? p_rest_length : length);
 	}
 }
 
@@ -422,7 +424,7 @@ void DampedSpringJoint2D::set_stiffness(real_t p_stiffness) {
 	stiffness = p_stiffness;
 	queue_redraw();
 	if (is_configured()) {
-		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_SPRING_STIFFNESS, p_stiffness);
+		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_rid(), PhysicsServer2D::DAMPED_SPRING_STIFFNESS, p_stiffness);
 	}
 }
 
@@ -434,7 +436,7 @@ void DampedSpringJoint2D::set_damping(real_t p_damping) {
 	damping = p_damping;
 	queue_redraw();
 	if (is_configured()) {
-		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_SPRING_DAMPING, p_damping);
+		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_rid(), PhysicsServer2D::DAMPED_SPRING_DAMPING, p_damping);
 	}
 }
 
