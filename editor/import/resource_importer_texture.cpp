@@ -218,7 +218,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized,Opaque"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate"), (p_preset == PRESET_3D ? true : false)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
@@ -642,6 +642,14 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 					image->convert(Image::FORMAT_RGBE9995);
 					use_uncompressed = true;
 				}
+			}
+		} else if (pack_channels == 2) { // discard alpha
+			if (image->get_format() == Image::FORMAT_RGBAF) {
+				image->convert(Image::FORMAT_RGBF);
+			} else if (image->get_format() == Image::FORMAT_RGBAH) {
+				image->convert(Image::FORMAT_RGBH);
+			} else if (image->get_format() == Image::FORMAT_RGBA8) {
+				image->convert(Image::FORMAT_RGB8);
 			}
 		}
 
