@@ -52,9 +52,12 @@ class VulkanContext {
 public:
 	struct SubgroupCapabilities {
 		uint32_t size;
+		uint32_t min_size;
+		uint32_t max_size;
 		VkShaderStageFlags supportedStages;
 		VkSubgroupFeatureFlags supportedOperations;
 		VkBool32 quadOperationsInAllStages;
+		bool size_control_is_supported;
 
 		uint32_t supported_stages_flags_rd() const;
 		String supported_stages_desc() const;

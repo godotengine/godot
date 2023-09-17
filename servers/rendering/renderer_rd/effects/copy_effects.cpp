@@ -281,8 +281,8 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		ba.enable_blend = true;
 		ba.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
 		ba.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
-		ba.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-		ba.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.src_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+		ba.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
 		ba.color_blend_op = RD::BLEND_OP_ADD;
 		ba.alpha_blend_op = RD::BLEND_OP_ADD;
 

@@ -2281,6 +2281,8 @@ void fragment_shader(in SceneData scene_data) {
 
 #else //MODE_SEPARATE_SPECULAR
 
+	alpha *= scene_data.pass_alpha_multiplier;
+
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
 #else

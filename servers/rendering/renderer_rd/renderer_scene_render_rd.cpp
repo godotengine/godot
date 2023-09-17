@@ -340,14 +340,16 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	// Glow, auto exposure and DoF (if enabled).
 
-	Size2i internal_size = rb->get_internal_size();
 	Size2i target_size = rb->get_target_size();
-
 	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8; // FIXME I think this should check internal size, we do all our post processing at this size...
 	bool can_use_storage = _render_buffers_can_be_storage();
 
+	bool use_fsr = fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR;
+	bool use_upscaled_texture = rb->has_upscaled_texture() && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR2;
+
 	RID render_target = rb->get_render_target();
-	RID internal_texture = rb->get_internal_texture();
+	RID color_texture = use_upscaled_texture ? rb->get_upscaled_texture() : rb->get_internal_texture();
+	Size2i color_size = use_upscaled_texture ? target_size : rb->get_internal_size();
 
 	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes)) {
 		RENDER_TIMESTAMP("Depth of Field");
@@ -416,7 +418,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		double step = RSG::camera_attributes->camera_attributes_get_auto_exposure_adjust_speed(p_render_data->camera_attributes) * time_step;
 		float auto_exposure_min_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_min_sensitivity(p_render_data->camera_attributes);
 		float auto_exposure_max_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_max_sensitivity(p_render_data->camera_attributes);
-		luminance->luminance_reduction(internal_texture, internal_size, luminance_buffers, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
+		luminance->luminance_reduction(color_texture, color_size, luminance_buffers, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
 
 		// Swap final reduce with prev luminance.
 
@@ -525,7 +527,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		}
 
 		tonemap.use_debanding = rb->get_use_debanding();
-		tonemap.texture_size = Vector2i(rb->get_internal_size().x, rb->get_internal_size().y);
+		tonemap.texture_size = Vector2i(color_size.x, color_size.y);
 
 		if (p_render_data->environment.is_valid()) {
 			tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
@@ -555,7 +557,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(render_target);
 
 		RID dest_fb;
-		if (fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
+		bool use_intermediate_fb = use_fsr;
+		if (use_intermediate_fb) {
 			// If we use FSR to upscale we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
 			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
@@ -567,12 +570,12 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 		}
 
-		tone_mapper->tonemapper(internal_texture, dest_fb, tonemap);
+		tone_mapper->tonemapper(color_texture, dest_fb, tonemap);
 
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	if (fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
+	if (use_fsr) {
 		RD::get_singleton()->draw_command_begin_label("FSR 1.0 Upscale");
 
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
@@ -732,6 +735,11 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 		}
 	}
 
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER) {
+		Size2 rtsize = texture_storage->render_target_get_size(render_target);
+		copy_effects->copy_to_fb_rect(rb->get_internal_texture(), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false);
+	}
+
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(rb).is_valid()) {
 		Size2 rtsize = texture_storage->render_target_get_size(render_target);
 		copy_effects->copy_to_fb_rect(_render_buffers_get_normal_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false);
@@ -745,7 +753,12 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS && _render_buffers_get_velocity_texture(rb).is_valid()) {
-		debug_effects->draw_motion_vectors(_render_buffers_get_velocity_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), rb->get_internal_size());
+		RID velocity = _render_buffers_get_velocity_texture(rb);
+		RID depth = rb->get_depth_texture();
+		RID dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
+		Size2i resolution = rb->get_internal_size();
+
+		debug_effects->draw_motion_vectors(velocity, depth, dest_fb, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, p_render_data->scene_data->prev_cam_projection, p_render_data->scene_data->prev_cam_transform, resolution);
 	}
 }
 

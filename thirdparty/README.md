@@ -16,6 +16,19 @@ Files extracted from upstream source:
 - `ffx_a.h` and `ffx_fsr1.h` from `ffx-fsr`
 - `license.txt`
 
+## amd-fsr2
+
+- Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR2
+- Version: 2.2.1 (1680d1edd5c034f88ebbbb793d8b88f8842cf804, 2023)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `ffx_*.cpp` and `ffx_*.h` from `src/ffx-fsr2-api`
+- `shaders` folder from `src/ffx-fsr2-api` with `ffx_*.hlsl` files excluded
+- `LICENSE.txt`
+
+Apply `patches` to add the new options required by Godot and general compilation fixes.
 
 ## astcenc
 
