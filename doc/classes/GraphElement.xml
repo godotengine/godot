@@ -27,11 +27,6 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="close_request">
-			<description>
-				Emitted when closing the GraphElement is requested.
-			</description>
-		</signal>
 		<signal name="dragged">
 			<param index="0" name="from" type="Vector2" />
 			<param index="1" name="to" type="Vector2" />

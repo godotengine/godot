@@ -238,7 +238,6 @@ void GraphElement::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_deselected"));
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
-	ADD_SIGNAL(MethodInfo("close_request"));
 	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphElement, resizer);
