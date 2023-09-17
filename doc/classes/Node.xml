@@ -1137,6 +1137,9 @@
 			Duplicate using instancing.
 			An instance stays linked to the original so when the original changes, the instance changes too.
 		</constant>
+		<constant name="DUPLICATE_NODE_REFERENCES" value="16" enum="DuplicateFlags">
+			Duplicate the node's references, changing all exported [Node] properties to be part of the newly duplicated hierarchy, if possible. Does not work without [constant DUPLICATE_USE_INSTANTIATION].
+		</constant>
 		<constant name="INTERNAL_MODE_DISABLED" value="0" enum="InternalMode">
 			Node will not be internal.
 		</constant>

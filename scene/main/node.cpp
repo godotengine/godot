@@ -2523,6 +2523,18 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 			Variant value = N->get()->get(name).duplicate(true);
 
+			if (p_flags & DUPLICATE_NODE_REFERENCES &&
+					E.type == Variant::OBJECT &&
+					ClassDB::is_parent_class(E.class_name, SNAME("Node"))) {
+				Node *node_from_property = Object::cast_to<Node>(value);
+				if (node_from_property) {
+					NodePath relative_path = get_path_to(node_from_property);
+
+					current_node->set(name, node->get_node(relative_path));
+					continue;
+				}
+			}
+
 			if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
 				Resource *res = Object::cast_to<Resource>(value);
 				if (res) { // Duplicate only if it's a resource
@@ -3466,6 +3478,7 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
 	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANTIATION);
+	BIND_ENUM_CONSTANT(DUPLICATE_NODE_REFERENCES);
 
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_FRONT);
