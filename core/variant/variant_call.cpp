@@ -2569,9 +2569,13 @@ static void _register_variant_builtin_methods() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ZERO", Vector4i(0, 0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ONE", Vector4i(1, 1, 1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MIN", Vector4i(INT32_MIN, INT32_MIN, INT32_MIN, INT32_MIN));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MAX", Vector4i(INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX));
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ZERO", Vector3i(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ONE", Vector3i(1, 1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MIN", Vector3i(INT32_MIN, INT32_MIN, INT32_MIN));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MAX", Vector3i(INT32_MAX, INT32_MAX, INT32_MAX));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "LEFT", Vector3i(-1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "RIGHT", Vector3i(1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "UP", Vector3i(0, 1, 0));
@@ -2601,6 +2605,8 @@ static void _register_variant_builtin_methods() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ZERO", Vector2i(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ONE", Vector2i(1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MIN", Vector2i(INT32_MIN, INT32_MIN));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MAX", Vector2i(INT32_MAX, INT32_MAX));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "LEFT", Vector2i(-1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i(0, -1));
