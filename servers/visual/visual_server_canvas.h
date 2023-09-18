@@ -181,6 +181,7 @@ private:
 	void _prepare_tree_bounds(Item *p_root);
 	void _calculate_canvas_item_bound(Item *p_canvas_item, Rect2 *r_branch_bound);
 
+	Transform2D _calculate_item_global_xform(const Item *p_canvas_item);
 	void _finalize_and_merge_local_bound_to_branch(Item *p_canvas_item, Rect2 *r_branch_bound);
 	void _merge_local_bound_to_branch(Item *p_canvas_item, Rect2 *r_branch_bound);
 
@@ -227,7 +228,7 @@ public:
 	void canvas_item_set_self_modulate(RID p_item, const Color &p_color);
 
 	void canvas_item_set_draw_behind_parent(RID p_item, bool p_enable);
-	void canvas_item_set_ignore_parent_transform(RID p_item, bool p_enable);
+	void canvas_item_set_use_identity_transform(RID p_item, bool p_enable);
 
 	void canvas_item_set_update_when_visible(RID p_item, bool p_update);
 
