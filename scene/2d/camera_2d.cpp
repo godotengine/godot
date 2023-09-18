@@ -318,6 +318,14 @@ void Camera2D::_notification(int p_what) {
 			first = true;
 			_set_current(current);
 
+			// Note that NOTIFICATION_RESET_PHYSICS_INTERPOLATION
+			// is automatically called before this because Camera2D is inherited
+			// from CanvasItem. However, the camera transform is not up to date
+			// until this point, so we do an extra manual reset.
+			if (is_physics_interpolated_and_enabled()) {
+				_interpolation_data.xform_curr = get_camera_transform();
+				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			const bool viewport_valid = !custom_viewport || ObjectDB::get_instance(custom_viewport_id);
