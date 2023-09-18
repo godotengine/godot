@@ -108,12 +108,6 @@ def configure(env):
         env.Append(CCFLAGS=["-flto=full"])
         env.Append(LINKFLAGS=["-flto=full"])
 
-    if env["use_thinlto"] or env["use_lto"]:
-        # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
-        cc_semver = tuple(get_compiler_version(env))
-        if cc_semver >= (3, 1, 42):
-            env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
-
     # Sanitizers
     if env["use_ubsan"]:
         env.Append(CCFLAGS=["-fsanitize=undefined"])
@@ -191,8 +185,15 @@ def configure(env):
     else:
         env.Append(CPPDEFINES=["NO_THREADS"])
 
+    # Get version info for checks below.
+    cc_semver = tuple(get_compiler_version(env))
+
+    if env["use_thinlto"] or env["use_lto"]:
+        # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
+        if cc_semver >= (3, 1, 42) and cc_semver < (3, 1, 46):
+            env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
+
     if env["gdnative_enabled"]:
-        cc_semver = tuple(get_compiler_version(env))
         if cc_semver < (2, 0, 10):
             print("GDNative support requires emscripten >= 2.0.10, detected: %s.%s.%s" % cc_semver)
             sys.exit(255)
