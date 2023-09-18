@@ -33,6 +33,7 @@ package org.godotengine.godot.input;
 import org.godotengine.godot.*;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputFilter;
@@ -209,6 +210,17 @@ public class GodotEditText extends EditText {
 	@Override
 	public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 		/* Let SurfaceView get focus if back key is input. */
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			mView.requestFocus();
+		}
+
+		// When a hardware keyboard is connected, all key events come through so we can route them
+		// directly to the engine.
+		// This is not the case when using a soft keyboard, requiring extra processing from this class.
+		if (hasHardwareKeyboard()) {
+			return mView.getInputHandler().onKeyDown(keyCode, keyEvent);
+		}
+
 		// pass event to godot in special cases
 		if (needHandlingInGodot(keyCode, keyEvent) && mView.getInputHandler().onKeyDown(keyCode, keyEvent)) {
 			return true;
@@ -219,6 +231,13 @@ public class GodotEditText extends EditText {
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent keyEvent) {
+		// When a hardware keyboard is connected, all key events come through so we can route them
+		// directly to the engine.
+		// This is not the case when using a soft keyboard, requiring extra processing from this class.
+		if (hasHardwareKeyboard()) {
+			return mView.getInputHandler().onKeyUp(keyCode, keyEvent);
+		}
+
 		if (needHandlingInGodot(keyCode, keyEvent) && mView.getInputHandler().onKeyUp(keyCode, keyEvent)) {
 			return true;
 		} else {
@@ -235,10 +254,20 @@ public class GodotEditText extends EditText {
 				isModifiedKey;
 	}
 
+	boolean hasHardwareKeyboard() {
+		Configuration config = getResources().getConfiguration();
+		return config.keyboard != Configuration.KEYBOARD_NOKEYS &&
+				config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
+	}
+
 	// ===========================================================
 	// Methods
 	// ===========================================================
 	public void showKeyboard(String p_existing_text, VirtualKeyboardType p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+		if (hasHardwareKeyboard()) {
+			return;
+		}
+
 		int maxInputLength = (p_max_input_length <= 0) ? Integer.MAX_VALUE : p_max_input_length;
 		if (p_cursor_start == -1) { // cursor position not given
 			this.mOriginText = p_existing_text;
@@ -262,6 +291,10 @@ public class GodotEditText extends EditText {
 	}
 
 	public void hideKeyboard() {
+		if (hasHardwareKeyboard()) {
+			return;
+		}
+
 		final Message msg = new Message();
 		msg.what = HANDLER_CLOSE_IME_KEYBOARD;
 		msg.obj = this;
