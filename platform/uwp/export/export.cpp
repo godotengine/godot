@@ -1221,6 +1221,51 @@ public:
 		return valid;
 	}
 
+#ifdef WINDOWS_ENABLED
+	void extract_all_files_from_zip(String zip_file_path, String extract_path) {
+		FileAccess *src_f = nullptr;
+		zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+
+		unzFile pkg = unzOpen2(zip_file_path.utf8().get_data(), &io);
+
+		int ret = unzGoToFirstFile(pkg);
+
+		while (ret == UNZ_OK) {
+			// get file name
+			unz_file_info info;
+			char fname[16384];
+			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+
+			String path = String::utf8(fname);
+
+			//write the files
+			Vector<uint8_t> data;
+
+			//read
+			data.resize(info.uncompressed_size);
+			unzOpenCurrentFile(pkg);
+			unzReadCurrentFile(pkg, data.ptrw(), data.size());
+			unzCloseCurrentFile(pkg);
+
+			//check if the subfolder doesn't exist and create it
+			String file_path = extract_path + "/" + path.get_base_dir();
+			DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			if (!da->dir_exists(file_path)) {
+				da->make_dir_recursive(file_path);
+			}
+			memdelete(da);
+
+			FileAccess *unzipped_file = FileAccess::open(extract_path + "/" + path, FileAccess::WRITE);
+			unzipped_file->store_buffer(data.ptrw(), data.size());
+			unzipped_file->close();
+
+			ret = unzGoToNextFile(pkg);
+		}
+
+		unzClose(pkg);
+	}
+#endif
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -1410,6 +1455,50 @@ public:
 		packager.finish();
 
 #ifdef WINDOWS_ENABLED
+		// Repackage it with makeappx if available
+		String makeappx_path = EditorSettings::get_singleton()->get("export/uwp/makeappx");
+		if (makeappx_path != String()) {
+			if (FileAccess::exists(makeappx_path)) {
+				// Get uwp_temp_path
+				String uwp_temp_path = EditorSettings::get_singleton()->get_cache_dir() + "/uwptemp";
+
+				// Extract current appx file
+				extract_all_files_from_zip(p_path, uwp_temp_path);
+
+				// Call makeappx
+				List<String> args_makeappx;
+				args_makeappx.push_back("pack");
+				args_makeappx.push_back("/d");
+				args_makeappx.push_back(uwp_temp_path);
+				args_makeappx.push_back("/p");
+				args_makeappx.push_back(p_path);
+				args_makeappx.push_back("/o");
+
+				OS::get_singleton()->execute(makeappx_path, args_makeappx, true);
+
+				// Delete uwp_temp_path folder recursively
+				DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+				Error err = da->change_dir(uwp_temp_path);
+				if (err == OK) {
+					err = da->erase_contents_recursive();
+					if (err != OK) {
+						ERR_PRINT("Could not delete UWP temporary folder: '" + uwp_temp_path + "'.");
+						return err;
+					} else {
+						da->remove(uwp_temp_path);
+					}
+				} else {
+					ERR_PRINT("Could not change dir to UWP temporary folder: '" + uwp_temp_path + "'.");
+					ERR_PRINT("Could not delete UWP temporary folder: '" + uwp_temp_path + "'.");
+					return err;
+				}
+				memdelete(da);
+			} else {
+				ERR_PRINT("Could not find makeappx executable at " + makeappx_path + ", aborting.");
+				return ERR_FILE_NOT_FOUND;
+			}
+		}
+
 		// Sign with signtool
 		String signtool_path = EditorSettings::get_singleton()->get("export/uwp/signtool");
 		if (signtool_path == String()) {
@@ -1487,6 +1576,8 @@ void register_uwp_exporter() {
 #ifdef WINDOWS_ENABLED
 	EDITOR_DEF("export/uwp/signtool", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
+	EDITOR_DEF("export/uwp/makeappx", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/makeappx", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
 	EDITOR_DEF("export/uwp/debug_certificate", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/debug_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.pfx"));
 	EDITOR_DEF("export/uwp/debug_password", "");
