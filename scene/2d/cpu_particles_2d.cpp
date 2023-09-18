@@ -101,18 +101,24 @@ void CPUParticles2D::set_lifetime_randomness(float p_random) {
 }
 void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
-	set_notify_transform(!p_enable);
+
+#ifdef GODOT_CPU_PARTICLES_2D_LEGACY_COMPATIBILITY
+	// We only need NOTIFICATION_TRANSFORM_CHANGED when in global mode
+	// non-interpolated for legacy particles
+	// (because they are in local space and need inverse parent xform applying).
+	set_notify_transform(!_interpolated && !local_coords);
 
 	// Prevent sending item transforms when using global coords,
 	// and inform VisualServer to use identity mode.
-#ifdef GODOT_CPU_PARTICLES_2D_LEGACY_COMPATIBILITY
-	set_canvas_item_use_identity_transform((_interpolated) && (!p_enable));
+	set_canvas_item_use_identity_transform(_interpolated && !local_coords);
 
 	// Always reset this, as it is unused when interpolation is on.
 	// (i.e. We do particles in global space, rather than pseudo globalspace.)
 	inv_emission_transform = Transform2D();
 #else
-	set_canvas_item_use_identity_transform(!p_enable);
+	// When not using legacy, there is never a need for NOTIFICATION_TRANSFORM_CHANGED,
+	// so we leave it at the default (false).
+	set_canvas_item_use_identity_transform(!local_coords);
 #endif
 }
 
@@ -1190,6 +1196,38 @@ void CPUParticles2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 		_update_internal(true);
 	}
+#ifdef GODOT_CPU_PARTICLES_2D_LEGACY_COMPATIBILITY
+	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
+		if (!_interpolated && !local_coords) {
+			inv_emission_transform = get_global_transform().affine_inverse();
+			int pc = particles.size();
+
+			PoolVector<float>::Write w = particle_data.write();
+			PoolVector<Particle>::Read r = particles.read();
+			float *ptr = w.ptr();
+
+			for (int i = 0; i < pc; i++) {
+				Transform2D t = inv_emission_transform * r[i].transform;
+
+				if (r[i].active) {
+					ptr[0] = t.elements[0][0];
+					ptr[1] = t.elements[1][0];
+					ptr[2] = 0;
+					ptr[3] = t.elements[2][0];
+					ptr[4] = t.elements[0][1];
+					ptr[5] = t.elements[1][1];
+					ptr[6] = 0;
+					ptr[7] = t.elements[2][1];
+
+				} else {
+					memset(ptr, 0, sizeof(float) * 8);
+				}
+
+				ptr += 13;
+			}
+		}
+	}
+#endif
 }
 
 void CPUParticles2D::convert_from_particles(Node *p_particles) {
