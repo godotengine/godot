@@ -9158,7 +9158,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	VkPipelineCacheCreateInfo cache_info = {};
 	cache_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	cache_info.pNext = nullptr;
-	if (context->is_device_extension_enabled(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
+	if (context->get_pipeline_cache_control_support()) {
 		cache_info.flags = VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
 	}
 	cache_info.initialDataSize = pipelines_cache.buffer.size();
