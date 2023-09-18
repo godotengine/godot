@@ -34,12 +34,38 @@
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 
+#include <functional>
+
 class Font;
 class Node;
 class StyleBox;
 class Texture2D;
 class Theme;
 class ThemeContext;
+
+// Macros for binding theme items of this class. This information is used for the documentation, theme
+// overrides, etc. This is also the basis for theme cache.
+
+#define BIND_THEME_ITEM(m_data_type, m_class, m_prop)                                                      \
+	ThemeDB::get_singleton()->bind_class_item(get_class_static(), #m_prop, #m_prop, [](Node *p_instance) { \
+		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                            \
+		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(#m_prop));            \
+	})
+
+#define BIND_THEME_ITEM_CUSTOM(m_data_type, m_class, m_prop, m_item_name)                                      \
+	ThemeDB::get_singleton()->bind_class_item(get_class_static(), #m_prop, m_item_name, [](Node *p_instance) { \
+		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                \
+		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(m_item_name));            \
+	})
+
+// Macro for binding theme items used by this class, but defined/binded by other classes. This is primarily used for
+// the theme cache. Can also be used to list such items in documentation.
+
+#define BIND_THEME_ITEM_EXT(m_data_type, m_class, m_prop, m_item_name, m_type_name)                                                  \
+	ThemeDB::get_singleton()->bind_class_external_item(get_class_static(), #m_prop, m_item_name, m_type_name, [](Node *p_instance) { \
+		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                                      \
+		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(m_item_name), _scs_create(m_type_name));        \
+	})
 
 class ThemeDB : public Object {
 	GDCLASS(ThemeDB, Object);
@@ -67,6 +93,21 @@ class ThemeDB : public Object {
 	void _propagate_theme_context(Node *p_from_node, ThemeContext *p_context);
 	void _init_default_theme_context();
 	void _finalize_theme_contexts();
+
+	// Binding of theme items to Node classes.
+
+	typedef std::function<void(Node *)> ThemeItemSetter;
+
+	struct ThemeItemBind {
+		StringName class_name;
+		StringName item_name;
+		StringName type_name;
+		bool external = false;
+
+		ThemeItemSetter setter;
+	};
+
+	HashMap<StringName, HashMap<StringName, ThemeItemBind>> theme_item_binds;
 
 protected:
 	static void _bind_methods();
@@ -111,6 +152,12 @@ public:
 	ThemeContext *get_theme_context(Node *p_node) const;
 	ThemeContext *get_default_theme_context() const;
 	ThemeContext *get_nearest_theme_context(Node *p_for_node) const;
+
+	// Theme item binding.
+
+	void bind_class_item(const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter);
+	void bind_class_external_item(const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter);
+	void update_class_instance_items(Node *p_instance);
 
 	// Memory management, reference, and initialization.
 

@@ -300,7 +300,7 @@ String EditorDebuggerTree::get_selected_path() {
 }
 
 String EditorDebuggerTree::_get_path(TreeItem *p_item) {
-	ERR_FAIL_COND_V(!p_item, "");
+	ERR_FAIL_NULL_V(p_item, "");
 
 	if (p_item->get_parent() == nullptr) {
 		return "/root";

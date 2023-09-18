@@ -76,9 +76,7 @@ class SpinBox : public Range {
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
-
 	static void _bind_methods();
 
 public:

@@ -47,7 +47,7 @@ EditorPerformanceProfiler::Monitor::Monitor(String p_name, String p_base, int p_
 }
 
 void EditorPerformanceProfiler::Monitor::update_value(float p_value) {
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 	String label = EditorPerformanceProfiler::_create_label(p_value, type);
 	String tooltip = label;
 	switch (type) {

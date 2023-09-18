@@ -267,8 +267,6 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
 	toolbar->hide();
 
-	toolbar->add_child(memnew(VSeparator));
-
 	menu = memnew(MenuButton);
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);

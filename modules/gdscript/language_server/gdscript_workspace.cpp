@@ -46,7 +46,6 @@
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_new_signal"), &GDScriptWorkspace::apply_new_signal);
 	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::did_delete_files);
-	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
 	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
 	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
@@ -182,35 +181,33 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_parameter_symbol(const lsp::Do
 	return nullptr;
 }
 
-const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier) {
-	const lsp::DocumentSymbol *class_symbol = &p_parser->get_symbols();
+const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol_at(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier, const lsp::Position p_position) {
+	// Go down and pick closest `DocumentSymbol` with `p_symbol_identifier`.
 
-	for (int i = 0; i < class_symbol->children.size(); ++i) {
-		int kind = class_symbol->children[i].kind;
-		switch (kind) {
-			case lsp::SymbolKind::Function:
-			case lsp::SymbolKind::Method:
-			case lsp::SymbolKind::Class: {
-				const lsp::DocumentSymbol *function_symbol = &class_symbol->children[i];
+	const lsp::DocumentSymbol *current = &p_parser->get_symbols();
+	const lsp::DocumentSymbol *best_match = nullptr;
 
-				for (int l = 0; l < function_symbol->children.size(); ++l) {
-					const lsp::DocumentSymbol *local = &function_symbol->children[l];
-					if (!local->detail.is_empty() && local->name == p_symbol_identifier) {
-						return local;
-					}
-				}
-			} break;
+	while (current) {
+		if (current->name == p_symbol_identifier) {
+			if (current->selectionRange.contains(p_position)) {
+				// Exact match: pos is ON symbol decl identifier.
+				return current;
+			}
 
-			case lsp::SymbolKind::Variable: {
-				const lsp::DocumentSymbol *variable_symbol = &class_symbol->children[i];
-				if (variable_symbol->name == p_symbol_identifier) {
-					return variable_symbol;
-				}
-			} break;
+			best_match = current;
+		}
+
+		const lsp::DocumentSymbol *parent = current;
+		current = nullptr;
+		for (const lsp::DocumentSymbol &child : parent->children) {
+			if (child.range.contains(p_position)) {
+				current = &child;
+				break;
+			}
 		}
 	}
 
-	return nullptr;
+	return best_match;
 }
 
 void GDScriptWorkspace::reload_all_workspace_scripts() {
@@ -273,25 +270,6 @@ ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) 
 		return S->value;
 	}
 	return nullptr;
-}
-
-Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
-	String query = p_params["query"];
-	Array arr;
-	if (!query.is_empty()) {
-		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
-			Vector<lsp::DocumentedSymbolInformation> script_symbols;
-			E.value->get_symbols().symbol_tree_as_list(E.key, script_symbols);
-			for (int i = 0; i < script_symbols.size(); ++i) {
-				if (query.is_subsequence_ofn(script_symbols[i].name)) {
-					lsp::DocumentedSymbolInformation symbol = script_symbols[i];
-					symbol.location.uri = get_file_uri(symbol.location.uri);
-					arr.push_back(symbol.to_json());
-				}
-			}
-		}
-	}
-	return arr;
 }
 
 Error GDScriptWorkspace::initialize() {
@@ -423,7 +401,7 @@ Error GDScriptWorkspace::initialize() {
 			native_members.insert(E.key, members);
 		}
 
-		// cache member completions
+		// Cache member completions.
 		for (const KeyValue<String, ExtendGDScriptParser *> &S : scripts) {
 			S.value->get_member_completions();
 		}
@@ -458,48 +436,110 @@ Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_cont
 	return err;
 }
 
-Dictionary GDScriptWorkspace::rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name) {
-	Error err;
-	String path = get_file_path(p_doc_pos.textDocument.uri);
+static bool is_valid_rename_target(const lsp::DocumentSymbol *p_symbol) {
+	// Must be valid symbol.
+	if (!p_symbol) {
+		return false;
+	}
 
+	// Cannot rename builtin.
+	if (!p_symbol->native_class.is_empty()) {
+		return false;
+	}
+
+	// Source must be available.
+	if (p_symbol->script_path.is_empty()) {
+		return false;
+	}
+
+	return true;
+}
+
+Dictionary GDScriptWorkspace::rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name) {
 	lsp::WorkspaceEdit edit;
 
-	List<String> paths;
-	list_script_files("res://", paths);
-
 	const lsp::DocumentSymbol *reference_symbol = resolve_symbol(p_doc_pos);
-	if (reference_symbol) {
-		String identifier = reference_symbol->name;
+	if (is_valid_rename_target(reference_symbol)) {
+		Vector<lsp::Location> usages = find_all_usages(*reference_symbol);
+		for (int i = 0; i < usages.size(); ++i) {
+			lsp::Location loc = usages[i];
 
-		for (List<String>::Element *PE = paths.front(); PE; PE = PE->next()) {
-			PackedStringArray content = FileAccess::get_file_as_string(PE->get(), &err).split("\n");
-			for (int i = 0; i < content.size(); ++i) {
-				String line = content[i];
-
-				int character = line.find(identifier);
-				while (character > -1) {
-					lsp::TextDocumentPositionParams params;
-
-					lsp::TextDocumentIdentifier text_doc;
-					text_doc.uri = get_file_uri(PE->get());
-
-					params.textDocument = text_doc;
-					params.position.line = i;
-					params.position.character = character;
-
-					const lsp::DocumentSymbol *other_symbol = resolve_symbol(params);
-
-					if (other_symbol == reference_symbol) {
-						edit.add_change(text_doc.uri, i, character, character + identifier.length(), new_name);
-					}
-
-					character = line.find(identifier, character + 1);
-				}
-			}
+			edit.add_change(loc.uri, loc.range.start.line, loc.range.start.character, loc.range.end.character, new_name);
 		}
 	}
 
 	return edit.to_json();
+}
+
+bool GDScriptWorkspace::can_rename(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::DocumentSymbol &r_symbol, lsp::Range &r_range) {
+	const lsp::DocumentSymbol *reference_symbol = resolve_symbol(p_doc_pos);
+	if (!is_valid_rename_target(reference_symbol)) {
+		return false;
+	}
+
+	String path = get_file_path(p_doc_pos.textDocument.uri);
+	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
+		parser->get_identifier_under_position(p_doc_pos.position, r_range);
+		r_symbol = *reference_symbol;
+		return true;
+	}
+
+	return false;
+}
+
+Vector<lsp::Location> GDScriptWorkspace::find_usages_in_file(const lsp::DocumentSymbol &p_symbol, const String &p_file_path) {
+	Vector<lsp::Location> usages;
+
+	String identifier = p_symbol.name;
+	if (const ExtendGDScriptParser *parser = get_parse_result(p_file_path)) {
+		const PackedStringArray &content = parser->get_lines();
+		for (int i = 0; i < content.size(); ++i) {
+			String line = content[i];
+
+			int character = line.find(identifier);
+			while (character > -1) {
+				lsp::TextDocumentPositionParams params;
+
+				lsp::TextDocumentIdentifier text_doc;
+				text_doc.uri = get_file_uri(p_file_path);
+
+				params.textDocument = text_doc;
+				params.position.line = i;
+				params.position.character = character;
+
+				const lsp::DocumentSymbol *other_symbol = resolve_symbol(params);
+
+				if (other_symbol == &p_symbol) {
+					lsp::Location loc;
+					loc.uri = text_doc.uri;
+					loc.range.start = params.position;
+					loc.range.end.line = params.position.line;
+					loc.range.end.character = params.position.character + identifier.length();
+					usages.append(loc);
+				}
+
+				character = line.find(identifier, character + 1);
+			}
+		}
+	}
+
+	return usages;
+}
+
+Vector<lsp::Location> GDScriptWorkspace::find_all_usages(const lsp::DocumentSymbol &p_symbol) {
+	if (p_symbol.local) {
+		// Only search in current document.
+		return find_usages_in_file(p_symbol, p_symbol.script_path);
+	}
+	// Search in all documents.
+	List<String> paths;
+	list_script_files("res://", paths);
+
+	Vector<lsp::Location> usages;
+	for (List<String>::Element *PE = paths.front(); PE; PE = PE->next()) {
+		usages.append_array(find_usages_in_file(p_symbol, PE->get()));
+	}
+	return usages;
 }
 
 Error GDScriptWorkspace::parse_local_script(const String &p_path) {
@@ -636,9 +676,9 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 
 		lsp::Position pos = p_doc_pos.position;
 		if (symbol_identifier.is_empty()) {
-			Vector2i offset;
-			symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, offset);
-			pos.character += offset.y;
+			lsp::Range range;
+			symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, range);
+			pos.character = range.end.character;
 		}
 
 		if (!symbol_identifier.is_empty()) {
@@ -661,7 +701,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 						}
 
 						if (const ExtendGDScriptParser *target_parser = get_parse_result(target_script_path)) {
-							symbol = target_parser->get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(ret.location));
+							symbol = target_parser->get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(ret.location), symbol_identifier);
 
 							if (symbol) {
 								switch (symbol->kind) {
@@ -669,10 +709,6 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 										if (symbol->name != symbol_identifier) {
 											symbol = get_parameter_symbol(symbol, symbol_identifier);
 										}
-									} break;
-
-									case lsp::SymbolKind::Variable: {
-										symbol = get_local_symbol(parser, symbol_identifier);
 									} break;
 								}
 							}
@@ -686,10 +722,9 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 						symbol = get_native_symbol(ret.class_name, member);
 					}
 				} else {
-					symbol = parser->get_member_symbol(symbol_identifier);
-
+					symbol = get_local_symbol_at(parser, symbol_identifier, p_doc_pos.position);
 					if (!symbol) {
-						symbol = get_local_symbol(parser, symbol_identifier);
+						symbol = parser->get_member_symbol(symbol_identifier);
 					}
 				}
 			}
@@ -703,8 +738,8 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 	String path = get_file_path(p_doc_pos.textDocument.uri);
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
 		String symbol_identifier;
-		Vector2i offset;
-		symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, offset);
+		lsp::Range range;
+		symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, range);
 
 		for (const KeyValue<StringName, ClassMembers> &E : native_members) {
 			const ClassMembers &members = native_members.get(E.key);

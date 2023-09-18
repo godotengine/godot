@@ -212,7 +212,7 @@ void ThemeOwner::get_theme_type_dependencies(const Node *p_for_node, const Strin
 		type_variation = for_w->get_theme_type_variation();
 	}
 
-	// If we are looking for dependencies of the current class (or a variantion of it), check themes from the context.
+	// If we are looking for dependencies of the current class (or a variation of it), check themes from the context.
 	if (p_theme_type == StringName() || p_theme_type == type_name || p_theme_type == type_variation) {
 		ThemeContext *global_context = _get_active_owner_context();
 		for (const Ref<Theme> &theme : global_context->get_themes()) {

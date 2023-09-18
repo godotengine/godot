@@ -79,13 +79,48 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 		args.resize(p_argcount + captures_amount);
 		for (int i = 0; i < captures_amount; i++) {
 			args.write[i] = &captures[i];
+			if (captures[i].get_type() == Variant::OBJECT) {
+				bool was_freed = false;
+				captures[i].get_validated_object_with_check(was_freed);
+				if (was_freed) {
+					ERR_PRINT(vformat(R"(Lambda capture at index %d was freed. Passed "null" instead.)", i));
+					static Variant nil;
+					args.write[i] = &nil;
+				}
+			}
 		}
 		for (int i = 0; i < p_argcount; i++) {
 			args.write[i + captures_amount] = p_arguments[i];
 		}
 
 		r_return_value = function->call(nullptr, args.ptrw(), args.size(), r_call_error);
-		r_call_error.argument -= captures_amount;
+		switch (r_call_error.error) {
+			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+				r_call_error.argument -= captures_amount;
+#ifdef DEBUG_ENABLED
+				if (r_call_error.argument < 0) {
+					ERR_PRINT(vformat("GDScript bug (please report): Invalid value of lambda capture at index %d.", captures_amount + r_call_error.argument));
+					r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // TODO: Add a more suitable error code.
+					r_call_error.argument = 0;
+					r_call_error.expected = 0;
+				}
+#endif
+				break;
+			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+				r_call_error.expected -= captures_amount;
+#ifdef DEBUG_ENABLED
+				if (r_call_error.expected < 0) {
+					ERR_PRINT("GDScript bug (please report): Invalid lambda captures count.");
+					r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // TODO: Add a more suitable error code.
+					r_call_error.argument = 0;
+					r_call_error.expected = 0;
+				}
+#endif
+				break;
+			default:
+				break;
+		}
 	} else {
 		r_return_value = function->call(nullptr, p_arguments, p_argcount, r_call_error);
 	}
@@ -148,13 +183,48 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 		args.resize(p_argcount + captures_amount);
 		for (int i = 0; i < captures_amount; i++) {
 			args.write[i] = &captures[i];
+			if (captures[i].get_type() == Variant::OBJECT) {
+				bool was_freed = false;
+				captures[i].get_validated_object_with_check(was_freed);
+				if (was_freed) {
+					ERR_PRINT(vformat(R"(Lambda capture at index %d was freed. Passed "null" instead.)", i));
+					static Variant nil;
+					args.write[i] = &nil;
+				}
+			}
 		}
 		for (int i = 0; i < p_argcount; i++) {
 			args.write[i + captures_amount] = p_arguments[i];
 		}
 
 		r_return_value = function->call(static_cast<GDScriptInstance *>(object->get_script_instance()), args.ptrw(), args.size(), r_call_error);
-		r_call_error.argument -= captures_amount;
+		switch (r_call_error.error) {
+			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+				r_call_error.argument -= captures_amount;
+#ifdef DEBUG_ENABLED
+				if (r_call_error.argument < 0) {
+					ERR_PRINT(vformat("GDScript bug (please report): Invalid value of lambda capture at index %d.", captures_amount + r_call_error.argument));
+					r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // TODO: Add a more suitable error code.
+					r_call_error.argument = 0;
+					r_call_error.expected = 0;
+				}
+#endif
+				break;
+			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+				r_call_error.expected -= captures_amount;
+#ifdef DEBUG_ENABLED
+				if (r_call_error.expected < 0) {
+					ERR_PRINT("GDScript bug (please report): Invalid lambda captures count.");
+					r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // TODO: Add a more suitable error code.
+					r_call_error.argument = 0;
+					r_call_error.expected = 0;
+				}
+#endif
+				break;
+			default:
+				break;
+		}
 	} else {
 		r_return_value = function->call(static_cast<GDScriptInstance *>(object->get_script_instance()), p_arguments, p_argcount, r_call_error);
 	}

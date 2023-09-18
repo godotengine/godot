@@ -1804,7 +1804,7 @@ Rect2i Window::fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) co
 		p_rect.position.x = 0;
 	}
 
-	int title_height = get_flag(Window::FLAG_BORDERLESS) ? 0 : get_theme_constant(SNAME("title_height"));
+	int title_height = get_flag(Window::FLAG_BORDERLESS) ? 0 : theme_cache.title_height;
 
 	if (p_rect.position.y < title_height) {
 		p_rect.position.y = title_height;
@@ -1965,6 +1965,8 @@ void Window::_update_theme_item_cache() {
 	} else {
 		child_controls_changed();
 	}
+
+	ThemeDB::get_singleton()->update_class_instance_items(this);
 }
 
 void Window::_update_embedded_window() {
@@ -2136,6 +2138,27 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_the
 	int constant = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 	theme_constant_cache[p_theme_type][p_name] = constant;
 	return constant;
+}
+
+Variant Window::get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const {
+	switch (p_data_type) {
+		case Theme::DATA_TYPE_COLOR:
+			return get_theme_color(p_name, p_theme_type);
+		case Theme::DATA_TYPE_CONSTANT:
+			return get_theme_constant(p_name, p_theme_type);
+		case Theme::DATA_TYPE_FONT:
+			return get_theme_font(p_name, p_theme_type);
+		case Theme::DATA_TYPE_FONT_SIZE:
+			return get_theme_font_size(p_name, p_theme_type);
+		case Theme::DATA_TYPE_ICON:
+			return get_theme_icon(p_name, p_theme_type);
+		case Theme::DATA_TYPE_STYLEBOX:
+			return get_theme_stylebox(p_name, p_theme_type);
+		case Theme::DATA_TYPE_MAX:
+			break; // Can't happen, but silences warning.
+	}
+
+	return Variant();
 }
 
 #ifdef TOOLS_ENABLED
@@ -2887,6 +2910,23 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS);
 
 	GDVIRTUAL_BIND(_get_contents_minimum_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Window, embedded_border);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Window, embedded_unfocused_border);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Window, title_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, Window, title_font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Window, title_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, title_height);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Window, title_outline_modulate);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, title_outline_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, close);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, close_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, close_h_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, close_v_offset);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, resize_margin);
 }
 
 Window::Window() {

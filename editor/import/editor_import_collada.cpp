@@ -208,7 +208,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 						return OK; //do nothing not needed
 					}
 
-					if (!bool(GLOBAL_DEF("collada/use_ambient", false))) {
+					if (!bool(GLOBAL_GET("collada/use_ambient"))) {
 						return OK;
 					}
 					//well, it's an ambient light..
@@ -1107,7 +1107,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 			ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(node);
 
-			ERR_FAIL_COND_V(!mi, ERR_BUG);
+			ERR_FAIL_NULL_V(mi, ERR_BUG);
 
 			Collada::SkinControllerData *skin = nullptr;
 			Collada::MorphControllerData *morph = nullptr;
@@ -1131,7 +1131,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					ERR_FAIL_COND_V(!node_map.has(skname), ERR_INVALID_DATA);
 					NodeMap nmsk = node_map[skname];
 					Skeleton3D *sk = Object::cast_to<Skeleton3D>(nmsk.node);
-					ERR_FAIL_COND_V(!sk, ERR_INVALID_DATA);
+					ERR_FAIL_NULL_V(sk, ERR_INVALID_DATA);
 					ERR_FAIL_COND_V(!skeleton_bone_map.has(sk), ERR_INVALID_DATA);
 					HashMap<String, int> &bone_remap_map = skeleton_bone_map[sk];
 

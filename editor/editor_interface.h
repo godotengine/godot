@@ -50,6 +50,7 @@ class Mesh;
 class Node;
 class ScriptEditor;
 class Texture2D;
+class Theme;
 class VBoxContainer;
 class Window;
 
@@ -84,10 +85,9 @@ public:
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
 
-	void add_editor_plugin(EditorPlugin *p_plugin);
-	void remove_editor_plugin(EditorPlugin *p_plugin);
-
 	// Editor GUI.
+
+	Ref<Theme> get_editor_theme() const;
 
 	Control *get_base_control() const;
 	VBoxContainer *get_editor_main_screen() const;

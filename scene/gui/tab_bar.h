@@ -152,7 +152,7 @@ private:
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual void _update_theme_item_cache() override;
+
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;

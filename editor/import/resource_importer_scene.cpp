@@ -155,11 +155,11 @@ Variant EditorScenePostImportPlugin::get_option_value(const StringName &p_name) 
 	return Variant();
 }
 void EditorScenePostImportPlugin::add_import_option(const String &p_name, Variant p_default_value) {
-	ERR_FAIL_COND_MSG(current_option_list == nullptr, "add_import_option() can only be called from get_import_options()");
+	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option() can only be called from get_import_options().");
 	add_import_option_advanced(p_default_value.get_type(), p_name, p_default_value);
 }
 void EditorScenePostImportPlugin::add_import_option_advanced(Variant::Type p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint, const String &p_hint_string, int p_usage_flags) {
-	ERR_FAIL_COND_MSG(current_option_list == nullptr, "add_import_option_advanced() can only be called from get_import_options()");
+	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option_advanced() can only be called from get_import_options().");
 	current_option_list->push_back(ResourceImporter::ImportOption(PropertyInfo(p_type, p_name, p_hint, p_hint_string, p_usage_flags), p_default_value));
 }
 
@@ -356,7 +356,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 }
 
 static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
-	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
+	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value.");
 	if (!p_convex) {
 		Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
@@ -2143,7 +2143,7 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 	List<StringName> anims;
 	p_player->get_animation_list(&anims);
 	Node *parent = p_player->get_parent();
-	ERR_FAIL_COND(parent == nullptr);
+	ERR_FAIL_NULL(parent);
 	HashMap<NodePath, uint32_t> used_tracks[TRACK_CHANNEL_MAX];
 	bool tracks_to_add = false;
 	static const Animation::TrackType track_types[TRACK_CHANNEL_MAX] = { Animation::TYPE_POSITION_3D, Animation::TYPE_ROTATION_3D, Animation::TYPE_SCALE_3D, Animation::TYPE_BLEND_SHAPE };
@@ -2727,7 +2727,7 @@ Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t
 		}
 	}
 
-	ERR_FAIL_COND_V(!scene, nullptr);
+	ERR_FAIL_NULL_V(scene, nullptr);
 
 	return scene;
 }

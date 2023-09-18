@@ -317,7 +317,15 @@
 	<signals>
 		<signal name="bus_layout_changed">
 			<description>
-				Emitted when the [AudioBusLayout] changes.
+				Emitted when an audio bus is added, deleted, or moved.
+			</description>
+		</signal>
+		<signal name="bus_renamed">
+			<param index="0" name="bus_index" type="int" />
+			<param index="1" name="old_name" type="StringName" />
+			<param index="2" name="new_name" type="StringName" />
+			<description>
+				Emitted when the audio bus at [param bus_index] is renamed from [param old_name] to [param new_name].
 			</description>
 		</signal>
 	</signals>

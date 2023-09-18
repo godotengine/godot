@@ -50,6 +50,8 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("completion"), &GDScriptTextDocument::completion);
 	ClassDB::bind_method(D_METHOD("resolve"), &GDScriptTextDocument::resolve);
 	ClassDB::bind_method(D_METHOD("rename"), &GDScriptTextDocument::rename);
+	ClassDB::bind_method(D_METHOD("prepareRename"), &GDScriptTextDocument::prepareRename);
+	ClassDB::bind_method(D_METHOD("references"), &GDScriptTextDocument::references);
 	ClassDB::bind_method(D_METHOD("foldingRange"), &GDScriptTextDocument::foldingRange);
 	ClassDB::bind_method(D_METHOD("codeLens"), &GDScriptTextDocument::codeLens);
 	ClassDB::bind_method(D_METHOD("documentLink"), &GDScriptTextDocument::documentLink);
@@ -161,11 +163,8 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(uri);
 	Array arr;
 	if (HashMap<String, ExtendGDScriptParser *>::ConstIterator parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
-		Vector<lsp::DocumentedSymbolInformation> list;
-		parser->value->get_symbols().symbol_tree_as_list(uri, list);
-		for (int i = 0; i < list.size(); i++) {
-			arr.push_back(list[i].to_json());
-		}
+		lsp::DocumentSymbol symbol = parser->value->get_symbols();
+		arr.push_back(symbol.to_json(true));
 	}
 	return arr;
 }
@@ -251,6 +250,48 @@ Dictionary GDScriptTextDocument::rename(const Dictionary &p_params) {
 	String new_name = p_params["newName"];
 
 	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->rename(params, new_name);
+}
+
+Variant GDScriptTextDocument::prepareRename(const Dictionary &p_params) {
+	lsp::TextDocumentPositionParams params;
+	params.load(p_params);
+
+	lsp::DocumentSymbol symbol;
+	lsp::Range range;
+	if (GDScriptLanguageProtocol::get_singleton()->get_workspace()->can_rename(params, symbol, range)) {
+		return Variant(range.to_json());
+	}
+
+	// `null` -> rename not valid at current location.
+	return Variant();
+}
+
+Array GDScriptTextDocument::references(const Dictionary &p_params) {
+	Array res;
+
+	lsp::ReferenceParams params;
+	params.load(p_params);
+
+	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
+	if (symbol) {
+		Vector<lsp::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_all_usages(*symbol);
+		res.resize(usages.size());
+		int declaration_adjustment = 0;
+		for (int i = 0; i < usages.size(); i++) {
+			lsp::Location usage = usages[i];
+			if (!params.context.includeDeclaration && usage.range == symbol->range) {
+				declaration_adjustment++;
+				continue;
+			}
+			res[i - declaration_adjustment] = usages[i].to_json();
+		}
+
+		if (declaration_adjustment > 0) {
+			res.resize(res.size() - declaration_adjustment);
+		}
+	}
+
+	return res;
 }
 
 Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
@@ -450,7 +491,7 @@ Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &
 	if (symbol) {
 		lsp::Location location;
 		location.uri = symbol->uri;
-		location.range = symbol->range;
+		location.range = symbol->selectionRange;
 		const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(symbol->uri);
 		if (file_checker->file_exists(path)) {
 			arr.push_back(location.to_json());
@@ -464,7 +505,7 @@ Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &
 				if (!s->uri.is_empty()) {
 					lsp::Location location;
 					location.uri = s->uri;
-					location.range = s->range;
+					location.range = s->selectionRange;
 					arr.push_back(location.to_json());
 					r_list.push_back(s);
 				}

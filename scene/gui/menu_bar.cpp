@@ -32,6 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
+#include "scene/theme/theme_db.h"
 
 void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
@@ -303,35 +304,6 @@ void MenuBar::_update_menu() {
 	}
 	update_minimum_size();
 	queue_redraw();
-}
-
-void MenuBar::_update_theme_item_cache() {
-	Control::_update_theme_item_cache();
-
-	theme_cache.normal = get_theme_stylebox(SNAME("normal"));
-	theme_cache.normal_mirrored = get_theme_stylebox(SNAME("normal_mirrored"));
-	theme_cache.disabled = get_theme_stylebox(SNAME("disabled"));
-	theme_cache.disabled_mirrored = get_theme_stylebox(SNAME("disabled_mirrored"));
-	theme_cache.pressed = get_theme_stylebox(SNAME("pressed"));
-	theme_cache.pressed_mirrored = get_theme_stylebox(SNAME("pressed_mirrored"));
-	theme_cache.hover = get_theme_stylebox(SNAME("hover"));
-	theme_cache.hover_mirrored = get_theme_stylebox(SNAME("hover_mirrored"));
-	theme_cache.hover_pressed = get_theme_stylebox(SNAME("hover_pressed"));
-	theme_cache.hover_pressed_mirrored = get_theme_stylebox(SNAME("hover_pressed_mirrored"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-	theme_cache.font_pressed_color = get_theme_color(SNAME("font_pressed_color"));
-	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
-	theme_cache.font_hover_pressed_color = get_theme_color(SNAME("font_hover_pressed_color"));
-	theme_cache.font_focus_color = get_theme_color(SNAME("font_focus_color"));
-
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
 }
 
 void MenuBar::_notification(int p_what) {
@@ -684,6 +656,31 @@ void MenuBar::_bind_methods() {
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, normal);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, normal_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, disabled_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, pressed_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, hover);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, hover_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, hover_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, MenuBar, hover_pressed_mirrored);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, MenuBar, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, MenuBar, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, outline_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_hover_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_hover_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_focus_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, h_separation);
 }
 
 void MenuBar::set_switch_on_hover(bool p_enabled) {

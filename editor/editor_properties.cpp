@@ -2786,7 +2786,7 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
 	if (!base_node && Object::cast_to<RefCounted>(get_edited_object())) {
 		Node *to_node = get_node(p_path);
-		ERR_FAIL_COND(!to_node);
+		ERR_FAIL_NULL(to_node);
 		path = get_tree()->get_edited_scene_root()->get_path_to(to_node);
 	}
 
@@ -2899,7 +2899,7 @@ void EditorPropertyNodePath::update_property() {
 	}
 
 	Node *target_node = base_node->get_node(p);
-	ERR_FAIL_COND(!target_node);
+	ERR_FAIL_NULL(target_node);
 
 	if (String(target_node->get_name()).contains("@")) {
 		assign->set_icon(Ref<Texture2D>());

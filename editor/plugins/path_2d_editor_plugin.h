@@ -34,7 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/2d/path_2d.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/separator.h"
 
 class CanvasItemEditor;
 class MenuButton;
@@ -47,7 +46,6 @@ class Path2DEditor : public HBoxContainer {
 	Path2D *node = nullptr;
 
 	HBoxContainer *base_hb = nullptr;
-	Separator *sep = nullptr;
 
 	enum Mode {
 		MODE_CREATE,

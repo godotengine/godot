@@ -959,6 +959,9 @@
 		<member name="text_editor/theme/highlighting/executing_line_color" type="Color" setter="" getter="">
 			The script editor's color for the debugger's executing line icon (displayed in the gutter).
 		</member>
+		<member name="text_editor/theme/highlighting/folded_code_region_color" type="Color" setter="" getter="">
+			The script editor's background line highlighting color for folded code region.
+		</member>
 		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
 			The script editor's function call color.
 			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).

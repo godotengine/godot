@@ -66,12 +66,12 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 	}
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 
 	NodePath np = item->get_metadata(0);
 
 	Node *n = get_node(np);
-	ERR_FAIL_COND(!n);
+	ERR_FAIL_NULL(n);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_id == BUTTON_SUBSCENE) {
@@ -94,7 +94,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		List<Node *> selection = editor_selection->get_selected_node_list();
 		if (selection.size() > 1 && selection.find(n) != nullptr) {
 			for (Node *nv : selection) {
-				ERR_FAIL_COND(!nv);
+				ERR_FAIL_NULL(nv);
 				if (nv == n) {
 					continue;
 				}
@@ -826,7 +826,7 @@ void SceneTreeEditor::_tree_changed() {
 
 void SceneTreeEditor::_selected_changed() {
 	TreeItem *s = tree->get_selected();
-	ERR_FAIL_COND(!s);
+	ERR_FAIL_NULL(s);
 	NodePath np = s->get_metadata(0);
 
 	Node *n = get_node(np);
@@ -852,7 +852,7 @@ void SceneTreeEditor::_deselect_items() {
 
 void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_selected) {
 	TreeItem *item = Object::cast_to<TreeItem>(p_object);
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 
 	if (!item->is_visible()) {
 		return;
@@ -980,7 +980,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 
 void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 	TreeItem *item = _find(tree->get_root(), p_node->get_path());
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 	String new_name = p_name.validate_node_name();
 
 	if (new_name != p_name) {
@@ -1060,10 +1060,10 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 void SceneTreeEditor::_renamed() {
 	TreeItem *which = tree->get_edited();
 
-	ERR_FAIL_COND(!which);
+	ERR_FAIL_NULL(which);
 	NodePath np = which->get_metadata(0);
 	Node *n = get_node(np);
-	ERR_FAIL_COND(!n);
+	ERR_FAIL_NULL(n);
 
 	String new_name = which->get_text(0);
 
@@ -1131,7 +1131,7 @@ void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {
 }
 
 void SceneTreeEditor::_update_selection(TreeItem *item) {
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 
 	NodePath np = item->get_metadata(0);
 
@@ -1196,7 +1196,7 @@ void SceneTreeEditor::_cell_collapsed(Object *p_obj) {
 	NodePath np = ti->get_metadata(0);
 
 	Node *n = get_node(np);
-	ERR_FAIL_COND(!n);
+	ERR_FAIL_NULL(n);
 
 	n->set_display_folded(collapsed);
 }

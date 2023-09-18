@@ -38,6 +38,7 @@
 #include "scene/gui/label.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/scene_string_names.h"
+#include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
@@ -215,7 +216,7 @@ String RichTextLabel::_letters(int p_num, bool p_capitalize) const {
 }
 
 void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size) {
-	ERR_FAIL_COND(p_frame == nullptr);
+	ERR_FAIL_NULL(p_frame);
 	ERR_FAIL_COND(p_line < 0 || p_line >= (int)p_frame->lines.size());
 
 	Line &l = p_frame->lines[p_line];
@@ -266,7 +267,7 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 }
 
 float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h) {
-	ERR_FAIL_COND_V(p_frame == nullptr, p_h);
+	ERR_FAIL_NULL_V(p_frame, p_h);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)p_frame->lines.size(), p_h);
 
 	Line &l = p_frame->lines[p_line];
@@ -447,7 +448,7 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 }
 
 float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset) {
-	ERR_FAIL_COND_V(p_frame == nullptr, p_h);
+	ERR_FAIL_NULL_V(p_frame, p_h);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)p_frame->lines.size(), p_h);
 
 	Line &l = p_frame->lines[p_line];
@@ -747,7 +748,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 }
 
 int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs) {
-	ERR_FAIL_COND_V(p_frame == nullptr, 0);
+	ERR_FAIL_NULL_V(p_frame, 0);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)p_frame->lines.size(), 0);
 
 	Vector2 off;
@@ -967,7 +968,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		int gl_size = TS->shaped_text_get_glyph_count(rid);
 
 		Vector2 gloff = off;
-		// Draw oulines and shadow.
+		// Draw outlines and shadow.
 		int processed_glyphs_ol = r_processed_glyphs;
 		for (int i = 0; i < gl_size; i++) {
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
@@ -1744,43 +1745,8 @@ _FORCE_INLINE_ float RichTextLabel::_calculate_line_vertical_offset(const RichTe
 void RichTextLabel::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
-	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
-	theme_cache.focus_style = get_theme_stylebox(SNAME("focus"));
-	theme_cache.progress_bg_style = get_theme_stylebox(SNAME("background"), SNAME("ProgressBar"));
-	theme_cache.progress_fg_style = get_theme_stylebox(SNAME("fill"), SNAME("ProgressBar"));
-
-	theme_cache.line_separation = get_theme_constant(SNAME("line_separation"));
-
-	theme_cache.normal_font = get_theme_font(SNAME("normal_font"));
-	theme_cache.normal_font_size = get_theme_font_size(SNAME("normal_font_size"));
-
-	theme_cache.default_color = get_theme_color(SNAME("default_color"));
-	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
-	use_selected_font_color = theme_cache.font_selected_color != Color(0, 0, 0, 0);
-	theme_cache.selection_color = get_theme_color(SNAME("selection_color"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-	theme_cache.font_shadow_color = get_theme_color(SNAME("font_shadow_color"));
-	theme_cache.shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
-	theme_cache.shadow_offset_x = get_theme_constant(SNAME("shadow_offset_x"));
-	theme_cache.shadow_offset_y = get_theme_constant(SNAME("shadow_offset_y"));
-	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-
-	theme_cache.bold_font = get_theme_font(SNAME("bold_font"));
-	theme_cache.bold_font_size = get_theme_font_size(SNAME("bold_font_size"));
-	theme_cache.bold_italics_font = get_theme_font(SNAME("bold_italics_font"));
-	theme_cache.bold_italics_font_size = get_theme_font_size(SNAME("bold_italics_font_size"));
-	theme_cache.italics_font = get_theme_font(SNAME("italics_font"));
-	theme_cache.italics_font_size = get_theme_font_size(SNAME("italics_font_size"));
-	theme_cache.mono_font = get_theme_font(SNAME("mono_font"));
-	theme_cache.mono_font_size = get_theme_font_size(SNAME("mono_font_size"));
-
-	theme_cache.table_h_separation = get_theme_constant(SNAME("table_h_separation"));
-	theme_cache.table_v_separation = get_theme_constant(SNAME("table_v_separation"));
-	theme_cache.table_odd_row_bg = get_theme_color(SNAME("table_odd_row_bg"));
-	theme_cache.table_even_row_bg = get_theme_color(SNAME("table_even_row_bg"));
-	theme_cache.table_border = get_theme_color(SNAME("table_border"));
-
 	theme_cache.base_scale = get_theme_default_base_scale();
+	use_selected_font_color = theme_cache.font_selected_color != Color(0, 0, 0, 0);
 }
 
 void RichTextLabel::_notification(int p_what) {
@@ -5059,7 +5025,7 @@ bool RichTextLabel::_search_table(ItemTable *p_table, List<Item *>::Element *p_f
 }
 
 bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search) {
-	ERR_FAIL_COND_V(p_frame == nullptr, false);
+	ERR_FAIL_NULL_V(p_frame, false);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)p_frame->lines.size(), false);
 
 	Line &l = p_frame->lines[p_line];
@@ -5144,14 +5110,14 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 
 			while (parent_element->get() != selection.from_frame) {
 				parent_element = p_search_previous ? parent_element->prev() : parent_element->next();
-				ERR_FAIL_COND_V(parent_element == nullptr, false);
+				ERR_FAIL_NULL_V(parent_element, false);
 			}
 
 			// Search remainder of table
 			if (!(p_search_previous && parent_element == parent_table->subitems.front()) &&
 					parent_element != parent_table->subitems.back()) {
 				parent_element = p_search_previous ? parent_element->prev() : parent_element->next(); // Don't want to search current item
-				ERR_FAIL_COND_V(parent_element == nullptr, false);
+				ERR_FAIL_NULL_V(parent_element, false);
 
 				// Search for next element
 				if (_search_table(parent_table, parent_element, p_string, p_search_previous)) {
@@ -5200,7 +5166,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p_selection) const {
 	String txt;
 
-	ERR_FAIL_COND_V(p_frame == nullptr, txt);
+	ERR_FAIL_NULL_V(p_frame, txt);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)p_frame->lines.size(), txt);
 
 	Line &l = p_frame->lines[p_line];
@@ -5821,6 +5787,44 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_COPY);
 	BIND_ENUM_CONSTANT(MENU_SELECT_ALL);
 	BIND_ENUM_CONSTANT(MENU_MAX);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, normal_style, "normal");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, focus_style, "focus");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, progress_bg_style, "background", "ProgressBar");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, RichTextLabel, progress_fg_style, "fill", "ProgressBar");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, line_separation);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, RichTextLabel, normal_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, RichTextLabel, normal_font_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, default_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, font_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, selection_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, font_outline_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, font_shadow_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, shadow_outline_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, shadow_offset_x);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, shadow_offset_y);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, outline_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, RichTextLabel, bold_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, RichTextLabel, bold_font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, RichTextLabel, bold_italics_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, RichTextLabel, bold_italics_font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, RichTextLabel, italics_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, RichTextLabel, italics_font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, RichTextLabel, mono_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, RichTextLabel, mono_font_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, text_highlight_h_padding);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, text_highlight_v_padding);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, table_h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, RichTextLabel, table_v_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, table_odd_row_bg);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, table_even_row_bg);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextLabel, table_border);
 }
 
 TextServer::VisibleCharactersBehavior RichTextLabel::get_visible_characters_behavior() const {
@@ -6028,8 +6032,6 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 	Vector2i fbg_index = Vector2i(end, start);
 	Color last_color = Color(0, 0, 0, 0);
 	bool draw_box = false;
-	int hpad = get_theme_constant(SNAME("text_highlight_h_padding"));
-	int vpad = get_theme_constant(SNAME("text_highlight_v_padding"));
 	// Draw a box based on color tags associated with glyphs
 	for (int i = start; i < end; i++) {
 		Item *it = _get_item_at_pos(it_from, it_to, i);
@@ -6059,8 +6061,8 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 		if (draw_box) {
 			Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, fbg_index.y);
 			for (int j = 0; j < sel.size(); j++) {
-				Vector2 rect_off = line_off + Vector2(sel[j].x - hpad, -TS->shaped_text_get_ascent(p_rid) - vpad);
-				Vector2 rect_size = Vector2(sel[j].y - sel[j].x + 2 * hpad, TS->shaped_text_get_size(p_rid).y + 2 * vpad);
+				Vector2 rect_off = line_off + Vector2(sel[j].x - theme_cache.text_highlight_h_padding, -TS->shaped_text_get_ascent(p_rid) - theme_cache.text_highlight_v_padding);
+				Vector2 rect_size = Vector2(sel[j].y - sel[j].x + 2 * theme_cache.text_highlight_h_padding, TS->shaped_text_get_size(p_rid).y + 2 * theme_cache.text_highlight_v_padding);
 				RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
 			}
 			fbg_index = Vector2i(end, start);
@@ -6078,8 +6080,8 @@ void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item 
 	if (last_color.a > 0) {
 		Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, end);
 		for (int i = 0; i < sel.size(); i++) {
-			Vector2 rect_off = line_off + Vector2(sel[i].x - hpad, -TS->shaped_text_get_ascent(p_rid) - vpad);
-			Vector2 rect_size = Vector2(sel[i].y - sel[i].x + 2 * hpad, TS->shaped_text_get_size(p_rid).y + 2 * vpad);
+			Vector2 rect_off = line_off + Vector2(sel[i].x - theme_cache.text_highlight_h_padding, -TS->shaped_text_get_ascent(p_rid) - theme_cache.text_highlight_v_padding);
+			Vector2 rect_size = Vector2(sel[i].y - sel[i].x + 2 * theme_cache.text_highlight_h_padding, TS->shaped_text_get_size(p_rid).y + 2 * theme_cache.text_highlight_v_padding);
 			RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
 		}
 	}

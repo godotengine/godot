@@ -2448,6 +2448,7 @@ void Control::_invalidate_theme_cache() {
 }
 
 void Control::_update_theme_item_cache() {
+	ThemeDB::get_singleton()->update_class_instance_items(this);
 }
 
 void Control::set_theme_owner_node(Node *p_node) {
@@ -2667,6 +2668,27 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 	int constant = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 	data.theme_constant_cache[p_theme_type][p_name] = constant;
 	return constant;
+}
+
+Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const {
+	switch (p_data_type) {
+		case Theme::DATA_TYPE_COLOR:
+			return get_theme_color(p_name, p_theme_type);
+		case Theme::DATA_TYPE_CONSTANT:
+			return get_theme_constant(p_name, p_theme_type);
+		case Theme::DATA_TYPE_FONT:
+			return get_theme_font(p_name, p_theme_type);
+		case Theme::DATA_TYPE_FONT_SIZE:
+			return get_theme_font_size(p_name, p_theme_type);
+		case Theme::DATA_TYPE_ICON:
+			return get_theme_icon(p_name, p_theme_type);
+		case Theme::DATA_TYPE_STYLEBOX:
+			return get_theme_stylebox(p_name, p_theme_type);
+		case Theme::DATA_TYPE_MAX:
+			break; // Can't happen, but silences warning.
+	}
+
+	return Variant();
 }
 
 #ifdef TOOLS_ENABLED

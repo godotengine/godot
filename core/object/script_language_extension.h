@@ -689,9 +689,11 @@ public:
 	}
 	virtual void validate_property(PropertyInfo &p_property) const override {
 		if (native_info->validate_property_func) {
+			// GDExtension uses a StringName rather than a String for property name.
+			StringName prop_name = p_property.name;
 			GDExtensionPropertyInfo gdext_prop = {
 				(GDExtensionVariantType)p_property.type,
-				&p_property.name,
+				&prop_name,
 				&p_property.class_name,
 				(uint32_t)p_property.hint,
 				&p_property.hint_string,

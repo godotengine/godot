@@ -315,12 +315,14 @@ struct ObjectGDExtension {
 	bool editor_class = false;
 	bool is_virtual = false;
 	bool is_abstract = false;
+	bool is_exposed = true;
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;
 	GDExtensionClassFreePropertyList free_property_list;
 	GDExtensionClassPropertyCanRevert property_can_revert;
 	GDExtensionClassPropertyGetRevert property_get_revert;
+	GDExtensionClassValidateProperty validate_property;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassNotification notification;
 #endif // DISABLE_DEPRECATED

@@ -32,6 +32,7 @@
 
 #include "core/string/translation.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/theme/theme_db.h"
 
 #ifdef TOOLS_ENABLED
 void GraphElement::_edit_set_position(const Point2 &p_position) {
@@ -154,9 +155,7 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			Vector2 mpos = mb->get_position();
 
-			Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
-
-			if (resizable && mpos.x > get_size().x - resizer->get_width() && mpos.y > get_size().y - resizer->get_height()) {
+			if (resizable && mpos.x > get_size().x - theme_cache.resizer->get_width() && mpos.y > get_size().y - theme_cache.resizer->get_height()) {
 				resizing = true;
 				resizing_from = mpos;
 				resizing_from_size = get_size();
@@ -241,4 +240,6 @@ void GraphElement::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("close_request"));
 	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphElement, resizer);
 }

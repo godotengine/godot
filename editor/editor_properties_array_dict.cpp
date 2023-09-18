@@ -1111,7 +1111,7 @@ void EditorPropertyDictionary::update_property() {
 				}
 			}
 
-			ERR_FAIL_COND(!prop);
+			ERR_FAIL_NULL(prop);
 
 			prop->set_read_only(is_read_only());
 

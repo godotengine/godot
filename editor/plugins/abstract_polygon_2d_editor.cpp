@@ -725,7 +725,6 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 	selected_point = Vertex();
 	edge_point = PosVertex();
 
-	add_child(memnew(VSeparator));
 	button_create = memnew(Button);
 	button_create->set_flat(true);
 	add_child(button_create);

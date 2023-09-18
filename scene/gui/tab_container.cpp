@@ -33,6 +33,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/theme/theme_db.h"
 
 int TabContainer::_get_top_margin() const {
 	int height = 0;
@@ -133,44 +134,6 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void TabContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.side_margin = get_theme_constant(SNAME("side_margin"));
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
-	theme_cache.tabbar_style = get_theme_stylebox(SNAME("tabbar_background"));
-
-	theme_cache.menu_icon = get_theme_icon(SNAME("menu"));
-	theme_cache.menu_hl_icon = get_theme_icon(SNAME("menu_highlight"));
-
-	// TabBar overrides.
-	theme_cache.icon_separation = get_theme_constant(SNAME("icon_separation"));
-	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
-	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-
-	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
-	theme_cache.tab_hovered_style = get_theme_stylebox(SNAME("tab_hovered"));
-	theme_cache.tab_selected_style = get_theme_stylebox(SNAME("tab_selected"));
-	theme_cache.tab_disabled_style = get_theme_stylebox(SNAME("tab_disabled"));
-
-	theme_cache.increment_icon = get_theme_icon(SNAME("increment"));
-	theme_cache.increment_hl_icon = get_theme_icon(SNAME("increment_highlight"));
-	theme_cache.decrement_icon = get_theme_icon(SNAME("decrement"));
-	theme_cache.decrement_hl_icon = get_theme_icon(SNAME("decrement_highlight"));
-	theme_cache.drop_mark_icon = get_theme_icon(SNAME("drop_mark"));
-	theme_cache.drop_mark_color = get_theme_color(SNAME("drop_mark_color"));
-
-	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
-	theme_cache.font_hovered_color = get_theme_color(SNAME("font_hovered_color"));
-	theme_cache.font_unselected_color = get_theme_color(SNAME("font_unselected_color"));
-	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.tab_font = get_theme_font(SNAME("font"));
-	theme_cache.tab_font_size = get_theme_font_size(SNAME("font_size"));
-}
-
 void TabContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -218,7 +181,7 @@ void TabContainer::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			theme_changing = true;
-			call_deferred(SNAME("_on_theme_changed")); // Wait until all changed theme.
+			callable_mp(this, &TabContainer::_on_theme_changed).call_deferred(); // Wait until all changed theme.
 		} break;
 	}
 }
@@ -511,14 +474,14 @@ void TabContainer::_on_tab_hovered(int p_tab) {
 }
 
 void TabContainer::_on_tab_changed(int p_tab) {
-	call_deferred(SNAME("_repaint"));
+	callable_mp(this, &TabContainer::_repaint).call_deferred();
 
 	emit_signal(SNAME("tab_changed"), p_tab);
 }
 
 void TabContainer::_on_tab_selected(int p_tab) {
 	if (p_tab != get_previous_tab()) {
-		call_deferred(SNAME("_repaint"));
+		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
 
 	emit_signal(SNAME("tab_selected"), p_tab);
@@ -561,7 +524,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		call_deferred("_repaint");
+		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
 }
 
@@ -618,7 +581,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		call_deferred("_repaint");
+		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
 }
 
@@ -804,7 +767,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	if (!get_clip_tabs()) {
 		update_minimum_size();
 	}
-	call_deferred(SNAME("_repaint"));
+	callable_mp(this, &TabContainer::_repaint).call_deferred();
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {
@@ -981,9 +944,6 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_hidden_tabs_for_min_size", "enabled"), &TabContainer::set_use_hidden_tabs_for_min_size);
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
 
-	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
-	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
-
 	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
@@ -1000,6 +960,40 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, side_margin);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, panel_style, "panel");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tabbar_style, "tabbar_background");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, menu_icon, "menu");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, menu_hl_icon, "menu_highlight");
+
+	// TabBar overrides.
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, icon_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, icon_max_width);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_unselected_style, "tab_unselected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_hovered_style, "tab_hovered");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_selected_style, "tab_selected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_disabled_style, "tab_disabled");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, increment_icon, "increment");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, increment_hl_icon, "increment_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, decrement_icon, "decrement");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, decrement_hl_icon, "decrement_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, drop_mark_icon, "drop_mark");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, drop_mark_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_hovered_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_unselected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_outline_color);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT, TabContainer, tab_font, "font");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT_SIZE, TabContainer, tab_font_size, "font_size");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, outline_size);
 }
 
 TabContainer::TabContainer() {

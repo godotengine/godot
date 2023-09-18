@@ -104,6 +104,7 @@ private:
 		uint64_t released_physics_frame = UINT64_MAX;
 		uint64_t released_process_frame = UINT64_MAX;
 		int pressed = 0;
+		bool axis_pressed = false;
 		bool exact = true;
 		float strength = 0.0f;
 		float raw_strength = 0.0f;

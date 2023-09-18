@@ -13,6 +13,16 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="activate_item_by_event">
+			<return type="bool" />
+			<param index="0" name="event" type="InputEvent" />
+			<param index="1" name="for_global_only" type="bool" default="false" />
+			<description>
+				Checks the provided [param event] against the [PopupMenu]'s shortcuts and accelerators, and activates the first item with matching events. If [param for_global_only] is [code]true[/code], only shortcuts and accelerators with [code]global[/code] set to [code]true[/code] will be called.
+				Returns [code]true[/code] if an item was successfully activated.
+				[b]Note:[/b] Certain [Control]s, such as [MenuButton], will call this method automatically.
+			</description>
+		</method>
 		<method name="add_check_item">
 			<return type="void" />
 			<param index="0" name="label" type="String" />

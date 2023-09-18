@@ -3241,6 +3241,15 @@ TEST_CASE("[SceneTree][TextEdit] mouse") {
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
 	text_edit->set_size(Size2(800, 200));
+
+	CHECK(text_edit->get_rect_at_line_column(0, 0).get_position() == Point2i(0, 0));
+
+	text_edit->set_line(0, "A");
+	MessageQueue::get_singleton()->flush();
+	CHECK(text_edit->get_rect_at_line_column(0, 1).get_position().x > 0);
+
+	text_edit->clear(); // Necessary, otherwise the following test cases fail.
+
 	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	MessageQueue::get_singleton()->flush();
 

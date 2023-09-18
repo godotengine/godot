@@ -493,7 +493,6 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 	scene_root_parent->add_theme_style_override("panel", theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
 	bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 	main_menu->add_theme_style_override("hover", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
-	prev_scene->set_icon(theme->get_icon(SNAME("PrevScene"), EditorStringName(EditorIcons)));
 	distraction_free->set_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
 	bottom_panel_raise->set_icon(theme->get_icon(SNAME("ExpandBottomDock"), EditorStringName(EditorIcons)));
 
@@ -2004,7 +2003,7 @@ void EditorNode::_dialog_action(String p_file) {
 			saving_resource = Ref<Resource>();
 			ObjectID current_id = editor_history.get_current();
 			Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
-			ERR_FAIL_COND(!current_obj);
+			ERR_FAIL_NULL(current_obj);
 			current_obj->notify_property_list_changed();
 		} break;
 		case SETTINGS_LAYOUT_SAVE: {
@@ -2282,7 +2281,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 
 	if (is_resource) {
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
-		ERR_FAIL_COND(!current_res);
+		ERR_FAIL_NULL(current_res);
 
 		InspectorDock::get_inspector_singleton()->edit(current_res);
 		SceneTreeDock::get_singleton()->set_selected(nullptr);
@@ -2316,7 +2315,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		}
 	} else if (is_node) {
 		Node *current_node = Object::cast_to<Node>(current_obj);
-		ERR_FAIL_COND(!current_node);
+		ERR_FAIL_NULL(current_node);
 
 		InspectorDock::get_inspector_singleton()->edit(current_node);
 		if (current_node->is_inside_tree()) {
@@ -2951,9 +2950,9 @@ void EditorNode::_screenshot(bool p_use_utc) {
 
 void EditorNode::_save_screenshot(NodePath p_path) {
 	Control *editor_main_screen = EditorInterface::get_singleton()->get_editor_main_screen();
-	ERR_FAIL_COND_MSG(!editor_main_screen, "Cannot get the editor main screen control.");
+	ERR_FAIL_NULL_MSG(editor_main_screen, "Cannot get the editor main screen control.");
 	Viewport *viewport = editor_main_screen->get_viewport();
-	ERR_FAIL_COND_MSG(!viewport, "Cannot get a viewport from the editor main screen.");
+	ERR_FAIL_NULL_MSG(viewport, "Cannot get a viewport from the editor main screen.");
 	Ref<ViewportTexture> texture = viewport->get_texture();
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
@@ -3137,7 +3136,7 @@ void EditorNode::editor_select(int p_which) {
 	selecting = false;
 
 	EditorPlugin *new_editor = editor_table[p_which];
-	ERR_FAIL_COND(!new_editor);
+	ERR_FAIL_NULL(new_editor);
 
 	if (editor_plugin_screen == new_editor) {
 		return;
@@ -3782,7 +3781,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		editor_folding.save_scene_folding(new_scene, lpath);
 	}
 
-	prev_scene->set_disabled(previous_scenes.size() == 0);
 	opening_prev = false;
 
 	EditorDebuggerNode::get_singleton()->update_live_edit_root();
@@ -4171,7 +4169,7 @@ void EditorNode::stop_child_process(OS::ProcessID p_pid) {
 }
 
 Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) const {
-	ERR_FAIL_COND_V(!p_object, nullptr);
+	ERR_FAIL_NULL_V(p_object, nullptr);
 
 	Ref<Script> scr = p_object->get_script();
 
@@ -4203,7 +4201,7 @@ Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) cons
 }
 
 StringName EditorNode::get_object_custom_type_name(const Object *p_object) const {
-	ERR_FAIL_COND_V(!p_object, StringName());
+	ERR_FAIL_NULL_V(p_object, StringName());
 
 	Ref<Script> scr = p_object->get_script();
 	if (scr.is_null() && Object::cast_to<Script>(p_object)) {
@@ -4343,7 +4341,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 }
 
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
-	ERR_FAIL_COND_V(!p_object, false);
+	ERR_FAIL_NULL_V(p_object, false);
 
 	Ref<Script> scr = p_object->get_script();
 	if (scr.is_null() && Object::cast_to<Script>(p_object)) {
@@ -4633,7 +4631,7 @@ void EditorNode::_dock_make_selected_float() {
 }
 
 void EditorNode::_dock_make_float(Control *p_dock, int p_slot_index, bool p_show_window) {
-	ERR_FAIL_COND(!p_dock);
+	ERR_FAIL_NULL(p_dock);
 
 	Size2 borders = Size2(4, 4) * EDSCALE;
 	// Remember size and position before removing it from the main window.
@@ -5812,7 +5810,7 @@ void EditorNode::remove_control_from_dock(Control *p_control) {
 		}
 	}
 
-	ERR_FAIL_COND_MSG(!dock, "Control was not in dock.");
+	ERR_FAIL_NULL_MSG(dock, "Control was not in dock.");
 
 	dock->remove_child(p_control);
 	_update_dock_slots_visibility();
@@ -6209,7 +6207,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 					instantiated_node = current_packed_scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 				}
 
-				ERR_FAIL_COND(!instantiated_node);
+				ERR_FAIL_NULL(instantiated_node);
 
 				bool original_node_is_displayed_folded = original_node->is_displayed_folded();
 				bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
@@ -7152,15 +7150,6 @@ EditorNode::EditorNode() {
 	file_menu->set_name(TTR("Scene"));
 	main_menu->add_child(file_menu);
 	main_menu->set_menu_tooltip(0, TTR("Operations with scene files."));
-
-	prev_scene = memnew(Button);
-	prev_scene->set_flat(true);
-	prev_scene->set_tooltip_text(TTR("Go to previously opened scene."));
-	prev_scene->set_disabled(true);
-	prev_scene->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(FILE_OPEN_PREV));
-	gui_base->add_child(prev_scene);
-	prev_scene->set_position(Point2(3, 24));
-	prev_scene->hide();
 
 	accept = memnew(AcceptDialog);
 	accept->set_unparent_when_invisible(true);

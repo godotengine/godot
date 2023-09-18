@@ -33,6 +33,7 @@
 #include "core/string/translation.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
+#include "scene/theme/theme_db.h"
 
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
@@ -151,8 +152,8 @@ void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void GraphNode::_resort() {
 	Size2 new_size = get_size();
-	Ref<StyleBox> sb_panel = get_theme_stylebox(SNAME("panel"));
-	Ref<StyleBox> sb_titlebar = get_theme_stylebox(SNAME("titlebar"));
+	Ref<StyleBox> sb_panel = theme_cache.panel;
+	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 
 	// Resort titlebar first.
 	Size2 titlebar_size = Size2(new_size.width, titlebar_hbox->get_size().height);
@@ -164,8 +165,8 @@ void GraphNode::_resort() {
 	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
 
 	// First pass, determine minimum size AND amount of stretchable elements.
-	Ref<StyleBox> sb_slot = get_theme_stylebox(SNAME("slot"));
-	int separation = get_theme_constant(SNAME("separation"));
+	Ref<StyleBox> sb_slot = theme_cache.slot;
+	int separation = theme_cache.separation;
 
 	int children_count = 0;
 	int stretch_min = 0;
@@ -300,7 +301,7 @@ void GraphNode::draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Co
 
 	Point2 icon_offset;
 	if (!port_icon.is_valid()) {
-		port_icon = get_theme_icon(SNAME("port"));
+		port_icon = theme_cache.port;
 	}
 
 	icon_offset = -port_icon->get_size() * 0.5;
@@ -311,19 +312,15 @@ void GraphNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			// Used for layout calculations.
-			Ref<StyleBox> sb_panel = get_theme_stylebox(SNAME("panel"));
-			Ref<StyleBox> sb_titlebar = get_theme_stylebox(SNAME("titlebar"));
+			Ref<StyleBox> sb_panel = theme_cache.panel;
+			Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 			// Used for drawing.
-			Ref<StyleBox> sb_to_draw_panel = get_theme_stylebox(selected ? SNAME("panel_selected") : SNAME("panel"));
-			Ref<StyleBox> sb_to_draw_titlebar = get_theme_stylebox(selected ? SNAME("titlebar_selected") : SNAME("titlebar"));
+			Ref<StyleBox> sb_to_draw_panel = selected ? theme_cache.panel_selected : theme_cache.panel;
+			Ref<StyleBox> sb_to_draw_titlebar = selected ? theme_cache.titlebar_selected : theme_cache.titlebar;
 
-			Ref<StyleBox> sb_slot = get_theme_stylebox(SNAME("slot"));
+			Ref<StyleBox> sb_slot = theme_cache.slot;
 
-			int port_h_offset = get_theme_constant(SNAME("port_h_offset"));
-
-			Ref<Texture2D> resizer_icon = get_theme_icon(SNAME("resizer"));
-
-			Color resizer_color = get_theme_color(SNAME("resizer_color"));
+			int port_h_offset = theme_cache.port_h_offset;
 
 			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_size() + sb_titlebar->get_minimum_size());
 			Size2 body_size = get_size();
@@ -377,7 +374,7 @@ void GraphNode::_notification(int p_what) {
 			}
 
 			if (resizable) {
-				draw_texture(resizer_icon, get_size() - resizer_icon->get_size(), resizer_color);
+				draw_texture(theme_cache.resizer, get_size() - theme_cache.resizer->get_size(), theme_cache.resizer_color);
 			}
 		} break;
 	}
@@ -566,11 +563,11 @@ void GraphNode::set_slot_draw_stylebox(int p_slot_index, bool p_enable) {
 }
 
 Size2 GraphNode::get_minimum_size() const {
-	Ref<StyleBox> sb_panel = get_theme_stylebox(SNAME("panel"));
-	Ref<StyleBox> sb_titlebar = get_theme_stylebox(SNAME("titlebar"));
-	Ref<StyleBox> sb_slot = get_theme_stylebox(SNAME("slot"));
+	Ref<StyleBox> sb_panel = theme_cache.panel;
+	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
+	Ref<StyleBox> sb_slot = theme_cache.slot;
 
-	int separation = get_theme_constant(SNAME("separation"));
+	int separation = theme_cache.separation;
 	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
@@ -599,11 +596,11 @@ Size2 GraphNode::get_minimum_size() const {
 }
 
 void GraphNode::_port_pos_update() {
-	int edgeofs = get_theme_constant(SNAME("port_h_offset"));
-	int separation = get_theme_constant(SNAME("separation"));
+	int edgeofs = theme_cache.port_h_offset;
+	int separation = theme_cache.separation;
 
-	Ref<StyleBox> sb_panel = get_theme_stylebox(SNAME("panel"));
-	Ref<StyleBox> sb_titlebar = get_theme_stylebox(SNAME("titlebar"));
+	Ref<StyleBox> sb_panel = theme_cache.panel;
+	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 
 	left_port_cache.clear();
 	right_port_cache.clear();
@@ -754,9 +751,7 @@ HBoxContainer *GraphNode::get_titlebar_hbox() {
 
 Control::CursorShape GraphNode::get_cursor_shape(const Point2 &p_pos) const {
 	if (resizable) {
-		Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
-
-		if (resizing || (p_pos.x > get_size().x - resizer->get_width() && p_pos.y > get_size().y - resizer->get_height())) {
+		if (resizing || (p_pos.x > get_size().x - theme_cache.resizer->get_width() && p_pos.y > get_size().y - theme_cache.resizer->get_height())) {
 			return CURSOR_FDIAGSIZE;
 		}
 	}
@@ -830,6 +825,19 @@ void GraphNode::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "slot_index")));
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, titlebar);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, titlebar_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, slot);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphNode, separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphNode, port_h_offset);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphNode, port);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphNode, resizer);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphNode, resizer_color);
 }
 
 GraphNode::GraphNode() {

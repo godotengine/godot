@@ -661,7 +661,7 @@ void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorAssetLibrary::_install_asset() {
-	ERR_FAIL_COND(!description);
+	ERR_FAIL_NULL(description);
 
 	EditorAssetLibraryItemDownload *d = _get_asset_in_progress(description->get_asset_id());
 	if (d) {

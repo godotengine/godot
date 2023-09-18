@@ -80,7 +80,7 @@ Error AudioDriverCoreAudio::init() {
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
 	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
-	ERR_FAIL_COND_V(comp == nullptr, FAILED);
+	ERR_FAIL_NULL_V(comp, FAILED);
 
 	OSStatus result = AudioComponentInstanceNew(comp, &audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -349,7 +349,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
 	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
-	ERR_FAIL_COND_V(comp == nullptr, FAILED);
+	ERR_FAIL_NULL_V(comp, FAILED);
 
 	OSStatus result = AudioComponentInstanceNew(comp, &input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);

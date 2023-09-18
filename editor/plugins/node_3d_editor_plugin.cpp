@@ -1460,14 +1460,10 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 			}
 
 			if (p_local) {
-				p_motion = p_original.basis.xform(p_motion);
+				return p_original_local.translated_local(p_motion);
 			}
 
-			// Apply translation
-			Transform3D t = p_original;
-			t.origin += p_motion;
-
-			return t;
+			return p_original.translated(p_motion);
 		}
 		case TRANSFORM_ROTATE: {
 			Transform3D r;
@@ -3161,7 +3157,7 @@ void Node3DEditorViewport::_draw() {
 							get_editor_theme_icon(SNAME("ViewportSpeed")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)),
+							vformat("%s m/s", String::num(freelook_speed).pad_decimals(precision)),
 							Color(1.0, 0.95, 0.7));
 				}
 
@@ -3184,7 +3180,7 @@ void Node3DEditorViewport::_draw() {
 							get_editor_theme_icon(SNAME("ViewportZoom")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)),
+							vformat("%s m", String::num(cursor.distance).pad_decimals(precision)),
 							Color(0.7, 0.95, 1.0));
 				}
 			}
@@ -4957,7 +4953,7 @@ void Node3DEditorViewport::update_transform_numeric() {
 	apply_transform(motion, extra);
 }
 
-// Perform cleanup after a transform operation is committed or cancelled.
+// Perform cleanup after a transform operation is committed or canceled.
 void Node3DEditorViewport::finish_transform() {
 	_edit.mode = TRANSFORM_NONE;
 	_edit.instant = false;
@@ -7499,7 +7495,7 @@ void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 		SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 		base = get_tree()->get_edited_scene_root();
 	}
-	ERR_FAIL_COND(!base);
+	ERR_FAIL_NULL(base);
 	Node *new_sun = preview_sun->duplicate();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -7528,7 +7524,7 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 		SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 		base = get_tree()->get_edited_scene_root();
 	}
-	ERR_FAIL_COND(!base);
+	ERR_FAIL_NULL(base);
 
 	WorldEnvironment *new_env = memnew(WorldEnvironment);
 	new_env->set_environment(preview_environment->get_environment()->duplicate(true));
@@ -7581,7 +7577,7 @@ void Node3DEditor::_update_theme() {
 	environ_sky_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 	environ_ground_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 
-	context_menu_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
+	context_toolbar_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 }
 
 void Node3DEditor::_notification(int p_what) {
@@ -7679,11 +7675,51 @@ Vector<int> Node3DEditor::get_subgizmo_selection() {
 }
 
 void Node3DEditor::add_control_to_menu_panel(Control *p_control) {
-	context_menu_hbox->add_child(p_control);
+	ERR_FAIL_NULL(p_control);
+	ERR_FAIL_COND(p_control->get_parent());
+
+	VSeparator *sep = memnew(VSeparator);
+	context_toolbar_hbox->add_child(sep);
+	context_toolbar_hbox->add_child(p_control);
+	context_toolbar_separators[p_control] = sep;
+
+	p_control->connect("visibility_changed", callable_mp(this, &Node3DEditor::_update_context_toolbar));
+
+	_update_context_toolbar();
 }
 
 void Node3DEditor::remove_control_from_menu_panel(Control *p_control) {
-	context_menu_hbox->remove_child(p_control);
+	ERR_FAIL_NULL(p_control);
+	ERR_FAIL_COND(p_control->get_parent() != context_toolbar_hbox);
+
+	p_control->disconnect("visibility_changed", callable_mp(this, &Node3DEditor::_update_context_toolbar));
+
+	context_toolbar_hbox->remove_child(context_toolbar_separators[p_control]);
+	context_toolbar_hbox->remove_child(p_control);
+	context_toolbar_separators.erase(p_control);
+
+	_update_context_toolbar();
+}
+
+void Node3DEditor::_update_context_toolbar() {
+	bool has_visible = false;
+	bool first_visible = false;
+
+	for (int i = 0; i < context_toolbar_hbox->get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(context_toolbar_hbox->get_child(i));
+		if (!child || !context_toolbar_separators.has(child)) {
+			continue;
+		}
+		if (child->is_visible()) {
+			first_visible = !has_visible;
+			has_visible = true;
+		}
+
+		VSeparator *sep = context_toolbar_separators[child];
+		sep->set_visible(!first_visible && child->is_visible());
+	}
+
+	context_toolbar_panel->set_visible(has_visible);
 }
 
 void Node3DEditor::set_can_preview(Camera3D *p_preview) {
@@ -8161,22 +8197,23 @@ Node3DEditor::Node3DEditor() {
 
 	camera_override_viewport_id = 0;
 
+	// Add some margin to the sides for better esthetics.
+	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
+	// which looks ugly.
+	MarginContainer *toolbar_margin = memnew(MarginContainer);
+	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
+	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	vbc->add_child(toolbar_margin);
+
 	// A fluid container for all toolbars.
 	HFlowContainer *main_flow = memnew(HFlowContainer);
-	vbc->add_child(main_flow);
+	toolbar_margin->add_child(main_flow);
 
 	// Main toolbars.
 	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
 	main_flow->add_child(main_menu_hbox);
 
 	String sct;
-
-	// Add some margin to the left for better esthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
-	Control *margin_left = memnew(Control);
-	main_menu_hbox->add_child(margin_left);
-	margin_left->set_custom_minimum_size(Size2(2, 0) * EDSCALE);
 
 	tool_button[TOOL_MODE_SELECT] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
@@ -8365,10 +8402,10 @@ Node3DEditor::Node3DEditor() {
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
-	context_menu_panel = memnew(PanelContainer);
-	context_menu_hbox = memnew(HBoxContainer);
-	context_menu_panel->add_child(context_menu_hbox);
-	main_flow->add_child(context_menu_panel);
+	context_toolbar_panel = memnew(PanelContainer);
+	context_toolbar_hbox = memnew(HBoxContainer);
+	context_toolbar_panel->add_child(context_toolbar_hbox);
+	main_flow->add_child(context_toolbar_panel);
 
 	// Get the view menu popup and have it stay open when a checkable item is selected
 	p = view_menu->get_popup();

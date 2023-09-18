@@ -197,7 +197,7 @@ protected:
 		ERR_FAIL_INDEX_V(p_variant, variant_count, false);
 
 		Version *version = version_owner.get_or_null(p_version);
-		ERR_FAIL_COND_V(!version, false);
+		ERR_FAIL_NULL_V(version, false);
 
 		if (version->variants.size() == 0) {
 			_initialize_version(version); //may lack initialization
@@ -235,10 +235,10 @@ protected:
 	_FORCE_INLINE_ int _version_get_uniform(int p_which, RID p_version, int p_variant, uint64_t p_specialization) {
 		ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
 		Version *version = version_owner.get_or_null(p_version);
-		ERR_FAIL_COND_V(!version, -1);
+		ERR_FAIL_NULL_V(version, -1);
 		ERR_FAIL_INDEX_V(p_variant, int(version->variants.size()), -1);
 		Version::Specialization *spec = version->variants[p_variant].lookup_ptr(p_specialization);
-		ERR_FAIL_COND_V(!spec, -1);
+		ERR_FAIL_NULL_V(spec, -1);
 		ERR_FAIL_INDEX_V(p_which, int(spec->uniform_location.size()), -1);
 		return spec->uniform_location[p_which];
 	}
