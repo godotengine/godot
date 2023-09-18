@@ -301,7 +301,8 @@ bool AudioStreamPlayer2D::is_playing() const {
 float AudioStreamPlayer2D::get_playback_position() {
 	// Return the playback position of the most recently started playback stream.
 	if (!stream_playbacks.is_empty()) {
-		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]);
+		float time_to_next_mix = get_stream_paused() ? 0.0 : MAX(AudioServer::get_singleton()->get_time_to_next_mix() * pitch_scale, 0.0);
+		return AudioServer::get_singleton()->get_playback_position(stream_playbacks[stream_playbacks.size() - 1]) - time_to_next_mix;
 	}
 	return 0;
 }
