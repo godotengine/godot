@@ -589,8 +589,12 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 		raster_push_constant.grid_size[0] = grid_size;
 		raster_push_constant.grid_size[1] = grid_size;
 		raster_push_constant.grid_size[2] = grid_size;
-		raster_push_constant.uv_offset[0] = 0;
-		raster_push_constant.uv_offset[1] = 0;
+
+		// Half pixel offset is required so the rasterizer doesn't output face edges directly aligned into pixels.
+		// This fixes artifacts where the pixel would be traced from the edge of a face, causing half the rays to
+		// be outside of the boundaries of the geometry. See <https://github.com/godotengine/godot/issues/69126>.
+		raster_push_constant.uv_offset[0] = -0.5f / float(atlas_size.x);
+		raster_push_constant.uv_offset[1] = -0.5f / float(atlas_size.y);
 
 		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
 		//draw opaque
@@ -1579,8 +1583,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				{
 					seams_push_constant.base_index = seam_offset;
 					rd->draw_list_bind_render_pipeline(draw_list, blendseams_line_raster_pipeline);
-					seams_push_constant.uv_offset[0] = uv_offsets[0].x / float(atlas_size.width);
-					seams_push_constant.uv_offset[1] = uv_offsets[0].y / float(atlas_size.height);
+					seams_push_constant.uv_offset[0] = (uv_offsets[0].x - 0.5f) / float(atlas_size.width);
+					seams_push_constant.uv_offset[1] = (uv_offsets[0].y - 0.5f) / float(atlas_size.height);
 					seams_push_constant.blend = uv_offsets[0].z;
 
 					rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));
@@ -1603,8 +1607,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 				for (int j = 1; j < uv_offset_count; j++) {
 					seams_push_constant.base_index = seam_offset;
-					seams_push_constant.uv_offset[0] = uv_offsets[j].x / float(atlas_size.width);
-					seams_push_constant.uv_offset[1] = uv_offsets[j].y / float(atlas_size.height);
+					seams_push_constant.uv_offset[0] = (uv_offsets[j].x - 0.5f) / float(atlas_size.width);
+					seams_push_constant.uv_offset[1] = (uv_offsets[j].y - 0.5f) / float(atlas_size.height);
 					seams_push_constant.blend = uv_offsets[0].z;
 
 					rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));
