@@ -190,6 +190,9 @@ namespace GodotTools
                 case ExternalEditorId.CustomEditor:
                 {
                     string file = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string project = ProjectSettings.GlobalizePath("res://");
+                    // Since ProjectSettings.GlobalizePath replaces only "res:/", leaving a trailing slash, it is removed here.
+                    project = project[..^1];
                     var execCommand = _editorSettings.GetSetting(Settings.CustomExecPath).As<string>();
                     var execArgs = _editorSettings.GetSetting(Settings.CustomExecPathArgs).As<string>();
                     var args = new List<string>();
@@ -226,6 +229,7 @@ namespace GodotTools
                                 hasFileFlag = true;
                             }
 
+                            arg = arg.ReplaceN("{project}", project);
                             arg = arg.ReplaceN("{file}", file);
                             args.Add(arg);
 
