@@ -1298,7 +1298,8 @@ void TextEdit::_notification(int p_what) {
 						if (had_glyphs_drawn) {
 							if (first_visible_char > glyphs[j].start) {
 								first_visible_char = glyphs[j].start;
-							} else if (last_visible_char < glyphs[j].end) {
+							}
+							if (last_visible_char < glyphs[j].end) {
 								last_visible_char = glyphs[j].end;
 							}
 						}
@@ -4327,6 +4328,11 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), Rect2i(-1, -1, 0, 0));
 	ERR_FAIL_COND_V(p_column < 0, Rect2i(-1, -1, 0, 0));
 	ERR_FAIL_COND_V(p_column > text[p_line].length(), Rect2i(-1, -1, 0, 0));
+
+	if (text.size() == 1 && text[0].length() == 0) {
+		// The TextEdit is empty.
+		return Rect2i();
+	}
 
 	if (line_drawing_cache.size() == 0 || !line_drawing_cache.has(p_line)) {
 		// Line is not in the cache, which means it's outside of the viewing area.
