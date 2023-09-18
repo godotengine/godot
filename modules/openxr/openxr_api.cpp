@@ -2921,8 +2921,8 @@ bool OpenXRAPI::is_environment_blend_mode_supported(XrEnvironmentBlendMode p_ble
 }
 
 bool OpenXRAPI::set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode) {
-	// We allow setting this when not initialised and will check if it is supported when initialising.
-	// After OpenXR is initialised we verify we're setting a supported blend mode.
+	// We allow setting this when not initialized and will check if it is supported when initializing.
+	// After OpenXR is initialized we verify we're setting a supported blend mode.
 	if (!is_initialized() || is_environment_blend_mode_supported(p_blend_mode)) {
 		environment_blend_mode = p_blend_mode;
 		return true;
