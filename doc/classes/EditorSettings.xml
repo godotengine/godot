@@ -710,6 +710,10 @@
 		<member name="project_manager/default_renderer" type="String" setter="" getter="">
 			The renderer type that will be checked off by default when creating a new project. Accepted strings are "forward_plus", "mobile" or "gl_compatibility".
 		</member>
+		<member name="project_manager/gpu_index" type="int" setter="" getter="">
+			Set default Vulkan gpu to run, [code]-1[/code] will be default, requires restart editor to apply.
+			[b]Warning:[/b] Only change this if you know what you are doing, it could cause non-optimal GPU or software rendering.
+		</member>
 		<member name="project_manager/sorting_order" type="int" setter="" getter="">
 			The sorting order to use in the project manager. When changing the sorting order in the project manager, this setting is set permanently in the editor settings.
 		</member>

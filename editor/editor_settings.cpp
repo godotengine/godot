@@ -791,6 +791,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", "forward_plus", "forward_plus,mobile,gl_compatibility")
 #endif
 
+	//Set default gpu in editor to run, -1 will be default
+	_initial_set("project_manager/gpu_index", -1);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_NONE, "project_manager/gpu_index", -1, "");
+	set_restart_if_changed("project_manager/gpu_index", true);
+
 	if (p_extra_config.is_valid()) {
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
 			Vector<String> list = p_extra_config->get_value("init_projects", "list");
