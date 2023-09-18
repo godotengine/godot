@@ -2913,7 +2913,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 			p_popup->add_child(folder_colors_menu);
 			p_popup->add_submenu_item(TTR("Set Folder Color..."), "FolderColor");
-			p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("CanvasItem")));
+			p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("Paint")));
 
 			folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("Default (Reset)"));
 			folder_colors_menu->set_item_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));

@@ -2406,7 +2406,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tool_setup_atlas_source_button->set_icon(get_editor_theme_icon(SNAME("Tools")));
 			tool_select_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-			tool_paint_button->set_icon(get_editor_theme_icon(SNAME("CanvasItem")));
+			tool_paint_button->set_icon(get_editor_theme_icon(SNAME("Paint")));
 
 			tools_settings_erase_button->set_icon(get_editor_theme_icon(SNAME("Eraser")));
 			tool_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
