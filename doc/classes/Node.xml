@@ -1137,6 +1137,9 @@
 			Duplicate using instancing.
 			An instance stays linked to the original so when the original changes, the instance changes too.
 		</constant>
+		<constant name="DUPLICATE_DEFAULT" value="15" enum="DuplicateFlags">
+			Duplicate the node's signals, groups and scripts using a new instance. This is the default behavior.
+		</constant>
 		<constant name="INTERNAL_MODE_DISABLED" value="0" enum="InternalMode">
 			Node will not be internal.
 		</constant>
