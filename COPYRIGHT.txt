@@ -425,11 +425,6 @@ Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK
 Copyright: 2019-2022, NVIDIA Corporation
 License: Expat
 
-Files: ./thirdparty/oidn/
-Comment: Intel Open Image Denoise
-Copyright: 2009-2019, Intel Corporation
-License: Apache-2.0
-
 Files: ./thirdparty/openxr/
 Comment: OpenXR Loader
 Copyright: 2020-2023, The Khronos Group Inc.
