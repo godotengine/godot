@@ -1238,6 +1238,11 @@ void ConnectionsDock::_rmb_pressed(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	if (item->is_selectable(0)) {
+		// Update selection now, before `about_to_popup` signal. Needed for SIGNAL and CONNECTION context menus.
+		tree->set_selected(item);
+	}
+
 	Vector2 screen_position = tree->get_screen_position() + mb_event->get_position();
 
 	switch (_get_item_type(*item)) {
