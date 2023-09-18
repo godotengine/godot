@@ -73,9 +73,34 @@ struct Array
         return reserve(count + size);
     }
 
-    T* end() const
+    const T& operator[](size_t idx) const
+    {
+        return data[idx];
+    }
+
+    T& operator[](size_t idx)
+    {
+        return data[idx];
+    }
+
+    T* end()
     {
         return data + count;
+    }
+
+    const T* end() const
+    {
+        return data + count;
+    }
+
+    const T& last() const
+    {
+        return data[count - 1];
+    }
+
+    const T& first() const
+    {
+        return data[0];
     }
 
     T& last()

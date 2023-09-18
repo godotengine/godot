@@ -100,6 +100,9 @@ struct TaskQueue {
 };
 
 
+static thread_local bool _async = true;  //toggle async tasking for each thread on/off
+
+
 struct TaskSchedulerImpl
 {
     uint32_t                       threadCnt;
@@ -109,6 +112,8 @@ struct TaskSchedulerImpl
 
     TaskSchedulerImpl(unsigned threadCnt) : threadCnt(threadCnt), taskQueues(threadCnt)
     {
+        threads.reserve(threadCnt);
+
         for (unsigned i = 0; i < threadCnt; ++i) {
             threads.emplace_back([&, i] { run(i); });
         }
@@ -142,7 +147,7 @@ struct TaskSchedulerImpl
     void request(Task* task)
     {
         //Async
-        if (threadCnt > 0) {
+        if (threadCnt > 0 && _async) {
             task->prepare();
             auto i = idx++;
             for (unsigned n = 0; n < threadCnt; ++n) {
@@ -189,4 +194,10 @@ unsigned TaskScheduler::threads()
 {
     if (inst) return inst->threadCnt;
     return 0;
+}
+
+
+void TaskScheduler::async(bool on)
+{
+    _async = on;
 }

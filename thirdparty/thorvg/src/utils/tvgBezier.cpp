@@ -116,7 +116,7 @@ float bezAt(const Bezier& bz, float at, float length)
 
     //just in case to prevent an infinite loop
     if (at <= 0) return 0.0f;
-    if (at >= length) return length;
+    if (at >= length) return 1.0f;
 
     while (true) {
         auto right = bz;
