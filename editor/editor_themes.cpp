@@ -68,7 +68,10 @@ void EditorColorMap::create() {
 	add_conversion_color_pair("#414042", "#414042"); // Godot Gray
 
 	add_conversion_color_pair("#ffffff", "#414141"); // Pure white
+	add_conversion_color_pair("#fefefe", "#fefefe"); // Forced light color
 	add_conversion_color_pair("#000000", "#bfbfbf"); // Pure black
+	add_conversion_color_pair("#010101", "#010101"); // Forced dark color
+
 	// Keep pure RGB colors as is, but list them for explicitness.
 	add_conversion_color_pair("#ff0000", "#ff0000"); // Pure red
 	add_conversion_color_pair("#00ff00", "#00ff00"); // Pure green
@@ -76,7 +79,6 @@ void EditorColorMap::create() {
 
 	// GUI Colors
 	add_conversion_color_pair("#e0e0e0", "#5a5a5a"); // Common icon color
-	add_conversion_color_pair("#fefefe", "#fefefe"); // Forced light color
 	add_conversion_color_pair("#808080", "#808080"); // GUI disabled color
 	add_conversion_color_pair("#b3b3b3", "#363636"); // GUI disabled light color
 	add_conversion_color_pair("#699ce8", "#699ce8"); // GUI highlight color
@@ -84,7 +86,6 @@ void EditorColorMap::create() {
 
 	add_conversion_color_pair("#c38ef1", "#a85de9"); // Animation
 	add_conversion_color_pair("#8da5f3", "#3d64dd"); // 2D
-	add_conversion_color_pair("#4b70ea", "#1a3eac"); // 2D Dark
 	add_conversion_color_pair("#7582a8", "#6d83c8"); // 2D Abstract
 	add_conversion_color_pair("#fc7f7f", "#cd3838"); // 3D
 	add_conversion_color_pair("#b56d6d", "#be6a6a"); // 3D Abstract
