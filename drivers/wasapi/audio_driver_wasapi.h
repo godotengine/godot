@@ -54,7 +54,6 @@ class AudioDriverWASAPI : public AudioDriver {
 		WORD format_tag = 0;
 		WORD bits_per_sample = 0;
 		unsigned int channels = 0;
-		unsigned int frame_size = 0;
 
 		String device_name = "Default"; // Output OR Input
 		String new_device = "Default"; // Output OR Input
@@ -73,13 +72,12 @@ class AudioDriverWASAPI : public AudioDriver {
 	unsigned int channels = 0;
 	int mix_rate = 0;
 	int buffer_frames = 0;
-	int target_latency_ms = 0;
-	float real_latency = 0.0;
-	bool using_audio_client_3 = false;
+	float real_latency = 0.0f;
 
+	HANDLE feed_event = nullptr; // Set by the system when the device needs more samples.
 	SafeFlag exit_thread;
 
-	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample);
+	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, unsigned int i, int32_t sample);
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
 	static void thread_func(void *p_udata);
 
@@ -89,7 +87,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	Error finish_output_device();
 	Error finish_input_device();
 
-	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_input, bool p_reinit, bool p_no_audio_client_3 = false);
+	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_input, bool p_reinit);
 	Error audio_device_finish(AudioDeviceWASAPI *p_device);
 	PackedStringArray audio_device_get_list(bool p_input);
 
