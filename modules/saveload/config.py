@@ -12,6 +12,7 @@ def get_doc_classes():
         "SceneSaveload",
         "SaveloadSpawner",
         "SaveloadSynchronizer",
+        "SaveloadAPI",
     ]
 
 
