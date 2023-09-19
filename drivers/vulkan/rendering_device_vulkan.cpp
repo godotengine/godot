@@ -3112,7 +3112,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.image = dst_tex->image;
-			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			image_memory_barrier.subresourceRange.aspectMask = dst_tex->read_aspect_mask;
 			image_memory_barrier.subresourceRange.baseMipLevel = p_src_mipmap;
 			image_memory_barrier.subresourceRange.levelCount = 1;
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
@@ -3294,7 +3294,7 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.image = dst_tex->image;
-			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			image_memory_barrier.subresourceRange.aspectMask = dst_tex->read_aspect_mask;
 			image_memory_barrier.subresourceRange.baseMipLevel = dst_tex->base_mipmap;
 			image_memory_barrier.subresourceRange.levelCount = 1;
 			image_memory_barrier.subresourceRange.baseArrayLayer = dst_tex->base_layer;
@@ -5918,7 +5918,7 @@ Error RenderingDeviceVulkan::buffer_copy(RID p_src_buffer, RID p_dst_buffer, uin
 
 	// This method assumes the barriers have been pushed prior to being called, therefore no barriers are pushed
 	// for the source or destination buffers before performing the copy. These masks are effectively ignored.
-	VkPipelineShaderStageCreateFlags src_stage_mask = 0;
+	VkPipelineStageFlags src_stage_mask = 0;
 	VkAccessFlags src_access_mask = 0;
 	Buffer *src_buffer = _get_buffer_from_owner(p_src_buffer, src_stage_mask, src_access_mask, BARRIER_MASK_NO_BARRIER);
 	if (!src_buffer) {
@@ -6038,9 +6038,6 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
 			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
 
-	// Should not be needed.
-	// _buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, p_post_barrier);
-
 	vkCmdFillBuffer(frames[frame].draw_command_buffer, buffer->buffer, p_offset, p_size, 0);
 
 #ifdef FORCE_FULL_BARRIER
@@ -6050,7 +6047,7 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 		dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 	}
 
-	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, dst_stage_mask);
+	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, true);
 
 #endif
 	return OK;
