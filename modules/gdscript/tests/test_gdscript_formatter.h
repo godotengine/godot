@@ -1662,7 +1662,12 @@ func _ready():
 func _ready():
 	var arr = []
 	arr.append_array([
-		"long string 1", "long string 2", "long string 3", "long string 4", "long string 5", "long string 6"
+		"long string 1",
+		"long string 2",
+		"long string 3",
+		"long string 4",
+		"long string 5",
+		"long string 6",
 	])
 )");
 
@@ -1779,10 +1784,12 @@ class MyInnerClass:
 				GDSCRIPT(R"(
 class MyInnerClass:
 	var hi
-
+<*noop*>
+<*noop*>
 	func my_inner_class_function() -> void:
 		pass
-
+<*noop*>
+<*noop*>
 	func another_one() -> void:
 		pass
 )");
@@ -2857,7 +2864,7 @@ func _ready():
 )");
 		const String pre_formatted =
 				GDSCRIPT(R"(
-@onready var my_variable := MY_CONST # The comment
+@onready var my_variable := (MY_CONST) # The comment
 )");
 
 		CHECK_FORMAT(code, pre_formatted);
@@ -2872,7 +2879,7 @@ func _ready():
 )");
 		const String pre_formatted =
 				GDSCRIPT(R"(
-@onready var my_variable := $Player/Sprite2D # The comment
+@onready var my_variable := ($Player/Sprite2D) # The comment
 )");
 
 		CHECK_FORMAT(code, pre_formatted);
