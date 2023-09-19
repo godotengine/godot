@@ -78,14 +78,13 @@ void SoftBodyRenderingServerHandler::commit_changes() {
 	RS::get_singleton()->mesh_surface_update_vertex_region(mesh, surface, 0, buffer);
 }
 
-void SoftBodyRenderingServerHandler::set_vertex(int p_vertex_id, const void *p_vector3) {
-	memcpy(&write_buffer[p_vertex_id * stride + offset_vertices], p_vector3, sizeof(float) * 3);
+void SoftBodyRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
+	memcpy(&write_buffer[p_vertex_id * stride + offset_vertices], &p_vertex, sizeof(Vector3));
 }
 
-void SoftBodyRenderingServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
+void SoftBodyRenderingServerHandler::set_normal(int p_vertex_id, const Vector3 &p_normal) {
 	// Store normal vector in A2B10G10R10 format.
-	Vector3 n;
-	memcpy(&n, p_vector3, sizeof(Vector3));
+	Vector3 n = p_normal;
 	n *= Vector3(0.5, 0.5, 0.5);
 	n += Vector3(0.5, 0.5, 0.5);
 	Vector2 res = n.octahedron_encode();
