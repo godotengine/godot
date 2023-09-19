@@ -3421,6 +3421,10 @@ void WaylandThread::cursor_hide() {
 }
 
 void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) {
+	if (!wl_cursors[p_cursor_shape]) {
+		return;
+	}
+
 	current_wl_cursor = wl_cursors[p_cursor_shape];
 
 	for (struct wl_seat *wl_seat : registry.wl_seats) {
