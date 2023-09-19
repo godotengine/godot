@@ -65,8 +65,6 @@ const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 #define REFTIMES_PER_SEC 10000000
 #define REFTIMES_PER_MILLISEC 10000
 
-#define CAPTURE_BUFFER_CHANNELS 2
-
 static bool default_output_device_changed = false;
 static bool default_input_device_changed = false;
 
@@ -78,15 +76,14 @@ static bool default_input_device_changed = false;
 
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef = 1;
-	IMMDeviceEnumerator *_pEnumerator = nullptr;
+	AudioDriverWASAPI *driver;
 
 public:
 	CMMNotificationClient() {}
-	virtual ~CMMNotificationClient() {
-		if ((_pEnumerator) != nullptr) {
-			(_pEnumerator)->Release();
-			(_pEnumerator) = nullptr;
-		}
+	virtual ~CMMNotificationClient() {}
+
+	void set_driver(AudioDriverWASAPI *d) {
+		driver = d;
 	}
 
 	ULONG STDMETHODCALLTYPE AddRef() {
@@ -129,10 +126,8 @@ public:
 
 	HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR pwstrDeviceId) {
 		if (role == eConsole) {
-			if (flow == eRender) {
-				default_output_device_changed = true;
-			} else if (flow == eCapture) {
-				default_input_device_changed = true;
+			if (driver) {
+				driver->default_device_changed(flow);
 			}
 		}
 
@@ -155,6 +150,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	IMMDeviceEnumerator *enumerator = nullptr;
 	IMMDevice *output_device = nullptr;
 
+	// TODO: Not sure if this has to be created over and over. Docs are also not clear if a new one has to created to receive fresh values.
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
@@ -258,8 +254,11 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	print_verbose("WASAPI: wBitsPerSample = " + itos(pwfex->wBitsPerSample));
 	print_verbose("WASAPI: cbSize = " + itos(pwfex->cbSize));
 
-	// Since we're using WASAPI Shared Mode we can't control any of these, we just tag along
+	// This can be adjusted if needed. But doesn't look like Godot has support for setting the
+	// wanted channels, and instead just use what we say in get_speaker_mode.
 	p_device->channels = pwfex->nChannels;
+
+	// Since we're using WASAPI Shared Mode we can't control any of these, we just tag along
 	p_device->format_tag = pwfex->wFormatTag;
 	p_device->bits_per_sample = pwfex->wBitsPerSample;
 
@@ -293,8 +292,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		pwfex->nAvgBytesPerSec = pwfex->nSamplesPerSec * pwfex->nChannels * (pwfex->wBitsPerSample / 8);
 	}
 
-	if (!p_input)
-	{
+	if (!p_input) {
 		// Let WASAPI notify us when it wants more samples (push method).
 		streamflags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
 	}
@@ -307,13 +305,14 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_input ? REFTIMES_PER_SEC : 0, 0, pwfex, nullptr);
 	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
 
-	if (!p_input)
-	{
+	if (!p_input) {
 		// This is the event that WASAPI will signal when it wants more data from us (push method).
 		// The initial state for this event must be unsignaled!
-		feed_event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-		hr = p_device->audio_client->SetEventHandle(feed_event);
-		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Could not set event handle with error 0x" + String::num_uint64(hr, 16) + ".");
+		p_device->feed_event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+		ERR_FAIL_COND_V_MSG(p_device->feed_event == nullptr, ERR_CANT_OPEN, "WASAPI: Could not create event handle with error " + String::num(GetLastError()));
+
+		hr = p_device->audio_client->SetEventHandle(p_device->feed_event);
+		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Could not set event handle with error 0x" + String::num_uint64(hr, 16));
 	}
 
 	// We send in 0 as the buffer size for Initialize, which means the WASAPI engine will automatically assign the smallest buffer size it can use.
@@ -358,31 +357,10 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 		return err;
 	}
 
-	switch (audio_output.channels) {
-		case 1: // Mono
-		case 3: // Surround 2.1
-		case 5: // Surround 5.0
-		case 7: // Surround 7.0
-			// We will downmix as required.
-			channels = audio_output.channels + 1;
-			break;
-
-		case 2: // Stereo
-		case 4: // Surround 3.1
-		case 6: // Surround 5.1
-		case 8: // Surround 7.1
-			channels = audio_output.channels;
-			break;
-
-		default:
-			WARN_PRINT("WASAPI: Unsupported number of channels: " + itos(audio_output.channels));
-			channels = 2;
-			break;
-	}
-
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
-	samples_in.resize(buffer_frames * channels);
+	samples_in.resize(buffer_frames * audio_output.channels);
 
+	// FIXME: Why is this capture state reset in the output function?
 	input_position = 0;
 	input_size = 0;
 
@@ -408,45 +386,70 @@ Error AudioDriverWASAPI::init_input_device(bool p_reinit) {
 	return OK;
 }
 
-Error AudioDriverWASAPI::audio_device_finish(AudioDeviceWASAPI *p_device) {
-	if (p_device->active.is_set()) {
-		if (p_device->audio_client) {
-			p_device->audio_client->Stop();
-		}
-		p_device->active.clear();
+void AudioDriverWASAPI::audio_device_finish(AudioDeviceWASAPI *p_device) {
+	if (p_device->audio_client) {
+		p_device->audio_client->Stop();
 	}
 
-	if (feed_event) {
-		CloseHandle(feed_event);
-		feed_event = nullptr;
+	// Only used for capture.
+	p_device->active.clear();
+
+	if (p_device->feed_event) {
+		CloseHandle(p_device->feed_event);
+		p_device->feed_event = nullptr;
 	}
 
 	SAFE_RELEASE(p_device->audio_client)
 	SAFE_RELEASE(p_device->render_client)
 	SAFE_RELEASE(p_device->capture_client)
-
-	return OK;
 }
 
-Error AudioDriverWASAPI::finish_output_device() {
-	return audio_device_finish(&audio_output);
+void AudioDriverWASAPI::finish_output_device() {
+	audio_device_finish(&audio_output);
 }
 
-Error AudioDriverWASAPI::finish_input_device() {
-	return audio_device_finish(&audio_input);
+void AudioDriverWASAPI::finish_input_device() {
+	audio_device_finish(&audio_input);
+}
+
+// Only to be called in the render thread after init has already happened!
+Error AudioDriverWASAPI::remake_output_device() {
+	finish_output_device();
+
+	// At this point the wake event will be signaled. If the remake works, then the event will become signaled again and everything works.
+	// If the remake fails, then it will remain unsignaled and the render thread goes back to waiting for a working output device.
+
+	Error err = init_output_device(true); // This will fail if the device isn't in the system anymore.
+	if (err == OK) {
+		start(); // Will signal the wake event.
+	} else {
+		ResetEvent(render_wake); // Not active anymore. Put to waiting.
+	}
+
+	return err;
 }
 
 Error AudioDriverWASAPI::init() {
 	mix_rate = _get_configured_mix_rate();
 
+	// This below is cryptic but it is assumed that if we fail to initialize now, then maybe a new working device will be inserted to the system later.
 	Error err = init_output_device();
 	if (err != OK) {
 		ERR_PRINT("WASAPI: init_output_device error");
 	}
 
+	// The initial state for this event must be unsignaled!
+	// Literally impossible for this call to fail. You be the judge if you need to check the return value of this.
+	// It is however fundamental to the logic for this to exist.
+	render_wake = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+	ERR_FAIL_COND_V_MSG(render_wake == nullptr, ERR_CANT_OPEN, "WASAPI: Could not create render wake handle with error " + String::num(GetLastError()));
+
 	exit_thread.clear();
 
-	thread.start(thread_func, this);
+	render_thread.start(render_thread_func, this);
+	capture_thread.start(capture_thread_func, this);
+
+	notif_client.set_driver(this);
 
 	return OK;
 }
@@ -460,7 +463,7 @@ float AudioDriverWASAPI::get_latency() {
 }
 
 AudioDriver::SpeakerMode AudioDriverWASAPI::get_speaker_mode() const {
-	return get_speaker_mode_by_total_channels(channels);
+	return get_speaker_mode_by_total_channels(audio_output.channels);
 }
 
 PackedStringArray AudioDriverWASAPI::audio_device_get_list(bool p_input) {
@@ -508,22 +511,51 @@ PackedStringArray AudioDriverWASAPI::audio_device_get_list(bool p_input) {
 	return list;
 }
 
+void AudioDriverWASAPI::lock_render() {
+	audio_output.mutex.lock();
+}
+
+void AudioDriverWASAPI::unlock_render() {
+	audio_output.mutex.unlock();
+}
+
+void AudioDriverWASAPI::lock_capture() {
+	audio_input.mutex.lock();
+}
+
+void AudioDriverWASAPI::unlock_capture() {
+	audio_input.mutex.unlock();
+}
+
+// Called in the main thread from notif_client.
+// This is messy because Godot does not have any cross thread communication. Anyway.
+// The logic for remaking the devices is done on the respective thread to keep it a little bit simpler.
+
+void AudioDriverWASAPI::default_device_changed(EDataFlow flow) {
+	if (flow == eRender) {
+		default_output_device_changed = true;
+		SetEvent(render_wake); // Wake if render thread is currently waiting for a working output device.
+	} else if (flow == eCapture) {
+		default_input_device_changed = true;
+	}
+}
+
 PackedStringArray AudioDriverWASAPI::get_output_device_list() {
 	return audio_device_get_list(false);
 }
 
 String AudioDriverWASAPI::get_output_device() {
-	lock();
+	lock_render();
 	String name = audio_output.device_name;
-	unlock();
+	unlock_render();
 
 	return name;
 }
 
 void AudioDriverWASAPI::set_output_device(const String &p_name) {
-	lock();
+	lock_render();
 	audio_output.new_device = p_name;
-	unlock();
+	unlock_render();
 }
 
 int32_t AudioDriverWASAPI::read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i) {
@@ -587,70 +619,149 @@ void AudioDriverWASAPI::write_sample(WORD format_tag, int bits_per_sample, BYTE 
 	}
 }
 
-void AudioDriverWASAPI::thread_func(void *p_udata) {
+// Render and capture are using different threads to not disturb each other, especially since we use the push method for rendering.
+void AudioDriverWASAPI::render_thread_func(void *p_udata) {
 	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
 	AudioDriverWASAPI *ad = static_cast<AudioDriverWASAPI *>(p_udata);
+	AudioDeviceWASAPI *dev = &ad->audio_output;
 
 	while (!ad->exit_thread.is_set()) {
-		// Play out the engine samples to the speakers.
+		// First wait to become active at all, but also wait if we don't have any device.
+		WaitForSingleObjectEx(ad->render_wake, INFINITE, FALSE);
 
-		ad->lock();
-		ad->start_counting_ticks();
+		// Let's specially handle the case when woken up before close.
+		if (ad->exit_thread.is_set()) {
+			break;
+		}
 
-		if (ad->audio_output.active.is_set()) {
-			HRESULT hr;
-			UINT32 padding; // How many samples are in the WASAPI buffer already.
-
-			while (true) {
-				// Wait for WASAPI to notify us that it wants more samples.
-				DWORD waited = WaitForSingleObjectEx(ad->feed_event, 200, FALSE);
-
-				// W
-				if (waited == WAIT_OBJECT_0) {
-					hr = ad->audio_output.audio_client->GetCurrentPadding(&padding);
-
-					// If there are any samples that we can give, break and do that.
-					if (padding < ad->buffer_frames) {
-						break;
-					}
-				}
-
-				else {
-					// This is an error.
-					if (waited != WAIT_TIMEOUT) {
-
-					}
+		// So we are not closing. This hits if we have been woken up to remake the output device.
+		// Really messy because Godot doesn't have any thread communication.
+		if (dev->audio_client == nullptr) {
+			if (default_output_device_changed) {
+				default_output_device_changed = false;
+				Error err = ad->remake_output_device();
+				if (err != OK) {
+					continue; // Still not working. Back to waiting.
 				}
 			}
 
+			// This will not hit, but probably better for safety.
+			if (dev->audio_client == nullptr) {
+				ResetEvent(ad->render_wake);
+				continue;
+			}
+
+			// If we get here, we have transitioned to a new device and things are back to normal.
+		}
+
+		// Play out the engine samples to the speakers.
+
+		HRESULT hr = E_FAIL; // Annoyingly, the device may be removed at any point so we have to constantly check the return values.
+		UINT32 padding; // How many samples are in the WASAPI buffer already. Don't have to initialize because it is only used in the success path.
+		bool need_to_remake_device = false; // Will be set in case device disappears, or if the user changes device.
+
+		while (true) {
+			// Wait for WASAPI to notify us that it wants more samples (push method).
+			DWORD waited = WaitForSingleObjectEx(dev->feed_event, 200, FALSE);
+
+			// Buffer needs topping up. Note that in exclusive mode you don't need to do this, as you have control yourself
+			// over how much or how little you want to write.
+			if (waited == WAIT_OBJECT_0) {
+				hr = dev->audio_client->GetCurrentPadding(&padding);
+
+				if (FAILED(hr)) {
+					break;
+				}
+
+				// TODO: Should probably have a threshold here so you dont potentially wake up to process 1 sample.
+				if (padding < ad->buffer_frames) {
+					break;
+				}
+			} else {
+				// This is an error.
+				if (waited != WAIT_TIMEOUT) {
+					hr = HRESULT_FROM_WIN32(GetLastError());
+					break;
+				}
+			}
+		}
+
+		if (SUCCEEDED(hr)) {
 			// This is how many frames we need to receive from the engine.
 			DWORD avail_frames = ad->buffer_frames - padding;
 
 			// Receive needed samples from engine.
+			// TODO: Does this always need to be called?
+			// TODO: What format are we even getting here? Does Godot just reconfigure itself to what our wave format?
 			ad->audio_server_process(avail_frames, ad->samples_in.ptrw());
 
 			// Receive a buffer from WASAPI that we can write to.
 			// Note that this pointer will not point to the beginning of the buffer if the current padding
 			// is greater than zero (as the existing will be data placed before).
-			BYTE* buf;
-			hr = ad->audio_output.render_client->GetBuffer(avail_frames, &buf);
+			BYTE *buf;
+			hr = dev->render_client->GetBuffer(avail_frames, &buf);
 
-			// Put the engine samples into the WASAPI buffer, converting the sample format as needed.
-			for (unsigned int i = 0; i < avail_frames * ad->channels; i++) {
-				write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buf, i, ad->samples_in.write[i]);
+			if (SUCCEEDED(hr)) {
+				// Put the engine samples into the WASAPI buffer, converting the sample format as needed.
+
+				for (unsigned int i = 0; i < avail_frames * dev->channels; i++) {
+					write_sample(dev->format_tag, dev->bits_per_sample, buf, i, ad->samples_in.write[i]);
+				}
+
+				// Now we are done, blast to the speakers.
+				hr = dev->render_client->ReleaseBuffer(avail_frames, 0);
 			}
-
-			// Now we are done, blast to the speakers.
-			hr = ad->audio_output.render_client->ReleaseBuffer(avail_frames, 0);
 		}
 
-		ad->stop_counting_ticks();
-		ad->unlock();
+		// Below is either transition to another device or transition to no device.
+		// Either case we have to remake our state.
 
+		// So the device got removed or something. Unfortunately WASAPI does not have a virtual output device (like XAudio2)
+		// which would automatically handle annoying cases like this. In this case we have to remake everything
+		if (FAILED(hr)) {
+			ERR_PRINT("WASAPI: Device error 0x" + String::num_uint64(hr, 16));
+			need_to_remake_device = true;
+		}
+
+		// Have to lock access to the device names.
+		ad->lock_render();
+
+		// This hits if the user changed the Windows default device. This new device may have new caps so we have to remake everything.
+		if (dev->device_name == "Default" && default_output_device_changed) {
+			need_to_remake_device = true;
+			default_output_device_changed = false;
+		}
+
+		// This hits if the engine is using a custom audio output that is not the default. Very rare case.
+
+		if (dev->device_name != dev->new_device) {
+			dev->device_name = dev->new_device;
+			need_to_remake_device = true;
+		}
+
+		ad->unlock_render();
+
+		// This may not succeed. If the output device is completely removed from the system then remaking will fail, but we cannot know that for sure.
+		// In case of failure, we will hit the outside path to wait until a new working output device is added to the system.
+		if (need_to_remake_device) {
+			need_to_remake_device = false;
+			ad->remake_output_device();
+		}
+	}
+
+	CoUninitialize();
+}
+
+void AudioDriverWASAPI::capture_thread_func(void *p_udata) {
+	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+
+	AudioDriverWASAPI *ad = static_cast<AudioDriverWASAPI *>(p_udata);
+
+	while (!ad->exit_thread.is_set()) {
 		uint32_t read_frames = 0;
 
-		ad->lock();
+		ad->lock_capture();
 		ad->start_counting_ticks();
 
 		if (ad->audio_input.active.is_set()) {
@@ -699,21 +810,14 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 			// If we're using the Default output device and it changed finish it so we'll re-init the output device
 			if (ad->audio_input.device_name == "Default" && default_input_device_changed) {
-				Error err = ad->finish_input_device();
-				if (err != OK) {
-					ERR_PRINT("WASAPI: finish_input_device error");
-				}
-
+				ad->finish_input_device();
 				default_input_device_changed = false;
 			}
 
 			// User selected a new input device, finish the current one so we'll init the new input device
 			if (ad->audio_input.device_name != ad->audio_input.new_device) {
 				ad->audio_input.device_name = ad->audio_input.new_device;
-				Error err = ad->finish_input_device();
-				if (err != OK) {
-					ERR_PRINT("WASAPI: finish_input_device error");
-				}
+				ad->finish_input_device();
 			}
 
 			if (!ad->audio_input.audio_client) {
@@ -725,12 +829,11 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 		}
 
 		ad->stop_counting_ticks();
-		ad->unlock();
+		ad->unlock_capture();
 
 		// Let the thread rest a while if we haven't read or write anything
 		if (read_frames == 0) {
-			// FIXME: This should be removed in favor of having event notifications.
-			// Also concerns the startup (before start is called).
+			// FIXME: This should be removed in favor of being event driven.
 			OS::get_singleton()->delay_usec(1000);
 		}
 	}
@@ -740,30 +843,45 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 void AudioDriverWASAPI::start() {
 	if (audio_output.audio_client) {
 		HRESULT hr = audio_output.audio_client->Start();
-		if (hr != S_OK) {
-			ERR_PRINT("WASAPI: Start failed");
+		if (SUCCEEDED(hr)) {
+			SetEvent(render_wake); // Now active.
 		} else {
-			audio_output.active.set();
+			ERR_PRINT("WASAPI: Start failed");
 		}
 	}
 }
 
+// FIXME: Lock what?
 void AudioDriverWASAPI::lock() {
-	mutex.lock();
+	lock_render();
+	lock_capture();
 }
 
+// FIXME: Unlock what?
 void AudioDriverWASAPI::unlock() {
-	mutex.unlock();
+	unlock_render();
+	unlock_capture();
 }
 
 void AudioDriverWASAPI::finish() {
 	exit_thread.set();
-	if (thread.is_started()) {
-		thread.wait_to_finish();
+
+	SetEvent(render_wake); // Wake up to exit if we are not active already.
+
+	if (render_thread.is_started()) {
+		render_thread.wait_to_finish();
 	}
+
+	if (capture_thread.is_started()) {
+		capture_thread.wait_to_finish();
+	}
+
+	CloseHandle(render_wake);
 
 	finish_input_device();
 	finish_output_device();
+
+	notif_client.set_driver(nullptr);
 }
 
 Error AudioDriverWASAPI::input_start() {
@@ -798,17 +916,17 @@ PackedStringArray AudioDriverWASAPI::get_input_device_list() {
 }
 
 String AudioDriverWASAPI::get_input_device() {
-	lock();
+	lock_capture();
 	String name = audio_input.device_name;
-	unlock();
+	unlock_capture();
 
 	return name;
 }
 
 void AudioDriverWASAPI::set_input_device(const String &p_name) {
-	lock();
+	lock_capture();
 	audio_input.new_device = p_name;
-	unlock();
+	unlock_capture();
 }
 
 AudioDriverWASAPI::AudioDriverWASAPI() {

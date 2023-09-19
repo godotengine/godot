@@ -46,17 +46,23 @@
 class AudioDriverWASAPI : public AudioDriver {
 	class AudioDeviceWASAPI {
 	public:
+		// For rendering, these interfaces must only be used in the render thread after init!
 		IAudioClient *audio_client = nullptr;
 		IAudioRenderClient *render_client = nullptr; // Output
 		IAudioCaptureClient *capture_client = nullptr; // Input
-		SafeFlag active;
+
+		SafeFlag active; // Only used for capture.
 
 		WORD format_tag = 0;
 		WORD bits_per_sample = 0;
 		unsigned int channels = 0;
 
+		SafeFlag has_new_device;
 		String device_name = "Default"; // Output OR Input
 		String new_device = "Default"; // Output OR Input
+
+		Mutex mutex;
+		HANDLE feed_event = nullptr; // Set by the system when the device needs more samples.
 
 		AudioDeviceWASAPI() {}
 	};
@@ -64,32 +70,46 @@ class AudioDriverWASAPI : public AudioDriver {
 	AudioDeviceWASAPI audio_input;
 	AudioDeviceWASAPI audio_output;
 
-	Mutex mutex;
-	Thread thread;
+	Thread render_thread;
+	Thread capture_thread;
+
+	// Cannot be part of AudioDeviceWASAPI in case creation fails, which means this would never be created and
+	// we would pass an invalid value to WaitForSingleObjectEx. Instead this is managed outside.
+	HANDLE render_wake = nullptr; // Manual reset event that is signalled when the device is active.
 
 	Vector<int32_t> samples_in;
 
-	unsigned int channels = 0;
 	int mix_rate = 0;
 	int buffer_frames = 0;
 	float real_latency = 0.0f;
 
-	HANDLE feed_event = nullptr; // Set by the system when the device needs more samples.
 	SafeFlag exit_thread;
 
 	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, unsigned int i, int32_t sample);
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
-	static void thread_func(void *p_udata);
+	static void render_thread_func(void *p_udata);
+	static void capture_thread_func(void *p_udata);
 
 	Error init_output_device(bool p_reinit = false);
 	Error init_input_device(bool p_reinit = false);
 
-	Error finish_output_device();
-	Error finish_input_device();
+	void finish_output_device();
+	void finish_input_device();
+
+	Error remake_output_device();
 
 	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_input, bool p_reinit);
-	Error audio_device_finish(AudioDeviceWASAPI *p_device);
+	void audio_device_finish(AudioDeviceWASAPI *p_device);
 	PackedStringArray audio_device_get_list(bool p_input);
+
+	void lock_render();
+	void unlock_render();
+	void lock_capture();
+	void unlock_capture();
+
+public:
+	// Calls from notif_client.
+	void default_device_changed(EDataFlow flow);
 
 public:
 	virtual const char *get_name() const override {
