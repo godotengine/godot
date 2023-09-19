@@ -69,7 +69,6 @@ hb_subset_input_t::hb_subset_input_t ()
   sets.drop_tables->add_array (default_drop_tables, ARRAY_LENGTH (default_drop_tables));
 
   hb_tag_t default_no_subset_tables[] = {
-    HB_TAG ('a', 'v', 'a', 'r'),
     HB_TAG ('g', 'a', 's', 'p'),
     HB_TAG ('f', 'p', 'g', 'm'),
     HB_TAG ('p', 'r', 'e', 'p'),

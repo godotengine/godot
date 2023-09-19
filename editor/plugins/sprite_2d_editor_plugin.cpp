@@ -74,7 +74,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 
 	ClipperLib::PolyNode *p = solution.GetFirst();
 
-	ERR_FAIL_COND_V(!p, points);
+	ERR_FAIL_NULL_V(p, points);
 
 	while (p->IsHole()) {
 		p = p->GetNext();
@@ -97,7 +97,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 
 	Vector<Vector2> outPoints;
 	ClipperLib::PolyNode *p2 = out.GetFirst();
-	ERR_FAIL_COND_V(!p2, points);
+	ERR_FAIL_NULL_V(p2, points);
 
 	while (p2->IsHole()) {
 		p2 = p2->GetNext();
@@ -503,12 +503,12 @@ void Sprite2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_theme_icon(SNAME("Sprite2D"), SNAME("EditorIcons")));
+			options->set_icon(get_editor_theme_icon(SNAME("Sprite2D")));
 
-			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_theme_icon(SNAME("MeshInstance2D"), SNAME("EditorIcons")));
-			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_theme_icon(SNAME("Polygon2D"), SNAME("EditorIcons")));
-			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_COLLISION_POLY_2D, get_theme_icon(SNAME("CollisionPolygon2D"), SNAME("EditorIcons")));
-			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D, get_theme_icon(SNAME("LightOccluder2D"), SNAME("EditorIcons")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_editor_theme_icon(SNAME("MeshInstance2D")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_editor_theme_icon(SNAME("Polygon2D")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_COLLISION_POLY_2D, get_editor_theme_icon(SNAME("CollisionPolygon2D")));
+			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D, get_editor_theme_icon(SNAME("LightOccluder2D")));
 		} break;
 	}
 }

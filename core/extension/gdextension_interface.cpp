@@ -1043,35 +1043,36 @@ static void gdextension_ref_set_object(GDExtensionRefPtr p_ref, GDExtensionObjec
 
 #ifndef DISABLE_DEPRECATED
 static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
-	const GDExtensionScriptInstanceInfo2 info_2 = {
-		p_info->set_func,
-		p_info->get_func,
-		p_info->get_property_list_func,
-		p_info->free_property_list_func,
-		p_info->property_can_revert_func,
-		p_info->property_get_revert_func,
-		p_info->get_owner_func,
-		p_info->get_property_state_func,
-		p_info->get_method_list_func,
-		p_info->free_method_list_func,
-		p_info->get_property_type_func,
-		p_info->has_method_func,
-		p_info->call_func,
-		nullptr, // notification_func.
-		p_info->to_string_func,
-		p_info->refcount_incremented_func,
-		p_info->refcount_decremented_func,
-		p_info->get_script_func,
-		p_info->is_placeholder_func,
-		p_info->set_fallback_func,
-		p_info->get_fallback_func,
-		p_info->get_language_func,
-		p_info->free_func,
-	};
+	GDExtensionScriptInstanceInfo2 *info_2 = memnew(GDExtensionScriptInstanceInfo2);
+	info_2->set_func = p_info->set_func;
+	info_2->get_func = p_info->get_func;
+	info_2->get_property_list_func = p_info->get_property_list_func;
+	info_2->free_property_list_func = p_info->free_property_list_func;
+	info_2->property_can_revert_func = p_info->property_can_revert_func;
+	info_2->property_get_revert_func = p_info->property_get_revert_func;
+	info_2->get_owner_func = p_info->get_owner_func;
+	info_2->get_property_state_func = p_info->get_property_state_func;
+	info_2->get_method_list_func = p_info->get_method_list_func;
+	info_2->free_method_list_func = p_info->free_method_list_func;
+	info_2->get_property_type_func = p_info->get_property_type_func;
+	info_2->validate_property_func = nullptr;
+	info_2->has_method_func = p_info->has_method_func;
+	info_2->call_func = p_info->call_func;
+	info_2->notification_func = nullptr;
+	info_2->to_string_func = p_info->to_string_func;
+	info_2->refcount_incremented_func = p_info->refcount_incremented_func;
+	info_2->refcount_decremented_func = p_info->refcount_decremented_func;
+	info_2->get_script_func = p_info->get_script_func;
+	info_2->is_placeholder_func = p_info->is_placeholder_func;
+	info_2->set_fallback_func = p_info->set_fallback_func;
+	info_2->get_fallback_func = p_info->get_fallback_func;
+	info_2->get_language_func = p_info->get_language_func;
+	info_2->free_func = p_info->free_func;
 
 	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
 	script_instance_extension->instance = p_instance_data;
-	script_instance_extension->native_info = &info_2;
+	script_instance_extension->native_info = info_2;
+	script_instance_extension->free_native_info = true;
 	script_instance_extension->deprecated_native_info.notification_func = p_info->notification_func;
 	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
 }
@@ -1096,7 +1097,7 @@ static GDExtensionScriptInstancePtr gdextension_placeholder_script_instance_crea
 
 static void gdextension_placeholder_script_instance_update(GDExtensionScriptInstancePtr p_placeholder, GDExtensionConstTypePtr p_properties, GDExtensionConstTypePtr p_values) {
 	PlaceHolderScriptInstance *placeholder = dynamic_cast<PlaceHolderScriptInstance *>(reinterpret_cast<ScriptInstance *>(p_placeholder));
-	ERR_FAIL_COND_MSG(!placeholder, "Unable to update placeholder, expected a PlaceHolderScriptInstance but received an invalid type.");
+	ERR_FAIL_NULL_MSG(placeholder, "Unable to update placeholder, expected a PlaceHolderScriptInstance but received an invalid type.");
 
 	const Array &properties = *reinterpret_cast<const Array *>(p_properties);
 	const Dictionary &values = *reinterpret_cast<const Dictionary *>(p_values);
@@ -1147,7 +1148,7 @@ static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionC
 		ERR_PRINT("Method '" + classname + "." + methodname + "' has changed and no compatibility fallback has been provided. Please open an issue.");
 		return nullptr;
 	}
-	ERR_FAIL_COND_V(!mb, nullptr);
+	ERR_FAIL_NULL_V(mb, nullptr);
 	if (mb->get_hash() != p_hash) {
 		ERR_PRINT("Hash mismatch for method '" + classname + "." + methodname + "'.");
 		return nullptr;

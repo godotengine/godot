@@ -33,7 +33,7 @@
 #include "scene/gui/graph_edit.h"
 
 void GraphEditArranger::arrange_nodes() {
-	ERR_FAIL_COND(!graph_edit);
+	ERR_FAIL_NULL(graph_edit);
 
 	if (!arranging_graph) {
 		arranging_graph = true;
@@ -408,8 +408,8 @@ void GraphEditArranger::_calculate_inner_shifts(Dictionary &r_inner_shifts, cons
 			int port_from = ports.first;
 			int port_to = ports.second;
 
-			Vector2 pos_from = gnode_from->get_connection_output_position(port_from) * graph_edit->get_zoom();
-			Vector2 pos_to = gnode_to->get_connection_input_position(port_to) * graph_edit->get_zoom();
+			Vector2 pos_from = gnode_from->get_output_port_position(port_from) * graph_edit->get_zoom();
+			Vector2 pos_to = gnode_to->get_input_port_position(port_to) * graph_edit->get_zoom();
 
 			real_t s = (real_t)r_inner_shifts[u] + (pos_from.y - pos_to.y) / graph_edit->get_zoom();
 			r_inner_shifts[v] = s;
@@ -459,8 +459,8 @@ float GraphEditArranger::_calculate_threshold(StringName p_v, StringName p_w, co
 		if (incoming.from_node != StringName()) {
 			GraphNode *gnode_from = Object::cast_to<GraphNode>(r_node_names[incoming.from_node]);
 			GraphNode *gnode_to = Object::cast_to<GraphNode>(r_node_names[p_w]);
-			Vector2 pos_from = gnode_from->get_connection_output_position(incoming.from_port) * graph_edit->get_zoom();
-			Vector2 pos_to = gnode_to->get_connection_input_position(incoming.to_port) * graph_edit->get_zoom();
+			Vector2 pos_from = gnode_from->get_output_port_position(incoming.from_port) * graph_edit->get_zoom();
+			Vector2 pos_to = gnode_to->get_input_port_position(incoming.to_port) * graph_edit->get_zoom();
 
 			// If connected block node is selected, calculate thershold or add current block to list.
 			if (gnode_from->is_selected()) {
@@ -491,8 +491,8 @@ float GraphEditArranger::_calculate_threshold(StringName p_v, StringName p_w, co
 		if (outgoing.to_node != StringName()) {
 			GraphNode *gnode_from = Object::cast_to<GraphNode>(r_node_names[p_w]);
 			GraphNode *gnode_to = Object::cast_to<GraphNode>(r_node_names[outgoing.to_node]);
-			Vector2 pos_from = gnode_from->get_connection_output_position(outgoing.from_port) * graph_edit->get_zoom();
-			Vector2 pos_to = gnode_to->get_connection_input_position(outgoing.to_port) * graph_edit->get_zoom();
+			Vector2 pos_from = gnode_from->get_output_port_position(outgoing.from_port) * graph_edit->get_zoom();
+			Vector2 pos_to = gnode_to->get_input_port_position(outgoing.to_port) * graph_edit->get_zoom();
 
 			// If connected block node is selected, calculate thershold or add current block to list.
 			if (gnode_to->is_selected()) {

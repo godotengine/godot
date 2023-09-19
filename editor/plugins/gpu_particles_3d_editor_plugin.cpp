@@ -237,7 +237,7 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 void GPUParticles3DEditor::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
-			options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
+			options->set_icon(options->get_popup()->get_editor_theme_icon(SNAME("GPUParticles3D")));
 			get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
 		} break;
 	}

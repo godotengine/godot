@@ -701,18 +701,39 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 			if (!p_event->is_echo()) {
 				if (p_event->is_action_pressed(E.key)) {
-					action.pressed++;
+					if (jm.is_valid()) {
+						// If axis is already pressed, don't increase the pressed counter.
+						if (!action.axis_pressed) {
+							action.pressed++;
+							action.axis_pressed = true;
+						}
+					} else {
+						action.pressed++;
+					}
+
 					is_pressed = true;
 					if (action.pressed == 1) {
 						action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
 						action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 					}
 				} else {
-					if (action.pressed == 1) {
-						action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
-						action.released_process_frame = Engine::get_singleton()->get_process_frames();
+					bool is_released = true;
+					if (jm.is_valid()) {
+						// Same as above. Don't release axis when not pressed.
+						if (action.axis_pressed) {
+							action.axis_pressed = false;
+						} else {
+							is_released = false;
+						}
 					}
-					action.pressed = MAX(action.pressed - 1, 0);
+
+					if (is_released) {
+						if (action.pressed == 1) {
+							action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+							action.released_process_frame = Engine::get_singleton()->get_process_frames();
+						}
+						action.pressed = MAX(action.pressed - 1, 0);
+					}
 				}
 				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
 			}

@@ -561,8 +561,8 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		}                                                                                                                                                         \
 		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) {                                                                     \
 			LocalVector<Variant> vars;                                                                                                                            \
-			vars.resize(p_argcount);                                                                                                                              \
 			LocalVector<const Variant *> vars_ptrs;                                                                                                               \
+			vars.resize(p_argcount);                                                                                                                              \
 			vars_ptrs.resize(p_argcount);                                                                                                                         \
 			for (int i = 0; i < p_argcount; i++) {                                                                                                                \
 				vars[i] = PtrToArg<Variant>::convert(p_args[i]);                                                                                                  \
@@ -571,7 +571,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			Variant base = PtrToArg<m_class>::convert(p_base);                                                                                                    \
 			Variant ret;                                                                                                                                          \
 			Callable::CallError ce;                                                                                                                               \
-			m_method_ptr(&base, (const Variant **)&vars_ptrs[0], p_argcount, ret, ce);                                                                            \
+			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce);                                                                                            \
 			if (m_has_return) {                                                                                                                                   \
 				m_return_type r = ret;                                                                                                                            \
 				PtrToArg<m_return_type>::encode(ret, r_ret);                                                                                                      \
@@ -617,8 +617,8 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		}                                                                                                                                                         \
 		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) {                                                                     \
 			LocalVector<Variant> vars;                                                                                                                            \
-			vars.resize(p_argcount);                                                                                                                              \
 			LocalVector<const Variant *> vars_ptrs;                                                                                                               \
+			vars.resize(p_argcount);                                                                                                                              \
 			vars_ptrs.resize(p_argcount);                                                                                                                         \
 			for (int i = 0; i < p_argcount; i++) {                                                                                                                \
 				vars[i] = PtrToArg<Variant>::convert(p_args[i]);                                                                                                  \
@@ -627,7 +627,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			Variant base = PtrToArg<m_class>::convert(p_base);                                                                                                    \
 			Variant ret;                                                                                                                                          \
 			Callable::CallError ce;                                                                                                                               \
-			m_method_ptr(&base, (const Variant **)&vars_ptrs[0], p_argcount, ret, ce);                                                                            \
+			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce);                                                                                            \
 		}                                                                                                                                                         \
 		static int get_argument_count() {                                                                                                                         \
 			return 1;                                                                                                                                             \
@@ -1132,11 +1132,7 @@ static void register_builtin_method(const Vector<String> &p_argnames, const Vect
 
 	imi.call = T::call;
 	imi.validated_call = T::validated_call;
-	if (T::is_vararg()) {
-		imi.ptrcall = nullptr;
-	} else {
-		imi.ptrcall = T::ptrcall;
-	}
+	imi.ptrcall = T::ptrcall;
 
 	imi.default_arguments = p_def_args;
 	imi.argument_names = p_argnames;
@@ -1263,28 +1259,28 @@ bool Variant::has_builtin_method(Variant::Type p_type, const StringName &p_metho
 Variant::ValidatedBuiltInMethod Variant::get_validated_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, nullptr);
+	ERR_FAIL_NULL_V(method, nullptr);
 	return method->validated_call;
 }
 
 Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, nullptr);
+	ERR_FAIL_NULL_V(method, nullptr);
 	return method->ptrcall;
 }
 
 int Variant::get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, 0);
+	ERR_FAIL_NULL_V(method, 0);
 	return method->argument_count;
 }
 
 Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, Variant::NIL);
+	ERR_FAIL_NULL_V(method, Variant::NIL);
 	ERR_FAIL_INDEX_V(p_argument, method->argument_count, Variant::NIL);
 	return method->get_argument_type(p_argument);
 }
@@ -1292,7 +1288,7 @@ Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, co
 String Variant::get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, String());
+	ERR_FAIL_NULL_V(method, String());
 #ifdef DEBUG_METHODS_ENABLED
 	ERR_FAIL_INDEX_V(p_argument, method->argument_count, String());
 	return method->argument_names[p_argument];
@@ -1304,14 +1300,14 @@ String Variant::get_builtin_method_argument_name(Variant::Type p_type, const Str
 Vector<Variant> Variant::get_builtin_method_default_arguments(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Vector<Variant>());
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, Vector<Variant>());
+	ERR_FAIL_NULL_V(method, Vector<Variant>());
 	return method->default_arguments;
 }
 
 bool Variant::has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, false);
+	ERR_FAIL_NULL_V(method, false);
 	return method->has_return_type;
 }
 
@@ -1330,35 +1326,35 @@ int Variant::get_builtin_method_count(Variant::Type p_type) {
 Variant::Type Variant::get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, Variant::NIL);
+	ERR_FAIL_NULL_V(method, Variant::NIL);
 	return method->return_type;
 }
 
 bool Variant::is_builtin_method_const(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, false);
+	ERR_FAIL_NULL_V(method, false);
 	return method->is_const;
 }
 
 bool Variant::is_builtin_method_static(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, false);
+	ERR_FAIL_NULL_V(method, false);
 	return method->is_static;
 }
 
 bool Variant::is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, false);
+	ERR_FAIL_NULL_V(method, false);
 	return method->is_vararg;
 }
 
 uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
-	ERR_FAIL_COND_V(!method, 0);
+	ERR_FAIL_NULL_V(method, 0);
 	uint32_t hash = hash_murmur3_one_32(method->is_const);
 	hash = hash_murmur3_one_32(method->is_static, hash);
 	hash = hash_murmur3_one_32(method->is_vararg, hash);
@@ -2573,9 +2569,13 @@ static void _register_variant_builtin_methods() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ZERO", Vector4i(0, 0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ONE", Vector4i(1, 1, 1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MIN", Vector4i(INT32_MIN, INT32_MIN, INT32_MIN, INT32_MIN));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MAX", Vector4i(INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX));
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ZERO", Vector3i(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ONE", Vector3i(1, 1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MIN", Vector3i(INT32_MIN, INT32_MIN, INT32_MIN));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MAX", Vector3i(INT32_MAX, INT32_MAX, INT32_MAX));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "LEFT", Vector3i(-1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "RIGHT", Vector3i(1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "UP", Vector3i(0, 1, 0));
@@ -2605,6 +2605,8 @@ static void _register_variant_builtin_methods() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ZERO", Vector2i(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ONE", Vector2i(1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MIN", Vector2i(INT32_MIN, INT32_MIN));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MAX", Vector2i(INT32_MAX, INT32_MAX));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "LEFT", Vector2i(-1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i(0, -1));

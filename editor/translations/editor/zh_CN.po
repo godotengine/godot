@@ -91,12 +91,13 @@
 # WangYi13 <wyi13@outlook.com>, 2023.
 # matrixant <yuan545@hotmail.com>, 2023.
 # GarliCat <phoenixkaze@live.com>, 2023.
+# GT-610 <myddz1005@163.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-07-29 03:10+0000\n"
+"PO-Revision-Date: 2023-09-05 13:09+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -105,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "未设置"
@@ -202,6 +203,9 @@ msgstr "返回、索尼 Select、Xbox Back、任天堂 -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "指南、索尼 PS、Xbox Home"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "开始、Xbox 菜单、任天堂 +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "左摇杆、索尼 L3、Xbox L/LS"
@@ -1221,6 +1225,9 @@ msgstr "行号："
 
 msgid "%d replaced."
 msgstr "已替换 %d 处。"
+
+msgid "No match"
+msgstr "无匹配"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -2551,7 +2558,7 @@ msgstr ""
 "这个 %s 目前没有描述。请帮我们[color=$color][url=$url]贡献一个[/url][/color]！"
 
 msgid "Top"
-msgstr "顶"
+msgstr "顶部"
 
 msgid "Class:"
 msgstr "类："
@@ -3013,6 +3020,9 @@ msgstr "解析文件“%s”时出错。"
 
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "场景文件“%s”似乎无效/已损坏。"
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "缺失文件“%s”或其依赖项。"
 
 msgid "Error while loading file '%s'."
 msgstr "加载文件“%s”时出错。"
@@ -6758,7 +6768,7 @@ msgstr "平移模式"
 
 msgid ""
 "You can also use Pan View shortcut (Space by default) to pan in any mode."
-msgstr "您还可以使用平移视图快捷键（默认为空格）在任何模式下平移。"
+msgstr "你还可以使用平移视图快捷键（默认为空格）在任何模式下平移。"
 
 msgid "Ruler Mode"
 msgstr "标尺模式"
@@ -10654,7 +10664,7 @@ msgid "Discard all changes"
 msgstr "丢弃所有修改"
 
 msgid "This operation is IRREVERSIBLE. Your changes will be deleted FOREVER."
-msgstr "此操作是不可逆的。您的更改将被永久删除。"
+msgstr "此操作是不可逆的。你的更改将被永久删除。"
 
 msgid "Permanentally delete my changes"
 msgstr "永久删除我的更改"
@@ -11814,8 +11824,8 @@ msgid ""
 "it later in the Expressions. You can also declare varyings, parameters and "
 "constants."
 msgstr ""
-"自定义的 Godot 着色器语言表达式，会被放到最终的着色器开头。您可以在其中放置各"
-"种函数定义，然后在表达式中调用。您还可以声明 varying、参数和常量。"
+"自定义的 Godot 着色器语言表达式，会被放到最终的着色器开头。你可以在其中放置各"
+"种函数定义，然后在表达式中调用。你还可以声明 varying、参数和常量。"
 
 msgid "A reference to an existing parameter."
 msgstr "对现有参数的引用。"
@@ -12017,6 +12027,12 @@ msgstr "版本控制元数据："
 msgid "Git"
 msgstr "Git"
 
+msgid "This project was last edited in a different Godot version: "
+msgstr "该项目的最近一次编辑使用了不同的 Godot 版本： "
+
+msgid "This project uses features unsupported by the current build:"
+msgstr "该项目使用了当前 Godot 构建不支持的功能："
+
 msgid "Error: Project is missing on the filesystem."
 msgstr "错误：文件系统上缺失项目。"
 
@@ -12146,6 +12162,14 @@ msgid ""
 msgstr ""
 "警告：该项目使用 C#，但 Godot 的这个版本没有\n"
 "Mono 模块。如果继续，你将无法使用任何 C# 脚本。\n"
+"\n"
+
+msgid ""
+"Warning: This project was last edited in Godot %s. Opening will change it to "
+"Godot %s.\n"
+"\n"
+msgstr ""
+"警告：该项目的最近一次编辑使用的是 Godot %s。打开后将修改为 Godot %s。\n"
 "\n"
 
 msgid ""
@@ -12285,6 +12309,26 @@ msgstr "同时删除项目内容（无法撤销！）"
 
 msgid "Convert Full Project"
 msgstr "转换完整项目"
+
+msgid ""
+"This option will perform full project conversion, updating scenes, resources "
+"and scripts from Godot 3 to work in Godot 4.\n"
+"\n"
+"Note that this is a best-effort conversion, i.e. it makes upgrading the "
+"project easier, but it will not open out-of-the-box and will still require "
+"manual adjustments.\n"
+"\n"
+"IMPORTANT: Make sure to backup your project before converting, as this "
+"operation makes it impossible to open it in older versions of Godot."
+msgstr ""
+"该选项将执行完整的项目转换，更新 Godot 3 的场景、资源和脚本，以便在 Godot 4 中"
+"运行。\n"
+"\n"
+"注意，转换是尽力而为的，也就是说，它可以让项目的升级更容易，但无法做到开箱即"
+"用，仍然需要手动调整。\n"
+"\n"
+"重要：转换前请一定要备份你的项目，因为本操作会使它无法在旧版本的 Godot 中打"
+"开。"
 
 msgid "Can't run project"
 msgstr "无法运行项目"
@@ -15177,7 +15221,7 @@ msgid ""
 "If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "除非脚本配置其子节点放置行为，否则容器本身没有任何作用。\n"
-"如果您不想添加脚本，请改用普通的 Control 节点。"
+"如果你不想添加脚本，请改用普通的 Control 节点。"
 
 msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
@@ -15905,6 +15949,11 @@ msgstr "实例索引不能为负。"
 
 msgid "Allowed instance uniform indices must be within [0..%d] range."
 msgstr "实例 uniform 索引必须在 [0...%d] 范围内。"
+
+msgid ""
+"'hint_normal_roughness_texture' is only available when using the Forward+ "
+"backend."
+msgstr "“hint_normal_roughness_texture”仅在使用 Forward+ 后端时可用。"
 
 msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
 msgstr "“%s”着色器尚未支持“hint_normal_roughness_texture”。"

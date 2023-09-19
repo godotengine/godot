@@ -76,27 +76,27 @@ void EditorDebuggerSession::remove_session_tab(Control *p_tab) {
 }
 
 void EditorDebuggerSession::send_message(const String &p_message, const Array &p_args) {
-	ERR_FAIL_COND_MSG(!debugger, "Plugin is not attached to debugger");
+	ERR_FAIL_NULL_MSG(debugger, "Plugin is not attached to debugger.");
 	debugger->send_message(p_message, p_args);
 }
 
 void EditorDebuggerSession::toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data) {
-	ERR_FAIL_COND_MSG(!debugger, "Plugin is not attached to debugger");
+	ERR_FAIL_NULL_MSG(debugger, "Plugin is not attached to debugger.");
 	debugger->toggle_profiler(p_profiler, p_enable, p_data);
 }
 
 bool EditorDebuggerSession::is_breaked() {
-	ERR_FAIL_COND_V_MSG(!debugger, false, "Plugin is not attached to debugger");
+	ERR_FAIL_NULL_V_MSG(debugger, false, "Plugin is not attached to debugger.");
 	return debugger->is_breaked();
 }
 
 bool EditorDebuggerSession::is_debuggable() {
-	ERR_FAIL_COND_V_MSG(!debugger, false, "Plugin is not attached to debugger");
+	ERR_FAIL_NULL_V_MSG(debugger, false, "Plugin is not attached to debugger.");
 	return debugger->is_debuggable();
 }
 
 bool EditorDebuggerSession::is_active() {
-	ERR_FAIL_COND_V_MSG(!debugger, false, "Plugin is not attached to debugger");
+	ERR_FAIL_NULL_V_MSG(debugger, false, "Plugin is not attached to debugger.");
 	return debugger->is_session_active();
 }
 
@@ -121,7 +121,7 @@ void EditorDebuggerSession::_debugger_gone_away() {
 }
 
 EditorDebuggerSession::EditorDebuggerSession(ScriptEditorDebugger *p_debugger) {
-	ERR_FAIL_COND(!p_debugger);
+	ERR_FAIL_NULL(p_debugger);
 	debugger = p_debugger;
 	debugger->connect("started", callable_mp(this, &EditorDebuggerSession::_started));
 	debugger->connect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));

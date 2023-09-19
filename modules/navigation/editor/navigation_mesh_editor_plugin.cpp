@@ -35,6 +35,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
@@ -54,8 +55,8 @@ void NavigationMeshEditor::_node_removed(Node *p_node) {
 void NavigationMeshEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			button_bake->set_icon(get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
-			button_reset->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+			button_bake->set_icon(get_theme_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
+			button_reset->set_icon(get_theme_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 		} break;
 	}
 }

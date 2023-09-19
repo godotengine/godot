@@ -107,7 +107,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_b
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
-	ERR_FAIL_COND(!p_tile_set_scenes_collection_source);
+	ERR_FAIL_NULL(p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_scenes_collection_source);
 
@@ -197,7 +197,7 @@ void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_get_property_li
 }
 
 void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::edit(TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_scene_id) {
-	ERR_FAIL_COND(!p_tile_set_scenes_collection_source);
+	ERR_FAIL_NULL(p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(!p_tile_set_scenes_collection_source->has_scene_tile_id(p_scene_id));
 
 	if (tile_set_scenes_collection_source == p_tile_set_scenes_collection_source && scene_id == p_scene_id) {
@@ -332,7 +332,7 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 			Variant udata = i;
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, this, "_scene_thumbnail_done", udata);
 		} else {
-			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")));
+			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), get_editor_theme_icon(SNAME("PackedScene")));
 		}
 		scene_tiles_list->set_item_metadata(item_index, scene_id);
 
@@ -358,8 +358,8 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			scene_tile_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			scene_tile_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			scene_tile_add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			scene_tile_delete_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
 			_update_scenes_list();
 		} break;
 
@@ -390,7 +390,7 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 
 void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
-	ERR_FAIL_COND(!p_tile_set_scenes_collection_source);
+	ERR_FAIL_NULL(p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_scenes_collection_source);
 

@@ -33,6 +33,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/resources/gradient_texture.h"
 
@@ -393,7 +394,7 @@ void GradientEditor::_notification(int p_what) {
 			int total_w = get_size().width - get_size().height - draw_spacing - handle_width;
 
 			// Draw checker pattern for ramp.
-			draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(handle_width / 2, 0, total_w, h), true);
+			draw_texture_rect(get_editor_theme_icon(SNAME("GuiMiniCheckerboard")), Rect2(handle_width / 2, 0, total_w, h), true);
 
 			// Draw color ramp.
 			gradient_cache->set_points(points);
@@ -417,7 +418,7 @@ void GradientEditor::_notification(int p_what) {
 				draw_rect(rect, points[i].color, true);
 				draw_rect(rect, col, false, 1);
 				if (grabbed == i) {
-					const Color focus_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+					const Color focus_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 					rect = rect.grow(-1);
 					if (has_focus()) {
 						draw_rect(rect, focus_color, false, 1);
@@ -432,7 +433,7 @@ void GradientEditor::_notification(int p_what) {
 
 			// Draw "button" for color selector.
 			int button_offset = total_w + handle_width + draw_spacing;
-			draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(button_offset, 0, h, h), true);
+			draw_texture_rect(get_editor_theme_icon(SNAME("GuiMiniCheckerboard")), Rect2(button_offset, 0, h, h), true);
 			if (grabbed != -1) {
 				// Draw with selection color.
 				draw_rect(Rect2(button_offset, 0, h, h), points[grabbed].color);

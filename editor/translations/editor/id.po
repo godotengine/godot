@@ -51,13 +51,14 @@
 # Septian Ganendra Savero Kurniawan <septgsk@outlook.com>, 2023.
 # Septian Ganendra Savero Kurniawan <mail@init.id>, 2023.
 # GID <ghavind12345@gmail.com>, 2023.
+# Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-08 13:52+0000\n"
-"Last-Translator: GID <ghavind12345@gmail.com>\n"
+"PO-Revision-Date: 2023-09-05 08:33+0000\n"
+"Last-Translator: EngageIndo <engageindo@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -65,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "Batal disetel"
@@ -162,6 +163,9 @@ msgstr "Kembali, Sony Select, Xbox Kembali, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Panduan, Sony PS, Xbox Home"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Mulai, Xbox Menu, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Stik Kiri, Sony L3, Xbox L/LS"
@@ -1195,6 +1199,9 @@ msgstr "Nomor Baris:"
 
 msgid "%d replaced."
 msgstr "%d telah diganti."
+
+msgid "No match"
+msgstr "Tidak ada kecocokan"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -3032,6 +3039,9 @@ msgstr "Kesalahan saat mem-parsing file '%s'."
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "File adegan '%s' tampaknya tidak valid/rusak."
 
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "File '%s' hilang atau salah satu dependensinya."
+
 msgid "Error while loading file '%s'."
 msgstr "Kesalahan saat memuat file '%s'."
 
@@ -3589,7 +3599,7 @@ msgid "Mobile"
 msgstr "Mobile"
 
 msgid "Compatibility"
-msgstr "Kompatibilitas"
+msgstr "Kecocokan"
 
 msgid "Changing the renderer requires restarting the editor."
 msgstr "Mengubah perender memerlukan restart ulang editor."
@@ -4110,7 +4120,7 @@ msgid "Cannot create file \"%s\"."
 msgstr "Tidak dapat membuat file \"%s\"."
 
 msgid "Failed to export project files."
-msgstr "Tidak dapat ekspor berkas proyek"
+msgstr "Tidak dapat ekspor berkas proyek."
 
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "Tidak dapat membuka file untuk menulis di path \"%s\"."
@@ -9907,6 +9917,27 @@ msgstr ""
 "Anda dapat menambahkan tipe kustom atau mengimpor tipe dengan itemnya dari "
 "tema lain."
 
+msgid "Remove All Color Items"
+msgstr "Hapus Semua Warna Item"
+
+msgid "Rename Item"
+msgstr "Ganti Nama Item"
+
+msgid "Remove All Constant Items"
+msgstr "Hapus Semua Item Konstanta"
+
+msgid "Remove All Font Items"
+msgstr "Hapus Semua Item Font"
+
+msgid "Remove All Font Size Items"
+msgstr "Hapus Semua Item Ukuran Font"
+
+msgid "Remove All Icon Items"
+msgstr "Hapus Semua Item Ikon"
+
+msgid "Remove All StyleBox Items"
+msgstr "Hapus Semua Item StyleBox"
+
 msgid ""
 "This theme type is empty.\n"
 "Add more items to it manually or by importing from another theme."
@@ -9914,6 +9945,30 @@ msgstr ""
 "Jenis tema ini kosong.\n"
 "Tambahkan lebih banyak item ke dalamnya secara manual atau dengan mengimpor "
 "dari tema lain."
+
+msgid "Remove Theme Item"
+msgstr "Hapus Item Tema"
+
+msgid "Add Theme Type"
+msgstr "Tambah Tipe Tema"
+
+msgid "Create Theme Item"
+msgstr "Buat Item Tema"
+
+msgid "Remove Theme Type"
+msgstr "Hapus Tipe Tema"
+
+msgid "Remove Data Type Items From Theme"
+msgstr "Hapus Item Tipe Data dari Tema"
+
+msgid "Remove Class Items From Theme"
+msgstr "Hapus Item Kelas dari Tema"
+
+msgid "Remove Custom Items From Theme"
+msgstr "Hapus Item Kustom dari Tema"
+
+msgid "Remove All Items From Theme"
+msgstr "Hapus Semua Item dari Tema"
 
 msgid "Add Color Item"
 msgstr "Tambah Item Warna"
@@ -9923,6 +9978,9 @@ msgstr "Tambah Item Konstan"
 
 msgid "Add Font Item"
 msgstr "Tambah Item Fonta"
+
+msgid "Add Font Size Item"
+msgstr "Tambah Item Ukuran Font"
 
 msgid "Add Icon Item"
 msgstr "Tambah Item Ikon"
@@ -9963,6 +10021,18 @@ msgid ""
 msgstr ""
 "Sematkan StyleBox ini sebagai gaya utama. Mengedit propertinya akan "
 "memperbarui properti yang sama di semua StyleBox lain dari jenis ini."
+
+msgid "Override All Default Theme Items"
+msgstr "Timpa Semua Item Tema Bawaan"
+
+msgid "Set Font Size Item in Theme"
+msgstr "Set Ukuran Font di Tema"
+
+msgid "Set Icon Item in Theme"
+msgstr "Set Icon Item di Tema"
+
+msgid "Add a type from a list of available types or create a new one."
+msgstr "Tambahkan sebuah tipe dari daftar tipe yang ada atau buat yang baru."
 
 msgid "Base Type"
 msgstr "Tipe Dasar"
@@ -10011,7 +10081,7 @@ msgid "Named Separator"
 msgstr "Pemisah yang diberi nama"
 
 msgid "Submenu"
-msgstr "Submenu"
+msgstr "Menu Tambahan"
 
 msgid "Subitem 1"
 msgstr "Sub menu 1"
@@ -10053,6 +10123,42 @@ msgstr ""
 msgid "Reload the scene to reflect its most actual state."
 msgstr "Muat ulang skena untuk mencerminkan keadaannya yang paling aktual."
 
+msgid "Merge TileSetAtlasSource"
+msgstr "Menggabungkan TileSetAtlasSource"
+
+msgid "%s (ID: %d)"
+msgstr "%s (ID: %d)"
+
+msgid "Merge (Keep original Atlases)"
+msgstr "Menggabungkan (Simpan Atlas asli)"
+
+msgid "Next Line After Column"
+msgstr "Baris Berikutnya Setelah Kolom"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: 0"
+msgstr ""
+"Sumber: %d\n"
+" Koordinat Atlas: %s\n"
+" Alternatif: 0"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"Sumber: %d\n"
+" Koordinat Atlas: %s\n"
+" Alternatif: 0"
+
+msgid "No atlas source with a valid texture selected."
+msgstr "Tidak ada sumber atlas dengan tekstur valid yang dipilih."
+
+msgid "Edit points tool"
+msgstr "Edit point tool"
+
 msgid "Rotate Right"
 msgstr "Putar ke kanan"
 
@@ -10065,23 +10171,158 @@ msgstr "Balik secara Horizontal"
 msgid "Flip Vertically"
 msgstr "Balik secara Vertikal"
 
+msgid "No terrains"
+msgstr "Tidak ada lahan"
+
+msgid "No terrain"
+msgstr "Tidak ada lahan"
+
+msgid "No Texture Atlas Source (ID: %d)"
+msgstr "Sumber Atlas Tanpa Tekstur (ID: %d)"
+
+msgid "Scene Collection Source (ID: %d)"
+msgstr "Scene Sumber Koleksi (ID: %d)"
+
+msgid "Unknown Type Source (ID: %d)"
+msgstr "Sumber Jenis Tidak Diketahui (ID: %d)"
+
+msgid "Index: %d"
+msgstr "Indeks:%d"
+
+msgid "Tile with Invalid Scene"
+msgstr "Petak dengan Adegan tidak valid"
+
+msgid "Delete tiles"
+msgstr "Hapus Petak"
+
+msgid "Drawing Rect:"
+msgstr "Menggambar Persegi:"
+
+msgid "Change selection"
+msgstr "Ubah seleksi"
+
+msgid "Move tiles"
+msgstr "Geser Petak"
+
+msgid "Shift: Draw line."
+msgstr "Shift: Menggambar garis."
+
+msgid "Shift+Ctrl: Draw rectangle."
+msgstr "Shift+Ctrl: Menggambar Persegi."
+
+msgid "Bucket"
+msgstr "Keranjang"
+
+msgid "Eraser"
+msgstr "Penghapus"
+
 msgid "Tiles"
-msgstr "Ubin"
+msgstr "Petak"
+
+msgid "Patterns"
+msgstr "Pola"
+
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr ""
+"Seret dan lepas atau tempel pilihan TileMap ke sini untuk menyimpan pola."
+
+msgid "Matches Corners and Sides"
+msgstr "Cocokkan Sudut dan Sisi"
+
+msgid "Terrain Set %d (%s)"
+msgstr "Set Terrain %d (%s)"
+
+msgid "Terrains"
+msgstr "Lahan"
+
+msgid "Select Previous Tile Map Layer"
+msgstr "Pilih Layer Tile Map Sebelumnya"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "Sorot Layer TileMap Terpilih"
+
+msgid "Toggle grid visibility."
+msgstr "Tampilkan kisi."
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "Hapus Semua Proksi Petak yang Tidak Valid"
+
+msgid "Delete All Tile Proxies"
+msgstr "Hapus Semua Proksi Petak"
+
+msgid "Tile Proxies Management"
+msgstr "Manajemen Proksi Petak"
+
+msgid ""
+"Selected tile:\n"
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"Petak terpilih:\n"
+"Sumber: %d\n"
+"Koordinat Atlas: %s\n"
+"Alternatif: %d"
 
 msgid "Rendering"
-msgstr "Rendering"
+msgstr "Proses membuat gambar"
 
 msgid "Modulate"
 msgstr "Memodulasi"
 
+msgid "Create tiles in non-transparent texture regions"
+msgstr "Buat petak di region tekstur non-transparan"
+
+msgid "Remove tiles in fully transparent texture regions"
+msgstr "Hapus petak di region tekstur dengan transparansi penuh"
+
+msgid "Select tiles."
+msgstr "Pilih Petak."
+
+msgid "No tiles selected."
+msgstr "Tidak ada petak yang dipilih."
+
+msgid "Create Tiles in Non-Transparent Texture Regions"
+msgstr "Buat petak di region tekstur non-transparan"
+
+msgid "Remove Tiles in Fully Transparent Texture Regions"
+msgstr "Hapus petak di region tekstur dengan transparansi penuh"
+
+msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
+msgstr "Buat Petak Otomatis di Region Tekstur Non-Transparan?"
+
 msgid "Yes"
 msgstr "Ya"
+
+msgid "Add a new atlas source"
+msgstr "Tambah sumber atlas baru"
+
+msgid "Open Atlas Merging Tool"
+msgstr "Buka Alat Penggabung Atlas"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"Tidak ada sumber TileSet terpilih. Pilih atau buat sumber TileSet.\n"
+"Anda dapat membuat sebuah sumber baru menggunakan tombol Tambah pada sebelah "
+"kiri atau dengan melepas tekstur TileSet pada daftar sumber."
+
+msgid "Add new patterns in the TileMap editing mode."
+msgstr "Tambah pola baru di Mode Sunting TileMap."
 
 msgid "TileSet"
 msgstr "TileSet"
 
 msgid "Error"
 msgstr "Error"
+
+msgid ""
+"Remote settings are empty. VCS features that use the network may not work."
+msgstr ""
+"Pengaturan remote kosong. Fitur VCS yang menggunakan jaringan mungkin akan "
+"tidak berfungsi."
 
 msgid "Commit"
 msgstr "Komit"
@@ -10091,6 +10332,9 @@ msgstr "Tanggal:"
 
 msgid "Subtitle:"
 msgstr "Subjudul:"
+
+msgid "Existing VCS metadata files will be overwritten."
+msgstr "Berkas metadata VCS yang sudah ada akan ditimpa."
 
 msgid "Apply"
 msgstr "Terapkan"
@@ -10115,6 +10359,10 @@ msgstr "Deteksi perubahan baru"
 
 msgid "Discard all changes"
 msgstr "Buang semua perubahan"
+
+msgid "This operation is IRREVERSIBLE. Your changes will be deleted FOREVER."
+msgstr ""
+"Operasi ini TIDAK DAPAT DIKEMBALIKAN. Perubahan anda akan hilang SELAMANYA."
 
 msgid "Unstage all changes"
 msgstr "Buang semua perubahan"
@@ -10158,6 +10406,12 @@ msgstr "Nama Remot"
 msgid "Remote URL"
 msgstr "URL Remot"
 
+msgid "Pull"
+msgstr "Pull"
+
+msgid "Push"
+msgstr "Push"
+
 msgid "Modified"
 msgstr "Dimodifikasi"
 
@@ -10169,6 +10423,9 @@ msgstr "Dihapus"
 
 msgid "Typechange"
 msgstr "Jenis perubahan"
+
+msgid "View file diffs before committing them to the latest version"
+msgstr "Tampilkan perbedaan file sebelum melakukan commit ke versi terbaru"
 
 msgid "Split"
 msgstr "Pisahkan"
@@ -10219,7 +10476,7 @@ msgid "Boolean"
 msgstr "Boolean"
 
 msgid "Sampler"
-msgstr "Sampler"
+msgstr "Contoh Acak"
 
 msgid "[default]"
 msgstr "[bawaan]"
@@ -10259,6 +10516,12 @@ msgstr "Cahaya"
 
 msgid "Process"
 msgstr "Proses"
+
+msgid "Sky"
+msgstr "Langit"
+
+msgid "Fog"
+msgstr "Kabut"
 
 msgid "Add Node"
 msgstr "Tambahkan Node"
@@ -11747,6 +12010,9 @@ msgstr "Tidak dapat menemukan contoh APK untuk ekspor: \"%s\""
 
 msgid "Invalid Identifier:"
 msgstr "Identifier tidak valid:"
+
+msgid "Xcode Build"
+msgstr "Membangun Xcode"
 
 msgid "Identifier is missing."
 msgstr "Kurang identifier."

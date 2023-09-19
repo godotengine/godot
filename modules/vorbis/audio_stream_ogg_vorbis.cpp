@@ -328,9 +328,9 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 	int64_t samples_to_burn = samples_in_page - (granule_pos - desired_sample);
 
 	if (samples_to_burn > samples_in_page) {
-		WARN_PRINT("Burning more samples than we have in this page. Check seek algorithm.");
+		WARN_PRINT_ONCE("Burning more samples than we have in this page. Check seek algorithm.");
 	} else if (samples_to_burn < 0) {
-		WARN_PRINT("Burning negative samples doesn't make sense. Check seek algorithm.");
+		WARN_PRINT_ONCE("Burning negative samples doesn't make sense. Check seek algorithm.");
 	}
 
 	// Seek again, this time we'll burn a specific number of samples instead of all of them.

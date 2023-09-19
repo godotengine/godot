@@ -8,6 +8,7 @@
 		[b]Note:[/b] [CanvasTexture] cannot be used in 3D rendering. For physically-based materials in 3D, use [BaseMaterial3D] instead.
 	</description>
 	<tutorials>
+		<link title="2D Lights and Shadows">$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html</link>
 	</tutorials>
 	<members>
 		<member name="diffuse_texture" type="Texture2D" setter="set_diffuse_texture" getter="get_diffuse_texture">

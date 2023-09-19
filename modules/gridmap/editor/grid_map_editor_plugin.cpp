@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
@@ -748,6 +749,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				for (int i = 0; i < options->get_popup()->get_item_count(); ++i) {
 					const Ref<Shortcut> &shortcut = options->get_popup()->get_item_shortcut(i);
 					if (shortcut.is_valid() && shortcut->matches_event(p_event)) {
+						accept_event();
 						_menu_option(options->get_popup()->get_item_id(i));
 						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					}
@@ -1059,10 +1061,10 @@ void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
 }
 
 void GridMapEditor::_update_theme() {
-	options->set_icon(get_theme_icon(SNAME("GridMap"), SNAME("EditorIcons")));
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-	mode_thumbnail->set_icon(get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
-	mode_list->set_icon(get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
+	options->set_icon(get_theme_icon(SNAME("GridMap"), EditorStringName(EditorIcons)));
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), EditorStringName(EditorIcons)));
+	mode_thumbnail->set_icon(get_theme_icon(SNAME("FileThumbnail"), EditorStringName(EditorIcons)));
+	mode_list->set_icon(get_theme_icon(SNAME("FileList"), EditorStringName(EditorIcons)));
 }
 
 void GridMapEditor::_notification(int p_what) {

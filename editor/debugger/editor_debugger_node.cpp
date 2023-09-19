@@ -36,6 +36,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
@@ -50,7 +51,7 @@ template <typename Func>
 void _for_all(TabContainer *p_node, const Func &p_func) {
 	for (int i = 0; i < p_node->get_tab_count(); i++) {
 		ScriptEditorDebugger *dbg = Object::cast_to<ScriptEditorDebugger>(p_node->get_tab_control(i));
-		ERR_FAIL_COND(!dbg);
+		ERR_FAIL_NULL(dbg);
 		p_func(dbg);
 	}
 }
@@ -62,8 +63,8 @@ EditorDebuggerNode::EditorDebuggerNode() {
 		singleton = this;
 	}
 
-	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
-	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
+	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
+	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
 
 	tabs = memnew(TabContainer);
 	tabs->set_tabs_visible(false);
@@ -118,7 +119,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	if (tabs->get_tab_count() > 1) {
 		node->clear_style();
 		tabs->set_tabs_visible(true);
-		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 	}
 
 	if (!debugger_plugins.is_empty()) {
@@ -132,7 +133,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 
 void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 	const ScriptEditorDebugger *dbg = get_debugger(p_debugger);
-	ERR_FAIL_COND(!dbg);
+	ERR_FAIL_NULL(dbg);
 	if (dbg != get_current_debugger()) {
 		return;
 	}
@@ -283,10 +284,10 @@ void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->get_tab_count() > 1) {
-				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
-				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
+				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
+				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
 
-				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
 		} break;
 
@@ -386,15 +387,15 @@ void EditorDebuggerNode::_update_errors() {
 		} else {
 			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 			if (error_count >= 1 && warning_count >= 1) {
-				debugger_button->set_icon(get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
+				debugger_button->set_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
 				// Use error color to represent the highest level of severity reported.
-				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else if (error_count >= 1) {
-				debugger_button->set_icon(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
-				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+				debugger_button->set_icon(get_editor_theme_icon(SNAME("Error")));
+				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else {
-				debugger_button->set_icon(get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
-				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+				debugger_button->set_icon(get_editor_theme_icon(SNAME("Warning")));
+				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			}
 		}
 		last_error_count = error_count;
@@ -404,7 +405,7 @@ void EditorDebuggerNode::_update_errors() {
 
 void EditorDebuggerNode::_debugger_stopped(int p_id) {
 	ScriptEditorDebugger *dbg = get_debugger(p_id);
-	ERR_FAIL_COND(!dbg);
+	ERR_FAIL_NULL(dbg);
 
 	bool found = false;
 	_for_all(tabs, [&](ScriptEditorDebugger *p_debugger) {
@@ -602,7 +603,7 @@ void EditorDebuggerNode::_remote_tree_button_pressed(Object *p_item, int p_colum
 	}
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 
 	if (p_id == EditorDebuggerTree::BUTTON_SUBSCENE) {
 		remote_scene_tree->emit_signal(SNAME("open"), item->get_meta("scene_file_path"));

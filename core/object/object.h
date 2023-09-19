@@ -315,12 +315,14 @@ struct ObjectGDExtension {
 	bool editor_class = false;
 	bool is_virtual = false;
 	bool is_abstract = false;
+	bool is_exposed = true;
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;
 	GDExtensionClassFreePropertyList free_property_list;
 	GDExtensionClassPropertyCanRevert property_can_revert;
 	GDExtensionClassPropertyGetRevert property_get_revert;
+	GDExtensionClassValidateProperty validate_property;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassNotification notification;
 #endif // DISABLE_DEPRECATED
@@ -489,7 +491,7 @@ protected:                                                                      
 		if (!p_reversed) {                                                                                                                       \
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                                 \
 		}                                                                                                                                        \
-		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));                \
+		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY));      \
 		if (!_is_gpl_reversed()) {                                                                                                               \
 			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                          \
 		}                                                                                                                                        \

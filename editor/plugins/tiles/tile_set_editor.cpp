@@ -190,7 +190,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		// Scene collection source.
 		TileSetScenesCollectionSource *scene_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 		if (scene_collection_source) {
-			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+			texture = get_editor_theme_icon(SNAME("PackedScene"));
 			if (item_text.is_empty()) {
 				if (scene_collection_source->get_scene_tiles_count() > 0) {
 					item_text = vformat(TTR("Scene Collection Source (ID: %d)"), source_id);
@@ -364,11 +364,11 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			sources_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-			sources_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			source_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
-			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
+			sources_delete_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			sources_add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			source_sort_button->set_icon(get_editor_theme_icon(SNAME("Sort")));
+			sources_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			missing_texture_texture = get_editor_theme_icon(SNAME("TileSet"));
 			expanded_area->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
 			_update_sources_list();
 		} break;
@@ -568,7 +568,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 				for (int k = 0; k < tas->get_alternative_tiles_count(tile_id); k++) {
 					int alternative_id = tas->get_alternative_tile_id(tile_id, k);
 					TileData *tile_data = tas->get_tile_data(tile_id, alternative_id);
-					ERR_FAIL_COND(!tile_data);
+					ERR_FAIL_NULL(tile_data);
 
 					// Actually saving stuff.
 					if (p_array_prefix == "occlusion_layer_") {
@@ -687,7 +687,7 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 					for (int k = 0; k < tas->get_alternative_tiles_count(tile_id); k++) {
 						int alternative_id = tas->get_alternative_tile_id(tile_id, k);
 						TileData *tile_data = tas->get_tile_data(tile_id, alternative_id);
-						ERR_FAIL_COND(!tile_data);
+						ERR_FAIL_NULL(tile_data);
 
 						if (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "mode") {
 							ADD_UNDO(tile_data, "terrain_set");

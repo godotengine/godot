@@ -367,9 +367,19 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				}
 
 				if (target_itype) {
-					xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-					xml_output.append(target_itype->proxy_name);
-					xml_output.append("\"/>");
+					if ((!p_itype || p_itype->api_type == ClassDB::API_CORE) && target_itype->api_type == ClassDB::API_EDITOR) {
+						// Editor references in core documentation cannot be resolved,
+						// handle as standard codeblock.
+						_log("Cannot reference editor type '%s' in documentation for core type '%s'\n",
+								target_itype->proxy_name.utf8().get_data(), p_itype ? p_itype->proxy_name.utf8().get_data() : "@GlobalScope");
+						xml_output.append("<c>");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append("</c>");
+					} else {
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append("\"/>");
+					}
 				} else {
 					ERR_PRINT("Cannot resolve type reference in documentation: '" + tag + "'.");
 
@@ -523,7 +533,31 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_imethod->proxy_name);
-				p_xml_output.append("\"/>");
+				p_xml_output.append("(");
+				bool first_key = true;
+				for (const ArgumentInterface &iarg : target_imethod->arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+
+					if (first_key) {
+						first_key = false;
+					} else {
+						p_xml_output.append(", ");
+					}
+					if (!arg_type) {
+						ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
+						p_xml_output.append(iarg.type.cname);
+						continue;
+					}
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("Nullable{");
+					}
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					p_xml_output.append(arg_cs_type.replacen("<", "{").replacen(">", "}").replacen("params ", ""));
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("}");
+					}
+				}
+				p_xml_output.append(")\"/>");
 			} else {
 				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
@@ -955,9 +989,6 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 	p_output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 
-	p_output.append("\n#pragma warning disable CS1591 // Disable warning: "
-					"'Missing XML comment for publicly visible type or member'\n");
-
 	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
 
 	for (const ConstantInterface &iconstant : global_constants) {
@@ -1055,8 +1086,6 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			p_output.append(CLOSE_BLOCK);
 		}
 	}
-
-	p_output.append("\n#pragma warning restore CS1591\n");
 }
 
 Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
@@ -1371,12 +1400,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append("using System;\n"); // IntPtr
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
 	output.append("using Godot.NativeInterop;\n");
-
-	output.append("\n"
-				  "#pragma warning disable CS1591 // Disable warning: "
-				  "'Missing XML comment for publicly visible type or member'\n"
-				  "#pragma warning disable CS1573 // Disable warning: "
-				  "'Parameter has no matching param tag in the XML comment'\n");
 
 	output.append("\n#nullable disable\n");
 
@@ -1869,10 +1892,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output << INDENT1 "}\n";
 
 	output.append(CLOSE_BLOCK /* class */);
-
-	output.append("\n"
-				  "#pragma warning restore CS1591\n"
-				  "#pragma warning restore CS1573\n");
 
 	return _save_file(p_output_file, output);
 }

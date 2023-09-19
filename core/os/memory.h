@@ -144,7 +144,7 @@ T *memnew_arr_template(size_t p_elements) {
 	size_t len = sizeof(T) * p_elements;
 	uint64_t *mem = (uint64_t *)Memory::alloc_static(len, true);
 	T *failptr = nullptr; //get rid of a warning
-	ERR_FAIL_COND_V(!mem, failptr);
+	ERR_FAIL_NULL_V(mem, failptr);
 	*(mem - 1) = p_elements;
 
 	if (!std::is_trivially_constructible<T>::value) {

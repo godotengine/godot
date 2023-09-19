@@ -36,6 +36,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -45,8 +46,8 @@
 void Polygon3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			button_create->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-			button_edit->set_icon(get_theme_icon(SNAME("MovePoint"), SNAME("EditorIcons")));
+			button_create->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			button_edit->set_icon(get_editor_theme_icon(SNAME("MovePoint")));
 			button_edit->set_pressed(true);
 			get_tree()->connect("node_removed", callable_mp(this, &Polygon3DEditor::_node_removed));
 
@@ -94,7 +95,7 @@ void Polygon3DEditor::_menu_option(int p_option) {
 
 void Polygon3DEditor::_wip_close() {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_COND_MSG(!obj, "Edited object is not valid.");
+	ERR_FAIL_NULL_MSG(obj, "Edited object is not valid.");
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Polygon3D"));
 	undo_redo->add_undo_method(obj, "set_polygon", obj->call("get_polygon"));
@@ -348,7 +349,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 
 float Polygon3DEditor::_get_depth() {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_COND_V_MSG(!obj, 0.0f, "Edited object is not valid.");
+	ERR_FAIL_NULL_V_MSG(obj, 0.0f, "Edited object is not valid.");
 
 	if (bool(obj->call("_has_editable_3d_polygon_no_depth"))) {
 		return 0.0f;
@@ -359,13 +360,13 @@ float Polygon3DEditor::_get_depth() {
 
 PackedVector2Array Polygon3DEditor::_get_polygon() {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_COND_V_MSG(!obj, PackedVector2Array(), "Edited object is not valid.");
+	ERR_FAIL_NULL_V_MSG(obj, PackedVector2Array(), "Edited object is not valid.");
 	return PackedVector2Array(obj->call("get_polygon"));
 }
 
 void Polygon3DEditor::_set_polygon(PackedVector2Array p_poly) {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_COND_MSG(!obj, "Edited object is not valid.");
+	ERR_FAIL_NULL_MSG(obj, "Edited object is not valid.");
 	obj->call("set_polygon", p_poly);
 }
 
@@ -536,7 +537,6 @@ void Polygon3DEditor::_bind_methods() {
 Polygon3DEditor::Polygon3DEditor() {
 	node = nullptr;
 
-	add_child(memnew(VSeparator));
 	button_create = memnew(Button);
 	button_create->set_flat(true);
 	add_child(button_create);
@@ -569,7 +569,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> handle = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Editor3DHandle"), EditorStringName(EditorIcons));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
 

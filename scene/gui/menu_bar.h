@@ -121,7 +121,6 @@ class MenuBar : public Control {
 protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;

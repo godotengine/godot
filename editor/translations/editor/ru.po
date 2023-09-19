@@ -101,7 +101,7 @@
 # mrvladus <mrvladus@yandex.ru>, 2021.
 # DΞLTΛ <craftercrafter43@gmail.com>, 2021.
 # AngryPhilomel <an.aries@icloud.com>, 2021.
-# Russkikh Michail <summersay415@gmail.com>, 2022.
+# Russkikh Michail <summersay415@gmail.com>, 2022, 2023.
 # Alex_Faction <creeponedead@gmail.com>, 2022.
 # Максим Легостаев <dstu1914346@gmail.com>, 2022.
 # dickus <dickie.dickus@yahoo.com>, 2022.
@@ -151,13 +151,15 @@
 # Artem Yaroshenko <zero.maiami@gmail.com>, 2023.
 # Толя Богомолов <tolya.bogomolov2004@gmail.com>, 2023.
 # Quartin <fihpoile+weblateorg@yandex.ru>, 2023.
+# 0eoc <0eoc@users.noreply.hosted.weblate.org>, 2023.
+# 0que <0que@users.noreply.hosted.weblate.org>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-16 20:54+0000\n"
-"Last-Translator: Quartin <fihpoile+weblateorg@yandex.ru>\n"
+"PO-Revision-Date: 2023-09-07 02:32+0000\n"
+"Last-Translator: Russkikh Michail <summersay415@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -166,7 +168,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "Не задано"
@@ -264,6 +266,9 @@ msgstr "Назад, Sony Select, Xbox Back, Nintendo -"
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Руководство, Sony PS, Xbox Home"
 
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Старт, Xbox Меню, Nintendo +"
+
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Левый стик, Sony L3, Xbox L/LS"
 
@@ -289,7 +294,7 @@ msgid "D-pad Right"
 msgstr "D-pad вправо"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
-msgstr "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Share, Микрофон PS5, Nintendo Capture"
 
 msgid "Xbox Paddle 1"
 msgstr "Xbox крестовина 1"
@@ -1237,6 +1242,10 @@ msgid "Spring"
 msgstr "Пружина"
 
 msgctxt "Ease Type"
+msgid "In"
+msgstr "Вход"
+
+msgctxt "Ease Type"
 msgid "Out"
 msgstr "Выход"
 
@@ -1295,6 +1304,9 @@ msgstr "Номер строки:"
 
 msgid "%d replaced."
 msgstr "%d заменено."
+
+msgid "No match"
+msgstr "Не совпадает"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -3141,6 +3153,9 @@ msgstr "Ошибка при разборе файла '%s'."
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "Файл сцены '%s' является недействительным/повреждённым."
 
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "Не найден файл '%s' или одна из его зависимостей."
+
 msgid "Error while loading file '%s'."
 msgstr "Ошибка при загрузке файла '%s'."
 
@@ -4906,6 +4921,9 @@ msgstr ""
 msgid "Overwrite"
 msgstr "Перезаписать"
 
+msgid "Keep Both"
+msgstr "Оставить оба"
+
 msgid "Create Script"
 msgstr "Создать скрипт"
 
@@ -5202,7 +5220,7 @@ msgid ""
 "Hold Shift for more precise changes."
 msgstr ""
 "Зажмите %s, чтобы округлить до целых.\n"
-" Зажмите Shift для более точных изменений."
+"Зажмите Shift для более точных изменений."
 
 msgid "No notifications."
 msgstr "Нет уведомлений."
@@ -7441,6 +7459,9 @@ msgstr "Изменить точку кривой"
 msgid "Modify Curve Point's Tangents"
 msgstr "Изменить касательные точки кривой"
 
+msgid "Toggle Linear Curve Point's Tangent"
+msgstr "Переключить Тангенс точки линейной кривой"
+
 msgid "Hold Shift to edit tangents individually"
 msgstr "Удерживайте Shift, чтобы изменить касательные индивидуально"
 
@@ -7523,6 +7544,9 @@ msgid ""
 msgstr ""
 "Когда эта опция включена, навигационные меши и полигоны будут видны в "
 "запущенном проекте."
+
+msgid "Visible Avoidance"
+msgstr "Избегание видимости"
 
 msgid "Synchronize Scene Changes"
 msgstr "Синхронизация изменений в сценах"
@@ -7782,6 +7806,9 @@ msgstr "Градиент отредактирован"
 
 msgid "Reverse/mirror gradient."
 msgstr "Развернуть/отразить градиент."
+
+msgid "Move GradientTexture2D Fill Point"
+msgstr "Переместить точку заливки GradientTexture2D"
 
 msgid "Swap GradientTexture2D Fill Points"
 msgstr "Поменять местами точки заливки GradientTexture2D"
@@ -8542,6 +8569,15 @@ msgstr ""
 "Если к сцене добавляется узел DirectionalLight3D, предварительный просмотр "
 "солнечного света отключается."
 
+msgid ""
+"Toggle preview environment.\n"
+"If a WorldEnvironment node is added to the scene, preview environment is "
+"disabled."
+msgstr ""
+"Включить предварительный просмотр окружения.\n"
+"Если в сцену добавлен узел WorldEnvironment, предварительный просмотр "
+"окружения отключается."
+
 msgid "Edit Sun and Environment settings."
 msgstr "Изменить настройки солнца и окружения."
 
@@ -8757,6 +8793,21 @@ msgstr ""
 "окружения, в текущую сцену.\n"
 "Удерживайте Shift при нажатии, чтобы также добавить предпросмотр солнца к "
 "текущей сцене."
+
+msgid ""
+"No meshes to bake.\n"
+"Make sure there is at least one MeshInstance3D node in the scene whose visual "
+"layers are part of the OccluderInstance3D's Bake Mask property."
+msgstr ""
+"Нет сеток для запекания.\n"
+"Убедитесь, что в сцене есть хотя бы один узел MeshInstance3D, визуальные слои "
+"которого являются частью свойства Bake Mask OccluderInstance3D."
+
+msgid "Could not save the new occluder at the specified path:"
+msgstr "Не удалось сохранить новый окклюдер по указанному пути:"
+
+msgid "Bake Occluders"
+msgstr "Запечь окклюдеры"
 
 msgid "Remove Point from Curve"
 msgstr "Удалить точку с кривой"
@@ -9042,7 +9093,7 @@ msgid "Error while saving theme."
 msgstr "Ошибка при сохранении темы."
 
 msgid "Error Saving"
-msgstr "Ошибка сохранения"
+msgstr "Ошибка Сохранения"
 
 msgid "Error importing theme."
 msgstr "Ошибка импортирования темы."
@@ -11681,6 +11732,9 @@ msgstr ""
 msgid "Version Control Metadata:"
 msgstr "Метаданные контроля версий:"
 
+msgid "This project was last edited in a different Godot version: "
+msgstr "В последний раз проект был изменён в другой версии Godot: "
+
 msgid "Error: Project is missing on the filesystem."
 msgstr "Ошибка: Проект отсутствует в файловой системе."
 
@@ -11822,6 +11876,15 @@ msgid ""
 msgstr ""
 "Предупреждение: Данный проект использует C#, но эта сборка Godot не имеет\n"
 "модуля Mono. Если продолжить, вы не сможете использовать скрипты C#.\n"
+"\n"
+
+msgid ""
+"Warning: This project was last edited in Godot %s. Opening will change it to "
+"Godot %s.\n"
+"\n"
+msgstr ""
+"Внимание: Проект был создан в Godot %s. Открытие приведет к изменению на "
+"Godot %s.\n"
 "\n"
 
 msgid ""
@@ -14294,6 +14357,39 @@ msgstr ""
 "установлен в \"Particle Billboard\"."
 
 msgid ""
+"Using Trail meshes with a skin causes Skin to override Trail poses. Suggest "
+"removing the Skin."
+msgstr ""
+"Использование Trail сетки со скином заставляет Skin переопределить позы "
+"Trail. Предлагаем удалить Skin."
+
+msgid "Trails active, but neither Trail meshes or a Skin were found."
+msgstr "Trails активны, но ни сетки Trail, ни Skin не обнаружены."
+
+msgid ""
+"Only one Trail mesh is supported. If you want to use more than a single mesh, "
+"a Skin is needed (see documentation)."
+msgstr ""
+"Поддерживается только одна сетка Trail. Если вы хотите использовать более "
+"одной сетки, необходимо установить Skin (см. документацию)."
+
+msgid ""
+"Trails enabled, but one or more mesh materials are either missing or not set "
+"for trails rendering."
+msgstr ""
+"Trails включен, но один или несколько материалов сетки либо отсутствуют, либо "
+"не настроены для рендеринга Trails."
+
+msgid ""
+"The Bake Mask has no bits enabled, which means baking will not produce any "
+"collision for this GPUParticlesCollisionSDF3D.\n"
+"To resolve this, enable at least one bit in the Bake Mask property."
+msgstr ""
+"В свойстве Bake Mask не включено ни одного бита, что означает, что запекание "
+"не приведет к столкновениям для данного GPUParticlesCollisionSDF3D.\n"
+"Чтобы решить эту проблему, включите хотя бы один бит в свойстве Bake Mask."
+
+msgid ""
 "Shadows are not supported when using the GL Compatibility backend yet. "
 "Support will be added in a future release."
 msgstr ""
@@ -14306,14 +14402,31 @@ msgstr "Масштабирование света не влияет на раз�
 msgid "Projector texture only works with shadows active."
 msgstr "Текстура проекции работает только с включенными тенями."
 
+msgid ""
+"Projector textures are not supported when using the GL Compatibility backend "
+"yet. Support will be added in a future release."
+msgstr ""
+"Текстуры проекторов пока не поддерживаются при использовании бэкенда GL "
+"Compatibility. Поддержка будет добавлена в одном из следующих выпусков."
+
 msgid "Creating probes"
 msgstr "Создание проб"
+
+msgid "Creating probes from mesh %d/%d"
+msgstr "Создание зондов из сетки %d/%d"
 
 msgid "Generating Probe Volumes"
 msgstr "Генерация объёмов проб"
 
 msgid "Generating Probe Acceleration Structures"
 msgstr "Создание ускоряющих структур зонда"
+
+msgid ""
+"LightmapGI nodes are not supported when using the GL Compatibility backend "
+"yet. Support will be added in a future release."
+msgstr ""
+"Узлы LightmapGI пока не поддерживаются при использовании бэкенда GL "
+"Compatibility. Поддержка будет добавлена в одном из будущих выпусков."
 
 msgid ""
 "NavigationLink3D start position should be different than the end position to "
@@ -14475,6 +14588,34 @@ msgid "(Other)"
 msgstr "(Другие)"
 
 msgid ""
+"This node was saved as class type '%s', which was no longer available when "
+"this scene was loaded."
+msgstr ""
+"Этот узел был сохранён с типом класса \"%s\", более недоступного после "
+"загрузки этой сцены."
+
+msgid ""
+"This node is marked as deprecated and will be removed in future versions.\n"
+"Please check the Godot documentation for information about migration."
+msgstr ""
+"Этот узел является устаревшим и будет удалён в следующих версиях.\n"
+"Для получения информации о миграции, ознакомьтесь с документацией Godot."
+
+msgid ""
+"This node is marked as experimental and may be subject to removal or major "
+"changes in future versions."
+msgstr ""
+"Этот узел является экспериментальным и может быть удалён или значительно "
+"изменён в следующих версиях."
+
+msgid ""
+"ShaderGlobalsOverride is not active because another node of the same type is "
+"in the scene."
+msgstr ""
+"ShaderGlobalsOverride неактивен, т.к. другой узел с таким же типом "
+"присутствует в сцене."
+
+msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "
 "different ways depending on the rendered or physics frame rate.\n"
 "Consider using a script's process loop instead of relying on a Timer for very "
@@ -14582,14 +14723,60 @@ msgstr ""
 "Недопустимое количество аргументов при вызове функции стадии '%s', которая "
 "ожидает %d аргументов."
 
+msgid ""
+"Invalid argument type when calling stage function '%s', type expected is '%s'."
+msgstr ""
+"Неверный тип аргумента при вызове функции этапа \"%s\". Ожидаемый тип: \"%s\"."
+
+msgid "Expected integer constant within [%d..%d] range."
+msgstr "Ожидалась целочисленная константа в диапазоне [%d..%d]."
+
+msgid "Argument %d of function '%s' is not a variable, array, or member."
+msgstr "Аргумент %d функции \"%s\" не является переменной, массивом или членом."
+
 msgid "Varyings cannot be passed for the '%s' parameter."
 msgstr "Для параметра '%s' не могут быть переданы вариации."
+
+msgid "A constant value cannot be passed for the '%s' parameter."
+msgstr "Константа не может быть передана для параметра \"%s\"."
+
+msgid ""
+"Argument %d of function '%s' can only take a local variable, array, or member."
+msgstr ""
+"Аргумент %d функции \"%s\" может принимать только локальные переменные, "
+"массивы или члены."
+
+msgid "Built-in function \"%s(%s)\" is only supported on high-end platforms."
+msgstr ""
+"Встроенная функция \"%s(%s)\" поддерживается только на современных/"
+"производительных платформах."
 
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "Недопустимые аргументы для встроенной функции: \"%s(%s)\"."
 
 msgid "Recursion is not allowed."
 msgstr "Рекурсия запрещена."
+
+msgid "Function '%s' can't be called from source code."
+msgstr "Функция \"%s\" не может быть вызвана из исходного кода."
+
+msgid ""
+"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
+msgstr ""
+"Неправильный аргумент для функции \"%s(%s)\": аргумент %d должен быть %s, не "
+"%s."
+
+msgid ""
+"Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
+msgstr ""
+"Слишком мало аргументов для вызова \"%s(%s)\". Ожидалось хотя бы %d, получено "
+"%d."
+
+msgid ""
+"Too many arguments for \"%s(%s)\" call. Expected at most %d but received %d."
+msgstr ""
+"Слишком много аргументов для вызова \"%s(%s)\". Ожидалось не более %d, "
+"получено %d."
 
 msgid "Invalid assignment of '%s' to '%s'."
 msgstr "Недопустимое присвоение '%s' в '%s'."
@@ -14617,6 +14804,15 @@ msgstr "Назначить форму."
 
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+msgid "Array size is already defined."
+msgstr "Размер массива уже определён."
+
+msgid "Unknown array size is forbidden in that context."
+msgstr "Неизвестный размер массива невозможен в этом контексте."
+
+msgid "Array size expressions are not supported."
+msgstr "Выражения размера массива не поддерживаются."
 
 msgid "Expected a positive integer constant."
 msgstr "Ожидалась целая положительная константа."
@@ -14660,6 +14856,12 @@ msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "Varying '%s' не может быть передано для параметра '%s' в данном контексте."
 
+msgid "A constant value cannot be passed for '%s' parameter."
+msgstr "Значение константы не может передано параметру \"%s\"."
+
+msgid "Unknown identifier in expression: '%s'."
+msgstr "Неизвестный идентификатор в выражении: \"%s\"."
+
 msgid "Varying with '%s' data type may only be used in the 'fragment' function."
 msgstr ""
 "Varying с типом данных '%s' может быть использовано только в 'fragment' "
@@ -14668,11 +14870,20 @@ msgstr ""
 msgid "Varying '%s' must be assigned in the 'fragment' function first."
 msgstr "Varying '%s' должны быть сначала назначены в 'fragment' функции."
 
+msgid "Can't use function as identifier: '%s'."
+msgstr "Невозможно использовать функцию в качестве идентификатора: \"%s\"."
+
+msgid "Only integer expressions are allowed for indexing."
+msgstr "Только целочисленные выражения могут быть индексированы."
+
 msgid "Expected expression, found: '%s'."
 msgstr "Ожидаемое выражение, найдено: '%s'."
 
 msgid "Invalid member for '%s' expression: '.%s'."
 msgstr "Недопустимый член для '%s': выражения '.%s'."
+
+msgid "An object of type '%s' can't be indexed."
+msgstr "Объекты типа \"%s\" не могут быть индексированы."
 
 msgid "Unexpected end of expression."
 msgstr "Неожиданный конец выражения."
@@ -14689,8 +14900,29 @@ msgstr "Недопустимые аргументы для оператора '%
 msgid "Invalid variable type (samplers are not allowed)."
 msgstr "Недопустимый тип переменной (сэмплеры не разрешены)."
 
+msgid "Expected initialization of constant."
+msgstr "Ожидалась инициализация константы."
+
+msgid "Expected a boolean expression."
+msgstr "Ожидалось логическое выражение."
+
+msgid "Expected an integer expression."
+msgstr "Ожидалось целочисленное выражение."
+
+msgid "Cases must be defined before default case."
+msgstr "Варианты должны быть указаны перед вариантом по умолчанию."
+
+msgid "Default case must be defined only once."
+msgstr "Вариант по умолчанию должен быть указан единожды."
+
 msgid "Duplicated case label: %d."
 msgstr "Дублируется метка варианта: %d."
+
+msgid "'%s' must be placed within a '%s' block."
+msgstr "\"%s\" должен быть размещён внутри блока \"%s\"."
+
+msgid "Expected an integer constant."
+msgstr "Ожидалась целочисленная константа."
 
 msgid "Use of '%s' is not allowed here."
 msgstr "Использование '%s' здесь недопустимо."
@@ -14769,6 +15001,9 @@ msgstr "Переопределение '%s'."
 
 msgid "Invalid argument name."
 msgstr "Недопустимое имя аргумента."
+
+msgid "Unmatched elif."
+msgstr "Несовпадающий elif."
 
 msgid "Missing condition."
 msgstr "Пропущено условие."

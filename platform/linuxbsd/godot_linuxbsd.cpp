@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 	TEST_MAIN_OVERRIDE
 
 	char *cwd = (char *)malloc(PATH_MAX);
-	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
+	ERR_FAIL_NULL_V(cwd, ERR_OUT_OF_MEMORY);
 	char *ret = getcwd(cwd, PATH_MAX);
 
 	Error err = Main::setup(argv[0], argc - 1, &argv[1]);

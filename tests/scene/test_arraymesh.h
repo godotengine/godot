@@ -195,7 +195,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	}
 
 	SUBCASE("Returns correct format for the mesh") {
-		auto format = RS::ARRAY_FORMAT_BLEND_SHAPE_MASK | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
+		int format = RS::ARRAY_FORMAT_BLEND_SHAPE_MASK | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
 		CHECK((mesh->surface_get_format(0) & format) != 0);
 		CHECK((mesh->surface_get_format(1) & format) != 0);
 	}

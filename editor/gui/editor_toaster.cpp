@@ -32,6 +32,7 @@
 
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
@@ -110,29 +111,29 @@ void EditorToaster::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vbox_container->is_visible()) {
-				main_button->set_icon(get_theme_icon(SNAME("Notification"), SNAME("EditorIcons")));
+				main_button->set_icon(get_editor_theme_icon(SNAME("Notification")));
 			} else {
-				main_button->set_icon(get_theme_icon(SNAME("NotificationDisabled"), SNAME("EditorIcons")));
+				main_button->set_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 			}
-			disable_notifications_button->set_icon(get_theme_icon(SNAME("NotificationDisabled"), SNAME("EditorIcons")));
+			disable_notifications_button->set_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 
 			// Styleboxes background.
-			info_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")));
+			info_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
 
-			warning_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")));
-			warning_panel_style_background->set_border_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			warning_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+			warning_panel_style_background->set_border_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
-			error_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")));
-			error_panel_style_background->set_border_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			error_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
+			error_panel_style_background->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			// Styleboxes progress.
-			info_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
+			info_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
 
-			warning_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
-			warning_panel_style_progress->set_border_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			warning_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
+			warning_panel_style_progress->set_border_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
-			error_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
-			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			error_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
+			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			main_button->queue_redraw();
 			disable_notifications_button->queue_redraw();
@@ -270,13 +271,13 @@ void EditorToaster::_draw_button() {
 	real_t button_radius = main_button->get_size().x / 8;
 	switch (highest_severity) {
 		case SEVERITY_INFO:
-			color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			break;
 		case SEVERITY_WARNING:
-			color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
+			color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 			break;
 		case SEVERITY_ERROR:
-			color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
+			color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 			break;
 		default:
 			break;
@@ -310,9 +311,9 @@ void EditorToaster::_draw_progress(Control *panel) {
 void EditorToaster::_set_notifications_enabled(bool p_enabled) {
 	vbox_container->set_visible(p_enabled);
 	if (p_enabled) {
-		main_button->set_icon(get_theme_icon(SNAME("Notification"), SNAME("EditorIcons")));
+		main_button->set_icon(get_editor_theme_icon(SNAME("Notification")));
 	} else {
-		main_button->set_icon(get_theme_icon(SNAME("NotificationDisabled"), SNAME("EditorIcons")));
+		main_button->set_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 	}
 	_update_disable_notifications_button();
 }
@@ -374,7 +375,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	if (p_time > 0.0) {
 		Button *close_button = memnew(Button);
 		close_button->set_flat(true);
-		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+		close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
 		close_button->connect("pressed", callable_mp(this, &EditorToaster::close).bind(panel));
 		close_button->connect("theme_changed", callable_mp(this, &EditorToaster::_close_button_theme_changed).bind(close_button));
 		hbox_container->add_child(close_button);
@@ -455,7 +456,7 @@ void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_t
 
 	// Retrieve the label back, then update the text.
 	Label *message_label = toasts[control].message_label;
-	ERR_FAIL_COND(!message_label);
+	ERR_FAIL_NULL(message_label);
 	message_label->set_text(p_message);
 	message_label->set_text_overrun_behavior(TextServer::OVERRUN_NO_TRIMMING);
 	message_label->set_custom_minimum_size(Size2());
@@ -490,7 +491,7 @@ void EditorToaster::close(Control *p_control) {
 void EditorToaster::_close_button_theme_changed(Control *p_close_button) {
 	Button *close_button = Object::cast_to<Button>(p_close_button);
 	if (close_button) {
-		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+		close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
 	}
 }
 

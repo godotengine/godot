@@ -1376,9 +1376,9 @@ void TextServerFallback::_font_set_variation_coordinates(const RID &p_font_rid, 
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	if (fd->variation_coordinates != p_variation_coordinates) {
+	if (!fd->variation_coordinates.recursive_equal(p_variation_coordinates, 1)) {
 		_font_clear_cache(fd);
-		fd->variation_coordinates = p_variation_coordinates;
+		fd->variation_coordinates = p_variation_coordinates.duplicate();
 	}
 }
 

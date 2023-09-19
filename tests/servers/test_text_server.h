@@ -70,7 +70,7 @@ TEST_SUITE("[TextServer]") {
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 				ts->font_set_allow_system_fallback(font1, false);
 				RID font2 = ts->create_font();
-				ts->font_set_data_ptr(font2, _font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
+				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
 				ts->font_set_allow_system_fallback(font2, false);
 
 				Array font;
@@ -177,7 +177,7 @@ TEST_SUITE("[TextServer]") {
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 				ts->font_set_allow_system_fallback(font1, false);
 				RID font2 = ts->create_font();
-				ts->font_set_data_ptr(font2, _font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
+				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
 				ts->font_set_allow_system_fallback(font2, false);
 				RID font3 = ts->create_font();
 				ts->font_set_data_ptr(font3, _font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
@@ -511,7 +511,7 @@ TEST_SUITE("[TextServer]") {
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 				RID font2 = ts->create_font();
-				ts->font_set_data_ptr(font2, _font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
+				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
 
 				Array font;
 				font.push_back(font1);

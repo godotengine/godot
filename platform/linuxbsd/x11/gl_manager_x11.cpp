@@ -103,7 +103,7 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
 
-	ERR_FAIL_COND_V(!glXCreateContextAttribsARB, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(glXCreateContextAttribsARB, ERR_UNCONFIGURED);
 
 	static int visual_attribs[] = {
 		GLX_RENDER_TYPE, GLX_RGBA_BIT,
@@ -134,7 +134,7 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 
 	if (OS::get_singleton()->is_layered_allowed()) {
 		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs_layered, &fbcount);
-		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
+		ERR_FAIL_NULL_V(fbc, ERR_UNCONFIGURED);
 
 		for (int i = 0; i < fbcount; i++) {
 			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
@@ -156,10 +156,10 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 		}
 		XFree(fbc);
 
-		ERR_FAIL_COND_V(!fbconfig, ERR_UNCONFIGURED);
+		ERR_FAIL_NULL_V(fbconfig, ERR_UNCONFIGURED);
 	} else {
 		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
-		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
+		ERR_FAIL_NULL_V(fbc, ERR_UNCONFIGURED);
 
 		vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
 

@@ -56,9 +56,10 @@ class PanelContainer;
 class ProceduralSkyMaterial;
 class SubViewport;
 class SubViewportContainer;
+class VSeparator;
 class VSplitContainer;
-class WorldEnvironment;
 class ViewportNavigationControl;
+class WorldEnvironment;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
@@ -715,8 +716,11 @@ private:
 	void _update_camera_override_viewport(Object *p_viewport);
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_panel = nullptr;
-	HBoxContainer *context_menu_hbox = nullptr;
+	PanelContainer *context_toolbar_panel = nullptr;
+	HBoxContainer *context_toolbar_hbox = nullptr;
+	HashMap<Control *, VSeparator *> context_toolbar_separators;
+
+	void _update_context_toolbar();
 
 	void _generate_selection_boxes();
 

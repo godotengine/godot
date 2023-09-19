@@ -39,6 +39,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
+#include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
 #include "thirdparty/misc/ok_color.h"
 #include "thirdparty/misc/ok_color_shader.h"
@@ -122,34 +123,6 @@ void ColorPicker::_update_theme_item_cache() {
 	VBoxContainer::_update_theme_item_cache();
 
 	theme_cache.base_scale = get_theme_default_base_scale();
-
-	theme_cache.content_margin = get_theme_constant(SNAME("margin"));
-	theme_cache.label_width = get_theme_constant(SNAME("label_width"));
-
-	theme_cache.sv_width = get_theme_constant(SNAME("sv_width"));
-	theme_cache.sv_height = get_theme_constant(SNAME("sv_height"));
-	theme_cache.h_width = get_theme_constant(SNAME("h_width"));
-
-	theme_cache.center_slider_grabbers = get_theme_constant(SNAME("center_slider_grabbers"));
-
-	theme_cache.screen_picker = get_theme_icon(SNAME("screen_picker"));
-	theme_cache.expanded_arrow = get_theme_icon(SNAME("expanded_arrow"));
-	theme_cache.folded_arrow = get_theme_icon(SNAME("folded_arrow"));
-	theme_cache.add_preset = get_theme_icon(SNAME("add_preset"));
-
-	theme_cache.shape_rect = get_theme_icon(SNAME("shape_rect"));
-	theme_cache.shape_rect_wheel = get_theme_icon(SNAME("shape_rect_wheel"));
-	theme_cache.shape_circle = get_theme_icon(SNAME("shape_circle"));
-
-	theme_cache.bar_arrow = get_theme_icon(SNAME("bar_arrow"));
-	theme_cache.sample_background_icon = get_theme_icon(SNAME("sample_bg"), SNAME("ColorPicker"));
-	theme_cache.overbright_indicator = get_theme_icon(SNAME("overbright_indicator"), SNAME("ColorPicker"));
-	theme_cache.picker_cursor = get_theme_icon(SNAME("picker_cursor"));
-	theme_cache.color_hue_icon = get_theme_icon(SNAME("color_hue"));
-
-	theme_cache.mode_button_normal = get_theme_stylebox("tab_unselected", "TabContainer");
-	theme_cache.mode_button_pressed = get_theme_stylebox("tab_selected", "TabContainer");
-	theme_cache.mode_button_hover = get_theme_stylebox("tab_selected", "TabContainer");
 }
 
 Ref<Shader> ColorPicker::wheel_shader;
@@ -654,7 +627,9 @@ void ColorPicker::_text_type_toggled() {
 	text_is_constructor = !text_is_constructor;
 	if (text_is_constructor) {
 		text_type->set_text("");
-		text_type->set_icon(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
+#ifdef TOOLS_ENABLED
+		text_type->set_icon(get_editor_theme_icon(SNAME("Script")));
+#endif
 
 		c_text->set_editable(false);
 		c_text->set_tooltip_text(RTR("Copy this constructor in a script."));
@@ -698,7 +673,7 @@ ColorPicker::PickerShapeType ColorPicker::get_picker_shape() const {
 }
 
 inline int ColorPicker::_get_preset_size() {
-	return (int(get_minimum_size().width) - (preset_container->get_theme_constant(SNAME("h_separation")) * (PRESET_COLUMN_COUNT - 1))) / PRESET_COLUMN_COUNT;
+	return (int(get_minimum_size().width) - (preset_container->get_h_separation() * (PRESET_COLUMN_COUNT - 1))) / PRESET_COLUMN_COUNT;
 }
 
 void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
@@ -1022,7 +997,7 @@ void ColorPicker::_sample_draw() {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 
 		if (old_color.a < 1.0) {
-			sample->draw_texture_rect(theme_cache.sample_background_icon, rect_old, true);
+			sample->draw_texture_rect(theme_cache.sample_bg, rect_old, true);
 		}
 
 		sample->draw_rect(rect_old, old_color);
@@ -1036,7 +1011,7 @@ void ColorPicker::_sample_draw() {
 	}
 
 	if (color.a < 1.0) {
-		sample->draw_texture_rect(theme_cache.sample_background_icon, rect_new, true);
+		sample->draw_texture_rect(theme_cache.sample_bg, rect_new, true);
 	}
 
 	sample->draw_rect(rect_new, color);
@@ -1150,7 +1125,7 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 	} else if (p_which == 1) {
 		if (actual_shape == SHAPE_HSV_RECTANGLE) {
 			c->draw_set_transform(Point2(), -Math_PI / 2, Size2(c->get_size().x, -c->get_size().y));
-			c->draw_texture_rect(theme_cache.color_hue_icon, Rect2(Point2(), Size2(1, 1)));
+			c->draw_texture_rect(theme_cache.color_hue, Rect2(Point2(), Size2(1, 1)));
 			c->draw_set_transform(Point2(), 0, Size2(1, 1));
 			int y = c->get_size().y - c->get_size().y * (1.0 - h);
 			Color col;
@@ -1708,6 +1683,35 @@ void ColorPicker::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHAPE_VHS_CIRCLE);
 	BIND_ENUM_CONSTANT(SHAPE_OKHSL_CIRCLE);
 	BIND_ENUM_CONSTANT(SHAPE_NONE);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ColorPicker, content_margin, "margin");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, label_width);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, sv_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, sv_height);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, h_width);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, center_slider_grabbers);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, screen_picker);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, expanded_arrow);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, folded_arrow);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, add_preset);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, shape_rect);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, shape_rect_wheel);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, shape_circle);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, bar_arrow);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, sample_bg);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, overbright_indicator);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_okhsl_hue);
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_selected", "TabContainer");
 }
 
 ColorPicker::ColorPicker() {
@@ -2009,15 +2013,6 @@ void ColorPickerButton::_notification(int p_what) {
 	}
 }
 
-void ColorPickerButton::_update_theme_item_cache() {
-	Button::_update_theme_item_cache();
-
-	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
-	theme_cache.background_icon = get_theme_icon(SNAME("bg"));
-
-	theme_cache.overbright_indicator = get_theme_icon(SNAME("overbright_indicator"), SNAME("ColorPicker"));
-}
-
 void ColorPickerButton::set_pick_color(const Color &p_color) {
 	if (color == p_color) {
 		return;
@@ -2091,6 +2086,10 @@ void ColorPickerButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("picker_created"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ColorPickerButton, normal_style, "normal");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ColorPickerButton, background_icon, "bg");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, ColorPickerButton, overbright_indicator, "overbright_indicator", "ColorPicker");
 }
 
 ColorPickerButton::ColorPickerButton(const String &p_text) :
@@ -2151,21 +2150,18 @@ void ColorPresetButton::_notification(int p_what) {
 	}
 }
 
-void ColorPresetButton::_update_theme_item_cache() {
-	BaseButton::_update_theme_item_cache();
-
-	theme_cache.foreground_style = get_theme_stylebox(SNAME("preset_fg"));
-
-	theme_cache.background_icon = get_theme_icon(SNAME("preset_bg"));
-	theme_cache.overbright_indicator = get_theme_icon(SNAME("overbright_indicator"));
-}
-
 void ColorPresetButton::set_preset_color(const Color &p_color) {
 	preset_color = p_color;
 }
 
 Color ColorPresetButton::get_preset_color() const {
 	return preset_color;
+}
+
+void ColorPresetButton::_bind_methods() {
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ColorPresetButton, foreground_style, "preset_fg");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ColorPresetButton, background_icon, "preset_bg");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPresetButton, overbright_indicator);
 }
 
 ColorPresetButton::ColorPresetButton(Color p_color, int p_size) {

@@ -30,11 +30,13 @@
 
 #include "cpu_particles_3d_gizmo_plugin.h"
 
+#include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/cpu_particles_3d.h"
 
 CPUParticles3DGizmoPlugin::CPUParticles3DGizmoPlugin() {
-	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoCPUParticles3D"), SNAME("EditorIcons")));
+	create_icon_material("particles_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoCPUParticles3D"), EditorStringName(EditorIcons)));
 }
 
 bool CPUParticles3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {

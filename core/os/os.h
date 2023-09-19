@@ -328,6 +328,10 @@ public:
 
 	virtual PreferredTextureFormat get_preferred_texture_format() const;
 
+	// Load GDExtensions specific to this platform.
+	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
+	virtual void load_platform_gdextensions() const {}
+
 	OS();
 	virtual ~OS();
 };

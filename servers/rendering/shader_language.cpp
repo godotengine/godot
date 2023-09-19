@@ -10497,6 +10497,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			const char colv[4] = { 'r', 'g', 'b', 'a' };
 			const char coordv[4] = { 'x', 'y', 'z', 'w' };
 			const char coordt[4] = { 's', 't', 'p', 'q' };
+			const String theme_color_names[4] = { "axis_x_color", "axis_y_color", "axis_z_color", "axis_w_color" };
 
 			int limit = 0;
 
@@ -10527,9 +10528,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			}
 
 			for (int i = 0; i < limit; i++) {
-				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(colv[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT));
-				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(coordv[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT));
-				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(coordt[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT));
+				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(colv[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT, ScriptLanguage::LOCATION_OTHER, theme_color_names[i]));
+				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(coordv[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT, ScriptLanguage::LOCATION_OTHER, theme_color_names[i]));
+				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(coordt[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT, ScriptLanguage::LOCATION_OTHER, theme_color_names[i]));
 			}
 
 		} break;

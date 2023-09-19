@@ -143,6 +143,7 @@ struct hb_inc_bimap_t
   hb_codepoint_t skip (unsigned count)
   {
     hb_codepoint_t start = back_map.length;
+    back_map.alloc (back_map.length + count);
     for (unsigned i = 0; i < count; i++)
       back_map.push (HB_MAP_VALUE_INVALID);
     return start;

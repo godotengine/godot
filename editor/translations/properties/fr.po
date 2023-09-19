@@ -114,13 +114,14 @@
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
 # Varthore <moutcho57@gmail.com>, 2023.
 # Chloe Lee-Hone <chloe.leehone@gmail.com>, 2023.
+# François de la Taste <francois.delataste@wildwits.games>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-13 09:01+0000\n"
-"Last-Translator: Chloe Lee-Hone <chloe.leehone@gmail.com>\n"
+"PO-Revision-Date: 2023-08-30 14:58+0000\n"
+"Last-Translator: François de la Taste <francois.delataste@wildwits.games>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -128,7 +129,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Application"
 msgstr "Application"
@@ -2765,7 +2766,7 @@ msgid "Animations"
 msgstr "Animations"
 
 msgid "Blender"
-msgstr "Mélangeur"
+msgstr "Blender"
 
 msgid "RPC Port"
 msgstr "Port RPC"

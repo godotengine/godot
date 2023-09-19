@@ -46,13 +46,14 @@
 # Overdue - <kaameo12@gmail.com>, 2023.
 # nulta <un5450@naver.com>, 2023.
 # 이정희 <daemul72@gmail.com>, 2023.
+# Zinccccc <velocity2772@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-31 18:39+0000\n"
-"Last-Translator: 이정희 <daemul72@gmail.com>\n"
+"PO-Revision-Date: 2023-09-05 08:33+0000\n"
+"Last-Translator: Zinccccc <velocity2772@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -60,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -3854,6 +3855,9 @@ msgstr "권한 설정 프로파일"
 msgid "Location"
 msgstr "위치"
 
+msgid "Notarization"
+msgstr "공증"
+
 msgid "UWP"
 msgstr "UWP"
 
@@ -7198,6 +7202,12 @@ msgstr "상수"
 
 msgid "Function"
 msgstr "함수"
+
+msgid "Use All Surfaces"
+msgstr "모든 서피스 사용"
+
+msgid "Surface Index"
+msgstr "서피스 인덱스"
 
 msgid "Degrees Mode"
 msgstr "각도 모드"

@@ -108,8 +108,6 @@ class ScrollBar : public Range {
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int p_what);
 	static void _bind_methods();
 

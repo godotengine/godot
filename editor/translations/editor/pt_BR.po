@@ -167,13 +167,15 @@
 # Daniel Mucciolo <danielviannapsi@gmail.com>, 2023.
 # Guilherme <gui.rugai.freire@gmail.com>, 2023.
 # Glayson Olivieri <glayson.murollo75@gmail.com>, 2023.
+# Jose Delvani <del.cidrak@gmail.com>, 2023.
+# Romildo Franco <rtfranco@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-07-27 22:43+0000\n"
-"Last-Translator: Joel Gomes da Silva <joelgomes1994@hotmail.com>\n"
+"PO-Revision-Date: 2023-09-08 06:21+0000\n"
+"Last-Translator: Romildo Franco <rtfranco@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -181,7 +183,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "Restaurar"
@@ -278,6 +280,9 @@ msgstr "Voltar, Sony Select, Xbox Back, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Menu, Sony PS, Xbox Home"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Iniciar, Menu Xbox, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Alavanca Esquerda, Sony L3, Xbox L/LS"
@@ -1283,6 +1288,9 @@ msgstr "Gerar Animação"
 msgid "3D Pos/Rot/Scl Track:"
 msgstr "Faixa de Pos/Rot/Esc 3D:"
 
+msgid "Blendshape Track:"
+msgstr "Trilha Blendshape:"
+
 msgid "Value Track:"
 msgstr "Faixa de valor:"
 
@@ -1312,6 +1320,9 @@ msgstr "Número da Linha:"
 
 msgid "%d replaced."
 msgstr "%d substituído."
+
+msgid "No match"
+msgstr "Sem correspondência"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -1571,6 +1582,15 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Alternar Visibilidade"
+
+msgid "Updating assets on target device:"
+msgstr "Atualizando recursos no dispositivo alvo:"
+
+msgid "Syncing headers"
+msgstr "Sincronizando cabeçalhos"
+
+msgid "Getting remote file system"
+msgstr "Obtendo o sistema de arquivos remoto"
 
 msgid "Decompressing remote file system"
 msgstr "Descompactando o sistema de arquivos remoto"
@@ -3143,6 +3163,9 @@ msgstr "Erro ao processar o arquivo '%s'."
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "O arquivo de cena '%s' parece ser inválido/corrompido."
 
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "Arquivo '%s' ausente ou uma de suas dependências."
+
 msgid "Error while loading file '%s'."
 msgstr "Erro ao carregar o arquivo '%s'."
 
@@ -3378,9 +3401,7 @@ msgstr ""
 "falhou."
 
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr ""
-"Não foi possível encontrar o campo de script para o plugin em: 'res://addons/"
-"%s'."
+msgstr "Não foi possível encontrar o campo script para o plugin em: '%s'."
 
 msgid "Unable to load addon script from path: '%s'."
 msgstr ""
@@ -3429,6 +3450,9 @@ msgstr "Limpar Cenas Recentes"
 
 msgid "There is no defined scene to run."
 msgstr "Não há cena definida para rodar."
+
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Engine"
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -3995,6 +4019,9 @@ msgstr "Traduções da String (quantidade: %d)"
 msgid "Add Translation"
 msgstr "Adicionar Tradução"
 
+msgid "Lock/Unlock Component Ratio"
+msgstr "Relação de componente de bloqueio/desbloqueio"
+
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
 "(%s)."
@@ -4059,6 +4086,12 @@ msgid ""
 msgstr ""
 "Não foi possível executar o script do editor, você esqueceu de substituir o "
 "método '_run'?"
+
+msgid "Undo: %s"
+msgstr "Desfazer: %s"
+
+msgid "Redo: %s"
+msgstr "Refazer: %s"
 
 msgid "Edit Built-in Action"
 msgstr "Editar Ação Integrada"
@@ -4146,6 +4179,12 @@ msgstr "Joystick 4 Acima"
 
 msgid "Joystick 4 Down"
 msgstr "Joystick 4 Abaixo"
+
+msgid "or"
+msgstr "Ou"
+
+msgid "Unicode"
+msgstr "Padrão Unicode"
 
 msgid "Joypad Axis %d %s (%s)"
 msgstr "Eixo do Joypad %d %s (%s)"
@@ -4485,6 +4524,9 @@ msgstr "Recursos para exportar:"
 msgid "Delete preset '%s'?"
 msgstr "Apagar predefinição '%s'?"
 
+msgid "(Inherited)"
+msgstr "(Herdado)"
+
 msgid "%s Export"
 msgstr "Exportar %s"
 
@@ -4819,6 +4861,12 @@ msgstr "Expandir Pasta"
 
 msgid "Expand Hierarchy"
 msgstr "Expandir Hierarquia"
+
+msgid "Collapse Hierarchy"
+msgstr "Recolher hierarquia"
+
+msgid "Move/Duplicate To..."
+msgstr "Mover/Duplicar para..."
 
 msgid "Add to Favorites"
 msgstr "Adicionar aos Favoritos"
@@ -7426,11 +7474,26 @@ msgstr "Criar Pontos de Emissão a Partir do Nó"
 msgid "Load Curve Preset"
 msgstr "Carregar Definição de Curva"
 
+msgid "Add Curve Point"
+msgstr "Adicionar ponto de curva"
+
 msgid "Remove Curve Point"
 msgstr "Remover Ponto da Curva"
 
 msgid "Modify Curve Point"
 msgstr "Modificar Ponto da Curva"
+
+msgid "Modify Curve Point's Tangents"
+msgstr "Modifique as tangentes do ponto da curva"
+
+msgid "Modify Curve Point's Left Tangent"
+msgstr "Modifique a tangente esquerda do ponto da curva"
+
+msgid "Modify Curve Point's Right Tangent"
+msgstr "Modificar a tangente direita do ponto da curva"
+
+msgid "Toggle Linear Curve Point's Tangent"
+msgstr "Alternar a tangente do ponto da curva linear"
 
 msgid "Hold Shift to edit tangents individually"
 msgstr "Segure Shift para editar tangentes individualmente"
@@ -7516,6 +7579,16 @@ msgstr ""
 "Quando esta opção está ativa, malhas e polígonos de navegação serão visíveis "
 "durante o projeto em execução."
 
+msgid "Visible Avoidance"
+msgstr "Evitação Visível"
+
+msgid ""
+"When this option is enabled, avoidance objects shapes, radius and velocities "
+"will be visible in the running project."
+msgstr ""
+"Quando esta opção estiver habilitada, as formas, raios e velocidades dos "
+"objetos evitados ficarão visíveis no projeto em execução."
+
 msgid "Synchronize Scene Changes"
 msgstr "Sincronizar Mudanças de Cena"
 
@@ -7568,6 +7641,9 @@ msgstr "Tamanho: %s"
 
 msgid "Type: %s"
 msgstr "Tipo: %s"
+
+msgid "Dimensions: %d × %d"
+msgstr "Dimensões: %d × %d"
 
 msgid "Overrides (%d)"
 msgstr "Sobrescreveu (%d)"
@@ -7773,6 +7849,9 @@ msgstr "Gradiente Editado"
 
 msgid "Reverse/mirror gradient."
 msgstr "Gradiente reverso/espelhado."
+
+msgid "Move GradientTexture2D Fill Point"
+msgstr "Mover ponto de preenchimento GradientTexture2D"
 
 msgid "Swap GradientTexture2D Fill Points"
 msgstr "Trocar Pontos de Preenchimento do GradientTexture2D"
@@ -8119,6 +8198,9 @@ msgstr "Definir start_position"
 msgid "Set end_position"
 msgstr "Definir end_position"
 
+msgid "Set NavigationObstacle3D Vertices"
+msgstr "Definir Vértices do NavigationObstacle3D"
+
 msgid "Edit Vertices"
 msgstr "Editar Vértices"
 
@@ -8223,6 +8305,9 @@ msgstr "Tamanho: %s (%.1fMP)\n"
 
 msgid "Objects: %d\n"
 msgstr "Objetos: %d\n"
+
+msgid "Primitives: %d\n"
+msgstr "Primitivos: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Chamadas de Desenho: %d"
@@ -9222,6 +9307,9 @@ msgstr "Ir para o documento editado anteriormente."
 msgid "Go to next edited document."
 msgstr "Ir para o próximo documento editado."
 
+msgid "Make the script editor floating."
+msgstr "Torne o editor de script flutuante."
+
 msgid "Discard"
 msgstr "Descartar"
 
@@ -9337,6 +9425,9 @@ msgstr "Mostrar Todas as Linhas"
 msgid "Evaluate Selection"
 msgstr "Avaliar Seleção"
 
+msgid "Toggle Word Wrap"
+msgstr "Alternar Quebra de Linha"
+
 msgid "Trim Trailing Whitespace"
 msgstr "Apagar Espaços em Branco"
 
@@ -9411,6 +9502,9 @@ msgstr "Abrir Arquivo no Inspetor"
 
 msgid "Close File"
 msgstr "Fechar Arquivo"
+
+msgid "Make the shader editor floating."
+msgstr "Torne o editor de shader flutuante."
 
 msgid "No valid shader stages found."
 msgstr "Não foi encontrado estágio válido de Shader."
@@ -9639,6 +9733,9 @@ msgstr "Filtrar Animações"
 msgid "Delete Animation"
 msgstr "Excluir Animação"
 
+msgid "This resource does not have any animations."
+msgstr "Este recurso não possui animações."
+
 msgid "Animation Frames:"
 msgstr "Quadros da Animação:"
 
@@ -9678,6 +9775,9 @@ msgstr "Selecionar Quadros"
 msgid "Frame Order"
 msgstr "Ordem do Quadro"
 
+msgid "As Selected"
+msgstr "Conforme selecionado"
+
 msgid "By Row"
 msgstr "Por Linha"
 
@@ -9695,6 +9795,24 @@ msgstr "Direita para Esquerda, Baixo para Cima"
 
 msgid "By Column"
 msgstr "Por Coluna"
+
+msgid "Top to Bottom, Left to Right"
+msgstr "De cima para baixo, da esquerda para a direita"
+
+msgid "Top to Bottom, Right to Left"
+msgstr "De cima para baixo, da direita para a esquerda"
+
+msgid "Bottom to Top, Left to Right"
+msgstr "De baixo para cima, da esquerda para a direita"
+
+msgid "Bottom to Top, Right to Left"
+msgstr "De baixo para cima, da direita para a esquerda"
+
+msgid "Select None"
+msgstr "Selecionar nenhum"
+
+msgid "Toggle Settings Panel"
+msgstr "Alternar painel de configurações"
 
 msgid "Horizontal"
 msgstr "Horizontal"
@@ -10407,6 +10525,12 @@ msgstr "Inverter Horizontalmente"
 msgid "Flip Vertically"
 msgstr "Inverter Verticalmente"
 
+msgid "Disable Snap"
+msgstr "Desativar Snap"
+
+msgid "Half-Pixel Snap"
+msgstr "Snap de meio pixel"
+
 msgid "Painting Tiles Property"
 msgstr "Propriedade Pintar Tiles"
 
@@ -10451,6 +10575,9 @@ msgstr "Tile com Cena Inválida"
 
 msgid "Delete tiles"
 msgstr "Excluir tiles"
+
+msgid "Drawing Rect:"
+msgstr "Desenho Reto:"
 
 msgid "Change selection"
 msgstr "Mudar Seleção"
@@ -10511,6 +10638,13 @@ msgstr "Espalhamento:"
 
 msgid "Tiles"
 msgstr "Tiles"
+
+msgid ""
+"This TileMap's TileSet has no source configured. Go to the TileSet bottom tab "
+"to add one."
+msgstr ""
+"O TileSet deste TileMap não tem fonte configurada. Vá para a guia inferior "
+"TileSet para adicionar um."
 
 msgid "Sort sources"
 msgstr "Classificar fontes"
@@ -10586,6 +10720,13 @@ msgstr "Alterna visibilidade da grade."
 
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "Automaticamente Substitui Tiles com Proxies"
+
+msgid ""
+"The edited TileMap node has no TileSet resource.\n"
+"Create or load a TileSet resource in the Tile Set property in the inspector."
+msgstr ""
+"O nó TileMap editado não possui recurso TileSet.\n"
+"Crie ou carregue um recurso TileSet na propriedade Tile Set no inspetor."
 
 msgid "Remove Tile Proxies"
 msgstr "Remover Proxies de Tile"
@@ -10803,6 +10944,15 @@ msgstr "Abrir Ferramenta de Mesclagem do Atlas"
 
 msgid "Manage Tile Proxies"
 msgstr "Gerenciar Proxies Tile"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"Nenhuma fonte TileSet selecionada. Selecione ou crie uma fonte TileSet.\n"
+"Você pode criar uma nova fonte usando o botão Adicionar à esquerda ou "
+"soltando uma textura de mosaico na lista de fontes."
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Adicione novos padrões no modo de edição TileMap."
@@ -12371,6 +12521,13 @@ msgstr "Controle de Versão:"
 msgid "Git"
 msgstr "Git"
 
+msgid "This project was last edited in a different Godot version: "
+msgstr ""
+"Este projeto foi editado pela última vez em uma versão diferente do Godot: "
+
+msgid "This project uses features unsupported by the current build:"
+msgstr "Este projeto usa recursos não suportados pela compilação atual:"
+
 msgid "Error: Project is missing on the filesystem."
 msgstr "Erro: Projeto não encontrado no sistema de arquivos."
 
@@ -12512,6 +12669,15 @@ msgstr ""
 "\n"
 
 msgid ""
+"Warning: This project was last edited in Godot %s. Opening will change it to "
+"Godot %s.\n"
+"\n"
+msgstr ""
+"Aviso: Este projeto foi editado pela última vez em Godot %s. A abertura o "
+"mudará para Godot %s.\n"
+"\n"
+
+msgid ""
 "Warning: This project uses the following features not supported by this build "
 "of Godot:\n"
 "\n"
@@ -12545,6 +12711,18 @@ msgstr ""
 
 msgid "Are you sure to run %d projects at once?"
 msgstr "Tem certeza de que deseja executar %d projetos de modo simultâneo?"
+
+msgid "Tag name can't be empty."
+msgstr "O nome da tag não pode estar vazio."
+
+msgid "Tag name can't contain spaces."
+msgstr "O nome da tag não pode conter espaços."
+
+msgid "These characters are not allowed in tags: %s."
+msgstr "Estes caracteres não são permitidos em tags: %s."
+
+msgid "Tag name must be lowercase."
+msgstr "O nome da tag deve estar em letras minúsculas."
 
 msgid "Remove %d projects from the list?"
 msgstr "Remover %d projetos da lista?"
@@ -12597,6 +12775,9 @@ msgstr "Carregando, por favor aguarde..."
 msgid "Last Edited"
 msgstr "Última Modificação"
 
+msgid "Tags"
+msgstr "Tags"
+
 msgid "New Project"
 msgstr "Novo Projeto"
 
@@ -12611,6 +12792,9 @@ msgstr "Escanear Projetos"
 
 msgid "Edit Project"
 msgstr "Editar Projeto"
+
+msgid "Manage Tags"
+msgstr "Gerenciar tags"
 
 msgid "Remove Project"
 msgstr "Remover Projeto"
@@ -12636,6 +12820,27 @@ msgstr "Também deletar os conteúdos do projeto (não pode ser desfeito!)"
 msgid "Convert Full Project"
 msgstr "Converter Projeto Completo"
 
+msgid ""
+"This option will perform full project conversion, updating scenes, resources "
+"and scripts from Godot 3 to work in Godot 4.\n"
+"\n"
+"Note that this is a best-effort conversion, i.e. it makes upgrading the "
+"project easier, but it will not open out-of-the-box and will still require "
+"manual adjustments.\n"
+"\n"
+"IMPORTANT: Make sure to backup your project before converting, as this "
+"operation makes it impossible to open it in older versions of Godot."
+msgstr ""
+"Esta opção realizará a conversão completa do projeto, atualizando cenas, "
+"recursos e scripts do Godot 3 para funcionar no Godot 4.\n"
+"\n"
+"Observe que esta é uma conversão de melhor esforço, ou seja, facilita a "
+"atualização do projeto, mas não será aberta imediatamente e ainda exigirá "
+"ajustes manuais.\n"
+"\n"
+"IMPORTANTE: Certifique-se de fazer backup do seu projeto antes de converter, "
+"pois esta operação impossibilita a abertura em versões mais antigas do Godot."
+
 msgid "Can't run project"
 msgstr "Não é possível executar o projeto"
 
@@ -12646,8 +12851,26 @@ msgstr ""
 "Você não tem nenhum projeto no momento.\n"
 "Gostaria de explorar projetos de exemplos oficiais na Biblioteca de Recursos?"
 
+msgid "Manage Project Tags"
+msgstr "Gerenciar tags de projeto"
+
+msgid "Project Tags"
+msgstr "Tags de Projeto"
+
+msgid "Click tag to remove it from the project."
+msgstr "Clique na tag para removê-la do projeto."
+
+msgid "All Tags"
+msgstr "Todas as Tags"
+
+msgid "Click tag to add it to the project."
+msgstr "Clique na tag para adicioná-la ao projeto."
+
 msgid "Create New Tag"
 msgstr "Criar Nova Tag"
+
+msgid "Tags are capitalized automatically when displayed."
+msgstr "As tags são capitalizadas automaticamente quando exibidas."
 
 msgid "Add Project Setting"
 msgstr "Adicionar Configuração ao Projeto"
@@ -12838,6 +13061,9 @@ msgstr "Nome de arquivo inválido."
 msgid "File already exists."
 msgstr "O arquivo já existe."
 
+msgid "Root node valid."
+msgstr "Nó raiz válido."
+
 msgid "Invalid root node name."
 msgstr "Nome de nó raiz inválido."
 
@@ -12933,6 +13159,9 @@ msgstr "Excluir nó \"%s\" e seus filhos?"
 
 msgid "Delete node \"%s\"?"
 msgstr "Excluir o nó \"%s\"?"
+
+msgid "Some nodes are referenced by animation tracks."
+msgstr "Alguns nós são referenciados por faixas de animação."
 
 msgid "Saving the branch as a scene requires having a scene open in the editor."
 msgstr ""
@@ -13093,6 +13322,9 @@ msgstr "Carregar como Substituto"
 msgid "Auto Expand to Selected"
 msgstr "Auto Expandir Selecionados"
 
+msgid "All Scene Sub-Resources"
+msgstr "Todos os sub-recursos de cena"
+
 msgid "Filters"
 msgstr "Filtros"
 
@@ -13129,6 +13361,9 @@ msgstr "Colar Nó(s)"
 
 msgid "<Unnamed> at %s"
 msgstr "<Sem nome> em %s"
+
+msgid "(used %d times)"
+msgstr "(usado %d vezes)"
 
 msgid "Add Child Node"
 msgstr "Adicionar Nó Filho"
@@ -13181,6 +13416,9 @@ msgstr ""
 "Se selecionado, o painel da árvore de cena Remota vai fazer o projeto travar "
 "toda vez que atualizar.\n"
 "Volte para o painel da árvore de cena Local para melhorar o desempenho."
+
+msgid "Delete Related Animation Tracks"
+msgstr "Excluir faixas de animação relacionadas"
 
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Limpar Herança? (Irreversível!)"
@@ -13359,6 +13597,16 @@ msgstr "O nome '%s' é uma palavra-chave reservada da linguagem de shader."
 
 msgid "Add Shader Global Parameter"
 msgstr "Adicionar Parâmetro Global Shader"
+
+msgid "Make this panel floating in the screen %d."
+msgstr "Faça este painel flutuar na tela %d."
+
+msgid ""
+"Make this panel floating.\n"
+"Right click to open the screen selector."
+msgstr ""
+"Torne este painel flutuante.\n"
+"Clique com o botão direito para abrir o seletor de tela."
 
 msgid "Select Screen"
 msgstr "Selecionar tela"
@@ -13735,17 +13983,28 @@ msgstr "Por favor, selecione um MultiplayerSynchronizer primeiro."
 msgid "The MultiplayerSynchronizer needs a root path."
 msgstr "O MultiplayerSynchronizer precisa de um caminho raiz."
 
+msgid ""
+"Each MultiplayerSynchronizer can have no more than 64 watched properties."
+msgstr ""
+"Cada MultiplayerSynchronizer não pode ter mais de 64 propriedades monitoradas."
+
 msgid "Set spawn property"
 msgstr "Definir propriedade de geração"
 
 msgid "Set sync property"
 msgstr "Definir propriedade de sincronização"
 
+msgid "Set watch property"
+msgstr "Definir propriedade do relógio"
+
 msgid "Delete Property?"
 msgstr "Excluir Propriedade?"
 
 msgid "Remove Property"
 msgstr "Remover Propriedade"
+
+msgid "Property of this type not supported."
+msgstr "Propriedade deste tipo não é suportada."
 
 msgid ""
 "A valid NodePath must be set in the \"Spawn Path\" property in order for "
@@ -13999,6 +14258,20 @@ msgid "Could not execute on device."
 msgstr "Não foi possível executar no dispositivo."
 
 msgid ""
+"Exporting to Android is currently not supported in Godot 4 when using C#/."
+"NET. Use Godot 3 to target Android with C#/Mono instead."
+msgstr ""
+"Atualmente, a exportação para Android não é suportada no Godot 4 ao usar C#/."
+"NET. Em vez disso, use o Godot 3 para direcionar o Android com C#/Mono."
+
+msgid ""
+"If this project does not use C#, use a non-C# editor build to export the "
+"project."
+msgstr ""
+"Se este projeto não usar C#, use uma compilação de editor não C# para "
+"exportar o projeto."
+
+msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr ""
@@ -14212,6 +14485,9 @@ msgstr "Alinhando APK..."
 msgid "Could not unzip temporary unaligned APK."
 msgstr "Não foi possível descompactar o APK temporário não alinhado."
 
+msgid "App Store Team ID not specified."
+msgstr "ID da equipe da App Store não especificada."
+
 msgid "Invalid Identifier:"
 msgstr "Identificador Inválido:"
 
@@ -14247,6 +14523,13 @@ msgstr ""
 ".ipa só pode ser criado no macOS. Saindo do projeto Xcode sem compilar o "
 "pacote."
 
+msgid ""
+"Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. "
+"Use Godot 3 to target iOS with C#/Mono instead."
+msgstr ""
+"A exportação para iOS atualmente não é suportada no Godot 4 ao usar C#/.NET. "
+"Em vez disso, use o Godot 3 para direcionar o iOS com C#/Mono."
+
 msgid "Identifier is missing."
 msgstr "Identificador está ausente."
 
@@ -14258,6 +14541,12 @@ msgstr "Exportar Script de Depuração"
 
 msgid "Could not open file \"%s\"."
 msgstr "Não foi possível abrir o arquivo \"%s\"."
+
+msgid "Debug Console Export"
+msgstr "Exportação do console de depuração"
+
+msgid "Could not create console wrapper."
+msgstr "Não foi possível criar o wrapper do console."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "Falha ao abrir o arquivo executável \"%s\"."
@@ -14361,6 +14650,37 @@ msgstr "Tipo de objeto desconhecido."
 msgid "Invalid bundle identifier:"
 msgstr "Identificador de pacote inválido:"
 
+msgid "App Store distribution with ad-hoc code signing is not supported."
+msgstr ""
+"A distribuição da App Store com assinatura de código ad-hoc não é suportada."
+
+msgid "Notarization with an ad-hoc signature is not supported."
+msgstr "Notarização com uma assinatura ad-hoc não é suportada."
+
+msgid "Apple Team ID is required for App Store distribution."
+msgstr "O Apple Team ID é necessário para distribuição na App Store."
+
+msgid "Apple Team ID is required for notarization."
+msgstr "O Apple Team ID é necessário para reconhecimento de firma."
+
+msgid "Provisioning profile is required for App Store distribution."
+msgstr ""
+"O perfil de provisionamento é necessário para distribuição na App Store."
+
+msgid "Installer signing identity is required for App Store distribution."
+msgstr ""
+"A identidade de assinatura do instalador é necessária para distribuição na "
+"App Store."
+
+msgid "App sandbox is required for App Store distribution."
+msgstr "A sandbox do aplicativo é necessária para distribuição na App Store."
+
+msgid "Code signing is required for App Store distribution."
+msgstr "A assinatura do código é necessária para distribuição na App Store."
+
+msgid "Code signing is required for notarization."
+msgstr "A assinatura do código é necessária para reconhecimento de firma."
+
 msgid ""
 "Neither Apple ID name nor App Store Connect issuer ID name not specified."
 msgstr ""
@@ -14382,6 +14702,36 @@ msgstr "App Store Connect API key ID não foi especificado."
 
 msgid "App Store Connect issuer ID name not specified."
 msgstr "O nome do App Store Connect issuer ID não foi especificado."
+
+msgid "Microphone access is enabled, but usage description is not specified."
+msgstr ""
+"O acesso ao microfone está ativado, mas a descrição de uso não é especificada."
+
+msgid "Camera access is enabled, but usage description is not specified."
+msgstr ""
+"O acesso à câmera está ativado, mas a descrição de uso não é especificada."
+
+msgid ""
+"Location information access is enabled, but usage description is not "
+"specified."
+msgstr ""
+"O acesso às informações de localização está ativado, mas a descrição de uso "
+"não está especificada."
+
+msgid "Address book access is enabled, but usage description is not specified."
+msgstr ""
+"O acesso ao catálogo de endereços está ativado, mas a descrição de uso não "
+"está especificada."
+
+msgid "Calendar access is enabled, but usage description is not specified."
+msgstr ""
+"O acesso ao calendário está ativado, mas a descrição de uso não está "
+"especificada."
+
+msgid "Photo library access is enabled, but usage description is not specified."
+msgstr ""
+"O acesso à biblioteca de fotos está ativado, mas a descrição de uso não é "
+"especificada."
 
 msgid "Icon Creation"
 msgstr "Criação de Ícone"
@@ -14466,6 +14816,15 @@ msgstr ""
 "Links simbólicos relativos não são suportados, \"%s\" exportado pode estar "
 "quebrado!"
 
+msgid "PKG Creation"
+msgstr "Criação PKG"
+
+msgid "Could not start productbuild executable."
+msgstr "Não foi possível iniciar o executável do productbuild."
+
+msgid "`productbuild` failed."
+msgstr "`productbuild` falhou."
+
 msgid "DMG Creation"
 msgstr "Criação de DMG"
 
@@ -14541,6 +14900,9 @@ msgstr "Criando DMG"
 
 msgid "Code signing DMG"
 msgstr "Assinatura de código DMG"
+
+msgid "Making PKG installer"
+msgstr "Criando o instalador do PKG"
 
 msgid "Making ZIP"
 msgstr "Criando ZIP"
@@ -14658,6 +15020,13 @@ msgstr "Não foi possível ler o arquivo: \"%s\"."
 
 msgid "PWA"
 msgstr "PWA"
+
+msgid ""
+"Exporting to Web is currently not supported in Godot 4 when using C#/.NET. "
+"Use Godot 3 to target Web with C#/Mono instead."
+msgstr ""
+"Atualmente, a exportação para a Web não é suportada no Godot 4 ao usar C#/."
+"NET. Em vez disso, use Godot 3 para direcionar a Web com C#/Mono."
 
 msgid "Could not read HTML shell: \"%s\"."
 msgstr "Não foi possível ler o shell HTML: \"%s\"."
@@ -14820,6 +15189,13 @@ msgstr ""
 "de 'Segmentos'."
 
 msgid ""
+"The One Way Collision property will be ignored when the collision object is "
+"an Area2D."
+msgstr ""
+"A propriedade One Way Collision será ignorada quando o objeto de colisão for "
+"um Area2D."
+
+msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
@@ -14869,6 +15245,13 @@ msgid ""
 msgstr ""
 "As trilhas de partículas estão disponíveis apenas ao usar o módulo de "
 "renderização Avançado+ ou Mobile."
+
+msgid ""
+"Particle sub-emitters are not available when using the GL Compatibility "
+"rendering backend."
+msgstr ""
+"Os subemissores de partículas não estão disponíveis ao usar o back-end de "
+"renderização de compatibilidade com GL."
 
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "O Nó A e o Nó B devem ser PhysicsBody2Ds"
@@ -15202,6 +15585,13 @@ msgid ""
 msgstr ""
 "Trilhas habilitadas, mas um ou mais materiais de malha estão ausentes ou não "
 "definidos para renderização de trilhas."
+
+msgid ""
+"Particle sub-emitters are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr ""
+"Os subemissores de partículas estão disponíveis apenas ao usar os back-ends "
+"de renderização Forward+ ou Mobile."
 
 msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
@@ -15557,6 +15947,10 @@ msgstr ""
 msgid "Copy this constructor in a script."
 msgstr "Copiar este construtor em um script."
 
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr ""
+"Insira um código hexadecimal (\"#ff0000\") ou uma cor nomeada (\"vermelho\")."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -15573,6 +15967,9 @@ msgstr ""
 "Cor: #%s\n"
 "LMB: Aplica cor"
 
+msgid "Pick a color from the screen."
+msgstr "Escolha uma cor na tela."
+
 msgid "Pick a color from the application window."
 msgstr "Escolha uma cor na janela do aplicativo."
 
@@ -15584,6 +15981,9 @@ msgstr "Selecione o modo do seletor."
 
 msgid "Switch between hexadecimal and code values."
 msgstr "Alterne entre valores hexadecimais e de código."
+
+msgid "Hex code or named color"
+msgstr "Código hexadecimal ou cor nomeada"
 
 msgid "Add current color as a preset."
 msgstr "Adicionar cor atual como uma predefinição."
@@ -15782,6 +16182,13 @@ msgstr ""
 "grandes alterações em versões futuras."
 
 msgid ""
+"Default Environment as specified in the project setting \"rendering/"
+"environment/defaults/default_environment\" could not be loaded."
+msgstr ""
+"O ambiente padrão conforme especificado na configuração do projeto "
+"\"rendering/environment/defaults/default_environment\" não pôde ser carregado."
+
+msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
 "in the scene."
 msgstr ""
@@ -15827,6 +16234,15 @@ msgstr "Formato de textura BMFont não suportado."
 
 msgid "Invalid BMFont block type."
 msgstr "Tipo de bloco BMFont inválido."
+
+msgid ""
+"An incoming node's name clashes with %s already in the scene (presumably, "
+"from a more nested instance).\n"
+"The less nested node will be renamed. Please fix and re-save the scene."
+msgstr ""
+"O nome de um nó entrante conflita com %s já na cena (presumivelmente, de uma "
+"instância mais aninhada).\n"
+"O nó menos aninhado será renomeado. Corrija e salve novamente a cena."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"
@@ -16366,6 +16782,13 @@ msgid "Allowed instance uniform indices must be within [0..%d] range."
 msgstr ""
 "Índices uniformes de instância permitidos devem estar dentro do intervalo [0.."
 "%d]."
+
+msgid ""
+"'hint_normal_roughness_texture' is only available when using the Forward+ "
+"backend."
+msgstr ""
+"'hint_normal_roughness_texture' só está disponível ao usar o back-end "
+"Forward+."
 
 msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
 msgstr "'hint_normal_roughness_texture' não é suportado em shaders '%s'."

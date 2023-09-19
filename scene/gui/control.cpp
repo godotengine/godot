@@ -2448,6 +2448,7 @@ void Control::_invalidate_theme_cache() {
 }
 
 void Control::_update_theme_item_cache() {
+	ThemeDB::get_singleton()->update_class_instance_items(this);
 }
 
 void Control::set_theme_owner_node(Node *p_node) {
@@ -2463,6 +2464,11 @@ Node *Control::get_theme_owner_node() const {
 bool Control::has_theme_owner_node() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return data.theme_owner->has_owner_node();
+}
+
+void Control::set_theme_context(ThemeContext *p_context, bool p_propagate) {
+	ERR_MAIN_THREAD_GUARD;
+	data.theme_owner->set_owner_context(p_context, p_propagate);
 }
 
 void Control::set_theme(const Ref<Theme> &p_theme) {
@@ -2663,6 +2669,33 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 	data.theme_constant_cache[p_theme_type][p_name] = constant;
 	return constant;
 }
+
+Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const {
+	switch (p_data_type) {
+		case Theme::DATA_TYPE_COLOR:
+			return get_theme_color(p_name, p_theme_type);
+		case Theme::DATA_TYPE_CONSTANT:
+			return get_theme_constant(p_name, p_theme_type);
+		case Theme::DATA_TYPE_FONT:
+			return get_theme_font(p_name, p_theme_type);
+		case Theme::DATA_TYPE_FONT_SIZE:
+			return get_theme_font_size(p_name, p_theme_type);
+		case Theme::DATA_TYPE_ICON:
+			return get_theme_icon(p_name, p_theme_type);
+		case Theme::DATA_TYPE_STYLEBOX:
+			return get_theme_stylebox(p_name, p_theme_type);
+		case Theme::DATA_TYPE_MAX:
+			break; // Can't happen, but silences warning.
+	}
+
+	return Variant();
+}
+
+#ifdef TOOLS_ENABLED
+Ref<Texture2D> Control::get_editor_theme_icon(const StringName &p_name) const {
+	return get_theme_icon(p_name, SNAME("EditorIcons"));
+}
+#endif
 
 bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -3118,7 +3151,9 @@ void Control::_notification(int p_notification) {
 				notification(NOTIFICATION_TRANSLATION_CHANGED);
 			}
 #endif
-			notification(NOTIFICATION_THEME_CHANGED);
+
+			// Emits NOTIFICATION_THEME_CHANGED internally.
+			set_theme_context(ThemeDB::get_singleton()->get_nearest_theme_context(this));
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
@@ -3128,6 +3163,7 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			set_theme_context(nullptr, false);
 			release_focus();
 			get_viewport()->_gui_remove_control(this);
 		} break;
@@ -3626,7 +3662,7 @@ void Control::_bind_methods() {
 }
 
 Control::Control() {
-	data.theme_owner = memnew(ThemeOwner);
+	data.theme_owner = memnew(ThemeOwner(this));
 }
 
 Control::~Control() {

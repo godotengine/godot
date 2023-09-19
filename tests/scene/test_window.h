@@ -38,8 +38,8 @@
 
 namespace TestWindow {
 
-class NotificationControl : public Control {
-	GDCLASS(NotificationControl, Control);
+class NotificationControlWindow : public Control {
+	GDCLASS(NotificationControlWindow, Control);
 
 protected:
 	void _notification(int p_what) {
@@ -69,7 +69,7 @@ TEST_CASE("[SceneTree][Window]") {
 		w->set_content_scale_size(Size2i(200, 200));
 		w->set_content_scale_mode(Window::CONTENT_SCALE_MODE_CANVAS_ITEMS);
 		w->set_content_scale_aspect(Window::CONTENT_SCALE_ASPECT_KEEP);
-		NotificationControl *c = memnew(NotificationControl);
+		NotificationControlWindow *c = memnew(NotificationControlWindow);
 		w->add_child(c);
 		c->set_size(Size2i(100, 100));
 		c->set_position(Size2i(-50, -50));

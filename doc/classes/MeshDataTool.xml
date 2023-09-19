@@ -171,7 +171,7 @@
 			<return type="Vector3" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the vertex at given index.
+				Returns the position of the given vertex.
 			</description>
 		</method>
 		<method name="get_vertex_bones" qualifiers="const">

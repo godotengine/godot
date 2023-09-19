@@ -114,7 +114,7 @@ void TTS_Windows::_update_tts() {
 }
 
 bool TTS_Windows::is_speaking() const {
-	ERR_FAIL_COND_V(!synth, false);
+	ERR_FAIL_NULL_V(synth, false);
 
 	SPVOICESTATUS status;
 	synth->GetStatus(&status, nullptr);
@@ -122,7 +122,7 @@ bool TTS_Windows::is_speaking() const {
 }
 
 bool TTS_Windows::is_paused() const {
-	ERR_FAIL_COND_V(!synth, false);
+	ERR_FAIL_NULL_V(synth, false);
 	return paused;
 }
 
@@ -185,7 +185,7 @@ Array TTS_Windows::get_voices() const {
 }
 
 void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	if (p_interrupt) {
 		stop();
 	}
@@ -212,7 +212,7 @@ void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volum
 }
 
 void TTS_Windows::pause() {
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	if (!paused) {
 		if (synth->Pause() == S_OK) {
 			paused = true;
@@ -221,13 +221,13 @@ void TTS_Windows::pause() {
 }
 
 void TTS_Windows::resume() {
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	synth->Resume();
 	paused = false;
 }
 
 void TTS_Windows::stop() {
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 
 	SPVOICESTATUS status;
 	synth->GetStatus(&status, nullptr);

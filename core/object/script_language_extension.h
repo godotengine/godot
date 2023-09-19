@@ -631,6 +631,7 @@ VARIANT_ENUM_CAST(ScriptLanguageExtension::CodeCompletionLocation)
 class ScriptInstanceExtension : public ScriptInstance {
 public:
 	const GDExtensionScriptInstanceInfo2 *native_info;
+	bool free_native_info = false;
 	struct {
 		GDExtensionClassNotification notification_func;
 	} deprecated_native_info;
@@ -687,7 +688,26 @@ public:
 		return Variant::NIL;
 	}
 	virtual void validate_property(PropertyInfo &p_property) const override {
-		// TODO
+		if (native_info->validate_property_func) {
+			// GDExtension uses a StringName rather than a String for property name.
+			StringName prop_name = p_property.name;
+			GDExtensionPropertyInfo gdext_prop = {
+				(GDExtensionVariantType)p_property.type,
+				&prop_name,
+				&p_property.class_name,
+				(uint32_t)p_property.hint,
+				&p_property.hint_string,
+				p_property.usage,
+			};
+			if (native_info->validate_property_func(instance, &gdext_prop)) {
+				p_property.type = (Variant::Type)gdext_prop.type;
+				p_property.name = *reinterpret_cast<StringName *>(gdext_prop.name);
+				p_property.class_name = *reinterpret_cast<StringName *>(gdext_prop.class_name);
+				p_property.hint = (PropertyHint)gdext_prop.hint;
+				p_property.hint_string = *reinterpret_cast<String *>(gdext_prop.hint_string);
+				p_property.usage = gdext_prop.usage;
+			}
+		}
 	}
 
 	virtual bool property_can_revert(const StringName &p_name) const override {
@@ -830,6 +850,9 @@ public:
 	virtual ~ScriptInstanceExtension() {
 		if (native_info->free_func) {
 			native_info->free_func(instance);
+		}
+		if (free_native_info) {
+			memfree(const_cast<GDExtensionScriptInstanceInfo2 *>(native_info));
 		}
 	}
 

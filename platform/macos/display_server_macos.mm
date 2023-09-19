@@ -1451,7 +1451,7 @@ void DisplayServerMacOS::global_menu_set_item_checkable(const String &p_menu_roo
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->checkable_type = (p_checkable) ? CHECKABLE_TYPE_CHECK_BOX : CHECKABLE_TYPE_NONE;
 		}
 	}
@@ -1470,7 +1470,7 @@ void DisplayServerMacOS::global_menu_set_item_radio_checkable(const String &p_me
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->checkable_type = (p_checkable) ? CHECKABLE_TYPE_RADIO_BUTTON : CHECKABLE_TYPE_NONE;
 		}
 	}
@@ -1489,7 +1489,7 @@ void DisplayServerMacOS::global_menu_set_item_callback(const String &p_menu_root
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->callback = p_callback;
 		}
 	}
@@ -1508,7 +1508,7 @@ void DisplayServerMacOS::global_menu_set_item_key_callback(const String &p_menu_
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->key_callback = p_key_callback;
 		}
 	}
@@ -1527,7 +1527,7 @@ void DisplayServerMacOS::global_menu_set_item_tag(const String &p_menu_root, int
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->meta = p_tag;
 		}
 	}
@@ -1642,7 +1642,7 @@ void DisplayServerMacOS::global_menu_set_item_state(const String &p_menu_root, i
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->state = p_state;
 		}
 	}
@@ -1661,7 +1661,7 @@ void DisplayServerMacOS::global_menu_set_item_max_states(const String &p_menu_ro
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->max_states = p_max_states;
 		}
 	}
@@ -1680,7 +1680,7 @@ void DisplayServerMacOS::global_menu_set_item_icon(const String &p_menu_root, in
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			if (p_icon.is_valid()) {
 				obj->img = p_icon->get_image();
 				obj->img = obj->img->duplicate();
@@ -3826,10 +3826,10 @@ void DisplayServerMacOS::set_native_icon(const String &p_filename) {
 
 	@try {
 		NSData *icon_data = [[NSData alloc] initWithBytes:&data.write[0] length:len];
-		ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
+		ERR_FAIL_NULL_MSG(icon_data, "Error reading icon data.");
 
 		NSImage *icon = [[NSImage alloc] initWithData:icon_data];
-		ERR_FAIL_COND_MSG(!icon, "Error loading icon.");
+		ERR_FAIL_NULL_MSG(icon, "Error loading icon.");
 
 		[NSApp setApplicationIconImage:icon];
 	} @catch (NSException *exception) {

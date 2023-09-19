@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
@@ -58,7 +59,7 @@ class ShortcutBin : public Node {
 			return;
 		}
 		Window *grandparent_window = get_window()->get_parent_visible_window();
-		ERR_FAIL_COND(!grandparent_window);
+		ERR_FAIL_NULL(grandparent_window);
 
 		if (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventShortcut>(p_event.ptr())) {
 			// HACK: Propagate the window input to the editor main window to handle global shortcuts.
@@ -150,7 +151,7 @@ void WindowWrapper::_notification(int p_what) {
 			set_process_shortcut_input(true);
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			window_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", "EditorStyles"));
+			window_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
 		} break;
 	}
 }
@@ -360,7 +361,7 @@ void ScreenSelect::_build_advanced_menu() {
 		button->set_tooltip_text(vformat(TTR("Make this panel floating in the screen %d."), i));
 
 		if (i == current_screen) {
-			Color accent_color = get_theme_color("accent_color", "Editor");
+			Color accent_color = get_theme_color("accent_color", EditorStringName(Editor));
 			button->add_theme_color_override("font_color", accent_color);
 		}
 
@@ -384,8 +385,8 @@ void ScreenSelect::_notification(int p_what) {
 			connect("gui_input", callable_mp(this, &ScreenSelect::_handle_mouse_shortcut));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MakeFloating", "EditorIcons"));
-			popup_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", "EditorStyles"));
+			set_icon(get_editor_theme_icon("MakeFloating"));
+			popup_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
 
 			const real_t popup_height = real_t(get_theme_font_size("font_size")) * 2.0;
 			popup->set_min_size(Size2(0, popup_height * 3));

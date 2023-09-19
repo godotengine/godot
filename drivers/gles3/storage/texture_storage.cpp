@@ -702,7 +702,7 @@ RID TextureStorage::texture_allocate() {
 
 void TextureStorage::texture_free(RID p_texture) {
 	Texture *t = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!t);
+	ERR_FAIL_NULL(t);
 	ERR_FAIL_COND(t->is_render_target);
 
 	if (t->canvas_texture) {
@@ -816,7 +816,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format, int p_w
 // Note: p_base is the root and p_texture is the proxy.
 void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	Texture *texture = texture_owner.get_or_null(p_base);
-	ERR_FAIL_COND(!texture);
+	ERR_FAIL_NULL(texture);
 	Texture proxy_tex;
 	proxy_tex.copy_from(*texture);
 	proxy_tex.proxy_to = p_base;
@@ -860,7 +860,7 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 	texture_set_data(p_texture, p_image, p_layer);
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
+	ERR_FAIL_NULL(tex);
 	GLES3::Utilities::get_singleton()->texture_resize_data(tex->tex_id, tex->total_data_size);
 
 #ifdef TOOLS_ENABLED
@@ -870,15 +870,15 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex);
+	ERR_FAIL_NULL(tex);
 	ERR_FAIL_COND(!tex->is_proxy);
 	Texture *proxy_to = texture_owner.get_or_null(p_proxy_to);
-	ERR_FAIL_COND(!proxy_to);
+	ERR_FAIL_NULL(proxy_to);
 	ERR_FAIL_COND(proxy_to->is_proxy);
 
 	if (tex->proxy_to.is_valid()) {
 		Texture *prev_tex = texture_owner.get_or_null(tex->proxy_to);
-		ERR_FAIL_COND(!prev_tex);
+		ERR_FAIL_NULL(prev_tex);
 		prev_tex->proxies.erase(p_texture);
 	}
 
@@ -938,7 +938,7 @@ void TextureStorage::texture_3d_placeholder_initialize(RID p_texture) {
 
 Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!texture, Ref<Image>());
+	ERR_FAIL_NULL_V(texture, Ref<Image>());
 
 #ifdef TOOLS_ENABLED
 	if (texture->image_cache_2d.is_valid() && !texture->is_render_target) {
@@ -1057,10 +1057,10 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	Texture *tex_to = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!tex_to);
+	ERR_FAIL_NULL(tex_to);
 	ERR_FAIL_COND(tex_to->is_proxy); //can't replace proxy
 	Texture *tex_from = texture_owner.get_or_null(p_by_texture);
-	ERR_FAIL_COND(!tex_from);
+	ERR_FAIL_NULL(tex_from);
 	ERR_FAIL_COND(tex_from->is_proxy); //can't replace proxy
 
 	if (tex_to == tex_from) {
@@ -1103,7 +1103,7 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p_height) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
-	ERR_FAIL_COND(!texture);
+	ERR_FAIL_NULL(texture);
 	ERR_FAIL_COND(texture->is_render_target);
 
 	ERR_FAIL_COND(p_width <= 0 || p_width > 16384);
@@ -1115,21 +1115,21 @@ void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p
 
 void TextureStorage::texture_set_path(RID p_texture, const String &p_path) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!texture);
+	ERR_FAIL_NULL(texture);
 
 	texture->path = p_path;
 }
 
 String TextureStorage::texture_get_path(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!texture, "");
+	ERR_FAIL_NULL_V(texture, "");
 
 	return texture->path;
 }
 
 void TextureStorage::texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!texture);
+	ERR_FAIL_NULL(texture);
 
 	texture->detect_3d_callback = p_callback;
 	texture->detect_3d_callback_ud = p_userdata;
@@ -1140,7 +1140,7 @@ void TextureStorage::texture_set_detect_srgb_callback(RID p_texture, RS::Texture
 
 void TextureStorage::texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!texture);
+	ERR_FAIL_NULL(texture);
 
 	texture->detect_normal_callback = p_callback;
 	texture->detect_normal_callback_ud = p_userdata;
@@ -1148,7 +1148,7 @@ void TextureStorage::texture_set_detect_normal_callback(RID p_texture, RS::Textu
 
 void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!texture);
+	ERR_FAIL_NULL(texture);
 
 	texture->detect_roughness_callback = p_callback;
 	texture->detect_roughness_callback_ud = p_userdata;
@@ -1176,14 +1176,14 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 
 void TextureStorage::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND(!texture);
+	ERR_FAIL_NULL(texture);
 
 	texture->redraw_if_visible = p_enable;
 }
 
 Size2 TextureStorage::texture_size_with_proxy(RID p_texture) {
 	const Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!texture, Size2());
+	ERR_FAIL_NULL_V(texture, Size2());
 	if (texture->is_proxy) {
 		const Texture *proxy = texture_owner.get_or_null(texture->proxy_to);
 		return Size2(proxy->width, proxy->height);
@@ -1201,7 +1201,7 @@ RID TextureStorage::texture_get_rd_texture(RID p_texture, bool p_srgb) const {
 
 uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) const {
 	const Texture *texture = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!texture, 0);
+	ERR_FAIL_NULL_V(texture, 0);
 
 	return texture->tex_id;
 }
@@ -1213,7 +1213,7 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer, bool initialize) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
-	ERR_FAIL_COND(!texture);
+	ERR_FAIL_NULL(texture);
 	if (texture->target == GL_TEXTURE_3D) {
 		// Target is set to a 3D texture or array texture, exit early to avoid spamming errors
 		return;
@@ -1346,7 +1346,7 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 Image::Format TextureStorage::texture_get_format(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
-	ERR_FAIL_COND_V(!texture, Image::FORMAT_L8);
+	ERR_FAIL_NULL_V(texture, Image::FORMAT_L8);
 
 	return texture->format;
 }
@@ -1354,7 +1354,7 @@ Image::Format TextureStorage::texture_get_format(RID p_texture) const {
 uint32_t TextureStorage::texture_get_texid(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
-	ERR_FAIL_COND_V(!texture, 0);
+	ERR_FAIL_NULL_V(texture, 0);
 
 	return texture->tex_id;
 }
@@ -1362,7 +1362,7 @@ uint32_t TextureStorage::texture_get_texid(RID p_texture) const {
 uint32_t TextureStorage::texture_get_width(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
-	ERR_FAIL_COND_V(!texture, 0);
+	ERR_FAIL_NULL_V(texture, 0);
 
 	return texture->width;
 }
@@ -1370,7 +1370,7 @@ uint32_t TextureStorage::texture_get_width(RID p_texture) const {
 uint32_t TextureStorage::texture_get_height(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
-	ERR_FAIL_COND_V(!texture, 0);
+	ERR_FAIL_NULL_V(texture, 0);
 
 	return texture->height;
 }
@@ -1378,7 +1378,7 @@ uint32_t TextureStorage::texture_get_height(RID p_texture) const {
 uint32_t TextureStorage::texture_get_depth(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
-	ERR_FAIL_COND_V(!texture, 0);
+	ERR_FAIL_NULL_V(texture, 0);
 
 	return texture->depth;
 }
@@ -1386,7 +1386,7 @@ uint32_t TextureStorage::texture_get_depth(RID p_texture) const {
 void TextureStorage::texture_bind(RID p_texture, uint32_t p_texture_no) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
-	ERR_FAIL_COND(!texture);
+	ERR_FAIL_NULL(texture);
 
 	glActiveTexture(GL_TEXTURE0 + p_texture_no);
 	glBindTexture(texture->target, texture->tex_id);
@@ -1408,7 +1408,7 @@ void TextureStorage::texture_add_to_texture_atlas(RID p_texture) {
 
 void TextureStorage::texture_remove_from_texture_atlas(RID p_texture) {
 	TextureAtlas::Texture *t = texture_atlas.textures.getptr(p_texture);
-	ERR_FAIL_COND(!t);
+	ERR_FAIL_NULL(t);
 	t->users--;
 	if (t->users == 0) {
 		texture_atlas.textures.erase(p_texture);
@@ -1684,13 +1684,13 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		// color
 		if (rt->overridden.color.is_valid()) {
 			texture = get_texture(rt->overridden.color);
-			ERR_FAIL_COND(!texture);
+			ERR_FAIL_NULL(texture);
 
 			rt->color = texture->tex_id;
 			rt->size = Size2i(texture->width, texture->height);
 		} else {
 			texture = get_texture(rt->texture);
-			ERR_FAIL_COND(!texture);
+			ERR_FAIL_NULL(texture);
 
 			glGenTextures(1, &rt->color);
 			glBindTexture(texture_target, rt->color);
@@ -1719,7 +1719,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		// depth
 		if (rt->overridden.depth.is_valid()) {
 			texture = get_texture(rt->overridden.depth);
-			ERR_FAIL_COND(!texture);
+			ERR_FAIL_NULL(texture);
 
 			rt->depth = texture->tex_id;
 		} else {
@@ -2021,21 +2021,21 @@ void TextureStorage::render_target_free(RID p_rid) {
 
 void TextureStorage::render_target_set_position(RID p_render_target, int p_x, int p_y) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	rt->position = Point2i(p_x, p_y);
 }
 
 Point2i TextureStorage::render_target_get_position(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Point2i());
+	ERR_FAIL_NULL_V(rt, Point2i());
 
 	return rt->position;
 };
 
 void TextureStorage::render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	if (p_width == rt->size.x && p_height == rt->size.y && p_view_count == rt->view_count) {
 		return;
@@ -2055,14 +2055,14 @@ void TextureStorage::render_target_set_size(RID p_render_target, int p_width, in
 // TODO: convert to Size2i internally
 Size2i TextureStorage::render_target_get_size(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Size2i());
+	ERR_FAIL_NULL_V(rt, Size2i());
 
 	return rt->size;
 }
 
 void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->direct_to_screen);
 
 	rt->overridden.velocity = p_velocity_texture;
@@ -2118,28 +2118,28 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 
 RID TextureStorage::render_target_get_override_color(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
+	ERR_FAIL_NULL_V(rt, RID());
 
 	return rt->overridden.color;
 }
 
 RID TextureStorage::render_target_get_override_depth(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
+	ERR_FAIL_NULL_V(rt, RID());
 
 	return rt->overridden.depth;
 }
 
 RID TextureStorage::render_target_get_override_velocity(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
+	ERR_FAIL_NULL_V(rt, RID());
 
 	return rt->overridden.velocity;
 }
 
 RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
+	ERR_FAIL_NULL_V(rt, RID());
 
 	if (rt->overridden.color.is_valid()) {
 		return rt->overridden.color;
@@ -2150,7 +2150,7 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_transparent) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	rt->is_transparent = p_transparent;
 
@@ -2162,14 +2162,14 @@ void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_t
 
 bool TextureStorage::render_target_get_transparent(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, false);
+	ERR_FAIL_NULL_V(rt, false);
 
 	return rt->is_transparent;
 }
 
 void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	if (p_direct_to_screen == rt->direct_to_screen) {
 		return;
@@ -2188,28 +2188,28 @@ void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, boo
 
 bool TextureStorage::render_target_get_direct_to_screen(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, false);
+	ERR_FAIL_NULL_V(rt, false);
 
 	return rt->direct_to_screen;
 }
 
 bool TextureStorage::render_target_was_used(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, false);
+	ERR_FAIL_NULL_V(rt, false);
 
 	return rt->used_in_frame;
 }
 
 void TextureStorage::render_target_clear_used(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	rt->used_in_frame = false;
 }
 
 void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 	if (p_msaa == rt->msaa) {
 		return;
 	}
@@ -2223,38 +2223,38 @@ void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSA
 
 RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, RS::VIEWPORT_MSAA_DISABLED);
+	ERR_FAIL_NULL_V(rt, RS::VIEWPORT_MSAA_DISABLED);
 
 	return rt->msaa;
 }
 
 void TextureStorage::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 	rt->clear_requested = true;
 	rt->clear_color = p_clear_color;
 }
 
 bool TextureStorage::render_target_is_clear_requested(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, false);
+	ERR_FAIL_NULL_V(rt, false);
 	return rt->clear_requested;
 }
 Color TextureStorage::render_target_get_clear_request_color(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Color());
+	ERR_FAIL_NULL_V(rt, Color());
 	return rt->clear_color;
 }
 
 void TextureStorage::render_target_disable_clear_request(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 	rt->clear_requested = false;
 }
 
 void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 	if (!rt->clear_requested) {
 		return;
 	}
@@ -2267,7 +2267,7 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 
 void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 	if (rt->sdf_oversize == p_size && rt->sdf_scale == p_scale) {
 		return;
 	}
@@ -2309,28 +2309,28 @@ Rect2i TextureStorage::_render_target_get_sdf_rect(const RenderTarget *rt) const
 
 Rect2i TextureStorage::render_target_get_sdf_rect(RID p_render_target) const {
 	const RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Rect2i());
+	ERR_FAIL_NULL_V(rt, Rect2i());
 
 	return _render_target_get_sdf_rect(rt);
 }
 
 void TextureStorage::render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	rt->sdf_enabled = p_enabled;
 }
 
 bool TextureStorage::render_target_is_sdf_enabled(RID p_render_target) const {
 	const RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, false);
+	ERR_FAIL_NULL_V(rt, false);
 
 	return rt->sdf_enabled;
 }
 
 GLuint TextureStorage::render_target_get_sdf_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, 0);
+	ERR_FAIL_NULL_V(rt, 0);
 	if (rt->sdf_texture_read == 0) {
 		Texture *texture = texture_owner.get_or_null(default_gl_textures[DEFAULT_GL_TEXTURE_BLACK]);
 		return texture->tex_id;
@@ -2431,7 +2431,7 @@ void TextureStorage::_render_target_clear_sdf(RenderTarget *rt) {
 
 GLuint TextureStorage::render_target_get_sdf_framebuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, 0);
+	ERR_FAIL_NULL_V(rt, 0);
 
 	if (rt->sdf_texture_write_fb == 0) {
 		_render_target_allocate_sdf(rt);
@@ -2443,7 +2443,7 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 	CopyEffects *copy_effects = CopyEffects::get_singleton();
 
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->sdf_texture_write_fb == 0);
 
 	Rect2i r = _render_target_get_sdf_rect(rt);
@@ -2553,7 +2553,7 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 
 void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->direct_to_screen);
 
 	if (rt->backbuffer_fbo == 0) {
@@ -2587,7 +2587,7 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 
 void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->direct_to_screen);
 
 	if (rt->backbuffer_fbo == 0) {
@@ -2612,7 +2612,7 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 
 void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	if (rt->backbuffer_fbo == 0) {
 		_create_render_target_backbuffer(rt);

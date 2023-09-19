@@ -41,6 +41,7 @@ public:
 	Line2D::LineJointMode joint_mode = Line2D::LINE_JOINT_SHARP;
 	Line2D::LineCapMode begin_cap_mode = Line2D::LINE_CAP_NONE;
 	Line2D::LineCapMode end_cap_mode = Line2D::LINE_CAP_NONE;
+	bool closed = false;
 	float width = 10.0;
 	Curve *curve = nullptr;
 	Color default_color = Color(0.4, 0.5, 1);
@@ -61,7 +62,6 @@ public:
 	LineBuilder();
 
 	void build();
-	void clear_output();
 
 private:
 	enum Orientation {

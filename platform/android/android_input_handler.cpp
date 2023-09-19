@@ -292,7 +292,7 @@ void AndroidInputHandler::_release_mouse_event_info(bool p_source_mouse_relative
 	mouse_event_info.valid = false;
 }
 
-void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative) {
+void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative, float p_pressure, Vector2 p_tilt) {
 	BitField<MouseButtonMask> event_buttons_mask = _android_button_mask_to_godot_button_mask(p_event_android_buttons_mask);
 	switch (p_event_action) {
 		case AMOTION_EVENT_ACTION_HOVER_MOVE: // hover move
@@ -349,6 +349,8 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 				hover_prev_pos = p_event_pos;
 			}
 			ev->set_button_mask(event_buttons_mask);
+			ev->set_pressure(p_pressure);
+			ev->set_tilt(p_tilt);
 			Input::get_singleton()->parse_input_event(ev);
 		} break;
 

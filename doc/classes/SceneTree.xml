@@ -90,6 +90,7 @@
 			<return type="Tween" />
 			<description>
 				Creates and returns a new [Tween]. The Tween will start automatically on the next process frame or physics frame (depending on [enum Tween.TweenProcessMode]).
+				[b]Note:[/b] When creating a [Tween] using this method, the [Tween] will not be tied to the [Node] that called it. It will continue to animate even if the [Node] is freed, but it will automatically finish if there's nothing left to animate. If you want the [Tween] to be automatically killed when the [Node] is freed, use [method Node.create_tween] or [method Tween.bind_node].
 			</description>
 		</method>
 		<method name="get_first_node_in_group">

@@ -858,6 +858,9 @@
 		<member name="text_editor/completion/code_complete_enabled" type="bool" setter="" getter="">
 			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. If [code]false[/code], you can still trigger completion manually by pressing [kbd]Ctrl + Space[/kbd] ([kbd]Cmd + Space[/kbd] on macOS).
 		</member>
+		<member name="text_editor/completion/colorize_suggestions" type="bool" setter="" getter="">
+			If [code]true[/code] enables the coloring for some items in the autocompletion suggestions, like vector components.
+		</member>
 		<member name="text_editor/completion/complete_file_paths" type="bool" setter="" getter="">
 			If [code]true[/code], provides autocompletion suggestions for file paths in methods such as [code]load()[/code] and [code]preload()[/code].
 		</member>
@@ -955,6 +958,9 @@
 		</member>
 		<member name="text_editor/theme/highlighting/executing_line_color" type="Color" setter="" getter="">
 			The script editor's color for the debugger's executing line icon (displayed in the gutter).
+		</member>
+		<member name="text_editor/theme/highlighting/folded_code_region_color" type="Color" setter="" getter="">
+			The script editor's background line highlighting color for folded code region.
 		</member>
 		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
 			The script editor's function call color.

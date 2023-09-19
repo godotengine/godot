@@ -115,8 +115,8 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 	item->select(0);
 
 	item_menu->clear();
-	item_menu->add_icon_item(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
-	item_menu->add_icon_item(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
+	item_menu->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
+	item_menu->add_icon_item(get_editor_theme_icon(SNAME("CopyNodePath")), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
 	item_menu->set_position(get_screen_position() + get_local_mouse_position());
 	item_menu->reset_size();
 	item_menu->popup();
@@ -198,7 +198,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		const Color remote_button_color = Color(1, 1, 1, 0.8);
 		if (!node.scene_file_path.is_empty()) {
 			String node_scene_file_path = node.scene_file_path;
-			Ref<Texture2D> button_icon = get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons"));
+			Ref<Texture2D> button_icon = get_editor_theme_icon(SNAME("InstanceOptions"));
 			String tooltip = vformat(TTR("This node has been instantiated from a PackedScene file:\n%s\nClick to open the original file in the Editor."), node_scene_file_path);
 
 			item->set_meta("scene_file_path", node_scene_file_path);
@@ -209,7 +209,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		if (node.view_flags & SceneDebuggerTree::RemoteNode::VIEW_HAS_VISIBLE_METHOD) {
 			bool node_visible = node.view_flags & SceneDebuggerTree::RemoteNode::VIEW_VISIBLE;
 			bool node_visible_in_tree = node.view_flags & SceneDebuggerTree::RemoteNode::VIEW_VISIBLE_IN_TREE;
-			Ref<Texture2D> button_icon = get_theme_icon(node_visible ? SNAME("GuiVisibilityVisible") : SNAME("GuiVisibilityHidden"), SNAME("EditorIcons"));
+			Ref<Texture2D> button_icon = get_editor_theme_icon(node_visible ? SNAME("GuiVisibilityVisible") : SNAME("GuiVisibilityHidden"));
 			String tooltip = TTR("Toggle Visibility");
 
 			item->set_meta("visible", node_visible);
@@ -300,7 +300,7 @@ String EditorDebuggerTree::get_selected_path() {
 }
 
 String EditorDebuggerTree::_get_path(TreeItem *p_item) {
-	ERR_FAIL_COND_V(!p_item, "");
+	ERR_FAIL_NULL_V(p_item, "");
 
 	if (p_item->get_parent() == nullptr) {
 		return "/root";

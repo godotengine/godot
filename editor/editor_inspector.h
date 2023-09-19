@@ -253,11 +253,22 @@ class EditorInspectorCategory : public Control {
 	GDCLASS(EditorInspectorCategory, Control);
 
 	friend class EditorInspector;
+
+	// Right-click context menu options.
+	enum ClassMenuOption {
+		MENU_OPEN_DOCS,
+	};
+
 	Ref<Texture2D> icon;
 	String label;
+	String doc_class_name;
+	PopupMenu *menu = nullptr;
+
+	void _handle_menu_option(int p_option);
 
 protected:
 	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual Size2 get_minimum_size() const override;

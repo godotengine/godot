@@ -805,8 +805,10 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	};
 
 	struct PipelineCache {
+		String file_path;
+		PipelineCacheHeader header = {};
 		size_t current_size = 0;
-		Vector<uint8_t> buffer;
+		LocalVector<uint8_t> buffer;
 		VkPipelineCache cache_object = VK_NULL_HANDLE;
 	};
 
@@ -816,7 +818,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	void _load_pipeline_cache();
 	void _update_pipeline_cache(bool p_closing = false);
-	void _save_pipeline_cache_threaded(size_t pso_blob_size);
+	static void _save_pipeline_cache(void *p_data);
 
 	struct ComputePipeline {
 		RID shader;

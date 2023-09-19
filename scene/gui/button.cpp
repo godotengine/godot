@@ -31,6 +31,7 @@
 #include "button.h"
 
 #include "core/string/translation.h"
+#include "scene/theme/theme_db.h"
 #include "servers/rendering_server.h"
 
 Size2 Button::get_minimum_size() const {
@@ -47,46 +48,6 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 }
 
 void Button::_queue_update_size_cache() {
-}
-
-void Button::_update_theme_item_cache() {
-	BaseButton::_update_theme_item_cache();
-
-	theme_cache.normal = get_theme_stylebox(SNAME("normal"));
-	theme_cache.normal_mirrored = get_theme_stylebox(SNAME("normal_mirrored"));
-	theme_cache.pressed = get_theme_stylebox(SNAME("pressed"));
-	theme_cache.pressed_mirrored = get_theme_stylebox(SNAME("pressed_mirrored"));
-	theme_cache.hover = get_theme_stylebox(SNAME("hover"));
-	theme_cache.hover_mirrored = get_theme_stylebox(SNAME("hover_mirrored"));
-	theme_cache.hover_pressed = get_theme_stylebox(SNAME("hover_pressed"));
-	theme_cache.hover_pressed_mirrored = get_theme_stylebox(SNAME("hover_pressed_mirrored"));
-	theme_cache.disabled = get_theme_stylebox(SNAME("disabled"));
-	theme_cache.disabled_mirrored = get_theme_stylebox(SNAME("disabled_mirrored"));
-	theme_cache.focus = get_theme_stylebox(SNAME("focus"));
-
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_focus_color = get_theme_color(SNAME("font_focus_color"));
-	theme_cache.font_pressed_color = get_theme_color(SNAME("font_pressed_color"));
-	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
-	theme_cache.font_hover_pressed_color = get_theme_color(SNAME("font_hover_pressed_color"));
-	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.icon_normal_color = get_theme_color(SNAME("icon_normal_color"));
-	theme_cache.icon_focus_color = get_theme_color(SNAME("icon_focus_color"));
-	theme_cache.icon_pressed_color = get_theme_color(SNAME("icon_pressed_color"));
-	theme_cache.icon_hover_color = get_theme_color(SNAME("icon_hover_color"));
-	theme_cache.icon_hover_pressed_color = get_theme_color(SNAME("icon_hover_pressed_color"));
-	theme_cache.icon_disabled_color = get_theme_color(SNAME("icon_disabled_color"));
-
-	theme_cache.icon = get_theme_icon(SNAME("icon"));
-
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
 }
 
 void Button::_notification(int p_what) {
@@ -554,10 +515,8 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 }
 
 void Button::_texture_changed() {
-	if (icon.is_valid()) {
-		queue_redraw();
-		update_minimum_size();
-	}
+	queue_redraw();
+	update_minimum_size();
 }
 
 Ref<Texture2D> Button::get_icon() const {
@@ -672,6 +631,42 @@ void Button::_bind_methods() {
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, normal);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, normal_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, pressed_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, hover);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, hover_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, hover_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, hover_pressed_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, disabled_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_focus_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_hover_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_hover_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_disabled_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Button, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, Button, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, outline_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_normal_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_focus_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_hover_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_hover_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_disabled_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Button, icon);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, icon_max_width);
 }
 
 Button::Button(const String &p_text) {

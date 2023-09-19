@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/plugins/tiles/tile_set_editor.h"
@@ -294,7 +295,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 
 		bool valid = false;
 		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-		ERR_FAIL_COND_V(!tile_data, false);
+		ERR_FAIL_NULL_V(tile_data, false);
 		tile_data->set(p_name, p_value, &valid);
 
 		any_valid |= valid;
@@ -382,7 +383,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		const int &alternative = E.alternative;
 
 		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-		ERR_FAIL_COND_V(!tile_data, false);
+		ERR_FAIL_NULL_V(tile_data, false);
 
 		bool valid = false;
 		r_ret = tile_data->get(p_name, &valid);
@@ -460,7 +461,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 		const int &alternative = E.alternative;
 
 		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-		ERR_FAIL_COND(!tile_data);
+		ERR_FAIL_NULL(tile_data);
 
 		List<PropertyInfo> list;
 		tile_data->get_property_list(&list);
@@ -649,7 +650,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	tile_data_editors_tree->add_theme_constant_override("v_separation", 1);
 	tile_data_editors_tree->add_theme_constant_override("h_separation", 3);
 
-	Color group_color = get_theme_color(SNAME("prop_category"), SNAME("Editor"));
+	Color group_color = get_theme_color(SNAME("prop_category"), EditorStringName(Editor));
 
 	// List of editors.
 	// --- Rendering ---
@@ -732,7 +733,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["probability"] = tile_data_probability_editor;
 	}
 
-	Color disabled_color = get_theme_color("disabled_font_color", "Editor");
+	Color disabled_color = get_theme_color("disabled_font_color", EditorStringName(Editor));
 
 	// --- Physics ---
 	ADD_TILE_DATA_EDITOR_GROUP(TTR("Physics"));
@@ -754,7 +755,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 
 	if (tile_set->get_physics_layers_count() == 0) {
 		item = tile_data_editors_tree->create_item(group);
-		item->set_icon(0, get_theme_icon("Info", "EditorIcons"));
+		item->set_icon(0, get_editor_theme_icon("Info"));
 		item->set_icon_modulate(0, disabled_color);
 		item->set_text(0, TTR("No physics layers"));
 		item->set_tooltip_text(0, TTR("Create and customize physics layers in the inspector of the TileSet resource."));
@@ -782,7 +783,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 
 	if (tile_set->get_navigation_layers_count() == 0) {
 		item = tile_data_editors_tree->create_item(group);
-		item->set_icon(0, get_theme_icon("Info", "EditorIcons"));
+		item->set_icon(0, get_editor_theme_icon("Info"));
 		item->set_icon_modulate(0, disabled_color);
 		item->set_text(0, TTR("No navigation layers"));
 		item->set_tooltip_text(0, TTR("Create and customize navigation layers in the inspector of the TileSet resource."));
@@ -825,7 +826,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 
 	if (tile_set->get_custom_data_layers_count() == 0) {
 		item = tile_data_editors_tree->create_item(group);
-		item->set_icon(0, get_theme_icon("Info", "EditorIcons"));
+		item->set_icon(0, get_editor_theme_icon("Info"));
 		item->set_icon_modulate(0, disabled_color);
 		item->set_text(0, TTR("No custom data layers"));
 		item->set_tooltip_text(0, TTR("Create and customize custom data layers in the inspector of the TileSet resource."));
@@ -992,7 +993,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 			// Create and position the button.
 			Button *button = memnew(Button);
 			button->set_flat(true);
-			button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			button->set_icon(get_editor_theme_icon(SNAME("Add")));
 			button->add_theme_style_override("normal", memnew(StyleBoxEmpty));
 			button->add_theme_style_override("hover", memnew(StyleBoxEmpty));
 			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
@@ -2156,7 +2157,7 @@ Vector2i TileSetAtlasSourceEditor::_get_drag_offset_tile_coords(const Vector2i &
 
 void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
-	ERR_FAIL_COND(!p_tile_set_atlas_source);
+	ERR_FAIL_NULL(p_tile_set_atlas_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
 
@@ -2403,16 +2404,16 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			tool_setup_atlas_source_button->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
-			tool_select_button->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
-			tool_paint_button->set_icon(get_theme_icon(SNAME("CanvasItem"), SNAME("EditorIcons")));
+			tool_setup_atlas_source_button->set_icon(get_editor_theme_icon(SNAME("Tools")));
+			tool_select_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+			tool_paint_button->set_icon(get_editor_theme_icon(SNAME("Paint")));
 
-			tools_settings_erase_button->set_icon(get_theme_icon(SNAME("Eraser"), SNAME("EditorIcons")));
-			tool_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
-			outside_tiles_warning->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+			tools_settings_erase_button->set_icon(get_editor_theme_icon(SNAME("Eraser")));
+			tool_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			outside_tiles_warning->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
 
-			resize_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
-			resize_handle_disabled = get_theme_icon(SNAME("EditorHandleDisabled"), SNAME("EditorIcons"));
+			resize_handle = get_editor_theme_icon(SNAME("EditorHandle"));
+			resize_handle_disabled = get_editor_theme_icon(SNAME("EditorHandleDisabled"));
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -2770,7 +2771,7 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 
 void EditorPropertyTilePolygon::update_property() {
 	TileSetAtlasSourceEditor::AtlasTileProxyObject *atlas_tile_proxy_object = Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(get_edited_object());
-	ERR_FAIL_COND(!atlas_tile_proxy_object);
+	ERR_FAIL_NULL(atlas_tile_proxy_object);
 	ERR_FAIL_COND(atlas_tile_proxy_object->get_edited_tiles().is_empty());
 
 	Ref<TileSetAtlasSource> tile_set_atlas_source = atlas_tile_proxy_object->get_edited_tile_set_atlas_source();

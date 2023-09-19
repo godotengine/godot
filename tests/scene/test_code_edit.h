@@ -2839,6 +2839,194 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 	memdelete(code_edit);
 }
 
+TEST_CASE("[SceneTree][CodeEdit] region folding") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
+
+	SUBCASE("[CodeEdit] region folding") {
+		code_edit->set_line_folding_enabled(true);
+
+		// Region tag detection.
+		code_edit->set_text("#region region_name\nline2\n#endregion");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		CHECK(code_edit->is_line_code_region_start(0));
+		CHECK_FALSE(code_edit->is_line_code_region_start(1));
+		CHECK_FALSE(code_edit->is_line_code_region_start(2));
+		CHECK_FALSE(code_edit->is_line_code_region_end(0));
+		CHECK_FALSE(code_edit->is_line_code_region_end(1));
+		CHECK(code_edit->is_line_code_region_end(2));
+
+		// Region tag customization.
+		code_edit->set_text("#region region_name\nline2\n#endregion\n#open region_name\nline2\n#close");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		CHECK(code_edit->is_line_code_region_start(0));
+		CHECK(code_edit->is_line_code_region_end(2));
+		CHECK_FALSE(code_edit->is_line_code_region_start(3));
+		CHECK_FALSE(code_edit->is_line_code_region_end(5));
+		code_edit->set_code_region_tags("open", "close");
+		CHECK_FALSE(code_edit->is_line_code_region_start(0));
+		CHECK_FALSE(code_edit->is_line_code_region_end(2));
+		CHECK(code_edit->is_line_code_region_start(3));
+		CHECK(code_edit->is_line_code_region_end(5));
+		code_edit->set_code_region_tags("region", "endregion");
+
+		// Setting identical start and end region tags should fail.
+		CHECK(code_edit->get_code_region_start_tag() == "region");
+		CHECK(code_edit->get_code_region_end_tag() == "endregion");
+		ERR_PRINT_OFF;
+		code_edit->set_code_region_tags("same_tag", "same_tag");
+		ERR_PRINT_ON;
+		CHECK(code_edit->get_code_region_start_tag() == "region");
+		CHECK(code_edit->get_code_region_end_tag() == "endregion");
+
+		// Region creation with selection adds start / close region lines.
+		code_edit->set_text("line1\nline2\nline3");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->select(1, 0, 1, 4);
+		code_edit->create_code_region();
+		CHECK(code_edit->is_line_code_region_start(1));
+		CHECK(code_edit->get_line(2).contains("line2"));
+		CHECK(code_edit->is_line_code_region_end(3));
+
+		// Region creation without any selection has no effect.
+		code_edit->set_text("line1\nline2\nline3");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->create_code_region();
+		CHECK(code_edit->get_text() == "line1\nline2\nline3");
+
+		// Region creation with multiple selections.
+		code_edit->set_text("line1\nline2\nline3");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->select(0, 0, 0, 4, 0);
+		code_edit->add_caret(2, 5);
+		code_edit->select(2, 0, 2, 5, 1);
+		code_edit->create_code_region();
+		CHECK(code_edit->get_text() == "#region New Code Region\nline1\n#endregion\nline2\n#region New Code Region\nline3\n#endregion");
+
+		// Two selections on the same line create only one region.
+		code_edit->set_text("test line1\ntest line2\ntest line3");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->select(0, 0, 1, 2, 0);
+		code_edit->add_caret(1, 4);
+		code_edit->select(1, 4, 2, 5, 1);
+		code_edit->create_code_region();
+		CHECK(code_edit->get_text() == "#region New Code Region\ntest line1\ntest line2\ntest line3\n#endregion");
+
+		// Region tag with // comment delimiter.
+		code_edit->set_text("//region region_name\nline2\n//endregion");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("//", "");
+		CHECK(code_edit->is_line_code_region_start(0));
+		CHECK(code_edit->is_line_code_region_end(2));
+
+		// Creating region with no valid one line comment delimiter has no effect.
+		code_edit->set_text("line1\nline2\nline3");
+		code_edit->clear_comment_delimiters();
+		code_edit->create_code_region();
+		CHECK(code_edit->get_text() == "line1\nline2\nline3");
+		code_edit->add_comment_delimiter("/*", "*/");
+		code_edit->create_code_region();
+		CHECK(code_edit->get_text() == "line1\nline2\nline3");
+
+		// Choose one line comment delimiter.
+		code_edit->set_text("//region region_name\nline2\n//endregion");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("/*", "*/");
+		code_edit->add_comment_delimiter("//", "");
+		CHECK(code_edit->is_line_code_region_start(0));
+		CHECK(code_edit->is_line_code_region_end(2));
+
+		// Update code region delimiter when removing comment delimiter.
+		code_edit->set_text("//region region_name\nline2\n//endregion\n#region region_name\nline2\n#endregion");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("//", "");
+		code_edit->add_comment_delimiter("#", "");
+		CHECK(code_edit->is_line_code_region_start(0));
+		CHECK(code_edit->is_line_code_region_end(2));
+		CHECK_FALSE(code_edit->is_line_code_region_start(3));
+		CHECK_FALSE(code_edit->is_line_code_region_end(5));
+		code_edit->remove_comment_delimiter("//");
+		CHECK_FALSE(code_edit->is_line_code_region_start(0));
+		CHECK_FALSE(code_edit->is_line_code_region_end(2));
+		CHECK(code_edit->is_line_code_region_start(3));
+		CHECK(code_edit->is_line_code_region_end(5));
+
+		// Update code region delimiter when clearing comment delimiters.
+		code_edit->set_text("//region region_name\nline2\n//endregion");
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("//", "");
+		CHECK(code_edit->is_line_code_region_start(0));
+		CHECK(code_edit->is_line_code_region_end(2));
+		code_edit->clear_comment_delimiters();
+		CHECK_FALSE(code_edit->is_line_code_region_start(0));
+		CHECK_FALSE(code_edit->is_line_code_region_end(2));
+
+		// Fold region.
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->set_text("#region region_name\nline2\nline3\n#endregion\nvisible line");
+		CHECK(code_edit->can_fold_line(0));
+		for (int i = 1; i < 5; i++) {
+			CHECK_FALSE(code_edit->can_fold_line(i));
+		}
+		for (int i = 0; i < 5; i++) {
+			CHECK_FALSE(code_edit->is_line_folded(i));
+		}
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
+
+		// Region with no end can't be folded.
+		ERR_PRINT_OFF;
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->set_text("#region region_name\nline2\nline3\n#bad_end_tag\nvisible line");
+		CHECK_FALSE(code_edit->can_fold_line(0));
+		ERR_PRINT_ON;
+
+		// Bad nested region can't be folded.
+		ERR_PRINT_OFF;
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->set_text("#region without end\n#region region2\nline3\n#endregion\n#no_end");
+		CHECK_FALSE(code_edit->can_fold_line(0));
+		CHECK(code_edit->can_fold_line(1));
+		ERR_PRINT_ON;
+
+		// Nested region folding.
+		ERR_PRINT_OFF;
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->set_text("#region region1\n#region region2\nline3\n#endregion\n#endregion");
+		CHECK(code_edit->can_fold_line(0));
+		CHECK(code_edit->can_fold_line(1));
+		code_edit->fold_line(1);
+		CHECK(code_edit->get_next_visible_line_offset_from(2, 1) == 3);
+		code_edit->fold_line(0);
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
+		ERR_PRINT_ON;
+
+		// Unfolding a line inside a region unfold whole region.
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->set_text("#region region\ninside\nline3\n#endregion\nvisible");
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
+		code_edit->unfold_line(1);
+		CHECK_FALSE(code_edit->is_line_folded(0));
+	}
+
+	memdelete(code_edit);
+}
+
 TEST_CASE("[SceneTree][CodeEdit] completion") {
 	CodeEdit *code_edit = memnew(CodeEdit);
 	SceneTree::get_singleton()->get_root()->add_child(code_edit);
@@ -3446,7 +3634,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 	}
 
 	SUBCASE("[CodeEdit] autocomplete suggestion order") {
-		/* Favorize less fragmented suggestion. */
+		/* Prefer less fragmented suggestion. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3456,7 +3644,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize suggestion starting from the string to complete (matching start). */
+		/* Prefer suggestion starting with the string to complete (matching start). */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3466,7 +3654,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize less fragment to matching start. */
+		/* Prefer less fragment over matching start. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3476,27 +3664,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "stest");
 
-		/* Favorize closer location. */
-		code_edit->clear();
-		code_edit->insert_text_at_caret("te");
-		code_edit->set_caret_column(2);
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test", "test");
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test_bis", "test_bis", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
-		code_edit->update_code_completion_options();
-		code_edit->confirm_code_completion();
-		CHECK(code_edit->get_line(0) == "test_bis");
-
-		/* Favorize matching start to location. */
-		code_edit->clear();
-		code_edit->insert_text_at_caret("te");
-		code_edit->set_caret_column(2);
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test", "test");
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "stest_bis", "test_bis", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
-		code_edit->update_code_completion_options();
-		code_edit->confirm_code_completion();
-		CHECK(code_edit->get_line(0) == "test");
-
-		/* Favorize good capitalization. */
+		/* Prefer good capitalization. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3506,7 +3674,27 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize location to good capitalization. */
+		/* Prefer matching start over good capitalization. */
+		code_edit->clear();
+		code_edit->insert_text_at_caret("te");
+		code_edit->set_caret_column(2);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "Test", "Test");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "stest_bis", "test_bis");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "Test");
+
+		/* Prefer closer location. */
+		code_edit->clear();
+		code_edit->insert_text_at_caret("te");
+		code_edit->set_caret_column(2);
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test", "test");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "test_bis", "test_bis", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "test_bis");
+
+		/* Prefer good capitalization over location. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3514,9 +3702,9 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "Test", "Test", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
-		CHECK(code_edit->get_line(0) == "Test");
+		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize string to complete being closest to the start of the suggestion (closest to start). */
+		/* Prefer the start of the string to complete being closest to the start of the suggestion (closest to start). */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3526,12 +3714,12 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "stest");
 
-		/* Favorize good capitalization to closest to start. */
+		/* Prefer location over closest to start. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "sTest", "stest");
-		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "sstest", "sstest");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "stest", "stest");
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_VARIABLE, "sstest", "sstest", Color(1, 1, 1), Ref<Resource>(), Variant::NIL, CodeEdit::LOCATION_LOCAL);
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "sstest");

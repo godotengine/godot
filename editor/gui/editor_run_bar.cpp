@@ -37,6 +37,7 @@
 #include "editor/editor_quick_open.h"
 #include "editor/editor_run_native.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel_container.h"
@@ -51,18 +52,18 @@ void EditorRunBar::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_play_buttons();
-			pause_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-			stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+			pause_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
+			stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
 
 			if (is_movie_maker_enabled()) {
-				main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
-				write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
+				main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
+				write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 			} else {
-				main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-				write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
+				main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
+				write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 			}
 
-			write_movie_button->set_icon(get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
+			write_movie_button->set_icon(get_editor_theme_icon(SNAME("MainMovieWrite")));
 			// This button behaves differently, so color it as such.
 			write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.7));
 			write_movie_button->add_theme_color_override("icon_pressed_color", Color(0, 0, 0, 0.84));
@@ -73,15 +74,15 @@ void EditorRunBar::_notification(int p_what) {
 
 void EditorRunBar::_reset_play_buttons() {
 	play_button->set_pressed(false);
-	play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	play_button->set_tooltip_text(TTR("Play the project."));
 
 	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
+	play_scene_button->set_icon(get_editor_theme_icon(SNAME("PlayScene")));
 	play_scene_button->set_tooltip_text(TTR("Play the edited scene."));
 
 	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
+	play_custom_scene_button->set_icon(get_editor_theme_icon(SNAME("PlayCustom")));
 	play_custom_scene_button->set_tooltip_text(TTR("Play a custom scene."));
 }
 
@@ -102,18 +103,18 @@ void EditorRunBar::_update_play_buttons() {
 
 	if (active_button) {
 		active_button->set_pressed(true);
-		active_button->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+		active_button->set_icon(get_editor_theme_icon(SNAME("Reload")));
 		active_button->set_tooltip_text(TTR("Reload the played scene."));
 	}
 }
 
 void EditorRunBar::_write_movie_toggled(bool p_enabled) {
 	if (p_enabled) {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
-		write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
+		add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
+		write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 	} else {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
-		write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
+		add_theme_style_override("panel", get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
+		write_movie_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 	}
 }
 
@@ -219,7 +220,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path) {
 				return;
 			}
 
-			run_filename = GLOBAL_DEF_BASIC("application/run/main_scene", "");
+			run_filename = GLOBAL_GET("application/run/main_scene");
 		} break;
 	}
 

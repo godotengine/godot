@@ -288,7 +288,6 @@ def generate_scu_files(verbose, max_includes_per_scu):
     process_folder(["platform/ios/export"])
     process_folder(["platform/linuxbsd/export"])
     process_folder(["platform/macos/export"])
-    process_folder(["platform/uwp/export"])
     process_folder(["platform/web/export"])
     process_folder(["platform/windows/export"])
 

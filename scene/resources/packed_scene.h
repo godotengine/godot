@@ -136,6 +136,7 @@ public:
 	};
 
 	static void set_disable_placeholders(bool p_disable);
+	static Ref<Resource> get_remap_resource(const Ref<Resource> &p_resource, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene);
 
 	int find_node_by_path(const NodePath &p_node) const;
 	Variant get_property_value(int p_node, const StringName &p_property, bool &found) const;

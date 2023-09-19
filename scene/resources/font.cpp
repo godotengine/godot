@@ -2779,48 +2779,25 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 		return base_font;
 	}
 
-	// Check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_project_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
+	StringName theme_name = "font";
+	List<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
-		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f == this) {
-					continue;
-				}
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
-				}
-				return f;
-			}
-		}
-	}
-
-	// Lastly, fall back on the items defined in the default Theme, if they exist.
-	if (ThemeDB::get_singleton()->get_default_theme().is_valid()) {
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
-
-		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f == this) {
-					continue;
-				}
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
-				}
-				return f;
-			}
+	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_null()) {
+			continue;
 		}
 
-		// If they don't exist, use any type to return the default/empty value.
-		Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
-		if (f != this) {
+		for (const StringName &E : theme_types) {
+			if (!theme->has_font(theme_name, E)) {
+				continue;
+			}
+
+			Ref<Font> f = theme->get_font(theme_name, E);
+			if (f == this) {
+				continue;
+			}
 			if (f.is_valid()) {
 				theme_font = f;
 				theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -2829,18 +2806,27 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 		}
 	}
 
+	Ref<Font> f = global_context->get_fallback_theme()->get_font(theme_name, StringName());
+	if (f != this) {
+		if (f.is_valid()) {
+			theme_font = f;
+			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+		}
+		return f;
+	}
+
 	return Ref<Font>();
 }
 
 void FontVariation::set_variation_opentype(const Dictionary &p_coords) {
-	if (variation.opentype != p_coords) {
-		variation.opentype = p_coords;
+	if (!variation.opentype.recursive_equal(p_coords, 1)) {
+		variation.opentype = p_coords.duplicate();
 		_invalidate_rids();
 	}
 }
 
 Dictionary FontVariation::get_variation_opentype() const {
-	return variation.opentype;
+	return variation.opentype.duplicate();
 }
 
 void FontVariation::set_variation_embolden(float p_strength) {
@@ -2877,14 +2863,14 @@ int FontVariation::get_variation_face_index() const {
 }
 
 void FontVariation::set_opentype_features(const Dictionary &p_features) {
-	if (opentype_features != p_features) {
-		opentype_features = p_features;
+	if (!opentype_features.recursive_equal(p_features, 1)) {
+		opentype_features = p_features.duplicate();
 		_invalidate_rids();
 	}
 }
 
 Dictionary FontVariation::get_opentype_features() const {
-	return opentype_features;
+	return opentype_features.duplicate();
 }
 
 void FontVariation::set_spacing(TextServer::SpacingType p_spacing, int p_value) {
@@ -3135,54 +3121,40 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 		return base_font;
 	}
 
-	// Check the project-defined Theme resource.
-	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_project_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
+	StringName theme_name = "font";
+	List<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
-		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f == this) {
-					continue;
-				}
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
-				}
-				return f;
-			}
-		}
-	}
-
-	// Lastly, fall back on the items defined in the default Theme, if they exist.
-	if (ThemeDB::get_singleton()->get_default_theme().is_valid()) {
-		List<StringName> theme_types;
-		ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
-
-		for (const StringName &E : theme_types) {
-			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
-				if (f == this) {
-					continue;
-				}
-				if (f.is_valid()) {
-					theme_font = f;
-					theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
-				}
-				return f;
-			}
+	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
+	for (const Ref<Theme> &theme : global_context->get_themes()) {
+		if (theme.is_null()) {
+			continue;
 		}
 
-		// If they don't exist, use any type to return the default/empty value.
-		Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
-		if (f != this) {
+		for (const StringName &E : theme_types) {
+			if (!theme->has_font(theme_name, E)) {
+				continue;
+			}
+
+			Ref<Font> f = theme->get_font(theme_name, E);
+			if (f == this) {
+				continue;
+			}
 			if (f.is_valid()) {
 				theme_font = f;
 				theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 			}
 			return f;
 		}
+	}
+
+	Ref<Font> f = global_context->get_fallback_theme()->get_font(theme_name, StringName());
+	if (f != this) {
+		if (f.is_valid()) {
+			theme_font = f;
+			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+		}
+		return f;
 	}
 
 	return Ref<Font>();

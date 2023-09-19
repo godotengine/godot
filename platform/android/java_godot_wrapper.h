@@ -59,6 +59,7 @@ private:
 	jmethodID _request_permission = nullptr;
 	jmethodID _request_permissions = nullptr;
 	jmethodID _get_granted_permissions = nullptr;
+	jmethodID _get_gdextension_list_config_file = nullptr;
 	jmethodID _get_ca_certificates = nullptr;
 	jmethodID _init_input_devices = nullptr;
 	jmethodID _vibrate = nullptr;
@@ -102,6 +103,9 @@ public:
 	void begin_benchmark_measure(const String &p_label);
 	void end_benchmark_measure(const String &p_label);
 	void dump_benchmark(const String &benchmark_file);
+
+	// Return the list of gdextensions config file.
+	Vector<String> get_gdextension_list_config_file() const;
 };
 
 #endif // JAVA_GODOT_WRAPPER_H

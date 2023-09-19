@@ -251,7 +251,7 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
-			menu->set_icon(epoints->get_theme_icon(SNAME("CPUParticles2D"), SNAME("EditorIcons")));
+			menu->set_icon(epoints->get_editor_theme_icon(SNAME("CPUParticles2D")));
 			file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
 		} break;
 	}
@@ -266,8 +266,6 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
 	toolbar->hide();
-
-	toolbar->add_child(memnew(VSeparator));
 
 	menu = memnew(MenuButton);
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);

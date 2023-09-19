@@ -248,7 +248,7 @@ void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
 }
 
 void Dictionary::_unref() const {
-	ERR_FAIL_COND(!_p);
+	ERR_FAIL_NULL(_p);
 	if (_p->refcount.unref()) {
 		if (_p->read_only) {
 			memdelete(_p->read_only);

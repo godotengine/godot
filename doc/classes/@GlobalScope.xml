@@ -72,6 +72,19 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="acosh">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the hyperbolic arc (also called inverse) cosine of [param x], returning a value in radians. Use it to get the angle from an angle's cosine in hyperbolic space if [param x] is larger or equal to 1. For values of [param x] lower than 1, it will return 0, in order to prevent [method acosh] from returning [constant @GDScript.NAN].
+				[codeblock]
+				var a = acosh(2) # Returns 1.31695789692482
+				cosh(a) # Returns 2
+
+				var b = acosh(-1) # Returns 0
+				[/codeblock]
+			</description>
+		</method>
 		<method name="asin">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
@@ -80,6 +93,17 @@
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad_to_deg(s)
 				var s = asin(0.5)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="asinh">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the hyperbolic arc (also called inverse) sine of [param x], returning a value in radians. Use it to get the angle from an angle's sine in hyperbolic space.
+				[codeblock]
+				var a = asinh(0.9) # Returns 0.8088669356527824
+				sinh(a) # Returns 0.9
 				[/codeblock]
 			</description>
 		</method>
@@ -104,6 +128,21 @@
 				Important note: The Y coordinate comes first, by convention.
 				[codeblock]
 				var a = atan2(0, -1) # a is 3.141593
+				[/codeblock]
+			</description>
+		</method>
+		<method name="atanh">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the hyperbolic arc (also called inverse) tangent of [param x], returning a value in radians. Use it to get the angle from an angle's tangent in hyperbolic space if [param x] is between -1 and 1 (non-inclusive).
+				In mathematics, the inverse hyperbolic tangent is only defined for -1 &lt; [param x] &lt; 1 in the real set, so values equal or lower to -1 for [param x] return negative [constant @GDScript.INF] and values equal or higher than 1 return positive [constant @GDScript.INF] in order to prevent [method atanh] from returning [constant @GDScript.NAN].
+				[codeblock]
+				var a = atanh(0.9) # Returns 1.47221948958322
+				tanh(a) # Returns 0.9
+
+				var b = atanh(-2) # Returns -inf
+				tanh(b) # Returns -1
 				[/codeblock]
 			</description>
 		</method>
@@ -1129,11 +1168,13 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Returns the same type of [Variant] as [param x], with [code]-1[/code] for negative values, [code]1[/code] for positive values, and [code]0[/code] for zeros. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
+				Returns the same type of [Variant] as [param x], with [code]-1[/code] for negative values, [code]1[/code] for positive values, and [code]0[/code] for zeros. For [code]nan[/code] values it returns 0.
+				Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				sign(-6.0) # Returns -1
 				sign(0.0)  # Returns 0
 				sign(6.0)  # Returns 1
+				sign(NAN)  # Returns 0
 
 				sign(Vector3(-6.0, 0.0, 6.0)) # Returns (-1, 0, 1)
 				[/codeblock]
@@ -1144,11 +1185,12 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if [param x] is zero.
+				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if [param x] is zero. For [code]nan[/code] values of [param x] it returns 0.0.
 				[codeblock]
 				signf(-6.5) # Returns -1.0
 				signf(0.0)  # Returns 0.0
 				signf(6.5)  # Returns 1.0
+				signf(NAN)  # Returns 0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1322,6 +1364,23 @@
 				[codeblock]
 				var a = log(2.0) # Returns 0.693147
 				tanh(a)          # Returns 0.6
+				[/codeblock]
+			</description>
+		</method>
+		<method name="type_convert">
+			<return type="Variant" />
+			<param index="0" name="variant" type="Variant" />
+			<param index="1" name="type" type="int" />
+			<description>
+				Converts the given [param variant] to the given [param type], using the [enum Variant.Type] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
+				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [code]Vector2.ZERO[/code]. This method will never show error messages as long as [param type] is a valid Variant type.
+				The returned value is a [Variant], but the data inside and the [enum Variant.Type] will be the same as the requested type.
+				[codeblock]
+				type_convert("Hi!", TYPE_INT) # Returns 0
+				type_convert("123", TYPE_INT) # Returns 123
+				type_convert(123.4, TYPE_INT) # Returns 123
+				type_convert(5, TYPE_VECTOR2) # Returns (0, 0)
+				type_convert("Hi!", TYPE_NIL) # Returns null
 				[/codeblock]
 			</description>
 		</method>

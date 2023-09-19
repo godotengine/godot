@@ -179,6 +179,7 @@ struct hmtxvmtx
 	lm.advance = mtx.first;
 	lm.sb = mtx.second;
       }
+      // TODO(beyond-64k): This assumes that maxp.numGlyphs is 0xFFFF.
       else if (gid < 0x10000u)
         short_metrics[gid] = mtx.second;
       else
@@ -198,6 +199,8 @@ struct hmtxvmtx
     {
       /* Determine num_long_metrics to encode. */
       auto& plan = c->plan;
+
+      // TODO Don't consider retaingid holes here.
 
       num_long_metrics = hb_min (plan->num_output_glyphs (), 0xFFFFu);
       unsigned int last_advance = get_new_gid_advance_unscaled (plan, mtx_map, num_long_metrics - 1, _mtx);

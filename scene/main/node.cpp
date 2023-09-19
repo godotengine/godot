@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
+#include "core/object/script_language.h"
 #include "core/string/print_string.h"
 #include "instance_placeholder.h"
 #include "scene/animation/tween.h"
@@ -2722,9 +2723,15 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 					copytarget = p_copy->get_node(ptarget);
 				}
 
-				if (copy && copytarget) {
-					const Callable copy_callable = Callable(copytarget, E.callable.get_method());
+				if (copy && copytarget && E.callable.get_method() != StringName()) {
+					Callable copy_callable = Callable(copytarget, E.callable.get_method());
 					if (!copy->is_connected(E.signal.get_name(), copy_callable)) {
+						int arg_count = E.callable.get_bound_arguments_count();
+						if (arg_count > 0) {
+							copy_callable = copy_callable.bindv(E.callable.get_bound_arguments());
+						} else if (arg_count < 0) {
+							copy_callable = copy_callable.unbind(-arg_count);
+						}
 						copy->connect(E.signal.get_name(), copy_callable, E.flags);
 					}
 				}

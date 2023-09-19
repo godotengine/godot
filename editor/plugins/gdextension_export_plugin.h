@@ -50,6 +50,15 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 	Error err = config->load(p_path);
 	ERR_FAIL_COND_MSG(err, "Failed to load GDExtension file: " + p_path);
 
+	// Check whether this GDExtension should be exported.
+	bool android_aar_plugin = config->get_value("configuration", "android_aar_plugin", false);
+	if (android_aar_plugin && p_features.has("android")) {
+		// The gdextension configuration and Android .so files will be provided by the Android aar
+		// plugin it's part of, so we abort here.
+		skip();
+		return;
+	}
+
 	ERR_FAIL_COND_MSG(!config->has_section_key("configuration", "entry_symbol"), "Failed to export GDExtension file, missing entry symbol: " + p_path);
 
 	String entry_symbol = config->get_value("configuration", "entry_symbol");

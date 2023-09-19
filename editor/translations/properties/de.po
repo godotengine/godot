@@ -100,7 +100,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-07 16:32+0000\n"
+"PO-Revision-Date: 2023-09-08 02:18+0000\n"
 "Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
@@ -109,7 +109,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -322,7 +322,7 @@ msgid "Occlusion Culling"
 msgstr "Occlusion Culling"
 
 msgid "BVH Build Quality"
-msgstr "BVH Build Qualität"
+msgstr "BVH Build-Qualität"
 
 msgid "Memory"
 msgstr "Speicher"
@@ -2559,6 +2559,9 @@ msgstr "Angepasster Vordergrund 432 x 432"
 msgid "Adaptive Background 432 X 432"
 msgstr "Angepasster Hintergrund 432 x 432"
 
+msgid "Use Gradle Build"
+msgstr "Einen Gradle Build verwenden"
+
 msgid "Export Format"
 msgstr "Exportformat"
 
@@ -2886,14 +2889,23 @@ msgstr "Mindest-macOS-Version"
 msgid "High Res"
 msgstr "Hohe Auflösung"
 
+msgid "Platform Build"
+msgstr "Plattform-Build"
+
 msgid "SDK Version"
 msgstr "SDK-Version"
+
+msgid "SDK Build"
+msgstr "SDK Build"
 
 msgid "SDK Name"
 msgstr "SDK-Name"
 
 msgid "Xcode Version"
 msgstr "Xcode-Version"
+
+msgid "Xcode Build"
+msgstr "Xcode-Build"
 
 msgid "Codesign"
 msgstr "Code-Signierung"
@@ -3722,6 +3734,9 @@ msgstr "Vermeidungsmaske"
 
 msgid "Avoidance Priority"
 msgstr "Vermeidungspriorität"
+
+msgid "Use Custom"
+msgstr "Benutzerdefiniert"
 
 msgid "Path Custom Point Size"
 msgstr "Pfad Benutzerdefinierte Punktgröße"
@@ -5976,6 +5991,9 @@ msgstr "Vorschau"
 msgid "Transform Format"
 msgstr "Transformformat"
 
+msgid "Use Custom Data"
+msgstr "Eigene Daten verwenden"
+
 msgid "Instance Count"
 msgstr "Instanzanzahl"
 
@@ -6557,6 +6575,9 @@ msgstr "Upscale-Modus"
 
 msgid "Buffer Size"
 msgstr "Puffergröße"
+
+msgid "Cluster Builder"
+msgstr "Cluster Builder"
 
 msgid "Max Lights per Object"
 msgstr "Max Lichtinstanzen pro Objekt"

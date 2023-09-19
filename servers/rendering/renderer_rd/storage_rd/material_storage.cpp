@@ -1191,18 +1191,18 @@ MaterialStorage::MaterialStorage() {
 	// buffers
 	{ //create index array for copy shaders
 		Vector<uint8_t> pv;
-		pv.resize(6 * 4);
+		pv.resize(6 * 2);
 		{
 			uint8_t *w = pv.ptrw();
-			int *p32 = (int *)w;
-			p32[0] = 0;
-			p32[1] = 1;
-			p32[2] = 2;
-			p32[3] = 0;
-			p32[4] = 2;
-			p32[5] = 3;
+			uint16_t *p16 = (uint16_t *)w;
+			p16[0] = 0;
+			p16[1] = 1;
+			p16[2] = 2;
+			p16[3] = 0;
+			p16[4] = 2;
+			p16[5] = 3;
 		}
-		quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
+		quad_index_buffer = RD::get_singleton()->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT16, pv);
 		quad_index_array = RD::get_singleton()->index_array_create(quad_index_buffer, 0, 6);
 	}
 

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
@@ -41,7 +42,7 @@ Camera3DGizmoPlugin::Camera3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
 
 	create_material("camera_material", gizmo_color);
-	create_icon_material("camera_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoCamera3D", "EditorIcons"));
+	create_icon_material("camera_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoCamera3D"), EditorStringName(EditorIcons)));
 	create_handle_material("handles");
 }
 

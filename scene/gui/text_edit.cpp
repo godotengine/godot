@@ -39,9 +39,9 @@
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/string/translation.h"
-#include "label.h"
-
+#include "scene/gui/label.h"
 #include "scene/main/window.h"
+#include "scene/theme/theme_db.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 ///                            TEXT                                         ///
@@ -1254,7 +1254,7 @@ void TextEdit::_notification(int p_what) {
 									if ((brace_matching[c].open_match_line == line && brace_matching[c].open_match_column == glyphs[j].start) ||
 											(get_caret_column(c) == glyphs[j].start && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index && (brace_matching[c].open_matching || brace_matching[c].open_mismatch))) {
 										if (brace_matching[c].open_mismatch) {
-											gl_color = theme_cache.brace_mismatch_color;
+											gl_color = _get_brace_mismatch_color();
 										}
 										Rect2 rect = Rect2(char_pos, ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size), glyphs[j].advance * glyphs[j].repeat, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size) * theme_cache.base_scale, 1));
 										draw_rect(rect, gl_color);
@@ -1263,7 +1263,7 @@ void TextEdit::_notification(int p_what) {
 									if ((brace_matching[c].close_match_line == line && brace_matching[c].close_match_column == glyphs[j].start) ||
 											(get_caret_column(c) == glyphs[j].start + 1 && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index && (brace_matching[c].close_matching || brace_matching[c].close_mismatch))) {
 										if (brace_matching[c].close_mismatch) {
-											gl_color = theme_cache.brace_mismatch_color;
+											gl_color = _get_brace_mismatch_color();
 										}
 										Rect2 rect = Rect2(char_pos, ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size), glyphs[j].advance * glyphs[j].repeat, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size) * theme_cache.base_scale, 1));
 										draw_rect(rect, gl_color);
@@ -1298,7 +1298,8 @@ void TextEdit::_notification(int p_what) {
 						if (had_glyphs_drawn) {
 							if (first_visible_char > glyphs[j].start) {
 								first_visible_char = glyphs[j].start;
-							} else if (last_visible_char < glyphs[j].end) {
+							}
+							if (last_visible_char < glyphs[j].end) {
 								last_visible_char = glyphs[j].end;
 							}
 						}
@@ -1313,12 +1314,12 @@ void TextEdit::_notification(int p_what) {
 
 					// is_line_folded
 					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
-						int xofs = char_ofs + char_margin + ofs_x + (theme_cache.folded_eol_icon->get_width() / 2);
+						int xofs = char_ofs + char_margin + ofs_x + (_get_folded_eol_icon()->get_width() / 2);
 						if (xofs >= xmargin_beg && xofs < xmargin_end) {
-							int yofs = (text_height - theme_cache.folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-							Color eol_color = theme_cache.code_folding_color;
+							int yofs = (text_height - _get_folded_eol_icon()->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+							Color eol_color = _get_code_folding_color();
 							eol_color.a = 1;
-							theme_cache.folded_eol_icon->draw(ci, Point2(xofs, ofs_y + yofs), eol_color);
+							_get_folded_eol_icon()->draw(ci, Point2(xofs, ofs_y + yofs), eol_color);
 						}
 					}
 
@@ -1752,10 +1753,26 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				const int triple_click_tolerance = 5;
 				bool is_triple_click = (!mb->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && mb->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance);
 
-				if (!is_mouse_over_selection() && !mb->is_double_click() && !is_triple_click) {
+				if (!mb->is_double_click() && !is_triple_click) {
 					if (mb->is_alt_pressed()) {
 						prev_line = row;
 						prev_col = col;
+
+						// Remove caret at clicked location.
+						if (carets.size() > 1) {
+							for (int i = 0; i < carets.size(); i++) {
+								// Deselect if clicked on caret or its selection.
+								if ((get_caret_column(i) == col && get_caret_line(i) == row) || is_mouse_over_selection(true, i)) {
+									remove_caret(i);
+									last_dblclk = 0;
+									return;
+								}
+							}
+						}
+
+						if (is_mouse_over_selection()) {
+							return;
+						}
 
 						caret = add_caret(row, col);
 						if (caret == -1) {
@@ -1766,7 +1783,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						carets.write[caret].selection.selecting_column = col;
 
 						last_dblclk = 0;
-					} else if (!mb->is_shift_pressed()) {
+					} else if (!mb->is_shift_pressed() && !is_mouse_over_selection()) {
 						caret = 0;
 						remove_secondary_carets();
 					}
@@ -2943,7 +2960,11 @@ void TextEdit::_update_placeholder() {
 	placeholder_data_buf->clear();
 	placeholder_data_buf->set_width(text.get_width());
 	placeholder_data_buf->set_break_flags(text.get_brk_flags());
-	placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
+	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
+		placeholder_data_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+	} else {
+		placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
+	}
 	placeholder_data_buf->set_preserve_control(draw_control_chars);
 	placeholder_data_buf->add_string(placeholder_text, theme_cache.font, theme_cache.font_size, language);
 
@@ -2980,51 +3001,11 @@ void TextEdit::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
 	theme_cache.base_scale = get_theme_default_base_scale();
-
-	/* Internal API for CodeEdit */
-	theme_cache.brace_mismatch_color = get_theme_color(SNAME("brace_mismatch_color"), SNAME("CodeEdit"));
-	theme_cache.code_folding_color = get_theme_color(SNAME("code_folding_color"), SNAME("CodeEdit"));
-	theme_cache.folded_eol_icon = get_theme_icon(SNAME("folded_eol_icon"), SNAME("CodeEdit"));
-
-	/* Search */
-	theme_cache.search_result_color = get_theme_color(SNAME("search_result_color"));
-	theme_cache.search_result_border_color = get_theme_color(SNAME("search_result_border_color"));
-
-	/* Caret */
-	theme_cache.caret_width = get_theme_constant(SNAME("caret_width"));
-	theme_cache.caret_color = get_theme_color(SNAME("caret_color"));
-	theme_cache.caret_background_color = get_theme_color(SNAME("caret_background_color"));
-
-	/* Selection */
-	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
-	theme_cache.selection_color = get_theme_color(SNAME("selection_color"));
 	use_selected_font_color = theme_cache.font_selected_color != Color(0, 0, 0, 0);
 
-	/* Other visuals */
-	theme_cache.style_normal = get_theme_stylebox(SNAME("normal"));
-	theme_cache.style_focus = get_theme_stylebox(SNAME("focus"));
-	theme_cache.style_readonly = get_theme_stylebox(SNAME("read_only"));
-
-	theme_cache.tab_icon = get_theme_icon(SNAME("tab"));
-	theme_cache.space_icon = get_theme_icon(SNAME("space"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_readonly_color = get_theme_color(SNAME("font_readonly_color"));
-	theme_cache.font_placeholder_color = get_theme_color(SNAME("font_placeholder_color"));
-
-	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.line_spacing = get_theme_constant(SNAME("line_spacing"));
 	if (text.get_line_height() + theme_cache.line_spacing < 1) {
 		WARN_PRINT("Line height is too small, please increase font_size and/or line_spacing");
 	}
-
-	theme_cache.background_color = get_theme_color(SNAME("background_color"));
-	theme_cache.current_line_color = get_theme_color(SNAME("current_line_color"));
-	theme_cache.word_highlighted_color = get_theme_color(SNAME("word_highlighted_color"));
 }
 
 void TextEdit::_update_caches() {
@@ -4347,6 +4328,11 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), Rect2i(-1, -1, 0, 0));
 	ERR_FAIL_COND_V(p_column < 0, Rect2i(-1, -1, 0, 0));
 	ERR_FAIL_COND_V(p_column > text[p_line].length(), Rect2i(-1, -1, 0, 0));
+
+	if (text.size() == 1 && text[0].length() == 0) {
+		// The TextEdit is empty.
+		return Rect2i();
+	}
 
 	if (line_drawing_cache.size() == 0 || !line_drawing_cache.has(p_line)) {
 		// Line is not in the cache, which means it's outside of the viewing area.
@@ -6033,7 +6019,7 @@ bool TextEdit::is_drawing_spaces() const {
 }
 
 void TextEdit::_bind_methods() {
-	/*Internal. */
+	/* Internal. */
 
 	ClassDB::bind_method(D_METHOD("_text_changed_emit"), &TextEdit::_text_changed_emit);
 
@@ -6491,6 +6477,43 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("gutter_clicked", PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "gutter")));
 	ADD_SIGNAL(MethodInfo("gutter_added"));
 	ADD_SIGNAL(MethodInfo("gutter_removed"));
+
+	/* Theme items */
+	/* Search */
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, search_result_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, search_result_border_color);
+
+	/* Caret */
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, caret_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, caret_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, caret_background_color);
+
+	/* Selection */
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, font_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, selection_color);
+
+	/* Other visuals */
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TextEdit, style_normal, "normal");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TextEdit, style_focus, "focus");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TextEdit, style_readonly, "read_only");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TextEdit, tab_icon, "tab");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TextEdit, space_icon, "space");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, TextEdit, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, TextEdit, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, font_readonly_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, font_placeholder_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, outline_size);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, TextEdit, outline_color, "font_outline_color");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, line_spacing);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, background_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, current_line_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, word_highlighted_color);
 
 	/* Settings. */
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/text_edit_idle_detect_sec", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"), 3);

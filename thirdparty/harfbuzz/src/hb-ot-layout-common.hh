@@ -1937,13 +1937,22 @@ struct ClassDefFormat2_4
     {
       /* Match if there's any glyph that is not listed! */
       hb_codepoint_t g = HB_SET_VALUE_INVALID;
-      for (auto &range : rangeRecord)
+      hb_codepoint_t last = HB_SET_VALUE_INVALID;
+      auto it = hb_iter (rangeRecord);
+      for (auto &range : it)
       {
+        if (it->first == last + 1)
+	{
+	  it++;
+	  continue;
+	}
+
 	if (!glyphs->next (&g))
 	  break;
 	if (g < range.first)
 	  return true;
 	g = range.last;
+	last = g;
       }
       if (g != HB_SET_VALUE_INVALID && glyphs->next (&g))
 	return true;
@@ -2928,8 +2937,28 @@ struct ConditionFormat1
     const hb_map_t *index_map = &c->plan->axes_index_map;
     if (index_map->is_empty ()) return_trace (true);
 
-    if (!index_map->has (axisIndex))
+    const hb_map_t& axes_old_index_tag_map = c->plan->axes_old_index_tag_map;
+    hb_codepoint_t *axis_tag;
+    if (!axes_old_index_tag_map.has (axisIndex, &axis_tag) ||
+        !index_map->has (axisIndex))
       return_trace (false);
+
+    const hb_hashmap_t<hb_tag_t, Triple>& normalized_axes_location = c->plan->axes_location;
+    Triple axis_limit{-1.f, 0.f, 1.f};
+    Triple *normalized_limit;
+    if (normalized_axes_location.has (*axis_tag, &normalized_limit))
+      axis_limit = *normalized_limit;
+
+    const hb_hashmap_t<hb_tag_t, TripleDistances>& axes_triple_distances = c->plan->axes_triple_distances;
+    TripleDistances axis_triple_distances{1.f, 1.f};
+    TripleDistances *triple_dists;
+    if (axes_triple_distances.has (*axis_tag, &triple_dists))
+      axis_triple_distances = *triple_dists;
+
+    float normalized_min = renormalizeValue (filterRangeMinValue.to_float (), axis_limit, axis_triple_distances, false);
+    float normalized_max = renormalizeValue (filterRangeMaxValue.to_float (), axis_limit, axis_triple_distances, false);
+    out->filterRangeMinValue.set_float (normalized_min);
+    out->filterRangeMaxValue.set_float (normalized_max);
 
     return_trace (c->serializer->check_assign (out->axisIndex, index_map->get (axisIndex),
                                                HB_SERIALIZE_ERROR_INT_OVERFLOW));
@@ -2946,15 +2975,16 @@ struct ConditionFormat1
     hb_tag_t axis_tag = c->axes_index_tag_map->get (axisIndex);
 
     Triple axis_range (-1.f, 0.f, 1.f);
-    if (c->axes_location->has (axis_tag))
-      axis_range = c->axes_location->get (axis_tag);
+    Triple *axis_limit;
+    if (c->axes_location->has (axis_tag, &axis_limit))
+      axis_range = *axis_limit;
 
-    int axis_min_val = axis_range.minimum;
-    int axis_default_val = axis_range.middle;
-    int axis_max_val = axis_range.maximum;
+    float axis_min_val = axis_range.minimum;
+    float axis_default_val = axis_range.middle;
+    float axis_max_val = axis_range.maximum;
 
-    int16_t filter_min_val = filterRangeMinValue.to_int ();
-    int16_t filter_max_val = filterRangeMaxValue.to_int ();
+    float filter_min_val = filterRangeMinValue.to_float ();
+    float filter_max_val = filterRangeMaxValue.to_float ();
 
     if (axis_default_val < filter_min_val ||
         axis_default_val > filter_max_val)
@@ -2974,7 +3004,9 @@ struct ConditionFormat1
     {
       // add axisIndex->value into the hashmap so we can check if the record is
       // unique with variations
-      hb_codepoint_t val = (filter_max_val << 16) + filter_min_val;
+      int16_t int_filter_max_val = filterRangeMaxValue.to_int ();
+      int16_t int_filter_min_val = filterRangeMinValue.to_int ();
+      hb_codepoint_t val = (int_filter_max_val << 16) + int_filter_min_val;
 
       condition_map->set (axisIndex, val);
       return KEEP_COND_WITH_VAR;
