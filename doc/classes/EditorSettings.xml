@@ -757,7 +757,7 @@
 			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays an outline over the current character.
 		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
-			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column].
+			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column]. This also sets the target line length that the code formatter tries to target.
 		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_soft_column" type="int" setter="" getter="">
 			The column at which to display a [i]very[/i] subtle line as a line length guideline for scripts. This should generally be lower than [member text_editor/appearance/guidelines/line_length_guideline_hard_column].
@@ -815,6 +815,15 @@
 		</member>
 		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], trims trailing whitespace when saving a script. Trailing whitespace refers to tab and space characters placed at the end of lines. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
+		</member>
+		<member name="text_editor/behavior/formatter/format_on_save" type="bool" setter="" getter="">
+			If [code]true[/code], uses the code formatter before saving a script.
+		</member>
+		<member name="text_editor/behavior/formatter/indent_in_multiline_block" type="int" setter="" getter="">
+			The number of indents for the formatter to include when wrapping single line statements into multi-line blocks.
+		</member>
+		<member name="text_editor/behavior/formatter/lines_between_functions" type="int" setter="" getter="">
+			The number of extra lines between functions the formatter inserts.
 		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.

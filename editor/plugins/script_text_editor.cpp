@@ -399,6 +399,40 @@ void ScriptTextEditor::trim_trailing_whitespace() {
 	code_editor->trim_trailing_whitespace();
 }
 
+void ScriptTextEditor::format_code() {
+	CodeEdit *tx = code_editor->get_text_editor();
+	const String original = tx->get_text();
+	Ref<Script> scr = script;
+
+	const String formatted_code = scr->get_language()->format_code(original);
+
+	if (formatted_code == original) {
+		return;
+	}
+
+	const Vector<String> original_lines = original.split("\n");
+	const Vector<String> formatted_lines = formatted_code.split("\n");
+
+	tx->begin_complex_operation();
+
+	const int end = MIN(original_lines.size(), formatted_lines.size());
+	for (int i = 0; i < end; ++i) {
+		if (original_lines[i] == formatted_lines[i]) {
+			continue;
+		}
+		tx->set_line(i, formatted_lines[i]);
+	}
+	if (original_lines.size() > formatted_lines.size()) {
+		tx->remove_text(formatted_lines.size() - 1, 0, original_lines.size() - 1, tx->get_line_width(original_lines.size() - 1));
+	} else if (original_lines.size() < formatted_lines.size()) {
+		Vector remainder{ tx->get_line(tx->get_line_count() - 1) };
+		remainder.append_array(formatted_lines.slice(tx->get_line_count()));
+		tx->set_line(tx->get_line_count() - 1, String("\n").join(remainder));
+	}
+
+	tx->end_complex_operation();
+}
+
 void ScriptTextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
@@ -1357,6 +1391,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 			tx->end_complex_operation();
 		} break;
+		case EDIT_FORMAT_CODE: {
+			format_code();
+		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
 		} break;
@@ -2198,6 +2235,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_text_editor/format_code", TTR("Format Code"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::F), EDIT_FORMAT_CODE);
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
 		sub_menu->set_name("indent_menu");

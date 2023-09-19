@@ -30,8 +30,10 @@
 
 #include "gdscript_tokenizer.h"
 
+#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/string/char_utils.h"
+#include "core/templates/list.h"
 
 #ifdef DEBUG_ENABLED
 #include "servers/text_server.h"
@@ -47,6 +49,7 @@ static const char *token_names[] = {
 	"Annotation", // ANNOTATION
 	"Identifier", // IDENTIFIER,
 	"Literal", // LITERAL,
+	"Comment", // COMMENT,
 	// Comparison
 	"<", // LESS,
 	"<=", // LESS_EQUAL,
@@ -1121,7 +1124,7 @@ void GDScriptTokenizer::check_indent() {
 		char32_t current_indent_char = _peek();
 		int indent_count = 0;
 
-		if (current_indent_char != ' ' && current_indent_char != '\t' && current_indent_char != '\r' && current_indent_char != '\n' && current_indent_char != '#') {
+		if (current_indent_char != ' ' && current_indent_char != '\t' && current_indent_char != '\r' && current_indent_char != '\n') {
 			// First character of the line is not whitespace, so we clear all indentation levels.
 			// Unless we are in a continuation or in multiline mode (inside expression).
 			if (line_continuation || multiline_mode) {
@@ -1178,29 +1181,6 @@ void GDScriptTokenizer::check_indent() {
 		if (_peek() == '\n') {
 			// Empty line, keep going.
 			_advance();
-			newline(false);
-			continue;
-		}
-		if (_peek() == '#') {
-			// Comment. Advance to the next line.
-#ifdef TOOLS_ENABLED
-			String comment;
-			while (_peek() != '\n' && !_is_at_end()) {
-				comment += _advance();
-			}
-			comments[line] = CommentData(comment, true);
-#else
-			while (_peek() != '\n' && !_is_at_end()) {
-				_advance();
-			}
-#endif // TOOLS_ENABLED
-			if (_is_at_end()) {
-				// Reached the end with an empty line, so just dedent as much as needed.
-				pending_indents -= indent_level();
-				indent_stack.clear();
-				return;
-			}
-			_advance(); // Consume '\n'.
 			newline(false);
 			continue;
 		}
@@ -1318,26 +1298,6 @@ void GDScriptTokenizer::_skip_whitespace() {
 				newline(!is_bol); // Don't create new line token if line is empty.
 				check_indent();
 				break;
-			case '#': {
-				// Comment.
-#ifdef TOOLS_ENABLED
-				String comment;
-				while (_peek() != '\n' && !_is_at_end()) {
-					comment += _advance();
-				}
-				comments[line] = CommentData(comment, is_bol);
-#else
-				while (_peek() != '\n' && !_is_at_end()) {
-					_advance();
-				}
-#endif // TOOLS_ENABLED
-				if (_is_at_end()) {
-					return;
-				}
-				_advance(); // Consume '\n'
-				newline(!is_bol);
-				check_indent();
-			} break;
 			default:
 				return;
 		}
@@ -1613,7 +1573,20 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			} else {
 				return make_token(Token::GREATER);
 			}
+		case '#': {
+			// Comment.
+			String comment;
+			while (_peek() != '\n' && !_is_at_end()) {
+				comment += _advance();
+			}
+#ifdef TOOLS_ENABLED
+			comments[line] = CommentData(comment, column == 1);
+#endif
 
+			Token comment_token = make_token(Token::COMMENT);
+			comment_token.comment = comment.lstrip(" ").rstrip(" ");
+			return comment_token;
+		}
 		default:
 			if (is_whitespace(c)) {
 				return make_error(vformat(R"(Invalid white space character U+%04X.)", static_cast<int32_t>(c)));
@@ -1621,6 +1594,109 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 				return make_error(vformat(R"(Invalid character "%c" (U+%04X).)", c, static_cast<int32_t>(c)));
 			}
 	}
+}
+
+GDScriptTokenizer::Token GDScriptTokenizer::peek(int p_offset) {
+	if (p_offset < 0) {
+		return GDScriptTokenizer::Token();
+	}
+
+	push_state();
+
+	GDScriptTokenizer::Token peek_token;
+	for (int i = 0; i < p_offset + 1; i++) {
+		peek_token = scan();
+		if (peek_token.type == GDScriptTokenizer::Token::Type::EMPTY) {
+			break;
+		}
+	}
+
+	pop_state();
+
+	return peek_token;
+}
+
+void GDScriptTokenizer::push_state() {
+	GDScriptTokenizer::State state;
+
+	state.source = source;
+	state._source = _source;
+	state._current = _current;
+	state.line = line;
+	state.column = column;
+	state.cursor_line = cursor_line;
+	state.cursor_column = cursor_column;
+	state.tab_size = tab_size;
+
+	state._start = _start;
+	state.start_line = start_line;
+	state.start_column = start_column;
+	state.leftmost_column = leftmost_column;
+	state.rightmost_column = rightmost_column;
+
+	state.line_continuation = line_continuation;
+	state.multiline_mode = multiline_mode;
+	state.error_stack = error_stack;
+	state.pending_newline = pending_newline;
+	state.last_newline = last_newline;
+	state.pending_indents = pending_indents;
+	state.indent_stack = indent_stack;
+	state.indent_stack_stack = indent_stack_stack;
+	state.paren_stack = paren_stack;
+	state.indent_char = indent_char;
+	state.position = position;
+	state.length = length;
+
+#ifdef DEBUG_ENABLED
+	state.keyword_list = keyword_list;
+#endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	state.comments = comments;
+#endif // TOOLS_ENABLED
+
+	states.push_back(state);
+}
+
+void GDScriptTokenizer::pop_state() {
+	State state = states.back()->get();
+	states.pop_back();
+
+	source = state.source;
+	_source = state._source;
+	_current = state._current;
+	line = state.line;
+	column = state.column;
+	cursor_line = state.cursor_line;
+	cursor_column = state.cursor_column;
+	tab_size = state.tab_size;
+
+	_start = state._start;
+	start_line = state.start_line;
+	start_column = state.start_column;
+	leftmost_column = state.leftmost_column;
+	rightmost_column = state.rightmost_column;
+
+	line_continuation = state.line_continuation;
+	multiline_mode = state.multiline_mode;
+	error_stack = state.error_stack;
+	pending_newline = state.pending_newline;
+	last_newline = state.last_newline;
+	pending_indents = state.pending_indents;
+	indent_stack = state.indent_stack;
+	indent_stack_stack = state.indent_stack_stack;
+	paren_stack = state.paren_stack;
+	indent_char = state.indent_char;
+	position = state.position;
+	length = state.length;
+
+#ifdef DEBUG_ENABLED
+	keyword_list = state.keyword_list;
+#endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	comments = state.comments;
+#endif // TOOLS_ENABLED
 }
 
 GDScriptTokenizer::GDScriptTokenizer() {
