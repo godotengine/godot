@@ -70,6 +70,7 @@ venv
 # Python generated
 __pycache__/
 *.pyc
+.SCache/
 
 # Documentation
 doc/_build/
