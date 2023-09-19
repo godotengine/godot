@@ -659,8 +659,14 @@ void ParticlesMaterial::_update_shader() {
 	}
 	//scale by scale
 	code += "	float base_scale = tex_scale * mix(scale, 1.0, scale_random * scale_rand);\n";
+
 	// Prevent zero scale (which can cause rendering issues).
-	code += "	base_scale = sign(base_scale) * max(abs(base_scale), 0.000001);\n";
+	code += "	if (base_scale >= 0.0) {\n";
+	code += "		base_scale = max(base_scale, 0.000001);\n";
+	code += "	} else {\n";
+	code += "		base_scale = min(base_scale, -0.000001);\n";
+	code += "	}\n";
+
 	if (trail_size_modifier.is_valid()) {
 		code += "	if (trail_divisor > 1) {\n";
 		code += "		base_scale *= textureLod(trail_size_modifier, vec2(float(int(NUMBER) % trail_divisor) / float(trail_divisor - 1), 0.0), 0.0).r;\n";
