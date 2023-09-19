@@ -730,35 +730,35 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(topmenu_bar);
 
 	curve_edit = memnew(Button);
-	curve_edit->set_flat(true);
+	curve_edit->set_theme_type_variation("FlatButton");
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
 	topmenu_bar->add_child(curve_edit);
 
 	curve_edit_curve = memnew(Button);
-	curve_edit_curve->set_flat(true);
+	curve_edit_curve->set_theme_type_variation("FlatButton");
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip_text(TTR("Select Control Points (Shift+Drag)"));
 	topmenu_bar->add_child(curve_edit_curve);
 
 	curve_create = memnew(Button);
-	curve_create->set_flat(true);
+	curve_create->set_theme_type_variation("FlatButton");
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Split Segment (in curve)"));
 	topmenu_bar->add_child(curve_create);
 
 	curve_del = memnew(Button);
-	curve_del->set_flat(true);
+	curve_del->set_theme_type_variation("FlatButton");
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip_text(TTR("Delete Point"));
 	topmenu_bar->add_child(curve_del);
 
 	curve_close = memnew(Button);
-	curve_close->set_flat(true);
+	curve_close->set_theme_type_variation("FlatButton");
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip_text(TTR("Close Curve"));
 	topmenu_bar->add_child(curve_close);
@@ -766,6 +766,8 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	PopupMenu *menu;
 
 	handle_menu = memnew(MenuButton);
+	handle_menu->set_flat(false);
+	handle_menu->set_theme_type_variation("FlatMenuButton");
 	handle_menu->set_text(TTR("Options"));
 	topmenu_bar->add_child(handle_menu);
 

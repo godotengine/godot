@@ -1291,14 +1291,14 @@ GridMapEditor::GridMapEditor() {
 	search_box->connect("gui_input", callable_mp(this, &GridMapEditor::_sbox_input));
 
 	mode_thumbnail = memnew(Button);
-	mode_thumbnail->set_flat(true);
+	mode_thumbnail->set_theme_type_variation("FlatButton");
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
 	hb->add_child(mode_thumbnail);
 	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(Button);
-	mode_list->set_flat(true);
+	mode_list->set_theme_type_variation("FlatButton");
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
 	hb->add_child(mode_list);

@@ -717,6 +717,8 @@ void Skeleton3DEditor::create_editors() {
 
 	// Create Skeleton Option in Top Menu Bar.
 	skeleton_options = memnew(MenuButton);
+	skeleton_options->set_flat(false);
+	skeleton_options->set_theme_type_variation("FlatMenuButton");
 	topmenu_bar->add_child(skeleton_options);
 
 	skeleton_options->set_text(TTR("Skeleton3D"));
@@ -738,7 +740,7 @@ void Skeleton3DEditor::create_editors() {
 
 	edit_mode_button = memnew(Button);
 	topmenu_bar->add_child(edit_mode_button);
-	edit_mode_button->set_flat(true);
+	edit_mode_button->set_theme_type_variation("FlatButton");
 	edit_mode_button->set_toggle_mode(true);
 	edit_mode_button->set_focus_mode(FOCUS_NONE);
 	edit_mode_button->set_tooltip_text(TTR("Edit Mode\nShow buttons on joints."));
@@ -758,7 +760,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->hide();
 
 	key_loc_button = memnew(Button);
-	key_loc_button->set_flat(true);
+	key_loc_button->set_theme_type_variation("FlatButton");
 	key_loc_button->set_toggle_mode(true);
 	key_loc_button->set_pressed(false);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
@@ -766,7 +768,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_loc_button);
 
 	key_rot_button = memnew(Button);
-	key_rot_button->set_flat(true);
+	key_rot_button->set_theme_type_variation("FlatButton");
 	key_rot_button->set_toggle_mode(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
@@ -774,7 +776,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_rot_button);
 
 	key_scale_button = memnew(Button);
-	key_scale_button->set_flat(true);
+	key_scale_button->set_theme_type_variation("FlatButton");
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_pressed(false);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
@@ -782,7 +784,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_scale_button);
 
 	key_insert_button = memnew(Button);
-	key_insert_button->set_flat(true);
+	key_insert_button->set_theme_type_variation("FlatButton");
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
 	key_insert_button->set_tooltip_text(TTR("Insert key of bone poses already exist track."));
@@ -790,7 +792,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_insert_button);
 
 	key_insert_all_button = memnew(Button);
-	key_insert_all_button->set_flat(true);
+	key_insert_all_button->set_theme_type_variation("FlatButton");
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
 	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
 	key_insert_all_button->set_tooltip_text(TTR("Insert key of all bone poses."));

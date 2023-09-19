@@ -360,6 +360,28 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("check_v_offset", "CheckButton", 0);
 	theme->set_constant("outline_size", "CheckButton", 0);
 
+	// Button variations
+
+	theme->set_type_variation("FlatButton", "Button");
+	theme->set_type_variation("FlatMenuButton", "MenuButton");
+
+	Ref<StyleBoxEmpty> flat_button_normal = make_empty_stylebox();
+	for (int i = 0; i < 4; i++) {
+		flat_button_normal->set_content_margin((Side)i, button_normal->get_margin((Side)i) + button_normal->get_border_width((Side)i));
+	}
+	Ref<StyleBoxFlat> flat_button_pressed = button_pressed->duplicate();
+	flat_button_pressed->set_bg_color(style_pressed_color * Color(1, 1, 1, 0.85));
+
+	theme->set_stylebox("normal", "FlatButton", flat_button_normal);
+	theme->set_stylebox("hover", "FlatButton", flat_button_normal);
+	theme->set_stylebox("pressed", "FlatButton", flat_button_pressed);
+	theme->set_stylebox("disabled", "FlatButton", flat_button_normal);
+
+	theme->set_stylebox("normal", "FlatMenuButton", flat_button_normal);
+	theme->set_stylebox("hover", "FlatMenuButton", flat_button_normal);
+	theme->set_stylebox("pressed", "FlatMenuButton", flat_button_pressed);
+	theme->set_stylebox("disabled", "FlatMenuButton", flat_button_normal);
+
 	// Label
 
 	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));

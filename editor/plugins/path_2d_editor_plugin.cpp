@@ -533,7 +533,7 @@ Path2DEditor::Path2DEditor() {
 	action = ACTION_NONE;
 
 	curve_edit = memnew(Button);
-	curve_edit->set_flat(true);
+	curve_edit->set_theme_type_variation("FlatButton");
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_pressed(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
@@ -542,7 +542,7 @@ Path2DEditor::Path2DEditor() {
 	add_child(curve_edit);
 
 	curve_edit_curve = memnew(Button);
-	curve_edit_curve->set_flat(true);
+	curve_edit_curve->set_theme_type_variation("FlatButton");
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip_text(TTR("Select Control Points (Shift+Drag)"));
@@ -550,7 +550,7 @@ Path2DEditor::Path2DEditor() {
 	add_child(curve_edit_curve);
 
 	curve_create = memnew(Button);
-	curve_create->set_flat(true);
+	curve_create->set_theme_type_variation("FlatButton");
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip_text(TTR("Add Point (in empty space)"));
@@ -558,7 +558,7 @@ Path2DEditor::Path2DEditor() {
 	add_child(curve_create);
 
 	curve_del = memnew(Button);
-	curve_del->set_flat(true);
+	curve_del->set_theme_type_variation("FlatButton");
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip_text(TTR("Delete Point"));
@@ -566,7 +566,7 @@ Path2DEditor::Path2DEditor() {
 	add_child(curve_del);
 
 	curve_close = memnew(Button);
-	curve_close->set_flat(true);
+	curve_close->set_theme_type_variation("FlatButton");
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip_text(TTR("Close Curve"));
 	curve_close->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(ACTION_CLOSE));
@@ -575,6 +575,8 @@ Path2DEditor::Path2DEditor() {
 	PopupMenu *menu;
 
 	handle_menu = memnew(MenuButton);
+	handle_menu->set_flat(false);
+	handle_menu->set_theme_type_variation("FlatMenuButton");
 	handle_menu->set_text(TTR("Options"));
 	add_child(handle_menu);
 

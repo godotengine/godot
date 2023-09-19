@@ -2491,7 +2491,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_setup_atlas_source_button = memnew(Button);
 	tool_setup_atlas_source_button->set_text(TTR("Setup"));
-	tool_setup_atlas_source_button->set_flat(true);
+	tool_setup_atlas_source_button->set_theme_type_variation("FlatButton");
 	tool_setup_atlas_source_button->set_toggle_mode(true);
 	tool_setup_atlas_source_button->set_pressed(true);
 	tool_setup_atlas_source_button->set_button_group(tools_button_group);
@@ -2500,7 +2500,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_select_button = memnew(Button);
 	tool_select_button->set_text(TTR("Select"));
-	tool_select_button->set_flat(true);
+	tool_select_button->set_theme_type_variation("FlatButton");
 	tool_select_button->set_toggle_mode(true);
 	tool_select_button->set_pressed(false);
 	tool_select_button->set_button_group(tools_button_group);
@@ -2509,7 +2509,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_paint_button = memnew(Button);
 	tool_paint_button->set_text(TTR("Paint"));
-	tool_paint_button->set_flat(true);
+	tool_paint_button->set_theme_type_variation("FlatButton");
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
 	tool_paint_button->set_tooltip_text(TTR("Paint properties."));
@@ -2592,14 +2592,15 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(tool_settings_tile_data_toolbar_container);
 
 	tools_settings_erase_button = memnew(Button);
-	tools_settings_erase_button->set_flat(true);
+	tools_settings_erase_button->set_theme_type_variation("FlatButton");
 	tools_settings_erase_button->set_toggle_mode(true);
 	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E));
 	tools_settings_erase_button->set_shortcut_context(this);
 	tool_settings->add_child(tools_settings_erase_button);
 
 	tool_advanced_menu_button = memnew(MenuButton);
-	tool_advanced_menu_button->set_flat(true);
+	tool_advanced_menu_button->set_flat(false);
+	tool_advanced_menu_button->set_theme_type_variation("FlatMenuButton");
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles Outside the Texture"), ADVANCED_CLEANUP_TILES);
