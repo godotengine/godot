@@ -858,7 +858,11 @@ void ParticleProcessMaterial::_update_shader() {
 
 	// scale by scale
 	code += "	float base_scale = mix(scale_min, scale_max, scale_rand);\n";
-	code += "	base_scale = sign(base_scale) * max(abs(base_scale), 0.001);\n";
+	code += "	if (base_scale >= 0.0) {\n";
+	code += "		base_scale = max(base_scale, 0.001);\n";
+	code += "	} else {\n";
+	code += "		base_scale = min(base_scale, -0.001);\n";
+	code += "	}\n";
 	code += "	TRANSFORM[0].xyz *= base_scale * sign(tex_scale.r) * max(abs(tex_scale.r), 0.001);\n";
 	code += "	TRANSFORM[1].xyz *= base_scale * sign(tex_scale.g) * max(abs(tex_scale.g), 0.001);\n";
 	code += "	TRANSFORM[2].xyz *= base_scale * sign(tex_scale.b) * max(abs(tex_scale.b), 0.001);\n";
