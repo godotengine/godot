@@ -47,6 +47,35 @@ public:
 	Vector<Variant> array;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
+
+	/// structs
+
+	uint32_t struct_size = 0;
+	StringName *struct_member_names = nullptr;
+	bool struct_array = false;
+
+	_FORCE_INLINE_ bool is_struct() const {
+		return struct_size > 0;
+	}
+
+	_FORCE_INLINE_ bool is_struct_array() const {
+		return struct_size > 0; // TODO: this seems fishy
+	}
+
+	_FORCE_INLINE_ int32_t find_member_index(const StringName &p_member) const {
+		// TODO: is there a better way to do this than linear search?
+		for (uint32_t i = 0; i < struct_size; i++) {
+			if (p_member == struct_member_names[i]) {
+				return (int32_t) i; // TODO: is this cast necessary?
+			}
+		}
+		return -1;
+	}
+
+	_FORCE_INLINE_ bool validate_member(uint32_t p_index, const Variant &p_value) {
+		// TODO: check in with ContainerValidate
+		return true;
+	}
 };
 
 void Array::_ref(const Array &p_from) const {
