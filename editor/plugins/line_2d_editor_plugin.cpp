@@ -45,6 +45,10 @@ bool Line2DEditor::_is_line() const {
 	return true;
 }
 
+bool Line2DEditor::_is_closed_line() const {
+	return _get_node()->get("closed");
+}
+
 Variant Line2DEditor::_get_polygon(int p_idx) const {
 	return _get_node()->get("points");
 }

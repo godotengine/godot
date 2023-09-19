@@ -121,6 +121,7 @@ protected:
 	virtual void _set_node(Node *p_polygon) = 0;
 
 	virtual bool _is_line() const;
+	virtual bool _is_closed_line() const;
 	virtual bool _has_uv() const;
 	virtual int _get_polygon_count() const;
 	virtual Vector2 _get_offset(int p_idx) const;
