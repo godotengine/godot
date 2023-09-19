@@ -10,10 +10,18 @@ optimize = "speed_trace"
 dev_build = "no"
 dev_mode = "no"
 debug_symbols = "no"
-production = "yes"
+production = "yes" 
+# tools="yes" ???
+use_lto="yes"
+precision="single"
+vulkan = "no"
+opengl3 = "yes"
+
+
 
 # REQUIRED to compile
 
+custom_modules = "custom_modules/"
 module_freetype_enabled =" yes"
 module_svg_enabled = "yes"
 disable_3d = "no"
@@ -53,9 +61,6 @@ module_theora_enabled = "no"
 module_vhacd_enabled = "no"
 module_visual_script_enabled = "no"
 module_webm_enabled = "no"
-module_webrtc_enabled = "no"
-module_websocket_enabled = "no"
-custom_modules = "custom_modules/"
 
 # Stuff we don't disable
 
@@ -70,3 +75,6 @@ custom_modules = "custom_modules/"
 # module_text_server_adv_enabled = "no"
 # module_text_server_fb_enabled = "yes"
 # module_vorbis_enabled = "no"
+
+# module_webrtc_enabled = "no"
+# module_websocket_enabled = "no"

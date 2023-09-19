@@ -1,6 +1,6 @@
 REM Windows Templates
 scons profile=TemplatesCustom.py platform=windows target=template_release arch=x86_32
-scons platform=windows target=template_release arch=x86_64
+scons profile=TemplatesCustom.py platform=windows target=template_release arch=x86_64
 
 REM Linux Templates
 scons platform=linux target=template_release arch=x86_32
