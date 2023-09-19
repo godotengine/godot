@@ -6018,6 +6018,10 @@ bool TextEdit::is_drawing_spaces() const {
 	return draw_spaces;
 }
 
+Color TextEdit::get_font_color() const {
+	return theme_cache.font_color;
+}
+
 void TextEdit::_bind_methods() {
 	/* Internal. */
 
