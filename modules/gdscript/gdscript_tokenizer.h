@@ -31,6 +31,7 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
+#include "core/string/char_list.inc"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
@@ -223,7 +224,7 @@ private:
 	List<int> indent_stack;
 	List<List<int>> indent_stack_stack; // For lambdas, which require manipulating the indentation point.
 	List<char32_t> paren_stack;
-	char32_t indent_char = '\0';
+	char32_t indent_char = CHAR_NULL;
 	int position = 0;
 	int length = 0;
 #ifdef DEBUG_ENABLED
@@ -235,7 +236,7 @@ private:
 #endif // TOOLS_ENABLED
 
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
-	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
+	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : CHAR_NULL; }
 	int indent_level() const { return indent_stack.size(); }
 	bool has_error() const { return !error_stack.is_empty(); }
 	Token pop_error();

@@ -33,6 +33,7 @@
 
 #include "core/typedefs.h"
 
+#include "char_list.inc"
 #include "char_range.inc"
 
 static _FORCE_INLINE_ bool is_unicode_identifier_start(char32_t c) {
@@ -86,23 +87,35 @@ static _FORCE_INLINE_ bool is_ascii_identifier_char(char32_t c) {
 }
 
 static _FORCE_INLINE_ bool is_symbol(char32_t c) {
-	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
+	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == CHAR_HORIZONTAL_TAB || c == ' ');
 }
 
 static _FORCE_INLINE_ bool is_control(char32_t p_char) {
-	return (p_char <= 0x001f) || (p_char >= 0x007f && p_char <= 0x009f);
+	return (p_char <= CHAR_UNIT_SEPARATOR) || (p_char >= CHAR_DELETE && p_char <= CHAR_APPLICATION_PROGRAM_COMMAND);
 }
 
 static _FORCE_INLINE_ bool is_whitespace(char32_t p_char) {
-	return (p_char == ' ') || (p_char == 0x00a0) || (p_char == 0x1680) || (p_char >= 0x2000 && p_char <= 0x200a) || (p_char == 0x202f) || (p_char == 0x205f) || (p_char == 0x3000) || (p_char == 0x2028) || (p_char == 0x2029) || (p_char >= 0x0009 && p_char <= 0x000d) || (p_char == 0x0085);
+	return (p_char == ' ') || (p_char == CHAR_NO_BREAK_SPACE) || (p_char >= CHAR_HORIZONTAL_TAB && p_char <= CHAR_CARRIAGE_RETURN) || (p_char == CHAR_NEXT_LINE)
+			// Ogham
+			|| (p_char == CHAR_OGHAM_SPACE_MARK)
+			// General Punctuation
+			|| (p_char >= CHAR_EN_QUAD && p_char <= CHAR_HAIR_SPACE) || (p_char == CHAR_NARROW_NO_BREAK_SPACE) || (p_char == CHAR_MEDIUM_MATHEMATICAL_SPACE) || (p_char == CHAR_LINE_SEPARATOR) || (p_char == CHAR_PARAGRAPH_SEPARATOR)
+			// CJK Symbols and Punctuation
+			|| (p_char == CHAR_IDEOGRAPHIC_SPACE);
 }
 
 static _FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
-	return (p_char >= 0x000a && p_char <= 0x000d) || (p_char == 0x0085) || (p_char == 0x2028) || (p_char == 0x2029);
+	return (p_char >= CHAR_NEWLINE && p_char <= CHAR_CARRIAGE_RETURN) || (p_char == CHAR_NEXT_LINE)
+			// General Punctuation
+			|| (p_char == CHAR_LINE_SEPARATOR) || (p_char == CHAR_PARAGRAPH_SEPARATOR);
 }
 
 static _FORCE_INLINE_ bool is_punct(char32_t p_char) {
-	return (p_char >= ' ' && p_char <= '/') || (p_char >= ':' && p_char <= '@') || (p_char >= '[' && p_char <= '^') || (p_char == '`') || (p_char >= '{' && p_char <= '~') || (p_char >= 0x2000 && p_char <= 0x206f) || (p_char >= 0x3000 && p_char <= 0x303f);
+	return (p_char >= ' ' && p_char <= '/') || (p_char >= ':' && p_char <= '@') || (p_char >= '[' && p_char <= '^') || (p_char == '`') || (p_char >= '[' && p_char <= '~')
+			// General punctuation
+			|| (p_char >= CHAR_EN_QUAD && p_char <= CHAR_NOMINAL_DIGIT_SHAPES)
+			// CJK Symbols and Punctuation
+			|| (p_char >= CHAR_IDEOGRAPHIC_SPACE && p_char <= CHAR_IDEOGRAPHIC_HALF_FILL_SPACE);
 }
 
 static _FORCE_INLINE_ bool is_underscore(char32_t p_char) {
