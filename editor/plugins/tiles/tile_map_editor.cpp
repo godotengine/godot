@@ -678,12 +678,22 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 					if (tile_map_selection.has(tile_map->local_to_map(drag_start_mouse_pos)) && !mb->is_shift_pressed()) {
 						// Move the selection
 						_update_selection_pattern_from_tilemap_selection(); // Make sure the pattern is up to date before moving.
-						drag_type = DRAG_TYPE_MOVE;
 						drag_modified.clear();
-						for (const Vector2i &E : tile_map_selection) {
-							Vector2i coords = E;
-							drag_modified.insert(coords, tile_map->get_cell(tile_map_layer, coords));
-							tile_map->set_cell(tile_map_layer, coords, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+						if (drag_erasing) {
+							drag_type = DRAG_TYPE_PAINT;
+							for (const Vector2i &E : tile_map_selection) {
+								Vector2i coords = E;
+								drag_modified.insert(coords, tile_map->get_cell(tile_map_layer, coords));
+								tile_map->erase_cell(tile_map_layer, coords);
+							}
+							tile_map_selection.clear();
+						} else {
+							drag_type = DRAG_TYPE_MOVE;
+							for (const Vector2i &E : tile_map_selection) {
+								Vector2i coords = E;
+								drag_modified.insert(coords, tile_map->get_cell(tile_map_layer, coords));
+								tile_map->set_cell(tile_map_layer, coords, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+							}
 						}
 					} else {
 						// Select tiles
