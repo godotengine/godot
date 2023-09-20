@@ -2609,7 +2609,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	}
 
 	// Check if assigned value is an array literal, so we can make it a typed array too if appropriate.
-	if (p_assignment->assigned_value->type == GDScriptParser::Node::ARRAY && assignee_type.has_container_element_type()) {
+	if (p_assignment->assigned_value->type == GDScriptParser::Node::ARRAY && assignee_type.is_hard_type() && assignee_type.has_container_element_type()) {
 		update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_assignment->assigned_value), assignee_type.get_container_element_type());
 	}
 
@@ -3213,7 +3213,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		// If the function requires typed arrays we must make literals be typed.
 		for (const KeyValue<int, GDScriptParser::ArrayNode *> &E : arrays) {
 			int index = E.key;
-			if (index < par_types.size() && par_types[index].has_container_element_type()) {
+			if (index < par_types.size() && par_types[index].is_hard_type() && par_types[index].has_container_element_type()) {
 				update_array_literal_element_type(E.value, par_types[index].get_container_element_type());
 			}
 		}
