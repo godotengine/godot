@@ -2353,6 +2353,8 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 			mi.arguments.push_back(arg_info);
 		}
 
+		mi.flags = (uint32_t)method_info_dict["flags"];
+
 		p_script->methods.set(push_index++, CSharpMethodInfo{ name, mi });
 	}
 
@@ -2600,6 +2602,18 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 	}
 
 	return MethodInfo();
+}
+
+Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	ERR_FAIL_COND_V(!valid, Variant());
+
+	Variant ret;
+	bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
+	if (ok) {
+		return ret;
+	}
+
+	return Script::callp(p_method, p_args, p_argcount, r_error);
 }
 
 Error CSharpScript::reload(bool p_keep_state) {
