@@ -1,6 +1,6 @@
 import os
 import sys
-from methods import detect_darwin_sdk_path
+from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang
 
 
 def is_active():
@@ -85,6 +85,13 @@ def configure(env):
         print("Building for macOS 10.12+, platform x86-64.")
         env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
+
+    cc_version = get_compiler_version(env) or [-1, -1]
+    vanilla = is_vanilla_clang(env)
+
+    # Workaround for Xcode 15 linker bug.
+    if not vanilla and cc_version[0] == 15 and cc_version[1] == 0:
+        env.Prepend(LINKFLAGS=["-ld_classic"])
 
     if not "osxcross" in env:  # regular native build
         if env["macports_clang"] != "no":
