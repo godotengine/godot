@@ -185,6 +185,8 @@ protected:
 
 	static void _bind_methods();
 
+	virtual Error _reload(bool p_keep_state = false) override;
+
 public:
 #ifdef DEBUG_ENABLED
 	static String debug_get_script_name(const Ref<Script> &p_script);
@@ -250,8 +252,6 @@ public:
 	}
 	virtual String get_class_icon_path() const override;
 #endif // TOOLS_ENABLED
-
-	virtual Error reload(bool p_keep_state = false) override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	String get_script_path() const;

@@ -2602,7 +2602,7 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 	return MethodInfo();
 }
 
-Error CSharpScript::reload(bool p_keep_state) {
+Error CSharpScript::_reload(bool p_keep_state) {
 	if (!reload_invalidated) {
 		return OK;
 	}

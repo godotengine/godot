@@ -48,6 +48,13 @@ protected:
 		GDVIRTUAL_CALL(_placeholder_erased, p_placeholder);
 	}
 
+	GDVIRTUAL1R(Error, _reload, bool)
+	virtual Error _reload(bool p_keep_state = false) override {
+		Error err = OK;
+		GDVIRTUAL_REQUIRED_CALL(_reload, p_keep_state, err);
+		return err;
+	}
+
 	static void _bind_methods();
 
 public:
@@ -74,7 +81,6 @@ public:
 	EXBIND0RC(bool, has_source_code)
 	EXBIND0RC(String, get_source_code)
 	EXBIND1(set_source_code, const String &)
-	EXBIND1R(Error, reload, bool)
 
 	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_documentation)
 	GDVIRTUAL0RC(String, _get_class_icon_path)

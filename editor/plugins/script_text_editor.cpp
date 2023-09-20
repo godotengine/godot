@@ -147,6 +147,8 @@ void ScriptTextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 
 	script = p_res;
 
+	script->connect(SNAME("reload_finished"), callable_mp(this, &ScriptTextEditor::reload_text));
+
 	code_editor->get_text_editor()->set_text(script->get_source_code());
 	code_editor->get_text_editor()->clear_undo_history();
 	code_editor->get_text_editor()->tag_saved_version();
@@ -2352,6 +2354,10 @@ ScriptTextEditor::ScriptTextEditor() {
 
 ScriptTextEditor::~ScriptTextEditor() {
 	highlighters.clear();
+
+	if (script.is_valid()) {
+		script->disconnect(SNAME("reload_finished"), callable_mp(this, &ScriptTextEditor::reload_text));
+	}
 
 	if (!editor_enabled) {
 		memdelete(code_editor);

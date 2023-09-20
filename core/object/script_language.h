@@ -115,6 +115,7 @@ protected:
 
 	friend class PlaceHolderScriptInstance;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
+	virtual Error _reload(bool p_keep_state = false) = 0;
 
 	Variant _get_property_default_value(const StringName &p_property);
 	TypedArray<Dictionary> _get_script_property_list();
@@ -137,7 +138,8 @@ public:
 	virtual bool has_source_code() const = 0;
 	virtual String get_source_code() const = 0;
 	virtual void set_source_code(const String &p_code) = 0;
-	virtual Error reload(bool p_keep_state = false) = 0;
+
+	Error reload(bool p_keep_state = false);
 
 #ifdef TOOLS_ENABLED
 	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;

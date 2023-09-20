@@ -126,6 +126,12 @@ PropertyInfo Script::get_class_category() const {
 
 #endif // TOOLS_ENABLED
 
+Error Script::reload(bool p_keep_state) {
+	Error err = _reload(p_keep_state);
+	emit_signal(SNAME("reload_finished"));
+	return err;
+}
+
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
 	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
@@ -146,6 +152,8 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_property_default_value", "property"), &Script::_get_property_default_value);
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
+
+	ADD_SIGNAL(MethodInfo("reload_finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }

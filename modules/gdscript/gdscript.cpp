@@ -669,7 +669,7 @@ void GDScript::_restore_old_static_data() {
 
 #endif
 
-Error GDScript::reload(bool p_keep_state) {
+Error GDScript::_reload(bool p_keep_state) {
 	if (reloading) {
 		return OK;
 	}

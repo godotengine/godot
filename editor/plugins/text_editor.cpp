@@ -105,6 +105,7 @@ void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	Ref<TextFile> text_file = edited_res;
 	if (text_file != nullptr) {
 		code_editor->get_text_editor()->set_text(text_file->get_text());
+		text_file->connect(SNAME("reload_finished"), callable_mp(this, &TextEditor::reload_text));
 	}
 
 	Ref<JSON> json_file = edited_res;
@@ -705,6 +706,12 @@ TextEditor::TextEditor() {
 
 TextEditor::~TextEditor() {
 	highlighters.clear();
+
+	Ref<TextFile> text_file = edited_res;
+
+	if (text_file.is_valid()) {
+		text_file->disconnect(SNAME("reload_finished"), callable_mp(this, &TextEditor::reload_text));
+	}
 }
 
 void TextEditor::validate() {
