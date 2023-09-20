@@ -1245,7 +1245,7 @@ void GDScriptTokenizer::check_indent() {
 
 		if (line_continuation || multiline_mode) {
 			// We cleared up all the whitespace at the beginning of the line.
-			// But if this is a continuation or multiline mode and we don't want any indentation change.
+			// If this is a line continuation or we're in multiline mode then we don't want any indentation changes.
 			return;
 		}
 
