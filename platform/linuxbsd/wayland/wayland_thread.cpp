@@ -2003,7 +2003,7 @@ void WaylandThread::_wp_fractional_scale_on_preferred_scale(void *data, struct w
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	ws->fractional_scale = (float)scale / 120;
+	ws->fractional_scale = (double)scale / 120;
 }
 
 void WaylandThread::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
@@ -2307,7 +2307,7 @@ void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool
 	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
 	ERR_FAIL_NULL(ws);
 
-	float scale_factor = window_state_get_scale_factor(ws);
+	double scale_factor = window_state_get_scale_factor(ws);
 
 	TabletToolData &td = ss->tablet_tool_data_buffer;
 
@@ -2641,7 +2641,7 @@ int WaylandThread::window_state_get_buffer_scale(WindowState *p_ws) {
 	return 1;
 }
 
-float WaylandThread::window_state_get_scale_factor(WindowState *p_ws) {
+double WaylandThread::window_state_get_scale_factor(WindowState *p_ws) {
 	ERR_FAIL_NULL_V(p_ws, 1);
 
 	if (p_ws->fractional_scale > 0) {
@@ -2654,7 +2654,7 @@ float WaylandThread::window_state_get_scale_factor(WindowState *p_ws) {
 
 // Scales a vector according to wp_fractional_scale's rules, where coordinates
 // must be scaled with away from zero half-rounding.
-Vector2i WaylandThread::scale_vector2i(Vector2i p_vector, float p_amount) {
+Vector2i WaylandThread::scale_vector2i(Vector2i p_vector, double p_amount) {
 	// This snippet is tiny, I know, but this is done a lot.
 	p_vector.x = round(p_vector.x * p_amount);
 	p_vector.y = round(p_vector.y * p_amount);
@@ -3279,7 +3279,13 @@ void WaylandThread::pointer_set_hint(Point2i p_hint) {
 	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
 
 	if (ws) {
-		p_hint /= window_state_get_scale_factor(ws);
+		// NOTE: It looks like it's not really recommended to convert from
+		// "godot-space" to "wayland-space" and in general I received mixed feelings
+		// discussing about this. I'm not really sure about the maths behind this but,
+		// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
+		// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
+		p_hint.x = round(p_hint.x / window_state_get_scale_factor(ws));
+		p_hint.y = round(p_hint.y / window_state_get_scale_factor(ws));
 	}
 
 	if (ss) {

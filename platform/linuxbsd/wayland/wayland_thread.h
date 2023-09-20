@@ -201,7 +201,7 @@ public:
 
 		// Override used by the fractional scale add-on object. If less or equal to 0
 		// (default) then the normal output-based scale is used instead.
-		float fractional_scale = 0;
+		double fractional_scale = 0;
 
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
@@ -823,9 +823,9 @@ public:
 	void seat_state_echo_keys(SeatState *p_ss);
 
 	static int window_state_get_buffer_scale(WindowState *p_ws);
-	static float window_state_get_scale_factor(WindowState *p_ws);
+	static double window_state_get_scale_factor(WindowState *p_ws);
 
-	static Vector2i scale_vector2i(Vector2i p_vector, float p_amount);
+	static Vector2i scale_vector2i(Vector2i p_vector, double p_amount);
 
 	void push_message(Ref<Message> message);
 	bool has_message();
