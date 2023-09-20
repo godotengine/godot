@@ -212,7 +212,7 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (k->is_ctrl_pressed()) {
+		if (k->is_command_or_control_pressed()) {
 			step *= 100.0;
 		} else if (k->is_shift_pressed()) {
 			step *= 10.0;

@@ -347,6 +347,8 @@ struct ObjectGDExtension {
 	GDExtensionClassCreateInstance create_instance;
 	GDExtensionClassFreeInstance free_instance;
 	GDExtensionClassGetVirtual get_virtual;
+	GDExtensionClassGetVirtualCallData get_virtual_call_data;
+	GDExtensionClassCallVirtualWithData call_virtual_with_data;
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call<false>(__VA_ARGS__)

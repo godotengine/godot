@@ -41,8 +41,6 @@
 class TextEdit : public Control {
 	GDCLASS(TextEdit, Control);
 
-	friend class CodeHighlighter;
-
 public:
 	/* Edit Actions. */
 	enum EditAction {
@@ -1028,6 +1026,8 @@ public:
 
 	void set_draw_spaces(bool p_enabled);
 	bool is_drawing_spaces() const;
+
+	Color get_font_color() const;
 
 	TextEdit(const String &p_placeholder = String());
 };

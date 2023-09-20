@@ -312,7 +312,7 @@ void GradientEditor::gui_input(const Ref<InputEvent> &p_event) {
 
 		// Snap to "round" coordinates if holding Ctrl.
 		// Be more precise if holding Shift as well.
-		if (mm->is_ctrl_pressed()) {
+		if (mm->is_command_or_control_pressed()) {
 			newofs = Math::snapped(newofs, mm->is_shift_pressed() ? 0.025 : 0.1);
 		} else if (mm->is_shift_pressed()) {
 			// Snap to nearest point if holding just Shift.

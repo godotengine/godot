@@ -188,7 +188,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 					// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
 					frames_toggled_by_mouse_hover.insert(this_idx);
 
-					if (mb->is_ctrl_pressed()) {
+					if (mb->is_command_or_control_pressed()) {
 						frames_selected.erase(this_idx);
 					} else if (!frames_selected.has(this_idx)) {
 						frames_selected.insert(this_idx, selected_count);
@@ -255,6 +255,7 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 		// Zoom in/out using Ctrl + mouse wheel. This is done on the ScrollContainer
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
+		// keep CTRL and not CMD_OR_CTRL as CTRL is expected even on MacOS.
 		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_sheet_zoom_on_position(scale_ratio, mb->get_position());
 			// Don't scroll up after zooming in.
@@ -1485,7 +1486,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 			_prepare_sprite_sheet(files[0]);
 		} else {
 			_file_load_request(files, at_pos);
