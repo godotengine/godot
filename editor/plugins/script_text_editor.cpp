@@ -1716,7 +1716,7 @@ static String _quote_drop_data(const String &str) {
 	return escaped.quote(using_single_quotes ? "'" : "\"");
 }
 
-static String _get_preload_resource_line(const Ref<Resource> &p_resource, bool p_use_type, bool p_create_variable) {
+static String _create_dropped_resource_line(const Ref<Resource> &p_resource, bool p_use_type, bool p_create_variable) {
 	const String &path = p_resource->get_path();
 
 	if (!p_create_variable) {
@@ -1747,6 +1747,45 @@ static String _get_preload_resource_line(const Ref<Resource> &p_resource, bool p
 	return vformat("var %s = preload(%s)", variable_name, _quote_drop_data(path));
 }
 
+static String _create_dropped_node_text(const Node *p_node, const Node *p_scene_root, bool p_use_type, bool p_create_variable) {
+	bool is_unique = false;
+	String path;
+	if (p_node->is_unique_name_in_owner()) {
+		path = p_node->get_name();
+		is_unique = true;
+	} else {
+		path = p_scene_root->get_path_to(p_node);
+	}
+	for (const String &segment : path.split("/")) {
+		if (!segment.is_valid_identifier()) {
+			path = _quote_drop_data(path);
+			break;
+		}
+	}
+
+	char prefix = is_unique ? '%' : '$';
+
+	if (!p_create_variable) {
+		return prefix + path;
+	}
+
+	String variable_name = String(p_node->get_name()).to_snake_case().validate_identifier();
+
+	if (p_use_type) {
+		StringName class_name = p_node->get_class_name();
+		Ref<Script> node_script = p_node->get_script();
+		if (node_script.is_valid()) {
+			StringName global_node_script_name = node_script->get_global_name();
+			if (global_node_script_name != StringName()) {
+				class_name = global_node_script_name;
+			}
+		}
+		return vformat("@onready var %s: %s = %c%s", variable_name, class_name, prefix, path);
+	} else {
+		return vformat("@onready var %s = %c%s", variable_name, prefix, path);
+	}
+}
+
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
@@ -1769,7 +1808,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		const String &path = resource->get_path();
 		if (path.is_empty() || path.ends_with("::")) {
-			EditorNode::get_singleton()->show_warning(TTR("The resource does not have a valid path because it has not been saved.\nPlease save the scene or resource that contains this resource and try again."));
+			String msg = "The resource does not have a valid path because it has not been saved.\nPlease save the scene or resource that contains this resource and try again.";
+			EditorToaster::get_singleton()->popup_str(TTR(msg), EditorToaster::SEVERITY_WARNING);
 			return;
 		}
 		if (path.is_resource_file()) {
@@ -1779,7 +1819,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		String text_to_drop;
 		if (is_ctrl_pressed) {
-			text_to_drop = _get_preload_resource_line(resource, use_type, is_empty_line);
+			text_to_drop = _create_dropped_resource_line(resource, use_type, is_empty_line);
 		} else {
 			text_to_drop = _quote_drop_data(path);
 		}
@@ -1801,7 +1841,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 			if (is_ctrl_pressed && ResourceLoader::exists(path)) {
 				Ref<Resource> resource = ResourceLoader::load(path);
-				text_to_drop += _get_preload_resource_line(resource, use_type, is_empty_line);
+				text_to_drop += _create_dropped_resource_line(resource, use_type, is_empty_line);
 			} else {
 				text_to_drop += _quote_drop_data(path);
 			}
@@ -1838,72 +1878,23 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array nodes = d["nodes"];
 		String text_to_drop;
 
-		if (is_ctrl_pressed) {
-			for (int i = 0; i < nodes.size(); i++) {
-				NodePath np = nodes[i];
-				Node *node = get_node(np);
-				if (!node) {
-					continue;
-				}
-
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
-				for (const String &segment : path.split("/")) {
-					if (!segment.is_valid_identifier()) {
-						path = _quote_drop_data(path);
-						break;
-					}
-				}
-
-				String variable_name = String(node->get_name()).to_snake_case().validate_identifier();
-				if (use_type) {
-					StringName class_name = node->get_class_name();
-					Ref<Script> node_script = node->get_script();
-					if (node_script.is_valid()) {
-						StringName global_node_script_name = node_script->get_global_name();
-						if (global_node_script_name != StringName()) {
-							class_name = global_node_script_name;
-						}
-					}
-					text_to_drop += vformat("@onready var %s: %s = %c%s\n", variable_name, class_name, is_unique ? '%' : '$', path);
-				} else {
-					text_to_drop += vformat("@onready var %s = %c%s\n", variable_name, is_unique ? '%' : '$', path);
-				}
+		for (int i = 0; i < nodes.size(); i++) {
+			NodePath np = nodes[i];
+			Node *node = get_node(np);
+			if (!node)
+			{
+				continue;
 			}
-		} else {
-			for (int i = 0; i < nodes.size(); i++) {
-				if (i > 0) {
-					text_to_drop += ", ";
-				}
-
-				NodePath np = nodes[i];
-				Node *node = get_node(np);
-				if (!node) {
-					continue;
-				}
-
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
-
-				for (const String &segment : path.split("/")) {
-					if (!segment.is_valid_identifier()) {
-						path = _quote_drop_data(path);
-						break;
-					}
-				}
-				text_to_drop += (is_unique ? "%" : "$") + path;
+			
+			if (is_ctrl_pressed) {
+				text_to_drop += _create_dropped_node_text(node, sn, use_type, is_empty_line);
+			} else {
+				text_to_drop += _create_dropped_node_text(node, sn, use_type, false);
+			}
+			
+			if (i < nodes.size() - 1) 
+			{
+				text_to_drop += is_ctrl_pressed && is_empty_line ? "\n" : ", ";
 			}
 		}
 
