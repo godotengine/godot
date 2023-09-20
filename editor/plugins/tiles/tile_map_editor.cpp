@@ -1324,7 +1324,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			for (int x = rect.position.x; x <= rect.get_end().x; x++) {
 				for (int y = rect.position.y; y <= rect.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
-					if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+					if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) || drag_erasing) {
 						if (tile_map_selection.has(coords)) {
 							tile_map_selection.erase(coords);
 						}
