@@ -31,6 +31,7 @@
 #include "test_main.h"
 
 #include "tests/core/config/test_project_settings.h"
+#include "tests/core/crypto/test_crypto.h"
 #include "tests/core/input/test_input_event.h"
 #include "tests/core/input/test_input_event_key.h"
 #include "tests/core/input/test_input_event_mouse.h"
@@ -82,7 +83,6 @@
 #include "tests/core/templates/test_paged_array.h"
 #include "tests/core/templates/test_rid.h"
 #include "tests/core/templates/test_vector.h"
-#include "tests/core/test_crypto.h"
 #include "tests/core/test_hashing_context.h"
 #include "tests/core/test_time.h"
 #include "tests/core/threads/test_worker_thread_pool.h"
