@@ -3651,9 +3651,8 @@ void AnimationTrackEditor::commit_insert_queue() {
 		insert_confirm->popup_centered();
 	} else {
 		_insert_track(reset_allowed && EDITOR_GET("editors/animation/default_create_reset_tracks"), all_bezier && EDITOR_GET("editors/animation/default_create_bezier_tracks"));
+		insert_queue = false;
 	}
-
-	insert_queue = false;
 }
 
 void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
@@ -4016,30 +4015,12 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 }
 
 void AnimationTrackEditor::_confirm_insert_list() {
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Animation Insert Key"));
-
 	bool create_reset = insert_confirm_reset->is_visible() && insert_confirm_reset->is_pressed();
-	Ref<Animation> reset_anim;
-	if (create_reset) {
-		reset_anim = _create_and_get_reset_animation();
-	}
+	bool create_bezier = insert_confirm_bezier->is_visible() && insert_confirm_bezier->is_pressed();
 
-	TrackIndices next_tracks(animation.ptr(), reset_anim.ptr());
-	bool advance = false;
-	while (insert_data.size()) {
-		if (insert_data.front()->get().advance) {
-			advance = true;
-		}
-		next_tracks = _confirm_insert(insert_data.front()->get(), next_tracks, create_reset, reset_anim, insert_confirm_bezier->is_pressed());
-		insert_data.pop_front();
-	}
+	_insert_track(create_reset, create_bezier);
 
-	undo_redo->commit_action();
-
-	if (advance) {
-		_edit_menu_pressed(EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY);
-	}
+	insert_queue = false;
 }
 
 PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val) {
