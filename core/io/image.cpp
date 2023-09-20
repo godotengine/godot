@@ -3412,6 +3412,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("convert", "format"), &Image::convert);
 
+	ClassDB::bind_method(D_METHOD("get_mipmap_count"), &Image::get_mipmap_count);
 	ClassDB::bind_method(D_METHOD("get_mipmap_offset", "mipmap"), &Image::get_mipmap_offset);
 
 	ClassDB::bind_method(D_METHOD("resize_to_po2", "square", "interpolation"), &Image::resize_to_po2, DEFVAL(false), DEFVAL(INTERPOLATE_BILINEAR));
