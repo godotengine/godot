@@ -78,10 +78,10 @@ def configure(env):
         env["osxcross"] = True
 
     if env["arch"] == "arm64":
-        print("Building for macOS 10.15+, platform arm64.")
-        env.Append(ASFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
-        env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
-        env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
+        print("Building for macOS 11.0+, platform arm64.")
+        env.Append(ASFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
+        env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
+        env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
     else:
         print("Building for macOS 10.13+, platform x86-64.")
         env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
