@@ -6,7 +6,7 @@ extra_suffix = "GopherMode"
 
 # Engine Compilation Stuff
 
-optimize = "speed_trace"
+optimize = "size"
 dev_build = "no"
 dev_mode = "no"
 debug_symbols = "no"
@@ -18,8 +18,7 @@ precision="single"
 vulkan = "no"
 opengl3 = "yes"
 
-
-# REQUIRED to compile
+# # REQUIRED to compile
 
 custom_modules = "custom_modules/"
 module_freetype_enabled =" yes"
@@ -42,7 +41,7 @@ module_openxr_enabled = "no"
 module_basis_universal_enabled = "no"
 module_csg_enabled = "no"
 module_dds_enabled = "no"
-module_enet_enabled = "no"
+# module_enet_enabled = "no" BREAKS LINKING!!
 module_bmp_enabled = "no"
 module_bullet_enabled = "no"
 module_gdnative_enabled = "no"
@@ -63,6 +62,9 @@ module_visual_script_enabled = "no"
 module_webm_enabled = "no"
 module_webrtc_enabled = "no"
 module_websocket_enabled = "no"
+
+
+
 
 # Stuff we don't disable
 

@@ -200,13 +200,14 @@ def configure(env: "Environment"):
     env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
 
     # Get version info for checks below.
+    print(env)
     cc_version = get_compiler_version(env)
-    cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
+    cc_semver = (3,1,40)#(int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
 
     if env["lto"] != "none":
         # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
         if cc_semver >= (3, 1, 42) and cc_semver < (3, 1, 46):
-            env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
+            env.Append(LINKFLAGS=["-Wl,-u,scalbnf"]) # "-Wl,-u,htonl"
 
     if env["dlink_enabled"]:
         if cc_semver < (3, 1, 14):
