@@ -741,7 +741,7 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
  * - start() is the last step and that's where command line tools can run, or the main loop
  *   can be created eventually and the project settings put into action. That's also where
  *   the editor node is created, if relevant.
- *   start() does it own argument parsing for a subset of the command line arguments described
+ *   start() does its own argument parsing for a subset of the command line arguments described
  *   in help, it's a bit messy and should be globalized with the setup() parsing somehow.
  */
 
