@@ -52,6 +52,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_keyword = false;
 	bool in_word = false;
 	bool in_number = false;
+	bool in_raw_string = false;
 	bool in_node_path = false;
 	bool in_node_ref = false;
 	bool in_annotation = false;
@@ -234,15 +235,33 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 							}
 
 							if (str[from] == '\\') {
-								Dictionary escape_char_highlighter_info;
-								escape_char_highlighter_info["color"] = symbol_color;
-								color_map[from] = escape_char_highlighter_info;
+								if (!in_raw_string) {
+									Dictionary escape_char_highlighter_info;
+									escape_char_highlighter_info["color"] = symbol_color;
+									color_map[from] = escape_char_highlighter_info;
+								}
 
 								from++;
 
-								Dictionary region_continue_highlighter_info;
-								region_continue_highlighter_info["color"] = region_color;
-								color_map[from + 1] = region_continue_highlighter_info;
+								if (!in_raw_string) {
+									int esc_len = 0;
+									if (str[from] == 'u') {
+										esc_len = 4;
+									} else if (str[from] == 'U') {
+										esc_len = 6;
+									}
+									for (int k = 0; k < esc_len && from < line_length - 1; k++) {
+										if (!is_hex_digit(str[from + 1])) {
+											break;
+										}
+										from++;
+									}
+
+									Dictionary region_continue_highlighter_info;
+									region_continue_highlighter_info["color"] = region_color;
+									color_map[from + 1] = region_continue_highlighter_info;
+								}
+
 								continue;
 							}
 
@@ -489,6 +508,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_member_variable = false;
 		}
 
+		if (!in_raw_string && in_region == -1 && str[j] == 'r' && j < line_length - 1 && (str[j + 1] == '"' || str[j + 1] == '\'')) {
+			in_raw_string = true;
+		} else if (in_raw_string && in_region == -1) {
+			in_raw_string = false;
+		}
+
 		// Keep symbol color for binary '&&'. In the case of '&&&' use StringName color for the last ampersand.
 		if (!in_string_name && in_region == -1 && str[j] == '&' && !is_binary_op) {
 			if (j >= 2 && str[j - 1] == '&' && str[j - 2] != '&' && prev_is_binary_op) {
@@ -520,7 +545,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_annotation = false;
 		}
 
-		if (in_node_ref) {
+		if (in_raw_string) {
+			color = string_color;
+		} else if (in_node_ref) {
 			next_type = NODE_REF;
 			color = node_ref_color;
 		} else if (in_annotation) {
@@ -692,7 +719,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	/* Strings */
-	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 	List<String> strings;
 	gdscript->get_string_delimiters(&strings);
 	for (const String &string : strings) {
