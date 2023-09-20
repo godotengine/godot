@@ -294,6 +294,7 @@ void Array::assign(const Array &p_array) {
 
 void Array::push_back(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "push_back"));
 	_p->array.push_back(value);
@@ -301,6 +302,7 @@ void Array::push_back(const Variant &p_value) {
 
 void Array::append_array(const Array &p_array) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 
 	Vector<Variant> validated_array = p_array._p->array;
 	for (int i = 0; i < validated_array.size(); ++i) {
@@ -312,6 +314,7 @@ void Array::append_array(const Array &p_array) {
 
 Error Array::resize(int p_new_size) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), ERR_LOCKED, "Array is a struct."); // TODO: better error message
 	Variant::Type &variant_type = _p->typed.type;
 	int old_size = _p->array.size();
 	Error err = _p->array.resize_zeroed(p_new_size);
@@ -325,6 +328,7 @@ Error Array::resize(int p_new_size) {
 
 Error Array::insert(int p_pos, const Variant &p_value) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), ERR_LOCKED, "Array is a struct."); // TODO: better error message
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "insert"), ERR_INVALID_PARAMETER);
 	return _p->array.insert(p_pos, value);
@@ -332,6 +336,7 @@ Error Array::insert(int p_pos, const Variant &p_value) {
 
 void Array::fill(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "fill"));
 	_p->array.fill(value);
@@ -339,6 +344,7 @@ void Array::fill(const Variant &p_value) {
 
 void Array::erase(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "erase"));
 	_p->array.erase(value);
@@ -433,11 +439,13 @@ bool Array::has(const Variant &p_value) const {
 
 void Array::remove_at(int p_pos) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	_p->array.remove_at(p_pos);
 }
 
 void Array::set(int p_idx, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "set"));
 
@@ -447,6 +455,21 @@ void Array::set(int p_idx, const Variant &p_value) {
 const Variant &Array::get(int p_idx) const {
 	return operator[](p_idx);
 }
+
+void Array::set_named(const StringName &p_member, const Variant &p_value) {
+	CRASH_COND_MSG(!_p->is_struct(), "Array is not a struct"); // TODO: should this crash?
+	int32_t index = _p->find_member_index(p_member);
+	CRASH_COND_MSG(index < 0, vformat("member '%s' not found", p_member));
+	set(index, p_value);
+}
+
+const Variant &Array::get_named(const StringName &p_member) const {
+	CRASH_COND_MSG(!_p->is_struct(), "Array is not a struct"); // TODO: should this crash?
+	int32_t index = _p->find_member_index(p_member);
+	CRASH_COND_MSG(index < 0, vformat("member '%s' not found", p_member));
+	return get(index);
+}
+
 
 Array Array::duplicate(bool p_deep) const {
 	return recursive_duplicate(p_deep, 0);
@@ -642,16 +665,19 @@ struct _ArrayVariantSort {
 
 void Array::sort() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	_p->array.sort_custom<_ArrayVariantSort>();
 }
 
 void Array::sort_custom(const Callable &p_callable) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	_p->array.sort_custom<CallableComparator, true>(p_callable);
 }
 
 void Array::shuffle() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	const int n = _p->array.size();
 	if (n < 2) {
 		return;
@@ -681,11 +707,13 @@ int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bo
 
 void Array::reverse() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	_p->array.reverse();
 }
 
 void Array::push_front(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "push_front"));
 	_p->array.insert(0, value);
@@ -693,6 +721,7 @@ void Array::push_front(const Variant &p_value) {
 
 Variant Array::pop_back() {
 	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), Variant(), "Array is a struct."); // TODO: better error message
 	if (!_p->array.is_empty()) {
 		const int n = _p->array.size() - 1;
 		const Variant ret = _p->array.get(n);
@@ -704,6 +733,7 @@ Variant Array::pop_back() {
 
 Variant Array::pop_front() {
 	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), Variant(), "Array is a struct."); // TODO: better error message
 	if (!_p->array.is_empty()) {
 		const Variant ret = _p->array.get(0);
 		_p->array.remove_at(0);
@@ -714,6 +744,7 @@ Variant Array::pop_front() {
 
 Variant Array::pop_at(int p_pos) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), Variant(), "Array is a struct."); // TODO: better error message
 	if (_p->array.is_empty()) {
 		// Return `null` without printing an error to mimic `pop_back()` and `pop_front()` behavior.
 		return Variant();
@@ -795,6 +826,7 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
 	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");

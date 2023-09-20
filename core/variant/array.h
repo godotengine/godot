@@ -54,7 +54,7 @@ public:
 	void set(int p_idx, const Variant &p_value);
 	const Variant &get(int p_idx) const;
 	void set_named(const StringName &p_member, const Variant &p_value);
-	const Variant get_named(const StringName &p_member) const; // TODO: should be & return
+	const Variant &get_named(const StringName &p_member) const; // TODO: should be & return?
 
 
 	int size() const;
