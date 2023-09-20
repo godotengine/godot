@@ -125,6 +125,12 @@
 				Returns an array of all [GLTFSkin]s in the GLTF file. These are the skins that the [member GLTFNode.skin] index refers to.
 			</description>
 		</method>
+		<method name="get_source_images">
+			<return type="Image[]" />
+			<description>
+				Gets the source images of the GLTF file as an array of [Image]s. These are the images that the [member GLTFTexture.src_image] index refers to.
+			</description>
+		</method>
 		<method name="get_texture_samplers">
 			<return type="GLTFTextureSampler[]" />
 			<description>

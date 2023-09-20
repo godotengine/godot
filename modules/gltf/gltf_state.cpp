@@ -74,6 +74,7 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_samplers", "texture_samplers"), &GLTFState::set_texture_samplers);
 	ClassDB::bind_method(D_METHOD("get_images"), &GLTFState::get_images);
 	ClassDB::bind_method(D_METHOD("set_images", "images"), &GLTFState::set_images);
+	ClassDB::bind_method(D_METHOD("get_source_images"), &GLTFState::get_source_images);
 	ClassDB::bind_method(D_METHOD("get_skins"), &GLTFState::get_skins);
 	ClassDB::bind_method(D_METHOD("set_skins", "skins"), &GLTFState::set_skins);
 	ClassDB::bind_method(D_METHOD("get_cameras"), &GLTFState::get_cameras);
@@ -273,6 +274,10 @@ void GLTFState::set_texture_samplers(TypedArray<GLTFTextureSampler> p_texture_sa
 
 TypedArray<Texture2D> GLTFState::get_images() {
 	return GLTFTemplateConvert::to_array(images);
+}
+
+TypedArray<Image> GLTFState::get_source_images() {
+	return GLTFTemplateConvert::to_array(source_images);
 }
 
 void GLTFState::set_images(TypedArray<Texture2D> p_images) {
