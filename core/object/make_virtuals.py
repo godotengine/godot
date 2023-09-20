@@ -2,7 +2,7 @@ proto = """
 #define GDVIRTUAL$VER($RET m_name $ARG) \\
 StringName _gdvirtual_##m_name##_sn = #m_name;\\
 mutable bool _gdvirtual_##m_name##_initialized = false;\\
-mutable GDExtensionClassCallVirtual _gdvirtual_##m_name = nullptr;\\
+mutable void* _gdvirtual_##m_name = nullptr;\\
 template<bool required>\\
 _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 	ScriptInstance *_script_instance = ((Object*)(this))->get_script_instance();\\
@@ -16,15 +16,24 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 		}    \\
 	}\\
     if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
-        /* TODO: C-style cast because GDExtensionStringNamePtr's const qualifier is broken (see https://github.com/godotengine/godot/pull/67751) */\\
-        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, (GDExtensionStringNamePtr)&_gdvirtual_##m_name##_sn) : (GDExtensionClassCallVirtual) nullptr;\\
+        _gdvirtual_##m_name = nullptr;\\
+        if (_get_extension()->get_virtual_call_data && _get_extension()->call_virtual_with_data) {\\
+            _gdvirtual_##m_name = _get_extension()->get_virtual_call_data(_get_extension()->class_userdata, &_gdvirtual_##m_name##_sn);\\
+        } else if (_get_extension()->get_virtual) {\\
+            _gdvirtual_##m_name = (void *)_get_extension()->get_virtual(_get_extension()->class_userdata, &_gdvirtual_##m_name##_sn);\\
+        }\\
         _gdvirtual_##m_name##_initialized = true;\\
     }\\
 	if (_gdvirtual_##m_name) {\\
 		$CALLPTRARGS\\
 		$CALLPTRRETDEF\\
-		_gdvirtual_##m_name(_get_extension_instance(),$CALLPTRARGPASS,$CALLPTRRETPASS);\\
-		$CALLPTRRET\\
+        if (_get_extension()->get_virtual_call_data && _get_extension()->call_virtual_with_data) {\\
+            _get_extension()->call_virtual_with_data(_get_extension_instance(), &_gdvirtual_##m_name##_sn, _gdvirtual_##m_name, $CALLPTRARGPASS,$CALLPTRRETPASS);\\
+            $CALLPTRRET\\
+        } else {\\
+		    ((GDExtensionClassCallVirtual)_gdvirtual_##m_name)(_get_extension_instance(),$CALLPTRARGPASS,$CALLPTRRETPASS);\\
+            $CALLPTRRET\\
+        }\\
 		return true;\\
 	}\\
 	\\
@@ -41,8 +50,12 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_overridden() const { \\
 	    return _script_instance->has_method(_gdvirtual_##m_name##_sn);\\
 	}\\
     if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
-        /* TODO: C-style cast because GDExtensionStringNamePtr's const qualifier is broken (see https://github.com/godotengine/godot/pull/67751) */\\
-        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, (GDExtensionStringNamePtr)&_gdvirtual_##m_name##_sn) : (GDExtensionClassCallVirtual) nullptr;\\
+         _gdvirtual_##m_name = nullptr;\\
+        if (_get_extension()->get_virtual_call_data && _get_extension()->call_virtual_with_data) {\\
+             _gdvirtual_##m_name = _get_extension()->get_virtual_call_data(_get_extension()->class_userdata, &_gdvirtual_##m_name##_sn);\\
+        } else if (_get_extension()->get_virtual) {\\
+             _gdvirtual_##m_name = (void *)_get_extension()->get_virtual(_get_extension()->class_userdata, &_gdvirtual_##m_name##_sn);\\
+        }\\
         _gdvirtual_##m_name##_initialized = true;\\
     }\\
 	if (_gdvirtual_##m_name) {\\
