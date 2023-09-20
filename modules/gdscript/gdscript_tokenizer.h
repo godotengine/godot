@@ -187,6 +187,8 @@ public:
 #ifdef TOOLS_ENABLED
 	struct CommentData {
 		String comment;
+		// true: Comment starts at beginning of line or after indentation.
+		// false: Inline comment (starts after some code).
 		bool new_line = false;
 		CommentData() {}
 		CommentData(const String &p_comment, bool p_new_line) {

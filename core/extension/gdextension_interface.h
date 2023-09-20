@@ -265,9 +265,11 @@ typedef void (*GDExtensionClassToString)(GDExtensionClassInstancePtr p_instance,
 typedef void (*GDExtensionClassReference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDExtensionClassUnreference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret);
-typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance)(void *p_userdata);
-typedef void (*GDExtensionClassFreeInstance)(void *p_userdata, GDExtensionClassInstancePtr p_instance);
-typedef GDExtensionClassCallVirtual (*GDExtensionClassGetVirtual)(void *p_userdata, GDExtensionConstStringNamePtr p_name);
+typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance)(void *p_class_userdata);
+typedef void (*GDExtensionClassFreeInstance)(void *p_class_userdata, GDExtensionClassInstancePtr p_instance);
+typedef GDExtensionClassCallVirtual (*GDExtensionClassGetVirtual)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name);
+typedef void *(*GDExtensionClassGetVirtualCallData)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name);
+typedef void (*GDExtensionClassCallVirtualWithData)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, void *p_virtual_call_userdata, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret);
 
 typedef struct {
 	GDExtensionBool is_virtual;
@@ -306,7 +308,17 @@ typedef struct {
 	GDExtensionClassUnreference unreference_func;
 	GDExtensionClassCreateInstance create_instance_func; // (Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract.
 	GDExtensionClassFreeInstance free_instance_func; // Destructor; mandatory.
-	GDExtensionClassGetVirtual get_virtual_func; // Queries a virtual function by name and returns a callback to invoke the requested virtual function.
+	// Queries a virtual function by name and returns a callback to invoke the requested virtual function.
+	GDExtensionClassGetVirtual get_virtual_func;
+	// Paired with `call_virtual_with_data_func`, this is an alternative to `get_virtual_func` for extensions that
+	// need or benefit from extra data when calling virtual functions.
+	// Returns user data that will be passed to `call_virtual_with_data_func`.
+	// Returning `NULL` from this function signals to Godot that the virtual function is not overridden.
+	// Data returned from this function should be managed by the extension and must be valid until the extension is deinitialized.
+	// You should supply either `get_virtual_func`, or `get_virtual_call_data_func` with `call_virtual_with_data_func`.
+	GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
+	// Used to call virtual functions when `get_virtual_call_data_func` is not null.
+	GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
 	GDExtensionClassGetRID get_rid_func;
 	void *class_userdata; // Per-class user data, later accessible in instance bindings.
 } GDExtensionClassCreationInfo2;

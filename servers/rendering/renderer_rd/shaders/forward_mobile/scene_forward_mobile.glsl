@@ -1121,11 +1121,10 @@ void main() {
 	} else if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(draw_call.flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
 		uint ofs = draw_call.gi_offset & 0xFFFF;
+		uint slice = draw_call.gi_offset >> 16;
 		vec3 uvw;
 		uvw.xy = uv2 * draw_call.lightmap_uv_scale.zw + draw_call.lightmap_uv_scale.xy;
-		uvw.z = float((draw_call.gi_offset >> 16) & 0xFFFF);
-
-		uint idx = draw_call.gi_offset >> 20;
+		uvw.z = float(slice);
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
@@ -1134,8 +1133,8 @@ void main() {
 			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
 			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
 
-			vec3 n = normalize(lightmaps.data[idx].normal_xform * normal);
-			float exposure_normalization = lightmaps.data[idx].exposure_normalization;
+			vec3 n = normalize(lightmaps.data[ofs].normal_xform * normal);
+			float exposure_normalization = lightmaps.data[ofs].exposure_normalization;
 
 			ambient_light += lm_light_l0 * 0.282095f;
 			ambient_light += lm_light_l1n1 * 0.32573 * n.y * exposure_normalization;
@@ -1149,7 +1148,7 @@ void main() {
 			}
 
 		} else {
-			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[idx].exposure_normalization;
+			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
 		}
 	}
 

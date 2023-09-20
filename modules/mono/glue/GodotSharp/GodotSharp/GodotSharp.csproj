@@ -11,9 +11,6 @@
     <LangVersion>10</LangVersion>
 
     <AnalysisMode>Recommended</AnalysisMode>
-
-    <!-- Disabled temporarily as it pollutes the warnings, but we need to document public APIs. -->
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <Description>Godot C# Core API.</Description>

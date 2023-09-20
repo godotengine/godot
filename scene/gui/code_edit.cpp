@@ -433,7 +433,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	// Allow unicode handling if:
 	// No modifiers are pressed (except Shift and CapsLock)
-	bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
+	bool allow_unicode_handling = !(k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 	/* AUTO-COMPLETE */
 	if (code_completion_enabled && k->is_action("ui_text_completion_query", true)) {

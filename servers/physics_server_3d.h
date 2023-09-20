@@ -211,15 +211,15 @@ public:
 class PhysicsServer3DRenderingServerHandler : public Object {
 	GDCLASS(PhysicsServer3DRenderingServerHandler, Object)
 protected:
-	GDVIRTUAL2(_set_vertex, int, GDExtensionConstPtr<void>)
-	GDVIRTUAL2(_set_normal, int, GDExtensionConstPtr<void>)
+	GDVIRTUAL2(_set_vertex, int, const Vector3 &)
+	GDVIRTUAL2(_set_normal, int, const Vector3 &)
 	GDVIRTUAL1(_set_aabb, const AABB &)
 
 	static void _bind_methods();
 
 public:
-	virtual void set_vertex(int p_vertex_id, const void *p_vector3);
-	virtual void set_normal(int p_vertex_id, const void *p_vector3);
+	virtual void set_vertex(int p_vertex_id, const Vector3 &p_vertex);
+	virtual void set_normal(int p_vertex_id, const Vector3 &p_normal);
 	virtual void set_aabb(const AABB &p_aabb);
 
 	virtual ~PhysicsServer3DRenderingServerHandler() {}
