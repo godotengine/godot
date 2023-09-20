@@ -404,6 +404,10 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		}
 	}
 
+#ifndef WEB_ENABLED
+	glProgramParameteri(spec.id, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+#endif
+
 	glLinkProgram(spec.id);
 
 	glGetProgramiv(spec.id, GL_LINK_STATUS, &status);
@@ -514,12 +518,34 @@ String ShaderGLES3::_version_get_sha1(Version *p_version) const {
 	return hash_build.as_string().sha1_text();
 }
 
+#define CACHE_LOG(text, value) print_line(vformat(String("CACHE_LOG: ") + text + ": %s", value))
+
 #ifndef WEB_ENABLED // not supported in webgl
 static const char *shader_file_header = "GLSC";
-static const uint32_t cache_file_version = 3;
+static const uint32_t cache_file_version = 5;
+
+static bool is_shader_cache_supported() {
+	static bool disabled = OS::get_singleton()->get_cmdline_args().find("--disable-shader-cache") != nullptr;
+	CACHE_LOG("Shader cache command line disabled", String::num(disabled));
+	if (disabled) {
+		return false;
+	}
+
+	GLint max_program_binary_formats = 0;
+	glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &max_program_binary_formats);
+	CACHE_LOG("GL_NUM_PROGRAM_BINARY_FORMATS", max_program_binary_formats);
+
+	bool supported = max_program_binary_formats > 0;
+	CACHE_LOG("Shader cache supported", supported);
+
+	return supported;
+}
+
 #endif
 
 bool ShaderGLES3::_load_from_cache(Version *p_version) {
+	CACHE_LOG("_load_from_cache() start", "");
+
 #ifdef WEB_ENABLED // not supported in webgl
 	return false;
 #else
@@ -528,6 +554,11 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 		return false;
 	}
 #endif
+
+	if (!is_shader_cache_supported()) {
+		return false;
+	}
+
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.path_join(name).path_join(base_sha256).path_join(sha1) + ".cache";
 
@@ -550,9 +581,12 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 
 	LocalVector<OAHashMap<uint64_t, Version::Specialization>> variants;
 	for (int i = 0; i < cache_variant_count; i++) {
+		CACHE_LOG("Load cache variant", String::num(i));
 		uint32_t cache_specialization_count = f->get_32();
 		OAHashMap<uint64_t, Version::Specialization> variant;
 		for (uint32_t j = 0; j < cache_specialization_count; j++) {
+			CACHE_LOG("Load cache _specialization", String::num(j));
+
 			uint64_t specialization_key = f->get_64();
 			uint32_t variant_size = f->get_32();
 			if (variant_size == 0) {
@@ -567,6 +601,8 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 			ERR_FAIL_COND_V(br != variant_size, false);
 
 			Version::Specialization specialization;
+
+			CACHE_LOG("Binary load format", variant_format);
 
 			specialization.id = glCreateProgram();
 			glProgramBinary(specialization.id, variant_format, variant_bytes.ptr(), variant_bytes.size());
@@ -588,44 +624,78 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	}
 	p_version->variants = variants;
 
+	CACHE_LOG("_load_from_cache() end", "");
+
 	return true;
 #endif // WEB_ENABLED
 }
 
 void ShaderGLES3::_save_to_cache(Version *p_version) {
+	print_error("Test error redirect");
+	print_verbose("Test verbose enabled");
+
 #ifdef WEB_ENABLED // not supported in webgl
 	return;
 #else
 #ifdef GLES_OVER_GL
 	if (glGetProgramBinary == NULL) { // ARB_get_program_binary extension not available
+		CACHE_LOG("glGetProgramBinary is null", "");
 		return;
 	}
 #endif
+
+	if (!is_shader_cache_supported()) {
+		return;
+	}
+
+	CACHE_LOG("_save_to_cache() start", "");
+	CACHE_LOG("Variants", variant_count);
+	CACHE_LOG("Version variants", p_version->variants.size());
+
+	GLint max_program_binary_formats = 0;
+	glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &max_program_binary_formats);
+	CACHE_LOG("GL_NUM_PROGRAM_BINARY_FORMATS", max_program_binary_formats);
+
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.path_join(name).path_join(base_sha256).path_join(sha1) + ".cache";
 
+	CACHE_LOG("Version sha1", sha1);
+	CACHE_LOG("Cache path", path);
+
 	Error error;
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, &error);
+	CACHE_LOG("File valid", f.is_valid());
 	ERR_FAIL_COND(f.is_null());
 	f->store_buffer((const uint8_t *)shader_file_header, 4);
 	f->store_32(cache_file_version);
 	f->store_32(variant_count);
 
 	for (int i = 0; i < variant_count; i++) {
+		CACHE_LOG("Variant index", i);
+
 		int cache_specialization_count = p_version->variants[i].get_num_elements();
+		CACHE_LOG("cache_specialization_count", cache_specialization_count);
 		f->store_32(cache_specialization_count);
 
+		CACHE_LOG("Version variant count", p_version->variants[i].get_num_elements());
+
+		CACHE_LOG("Variant loop", "\n");
 		for (OAHashMap<uint64_t, ShaderGLES3::Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
 			const uint64_t specialization_key = *it.key;
+			CACHE_LOG("specialization_key", specialization_key);
 			f->store_64(specialization_key);
 
 			const Version::Specialization *specialization = it.value;
-			if (specialization == nullptr) {
+			if (specialization == nullptr || !specialization->ok || specialization->id <= 0) {
+				CACHE_LOG("specialization not valid, continue", "");
 				f->store_32(0);
 				continue;
 			}
+
+			CACHE_LOG("specialization->id", specialization->id);
 			GLint program_size = 0;
 			glGetProgramiv(specialization->id, GL_PROGRAM_BINARY_LENGTH, &program_size);
+			CACHE_LOG("program_size", program_size);
 			if (program_size == 0) {
 				f->store_32(0);
 				continue;
@@ -634,15 +704,24 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 			compiled_program.resize(program_size);
 			GLenum binary_format = 0;
 			glGetProgramBinary(specialization->id, program_size, nullptr, &binary_format, compiled_program.ptrw());
+
+			CACHE_LOG("Binary save format", binary_format);
 			if (program_size != compiled_program.size()) {
+				CACHE_LOG("program_size != compiled_program.size()", "");
 				f->store_32(0);
 				continue;
 			}
+
 			f->store_32(program_size);
 			f->store_32(binary_format);
 			f->store_buffer(compiled_program.ptr(), compiled_program.size());
+
+			CACHE_LOG("compiled_program", compiled_program.size());
 		}
 	}
+
+	CACHE_LOG("_save_to_cache() end", "");
+
 #endif // WEB_ENABLED
 }
 
