@@ -16952,7 +16952,7 @@ msgid "Invalid else."
 msgstr "else Inválido."
 
 msgid "Unmatched endif."
-msgstr "Endif incomparável."
+msgstr "endif incomparável."
 
 msgid "Invalid endif."
 msgstr "endif Inválido."
