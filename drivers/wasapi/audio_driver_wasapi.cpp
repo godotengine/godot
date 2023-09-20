@@ -658,7 +658,7 @@ void AudioDriverWASAPI::render_thread_func(void *p_udata) {
 		// Play out the engine samples to the speakers.
 
 		HRESULT hr = E_FAIL; // Annoyingly, the device may be removed at any point so we have to constantly check the return values.
-		UINT32 padding; // How many samples are in the WASAPI buffer already. Don't have to initialize because it is only used in the success path.
+		UINT32 padding = 0; // How many samples are in the WASAPI buffer already.
 		bool need_to_remake_device = false; // Will be set in case device disappears, or if the user changes device.
 
 		while (true) {
