@@ -184,7 +184,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 			case MODE_EDIT: {
 				if (mb->get_button_index() == MouseButton::LEFT) {
 					if (mb->is_pressed()) {
-						if (mb->is_ctrl_pressed()) {
+						if (mb->is_command_or_control_pressed()) {
 							if (poly.size() < 3) {
 								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 								undo_redo->create_action(TTR("Edit Poly"));
@@ -329,7 +329,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			if (snap_ignore && !Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+			if (snap_ignore && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 				snap_ignore = false;
 			}
 

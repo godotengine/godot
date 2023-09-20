@@ -1977,7 +1977,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_shift_pressed()) {
 				nav_mode = NAVIGATION_PAN;
-			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_ctrl_pressed()) {
+			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_command_or_control_pressed()) {
 				nav_mode = NAVIGATION_ZOOM;
 			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ORBIT;
@@ -5244,7 +5244,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_material_label_desc = memnew(Label);
 	preview_material_label_desc->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
 	preview_material_label_desc->set_offset(Side::SIDE_TOP, -50 * EDSCALE);
-	preview_material_label_desc->set_text(TTR("Drag and drop to override the material of any geometry node.\nHold Ctrl when dropping to override a specific surface."));
+	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+	preview_material_label_desc->set_text(vformat(TTR("Drag and drop to override the material of any geometry node.\nHold %s when dropping to override a specific surface."), find_keycode_name(key)));
 	preview_material_label_desc->add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1));
 	preview_material_label_desc->add_theme_constant_override("line_spacing", 0);
 	preview_material_label_desc->hide();
