@@ -57,7 +57,6 @@ class AudioDriverWASAPI : public AudioDriver {
 		WORD bits_per_sample = 0;
 		unsigned int channels = 0;
 
-		SafeFlag has_new_device;
 		String device_name = "Default"; // Output OR Input
 		String new_device = "Default"; // Output OR Input
 
@@ -80,7 +79,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	Vector<int32_t> samples_in;
 
 	int mix_rate = 0;
-	int buffer_frames = 0;
+	unsigned int buffer_frames = 0; // This is how many frames at most we can write to the speakers.
 	float real_latency = 0.0f;
 
 	SafeFlag exit_thread;
@@ -109,7 +108,7 @@ class AudioDriverWASAPI : public AudioDriver {
 
 public:
 	// Calls from notif_client.
-	void default_device_changed(EDataFlow flow);
+	void default_device_changed(EDataFlow p_flow);
 
 public:
 	virtual const char *get_name() const override {

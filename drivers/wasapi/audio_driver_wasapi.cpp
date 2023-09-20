@@ -82,8 +82,8 @@ public:
 	CMMNotificationClient() {}
 	virtual ~CMMNotificationClient() {}
 
-	void set_driver(AudioDriverWASAPI *d) {
-		driver = d;
+	void set_driver(AudioDriverWASAPI *p_driver) {
+		driver = p_driver;
 	}
 
 	ULONG STDMETHODCALLTYPE AddRef() {
@@ -303,16 +303,16 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	//
 	// Passing in 0 here for the buffer duration means that we will get the smallest possible buffer (also lowest latency).
 	hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_input ? REFTIMES_PER_SEC : 0, 0, pwfex, nullptr);
-	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
+	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Initialize failed with error: 0x" + String::num_uint64(hr, 16) + ".");
 
 	if (!p_input) {
 		// This is the event that WASAPI will signal when it wants more data from us (push method).
 		// The initial state for this event must be unsignaled!
 		p_device->feed_event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-		ERR_FAIL_COND_V_MSG(p_device->feed_event == nullptr, ERR_CANT_OPEN, "WASAPI: Could not create event handle with error " + String::num(GetLastError()));
+		ERR_FAIL_COND_V_MSG(p_device->feed_event == nullptr, ERR_CANT_OPEN, "WASAPI: Could not create event handle with error: " + String::num(GetLastError()) + ".");
 
 		hr = p_device->audio_client->SetEventHandle(p_device->feed_event);
-		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Could not set event handle with error 0x" + String::num_uint64(hr, 16));
+		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Could not set event handle with error: 0x" + String::num_uint64(hr, 16) + ".");
 	}
 
 	// We send in 0 as the buffer size for Initialize, which means the WASAPI engine will automatically assign the smallest buffer size it can use.
@@ -442,7 +442,7 @@ Error AudioDriverWASAPI::init() {
 	// Literally impossible for this call to fail. You be the judge if you need to check the return value of this.
 	// It is however fundamental to the logic for this to exist.
 	render_wake = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-	ERR_FAIL_COND_V_MSG(render_wake == nullptr, ERR_CANT_OPEN, "WASAPI: Could not create render wake handle with error " + String::num(GetLastError()));
+	ERR_FAIL_COND_V_MSG(render_wake == nullptr, ERR_CANT_OPEN, "WASAPI: Could not create render wake handle with error: " + String::num(GetLastError()) + ".");
 
 	exit_thread.clear();
 
@@ -531,11 +531,11 @@ void AudioDriverWASAPI::unlock_capture() {
 // This is messy because Godot does not have any cross thread communication. Anyway.
 // The logic for remaking the devices is done on the respective thread to keep it a little bit simpler.
 
-void AudioDriverWASAPI::default_device_changed(EDataFlow flow) {
-	if (flow == eRender) {
+void AudioDriverWASAPI::default_device_changed(EDataFlow p_flow) {
+	if (p_flow == eRender) {
 		default_output_device_changed = true;
 		SetEvent(render_wake); // Wake if render thread is currently waiting for a working output device.
-	} else if (flow == eCapture) {
+	} else if (p_flow == eCapture) {
 		default_input_device_changed = true;
 	}
 }
@@ -720,7 +720,7 @@ void AudioDriverWASAPI::render_thread_func(void *p_udata) {
 		// So the device got removed or something. Unfortunately WASAPI does not have a virtual output device (like XAudio2)
 		// which would automatically handle annoying cases like this. In this case we have to remake everything
 		if (FAILED(hr)) {
-			ERR_PRINT("WASAPI: Device error 0x" + String::num_uint64(hr, 16));
+			ERR_PRINT("WASAPI: Device error: 0x" + String::num_uint64(hr, 16) + ".");
 			need_to_remake_device = true;
 		}
 
@@ -846,7 +846,7 @@ void AudioDriverWASAPI::start() {
 		if (SUCCEEDED(hr)) {
 			SetEvent(render_wake); // Now active.
 		} else {
-			ERR_PRINT("WASAPI: Start failed");
+			ERR_PRINT("WASAPI: Start failed.");
 		}
 	}
 }
