@@ -786,11 +786,11 @@ public:
 
 	// TODO: Make all the methods starting with "_" actually private.
 
-	static String _string_read_fd(int fd);
+	static LocalVector<uint8_t> _read_fd(int fd);
 	static int _allocate_shm_file(size_t size);
 
-	static String _wl_data_offer_read(struct wl_display *wl_display, struct wl_data_offer *wl_data_offer);
-	static String _wp_primary_selection_offer_read(struct wl_display *wl_display, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
+	static LocalVector<uint8_t> _wl_data_offer_read(struct wl_display *wl_display, const char *p_mime, struct wl_data_offer *wl_data_offer);
+	static LocalVector<uint8_t> _wp_primary_selection_offer_read(struct wl_display *wl_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
 
 	static void _seat_state_set_current(WaylandThread::SeatState &p_ss);
 	static bool _seat_state_configure_key_event(WaylandThread::SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);

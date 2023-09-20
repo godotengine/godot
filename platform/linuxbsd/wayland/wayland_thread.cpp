@@ -56,8 +56,8 @@
 #define DEBUG_LOG_WAYLAND_THREAD(...)
 #endif
 
-// Read the content pointed by fd into a string.
-String WaylandThread::_string_read_fd(int fd) {
+// Read the content pointed by fd into a LocalVector<uint8_t>.
+LocalVector<uint8_t> WaylandThread::_read_fd(int fd) {
 	// This is pretty much an arbitrary size.
 	uint32_t chunk_size = 2048;
 
@@ -70,13 +70,18 @@ String WaylandThread::_string_read_fd(int fd) {
 		ssize_t last_bytes_read = read(fd, data.ptr() + bytes_read, chunk_size);
 		if (last_bytes_read < 0) {
 			ERR_PRINT(vformat("Read error %d.", errno));
-			return "";
+
+			data.clear();
+			break;
 		}
 
 		if (last_bytes_read == 0) {
 			// We're done, we've reached the EOF.
 			DEBUG_LOG_WAYLAND_THREAD(vformat("Done reading %d bytes.", bytes_read));
+
 			close(fd);
+
+			data.resize(bytes_read);
 			break;
 		}
 
@@ -88,9 +93,7 @@ String WaylandThread::_string_read_fd(int fd) {
 		data.resize(bytes_read + chunk_size);
 	}
 
-	String ret;
-	ret.parse_utf8((const char *)data.ptr(), bytes_read);
-	return ret;
+	return data;
 }
 
 // Based on the wayland book's shared memory boilerplate (PD/CC0).
@@ -131,17 +134,15 @@ int WaylandThread::_allocate_shm_file(size_t size) {
 	return -1;
 }
 
-// Read the content of a "text/plain" wl_data_offer.
-String WaylandThread::_wl_data_offer_read(struct wl_display *p_display, struct wl_data_offer *p_offer) {
+// Return the content of a wl_data_offer.
+LocalVector<uint8_t> WaylandThread::_wl_data_offer_read(struct wl_display *p_display, const char *p_mime, struct wl_data_offer *p_offer) {
 	if (!p_offer) {
-		return "";
+		return LocalVector<uint8_t>();
 	}
 
 	int fds[2];
 	if (pipe(fds) == 0) {
-		// This function expects to return a string, so we can only ask for a MIME of
-		// "text/plain"
-		wl_data_offer_receive(p_offer, "text/plain", fds[1]);
+		wl_data_offer_receive(p_offer, p_mime, fds[1]);
 
 		// Wait for the compositor to know about the pipe.
 		wl_display_roundtrip(p_display);
@@ -150,23 +151,23 @@ String WaylandThread::_wl_data_offer_read(struct wl_display *p_display, struct w
 		// just stall our next `read`s.
 		close(fds[1]);
 
-		return _string_read_fd(fds[0]);
+		return _read_fd(fds[0]);
 	}
 
-	return "";
+	return LocalVector<uint8_t>();
 }
 
-// Read the content of a "text/plain" wp_primary_selection_offer.
-String WaylandThread::_wp_primary_selection_offer_read(struct wl_display *p_display, struct zwp_primary_selection_offer_v1 *p_offer) {
+// Read the content of a wp_primary_selection_offer.
+LocalVector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_display *p_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *p_offer) {
 	if (!p_offer) {
-		return "";
+		return LocalVector<uint8_t>();
 	}
 
 	int fds[2];
 	if (pipe(fds) == 0) {
 		// This function expects to return a string, so we can only ask for a MIME of
 		// "text/plain"
-		zwp_primary_selection_offer_v1_receive(p_offer, "text/plain", fds[1]);
+		zwp_primary_selection_offer_v1_receive(p_offer, p_mime, fds[1]);
 
 		// Wait for the compositor to know about the pipe.
 		wl_display_roundtrip(p_display);
@@ -175,10 +176,10 @@ String WaylandThread::_wp_primary_selection_offer_read(struct wl_display *p_disp
 		// just stall our next `read`s.
 		close(fds[1]);
 
-		return _string_read_fd(fds[0]);
+		return _read_fd(fds[0]);
 	}
 
-	return "";
+	return LocalVector<uint8_t>();
 }
 
 // Sets up an `InputEventKey` and returns whether it has any meaningful value.
@@ -1894,7 +1895,9 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 		Ref<DropFilesEventMessage> msg;
 		msg.instantiate();
 
-		msg->files = _string_read_fd(fds[0]).split("\r\n", false);
+		LocalVector<uint8_t> list_data = _read_fd(fds[0]);
+
+		msg->files = String::utf8((const char *)list_data.ptr(), list_data.size()).split("\r\n", false);
 		for (int i = 0; i < msg->files.size(); i++) {
 			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
 		}
@@ -3627,7 +3630,9 @@ String WaylandThread::selection_get_text() const {
 		return "";
 	}
 
-	return _wl_data_offer_read(wl_display, ss->wl_data_offer_selection);
+	LocalVector<uint8_t> data = _wl_data_offer_read(wl_display, "text/plain", ss->wl_data_offer_selection);
+	print_line("size of string:", data.size());
+	return String::utf8((const char *)data.ptr(), data.size());
 }
 
 void WaylandThread::primary_set_text(String p_text) {
@@ -3668,7 +3673,8 @@ String WaylandThread::primary_get_text() const {
 		return "";
 	}
 
-	return _wp_primary_selection_offer_read(wl_display, ss->wp_primary_selection_offer);
+	LocalVector<uint8_t> data = _wp_primary_selection_offer_read(wl_display, "text/plain", ss->wp_primary_selection_offer);
+	return String::utf8((const char *)data.ptr(), data.size());
 }
 
 void WaylandThread::set_frame() {
