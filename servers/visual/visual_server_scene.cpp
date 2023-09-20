@@ -2294,20 +2294,19 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 				half >>= 1;
 			}
 
-			if (cell == RasterizerStorage::LightmapCaptureOctree::CHILD_EMPTY) {
-				alpha[c][n] = 0;
-			} else {
+			if (cell != RasterizerStorage::LightmapCaptureOctree::CHILD_EMPTY) {
 				alpha[c][n] = p_octree[cell].alpha;
 
 				for (int i = 0; i < 6; i++) {
 					//anisotropic read light
 					float amount = p_dir.dot(aniso_normal[i]);
-					if (amount < 0) {
-						amount = 0;
+
+					if (amount > 0) {
+						constexpr float ONE_1024TH = 1.0 / 1024.0;
+						color[c][n].x += p_octree[cell].light[i][0] * ONE_1024TH * amount;
+						color[c][n].y += p_octree[cell].light[i][1] * ONE_1024TH * amount;
+						color[c][n].z += p_octree[cell].light[i][2] * ONE_1024TH * amount;
 					}
-					color[c][n].x += p_octree[cell].light[i][0] / 1024.0 * amount;
-					color[c][n].y += p_octree[cell].light[i][1] / 1024.0 * amount;
-					color[c][n].z += p_octree[cell].light[i][2] / 1024.0 * amount;
 				}
 			}
 
@@ -2318,15 +2317,24 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	float target_level_size = size >> target_level;
 	Vector3 pos_fract[2];
 
-	pos_fract[0].x = Math::fmod(pos.x, target_level_size) / target_level_size;
-	pos_fract[0].y = Math::fmod(pos.y, target_level_size) / target_level_size;
-	pos_fract[0].z = Math::fmod(pos.z, target_level_size) / target_level_size;
+	float target_level_size_inv = 1.0f / target_level_size;
+	real_t res;
+	res = pos.x * target_level_size_inv;
+	pos_fract[0].x = res - (int)res;
+	res = pos.y * target_level_size_inv;
+	pos_fract[0].y = res - (int)res;
+	res = pos.z * target_level_size_inv;
+	pos_fract[0].z = res - (int)res;
 
 	target_level_size = size >> MAX(0, target_level - 1);
 
-	pos_fract[1].x = Math::fmod(pos.x, target_level_size) / target_level_size;
-	pos_fract[1].y = Math::fmod(pos.y, target_level_size) / target_level_size;
-	pos_fract[1].z = Math::fmod(pos.z, target_level_size) / target_level_size;
+	target_level_size_inv = 1.0f / target_level_size;
+	res = pos.x * target_level_size_inv;
+	pos_fract[1].x = res - (int)res;
+	res = pos.y * target_level_size_inv;
+	pos_fract[1].y = res - (int)res;
+	res = pos.z * target_level_size_inv;
+	pos_fract[1].z = res - (int)res;
 
 	float alpha_interp[2];
 	Vector3 color_interp[2];
