@@ -218,10 +218,15 @@ void GDScriptEditorTranslationParserPlugin::_assess_assignment(GDScriptParser::A
 	if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
 		assignee_name = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee)->name;
 	} else if (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT) {
-		assignee_name = static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee)->attribute->name;
+		const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(p_assignment->assignee);
+		if (subscript->is_attribute && subscript->attribute) {
+			assignee_name = subscript->attribute->name;
+		} else if (subscript->index && subscript->index->type == GDScriptParser::Node::LITERAL) {
+			assignee_name = static_cast<GDScriptParser::LiteralNode *>(subscript->index)->value;
+		}
 	}
 
-	if (assignment_patterns.has(assignee_name) && p_assignment->assigned_value->type == GDScriptParser::Node::LITERAL) {
+	if (assignee_name != StringName() && assignment_patterns.has(assignee_name) && p_assignment->assigned_value->type == GDScriptParser::Node::LITERAL) {
 		// If the assignment is towards one of the extract patterns (text, tooltip_text etc.), and the value is a string literal, we collect the string.
 		ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_assignment->assigned_value)->value);
 	} else if (assignee_name == fd_filters && p_assignment->assigned_value->type == GDScriptParser::Node::CALL) {
@@ -229,7 +234,7 @@ void GDScriptEditorTranslationParserPlugin::_assess_assignment(GDScriptParser::A
 		// get_node("FileDialog").filters = PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]).
 
 		GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(p_assignment->assigned_value);
-		if (call_node->arguments[0]->type == GDScriptParser::Node::ARRAY) {
+		if (!call_node->arguments.is_empty() && call_node->arguments[0]->type == GDScriptParser::Node::ARRAY) {
 			GDScriptParser::ArrayNode *array_node = static_cast<GDScriptParser::ArrayNode *>(call_node->arguments[0]);
 
 			// Extract the name in "extension ; name" of PackedStringArray.
