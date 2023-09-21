@@ -2708,6 +2708,7 @@ void RichTextLabel::_thread_function(void *p_userdata) {
 	_process_line_caches();
 	updating.store(false);
 	call_deferred(SNAME("thread_end"));
+	call_deferred("emit_signal", SNAME("thread_finish"));
 }
 
 void RichTextLabel::_thread_end() {
@@ -5778,6 +5779,8 @@ void RichTextLabel::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("meta_hover_ended", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 
 	ADD_SIGNAL(MethodInfo("finished"));
+
+	ADD_SIGNAL(MethodInfo("thread_finish"));
 
 	BIND_ENUM_CONSTANT(LIST_NUMBERS);
 	BIND_ENUM_CONSTANT(LIST_LETTERS);
