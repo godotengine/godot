@@ -21,6 +21,15 @@ namespace Godot
         /// <summary>
         /// Constructs a new ExportAttribute Instance.
         /// </summary>
+        public ExportAttribute()
+        {
+            Hint = PropertyHint.None;
+            HintString = "";
+        }
+
+        /// <summary>
+        /// Constructs a new ExportAttribute Instance.
+        /// </summary>
         /// <param name="hint">The hint for the exported property.</param>
         /// <param name="hintString">A string that may contain additional metadata for the hint.</param>
         public ExportAttribute(PropertyHint hint = PropertyHint.None, string hintString = "")
