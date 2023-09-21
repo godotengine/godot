@@ -471,6 +471,10 @@ double VariantUtilityFunctions::move_toward(double from, double to, double delta
 	return Math::move_toward(from, to, delta);
 }
 
+double VariantUtilityFunctions::move_toward_angle(double from, double to, double delta) {
+	return Math::move_toward_angle(from, to, delta);
+}
+
 double VariantUtilityFunctions::deg_to_rad(double angle_deg) {
 	return Math::deg_to_rad(angle_deg);
 }
@@ -1659,6 +1663,7 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(smoothstep, sarray("from", "to", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(move_toward_angle, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(deg_to_rad, sarray("deg"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(rad_to_deg, sarray("rad"), Variant::UTILITY_FUNC_TYPE_MATH);

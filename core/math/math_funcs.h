@@ -444,6 +444,16 @@ public:
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
 		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
 	}
+	static _ALWAYS_INLINE_ double move_toward_angle(double p_from, double p_to, double p_delta) {
+		double difference = fmod(p_to - p_from, Math_TAU);
+		double distance = fmod(2.0 * difference, Math_TAU) - difference;
+		return p_from + CLAMP(distance, p_delta * -1, p_delta);
+	}
+	static _ALWAYS_INLINE_ float move_toward_angle(float p_from, float p_to, float p_delta) {
+		float difference = fmod(p_to - p_from, (float)Math_TAU);
+		float distance = fmod(2.0f * difference, (float)Math_TAU) - difference;
+		return p_from + CLAMP(distance, p_delta * -1, p_delta);
+	}
 
 	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
 		return Math::log(p_linear) * 8.6858896380650365530225783783321;

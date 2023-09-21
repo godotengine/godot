@@ -362,32 +362,39 @@ TEST_CASE_TEMPLATE("[Math] remap", T, float, double) {
 
 TEST_CASE_TEMPLATE("[Math] lerp_angle", T, float, double) {
 	// Counter-clockwise rotation.
-	CHECK(Math::lerp_angle((T)0.24 * Math_TAU, 0.75 * Math_TAU, 0.5) == doctest::Approx((T)-0.005 * Math_TAU));
+	CHECK(Math::lerp_angle((T)0.24 * Math_TAU, (T)0.75 * Math_TAU, (T)0.5) == doctest::Approx((T)-0.005 * Math_TAU));
 	// Counter-clockwise rotation.
-	CHECK(Math::lerp_angle((T)0.25 * Math_TAU, 0.75 * Math_TAU, 0.5) == doctest::Approx((T)0.0));
+	CHECK(Math::lerp_angle((T)0.25 * Math_TAU, (T)0.75 * Math_TAU, (T)0.5) == doctest::Approx((T)0.0));
 	// Clockwise rotation.
-	CHECK(Math::lerp_angle((T)0.26 * Math_TAU, 0.75 * Math_TAU, 0.5) == doctest::Approx((T)0.505 * Math_TAU));
+	CHECK(Math::lerp_angle((T)0.26 * Math_TAU, (T)0.75 * Math_TAU, (T)0.5) == doctest::Approx((T)0.505 * Math_TAU));
 
-	CHECK(Math::lerp_angle((T)-0.25 * Math_TAU, 1.25 * Math_TAU, 0.5) == doctest::Approx((T)-0.5 * Math_TAU));
-	CHECK(Math::lerp_angle((T)0.72 * Math_TAU, 1.44 * Math_TAU, 0.96) == doctest::Approx((T)0.4512 * Math_TAU));
-	CHECK(Math::lerp_angle((T)0.72 * Math_TAU, 1.44 * Math_TAU, 1.04) == doctest::Approx((T)0.4288 * Math_TAU));
+	CHECK(Math::lerp_angle((T)-0.25 * Math_TAU, (T)1.25 * Math_TAU, (T)0.5) == doctest::Approx((T)-0.5 * Math_TAU));
+	CHECK(Math::lerp_angle((T)0.72 * Math_TAU, (T)1.44 * Math_TAU, (T)0.96) == doctest::Approx((T)0.4512 * Math_TAU));
+	CHECK(Math::lerp_angle((T)0.72 * Math_TAU, (T)1.44 * Math_TAU, (T)1.04) == doctest::Approx((T)0.4288 * Math_TAU));
 
 	// Initial and final angles are effectively identical, so the value returned
 	// should always be the same regardless of the `weight` parameter.
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, -1.0) == doctest::Approx((T)-4.0 * Math_TAU));
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, 0.0) == doctest::Approx((T)-4.0 * Math_TAU));
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, 0.5) == doctest::Approx((T)-4.0 * Math_TAU));
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, 1.0) == doctest::Approx((T)-4.0 * Math_TAU));
-	CHECK(Math::lerp_angle((T)-4 * Math_TAU, 4 * Math_TAU, 500.0) == doctest::Approx((T)-4.0 * Math_TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math_TAU, (T)4 * Math_TAU, (T)-1.0) == doctest::Approx((T)-4.0 * Math_TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math_TAU, (T)4 * Math_TAU, (T)0.0) == doctest::Approx((T)-4.0 * Math_TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math_TAU, (T)4 * Math_TAU, (T)0.5) == doctest::Approx((T)-4.0 * Math_TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math_TAU, (T)4 * Math_TAU, (T)1.0) == doctest::Approx((T)-4.0 * Math_TAU));
+	CHECK(Math::lerp_angle((T)-4 * Math_TAU, (T)4 * Math_TAU, (T)500.0) == doctest::Approx((T)-4.0 * Math_TAU));
 }
 
 TEST_CASE_TEMPLATE("[Math] move_toward", T, float, double) {
-	CHECK(Math::move_toward(2.0, 5.0, -1.0) == doctest::Approx((T)1.0));
-	CHECK(Math::move_toward(2.0, 5.0, 2.5) == doctest::Approx((T)4.5));
-	CHECK(Math::move_toward(2.0, 5.0, 4.0) == doctest::Approx((T)5.0));
-	CHECK(Math::move_toward(-2.0, -5.0, -1.0) == doctest::Approx((T)-1.0));
-	CHECK(Math::move_toward(-2.0, -5.0, 2.5) == doctest::Approx((T)-4.5));
-	CHECK(Math::move_toward(-2.0, -5.0, 4.0) == doctest::Approx((T)-5.0));
+	CHECK(Math::move_toward((T)2.0, (T)5.0, (T)-1.0) == doctest::Approx((T)1.0));
+	CHECK(Math::move_toward((T)2.0, (T)5.0, (T)2.5) == doctest::Approx((T)4.5));
+	CHECK(Math::move_toward((T)2.0, (T)5.0, (T)4.0) == doctest::Approx((T)5.0));
+	CHECK(Math::move_toward((T)-2.0, (T)-5.0, (T)-1.0) == doctest::Approx((T)-1.0));
+	CHECK(Math::move_toward((T)-2.0, (T)-5.0, (T)2.5) == doctest::Approx((T)-4.5));
+	CHECK(Math::move_toward((T)-2.0, (T)-5.0, (T)4.0) == doctest::Approx((T)-5.0));
+}
+
+TEST_CASE_TEMPLATE("[Math] move_toward_angle", T, float, double) {
+	CHECK(Math::move_toward_angle((T)0.25 * Math_TAU, (T)0.9 * Math_TAU, (T)0.2) == doctest::Approx((T)0.05 * Math_TAU));
+	CHECK(Math::move_toward_angle((T)0.25 * Math_TAU, (T)0.9 * Math_TAU, (T)-0.2) == doctest::Approx((T)0.45 * Math_TAU));
+	CHECK(Math::move_toward_angle((T)0.72 * Math_TAU, (T)1.0 * Math_TAU, (T)0.2) == doctest::Approx((T)0.92 * Math_TAU));
+	CHECK(Math::move_toward_angle((T)0.65 * Math_TAU, (T)0.94 * Math_TAU, (T)0.5) == doctest::Approx((T)0.94 * Math_TAU));
 }
 
 TEST_CASE_TEMPLATE("[Math] smoothstep", T, float, double) {
