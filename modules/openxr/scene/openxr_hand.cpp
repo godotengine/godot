@@ -132,8 +132,8 @@ Skeleton3D *OpenXRHand::get_skeleton() {
 
 void OpenXRHand::_get_bones() {
 	const char *bone_names[XR_HAND_JOINT_COUNT_EXT] = {
-		"Palm",
 		"Wrist",
+		"Palm",
 		"Thumb_Metacarpal",
 		"Thumb_Proximal",
 		"Thumb_Distal",
@@ -233,7 +233,7 @@ void OpenXRHand::_update_skeleton() {
 			}
 		}
 
-		if (confidences[XR_HAND_JOINT_PALM_EXT] != XRPose::XR_TRACKING_CONFIDENCE_NONE) {
+		if (confidences[XR_HAND_JOINT_WRIST_EXT] != XRPose::XR_TRACKING_CONFIDENCE_NONE) {
 			// now update our skeleton
 			for (int i = 0; i < XR_HAND_JOINT_COUNT_EXT; i++) {
 				if (bones[i] != -1) {
@@ -246,7 +246,7 @@ void OpenXRHand::_update_skeleton() {
 					// get local translation, parent should already be processed
 					if (parent == -1) {
 						// use our palm location here, that is what we are tracking
-						q = inv_quaternions[XR_HAND_JOINT_PALM_EXT] * q;
+						q = inv_quaternions[XR_HAND_JOINT_WRIST_EXT] * q;
 					} else {
 						int found = false;
 						for (int b = 0; b < XR_HAND_JOINT_COUNT_EXT && !found; b++) {
@@ -268,8 +268,8 @@ void OpenXRHand::_update_skeleton() {
 			}
 
 			Transform3D t;
-			t.basis = Basis(quaternions[XR_HAND_JOINT_PALM_EXT]);
-			t.origin = positions[XR_HAND_JOINT_PALM_EXT];
+			t.basis = Basis(quaternions[XR_HAND_JOINT_WRIST_EXT]);
+			t.origin = positions[XR_HAND_JOINT_WRIST_EXT];
 			set_transform(t);
 
 			// show it
