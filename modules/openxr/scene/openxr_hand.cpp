@@ -245,7 +245,7 @@ void OpenXRHand::_update_skeleton() {
 
 					// get local translation, parent should already be processed
 					if (parent == -1) {
-						// use our palm location here, that is what we are tracking
+						// Use our wrist location here, that is what we are tracking.
 						q = inv_quaternions[XR_HAND_JOINT_WRIST_EXT] * q;
 					} else {
 						int found = false;
