@@ -1729,12 +1729,12 @@ void FileSystemDock::_folder_removed(String p_folder) {
 
 void FileSystemDock::_rename_operation_confirm() {
 	String new_name;
-	TreeItem *s = tree->get_selected();
-	int col_index = tree->get_selected_column();
+	TreeItem *ti = tree->get_edited();
+	int col_index = tree->get_edited_column();
 
-	if (tree->has_focus()) {
-		new_name = s->get_text(col_index).strip_edges();
-	} else if (files->has_focus()) {
+	if (ti) {
+		new_name = ti->get_text(col_index).strip_edges();
+	} else {
 		new_name = files->get_edit_text().strip_edges();
 	}
 	String old_name = to_rename.is_file ? to_rename.path.get_file() : to_rename.path.left(-1).get_file();
@@ -1757,10 +1757,10 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 
 	// Restore original name.
-	if (rename_error && tree->has_focus()) {
-		s->set_text(col_index, old_name);
-		return;
-	} else if (rename_error && files->has_focus()) {
+	if (rename_error) {
+		if (ti) {
+			ti->set_text(col_index, old_name);
+		}
 		return;
 	}
 
@@ -1783,7 +1783,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
 #endif
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
-		s->set_text(col_index, old_name);
+		ti->set_text(col_index, old_name);
 		return;
 	}
 
@@ -1803,7 +1803,7 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 
-	if (tree->has_focus()) {
+	if (ti) {
 		current_path = new_path;
 		current_path_line_edit->set_text(current_path);
 	}
@@ -2004,13 +2004,13 @@ void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Vect
 	EditorNode::get_singleton()->save_scene_list(r_file_owners);
 }
 
-Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) const {
+Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion, bool p_include_unselected_cursor) const {
 	// Build a list of selected items with the active one at the first position.
 	Vector<String> selected_strings;
 
 	TreeItem *favorites_item = tree->get_root()->get_first_child();
 	TreeItem *cursor_item = tree->get_selected();
-	if (cursor_item && cursor_item->is_selected(0) && cursor_item != favorites_item) {
+	if (cursor_item && (p_include_unselected_cursor || cursor_item->is_selected(0)) && cursor_item != favorites_item) {
 		selected_strings.push_back(cursor_item->get_metadata(0));
 	}
 
@@ -2059,6 +2059,10 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 				tree->get_selected()->set_collapsed_recursive(p_option == FOLDER_COLLAPSE_ALL);
 			}
 		} break;
+		case FILE_RENAME: {
+			selected_strings = _tree_get_selected(false, true);
+			[[fallthrough]];
+		}
 		default: {
 			_file_option(p_option, selected_strings);
 		} break;

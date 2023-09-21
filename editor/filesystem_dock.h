@@ -351,7 +351,7 @@ private:
 
 	void _update_display_mode(bool p_force = false);
 
-	Vector<String> _tree_get_selected(bool remove_self_inclusion = true) const;
+	Vector<String> _tree_get_selected(bool remove_self_inclusion = true, bool p_include_unselected_cursor = false) const;
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
