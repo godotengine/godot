@@ -61,10 +61,15 @@ void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_velocity_texture"), &RenderSceneBuffersRD::_get_velocity_texture);
 	ClassDB::bind_method(D_METHOD("get_velocity_layer", "layer"), &RenderSceneBuffersRD::_get_velocity_layer);
 
+	ClassDB::bind_method(D_METHOD("get_upscaler_input", "layer"), &RenderSceneBuffersRD::get_upscaler_input);
+	ClassDB::bind_method(D_METHOD("get_upscaler_output", "layer"), &RenderSceneBuffersRD::get_upscaler_output);
+
 	// Expose a few properties we're likely to use externally
 	ClassDB::bind_method(D_METHOD("get_render_target"), &RenderSceneBuffersRD::get_render_target);
 	ClassDB::bind_method(D_METHOD("get_view_count"), &RenderSceneBuffersRD::get_view_count);
 	ClassDB::bind_method(D_METHOD("get_internal_size"), &RenderSceneBuffersRD::get_internal_size);
+	ClassDB::bind_method(D_METHOD("get_target_size"), &RenderSceneBuffersRD::get_target_size);
+	ClassDB::bind_method(D_METHOD("get_msaa_3d"), &RenderSceneBuffersRD::get_msaa_3d);
 	ClassDB::bind_method(D_METHOD("get_use_taa"), &RenderSceneBuffersRD::get_use_taa);
 }
 
@@ -656,4 +661,20 @@ RID RenderSceneBuffersRD::get_velocity_buffer(bool p_get_msaa, uint32_t p_layer)
 			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY, p_layer, 0);
 		}
 	}
+}
+
+// Upscaler Rendering Effect
+
+RID RenderSceneBuffersRD::get_upscaler_input(const uint32_t p_layer) {
+	if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_UPSCALER)) {
+		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_UPSCALER, p_layer, 0);
+	} else {
+		return RID();
+	}
+}
+
+RID RenderSceneBuffersRD::get_upscaler_output(const uint32_t p_layer) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
+	return texture_storage->render_target_get_rd_texture_slice(render_target, p_layer);
 }

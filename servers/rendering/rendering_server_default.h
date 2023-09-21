@@ -682,6 +682,14 @@ public:
 	FUNC2(sky_set_material, RID, RID)
 	FUNC4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
+	/* RENDERING EFFECT */
+
+	FUNCRIDSPLIT(rendering_effect)
+	FUNC3(rendering_effect_set_callback, RID, RenderingEffectCallbackType, Callable)
+	FUNC3(rendering_effect_set_flag, RID, RenderingEffectFlags, bool)
+
+	/* ENVIRONMENT */
+
 	FUNCRIDSPLIT(environment)
 
 	FUNC2(environment_set_background, RID, EnvironmentBG)
@@ -723,6 +731,8 @@ public:
 	FUNC1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
 	FUNC1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
 	FUNC1(environment_set_sdfgi_frames_to_update_light, EnvironmentSDFGIFramesToUpdateLight)
+
+	FUNC2(environment_set_rendering_effects, RID, const TypedArray<RID> &)
 
 	FUNC3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 

@@ -1583,6 +1583,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	// check if we need motion vectors
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
 		p_render_data->scene_data->calculate_motion_vectors = true;
+	} else if (_render_effects_has_flag(p_render_data, RS::RENDERING_EFFECT_FLAG_NEEDS_MOTION_VECTORS)) {
+		p_render_data->scene_data->calculate_motion_vectors = true;
 	} else if (!is_reflection_probe && rb->get_use_taa()) {
 		p_render_data->scene_data->calculate_motion_vectors = true;
 	} else {
@@ -1819,6 +1821,19 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		clear_color = p_default_bg_color;
 	}
 
+	RS::ViewportMSAA msaa = rb->get_msaa_3d();
+	bool use_msaa = msaa != RS::VIEWPORT_MSAA_DISABLED;
+
+	bool re_pre_opaque_resolved_color = use_msaa && _render_effects_has_flag(p_render_data, RS::RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_COLOR, RS::RENDERING_EFFECT_CALLBACK_TYPE_PRE_OPAQUE);
+	bool re_post_opaque_resolved_color = use_msaa && _render_effects_has_flag(p_render_data, RS::RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_COLOR, RS::RENDERING_EFFECT_CALLBACK_TYPE_POST_OPAQUE);
+	bool re_pre_transparent_resolved_color = use_msaa && _render_effects_has_flag(p_render_data, RS::RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_COLOR, RS::RENDERING_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT);
+	bool re_post_transparent_resolved_color = use_msaa && _render_effects_has_flag(p_render_data, RS::RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_COLOR, RS::RENDERING_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
+
+	bool re_pre_opaque_resolved_depth = use_msaa && _render_effects_has_flag(p_render_data, RS::RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH, RS::RENDERING_EFFECT_CALLBACK_TYPE_PRE_OPAQUE);
+	bool re_post_opaque_resolved_depth = use_msaa && _render_effects_has_flag(p_render_data, RS::RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH, RS::RENDERING_EFFECT_CALLBACK_TYPE_POST_OPAQUE);
+	bool re_pre_transparent_resolved_depth = use_msaa && _render_effects_has_flag(p_render_data, RS::RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH, RS::RENDERING_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT);
+	bool re_post_transparent_resolved_depth = use_msaa && _render_effects_has_flag(p_render_data, RS::RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH, RS::RENDERING_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
+
 	bool debug_voxelgis = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION;
 	bool debug_sdfgi_probes = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES;
 	bool depth_pre_pass = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable")) && depth_framebuffer.is_valid();
@@ -1845,7 +1860,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, nullptr, RID());
 
-		bool finish_depth = using_ssao || using_ssil || using_sdfgi || using_voxelgi;
+		bool finish_depth = using_ssao || using_ssil || using_sdfgi || using_voxelgi || re_pre_opaque_resolved_depth || re_post_opaque_resolved_depth;
 		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, depth_pass_mode, 0, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 		_render_list_with_threads(&render_list_params, depth_framebuffer, needs_pre_resolve ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, needs_pre_resolve ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_CLEAR, finish_depth ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, needs_pre_resolve ? Vector<Color>() : depth_pass_clear);
 
@@ -1855,7 +1870,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			_pre_resolve_render(p_render_data, using_sdfgi || using_voxelgi);
 		}
 
-		if (rb->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
+		if (use_msaa) {
 			RENDER_TIMESTAMP("Resolve Depth Pre-Pass (MSAA)");
 			RD::get_singleton()->draw_command_begin_label("Resolve Depth Pre-Pass (MSAA)");
 			if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI) {
@@ -1863,17 +1878,31 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 					RD::get_singleton()->barrier(RD::BARRIER_MASK_RASTER, RD::BARRIER_MASK_COMPUTE);
 				}
 				for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-					resolve_effects->resolve_gi(rb->get_depth_msaa(v), rb_data->get_normal_roughness_msaa(v), using_voxelgi ? rb_data->get_voxelgi_msaa(v) : RID(), rb->get_depth_texture(v), rb_data->get_normal_roughness(v), using_voxelgi ? rb_data->get_voxelgi(v) : RID(), rb->get_internal_size(), texture_multisamples[rb->get_msaa_3d()]);
+					resolve_effects->resolve_gi(rb->get_depth_msaa(v), rb_data->get_normal_roughness_msaa(v), using_voxelgi ? rb_data->get_voxelgi_msaa(v) : RID(), rb->get_depth_texture(v), rb_data->get_normal_roughness(v), using_voxelgi ? rb_data->get_voxelgi(v) : RID(), rb->get_internal_size(), texture_multisamples[msaa]);
 				}
 			} else if (finish_depth) {
 				for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-					resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[rb->get_msaa_3d()]);
+					resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
 				}
 			}
 			RD::get_singleton()->draw_command_end_label();
 		}
 
 		continue_depth = !finish_depth;
+	}
+
+	{
+		if (re_pre_opaque_resolved_color) {
+			// We haven't rendered color data yet so...
+			WARN_PRINT_ONCE("Pre opaque rendering effects can't access resolved color buffers.");
+		}
+
+		if (re_pre_opaque_resolved_depth && !depth_pre_pass) {
+			// We haven't rendered depth data yet so...
+			WARN_PRINT_ONCE("Pre opaque rendering effects can't access resolved depth buffers.");
+		}
+
+		_process_render_effects(RS::RENDERING_EFFECT_CALLBACK_TYPE_PRE_OPAQUE, p_render_data);
 	}
 
 	RID normal_roughness_views[RendererSceneRender::MAX_RENDER_VIEWS];
@@ -1895,8 +1924,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, true);
 
-	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !using_sss;
-	bool can_continue_depth = !(scene_state.used_depth_texture || scene_state.used_normal_texture) && !using_ssr && !using_sss;
+	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !using_sss && !re_pre_transparent_resolved_color;
+	bool can_continue_depth = !(scene_state.used_depth_texture || scene_state.used_normal_texture) && !using_ssr && !using_sss && !re_pre_transparent_resolved_depth;
 
 	{
 		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only || debug_voxelgis || debug_sdfgi_probes);
@@ -1926,6 +1955,22 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	RD::get_singleton()->draw_command_end_label();
+
+	{
+		if (re_post_opaque_resolved_color) {
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
+			}
+		}
+
+		if (re_post_opaque_resolved_depth) {
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
+			}
+		}
+
+		_process_render_effects(RS::RENDERING_EFFECT_CALLBACK_TYPE_POST_OPAQUE, p_render_data);
+	}
 
 	if (debug_voxelgis) {
 		//debug voxelgis
@@ -1969,7 +2014,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		RD::get_singleton()->draw_list_end();
 		RD::get_singleton()->draw_command_end_label();
 	}
-	if (rb->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
+
+	if (use_msaa) {
 		RENDER_TIMESTAMP("Resolve MSAA");
 
 		if (!can_continue_color) {
@@ -1986,7 +2032,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		if (!can_continue_depth) {
 			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-				resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[rb->get_msaa_3d()]);
+				resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
 			}
 		}
 	}
@@ -2006,12 +2052,12 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			for (uint32_t v = 0; v < p_render_data->scene_data->view_count; v++) {
 				specular_views[v] = rb_data->get_specular(v);
 			}
-			_process_ssr(rb, color_only_framebuffer, normal_roughness_views, rb_data->get_specular(), specular_views, p_render_data->environment, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, rb->get_msaa_3d() == RS::VIEWPORT_MSAA_DISABLED);
+			_process_ssr(rb, color_only_framebuffer, normal_roughness_views, rb_data->get_specular(), specular_views, p_render_data->environment, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, !use_msaa);
 			RD::get_singleton()->draw_command_end_label();
 		} else {
 			//just mix specular back
 			RENDER_TIMESTAMP("Merge Specular");
-			copy_effects->merge_specular(color_only_framebuffer, rb_data->get_specular(), rb->get_msaa_3d() == RS::VIEWPORT_MSAA_DISABLED ? RID() : rb->get_internal_texture(), RID(), p_render_data->scene_data->view_count);
+			copy_effects->merge_specular(color_only_framebuffer, rb_data->get_specular(), !use_msaa ? RID() : rb->get_internal_texture(), RID(), p_render_data->scene_data->view_count);
 		}
 	}
 
@@ -2039,6 +2085,9 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_render_buffers_copy_depth_texture(p_render_data);
 	}
 
+	// don't need to check for depth or color resolve here, we've already triggered it.
+	_process_render_effects(RS::RENDERING_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
+
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Transparent Pass");
@@ -2056,14 +2105,30 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_end_label();
 
+	{
+		if (re_post_transparent_resolved_color) {
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
+			}
+		}
+
+		if (re_post_transparent_resolved_depth) {
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
+			}
+		}
+
+		_process_render_effects(RS::RENDERING_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
+	}
+
 	RENDER_TIMESTAMP("Resolve");
 
 	RD::get_singleton()->draw_command_begin_label("Resolve");
 
-	if (rb_data.is_valid() && rb->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
+	if (rb_data.is_valid() && use_msaa) {
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
-			resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[rb->get_msaa_3d()]);
+			resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
 		}
 		if (taa && rb->get_use_taa()) {
 			taa->msaa_resolve(rb);

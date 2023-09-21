@@ -73,6 +73,16 @@ public:
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
 	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
+	/* RENDERING EFFECT API */
+
+	RID rendering_effect_allocate();
+	void rendering_effect_initialize(RID p_rid);
+	void rendering_effect_free(RID p_rid);
+
+	bool is_rendering_effect(RID p_effect) const;
+	void rendering_effect_set_callback(RID p_effect, RS::RenderingEffectCallbackType p_callback_type, Callable p_callback);
+	void rendering_effect_set_flag(RID p_effect, RS::RenderingEffectFlags p_flag, bool p_set);
+
 	/* ENVIRONMENT API */
 
 	RID environment_allocate();
@@ -222,6 +232,8 @@ public:
 	float environment_get_adjustments_saturation(RID p_env) const;
 	bool environment_get_use_1d_color_correction(RID p_env) const;
 	RID environment_get_color_correction(RID p_env) const;
+
+	void environment_set_rendering_effects(RID p_env, const TypedArray<RID> &p_effects);
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) = 0;
 

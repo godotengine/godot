@@ -1160,6 +1160,14 @@
 				Configures glow for the specified environment RID. See [code]glow_*[/code] properties in [Environment] for more information.
 			</description>
 		</method>
+		<method name="environment_set_rendering_effects">
+			<return type="void" />
+			<param index="0" name="env" type="RID" />
+			<param index="1" name="effects" type="RID[]" />
+			<description>
+				Sets the rendering effects for the specified environment RID. [param effects] should be an array containing RIDs created with [method rendering_effect_create].
+			</description>
+		</method>
 		<method name="environment_set_sdfgi">
 			<return type="void" />
 			<param index="0" name="env" type="RID" />
@@ -2925,6 +2933,31 @@
 				Sets how often the reflection probe updates. Can either be once or every frame. See [enum ReflectionProbeUpdateMode] for options.
 			</description>
 		</method>
+		<method name="rendering_effect_create">
+			<return type="RID" />
+			<description>
+				Creates a new rendering effect and adds it to the RenderingServer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+			</description>
+		</method>
+		<method name="rendering_effect_set_callback">
+			<return type="void" />
+			<param index="0" name="effect" type="RID" />
+			<param index="1" name="callback_type" type="int" enum="RenderingServer.RenderingEffectCallbackType" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Sets the callback type ([param callback_type]) and callback method([param callback]) for this rendering effect.
+			</description>
+		</method>
+		<method name="rendering_effect_set_flag">
+			<return type="void" />
+			<param index="0" name="effect" type="RID" />
+			<param index="1" name="flag" type="int" enum="RenderingServer.RenderingEffectFlags" />
+			<param index="2" name="set" type="bool" />
+			<description>
+				Sets the flag ([param flag]) for this rendering effect to [code]true[/code] or [code]false[/code] ([param set]).
+			</description>
+		</method>
 		<method name="request_frame_drawn_callback">
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
@@ -4507,7 +4540,9 @@
 		<constant name="VIEWPORT_SCALING_3D_MODE_FSR" value="1" enum="ViewportScaling3DMode">
 			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
-		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="2" enum="ViewportScaling3DMode">
+		<constant name="VIEWPORT_SCALING_3D_MODE_RENDERING_EFFECT" value="2" enum="ViewportScaling3DMode">
+		</constant>
+		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="3" enum="ViewportScaling3DMode">
 			Represents the size of the [enum ViewportScaling3DMode] enum.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
@@ -4732,6 +4767,32 @@
 		<constant name="SKY_MODE_REALTIME" value="3" enum="SkyMode">
 			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times. If you need better quality, but still need to update the sky every frame, consider turning on [member ProjectSettings.rendering/reflections/sky_reflections/fast_filter_high_quality].
 			[b]Note:[/b] The fast filtering algorithm is limited to 256×256 cubemaps, so [method sky_set_radiance_size] must be set to [code]256[/code]. Otherwise, a warning is printed and the overridden radiance size is ignored.
+		</constant>
+		<constant name="RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_COLOR" value="1" enum="RenderingEffectFlags">
+			The rendering effect requires the color buffer to be resolved if MSAA is enabled.
+		</constant>
+		<constant name="RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH" value="2" enum="RenderingEffectFlags">
+			The rendering effect requires the depth buffer to be resolved if MSAA is enabled.
+		</constant>
+		<constant name="RENDERING_EFFECT_FLAG_NEEDS_MOTION_VECTORS" value="4" enum="RenderingEffectFlags">
+			The rendering effect requires motion vectors to be produced.
+		</constant>
+		<constant name="RENDERING_EFFECT_CALLBACK_TYPE_PRE_OPAQUE" value="0" enum="RenderingEffectCallbackType">
+			The callback is called before our opaque rendering pass, but after depth prepass (if applicable).
+		</constant>
+		<constant name="RENDERING_EFFECT_CALLBACK_TYPE_POST_OPAQUE" value="1" enum="RenderingEffectCallbackType">
+			The callback is called after our opaque rendering pass, but before our sky is rendered.
+		</constant>
+		<constant name="RENDERING_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT" value="2" enum="RenderingEffectCallbackType">
+			The callback is called before our transparent rendering pass, but after our sky is rendered and we've created our back buffers.
+		</constant>
+		<constant name="RENDERING_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT" value="3" enum="RenderingEffectCallbackType">
+			The callback is called after our transparent rendering pass, but before any build in post effects and output to our render target.
+		</constant>
+		<constant name="RENDERING_EFFECT_CALLBACK_TYPE_UPSCALER" value="4" enum="RenderingEffectCallbackType">
+			The callback is called to perform our upscaling rendering pass. Only one such effect is applied.
+		</constant>
+		<constant name="RENDERING_EFFECT_CALLBACK_TYPE_ANY" value="-1" enum="RenderingEffectCallbackType">
 		</constant>
 		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
 			Use the clear color as background.

@@ -186,6 +186,32 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	}
 }
 
+/* Rendering effect API */
+
+RID RendererSceneRender::rendering_effect_allocate() {
+	return environment_storage.rendering_effect_allocate();
+}
+
+void RendererSceneRender::rendering_effect_initialize(RID p_rid) {
+	environment_storage.rendering_effect_initialize(p_rid);
+}
+
+void RendererSceneRender::rendering_effect_free(RID p_rid) {
+	environment_storage.rendering_effect_free(p_rid);
+}
+
+bool RendererSceneRender::is_rendering_effect(RID p_effect) const {
+	return environment_storage.is_rendering_effect(p_effect);
+}
+
+void RendererSceneRender::rendering_effect_set_callback(RID p_effect, RS::RenderingEffectCallbackType p_callback_type, Callable p_callback) {
+	environment_storage.rendering_effect_set_callback(p_effect, p_callback_type, p_callback);
+}
+
+void RendererSceneRender::rendering_effect_set_flag(RID p_effect, RS::RenderingEffectFlags p_flag, bool p_set) {
+	environment_storage.rendering_effect_set_flag(p_effect, p_flag, p_set);
+}
+
 /* Environment API */
 
 RID RendererSceneRender::environment_allocate() {
@@ -630,4 +656,15 @@ bool RendererSceneRender::environment_get_use_1d_color_correction(RID p_env) con
 
 RID RendererSceneRender::environment_get_color_correction(RID p_env) const {
 	return environment_storage.environment_get_color_correction(p_env);
+}
+
+// Rendering effects
+void RendererSceneRender::environment_set_rendering_effects(RID p_env, const TypedArray<RID> &p_effects) {
+	Vector<RID> rids;
+	for (int i = 0; i < p_effects.size(); i++) {
+		RID rid = p_effects[i];
+		rids.push_back(rid);
+	}
+
+	environment_storage.environment_set_rendering_effects(p_env, rids);
 }

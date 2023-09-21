@@ -168,6 +168,9 @@ public:
 		if (is_environment(p_rid)) {
 			environment_free(p_rid);
 			return true;
+		} else if (is_rendering_effect(p_rid)) {
+			rendering_effect_free(p_rid);
+			return true;
 		} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
 			RSG::camera_attributes->camera_attributes_free(p_rid);
 			return true;

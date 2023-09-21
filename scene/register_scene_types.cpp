@@ -182,6 +182,7 @@
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/rectangle_shape_2d.h"
+#include "scene/resources/rendering_effect.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/segment_shape_2d.h"
 #include "scene/resources/separation_ray_shape_2d.h"
@@ -335,6 +336,8 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(Viewport);
 	GDREGISTER_CLASS(SubViewport);
 	GDREGISTER_CLASS(ViewportTexture);
+
+	GDREGISTER_VIRTUAL_CLASS(RenderingEffect);
 
 	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
 	GDREGISTER_CLASS(MultiplayerPeerExtension);

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  uniform_set_cache_rd.cpp                                              */
+/*  render_data.cpp                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "uniform_set_cache_rd.h"
+#include "render_data.h"
 
-UniformSetCacheRD *UniformSetCacheRD::singleton = nullptr;
-
-void UniformSetCacheRD::_bind_methods() {
-	ClassDB::bind_static_method("UniformSetCacheRD", D_METHOD("get_cache", "shader", "set", "uniforms"), &UniformSetCacheRD::get_cache_array);
+void RenderData::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_render_scene_buffers"), &RenderData::get_render_scene_buffers);
+	ClassDB::bind_method(D_METHOD("get_render_scene_data"), &RenderData::get_render_scene_data);
+	ClassDB::bind_method(D_METHOD("get_environment"), &RenderData::get_environment);
+	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &RenderData::get_camera_attributes);
 }
 
-RID UniformSetCacheRD::get_cache_array(RID p_shader, uint32_t p_set, TypedArray<RDUniform> p_uniforms) {
-	Vector<RD::Uniform> uniforms;
-
-	for (int i = 0; i < p_uniforms.size(); i++) {
-		Ref<RDUniform> uniform = p_uniforms[i];
-		if (uniform.is_valid()) {
-			uniforms.push_back(uniform->base);
-		}
-	}
-
-	return UniformSetCacheRD::get_singleton()->get_cache_vec(p_shader, p_set, uniforms);
+void RenderDataExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_get_render_scene_buffers);
+	GDVIRTUAL_BIND(_get_render_scene_data)
+	GDVIRTUAL_BIND(_get_environment)
+	GDVIRTUAL_BIND(_get_camera_attributes)
 }
 
-void UniformSetCacheRD::_invalidate(Cache *p_cache) {
-	if (p_cache->prev) {
-		p_cache->prev->next = p_cache->next;
-	} else {
-		// At beginning of table
-		uint32_t table_idx = p_cache->hash % HASH_TABLE_SIZE;
-		hash_table[table_idx] = p_cache->next;
-	}
-
-	if (p_cache->next) {
-		p_cache->next->prev = p_cache->prev;
-	}
-
-	cache_allocator.free(p_cache);
-	cache_instances_used--;
-}
-void UniformSetCacheRD::_uniform_set_invalidation_callback(void *p_userdata) {
-	singleton->_invalidate(reinterpret_cast<Cache *>(p_userdata));
+Ref<RenderSceneBuffers> RenderDataExtension::get_render_scene_buffers() const {
+	Ref<RenderSceneBuffers> ret;
+	GDVIRTUAL_CALL(_get_render_scene_buffers, ret);
+	return ret;
 }
 
-UniformSetCacheRD::UniformSetCacheRD() {
-	ERR_FAIL_COND(singleton != nullptr);
-	singleton = this;
+RenderSceneData *RenderDataExtension::get_render_scene_data() const {
+	RenderSceneData *ret = nullptr;
+	GDVIRTUAL_CALL(_get_render_scene_data, ret);
+	return ret;
 }
 
-UniformSetCacheRD::~UniformSetCacheRD() {
-	if (cache_instances_used > 0) {
-		ERR_PRINT("At exit: " + itos(cache_instances_used) + " uniform set cache instance(s) still in use.");
-	}
+RID RenderDataExtension::get_environment() const {
+	RID ret;
+	GDVIRTUAL_CALL(_get_environment, ret);
+	return ret;
+}
+
+RID RenderDataExtension::get_camera_attributes() const {
+	RID ret;
+	GDVIRTUAL_CALL(_get_camera_attributes, ret);
+	return ret;
 }

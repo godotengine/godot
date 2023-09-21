@@ -47,57 +47,12 @@
 #include "servers/rendering/renderer_rd/environment/sky.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_method.h"
-
-// For RenderDataRD, possibly inherited from RefCounted and add proper getters for our implementation classes
-
-struct RenderDataRD {
-	Ref<RenderSceneBuffersRD> render_buffers;
-	RenderSceneDataRD *scene_data;
-
-	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
-	const PagedArray<RID> *lights = nullptr;
-	const PagedArray<RID> *reflection_probes = nullptr;
-	const PagedArray<RID> *voxel_gi_instances = nullptr;
-	const PagedArray<RID> *decals = nullptr;
-	const PagedArray<RID> *lightmaps = nullptr;
-	const PagedArray<RID> *fog_volumes = nullptr;
-	RID environment;
-	RID camera_attributes;
-	RID shadow_atlas;
-	RID occluder_debug_tex;
-	RID reflection_atlas;
-	RID reflection_probe;
-	int reflection_probe_pass = 0;
-
-	RID cluster_buffer;
-	uint32_t cluster_size = 0;
-	uint32_t cluster_max_elements = 0;
-
-	uint32_t directional_light_count = 0;
-	bool directional_light_soft_shadows = false;
-
-	RenderingMethod::RenderInfo *render_info = nullptr;
-
-	/* Shadow data */
-	const RendererSceneRender::RenderShadowData *render_shadows = nullptr;
-	int render_shadow_count = 0;
-
-	LocalVector<int> cube_shadows;
-	LocalVector<int> shadows;
-	LocalVector<int> directional_shadows;
-
-	/* GI info */
-	const RendererSceneRender::RenderSDFGIData *render_sdfgi_regions = nullptr;
-	int render_sdfgi_region_count = 0;
-	const RendererSceneRender::RenderSDFGIUpdateData *sdfgi_update_data = nullptr;
-
-	uint32_t voxel_gi_count = 0;
-};
 
 class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererRD::SkyRD;
@@ -146,6 +101,10 @@ protected:
 	void _post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi);
 
+	RID _render_effects_get(const RenderDataRD *p_render_data, RS::RenderingEffectCallbackType p_callback_type);
+	bool _render_effects_has_flag(const RenderDataRD *p_render_data, RS::RenderingEffectFlags p_flag, RS::RenderingEffectCallbackType p_callback_type = RS::RENDERING_EFFECT_CALLBACK_TYPE_ANY);
+
+	void _process_render_effects(RS::RenderingEffectCallbackType p_callback_type, const RenderDataRD *p_render_data);
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data);

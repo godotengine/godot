@@ -69,10 +69,15 @@
 #include "physics_server_3d.h"
 #include "physics_server_3d_wrap_mt.h"
 #include "rendering/renderer_compositor.h"
+#include "rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+#include "rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
+#include "rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
+#include "rendering/storage/render_data.h"
 #include "rendering/storage/render_scene_buffers.h"
+#include "rendering/storage/render_scene_data.h"
 #include "rendering_server.h"
 #include "servers/extensions/physics_server_2d_extension.h"
 #include "servers/extensions/physics_server_3d_extension.h"
@@ -249,10 +254,20 @@ void register_server_types() {
 	GDREGISTER_CLASS(RDShaderFile);
 	GDREGISTER_CLASS(RDPipelineSpecializationConstant);
 
+	GDREGISTER_ABSTRACT_CLASS(RenderData);
+	GDREGISTER_CLASS(RenderDataExtension);
+	GDREGISTER_CLASS(RenderDataRD);
+
+	GDREGISTER_ABSTRACT_CLASS(RenderSceneData);
+	GDREGISTER_CLASS(RenderSceneDataExtension);
+	GDREGISTER_CLASS(RenderSceneDataRD);
+
 	GDREGISTER_CLASS(RenderSceneBuffersConfiguration);
 	GDREGISTER_ABSTRACT_CLASS(RenderSceneBuffers);
 	GDREGISTER_CLASS(RenderSceneBuffersExtension);
-	GDREGISTER_ABSTRACT_CLASS(RenderSceneBuffersRD);
+	GDREGISTER_CLASS(RenderSceneBuffersRD);
+
+	GDREGISTER_CLASS(UniformSetCacheRD);
 
 	GDREGISTER_CLASS(CameraFeed);
 
