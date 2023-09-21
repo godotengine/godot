@@ -12,6 +12,7 @@ func test():
 	print("end")
 
 func test_construct(v, f):
+	@warning_ignore("unsafe_call_argument")
 	Vector2(v, v) # Built-in type construct.
 	assert(not f) # Test unary operator reading from `nil`.
 
