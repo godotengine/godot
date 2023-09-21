@@ -188,7 +188,6 @@ Intentional compatibility breakage to be consistent with the new non-virtual set
 
 GH-82035
 --------
-
 Validate extension JSON: Error: Field 'classes/ProjectSettings/methods/load_resource_pack/arguments': size changed value in new API, from 3 to 4.
 
 Added an optional argument to prefix the paths with (a "mount point", if you will) in the virtual filesystem.
