@@ -1990,7 +1990,8 @@ FRAGMENT_SHADER_CODE
 		env_reflection_light *= horizon * horizon;
 	}
 #ifndef USE_LIGHTMAP //ubershader-runtime
-	{
+	// Skip ambient light sampling for fully metallic materials as it's not visible on those materials.
+	if (metallic < 0.999) {
 		vec3 norm = normal;
 		norm = normalize((radiance_inverse_xform * vec4(norm, 0.0)).xyz);
 		norm.xy /= 1.0 + abs(norm.z);
@@ -2040,7 +2041,8 @@ FRAGMENT_SHADER_CODE
 #endif //ubershader-runtime
 
 #ifdef USE_LIGHTMAP_CAPTURE //ubershader-runtime
-	{
+	// Skip ambient light sampling for fully metallic materials as it's not visible on those materials.
+	if (metallic < 0.999) {
 		vec3 cone_dirs[12] = vec3[](
 				vec3(0.0, 0.0, 1.0),
 				vec3(0.866025, 0.0, 0.5),
@@ -2119,35 +2121,86 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_LIGHT_DIRECTIONAL //ubershader-runtime
 
-	vec3 light_attenuation = vec3(1.0);
+	// Skip shadow sampling for fully metallic smooth materials as shadows are not visible on those materials.
+	// We still have to sample shadows for fully metallic rough materials as the shadow can obstruct the specular lobe.
+	if (roughness > 0.001 || metallic < 0.999) {
+		vec3 light_attenuation = vec3(1.0);
 
-	float depth_z = -vertex.z;
+		float depth_z = -vertex.z;
 #ifdef LIGHT_DIRECTIONAL_SHADOW //ubershader-runtime
 #if !defined(SHADOWS_DISABLED)
 
-	float value;
+		float value;
 #ifdef LIGHT_USE_PSSM4 //ubershader-runtime
-	value = shadow_split_offsets.w;
+		value = shadow_split_offsets.w;
 #else //ubershader-runtime
 #ifdef LIGHT_USE_PSSM2 //ubershader-runtime
-	value = shadow_split_offsets.y;
+		value = shadow_split_offsets.y;
 #else //ubershader-runtime
-	value = shadow_split_offsets.x;
+		value = shadow_split_offsets.x;
 #endif //ubershader-runtime
 #endif //LIGHT_USE_PSSM4 //ubershader-runtime
-	if (depth_z < value) {
-		vec3 pssm_coord;
-		float pssm_fade = 0.0;
+		if (depth_z < value) {
+			vec3 pssm_coord;
+			float pssm_fade = 0.0;
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-skip
-		float pssm_blend;
-		vec3 pssm_coord2;
-		bool use_blend = true;
+			float pssm_blend;
+			vec3 pssm_coord2;
+			bool use_blend = true;
 #endif //ubershader-skip
 
 #ifdef LIGHT_USE_PSSM4 //ubershader-runtime
 
-		if (depth_z < shadow_split_offsets.y) {
+			if (depth_z < shadow_split_offsets.y) {
+				if (depth_z < shadow_split_offsets.x) {
+					highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
+					pssm_coord = splane.xyz / splane.w;
+
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
+
+					splane = (shadow_matrix2 * vec4(vertex, 1.0));
+					pssm_coord2 = splane.xyz / splane.w;
+					pssm_blend = smoothstep(0.0, shadow_split_offsets.x, depth_z);
+#endif //ubershader-runtime
+
+				} else {
+					highp vec4 splane = (shadow_matrix2 * vec4(vertex, 1.0));
+					pssm_coord = splane.xyz / splane.w;
+
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
+					splane = (shadow_matrix3 * vec4(vertex, 1.0));
+					pssm_coord2 = splane.xyz / splane.w;
+					pssm_blend = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
+#endif //ubershader-runtime
+				}
+			} else {
+				if (depth_z < shadow_split_offsets.z) {
+					highp vec4 splane = (shadow_matrix3 * vec4(vertex, 1.0));
+					pssm_coord = splane.xyz / splane.w;
+
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
+					splane = (shadow_matrix4 * vec4(vertex, 1.0));
+					pssm_coord2 = splane.xyz / splane.w;
+					pssm_blend = smoothstep(shadow_split_offsets.y, shadow_split_offsets.z, depth_z);
+#endif //ubershader-runtime
+
+				} else {
+					highp vec4 splane = (shadow_matrix4 * vec4(vertex, 1.0));
+					pssm_coord = splane.xyz / splane.w;
+					pssm_fade = smoothstep(shadow_split_offsets.z, shadow_split_offsets.w, depth_z);
+
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
+					use_blend = false;
+
+#endif //ubershader-runtime
+				}
+			}
+
+#endif //LIGHT_USE_PSSM4 //ubershader-runtime
+
+#ifdef LIGHT_USE_PSSM2 //ubershader-runtime
+
 			if (depth_z < shadow_split_offsets.x) {
 				highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
@@ -2162,101 +2215,56 @@ FRAGMENT_SHADER_CODE
 			} else {
 				highp vec4 splane = (shadow_matrix2 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
-
-#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
-				splane = (shadow_matrix3 * vec4(vertex, 1.0));
-				pssm_coord2 = splane.xyz / splane.w;
-				pssm_blend = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
-#endif //ubershader-runtime
-			}
-		} else {
-			if (depth_z < shadow_split_offsets.z) {
-				highp vec4 splane = (shadow_matrix3 * vec4(vertex, 1.0));
-				pssm_coord = splane.xyz / splane.w;
-
-#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
-				splane = (shadow_matrix4 * vec4(vertex, 1.0));
-				pssm_coord2 = splane.xyz / splane.w;
-				pssm_blend = smoothstep(shadow_split_offsets.y, shadow_split_offsets.z, depth_z);
-#endif //ubershader-runtime
-
-			} else {
-				highp vec4 splane = (shadow_matrix4 * vec4(vertex, 1.0));
-				pssm_coord = splane.xyz / splane.w;
-				pssm_fade = smoothstep(shadow_split_offsets.z, shadow_split_offsets.w, depth_z);
-
+				pssm_fade = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 				use_blend = false;
 
 #endif //ubershader-runtime
 			}
-		}
-
-#endif //LIGHT_USE_PSSM4 //ubershader-runtime
-
-#ifdef LIGHT_USE_PSSM2 //ubershader-runtime
-
-		if (depth_z < shadow_split_offsets.x) {
-			highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
-			pssm_coord = splane.xyz / splane.w;
-
-#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
-
-			splane = (shadow_matrix2 * vec4(vertex, 1.0));
-			pssm_coord2 = splane.xyz / splane.w;
-			pssm_blend = smoothstep(0.0, shadow_split_offsets.x, depth_z);
-#endif //ubershader-runtime
-
-		} else {
-			highp vec4 splane = (shadow_matrix2 * vec4(vertex, 1.0));
-			pssm_coord = splane.xyz / splane.w;
-			pssm_fade = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
-#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
-			use_blend = false;
-
-#endif //ubershader-runtime
-		}
 
 #endif //LIGHT_USE_PSSM2 //ubershader-runtime
 
 #ifndef LIGHT_USE_PSSM2 //ubershader-runtime
 #ifndef LIGHT_USE_PSSM4 //ubershader-runtime
-		{ //regular orthogonal
-			highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
-			pssm_coord = splane.xyz / splane.w;
-		}
+			{ //regular orthogonal
+				highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
+				pssm_coord = splane.xyz / splane.w;
+			}
 #endif //ubershader-runtime
 #endif //ubershader-runtime
 
-		//one one sample
+			//one one sample
 
-		float shadow = sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord.xy, pssm_coord.z, light_clamp);
+			float shadow = sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord.xy, pssm_coord.z, light_clamp);
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 
-		if (use_blend) {
-			shadow = mix(shadow, sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord2.xy, pssm_coord2.z, light_clamp), pssm_blend);
-		}
+			if (use_blend) {
+				shadow = mix(shadow, sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord2.xy, pssm_coord2.z, light_clamp), pssm_blend);
+			}
 #endif //ubershader-runtime
 
 #ifdef USE_CONTACT_SHADOWS //ubershader-runtime
-		if (shadow > 0.01 && shadow_color_contact.a > 0.0) {
-			float contact_shadow = contact_shadow_compute(vertex, -light_direction_attenuation.xyz, shadow_color_contact.a);
-			shadow = min(shadow, contact_shadow);
-		}
+			if (shadow > 0.01 && shadow_color_contact.a > 0.0) {
+				float contact_shadow = contact_shadow_compute(vertex, -light_direction_attenuation.xyz, shadow_color_contact.a);
+				shadow = min(shadow, contact_shadow);
+			}
 #endif //ubershader-runtime
-		light_attenuation = mix(mix(shadow_color_contact.rgb, vec3(1.0), shadow), vec3(1.0), pssm_fade);
-	}
+			light_attenuation = mix(mix(shadow_color_contact.rgb, vec3(1.0), shadow), vec3(1.0), pssm_fade);
+		}
 
 #endif // !defined(SHADOWS_DISABLED)
 #endif //LIGHT_DIRECTIONAL_SHADOW //ubershader-runtime
 
 #ifdef USE_VERTEX_LIGHTING //ubershader-runtime
-	diffuse_light *= mix(vec3(1.0), light_attenuation, diffuse_light_interp.a);
-	specular_light *= mix(vec3(1.0), light_attenuation, specular_light_interp.a);
+		diffuse_light *= mix(vec3(1.0), light_attenuation, diffuse_light_interp.a);
+		specular_light *= mix(vec3(1.0), light_attenuation, specular_light_interp.a);
+
 #else //ubershader-runtime
-	light_compute(normal, -light_direction_attenuation.xyz, eye_vec, binormal, tangent, light_color_energy.rgb, light_attenuation, albedo, transmission, light_params.z * specular_blob_intensity, roughness, metallic, specular, rim, rim_tint, clearcoat, clearcoat_gloss, anisotropy, diffuse_light, specular_light, alpha);
+		light_compute(normal, -light_direction_attenuation.xyz, eye_vec, binormal, tangent, light_color_energy.rgb, light_attenuation, albedo, transmission, light_params.z * specular_blob_intensity, roughness, metallic, specular, rim, rim_tint, clearcoat, clearcoat_gloss, anisotropy, diffuse_light, specular_light, alpha);
 #endif //ubershader-runtime
+
+	} // if (roughness > 0.001 || metallic < 0.999)
 
 #endif //#USE_LIGHT_DIRECTIONAL //ubershader-runtime
 

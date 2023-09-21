@@ -1924,7 +1924,9 @@ FRAGMENT_SHADER_CODE
 #if !defined(SHADOWS_DISABLED)
 
 #ifdef USE_SHADOW
-	{
+	// Skip shadow sampling for fully metallic smooth materials as shadows are not visible on those materials.
+	// We still have to sample shadows for fully metallic rough materials as the shadow can obstruct the specular lobe.
+	if (roughness > 0.001 || metallic < 0.999) {
 		highp vec4 splane = shadow_coord;
 		float shadow_len = length(splane.xyz);
 
@@ -1968,167 +1970,56 @@ FRAGMENT_SHADER_CODE
 #if !defined(SHADOWS_DISABLED)
 
 #ifdef USE_SHADOW
-
+	// Skip shadow sampling for fully metallic smooth materials as shadows are not visible on those materials.
+	// We still have to sample shadows for fully metallic rough materials as the shadow can obstruct the specular lobe.
+	if (roughness > 0.001 || metallic < 0.999) {
 #ifdef USE_VERTEX_LIGHTING
-	//compute shadows in a mobile friendly way
+		//compute shadows in a mobile friendly way
 
 #ifdef LIGHT_USE_PSSM4
-	//take advantage of prefetch
-	float shadow1 = sample_shadow(light_directional_shadow, shadow_coord);
-	float shadow2 = sample_shadow(light_directional_shadow, shadow_coord2);
-	float shadow3 = sample_shadow(light_directional_shadow, shadow_coord3);
-	float shadow4 = sample_shadow(light_directional_shadow, shadow_coord4);
+		//take advantage of prefetch
+		float shadow1 = sample_shadow(light_directional_shadow, shadow_coord);
+		float shadow2 = sample_shadow(light_directional_shadow, shadow_coord2);
+		float shadow3 = sample_shadow(light_directional_shadow, shadow_coord3);
+		float shadow4 = sample_shadow(light_directional_shadow, shadow_coord4);
 
-	if (depth_z < light_split_offsets.w) {
-		float pssm_fade = 0.0;
-		float shadow_att = 1.0;
-#ifdef LIGHT_USE_PSSM_BLEND
-		float shadow_att2 = 1.0;
-		float pssm_blend = 0.0;
-		bool use_blend = true;
-#endif
-		if (depth_z < light_split_offsets.y) {
-			if (depth_z < light_split_offsets.x) {
-				shadow_att = shadow1;
-
-#ifdef LIGHT_USE_PSSM_BLEND
-				shadow_att2 = shadow2;
-
-				pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
-#endif
-			} else {
-				shadow_att = shadow2;
-
-#ifdef LIGHT_USE_PSSM_BLEND
-				shadow_att2 = shadow3;
-
-				pssm_blend = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
-#endif
-			}
-		} else {
-			if (depth_z < light_split_offsets.z) {
-				shadow_att = shadow3;
-
-#if defined(LIGHT_USE_PSSM_BLEND)
-				shadow_att2 = shadow4;
-				pssm_blend = smoothstep(light_split_offsets.y, light_split_offsets.z, depth_z);
-#endif
-
-			} else {
-				shadow_att = shadow4;
-				pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
-
-#if defined(LIGHT_USE_PSSM_BLEND)
-				use_blend = false;
-#endif
-			}
-		}
-#if defined(LIGHT_USE_PSSM_BLEND)
-		if (use_blend) {
-			shadow_att = mix(shadow_att, shadow_att2, pssm_blend);
-		}
-#endif
-		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow_att);
-	}
-
-#endif //LIGHT_USE_PSSM4
-
-#ifdef LIGHT_USE_PSSM2
-
-	//take advantage of prefetch
-	float shadow1 = sample_shadow(light_directional_shadow, shadow_coord);
-	float shadow2 = sample_shadow(light_directional_shadow, shadow_coord2);
-
-	if (depth_z < light_split_offsets.y) {
-		float shadow_att = 1.0;
-		float pssm_fade = 0.0;
-
-#ifdef LIGHT_USE_PSSM_BLEND
-		float shadow_att2 = 1.0;
-		float pssm_blend = 0.0;
-		bool use_blend = true;
-#endif
-		if (depth_z < light_split_offsets.x) {
-			float pssm_fade = 0.0;
-			shadow_att = shadow1;
-
-#ifdef LIGHT_USE_PSSM_BLEND
-			shadow_att2 = shadow2;
-			pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
-#endif
-		} else {
-			shadow_att = shadow2;
-			pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
-#ifdef LIGHT_USE_PSSM_BLEND
-			use_blend = false;
-#endif
-		}
-#ifdef LIGHT_USE_PSSM_BLEND
-		if (use_blend) {
-			shadow_att = mix(shadow_att, shadow_att2, pssm_blend);
-		}
-#endif
-		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow_att);
-	}
-
-#endif //LIGHT_USE_PSSM2
-
-#if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
-
-	light_att *= mix(shadow_color.rgb, vec3(1.0), sample_shadow(light_directional_shadow, shadow_coord));
-#endif //orthogonal
-
-#else //fragment version of pssm
-
-	{
-#ifdef LIGHT_USE_PSSM4
 		if (depth_z < light_split_offsets.w) {
-#elif defined(LIGHT_USE_PSSM2)
-		if (depth_z < light_split_offsets.y) {
-#else
-		if (depth_z < light_split_offsets.x) {
-#endif //pssm2
-
-			highp vec4 pssm_coord;
 			float pssm_fade = 0.0;
-
+			float shadow_att = 1.0;
 #ifdef LIGHT_USE_PSSM_BLEND
-			float pssm_blend;
-			highp vec4 pssm_coord2;
+			float shadow_att2 = 1.0;
+			float pssm_blend = 0.0;
 			bool use_blend = true;
 #endif
-
-#ifdef LIGHT_USE_PSSM4
-
 			if (depth_z < light_split_offsets.y) {
 				if (depth_z < light_split_offsets.x) {
-					pssm_coord = shadow_coord;
+					shadow_att = shadow1;
 
 #ifdef LIGHT_USE_PSSM_BLEND
-					pssm_coord2 = shadow_coord2;
+					shadow_att2 = shadow2;
 
 					pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
 #endif
 				} else {
-					pssm_coord = shadow_coord2;
+					shadow_att = shadow2;
 
 #ifdef LIGHT_USE_PSSM_BLEND
-					pssm_coord2 = shadow_coord3;
+					shadow_att2 = shadow3;
 
 					pssm_blend = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
 #endif
 				}
 			} else {
 				if (depth_z < light_split_offsets.z) {
-					pssm_coord = shadow_coord3;
+					shadow_att = shadow3;
 
 #if defined(LIGHT_USE_PSSM_BLEND)
-					pssm_coord2 = shadow_coord4;
+					shadow_att2 = shadow4;
 					pssm_blend = smoothstep(light_split_offsets.y, light_split_offsets.z, depth_z);
 #endif
 
 				} else {
-					pssm_coord = shadow_coord4;
+					shadow_att = shadow4;
 					pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
 
 #if defined(LIGHT_USE_PSSM_BLEND)
@@ -2136,42 +2027,156 @@ FRAGMENT_SHADER_CODE
 #endif
 				}
 			}
+#if defined(LIGHT_USE_PSSM_BLEND)
+			if (use_blend) {
+				shadow_att = mix(shadow_att, shadow_att2, pssm_blend);
+			}
+#endif
+			light_att *= mix(shadow_color.rgb, vec3(1.0), shadow_att);
+		}
 
-#endif // LIGHT_USE_PSSM4
+#endif //LIGHT_USE_PSSM4
 
 #ifdef LIGHT_USE_PSSM2
-			if (depth_z < light_split_offsets.x) {
-				pssm_coord = shadow_coord;
+
+		//take advantage of prefetch
+		float shadow1 = sample_shadow(light_directional_shadow, shadow_coord);
+		float shadow2 = sample_shadow(light_directional_shadow, shadow_coord2);
+
+		if (depth_z < light_split_offsets.y) {
+			float shadow_att = 1.0;
+			float pssm_fade = 0.0;
 
 #ifdef LIGHT_USE_PSSM_BLEND
-				pssm_coord2 = shadow_coord2;
+			float shadow_att2 = 1.0;
+			float pssm_blend = 0.0;
+			bool use_blend = true;
+#endif
+			if (depth_z < light_split_offsets.x) {
+				float pssm_fade = 0.0;
+				shadow_att = shadow1;
+
+#ifdef LIGHT_USE_PSSM_BLEND
+				shadow_att2 = shadow2;
 				pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
 #endif
 			} else {
-				pssm_coord = shadow_coord2;
+				shadow_att = shadow2;
 				pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
 #ifdef LIGHT_USE_PSSM_BLEND
 				use_blend = false;
 #endif
 			}
+#ifdef LIGHT_USE_PSSM_BLEND
+			if (use_blend) {
+				shadow_att = mix(shadow_att, shadow_att2, pssm_blend);
+			}
+#endif
+			light_att *= mix(shadow_color.rgb, vec3(1.0), shadow_att);
+		}
+
+#endif //LIGHT_USE_PSSM2
+
+#if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
+
+		light_att *= mix(shadow_color.rgb, vec3(1.0), sample_shadow(light_directional_shadow, shadow_coord));
+#endif //orthogonal
+
+#else //fragment version of pssm
+
+		{
+#ifdef LIGHT_USE_PSSM4
+			if (depth_z < light_split_offsets.w) {
+#elif defined(LIGHT_USE_PSSM2)
+			if (depth_z < light_split_offsets.y) {
+#else
+			if (depth_z < light_split_offsets.x) {
+#endif //pssm2
+
+				highp vec4 pssm_coord;
+				float pssm_fade = 0.0;
+
+#ifdef LIGHT_USE_PSSM_BLEND
+				float pssm_blend;
+				highp vec4 pssm_coord2;
+				bool use_blend = true;
+#endif
+
+#ifdef LIGHT_USE_PSSM4
+
+				if (depth_z < light_split_offsets.y) {
+					if (depth_z < light_split_offsets.x) {
+						pssm_coord = shadow_coord;
+
+#ifdef LIGHT_USE_PSSM_BLEND
+						pssm_coord2 = shadow_coord2;
+
+						pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
+#endif
+					} else {
+						pssm_coord = shadow_coord2;
+
+#ifdef LIGHT_USE_PSSM_BLEND
+						pssm_coord2 = shadow_coord3;
+
+						pssm_blend = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
+#endif
+					}
+				} else {
+					if (depth_z < light_split_offsets.z) {
+						pssm_coord = shadow_coord3;
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+						pssm_coord2 = shadow_coord4;
+						pssm_blend = smoothstep(light_split_offsets.y, light_split_offsets.z, depth_z);
+#endif
+
+					} else {
+						pssm_coord = shadow_coord4;
+						pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+						use_blend = false;
+#endif
+					}
+				}
+
+#endif // LIGHT_USE_PSSM4
+
+#ifdef LIGHT_USE_PSSM2
+				if (depth_z < light_split_offsets.x) {
+					pssm_coord = shadow_coord;
+
+#ifdef LIGHT_USE_PSSM_BLEND
+					pssm_coord2 = shadow_coord2;
+					pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
+#endif
+				} else {
+					pssm_coord = shadow_coord2;
+					pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
+#ifdef LIGHT_USE_PSSM_BLEND
+					use_blend = false;
+#endif
+				}
 
 #endif // LIGHT_USE_PSSM2
 
 #if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
-			{
-				pssm_coord = shadow_coord;
-			}
+				{
+					pssm_coord = shadow_coord;
+				}
 #endif
 
-			float shadow = sample_shadow(light_directional_shadow, pssm_coord);
+				float shadow = sample_shadow(light_directional_shadow, pssm_coord);
 
 #ifdef LIGHT_USE_PSSM_BLEND
-			if (use_blend) {
-				shadow = mix(shadow, sample_shadow(light_directional_shadow, pssm_coord2), pssm_blend);
-			}
+				if (use_blend) {
+					shadow = mix(shadow, sample_shadow(light_directional_shadow, pssm_coord2), pssm_blend);
+				}
 #endif
 
-			light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
+				light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
+			}
 		}
 	}
 #endif //use vertex lighting
@@ -2184,52 +2189,54 @@ FRAGMENT_SHADER_CODE
 
 #ifdef LIGHT_MODE_SPOT
 
-	light_att = vec3(1.0);
+		light_att = vec3(1.0);
 
 #ifndef USE_VERTEX_LIGHTING
 
-	vec3 light_rel_vec = light_position - vertex;
-	float light_length = length(light_rel_vec);
-	float normalized_distance = light_length / light_range;
+		vec3 light_rel_vec = light_position - vertex;
+		float light_length = length(light_rel_vec);
+		float normalized_distance = light_length / light_range;
 
-	if (normalized_distance < 1.0) {
+		if (normalized_distance < 1.0) {
 #ifdef USE_PHYSICAL_LIGHT_ATTENUATION
-		float spot_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
+			float spot_attenuation = get_omni_attenuation(light_length, 1.0 / light_range, light_attenuation);
 #else
 		float spot_attenuation = pow(1.0 - normalized_distance, light_attenuation);
 #endif
 
-		vec3 spot_dir = light_direction;
+			vec3 spot_dir = light_direction;
 
-		float spot_cutoff = light_spot_angle;
-		float angle = dot(-normalize(light_rel_vec), spot_dir);
+			float spot_cutoff = light_spot_angle;
+			float angle = dot(-normalize(light_rel_vec), spot_dir);
 
-		if (angle > spot_cutoff) {
-			float scos = max(angle, spot_cutoff);
-			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_cutoff));
-			spot_attenuation *= 1.0 - pow(spot_rim, light_spot_attenuation);
+			if (angle > spot_cutoff) {
+				float scos = max(angle, spot_cutoff);
+				float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_cutoff));
+				spot_attenuation *= 1.0 - pow(spot_rim, light_spot_attenuation);
 
-			light_att = vec3(spot_attenuation);
+				light_att = vec3(spot_attenuation);
+			} else {
+				light_att = vec3(0.0);
+			}
 		} else {
 			light_att = vec3(0.0);
 		}
-	} else {
-		light_att = vec3(0.0);
-	}
 
-	L = normalize(light_rel_vec);
+		L = normalize(light_rel_vec);
 
 #endif
 
 #if !defined(SHADOWS_DISABLED)
 
 #ifdef USE_SHADOW
-	{
-		highp vec4 splane = shadow_coord;
+		// Skip shadow sampling for fully metallic smooth materials as shadows are not visible on those materials.
+		// We still have to sample shadows for fully metallic rough materials as the shadow can obstruct the specular lobe.
+		if (roughness > 0.001 || metallic < 0.999) {
+			highp vec4 splane = shadow_coord;
 
-		float shadow = sample_shadow(light_shadow_atlas, splane);
-		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
-	}
+			float shadow = sample_shadow(light_shadow_atlas, splane);
+			light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
+		}
 #endif
 
 #endif // SHADOWS_DISABLED
@@ -2237,9 +2244,9 @@ FRAGMENT_SHADER_CODE
 #endif // LIGHT_MODE_SPOT
 
 #ifdef USE_VERTEX_LIGHTING
-	//vertex lighting
-	specular_light += specular_interp * albedo * specular * specular_blob_intensity * light_att;
-	diffuse_light += diffuse_interp * albedo * light_att;
+		//vertex lighting
+		specular_light += specular_interp * albedo * specular * specular_blob_intensity * light_att;
+		diffuse_light += diffuse_interp * albedo * light_att;
 
 #else
 	//fragment lighting
@@ -2269,24 +2276,24 @@ FRAGMENT_SHADER_CODE
 #endif //vertex lighting
 
 #endif //USE_LIGHTING
-	//compute and merge
+		//compute and merge
 
 #ifdef USE_SHADOW_TO_OPACITY
 
-	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
+		alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
-	if (alpha < alpha_scissor) {
-		discard;
-	}
+		if (alpha < alpha_scissor) {
+			discard;
+		}
 #endif // ALPHA_SCISSOR_USED
 
 #ifdef USE_DEPTH_PREPASS
 #if !defined(ALPHA_SCISSOR_USED)
 
-	if (alpha < 0.1) {
-		discard;
-	}
+		if (alpha < 0.1) {
+			discard;
+		}
 
 #endif // not ALPHA_SCISSOR_USED
 #endif // USE_DEPTH_PREPASS
@@ -2297,7 +2304,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef SHADELESS
 
-	gl_FragColor = vec4(albedo, alpha);
+		gl_FragColor = vec4(albedo, alpha);
 #else
 
 	ambient_light *= albedo;
@@ -2376,8 +2383,8 @@ FRAGMENT_SHADER_CODE
 #endif //unshaded
 
 #ifdef OUTPUT_LINEAR
-	// sRGB -> linear
-	gl_FragColor.rgb = mix(pow((gl_FragColor.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), gl_FragColor.rgb * (1.0 / 12.92), vec3(lessThan(gl_FragColor.rgb, vec3(0.04045))));
+		// sRGB -> linear
+		gl_FragColor.rgb = mix(pow((gl_FragColor.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), gl_FragColor.rgb * (1.0 / 12.92), vec3(lessThan(gl_FragColor.rgb, vec3(0.04045))));
 #endif
 
 #else // not RENDER_DEPTH
@@ -2391,4 +2398,4 @@ FRAGMENT_SHADER_CODE
 
 #endif
 #endif
-}
+	}
