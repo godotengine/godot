@@ -1233,6 +1233,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	for (int i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;
 		st.instantiate();
+		st->set_skin_weight_count((lightmap_surfaces[i].format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? SurfaceTool::SKIN_8_WEIGHTS : SurfaceTool::SKIN_4_WEIGHTS);
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
 		st->set_material(lightmap_surfaces[i].material);
 		st->set_meta("name", lightmap_surfaces[i].name);
@@ -1300,7 +1301,15 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 		Ref<SurfaceTool> &tool = surfaces_tools[i];
 		tool->index();
 		Array arrays = tool->commit_to_arrays();
-		add_surface(tool->get_primitive_type(), arrays, Array(), Dictionary(), tool->get_material(), tool->get_meta("name"), lightmap_surfaces[i].format);
+
+		uint64_t format = lightmap_surfaces[i].format;
+		if (tool->get_skin_weight_count() == SurfaceTool::SKIN_8_WEIGHTS) {
+			format |= RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+		} else {
+			format &= ~RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+		}
+
+		add_surface(tool->get_primitive_type(), arrays, Array(), Dictionary(), tool->get_material(), tool->get_meta("name"), format);
 	}
 
 	set_lightmap_size_hint(Size2(size_x, size_y));
