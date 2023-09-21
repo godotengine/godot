@@ -37,9 +37,9 @@
 
 #include <stdio.h>
 
-Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const String &p_prefix) {
 	for (int i = 0; i < sources.size(); i++) {
-		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
+		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset, p_prefix)) {
 			return OK;
 		}
 	}
@@ -127,7 +127,7 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const String &p_prefix) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
 		return false;
@@ -241,6 +241,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 		String path;
 		path.parse_utf8(cs.ptr());
+		path = String("res://") + p_prefix + path.replace_first("res://", "");
 
 		uint64_t ofs = file_base + f->get_64();
 		uint64_t size = f->get_64();
@@ -248,7 +249,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		f->get_buffer(md5, 16);
 		uint32_t flags = f->get_32();
 
-		PackedData::get_singleton()->add_path(p_path, path, ofs + p_offset, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
+		PackedData::get_singleton()->add_path(p_path, path , ofs + p_offset, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
 	}
 
 	return true;
