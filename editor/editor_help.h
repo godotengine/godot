@@ -232,6 +232,12 @@ public:
 class EditorHelpBit : public MarginContainer {
 	GDCLASS(EditorHelpBit, MarginContainer);
 
+	inline static HashMap<StringName, String> doc_class_cache;
+	inline static HashMap<StringName, HashMap<StringName, String>> doc_property_cache;
+	inline static HashMap<StringName, HashMap<StringName, String>> doc_method_cache;
+	inline static HashMap<StringName, HashMap<StringName, String>> doc_signal_cache;
+	inline static HashMap<StringName, HashMap<StringName, String>> doc_theme_item_cache;
+
 	RichTextLabel *rich_text = nullptr;
 	void _go_to_help(String p_what);
 	void _meta_clicked(String p_select);
@@ -243,9 +249,30 @@ protected:
 	void _notification(int p_what);
 
 public:
+	String get_class_description(const StringName &p_class_name) const;
+	String get_property_description(const StringName &p_class_name, const StringName &p_property_name) const;
+	String get_method_description(const StringName &p_class_name, const StringName &p_method_name) const;
+	String get_signal_description(const StringName &p_class_name, const StringName &p_signal_name) const;
+	String get_theme_item_description(const StringName &p_class_name, const StringName &p_theme_item_name) const;
+
 	RichTextLabel *get_rich_text() { return rich_text; }
 	void set_text(const String &p_text);
+
 	EditorHelpBit();
+};
+
+class EditorHelpTooltip : public EditorHelpBit {
+	GDCLASS(EditorHelpTooltip, EditorHelpBit);
+
+	String tooltip_text;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void parse_tooltip(const String &p_text);
+
+	EditorHelpTooltip(const String &p_text = String());
 };
 
 #endif // EDITOR_HELP_H

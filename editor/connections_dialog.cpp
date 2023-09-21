@@ -835,35 +835,9 @@ ConnectDialog::~ConnectDialog() {
 
 //////////////////////////////////////////
 
-// Originally copied and adapted from EditorProperty, try to keep style in sync.
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
-	// `p_text` is expected to be something like this:
-	// - `class|Control||Control brief description.`;
-	// - `signal|gui_input|(event: InputEvent)|gui_input description.`;
-	// - `../../.. :: _on_gui_input()`.
-	// Note that the description can be empty or contain `|`.
-	PackedStringArray slices = p_text.split("|", true, 3);
-	if (slices.size() < 4) {
-		return nullptr; // Use default tooltip instead.
-	}
-
-	String item_type = (slices[0] == "class") ? TTR("Class:") : TTR("Signal:");
-	String item_name = slices[1].strip_edges();
-	String item_params = slices[2].strip_edges();
-	String item_descr = slices[3].strip_edges();
-
-	String text = item_type + " [u][b]" + item_name + "[/b][/u]" + item_params + "\n";
-	if (item_descr.is_empty()) {
-		text += "[i]" + TTR("No description.") + "[/i]";
-	} else {
-		text += item_descr;
-	}
-
-	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 1));
-	help_bit->set_text(text);
-
-	return help_bit;
+	// If it's not a doc tooltip, fallback to the default one.
+	return p_text.contains("::") ? nullptr : memnew(EditorHelpTooltip(p_text));
 }
 
 struct _ConnectionsDockMethodInfoSort {
@@ -1341,7 +1315,6 @@ void ConnectionsDock::update_tree() {
 	while (native_base != StringName()) {
 		String class_name;
 		String doc_class_name;
-		String class_brief;
 		Ref<Texture2D> class_icon;
 		List<MethodInfo> class_signals;
 
@@ -1355,21 +1328,8 @@ void ConnectionsDock::update_tree() {
 			if (doc_class_name.is_empty()) {
 				doc_class_name = script_base->get_path().trim_prefix("res://").quote();
 			}
-
-			// For a script class, the cache is filled each time.
-			if (!doc_class_name.is_empty()) {
-				if (descr_cache.has(doc_class_name)) {
-					descr_cache[doc_class_name].clear();
-				}
-				HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(doc_class_name);
-				if (F) {
-					class_brief = F->value.brief_description;
-					for (int i = 0; i < F->value.signals.size(); i++) {
-						descr_cache[doc_class_name][F->value.signals[i].name] = F->value.signals[i].description;
-					}
-				} else {
-					doc_class_name = String();
-				}
+			if (!doc_class_name.is_empty() && !doc_data->class_list.find(doc_class_name)) {
+				doc_class_name = String();
 			}
 
 			class_icon = editor_data.get_script_icon(script_base);
@@ -1398,18 +1358,9 @@ void ConnectionsDock::update_tree() {
 			script_base = base;
 		} else {
 			class_name = native_base;
-			doc_class_name = class_name;
+			doc_class_name = native_base;
 
-			HashMap<String, DocData::ClassDoc>::ConstIterator F = doc_data->class_list.find(doc_class_name);
-			if (F) {
-				class_brief = DTR(F->value.brief_description);
-				// For a native class, the cache is filled once.
-				if (!descr_cache.has(doc_class_name)) {
-					for (int i = 0; i < F->value.signals.size(); i++) {
-						descr_cache[doc_class_name][F->value.signals[i].name] = DTR(F->value.signals[i].description);
-					}
-				}
-			} else {
+			if (!doc_data->class_list.find(doc_class_name)) {
 				doc_class_name = String();
 			}
 
@@ -1434,8 +1385,8 @@ void ConnectionsDock::update_tree() {
 
 			section_item = tree->create_item(root);
 			section_item->set_text(0, class_name);
-			// `|` separators used in `make_custom_tooltip()` for formatting.
-			section_item->set_tooltip_text(0, "class|" + class_name + "||" + class_brief);
+			// `|` separators used in `EditorHelpTooltip` for formatting.
+			section_item->set_tooltip_text(0, "class|" + doc_class_name + "||");
 			section_item->set_icon(0, class_icon);
 			section_item->set_selectable(0, false);
 			section_item->set_editable(0, false);
@@ -1466,22 +1417,8 @@ void ConnectionsDock::update_tree() {
 			sinfo["args"] = argnames;
 			signal_item->set_metadata(0, sinfo);
 			signal_item->set_icon(0, get_editor_theme_icon(SNAME("Signal")));
-
-			// Set tooltip with the signal's documentation.
-			{
-				String descr;
-
-				HashMap<StringName, HashMap<StringName, String>>::ConstIterator G = descr_cache.find(doc_class_name);
-				if (G) {
-					HashMap<StringName, String>::ConstIterator F = G->value.find(signal_name);
-					if (F) {
-						descr = F->value;
-					}
-				}
-
-				// `|` separators used in `make_custom_tooltip()` for formatting.
-				signal_item->set_tooltip_text(0, "signal|" + String(signal_name) + "|" + signame.trim_prefix(mi.name) + "|" + descr);
-			}
+			// `|` separators used in `EditorHelpTooltip` for formatting.
+			signal_item->set_tooltip_text(0, "signal|" + doc_class_name + "|" + String(signal_name) + "|" + signame.trim_prefix(mi.name));
 
 			// List existing connections.
 			List<Object::Connection> existing_connections;
