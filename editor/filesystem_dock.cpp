@@ -1970,15 +1970,15 @@ Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) co
 	Vector<String> selected_strings;
 
 	TreeItem *favorites_item = tree->get_root()->get_first_child();
-	TreeItem *active_selected = tree->get_selected();
-	if (active_selected && active_selected != favorites_item) {
-		selected_strings.push_back(active_selected->get_metadata(0));
+	TreeItem *cursor_item = tree->get_selected();
+	if (cursor_item && cursor_item->is_selected(0) && cursor_item != favorites_item) {
+		selected_strings.push_back(cursor_item->get_metadata(0));
 	}
 
 	TreeItem *selected = tree->get_root();
 	selected = tree->get_next_selected(selected);
 	while (selected) {
-		if (selected != active_selected && selected != favorites_item) {
+		if (selected != cursor_item && selected != favorites_item) {
 			selected_strings.push_back(selected->get_metadata(0));
 		}
 		selected = tree->get_next_selected(selected);
