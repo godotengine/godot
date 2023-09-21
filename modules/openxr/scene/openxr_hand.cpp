@@ -132,8 +132,8 @@ Skeleton3D *OpenXRHand::get_skeleton() {
 
 void OpenXRHand::_get_bones() {
 	const char *bone_names[XR_HAND_JOINT_COUNT_EXT] = {
-		"Wrist",
 		"Palm",
+		"Wrist",
 		"Thumb_Metacarpal",
 		"Thumb_Proximal",
 		"Thumb_Distal",
