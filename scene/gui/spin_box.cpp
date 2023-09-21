@@ -78,6 +78,10 @@ void SpinBox::_text_submitted(const String &p_string) {
 }
 
 void SpinBox::_text_changed(const String &p_string) {
+	if (p_string.ends_with(".")) {
+		return;
+	}
+
 	int cursor_pos = line_edit->get_caret_column();
 
 	_text_submitted(p_string);
