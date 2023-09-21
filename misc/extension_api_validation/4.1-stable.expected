@@ -184,3 +184,11 @@ Validate extension JSON: Error: Field 'classes/PhysicsServer3DRenderingServerHan
 Validate extension JSON: Error: Field 'classes/PhysicsServer3DRenderingServerHandler/methods/_set_normal/arguments/1': type changed value in new API, from "const void*" to "Vector3".
 
 Intentional compatibility breakage to be consistent with the new non-virtual set_vertex/set_normal.
+
+
+GH-82035
+--------
+
+Validate extension JSON: Error: Field 'classes/ProjectSettings/methods/load_resource_pack/arguments': size changed value in new API, from 3 to 4.
+
+Added an optional argument to prefix the paths with (a "mount point", if you will) in the virtual filesystem.
