@@ -19,7 +19,7 @@ for file in $files; do
   # Skip *.gen.h and *-so_wrap.h, they're generated.
   if [[ "$file" == *".gen.h" || "$file" == *"-so_wrap.h" ]]; then continue; fi
   # Has important define before normal header guards.
-  if [[ "$file" == *"thread.h" || "$file" == *"platform_config.h" ]]; then continue; fi
+  if [[ "$file" == *"thread.h" || "$file" == *"platform_config.h" || "$file" == *"platform_gl.h" ]]; then continue; fi
   # Obj-C files don't use header guards.
   if grep -q "#import " "$file"; then continue; fi
 

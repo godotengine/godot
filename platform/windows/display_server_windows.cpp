@@ -31,6 +31,7 @@
 #include "display_server_windows.h"
 
 #include "os_windows.h"
+#include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -1070,8 +1071,11 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 #endif
 #ifdef GLES3_ENABLED
-	if (gl_manager) {
-		gl_manager->window_destroy(p_window);
+	if (gl_manager_angle) {
+		gl_manager_angle->window_destroy(p_window);
+	}
+	if (gl_manager_native) {
+		gl_manager_native->window_destroy(p_window);
 	}
 #endif
 
@@ -1089,8 +1093,11 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 void DisplayServerWindows::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_make_current(p_window_id);
+	if (gl_manager_angle) {
+		gl_manager_angle->window_make_current(p_window_id);
+	}
+	if (gl_manager_native) {
+		gl_manager_native->window_make_current(p_window_id);
 	}
 #endif
 }
@@ -1106,14 +1113,18 @@ int64_t DisplayServerWindows::window_get_native_handle(HandleType p_handle_type,
 		}
 #if defined(GLES3_ENABLED)
 		case WINDOW_VIEW: {
-			if (gl_manager) {
-				return (int64_t)gl_manager->get_hdc(p_window);
+			if (gl_manager_native) {
+				return (int64_t)gl_manager_native->get_hdc(p_window);
+			} else {
+				return (int64_t)GetDC(windows[p_window].hWnd);
 			}
-			return 0;
 		}
 		case OPENGL_CONTEXT: {
-			if (gl_manager) {
-				return (int64_t)gl_manager->get_hglrc(p_window);
+			if (gl_manager_native) {
+				return (int64_t)gl_manager_native->get_hglrc(p_window);
+			}
+			if (gl_manager_angle) {
+				return (int64_t)gl_manager_angle->get_context(p_window);
 			}
 			return 0;
 		}
@@ -1447,8 +1458,11 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	}
 #endif
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_resize(p_window, w, h);
+	if (gl_manager_native) {
+		gl_manager_native->window_resize(p_window, w, h);
+	}
+	if (gl_manager_angle) {
+		gl_manager_angle->window_resize(p_window, w, h);
 	}
 #endif
 
@@ -2318,8 +2332,11 @@ void DisplayServerWindows::make_rendering_thread() {
 
 void DisplayServerWindows::swap_buffers() {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->swap_buffers();
+	if (gl_manager_angle) {
+		gl_manager_angle->swap_buffers();
+	}
+	if (gl_manager_native) {
+		gl_manager_native->swap_buffers();
 	}
 #endif
 }
@@ -2490,8 +2507,11 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 #endif
 
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->set_use_vsync(p_window, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	if (gl_manager_native) {
+		gl_manager_native->set_use_vsync(p_window, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+	if (gl_manager_angle) {
+		gl_manager_angle->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 }
@@ -2505,8 +2525,11 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 #endif
 
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		return gl_manager->is_using_vsync(p_window) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	if (gl_manager_native) {
+		return gl_manager_native->is_using_vsync(p_window) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	}
+	if (gl_manager_angle) {
+		return gl_manager_angle->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
 #endif
 
@@ -4224,10 +4247,20 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 #endif
 
 #ifdef GLES3_ENABLED
-		if (gl_manager) {
-			if (gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
-				memdelete(gl_manager);
-				gl_manager = nullptr;
+		if (gl_manager_native) {
+			if (gl_manager_native->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
+				memdelete(gl_manager_native);
+				gl_manager_native = nullptr;
+				windows.erase(id);
+				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
+			}
+			window_set_vsync_mode(p_vsync_mode, id);
+		}
+
+		if (gl_manager_angle) {
+			if (gl_manager_angle->window_create(id, nullptr, wd.hWnd, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
+				memdelete(gl_manager_angle);
+				gl_manager_angle = nullptr;
 				windows.erase(id);
 				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
 			}
@@ -4523,18 +4556,36 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(GLES3_ENABLED)
 
 	if (rendering_driver == "opengl3") {
-		GLManager_Windows::ContextType opengl_api_type = GLManager_Windows::GLES_3_0_COMPATIBLE;
+		int gl_version = detect_wgl_version();
+		if (gl_version < 30003) {
+			WARN_PRINT("Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE.");
+			rendering_driver = "opengl3_angle";
+		}
+	}
 
-		gl_manager = memnew(GLManager_Windows(opengl_api_type));
+	if (rendering_driver == "opengl3") {
+		gl_manager_native = memnew(GLManagerNative_Windows);
 
-		if (gl_manager->initialize() != OK) {
-			memdelete(gl_manager);
-			gl_manager = nullptr;
+		if (gl_manager_native->initialize() != OK) {
+			memdelete(gl_manager_native);
+			gl_manager_native = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
-		RasterizerGLES3::make_current();
+		RasterizerGLES3::make_current(true);
+	}
+	if (rendering_driver == "opengl3_angle") {
+		gl_manager_angle = memnew(GLManagerANGLE_Windows);
+
+		if (gl_manager_angle->initialize() != OK) {
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+
+		RasterizerGLES3::make_current(false);
 	}
 #endif
 
@@ -4608,6 +4659,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 #endif
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
+	drivers.push_back("opengl3_angle");
 #endif
 
 	return drivers;
@@ -4693,9 +4745,13 @@ DisplayServerWindows::~DisplayServerWindows() {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
 	}
 #ifdef GLES3_ENABLED
-	if (gl_manager) {
-		memdelete(gl_manager);
-		gl_manager = nullptr;
+	if (gl_manager_angle) {
+		memdelete(gl_manager_angle);
+		gl_manager_angle = nullptr;
+	}
+	if (gl_manager_native) {
+		memdelete(gl_manager_native);
+		gl_manager_native = nullptr;
 	}
 #endif
 	if (tts) {

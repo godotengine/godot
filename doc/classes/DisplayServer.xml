@@ -1891,9 +1891,9 @@
 		</constant>
 		<constant name="OPENGL_CONTEXT" value="3" enum="HandleType">
 			OpenGL context (only with the GL Compatibility renderer):
-			- Windows: [code]HGLRC[/code] for the window.
+			- Windows: [code]HGLRC[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Linux: [code]GLXContext*[/code] for the window.
-			- macOS: [code]NSOpenGLContext*[/code] for the window.
+			- macOS: [code]NSOpenGLContext*[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Android: [code]EGLContext[/code] for the window.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">

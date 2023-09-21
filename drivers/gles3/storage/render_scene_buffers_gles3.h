@@ -35,12 +35,7 @@
 
 #include "servers/rendering/storage/render_scene_buffers.h"
 
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
+#include "platform_gl.h"
 
 class RenderSceneBuffersGLES3 : public RenderSceneBuffers {
 	GDCLASS(RenderSceneBuffersGLES3, RenderSceneBuffers);
