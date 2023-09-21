@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_interaction_profile_meta_data.h                                */
+/*  openxr_interaction_profile_metadata.h                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_INTERACTION_PROFILE_META_DATA_H
-#define OPENXR_INTERACTION_PROFILE_META_DATA_H
+#ifndef OPENXR_INTERACTION_PROFILE_METADATA_H
+#define OPENXR_INTERACTION_PROFILE_METADATA_H
 
 ///////////////////////////////////////////////////////////////////////////
-// Stores available interaction profile meta data
+// Stores available interaction profile metadata
 //
 // OpenXR defines and hardcodes all the supported input devices and their
 // paths as part of the OpenXR spec. When support for new devices is
@@ -57,7 +57,9 @@
 
 #define XR_PATH_UNSUPPORTED_NAME "unsupported"
 
-class OpenXRInteractionProfileMetaData : public Object {
+class OpenXRInteractionProfileMetadata : public Object {
+	GDCLASS(OpenXRInteractionProfileMetadata, Object);
+
 public:
 	struct TopLevelPath {
 		String display_name; // User friendly display name (i.e. Left controller)
@@ -84,7 +86,7 @@ public:
 	};
 
 private:
-	static OpenXRInteractionProfileMetaData *singleton;
+	static OpenXRInteractionProfileMetadata *singleton;
 
 	Vector<TopLevelPath> top_level_paths;
 	Vector<InteractionProfile> interaction_profiles;
@@ -95,10 +97,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	static OpenXRInteractionProfileMetaData *get_singleton() { return singleton; }
+	static OpenXRInteractionProfileMetadata *get_singleton() { return singleton; }
 
-	OpenXRInteractionProfileMetaData();
-	~OpenXRInteractionProfileMetaData();
+	OpenXRInteractionProfileMetadata();
+	~OpenXRInteractionProfileMetadata();
 
 	void register_top_level_path(const String &p_display_name, const String &p_openxr_path, const String &p_openxr_extension_name);
 	bool has_top_level_path(const String p_openxr_path) const;
@@ -115,4 +117,4 @@ public:
 	const IOPath *get_io_path(const String p_interaction_profile, const String p_io_path) const;
 };
 
-#endif // OPENXR_INTERACTION_PROFILE_META_DATA_H
+#endif // OPENXR_INTERACTION_PROFILE_METADATA_H

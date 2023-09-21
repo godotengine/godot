@@ -34,7 +34,7 @@
 #include "action_map/openxr_action_map.h"
 #include "action_map/openxr_action_set.h"
 #include "action_map/openxr_interaction_profile.h"
-#include "action_map/openxr_interaction_profile_meta_data.h"
+#include "action_map/openxr_interaction_profile_metadata.h"
 #include "openxr_interface.h"
 #include "scene/openxr_hand.h"
 
@@ -66,7 +66,7 @@
 #endif
 
 static OpenXRAPI *openxr_api = nullptr;
-static OpenXRInteractionProfileMetaData *openxr_interaction_profile_meta_data = nullptr;
+static OpenXRInteractionProfileMetadata *openxr_interaction_profile_metadata = nullptr;
 static Ref<OpenXRInterface> openxr_interface;
 
 #ifdef TOOLS_ENABLED
@@ -74,10 +74,10 @@ static void _editor_init() {
 	if (OpenXRAPI::openxr_is_enabled(false)) {
 		// Only add our OpenXR action map editor if OpenXR is enabled for our project
 
-		if (openxr_interaction_profile_meta_data == nullptr) {
-			// If we didn't initialize our actionmap meta data at startup, we initialize it now.
-			openxr_interaction_profile_meta_data = memnew(OpenXRInteractionProfileMetaData);
-			ERR_FAIL_NULL(openxr_interaction_profile_meta_data);
+		if (openxr_interaction_profile_metadata == nullptr) {
+			// If we didn't initialize our actionmap metadata at startup, we initialize it now.
+			openxr_interaction_profile_metadata = memnew(OpenXRInteractionProfileMetadata);
+			ERR_FAIL_NULL(openxr_interaction_profile_metadata);
 		}
 
 		OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
@@ -110,8 +110,8 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		}
 
 		if (OpenXRAPI::openxr_is_enabled()) {
-			openxr_interaction_profile_meta_data = memnew(OpenXRInteractionProfileMetaData);
-			ERR_FAIL_NULL(openxr_interaction_profile_meta_data);
+			openxr_interaction_profile_metadata = memnew(OpenXRInteractionProfileMetadata);
+			ERR_FAIL_NULL(openxr_interaction_profile_metadata);
 			openxr_api = memnew(OpenXRAPI);
 			ERR_FAIL_NULL(openxr_api);
 
@@ -142,7 +142,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRAction);
 		GDREGISTER_CLASS(OpenXRActionSet);
 		GDREGISTER_CLASS(OpenXRActionMap);
-		GDREGISTER_CLASS(OpenXRInteractionProfileMetaData);
+		GDREGISTER_CLASS(OpenXRInteractionProfileMetadata);
 		GDREGISTER_CLASS(OpenXRIPBinding);
 		GDREGISTER_CLASS(OpenXRInteractionProfile);
 
@@ -195,9 +195,9 @@ void uninitialize_openxr_module(ModuleInitializationLevel p_level) {
 		openxr_api = nullptr;
 	}
 
-	if (openxr_interaction_profile_meta_data) {
-		memdelete(openxr_interaction_profile_meta_data);
-		openxr_interaction_profile_meta_data = nullptr;
+	if (openxr_interaction_profile_metadata) {
+		memdelete(openxr_interaction_profile_metadata);
+		openxr_interaction_profile_metadata = nullptr;
 	}
 
 	// cleanup our extension wrappers

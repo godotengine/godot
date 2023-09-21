@@ -1077,6 +1077,32 @@ void ItemList::_notification(int p_what) {
 			// Define a visible frame to check against and optimize drawing.
 			const Rect2 clip(-base_ofs, size);
 
+			// Do a binary search to find the first separator that is below clip_position.y.
+			int first_visible_separator = 0;
+			{
+				int lo = 0;
+				int hi = separators.size();
+				while (lo < hi) {
+					const int mid = (lo + hi) / 2;
+					if (separators[mid] < clip.position.y) {
+						lo = mid + 1;
+					} else {
+						hi = mid;
+					}
+				}
+				first_visible_separator = lo;
+			}
+
+			// Draw visible separators.
+			for (int i = first_visible_separator; i < separators.size(); i++) {
+				if (separators[i] > clip.position.y + clip.size.y) {
+					break; // done
+				}
+
+				const int y = base_ofs.y + separators[i];
+				draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+			}
+
 			// Do a binary search to find the first item whose rect reaches below clip.position.y.
 			int first_item_visible;
 			{
@@ -1297,32 +1323,6 @@ void ItemList::_notification(int p_what) {
 
 					draw_style_box(cursor, r);
 				}
-			}
-
-			// Do a binary search to find the first separator that is below clip_position.y.
-			int first_visible_separator = 0;
-			{
-				int lo = 0;
-				int hi = separators.size();
-				while (lo < hi) {
-					const int mid = (lo + hi) / 2;
-					if (separators[mid] < clip.position.y) {
-						lo = mid + 1;
-					} else {
-						hi = mid;
-					}
-				}
-				first_visible_separator = lo;
-			}
-
-			// Draw visible separators.
-			for (int i = first_visible_separator; i < separators.size(); i++) {
-				if (separators[i] > clip.position.y + clip.size.y) {
-					break; // done
-				}
-
-				const int y = base_ofs.y + separators[i];
-				draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
 			}
 		} break;
 	}
@@ -1603,7 +1603,14 @@ bool ItemList::get_allow_search() const {
 
 void ItemList::set_icon_scale(real_t p_scale) {
 	ERR_FAIL_COND(!Math::is_finite(p_scale));
+
+	if (icon_scale == p_scale) {
+		return;
+	}
+
 	icon_scale = p_scale;
+	queue_redraw();
+	shape_changed = true;
 }
 
 real_t ItemList::get_icon_scale() const {

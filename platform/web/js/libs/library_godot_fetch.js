@@ -50,22 +50,17 @@ const GodotFetch = {
 				return;
 			}
 			let chunked = false;
-			let bodySize = -1;
 			response.headers.forEach(function (value, header) {
 				const v = value.toLowerCase().trim();
 				const h = header.toLowerCase().trim();
 				if (h === 'transfer-encoding' && v === 'chunked') {
 					chunked = true;
 				}
-				if (h === 'content-length') {
-					bodySize = parseInt(v, 10);
-				}
 			});
 			obj.status = response.status;
 			obj.response = response;
 			obj.reader = response.body.getReader();
 			obj.chunked = chunked;
-			obj.bodySize = bodySize;
 		},
 
 		onerror: function (id, err) {
@@ -87,7 +82,6 @@ const GodotFetch = {
 				reading: false,
 				status: 0,
 				chunks: [],
-				bodySize: -1,
 			};
 			const id = IDHandler.add(obj);
 			const init = {
@@ -222,15 +216,6 @@ const GodotFetch = {
 			GodotFetch.read(p_id);
 		}
 		return p_buf_size - to_read;
-	},
-
-	godot_js_fetch_body_length_get__sig: 'ii',
-	godot_js_fetch_body_length_get: function (p_id) {
-		const obj = IDHandler.get(p_id);
-		if (!obj || !obj.response) {
-			return -1;
-		}
-		return obj.bodySize;
 	},
 
 	godot_js_fetch_is_chunked__sig: 'ii',

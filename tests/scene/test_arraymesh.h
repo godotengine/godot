@@ -154,7 +154,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 	}
 }
 
-TEST_CASE("[SceneTree][ArrayMesh] Surface meta data tests.") {
+TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 	Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
 	Array cylinder_array{};

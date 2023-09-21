@@ -506,6 +506,9 @@ public:
 					}
 
 				} break;
+				default: {
+					// Ignored notifications.
+				} break;
 			}
 		}
 

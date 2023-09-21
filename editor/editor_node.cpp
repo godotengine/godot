@@ -1982,6 +1982,9 @@ void EditorNode::_dialog_action(String p_file) {
 
 				if (scene_idx != -1) {
 					_discard_changes();
+				} else {
+					// Update the path of the edited scene to ensure later do/undo action history matches.
+					editor_data.set_scene_path(editor_data.get_edited_scene(), p_file);
 				}
 			}
 
@@ -3574,7 +3577,9 @@ void EditorNode::set_current_scene(int p_idx) {
 	_update_title();
 	_update_scene_tabs();
 
-	call_deferred(SNAME("_set_main_scene_state"), state, get_edited_scene()); // Do after everything else is done setting up.
+	if (tabs_to_close.is_empty()) {
+		call_deferred(SNAME("_set_main_scene_state"), state, get_edited_scene()); // Do after everything else is done setting up.
+	}
 }
 
 void EditorNode::setup_color_picker(ColorPicker *p_picker) {
@@ -4234,7 +4239,7 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 	}
 }
 
-Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback) {
+Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback, bool p_fallback_script_to_theme) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
 	EditorData &ed = EditorNode::get_editor_data();
 
@@ -4243,6 +4248,16 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 		Ref<Texture2D> script_icon = ed.get_script_icon(p_script);
 		if (script_icon.is_valid()) {
 			return script_icon;
+		}
+
+		if (p_fallback_script_to_theme) {
+			// Look for the native base type in the editor theme. This is relevant for
+			// scripts extending other scripts and for built-in classes.
+			String script_class_name = p_script->get_language()->get_global_class_name(p_script->get_path());
+			String base_type = ScriptServer::get_global_class_native_base(script_class_name);
+			if (gui_base && gui_base->has_theme_icon(base_type, SNAME("EditorIcons"))) {
+				return gui_base->get_theme_icon(base_type, SNAME("EditorIcons"));
+			}
 		}
 	}
 
@@ -4296,7 +4311,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		scr = EditorNode::get_editor_data().script_class_load_script(p_class);
 	}
 
-	return _get_class_or_script_icon(p_class, scr, p_fallback);
+	return _get_class_or_script_icon(p_class, scr, p_fallback, true);
 }
 
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
@@ -4950,10 +4965,15 @@ void EditorNode::_load_editor_layout() {
 	config.instantiate();
 	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
 	if (err != OK) { // No config.
-		// If config is not found, expand the res:// folder by default.
+		// If config is not found, expand the res:// folder and favorites by default.
 		TreeItem *root = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata("res://", 0);
 		if (root) {
 			root->set_collapsed(false);
+		}
+
+		TreeItem *favorites = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata("Favorites", 0);
+		if (favorites) {
+			favorites->set_collapsed(false);
 		}
 
 		if (overridden_default_layout >= 0) {
@@ -7135,7 +7155,7 @@ EditorNode::EditorNode() {
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
 
-	if (!SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && EDITOR_GET("interface/multi_window/enable")) {
+	if (!SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && !EDITOR_GET("interface/editor/single_window_mode") && EDITOR_GET("interface/multi_window/enable")) {
 		dock_float = memnew(Button);
 		dock_float->set_icon(theme->get_icon("MakeFloating", "EditorIcons"));
 		dock_float->set_text(TTR("Make Floating"));

@@ -52,7 +52,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="array">The objects to put in the new array.</param>
         /// <returns>A new Godot Array.</returns>
-        public Array(Variant[] array) : this()
+        public Array(Variant[] array)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
@@ -68,7 +68,7 @@ namespace Godot.Collections
                 this[i] = array[i];
         }
 
-        public Array(Span<StringName> array) : this()
+        public Array(Span<StringName> array)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
@@ -84,7 +84,7 @@ namespace Godot.Collections
                 this[i] = array[i];
         }
 
-        public Array(Span<NodePath> array) : this()
+        public Array(Span<NodePath> array)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
@@ -100,7 +100,7 @@ namespace Godot.Collections
                 this[i] = array[i];
         }
 
-        public Array(Span<Rid> array) : this()
+        public Array(Span<Rid> array)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
@@ -121,7 +121,7 @@ namespace Godot.Collections
         // fine as long as the array is not mutated. However, Span does this type checking at
         // instantiation, so it's not possible to use it even when not mutating anything.
         // ReSharper disable once RedundantNameQualifier
-        public Array(ReadOnlySpan<GodotObject> array) : this()
+        public Array(ReadOnlySpan<GodotObject> array)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
@@ -1057,7 +1057,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="array">The items to put in the new array.</param>
         /// <returns>A new Godot Array.</returns>
-        public Array(T[] array) : this()
+        public Array(T[] array)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));

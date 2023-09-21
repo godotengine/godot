@@ -44,6 +44,7 @@ if env["windows_subsystem"] == "gui":
         env_wrap.Append(LIBS=["version"])
 
     prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
+    env_wrap.Depends(prog_wrap, prog)
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:

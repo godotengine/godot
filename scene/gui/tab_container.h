@@ -75,6 +75,7 @@ class TabContainer : public Container {
 		Color drop_mark_color;
 
 		Color font_selected_color;
+		Color font_hovered_color;
 		Color font_unselected_color;
 		Color font_disabled_color;
 		Color font_outline_color;

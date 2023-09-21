@@ -776,8 +776,18 @@ def add_to_vs_project(env, sources):
                 env.vs_srcs += [basename + ".cpp"]
 
 
-def generate_vs_project(env, num_jobs, project_name="godot"):
+def generate_vs_project(env, original_args, project_name="godot"):
     batch_file = find_visual_c_batch_file(env)
+    filtered_args = original_args.copy()
+    # Ignore the "vsproj" option to not regenerate the VS project on every build
+    filtered_args.pop("vsproj", None)
+    # The "platform" option is ignored because only the Windows platform is currently supported for VS projects
+    filtered_args.pop("platform", None)
+    # The "target" option is ignored due to the way how targets configuration is performed for VS projects (there is a separate project configuration for each target)
+    filtered_args.pop("target", None)
+    # The "progress" option is ignored as the current compilation progress indication doesn't work in VS
+    filtered_args.pop("progress", None)
+
     if batch_file:
 
         class ModuleConfigs(Mapping):
@@ -853,23 +863,10 @@ def generate_vs_project(env, num_jobs, project_name="godot"):
                     "platform=windows",
                     f"target={configuration_getter}",
                     "progress=no",
-                    "-j%s" % num_jobs,
                 ]
 
-                if env["dev_build"]:
-                    common_build_postfix.append("dev_build=yes")
-
-                if env["dev_mode"]:
-                    common_build_postfix.append("dev_mode=yes")
-
-                elif env["tests"]:
-                    common_build_postfix.append("tests=yes")
-
-                if env["custom_modules"]:
-                    common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
-
-                if env["precision"] == "double":
-                    common_build_postfix.append("precision=double")
+                for arg, value in filtered_args.items():
+                    common_build_postfix.append(f"{arg}={value}")
 
                 result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
                 return result

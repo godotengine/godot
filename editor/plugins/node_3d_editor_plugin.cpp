@@ -3104,7 +3104,7 @@ void Node3DEditorViewport::_draw() {
 							get_theme_icon(SNAME("ViewportSpeed"), SNAME("EditorIcons")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)),
+							vformat("%s m/s", String::num(freelook_speed).pad_decimals(precision)),
 							Color(1.0, 0.95, 0.7));
 				}
 
@@ -3127,7 +3127,7 @@ void Node3DEditorViewport::_draw() {
 							get_theme_icon(SNAME("ViewportZoom"), SNAME("EditorIcons")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)),
+							vformat("%s m", String::num(cursor.distance).pad_decimals(precision)),
 							Color(0.7, 0.95, 1.0));
 				}
 			}

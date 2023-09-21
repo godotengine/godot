@@ -30,7 +30,7 @@
 
 #include "openxr_pico_controller_extension.h"
 
-#include "../action_map/openxr_interaction_profile_meta_data.h"
+#include "../action_map/openxr_interaction_profile_metadata.h"
 
 // Pico controllers are not part of the OpenXR spec at the time of writing this
 // code. We'll hardcode the extension name that is used internally, verified by
@@ -53,7 +53,7 @@ bool OpenXRPicoControllerExtension::is_available() {
 }
 
 void OpenXRPicoControllerExtension::on_register_metadata() {
-	OpenXRInteractionProfileMetaData *metadata = OpenXRInteractionProfileMetaData::get_singleton();
+	OpenXRInteractionProfileMetadata *metadata = OpenXRInteractionProfileMetadata::get_singleton();
 	ERR_FAIL_NULL(metadata);
 
 	// Pico controller (Pico 4 and Pico Neo 3 controllers)

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  canvas_modulate.h                                                     */
+/*  test_node_2d.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CANVAS_MODULATE_H
-#define CANVAS_MODULATE_H
+#ifndef TEST_NODE_2D_H
+#define TEST_NODE_2D_H
 
 #include "scene/2d/node_2d.h"
 
-class CanvasModulate : public Node2D {
-	GDCLASS(CanvasModulate, Node2D);
+#include "tests/test_macros.h"
 
-	Color color = Color(1, 1, 1, 1);
+namespace TestNode2D {
 
-	// CanvasModulate is in canvas-specific modulate group when both in canvas and visible in tree.
-	// Exactly one CanvasModulate in each such non-empty group is active.
-	bool is_in_canvas = false;
-	bool was_visible_in_tree = false; // Relevant only when in canvas.
-	bool is_active = false;
+TEST_CASE("[SceneTree][Node2D]") {
+	SUBCASE("[Node2D][Global Transform] Global Transform should be accessible while not in SceneTree.") { // GH-79453
+		Node2D *test_node = memnew(Node2D);
+		test_node->set_name("node");
+		Node2D *test_child = memnew(Node2D);
+		test_child->set_name("child");
+		test_node->add_child(test_child);
 
-	void _on_in_canvas_visibility_changed(bool p_new_visibility);
+		test_node->set_global_position(Point2(1, 1));
+		CHECK_EQ(test_node->get_global_position(), Point2(1, 1));
+		CHECK_EQ(test_child->get_global_position(), Point2(1, 1));
+		test_node->set_global_position(Point2(2, 2));
+		CHECK_EQ(test_node->get_global_position(), Point2(2, 2));
+		test_node->set_global_transform(Transform2D(0, Point2(3, 3)));
+		CHECK_EQ(test_node->get_global_position(), Point2(3, 3));
 
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
+		memdelete(test_child);
+		memdelete(test_node);
+	}
+}
 
-public:
-	void set_color(const Color &p_color);
-	Color get_color() const;
+} // namespace TestNode2D
 
-	PackedStringArray get_configuration_warnings() const override;
-
-	CanvasModulate();
-	~CanvasModulate();
-};
-
-#endif // CANVAS_MODULATE_H
+#endif // TEST_NODE_2D_H

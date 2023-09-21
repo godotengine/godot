@@ -30,7 +30,6 @@ def get_opts():
         ),
         ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),
-        BoolVariable("ios_exceptions", "Enable exceptions", False),
         ("ios_triple", "Triple for ios toolchain", ""),
     ]
 
@@ -137,11 +136,6 @@ def configure(env: "Environment"):
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
-
-    if env["ios_exceptions"]:
-        env.Append(CCFLAGS=["-fexceptions"])
-    else:
-        env.Append(CCFLAGS=["-fno-exceptions"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])

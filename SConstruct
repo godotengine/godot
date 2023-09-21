@@ -193,6 +193,7 @@ opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
+opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", False))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
 
@@ -240,6 +241,7 @@ opts.Add(BoolVariable("builtin_libwebp", "Use the built-in libwebp library", Tru
 opts.Add(BoolVariable("builtin_wslay", "Use the built-in wslay library", True))
 opts.Add(BoolVariable("builtin_mbedtls", "Use the built-in mbedTLS library", True))
 opts.Add(BoolVariable("builtin_miniupnpc", "Use the built-in miniupnpc library", True))
+opts.Add(BoolVariable("builtin_openxr", "Use the built-in OpenXR library", True))
 opts.Add(BoolVariable("builtin_pcre2", "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable("builtin_pcre2_with_jit", "Use JIT compiler for the built-in PCRE2 library", True))
 opts.Add(BoolVariable("builtin_recastnavigation", "Use the built-in Recast navigation library", True))
@@ -699,6 +701,16 @@ if selected_platform in platform_list:
             )
             Exit(255)
 
+    # Disable exception handling. Godot doesn't use exceptions anywhere, and this
+    # saves around 20% of binary size and very significant build time (GH-80513).
+    if env["disable_exceptions"]:
+        if env.msvc:
+            env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
+        else:
+            env.Append(CCFLAGS=["-fno-exceptions"])
+    elif env.msvc:
+        env.Append(CCFLAGS=["/EHsc"])
+
     # Configure compiler warnings
     if env.msvc:  # MSVC
         if env["warnings"] == "no":
@@ -728,11 +740,9 @@ if selected_platform in platform_list:
                 ]
             )
 
-        # Set exception handling model to avoid warnings caused by Windows system headers.
-        env.Append(CCFLAGS=["/EHsc"])
-
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
+            env.Append(LINKFLAGS=["/WX"])
     else:  # GCC, Clang
         common_warnings = []
 
@@ -958,7 +968,7 @@ if selected_platform in platform_list:
             print("Error: The `vsproj` option is only usable on Windows with Visual Studio.")
             Exit(255)
         env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
-        methods.generate_vs_project(env, GetOption("num_jobs"), env["vsproj_name"])
+        methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
         methods.generate_cpp_hint_file("cpp.hint")
 
     # Check for the existence of headers

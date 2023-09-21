@@ -249,7 +249,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
 	void _update_tree_menu();
-	void _update_filter_menu();
 
 	void _filter_changed(const String &p_filter);
 	void _filter_gui_input(const Ref<InputEvent> &p_event);
