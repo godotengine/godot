@@ -112,10 +112,18 @@ void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputT
 String ProjectDialog::_test_path() {
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String valid_path, valid_install_path;
+	need_mkdir = false;
+
 	if (d->change_dir(project_path->get_text()) == OK) {
 		valid_path = project_path->get_text();
 	} else if (d->change_dir(project_path->get_text().strip_edges()) == OK) {
 		valid_path = project_path->get_text().strip_edges();
+	} else if (mode == MODE_NEW && d->change_dir(project_path->get_text().get_base_dir()) == OK) {
+		valid_path = project_path->get_text().strip_edges();
+		need_mkdir = true;
+		_set_message(TTR("A new folder will be created for the project."), MESSAGE_WARNING);
+		get_ok_button()->set_disabled(false);
+		return valid_path;
 	} else if (project_path->get_text().ends_with(".zip")) {
 		if (d->file_exists(project_path->get_text())) {
 			valid_path = project_path->get_text();
@@ -475,6 +483,18 @@ void ProjectDialog::ok_pressed() {
 
 		} else {
 			if (mode == MODE_NEW) {
+				if (need_mkdir) {
+					Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+					Error error = da->make_dir(dir.strip_edges());
+					if (error != OK) {
+						ERR_PRINT("Could not create project directory at: " + dir);
+						_set_message(TTR("Could not create the project folder, please create it manually."), MESSAGE_ERROR);
+						return;
+					}
+					is_folder_empty = true;
+					need_mkdir = false;
+				}
+
 				// Before we create a project, check that the target folder is empty.
 				// If not, we need to ask the user if they're sure they want to do this.
 				if (!is_folder_empty) {

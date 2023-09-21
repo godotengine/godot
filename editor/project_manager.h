@@ -69,6 +69,7 @@ private:
 
 	Mode mode = MODE_NEW;
 	bool is_folder_empty = true;
+	bool need_mkdir = false;
 
 	Button *browse = nullptr;
 	Button *install_browse = nullptr;
