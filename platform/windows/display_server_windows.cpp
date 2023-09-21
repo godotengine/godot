@@ -227,7 +227,7 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 	for (const String &E : p_filters) {
 		Vector<String> tokens = E.split(";");
 		if (tokens.size() == 2) {
-			filter_exts.push_back(tokens[0].strip_edges().utf16());
+			filter_exts.push_back(tokens[0].replace(",", ";").strip_edges().utf16());
 			filter_names.push_back(tokens[1].strip_edges().utf16());
 		} else if (tokens.size() == 1) {
 			filter_exts.push_back(tokens[0].strip_edges().utf16());
