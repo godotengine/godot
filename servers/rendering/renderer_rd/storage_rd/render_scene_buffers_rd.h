@@ -34,6 +34,7 @@
 #include "../effects/vrs.h"
 #include "../framebuffer_cache_rd.h"
 #include "core/templates/hash_map.h"
+#include "material_storage.h"
 #include "render_buffer_custom_data_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_binds.h"
@@ -153,6 +154,11 @@ private:
 	// Data buffers
 	mutable HashMap<StringName, Ref<RenderBufferCustomDataRD>> data_buffers;
 
+	// Samplers.
+	RendererRD::MaterialStorage::Samplers samplers;
+
+	void update_samplers();
+
 protected:
 	static void _bind_methods();
 
@@ -251,6 +257,12 @@ public:
 	bool has_velocity_buffer(bool p_has_msaa);
 	RID get_velocity_buffer(bool p_get_msaa);
 	RID get_velocity_buffer(bool p_get_msaa, uint32_t p_layer);
+
+	// Samplers adjusted with the mipmap bias that is best fit for the configuration of these render buffers.
+
+	_FORCE_INLINE_ RendererRD::MaterialStorage::Samplers get_samplers() const {
+		return samplers;
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Our classDB doesn't support calling our normal exposed functions
