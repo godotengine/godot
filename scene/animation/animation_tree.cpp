@@ -112,9 +112,7 @@ void AnimationNode::blend_animation(const StringName &p_animation, float p_time,
 	anim_state.time = p_time;
 	anim_state.animation = animation;
 	anim_state.seeked = p_seeked;
-	anim_state.mix = mix;
-
-	mix = MIX_MODE_BLEND; // reset?
+	anim_state.use_blend = use_blend;
 
 	state->animation_states.push_back(anim_state);
 }
@@ -144,7 +142,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	state->invalid_reasons += String::utf8("• ") + p_reason;
 }
 
-float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, MixMode p_mix) {
+float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, bool use_blend) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -159,12 +157,7 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 		return 0;
 	} else {
 		Ref<AnimationNode> node = blend_tree->get_node(node_name);
-		// this is some hacky bs to make it pass down to children
-		if (p_mix == MIX_MODE_BLEND) {
-			node->mix = mix; // use parent flag
-		} else {
-			node->mix = p_mix; // use parameter
-		}
+		node->use_blend = use_blend;
 	}
 
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
@@ -226,7 +219,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (blendw[i] > CMP_EPSILON) {
+					if (Math::abs(blendw[i]) > CMP_EPSILON) {
 						any_valid = true;
 					}
 				}
@@ -241,7 +234,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (blendw[i] > CMP_EPSILON) {
+					if (Math::abs(blendw[i]) > CMP_EPSILON) {
 						any_valid = true;
 					}
 				}
@@ -257,7 +250,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 						blendw[i] = blendr[i]; //not filtered, do not blend
 					}
 
-					if (blendw[i] > CMP_EPSILON) {
+					if (Math::abs(blendw[i]) > CMP_EPSILON) {
 						any_valid = true;
 					}
 				}
@@ -268,7 +261,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 		for (int i = 0; i < blend_count; i++) {
 			//regular blend
 			blendw[i] = blendr[i] * p_blend;
-			if (blendw[i] > CMP_EPSILON) {
+			if (Math::abs(blendw[i]) > CMP_EPSILON) {
 				any_valid = true;
 			}
 		}
@@ -277,7 +270,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 	if (r_max) {
 		*r_max = 0;
 		for (int i = 0; i < blend_count; i++) {
-			*r_max = MAX(*r_max, blendw[i]);
+			*r_max = MAX(*r_max, Math::abs(blendw[i])); // to account for negative blend weights as used by Sub2 nodes
 		}
 	}
 
@@ -423,7 +416,7 @@ void AnimationNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "blend"), &AnimationNode::blend_animation);
 	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "blend", "filter", "optimize", "mix"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(MIX_MODE_BLEND));
+	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "blend", "filter", "optimize", "use_blend"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
@@ -457,7 +450,7 @@ AnimationNode::AnimationNode() {
 	state = nullptr;
 	parent = nullptr;
 	filter_enabled = false;
-	mix = MIX_MODE_BLEND;
+	use_blend = true;
 }
 
 ////////////////////
@@ -835,6 +828,7 @@ void AnimationTree::_process_graph(float p_delta) {
 			float delta = as.delta;
 			float weight = as.blend;
 			bool seeked = as.seeked;
+			bool use_blend = as.use_blend;
 
 			for (int i = 0; i < a->get_track_count(); i++) {
 				NodePath path = a->track_get_path(i);
@@ -931,34 +925,25 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->scale = scale;
 							}
 
-							if (err != OK) {
+							if (err != OK) { // error happens when I animated an object transform manually?? fix
 								continue;
 							}
 
-							if (as.mix == AnimationNode::MIX_MODE_BLEND || as.mix == AnimationNode::MIX_MODE_ADD) {
+							if (use_blend) {
 								t->loc = t->loc.linear_interpolate(loc, blend);
-								if (t->rot_blend_accum == 0) {
-									t->rot = rot;
-									t->rot_blend_accum = blend;
-								} else {
-									float rot_total = t->rot_blend_accum + blend;
-									t->rot = rot.slerp(t->rot, t->rot_blend_accum / rot_total).normalized();
-									t->rot_blend_accum = rot_total;
-								}
-								t->scale = t->scale.linear_interpolate(scale, blend);
-							} else if (as.mix == AnimationNode::MIX_MODE_ADD_DIRECT) {
+							} else {
+								// Direct adding. Used by Add and Sub
 								t->loc += loc * blend;
-								t->scale = t->scale.linear_interpolate(scale, blend);
-
-								Quat q = Quat().slerp(rot.normalized(), blend).normalized();
-								t->rot = (t->rot * q).normalized();
-							} else if (as.mix == AnimationNode::MIX_MODE_SUB) {
-								t->loc -= loc * blend;
-								t->scale = t->scale.linear_interpolate(scale, blend);
-
-								Quat q = Quat().slerp(rot.normalized().inverse(), blend).normalized();
-								t->rot = (t->rot * q).normalized();
 							}
+							if (t->rot_blend_accum == 0) {
+								t->rot = rot;
+								t->rot_blend_accum = blend;
+							} else {
+								float rot_total = t->rot_blend_accum + blend;
+								t->rot = rot.slerp(t->rot, t->rot_blend_accum / rot_total).normalized();
+								t->rot_blend_accum = rot_total;
+							}
+							t->scale = t->scale.linear_interpolate(scale, blend);
 						}
 
 					} break;
@@ -1035,7 +1020,6 @@ void AnimationTree::_process_graph(float p_delta) {
 							t->value = bezier;
 							t->process_pass = process_pass;
 						}
-
 						t->value = Math::lerp(t->value, bezier, blend);
 
 					} break;

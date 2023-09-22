@@ -189,7 +189,7 @@ float AnimationNodeOneShot::get_autorestart_random_delay() const {
 void AnimationNodeOneShot::set_mix_mode(MixMode p_mix) {
 	mix = p_mix;
 }
-AnimationNode::MixMode AnimationNodeOneShot::get_mix_mode() const {
+AnimationNodeOneShot::MixMode AnimationNodeOneShot::get_mix_mode() const {
 	return mix;
 }
 
@@ -362,6 +362,7 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 ////////////////////////////////////////////////
 
 void AnimationNodeSub2::get_parameter_list(List<PropertyInfo> *r_list) const {
+	r_list->push_back(PropertyInfo(Variant::REAL, sub_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeSub2::get_parameter_default_value(const StringName &p_parameter) const {
@@ -384,10 +385,11 @@ bool AnimationNodeSub2::has_filter() const {
 }
 
 float AnimationNodeSub2::process(float p_time, bool p_seek) {
-	float rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync, MIX_MODE_BLEND);
-	blend_input(1, p_time, p_seek, 1.0, FILTER_PASS, !sync, MIX_MODE_SUB);
+	double amount = get_parameter(sub_amount);
+	// Out = Sub.Transform3D^(-1) * In.Transform3D
+	blend_input(1, p_time, p_seek, -amount, FILTER_PASS, sync, false);
+	return blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, sync);
 
-	return rem0;
 }
 
 void AnimationNodeSub2::_bind_methods() {
@@ -397,6 +399,7 @@ void AnimationNodeSub2::_bind_methods() {
 }
 
 AnimationNodeSub2::AnimationNodeSub2() {
+	sub_amount = PNAME("sub_amount");
 	add_input("in");
 	add_input("sub");
 	sync = false;
@@ -437,7 +440,7 @@ bool AnimationNodeAdd2::has_filter() const {
 float AnimationNodeAdd2::process(float p_time, bool p_seek) {
 	float amount = get_parameter(add_amount);
 	float rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
-	blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync, add_directly ? MIX_MODE_ADD_DIRECT : MIX_MODE_ADD);
+	blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync, !add_directly);
 
 	return rem0;
 }
