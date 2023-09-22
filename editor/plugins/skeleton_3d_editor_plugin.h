@@ -120,7 +120,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	BoneTransformEditor *rest_editor = nullptr;
 	BoneTransformEditor *pose_editor = nullptr;
 
-	VSeparator *separator = nullptr;
+	HBoxContainer *topmenu_bar = nullptr;
 	MenuButton *skeleton_options = nullptr;
 	Button *edit_mode_button = nullptr;
 
