@@ -67,7 +67,7 @@ public:
 	virtual Error get_data(uint8_t *p_buffer, int p_bytes) override;
 	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 
-	virtual int get_available_bytes() const override;
+	virtual uint32_t get_available_bytes() const override;
 
 	StreamPeerGZIP();
 	~StreamPeerGZIP();

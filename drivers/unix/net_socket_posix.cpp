@@ -739,15 +739,15 @@ bool NetSocketPosix::is_open() const {
 	return _sock != SOCK_EMPTY;
 }
 
-int NetSocketPosix::get_available_bytes() const {
-	ERR_FAIL_COND_V(!is_open(), -1);
+uint32_t NetSocketPosix::get_available_bytes() const {
+	ERR_FAIL_COND_V(!is_open(), 0);
 
 	unsigned long len;
 	int ret = SOCK_IOCTL(_sock, FIONREAD, &len);
 	if (ret == -1) {
 		_get_socket_error();
 		print_verbose("Error when checking available bytes on socket.");
-		return -1;
+		return 0;
 	}
 	return len;
 }

@@ -70,7 +70,7 @@ public:
 	int get_local_port() const;
 	void disconnect_from_host();
 
-	int get_available_bytes() const override;
+	uint32_t get_available_bytes() const override;
 	Status get_status() const;
 
 	void set_no_delay(bool p_enabled);

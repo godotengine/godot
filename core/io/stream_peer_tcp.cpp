@@ -279,8 +279,8 @@ Error StreamPeerTCP::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_rec
 	return read(p_buffer, p_bytes, r_received, false);
 }
 
-int StreamPeerTCP::get_available_bytes() const {
-	ERR_FAIL_COND_V(!_sock.is_valid(), -1);
+uint32_t StreamPeerTCP::get_available_bytes() const {
+	ERR_FAIL_COND_V(!_sock.is_valid(), 0);
 	return _sock->get_available_bytes();
 }
 

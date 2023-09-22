@@ -59,7 +59,7 @@ public:
 	virtual Error get_data(uint8_t *p_buffer, int p_bytes) = 0; ///< read p_bytes of data, if p_bytes > available, it will block
 	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) = 0; ///< read as much data as p_bytes into buffer, if less was read, return in r_received
 
-	virtual int get_available_bytes() const = 0;
+	virtual uint32_t get_available_bytes() const = 0;
 
 	/* helpers */
 	void set_big_endian(bool p_big_endian);
@@ -115,7 +115,7 @@ public:
 	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 	GDVIRTUAL3R(Error, _get_partial_data, GDExtensionPtr<uint8_t>, int, GDExtensionPtr<int>);
 
-	EXBIND0RC(int, get_available_bytes);
+	EXBIND0RC(uint32_t, get_available_bytes);
 };
 
 class StreamPeerBuffer : public StreamPeer {
@@ -134,7 +134,7 @@ public:
 	Error get_data(uint8_t *p_buffer, int p_bytes) override;
 	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 
-	virtual int get_available_bytes() const override;
+	virtual uint32_t get_available_bytes() const override;
 
 	void seek(int p_pos);
 	int get_size() const;

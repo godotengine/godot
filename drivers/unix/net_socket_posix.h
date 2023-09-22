@@ -89,7 +89,7 @@ public:
 	virtual Ref<NetSocket> accept(IPAddress &r_ip, uint16_t &r_port);
 
 	virtual bool is_open() const;
-	virtual int get_available_bytes() const;
+	virtual uint32_t get_available_bytes() const;
 	virtual Error get_socket_address(IPAddress *r_ip, uint16_t *r_port) const;
 
 	virtual Error set_broadcasting_enabled(bool p_enabled);

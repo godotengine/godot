@@ -187,7 +187,7 @@ Error StreamPeerGZIP::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_re
 	return OK;
 }
 
-int StreamPeerGZIP::get_available_bytes() const {
+uint32_t StreamPeerGZIP::get_available_bytes() const {
 	return rb.data_left();
 }
 

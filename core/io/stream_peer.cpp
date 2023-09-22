@@ -522,7 +522,7 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 	return OK;
 }
 
-int StreamPeerBuffer::get_available_bytes() const {
+uint32_t StreamPeerBuffer::get_available_bytes() const {
 	return data.size() - pointer;
 }
 

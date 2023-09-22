@@ -68,7 +68,7 @@ public:
 	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
 	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
-	virtual int get_available_bytes() const;
+	virtual uint32_t get_available_bytes() const;
 
 	static void initialize_tls();
 	static void finalize_tls();

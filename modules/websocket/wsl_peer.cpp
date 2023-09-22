@@ -276,7 +276,7 @@ Error WSLPeer::_do_server_handshake() {
 		return OK;
 	}
 
-	int left = handshake_buffer->get_available_bytes();
+	uint32_t left = handshake_buffer->get_available_bytes();
 	if (left) {
 		Vector<uint8_t> data = handshake_buffer->get_data_array();
 		int pos = handshake_buffer->get_position();
@@ -351,7 +351,7 @@ void WSLPeer::_do_client_handshake() {
 
 	// Do websocket handshake.
 	if (pending_request) {
-		int left = handshake_buffer->get_available_bytes();
+		uint32_t left = handshake_buffer->get_available_bytes();
 		int pos = handshake_buffer->get_position();
 		const Vector<uint8_t> data = handshake_buffer->get_data_array();
 		int sent = 0;
@@ -371,7 +371,7 @@ void WSLPeer::_do_client_handshake() {
 	} else {
 		int read = 0;
 		while (true) {
-			int left = handshake_buffer->get_available_bytes();
+			uint32_t left = handshake_buffer->get_available_bytes();
 			int pos = handshake_buffer->get_position();
 			if (left == 0) {
 				// Header is too big

@@ -259,7 +259,7 @@ void StreamPeerMbedTLS::poll() {
 	}
 }
 
-int StreamPeerMbedTLS::get_available_bytes() const {
+uint32_t StreamPeerMbedTLS::get_available_bytes() const {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, 0);
 
 	return mbedtls_ssl_get_bytes_avail(&(tls_ctx->tls));

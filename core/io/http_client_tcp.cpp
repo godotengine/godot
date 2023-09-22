@@ -438,8 +438,8 @@ Error HTTPClientTCP::poll() {
 			return OK;
 		} break;
 		case STATUS_REQUESTING: {
-			if (request_buffer->get_available_bytes()) {
-				int avail = request_buffer->get_available_bytes();
+			uint32_t avail = request_buffer->get_available_bytes();
+			if (avail) {
 				int pos = request_buffer->get_position();
 				const Vector<uint8_t> data = request_buffer->get_data_array();
 				int wrote = 0;
