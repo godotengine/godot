@@ -441,7 +441,7 @@ void RayCast3D::_bind_methods() {
 int RayCast3D::get_debug_shape_thickness() const {
 	return debug_shape_thickness;
 }
-//updates the new target posistion based on the global scale and distances
+//updates the new target position based on the global scale and distances
 Vector3 RayCast3D::_update_new_target_position() {
 	double distance_from_collision_point_to_origin = (1 / get_global_transform().basis.get_scale_abs().x) * collision_point.distance_to(get_global_position());
 	double scale_of_distance = (distance_from_collision_point_to_origin / Vector3(target_position).distance_to(Vector3(0, 0, 0)));
