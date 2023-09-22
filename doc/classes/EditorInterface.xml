@@ -116,6 +116,12 @@
 				[b]Note:[/b] When creating custom editor UI, prefer accessing theme items directly from your GUI nodes using the [code]get_theme_*[/code] methods.
 			</description>
 		</method>
+		<method name="get_editor_translation" qualifiers="const">
+			<return type="Translation" />
+			<description>
+				Returns the editor's [Translation]. Returns null if there is no [Translation] for current locale.
+			</description>
+		</method>
 		<method name="get_file_system_dock" qualifiers="const">
 			<return type="FileSystemDock" />
 			<description>

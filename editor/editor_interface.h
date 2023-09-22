@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
+#include "core/string/translation.h"
 
 class Control;
 class EditorCommandPalette;
@@ -79,6 +80,7 @@ public:
 	EditorResourcePreview *get_resource_previewer() const;
 	EditorSelection *get_selection() const;
 	Ref<EditorSettings> get_editor_settings() const;
+	Ref<Translation> get_editor_translation() const;
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
 

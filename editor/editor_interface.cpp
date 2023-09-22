@@ -82,6 +82,10 @@ Ref<EditorSettings> EditorInterface::get_editor_settings() const {
 	return EditorSettings::get_singleton();
 }
 
+Ref<Translation> EditorInterface::get_editor_translation() const {
+	return TranslationServer::get_singleton()->get_tool_translation();
+}
+
 TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size) {
 	Vector<Ref<Mesh>> meshes;
 
@@ -402,6 +406,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
+	ClassDB::bind_method(D_METHOD("get_editor_translation"), &EditorInterface::get_editor_translation);
 
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 
