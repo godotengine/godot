@@ -28,8 +28,11 @@
 		<method name="set_trans">
 			<return type="MethodTweener" />
 			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
+			<param index="1" name="param1" type="float" default="inf" />
+			<param index="2" name="param2" type="float" default="inf" />
 			<description>
 				Sets the type of used transition from [enum Tween.TransitionType]. If not set, the default transition is used from the [Tween] that contains this Tweener.
+				[param param1] and [param param2] are control parameters of the transition. They are used only in specific transitions, check [enum Tween.TransitionType] for details.
 			</description>
 		</method>
 	</methods>
