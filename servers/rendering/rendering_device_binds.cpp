@@ -30,6 +30,8 @@
 
 #include "rendering_device_binds.h"
 
+#include "shader_include_db.h"
+
 Error RDShaderFile::parse_versions_from_text(const String &p_text, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
 	ERR_FAIL_NULL_V_MSG(
 			RenderingDevice::get_singleton(),
@@ -144,11 +146,17 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 							break;
 						}
 						include = include.substr(1, include.length() - 2).strip_edges();
-						String include_text = p_include_func(include, p_include_func_userdata);
-						if (!include_text.is_empty()) {
-							stage_code[stage] += "\n" + include_text + "\n";
+
+						String include_code = ShaderIncludeDB::get_built_in_include_file(include);
+						if (!include_code.is_empty()) {
+							stage_code[stage] += "\n" + include_code + "\n";
 						} else {
-							base_error = "#include failed for file '" + include + "'";
+							String include_text = p_include_func(include, p_include_func_userdata);
+							if (!include_text.is_empty()) {
+								stage_code[stage] += "\n" + include_text + "\n";
+							} else {
+								base_error = "#include failed for file '" + include + "'.";
+							}
 						}
 					} else {
 						base_error = "#include used, but no include function provided.";
