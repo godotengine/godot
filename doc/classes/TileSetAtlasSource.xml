@@ -284,7 +284,10 @@
 		<constant name="TILE_ANIMATION_MODE_RANDOM_START_TIMES" value="1" enum="TileAnimationMode">
 			Tile animations start at random times, looking varied.
 		</constant>
-		<constant name="TILE_ANIMATION_MODE_MAX" value="2" enum="TileAnimationMode">
+		<constant name="TILE_ANIMATION_MODE_EXPLICIT_START_FRAME" value="2" enum="TileAnimationMode">
+			Tile animations start at the explicitly selected start frame.
+		</constant>
+		<constant name="TILE_ANIMATION_MODE_MAX" value="3" enum="TileAnimationMode">
 			Represents the size of the [enum TileAnimationMode] enum.
 		</constant>
 		<constant name="TRANSFORM_FLIP_H" value="4096">

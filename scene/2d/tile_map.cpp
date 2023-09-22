@@ -358,19 +358,27 @@ void TileMapLayer::_rendering_update() {
 						ci = prev_ci;
 					}
 
+					// Calculate animation offset using animation mode.
+					real_t animation_offset = 0.0;
 					const Vector2 local_tile_pos = tile_map_node->map_to_local(cell_data.coords);
-
-					// Random animation offset.
-					real_t random_animation_offset = 0.0;
-					if (atlas_source->get_tile_animation_mode(cell_data.cell.get_atlas_coords()) != TileSetAtlasSource::TILE_ANIMATION_MODE_DEFAULT) {
+					const Vector2 atlas_coords = cell_data.cell.get_atlas_coords();
+					const TileSetAtlasSource::TileAnimationMode animation_mode = atlas_source->get_tile_animation_mode(atlas_coords);
+					if (animation_mode == TileSetAtlasSource::TILE_ANIMATION_MODE_RANDOM_START_TIMES) {
 						Array to_hash;
-						to_hash.push_back(local_tile_pos);
-						to_hash.push_back(get_instance_id()); // Use instance id as a random hash
-						random_animation_offset = RandomPCG(to_hash.hash()).randf();
+						to_hash.append(local_tile_pos);
+						to_hash.append(get_instance_id());
+						animation_offset = RandomPCG(to_hash.hash()).randf();
+					} else if (animation_mode == TileSetAtlasSource::TILE_ANIMATION_MODE_EXPLICIT_START_FRAME) {
+						real_t speed = atlas_source->get_tile_animation_speed(atlas_coords);
+						real_t explicit_start_offset = 0.0;
+						for (int frame = 0; frame <= (int)explicit_start_frames[cell_data.coords]; frame++) {
+							explicit_start_offset += atlas_source->get_tile_animation_frame_duration(atlas_coords, frame) / speed;
+						}
+						animation_offset += explicit_start_offset;
 					}
 
 					// Drawing the tile in the canvas item.
-					tile_map_node->draw_tile(ci, local_tile_pos - ci_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, tile_map_node->get_self_modulate(), tile_data, random_animation_offset);
+					tile_map_node->draw_tile(ci, local_tile_pos - ci_position, tile_set, cell_data.cell.source_id, atlas_coords, cell_data.cell.alternative_tile, -1, tile_map_node->get_self_modulate(), tile_data, animation_offset);
 				}
 			} else {
 				// Free the quadrant.
@@ -1991,7 +1999,7 @@ void TileMapLayer::internal_update() {
 	dirty.cell_list.clear();
 }
 
-void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
+void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile, int p_explicit_start_frame) {
 	// Set the current cell tile (using integer position).
 	Vector2i pk(p_coords);
 	HashMap<Vector2i, CellData>::Iterator E = tile_map.find(pk);
@@ -2017,9 +2025,13 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 		new_cell_data.coords = pk;
 		E = tile_map.insert(pk, new_cell_data);
 	} else {
-		if (E->value.cell.source_id == source_id && E->value.cell.get_atlas_coords() == atlas_coords && E->value.cell.alternative_tile == alternative_tile) {
+		if (E->value.cell.source_id == source_id && E->value.cell.get_atlas_coords() == atlas_coords && E->value.cell.alternative_tile == alternative_tile && (int)explicit_start_frames[pk] == p_explicit_start_frame) {
 			return; // Nothing changed.
 		}
+	}
+
+	if (p_explicit_start_frame != -1) {
+		explicit_start_frames[pk] = p_explicit_start_frame;
 	}
 
 	TileMapCell &c = E->value.cell;
@@ -2037,7 +2049,7 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 }
 
 void TileMapLayer::erase_cell(const Vector2i &p_coords) {
-	set_cell(p_coords, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	set_cell(p_coords, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE, 0);
 }
 
 int TileMapLayer::get_cell_source_id(const Vector2i &p_coords, bool p_use_proxies) const {
@@ -2406,6 +2418,18 @@ RID TileMapLayer::get_navigation_map() const {
 		return navigation_map;
 	}
 	return RID();
+}
+
+void TileMapLayer::set_explicit_start_frames(const Dictionary &p_explicit_start_frame) {
+	explicit_start_frames = p_explicit_start_frame;
+
+	dirty.flags[DIRTY_FLAGS_LAYER_EXPLICIT_START_FRAMES] = true;
+	tile_map_node->queue_internal_update();
+	tile_map_node->emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+Dictionary TileMapLayer::get_explicit_start_frames() const {
+	return explicit_start_frames;
 }
 
 void TileMapLayer::fix_invalid_tiles() {
@@ -3263,6 +3287,14 @@ RID TileMap::get_layer_navigation_map(int p_layer) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, RID(), get_navigation_map);
 }
 
+void TileMap::set_layer_explicit_start_frames(int p_layer, const Dictionary &p_explicit_start_frames) {
+	TILEMAP_CALL_FOR_LAYER(p_layer, set_explicit_start_frames, p_explicit_start_frames);
+}
+
+Dictionary TileMap::get_layer_explicit_start_frames(int p_layer) const {
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, Dictionary(), get_explicit_start_frames);
+}
+
 void TileMap::set_collision_animatable(bool p_enabled) {
 	if (collision_animatable == p_enabled) {
 		return;
@@ -3322,8 +3354,8 @@ void TileMap::set_y_sort_enabled(bool p_enable) {
 	update_configuration_warnings();
 }
 
-void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
-	TILEMAP_CALL_FOR_LAYER(p_layer, set_cell, p_coords, p_source_id, p_atlas_coords, p_alternative_tile);
+void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile, int p_explicit_start_frame) {
+	TILEMAP_CALL_FOR_LAYER(p_layer, set_cell, p_coords, p_source_id, p_atlas_coords, p_alternative_tile, p_explicit_start_frame);
 }
 
 void TileMap::erase_cell(int p_layer, const Vector2i &p_coords) {
@@ -3573,6 +3605,9 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (components[1] == "z_index") {
 			set_layer_z_index(index, p_value);
 			return true;
+		} else if (components[1] == "explicit_start_frames") {
+			set_layer_explicit_start_frames(index, p_value);
+			return true;
 		} else if (components[1] == "tile_data") {
 			layers[index]->set_tile_data(format, p_value);
 			emit_signal(CoreStringNames::get_singleton()->changed);
@@ -3613,6 +3648,9 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "z_index") {
 			r_ret = get_layer_z_index(index);
 			return true;
+		} else if (components[1] == "explicit_start_frames") {
+			r_ret = get_layer_explicit_start_frames(index);
+			return true;
 		} else if (components[1] == "tile_data") {
 			r_ret = layers[index]->get_tile_data();
 			return true;
@@ -3633,6 +3671,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/y_sort_enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/y_sort_origin", i), PROPERTY_HINT_NONE, "suffix:px"));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/z_index", i), PROPERTY_HINT_NONE));
+		p_list->push_back(PropertyInfo(Variant::DICTIONARY, vformat("layer_%d/explicit_start_frames", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("layer_%d/tile_data", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 }
@@ -4559,7 +4598,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_visibility_mode", "navigation_visibility_mode"), &TileMap::set_navigation_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_navigation_visibility_mode"), &TileMap::get_navigation_visibility_mode);
 
-	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile", "explicit_start_frame"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("erase_cell", "layer", "coords"), &TileMap::erase_cell);
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "layer", "coords", "use_proxies"), &TileMap::get_cell_source_id, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "layer", "coords", "use_proxies"), &TileMap::get_cell_atlas_coords, DEFVAL(false));

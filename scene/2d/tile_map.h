@@ -237,6 +237,7 @@ public:
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
 		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE,
+		DIRTY_FLAGS_LAYER_EXPLICIT_START_FRAMES,
 		DIRTY_FLAGS_TILE_MAP_IN_TREE,
 		DIRTY_FLAGS_TILE_MAP_IN_CANVAS,
 		DIRTY_FLAGS_TILE_MAP_VISIBILITY,
@@ -345,6 +346,9 @@ private:
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
+	// Explicit start frames.
+	Dictionary explicit_start_frames;
+
 public:
 	// TileMap node.
 	void set_tile_map(TileMap *p_tile_map);
@@ -372,7 +376,7 @@ public:
 	// --- Exposed in TileMap ---
 
 	// Cells manipulation.
-	void set_cell(const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
+	void set_cell(const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0, int p_explicit_start_frame = -1);
 	void erase_cell(const Vector2i &p_coords);
 
 	int get_cell_source_id(const Vector2i &p_coords, bool p_use_proxies = false) const;
@@ -409,6 +413,8 @@ public:
 	int get_z_index() const;
 	void set_navigation_map(RID p_map);
 	RID get_navigation_map() const;
+	void set_explicit_start_frames(const Dictionary &p_explicit_start_frames);
+	Dictionary get_explicit_start_frames() const;
 
 	// Fixing and clearing methods.
 	void fix_invalid_tiles();
@@ -516,9 +522,10 @@ public:
 	int get_layer_y_sort_origin(int p_layer) const;
 	void set_layer_z_index(int p_layer, int p_z_index);
 	int get_layer_z_index(int p_layer) const;
-
 	void set_layer_navigation_map(int p_layer, RID p_map);
 	RID get_layer_navigation_map(int p_layer) const;
+	void set_layer_explicit_start_frames(int p_layer, const Dictionary &p_explicit_start_frames);
+	Dictionary get_layer_explicit_start_frames(int p_layer) const;
 
 	void set_selected_layer(int p_layer_id); // For editor use.
 	int get_selected_layer() const;
@@ -534,7 +541,7 @@ public:
 	VisibilityMode get_navigation_visibility_mode();
 
 	// Cells accessors.
-	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
+	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0, int p_explicit_start_frame = -1);
 	void erase_cell(int p_layer, const Vector2i &p_coords);
 	int get_cell_source_id(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;

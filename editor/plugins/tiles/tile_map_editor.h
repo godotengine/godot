@@ -168,6 +168,8 @@ private:
 
 	void patterns_item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 
+	int selected_explicit_start_frame = 0;
+
 	///// Bottom panel common ////
 	void _tab_changed();
 
