@@ -252,8 +252,8 @@ class EditorPlugins {
 		MAX_CREATE_FUNCS = 128
 	};
 
-	static EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];
-	static int creation_func_count;
+	static inline EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];
+	static inline int creation_func_count = 0;
 
 	template <class T>
 	static EditorPlugin *creator() {

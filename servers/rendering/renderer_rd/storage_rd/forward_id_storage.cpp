@@ -32,8 +32,6 @@
 
 using namespace RendererRD;
 
-ForwardIDStorage *ForwardIDStorage::singleton = nullptr;
-
 ForwardIDStorage::ForwardIDStorage() {
 	singleton = this;
 }

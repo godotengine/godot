@@ -106,7 +106,7 @@ public:
 	};
 
 private:
-	static MaterialStorage *singleton;
+	static inline MaterialStorage *singleton = nullptr;
 
 	/* Samplers */
 

@@ -169,7 +169,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	Timer *update_timer = nullptr;
 	void _emit_current_profile_changed();
 
-	static EditorFeatureProfileManager *singleton;
+	static inline EditorFeatureProfileManager *singleton = nullptr;
 
 protected:
 	static void _bind_methods();

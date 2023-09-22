@@ -38,7 +38,7 @@ namespace RendererSceneRenderImplementation {
 
 class SceneShaderForwardMobile {
 private:
-	static SceneShaderForwardMobile *singleton;
+	static inline SceneShaderForwardMobile *singleton = nullptr;
 
 public:
 	enum ShaderVersion {

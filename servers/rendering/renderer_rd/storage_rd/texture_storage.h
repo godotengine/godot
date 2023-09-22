@@ -80,7 +80,7 @@ private:
 	friend class LightStorage;
 	friend class MaterialStorage;
 
-	static TextureStorage *singleton;
+	static inline TextureStorage *singleton = nullptr;
 
 	RID default_rd_textures[DEFAULT_RD_TEXTURE_MAX];
 

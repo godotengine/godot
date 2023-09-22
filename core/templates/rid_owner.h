@@ -44,7 +44,7 @@
 #include <typeinfo>
 
 class RID_AllocBase {
-	static SafeNumeric<uint64_t> base_id;
+	static inline SafeNumeric<uint64_t> base_id{ 1 };
 
 protected:
 	static RID _make_from_id(uint64_t p_id) {

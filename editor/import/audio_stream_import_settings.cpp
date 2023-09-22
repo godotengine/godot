@@ -35,8 +35,6 @@
 #include "editor/editor_string_names.h"
 #include "scene/gui/check_box.h"
 
-AudioStreamImportSettings *AudioStreamImportSettings::singleton = nullptr;
-
 void AudioStreamImportSettings::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {

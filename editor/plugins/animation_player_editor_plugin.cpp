@@ -1662,8 +1662,6 @@ void AnimationPlayerEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_selected", PropertyInfo(Variant::STRING, "name")));
 }
 
-AnimationPlayerEditor *AnimationPlayerEditor::singleton = nullptr;
-
 AnimationPlayer *AnimationPlayerEditor::get_player() const {
 	return player;
 }

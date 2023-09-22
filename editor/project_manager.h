@@ -328,7 +328,7 @@ class ProjectManager : public Control {
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
 	void _build_icon_type_cache(Ref<Theme> p_theme);
 
-	static ProjectManager *singleton;
+	static inline ProjectManager *singleton = nullptr;
 
 	Panel *background_panel = nullptr;
 	TabContainer *tabs = nullptr;

@@ -34,8 +34,6 @@
 #include "core/math/transform_3d.h"
 #include "servers/navigation_server_3d.h"
 
-NavigationServer2D *NavigationServer2D::singleton = nullptr;
-
 #define FORWARD_0(FUNC_NAME)                                     \
 	NavigationServer2D::FUNC_NAME() {                            \
 		return NavigationServer3D::get_singleton()->FUNC_NAME(); \

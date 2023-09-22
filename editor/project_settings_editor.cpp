@@ -41,8 +41,6 @@
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
-ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
-
 void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
 	localization_editor->connect_filesystem_dock_signals(p_fs_dock);
 }

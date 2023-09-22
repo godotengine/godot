@@ -940,8 +940,6 @@ void AnimationNodeBlendTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_update_filters", &AnimationNodeBlendTreeEditor::_update_filters);
 }
 
-AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = nullptr;
-
 // AnimationNode's "node_changed" signal means almost update_input.
 void AnimationNodeBlendTreeEditor::_node_changed(const StringName &p_node_name) {
 	// TODO:

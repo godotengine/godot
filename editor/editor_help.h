@@ -112,7 +112,7 @@ class EditorHelp : public VBoxContainer {
 
 	RichTextLabel *class_desc = nullptr;
 	HSplitContainer *h_split = nullptr;
-	static DocTools *doc;
+	static inline DocTools *doc = nullptr;
 
 	ConfirmationDialog *search_dialog = nullptr;
 	LineEdit *search = nullptr;
@@ -187,7 +187,7 @@ class EditorHelp : public VBoxContainer {
 	String _fix_constant(const String &p_constant) const;
 	void _toggle_scripts_pressed();
 
-	static Thread thread;
+	static inline Thread thread;
 
 	static void _wait_for_thread();
 	static void _load_doc_thread(void *p_udata);

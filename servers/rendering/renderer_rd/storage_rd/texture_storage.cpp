@@ -80,8 +80,6 @@ void TextureStorage::Texture::cleanup() {
 ///////////////////////////////////////////////////////////////////////////
 // TextureStorage
 
-TextureStorage *TextureStorage::singleton = nullptr;
-
 TextureStorage *TextureStorage::get_singleton() {
 	return singleton;
 }

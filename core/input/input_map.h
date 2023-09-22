@@ -46,7 +46,7 @@ public:
 	/**
 	 * A special value used to signify that a given Action can be triggered by any device
 	 */
-	static int ALL_DEVICES;
+	static inline int ALL_DEVICES = -1;
 
 	struct Action {
 		int id;
@@ -55,7 +55,7 @@ public:
 	};
 
 private:
-	static InputMap *singleton;
+	static inline InputMap *singleton = nullptr;
 
 	mutable HashMap<StringName, Action> input_map;
 	HashMap<String, List<Ref<InputEvent>>> default_builtin_cache;

@@ -99,7 +99,7 @@ protected:
 	double delta = 0.0;
 
 	static uint64_t frame;
-	static RendererCompositorRD *singleton;
+	static inline RendererCompositorRD *singleton = nullptr;
 
 public:
 	RendererUtilities *get_utilities() { return utilities; };

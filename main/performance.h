@@ -43,7 +43,7 @@ class TypedArray;
 class Performance : public Object {
 	GDCLASS(Performance, Object);
 
-	static Performance *singleton;
+	static inline Performance *singleton = nullptr;
 	static void _bind_methods();
 
 	int _get_node_count() const;

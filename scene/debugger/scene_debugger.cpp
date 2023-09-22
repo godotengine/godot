@@ -39,8 +39,6 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
-SceneDebugger *SceneDebugger::singleton = nullptr;
-
 SceneDebugger::SceneDebugger() {
 	singleton = this;
 #ifdef DEBUG_ENABLED

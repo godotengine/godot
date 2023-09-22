@@ -37,8 +37,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 
-GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = nullptr;
-
 Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 	int read = 0;
 	// Read headers

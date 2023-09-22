@@ -37,7 +37,7 @@
 
 class RendererSceneOcclusionCull {
 protected:
-	static RendererSceneOcclusionCull *singleton;
+	static inline RendererSceneOcclusionCull *singleton = nullptr;
 
 public:
 	class HZBuffer {

@@ -1796,8 +1796,6 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 	return err;
 }
 
-ResourceFormatLoaderText *ResourceFormatLoaderText::singleton = nullptr;
-
 Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path, const String &p_dst_path) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_src_path, FileAccess::READ, &err);
@@ -2411,7 +2409,6 @@ void ResourceFormatSaverText::get_recognized_extensions(const Ref<Resource> &p_r
 	}
 }
 
-ResourceFormatSaverText *ResourceFormatSaverText::singleton = nullptr;
 ResourceFormatSaverText::ResourceFormatSaverText() {
 	singleton = this;
 }

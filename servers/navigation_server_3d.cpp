@@ -31,8 +31,6 @@
 #include "navigation_server_3d.h"
 #include "core/config/project_settings.h"
 
-NavigationServer3D *NavigationServer3D::singleton = nullptr;
-
 void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_maps"), &NavigationServer3D::get_maps);
 

@@ -68,13 +68,13 @@ private:
 	_IP_ResolverPrivate *resolver = nullptr;
 
 protected:
-	static IP *singleton;
+	static inline IP *singleton = nullptr;
 	static void _bind_methods();
 
 	PackedStringArray _get_local_addresses() const;
 	TypedArray<Dictionary> _get_local_interfaces() const;
 
-	static IP *(*_create)();
+	static inline IP *(*_create)();
 
 public:
 	struct Interface_Info {

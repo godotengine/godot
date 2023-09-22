@@ -34,8 +34,6 @@
 #include "core/string/print_string.h"
 #include "core/variant/typed_array.h"
 
-PhysicsServer2D *PhysicsServer2D::singleton = nullptr;
-
 void PhysicsDirectBodyState2D::integrate_forces() {
 	real_t step = get_step();
 	Vector2 lv = get_linear_velocity();

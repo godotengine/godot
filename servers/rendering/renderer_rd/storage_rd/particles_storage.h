@@ -46,7 +46,7 @@ namespace RendererRD {
 
 class ParticlesStorage : public RendererParticlesStorage {
 private:
-	static ParticlesStorage *singleton;
+	static inline ParticlesStorage *singleton = nullptr;
 
 	/* EFFECTS */
 	SortEffects *sort_effects = nullptr;

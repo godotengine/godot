@@ -1091,8 +1091,6 @@ void MaterialStorage::MaterialData::set_as_used() {
 ///////////////////////////////////////////////////////////////////////////
 // MaterialStorage
 
-MaterialStorage *MaterialStorage::singleton = nullptr;
-
 MaterialStorage *MaterialStorage::get_singleton() {
 	return singleton;
 }

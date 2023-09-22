@@ -201,7 +201,7 @@ private:
 	HashMap<NodePath, Ref<MultiplayerAPI>> custom_multiplayers;
 	bool multiplayer_poll = true;
 
-	static SceneTree *singleton;
+	static inline SceneTree *singleton = nullptr;
 	friend class Node;
 
 	void tree_changed();

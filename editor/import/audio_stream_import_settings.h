@@ -81,7 +81,7 @@ class AudioStreamImportSettings : public ConfirmationDialog {
 
 	void _audio_changed();
 
-	static AudioStreamImportSettings *singleton;
+	static inline AudioStreamImportSettings *singleton;
 
 	void _settings_changed();
 

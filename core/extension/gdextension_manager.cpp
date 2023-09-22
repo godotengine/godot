@@ -166,8 +166,6 @@ void GDExtensionManager::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOAD_STATUS_NEEDS_RESTART);
 }
 
-GDExtensionManager *GDExtensionManager::singleton = nullptr;
-
 GDExtensionManager::GDExtensionManager() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;

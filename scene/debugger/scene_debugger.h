@@ -43,7 +43,7 @@ class Node;
 class SceneDebugger {
 public:
 private:
-	static SceneDebugger *singleton;
+	static inline SceneDebugger *singleton = nullptr;
 
 	SceneDebugger();
 

@@ -95,8 +95,6 @@ void EditorResourcePreviewGenerator::_bind_methods() {
 EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
 }
 
-EditorResourcePreview *EditorResourcePreview::singleton = nullptr;
-
 void EditorResourcePreview::_thread_func(void *ud) {
 	EditorResourcePreview *erp = (EditorResourcePreview *)ud;
 	erp->_thread();

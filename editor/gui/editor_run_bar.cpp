@@ -42,8 +42,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/panel_container.h"
 
-EditorRunBar *EditorRunBar::singleton = nullptr;
-
 void EditorRunBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {

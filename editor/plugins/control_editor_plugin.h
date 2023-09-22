@@ -231,7 +231,7 @@ class ControlEditorToolbar : public HBoxContainer {
 protected:
 	void _notification(int p_notification);
 
-	static ControlEditorToolbar *singleton;
+	static inline ControlEditorToolbar *singleton = nullptr;
 
 public:
 	bool is_anchors_mode_enabled() { return anchors_mode; };

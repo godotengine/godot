@@ -137,7 +137,7 @@ public:
 
 class ResourceFormatLoaderText : public ResourceFormatLoader {
 public:
-	static ResourceFormatLoaderText *singleton;
+	static inline ResourceFormatLoaderText *singleton = nullptr;
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -197,7 +197,7 @@ public:
 
 class ResourceFormatSaverText : public ResourceFormatSaver {
 public:
-	static ResourceFormatSaverText *singleton;
+	static inline ResourceFormatSaverText *singleton = nullptr;
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;

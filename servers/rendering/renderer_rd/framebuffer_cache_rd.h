@@ -152,7 +152,7 @@ class FramebufferCacheRD : public Object {
 		_create_args(textures, args...);
 	}
 
-	static FramebufferCacheRD *singleton;
+	static inline FramebufferCacheRD *singleton = nullptr;
 
 	uint32_t cache_instances_used = 0;
 

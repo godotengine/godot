@@ -61,8 +61,6 @@ void NodeDock::_notification(int p_what) {
 	}
 }
 
-NodeDock *NodeDock::singleton = nullptr;
-
 void NodeDock::update_lists() {
 	connections->update_tree();
 }

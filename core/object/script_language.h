@@ -50,11 +50,11 @@ class ScriptServer {
 		MAX_LANGUAGES = 16
 	};
 
-	static ScriptLanguage *_languages[MAX_LANGUAGES];
-	static int _language_count;
-	static bool scripting_enabled;
-	static bool reload_scripts_on_save;
-	static SafeFlag languages_finished; // Used until GH-76581 is fixed properly.
+	static inline ScriptLanguage *_languages[MAX_LANGUAGES];
+	static inline int _language_count = 0;
+	static inline bool scripting_enabled = true;
+	static inline bool reload_scripts_on_save = false;
+	static inline SafeFlag languages_finished{}; // Used until GH-76581 is fixed properly.
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -62,12 +62,12 @@ class ScriptServer {
 		StringName base;
 	};
 
-	static HashMap<StringName, GlobalScriptClass> global_classes;
-	static HashMap<StringName, Vector<StringName>> inheriters_cache;
-	static bool inheriters_cache_dirty;
+	static inline HashMap<StringName, GlobalScriptClass> global_classes;
+	static inline HashMap<StringName, Vector<StringName>> inheriters_cache;
+	static inline bool inheriters_cache_dirty = true;
 
 public:
-	static ScriptEditRequestFunction edit_request_func;
+	static inline ScriptEditRequestFunction edit_request_func = nullptr;
 
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
@@ -175,7 +175,7 @@ public:
 };
 
 class ScriptCodeCompletionCache {
-	static ScriptCodeCompletionCache *singleton;
+	static inline ScriptCodeCompletionCache *singleton = nullptr;
 
 public:
 	static ScriptCodeCompletionCache *get_singleton() { return singleton; }

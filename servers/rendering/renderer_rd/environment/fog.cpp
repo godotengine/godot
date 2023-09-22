@@ -37,8 +37,6 @@
 
 using namespace RendererRD;
 
-Fog *Fog::singleton = nullptr;
-
 Fog::Fog() {
 	singleton = this;
 }

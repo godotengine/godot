@@ -44,10 +44,10 @@ class ScriptDebugger {
 
 	HashMap<int, HashSet<StringName>> breakpoints;
 
-	static thread_local int lines_left;
-	static thread_local int depth;
-	static thread_local ScriptLanguage *break_lang;
-	static thread_local Vector<StackInfo> error_stack_info;
+	static inline thread_local int lines_left = -1;
+	static inline thread_local int depth = -1;
+	static inline thread_local ScriptLanguage *break_lang = nullptr;
+	static inline thread_local Vector<StackInfo> error_stack_info;
 
 public:
 	void set_lines_left(int p_left);

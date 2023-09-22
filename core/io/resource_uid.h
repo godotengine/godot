@@ -54,7 +54,7 @@ private:
 	};
 
 	HashMap<ID, Cache> unique_ids; //unique IDs and utf8 paths (less memory used)
-	static ResourceUID *singleton;
+	static inline ResourceUID *singleton = nullptr;
 
 	uint32_t cache_entries = 0;
 	bool changed = false;

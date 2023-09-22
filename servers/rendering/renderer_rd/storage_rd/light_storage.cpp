@@ -35,8 +35,6 @@
 
 using namespace RendererRD;
 
-LightStorage *LightStorage::singleton = nullptr;
-
 LightStorage *LightStorage::get_singleton() {
 	return singleton;
 }

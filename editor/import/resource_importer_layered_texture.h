@@ -84,7 +84,7 @@ private:
 	static const char *compression_formats[];
 
 protected:
-	static ResourceImporterLayeredTexture *singleton;
+	static inline ResourceImporterLayeredTexture *singleton = nullptr;
 
 public:
 	void _check_compress_ctex(const String &p_source_file, Ref<LayeredTextureImport> r_texture_import);

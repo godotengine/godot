@@ -30,8 +30,6 @@
 
 #include "editor_string_names.h"
 
-EditorStringNames *EditorStringNames::singleton = nullptr;
-
 EditorStringNames::EditorStringNames() {
 	Editor = StaticCString::create("Editor");
 	EditorFonts = StaticCString::create("EditorFonts");

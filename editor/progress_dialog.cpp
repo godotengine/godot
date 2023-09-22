@@ -132,8 +132,6 @@ void BackgroundProgress::end_task(const String &p_task) {
 
 ////////////////////////////////////////////////
 
-ProgressDialog *ProgressDialog::singleton = nullptr;
-
 void ProgressDialog::_popup() {
 	Size2 ms = main->get_combined_minimum_size();
 	ms.width = MAX(500 * EDSCALE, ms.width);

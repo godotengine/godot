@@ -30,7 +30,6 @@
 
 #include "camera_attributes_storage.h"
 
-RendererCameraAttributes *RendererCameraAttributes::singleton = nullptr;
 uint64_t RendererCameraAttributes::auto_exposure_counter = 2;
 
 RendererCameraAttributes::RendererCameraAttributes() {

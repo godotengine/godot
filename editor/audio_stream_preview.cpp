@@ -222,8 +222,6 @@ void AudioStreamPreviewGenerator::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
 }
 
-AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = nullptr;
-
 void AudioStreamPreviewGenerator::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PROCESS: {

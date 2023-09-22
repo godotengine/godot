@@ -33,8 +33,6 @@
 #include "xr/xr_interface.h"
 #include "xr/xr_positional_tracker.h"
 
-XRServer::XRMode XRServer::xr_mode = XRMODE_DEFAULT;
-
 XRServer::XRMode XRServer::get_xr_mode() {
 	return xr_mode;
 }
@@ -42,8 +40,6 @@ XRServer::XRMode XRServer::get_xr_mode() {
 void XRServer::set_xr_mode(XRServer::XRMode p_mode) {
 	xr_mode = p_mode;
 }
-
-XRServer *XRServer::singleton = nullptr;
 
 XRServer *XRServer::get_singleton() {
 	return singleton;

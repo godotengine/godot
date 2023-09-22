@@ -33,8 +33,6 @@
 #include "core/string/translation.h"
 #include "editor_settings.h"
 
-EditorPropertyNameProcessor *EditorPropertyNameProcessor::singleton = nullptr;
-
 EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_default_inspector_style() {
 	if (!EditorSettings::get_singleton()) {
 		return STYLE_CAPITALIZED;

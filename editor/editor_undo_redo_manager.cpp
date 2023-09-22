@@ -39,8 +39,6 @@
 #include "editor/editor_node.h"
 #include "scene/main/node.h"
 
-EditorUndoRedoManager *EditorUndoRedoManager::singleton = nullptr;
-
 EditorUndoRedoManager::History &EditorUndoRedoManager::get_or_create_history(int p_idx) {
 	if (!history_map.has(p_idx)) {
 		History history;

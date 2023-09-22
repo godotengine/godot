@@ -134,7 +134,7 @@ private:
 	bool _try_promote_low_priority_task();
 	void _prevent_low_prio_saturation_deadlock();
 
-	static WorkerThreadPool *singleton;
+	static inline WorkerThreadPool *singleton = nullptr;
 
 	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description);
 	GroupID _add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description);

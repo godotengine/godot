@@ -84,7 +84,6 @@
 #define OPENXR_LOADER_NAME "libopenxr_loader.so"
 #endif
 
-OpenXRAPI *OpenXRAPI::singleton = nullptr;
 Vector<OpenXRExtensionWrapper *> OpenXRAPI::registered_extension_wrappers;
 
 bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {

@@ -48,7 +48,7 @@ protected:
 	struct GeometryInstanceSurfaceDataCache;
 
 private:
-	static RenderForwardMobile *singleton;
+	static inline RenderForwardMobile *singleton = nullptr;
 
 	/* Scene Shader */
 

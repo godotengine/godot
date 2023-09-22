@@ -49,7 +49,6 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/tile_set.h"
 
-TilesEditorUtils *TilesEditorUtils::singleton = nullptr;
 TileMapEditorPlugin *tile_map_plugin_singleton = nullptr;
 TileSetEditorPlugin *tile_set_plugin_singleton = nullptr;
 

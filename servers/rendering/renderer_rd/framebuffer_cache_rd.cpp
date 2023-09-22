@@ -30,8 +30,6 @@
 
 #include "framebuffer_cache_rd.h"
 
-FramebufferCacheRD *FramebufferCacheRD::singleton = nullptr;
-
 void FramebufferCacheRD::_invalidate(Cache *p_cache) {
 	if (p_cache->prev) {
 		p_cache->prev->next = p_cache->next;

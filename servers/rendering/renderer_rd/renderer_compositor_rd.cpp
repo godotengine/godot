@@ -251,8 +251,6 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->free(sampler);
 }
 
-RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
-
 RendererCompositorRD::RendererCompositorRD() {
 	uniform_set_cache = memnew(UniformSetCacheRD);
 	framebuffer_cache = memnew(FramebufferCacheRD);

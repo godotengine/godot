@@ -286,7 +286,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_remove_old = true);
 
 private:
-	static SceneTreeDock *singleton;
+	static inline SceneTreeDock *singleton = nullptr;
 
 public:
 	static SceneTreeDock *get_singleton() { return singleton; }

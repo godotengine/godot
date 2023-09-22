@@ -41,8 +41,6 @@
 #include "servers/physics_server_3d.h"
 #include "servers/rendering_server.h"
 
-Performance *Performance::singleton = nullptr;
-
 void Performance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_monitor", "monitor"), &Performance::get_monitor);
 	ClassDB::bind_method(D_METHOD("add_custom_monitor", "id", "callable", "arguments"), &Performance::add_custom_monitor, DEFVAL(Array()));

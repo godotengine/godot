@@ -404,8 +404,6 @@ RendererRD::MaterialStorage::MaterialData *SceneShaderForwardMobile::_create_mat
 
 /* Scene Shader */
 
-SceneShaderForwardMobile *SceneShaderForwardMobile::singleton = nullptr;
-
 SceneShaderForwardMobile::SceneShaderForwardMobile() {
 	// there should be only one of these, contained within our RenderForwardMobile singleton.
 	singleton = this;

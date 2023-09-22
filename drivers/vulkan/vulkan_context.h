@@ -100,7 +100,7 @@ private:
 		FRAME_LAG = 2
 	};
 
-	static VulkanHooks *vulkan_hooks;
+	static inline VulkanHooks *vulkan_hooks = nullptr;
 	VkInstance inst = VK_NULL_HANDLE;
 	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props;
@@ -183,12 +183,12 @@ private:
 	int command_buffer_count = 1;
 
 	// Extensions.
-	static bool instance_extensions_initialized;
-	static HashMap<CharString, bool> requested_instance_extensions;
+	static inline bool instance_extensions_initialized = false;
+	static inline HashMap<CharString, bool> requested_instance_extensions;
 	HashSet<CharString> enabled_instance_extension_names;
 
-	static bool device_extensions_initialized;
-	static HashMap<CharString, bool> requested_device_extensions;
+	static inline bool device_extensions_initialized;
+	static inline HashMap<CharString, bool> requested_device_extensions;
 	HashSet<CharString> enabled_device_extension_names;
 	bool VK_KHR_incremental_present_enabled = true;
 	bool VK_GOOGLE_display_timing_enabled = true;

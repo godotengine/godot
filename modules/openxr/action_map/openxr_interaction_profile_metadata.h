@@ -87,7 +87,7 @@ public:
 	};
 
 private:
-	static OpenXRInteractionProfileMetadata *singleton;
+	static inline OpenXRInteractionProfileMetadata *singleton = nullptr;
 
 	HashMap<String, String> profile_renames;
 	Vector<TopLevelPath> top_level_paths;

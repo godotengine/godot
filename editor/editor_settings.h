@@ -75,7 +75,7 @@ private:
 		}
 	};
 
-	static Ref<EditorSettings> singleton;
+	static inline Ref<EditorSettings> singleton = nullptr;
 
 	HashSet<String> changed_settings;
 

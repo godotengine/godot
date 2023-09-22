@@ -651,8 +651,6 @@ void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
 	interpolation->set_disabled(read_only);
 }
 
-AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = nullptr;
-
 AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	singleton = this;
 

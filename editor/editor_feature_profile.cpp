@@ -903,8 +903,6 @@ void EditorFeatureProfileManager::set_current_profile(const String &p_profile_na
 	_emit_current_profile_changed();
 }
 
-EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = nullptr;
-
 void EditorFeatureProfileManager::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("current_feature_profile_changed"));
 }

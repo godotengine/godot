@@ -545,9 +545,6 @@ CallQueue::~CallQueue() {
 
 //////////////////////
 
-CallQueue *MessageQueue::main_singleton = nullptr;
-thread_local CallQueue *MessageQueue::thread_singleton = nullptr;
-
 void MessageQueue::set_thread_singleton_override(CallQueue *p_thread_singleton) {
 	DEV_ASSERT(p_thread_singleton); // To unset the thread singleton, don't call this with nullptr, but just memfree() it.
 #ifdef DEV_ENABLED

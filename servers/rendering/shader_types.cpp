@@ -47,8 +47,6 @@ const List<String> &ShaderTypes::get_types_list() const {
 	return shader_types_list;
 }
 
-ShaderTypes *ShaderTypes::singleton = nullptr;
-
 static ShaderLanguage::BuiltInInfo constt(ShaderLanguage::DataType p_type) {
 	return ShaderLanguage::BuiltInInfo(p_type, true);
 }

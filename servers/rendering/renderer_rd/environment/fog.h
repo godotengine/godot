@@ -47,7 +47,7 @@ namespace RendererRD {
 
 class Fog : public RendererFog {
 private:
-	static Fog *singleton;
+	static inline Fog *singleton = nullptr;
 
 	/* FOG VOLUMES */
 

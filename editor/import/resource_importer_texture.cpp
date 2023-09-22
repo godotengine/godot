@@ -787,8 +787,6 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 	return valid;
 }
 
-ResourceImporterTexture *ResourceImporterTexture::singleton = nullptr;
-
 ResourceImporterTexture::ResourceImporterTexture(bool p_singleton) {
 	// This should only be set through the EditorNode.
 	if (p_singleton) {

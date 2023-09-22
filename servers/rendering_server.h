@@ -47,7 +47,7 @@ class TypedArray;
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
 
-	static RenderingServer *singleton;
+	static inline RenderingServer *singleton = nullptr;
 
 	int mm_policy = 0;
 	bool render_loop_enabled = true;

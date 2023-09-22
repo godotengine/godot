@@ -62,7 +62,6 @@
 
 #include <Recast.h>
 
-NavMeshGenerator3D *NavMeshGenerator3D::singleton = nullptr;
 Mutex NavMeshGenerator3D::baking_navmesh_mutex;
 Mutex NavMeshGenerator3D::generator_task_mutex;
 bool NavMeshGenerator3D::use_threads = true;

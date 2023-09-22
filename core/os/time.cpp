@@ -186,8 +186,6 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	int minute = p_datetime.has(MINUTE_KEY) ? int(p_datetime[MINUTE_KEY]) : 0;                    \
 	int second = p_datetime.has(SECOND_KEY) ? int(p_datetime[SECOND_KEY]) : 0;
 
-Time *Time::singleton = nullptr;
-
 Time *Time::get_singleton() {
 	if (!singleton) {
 		memnew(Time);

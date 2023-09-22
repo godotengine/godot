@@ -60,7 +60,7 @@ public:
 	};
 
 private:
-	static MeshStorage *singleton;
+	static inline MeshStorage *singleton = nullptr;
 
 	RID default_rd_storage_buffer;
 

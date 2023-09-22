@@ -103,7 +103,7 @@ class TranslationServer : public Object {
 	const char32_t *get_accented_version(char32_t p_character) const;
 	bool is_placeholder(String &p_message, int p_index) const;
 
-	static TranslationServer *singleton;
+	static inline TranslationServer *singleton = nullptr;
 	bool _load_translations(const String &p_from);
 	String _standardize_locale(const String &p_locale, bool p_add_defaults) const;
 
@@ -117,14 +117,14 @@ class TranslationServer : public Object {
 		String default_country;
 		HashSet<String> supported_countries;
 	};
-	static Vector<LocaleScriptInfo> locale_script_info;
+	static inline Vector<LocaleScriptInfo> locale_script_info;
 
-	static HashMap<String, String> language_map;
-	static HashMap<String, String> script_map;
-	static HashMap<String, String> locale_rename_map;
-	static HashMap<String, String> country_name_map;
-	static HashMap<String, String> country_rename_map;
-	static HashMap<String, String> variant_map;
+	static inline HashMap<String, String> language_map;
+	static inline HashMap<String, String> script_map;
+	static inline HashMap<String, String> locale_rename_map;
+	static inline HashMap<String, String> country_name_map;
+	static inline HashMap<String, String> country_rename_map;
+	static inline HashMap<String, String> variant_map;
 
 	void init_locale_info();
 

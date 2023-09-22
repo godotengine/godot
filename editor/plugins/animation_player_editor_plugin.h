@@ -130,7 +130,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	bool updating_blends;
 
 	AnimationTrackEditor *track_editor = nullptr;
-	static AnimationPlayerEditor *singleton;
+	static inline AnimationPlayerEditor *singleton = nullptr;
 
 	bool hack_disable_onion_skinning = true; // Temporary hack for GH-53870.
 

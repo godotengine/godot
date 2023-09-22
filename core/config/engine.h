@@ -80,7 +80,7 @@ private:
 	bool editor_hint = false;
 	bool project_manager_hint = false;
 
-	static Engine *singleton;
+	static inline Engine *singleton = nullptr;
 
 	String write_movie_path;
 	String shader_cache_path;

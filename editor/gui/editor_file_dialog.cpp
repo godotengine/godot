@@ -1569,10 +1569,6 @@ void EditorFileDialog::_go_forward() {
 	dir_next->set_disabled(local_history_pos == local_history.size() - 1);
 }
 
-bool EditorFileDialog::default_show_hidden_files = false;
-
-EditorFileDialog::DisplayMode EditorFileDialog::default_display_mode = DISPLAY_THUMBNAILS;
-
 void EditorFileDialog::set_display_mode(DisplayMode p_mode) {
 	if (display_mode == p_mode) {
 		return;

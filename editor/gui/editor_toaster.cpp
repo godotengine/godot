@@ -38,8 +38,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/resources/style_box_flat.h"
 
-EditorToaster *EditorToaster::singleton = nullptr;
-
 void EditorToaster::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {

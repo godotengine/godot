@@ -217,8 +217,6 @@ void BoneTransformEditor::_update_properties() {
 	}
 }
 
-Skeleton3DEditor *Skeleton3DEditor::singleton = nullptr;
-
 void Skeleton3DEditor::set_keyable(const bool p_keyable) {
 	keyable = p_keyable;
 	if (p_keyable) {

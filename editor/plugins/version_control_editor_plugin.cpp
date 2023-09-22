@@ -46,8 +46,6 @@
 #define CHECK_PLUGIN_INITIALIZED() \
 	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Plugin from Project menu.");
 
-VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
-
 void VersionControlEditorPlugin::_bind_methods() {
 	// No binds required so far.
 }

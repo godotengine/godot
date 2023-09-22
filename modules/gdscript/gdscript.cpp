@@ -1965,8 +1965,6 @@ GDScriptInstance::~GDScriptInstance() {
 
 /************* SCRIPT LANGUAGE **************/
 
-GDScriptLanguage *GDScriptLanguage::singleton = nullptr;
-
 String GDScriptLanguage::get_name() const {
 	return "GDScript";
 }

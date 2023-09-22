@@ -34,8 +34,6 @@
 
 #define UNIMPLEMENTED() ERR_PRINT(vformat("Unimplemented virtual function in EditorVCSInterface based plugin: %s", __func__))
 
-EditorVCSInterface *EditorVCSInterface::singleton = nullptr;
-
 void EditorVCSInterface::popup_error(String p_msg) {
 	// TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
 	EditorNode::get_singleton()->show_warning(p_msg.strip_edges(), vformat(TTR("%s Error"), get_vcs_name()));

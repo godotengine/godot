@@ -73,7 +73,7 @@ private:
 		ContentModified = -32801,
 	};
 
-	static GDScriptLanguageProtocol *singleton;
+	static inline GDScriptLanguageProtocol *singleton = nullptr;
 
 	HashMap<int, Ref<LSPeer>> clients;
 	Ref<TCPServer> server;

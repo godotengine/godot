@@ -75,7 +75,7 @@ class DebugAdapterProtocol : public Object {
 	friend class DebugAdapterParser;
 
 private:
-	static DebugAdapterProtocol *singleton;
+	static inline DebugAdapterProtocol *singleton = nullptr;
 	DebugAdapterParser *parser = nullptr;
 
 	List<Ref<DAPeer>> clients;

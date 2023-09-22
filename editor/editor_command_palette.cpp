@@ -37,8 +37,6 @@
 #include "scene/gui/control.h"
 #include "scene/gui/tree.h"
 
-EditorCommandPalette *EditorCommandPalette::singleton = nullptr;
-
 static Rect2i prev_rect = Rect2i();
 static bool was_showed = false;
 

@@ -678,8 +678,6 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	}
 }
 
-SceneImportSettings *SceneImportSettings::singleton = nullptr;
-
 SceneImportSettings *SceneImportSettings::get_singleton() {
 	return singleton;
 }

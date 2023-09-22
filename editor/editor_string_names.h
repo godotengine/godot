@@ -34,7 +34,7 @@
 #include "core/string/string_name.h"
 
 class EditorStringNames {
-	static EditorStringNames *singleton;
+	static inline EditorStringNames *singleton = nullptr;
 
 	EditorStringNames();
 

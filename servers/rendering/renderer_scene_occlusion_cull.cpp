@@ -30,8 +30,6 @@
 
 #include "renderer_scene_occlusion_cull.h"
 
-RendererSceneOcclusionCull *RendererSceneOcclusionCull::singleton = nullptr;
-
 const Vector3 RendererSceneOcclusionCull::HZBuffer::corners[8] = {
 	Vector3(0, 0, 0),
 	Vector3(0, 0, 1),

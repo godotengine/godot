@@ -151,7 +151,7 @@ public:
 	};
 
 private:
-	static GI *singleton;
+	static inline GI *singleton = nullptr;
 
 	/* VOXEL GI STORAGE */
 

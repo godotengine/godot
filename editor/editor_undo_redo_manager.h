@@ -38,7 +38,7 @@
 class EditorUndoRedoManager : public Object {
 	GDCLASS(EditorUndoRedoManager, Object);
 
-	static EditorUndoRedoManager *singleton;
+	static inline EditorUndoRedoManager *singleton = nullptr;
 
 public:
 	enum SpecialHistory {

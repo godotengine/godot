@@ -42,7 +42,7 @@
 class NavigationServer2D : public Object {
 	GDCLASS(NavigationServer2D, Object);
 
-	static NavigationServer2D *singleton;
+	static inline NavigationServer2D *singleton = nullptr;
 
 	void _emit_map_changed(RID p_map);
 

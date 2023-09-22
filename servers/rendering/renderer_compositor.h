@@ -70,7 +70,7 @@ struct BlitToScreen {
 class RendererCompositor {
 private:
 	bool xr_enabled = false;
-	static RendererCompositor *singleton;
+	static inline RendererCompositor *singleton = nullptr;
 
 protected:
 	static RendererCompositor *(*_create_func)();

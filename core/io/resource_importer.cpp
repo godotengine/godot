@@ -475,8 +475,6 @@ String ResourceFormatImporter::get_import_settings_hash() const {
 	return hash.md5_text();
 }
 
-ResourceFormatImporter *ResourceFormatImporter::singleton = nullptr;
-
 ResourceFormatImporter::ResourceFormatImporter() {
 	singleton = this;
 }

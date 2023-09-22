@@ -153,7 +153,7 @@ private:
 		void raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const;
 	};
 
-	static RaycastOcclusionCull *raycast_singleton;
+	static inline RaycastOcclusionCull *raycast_singleton = nullptr;
 
 	static const int TILE_SIZE = 4;
 	static const int TILE_RAYS = TILE_SIZE * TILE_SIZE;

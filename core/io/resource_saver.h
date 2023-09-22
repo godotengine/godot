@@ -64,11 +64,11 @@ class ResourceSaver {
 		MAX_SAVERS = 64
 	};
 
-	static Ref<ResourceFormatSaver> saver[MAX_SAVERS];
-	static int saver_count;
-	static bool timestamp_on_save;
-	static ResourceSavedCallback save_callback;
-	static ResourceSaverGetResourceIDForPath save_get_id_for_path;
+	static inline Ref<ResourceFormatSaver> saver[MAX_SAVERS];
+	static inline int saver_count = 0;
+	static inline bool timestamp_on_save = false;
+	static inline ResourceSavedCallback save_callback = nullptr;
+	static inline ResourceSaverGetResourceIDForPath save_get_id_for_path = nullptr;
 
 	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(String path);
 

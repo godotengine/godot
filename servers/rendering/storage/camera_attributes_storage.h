@@ -36,7 +36,7 @@
 
 class RendererCameraAttributes {
 private:
-	static RendererCameraAttributes *singleton;
+	static inline RendererCameraAttributes *singleton = nullptr;
 
 	struct CameraAttributes {
 		float exposure_multiplier = 1.0;

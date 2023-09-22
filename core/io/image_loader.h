@@ -86,7 +86,7 @@ public:
 };
 
 class ImageLoader {
-	static Vector<Ref<ImageFormatLoader>> loader;
+	static inline Vector<Ref<ImageFormatLoader>> loader;
 	friend class ResourceFormatLoaderImage;
 
 protected:

@@ -3312,8 +3312,6 @@ void RenderForwardClustered::sub_surface_scattering_set_scale(float p_scale, flo
 	ss_effects->sss_set_scale(p_scale, p_depth_scale);
 }
 
-RenderForwardClustered *RenderForwardClustered::singleton = nullptr;
-
 void RenderForwardClustered::sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
 	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
 	ERR_FAIL_COND(rb.is_null());

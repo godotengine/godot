@@ -47,8 +47,6 @@
 #include "scene/main/window.h"
 #include "scene/resources/theme.h"
 
-EditorInterface *EditorInterface::singleton = nullptr;
-
 void EditorInterface::restart_editor(bool p_save) {
 	if (p_save) {
 		EditorNode::get_singleton()->save_all_scenes();

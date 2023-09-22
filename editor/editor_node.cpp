@@ -157,8 +157,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-EditorNode *EditorNode::singleton = nullptr;
-
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
 static const String META_TEXT_TO_COPY = "text_to_copy";
 
@@ -4555,8 +4553,6 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 	singleton->editor_file_dialogs.erase(p_dialog);
 }
 
-Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
-
 void EditorNode::_begin_first_scan() {
 	OS::get_singleton()->benchmark_begin_measure("editor_scan_and_import");
 	EditorFileSystem::get_singleton()->scan();
@@ -6391,25 +6387,17 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 	_edit_current();
 }
 
-int EditorNode::plugin_init_callback_count = 0;
-
 void EditorNode::add_plugin_init_callback(EditorPluginInitializeCallback p_callback) {
 	ERR_FAIL_COND(plugin_init_callback_count == MAX_INIT_CALLBACKS);
 
 	plugin_init_callbacks[plugin_init_callback_count++] = p_callback;
 }
 
-EditorPluginInitializeCallback EditorNode::plugin_init_callbacks[EditorNode::MAX_INIT_CALLBACKS];
-
-int EditorNode::build_callback_count = 0;
-
 void EditorNode::add_build_callback(EditorBuildCallback p_callback) {
 	ERR_FAIL_COND(build_callback_count == MAX_INIT_CALLBACKS);
 
 	build_callbacks[build_callback_count++] = p_callback;
 }
-
-EditorBuildCallback EditorNode::build_callbacks[EditorNode::MAX_BUILD_CALLBACKS];
 
 bool EditorNode::call_build() {
 	bool builds_successful = true;

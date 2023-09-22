@@ -49,7 +49,7 @@ enum ForwardIDType {
 
 class ForwardIDStorage {
 private:
-	static ForwardIDStorage *singleton;
+	static inline ForwardIDStorage *singleton = nullptr;
 
 public:
 	static ForwardIDStorage *get_singleton() { return singleton; }

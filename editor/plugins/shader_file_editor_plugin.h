@@ -65,7 +65,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static ShaderFileEditor *singleton;
+	static inline ShaderFileEditor *singleton = nullptr;
 	void edit(const Ref<RDShaderFile> &p_shader);
 
 	ShaderFileEditor();

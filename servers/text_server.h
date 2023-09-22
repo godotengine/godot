@@ -571,7 +571,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	static TextServerManager *singleton;
+	static inline TextServerManager *singleton = nullptr;
 
 	Ref<TextServer> primary_interface;
 	Vector<Ref<TextServer>> interfaces;

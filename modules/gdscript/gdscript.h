@@ -349,7 +349,7 @@ public:
 class GDScriptLanguage : public ScriptLanguage {
 	friend class GDScriptFunctionState;
 
-	static GDScriptLanguage *singleton;
+	static inline GDScriptLanguage *singleton = nullptr;
 
 	Variant *_global_array = nullptr;
 	Vector<Variant> global_array;

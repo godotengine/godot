@@ -38,8 +38,6 @@
 
 using namespace RendererRD;
 
-Utilities *Utilities::singleton = nullptr;
-
 Utilities::Utilities() {
 	singleton = this;
 }

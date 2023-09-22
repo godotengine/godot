@@ -38,8 +38,6 @@
 #include <pmmintrin.h>
 #endif
 
-RaycastOcclusionCull *RaycastOcclusionCull::raycast_singleton = nullptr;
-
 void RaycastOcclusionCull::RaycastHZBuffer::clear() {
 	HZBuffer::clear();
 

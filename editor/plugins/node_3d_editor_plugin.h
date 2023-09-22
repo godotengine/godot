@@ -748,7 +748,7 @@ private:
 	void _set_subgizmo_selection(Object *p_obj, Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
 	void _clear_subgizmo_selection(Object *p_obj = nullptr);
 
-	static Node3DEditor *singleton;
+	static inline Node3DEditor *singleton = nullptr;
 
 	void _node_added(Node *p_node);
 	void _node_removed(Node *p_node);

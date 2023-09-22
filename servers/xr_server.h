@@ -81,7 +81,7 @@ public:
 	};
 
 private:
-	static XRMode xr_mode;
+	static inline XRMode xr_mode = XRMODE_DEFAULT;
 
 	Vector<Ref<XRInterface>> interfaces;
 	Dictionary trackers;
@@ -93,7 +93,7 @@ private:
 	Transform3D reference_frame; /* our reference frame */
 
 protected:
-	static XRServer *singleton;
+	static inline XRServer *singleton = nullptr;
 
 	static void _bind_methods();
 

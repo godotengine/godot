@@ -60,7 +60,7 @@ class OpenXRInterface;
 class OpenXRAPI {
 private:
 	// our singleton
-	static OpenXRAPI *singleton;
+	static inline OpenXRAPI *singleton = nullptr;
 
 	// Registered extension wrappers
 	static Vector<OpenXRExtensionWrapper *> registered_extension_wrappers;

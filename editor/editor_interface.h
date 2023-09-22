@@ -57,7 +57,7 @@ class Window;
 class EditorInterface : public Object {
 	GDCLASS(EditorInterface, Object);
 
-	static EditorInterface *singleton;
+	static inline EditorInterface *singleton = nullptr;
 
 	// Editor tools.
 

@@ -38,8 +38,6 @@
 
 using namespace RendererRD;
 
-SSEffects *SSEffects::singleton = nullptr;
-
 static _FORCE_INLINE_ void store_camera(const Projection &p_mtx, float *p_array) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {

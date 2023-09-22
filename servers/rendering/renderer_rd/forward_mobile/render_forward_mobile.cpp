@@ -2686,8 +2686,6 @@ uint32_t RenderForwardMobile::get_max_elements() const {
 	return 256;
 }
 
-RenderForwardMobile *RenderForwardMobile::singleton = nullptr;
-
 void RenderForwardMobile::_update_shader_quality_settings() {
 	Vector<RD::PipelineSpecializationConstant> spec_constants;
 

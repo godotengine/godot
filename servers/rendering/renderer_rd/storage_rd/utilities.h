@@ -47,7 +47,7 @@ struct VisibilityNotifier {
 
 class Utilities : public RendererUtilities {
 private:
-	static Utilities *singleton;
+	static inline Utilities *singleton = nullptr;
 
 	/* VISIBILITY NOTIFIER */
 

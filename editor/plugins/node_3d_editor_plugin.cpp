@@ -5647,8 +5647,6 @@ Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 
 ///////////////////////////////////////////////////////////////////
 
-Node3DEditor *Node3DEditor::singleton = nullptr;
-
 Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (sbox_instance.is_valid()) {

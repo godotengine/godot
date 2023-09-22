@@ -47,7 +47,7 @@ class EditorExport : public Node {
 	bool block_save = false;
 	bool should_update_presets = false;
 
-	static EditorExport *singleton;
+	static inline EditorExport *singleton = nullptr;
 
 	void _save();
 

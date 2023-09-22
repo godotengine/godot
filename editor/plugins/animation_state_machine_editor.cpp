@@ -1640,8 +1640,6 @@ void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_delete_tree_draw", &AnimationNodeStateMachineEditor::_delete_tree_draw);
 }
 
-AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = nullptr;
-
 AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	singleton = this;
 

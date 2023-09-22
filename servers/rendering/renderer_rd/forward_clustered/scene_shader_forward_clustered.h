@@ -38,7 +38,7 @@ namespace RendererSceneRenderImplementation {
 
 class SceneShaderForwardClustered {
 private:
-	static SceneShaderForwardClustered *singleton;
+	static inline SceneShaderForwardClustered *singleton = nullptr;
 
 public:
 	enum ShaderGroup {

@@ -44,7 +44,7 @@ class TextureRect;
 class EditorSceneTabs : public MarginContainer {
 	GDCLASS(EditorSceneTabs, MarginContainer);
 
-	static EditorSceneTabs *singleton;
+	static inline EditorSceneTabs *singleton = nullptr;
 
 	PanelContainer *tabbar_panel = nullptr;
 	HBoxContainer *tabbar_container = nullptr;

@@ -35,8 +35,6 @@
 
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
-RenderingDevice *RenderingDevice::singleton = nullptr;
-
 const char *RenderingDevice::shader_stage_names[RenderingDevice::SHADER_STAGE_MAX] = {
 	"Vertex",
 	"Fragment",

@@ -48,9 +48,6 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
-HashMap<Color, Color> EditorColorMap::color_conversion_map;
-HashSet<StringName> EditorColorMap::color_conversion_exceptions;
-
 void EditorColorMap::add_conversion_color_pair(const String p_from_color, const String p_to_color) {
 	color_conversion_map[Color::html(p_from_color)] = Color::html(p_to_color);
 }
@@ -214,8 +211,6 @@ void EditorColorMap::create() {
 	add_conversion_exception("TextEditorPlay");
 	add_conversion_exception("Breakpoint");
 }
-
-Vector<StringName> EditorTheme::editor_theme_types;
 
 // TODO: Refactor these and corresponding Theme methods to use the bool get_xxx(r_value) pattern internally.
 

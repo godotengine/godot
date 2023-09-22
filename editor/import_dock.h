@@ -90,7 +90,7 @@ class ImportDock : public VBoxContainer {
 	};
 
 private:
-	static ImportDock *singleton;
+	static inline ImportDock *singleton = nullptr;
 
 public:
 	static ImportDock *get_singleton() { return singleton; }

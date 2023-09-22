@@ -36,7 +36,7 @@
 
 class NetSocket : public RefCounted {
 protected:
-	static NetSocket *(*_create)();
+	static inline NetSocket *(*_create)() = nullptr;
 
 public:
 	static NetSocket *create();

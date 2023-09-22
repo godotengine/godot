@@ -254,7 +254,7 @@ void ResourceUID::_bind_methods() {
 
 	BIND_CONSTANT(INVALID_ID)
 }
-ResourceUID *ResourceUID::singleton = nullptr;
+
 ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;

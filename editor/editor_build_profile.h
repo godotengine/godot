@@ -176,7 +176,7 @@ class EditorBuildProfileManager : public AcceptDialog {
 
 	void _find_files(EditorFileSystemDirectory *p_dir, const HashMap<String, DetectedFile> &p_cache, HashMap<String, DetectedFile> &r_detected);
 
-	static EditorBuildProfileManager *singleton;
+	static inline EditorBuildProfileManager *singleton = nullptr;
 
 protected:
 	static void _bind_methods();

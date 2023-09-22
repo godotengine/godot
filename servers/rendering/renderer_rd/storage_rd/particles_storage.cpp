@@ -36,8 +36,6 @@
 
 using namespace RendererRD;
 
-ParticlesStorage *ParticlesStorage::singleton = nullptr;
-
 ParticlesStorage *ParticlesStorage::get_singleton() {
 	return singleton;
 }
