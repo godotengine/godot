@@ -27,6 +27,7 @@
 		    print("Pressure " + str(midi_event.pressure))
 		    print("Controller number: " + str(midi_event.controller_number))
 		    print("Controller value: " + str(midi_event.controller_value))
+		    print("Connection index: " + str{midi_event.connection_index));
 		[/gdscript]
 		[csharp]
 		public override void _Ready()
@@ -54,6 +55,7 @@
 		    GD.Print($"Pressure {midiEvent.Pressure}");
 		    GD.Print($"Controller number: {midiEvent.ControllerNumber}");
 		    GD.Print($"Controller value: {midiEvent.ControllerValue}");
+		    GD.Print($"Connection index: {midiEvent.ConnectionIndex}");
 		}
 		[/csharp]
 		[/codeblocks]
@@ -67,6 +69,9 @@
 	<members>
 		<member name="channel" type="int" setter="set_channel" getter="get_channel" default="0">
 			The MIDI channel of this input event. There are 16 channels, so this value ranges from 0 to 15. MIDI channel 9 is reserved for the use with percussion instruments, the rest of the channels are for non-percussion instruments.
+		</member>
+		<member name="connection_index" type="int" setter="set_connection_index" getter="get_connection_index" default="0">
+			The connection index of the MIDI device that relates to this message. Each MIDI device will have a unique connection index.
 		</member>
 		<member name="controller_number" type="int" setter="set_controller_number" getter="get_controller_number" default="0">
 			If the message is [constant MIDI_MESSAGE_CONTROL_CHANGE], this indicates the controller number, otherwise this is zero. Controllers include devices such as pedals and levers.

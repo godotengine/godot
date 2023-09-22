@@ -1717,6 +1717,14 @@ int InputEventMIDI::get_controller_value() const {
 	return controller_value;
 }
 
+void InputEventMIDI::set_connection_index(const int p_connection_index) {
+	connection_index = p_connection_index;
+}
+
+int InputEventMIDI::get_connection_index() const {
+	return connection_index;
+}
+
 String InputEventMIDI::as_text() const {
 	return vformat(RTR("MIDI Input on Channel=%s Message=%s"), itos(channel), itos((int64_t)message));
 }
@@ -1725,22 +1733,22 @@ String InputEventMIDI::to_string() {
 	String ret;
 	switch (message) {
 		case MIDIMessage::NOTE_ON:
-			ret = vformat("Note On: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
+			ret = vformat("Note On: channel=%d, pitch=%d, velocity=%d, connection_index=%d", channel, pitch, velocity, connection_index);
 			break;
 		case MIDIMessage::NOTE_OFF:
-			ret = vformat("Note Off: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
+			ret = vformat("Note Off: channel=%d, pitch=%d, velocity=%d, connection_index=%d", channel, pitch, velocity, connection_index);
 			break;
 		case MIDIMessage::PITCH_BEND:
-			ret = vformat("Pitch Bend: channel=%d, pitch=%d", channel, pitch);
+			ret = vformat("Pitch Bend: channel=%d, pitch=%d, connection_index=%d", channel, pitch, connection_index);
 			break;
 		case MIDIMessage::CHANNEL_PRESSURE:
-			ret = vformat("Channel Pressure: channel=%d, pressure=%d", channel, pressure);
+			ret = vformat("Channel Pressure: channel=%d, pressure=%d, connection_index=%d", channel, pressure, connection_index);
 			break;
 		case MIDIMessage::CONTROL_CHANGE:
-			ret = vformat("Control Change: channel=%d, controller_number=%d, controller_value=%d", channel, controller_number, controller_value);
+			ret = vformat("Control Change: channel=%d, controller_number=%d, controller_value=%d, connection_index=%d", channel, controller_number, controller_value, connection_index);
 			break;
 		default:
-			ret = vformat("channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d, controller_number=%d, controller_value=%d, instrument=%d", channel, message, pitch, velocity, pressure, controller_number, controller_value, instrument);
+			ret = vformat("channel=%d, message=%d, pitch=%d, velocity=%d, pressure=%d, controller_number=%d, controller_value=%d, instrument=%d, connection_index=%d", channel, message, pitch, velocity, pressure, controller_number, controller_value, instrument, connection_index);
 	}
 	return "InputEventMIDI: " + ret;
 }
@@ -1762,6 +1770,8 @@ void InputEventMIDI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_controller_number"), &InputEventMIDI::get_controller_number);
 	ClassDB::bind_method(D_METHOD("set_controller_value", "controller_value"), &InputEventMIDI::set_controller_value);
 	ClassDB::bind_method(D_METHOD("get_controller_value"), &InputEventMIDI::get_controller_value);
+	ClassDB::bind_method(D_METHOD("set_connection_index", "connection_index"), &InputEventMIDI::set_connection_index);
+	ClassDB::bind_method(D_METHOD("get_connection_index"), &InputEventMIDI::get_connection_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel"), "set_channel", "get_channel");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "message"), "set_message", "get_message");
@@ -1771,6 +1781,7 @@ void InputEventMIDI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_number"), "set_controller_number", "get_controller_number");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_value"), "set_controller_value", "get_controller_value");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "connection_index"), "set_connection_index", "get_connection_index");
 }
 
 ///////////////////////////////////
