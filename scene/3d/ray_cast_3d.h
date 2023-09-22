@@ -39,6 +39,9 @@ class RayCast3D : public Node3D {
 	GDCLASS(RayCast3D, Node3D);
 
 	bool enabled = true;
+	bool game_enabled = false;
+	bool change_color_on_collision = true;
+	bool extend_ray_to_target = true;
 	bool collided = false;
 	ObjectID against;
 	RID against_rid;
@@ -56,10 +59,12 @@ class RayCast3D : public Node3D {
 	Node *debug_shape = nullptr;
 	Ref<Material> debug_material;
 	Color debug_shape_custom_color = Color(0.0, 0.0, 0.0);
+	Color debug_shape_colliding_color = Color(1.0, 0.0, 0.0);
 	int debug_shape_thickness = 2;
 	Vector<Vector3> debug_shape_vertices;
 	Vector<Vector3> debug_line_vertices;
 
+	Vector3 _update_new_target_position();
 	void _create_debug_shape();
 	void _update_debug_shape();
 	void _update_debug_shape_material(bool p_check_collision = false);
@@ -93,6 +98,15 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
+	void set_game_enabled(bool p_enabled);
+	bool is_game_enabled() const;
+
+	void set_extend_ray(bool p_enabled);
+	bool is_extend_ray() const;
+
+	void set_change_color(bool p_enabled);
+	bool is_change_color() const;
+
 	void set_target_position(const Vector3 &p_point);
 	Vector3 get_target_position() const;
 
@@ -107,6 +121,9 @@ public:
 
 	const Color &get_debug_shape_custom_color() const;
 	void set_debug_shape_custom_color(const Color &p_color);
+
+	const Color &get_debug_shape_colliding_color() const;
+	void set_debug_shape_colliding_color(const Color &p_color);
 
 	const Vector<Vector3> &get_debug_shape_vertices() const;
 	const Vector<Vector3> &get_debug_line_vertices() const;

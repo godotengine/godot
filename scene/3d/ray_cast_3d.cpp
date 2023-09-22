@@ -131,6 +131,39 @@ void RayCast3D::set_enabled(bool p_enabled) {
 bool RayCast3D::is_enabled() const {
 	return enabled;
 }
+void RayCast3D::set_game_enabled(bool p_enabled) {
+	game_enabled = p_enabled;
+	update_gizmos();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	if (p_enabled) {
+		_update_debug_shape();
+	} else {
+		_clear_debug_shape();
+	}
+}
+
+bool RayCast3D::is_game_enabled() const {
+	return game_enabled;
+}
+
+void RayCast3D::set_extend_ray(bool p_enabled) {
+	extend_ray_to_target = p_enabled;
+	_update_debug_shape();
+}
+
+bool RayCast3D::is_extend_ray() const {
+	return extend_ray_to_target;
+}
+
+void RayCast3D::set_change_color(bool p_enabled) {
+	change_color_on_collision = p_enabled;
+}
+
+bool RayCast3D::is_change_color() const {
+	return change_color_on_collision;
+}
 
 void RayCast3D::set_exclude_parent_body(bool p_exclude_parent_body) {
 	if (exclude_parent_body == p_exclude_parent_body) {
@@ -197,9 +230,18 @@ void RayCast3D::_notification(int p_what) {
 			}
 
 			bool prev_collision_state = collided;
+			Vector3 prev_collision_point = collision_point;
 			_update_raycast_state();
-			if (prev_collision_state != collided && get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape_material(true);
+			if (!extend_ray_to_target && (prev_collision_point != collision_point)) {
+				_update_debug_shape();
+			}
+			if (prev_collision_state != collided) {
+				if ((get_tree()->is_debugging_collisions_hint() || change_color_on_collision)) {
+					_update_debug_shape_material(true);
+				}
+				if (!extend_ray_to_target) {
+					_update_debug_shape();
+				}
 			}
 		} break;
 	}
@@ -315,6 +357,15 @@ void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &RayCast3D::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_game_enabled", "game_enabled"), &RayCast3D::set_game_enabled);
+	ClassDB::bind_method(D_METHOD("is_game_enabled"), &RayCast3D::is_game_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_extend_ray", "extend_ray_to_target"), &RayCast3D::set_extend_ray);
+	ClassDB::bind_method(D_METHOD("is_extend_ray"), &RayCast3D::is_extend_ray);
+
+	ClassDB::bind_method(D_METHOD("set_change_color", "game_enabled"), &RayCast3D::set_change_color);
+	ClassDB::bind_method(D_METHOD("is_change_color"), &RayCast3D::is_change_color);
+
 	ClassDB::bind_method(D_METHOD("set_target_position", "local_point"), &RayCast3D::set_target_position);
 	ClassDB::bind_method(D_METHOD("get_target_position"), &RayCast3D::get_target_position);
 
@@ -360,6 +411,9 @@ void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_shape_custom_color", "debug_shape_custom_color"), &RayCast3D::set_debug_shape_custom_color);
 	ClassDB::bind_method(D_METHOD("get_debug_shape_custom_color"), &RayCast3D::get_debug_shape_custom_color);
 
+	ClassDB::bind_method(D_METHOD("set_debug_shape_colliding_color", "debug_shape_colliding_color"), &RayCast3D::set_debug_shape_colliding_color);
+	ClassDB::bind_method(D_METHOD("get_debug_shape_colliding_color"), &RayCast3D::get_debug_shape_colliding_color);
+
 	ClassDB::bind_method(D_METHOD("set_debug_shape_thickness", "debug_shape_thickness"), &RayCast3D::set_debug_shape_thickness);
 	ClassDB::bind_method(D_METHOD("get_debug_shape_thickness"), &RayCast3D::get_debug_shape_thickness);
 
@@ -376,25 +430,45 @@ void RayCast3D::_bind_methods() {
 
 	ADD_GROUP("Debug Shape", "debug_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_shape_custom_color"), "set_debug_shape_custom_color", "get_debug_shape_custom_color");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_shape_thickness", PROPERTY_HINT_RANGE, "1,5"), "set_debug_shape_thickness", "get_debug_shape_thickness");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_shape_collididing_color"), "set_debug_shape_colliding_color", "get_debug_shape_colliding_color");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_shape_thickness", PROPERTY_HINT_RANGE, "1,10"), "set_debug_shape_thickness", "get_debug_shape_thickness");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "extend_ray_to_target"), "set_extend_ray", "is_extend_ray");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_ray_in_game"), "set_game_enabled", "is_game_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "change_color_on_collision"), "set_change_color", "is_change_color");
 }
 
 int RayCast3D::get_debug_shape_thickness() const {
 	return debug_shape_thickness;
 }
+//updates the new target posistion based on the global scale and distances
+Vector3 RayCast3D::_update_new_target_position() {
+	double distance_from_collision_point_to_origin = (1 / get_global_transform().basis.get_scale_abs().x) * collision_point.distance_to(get_global_position());
+	double scale_of_distance = (distance_from_collision_point_to_origin / Vector3(target_position).distance_to(Vector3(0, 0, 0)));
+	if (!is_colliding()) {
+		scale_of_distance = 1;
+	}
+	return Vector3(target_position * scale_of_distance);
+}
 
 void RayCast3D::_update_debug_shape_vertices() {
+	if (!is_inside_tree()) {
+		return;
+	}
 	debug_shape_vertices.clear();
 	debug_line_vertices.clear();
 
 	if (target_position == Vector3()) {
 		return;
 	}
-
+	Vector3 new_target_position = target_position;
+	if (!extend_ray_to_target) {
+		new_target_position = _update_new_target_position();
+	}
 	debug_line_vertices.push_back(Vector3());
-	debug_line_vertices.push_back(target_position);
+	debug_line_vertices.push_back(new_target_position);
 
-	if (debug_shape_thickness > 1) {
+	if (debug_shape_thickness > 1 && Engine::get_singleton()->is_editor_hint()) {
 		float scale_factor = 100.0;
 		Vector3 dir = Vector3(target_position).normalized();
 		// Draw truncated pyramid
@@ -429,15 +503,26 @@ const Vector<Vector3> &RayCast3D::get_debug_line_vertices() const {
 	return debug_line_vertices;
 }
 
+const Color &RayCast3D::get_debug_shape_colliding_color() const {
+	return debug_shape_colliding_color;
+}
+
+void RayCast3D::set_debug_shape_colliding_color(const Color &p_color) {
+	debug_shape_colliding_color = p_color;
+	if (debug_material.is_valid()) {
+		_update_debug_shape_material(change_color_on_collision);
+	}
+}
+
 void RayCast3D::set_debug_shape_custom_color(const Color &p_color) {
 	debug_shape_custom_color = p_color;
 	if (debug_material.is_valid()) {
-		_update_debug_shape_material();
+		_update_debug_shape_material(change_color_on_collision);
 	}
 }
 
 Ref<StandardMaterial3D> RayCast3D::get_debug_material() {
-	_update_debug_shape_material();
+	_update_debug_shape_material(change_color_on_collision);
 	return debug_material;
 }
 
@@ -446,7 +531,7 @@ const Color &RayCast3D::get_debug_shape_custom_color() const {
 }
 
 void RayCast3D::_create_debug_shape() {
-	_update_debug_shape_material();
+	_update_debug_shape_material(change_color_on_collision);
 
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 
@@ -475,13 +560,7 @@ void RayCast3D::_update_debug_shape_material(bool p_check_collision) {
 	}
 
 	if (p_check_collision && collided) {
-		if ((color.get_h() < 0.055 || color.get_h() > 0.945) && color.get_s() > 0.5 && color.get_v() > 0.5) {
-			// If base color is already quite reddish, highlight collision with green color
-			color = Color(0.0, 1.0, 0.0, color.a);
-		} else {
-			// Else, highlight collision with red color
-			color = Color(1.0, 0, 0, color.a);
-		}
+		color = debug_shape_colliding_color;
 	}
 
 	Ref<StandardMaterial3D> material = static_cast<Ref<StandardMaterial3D>>(debug_material);
@@ -489,14 +568,17 @@ void RayCast3D::_update_debug_shape_material(bool p_check_collision) {
 }
 
 void RayCast3D::_update_debug_shape() {
-	if (!enabled) {
+	if (!enabled || !game_enabled) {
 		return;
 	}
 
 	if (!debug_shape) {
 		_create_debug_shape();
 	}
-
+	//this part is neccesry to avoid creating 2 meshes when show ray in game is enabled
+	if (Engine::get_singleton()->is_editor_hint() && game_enabled) {
+		return;
+	}
 	MeshInstance3D *mi = static_cast<MeshInstance3D *>(debug_shape);
 	Ref<ArrayMesh> mesh = mi->get_mesh();
 	if (!mesh.is_valid()) {
