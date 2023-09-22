@@ -284,6 +284,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 
 	if (unlikely(log->is_updating())) {
 		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
+		need_rebuld = true;
 		return;
 	}
 
@@ -379,6 +380,14 @@ void EditorLog::_reset_message_counts() {
 	}
 }
 
+void EditorLog::_check_need_rebuild() {
+	if (need_rebuld && !unlikely(log->is_updating()))
+	{
+		need_rebuld = false;
+		_rebuild_log();
+	}
+}
+
 EditorLog::EditorLog() {
 	save_state_timer = memnew(Timer);
 	save_state_timer->set_wait_time(2);
@@ -405,6 +414,7 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	log->set_deselect_on_focus_loss_enabled(false);
+	log->connect("thread_finish", callable_mp(this, &EditorLog::_check_need_rebuild));
 	vb_left->add_child(log);
 
 	// Search box
