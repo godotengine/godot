@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  detect_prime_egl.h                                                    */
+/*  wgl_detect_version.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DETECT_PRIME_EGL_H
-#define DETECT_PRIME_EGL_H
+#ifndef WGL_DETECT_VERSION_H
+#define WGL_DETECT_VERSION_H
 
-#ifdef GLES3_ENABLED
-#ifdef EGL_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
-int detect_prime();
+int detect_wgl_version();
 
-#endif // GLES3_ENABLED
-#endif // EGL_ENABLED
+#endif // WINDOWS_ENABLED && GLES3_ENABLED
 
-#endif // DETECT_PRIME_EGL_H
+#endif // WGL_DETECT_VERSION_H

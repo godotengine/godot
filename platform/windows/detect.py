@@ -186,6 +186,7 @@ def get_opts():
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
+        ("angle_libs", "Path to the ANGLE static libraries", ""),
     ]
 
 
@@ -431,7 +432,16 @@ def configure_msvc(env, vcvars_msvc_config):
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
-        LIBS += ["opengl32"]
+        if env["angle_libs"] != "":
+            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+            env.Append(LIBPATH=[env["angle_libs"]])
+            LIBS += [
+                "libANGLE.windows." + env["arch"],
+                "libEGL.windows." + env["arch"],
+                "libGLES.windows." + env["arch"],
+            ]
+            LIBS += ["dxgi", "d3d9", "d3d11"]
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
@@ -614,7 +624,18 @@ def configure_mingw(env):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        env.Append(LIBS=["opengl32"])
+        if env["angle_libs"] != "":
+            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+            env.Append(LIBPATH=[env["angle_libs"]])
+            env.Append(
+                LIBS=[
+                    "EGL.windows." + env["arch"],
+                    "GLES.windows." + env["arch"],
+                    "ANGLE.windows." + env["arch"],
+                ]
+            )
+            env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gl_manager_windows.cpp                                                */
+/*  gl_manager_windows_native.cpp                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gl_manager_windows.h"
+#include "gl_manager_windows_native.h"
 
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
@@ -52,11 +52,14 @@
 
 #if defined(__GNUC__)
 // Workaround GCC warning from -Wcast-function-type.
-#define wglGetProcAddress (void *)wglGetProcAddress
 #define GetProcAddress (void *)GetProcAddress
 #endif
 
+typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXT)(HDC);
+typedef BOOL(APIENTRY *PFNWGLDELETECONTEXT)(HGLRC);
+typedef BOOL(APIENTRY *PFNWGLMAKECURRENT)(HDC, HGLRC);
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
+typedef void *(APIENTRY *PFNWGLGETPROCADDRESS)(LPCSTR);
 
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
@@ -102,7 +105,7 @@ static bool nvapi_err_check(const char *msg, int status) {
 // On windows we have to disable threaded optimization when using NVIDIA graphics cards
 // to avoid stuttering, see https://github.com/microsoft/vscode-cpptools/issues/6592
 // also see https://github.com/Ryujinx/Ryujinx/blob/master/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
-void GLManager_Windows::_nvapi_disable_threaded_optimization() {
+void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	HMODULE nvapi = 0;
 #ifdef _WIN64
 	nvapi = LoadLibraryA("nvapi64.dll");
@@ -116,7 +119,7 @@ void GLManager_Windows::_nvapi_disable_threaded_optimization() {
 
 	void *(__cdecl * NvAPI_QueryInterface)(unsigned int interface_id) = 0;
 
-	NvAPI_QueryInterface = (void *(__cdecl *)(unsigned int))GetProcAddress(nvapi, "nvapi_QueryInterface");
+	NvAPI_QueryInterface = (void *(__cdecl *)(unsigned int))(void *)GetProcAddress(nvapi, "nvapi_QueryInterface");
 
 	if (NvAPI_QueryInterface == NULL) {
 		print_verbose("Error getting NVAPI NvAPI_QueryInterface");
@@ -235,7 +238,7 @@ void GLManager_Windows::_nvapi_disable_threaded_optimization() {
 	NvAPI_DRS_DestroySession(session_handle);
 }
 
-int GLManager_Windows::_find_or_create_display(GLWindow &win) {
+int GLManagerNative_Windows::_find_or_create_display(GLWindow &win) {
 	// find display NYI, only 1 supported so far
 	if (_displays.size()) {
 		return 0;
@@ -297,19 +300,36 @@ static Error _configure_pixel_format(HDC hDC) {
 	return OK;
 }
 
-Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
+PFNWGLCREATECONTEXT gd_wglCreateContext;
+PFNWGLMAKECURRENT gd_wglMakeCurrent;
+PFNWGLDELETECONTEXT gd_wglDeleteContext;
+PFNWGLGETPROCADDRESS gd_wglGetProcAddress;
+
+Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
 	Error err = _configure_pixel_format(win.hDC);
 	if (err != OK) {
 		return err;
 	}
 
-	gl_display.hRC = wglCreateContext(win.hDC);
+	HMODULE module = LoadLibraryW(L"opengl32.dll");
+	if (!module) {
+		return ERR_CANT_CREATE;
+	}
+	gd_wglCreateContext = (PFNWGLCREATECONTEXT)GetProcAddress(module, "wglCreateContext");
+	gd_wglMakeCurrent = (PFNWGLMAKECURRENT)GetProcAddress(module, "wglMakeCurrent");
+	gd_wglDeleteContext = (PFNWGLDELETECONTEXT)GetProcAddress(module, "wglDeleteContext");
+	gd_wglGetProcAddress = (PFNWGLGETPROCADDRESS)GetProcAddress(module, "wglGetProcAddress");
+	if (!gd_wglCreateContext || !gd_wglMakeCurrent || !gd_wglDeleteContext || !gd_wglGetProcAddress) {
+		return ERR_CANT_CREATE;
+	}
+
+	gl_display.hRC = gd_wglCreateContext(win.hDC);
 	if (!gl_display.hRC) // Are We Able To Get A Rendering Context?
 	{
 		return ERR_CANT_CREATE; // Return FALSE
 	}
 
-	if (!wglMakeCurrent(win.hDC, gl_display.hRC)) {
+	if (!gd_wglMakeCurrent(win.hDC, gl_display.hRC)) {
 		ERR_PRINT("Could not attach OpenGL context to newly created window: " + format_error_message(GetLastError()));
 	}
 
@@ -323,45 +343,45 @@ Error GLManager_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
 	}; //zero indicates the end of the array
 
 	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = nullptr; //pointer to the method
-	wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+	wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)gd_wglGetProcAddress("wglCreateContextAttribsARB");
 
 	if (wglCreateContextAttribsARB == nullptr) //OpenGL 3.0 is not supported
 	{
-		wglDeleteContext(gl_display.hRC);
+		gd_wglDeleteContext(gl_display.hRC);
 		gl_display.hRC = 0;
 		return ERR_CANT_CREATE;
 	}
 
 	HGLRC new_hRC = wglCreateContextAttribsARB(win.hDC, 0, attribs);
 	if (!new_hRC) {
-		wglDeleteContext(gl_display.hRC);
+		gd_wglDeleteContext(gl_display.hRC);
 		gl_display.hRC = 0;
 		return ERR_CANT_CREATE;
 	}
 
-	if (!wglMakeCurrent(win.hDC, nullptr)) {
+	if (!gd_wglMakeCurrent(win.hDC, nullptr)) {
 		ERR_PRINT("Could not detach OpenGL context from newly created window: " + format_error_message(GetLastError()));
 	}
 
-	wglDeleteContext(gl_display.hRC);
+	gd_wglDeleteContext(gl_display.hRC);
 	gl_display.hRC = new_hRC;
 
-	if (!wglMakeCurrent(win.hDC, gl_display.hRC)) // Try To Activate The Rendering Context
+	if (!gd_wglMakeCurrent(win.hDC, gl_display.hRC)) // Try to activate the rendering context.
 	{
 		ERR_PRINT("Could not attach OpenGL context to newly created window with replaced OpenGL context: " + format_error_message(GetLastError()));
-		wglDeleteContext(gl_display.hRC);
+		gd_wglDeleteContext(gl_display.hRC);
 		gl_display.hRC = 0;
 		return ERR_CANT_CREATE;
 	}
 
 	if (!wglSwapIntervalEXT) {
-		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)gd_wglGetProcAddress("wglSwapIntervalEXT");
 	}
 
 	return OK;
 }
 
-Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height) {
+Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height) {
 	HDC hDC = GetDC(p_hwnd);
 	if (!hDC) {
 		return ERR_CANT_CREATE;
@@ -374,8 +394,6 @@ Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND
 	}
 
 	GLWindow win;
-	win.width = p_width;
-	win.height = p_height;
 	win.hwnd = p_hwnd;
 	win.hDC = hDC;
 
@@ -395,24 +413,11 @@ Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND
 	return OK;
 }
 
-void GLManager_Windows::_internal_set_current_window(GLWindow *p_win) {
+void GLManagerNative_Windows::_internal_set_current_window(GLWindow *p_win) {
 	_current_window = p_win;
 }
 
-void GLManager_Windows::window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
-	get_window(p_window_id).width = p_width;
-	get_window(p_window_id).height = p_height;
-}
-
-int GLManager_Windows::window_get_width(DisplayServer::WindowID p_window_id) {
-	return get_window(p_window_id).width;
-}
-
-int GLManager_Windows::window_get_height(DisplayServer::WindowID p_window_id) {
-	return get_window(p_window_id).height;
-}
-
-void GLManager_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
+void GLManagerNative_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
 	GLWindow &win = get_window(p_window_id);
 	if (_current_window == &win) {
 		_current_window = nullptr;
@@ -420,17 +425,17 @@ void GLManager_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
 	_windows.erase(p_window_id);
 }
 
-void GLManager_Windows::release_current() {
+void GLManagerNative_Windows::release_current() {
 	if (!_current_window) {
 		return;
 	}
 
-	if (!wglMakeCurrent(_current_window->hDC, nullptr)) {
+	if (!gd_wglMakeCurrent(_current_window->hDC, nullptr)) {
 		ERR_PRINT("Could not detach OpenGL context from window marked current: " + format_error_message(GetLastError()));
 	}
 }
 
-void GLManager_Windows::window_make_current(DisplayServer::WindowID p_window_id) {
+void GLManagerNative_Windows::window_make_current(DisplayServer::WindowID p_window_id) {
 	if (p_window_id == -1) {
 		return;
 	}
@@ -444,33 +449,33 @@ void GLManager_Windows::window_make_current(DisplayServer::WindowID p_window_id)
 	}
 
 	const GLDisplay &disp = get_display(win.gldisplay_id);
-	if (!wglMakeCurrent(win.hDC, disp.hRC)) {
+	if (!gd_wglMakeCurrent(win.hDC, disp.hRC)) {
 		ERR_PRINT("Could not switch OpenGL context to other window: " + format_error_message(GetLastError()));
 	}
 
 	_internal_set_current_window(&win);
 }
 
-void GLManager_Windows::make_current() {
+void GLManagerNative_Windows::make_current() {
 	if (!_current_window) {
 		return;
 	}
 	const GLDisplay &disp = get_current_display();
-	if (!wglMakeCurrent(_current_window->hDC, disp.hRC)) {
+	if (!gd_wglMakeCurrent(_current_window->hDC, disp.hRC)) {
 		ERR_PRINT("Could not switch OpenGL context to window marked current: " + format_error_message(GetLastError()));
 	}
 }
 
-void GLManager_Windows::swap_buffers() {
+void GLManagerNative_Windows::swap_buffers() {
 	SwapBuffers(_current_window->hDC);
 }
 
-Error GLManager_Windows::initialize() {
+Error GLManagerNative_Windows::initialize() {
 	_nvapi_disable_threaded_optimization();
 	return OK;
 }
 
-void GLManager_Windows::set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use) {
+void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use) {
 	GLWindow &win = get_window(p_window_id);
 	GLWindow *current = _current_window;
 
@@ -480,7 +485,12 @@ void GLManager_Windows::set_use_vsync(DisplayServer::WindowID p_window_id, bool 
 
 	if (wglSwapIntervalEXT) {
 		win.use_vsync = p_use;
-		wglSwapIntervalEXT(p_use ? 1 : 0);
+
+		if (!wglSwapIntervalEXT(p_use ? 1 : 0)) {
+			WARN_PRINT("Could not set V-Sync mode.");
+		}
+	} else {
+		WARN_PRINT("Could not set V-Sync mode. V-Sync is not supported.");
 	}
 
 	if (current != _current_window) {
@@ -489,29 +499,27 @@ void GLManager_Windows::set_use_vsync(DisplayServer::WindowID p_window_id, bool 
 	}
 }
 
-bool GLManager_Windows::is_using_vsync(DisplayServer::WindowID p_window_id) const {
+bool GLManagerNative_Windows::is_using_vsync(DisplayServer::WindowID p_window_id) const {
 	return get_window(p_window_id).use_vsync;
 }
 
-HDC GLManager_Windows::get_hdc(DisplayServer::WindowID p_window_id) {
+HDC GLManagerNative_Windows::get_hdc(DisplayServer::WindowID p_window_id) {
 	return get_window(p_window_id).hDC;
 }
 
-HGLRC GLManager_Windows::get_hglrc(DisplayServer::WindowID p_window_id) {
+HGLRC GLManagerNative_Windows::get_hglrc(DisplayServer::WindowID p_window_id) {
 	const GLWindow &win = get_window(p_window_id);
 	const GLDisplay &disp = get_display(win.gldisplay_id);
 	return disp.hRC;
 }
 
-GLManager_Windows::GLManager_Windows(ContextType p_context_type) {
-	context_type = p_context_type;
-
+GLManagerNative_Windows::GLManagerNative_Windows() {
 	direct_render = false;
 	glx_minor = glx_major = 0;
 	_current_window = nullptr;
 }
 
-GLManager_Windows::~GLManager_Windows() {
+GLManagerNative_Windows::~GLManagerNative_Windows() {
 	release_current();
 }
 

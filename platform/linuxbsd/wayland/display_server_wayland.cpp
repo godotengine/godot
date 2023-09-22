@@ -1139,7 +1139,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 			ERR_FAIL_MSG("Could not initialize GLES3.");
 		}
 
-		RasterizerGLES3::make_current();
+		RasterizerGLES3::make_current(true);
 	}
 #endif // GLES3_ENABLED
 

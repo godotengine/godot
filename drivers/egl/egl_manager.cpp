@@ -32,6 +32,12 @@
 
 #ifdef EGL_ENABLED
 
+#if defined(EGL_STATIC)
+#define KHRONOS_STATIC 1
+extern "C" EGLAPI void EGLAPIENTRY eglSetBlobCacheFuncsANDROID(EGLDisplay dpy, EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get);
+#undef KHRONOS_STATIC
+#endif
+
 // Creates and caches a GLDisplay. Returns -1 on error.
 int EGLManager::_get_gldisplay_id(void *p_display) {
 	// Look for a cached GLDisplay.
@@ -46,17 +52,18 @@ int EGLManager::_get_gldisplay_id(void *p_display) {
 	GLDisplay new_gldisplay;
 	new_gldisplay.display = p_display;
 
-	new_gldisplay.egl_display = eglGetPlatformDisplay(_get_platform_extension_enum(), new_gldisplay.display, NULL);
+	Vector<EGLAttrib> attribs = _get_platform_display_attributes();
+
+	new_gldisplay.egl_display = eglGetPlatformDisplay(_get_platform_extension_enum(), new_gldisplay.display, (attribs.size() > 0) ? attribs.ptr() : nullptr);
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, -1);
 
 	ERR_FAIL_COND_V_MSG(new_gldisplay.egl_display == EGL_NO_DISPLAY, -1, "Can't create an EGL display.");
 
-	// TODO: Check EGL version?
-	if (!eglInitialize(new_gldisplay.egl_display, NULL, NULL)) {
+	if (!eglInitialize(new_gldisplay.egl_display, nullptr, nullptr)) {
 		ERR_FAIL_V_MSG(-1, "Can't initialize an EGL display.");
 	}
 
-	if (!eglBindAPI(EGL_OPENGL_API)) {
+	if (!eglBindAPI(_get_platform_api_enum())) {
 		ERR_FAIL_V_MSG(-1, "OpenGL not supported.");
 	}
 
@@ -67,11 +74,54 @@ int EGLManager::_get_gldisplay_id(void *p_display) {
 		ERR_FAIL_V(-1);
 	}
 
+#ifdef EGL_ANDROID_blob_cache
+#if defined(EGL_STATIC)
+	bool has_blob_cache = true;
+#else
+	bool has_blob_cache = (eglSetBlobCacheFuncsANDROID != nullptr);
+#endif
+	if (has_blob_cache && !shader_cache_dir.is_empty()) {
+		eglSetBlobCacheFuncsANDROID(new_gldisplay.egl_display, &EGLManager::_set_cache, &EGLManager::_get_cache);
+	}
+#endif
+
 	displays.push_back(new_gldisplay);
 
 	// Return the new GLDisplay's ID.
 	return displays.size() - 1;
 }
+
+#ifdef EGL_ANDROID_blob_cache
+String EGLManager::shader_cache_dir;
+
+void EGLManager::_set_cache(const void *p_key, EGLsizeiANDROID p_key_size, const void *p_value, EGLsizeiANDROID p_value_size) {
+	String name = CryptoCore::b64_encode_str((const uint8_t *)p_key, p_key_size).replace("/", "_");
+	String path = shader_cache_dir.path_join(name) + ".cache";
+
+	Error err = OK;
+	Ref<FileAccess> file = FileAccess::open(path, FileAccess::WRITE, &err);
+	if (err != OK) {
+		return;
+	}
+	file->store_buffer((const uint8_t *)p_value, p_value_size);
+}
+
+EGLsizeiANDROID EGLManager::_get_cache(const void *p_key, EGLsizeiANDROID p_key_size, void *p_value, EGLsizeiANDROID p_value_size) {
+	String name = CryptoCore::b64_encode_str((const uint8_t *)p_key, p_key_size).replace("/", "_");
+	String path = shader_cache_dir.path_join(name) + ".cache";
+
+	Error err = OK;
+	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
+	if (err != OK) {
+		return 0;
+	}
+	EGLsizeiANDROID len = file->get_length();
+	if (len <= p_value_size) {
+		file->get_buffer((uint8_t *)p_value, len);
+	}
+	return len;
+}
+#endif
 
 Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	EGLint attribs[] = {
@@ -109,16 +159,10 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	}
 
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
-
 	ERR_FAIL_COND_V(config_count == 0, ERR_UNCONFIGURED);
 
-	EGLint context_attribs[] = {
-		EGL_CONTEXT_MAJOR_VERSION, 3,
-		EGL_CONTEXT_MINOR_VERSION, 3,
-		EGL_NONE
-	};
-
-	p_gldisplay.egl_context = eglCreateContext(p_gldisplay.egl_display, p_gldisplay.egl_config, EGL_NO_CONTEXT, context_attribs);
+	Vector<EGLint> context_attribs = _get_platform_context_attribs();
+	p_gldisplay.egl_context = eglCreateContext(p_gldisplay.egl_display, p_gldisplay.egl_config, EGL_NO_CONTEXT, (context_attribs.size() > 0) ? context_attribs.ptr() : nullptr);
 	ERR_FAIL_COND_V_MSG(p_gldisplay.egl_context == EGL_NO_CONTEXT, ERR_CANT_CREATE, vformat("Can't create an EGL context. Error code: %d", eglGetError()));
 
 	return OK;
@@ -154,7 +198,7 @@ Error EGLManager::window_create(DisplayServer::WindowID p_window_id, void *p_dis
 	GLWindow &glwindow = windows[p_window_id];
 	glwindow.gldisplay_id = gldisplay_id;
 
-	glwindow.egl_surface = eglCreatePlatformWindowSurface(gldisplay.egl_display, gldisplay.egl_config, p_native_window, NULL);
+	glwindow.egl_surface = eglCreatePlatformWindowSurface(gldisplay.egl_display, gldisplay.egl_config, p_native_window, nullptr);
 
 	if (glwindow.egl_surface == EGL_NO_SURFACE) {
 		return ERR_CANT_CREATE;
@@ -246,6 +290,12 @@ void EGLManager::window_make_current(DisplayServer::WindowID p_window_id) {
 }
 
 void EGLManager::set_use_vsync(bool p_use) {
+	// Force vsync in the editor for now, as a safety measure.
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_editor) {
+		p_use = true;
+	}
+
 	// We need an active window to get a display to set the vsync.
 	if (!current_window) {
 		return;
@@ -253,11 +303,11 @@ void EGLManager::set_use_vsync(bool p_use) {
 
 	GLDisplay &disp = displays[current_window->gldisplay_id];
 
-	// TODO: Warn when vsync isn't available.
-
 	int swap_interval = p_use ? 1 : 0;
 
-	eglSwapInterval(disp.egl_display, swap_interval);
+	if (!eglSwapInterval(disp.egl_display, swap_interval)) {
+		WARN_PRINT("Could not set V-Sync mode.");
+	}
 
 	use_vsync = p_use;
 }
@@ -266,13 +316,25 @@ bool EGLManager::is_using_vsync() const {
 	return use_vsync;
 }
 
+EGLContext EGLManager::get_context(DisplayServer::WindowID p_window_id) {
+	GLWindow &glwindow = windows[p_window_id];
+
+	if (!glwindow.initialized) {
+		return EGL_NO_CONTEXT;
+	}
+
+	GLDisplay &display = displays[glwindow.gldisplay_id];
+
+	return display.egl_context;
+}
+
 Error EGLManager::initialize() {
-#ifdef GLAD_ENABLED
+#if defined(GLAD_ENABLED) && !defined(EGL_STATIC)
 	// Passing a null display loads just the bare minimum to create one. We'll have
 	// to create a temporary test display and reload EGL with it to get a good idea
 	// of what version is supported on this machine. Currently we're looking for
 	// 1.5, the latest at the time of writing, which is actually pretty old.
-	if (!gladLoaderLoadEGL(NULL)) {
+	if (!gladLoaderLoadEGL(nullptr)) {
 		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't load EGL.");
 	}
 
@@ -282,7 +344,7 @@ Error EGLManager::initialize() {
 	EGLDisplay tmp_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	ERR_FAIL_COND_V(tmp_display == EGL_NO_DISPLAY, ERR_UNAVAILABLE);
 
-	eglInitialize(tmp_display, NULL, NULL);
+	eglInitialize(tmp_display, nullptr, nullptr);
 
 	int version = gladLoaderLoadEGL(tmp_display);
 
@@ -292,6 +354,30 @@ Error EGLManager::initialize() {
 	ERR_FAIL_COND_V_MSG(!GLAD_EGL_VERSION_1_5, ERR_UNAVAILABLE, "EGL version is too old!");
 
 	eglTerminate(tmp_display);
+#endif
+
+#ifdef EGL_ANDROID_blob_cache
+	shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
+	if (shader_cache_dir.is_empty()) {
+		shader_cache_dir = "user://";
+	}
+	Error err = OK;
+	Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
+	if (da.is_null()) {
+		ERR_PRINT("EGL: Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+		shader_cache_dir = String();
+	} else {
+		err = da->change_dir(String("shader_cache").path_join("EGL"));
+		if (err != OK) {
+			err = da->make_dir_recursive(String("shader_cache").path_join("EGL"));
+		}
+		if (err != OK) {
+			ERR_PRINT("EGL: Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+			shader_cache_dir = String();
+		} else {
+			shader_cache_dir = shader_cache_dir.path_join(String("shader_cache").path_join("EGL"));
+		}
+	}
 #endif
 
 	String extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);

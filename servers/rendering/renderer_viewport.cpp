@@ -714,7 +714,7 @@ void RendererViewport::draw_viewports() {
 				// commit our eyes
 				Vector<BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
 				if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
-					if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
+					if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3" || OS::get_singleton()->get_current_rendering_driver_name() == "opengl3_angle") {
 						if (blits.size() > 0) {
 							RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
 						}
@@ -753,7 +753,7 @@ void RendererViewport::draw_viewports() {
 					blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
 				}
 
-				if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
+				if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3" || OS::get_singleton()->get_current_rendering_driver_name() == "opengl3_angle") {
 					Vector<BlitToScreen> blit_to_screen_vec;
 					blit_to_screen_vec.push_back(blit);
 					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blit_to_screen_vec.ptr(), 1);

@@ -141,6 +141,11 @@ Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.
 License: Expat
 
+Files: ./thirdparty/angle/
+Comment: ANGLE
+Copyright: 2018, The ANGLE Project Authors.
+License: BSD-3-clause
+
 Files: ./thirdparty/astcenc/
 Comment: Arm ASTC Encoder
 Copyright: 2011-2023, Arm Limited

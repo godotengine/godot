@@ -33,6 +33,7 @@
 #ifdef GLES3_ENABLED
 
 #include "core/os/os.h"
+#include "rasterizer_gles3.h"
 #include "rasterizer_scene_gles3.h"
 
 #include "core/config/project_settings.h"
@@ -1561,7 +1562,8 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(0, p_shadow_index * 2, state.shadow_texture_size, 2);
 	glClearColor(p_far, p_far, p_far, 1.0);
-	glClearDepth(1.0);
+	RasterizerGLES3::clear_depth(1.0);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glCullFace(GL_BACK);
@@ -1682,7 +1684,8 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(0, p_shadow_index * 2, state.shadow_texture_size, 2);
 	glClearColor(1.0, 1.0, 1.0, 1.0);
-	glClearDepth(1.0);
+	RasterizerGLES3::clear_depth(1.0);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glCullFace(GL_BACK);

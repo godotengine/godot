@@ -33,13 +33,13 @@
 
 #ifdef EGL_ENABLED
 
-#ifdef GLAD_ENABLED
-#include "thirdparty/glad/glad/egl.h"
-#else
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#endif
+// These must come first to avoid windows.h mess.
+#include "platform_gl.h"
 
+#include "core/config/project_settings.h"
+#include "core/crypto/crypto_core.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"
 
@@ -52,7 +52,7 @@ private:
 
 		EGLDisplay egl_display = EGL_NO_DISPLAY;
 		EGLContext egl_context = EGL_NO_CONTEXT;
-		EGLConfig egl_config;
+		EGLConfig egl_config = nullptr;
 	};
 
 	// EGL specific window data.
@@ -75,6 +75,16 @@ private:
 
 	virtual const char *_get_platform_extension_name() const = 0;
 	virtual EGLenum _get_platform_extension_enum() const = 0;
+	virtual EGLenum _get_platform_api_enum() const = 0;
+	virtual Vector<EGLAttrib> _get_platform_display_attributes() const = 0;
+	virtual Vector<EGLint> _get_platform_context_attribs() const = 0;
+
+#ifdef EGL_ANDROID_blob_cache
+	static String shader_cache_dir;
+
+	static void _set_cache(const void *p_key, EGLsizeiANDROID p_key_size, const void *p_value, EGLsizeiANDROID p_value_size);
+	static EGLsizeiANDROID _get_cache(const void *p_key, EGLsizeiANDROID p_key_size, void *p_value, EGLsizeiANDROID p_value_size);
+#endif
 
 	int _get_gldisplay_id(void *p_display);
 	Error _gldisplay_create_context(GLDisplay &p_gldisplay);
@@ -94,6 +104,8 @@ public:
 
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
+
+	EGLContext get_context(DisplayServer::WindowID p_window_id);
 
 	Error initialize();
 

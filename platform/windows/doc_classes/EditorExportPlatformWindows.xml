@@ -18,6 +18,9 @@
 		<member name="application/copyright" type="String" setter="" getter="">
 			Copyright notice for the bundle visible to the user. Optional. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>
+		<member name="application/export_angle" type="int" setter="" getter="">
+			If set to [code]1[/code], ANGLE libraries are exported with the exported application. If set to [code]0[/code], ANGLE libraries are exported only if [member ProjectSettings.rendering/gl_compatibility/driver] is set to [code]"opengl3_angle"[/code].
+		</member>
 		<member name="application/file_description" type="String" setter="" getter="">
 			File description to be presented to users. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>

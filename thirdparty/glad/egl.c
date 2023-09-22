@@ -29,7 +29,9 @@ int GLAD_EGL_VERSION_1_2 = 0;
 int GLAD_EGL_VERSION_1_3 = 0;
 int GLAD_EGL_VERSION_1_4 = 0;
 int GLAD_EGL_VERSION_1_5 = 0;
+int GLAD_EGL_ANDROID_blob_cache = 0;
 int GLAD_EGL_KHR_platform_wayland = 0;
+int GLAD_EGL_KHR_platform_x11 = 0;
 
 
 
@@ -69,6 +71,7 @@ PFNEGLQUERYSTRINGPROC glad_eglQueryString = NULL;
 PFNEGLQUERYSURFACEPROC glad_eglQuerySurface = NULL;
 PFNEGLRELEASETEXIMAGEPROC glad_eglReleaseTexImage = NULL;
 PFNEGLRELEASETHREADPROC glad_eglReleaseThread = NULL;
+PFNEGLSETBLOBCACHEFUNCSANDROIDPROC glad_eglSetBlobCacheFuncsANDROID = NULL;
 PFNEGLSURFACEATTRIBPROC glad_eglSurfaceAttrib = NULL;
 PFNEGLSWAPBUFFERSPROC glad_eglSwapBuffers = NULL;
 PFNEGLSWAPINTERVALPROC glad_eglSwapInterval = NULL;
@@ -138,6 +141,10 @@ static void glad_egl_load_EGL_VERSION_1_5( GLADuserptrloadfunc load, void* userp
     glad_eglGetSyncAttrib = (PFNEGLGETSYNCATTRIBPROC) load(userptr, "eglGetSyncAttrib");
     glad_eglWaitSync = (PFNEGLWAITSYNCPROC) load(userptr, "eglWaitSync");
 }
+static void glad_egl_load_EGL_ANDROID_blob_cache( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_EGL_ANDROID_blob_cache) return;
+    glad_eglSetBlobCacheFuncsANDROID = (PFNEGLSETBLOBCACHEFUNCSANDROIDPROC) load(userptr, "eglSetBlobCacheFuncsANDROID");
+}
 
 
 
@@ -175,7 +182,9 @@ static int glad_egl_find_extensions_egl(EGLDisplay display) {
     const char *extensions;
     if (!glad_egl_get_extensions(display, &extensions)) return 0;
 
+    GLAD_EGL_ANDROID_blob_cache = glad_egl_has_extension(extensions, "EGL_ANDROID_blob_cache");
     GLAD_EGL_KHR_platform_wayland = glad_egl_has_extension(extensions, "EGL_KHR_platform_wayland");
+    GLAD_EGL_KHR_platform_x11 = glad_egl_has_extension(extensions, "EGL_KHR_platform_x11");
 
     return 1;
 }
@@ -238,6 +247,7 @@ int gladLoadEGLUserPtr(EGLDisplay display, GLADuserptrloadfunc load, void* userp
     glad_egl_load_EGL_VERSION_1_5(load, userptr);
 
     if (!glad_egl_find_extensions_egl(display)) return 0;
+    glad_egl_load_EGL_ANDROID_blob_cache(load, userptr);
 
 
     return version;

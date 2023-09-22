@@ -32,6 +32,7 @@ def get_opts():
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
+        ("angle_libs", "Path to the ANGLE static libraries", ""),
     ]
 
 
@@ -255,7 +256,13 @@ def configure(env: "Environment"):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        env.Append(LINKFLAGS=["-framework", "OpenGL"])
+        if env["angle_libs"] != "":
+            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+            env.Append(LINKFLAGS=["-L" + env["angle_libs"]])
+            env.Append(LINKFLAGS=["-lANGLE.macos." + env["arch"]])
+            env.Append(LINKFLAGS=["-lEGL.macos." + env["arch"]])
+            env.Append(LINKFLAGS=["-lGLES.macos." + env["arch"]])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 
