@@ -39,7 +39,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #ifdef DEBUG_ENABLED
-#ifndef _DEBUG
+#ifndef _MSC_VER
 #define _DEBUG
 #endif
 #endif
