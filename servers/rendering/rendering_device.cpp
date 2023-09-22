@@ -32,6 +32,7 @@
 #include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
+#include "shader_include_db.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -189,6 +190,10 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 	}
 }
 
+/*******************************/
+/**** SHADER INFRASTRUCTURE ****/
+/*******************************/
+
 void RenderingDevice::shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function) {
 	compile_to_spirv_function = p_function;
 }
@@ -211,7 +216,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 
 	ERR_FAIL_NULL_V(compile_to_spirv_function, Vector<uint8_t>());
 
-	return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, this);
+	return compile_to_spirv_function(p_stage, ShaderIncludeDB::parse_include_files(p_source_code), p_language, r_error, this);
 }
 
 String RenderingDevice::shader_get_spirv_cache_key() const {
