@@ -141,6 +141,11 @@ Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.
 License: Expat
 
+Files: ./thirdparty/amd-fsr2/
+Comment: AMD FidelityFX Super Resolution 2
+Copyright: 2022-2023, Advanced Micro Devices, Inc.
+License: Expat
+
 Files: ./thirdparty/angle/
 Comment: ANGLE
 Copyright: 2018, The ANGLE Project Authors.

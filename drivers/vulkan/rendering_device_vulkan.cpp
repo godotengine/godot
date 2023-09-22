@@ -5750,8 +5750,8 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				Buffer *buffer = uniform_buffer_owner.get_or_null(uniform.get_id(0));
 				ERR_FAIL_NULL_V_MSG(buffer, RID(), "Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
-				ERR_FAIL_COND_V_MSG(buffer->size != (uint32_t)set_uniform.length, RID(),
-						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
+				ERR_FAIL_COND_V_MSG(buffer->size < (uint32_t)set_uniform.length, RID(),
+						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " is smaller than size of shader uniform: (" + itos(set_uniform.length) + ").");
 
 				write.dstArrayElement = 0;
 				write.descriptorCount = 1;
@@ -9561,6 +9561,14 @@ uint64_t RenderingDeviceVulkan::limit_get(Limit p_limit) const {
 		case LIMIT_SUBGROUP_SIZE: {
 			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
 			return subgroup_capabilities.size;
+		}
+		case LIMIT_SUBGROUP_MIN_SIZE: {
+			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+			return subgroup_capabilities.min_size;
+		}
+		case LIMIT_SUBGROUP_MAX_SIZE: {
+			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+			return subgroup_capabilities.max_size;
 		}
 		case LIMIT_SUBGROUP_IN_SHADERS: {
 			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();

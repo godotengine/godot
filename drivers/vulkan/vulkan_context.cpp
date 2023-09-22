@@ -504,6 +504,7 @@ Error VulkanContext::_initialize_device_extensions() {
 	register_requested_device_extension(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
@@ -739,9 +740,12 @@ Error VulkanContext::_check_capabilities() {
 	multiview_capabilities.max_view_count = 0;
 	multiview_capabilities.max_instance_count = 0;
 	subgroup_capabilities.size = 0;
+	subgroup_capabilities.min_size = 0;
+	subgroup_capabilities.max_size = 0;
 	subgroup_capabilities.supportedStages = 0;
 	subgroup_capabilities.supportedOperations = 0;
 	subgroup_capabilities.quadOperationsInAllStages = false;
+	subgroup_capabilities.size_control_is_supported = false;
 	shader_capabilities.shader_float16_is_supported = false;
 	shader_capabilities.shader_int8_is_supported = false;
 	storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = false;
@@ -886,6 +890,7 @@ Error VulkanContext::_check_capabilities() {
 			VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrsProperties{};
 			VkPhysicalDeviceMultiviewProperties multiviewProperties{};
 			VkPhysicalDeviceSubgroupProperties subgroupProperties{};
+			VkPhysicalDeviceSubgroupSizeControlProperties subgroupSizeControlProperties = {};
 			VkPhysicalDeviceProperties2 physicalDeviceProperties{};
 			void *nextptr = nullptr;
 
@@ -894,6 +899,15 @@ Error VulkanContext::_check_capabilities() {
 				subgroupProperties.pNext = nextptr;
 
 				nextptr = &subgroupProperties;
+
+				subgroup_capabilities.size_control_is_supported = is_device_extension_enabled(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
+
+				if (subgroup_capabilities.size_control_is_supported) {
+					subgroupSizeControlProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES;
+					subgroupSizeControlProperties.pNext = nextptr;
+
+					nextptr = &subgroupSizeControlProperties;
+				}
 			}
 
 			if (multiview_capabilities.is_supported) {
@@ -916,12 +930,19 @@ Error VulkanContext::_check_capabilities() {
 			device_properties_func(gpu, &physicalDeviceProperties);
 
 			subgroup_capabilities.size = subgroupProperties.subgroupSize;
+			subgroup_capabilities.min_size = subgroupProperties.subgroupSize;
+			subgroup_capabilities.max_size = subgroupProperties.subgroupSize;
 			subgroup_capabilities.supportedStages = subgroupProperties.supportedStages;
 			subgroup_capabilities.supportedOperations = subgroupProperties.supportedOperations;
 			// Note: quadOperationsInAllStages will be true if:
 			// - supportedStages has VK_SHADER_STAGE_ALL_GRAPHICS + VK_SHADER_STAGE_COMPUTE_BIT.
 			// - supportedOperations has VK_SUBGROUP_FEATURE_QUAD_BIT.
 			subgroup_capabilities.quadOperationsInAllStages = subgroupProperties.quadOperationsInAllStages;
+
+			if (subgroup_capabilities.size_control_is_supported && (subgroupSizeControlProperties.requiredSubgroupSizeStages & VK_SHADER_STAGE_COMPUTE_BIT)) {
+				subgroup_capabilities.min_size = subgroupSizeControlProperties.minSubgroupSize;
+				subgroup_capabilities.max_size = subgroupSizeControlProperties.maxSubgroupSize;
+			}
 
 			if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
 				print_verbose("- Vulkan Variable Rate Shading supported:");
@@ -962,6 +983,8 @@ Error VulkanContext::_check_capabilities() {
 
 			print_verbose("- Vulkan subgroup:");
 			print_verbose("  size: " + itos(subgroup_capabilities.size));
+			print_verbose("  min size: " + itos(subgroup_capabilities.min_size));
+			print_verbose("  max size: " + itos(subgroup_capabilities.max_size));
 			print_verbose("  stages: " + subgroup_capabilities.supported_stages_desc());
 			print_verbose("  supported ops: " + subgroup_capabilities.supported_operations_desc());
 			if (subgroup_capabilities.quadOperationsInAllStages) {
