@@ -345,6 +345,9 @@ private:
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
+	// Explicit start frames.
+	HashMap<uint32_t, int> explicit_start_frames;
+
 public:
 	// TileMap node.
 	void set_tile_map(TileMap *p_tile_map);
