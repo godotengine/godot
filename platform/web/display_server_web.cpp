@@ -817,7 +817,7 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 		if (!emscripten_webgl_enable_extension(webgl_ctx, "OVR_multiview2")) {
 			print_verbose("Failed to enable WebXR extension.");
 		}
-		RasterizerGLES3::make_current();
+		RasterizerGLES3::make_current(false);
 
 	} else {
 		OS::get_singleton()->alert(

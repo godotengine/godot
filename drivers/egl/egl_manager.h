@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gl_manager_windows.h                                                  */
+/*  egl_manager.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,79 +28,73 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_WINDOWS_H
-#define GL_MANAGER_WINDOWS_H
+#ifndef EGL_MANAGER_H
+#define EGL_MANAGER_H
 
-#if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
+#ifdef EGL_ENABLED
 
-#include "core/error/error_list.h"
-#include "core/os/os.h"
+// These must come first to avoid windows.h mess.
+#include "platform_gl.h"
+
+#include "core/config/project_settings.h"
+#include "core/crypto/crypto_core.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"
 
-#include <windows.h>
-
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
-
-class GLManager_Windows {
-public:
-	enum ContextType {
-		GLES_3_0_COMPATIBLE,
-	};
-
+class EGLManager {
 private:
-	// any data specific to the window
-	struct GLWindow {
-		int width = 0;
-		int height = 0;
-		bool use_vsync = false;
-
-		// windows specific
-		HDC hDC;
-		HWND hwnd;
-
-		int gldisplay_id = 0;
-	};
-
+	// An EGL-side rappresentation of a display with its own rendering
+	// context.
 	struct GLDisplay {
-		// windows specific
-		HGLRC hRC;
+		void *display = nullptr;
+
+		EGLDisplay egl_display = EGL_NO_DISPLAY;
+		EGLContext egl_context = EGL_NO_CONTEXT;
+		EGLConfig egl_config = nullptr;
 	};
 
-	RBMap<DisplayServer::WindowID, GLWindow> _windows;
-	LocalVector<GLDisplay> _displays;
+	// EGL specific window data.
+	struct GLWindow {
+		bool initialized = false;
 
-	GLWindow *_current_window = nullptr;
+		// An handle to the GLDisplay associated with this window.
+		int gldisplay_id = -1;
 
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = nullptr;
+		EGLSurface egl_surface = EGL_NO_SURFACE;
+	};
 
-	// funcs
-	void _internal_set_current_window(GLWindow *p_win);
+	LocalVector<GLDisplay> displays;
+	LocalVector<GLWindow> windows;
 
-	GLWindow &get_window(unsigned int id) { return _windows[id]; }
-	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
+	GLWindow *current_window = nullptr;
 
-	const GLDisplay &get_current_display() const { return _displays[_current_window->gldisplay_id]; }
-	const GLDisplay &get_display(unsigned int id) { return _displays[id]; }
+	// On EGL the default swap interval is 1 and thus vsync is on by default.
+	bool use_vsync = true;
 
-	bool direct_render;
-	int glx_minor, glx_major;
-	ContextType context_type;
+	virtual const char *_get_platform_extension_name() const = 0;
+	virtual EGLenum _get_platform_extension_enum() const = 0;
+	virtual EGLenum _get_platform_api_enum() const = 0;
+	virtual Vector<EGLAttrib> _get_platform_display_attributes() const = 0;
+	virtual Vector<EGLint> _get_platform_context_attribs() const = 0;
 
-private:
-	void _nvapi_disable_threaded_optimization();
-	int _find_or_create_display(GLWindow &win);
-	Error _create_context(GLWindow &win, GLDisplay &gl_display);
+#ifdef EGL_ANDROID_blob_cache
+	static String shader_cache_dir;
+
+	static void _set_cache(const void *p_key, EGLsizeiANDROID p_key_size, const void *p_value, EGLsizeiANDROID p_value_size);
+	static EGLsizeiANDROID _get_cache(const void *p_key, EGLsizeiANDROID p_key_size, void *p_value, EGLsizeiANDROID p_value_size);
+#endif
+
+	int _get_gldisplay_id(void *p_display);
+	Error _gldisplay_create_context(GLDisplay &p_gldisplay);
 
 public:
-	Error window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height);
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	int display_get_native_visual_id(void *p_display);
 
-	// get directly from the cached GLWindow
-	int window_get_width(DisplayServer::WindowID p_window_id = 0);
-	int window_get_height(DisplayServer::WindowID p_window_id = 0);
+	Error window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height);
+
+	void window_destroy(DisplayServer::WindowID p_window_id);
 
 	void release_current();
 	void make_current();
@@ -108,18 +102,17 @@ public:
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
 
+	void set_use_vsync(bool p_use);
+	bool is_using_vsync() const;
+
+	EGLContext get_context(DisplayServer::WindowID p_window_id);
+
 	Error initialize();
 
-	void set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use);
-	bool is_using_vsync(DisplayServer::WindowID p_window_id) const;
-
-	HDC get_hdc(DisplayServer::WindowID p_window_id);
-	HGLRC get_hglrc(DisplayServer::WindowID p_window_id);
-
-	GLManager_Windows(ContextType p_context_type);
-	~GLManager_Windows();
+	EGLManager();
+	virtual ~EGLManager();
 };
 
-#endif // WINDOWS_ENABLED && GLES3_ENABLED
+#endif // EGL_ENABLED
 
-#endif // GL_MANAGER_WINDOWS_H
+#endif // EGL_MANAGER_H

@@ -543,7 +543,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
-		RasterizerGLES3::make_current();
+		RasterizerGLES3::make_current(false);
 	}
 #endif
 

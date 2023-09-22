@@ -199,6 +199,7 @@ public:
 	void get_script_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
 	MethodInfo get_method_info(const StringName &p_method) const override;
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	int get_member_line(const StringName &p_member) const override;
 

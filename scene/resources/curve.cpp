@@ -1662,7 +1662,7 @@ void Curve3D::_bake() const {
 		const Vector3 *forward_ptr = baked_forward_vector_cache.ptr();
 		const Vector3 *points_ptr = baked_point_cache.ptr();
 
-		Basis frame; // X-right, Y-up, Z-forward.
+		Basis frame; // X-right, Y-up, -Z-forward.
 		Basis frame_prev;
 
 		// Set the initial frame based on Y-up rule.
@@ -1683,7 +1683,7 @@ void Curve3D::_bake() const {
 			Vector3 forward = forward_ptr[idx];
 
 			Basis rotate;
-			rotate.rotate_to_align(frame_prev.get_column(2), forward);
+			rotate.rotate_to_align(-frame_prev.get_column(2), forward);
 			frame = rotate * frame_prev;
 			frame.orthonormalize(); // guard against float error accumulation
 

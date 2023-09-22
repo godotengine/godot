@@ -118,11 +118,6 @@ def configure(env: "Environment"):
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
-        # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
-        cc_version = get_compiler_version(env)
-        cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
-        if cc_semver >= (3, 1, 42):
-            env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
 
     # Sanitizers
     if env["use_ubsan"]:
@@ -204,9 +199,16 @@ def configure(env: "Environment"):
     env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
     env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
 
+    # Get version info for checks below.
+    cc_version = get_compiler_version(env)
+    cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
+
+    if env["lto"] != "none":
+        # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
+        if cc_semver >= (3, 1, 42) and cc_semver < (3, 1, 46):
+            env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
+
     if env["dlink_enabled"]:
-        cc_version = get_compiler_version(env)
-        cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
         if cc_semver < (3, 1, 14):
             print("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
             sys.exit(255)

@@ -1202,7 +1202,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
 						if (tools_settings_erase_button->is_pressed()) {
 							// Erasing
-							if (mb->is_ctrl_pressed() || mb->is_shift_pressed()) {
+							if (mb->is_command_or_control_pressed() || mb->is_shift_pressed()) {
 								// Remove tiles using rect.
 
 								// Setup the dragging info.
@@ -1241,7 +1241,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 									// Create a tile.
 									tile_set_atlas_source->create_tile(coords);
 								}
-							} else if (mb->is_ctrl_pressed()) {
+							} else if (mb->is_command_or_control_pressed()) {
 								// Create tiles using rect.
 								drag_type = DRAG_TYPE_CREATE_TILES_USING_RECT;
 								drag_start_mouse_pos = mouse_local_pos;
