@@ -644,6 +644,12 @@
 				Triggers when the mouse enters a meta tag.
 			</description>
 		</signal>
+		<signal name="thread_finish">
+			<description>
+				Triggers when the background thread has finished text processing.
+			</description>
+		</signal>
+
 	</signals>
 	<constants>
 		<constant name="LIST_NUMBERS" value="0" enum="ListType">
