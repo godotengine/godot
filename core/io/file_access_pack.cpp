@@ -241,7 +241,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 		String path;
 		path.parse_utf8(cs.ptr());
-		path = String("res://") + p_prefix + path.replace_first("res://", "");
+		path = String("res://") + p_prefix.path_join(path.replace_first("res://", ""));
 
 		uint64_t ofs = file_base + f->get_64();
 		uint64_t size = f->get_64();
