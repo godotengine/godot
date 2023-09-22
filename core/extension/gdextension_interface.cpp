@@ -41,6 +41,152 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 
+class CallableCustomExtension : public CallableCustom {
+	void *userdata;
+	void *token;
+
+	ObjectID object;
+
+	GDExtensionCallableCustomCall call_func;
+	GDExtensionCallableCustomIsValid is_valid_func;
+	GDExtensionCallableCustomFree free_func;
+
+	GDExtensionCallableCustomEqual equal_func;
+	GDExtensionCallableCustomLessThan less_than_func;
+
+	GDExtensionCallableCustomToString to_string_func;
+
+	uint32_t _hash;
+
+	static bool default_compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->call_func != b->call_func || a->userdata != b->userdata) {
+			return false;
+		}
+		return true;
+	}
+
+	static bool default_compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->call_func != b->call_func) {
+			return a->call_func < b->call_func;
+		}
+		return a->userdata < b->userdata;
+	}
+
+	static bool custom_compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->equal_func != b->equal_func) {
+			return false;
+		}
+		return a->equal_func(a->userdata, b->userdata);
+	}
+
+	static bool custom_compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->less_than_func != b->less_than_func) {
+			return default_compare_less(p_a, p_b);
+		}
+		return a->less_than_func(a->userdata, b->userdata);
+	}
+
+public:
+	uint32_t hash() const override {
+		return _hash;
+	}
+
+	String get_as_text() const override {
+		if (to_string_func != nullptr) {
+			String out;
+			GDExtensionBool is_valid = false;
+
+			to_string_func(userdata, &is_valid, (GDExtensionStringPtr)&out);
+
+			if (is_valid) {
+				return out;
+			}
+		}
+		return "<CallableCustom>";
+	}
+
+	CompareEqualFunc get_compare_equal_func() const override {
+		return (equal_func != nullptr) ? custom_compare_equal : default_compare_equal;
+	}
+
+	CompareLessFunc get_compare_less_func() const override {
+		return (less_than_func != nullptr) ? custom_compare_less : default_compare_less;
+	}
+
+	bool is_valid() const override {
+		if (is_valid_func != nullptr && !is_valid_func(userdata)) {
+			return false;
+		}
+		return call_func != nullptr;
+	}
+
+	StringName get_method() const override {
+		return StringName();
+	}
+
+	ObjectID get_object() const override {
+		return object;
+	}
+
+	void *get_userdata(void *p_token) const {
+		return (p_token == token) ? userdata : nullptr;
+	}
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+		GDExtensionCallError error;
+
+		call_func(userdata, (GDExtensionConstVariantPtr *)p_arguments, p_argcount, (GDExtensionVariantPtr)&r_return_value, &error);
+
+		r_call_error.error = (Callable::CallError::Error)error.error;
+		r_call_error.argument = error.argument;
+		r_call_error.expected = error.expected;
+	}
+
+	CallableCustomExtension(GDExtensionCallableCustomInfo *p_info) {
+		userdata = p_info->callable_userdata;
+		token = p_info->token;
+
+		if (p_info->object != nullptr) {
+			object = ((Object *)p_info->object)->get_instance_id();
+		}
+
+		call_func = p_info->call_func;
+		is_valid_func = p_info->is_valid_func;
+		free_func = p_info->free_func;
+
+		equal_func = p_info->equal_func;
+		less_than_func = p_info->less_than_func;
+
+		to_string_func = p_info->to_string_func;
+
+		// Pre-calculate the hash.
+		if (p_info->hash_func != nullptr) {
+			_hash = p_info->hash_func(userdata);
+		} else {
+			_hash = hash_murmur3_one_64((uint64_t)call_func);
+			_hash = hash_murmur3_one_64((uint64_t)userdata, _hash);
+		}
+	}
+
+	~CallableCustomExtension() {
+		if (free_func != nullptr) {
+			free_func(userdata);
+		}
+	}
+};
+
 // Core interface functions.
 GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name) {
 	return GDExtension::get_interface_function(p_name);
@@ -1139,6 +1285,22 @@ static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExt
 	return script_instance_extension->instance;
 }
 
+static void gdextension_callable_custom_create(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo *p_custom_callable_info) {
+	memnew_placement(r_callable, Callable(memnew(CallableCustomExtension(p_custom_callable_info))));
+}
+
+static void *gdextension_callable_custom_get_userdata(GDExtensionTypePtr p_callable, void *p_token) {
+	const Callable &callable = *reinterpret_cast<const Callable *>(p_callable);
+	if (!callable.is_custom()) {
+		return nullptr;
+	}
+	const CallableCustomExtension *custom_callable = dynamic_cast<const CallableCustomExtension *>(callable.get_custom());
+	if (!custom_callable) {
+		return nullptr;
+	}
+	return custom_callable->get_userdata(p_token);
+}
+
 static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
@@ -1313,6 +1475,8 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(placeholder_script_instance_create);
 	REGISTER_INTERFACE_FUNC(placeholder_script_instance_update);
 	REGISTER_INTERFACE_FUNC(object_get_script_instance);
+	REGISTER_INTERFACE_FUNC(callable_custom_create);
+	REGISTER_INTERFACE_FUNC(callable_custom_get_userdata);
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
 	REGISTER_INTERFACE_FUNC(classdb_get_class_tag);

@@ -301,6 +301,8 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
 		p_extension_funcs->free_instance_func, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
+		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
+		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
 		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid;
 		p_extension_funcs->class_userdata, // void *class_userdata;
 	};
@@ -375,6 +377,8 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	extension->gdextension.create_instance = p_extension_funcs->create_instance_func;
 	extension->gdextension.free_instance = p_extension_funcs->free_instance_func;
 	extension->gdextension.get_virtual = p_extension_funcs->get_virtual_func;
+	extension->gdextension.get_virtual_call_data = p_extension_funcs->get_virtual_call_data_func;
+	extension->gdextension.call_virtual_with_data = p_extension_funcs->call_virtual_with_data_func;
 	extension->gdextension.get_rid = p_extension_funcs->get_rid_func;
 
 	ClassDB::register_extension_class(&extension->gdextension);

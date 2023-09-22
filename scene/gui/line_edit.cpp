@@ -614,7 +614,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		// Allow unicode handling if:
 		// * No Modifiers are pressed (except shift)
-		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
+		bool allow_unicode_handling = !(k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
 			// Handle Unicode if no modifiers are active.
@@ -679,13 +679,13 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		set_caret_at_pixel_pos(p_point.x);
 		int caret_column_tmp = caret_column;
 		bool is_inside_sel = selection.enabled && caret_column >= selection.begin && caret_column <= selection.end;
-		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 			is_inside_sel = selection.enabled && caret_column > selection.begin && caret_column < selection.end;
 		}
 		if (selection.drag_attempt) {
 			selection.drag_attempt = false;
 			if (!is_inside_sel) {
-				if (!Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+				if (!Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 					if (caret_column_tmp > selection.end) {
 						caret_column_tmp = caret_column_tmp - (selection.end - selection.begin);
 					}
@@ -1139,7 +1139,7 @@ void LineEdit::_notification(int p_what) {
 			if (is_drag_successful()) {
 				if (selection.drag_attempt) {
 					selection.drag_attempt = false;
-					if (is_editable() && !Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+					if (is_editable() && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 						selection_delete();
 					} else if (deselect_on_focus_loss_enabled) {
 						deselect();

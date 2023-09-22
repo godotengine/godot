@@ -267,6 +267,7 @@ void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 
 	_recreate_octant_data();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {

@@ -357,3 +357,13 @@ Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name
 	EditorCommandPalette::get_singleton()->add_shortcut_command(p_command_name, p_path, shortcut);
 	return shortcut;
 }
+
+Ref<Shortcut> ED_SHORTCUT_ARRAY_AND_COMMAND(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes, String p_command_name) {
+	if (p_command_name.is_empty()) {
+		p_command_name = p_name;
+	}
+
+	Ref<Shortcut> shortcut = ED_SHORTCUT_ARRAY(p_path, p_name, p_keycodes);
+	EditorCommandPalette::get_singleton()->add_shortcut_command(p_command_name, p_path, shortcut);
+	return shortcut;
+}
