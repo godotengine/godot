@@ -2050,6 +2050,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("slot", "GraphNode", graphn_sb_slot);
 
 	theme->set_color("resizer_color", "GraphNode", graphnode_decoration_color);
+	theme->set_color("title_color", "GraphNode", graphnode_decoration_color);
 
 	theme->set_constant("port_h_offset", "GraphNode", 0);
 	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
