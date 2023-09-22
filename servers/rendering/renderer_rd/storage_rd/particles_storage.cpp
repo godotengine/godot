@@ -1388,7 +1388,11 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
-		float screen_hz = DisplayServer::get_singleton()->screen_get_refresh_rate();
+		float screen_hz = 60;
+
+		float cur_display_hz = DisplayServer::get_singleton()->screen_get_refresh_rate();
+		if (cur_display_hz > 0)
+			screen_hz = cur_display_hz;
 
 		int fixed_fps = 0;
 		if (particles->fixed_fps > 0) {
