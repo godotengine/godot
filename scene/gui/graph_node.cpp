@@ -334,6 +334,10 @@ void GraphNode::_notification(int p_what) {
 			// Draw title bar stylebox above.
 			draw_style_box(sb_to_draw_titlebar, titlebar_rect);
 
+			if (title_label) {
+				title_label->add_theme_color_override("font_color", theme_cache.title_color);
+			}
+
 			int width = get_size().width - sb_panel->get_minimum_size().x;
 
 			if (get_child_count() > 0) {
@@ -737,6 +741,7 @@ void GraphNode::set_title(const String &p_title) {
 	title = p_title;
 	if (title_label) {
 		title_label->set_text(title);
+		title_label->add_theme_color_override("font_color", theme_cache.title_color);
 	}
 	update_minimum_size();
 }
@@ -838,6 +843,8 @@ void GraphNode::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphNode, port);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphNode, resizer);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphNode, resizer_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphNode, title_color);
 }
 
 GraphNode::GraphNode() {

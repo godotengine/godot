@@ -721,6 +721,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("port", "GraphNode", icons["graph_port"]);
 	theme->set_icon("resizer", "GraphNode", icons["resizer_se"]);
 	theme->set_color("resizer_color", "GraphNode", control_font_color);
+	theme->set_color("title_color", "GraphNode", control_font_color);
 	theme->set_constant("separation", "GraphNode", Math::round(2 * scale));
 	theme->set_constant("port_h_offset", "GraphNode", 0);
 
