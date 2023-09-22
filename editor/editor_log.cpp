@@ -381,7 +381,7 @@ void EditorLog::_reset_message_counts() {
 }
 
 void EditorLog::_check_need_rebuild() {
-	if (need_rebuld && !unlikely(log->is_updating())) {
+	if (need_rebuld && !log->is_updating()) {
 		need_rebuld = false;
 		_rebuild_log();
 	}
