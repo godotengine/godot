@@ -1264,22 +1264,78 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw_all() {
 		return;
 	}
 
-	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	String base_path = AnimationTreeEditor::get_singleton()->get_base_path();
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(base_path + "playback");
 	if (!playback.is_valid() || !playback->is_playing()) {
 		return;
 	}
 
-	{
+	if (current_length == HUGE_LENGTH) {
+		String current_node_name = playback->get_current_node();
+
+		Ref<Animation> anim;
+
+		if (!current_node_name.is_empty()) {
+			Ref<AnimationNodeAnimation> current_animation_node = state_machine->get_node(current_node_name);
+			AnimationPlayer *ap = nullptr;
+			if (current_animation_node.is_valid()) {
+				if (tree->has_node(tree->get_animation_player())) {
+					ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
+					if (ap) {
+						anim = ap->get_animation(current_animation_node->get_animation());
+					}
+				}
+			}
+		}
+
+		if (anim.is_valid()) {
+			double anim_size = (double)anim->get_length();
+			String full = base_path + current_node_name + "/time";
+			double time = tree->get(full);
+
+			_state_machine_pos_draw_individual(playback->get_current_node(), time / anim_size);
+		} else {
+			_state_machine_pos_draw_individual(playback->get_current_node(), 1.0);
+		}
+	} else {
 		float len = MAX(0.0001, current_length);
 		float pos = CLAMP(current_play_pos, 0, len);
-		float c = current_length == HUGE_LENGTH ? 1 : (pos / len);
+		float c = (pos / len);
 		_state_machine_pos_draw_individual(playback->get_current_node(), c);
 	}
 
-	{
+	if (fade_from_length == HUGE_LENGTH) {
+		String fading_from_node_name = playback->get_fading_from_node();
+
+		Ref<Animation> anim;
+
+		if (!fading_from_node_name.is_empty()) {
+			Ref<AnimationNodeAnimation> fading_from_animation_node = state_machine->get_node(fading_from_node_name);
+			AnimationPlayer *ap = nullptr;
+
+			if (fading_from_animation_node.is_valid()) {
+				if (tree->has_node(tree->get_animation_player())) {
+					ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
+					if (ap) {
+						anim = ap->get_animation(fading_from_animation_node->get_animation());
+					}
+				}
+			}
+		}
+
+		if (anim.is_valid()) {
+			double anim_size = (double)anim->get_length();
+			String full = base_path + fading_from_node_name + "/time";
+			double time = tree->get(full);
+
+			_state_machine_pos_draw_individual(playback->get_fading_from_node(), time / anim_size);
+		} else {
+			_state_machine_pos_draw_individual(playback->get_fading_from_node(), 1.0);
+		}
+	} else {
 		float len = MAX(0.0001, fade_from_length);
 		float pos = CLAMP(fade_from_current_play_pos, 0, len);
-		float c = fade_from_length == HUGE_LENGTH ? 1 : (pos / len);
+		float c = fade_from_length == (pos / len);
 		_state_machine_pos_draw_individual(playback->get_fading_from_node(), c);
 	}
 }
@@ -1478,7 +1534,10 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				}
 			}
 
-			if (last_play_pos != current_play_pos || fade_from_last_play_pos != fade_from_current_play_pos) {
+			if (last_play_pos != current_play_pos ||
+					fade_from_last_play_pos != fade_from_current_play_pos ||
+					(current_length == HUGE_LENGTH && tree->is_active()) ||
+					(fade_from_length == HUGE_LENGTH && tree->is_active())) {
 				last_play_pos = current_play_pos;
 				fade_from_last_play_pos = fade_from_current_play_pos;
 				state_machine_play_pos->queue_redraw();
