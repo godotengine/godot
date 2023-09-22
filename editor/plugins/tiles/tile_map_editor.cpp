@@ -107,17 +107,33 @@ void TileMapEditorTilesPlugin::_update_transform_buttons() {
 		return;
 	}
 
-	if (tile_set->get_tile_shape() == TileSet::TILE_SHAPE_SQUARE || selection_pattern->get_size() == Vector2i(1, 1)) {
-		transform_button_rotate_left->set_disabled(false);
-		transform_button_rotate_left->set_tooltip_text("");
-		transform_button_rotate_right->set_disabled(false);
-		transform_button_rotate_right->set_tooltip_text("");
+	bool has_scene_tile = false;
+	for (const KeyValue<Vector2i, TileMapCell> &E : selection_pattern->get_pattern()) {
+		if (Object::cast_to<TileSetScenesCollectionSource>(tile_set->get_source(E.value.source_id).ptr())) {
+			has_scene_tile = true;
+			break;
+		}
+	}
+
+	if (has_scene_tile) {
+		_set_transform_buttons_state({}, { transform_button_rotate_left, transform_button_rotate_right, transform_button_flip_h, transform_button_flip_v },
+				TTR("Can't transform scene tiles."));
+	} else if (tile_set->get_tile_shape() != TileSet::TILE_SHAPE_SQUARE && selection_pattern->get_size() != Vector2i(1, 1)) {
+		_set_transform_buttons_state({ transform_button_flip_h, transform_button_flip_v }, { transform_button_rotate_left, transform_button_rotate_right },
+				TTR("Can't rotate patterns when using non-square tile grid."));
 	} else {
-		const String tooltip_text = TTR("Can't rotate patterns when using non-square tile grid.");
-		transform_button_rotate_left->set_disabled(true);
-		transform_button_rotate_left->set_tooltip_text(tooltip_text);
-		transform_button_rotate_right->set_disabled(true);
-		transform_button_rotate_right->set_tooltip_text(tooltip_text);
+		_set_transform_buttons_state({ transform_button_rotate_left, transform_button_rotate_right, transform_button_flip_h, transform_button_flip_v }, {}, "");
+	}
+}
+
+void TileMapEditorTilesPlugin::_set_transform_buttons_state(const Vector<Button *> &p_enabled_buttons, const Vector<Button *> &p_disabled_buttons, const String &p_why_disabled) {
+	for (Button *button : p_enabled_buttons) {
+		button->set_disabled(false);
+		button->set_tooltip_text("");
+	}
+	for (Button *button : p_disabled_buttons) {
+		button->set_disabled(true);
+		button->set_tooltip_text(p_why_disabled);
 	}
 }
 

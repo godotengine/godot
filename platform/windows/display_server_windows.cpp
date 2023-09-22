@@ -1525,7 +1525,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 
 	if (p_fullscreen || p_borderless) {
 		r_style |= WS_POPUP; // p_borderless was WS_EX_TOOLWINDOW in the past.
-		if (p_fullscreen && p_multiwindow_fs) {
+		if ((p_fullscreen && p_multiwindow_fs) || p_maximized) {
 			r_style |= WS_BORDER; // Allows child windows to be displayed on top of full screen.
 		}
 	} else {
@@ -2852,6 +2852,30 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_NCPAINT: {
+			if (RenderingServer::get_singleton() && (windows[window_id].borderless || (windows[window_id].fullscreen && windows[window_id].multiwindow_fs))) {
+				Color color = RenderingServer::get_singleton()->get_default_clear_color();
+				HDC hdc = GetWindowDC(hWnd);
+				if (hdc) {
+					HPEN pen = CreatePen(PS_SOLID, 1, RGB(color.r * 255.f, color.g * 255.f, color.b * 255.f));
+					if (pen) {
+						HGDIOBJ prev_pen = SelectObject(hdc, pen);
+						HGDIOBJ prev_brush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
+
+						RECT rc;
+						GetWindowRect(hWnd, &rc);
+						OffsetRect(&rc, -rc.left, -rc.top);
+						Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom);
+
+						SelectObject(hdc, prev_pen);
+						SelectObject(hdc, prev_brush);
+						DeleteObject(pen);
+					}
+					ReleaseDC(hWnd, hdc);
+				}
+				return 0;
+			}
+		} break;
 		case WM_NCHITTEST: {
 			if (windows[window_id].mpass) {
 				return HTTRANSPARENT;
