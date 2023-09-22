@@ -41,7 +41,7 @@ StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
 		if (p.begins_with("params/")) {
 			String q = p.replace_first("params/", "");
 			param_remaps[p] = q;
-			r = param_remaps.getptr(q);
+			r = param_remaps.getptr(p);
 		}
 	}
 
