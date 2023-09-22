@@ -600,6 +600,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 void RendererViewport::draw_viewports() {
 	timestamp_vp_map.clear();
+	blit_to_screen_list.clear();
 
 	// get our xr interface in case we need it
 	Ref<XRInterface> xr_interface;
@@ -621,7 +622,6 @@ void RendererViewport::draw_viewports() {
 		sorted_active_viewports_dirty = false;
 	}
 
-	HashMap<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
 	//draw viewports
 	RENDER_TIMESTAMP("> Render Viewports");
 
