@@ -27,7 +27,7 @@
 		    print("Pressure " + str(midi_event.pressure))
 		    print("Controller number: " + str(midi_event.controller_number))
 		    print("Controller value: " + str(midi_event.controller_value))
-		    print("Connection index: " + str{midi_event.connection_index));
+		    print("Connection index: " + str(midi_event.connection_index))
 		[/gdscript]
 		[csharp]
 		public override void _Ready()
