@@ -306,7 +306,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 						multisample_state.enable_alpha_to_one = true;
 					}
 
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_MULTIVIEW || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW) {
+					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_NO_SHADOWS || k == SHADER_VERSION_COLOR_PASS_MULTIVIEW || k == SHADER_VERSION_COLOR_PASS_NO_SHADOWS_MULTIVIEW || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_NO_SHADOWS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_NO_SHADOWS_MULTIVIEW) {
 						blend_state = blend_state_blend;
 						if (depth_draw == DEPTH_DRAW_OPAQUE && !uses_alpha_clip) {
 							depth_stencil.enable_depth_write = false; //alpha does not draw depth
@@ -320,7 +320,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 						continue; // do not use this version (will error if using it is attempted)
 					}
 				} else {
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_MULTIVIEW || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW) {
+					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_NO_SHADOWS || k == SHADER_VERSION_COLOR_PASS_MULTIVIEW || k == SHADER_VERSION_COLOR_PASS_NO_SHADOWS_MULTIVIEW || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_NO_SHADOWS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_NO_SHADOWS_MULTIVIEW) {
 						blend_state = blend_state_opaque;
 					} else if (k == SHADER_VERSION_SHADOW_PASS || k == SHADER_VERSION_SHADOW_PASS_MULTIVIEW || k == SHADER_VERSION_SHADOW_PASS_DP) {
 						//none, leave empty
@@ -419,21 +419,27 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 	{
 		Vector<String> shader_versions;
 		shader_versions.push_back(""); // SHADER_VERSION_COLOR_PASS
+		shader_versions.push_back("\n#define SHADOWS_DISABLED\n"); // SHADER_VERSION_COLOR_PASS_NO_SHADOWS
 		shader_versions.push_back("\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
+		shader_versions.push_back("\n#define USE_LIGHTMAP\n#define SHADOWS_DISABLED\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_NO_SHADOWS
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_SHADOW_PASS_DP
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 
 		// multiview versions of our shaders
 		shader_versions.push_back("\n#define USE_MULTIVIEW\n"); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define SHADOWS_DISABLED\n"); // SHADER_VERSION_COLOR_PASS_NO_SHADOWS_MULTIVIEW
 		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n#define SHADOWS_DISABLED\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_NO_SHADOWS_MULTIVIEW
 		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
 
 		shader.initialize(shader_versions, p_defines);
 
 		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			shader.set_variant_enabled(SHADER_VERSION_COLOR_PASS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_COLOR_PASS_NO_SHADOWS_MULTIVIEW, false);
 			shader.set_variant_enabled(SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_LIGHTMAP_COLOR_PASS_NO_SHADOWS_MULTIVIEW, false);
 			shader.set_variant_enabled(SHADER_VERSION_SHADOW_PASS_MULTIVIEW, false);
 		}
 	}

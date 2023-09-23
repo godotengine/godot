@@ -568,6 +568,31 @@ void LightStorage::set_max_lights(const uint32_t p_max_lights) {
 	directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
 }
 
+bool LightStorage::has_shadows(const uint32_t p_directional_light_count) const {
+	for (uint32_t i = 0; i < p_directional_light_count; i++) {
+		if (directional_lights[i].shadow_opacity > 0.001) {
+			return true;
+		}
+	}
+
+	const uint32_t local_omni_light_count = omni_light_count;
+	const uint32_t local_spot_light_count = spot_light_count;
+
+	for (uint32_t i = 0u; i < local_omni_light_count; ++i) {
+		if (omni_lights[i].shadow_opacity > 0.001) {
+			return true;
+		}
+	}
+
+	for (uint32_t i = 0u; i < local_spot_light_count; ++i) {
+		if (spot_lights[i].shadow_opacity > 0.001) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
 	ForwardIDStorage *forward_id_storage = ForwardIDStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();

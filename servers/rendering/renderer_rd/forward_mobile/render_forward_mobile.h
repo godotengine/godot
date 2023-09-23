@@ -152,6 +152,7 @@ private:
 		RenderElementInfo *element_info = nullptr;
 		int element_count = 0;
 		bool reverse_cull = false;
+		bool has_shadows = false;
 		PassMode pass_mode = PASS_MODE_COLOR;
 		// bool no_gi = false;
 		uint32_t view_count = 1;
@@ -166,12 +167,13 @@ private:
 		uint32_t barrier = RD::BARRIER_MASK_ALL_BARRIERS;
 		uint32_t subpass = 0;
 
-		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, uint32_t p_spec_constant_base_flags = 0, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL_BARRIERS) {
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_has_shadows, RID p_render_pass_uniform_set, uint32_t p_spec_constant_base_flags = 0, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL_BARRIERS) {
 			elements = p_elements;
 			element_info = p_element_info;
 			element_count = p_element_count;
 			reverse_cull = p_reverse_cull;
 			pass_mode = p_pass_mode;
+			has_shadows = p_has_shadows;
 			// no_gi = p_no_gi;
 			view_count = p_view_count;
 			render_pass_uniform_set = p_render_pass_uniform_set;

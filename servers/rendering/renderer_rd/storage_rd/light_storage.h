@@ -776,6 +776,7 @@ public:
 		}
 		return false;
 	}
+	bool has_shadows(const uint32_t p_directional_light_count) const;
 	void update_light_buffers(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows);
 
 	/* REFLECTION PROBE */
