@@ -54,7 +54,7 @@
 			Whether the BoneAttachment3D node will override the bone pose of the bone it is attached to. When set to [code]true[/code], the BoneAttachment3D node can change the pose of the bone. When set to [code]false[/code], the BoneAttachment3D will always be set to the bone's transform.
 		</member>
 		<member name="use_bone_transform_no_override" type="bool" setter="set_use_bone_transform_no_override" getter="get_use_bone_transform_no_override" default="false">
-			Whether the BoneAttachment3D node will use the non overriden bone pose of the bone it is attached to. This feature does nothing if [member override_pose] is true. When set to [code]true[/code], the BoneAttachment3D will be set to the bone's non overriden transform. When set to [code]false[/code], the BoneAttachment3D will be set to the bone's overriden transform.
+			Whether the BoneAttachment3D node will use the non overridden bone pose of the bone it is attached to. This feature does nothing if [member override_pose] is true. When set to [code]true[/code], the BoneAttachment3D will be set to the bone's non overridden transform. When set to [code]false[/code], the BoneAttachment3D will be set to the bone's overridden transform.
 		</member>
 	</members>
 </class>
