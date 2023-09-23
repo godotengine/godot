@@ -49,7 +49,7 @@ class EditorPropertyVectorN : public EditorProperty {
 	Vector<double> ratio;
 	bool is_grabbed = false;
 
-	bool angle_in_radians = false;
+	bool radians_as_degrees = false;
 
 	void _update_ratio();
 	void _store_link(bool p_linked);
@@ -62,7 +62,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step = 1.0, bool p_hide_slider = true, bool p_link = false, const String &p_suffix = String(), bool p_angle_in_radians = false);
+	void setup(double p_min, double p_max, double p_step = 1.0, bool p_hide_slider = true, bool p_link = false, const String &p_suffix = String(), bool p_radians_as_degrees = false);
 	EditorPropertyVectorN(Variant::Type p_type, bool p_force_wide, bool p_horizontal);
 };
 
