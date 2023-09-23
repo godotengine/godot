@@ -1680,7 +1680,10 @@ Error VulkanContext::_create_semaphores() {
 		/*pNext*/ nullptr,
 		/*flags*/ VK_FENCE_CREATE_SIGNALED_BIT
 	};
-	for (uint32_t i = 0; i < FRAME_LAG; i++) {
+
+	CRASH_COND_MSG(frame_count == 0, "Used before initialization.");
+
+	for (uint32_t i = 0; i < frame_count; i++) {
 		err = vkCreateFence(device, &fence_ci, nullptr, &fences[i]);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
@@ -1743,6 +1746,9 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, Display
 	window.width = p_width;
 	window.height = p_height;
 	window.vsync_mode = p_vsync_mode;
+	for (size_t i = 0u; i < MAX_FRAME_LAG; ++i) {
+		window.image_acquired_semaphores[i] = VK_NULL_HANDLE;
+	}
 	Error err = _update_swap_chain(&window);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
@@ -1813,8 +1819,14 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 	window->render_pass = VK_NULL_HANDLE;
 	if (window->swapchain_image_resources) {
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {
-			vkDestroyImageView(device, window->swapchain_image_resources[i].view, nullptr);
-			vkDestroyFramebuffer(device, window->swapchain_image_resources[i].framebuffer, nullptr);
+			if (window->swapchain_image_resources[i].view != VK_NULL_HANDLE) {
+				vkDestroyImageView(device, window->swapchain_image_resources[i].view, nullptr);
+				window->swapchain_image_resources[i].view = VK_NULL_HANDLE;
+			}
+			if (window->swapchain_image_resources[i].framebuffer != VK_NULL_HANDLE) {
+				vkDestroyFramebuffer(device, window->swapchain_image_resources[i].framebuffer, nullptr);
+				window->swapchain_image_resources[i].framebuffer = VK_NULL_HANDLE;
+			}
 		}
 
 		free(window->swapchain_image_resources);
@@ -1822,17 +1834,22 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 		swapchainImageCount = 0;
 	}
 	if (separate_present_queue) {
-		vkDestroyCommandPool(device, window->present_cmd_pool, nullptr);
+		if (window->present_cmd_pool != VK_NULL_HANDLE) {
+			vkDestroyCommandPool(device, window->present_cmd_pool, nullptr);
+			window->present_cmd_pool = VK_NULL_HANDLE;
+		}
 	}
 
-	for (uint32_t i = 0; i < FRAME_LAG; i++) {
-		// Destroy the semaphores now (we'll re-create it later if we have to).
-		// We must do this because the semaphore cannot be reused if it's in a signaled state
-		// (which happens if vkAcquireNextImageKHR returned VK_ERROR_OUT_OF_DATE_KHR or VK_SUBOPTIMAL_KHR)
-		// The only way to reset it would be to present the swapchain... the one we just destroyed.
-		// And the API has no way to "unsignal" the semaphore.
-		vkDestroySemaphore(device, window->image_acquired_semaphores[i], nullptr);
-		window->image_acquired_semaphores[i] = 0;
+	for (uint32_t i = 0; i < frame_count; i++) {
+		if (window->image_acquired_semaphores[i] != VK_NULL_HANDLE) {
+			// Destroy the semaphores now (we'll re-create it later if we have to).
+			// We must do this because the semaphore cannot be reused if it's in a signaled state
+			// (which happens if vkAcquireNextImageKHR returned VK_ERROR_OUT_OF_DATE_KHR or
+			// VK_SUBOPTIMAL_KHR) The only way to reset it would be to present the swapchain...
+			// the one we just destroyed. And the API has no way to "unsignal" the semaphore.
+			vkDestroySemaphore(device, window->image_acquired_semaphores[i], nullptr);
+			window->image_acquired_semaphores[i] = VK_NULL_HANDLE;
+		}
 	}
 
 	return OK;
@@ -1960,18 +1977,13 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	free(presentModes);
 
-	// Determine the number of VkImages to use in the swap chain.
-	// Application desires to acquire 3 images at a time for triple
-	// buffering.
-	uint32_t desiredNumOfSwapchainImages = 3;
-	if (desiredNumOfSwapchainImages < surfCapabilities.minImageCount) {
-		desiredNumOfSwapchainImages = surfCapabilities.minImageCount;
-	}
+	uint32_t desiredNumOfSwapchainImages = MAX(surfCapabilities.minImageCount, swapchain_desired_count);
 	// If maxImageCount is 0, we can ask for as many images as we want;
 	// otherwise we're limited to maxImageCount.
-	if ((surfCapabilities.maxImageCount > 0) && (desiredNumOfSwapchainImages > surfCapabilities.maxImageCount)) {
+	if (surfCapabilities.maxImageCount != 0u) {
 		// Application must settle for fewer images than desired.
-		desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
+		desiredNumOfSwapchainImages =
+				MIN(surfCapabilities.maxImageCount, desiredNumOfSwapchainImages);
 	}
 
 	VkSurfaceTransformFlagsKHR preTransform;
@@ -2224,7 +2236,9 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		/*flags*/ 0,
 	};
 
-	for (uint32_t i = 0; i < FRAME_LAG; i++) {
+	CRASH_COND_MSG(frame_count == 0, "Used before initialization.");
+
+	for (uint32_t i = 0; i < frame_count; i++) {
 		VkResult vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &window->image_acquired_semaphores[i]);
 		ERR_FAIL_COND_V(vkerr, ERR_CANT_CREATE);
 	}
@@ -2314,10 +2328,6 @@ Error VulkanContext::prepare_buffers() {
 	}
 
 	VkResult err;
-
-	// Ensure no more than FRAME_LAG renderings are outstanding.
-	vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
-	vkResetFences(device, 1, &fences[frame_index]);
 
 	for (KeyValue<int, Window> &E : windows) {
 		Window *w = &E.value;
@@ -2425,6 +2435,7 @@ Error VulkanContext::swap_buffers() {
 	submit_info.pCommandBuffers = commands_ptr;
 	submit_info.signalSemaphoreCount = 1;
 	submit_info.pSignalSemaphores = &draw_complete_semaphores[frame_index];
+	vkResetFences(device, 1, &fences[frame_index]);
 	err = vkQueueSubmit(graphics_queue, 1, &submit_info, fences[frame_index]);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Vulkan: Cannot submit graphics queue. Error code: " + String(string_VkResult(err)));
 
@@ -2561,7 +2572,12 @@ Error VulkanContext::swap_buffers() {
 	err = fpQueuePresentKHR(present_queue, &present);
 
 	frame_index += 1;
-	frame_index %= FRAME_LAG;
+	frame_index %= frame_count;
+
+	// We must wait for the tail frame_index to finish rendering in the GPU, otherwise its resources
+	// (GPU memory address ranges + API handles) may still be in use.
+	// Ideally we'd delay calling this as long as possible; but it's hard to guarantee.
+	vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
 
 	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// Swapchain is out of date (e.g. the window was resized) and
@@ -2791,6 +2807,17 @@ void VulkanContext::set_vsync_mode(DisplayServer::WindowID p_window, DisplayServ
 }
 
 VulkanContext::VulkanContext() {
+	frame_count = uint8_t(GLOBAL_DEF_RST("display/window/vsync/buffer_count", 2u));
+	// TODO: In theory it should be possible to have swapchain_desired_count per window.
+	// But it may complicate their management.
+	swapchain_desired_count = uint8_t(GLOBAL_DEF_RST("display/window/vsync/swapchain_count", 3u));
+
+	CRASH_COND_MSG(frame_count < 1 || frame_count > MAX_FRAME_LAG,
+			vformat("display/window/vsync/buffer_count %d out of bounds (must be in range [1; %d).",
+					frame_count, MAX_FRAME_LAG));
+	CRASH_COND_MSG(swapchain_desired_count < 1,
+			"display/window/vsync/swapchain_count out of bounds (must be in range [1; inf).");
+
 	command_buffer_queue.resize(1); // First one is always the setup command.
 	command_buffer_queue.write[0] = nullptr;
 }
@@ -2800,7 +2827,7 @@ VulkanContext::~VulkanContext() {
 		free(queue_props);
 	}
 	if (device_initialized) {
-		for (uint32_t i = 0; i < FRAME_LAG; i++) {
+		for (uint32_t i = 0; i < frame_count; i++) {
 			vkDestroyFence(device, fences[i], nullptr);
 			vkDestroySemaphore(device, draw_complete_semaphores[i], nullptr);
 			if (separate_present_queue) {

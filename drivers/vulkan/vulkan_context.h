@@ -97,7 +97,7 @@ private:
 	enum {
 		MAX_EXTENSIONS = 128,
 		MAX_LAYERS = 64,
-		FRAME_LAG = 2
+		MAX_FRAME_LAG = 4
 	};
 
 	static VulkanHooks *vulkan_hooks;
@@ -135,10 +135,15 @@ private:
 	VkQueue present_queue = VK_NULL_HANDLE;
 	VkColorSpaceKHR color_space;
 	VkFormat format;
-	VkSemaphore draw_complete_semaphores[FRAME_LAG];
-	VkSemaphore image_ownership_semaphores[FRAME_LAG];
-	int frame_index = 0;
-	VkFence fences[FRAME_LAG];
+	VkSemaphore draw_complete_semaphores[MAX_FRAME_LAG] = {};
+	VkSemaphore image_ownership_semaphores[MAX_FRAME_LAG] = {};
+	uint32_t frame_index = 0;
+	// Initialize to 0 because we don't want it to be used before we initialize and read the config
+	// (this value must stay constant throghout VulkanContext's & RenderingDevice's lifetime).
+	uint32_t frame_count = 0;
+	// See swapchainImageCount.
+	uint32_t swapchain_desired_count = 0;
+	VkFence fences[MAX_FRAME_LAG] = {};
 	VkPhysicalDeviceMemoryProperties memory_properties;
 	VkPhysicalDeviceFeatures physical_device_features;
 
@@ -154,7 +159,7 @@ private:
 		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 		SwapchainImageResources *swapchain_image_resources = VK_NULL_HANDLE;
 		VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
-		VkSemaphore image_acquired_semaphores[FRAME_LAG];
+		VkSemaphore image_acquired_semaphores[MAX_FRAME_LAG] = {};
 		bool semaphore_acquired = false;
 		uint32_t current_buffer = 0;
 		int width = 0;
@@ -290,6 +295,9 @@ public:
 	int get_swapchain_image_count() const;
 	VkQueue get_graphics_queue() const;
 	uint32_t get_graphics_queue_family_index() const;
+
+	uint32_t get_frame_index() const { return frame_index; }
+	uint32_t get_frame_count() const { return frame_count; }
 
 	static void set_vulkan_hooks(VulkanHooks *p_vulkan_hooks) { vulkan_hooks = p_vulkan_hooks; };
 

@@ -1038,13 +1038,11 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint32_t max_timestamp_query_elements = 0;
 
 	TightLocalVector<Frame> frames; // Frames available, for main device they are cycled (usually 3), for local devices only 1.
-	int frame = 0; // Current frame.
-	int frame_count = 0; // Total amount of frames.
 	uint64_t frames_drawn = 0;
 	RID local_device;
 	bool local_device_processing = false;
 
-	void _free_pending_resources(int p_frame);
+	void _free_pending_resources(uint32_t p_frame);
 
 	VmaAllocator allocator = nullptr;
 	HashMap<uint32_t, VmaPool> small_allocs_pools;

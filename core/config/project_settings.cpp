@@ -1359,6 +1359,8 @@ ProjectSettings::ProjectSettings() {
 	// Keep the enum values in sync with the `DisplayServer::VSyncMode` enum.
 	custom_prop_info["display/window/vsync/vsync_mode"] = PropertyInfo(Variant::INT, "display/window/vsync/vsync_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Adaptive,Mailbox");
 	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "display/window/vsync/buffer_count", PROPERTY_HINT_RANGE, "1,3,1"), 2);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "display/window/vsync/swapchain_count", PROPERTY_HINT_RANGE, "1,4,1"), 3);
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
 

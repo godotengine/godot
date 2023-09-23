@@ -830,6 +830,23 @@
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
 			If [code]true[/code] subwindows are embedded in the main window.
 		</member>
+		<member name="display/window/vsync/buffer_count" type="int" setter="" getter="" default="2">
+			Sets the number of buffers before stalling to wait for the GPU.
+			1 may give you the lowest lag/latency but at the high cost of no parallelism between CPU &amp; GPU.
+			Try the [url=https://darksylinc.github.io/vsync_simulator/]V-Sync Simulator[/url], an interactive interface that simulates presentation to better understand how it is affected by different variables under various conditions.
+			[b]Note:[/b] This setting is not supported by all APIs.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
+		</member>
+		<member name="display/window/vsync/swapchain_count" type="int" setter="" getter="" default="3">
+			Sets the number of swapchains (back buffer + front buffer).
+			[code]2[/code] corresponds to double buffering and [code]3[/code] to triple buffering. A value of [code]1[/code] is not recommended.
+			Double buffering may give you the lowest lag/latency but if VSync is on and the system can't render at 60 fps, the framerate will go down in multiples of it (e.g. 30 fps, 15, 7.5, etc ). Triple buffering gives you higher framerate (specially if the system can't reach a constant 60 fps) at the cost of up to 1 frame of latency (when VSync is On in FIFO mode).
+			Use Double buffering if V-Sync is off. Triple buffering is a must if you plan on using V-Sync MAILBOX mode.
+			Try the [url=https://darksylinc.github.io/vsync_simulator/]V-Sync Simulator[/url], an interactive interface that simulates presentation to better understand how it is affected by different variables under various conditions.
+			[b]Note:[/b] This setting is not supported by all APIs.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
+			[b]Note:[/b] Some platforms may restrict the actual value.
+		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the V-Sync mode for the main game window.
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
