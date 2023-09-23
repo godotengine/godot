@@ -2426,7 +2426,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KeyModifierMask::ALT | Key::F1);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/contextual_help", "macos", KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::SPACE);
 
-	ED_SHORTCUT("script_text_editor/symbol_lookup", TTR("symbol_lookup"), Key::F12);
+	ED_SHORTCUT("script_text_editor/lookup_symbol", TTR("Lookup Symbol"), Key::F12);
 
 	ED_SHORTCUT("script_text_editor/toggle_bookmark", TTR("Toggle Bookmark"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::B);
 	ED_SHORTCUT("script_text_editor/goto_next_bookmark", TTR("Go to Next Bookmark"), KeyModifierMask::CMD_OR_CTRL | Key::B);
