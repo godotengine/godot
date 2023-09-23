@@ -2713,7 +2713,10 @@ void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
 	}
 
 	zwp_locked_pointer_v1_set_cursor_position_hint(p_ss->wp_locked_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y));
-	wl_surface_commit(p_ss->pointed_surface);
+
+	if (p_ss->pointed_surface) {
+		wl_surface_commit(p_ss->pointed_surface);
+	}
 }
 
 void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
