@@ -261,6 +261,16 @@ bool BoneAttachment3D::get_override_pose() const {
 	return override_pose;
 }
 
+void BoneAttachment3D::set_use_bone_transform_no_override(bool p_use_bone_transform_no_override) {
+	use_bone_transform_no_override = p_use_bone_transform_no_override;
+
+	notify_property_list_changed();
+}
+
+bool BoneAttachment3D::get_use_bone_transform_no_override() const {
+	return use_bone_transform_no_override;
+}
+
 void BoneAttachment3D::set_use_external_skeleton(bool p_use_external) {
 	use_external_skeleton = p_use_external;
 
@@ -319,9 +329,17 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 		if (sk) {
 			if (!override_pose) {
 				if (use_external_skeleton) {
-					set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose(bone_idx));
+					if (!use_bone_transform_no_override) {
+						set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose(bone_idx));
+					} else {
+						set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose_no_override(bone_idx));
+					}
 				} else {
-					set_transform(sk->get_bone_global_pose(bone_idx));
+					if (!use_bone_transform_no_override) {
+						set_transform(sk->get_bone_global_pose(bone_idx));
+					} else {
+						set_transform(sk->get_bone_global_pose_no_override(bone_idx));
+					}
 				}
 			} else {
 				if (!_override_dirty) {
@@ -366,6 +384,9 @@ void BoneAttachment3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_override_pose", "override_pose"), &BoneAttachment3D::set_override_pose);
 	ClassDB::bind_method(D_METHOD("get_override_pose"), &BoneAttachment3D::get_override_pose);
 
+	ClassDB::bind_method(D_METHOD("set_use_bone_transform_no_override", "use_bone_transform_no_override"), &BoneAttachment3D::set_use_bone_transform_no_override);
+	ClassDB::bind_method(D_METHOD("get_use_bone_transform_no_override"), &BoneAttachment3D::get_use_bone_transform_no_override);
+
 	ClassDB::bind_method(D_METHOD("set_use_external_skeleton", "use_external_skeleton"), &BoneAttachment3D::set_use_external_skeleton);
 	ClassDB::bind_method(D_METHOD("get_use_external_skeleton"), &BoneAttachment3D::get_use_external_skeleton);
 	ClassDB::bind_method(D_METHOD("set_external_skeleton", "external_skeleton"), &BoneAttachment3D::set_external_skeleton);
@@ -377,4 +398,5 @@ void BoneAttachment3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_pose"), "set_override_pose", "get_override_pose");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_bone_transform_no_override"), "set_use_bone_transform_no_override", "get_use_bone_transform_no_override");
 }
