@@ -909,9 +909,9 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	Ref<StyleBoxFlat> style = get_theme_stylebox(SNAME("state_machine_frame"), SNAME("GraphNode"));
 	Ref<StyleBoxFlat> style_selected = get_theme_stylebox(SNAME("state_machine_selected_frame"), SNAME("GraphNode"));
 
-	Ref<Font> font = get_theme_font(SNAME("title_font"), SNAME("GraphNode"));
-	int font_size = get_theme_font_size(SNAME("title_font_size"), SNAME("GraphNode"));
-	Color font_color = get_theme_color(SNAME("title_color"), SNAME("GraphNode"));
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("GraphNodeTitleLabel"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("GraphNodeTitleLabel"));
+	Color font_color = get_theme_color(SNAME("font_color"), SNAME("GraphNodeTitleLabel"));
 	Ref<Texture2D> play = get_editor_theme_icon(SNAME("Play"));
 	Ref<Texture2D> edit = get_editor_theme_icon(SNAME("Edit"));
 	Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
