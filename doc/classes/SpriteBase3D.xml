@@ -101,6 +101,9 @@
 		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], the texture's transparency and the opacity are used to make those parts of the sprite invisible.
 		</member>
+		<member name="repeat" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], the texture will repeat.
+		</member>
 	</members>
 	<constants>
 		<constant name="FLAG_TRANSPARENT" value="0" enum="DrawFlags">
@@ -118,7 +121,10 @@
 		<constant name="FLAG_FIXED_SIZE" value="4" enum="DrawFlags">
 			Label is scaled by depth so that it always appears the same size on screen.
 		</constant>
-		<constant name="FLAG_MAX" value="5" enum="DrawFlags">
+		<constant name="FLAG_REPEAT" value="5" enum="DrawFlags">
+			If set, the texture will repeat.
+		</constant>
+		<constant name="FLAG_MAX" value="6" enum="DrawFlags">
 			Represents the size of the [enum DrawFlags] enum.
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">

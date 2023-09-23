@@ -46,8 +46,8 @@ public:
 		FLAG_DOUBLE_SIDED,
 		FLAG_DISABLE_DEPTH_TEST,
 		FLAG_FIXED_SIZE,
+		FLAG_REPEAT,
 		FLAG_MAX
-
 	};
 
 	enum AlphaCutMode {
