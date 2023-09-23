@@ -140,6 +140,9 @@ void CurveEdit::_notification(int p_what) {
 
 void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	if (curve.is_null()) {
+		return;
+	}
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
