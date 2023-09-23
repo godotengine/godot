@@ -31,7 +31,10 @@
 #ifndef STRUCT_H
 #define STRUCT_H
 
-#include "array.h"
+#include "core/string/string_name.h"
+#include "core/variant/variant.h"
+
+class Array;
 
 struct StructMember {
 	StringName name;
@@ -47,35 +50,42 @@ struct StructMember {
 
 #define STRUCT_MEMBER(m_name, m_type) StructMember(SNAME(m_name), m_type)
 #define STRUCT_CLASS_MEMBER(m_name, m_class) StructMember(SNAME(m_name), Variant::OBJECT, m_class)
-
-#define STRUCT_LAYOUT(m_name,...) \
-struct m_name { \
-	static constexpr uint32_t member_count = GET_ARGUMENT_COUNT;\
-	_FORCE_INLINE_ static const StructMember& get_member(uint32_t p_index) {\
-		CRASH_BAD_INDEX(p_index,member_count)\
-		static StructMember members[member_count]={ __VA_ARGS__ };\
-		return members[p_index];\
-	}\
-};
+// TODO: is there a way to define this so that the member count doesn't have to be passed?
+#define STRUCT_LAYOUT(m_name, m_member_count, ...)                               \
+    struct m_name {                                                              \
+        static const uint32_t member_count = m_member_count;                     \
+        _FORCE_INLINE_ static const StructMember *get_members() {                \
+            static const StructMember members[member_count] = { __VA_ARGS__ };   \
+            return members;                                                      \
+        }                                                                        \
+    };
 
 template <class T>
 class Struct : public Array {
 public:
-	typedef Type T;
-
 	_FORCE_INLINE_ void operator=(const Array &p_array) {
 		ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign a Struct from array with a different format.");
 		_ref(p_array);
 	}
 	_FORCE_INLINE_ Struct(const Variant &p_variant) :
-			Array(T::member_count, T::get_member,Array(p_variant)) {
+			Array(Array(p_variant), T::get_members(), T::member_count) {
 	}
 	_FORCE_INLINE_ Struct(const Array &p_array) :
-			Array(T::member_count, T::get_member,p_array) {
+			Array(p_array, T::get_members(), T::member_count) {
 	}
-	_FORCE_INLINE_ Struct() {
-		Array(T::member_count, T::get_member) {
-		}
-	};
+	_FORCE_INLINE_ Struct() :
+			Array(T::get_members(), T::member_count) {
+	}
+};
+
+//#define STRUCT_LAYOUT(m_name, ...) \
+//struct m_name { \
+//    static constexpr uint32_t member_count = sizeof((StructMember[]){__VA_ARGS__}) / sizeof(StructMember); \
+//    _FORCE_INLINE_ static const StructMember& get_member(uint32_t p_index) { \
+//        CRASH_BAD_INDEX(p_index, member_count); \
+//        static StructMember members[] = {__VA_ARGS__}; \
+//        return members[p_index]; \
+//    } \
+//};
 
 #endif // STRUCT_H

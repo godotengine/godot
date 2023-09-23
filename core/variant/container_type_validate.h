@@ -41,7 +41,32 @@ struct ContainerTypeValidate {
 	LocalVector<ContainerTypeValidate> struct_members;
 	const char *where = "container";
 
-	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
+	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type, uint32_t r_recursion_count = 0) const {
+		bool can_ref = can_reference_base(p_type);
+		if (!can_ref) {
+			return false;
+		}
+
+		const uint32_t size = struct_members.size();
+		if (size != p_type.struct_members.size()) {
+			return false;
+		}
+
+		if (r_recursion_count > MAX_RECURSION) {
+			ERR_PRINT("Max recursion reached");
+			return true;
+		}
+		r_recursion_count++;
+		for (uint32_t i = 0; i < size; i++) {
+			can_ref = struct_members[i].can_reference(p_type.struct_members[i], r_recursion_count);
+			if (!can_ref) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	_FORCE_INLINE_ bool can_reference_base(const ContainerTypeValidate &p_type) const {
 		if (type != p_type.type) {
 			return false;
 		} else if (type != Variant::OBJECT) {
@@ -63,19 +88,67 @@ struct ContainerTypeValidate {
 		} else if (script != p_type.script && !p_type.script->inherits_script(script)) {
 			return false;
 		}
-
 		return true;
 	}
 
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
+		return equal_recursive(p_type, 0);
+	}
+
+	_FORCE_INLINE_ bool equal_recursive(const ContainerTypeValidate &p_type, uint32_t r_recursion_count = 0) const {
+		bool equals = equal_base(p_type);
+		if (!equals) {
+			return false;
+		}
+
+		const uint32_t size = struct_members.size();
+		if (size != p_type.struct_members.size()) {
+			return false;
+		}
+
+		if (r_recursion_count > MAX_RECURSION) {
+			ERR_PRINT("Max recursion reached");
+			return true;
+		}
+		r_recursion_count++;
+		for (uint32_t i = 0; i < size; i++) {
+			equals = struct_members[i].equal_recursive(p_type.struct_members[i], r_recursion_count);
+			if (!equals) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	_FORCE_INLINE_ bool equal_base(const ContainerTypeValidate &p_type) const {
 		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
 	}
+
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
+		return !equal_recursive(p_type, 0);
+	}
+
+	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use", uint32_t r_recursion_count = 0) const {
+		bool valid = validate_base(inout_variant);
+		if (!valid) {
+			return false;
+		}
+		if (r_recursion_count > MAX_RECURSION) {
+			ERR_PRINT("Max recursion reached");
+			return true;
+		}
+		r_recursion_count++;
+		for (const ContainerTypeValidate &member : struct_members) {
+			valid = member.validate(inout_variant, p_operation, r_recursion_count);
+			if (!valid) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	// Coerces String and StringName into each other and int into float when needed.
-	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
+	_FORCE_INLINE_ bool validate_base(Variant &inout_variant, const char *p_operation = "use") const {
 		if (type == Variant::NIL) {
 			return true;
 		}

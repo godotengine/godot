@@ -42,10 +42,14 @@
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/callable_bind.h"
+#include "core/variant/struct.h"
 #include "core/variant/variant.h"
 
 template <typename T>
 class TypedArray;
+
+template <typename T>
+class Struct;
 
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
@@ -142,6 +146,8 @@ enum PropertyUsageFlags {
 // Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
 // PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
+
+struct PropertyInfoLayout;
 
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
@@ -595,6 +601,9 @@ public:
 		Connection() {}
 		Connection(const Variant &p_variant);
 	};
+
+	//	TypedArray<Struct<PropertyInfoLayout>> _get_property_list_struct() const;
+		Struct<PropertyInfoLayout> _get_property_struct(uint32_t p_index) const;
 
 private:
 #ifdef DEBUG_ENABLED

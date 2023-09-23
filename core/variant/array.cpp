@@ -51,8 +51,7 @@ public:
 	/// structs
 
 	uint32_t struct_size = 0;
-	StringName *struct_member_names = nullptr;
-	bool struct_array = false;
+	const StructMember *struct_members = nullptr;
 
 	_FORCE_INLINE_ bool is_struct() const {
 		return struct_size > 0;
@@ -65,7 +64,7 @@ public:
 	_FORCE_INLINE_ int32_t find_member_index(const StringName &p_member) const {
 		// TODO: is there a better way to do this than linear search?
 		for (uint32_t i = 0; i < struct_size; i++) {
-			if (p_member == struct_member_names[i]) {
+			if (p_member == struct_members[i].name) {
 				return (int32_t) i; // TODO: is this cast necessary?
 			}
 		}
@@ -445,7 +444,7 @@ void Array::remove_at(int p_pos) {
 
 void Array::set(int p_idx, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
+	ERR_FAIL_COND_MSG(_p->is_struct() && (p_idx >= size()), "Array is a struct."); // TODO: better error message
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "set"));
 
@@ -873,6 +872,42 @@ bool Array::is_read_only() const {
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
+}
+
+Array::Array(const Array &p_from, const StructMember *p_members, uint32_t p_member_count) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init(); // TODO: should this be _ref(p_from)?
+	assign(p_from);
+	set_struct(p_members, p_member_count);
+}
+
+Array::Array(const StructMember *p_members, uint32_t p_member_count) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	set_struct(p_members, p_member_count);
+}
+
+void Array::set_struct(const StructMember *p_members, uint32_t p_member_count) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
+	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
+	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
+	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
+
+	// TODO: figure out what to do with this commented out section
+//	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
+//	Ref<Script> script = p_script;
+//	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
+//
+//	_p->typed.type = Variant::Type(p_type);
+//	_p->typed.class_name = p_class_name;
+//	_p->typed.script = script;
+	_p->array.resize(p_member_count);
+	_p->typed.where = "Struct";
+
+	_p->struct_members = p_members;
+	_p->struct_size = p_member_count;
+
 }
 
 Array::Array() {

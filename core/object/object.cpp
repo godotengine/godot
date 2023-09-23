@@ -64,6 +64,15 @@ struct _ObjectDebugLock {
 
 #endif
 
+STRUCT_LAYOUT(PropertyInfoLayout, 5,
+		STRUCT_MEMBER("name", Variant::STRING),
+		STRUCT_MEMBER("type", Variant::INT),
+		STRUCT_MEMBER("hint", Variant::INT),
+		STRUCT_MEMBER("hint_string", Variant::STRING),
+		STRUCT_MEMBER("class_name", Variant::STRING_NAME));
+
+template class Struct<PropertyInfoLayout>;
+
 PropertyInfo::operator Dictionary() const {
 	Dictionary d;
 	d["name"] = name;
@@ -990,6 +999,24 @@ TypedArray<Dictionary> Object::_get_property_list_bind() const {
 	List<PropertyInfo> lpi;
 	get_property_list(&lpi);
 	return convert_property_list(&lpi);
+}
+
+//TypedArray<Struct<PropertyInfoLayout>> Object::_get_property_list_struct() const {
+//	List<PropertyInfo> lpi;
+//	get_property_list(&lpi);
+//	TypedArray<Struct<PropertyInfoLayout>> props;
+//	for (const List<PropertyInfo>::Element *E = lpi.front(); E; E = E->next()) {
+//		Struct<PropertyInfoLayout> prop;
+//		props.push_back(Dictionary(E->get()));
+//	}
+//
+//	return props;
+//}
+
+Struct<PropertyInfoLayout> Object::_get_property_struct(uint32_t p_index) const {
+	List<PropertyInfo> lpi;
+	get_property_list(&lpi);
+	return Struct<PropertyInfoLayout>((Variant) lpi[p_index]);
 }
 
 TypedArray<Dictionary> Object::_get_method_list_bind() const {
