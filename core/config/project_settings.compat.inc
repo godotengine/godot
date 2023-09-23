@@ -30,7 +30,7 @@
 
 #ifndef DISABLE_DEPRECATED
 
-bool ProjectSettings::_load_resource_pack_compat_82035(const String &p_pack, bool p_replace_files, int p_offset){
+bool ProjectSettings::_load_resource_pack_compat_82035(const String &p_pack, bool p_replace_files, int p_offset) {
 	return _load_resource_pack(p_pack, p_replace_files, p_offset, "");
 }
 
