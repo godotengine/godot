@@ -4979,9 +4979,11 @@ void CanvasItemEditor::remove_control_from_menu_panel(Control *p_control) {
 
 	p_control->disconnect("visibility_changed", callable_mp(this, &CanvasItemEditor::_update_context_toolbar));
 
-	context_toolbar_hbox->remove_child(context_toolbar_separators[p_control]);
+	VSeparator *sep = context_toolbar_separators[p_control];
+	context_toolbar_hbox->remove_child(sep);
 	context_toolbar_hbox->remove_child(p_control);
 	context_toolbar_separators.erase(p_control);
+	memdelete(sep);
 
 	_update_context_toolbar();
 }
