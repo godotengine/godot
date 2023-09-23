@@ -1054,6 +1054,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_indent_size(EDITOR_GET("text_editor/behavior/indent/size"));
 	text_editor->set_auto_indent_enabled(EDITOR_GET("text_editor/behavior/indent/auto_indent"));
 	text_editor->set_indent_wrapped_lines(EDITOR_GET("text_editor/behavior/indent/indent_wrapped_lines"));
+	text_editor->set_tab_always_indents(EDITOR_GET("text_editor/behavior/indent/tab_action"));
 
 	// Completion
 	text_editor->set_auto_brace_completion_enabled(EDITOR_GET("text_editor/completion/auto_brace_complete"));

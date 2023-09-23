@@ -73,6 +73,8 @@ private:
 	int _calculate_spaces_till_next_left_indent(int p_column) const;
 	int _calculate_spaces_till_next_right_indent(int p_column) const;
 
+	bool tab_always_indents = false;
+
 	void _new_line(bool p_split_current_line = true, bool p_above = false);
 
 	/* Auto brace completion */
@@ -336,6 +338,9 @@ public:
 
 	void set_auto_indent_enabled(bool p_enabled);
 	bool is_auto_indent_enabled() const;
+
+	void set_tab_always_indents(bool p_tab_always_indents);
+	bool is_tab_always_indents() const;
 
 	void set_auto_indent_prefixes(const TypedArray<String> &p_prefixes);
 	TypedArray<String> get_auto_indent_prefixes() const;

@@ -836,6 +836,14 @@ bool CodeEdit::is_auto_indent_enabled() const {
 	return auto_indent;
 }
 
+void CodeEdit::set_tab_always_indents(bool p_tab_always_indents) {
+	tab_always_indents = p_tab_always_indents;
+}
+
+bool CodeEdit::is_tab_always_indents() const {
+	return tab_always_indents;
+}
+
 void CodeEdit::set_auto_indent_prefixes(const TypedArray<String> &p_prefixes) {
 	auto_indent_prefixes.clear();
 	for (int i = 0; i < p_prefixes.size(); i++) {
@@ -857,7 +865,7 @@ void CodeEdit::do_indent() {
 		return;
 	}
 
-	if (has_selection()) {
+	if (has_selection() || tab_always_indents) {
 		indent_lines();
 		return;
 	}
@@ -2490,6 +2498,9 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_indent_enabled", "enable"), &CodeEdit::set_auto_indent_enabled);
 	ClassDB::bind_method(D_METHOD("is_auto_indent_enabled"), &CodeEdit::is_auto_indent_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_tab_always_indents", "tab_always_indents"), &CodeEdit::set_tab_always_indents);
+	ClassDB::bind_method(D_METHOD("is_tab_always_indents"), &CodeEdit::is_tab_always_indents);
+
 	ClassDB::bind_method(D_METHOD("set_auto_indent_prefixes", "prefixes"), &CodeEdit::set_auto_indent_prefixes);
 	ClassDB::bind_method(D_METHOD("get_auto_indent_prefixes"), &CodeEdit::get_auto_indent_prefixes);
 
@@ -2703,6 +2714,7 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "indent_size"), "set_indent_size", "get_indent_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_use_spaces"), "set_indent_using_spaces", "is_indent_using_spaces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_automatic"), "set_auto_indent_enabled", "is_auto_indent_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tab_always_indents"), "set_tab_always_indents", "is_tab_always_indents");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
 
 	ADD_GROUP("Auto Brace Completion", "auto_brace_completion_");

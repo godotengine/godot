@@ -1024,6 +1024,11 @@
 		<member name="text_editor/behavior/indent/size" type="int" setter="" getter="">
 			When using tab indentation, determines the length of each tab. When using space indentation, determines how many spaces are inserted when pressing [kbd]Tab[/kbd] and when automatic indentation is performed.
 		</member>
+		<member name="text_editor/behavior/indent/tab_action" type="int" setter="" getter="">
+			What happens when pressing [kbd]Tab[/kbd] in the code editor.
+			- [b]Insert:[/b] Pressing [kbd]Tab[/kbd] will insert a tab character or a number of spaces until the next tab is reached (depending on [member text_editor/behavior/indent/type])
+			- [b]Indent:[/b] Pressing [kbd]Tab[/kbd] will increase the indentation of the line regardless of where the cursor is.
+		</member>
 		<member name="text_editor/behavior/indent/type" type="int" setter="" getter="">
 			The indentation style to use (tabs or spaces).
 			[b]Note:[/b] The [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
