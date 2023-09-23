@@ -46,7 +46,7 @@ void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_
 	Ref<InputEventMIDI> event;
 	event.instantiate();
 	uint32_t param_position = 1;
-	
+
 	event->set_connection_index(connectionIndex);
 
 	if (length >= 1) {
