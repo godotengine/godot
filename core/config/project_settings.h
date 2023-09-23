@@ -147,6 +147,11 @@ protected:
 
 	void _add_builtin_input_map();
 
+#ifndef DISABLE_DEPRECATED
+	bool _load_resource_pack_compat_82035(const String &p_pack, bool p_replace_files = true, int p_offset = 0);
+	static void _bind_compatibility_methods();
+#endif
+
 protected:
 	static void _bind_methods();
 

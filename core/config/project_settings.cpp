@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "project_settings.h"
+#include "project_settings.compat.inc"
 
 #include "core/core_bind.h" // For Compression enum.
 #include "core/core_string_names.h"
