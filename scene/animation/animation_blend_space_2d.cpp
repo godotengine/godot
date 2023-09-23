@@ -114,12 +114,12 @@ void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<Anim
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_blend_point_position(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, blend_points_used, Vector2());
+	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, Vector2());
 	return blend_points[p_point].position;
 }
 
 Ref<AnimationRootNode> AnimationNodeBlendSpace2D::get_blend_point_node(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, blend_points_used, Ref<AnimationRootNode>());
+	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, Ref<AnimationRootNode>());
 	return blend_points[p_point].node;
 }
 
