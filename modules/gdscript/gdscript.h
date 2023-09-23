@@ -94,12 +94,16 @@ class GDScript : public Script {
 	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
-	HashSet<StringName> members; //members are just indices to the instantiated script.
-	HashMap<StringName, Variant> constants;
+	// Members are just indices to the instantiated script.
+	HashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
+	HashSet<StringName> members; // Only members of the current class.
+
+	// Only static variables of the current class.
 	HashMap<StringName, MemberInfo> static_variables_indices;
-	Vector<Variant> static_variables;
+	Vector<Variant> static_variables; // Static variable values.
+
+	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
-	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
