@@ -322,7 +322,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 		}
 		return false;
 	}
-	if (version > 3) {
+	if (version > 4) {
 		if (r_err) {
 			*r_err = TTR("This Blender installation is too new for this importer (not 3.x).");
 		}
