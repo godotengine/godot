@@ -649,6 +649,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
 
+	void _append_uniform_info_to_lines(Vector<String> &lines, int set_index, const RenderingDeviceVulkan::Shader::Set &set);
+
 	RID_Owner<Shader, true> shader_owner;
 
 	/******************/
