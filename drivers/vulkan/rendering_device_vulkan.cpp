@@ -2449,16 +2449,16 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 }
 
 static _ALWAYS_INLINE_ void _copy_region(uint8_t const *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_x, uint32_t p_src_y, uint32_t p_src_w, uint32_t p_src_h, uint32_t p_src_full_w, uint32_t p_unit_size) {
-    uint32_t src_offset = (p_src_y * p_src_full_w + p_src_x) * p_unit_size;
-    uint32_t dst_offset = 0;
-    uint32_t row_bytes = p_src_w * p_unit_size;
-    for (uint32_t y = p_src_h; y > 0; y--) {
-        uint8_t const *__restrict src = p_src + src_offset;
-        uint8_t *__restrict dst = p_dst + dst_offset;
-        memcpy(dst, src, row_bytes);  // Copy entire row
-        src_offset += p_src_full_w * p_unit_size;
-        dst_offset += row_bytes;
-    }
+	uint32_t src_offset = (p_src_y * p_src_full_w + p_src_x) * p_unit_size;
+	uint32_t dst_offset = 0;
+	uint32_t row_bytes = p_src_w * p_unit_size;
+	for (uint32_t y = p_src_h; y > 0; y--) {
+		uint8_t const *__restrict src = p_src + src_offset;
+		uint8_t *__restrict dst = p_dst + dst_offset;
+		memcpy(dst, src, row_bytes); // Copy entire row
+		src_offset += p_src_full_w * p_unit_size;
+		dst_offset += row_bytes;
+	}
 }
 
 Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier, bool p_use_setup_queue) {
@@ -2686,69 +2686,68 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 }
 
 Vector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer, bool p_2d) {
-    uint32_t width, height, depth;
-    uint32_t blockw, blockh;
-    get_compressed_image_format_block_dimensions(tex->format, blockw, blockh);
-    uint32_t block_size = get_compressed_image_format_block_byte_size(tex->format);
-    uint32_t pixel_size = get_image_format_pixel_size(tex->format);
+	uint32_t width, height, depth;
+	uint32_t blockw, blockh;
+	get_compressed_image_format_block_dimensions(tex->format, blockw, blockh);
+	uint32_t block_size = get_compressed_image_format_block_byte_size(tex->format);
+	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
 
-    uint32_t image_size = get_image_format_required_size(tex->format, tex->width, tex->height, p_2d ? 1 : tex->depth, tex->mipmaps, &width, &height, &depth);
+	uint32_t image_size = get_image_format_required_size(tex->format, tex->width, tex->height, p_2d ? 1 : tex->depth, tex->mipmaps, &width, &height, &depth);
 
-    Vector<uint8_t> image_data;
-    image_data.resize(image_size);
+	Vector<uint8_t> image_data;
+	image_data.resize(image_size);
 
-    void *img_mem;
-    vmaMapMemory(allocator, p_allocation, &img_mem);
-    
-    uint8_t *w = image_data.ptrw();
-    uint32_t mipmap_offset = 0;
+	void *img_mem;
+	vmaMapMemory(allocator, p_allocation, &img_mem);
 
-    for (uint32_t mm_i = 0; mm_i < tex->mipmaps; mm_i++) {
-        uint32_t image_total = get_image_format_required_size(tex->format, tex->width, tex->height, p_2d ? 1 : tex->depth, mm_i + 1, &width, &height, &depth);
-        uint8_t *write_ptr_mipmap = w + mipmap_offset;
-        image_size = image_total - mipmap_offset;
+	uint8_t *w = image_data.ptrw();
+	uint32_t mipmap_offset = 0;
 
-        VkImageSubresource image_sub_resorce;
-        image_sub_resorce.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        image_sub_resorce.arrayLayer = p_layer;
-        image_sub_resorce.mipLevel = mm_i;
-        VkSubresourceLayout layout;
-        vkGetImageSubresourceLayout(device, p_image, &image_sub_resorce, &layout);
+	for (uint32_t mm_i = 0; mm_i < tex->mipmaps; mm_i++) {
+		uint32_t image_total = get_image_format_required_size(tex->format, tex->width, tex->height, p_2d ? 1 : tex->depth, mm_i + 1, &width, &height, &depth);
+		uint8_t *write_ptr_mipmap = w + mipmap_offset;
+		image_size = image_total - mipmap_offset;
 
-        uint32_t line_width;
-        if (block_size > 1) {
-            line_width = (block_size * (width / blockw));
-        }
+		VkImageSubresource image_sub_resorce;
+		image_sub_resorce.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		image_sub_resorce.arrayLayer = p_layer;
+		image_sub_resorce.mipLevel = mm_i;
+		VkSubresourceLayout layout;
+		vkGetImageSubresourceLayout(device, p_image, &image_sub_resorce, &layout);
 
-        for (uint32_t z = 0; z < depth; z++) {
-            uint8_t *write_ptr = write_ptr_mipmap + z * image_size / depth;
-            const uint8_t *slice_read_ptr = ((uint8_t *)img_mem) + layout.offset + z * layout.depthPitch;
+		uint32_t line_width;
+		if (block_size > 1) {
+			line_width = (block_size * (width / blockw));
+		}
 
-            if (block_size > 1) {
-                // Compressed.
-                for (uint32_t y = 0; y < height / blockh; y++) {
-                    const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
-                    uint8_t *wptr = write_ptr + y * line_width;
-                    memcpy(wptr, rptr, line_width);
-                }
-            } else {
-                // Uncompressed.
-                for (uint32_t y = 0; y < height; y++) {
-                    const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
-                    uint8_t *wptr = write_ptr + y * pixel_size * width;
-                    memcpy(wptr, rptr, (uint64_t)pixel_size * width);
-                }
-            }
-        }
+		for (uint32_t z = 0; z < depth; z++) {
+			uint8_t *write_ptr = write_ptr_mipmap + z * image_size / depth;
+			const uint8_t *slice_read_ptr = ((uint8_t *)img_mem) + layout.offset + z * layout.depthPitch;
 
-        mipmap_offset = image_total;
-    }
+			if (block_size > 1) {
+				// Compressed.
+				for (uint32_t y = 0; y < height / blockh; y++) {
+					const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
+					uint8_t *wptr = write_ptr + y * line_width;
+					memcpy(wptr, rptr, line_width);
+				}
+			} else {
+				// Uncompressed.
+				for (uint32_t y = 0; y < height; y++) {
+					const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
+					uint8_t *wptr = write_ptr + y * pixel_size * width;
+					memcpy(wptr, rptr, (uint64_t)pixel_size * width);
+				}
+			}
+		}
 
-    vmaUnmapMemory(allocator, p_allocation);
+		mipmap_offset = image_total;
+	}
 
-    return image_data;
+	vmaUnmapMemory(allocator, p_allocation);
+
+	return image_data;
 }
-
 
 Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t p_layer) {
 	_THREAD_SAFE_METHOD_
@@ -4616,30 +4615,30 @@ static VkShaderStageFlagBits shader_stage_masks[RenderingDevice::SHADER_STAGE_MA
 };
 
 String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
-    const Shader *shader = shader_owner.get_or_null(p_shader);
-    ERR_FAIL_NULL_V(shader, String());
+	const Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL_V(shader, String());
 
-    // Using a string builder approach for more efficient string concatenation.
-    Vector<String> lines;
+	// Using a string builder approach for more efficient string concatenation.
+	Vector<String> lines;
 
-    if (p_set >= 0 && p_set < shader->sets.size()) {
-        // If a specific set is provided, directly access it.
-        _append_uniform_info_to_lines(lines, p_set, shader->sets[p_set]);
-    } else {
-        // If no specific set is provided, iterate through all sets.
-        for (int i = 0; i < shader->sets.size(); i++) {
-            _append_uniform_info_to_lines(lines, i, shader->sets[i]);
-        }
-    }
+	if (p_set >= 0 && p_set < shader->sets.size()) {
+		// If a specific set is provided, directly access it.
+		_append_uniform_info_to_lines(lines, p_set, shader->sets[p_set]);
+	} else {
+		// If no specific set is provided, iterate through all sets.
+		for (int i = 0; i < shader->sets.size(); i++) {
+			_append_uniform_info_to_lines(lines, i, shader->sets[i]);
+		}
+	}
 
-    return String("\n").join(lines);
+	return String("\n").join(lines);
 }
 
 void RenderingDeviceVulkan::_append_uniform_info_to_lines(Vector<String> &lines, int set_index, const RenderingDeviceVulkan::Shader::Set &set) {
-    for (int j = 0; j < set.uniform_info.size(); j++) {
-        const UniformInfo &ui = set.uniform_info[j];
-        lines.push_back("Set: " + itos(set_index) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Writable: " + (ui.writable ? "Y" : "N") + " Length: " + itos(ui.length));
-    }
+	for (int j = 0; j < set.uniform_info.size(); j++) {
+		const UniformInfo &ui = set.uniform_info[j];
+		lines.push_back("Set: " + itos(set_index) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Writable: " + (ui.writable ? "Y" : "N") + " Length: " + itos(ui.length));
+	}
 }
 
 // Version 1: initial.
@@ -6618,7 +6617,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 	if (shader->specialization_constants.size()) {
 		specialization_constant_data.resize(shader->specialization_constants.size());
 		uint32_t *data_ptr = specialization_constant_data.ptrw();
-		
+
 		// Create a dictionary (unordered_map) for p_specialization_constants based on constant_id
 		std::unordered_map<int, PipelineSpecializationConstant> specialization_constants_dict;
 		for (int j = 0; j < p_specialization_constants.size(); j++) {
@@ -6628,7 +6627,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 		for (int i = 0; i < shader->specialization_constants.size(); i++) {
 			const Shader::SpecializationConstant &sc = shader->specialization_constants[i];
 			data_ptr[i] = sc.constant.int_value; // Just copy the 32 bits.
-			
+
 			// Check the dictionary for an overridden value
 			if (specialization_constants_dict.find(sc.constant.constant_id) != specialization_constants_dict.end()) {
 				const PipelineSpecializationConstant &psc = specialization_constants_dict[sc.constant.constant_id];
