@@ -41,9 +41,12 @@
 #include "core/variant_parser.h"
 #include "main/input_default.h"
 #include "node.h"
+#include "scene/2d/canvas_item.h"
 #include "scene/animation/scene_tree_tween.h"
 #include "scene/debugger/script_debugger_remote.h"
+#include "scene/gui/control.h"
 #include "scene/gui/shortcut.h"
+#include "scene/main/canvas_layer.h"
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
@@ -126,6 +129,127 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 			_spatials_list.remove(current);
 		}
 	}
+}
+
+void SceneTree::notify_canvas_parent_child_count_reduced(Node &p_parent) {
+	uint32_t id = p_parent.get_canvas_parent_id();
+
+	ERR_FAIL_COND(id == UINT32_MAX);
+	ERR_FAIL_UNSIGNED_INDEX(id, _canvas_parents_dirty_order.size());
+
+	CanvasParent &d = _canvas_parents_dirty_order[id];
+
+	// no pending children moved
+	if (!d.last_child_moved_plus_one) {
+		return;
+	}
+
+	uint32_t num_children = p_parent.get_child_count();
+	d.last_child_moved_plus_one = MIN(d.last_child_moved_plus_one, num_children);
+}
+
+void SceneTree::notify_canvas_parent_children_moved(Node &p_parent, uint32_t p_first_child, uint32_t p_last_child_plus_one) {
+	// First ensure the parent has a CanvasParent allocated.
+	uint32_t id = p_parent.get_canvas_parent_id();
+
+	if (id == UINT32_MAX) {
+		id = _canvas_parents_dirty_order.size();
+		p_parent.set_canvas_parent_id(id);
+		_canvas_parents_dirty_order.resize(id + 1);
+
+		CanvasParent &d = _canvas_parents_dirty_order[id];
+		d.id = p_parent.get_instance_id();
+		d.first_child_moved = p_first_child;
+		d.last_child_moved_plus_one = p_last_child_plus_one;
+		return;
+	}
+
+	CanvasParent &d = _canvas_parents_dirty_order[id];
+	DEV_CHECK_ONCE(d.id == p_parent.get_instance_id());
+	d.first_child_moved = MIN(d.first_child_moved, p_first_child);
+	d.last_child_moved_plus_one = MAX(d.last_child_moved_plus_one, p_last_child_plus_one);
+}
+
+void SceneTree::flush_canvas_parents_dirty_order() {
+	bool canvas_layers_moved = false;
+
+	for (uint32_t n = 0; n < _canvas_parents_dirty_order.size(); n++) {
+		CanvasParent &d = _canvas_parents_dirty_order[n];
+
+		Object *obj = ObjectDB::get_instance(d.id);
+		if (!obj) {
+			// May have been deleted.
+			continue;
+		}
+
+		Node *node = static_cast<Node *>(obj);
+		Control *parent_control = Object::cast_to<Control>(node);
+
+		// Allow anything subscribing to this signal (skeletons etc)
+		// to make any changes necessary.
+		node->emit_signal("child_order_changed");
+
+		// Reset the id stored in the node, as this data is cleared after every flush.
+		node->set_canvas_parent_id(UINT32_MAX);
+
+		// This should be very rare, as the last_child_moved_plus_one is usually kept up
+		// to date when within the scene tree. But it may become out of date outside the scene tree.
+		// This will cause no problems, just a very small possibility of more notifications being sent than
+		// necessary in that very rare situation.
+		if (d.last_child_moved_plus_one > (uint32_t)node->get_child_count()) {
+			d.last_child_moved_plus_one = node->get_child_count();
+		}
+
+		bool subwindow_order_dirty = false;
+		bool root_order_dirty = false;
+		bool control_found = false;
+
+		for (uint32_t c = d.first_child_moved; c < d.last_child_moved_plus_one; c++) {
+			Node *child = node->get_child(c);
+
+			CanvasItem *ci = Object::cast_to<CanvasItem>(child);
+			if (ci) {
+				ci->update_draw_order();
+
+				Control *control = Object::cast_to<Control>(ci);
+				if (control) {
+					control->_query_order_update(subwindow_order_dirty, root_order_dirty);
+
+					if (parent_control && !control_found) {
+						control_found = true;
+						parent_control->update();
+					}
+					control->update();
+				}
+
+				continue;
+			}
+
+			CanvasLayer *cl = Object::cast_to<CanvasLayer>(child);
+			if (cl) {
+				// If any canvas layers moved, we need to do an expensive update,
+				// so we ensure doing this only once.
+				if (!canvas_layers_moved) {
+					canvas_layers_moved = true;
+					cl->update_draw_order();
+				}
+			}
+		}
+
+		Viewport *viewport = node->get_viewport();
+		if (viewport) {
+			if (subwindow_order_dirty) {
+				viewport->_gui_set_subwindow_order_dirty();
+			}
+			if (root_order_dirty) {
+				viewport->_gui_set_root_order_dirty();
+			}
+		}
+
+		node->notification(Node::NOTIFICATION_CHILD_ORDER_CHANGED);
+	}
+
+	_canvas_parents_dirty_order.clear();
 }
 
 void SceneTree::tree_changed() {
@@ -688,6 +812,7 @@ bool SceneTree::idle(float p_time) {
 
 	process_tweens(p_time, false);
 
+	flush_canvas_parents_dirty_order();
 	flush_transform_notifications(); //additional transforms after timers update
 
 	_call_idle_callbacks();

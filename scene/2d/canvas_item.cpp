@@ -611,20 +611,6 @@ void CanvasItem::_notification(int p_what) {
 				notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 			}
 		} break;
-		case NOTIFICATION_MOVED_IN_PARENT: {
-			if (!is_inside_tree()) {
-				break;
-			}
-
-			if (canvas_group != "") {
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, canvas_group, "_toplevel_raise_self");
-			} else {
-				CanvasItem *p = get_parent_item();
-				ERR_FAIL_COND(!p);
-				VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
-			}
-
-		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
@@ -661,6 +647,20 @@ void CanvasItem::_name_changed_notify() {
 #endif
 }
 #endif
+
+void CanvasItem::update_draw_order() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (canvas_group != "") {
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, canvas_group, "_toplevel_raise_self");
+	} else {
+		CanvasItem *p = get_parent_item();
+		ERR_FAIL_COND(!p);
+		VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
+	}
+}
 
 void CanvasItem::update() {
 	if (!is_inside_tree()) {

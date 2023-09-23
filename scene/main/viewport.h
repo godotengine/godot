@@ -354,6 +354,7 @@ private:
 	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
 
 	friend class Control;
+	friend class SceneTree;
 
 	List<Control *>::Element *_gui_add_root_control(Control *p_control);
 	List<Control *>::Element *_gui_add_subwindow_control(Control *p_control);

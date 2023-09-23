@@ -426,9 +426,19 @@ void Node::move_child(Node *p_child, int p_pos) {
 	}
 	// notification second
 	move_child_notify(p_child);
-	for (int i = motion_from; i <= motion_to; i++) {
-		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+	SceneTree *tree = nullptr;
+	if (is_inside_tree()) {
+		tree = get_tree();
+	} else {
+		tree = SceneTree::get_singleton();
 	}
+
+	if (tree) {
+		tree->notify_canvas_parent_children_moved(*this, motion_from, motion_to + 1);
+	} else {
+		WARN_PRINT_ONCE("Can't change child order when no SceneTree is available.");
+	}
+
 	p_child->_propagate_groups_dirty();
 
 	data.blocked--;
@@ -1364,7 +1374,20 @@ void Node::remove_child(Node *p_child) {
 
 	for (int i = idx; i < child_count; i++) {
 		children[i]->data.pos = i;
-		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+	}
+
+	SceneTree *tree = nullptr;
+	if (is_inside_tree()) {
+		tree = get_tree();
+	} else {
+		tree = SceneTree::get_singleton();
+	}
+
+	if (tree) {
+		tree->notify_canvas_parent_children_moved(*this, idx, child_count);
+		tree->notify_canvas_parent_child_count_reduced(*this);
+	} else {
+		WARN_PRINT_ONCE("Can't change child order when no SceneTree is available.");
 	}
 
 	p_child->data.parent = nullptr;
@@ -3161,6 +3184,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_DRAG_BEGIN);
 	BIND_CONSTANT(NOTIFICATION_DRAG_END);
 	BIND_CONSTANT(NOTIFICATION_PATH_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_CHILD_ORDER_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);

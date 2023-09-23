@@ -280,9 +280,19 @@ private:
 	static int idle_callback_count;
 	void _call_idle_callbacks();
 
+	struct CanvasParent {
+		ObjectID id;
+		uint32_t first_child_moved = UINT32_MAX;
+		uint32_t last_child_moved_plus_one = 0;
+	};
+
+	LocalVector<CanvasParent> _canvas_parents_dirty_order;
+
 protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
+
+	void flush_canvas_parents_dirty_order();
 
 public:
 	enum {
@@ -436,6 +446,9 @@ public:
 
 	void client_physics_interpolation_add_spatial(SelfList<Spatial> *p_elem);
 	void client_physics_interpolation_remove_spatial(SelfList<Spatial> *p_elem);
+
+	void notify_canvas_parent_children_moved(Node &p_parent, uint32_t p_first_child, uint32_t p_last_child_plus_one);
+	void notify_canvas_parent_child_count_reduced(Node &p_parent);
 
 	static void add_idle_callback(IdleCallback p_callback);
 	SceneTree();
