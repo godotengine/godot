@@ -2801,7 +2801,9 @@ void EditorPropertyColor::_picker_created() {
 }
 
 void EditorPropertyColor::_popup_opening() {
-	EditorNode::get_singleton()->setup_color_picker(picker->get_picker());
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->setup_color_picker(picker->get_picker());
+	}
 	last_color = picker->get_pick_color();
 	was_checked = !is_checkable() || is_checked();
 }

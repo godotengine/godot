@@ -205,9 +205,15 @@ void EditorSettingsDialog::popup_edit_settings() {
 	set_process_shortcut_input(true);
 
 	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
+	Rect2 saved_size;
+	if (!_is_in_project_manager()) {
+		saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
+	}
+
 	if (saved_size != Rect2()) {
 		popup(saved_size);
+	} else if (_is_in_project_manager()) {
+		popup_centered_clamped(Size2(800, 600) * EDSCALE, 0.8); // Make it smaller that the default Project Manager size.
 	} else {
 		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
@@ -222,7 +228,7 @@ void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_nam
 void EditorSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible()) {
+			if (!is_visible() && !_is_in_project_manager()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
 				set_process_shortcut_input(false);
 			}
@@ -231,6 +237,9 @@ void EditorSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			EditorSettingsPropertyWrapper::restart_request_callback = callable_mp(this, &EditorSettingsDialog::_editor_restart_request);
 
+			if (_is_in_project_manager()) {
+				return;
+			}
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_method_notify_callback(EditorDebuggerNode::_methods_changed, nullptr);
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_property_notify_callback(EditorDebuggerNode::_properties_changed, nullptr);
@@ -275,14 +284,16 @@ void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
 
-		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			EditorNode::get_singleton()->undo();
-			handled = true;
-		}
+		if (EditorNode::get_singleton()) {
+			if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+				EditorNode::get_singleton()->undo();
+				handled = true;
+			}
 
-		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
-			EditorNode::get_singleton()->redo();
-			handled = true;
+			if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+				EditorNode::get_singleton()->redo();
+				handled = true;
+			}
 		}
 
 		if (k->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F))) {
@@ -325,6 +336,10 @@ void EditorSettingsDialog::_event_config_confirmed() {
 	} else {
 		_update_shortcut_events(current_edited_identifier, current_events);
 	}
+}
+
+bool EditorSettingsDialog::_is_in_project_manager() const {
+	return !ProjectSettings::get_singleton()->is_project_loaded();
 }
 
 void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Array &p_events) {
@@ -842,6 +857,10 @@ PropertyInfo EditorSettingsDialog::_create_mouse_shortcut_property_info(const St
 String EditorSettingsDialog::_get_shortcut_button_string(const String &p_shortcut_name) {
 	String button_string;
 	Ref<Shortcut> shortcut_ref = EditorSettings::get_singleton()->get_shortcut(p_shortcut_name);
+	if (shortcut_ref.is_null()) {
+		return String();
+	}
+
 	Array events = shortcut_ref->get_events();
 	for (Ref<InputEvent> input_event : events) {
 		button_string += input_event->as_text() + " + ";
@@ -869,8 +888,7 @@ void EditorSettingsDialog::_advanced_toggled(bool p_button_pressed) {
 }
 
 void EditorSettingsDialog::_editor_restart() {
-	EditorNode::get_singleton()->save_all_scenes();
-	EditorNode::get_singleton()->restart_editor();
+	emit_signal("restart_requested");
 }
 
 void EditorSettingsDialog::_editor_restart_request() {
@@ -884,6 +902,8 @@ void EditorSettingsDialog::_editor_restart_close() {
 void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
+
+	ADD_SIGNAL(MethodInfo("restart_requested"));
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
@@ -943,7 +963,11 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_hb->add_child(restart_icon);
 	restart_label = memnew(Label);
 	restart_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	restart_label->set_text(TTRC("The editor must be restarted for changes to take effect."));
+	if (_is_in_project_manager()) {
+		restart_label->set_text(TTRC("The Project Manager must be restarted for changes to take effect."));
+	} else {
+		restart_label->set_text(TTRC("The editor must be restarted for changes to take effect."));
+	}
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
@@ -1012,7 +1036,7 @@ void EditorSettingsPropertyWrapper::_update_override() {
 		return;
 	}
 
-	const bool has_override = ProjectSettings::get_singleton()->has_editor_setting_override(property);
+	const bool has_override = ProjectSettings::get_singleton()->is_project_loaded() && ProjectSettings::get_singleton()->has_editor_setting_override(property);
 	if (has_override) {
 		const Variant override_value = EDITOR_GET(property);
 		override_label->set_text(vformat(TTR("Overridden in project: %s"), override_value));
@@ -1076,7 +1100,9 @@ void EditorSettingsPropertyWrapper::setup(const String &p_property, EditorProper
 	goto_button = memnew(Button);
 	goto_button->set_tooltip_text(TTRC("Go to the override in the Project Settings."));
 	override_info->add_child(goto_button);
-	goto_button->connect(SceneStringName(pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::open_setting_override).bind(property), CONNECT_DEFERRED);
+	if (EditorNode::get_singleton()) {
+		goto_button->connect(SceneStringName(pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::open_setting_override).bind(property), CONNECT_DEFERRED);
+	}
 
 	remove_button = memnew(Button);
 	remove_button->set_tooltip_text(TTRC("Remove this override."));
