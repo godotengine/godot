@@ -368,6 +368,7 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(disp.x11_display, drawable, val);
 	} else {
+		WARN_PRINT("Could not set V-Sync mode. V-Sync is not supported.");
 		return;
 	}
 	use_vsync = p_use;

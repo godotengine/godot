@@ -5821,7 +5821,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		driver_found = true;
 
 		if (true) {
-			RasterizerGLES3::make_current();
+			RasterizerGLES3::make_current(true);
 		} else {
 			memdelete(gl_manager);
 			gl_manager = nullptr;

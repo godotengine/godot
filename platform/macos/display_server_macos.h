@@ -35,6 +35,7 @@
 #include "servers/display_server.h"
 
 #if defined(GLES3_ENABLED)
+#include "gl_manager_macos_angle.h"
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
@@ -127,7 +128,8 @@ public:
 
 private:
 #if defined(GLES3_ENABLED)
-	GLManager_MacOS *gl_manager = nullptr;
+	GLManagerLegacy_MacOS *gl_manager_legacy = nullptr;
+	GLManagerANGLE_MacOS *gl_manager_angle = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
 	VulkanContextMacOS *context_vulkan = nullptr;
@@ -244,7 +246,6 @@ public:
 	void mouse_enter_window(WindowID p_window);
 	void mouse_exit_window(WindowID p_window);
 
-	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
 	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);

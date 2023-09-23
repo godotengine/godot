@@ -33,16 +33,12 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/config/project_settings.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
+#include "core/templates/vector.h"
 
-// This must come first to avoid windows.h mess
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
+#include "platform_gl.h"
 
 #ifdef ANDROID_ENABLED
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei);

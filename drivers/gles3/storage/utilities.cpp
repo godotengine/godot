@@ -31,6 +31,8 @@
 #ifdef GLES3_ENABLED
 
 #include "utilities.h"
+
+#include "../rasterizer_gles3.h"
 #include "config.h"
 #include "light_storage.h"
 #include "material_storage.h"
@@ -253,9 +255,11 @@ void Utilities::capture_timestamps_begin() {
 void Utilities::capture_timestamp(const String &p_name) {
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
-#ifdef GLES_OVER_GL
-	glQueryCounter(frames[frame].queries[frames[frame].timestamp_count], GL_TIMESTAMP);
-#endif
+#ifdef GL_API_ENABLED
+	if (RasterizerGLES3::is_gles_over_gl()) {
+		glQueryCounter(frames[frame].queries[frames[frame].timestamp_count], GL_TIMESTAMP);
+	}
+#endif // GL_API_ENABLED
 
 	frames[frame].timestamp_names[frames[frame].timestamp_count] = p_name;
 	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = OS::get_singleton()->get_ticks_usec();
@@ -265,13 +269,15 @@ void Utilities::capture_timestamp(const String &p_name) {
 void Utilities::_capture_timestamps_begin() {
 	// frame is incremented at the end of the frame so this gives us the queries for frame - 2. By then they should be ready.
 	if (frames[frame].timestamp_count) {
-#ifdef GLES_OVER_GL
-		for (uint32_t i = 0; i < frames[frame].timestamp_count; i++) {
-			uint64_t temp = 0;
-			glGetQueryObjectui64v(frames[frame].queries[i], GL_QUERY_RESULT, &temp);
-			frames[frame].timestamp_result_values[i] = temp;
+#ifdef GL_API_ENABLED
+		if (RasterizerGLES3::is_gles_over_gl()) {
+			for (uint32_t i = 0; i < frames[frame].timestamp_count; i++) {
+				uint64_t temp = 0;
+				glGetQueryObjectui64v(frames[frame].queries[i], GL_QUERY_RESULT, &temp);
+				frames[frame].timestamp_result_values[i] = temp;
+			}
 		}
-#endif
+#endif // GL_API_ENABLED
 		SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
 		SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
 	}

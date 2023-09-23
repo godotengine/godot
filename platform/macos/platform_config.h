@@ -30,5 +30,4 @@
 
 #include <alloca.h>
 
-#define OPENGL_INCLUDE_H "thirdparty/glad/glad/gl.h"
 #define PTHREAD_RENAME_SELF

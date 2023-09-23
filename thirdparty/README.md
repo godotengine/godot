@@ -17,6 +17,18 @@ Files extracted from upstream source:
 - `license.txt`
 
 
+## angle
+
+- Upstream: https://chromium.googlesource.com/angle/angle/
+- Version: git (chromium/5907, 430a4f559cbc2bcd5d026e8b36ee46ddd80e9651, 2023)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `include/*`
+- `LICENSE`
+
+
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder
@@ -243,7 +255,10 @@ Files extracted from upstream source:
 - `LICENSE`
 
 Files generated from [upstream web instance](https://gen.glad.sh/):
+- `EGL/eglplatform.h`
 - `KHR/khrplatform.h`
+- `egl.c`
+- `glad/egl.h`
 - `gl.c`
 - `glad/gl.h`
 - `glx.c`
@@ -251,6 +266,9 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 
 See the permalinks in `glad/gl.h` and `glad/glx.h` to regenrate the files with
 a new version of the web instance.
+
+Some changes have been made in order to allow loading OpenGL and OpenGLES APIs at the same time.
+See the patches in the `patches` directory.
 
 
 ## glslang

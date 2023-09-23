@@ -29,14 +29,17 @@
 /**************************************************************************/
 
 #include "rasterizer_scene_gles3.h"
-#include "core/config/project_settings.h"
-#include "core/templates/sort_array.h"
-#include "servers/rendering/rendering_server_default.h"
-#include "servers/rendering/rendering_server_globals.h"
+
+#include "rasterizer_gles3.h"
 #include "storage/config.h"
 #include "storage/mesh_storage.h"
 #include "storage/particles_storage.h"
 #include "storage/texture_storage.h"
+
+#include "core/config/project_settings.h"
+#include "core/templates/sort_array.h"
+#include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #ifdef GLES3_ENABLED
 
@@ -528,19 +531,24 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glGenTextures(1, &sky->radiance);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, sky->radiance);
 
-#ifdef GLES_OVER_GL
-			GLenum format = GL_RGBA;
-			GLenum type = GL_UNSIGNED_INT_2_10_10_10_REV;
-			//TODO, on low-end compare this to allocating each face of each mip individually
-			// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
-			for (int i = 0; i < 6; i++) {
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
-			}
+#ifdef GL_API_ENABLED
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				GLenum format = GL_RGBA;
+				GLenum type = GL_UNSIGNED_INT_2_10_10_10_REV;
+				//TODO, on low-end compare this to allocating each face of each mip individually
+				// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
+				for (int i = 0; i < 6; i++) {
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
+				}
 
-			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-#else
-			glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
-#endif
+				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			}
+#endif // GL_API_ENABLED
+#ifdef GLES_API_ENABLED
+			if (!RasterizerGLES3::is_gles_over_gl()) {
+				glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
+			}
+#endif // GLES_API_ENABLED
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -553,17 +561,24 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glGenTextures(1, &sky->raw_radiance);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, sky->raw_radiance);
 
-#ifdef GLES_OVER_GL
-			//TODO, on low-end compare this to allocating each face of each mip individually
-			// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
-			for (int i = 0; i < 6; i++) {
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
-			}
+#ifdef GL_API_ENABLED
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				GLenum format = GL_RGBA;
+				GLenum type = GL_UNSIGNED_INT_2_10_10_10_REV;
+				//TODO, on low-end compare this to allocating each face of each mip individually
+				// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
+				for (int i = 0; i < 6; i++) {
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
+				}
 
-			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-#else
-			glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
-#endif
+				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			}
+#endif // GL_API_ENABLED
+#ifdef GLES_API_ENABLED
+			if (!RasterizerGLES3::is_gles_over_gl()) {
+				glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
+			}
+#endif // GLES_API_ENABLED
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1944,7 +1959,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glDisable(GL_SCISSOR_TEST);
 
 		glColorMask(0, 0, 0, 0);
-		glClearDepth(1.0f);
+		RasterizerGLES3::clear_depth(1.0);
+
 		glClear(GL_DEPTH_BUFFER_BIT);
 		uint64_t spec_constant = SceneShaderGLES3::DISABLE_FOG | SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL |
 				SceneShaderGLES3::DISABLE_LIGHTMAP | SceneShaderGLES3::DISABLE_LIGHT_OMNI |
@@ -1979,7 +1995,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_ALWAYS;
 
 	if (!fb_cleared) {
-		glClearDepth(1.0f);
+		RasterizerGLES3::clear_depth(1.0);
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -2505,7 +2521,8 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 	scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 	glColorMask(0, 0, 0, 0);
-	glClearDepth(1.0f);
+	RasterizerGLES3::clear_depth(1.0);
+
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, 31, false);
@@ -2778,9 +2795,11 @@ void sky() {
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
 
-#ifdef GLES_OVER_GL
-	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
-#endif
+#ifdef GL_API_ENABLED
+	if (RasterizerGLES3::is_gles_over_gl()) {
+		glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
+	}
+#endif // GL_API_ENABLED
 
 	// MultiMesh may read from color when color is disabled, so make sure that the color defaults to white instead of black;
 	glVertexAttrib4f(RS::ARRAY_COLOR, 1.0, 1.0, 1.0, 1.0);

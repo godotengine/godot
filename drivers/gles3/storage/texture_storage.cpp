@@ -31,8 +31,10 @@
 #ifdef GLES3_ENABLED
 
 #include "texture_storage.h"
+
+#include "../effects/copy_effects.h"
+#include "../rasterizer_gles3.h"
 #include "config.h"
-#include "drivers/gles3/effects/copy_effects.h"
 #include "utilities.h"
 
 #ifdef ANDROID_ENABLED
@@ -216,9 +218,11 @@ TextureStorage::TextureStorage() {
 		sdf_shader.shader_version = sdf_shader.shader.version_create();
 	}
 
-#ifdef GLES_OVER_GL
-	glEnable(GL_PROGRAM_POINT_SIZE);
-#endif
+#ifdef GL_API_ENABLED
+	if (RasterizerGLES3::is_gles_over_gl()) {
+		glEnable(GL_PROGRAM_POINT_SIZE);
+	}
+#endif // GL_API_ENABLED
 }
 
 TextureStorage::~TextureStorage() {
@@ -309,26 +313,26 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 
 	switch (p_format) {
 		case Image::FORMAT_L8: {
-#ifdef GLES_OVER_GL
-			r_gl_internal_format = GL_R8;
-			r_gl_format = GL_RED;
-			r_gl_type = GL_UNSIGNED_BYTE;
-#else
-			r_gl_internal_format = GL_LUMINANCE;
-			r_gl_format = GL_LUMINANCE;
-			r_gl_type = GL_UNSIGNED_BYTE;
-#endif
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				r_gl_internal_format = GL_R8;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			} else {
+				r_gl_internal_format = GL_LUMINANCE;
+				r_gl_format = GL_LUMINANCE;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			}
 		} break;
 		case Image::FORMAT_LA8: {
-#ifdef GLES_OVER_GL
-			r_gl_internal_format = GL_RG8;
-			r_gl_format = GL_RG;
-			r_gl_type = GL_UNSIGNED_BYTE;
-#else
-			r_gl_internal_format = GL_LUMINANCE_ALPHA;
-			r_gl_format = GL_LUMINANCE_ALPHA;
-			r_gl_type = GL_UNSIGNED_BYTE;
-#endif
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				r_gl_internal_format = GL_RG8;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			} else {
+				r_gl_internal_format = GL_LUMINANCE_ALPHA;
+				r_gl_format = GL_LUMINANCE_ALPHA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			}
 		} break;
 		case Image::FORMAT_R8: {
 			r_gl_internal_format = GL_R8;
@@ -946,105 +950,109 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	}
 #endif
 
-#ifdef GLES_OVER_GL
-	// OpenGL 3.3 supports glGetTexImage which is faster and simpler than glReadPixels.
-	// It also allows for reading compressed textures, mipmaps, and more formats.
-	Vector<uint8_t> data;
+	Ref<Image> image;
+#ifdef GL_API_ENABLED
+	if (RasterizerGLES3::is_gles_over_gl()) {
+		// OpenGL 3.3 supports glGetTexImage which is faster and simpler than glReadPixels.
+		// It also allows for reading compressed textures, mipmaps, and more formats.
+		Vector<uint8_t> data;
 
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->real_format, texture->mipmaps > 1);
+		int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->real_format, texture->mipmaps > 1);
 
-	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
-	uint8_t *w = data.ptrw();
+		data.resize(data_size * 2); // Add some memory at the end, just in case for buggy drivers.
+		uint8_t *w = data.ptrw();
 
-	glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0);
 
-	glBindTexture(texture->target, texture->tex_id);
+		glBindTexture(texture->target, texture->tex_id);
 
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-	for (int i = 0; i < texture->mipmaps; i++) {
-		int ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, texture->real_format, i);
+		for (int i = 0; i < texture->mipmaps; i++) {
+			int ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, texture->real_format, i);
 
-		if (texture->compressed) {
-			glPixelStorei(GL_PACK_ALIGNMENT, 4);
-			glGetCompressedTexImage(texture->target, i, &w[ofs]);
+			if (texture->compressed) {
+				glPixelStorei(GL_PACK_ALIGNMENT, 4);
+				glGetCompressedTexImage(texture->target, i, &w[ofs]);
 
-		} else {
-			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			} else {
+				glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
-			glGetTexImage(texture->target, i, texture->gl_format_cache, texture->gl_type_cache, &w[ofs]);
+				glGetTexImage(texture->target, i, texture->gl_format_cache, texture->gl_type_cache, &w[ofs]);
+			}
+		}
+
+		data.resize(data_size);
+
+		ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+		image = Image::create_from_data(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
+		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+		if (texture->format != texture->real_format) {
+			image->convert(texture->format);
 		}
 	}
+#endif // GL_API_ENABLED
+#ifdef GLES_API_ENABLED
+	if (!RasterizerGLES3::is_gles_over_gl()) {
+		Vector<uint8_t> data;
 
-	data.resize(data_size);
+		// On web and mobile we always read an RGBA8 image with no mipmaps.
+		int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
 
-	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image = Image::create_from_data(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
-	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
-	if (texture->format != texture->real_format) {
-		image->convert(texture->format);
+		data.resize(data_size * 2); // Add some memory at the end, just in case for buggy drivers.
+		uint8_t *w = data.ptrw();
+
+		GLuint temp_framebuffer;
+		glGenFramebuffers(1, &temp_framebuffer);
+
+		GLuint temp_color_texture;
+		glGenTextures(1, &temp_color_texture);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
+
+		glBindTexture(GL_TEXTURE_2D, temp_color_texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, temp_color_texture, 0);
+
+		glDepthMask(GL_FALSE);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_BLEND);
+		glDepthFunc(GL_LEQUAL);
+		glColorMask(1, 1, 1, 1);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture->tex_id);
+
+		glViewport(0, 0, texture->alloc_width, texture->alloc_height);
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		CopyEffects::get_singleton()->copy_to_rect(Rect2i(0, 0, 1.0, 1.0));
+
+		glReadPixels(0, 0, texture->alloc_width, texture->alloc_height, GL_RGBA, GL_UNSIGNED_BYTE, &w[0]);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDeleteTextures(1, &temp_color_texture);
+		glDeleteFramebuffers(1, &temp_framebuffer);
+
+		data.resize(data_size);
+
+		ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+		image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
+		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+
+		if (texture->format != Image::FORMAT_RGBA8) {
+			image->convert(texture->format);
+		}
+
+		if (texture->mipmaps > 1) {
+			image->generate_mipmaps();
+		}
 	}
-#else
-
-	Vector<uint8_t> data;
-
-	// On web and mobile we always read an RGBA8 image with no mipmaps.
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
-
-	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
-	uint8_t *w = data.ptrw();
-
-	GLuint temp_framebuffer;
-	glGenFramebuffers(1, &temp_framebuffer);
-
-	GLuint temp_color_texture;
-	glGenTextures(1, &temp_color_texture);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
-
-	glBindTexture(GL_TEXTURE_2D, temp_color_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, temp_color_texture, 0);
-
-	glDepthMask(GL_FALSE);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
-	glDepthFunc(GL_LEQUAL);
-	glColorMask(1, 1, 1, 1);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture->tex_id);
-
-	glViewport(0, 0, texture->alloc_width, texture->alloc_height);
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	CopyEffects::get_singleton()->copy_to_rect(Rect2i(0, 0, 1.0, 1.0));
-
-	glReadPixels(0, 0, texture->alloc_width, texture->alloc_height, GL_RGBA, GL_UNSIGNED_BYTE, &w[0]);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDeleteTextures(1, &temp_color_texture);
-	glDeleteFramebuffers(1, &temp_framebuffer);
-
-	data.resize(data_size);
-
-	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
-	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
-
-	if (texture->format != Image::FORMAT_RGBA8) {
-		image->convert(texture->format);
-	}
-
-	if (texture->mipmaps > 1) {
-		image->generate_mipmaps();
-	}
-
-#endif
+#endif // GLES_API_ENABLED
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && !texture->is_render_target) {
@@ -1254,21 +1262,32 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 
 #ifndef WEB_ENABLED
 	switch (texture->format) {
-#ifdef GLES_OVER_GL
 		case Image::FORMAT_L8: {
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+			} else {
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+			}
 		} break;
 		case Image::FORMAT_LA8: {
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+			} else {
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
+				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+			}
 		} break;
-#endif // GLES3_OVER_GL
-
 		case Image::FORMAT_ETC2_RA_AS_RG:
 		case Image::FORMAT_DXT5_RA_AS_RG: {
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);

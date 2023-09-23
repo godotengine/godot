@@ -139,12 +139,6 @@
 	return [[CAMetalLayer class] layer];
 }
 
-- (void)updateLayer {
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	ds->window_update(window_id);
-	[super updateLayer];
-}
-
 - (BOOL)wantsUpdateLayer {
 	return YES;
 }
