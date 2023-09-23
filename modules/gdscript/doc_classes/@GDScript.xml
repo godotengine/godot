@@ -567,7 +567,7 @@
 				@export_range(0, 100, 1, "or_greater") var power_percent
 				@export_range(0, 100, 1, "or_greater", "or_less") var health_delta
 
-				@export_range(-3.14, 3.14, 0.001, "radians") var angle_radians
+				@export_range(-180, 180, 0.1, "radians") var angle_radians
 				@export_range(0, 360, 1, "degrees") var angle_degrees
 				@export_range(-8, 8, 2, "suffix:px") var target_offset
 				[/codeblock]
