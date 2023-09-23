@@ -63,6 +63,7 @@
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "servers/display_server.h"
+#include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 
 struct FloatConstantDef {
@@ -5094,20 +5095,52 @@ void VisualShaderEditor::_update_preview() {
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_shader_uniform_type_func = _visual_shader_editor_get_global_shader_uniform_type;
 
-	ShaderLanguage sl;
-
-	Error err = sl.compile(code, info);
-
 	for (int i = 0; i < preview_text->get_line_count(); i++) {
 		preview_text->set_line_background_color(i, Color(0, 0, 0, 0));
 	}
+
+	String preprocessed_code;
+	{
+		String path = visual_shader->get_path();
+		String error_pp;
+		List<ShaderPreprocessor::FilePosition> err_positions;
+		ShaderPreprocessor preprocessor;
+		Error err = preprocessor.preprocess(code, path, preprocessed_code, &error_pp, &err_positions);
+		if (err != OK) {
+			ERR_FAIL_COND(err_positions.is_empty());
+
+			String file = err_positions.front()->get().file;
+			int err_line = err_positions.front()->get().line;
+			Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
+			preview_text->set_line_background_color(err_line - 1, error_line_color);
+			error_panel->show();
+
+			error_label->set_text("error(" + file + ":" + itos(err_line) + "): " + error_pp);
+			shader_error = true;
+			return;
+		}
+	}
+
+	ShaderLanguage sl;
+	Error err = sl.compile(preprocessed_code, info);
 	if (err != OK) {
+		int err_line;
+		String err_text;
+		Vector<ShaderLanguage::FilePosition> include_positions = sl.get_include_positions();
+		if (include_positions.size() > 1) {
+			// Error is in an include.
+			err_line = include_positions[0].line;
+			err_text = "error(" + itos(err_line) + ") in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
+		} else {
+			err_line = sl.get_error_line();
+			err_text = "error(" + itos(err_line) + "): " + sl.get_error_text();
+		}
+
 		Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
-		preview_text->set_line_background_color(sl.get_error_line() - 1, error_line_color);
+		preview_text->set_line_background_color(err_line - 1, error_line_color);
 		error_panel->show();
 
-		String text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
-		error_label->set_text(text);
+		error_label->set_text(err_text);
 		shader_error = true;
 	} else {
 		error_panel->hide();
