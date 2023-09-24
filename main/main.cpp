@@ -3445,6 +3445,8 @@ static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
 static uint64_t navigation_process_max = 0;
 
+static uint64_t last_draw_ticks = 0;
+
 bool Main::iteration() {
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
@@ -3465,7 +3467,6 @@ bool Main::iteration() {
 
 	MainFrameTime advance = main_timer_sync.advance(physics_step, physics_ticks_per_second);
 	double process_step = advance.process_step;
-	double scaled_step = process_step * time_scale;
 
 	Engine::get_singleton()->_process_step = process_step;
 	Engine::get_singleton()->_physics_interpolation_fraction = advance.interpolation_fraction;
@@ -3551,6 +3552,12 @@ bool Main::iteration() {
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
+		uint64_t draw_ticks = OS::get_singleton()->get_ticks_usec();
+		double scaled_step = (draw_ticks - last_draw_ticks) / 1000000.0 * time_scale;
+
+		// Cap the delta to 1s to avoid undesired behaviors caused by large deltas.
+		scaled_step = MIN(1.0, scaled_step);
+
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
 				RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
@@ -3561,6 +3568,8 @@ bool Main::iteration() {
 			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
 		}
+
+		last_draw_ticks = draw_ticks;
 	}
 
 	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
