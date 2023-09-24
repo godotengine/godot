@@ -5,6 +5,117 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [3.5.3] - 2023-09-25
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-5-3) for details.
+
+### Added
+
+#### GDScript
+
+- Suggest `class_name` in autocompletion ([GH-76346](https://github.com/godotengine/godot/pull/76346)).
+
+#### Porting
+
+- UWP: Add support for repackaging the generated UWP APPX file with `makeappx` ([GH-79544](https://github.com/godotengine/godot/pull/79544)).
+
+### Changed
+
+#### Buildsystem
+
+- Windows: Make misbehaving MSVC incremental linking opt-in ([GH-80482](https://github.com/godotengine/godot/pull/80482), [GH-81144](https://github.com/godotengine/godot/pull/81144)).
+
+#### GDScript
+
+- GDScriptParser: Don't use index operator on linked list ([GH-74782](https://github.com/godotengine/godot/pull/74782)).
+
+#### Porting
+
+- Android: Bump the target SDK version to 33 (Android 13) ([GH-75205](https://github.com/godotengine/godot/pull/75205)).
+
+#### Thirdparty
+
+- libwebp updated to version 1.3.2.
+- mbedtls updated to version 2.28.4.
+- tinyexr updated to version 1.0.7.
+- CA root certificates updated to 2023-06-02 bundle from Mozilla.
+- SDL GameControllerDB updated to 2023-09-23 git snapshot.
+
+### Fixed
+
+#### 2D
+
+- TileSet: Fix resizing collision shape when vertex is outside the tilesheet ([GH-73218](https://github.com/godotengine/godot/pull/73218)).
+- Notify child controls when `BackBufferCopy`'s rect changed ([GH-74282](https://github.com/godotengine/godot/pull/74282)).
+- Fix AnimatedSprite normal map loading ([GH-80406](https://github.com/godotengine/godot/pull/80406)).
+- Fix TouchScreenButton not redrawn when texture changes ([GH-81100](https://github.com/godotengine/godot/pull/81100)).
+
+#### Audio
+
+- Fix AudioEffectRecord circular reference ([GH-74986](https://github.com/godotengine/godot/pull/74986)).
+- Add mono audio support to WASAPI ([GH-76541](https://github.com/godotengine/godot/pull/76541)).
+- Fix trim when importing WAV ([GH-78048](https://github.com/godotengine/godot/pull/78048)).
+
+#### Buildsystem
+
+- Linux: Build `JoypadLinux` sandbox detection method only with udev ([GH-77458](https://github.com/godotengine/godot/pull/77458)).
+- macOS: Change target version to 11.0+ to fix PCRE SLJIT build ([GH-82007](https://github.com/godotengine/godot/pull/82007)).
+- macOS: Workaround Xcode 15 linker bug ([GH-82009](https://github.com/godotengine/godot/pull/82009)).
+- Web: Workaround Emscripten 3.1.42+ LTO regression ([GH-81340](https://github.com/godotengine/godot/pull/81340)).
+
+#### Core
+
+- Include the follow-viewport-transform into CanvasLayer transform calculations ([GH-70310](https://github.com/godotengine/godot/pull/70310)).
+- Fix moving position indicator out of bounds in FileAccessMemory ([GH-75641](https://github.com/godotengine/godot/pull/75641)).
+- Fix size error in `BitMap.opaque_to_polygons` ([GH-76544](https://github.com/godotengine/godot/pull/76544)).
+- Fix infinite loop on EOF in the command line debugger ([GH-80400](https://github.com/godotengine/godot/pull/80400)).
+- Add recursion level check for `Array` and `Dictionary` hashing ([GH-80888](https://github.com/godotengine/godot/pull/80888)).
+- Add recursion level check for `VariantWriter::write()` ([GH-81114](https://github.com/godotengine/godot/pull/81114)).
+- Add check to ensure registered classes are declared ([GH-81117](https://github.com/godotengine/godot/pull/81117)).
+
+#### Editor
+
+- Fix TextEdit `color_region_cache` bug ([GH-74777](https://github.com/godotengine/godot/pull/74777)).
+- Fix inconsistent file dialog settings usage ([GH-76423](https://github.com/godotengine/godot/pull/76423)).
+
+#### GUI
+
+- Fix scrolling behavior with zero/low page value ([GH-67910](https://github.com/godotengine/godot/pull/67910)).
+- Fix `GridContainer` max row/column calculations not skipping hidden children ([GH-76833](https://github.com/godotengine/godot/pull/76833)).
+- Make `TextureButton` and `Button` update on texture change ([GH-81113](https://github.com/godotengine/godot/pull/81113)).
+- Fix cursor after last character INDEX in line counting as a character outside of the viewing area ([GH-81352](https://github.com/godotengine/godot/pull/81352)).
+
+#### Import
+
+- Bounds fixes in `TextureAtlas` import ([GH-77428](https://github.com/godotengine/godot/pull/77428)).
+
+#### Multiplayer
+
+- Net/ENet: Better handle truncated socket messages ([GH-79704](https://github.com/godotengine/godot/pull/79704)).
+
+#### Navigation
+
+- Fix GridMap free navigation RID error spam ([GH-74895](https://github.com/godotengine/godot/pull/74895)).
+
+#### Porting
+
+- Android: Implement file provider capabilities ([GH-72496](https://github.com/godotengine/godot/pull/72496)).
+- Android: Fix directory access when the running app has the `All files access` permission ([GH-75147](https://github.com/godotengine/godot/pull/75147)).
+- Android: Fix null in text entry system ([GH-75992](https://github.com/godotengine/godot/pull/75992)).
+- iOS: Fix splash screen rotation ([GH-76037](https://github.com/godotengine/godot/pull/76037)).
+- Linux: Don't use udev for joypad hotloading when running in a sandbox ([GH-76962](https://github.com/godotengine/godot/pull/76962)).
+- Linux: Use current keyboard layout in `OS_X11::keyboard_get_scancode_from_physical` ([GH-78169](https://github.com/godotengine/godot/pull/78169)).
+- Linux: Ensure `joy_connection_changed` is emitted on the main thread ([GH-80432](https://github.com/godotengine/godot/pull/80432)).
+- macOS: Disable live resize in multithreaded rendering mode ([GH-81442](https://github.com/godotengine/godot/pull/81442)).
+- Web: Fix JavaScript callback memory leak ([GH-81090](https://github.com/godotengine/godot/pull/81090)).
+- Windows: Added a few device GUIDs to `is_xinput_device` fixing controller problems ([GH-78043](https://github.com/godotengine/godot/pull/78043)).
+- Windows: Fix StringFileInfo structure ([GH-76001](https://github.com/godotengine/godot/pull/76001)).
+
+#### Rendering
+
+- Fix shadows when using 2 directional lights ([GH-74539](https://github.com/godotengine/godot/pull/74539)).
+
+
 ## [3.5.2] - 2023-03-07
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-5-2) for details.
@@ -2913,6 +3024,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[3.5.3]: https://downloads.tuxfamily.org/godotengine/3.5.3/Godot_v3.5.3-stable_changelog_chrono.txt
 [3.5.2]: https://downloads.tuxfamily.org/godotengine/3.5.2/Godot_v3.5.2-stable_changelog_chrono.txt
 [3.5.1]: https://downloads.tuxfamily.org/godotengine/3.5.1/Godot_v3.5.1-stable_changelog_chrono.txt
 [3.5]: https://downloads.tuxfamily.org/godotengine/3.5/Godot_v3.5-stable_changelog_chrono.txt
