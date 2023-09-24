@@ -309,7 +309,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		// This is the event that WASAPI will signal when it wants more data from us (push method).
 		// The initial state for this event must be unsignaled!
 		p_device->feed_event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-		ERR_FAIL_COND_V_MSG(p_device->feed_event == nullptr, ERR_CANT_OPEN, "WASAPI: Could not create event handle with error: " + String::num(GetLastError()) + ".");
+		ERR_FAIL_NULL_V_MSG(p_device->feed_event, ERR_CANT_OPEN, "WASAPI: Could not create event handle with error: " + String::num(GetLastError()) + ".");
 
 		hr = p_device->audio_client->SetEventHandle(p_device->feed_event);
 		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Could not set event handle with error: 0x" + String::num_uint64(hr, 16) + ".");
@@ -442,7 +442,7 @@ Error AudioDriverWASAPI::init() {
 	// Literally impossible for this call to fail. You be the judge if you need to check the return value of this.
 	// It is however fundamental to the logic for this to exist.
 	render_wake = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-	ERR_FAIL_COND_V_MSG(render_wake == nullptr, ERR_CANT_OPEN, "WASAPI: Could not create render wake handle with error: " + String::num(GetLastError()) + ".");
+	ERR_FAIL_NULL_V_MSG(render_wake, ERR_CANT_OPEN, "WASAPI: Could not create render wake handle with error: " + String::num(GetLastError()) + ".");
 
 	exit_thread.clear();
 
