@@ -46,6 +46,7 @@ public:
 		BONE_POSE_NO_OVERRIDE,
 		BONE_REST
 	};
+
 private:
 	bool bound = false;
 	String bone_name;

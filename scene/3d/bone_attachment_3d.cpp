@@ -424,7 +424,6 @@ void BoneAttachment3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_pose"), "set_override_pose", "get_override_pose");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_pose_mode", PROPERTY_HINT_ENUM, "Bone Pose,Bone Pose Override,Bone Pose No Override, Bone Rest"), "set_bone_pose_mode", "get_bone_pose_mode");
 
-
 	BIND_ENUM_CONSTANT(BONE_POSE);
 	BIND_ENUM_CONSTANT(BONE_POSE_OVERRIDE);
 	BIND_ENUM_CONSTANT(BONE_POSE_NO_OVERRIDE);
