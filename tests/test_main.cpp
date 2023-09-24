@@ -125,6 +125,11 @@
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
 
+// Editor-only tests
+#ifdef TOOLS_ENABLED
+#include "tests/editor/import/test_csv_translation_importer.h"
+#endif
+
 #include "modules/modules_tests.gen.h"
 
 #include "tests/display_server_mock.h"

@@ -92,7 +92,11 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot open file from path '" + p_source_file + "'.");
 
 	Vector<String> line = f->get_csv_line(delimiter);
-	ERR_FAIL_COND_V(line.size() <= 1, ERR_PARSE_ERROR);
+
+	if (line.size() <= 1) {
+		WARN_PRINT(vformat("CSV Translation file: %s does not provide any translation keys.", p_source_file));
+		return OK;
+	}
 
 	Vector<String> locales;
 	Vector<Ref<Translation>> translations;
@@ -111,7 +115,10 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		line = f->get_csv_line(delimiter);
 		String key = line[0];
 		if (!key.is_empty()) {
-			ERR_FAIL_COND_V_MSG(line.size() != locales.size() + 1, ERR_PARSE_ERROR, vformat("Error importing CSV translation: expected %d locale(s), but the '%s' key has %d locale(s).", locales.size(), key, line.size() - 1));
+			if (line.size() != locales.size() + 1) {
+				WARN_PRINT(vformat("Skipping import of translation key: '%s'. Expected %d locale(s) but %d were provided.", key, locales.size(), line.size() - 1));
+				continue;
+			}
 
 			for (int i = 1; i < line.size(); i++) {
 				translations.write[i - 1]->add_message(key, line[i].c_unescape());

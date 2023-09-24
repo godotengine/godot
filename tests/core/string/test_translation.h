@@ -35,10 +35,6 @@
 #include "core/string/translation.h"
 #include "core/string/translation_po.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/import/resource_importer_csv_translation.h"
-#endif
-
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 
@@ -149,55 +145,6 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 	CHECK(optimized_translation->get_message_count() == 0);
 	CHECK(messages.size() == 0);
 }
-
-#ifdef TOOLS_ENABLED
-TEST_CASE("[TranslationCSV] CSV import") {
-	Ref<ResourceImporterCSVTranslation> import_csv_translation = memnew(ResourceImporterCSVTranslation);
-
-	HashMap<StringName, Variant> options;
-	options["compress"] = false;
-	options["delimiter"] = 0;
-
-	List<String> gen_files;
-
-	Error result = import_csv_translation->import(TestUtils::get_data_path("translations.csv"),
-			"", options, nullptr, &gen_files);
-	CHECK(result == OK);
-	CHECK(gen_files.size() == 4);
-
-	TranslationServer *ts = TranslationServer::get_singleton();
-
-	for (const String &file : gen_files) {
-		Ref<Translation> translation = ResourceLoader::load(file);
-		CHECK(translation.is_valid());
-		ts->add_translation(translation);
-	}
-
-	ts->set_locale("en");
-
-	// `tr` can be called on any Object, we reuse TranslationServer for convenience.
-	CHECK(ts->tr("GOOD_MORNING") == "Good Morning");
-	CHECK(ts->tr("GOOD_EVENING") == "Good Evening");
-
-	ts->set_locale("de");
-
-	CHECK(ts->tr("GOOD_MORNING") == "Guten Morgen");
-	CHECK(ts->tr("GOOD_EVENING") == "Good Evening"); // Left blank in CSV, should source from 'en'.
-
-	ts->set_locale("ja");
-
-	CHECK(ts->tr("GOOD_MORNING") == String::utf8("おはよう"));
-	CHECK(ts->tr("GOOD_EVENING") == String::utf8("こんばんは"));
-
-	/* FIXME: This passes, but triggers a chain reaction that makes test_viewport
-	 * and test_text_edit explode in a billion glittery Unicode particles.
-	ts->set_locale("fa");
-
-	CHECK(ts->tr("GOOD_MORNING") == String::utf8("صبح بخیر"));
-	CHECK(ts->tr("GOOD_EVENING") == String::utf8("عصر بخیر"));
-	*/
-}
-#endif // TOOLS_ENABLED
 
 } // namespace TestTranslation
 
