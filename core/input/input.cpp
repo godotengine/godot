@@ -144,7 +144,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_using_accumulated_input"), &Input::is_using_accumulated_input);
 	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::flush_buffered_events);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("mouse_mode", "Input.MouseMode", "Visible,Hidden,Captured,Confined,Confined Hidden"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);

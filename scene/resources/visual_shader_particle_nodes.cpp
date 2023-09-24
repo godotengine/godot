@@ -718,7 +718,7 @@ void VisualShaderNodeParticleMeshEmitter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_index", "surface_index"), &VisualShaderNodeParticleMeshEmitter::set_surface_index);
 	ClassDB::bind_method(D_METHOD("get_surface_index"), &VisualShaderNodeParticleMeshEmitter::get_surface_index);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo::make_object("mesh", "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_all_surfaces"), "set_use_all_surfaces", "is_use_all_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "surface_index"), "set_surface_index", "get_surface_index");
 }
@@ -903,7 +903,7 @@ void VisualShaderNodeParticleRandomness::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_op_type", "type"), &VisualShaderNodeParticleRandomness::set_op_type);
 	ClassDB::bind_method(D_METHOD("get_op_type"), &VisualShaderNodeParticleRandomness::get_op_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "op_type", PROPERTY_HINT_ENUM, "Scalar,Vector2,Vector3,Vector4"), "set_op_type", "get_op_type");
+	ADD_PROPERTY(PropertyInfo::make_enum("op_type", "VisualShaderNodeParticleRandomness.OpType", "Scalar,Vector2,Vector3,Vector4"), "set_op_type", "get_op_type");
 
 	BIND_ENUM_CONSTANT(OP_TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_2D);
@@ -1056,7 +1056,7 @@ void VisualShaderNodeParticleAccelerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &VisualShaderNodeParticleAccelerator::set_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &VisualShaderNodeParticleAccelerator::get_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Linear,Radial,Tangential"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("mode", "VisualShaderNodeParticleAccelerator.Mode", "Linear,Radial,Tangential"), "set_mode", "get_mode");
 
 	BIND_ENUM_CONSTANT(MODE_LINEAR);
 	BIND_ENUM_CONSTANT(MODE_RADIAL)
@@ -1445,13 +1445,13 @@ void VisualShaderNodeParticleEmit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &VisualShaderNodeParticleEmit::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &VisualShaderNodeParticleEmit::get_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Position,RotScale,Velocity,Color,Custom"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo::make_flags("flags", "VisualShaderNodeParticleEmit.EmitFlags", "Position,RotScale,Velocity,Color,Custom"), "set_flags", "get_flags");
 
-	BIND_ENUM_CONSTANT(EMIT_FLAG_POSITION);
-	BIND_ENUM_CONSTANT(EMIT_FLAG_ROT_SCALE);
-	BIND_ENUM_CONSTANT(EMIT_FLAG_VELOCITY);
-	BIND_ENUM_CONSTANT(EMIT_FLAG_COLOR);
-	BIND_ENUM_CONSTANT(EMIT_FLAG_CUSTOM);
+	BIND_BITFIELD_FLAG(EMIT_FLAG_POSITION);
+	BIND_BITFIELD_FLAG(EMIT_FLAG_ROT_SCALE);
+	BIND_BITFIELD_FLAG(EMIT_FLAG_VELOCITY);
+	BIND_BITFIELD_FLAG(EMIT_FLAG_COLOR);
+	BIND_BITFIELD_FLAG(EMIT_FLAG_CUSTOM);
 }
 
 String VisualShaderNodeParticleEmit::get_caption() const {
@@ -1515,21 +1515,21 @@ String VisualShaderNodeParticleEmit::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeParticleEmit::add_flag(EmitFlags p_flag) {
-	flags |= p_flag;
+	flags.set_flag(p_flag);
 	emit_changed();
 }
 
 bool VisualShaderNodeParticleEmit::has_flag(EmitFlags p_flag) const {
-	return flags & p_flag;
+	return flags.has_flag(p_flag);
 }
 
-void VisualShaderNodeParticleEmit::set_flags(EmitFlags p_flags) {
-	flags = (int)p_flags;
+void VisualShaderNodeParticleEmit::set_flags(BitField<EmitFlags> p_flags) {
+	flags = p_flags;
 	emit_changed();
 }
 
-VisualShaderNodeParticleEmit::EmitFlags VisualShaderNodeParticleEmit::get_flags() const {
-	return EmitFlags(flags);
+BitField<VisualShaderNodeParticleEmit::EmitFlags> VisualShaderNodeParticleEmit::get_flags() const {
+	return flags;
 }
 
 bool VisualShaderNodeParticleEmit::is_show_prop_names() const {

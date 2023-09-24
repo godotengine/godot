@@ -66,7 +66,7 @@ void ResourceImporterImageFont::get_import_options(const String &p_path, List<Im
 	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "image_margin"), Rect2i()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "character_margin"), Rect2i()));
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
+	r_options->push_back(ImportOption(PropertyInfo::make_typed_array("fallbacks", "Font"), Array()));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
 }

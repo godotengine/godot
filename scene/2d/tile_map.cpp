@@ -3633,7 +3633,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/y_sort_enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/y_sort_origin", i), PROPERTY_HINT_NONE, "suffix:px"));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/z_index", i), PROPERTY_HINT_NONE));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("layer_%d/tile_data", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo::make_object(vformat("layer_%d/tile_data", i), "Object", "", PROPERTY_USAGE_NO_EDITOR));
 	}
 }
 
@@ -4597,11 +4597,11 @@ void TileMap::_bind_methods() {
 	GDVIRTUAL_BIND(_use_tile_data_runtime_update, "layer", "coords");
 	GDVIRTUAL_BIND(_tile_data_runtime_update, "layer", "coords", "tile_data");
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
+	ADD_PROPERTY(PropertyInfo::make_object("tile_set", "TileSet"), "set_tileset", "get_tileset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("collision_visibility_mode", "TileMap.VisibilityMode", "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("navigation_visibility_mode", "TileMap.VisibilityMode", "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 
 	ADD_ARRAY("layers", "layer_");
 

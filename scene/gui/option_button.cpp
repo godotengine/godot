@@ -202,7 +202,7 @@ void OptionButton::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < popup->get_item_count(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("popup/item_%d/text", i)));
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		PropertyInfo pi = PropertyInfo::make_object(vformat("popup/item_%d/icon", i), "Texture2D");
 		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
@@ -575,7 +575,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &OptionButton::set_disable_shortcuts);
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
-	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
+	ADD_PROPERTY(PropertyInfo::make_array_count("item_count", "Items", "popup/item_"), "set_item_count", "get_item_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");

@@ -42,8 +42,8 @@ void FogVolume::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_material"), &FogVolume::get_material);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "shape", PROPERTY_HINT_ENUM, "Ellipsoid (Local),Cone (Local),Cylinder (Local),Box (Local),World (Global)"), "set_shape", "get_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "FogMaterial,ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo::make_enum("shape", "RenderingServer.FogVolumeShape", "Ellipsoid (Local),Cone (Local),Cylinder (Local),Box (Local),World (Global)"), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo::make_object("material", "Material", "FogMaterial,ShaderMaterial"), "set_material", "get_material");
 }
 
 void FogVolume::_validate_property(PropertyInfo &p_property) const {

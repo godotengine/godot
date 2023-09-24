@@ -564,7 +564,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 			}
 
 			for (int i = 0; i < args.size(); i++) {
-				p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%d/%s", PNAME("args"), i, PNAME("type")), PROPERTY_HINT_ENUM, vtypes));
+				p_list->push_back(PropertyInfo::make_enum(vformat("%s/%d/%s", PNAME("args"), i, PNAME("type")), "", vtypes));
 				if (args[i].get_type() != Variant::NIL) {
 					p_list->push_back(PropertyInfo(args[i].get_type(), vformat("%s/%d/%s", PNAME("args"), i, PNAME("value"))));
 				}
@@ -581,11 +581,11 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("in_handle")));
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("out_handle")));
 			}
-			p_list->push_back(PropertyInfo(Variant::INT, PNAME("handle_mode"), PROPERTY_HINT_ENUM, "Free,Linear,Balanced,Mirrored"));
+			p_list->push_back(PropertyInfo::make_enum(PNAME("handle_mode"), "", "Free,Linear,Balanced,Mirrored"));
 
 		} break;
 		case Animation::TYPE_AUDIO: {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("stream"), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
+			p_list->push_back(PropertyInfo::make_object(PNAME("stream"), "AudioStream"));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("start_offset"), PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("end_offset"), PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
 
@@ -1171,7 +1171,7 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 				}
 
 				for (int i = 0; i < args.size(); i++) {
-					p_list->push_back(PropertyInfo(Variant::INT, "args/" + itos(i) + "/type", PROPERTY_HINT_ENUM, vtypes));
+					p_list->push_back(PropertyInfo::make_enum("args/" + itos(i) + "/type", "", vtypes));
 					if (args[i].get_type() != Variant::NIL) {
 						p_list->push_back(PropertyInfo(args[i].get_type(), "args/" + itos(i) + "/value"));
 					}
@@ -1181,10 +1181,10 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "value"));
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, "in_handle"));
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, "out_handle"));
-				p_list->push_back(PropertyInfo(Variant::INT, "handle_mode", PROPERTY_HINT_ENUM, "Free,Linear,Balanced,Mirrored"));
+				p_list->push_back(PropertyInfo::make_enum("handle_mode", "", "Free,Linear,Balanced,Mirrored"));
 			} break;
 			case Animation::TYPE_AUDIO: {
-				p_list->push_back(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
+				p_list->push_back(PropertyInfo::make_object("stream", "AudioStream"));
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "start_offset", PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "end_offset", PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
 			} break;

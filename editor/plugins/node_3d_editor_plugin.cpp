@@ -3980,8 +3980,8 @@ Dictionary Node3DEditorViewport::get_state() const {
 void Node3DEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &Node3DEditorViewport::update_transform_gizmo_view); // Used by call_deferred.
 
-	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
-	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
+	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo::make_object("viewport", "Object")));
+	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo::make_object("viewport", "Object")));
 }
 
 void Node3DEditorViewport::reset() {

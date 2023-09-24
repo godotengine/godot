@@ -2246,12 +2246,12 @@ void AnimationTree::_bind_methods() {
 
 	GDVIRTUAL_BIND(_post_process_key_value, "animation", "track", "value", "object", "object_idx");
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
+	ADD_PROPERTY(PropertyInfo::make_object("tree_root", "AnimationNode", "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
+	ADD_PROPERTY(PropertyInfo::make_enum("process_callback", "AnimationTree.AnimationProcessCallback", "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
 	ADD_GROUP("Audio", "audio_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_max_polyphony", PROPERTY_HINT_RANGE, "1,127,1"), "set_audio_max_polyphony", "get_audio_max_polyphony");
 	ADD_GROUP("Root Motion", "root_motion_");

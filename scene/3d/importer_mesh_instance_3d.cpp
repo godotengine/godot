@@ -79,7 +79,7 @@ void ImporterMeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &ImporterMeshInstance3D::set_skeleton_path);
 	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &ImporterMeshInstance3D::get_skeleton_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "ImporterMesh"), "set_mesh", "get_mesh");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");
+	ADD_PROPERTY(PropertyInfo::make_object("mesh", "ImporterMesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo::make_object("skin", "Skin"), "set_skin", "get_skin");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton"), "set_skeleton_path", "get_skeleton_path");
 }

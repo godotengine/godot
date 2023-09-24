@@ -172,7 +172,7 @@ void UPNPDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_igd_status", "status"), &UPNPDevice::set_igd_status);
 	ClassDB::bind_method(D_METHOD("get_igd_status"), &UPNPDevice::get_igd_status);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "igd_status", PROPERTY_HINT_ENUM), "set_igd_status", "get_igd_status");
+	ADD_PROPERTY(PropertyInfo::make_enum("igd_status", "UPNPDevice.IGDStatus", "OK,HTTP Error,HTTP Empty,No URLs,No IGD,Disconnected,Unknown Device,Invalid Control,Malloc Error,Unknown Error"), "set_igd_status", "get_igd_status");
 
 	BIND_ENUM_CONSTANT(IGD_STATUS_OK);
 	BIND_ENUM_CONSTANT(IGD_STATUS_HTTP_ERROR);

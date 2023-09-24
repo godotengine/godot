@@ -1005,8 +1005,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "file_mode", PROPERTY_HINT_ENUM, "Open File,Open Files,Open Folder,Open Any,Save"), "set_file_mode", "get_file_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User Data,File System"), "set_access", "get_access");
+	ADD_PROPERTY(PropertyInfo::make_enum("file_mode", "FileDialog.FileMode", "Open File,Open Files,Open Folder,Open Any,Save"), "set_file_mode", "get_file_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("access", "FileDialog.Access", "Resources,User Data,File System"), "set_access", "get_access");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "root_subfolder"), "set_root_subfolder", "get_root_subfolder");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
