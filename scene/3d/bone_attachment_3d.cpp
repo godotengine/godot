@@ -330,39 +330,39 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 			if (!override_pose) {
 				if (use_external_skeleton) {
 					switch (bone_pose_mode) {
-							case BONE_POSE: {
-								set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose(bone_idx));
-							} break;
+						case BONE_POSE: {
+							set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose(bone_idx));
+						} break;
 
-							case BONE_POSE_OVERRIDE: {
-								set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose_override(bone_idx));
-							} break;
+						case BONE_POSE_OVERRIDE: {
+							set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose_override(bone_idx));
+						} break;
 
-							case BONE_POSE_NO_OVERRIDE: {
-								set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose_no_override(bone_idx));
-							} break;
+						case BONE_POSE_NO_OVERRIDE: {
+							set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose_no_override(bone_idx));
+						} break;
 
-							case BONE_REST: {
-								set_global_transform(sk->get_global_transform() * sk->get_bone_global_rest(bone_idx));
-							} break;
+						case BONE_REST: {
+							set_global_transform(sk->get_global_transform() * sk->get_bone_global_rest(bone_idx));
+						} break;
 					}
 				} else {
 					switch (bone_pose_mode) {
-							case BONE_POSE: {
-								set_transform(sk->get_bone_global_pose(bone_idx));
-							} break;
+						case BONE_POSE: {
+							set_transform(sk->get_bone_global_pose(bone_idx));
+						} break;
 
-							case BONE_POSE_OVERRIDE: {
-								set_transform(sk->get_bone_global_pose_override(bone_idx));
-							} break;
+						case BONE_POSE_OVERRIDE: {
+							set_transform(sk->get_bone_global_pose_override(bone_idx));
+						} break;
 
-							case BONE_POSE_NO_OVERRIDE: {
-								set_transform(sk->get_bone_global_pose_no_override(bone_idx));
-							} break;
+						case BONE_POSE_NO_OVERRIDE: {
+							set_transform(sk->get_bone_global_pose_no_override(bone_idx));
+						} break;
 
-							case BONE_REST: {
-								set_transform(sk->get_bone_global_rest(bone_idx));
-							} break;
+						case BONE_REST: {
+							set_transform(sk->get_bone_global_rest(bone_idx));
+						} break;
 					}
 				}
 			} else {
