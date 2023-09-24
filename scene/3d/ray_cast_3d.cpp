@@ -568,7 +568,7 @@ void RayCast3D::_update_debug_shape_material(bool p_check_collision) {
 }
 
 void RayCast3D::_update_debug_shape() {
-	if (!enabled || !game_enabled) {
+	if (!enabled) {
 		return;
 	}
 
