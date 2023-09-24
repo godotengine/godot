@@ -30,6 +30,13 @@
 				Returns the previously active tab index.
 			</description>
 		</method>
+		<method name="get_tab_bar" qualifiers="const">
+			<return type="TabBar" />
+			<description>
+				Returns the [TabBar] contained in this container.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it or editing its tabs may cause a crash. If you wish to edit the tabs, use the methods provided in [TabContainer].
+			</description>
+		</method>
 		<method name="get_tab_button_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="tab_idx" type="int" />
