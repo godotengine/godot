@@ -50,11 +50,11 @@
 		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name" default="&quot;&quot;">
 			The name of the attached bone.
 		</member>
-		<member name="override_pose" type="bool" setter="set_override_pose" getter="get_override_pose" default="false">
-			Whether the BoneAttachment3D node will override the bone pose of the bone it is attached to. When set to [code]true[/code], the BoneAttachment3D node can change the pose of the bone. When set to [code]false[/code], the BoneAttachment3D will always be set to the bone's transform.
-		</member>
 		<member name="bone_pose_mode" type="int" setter="set_bone_pose_mode" getter="get_bone_pose_mode" enum="BoneAttachment3D.BonePoseMode" default="0">
 			Which of the bone poses that BoneAttachment3D node will use, uses [enum BonePoseMode] values. This feature does nothing if [member override_pose] is true.
+		</member>
+		<member name="override_pose" type="bool" setter="set_override_pose" getter="get_override_pose" default="false">
+			Whether the BoneAttachment3D node will override the bone pose of the bone it is attached to. When set to [code]true[/code], the BoneAttachment3D node can change the pose of the bone. When set to [code]false[/code], the BoneAttachment3D will always be set to the bone's transform.
 		</member>
 	</members>
 	<constants>
