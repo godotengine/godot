@@ -371,15 +371,6 @@ float Environment::get_ssao_direct_light_affect() const {
 	return ssao_direct_light_affect;
 }
 
-void Environment::set_ssao_ao_channel_affect(float p_ao_channel_affect) {
-	ssao_ao_channel_affect = p_ao_channel_affect;
-	_update_ssao();
-}
-
-float Environment::get_ssao_ao_channel_affect() const {
-	return ssao_ao_channel_affect;
-}
-
 void Environment::_update_ssao() {
 	RS::get_singleton()->environment_set_ssao(
 			environment,
@@ -390,8 +381,7 @@ void Environment::_update_ssao() {
 			ssao_detail,
 			ssao_horizon,
 			ssao_sharpness,
-			ssao_direct_light_affect,
-			ssao_ao_channel_affect);
+			ssao_direct_light_affect);
 }
 
 // SSIL
@@ -1247,8 +1237,6 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ssao_sharpness"), &Environment::get_ssao_sharpness);
 	ClassDB::bind_method(D_METHOD("set_ssao_direct_light_affect", "amount"), &Environment::set_ssao_direct_light_affect);
 	ClassDB::bind_method(D_METHOD("get_ssao_direct_light_affect"), &Environment::get_ssao_direct_light_affect);
-	ClassDB::bind_method(D_METHOD("set_ssao_ao_channel_affect", "amount"), &Environment::set_ssao_ao_channel_affect);
-	ClassDB::bind_method(D_METHOD("get_ssao_ao_channel_affect"), &Environment::get_ssao_ao_channel_affect);
 
 	ADD_GROUP("SSAO", "ssao_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssao_enabled"), "set_ssao_enabled", "is_ssao_enabled");
@@ -1259,7 +1247,6 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_horizon", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_horizon", "get_ssao_horizon");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_sharpness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_sharpness", "get_ssao_sharpness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_light_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_direct_light_affect", "get_ssao_direct_light_affect");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_ao_channel_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_ao_channel_affect", "get_ssao_ao_channel_affect");
 
 	// SSIL
 	ClassDB::bind_method(D_METHOD("set_ssil_enabled", "enabled"), &Environment::set_ssil_enabled);

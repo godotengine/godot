@@ -642,7 +642,6 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 		scene_state.ubo.ss_effects_flags = 0;
 	} else if (p_render_data->reflection_probe.is_null() && is_environment(p_render_data->environment)) {
-		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_channel_affect(p_render_data->environment);
 		scene_state.ubo.ssao_light_affect = environment_get_ssao_direct_light_affect(p_render_data->environment);
 		uint32_t ss_flags = 0;
 		if (p_opaque_render_buffers) {

@@ -700,7 +700,7 @@ public:
 	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
 	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
 
-	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
+	FUNC9(environment_set_ssao, RID, bool, float, float, float, float, float, float, float)
 	FUNC6(environment_set_ssao_quality, EnvironmentSSAOQuality, bool, float, int, float, float)
 
 	FUNC6(environment_set_ssil, RID, bool, float, float, float, float)

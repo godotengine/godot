@@ -1233,7 +1233,6 @@
 			<param index="6" name="horizon" type="float" />
 			<param index="7" name="sharpness" type="float" />
 			<param index="8" name="light_affect" type="float" />
-			<param index="9" name="ao_channel_affect" type="float" />
 			<description>
 				Sets the variables to be used with the screen-space ambient occlusion (SSAO) post-process effect. See [Environment] for more details.
 			</description>

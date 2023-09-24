@@ -1469,7 +1469,7 @@ void fragment_shader(in SceneData scene_data) {
 		float ssao = texture(sampler2D(ao_buffer, SAMPLER_LINEAR_CLAMP), screen_uv).r;
 #endif
 		ao = min(ao, ssao);
-		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, implementation_data.ssao_light_affect), implementation_data.ssao_ao_affect);
+		ao_light_affect = max(ao_light_affect, implementation_data.ssao_light_affect);
 	}
 
 	{ // process reflections
