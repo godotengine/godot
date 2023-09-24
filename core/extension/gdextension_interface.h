@@ -1432,7 +1432,7 @@ typedef void (*GDExtensionInterfaceStringNewWithWideChars)(GDExtensionUninitiali
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a Latin-1 encoded C string.
- * @param p_size The number of characters.
+ * @param p_size The number of characters (= number of bytes).
  */
 typedef void (*GDExtensionInterfaceStringNewWithLatin1CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size);
 
@@ -1444,7 +1444,7 @@ typedef void (*GDExtensionInterfaceStringNewWithLatin1CharsAndLen)(GDExtensionUn
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a UTF-8 encoded C string.
- * @param p_size The number of characters.
+ * @param p_size The number of bytes (not code units).
  */
 typedef void (*GDExtensionInterfaceStringNewWithUtf8CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size);
 
@@ -1456,9 +1456,9 @@ typedef void (*GDExtensionInterfaceStringNewWithUtf8CharsAndLen)(GDExtensionUnin
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a UTF-16 encoded C string.
- * @param p_size The number of characters.
+ * @param p_size The number of characters (not bytes).
  */
-typedef void (*GDExtensionInterfaceStringNewWithUtf16CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_size);
+typedef void (*GDExtensionInterfaceStringNewWithUtf16CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count);
 
 /**
  * @name string_new_with_utf32_chars_and_len
@@ -1468,9 +1468,9 @@ typedef void (*GDExtensionInterfaceStringNewWithUtf16CharsAndLen)(GDExtensionUni
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a UTF-32 encoded C string.
- * @param p_size The number of characters.
+ * @param p_size The number of characters (not bytes).
  */
-typedef void (*GDExtensionInterfaceStringNewWithUtf32CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_size);
+typedef void (*GDExtensionInterfaceStringNewWithUtf32CharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count);
 
 /**
  * @name string_new_with_wide_chars_and_len
@@ -1480,9 +1480,9 @@ typedef void (*GDExtensionInterfaceStringNewWithUtf32CharsAndLen)(GDExtensionUni
  *
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a wide C string.
- * @param p_size The number of characters.
+ * @param p_size The number of characters (not bytes).
  */
-typedef void (*GDExtensionInterfaceStringNewWithWideCharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_size);
+typedef void (*GDExtensionInterfaceStringNewWithWideCharsAndLen)(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count);
 
 /**
  * @name string_to_latin1_chars
@@ -1663,6 +1663,50 @@ typedef void (*GDExtensionInterfaceStringOperatorPlusEqC32str)(GDExtensionString
  * @return Error code signifying if the operation successful.
  */
 typedef GDExtensionInt (*GDExtensionInterfaceStringResize)(GDExtensionStringPtr p_self, GDExtensionInt p_resize);
+
+/* INTERFACE: StringName Utilities */
+
+/**
+ * @name string_name_new_with_latin1_chars
+ * @since 4.2
+ *
+ * Creates a StringName from a Latin-1 encoded C string.
+ *
+ * If `p_is_static` is true, then:
+ * - The StringName will reuse the `p_contents` buffer instead of copying it.
+ *   You must guarantee that the buffer remains valid for the duration of the application (e.g. string literal).
+ * - You must not call a destructor for this StringName. Incrementing the initial reference once should achieve this.
+ *
+ * `p_is_static` is purely an optimization and can easily introduce undefined behavior if used wrong. In case of doubt, set it to false.
+ *
+ * @param r_dest A pointer to uninitialized storage, into which the newly created StringName is constructed.
+ * @param p_contents A pointer to a C string (null terminated and Latin-1 or ASCII encoded).
+ * @param p_is_static Whether the StringName reuses the buffer directly (see above).
+ */
+typedef void (*GDExtensionInterfaceStringNameNewWithLatin1Chars)(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static);
+
+/**
+ * @name string_name_new_with_utf8_chars
+ * @since 4.2
+ *
+ * Creates a StringName from a UTF-8 encoded C string.
+ *
+ * @param r_dest A pointer to uninitialized storage, into which the newly created StringName is constructed.
+ * @param p_contents A pointer to a C string (null terminated and UTF-8 encoded).
+ */
+typedef void (*GDExtensionInterfaceStringNameNewWithUtf8Chars)(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents);
+
+/**
+ * @name string_name_new_with_utf8_chars_and_len
+ * @since 4.2
+ *
+ * Creates a StringName from a UTF-8 encoded string with a given number of characters.
+ *
+ * @param r_dest A pointer to uninitialized storage, into which the newly created StringName is constructed.
+ * @param p_contents A pointer to a C string (null terminated and UTF-8 encoded).
+ * @param p_size The number of bytes (not UTF-8 code points).
+ */
+typedef void (*GDExtensionInterfaceStringNameNewWithUtf8CharsAndLen)(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size);
 
 /* INTERFACE: XMLParser Utilities */
 
