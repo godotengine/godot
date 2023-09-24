@@ -366,7 +366,7 @@ void TileMapLayer::_rendering_update() {
 						Array to_hash;
 						to_hash.push_back(local_tile_pos);
 						to_hash.push_back(get_instance_id()); // Use instance id as a random hash
-						random_animation_offset = RandomPCG(to_hash.hash()).randf();
+						random_animation_offset = RandomPCG(to_hash.hash()).randf() * 86400.0;
 					}
 
 					// Drawing the tile in the canvas item.
