@@ -399,10 +399,15 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		if (!scr.is_null()) {
 			String additional_notes;
 			Color button_color = Color(1, 1, 1);
+			StringName class_name = p_node->get_class_name();
 			// Can't set tooltip after adding button, need to do it before.
 			if (scr->is_tool()) {
 				additional_notes += "\n" + TTR("This script is currently running in the editor.");
 				button_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			}
+			if (class_name != scr->get_instance_base_type()) {
+				additional_notes += "\n" + TTR("Script does not inherit native type " + class_name);
+				button_color = Color(1, 0.5, 0.5);
 			}
 			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {
 				additional_notes += "\n" + TTR("This script is a custom type.");

@@ -2463,6 +2463,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		node->data.editable_instance = data.editable_instance;
 	}
 
+	StringName custom_type_script_property_name = CoreStringNames::get_singleton()->_custom_type_script;
 	StringName script_property_name = CoreStringNames::get_singleton()->_script;
 
 	List<const Node *> hidden_roots;
@@ -2503,6 +2504,12 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 		if (p_flags & DUPLICATE_SCRIPTS) {
 			bool is_valid = false;
+			Variant ct_scr = N->get()->get(custom_type_script_property_name, &is_valid);
+			if (is_valid) {
+				current_node->set(custom_type_script_property_name, ct_scr);
+			}
+
+			is_valid = false;
 			Variant scr = N->get()->get(script_property_name, &is_valid);
 			if (is_valid) {
 				current_node->set(script_property_name, scr);
@@ -2517,7 +2524,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 				continue;
 			}
 			String name = E.name;
-			if (name == script_property_name) {
+			if (name == script_property_name || name == custom_type_script_property_name) {
 				continue;
 			}
 
@@ -3546,6 +3553,16 @@ Node::~Node() {
 // Multithreaded locked version of Object functions.
 
 #ifdef DEBUG_ENABLED
+
+void Node::set_custom_type_script(const Variant &p_script) {
+	ERR_THREAD_GUARD;
+	Object::set_custom_type_script(p_script);
+}
+
+Variant Node::get_custom_type_script() const {
+	ERR_THREAD_GUARD_V(Variant());
+	return Object::get_custom_type_script();
+}
 
 void Node::set_script(const Variant &p_script) {
 	ERR_THREAD_GUARD;

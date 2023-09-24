@@ -990,6 +990,7 @@ Variant EditorData::script_class_instance(const String &p_class) {
 			// Store in a variant to initialize the refcount if needed.
 			Variant obj = ClassDB::instantiate(script->get_instance_base_type());
 			if (obj) {
+				obj.operator Object *()->set_custom_type_script(script);
 				obj.operator Object *()->set_script(script);
 			}
 			return obj;

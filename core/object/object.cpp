@@ -263,7 +263,12 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 			*r_valid = true;
 		}
 		return;
-
+	} else if (p_name == CoreStringNames::get_singleton()->_custom_type_script) {
+		set_custom_type_script(p_value);
+		if (r_valid) {
+			*r_valid = true;
+		}
+		return;
 	} else {
 		Variant **V = metadata_properties.getptr(p_name);
 		if (V) {
@@ -350,6 +355,12 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 
 	if (p_name == CoreStringNames::get_singleton()->_script) {
 		ret = get_script();
+		if (r_valid) {
+			*r_valid = true;
+		}
+		return ret;
+	} else if (p_name == CoreStringNames::get_singleton()->_custom_type_script) {
+		ret = get_custom_type_script();
 		if (r_valid) {
 			*r_valid = true;
 		}
@@ -507,6 +518,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	_get_property_listv(p_list, p_reversed);
 
 	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_type_script", PROPERTY_HINT_RESOURCE_TYPE, "Script", /* PROPERTY_USAGE_DEFAULT | */ PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_NEVER_DUPLICATE | PROPERTY_USAGE_READ_ONLY));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
 	}
 
@@ -874,6 +886,17 @@ void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_
 	script_instance = p_instance;
 }
 
+void Object::set_custom_type_script(const Variant &p_script) {
+	if (custom_type_script == p_script) {
+		return;
+	}
+
+	Ref<Script> s = p_script;
+	ERR_FAIL_COND_MSG(s.is_null() && !p_script.is_null(), "Parameter should be a reference to a valid script (or null).");
+
+	custom_type_script = p_script;
+}
+
 void Object::set_script(const Variant &p_script) {
 	if (script == p_script) {
 		return;
@@ -881,6 +904,17 @@ void Object::set_script(const Variant &p_script) {
 
 	Ref<Script> s = p_script;
 	ERR_FAIL_COND_MSG(s.is_null() && !p_script.is_null(), "Invalid parameter, it should be a reference to a valid script (or null).");
+
+	if (!custom_type_script.is_null()) {
+		if (s.is_null()) {
+			set_script(custom_type_script);
+			ERR_FAIL_MSG("Script cannot be null when object has a custom type script. Falling back to custom type script.");
+		}
+		Ref<Script> cts = custom_type_script;
+		if (!s->inherits_script(cts)) {
+			ERR_FAIL_MSG(s->get_path() + " is not an extension of " + cts->get_global_name());
+		}
+	}
 
 	script = p_script;
 
@@ -919,6 +953,10 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 	} else {
 		script = Variant();
 	}
+}
+
+Variant Object::get_custom_type_script() const {
+	return custom_type_script;
 }
 
 Variant Object::get_script() const {
@@ -1558,6 +1596,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("to_string"), &Object::to_string);
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 
+	ClassDB::bind_method(D_METHOD("set_custom_type_script", "script"), &Object::set_custom_type_script);
+	ClassDB::bind_method(D_METHOD("get_custom_type_script"), &Object::get_custom_type_script);
 	ClassDB::bind_method(D_METHOD("set_script", "script"), &Object::set_script);
 	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script);
 

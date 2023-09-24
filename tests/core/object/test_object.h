@@ -240,6 +240,31 @@ TEST_CASE("[Object] Built-in property getter") {
 			"The returned value should equal the one which was set with built-in setter.");
 }
 
+TEST_CASE("[Object] Custom type script property setter") {
+	Object object;
+	Variant custom_type_script;
+
+	bool valid = false;
+	object.set(CoreStringNames::get_singleton()->_custom_type_script, custom_type_script, &valid);
+	CHECK(valid);
+	CHECK_MESSAGE(
+			object.get_custom_type_script() == custom_type_script,
+			"The object script should be equal to the assigned one.");
+}
+
+TEST_CASE("[Object] Custom type script property getter") {
+	Object object;
+	Variant custom_type_script;
+	object.set_custom_type_script(custom_type_script);
+
+	bool valid = false;
+	const Variant &actual_value = object.get(CoreStringNames::get_singleton()->_custom_type_script, &valid);
+	CHECK(valid);
+	CHECK_MESSAGE(
+			actual_value == custom_type_script,
+			"The returned value should be equal to the assigned script.");
+}
+
 TEST_CASE("[Object] Script property setter") {
 	Object object;
 	Variant script;

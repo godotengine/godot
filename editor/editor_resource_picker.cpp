@@ -1073,7 +1073,17 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
-	menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+	bool allow_new_script = true;
+	if (script_owner) {
+		Ref<Script> bsln_scr = script_owner->get_custom_type_script();
+		if (bsln_scr.is_valid()) {
+			allow_new_script = false;
+		}
+	}
+	if (allow_new_script) {
+		menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+	}
+
 	if (script_owner) {
 		Ref<Script> scr = script_owner->get_script();
 		if (scr.is_valid()) {

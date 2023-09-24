@@ -2947,6 +2947,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	Ref<Script> existing_script;
 	bool existing_script_removable = true;
+	bool allow_attach_new_script = true;
 	if (selection.size() == 1) {
 		Node *selected = selection[0];
 
@@ -2970,6 +2971,11 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		if (EditorNode::get_singleton()->get_object_custom_type_base(selected) == existing_script) {
 			existing_script_removable = false;
 		}
+
+		Ref<Script> custom_type_script = selected->get_custom_type_script();
+		if (custom_type_script.is_valid()) {
+			allow_attach_new_script = false;
+		}
 	}
 
 	if (profile_allow_editing) {
@@ -2990,7 +2996,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		if (full_selection.size() == 1) {
 			add_separator = true;
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptCreate")), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+			if (allow_attach_new_script) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptCreate")), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+			}
+
 			if (existing_script.is_valid()) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptExtend")), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_EXTEND_SCRIPT);
 			}
