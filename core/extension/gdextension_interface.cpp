@@ -1341,10 +1341,6 @@ static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionC
 		return nullptr;
 	}
 	ERR_FAIL_NULL_V(mb, nullptr);
-	if (mb->get_hash() != p_hash) {
-		ERR_PRINT("Hash mismatch for method '" + classname + "." + methodname + "'.");
-		return nullptr;
-	}
 	return (GDExtensionMethodBindPtr)mb;
 }
 
