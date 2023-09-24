@@ -1308,7 +1308,7 @@ namespace Godot
         /// <returns>A hash code for this color.</returns>
         public override readonly int GetHashCode()
         {
-            return R.GetHashCode() ^ G.GetHashCode() ^ B.GetHashCode() ^ A.GetHashCode();
+            return HashCode.Combine(R, G, B, A);
         }
 
         /// <summary>
