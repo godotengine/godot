@@ -627,6 +627,7 @@ private:
 	HashSet<String> editor_section_folding;
 #endif
 	ScriptInstance *script_instance = nullptr;
+	Variant custom_type_script;
 	Variant script; // Reference does not exist yet, store it in a Variant.
 	HashMap<StringName, Variant> metadata;
 	HashMap<StringName, Variant *> metadata_properties;
@@ -867,6 +868,8 @@ public:
 #define MTVIRTUAL
 #endif
 
+	MTVIRTUAL void set_custom_type_script(const Variant &p_script);
+	MTVIRTUAL Variant get_custom_type_script() const;
 	MTVIRTUAL void set_script(const Variant &p_script);
 	MTVIRTUAL Variant get_script() const;
 

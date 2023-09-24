@@ -65,6 +65,17 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		*r_is_valid = false;
 	}
 
+	// Handle special case "Script" property.
+	if (p_property == SNAME("script")) {
+		Ref<Script> ct_scr = p_object->get_custom_type_script();
+		if (ct_scr.is_valid()) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ct_scr;
+		}
+	}
+
 	Ref<Script> topmost_script;
 
 	if (const Node *node = Object::cast_to<Node>(p_object)) {

@@ -687,6 +687,8 @@ public:
 	// These inherited functions need proper multithread locking when overridden in Node.
 #ifdef DEBUG_ENABLED
 
+	virtual void set_custom_type_script(const Variant &p_script) override;
+	virtual Variant get_custom_type_script() const override;
 	virtual void set_script(const Variant &p_script) override;
 	virtual Variant get_script() const override;
 

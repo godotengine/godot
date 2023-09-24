@@ -528,6 +528,7 @@ Variant EditorData::instantiate_custom_type(const String &p_type, const String &
 				if (n) {
 					n->set_name(p_type);
 				}
+				((Object *)ob)->set_custom_type_script(script);
 				((Object *)ob)->set_script(script);
 				return ob;
 			}
@@ -990,6 +991,7 @@ Variant EditorData::script_class_instance(const String &p_class) {
 			// Store in a variant to initialize the refcount if needed.
 			Variant obj = ClassDB::instantiate(script->get_instance_base_type());
 			if (obj) {
+				obj.operator Object *()->set_custom_type_script(script);
 				obj.operator Object *()->set_script(script);
 			}
 			return obj;

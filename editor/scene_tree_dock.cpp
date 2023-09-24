@@ -1396,6 +1396,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_instance->set_icon(get_editor_theme_icon(SNAME("Instance")));
 			button_create_script->set_icon(get_editor_theme_icon(SNAME("ScriptCreate")));
 			button_detach_script->set_icon(get_editor_theme_icon(SNAME("ScriptRemove")));
+			button_extend_script->set_icon(get_editor_theme_icon(SNAME("ScriptExtend")));
 			button_tree_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
@@ -2251,33 +2252,40 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 }
 
 void SceneTreeDock::_update_script_button() {
-	if (!profile_allow_script_editing) {
-		button_create_script->hide();
-		button_detach_script->hide();
-	} else if (editor_selection->get_selection().size() == 0) {
-		button_create_script->hide();
-		button_detach_script->hide();
-	} else if (editor_selection->get_selection().size() == 1) {
+	bool can_create_script = false;
+	bool can_detach_script = false;
+	bool can_extend_script = false;
+
+	if (editor_selection->get_selection().size() == 1) {
 		Node *n = editor_selection->get_selected_node_list()[0];
-		if (n->get_script().is_null()) {
-			button_create_script->show();
-			button_detach_script->hide();
+		Ref<Script> s = n->get_script();
+		if (s.is_null()) {
+			can_create_script = true;
 		} else {
-			button_create_script->hide();
-			button_detach_script->show();
+			Ref<Script> cts = n->get_custom_type_script();
+			if (cts.is_null() || (cts.is_valid() && s != cts)) {
+				can_detach_script = true;
+			}
+			if (cts.is_valid() && s == cts) {
+				can_extend_script = true;
+			}
 		}
-	} else {
-		button_create_script->hide();
+	} else if (editor_selection->get_selection().size() > 1) {
 		Array selection = editor_selection->get_selected_nodes();
 		for (int i = 0; i < selection.size(); i++) {
 			Node *n = Object::cast_to<Node>(selection[i]);
-			if (!n->get_script().is_null()) {
-				button_detach_script->show();
-				return;
+			Ref<Script> s = n->get_script();
+			Ref<Script> cts = n->get_custom_type_script();
+			if ((cts.is_null() && s.is_valid()) || (cts.is_valid() && s != cts)) {
+				can_detach_script = true;
+				break;
 			}
 		}
-		button_detach_script->hide();
 	}
+
+	button_create_script->set_visible(can_create_script);
+	button_detach_script->set_visible(can_detach_script);
+	button_extend_script->set_visible(can_extend_script);
 }
 
 void SceneTreeDock::_selection_changed() {
@@ -2465,12 +2473,39 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 	Node *newnode = p_by_node;
 
 	if (p_keep_properties) {
-		Node *default_oldnode = Object::cast_to<Node>(ClassDB::instantiate(n->get_class()));
+		Node *default_oldnode = nullptr;
+
+		// If we're dealing with a custom node type, we need to create a default instance of the custom type instead of the native type for property comparison.
+		Ref<Script> cts = n->get_custom_type_script();
+		if (cts.is_valid()) {
+			default_oldnode = Object::cast_to<Node>(get_editor_data()->script_class_instance(cts->get_global_name()));
+			if (default_oldnode) {
+				default_oldnode->set_name(cts->get_global_name());
+				get_editor_data()->instantiate_object_properties(default_oldnode);
+			} else {
+				// Legacy custom type, registered with "add_custom_type()".
+				// TODO: Should probably be deprecated in 4.x.
+				const EditorData::CustomType *custom_type = get_editor_data()->get_custom_type_by_path(cts->get_path());
+				if (custom_type) {
+					default_oldnode = Object::cast_to<Node>(get_editor_data()->instantiate_custom_type(custom_type->name, cts->get_instance_base_type()));
+				}
+			}
+		}
+
+		if (!default_oldnode) {
+			default_oldnode = Object::cast_to<Node>(ClassDB::instantiate(n->get_class()));
+		}
+
 		List<PropertyInfo> pinfo;
 		n->get_property_list(&pinfo);
 
 		for (const PropertyInfo &E : pinfo) {
 			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+				continue;
+			}
+
+			// Never copy the custom type script from the old node. It will always be set according to the custom node type itself when it's instantiated.
+			if (E.name == SNAME("custom_type_script")) {
 				continue;
 			}
 
@@ -2947,6 +2982,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	Ref<Script> existing_script;
 	bool existing_script_removable = true;
+	bool allow_attach_new_script = true;
 	if (selection.size() == 1) {
 		Node *selected = selection[0];
 
@@ -2970,6 +3006,11 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		if (EditorNode::get_singleton()->get_object_custom_type_base(selected) == existing_script) {
 			existing_script_removable = false;
 		}
+
+		Ref<Script> cts = selected->get_custom_type_script();
+		if (cts.is_valid()) {
+			allow_attach_new_script = false;
+		}
 	}
 
 	if (profile_allow_editing) {
@@ -2990,7 +3031,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		if (full_selection.size() == 1) {
 			add_separator = true;
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptCreate")), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+			if (allow_attach_new_script) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptCreate")), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+			}
+
 			if (existing_script.is_valid()) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptExtend")), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_EXTEND_SCRIPT);
 			}
@@ -3868,6 +3912,14 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_detach_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/detach_script"));
 	filter_hbc->add_child(button_detach_script);
 	button_detach_script->hide();
+
+	button_extend_script = memnew(Button);
+	button_extend_script->set_flat(true);
+	button_extend_script->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_EXTEND_SCRIPT, false));
+	button_extend_script->set_tooltip_text(TTR("Extend the script of the selected node."));
+	button_extend_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/extend_script"));
+	filter_hbc->add_child(button_extend_script);
+	button_extend_script->hide();
 
 	button_tree_menu = memnew(MenuButton);
 	button_tree_menu->set_flat(true);

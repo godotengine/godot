@@ -4171,6 +4171,11 @@ void EditorNode::stop_child_process(OS::ProcessID p_pid) {
 Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) const {
 	ERR_FAIL_NULL_V(p_object, nullptr);
 
+	Ref<Script> ct_scr = p_object->get_custom_type_script();
+	if (ct_scr.is_valid()) {
+		return ct_scr;
+	}
+
 	Ref<Script> scr = p_object->get_script();
 
 	if (scr.is_valid()) {

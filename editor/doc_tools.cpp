@@ -445,7 +445,7 @@ void DocTools::generate(bool p_basic_types) {
 				}
 
 				if (properties_from_instance) {
-					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
+					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script" || E.name == "custom_type_script") {
 						// Don't include spurious properties from Object property list.
 						continue;
 					}
