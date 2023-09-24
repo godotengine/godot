@@ -39,8 +39,9 @@
 
 void MIDIDriverCoreMidi::read(const MIDIPacketList *packet_list, void *read_proc_ref_con, void *src_conn_ref_con) {
 	MIDIPacket *packet = const_cast<MIDIPacket *>(packet_list->packet);
+	int *connection_index = static_cast<int *>(src_conn_ref_con);
 	for (UInt32 i = 0; i < packet_list->numPackets; i++) {
-		receive_input_packet(packet->timeStamp, packet->data, packet->length, (int)src_conn_ref_con);
+		receive_input_packet(packet->timeStamp, packet->data, packet->length, *connection_index);
 		packet = MIDIPacketNext(packet);
 	}
 }
@@ -64,7 +65,7 @@ Error MIDIDriverCoreMidi::open() {
 	for (int i = 0; i < sources; i++) {
 		MIDIEndpointRef source = MIDIGetSource(i);
 		if (source) {
-			MIDIPortConnectSource(port_in, source, (void *)i);
+			MIDIPortConnectSource(port_in, source, static_cast<void *>(&i));
 			connected_sources.insert(i, source);
 		}
 	}
