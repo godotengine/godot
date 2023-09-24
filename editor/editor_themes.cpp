@@ -2014,17 +2014,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphn_sb_titlebar_selected->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
 	Ref<StyleBoxEmpty> graphn_sb_slot = make_empty_stylebox(12, 0, 12, 0);
 
-	// StateMachine.
-	const int sm_margin_side = 10;
-	Ref<StyleBoxFlat> smgraphsb = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), sm_margin_side, 24, sm_margin_side, gn_margin_bottom, corner_width);
-	smgraphsb->set_border_width_all(border_width);
-	smgraphsb->set_border_color(graphnode_bg);
-	Ref<StyleBoxFlat> smgraphsbselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.9), sm_margin_side, 24, sm_margin_side, gn_margin_bottom, corner_width);
-	smgraphsbselected->set_border_width_all(2 * EDSCALE + border_width);
-	smgraphsbselected->set_border_color(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
-	smgraphsbselected->set_shadow_size(8 * EDSCALE);
-	smgraphsbselected->set_shadow_color(shadow_color);
-
 	theme->set_stylebox("panel", "GraphElement", graphn_sb_panel);
 	theme->set_stylebox("panel_selected", "GraphElement", graphn_sb_panel_selected);
 	theme->set_stylebox("titlebar", "GraphElement", graphn_sb_titlebar);
@@ -2059,8 +2048,55 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	port_icon->set_size_override(Size2(12, 12));
 	theme->set_icon("port", "GraphNode", port_icon);
 
-	theme->set_stylebox("state_machine_frame", "GraphNode", smgraphsb);
-	theme->set_stylebox("state_machine_selected_frame", "GraphNode", smgraphsbselected);
+	// StateMachine graph
+	theme->set_stylebox("panel", "GraphStateMachine", style_tree_bg);
+	theme->set_stylebox("error_panel", "GraphStateMachine", style_tree_bg);
+	theme->set_color("error_color", "GraphStateMachine", error_color);
+
+	const int sm_margin_side = 10 * EDSCALE;
+
+	Ref<StyleBoxFlat> sm_node_style = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), sm_margin_side, 24 * EDSCALE, sm_margin_side, gn_margin_bottom, corner_width);
+	sm_node_style->set_border_width_all(border_width);
+	sm_node_style->set_border_color(graphnode_bg);
+
+	Ref<StyleBoxFlat> sm_node_selected_style = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.9), sm_margin_side, 24 * EDSCALE, sm_margin_side, gn_margin_bottom, corner_width);
+	sm_node_selected_style->set_border_width_all(2 * EDSCALE + border_width);
+	sm_node_selected_style->set_border_color(accent_color * Color(1, 1, 1, 0.9));
+	sm_node_selected_style->set_shadow_size(8 * EDSCALE);
+	sm_node_selected_style->set_shadow_color(shadow_color);
+
+	Ref<StyleBoxFlat> sm_node_playing_style = sm_node_selected_style->duplicate();
+	sm_node_playing_style->set_border_color(warning_color);
+	sm_node_playing_style->set_shadow_color(warning_color * Color(1, 1, 1, 0.2));
+
+	theme->set_stylebox("node_frame", "GraphStateMachine", sm_node_style);
+	theme->set_stylebox("node_frame_selected", "GraphStateMachine", sm_node_selected_style);
+	theme->set_stylebox("node_frame_playing", "GraphStateMachine", sm_node_playing_style);
+
+	Ref<StyleBoxFlat> sm_node_start_style = sm_node_style->duplicate();
+	sm_node_start_style->set_border_width_all(1 * EDSCALE);
+	sm_node_start_style->set_border_color(success_color.lightened(0.24));
+	theme->set_stylebox("node_frame_start", "GraphStateMachine", sm_node_start_style);
+
+	Ref<StyleBoxFlat> sm_node_end_style = sm_node_style->duplicate();
+	sm_node_end_style->set_border_width_all(1 * EDSCALE);
+	sm_node_end_style->set_border_color(error_color);
+	theme->set_stylebox("node_frame_end", "GraphStateMachine", sm_node_end_style);
+
+	theme->set_font("node_title_font", "GraphStateMachine", theme->get_font(SNAME("font"), SNAME("Label")));
+	theme->set_font_size("node_title_font_size", "GraphStateMachine", theme->get_font_size(SNAME("font_size"), SNAME("Label")));
+	theme->set_color("node_title_font_color", "GraphStateMachine", font_color);
+
+	theme->set_color("transition_color", "GraphStateMachine", font_color);
+	theme->set_color("transition_disabled_color", "GraphStateMachine", font_color * Color(1, 1, 1, 0.2));
+	theme->set_color("transition_icon_color", "GraphStateMachine", Color(1, 1, 1));
+	theme->set_color("transition_icon_disabled_color", "GraphStateMachine", Color(1, 1, 1, 0.2));
+	theme->set_color("highlight_color", "GraphStateMachine", accent_color);
+	theme->set_color("highlight_disabled_color", "GraphStateMachine", accent_color * Color(1, 1, 1, 0.6));
+	theme->set_color("guideline_color", "GraphStateMachine", font_color * Color(1, 1, 1, 0.3));
+
+	theme->set_color("playback_color", "GraphStateMachine", font_color);
+	theme->set_color("playback_background_color", "GraphStateMachine", font_color * Color(1, 1, 1, 0.3));
 
 	// GridContainer
 	theme->set_constant("v_separation", "GridContainer", Math::round(widget_default_margin.y - 2 * EDSCALE));
