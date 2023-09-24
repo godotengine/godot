@@ -55,6 +55,12 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="preview_changed">
+			<param index="0" name="path" type="String" />
+			<description>
+				Emitted if a resource preview has changed. [param path] corresponds to the path of the preview.
+			</description>
+		</signal>
 		<signal name="preview_invalidated">
 			<param index="0" name="path" type="String" />
 			<description>

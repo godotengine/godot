@@ -96,7 +96,7 @@ class EditorResourcePreview : public Node {
 
 	HashMap<String, Item> cache;
 
-	void _preview_ready(const String &p_path, int p_hash, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud, const Dictionary &p_metadata);
+	void _preview_ready(const String &p_path, const Ref<Resource> &p_resource, int p_hash, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud, const Dictionary &p_metadata);
 	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base, Dictionary &p_metadata);
 
 	int small_thumbnail_size = -1;
@@ -122,6 +122,7 @@ public:
 	// p_preview will be null if there was an error
 	void queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 	void queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
+	void queue_edited_resource_preview_changed(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 	const Dictionary get_preview_metadata(const String &p_path) const;
 
 	void add_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);

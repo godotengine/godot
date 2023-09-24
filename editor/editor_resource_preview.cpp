@@ -102,14 +102,18 @@ void EditorResourcePreview::_thread_func(void *ud) {
 	erp->_thread();
 }
 
-void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud, const Dictionary &p_metadata) {
+void EditorResourcePreview::_preview_ready(const String &p_path, const Ref<Resource> &p_resource, int p_hash, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud, const Dictionary &p_metadata) {
 	{
 		MutexLock lock(preview_mutex);
 
 		uint64_t modified_time = 0;
 
+		bool is_resource_changed = false;
 		if (!p_path.begins_with("ID:")) {
 			modified_time = FileAccess::get_modified_time(p_path);
+			is_resource_changed = true;
+		} else {
+			modified_time = FileAccess::get_modified_time(p_resource->get_path());
 		}
 
 		Item item;
@@ -121,6 +125,10 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 		item.preview_metadata = p_metadata;
 
 		cache[p_path] = item;
+
+		if (is_resource_changed) {
+			call_deferred(SNAME("emit_signal"), "preview_changed", p_path);
+		}
 	}
 
 	MessageQueue::get_singleton()->push_call(id, p_func, p_path, p_texture, p_small_texture, p_ud);
@@ -212,7 +220,7 @@ void EditorResourcePreview::_iterate() {
 
 		if (cache.has(item.path)) {
 			// Already has it because someone loaded it, just let it know it's ready.
-			_preview_ready(item.path, cache[item.path].last_hash, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata, cache[item.path].preview_metadata);
+			_preview_ready(item.path, item.resource, cache[item.path].last_hash, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata, cache[item.path].preview_metadata);
 
 			preview_mutex.unlock();
 		} else {
@@ -227,8 +235,7 @@ void EditorResourcePreview::_iterate() {
 			if (item.resource.is_valid()) {
 				Dictionary preview_metadata;
 				_generate_preview(texture, small_texture, item, String(), preview_metadata);
-
-				_preview_ready(item.path, item.resource->hash_edited_version(), texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
+				_preview_ready(item.path, item.resource, item.resource->hash_edited_version(), texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
 
 			} else {
 				Dictionary preview_metadata;
@@ -306,7 +313,7 @@ void EditorResourcePreview::_iterate() {
 						_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
 					}
 				}
-				_preview_ready(item.path, 0, texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
+				_preview_ready(item.path, item.resource, 0, texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
 			}
 		}
 
@@ -355,15 +362,43 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 	{
 		MutexLock lock(preview_mutex);
 
-		String path_id = "ID:" + itos(p_res->get_instance_id());
+		const String path_id = "ID:" + itos(p_res->get_instance_id());
+		const String resource_path = p_res->get_path();
 
-		if (cache.has(path_id) && cache[path_id].last_hash == p_res->hash_edited_version()) {
+		if (cache.has(resource_path) && cache[resource_path].modified_time > cache[path_id].modified_time) {
+			// It means that the original file has been modified
+		} else if (cache.has(path_id) && cache[path_id].last_hash == p_res->hash_edited_version()) {
 			cache[path_id].order = order++;
 			p_receiver->call(p_receiver_func, path_id, cache[path_id].preview, cache[path_id].small_preview, p_userdata);
 			return;
 		}
 
 		cache.erase(path_id); //erase if exists, since it will be regen
+
+		QueueItem item;
+		item.function = p_receiver_func;
+		item.id = p_receiver->get_instance_id();
+		item.resource = p_res;
+		item.path = path_id;
+		item.userdata = p_userdata;
+
+		queue.push_back(item);
+	}
+	preview_sem.post();
+}
+
+void EditorResourcePreview::queue_edited_resource_preview_changed(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
+	ERR_FAIL_NULL(p_receiver);
+	ERR_FAIL_COND(!p_res.is_valid());
+	_update_thumbnail_sizes();
+	{
+		MutexLock lock(preview_mutex);
+
+		const String path_id = "ID:" + itos(p_res->get_instance_id());
+
+		if (cache.has(path_id)) {
+			cache.erase(path_id);
+		}
 
 		QueueItem item;
 		item.function = p_receiver_func;
@@ -423,6 +458,7 @@ void EditorResourcePreview::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("check_for_invalidation", "path"), &EditorResourcePreview::check_for_invalidation);
 
 	ADD_SIGNAL(MethodInfo("preview_invalidated", PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(MethodInfo("preview_changed", PropertyInfo(Variant::STRING, "path")));
 }
 
 void EditorResourcePreview::check_for_invalidation(const String &p_path) {
