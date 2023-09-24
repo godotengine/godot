@@ -4331,6 +4331,9 @@ real_t TileSetAtlasSource::get_tile_animation_total_duration(const Vector2i p_at
 	for (const real_t &duration : tiles[p_atlas_coords].animation_frames_durations) {
 		sum += duration;
 	}
+	if ((get_tile_animation_mode(p_atlas_coords) == TILE_ANIMATION_MODE_PINGPONG) || (get_tile_animation_mode(p_atlas_coords) == TILE_ANIMATION_MODE_PINGPONG_RANDOM_START_TIMES)) {
+		sum = sum * 2 - tiles[p_atlas_coords].animation_frames_durations[0] - tiles[p_atlas_coords].animation_frames_durations[tiles[p_atlas_coords].animation_frames_durations.size() - 1];
+	}
 	return sum;
 }
 
@@ -4675,6 +4678,8 @@ void TileSetAtlasSource::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_DEFAULT)
 	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_RANDOM_START_TIMES)
+	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_PINGPONG)
+	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_PINGPONG_RANDOM_START_TIMES)
 	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_MAX)
 
 	BIND_CONSTANT(TRANSFORM_FLIP_H)

@@ -362,11 +362,11 @@ void TileMapLayer::_rendering_update() {
 
 					// Random animation offset.
 					real_t random_animation_offset = 0.0;
-					if (atlas_source->get_tile_animation_mode(cell_data.cell.get_atlas_coords()) != TileSetAtlasSource::TILE_ANIMATION_MODE_DEFAULT) {
+					if ((atlas_source->get_tile_animation_mode(cell_data.cell.get_atlas_coords()) == TileSetAtlasSource::TILE_ANIMATION_MODE_RANDOM_START_TIMES) || (atlas_source->get_tile_animation_mode(cell_data.cell.get_atlas_coords()) == TileSetAtlasSource::TILE_ANIMATION_MODE_PINGPONG_RANDOM_START_TIMES)) {
 						Array to_hash;
 						to_hash.push_back(local_tile_pos);
 						to_hash.push_back(get_instance_id()); // Use instance id as a random hash
-						random_animation_offset = RandomPCG(to_hash.hash()).randf() * 86400.0;
+						random_animation_offset = RandomPCG(to_hash.hash()).randf();
 					}
 
 					// Drawing the tile in the canvas item.
@@ -3131,6 +3131,17 @@ void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<
 				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
 
 				time += frame_duration;
+			}
+			if ((atlas_source->get_tile_animation_mode(p_atlas_coords) == TileSetAtlasSource::TILE_ANIMATION_MODE_PINGPONG) || (atlas_source->get_tile_animation_mode(p_atlas_coords) == TileSetAtlasSource::TILE_ANIMATION_MODE_PINGPONG_RANDOM_START_TIMES)) {
+				for (int frame = (atlas_source->get_tile_animation_frames_count(p_atlas_coords) - 2); frame > 0; frame--) {
+					real_t frame_duration = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, frame) / speed;
+					RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, time, time + frame_duration, p_animation_offset);
+
+					Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, frame);
+					tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
+
+					time += frame_duration;
+				}
 			}
 			RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, 1.0, 0.0, 1.0, 0.0);
 		}
