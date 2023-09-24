@@ -53,8 +53,22 @@
 		<member name="override_pose" type="bool" setter="set_override_pose" getter="get_override_pose" default="false">
 			Whether the BoneAttachment3D node will override the bone pose of the bone it is attached to. When set to [code]true[/code], the BoneAttachment3D node can change the pose of the bone. When set to [code]false[/code], the BoneAttachment3D will always be set to the bone's transform.
 		</member>
-		<member name="use_bone_transform_no_override" type="bool" setter="set_use_bone_transform_no_override" getter="get_use_bone_transform_no_override" default="false">
-			Whether the BoneAttachment3D node will use the non overridden bone pose of the bone it is attached to. This feature does nothing if [member override_pose] is true. When set to [code]true[/code], the BoneAttachment3D will be set to the bone's non overridden transform. When set to [code]false[/code], the BoneAttachment3D will be set to the bone's overridden transform.
+		<member name="bone_pose_mode" type="int" setter="set_bone_pose_mode" getter="get_bone_pose_mode" enum="BoneAttachment3D.BonePoseMode" default="0">
+			Which of the bone poses that BoneAttachment3D node will use, uses [enum BonePoseMode] values. This feature does nothing if [member override_pose] is true.
 		</member>
 	</members>
+	<constants>
+		<constant name="BONE_POSE" value="0" enum="BonePoseMode">
+			The BoneAttachment3D will be set to the bone's transform.
+		</constant>
+		<constant name="BONE_POSE_OVERRIDE" value="1" enum="BonePoseMode">
+			The BoneAttachment3D will be set to the bone's overridden transform.
+		</constant>
+		<constant name="BONE_POSE_NO_OVERRIDE" value="2" enum="BonePoseMode">
+			The BoneAttachment3D will be set to the bone's non overridden transform.
+		</constant>
+		<constant name="BONE_REST" value="3" enum="BonePoseMode">
+			The BoneAttachment3D will be set to the bone's rest transform.
+		</constant>
+	</constants>
 </class>

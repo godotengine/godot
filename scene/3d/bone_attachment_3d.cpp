@@ -261,14 +261,14 @@ bool BoneAttachment3D::get_override_pose() const {
 	return override_pose;
 }
 
-void BoneAttachment3D::set_use_bone_transform_no_override(bool p_use_bone_transform_no_override) {
-	use_bone_transform_no_override = p_use_bone_transform_no_override;
+void BoneAttachment3D::set_bone_pose_mode(BonePoseMode p_pose_mode) {
+	bone_pose_mode = p_pose_mode;
 
 	notify_property_list_changed();
 }
 
-bool BoneAttachment3D::get_use_bone_transform_no_override() const {
-	return use_bone_transform_no_override;
+BoneAttachment3D::BonePoseMode BoneAttachment3D::get_bone_pose_mode() const {
+	return bone_pose_mode;
 }
 
 void BoneAttachment3D::set_use_external_skeleton(bool p_use_external) {
@@ -329,16 +329,40 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 		if (sk) {
 			if (!override_pose) {
 				if (use_external_skeleton) {
-					if (!use_bone_transform_no_override) {
-						set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose(bone_idx));
-					} else {
-						set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose_no_override(bone_idx));
+					switch (bone_pose_mode) {
+							case BONE_POSE: {
+								set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose(bone_idx));
+							} break;
+
+							case BONE_POSE_OVERRIDE: {
+								set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose_override(bone_idx));
+							} break;
+
+							case BONE_POSE_NO_OVERRIDE: {
+								set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose_no_override(bone_idx));
+							} break;
+
+							case BONE_REST: {
+								set_global_transform(sk->get_global_transform() * sk->get_bone_global_rest(bone_idx));
+							} break;
 					}
 				} else {
-					if (!use_bone_transform_no_override) {
-						set_transform(sk->get_bone_global_pose(bone_idx));
-					} else {
-						set_transform(sk->get_bone_global_pose_no_override(bone_idx));
+					switch (bone_pose_mode) {
+							case BONE_POSE: {
+								set_transform(sk->get_bone_global_pose(bone_idx));
+							} break;
+
+							case BONE_POSE_OVERRIDE: {
+								set_transform(sk->get_bone_global_pose_override(bone_idx));
+							} break;
+
+							case BONE_POSE_NO_OVERRIDE: {
+								set_transform(sk->get_bone_global_pose_no_override(bone_idx));
+							} break;
+
+							case BONE_REST: {
+								set_transform(sk->get_bone_global_rest(bone_idx));
+							} break;
 					}
 				}
 			} else {
@@ -384,8 +408,8 @@ void BoneAttachment3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_override_pose", "override_pose"), &BoneAttachment3D::set_override_pose);
 	ClassDB::bind_method(D_METHOD("get_override_pose"), &BoneAttachment3D::get_override_pose);
 
-	ClassDB::bind_method(D_METHOD("set_use_bone_transform_no_override", "use_bone_transform_no_override"), &BoneAttachment3D::set_use_bone_transform_no_override);
-	ClassDB::bind_method(D_METHOD("get_use_bone_transform_no_override"), &BoneAttachment3D::get_use_bone_transform_no_override);
+	ClassDB::bind_method(D_METHOD("set_bone_pose_mode", "mode"), &BoneAttachment3D::set_bone_pose_mode);
+	ClassDB::bind_method(D_METHOD("get_bone_pose_mode"), &BoneAttachment3D::get_bone_pose_mode);
 
 	ClassDB::bind_method(D_METHOD("set_use_external_skeleton", "use_external_skeleton"), &BoneAttachment3D::set_use_external_skeleton);
 	ClassDB::bind_method(D_METHOD("get_use_external_skeleton"), &BoneAttachment3D::get_use_external_skeleton);
@@ -398,5 +422,13 @@ void BoneAttachment3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_pose"), "set_override_pose", "get_override_pose");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_bone_transform_no_override"), "set_use_bone_transform_no_override", "get_use_bone_transform_no_override");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_pose_mode", PROPERTY_HINT_ENUM, "Bone Pose,Bone Pose Override,Bone Pose No Override, Bone Rest"), "set_bone_pose_mode", "get_bone_pose_mode");
+
+
+	BIND_ENUM_CONSTANT(BONE_POSE);
+	BIND_ENUM_CONSTANT(BONE_POSE_OVERRIDE);
+	BIND_ENUM_CONSTANT(BONE_POSE_NO_OVERRIDE);
+	BIND_ENUM_CONSTANT(BONE_REST);
 }
+
+VARIANT_ENUM_CAST(BoneAttachment3D::BonePoseMode);
