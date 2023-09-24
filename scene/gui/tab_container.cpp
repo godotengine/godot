@@ -585,6 +585,10 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	}
 }
 
+TabBar *TabContainer::get_tab_bar() const {
+	return tab_bar;
+}
+
 int TabContainer::get_tab_count() const {
 	return tab_bar->get_tab_count();
 }
@@ -912,6 +916,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabContainer::get_current_tab);
 	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab_control"), &TabContainer::get_current_tab_control);
+	ClassDB::bind_method(D_METHOD("get_tab_bar"), &TabContainer::get_tab_bar);
 	ClassDB::bind_method(D_METHOD("get_tab_control", "tab_idx"), &TabContainer::get_tab_control);
 	ClassDB::bind_method(D_METHOD("set_tab_alignment", "alignment"), &TabContainer::set_tab_alignment);
 	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabContainer::get_tab_alignment);

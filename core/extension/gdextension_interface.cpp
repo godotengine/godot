@@ -754,25 +754,25 @@ static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitiali
 	dest->parse_utf8(p_contents, p_size);
 }
 
-static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_size) {
+static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count) {
 	memnew_placement(r_dest, String);
 	String *dest = reinterpret_cast<String *>(r_dest);
-	dest->parse_utf16(p_contents, p_size);
+	dest->parse_utf16(p_contents, p_char_count);
 }
 
-static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_size) {
-	memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
+static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
+	memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
 }
 
-static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_size) {
+static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count) {
 	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit, parse.
 		memnew_placement(r_dest, String);
 		String *dest = reinterpret_cast<String *>(r_dest);
-		dest->parse_utf16((const char16_t *)p_contents, p_size);
+		dest->parse_utf16((const char16_t *)p_contents, p_char_count);
 	} else {
 		// wchar_t is 32 bit, copy.
-		memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
+		memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
 	}
 }
 
@@ -876,6 +876,24 @@ static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_se
 static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDExtensionInt p_length) {
 	String *self = (String *)p_self;
 	return (*self).resize(p_length);
+}
+
+static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
+	memnew_placement(r_dest, StringName(p_contents, static_cast<bool>(p_is_static)));
+}
+
+static void gdextension_string_name_new_with_utf8_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents) {
+	String tmp;
+	tmp.parse_utf8(p_contents);
+
+	memnew_placement(r_dest, StringName(tmp));
+}
+
+static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	String tmp;
+	tmp.parse_utf8(p_contents, p_size);
+
+	memnew_placement(r_dest, StringName(tmp));
 }
 
 static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
@@ -1323,10 +1341,6 @@ static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionC
 		return nullptr;
 	}
 	ERR_FAIL_NULL_V(mb, nullptr);
-	if (mb->get_hash() != p_hash) {
-		ERR_PRINT("Hash mismatch for method '" + classname + "." + methodname + "'.");
-		return nullptr;
-	}
 	return (GDExtensionMethodBindPtr)mb;
 }
 
@@ -1438,6 +1452,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_wcstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_c32str);
 	REGISTER_INTERFACE_FUNC(string_resize);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_latin1_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(xml_parser_open_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_store_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_get_buffer);
