@@ -2964,6 +2964,8 @@ void PhysicalBone3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joint_offset"), &PhysicalBone3D::get_joint_offset);
 	ClassDB::bind_method(D_METHOD("set_joint_rotation", "euler"), &PhysicalBone3D::set_joint_rotation);
 	ClassDB::bind_method(D_METHOD("get_joint_rotation"), &PhysicalBone3D::get_joint_rotation);
+	ClassDB::bind_method(D_METHOD("set_joint_exclude_nodes_from_collision", "exclude_nodes_from_collision"), &PhysicalBone3D::set_joint_exclude_nodes_from_collision);
+	ClassDB::bind_method(D_METHOD("get_joint_exclude_nodes_from_collision"), &PhysicalBone3D::get_joint_exclude_nodes_from_collision);
 
 	ClassDB::bind_method(D_METHOD("set_body_offset", "offset"), &PhysicalBone3D::set_body_offset);
 	ClassDB::bind_method(D_METHOD("get_body_offset"), &PhysicalBone3D::get_body_offset);
@@ -3016,6 +3018,7 @@ void PhysicalBone3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "joint_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_joint_offset", "get_joint_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation", PROPERTY_HINT_RANGE, "-360,360,0.01,or_less,or_greater,radians"), "set_joint_rotation", "get_joint_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joint_exclude_nodes_from_collision"), "set_joint_exclude_nodes_from_collision", "get_joint_exclude_nodes_from_collision");
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "body_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_body_offset", "get_body_offset");
 
@@ -3093,6 +3096,7 @@ void PhysicalBone3D::_reload_joint() {
 			PhysicsServer3D::get_singleton()->pin_joint_set_param(joint, PhysicsServer3D::PIN_JOINT_BIAS, pjd->bias);
 			PhysicsServer3D::get_singleton()->pin_joint_set_param(joint, PhysicsServer3D::PIN_JOINT_DAMPING, pjd->damping);
 			PhysicsServer3D::get_singleton()->pin_joint_set_param(joint, PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP, pjd->impulse_clamp);
+			PhysicsServer3D::get_singleton()->joint_disable_collisions_between_bodies(joint, joint_exclude_nodes_from_collision);
 
 		} break;
 		case JOINT_TYPE_CONE: {
@@ -3103,6 +3107,7 @@ void PhysicalBone3D::_reload_joint() {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(joint, PhysicsServer3D::CONE_TWIST_JOINT_BIAS, cjd->bias);
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(joint, PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS, cjd->softness);
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(joint, PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION, cjd->relaxation);
+			PhysicsServer3D::get_singleton()->joint_disable_collisions_between_bodies(joint, joint_exclude_nodes_from_collision);
 
 		} break;
 		case JOINT_TYPE_HINGE: {
@@ -3114,6 +3119,7 @@ void PhysicalBone3D::_reload_joint() {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(joint, PhysicsServer3D::HINGE_JOINT_LIMIT_BIAS, hjd->angular_limit_bias);
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(joint, PhysicsServer3D::HINGE_JOINT_LIMIT_SOFTNESS, hjd->angular_limit_softness);
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(joint, PhysicsServer3D::HINGE_JOINT_LIMIT_RELAXATION, hjd->angular_limit_relaxation);
+			PhysicsServer3D::get_singleton()->joint_disable_collisions_between_bodies(joint, joint_exclude_nodes_from_collision);
 
 		} break;
 		case JOINT_TYPE_SLIDER: {
@@ -3129,6 +3135,7 @@ void PhysicalBone3D::_reload_joint() {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS, sjd->angular_limit_softness);
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS, sjd->angular_limit_softness);
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING, sjd->angular_limit_damping);
+			PhysicsServer3D::get_singleton()->joint_disable_collisions_between_bodies(joint, joint_exclude_nodes_from_collision);
 
 		} break;
 		case JOINT_TYPE_6DOF: {
@@ -3156,6 +3163,7 @@ void PhysicalBone3D::_reload_joint() {
 				PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS, g6dofjd->axis_data[axis].angular_spring_stiffness);
 				PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_DAMPING, g6dofjd->axis_data[axis].angular_spring_damping);
 				PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, g6dofjd->axis_data[axis].angular_equilibrium_point);
+				PhysicsServer3D::get_singleton()->joint_disable_collisions_between_bodies(joint, joint_exclude_nodes_from_collision);
 			}
 
 		} break;
@@ -3249,6 +3257,18 @@ void PhysicalBone3D::set_joint_rotation(const Vector3 &p_euler_rad) {
 
 Vector3 PhysicalBone3D::get_joint_rotation() const {
 	return joint_offset.basis.get_euler_normalized();
+}
+
+void PhysicalBone3D::set_joint_exclude_nodes_from_collision(bool p_exclude_nodes_from_collision) {
+	if (joint_exclude_nodes_from_collision == p_exclude_nodes_from_collision) {
+		return;
+	}
+	joint_exclude_nodes_from_collision = p_exclude_nodes_from_collision;
+	_reload_joint();
+}
+
+bool PhysicalBone3D::get_joint_exclude_nodes_from_collision() const {
+	return joint_exclude_nodes_from_collision;
 }
 
 const Transform3D &PhysicalBone3D::get_body_offset() const {
