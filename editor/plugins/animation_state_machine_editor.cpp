@@ -152,7 +152,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	// Add new node
 	if (!read_only) {
 		if (mb.is_valid() && mb->is_pressed() && !box_selecting && !connecting && ((tool_select->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) || (tool_create->is_pressed() && mb->get_button_index() == MouseButton::LEFT))) {
-			connecting_from = StringName();
+			connecting_from_node = StringName();
 			_open_menu(mb->get_position());
 		}
 	}
@@ -299,37 +299,70 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (node_rects[i].node.has_point(mb->get_position())) { //select node since nothing else was selected
 				connecting = true;
 				connection_follows_cursor = true;
-				connecting_from = node_rects[i].node_name;
+				connecting_from_node = node_rects[i].node_name;
 				connecting_to = mb->get_position();
 				connecting_to_node = StringName();
 				return;
+			}
+		}
+
+		if (selected_transition_index > -1) {
+			Vector2 s[2] = { transition_lines[selected_transition_index].from, transition_lines[selected_transition_index].to };
+			Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mb->get_position(), s);
+			float d = cpoint.distance_to(mb->get_position());
+			if (d <= transition_lines[selected_transition_index].width) {
+				connecting = true;
+				connection_follows_cursor = true;
+
+				Vector2 cv = cpoint - s[0];
+				Vector2 sv = s[0] - s[1];
+				float ratio = cv.length() / sv.length();
+				if (ratio > 0.5f) {
+					connecting_from_node = transition_lines[selected_transition_index].from_node;
+					connecting_to = mb->get_position();
+					connecting_to_node = StringName();
+					reconnecting_from = false;
+				} else {
+					connecting_from = mb->get_position();
+					connecting_from_node = StringName();
+					connecting_to_node = transition_lines[selected_transition_index].to_node;
+					reconnecting_from = true;
+				}
+				reconnecting_selected_transition = true;
 			}
 		}
 	}
 
 	// End connecting nodes
 	if (mb.is_valid() && connecting && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
-		if (connecting_to_node != StringName()) {
-			Ref<AnimationNode> node = state_machine->get_node(connecting_to_node);
-			Ref<AnimationNodeStateMachine> anodesm = node;
-			Ref<AnimationNodeEndState> end_node = node;
+		if (connecting_from_node != StringName() && connecting_to_node != StringName()) {
+			Ref<AnimationNode> node_to = state_machine->get_node(connecting_to_node);
+			Ref<AnimationNode> node_from = state_machine->get_node(connecting_from_node);
+			Ref<AnimationNodeStateMachine> anodesm = node_from;
+			Ref<AnimationNodeStateMachine> bnodesm = node_to;
+			Ref<AnimationNodeEndState> end_node = node_to;
+			Ref<AnimationNodeStartState> start_node = node_from;
 
-			if (state_machine->has_transition(connecting_from, connecting_to_node) && state_machine->can_edit_node(connecting_to_node) && !anodesm.is_valid()) {
-				EditorNode::get_singleton()->show_warning(TTR("Transition exists!"));
-				connecting = false;
+			if (state_machine->has_transition(connecting_from_node, connecting_to_node) && state_machine->can_edit_node(connecting_to_node) && state_machine->can_edit_node(connecting_from_node) && !anodesm.is_valid() && !bnodesm.is_valid()) {
+				if (!(reconnecting_selected_transition && connecting_from_node == selected_transition_from && connecting_to_node == selected_transition_to)) {
+					EditorNode::get_singleton()->show_warning(TTR("Transition exists!"));
+				}
 			} else {
 				_add_transition();
 			}
+			connecting = false;
+			reconnecting_selected_transition = false;
+			connecting_from_node = StringName();
+			connecting_to_node = StringName();
 		} else {
 			_open_menu(mb->get_position());
 		}
-		connecting_to_node = StringName();
 		connection_follows_cursor = false;
 		state_machine_draw->queue_redraw();
 	}
 
 	// Start box selecting
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && tool_select->is_pressed()) {
+	if (mb.is_valid() && !connecting && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && tool_select->is_pressed()) {
 		box_selecting = true;
 		box_selecting_from = box_selecting_to = state_machine_draw->get_local_mouse_position();
 		box_selecting_rect = Rect2(MIN(box_selecting_from.x, box_selecting_to.x),
@@ -362,14 +395,28 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 	// Move mouse while connecting
 	if (mm.is_valid() && connecting && connection_follows_cursor && !read_only) {
-		connecting_to = mm->get_position();
-		connecting_to_node = StringName();
+		if (reconnecting_selected_transition && reconnecting_from) {
+			connecting_from_node = StringName();
+		} else {
+			connecting_to_node = StringName();
+		}
+		if (connecting_from_node == StringName()) {
+			connecting_from = mm->get_position();
+		}
+		if (connecting_to_node == StringName()) {
+			connecting_to = mm->get_position();
+		}
 		state_machine_draw->queue_redraw();
-
 		for (int i = node_rects.size() - 1; i >= 0; i--) { //inverse to draw order
-			if (node_rects[i].node_name != connecting_from && node_rects[i].node.has_point(connecting_to)) { //select node since nothing else was selected
-				connecting_to_node = node_rects[i].node_name;
-				return;
+			if (node_rects[i].node_name != connecting_from_node && node_rects[i].node_name != connecting_to_node) { //select node since nothing else was selected
+				if (connecting_from_node == StringName() && node_rects[i].node.has_point(connecting_from)) {
+					connecting_from_node = node_rects[i].node_name;
+					return;
+				}
+				if (connecting_to_node == StringName() && node_rects[i].node.has_point(connecting_to)) {
+					connecting_to_node = node_rects[i].node_name;
+					return;
+				}
 			}
 		}
 	}
@@ -629,6 +676,7 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 
 void AnimationNodeStateMachineEditor::_stop_connecting() {
 	connecting = false;
+	reconnecting_selected_transition = false;
 	state_machine_draw->queue_redraw();
 }
 
@@ -778,51 +826,74 @@ void AnimationNodeStateMachineEditor::_connect_to(int p_index) {
 }
 
 void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action) {
-	if (connecting_from != StringName() && connecting_to_node != StringName()) {
-		if (state_machine->has_transition(connecting_from, connecting_to_node)) {
+	if (connecting_from_node != StringName() && connecting_to_node != StringName()) {
+		// show warning only if it is has a transition and it is not the same reconnection
+		if (state_machine->has_transition(connecting_from_node, connecting_to_node) && !(reconnecting_selected_transition && connecting_from_node == selected_transition_from && connecting_to_node == selected_transition_to)) {
 			EditorNode::get_singleton()->show_warning("Transition exists!");
 			connecting = false;
+			reconnecting_selected_transition = false;
 			return;
 		}
 
-		Ref<AnimationNodeStateMachineTransition> tr;
-		tr.instantiate();
-		tr->set_advance_mode(auto_advance->is_pressed() ? AnimationNodeStateMachineTransition::AdvanceMode::ADVANCE_MODE_AUTO : AnimationNodeStateMachineTransition::AdvanceMode::ADVANCE_MODE_ENABLED);
-		tr->set_switch_mode(AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()));
-
-		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		if (!p_nested_action) {
-			updating = true;
-			undo_redo->create_action(TTR("Add Transition"));
-		}
-
-		undo_redo->add_do_method(state_machine.ptr(), "add_transition", connecting_from, connecting_to_node, tr);
-		undo_redo->add_undo_method(state_machine.ptr(), "remove_transition", connecting_from, connecting_to_node);
-		undo_redo->add_do_method(this, "_update_graph");
-		undo_redo->add_undo_method(this, "_update_graph");
-
-		if (!p_nested_action) {
-			undo_redo->commit_action();
-			updating = false;
-		}
-
-		selected_transition_from = connecting_from;
-		selected_transition_to = connecting_to_node;
-		selected_transition_index = transition_lines.size();
-
-		if (!state_machine->is_transition_across_group(selected_transition_index)) {
-			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+		if (reconnecting_selected_transition) {
+			Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(selected_transition_index);
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			if (!p_nested_action) {
+				updating = true;
+				undo_redo->create_action(TTR("Reroute Transition"));
+			}
+			undo_redo->add_do_method(state_machine.ptr(), "add_transition", connecting_from_node, connecting_to_node, tr);
+			undo_redo->add_do_method(state_machine.ptr(), "remove_transition", selected_transition_from, selected_transition_to);
+			undo_redo->add_undo_method(state_machine.ptr(), "add_transition", selected_transition_from, selected_transition_to, tr);
+			undo_redo->add_undo_method(state_machine.ptr(), "remove_transition", connecting_from_node, connecting_to_node);
+			undo_redo->add_do_method(this, "_update_graph");
+			undo_redo->add_undo_method(this, "_update_graph");
+			if (!p_nested_action) {
+				undo_redo->commit_action();
+				updating = false;
+			}
+			_erase_selected_transition(p_nested_action);
+			selected_transition_from = connecting_from_node;
+			selected_transition_to = connecting_to_node;
 		} else {
-			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
-			EditorNode::get_singleton()->push_item(nullptr, "", true);
+			Ref<AnimationNodeStateMachineTransition> tr;
+			tr.instantiate();
+			tr->set_advance_mode(auto_advance->is_pressed() ? AnimationNodeStateMachineTransition::AdvanceMode::ADVANCE_MODE_AUTO : AnimationNodeStateMachineTransition::AdvanceMode::ADVANCE_MODE_ENABLED);
+			tr->set_switch_mode(AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()));
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			if (!p_nested_action) {
+				updating = true;
+				undo_redo->create_action(TTR("Add Transition"));
+			}
+			undo_redo->add_do_method(state_machine.ptr(), "add_transition", connecting_from_node, connecting_to_node, tr);
+			undo_redo->add_undo_method(state_machine.ptr(), "remove_transition", connecting_from_node, connecting_to_node);
+			undo_redo->add_do_method(this, "_update_graph");
+			undo_redo->add_undo_method(this, "_update_graph");
+
+			if (!p_nested_action) {
+				undo_redo->commit_action();
+				updating = false;
+			}
+
+			selected_transition_from = connecting_from_node;
+			selected_transition_to = connecting_to_node;
+			selected_transition_index = transition_lines.size();
+
+			if (!state_machine->is_transition_across_group(selected_transition_index)) {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+			} else {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+				EditorNode::get_singleton()->push_item(nullptr, "", true);
+			}
 		}
 		_update_mode();
 	}
-
 	connecting = false;
+	reconnecting_selected_transition = false;
 }
 
-void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group) {
+void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group, bool p_is_reconnecting) {
 	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	Color icon_color(1, 1, 1);
 	Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -831,6 +902,11 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		linecolor.a *= 0.2;
 		icon_color.a *= 0.2;
 		accent.a *= 0.6;
+	}
+
+	if (p_is_reconnecting) {
+		linecolor.a *= 0.6;
+		icon_color.a *= 0.6;
 	}
 
 	const Ref<Texture2D> icons[] = {
@@ -1008,24 +1084,33 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 	//draw connecting line for potential new transition
 	if (connecting) {
-		Vector2 from = (state_machine->get_node_position(connecting_from) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
+		Vector2 from;
 		Vector2 to;
-		if (connecting_to_node != StringName()) {
-			to = (state_machine->get_node_position(connecting_to_node) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
+		if (connecting_from_node == StringName()) {
+			from = connecting_from;
 		} else {
+			from = (state_machine->get_node_position(connecting_from_node) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
+		}
+		if (connecting_to_node == StringName()) {
 			to = connecting_to;
+		} else {
+			to = (state_machine->get_node_position(connecting_to_node) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
 		}
 
 		for (int i = 0; i < node_rects.size(); i++) {
-			if (node_rects[i].node_name == connecting_from) {
+			if (node_rects[i].node_name == connecting_from_node) {
 				_clip_src_line_to_rect(from, to, node_rects[i].node);
 			}
 			if (node_rects[i].node_name == connecting_to_node) {
 				_clip_dst_line_to_rect(from, to, node_rects[i].node);
 			}
 		}
-
-		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()), true, false, false, 0.0, false, false);
+		if (reconnecting_selected_transition && selected_transition_index > -1) {
+			Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(selected_transition_index);
+			_connection_draw(from, to, tr->get_switch_mode(), true, false, false, 0.0, false, false, false);
+		} else {
+			_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()), true, false, false, 0.0, false, false, false);
+		}
 	}
 
 	Ref<Texture2D> tr_reference_icon = get_editor_theme_icon(SNAME("TransitionImmediateBig"));
@@ -1110,7 +1195,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	for (int i = 0; i < transition_lines.size(); i++) {
 		TransitionLine tl = transition_lines[i];
 		if (!tl.hidden) {
-			_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, tl.selected, tl.travel, tl.fade_ratio, tl.auto_advance, tl.is_across_group);
+			_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, tl.selected, tl.travel, tl.fade_ratio, tl.auto_advance, tl.is_across_group, i == selected_transition_index && reconnecting_selected_transition);
 		}
 	}
 
@@ -1613,6 +1698,30 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 	state_machine_draw->queue_redraw();
 }
 
+void AnimationNodeStateMachineEditor::_erase_selected_transition(const bool p_nested_action) {
+	if (selected_transition_to != StringName() && selected_transition_from != StringName() && state_machine->has_transition(selected_transition_from, selected_transition_to)) {
+		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(state_machine->find_transition(selected_transition_from, selected_transition_to));
+		if (!p_nested_action) {
+			updating = true;
+		}
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Transition Removed"));
+		undo_redo->add_do_method(state_machine.ptr(), "remove_transition", selected_transition_from, selected_transition_to);
+		undo_redo->add_undo_method(state_machine.ptr(), "add_transition", selected_transition_from, selected_transition_to, tr);
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
+		undo_redo->commit_action();
+		if (!p_nested_action) {
+			updating = false;
+		}
+		selected_transition_from = StringName();
+		selected_transition_to = StringName();
+		selected_transition_index = -1;
+	}
+
+	state_machine_draw->queue_redraw();
+}
+
 void AnimationNodeStateMachineEditor::_update_mode() {
 	if (tool_select->is_pressed()) {
 		selection_tools_hb->show();
@@ -1807,6 +1916,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	over_node_what = -1;
 	dragging_selected_attempt = false;
 	connecting = false;
+	reconnecting_selected_transition = false;
 	selected_transition_index = -1;
 
 	last_active = false;

@@ -83,7 +83,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	static AnimationNodeStateMachineEditor *singleton;
 
 	void _state_machine_gui_input(const Ref<InputEvent> &p_event);
-	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group);
+	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group, bool p_is_reconnecting);
 
 	void _state_machine_draw();
 
@@ -119,8 +119,11 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName snap_y;
 
 	bool connecting = false;
+	bool reconnecting_selected_transition = false;
+	bool reconnecting_from = false;
 	bool connection_follows_cursor = false;
-	StringName connecting_from;
+	Vector2 connecting_from;
+	StringName connecting_from_node;
 	Vector2 connecting_to;
 	StringName connecting_to_node;
 
@@ -194,6 +197,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _clip_dst_line_to_rect(const Vector2 &p_from, Vector2 &r_to, const Rect2 &p_rect);
 
 	void _erase_selected(const bool p_nested_action = false);
+	void _erase_selected_transition(const bool p_nested_action = false);
 	void _update_mode();
 	void _open_menu(const Vector2 &p_position);
 	bool _create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path);
