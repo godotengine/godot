@@ -1114,6 +1114,46 @@ struct VariantBuiltInMethodInfo {
 	Variant::Type return_type;
 	int argument_count = 0;
 	Variant::Type (*get_argument_type)(int p_arg) = nullptr;
+
+	MethodInfo get_method_info(const StringName &p_name) const {
+		MethodInfo mi;
+		mi.name = p_name;
+
+		if (has_return_type) {
+			mi.return_val.type = return_type;
+			if (mi.return_val.type == Variant::NIL) {
+				mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
+		}
+
+		if (is_const) {
+			mi.flags |= METHOD_FLAG_CONST;
+		}
+		if (is_vararg) {
+			mi.flags |= METHOD_FLAG_VARARG;
+		}
+		if (is_static) {
+			mi.flags |= METHOD_FLAG_STATIC;
+		}
+
+		for (int i = 0; i < argument_count; i++) {
+			PropertyInfo pi;
+#ifdef DEBUG_METHODS_ENABLED
+			pi.name = argument_names[i];
+#else
+			pi.name = "arg" + itos(i + 1);
+#endif
+			pi.type = (*get_argument_type)(i);
+			if (pi.type == Variant::NIL) {
+				pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
+			mi.arguments.push_back(pi);
+		}
+
+		mi.default_arguments = default_arguments;
+
+		return mi;
+	}
 };
 
 typedef OAHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
@@ -1268,6 +1308,13 @@ Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(Variant::Type p_type, 
 	return method->ptrcall;
 }
 
+MethodInfo Variant::get_builtin_method_info(Variant::Type p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, MethodInfo());
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	ERR_FAIL_NULL_V(method, MethodInfo());
+	return method->get_method_info(p_method);
+}
+
 int Variant::get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
@@ -1378,43 +1425,7 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 		for (const StringName &E : builtin_method_names[type]) {
 			const VariantBuiltInMethodInfo *method = builtin_method_info[type].lookup_ptr(E);
 			ERR_CONTINUE(!method);
-
-			MethodInfo mi;
-			mi.name = E;
-
-			//return type
-			if (method->has_return_type) {
-				mi.return_val.type = method->return_type;
-				if (mi.return_val.type == Variant::NIL) {
-					mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-				}
-			}
-
-			if (method->is_const) {
-				mi.flags |= METHOD_FLAG_CONST;
-			}
-			if (method->is_vararg) {
-				mi.flags |= METHOD_FLAG_VARARG;
-			}
-			if (method->is_static) {
-				mi.flags |= METHOD_FLAG_STATIC;
-			}
-			for (int i = 0; i < method->argument_count; i++) {
-				PropertyInfo pi;
-#ifdef DEBUG_METHODS_ENABLED
-				pi.name = method->argument_names[i];
-#else
-				pi.name = "arg" + itos(i + 1);
-#endif
-				pi.type = method->get_argument_type(i);
-				if (pi.type == Variant::NIL) {
-					pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-				}
-				mi.arguments.push_back(pi);
-			}
-
-			mi.default_arguments = method->default_arguments;
-			p_list->push_back(mi);
+			p_list->push_back(method->get_method_info(E));
 		}
 	}
 }
