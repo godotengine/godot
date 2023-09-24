@@ -35,6 +35,9 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tab_bar.h"
 
+class Button;
+class HBoxContainer;
+
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
@@ -43,6 +46,7 @@ class TabContainer : public Container {
 	bool all_tabs_in_front = false;
 	bool menu_hovered = false;
 	mutable ObjectID popup_obj_id;
+	HBoxContainer *buttons_container = nullptr;
 	bool drag_to_rearrange_enabled = false;
 	bool use_hidden_tabs_for_min_size = false;
 	bool theme_changing = false;
@@ -50,6 +54,7 @@ class TabContainer : public Container {
 
 	struct ThemeCache {
 		int side_margin = 0;
+		int buttons_separation = 4;
 
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> tabbar_style;
@@ -96,6 +101,8 @@ class TabContainer : public Container {
 	void _on_tab_hovered(int p_tab);
 	void _on_tab_selected(int p_tab);
 	void _on_tab_button_pressed(int p_tab);
+
+	void _on_buttons_container_child_order_changed();
 
 	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
@@ -158,6 +165,9 @@ public:
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;
+
+	void add_button(Control *p_button);
+	void remove_button(Control *p_button);
 
 	void set_drag_to_rearrange_enabled(bool p_enabled);
 	bool get_drag_to_rearrange_enabled() const;
