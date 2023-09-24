@@ -644,7 +644,7 @@ void TileMapLayer::_rendering_draw_cell_debug(const RID &p_canvas_item, const Ve
 					Transform2D cell_to_quadrant;
 					cell_to_quadrant.set_origin(tile_map_node->map_to_local(r_cell_data.coords) - p_quadrant_pos);
 					rs->canvas_item_add_set_transform(p_canvas_item, cell_to_quadrant);
-					rs->canvas_item_add_circle(p_canvas_item, Vector2(), MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 4.0, color);
+					rs->canvas_item_add_circle(p_canvas_item, Vector2(), MIN(tile_map_node->get_tile_spacing().x, tile_map_node->get_tile_spacing().y) / 4.0, color);
 				}
 			}
 		}
@@ -1286,7 +1286,7 @@ void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vecto
 				Transform2D cell_to_quadrant;
 				cell_to_quadrant.set_origin(tile_map_node->map_to_local(r_cell_data.coords) - p_quadrant_pos);
 				rs->canvas_item_add_set_transform(p_canvas_item, cell_to_quadrant);
-				rs->canvas_item_add_circle(p_canvas_item, Vector2(), MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 4.0, color);
+				rs->canvas_item_add_circle(p_canvas_item, Vector2(), MIN(tile_map_node->get_tile_spacing().x, tile_map_node->get_tile_spacing().y) / 4.0, color);
 			}
 		}
 	}
@@ -3112,6 +3112,22 @@ Ref<TileSet> TileMap::get_tileset() const {
 	return tile_set;
 }
 
+void TileMap::set_tile_spacing(Size2i p_size) {
+	ERR_FAIL_COND(p_size.x < 0 || p_size.y < 0);
+	tile_spacing = p_size;
+	for (Ref<TileMapLayer> &layer : layers) {
+		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_TILE_SET);
+	}
+}
+
+Size2i TileMap::get_tile_spacing() const {
+	if (tile_set.is_valid() && (tile_spacing.x == 0 && tile_spacing.y == 0)) {
+		return tile_set->get_tile_size();
+	} else {
+		return tile_spacing;
+	}
+}
+
 void TileMap::set_rendering_quadrant_size(int p_size) {
 	ERR_FAIL_COND_MSG(p_size < 1, "TileMapQuadrant size cannot be smaller than 1.");
 
@@ -3800,14 +3816,14 @@ Vector2 TileMap::map_to_local(const Vector2i &p_pos) const {
 		ret.x *= overlapping_ratio;
 	}
 
-	return (ret + Vector2(0.5, 0.5)) * tile_set->get_tile_size();
+	return (ret + Vector2(0.5, 0.5)) * get_tile_spacing();
 }
 
 Vector2i TileMap::local_to_map(const Vector2 &p_local_position) const {
 	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2i());
 
 	Vector2 ret = p_local_position;
-	ret /= tile_set->get_tile_size();
+	ret /= get_tile_spacing();
 
 	TileSet::TileShape tile_shape = tile_set->get_tile_shape();
 	TileSet::TileOffsetAxis tile_offset_axis = tile_set->get_tile_offset_axis();
@@ -4463,7 +4479,7 @@ void TileMap::draw_cells_outline(Control *p_control, const RBSet<Vector2i> &p_ce
 	}
 
 	// Create a set.
-	Vector2i tile_size = tile_set->get_tile_size();
+	Vector2i tile_size = get_tile_spacing();
 	Vector<Vector2> polygon = tile_set->get_tile_shape_polygon();
 	TileSet::TileShape shape = tile_set->get_tile_shape();
 
@@ -4629,6 +4645,8 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_tileset", "tileset"), &TileMap::set_tileset);
 	ClassDB::bind_method(D_METHOD("get_tileset"), &TileMap::get_tileset);
+	ClassDB::bind_method(D_METHOD("set_tile_spacing", "size"), &TileMap::set_tile_spacing);
+	ClassDB::bind_method(D_METHOD("get_tile_spacing"), &TileMap::get_tile_spacing);
 
 	ClassDB::bind_method(D_METHOD("set_rendering_quadrant_size", "size"), &TileMap::set_rendering_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_rendering_quadrant_size"), &TileMap::get_rendering_quadrant_size);
@@ -4701,6 +4719,7 @@ void TileMap::_bind_methods() {
 	GDVIRTUAL_BIND(_tile_data_runtime_update, "layer", "coords", "tile_data");
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_tile_spacing", "get_tile_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
