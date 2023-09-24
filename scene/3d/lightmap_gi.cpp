@@ -1082,7 +1082,9 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, bounces, bias, max_texture_size, directional, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
 
-	if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES) {
+	if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_TOO_SMALL) {
+		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
+	} else if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES) {
 		return BAKE_ERROR_MESHES_INVALID;
 	}
 
@@ -1566,6 +1568,7 @@ void LightmapGI::_bind_methods() {
 	BIND_ENUM_CONSTANT(BAKE_ERROR_MESHES_INVALID);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_CANT_CREATE_IMAGE);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_USER_ABORTED);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL);
 
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_SCENE);

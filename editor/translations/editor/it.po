@@ -87,13 +87,14 @@
 # GumaD3v <matteo.gugliuzza08@gmail.com>, 2023.
 # Adelina G <adelinadoncheva.georgieva@mail.polimi.it>, 2023.
 # Francesco <martefrinbell@gmail.com>, 2023.
+# Edoardo Barolo <velteyn@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-20 08:03+0000\n"
-"Last-Translator: Francesco <martefrinbell@gmail.com>\n"
+"PO-Revision-Date: 2023-08-30 14:58+0000\n"
+"Last-Translator: Edoardo Barolo <velteyn@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -101,7 +102,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "Non impostato"
@@ -198,6 +199,9 @@ msgstr "Indietro, Select Sony, Back Xbox, - Nintendo"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Guida, PS Sony, Home Xbox"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Start, MenuXbox , Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Levetta sinistra, L3 Sony, L/LS Xbox"
@@ -1053,6 +1057,9 @@ msgstr "Scala la selezione"
 msgid "Scale From Cursor"
 msgstr "Scala a partire dal cursore"
 
+msgid "Make Easing Selection"
+msgstr "Effettua selezione di facilitazione"
+
 msgid "Duplicate Selection"
 msgstr "Duplica la selezione"
 
@@ -1116,6 +1123,18 @@ msgstr "Fattore di scala:"
 msgctxt "Transition Type"
 msgid "Sine"
 msgstr "Seno"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Quintupletta"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Quartetto"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Quadrupla"
 
 msgctxt "Transition Type"
 msgid "Elastic"
@@ -2193,6 +2212,14 @@ msgstr ""
 "Supporto alla tecnologia di font intelligente SIL Graphite (supportata solo "
 "dal server di testo avanzato)."
 
+msgid ""
+"Multi-channel signed distance field font rendering support using msdfgen "
+"library (pre-rendered MSDF fonts can be used even if this option disabled)."
+msgstr ""
+"Supporto per il rendering di font multicanale con campo di distanza "
+"sottoscritto utilizzando la libreria msdfgen (i font MSDF pre-renderizzati "
+"possono essere utilizzati anche se questa opzione è disabilitata)."
+
 msgid "General Features:"
 msgstr "Funzionalità generali:"
 
@@ -2448,6 +2475,10 @@ msgstr "Importa risorse di tipo: %s"
 
 msgid "No return value."
 msgstr "Nessun valore di ritorno."
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Questo valore è un intero composto da una maschera di bit dei seguenti flag."
 
 msgid "Deprecated"
 msgstr "Deprecato"
@@ -2717,6 +2748,20 @@ msgstr "Aggiungi elemento all'array di proprietà col prefisso %s."
 
 msgid "Remove element %d from property array with prefix %s."
 msgstr "Rimuovi elemento %d dall'array di proprietà col prefisso %s."
+
+msgid "Move element %d to position %d in property array with prefix %s."
+msgstr ""
+"Sposta l'elemento %d nella posizione %d dell'array di proprietà con prefisso "
+"%s."
+
+msgid "Clear property array with prefix %s."
+msgstr "Cancella l'array di proprietà con il prefisso %s."
+
+msgid "Resize property array with prefix %s."
+msgstr "Ridimensiona la proprietà array con il prefisso %s."
+
+msgid "Element %d: %s%d*"
+msgstr "Element0 %d: %s%d*"
 
 msgid "Move Up"
 msgstr "Sposta su"
@@ -3724,6 +3769,9 @@ msgstr "Modifica i nomi dei livelli"
 msgid "<empty>"
 msgstr "<vuoto>"
 
+msgid "Temporary Euler may be changed implicitly!"
+msgstr "L'Eulero temporaneo può essere modificato implicitamente!"
+
 msgid ""
 "Temporary Euler will not be stored in the object with the original value. "
 "Instead, it will be stored as Quaternion with irreversible conversion.\n"
@@ -3958,6 +4006,9 @@ msgstr "Joystick 4 verso su"
 
 msgid "Joystick 4 Down"
 msgstr "Joystick 4 verso giù"
+
+msgid "Unicode"
+msgstr "Unicode"
 
 msgid "Joypad Axis %d %s (%s)"
 msgstr "Asse %d del joypad %s (%s)"
@@ -4449,6 +4500,20 @@ msgstr "Gestisci i modelli di esportazione"
 msgid "Export With Debug"
 msgstr "Esporta Con Debug"
 
+msgid ""
+"Canceling this dialog will disable the FBX importer.\n"
+"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
+"> Enabled.\n"
+"\n"
+"The editor will restart as importers are registered when the editor starts."
+msgstr ""
+"Chiudendo questa finestra di dialogo si disattiva l'importatore FBX.\n"
+"È possibile riabilitarlo nelle Impostazioni progetto in Filesystem > "
+"Importazione > FBX > Abilitato.\n"
+"\n"
+"L'editor si riavvia perché gli importatori sono registrati all'avvio "
+"dell'editor."
+
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Il percorso per FBX2glTF è vuoto."
 
@@ -4550,6 +4615,12 @@ msgid ""
 msgstr ""
 "I seguenti file o/e cartelle vanno in conflitto con i file o/e cartelle nel "
 "percorso di destinazione '%s':"
+
+msgid "Do you wish to overwrite them or rename the copied files?"
+msgstr "Si desidera sovrascrivere o rinominare i file copiati?"
+
+msgid "Do you wish to overwrite them or rename the moved files?"
+msgstr "Si desidera sovrascrivere o rinominare i file spostati?"
 
 msgid "Duplicating file:"
 msgstr "Duplica file:"
@@ -4783,6 +4854,13 @@ msgstr "Impossibile salvare file con il nome vuoto."
 
 msgid "Cannot save file with a name starting with a dot."
 msgstr "Impossibile salvare file il cui nome inizia con un punto."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Il file \"%s\" esiste già.\n"
+"Si desidera sovrascriverlo?"
 
 msgid "Select This Folder"
 msgstr "Seleziona questa cartella"
@@ -5116,6 +5194,16 @@ msgstr ""
 "di battiti dall'anteprima) per assicurarsi che la ripetizione funzioni "
 "correttamente."
 
+msgid "Bar Beats:"
+msgstr "Barra Battiti:"
+
+msgid ""
+"Configure the Beats Per Bar. This used for music-aware transitions between "
+"AudioStreams."
+msgstr ""
+"Configura i battiti per battuta. Si usa per le transizioni sensibili alla "
+"musica tra gli AudioStream."
+
 msgid "Music Playback:"
 msgstr "Riproduzione musicale:"
 
@@ -5226,6 +5314,9 @@ msgstr ""
 
 msgid "Dynamically rendered TrueType/OpenType font"
 msgstr "Font TrueType/OpenType renderizzato dinamicamente"
+
+msgid "Prerendered multichannel(+true) signed distance field"
+msgstr "Campo distanza sottoscritta(+true) multicanale prerenderizzata"
 
 msgid "Can't load font texture:"
 msgstr "Impossibile caricare texture del font:"
@@ -5345,6 +5436,9 @@ msgstr "Il file esistente con lo stesso nome verrà rimpiazzato."
 
 msgid "Will create new file"
 msgstr "Creerà un nuovo file"
+
+msgid "Already External"
+msgstr "Già esterno"
 
 msgid ""
 "This material already references an external file, no action will be taken.\n"
@@ -6537,6 +6631,9 @@ msgstr "File ZIP dei contenuti"
 msgid "Audio Preview Play/Pause"
 msgstr "Riproduci/Pausa Anteprima Audio"
 
+msgid "Clear mappings in current group."
+msgstr "Pulisci le mappature nel gruppo corrente."
+
 msgid "Preview"
 msgstr "Anteprima"
 
@@ -6762,6 +6859,12 @@ msgstr "Clicca per cambiare il perno di rotazione dell'oggetto."
 
 msgid "Pan Mode"
 msgstr "Modalità di Pan"
+
+msgid ""
+"You can also use Pan View shortcut (Space by default) to pan in any mode."
+msgstr ""
+"È inoltre possibile utilizzare la Vista Pan (Spazio per impostazione "
+"predefinita) per eseguire una panoramica in qualsiasi modalità."
 
 msgid "Ruler Mode"
 msgstr "Modalità Righello"
@@ -7000,6 +7103,12 @@ msgstr "Questo nodo è il figlio di un Control normale."
 msgid "Use anchors and the rectangle for positioning."
 msgstr "Utilizza le ancore e il rettangolo per il posizionamento."
 
+msgid "Collapse positioning hint."
+msgstr "Suggerimento per il posizionamento dello strumento di compressione."
+
+msgid "Expand positioning hint."
+msgstr "Suggerimento per il posizionamento dello strumento di espansione."
+
 msgid "Container Default"
 msgstr "Container predefinito"
 
@@ -7056,6 +7165,33 @@ msgstr "Lato Destro"
 
 msgid "Full Rect"
 msgstr "Rettangolo Completo"
+
+msgid ""
+"Enable to also set the Expand flag.\n"
+"Disable to only set Shrink/Fill flags."
+msgstr ""
+"Attivare per impostare anche il flag Espandi.\n"
+"Disattivare per impostare solo i flag Restringimento/riempimento."
+
+msgid "Some parents of the selected nodes do not support the Expand flag."
+msgstr "Alcuni parenti dei nodi selezionati non supportano il flag Espandi."
+
+msgid "Align with Expand"
+msgstr "Allinea con l'espansione"
+
+msgid "Change Anchors, Offsets, Grow Direction"
+msgstr "Modificare le ancore, gli offset e la direzione di espansione"
+
+msgid "Change Anchors, Offsets (Keep Ratio)"
+msgstr "Cambiare le ancore, gli offset (Mantieni il Rapporto)"
+
+msgid "Adjust anchors and offsets to match the current rect size."
+msgstr ""
+"Regola le ancore e gli offset per adattarli alla dimensione corrente del "
+"rettangolo."
+
+msgid "Sizing settings for children of a Container node."
+msgstr "Impostazioni di dimensionamento per i figli di un nodo Contenitore."
 
 msgid "Horizontal alignment"
 msgstr "Allineamento orizzontale"
@@ -7239,6 +7375,9 @@ msgstr "Dimensione: %s"
 
 msgid "Type: %s"
 msgstr "Tipo: %s"
+
+msgid "Dimensions: %d × %d"
+msgstr "Dimensioni: %d × %d"
 
 msgid "Overrides (%d)"
 msgstr "Sovrascrive (%d)"
@@ -7475,6 +7614,9 @@ msgstr ""
 
 msgid "No editor scene root found."
 msgstr "Nessuna radice della scena dell'editor trovata."
+
+msgid "Lightmap data is not local to the scene."
+msgstr "I dati della Lightmap non sono locali alla scena."
 
 msgid "Bake Lightmaps"
 msgstr "Preprocessa Lightmaps"

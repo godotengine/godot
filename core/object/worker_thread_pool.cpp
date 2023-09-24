@@ -34,8 +34,8 @@
 #include "core/os/thread_safe.h"
 
 void WorkerThreadPool::Task::free_template_userdata() {
-	ERR_FAIL_COND(!template_userdata);
-	ERR_FAIL_COND(native_func_userdata == nullptr);
+	ERR_FAIL_NULL(template_userdata);
+	ERR_FAIL_NULL(native_func_userdata);
 	BaseTemplateUserdata *btu = (BaseTemplateUserdata *)native_func_userdata;
 	memdelete(btu);
 }

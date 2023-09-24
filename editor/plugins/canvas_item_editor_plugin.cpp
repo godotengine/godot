@@ -78,7 +78,8 @@ class SnapDialog : public ConfirmationDialog {
 	SpinBox *grid_offset_y;
 	SpinBox *grid_step_x;
 	SpinBox *grid_step_y;
-	SpinBox *primary_grid_steps;
+	SpinBox *primary_grid_step_x;
+	SpinBox *primary_grid_step_y;
 	SpinBox *rotation_offset;
 	SpinBox *rotation_step;
 	SpinBox *scale_step;
@@ -151,24 +152,30 @@ public:
 		grid_step_y->set_select_all_on_focus(true);
 		child_container->add_child(grid_step_y);
 
-		child_container = memnew(GridContainer);
-		child_container->set_columns(2);
-		container->add_child(child_container);
-
 		label = memnew(Label);
 		label->set_text(TTR("Primary Line Every:"));
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(label);
 
-		primary_grid_steps = memnew(SpinBox);
-		primary_grid_steps->set_min(0);
-		primary_grid_steps->set_step(1);
-		primary_grid_steps->set_max(100);
-		primary_grid_steps->set_allow_greater(true);
-		primary_grid_steps->set_suffix(TTR("steps"));
-		primary_grid_steps->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		primary_grid_steps->set_select_all_on_focus(true);
-		child_container->add_child(primary_grid_steps);
+		primary_grid_step_x = memnew(SpinBox);
+		primary_grid_step_x->set_min(1);
+		primary_grid_step_x->set_step(1);
+		primary_grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
+		primary_grid_step_x->set_allow_greater(true);
+		primary_grid_step_x->set_suffix("steps");
+		primary_grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		primary_grid_step_x->set_select_all_on_focus(true);
+		child_container->add_child(primary_grid_step_x);
+
+		primary_grid_step_y = memnew(SpinBox);
+		primary_grid_step_y->set_min(1);
+		primary_grid_step_y->set_step(1);
+		primary_grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
+		primary_grid_step_y->set_allow_greater(true);
+		primary_grid_step_y->set_suffix("steps");
+		primary_grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		primary_grid_step_y->set_select_all_on_focus(true);
+		child_container->add_child(primary_grid_step_y);
 
 		container->add_child(memnew(HSeparator));
 
@@ -224,21 +231,22 @@ public:
 		child_container->add_child(scale_step);
 	}
 
-	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const int p_primary_grid_steps, const real_t p_rotation_offset, const real_t p_rotation_step, const real_t p_scale_step) {
+	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const Vector2i p_primary_grid_step, const real_t p_rotation_offset, const real_t p_rotation_step, const real_t p_scale_step) {
 		grid_offset_x->set_value(p_grid_offset.x);
 		grid_offset_y->set_value(p_grid_offset.y);
 		grid_step_x->set_value(p_grid_step.x);
 		grid_step_y->set_value(p_grid_step.y);
-		primary_grid_steps->set_value(p_primary_grid_steps);
+		primary_grid_step_x->set_value(p_primary_grid_step.x);
+		primary_grid_step_y->set_value(p_primary_grid_step.y);
 		rotation_offset->set_value(Math::rad_to_deg(p_rotation_offset));
 		rotation_step->set_value(Math::rad_to_deg(p_rotation_step));
 		scale_step->set_value(p_scale_step);
 	}
 
-	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, int &p_primary_grid_steps, real_t &p_rotation_offset, real_t &p_rotation_step, real_t &p_scale_step) {
+	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, Vector2i &p_primary_grid_step, real_t &p_rotation_offset, real_t &p_rotation_step, real_t &p_scale_step) {
 		p_grid_offset = Point2(grid_offset_x->get_value(), grid_offset_y->get_value());
 		p_grid_step = Point2(grid_step_x->get_value(), grid_step_y->get_value());
-		p_primary_grid_steps = int(primary_grid_steps->get_value());
+		p_primary_grid_step = Vector2i(primary_grid_step_x->get_value(), primary_grid_step_y->get_value());
 		p_rotation_offset = Math::deg_to_rad(rotation_offset->get_value());
 		p_rotation_step = Math::deg_to_rad(rotation_step->get_value());
 		p_scale_step = scale_step->get_value();
@@ -346,7 +354,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
-	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_key_pressed(Key::CTRL);
+	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 
 	// Smart snap using the canvas position
 	Vector2 output = p_target;
@@ -472,7 +480,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 }
 
 real_t CanvasItemEditor::snap_angle(real_t p_target, real_t p_start) const {
-	if (((smart_snap_active || snap_rotation) ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) && snap_rotation_step != 0) {
+	if (((smart_snap_active || snap_rotation) ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) && snap_rotation_step != 0) {
 		if (snap_relative) {
 			return Math::snapped(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset + (p_start - (int)(p_start / snap_rotation_step) * snap_rotation_step);
 		} else {
@@ -497,7 +505,7 @@ void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 			viewport->queue_redraw();
 		}
 
-		if (k->is_pressed() && !k->is_ctrl_pressed() && !k->is_echo() && (grid_snap_active || _is_grid_visible())) {
+		if (k->is_pressed() && !k->is_command_or_control_pressed() && !k->is_echo() && (grid_snap_active || _is_grid_visible())) {
 			if (multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->matches_event(p_ev)) {
 				// Multiply the grid size
 				grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
@@ -800,7 +808,7 @@ List<CanvasItem *> CanvasItemEditor::_get_edited_canvas_items(bool retrieve_lock
 }
 
 Vector2 CanvasItemEditor::_anchor_to_position(const Control *p_control, Vector2 anchor) {
-	ERR_FAIL_COND_V(!p_control, Vector2());
+	ERR_FAIL_NULL_V(p_control, Vector2());
 
 	Transform2D parent_transform = p_control->get_transform().affine_inverse();
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
@@ -813,7 +821,7 @@ Vector2 CanvasItemEditor::_anchor_to_position(const Control *p_control, Vector2 
 }
 
 Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 position) {
-	ERR_FAIL_COND_V(!p_control, Vector2());
+	ERR_FAIL_NULL_V(p_control, Vector2());
 
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
 
@@ -894,11 +902,11 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 }
 
 void CanvasItemEditor::_snap_changed() {
-	static_cast<SnapDialog *>(snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
+	static_cast<SnapDialog *>(snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_step, snap_rotation_offset, snap_rotation_step, snap_scale_step);
 
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_offset", grid_offset);
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_step", grid_step);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "primary_grid_steps", primary_grid_steps);
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "primary_grid_step", primary_grid_step);
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_offset", snap_rotation_offset);
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_step", snap_rotation_step);
 	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_scale_step", snap_scale_step);
@@ -1032,6 +1040,22 @@ void CanvasItemEditor::_on_grid_menu_id_pressed(int p_id) {
 		}
 	}
 	viewport->queue_redraw();
+}
+
+void CanvasItemEditor::_switch_theme_preview(int p_mode) {
+	view_menu->get_popup()->hide();
+
+	if (theme_preview == p_mode) {
+		return;
+	}
+	theme_preview = (ThemePreviewMode)p_mode;
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "theme_preview", theme_preview);
+
+	for (int i = 0; i < THEME_PREVIEW_MAX; i++) {
+		theme_menu->set_item_checked(i, i == theme_preview);
+	}
+
+	EditorNode::get_singleton()->update_preview_themes(theme_preview);
 }
 
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
@@ -1900,7 +1924,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
 
 			bool uniform = m->is_shift_pressed();
-			bool is_ctrl = m->is_ctrl_pressed();
+			bool is_ctrl = m->is_command_or_control_pressed();
 
 			Point2 drag_from_local = simple_xform.xform(drag_from);
 			Point2 drag_to_local = simple_xform.xform(drag_to);
@@ -2032,27 +2056,31 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 	if (drag_type == DRAG_MOVE || drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y) {
 		// Move the nodes
-		if (m.is_valid()) {
+		if (m.is_valid() && !drag_selection.is_empty()) {
 			_restore_canvas_item_state(drag_selection, true);
 
 			drag_to = transform.affine_inverse().xform(m->get_position());
 			Point2 previous_pos;
-			if (!drag_selection.is_empty()) {
-				if (drag_selection.size() == 1) {
-					Transform2D xform = drag_selection[0]->get_global_transform_with_canvas() * drag_selection[0]->get_transform().affine_inverse();
-					previous_pos = xform.xform(drag_selection[0]->_edit_get_position());
+			if (drag_selection.size() == 1) {
+				Transform2D xform = drag_selection[0]->get_global_transform_with_canvas() * drag_selection[0]->get_transform().affine_inverse();
+				previous_pos = xform.xform(drag_selection[0]->_edit_get_position());
+			} else {
+				previous_pos = _get_encompassing_rect_from_list(drag_selection).position;
+			}
+
+			Point2 drag_delta = drag_to - drag_from;
+			if (drag_selection.size() == 1 && (drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y)) {
+				const CanvasItem *selected = drag_selection.front()->get();
+				drag_delta = selected->get_transform().affine_inverse().basis_xform(drag_delta);
+
+				if (drag_type == DRAG_MOVE_X) {
+					drag_delta.y = 0;
 				} else {
-					previous_pos = _get_encompassing_rect_from_list(drag_selection).position;
+					drag_delta.x = 0;
 				}
+				drag_delta = selected->get_transform().basis_xform(drag_delta);
 			}
-
-			Point2 new_pos = snap_point(previous_pos + (drag_to - drag_from), SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, nullptr, drag_selection);
-
-			if (drag_type == DRAG_MOVE_X) {
-				new_pos.y = previous_pos.y;
-			} else if (drag_type == DRAG_MOVE_Y) {
-				new_pos.x = previous_pos.x;
-			}
+			Point2 new_pos = snap_point(previous_pos + drag_delta, SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, nullptr, drag_selection);
 
 			bool single_axis = m->is_shift_pressed();
 			if (single_axis) {
@@ -2909,10 +2937,10 @@ void CanvasItemEditor::_draw_grid() {
 
 				if (last_cell != cell) {
 					Color grid_color;
-					if (primary_grid_steps == 0) {
+					if (primary_grid_step.x <= 1) {
 						grid_color = secondary_grid_color;
 					} else {
-						grid_color = cell % primary_grid_steps == 0 ? primary_grid_color : secondary_grid_color;
+						grid_color = cell % primary_grid_step.x == 0 ? primary_grid_color : secondary_grid_color;
 					}
 
 					viewport->draw_line(Point2(i, 0), Point2(i, viewport_size.height), grid_color, Math::round(EDSCALE));
@@ -2932,10 +2960,10 @@ void CanvasItemEditor::_draw_grid() {
 
 				if (last_cell != cell) {
 					Color grid_color;
-					if (primary_grid_steps == 0) {
+					if (primary_grid_step.y <= 1) {
 						grid_color = secondary_grid_color;
 					} else {
-						grid_color = cell % primary_grid_steps == 0 ? primary_grid_color : secondary_grid_color;
+						grid_color = cell % primary_grid_step.y == 0 ? primary_grid_color : secondary_grid_color;
 					}
 
 					viewport->draw_line(Point2(0, i), Point2(viewport_size.width, i), grid_color, Math::round(EDSCALE));
@@ -3584,7 +3612,7 @@ void CanvasItemEditor::_draw_axis() {
 }
 
 void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-	ERR_FAIL_COND(!p_node);
+	ERR_FAIL_NULL(p_node);
 
 	Node *scene = EditorNode::get_singleton()->get_edited_scene();
 	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner())) {
@@ -3715,7 +3743,7 @@ void CanvasItemEditor::_draw_transform_message() {
 }
 
 void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-	ERR_FAIL_COND(!p_node);
+	ERR_FAIL_NULL(p_node);
 
 	Node *scene = EditorNode::get_singleton()->get_edited_scene();
 	if (p_node != scene && p_node->get_owner() != scene && !scene->is_editable_instance(p_node->get_owner())) {
@@ -3872,7 +3900,7 @@ void CanvasItemEditor::_update_editor_settings() {
 	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
 	animation_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
-	context_menu_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
+	context_toolbar_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 
 	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 	panner->set_scroll_speed(EDITOR_GET("editors/panning/2d_editor_pan_speed"));
@@ -3967,7 +3995,7 @@ void CanvasItemEditor::_notification(int p_what) {
 			select_sb->set_texture_margin_all(4);
 			select_sb->set_content_margin_all(4);
 
-			AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
+			AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("keying_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
 			AnimationPlayerEditor::get_singleton()->connect("animation_selected", callable_mp(this, &CanvasItemEditor::_keying_changed).unbind(1));
 			_keying_changed();
 			_update_editor_settings();
@@ -4325,8 +4353,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_pixel);
 		} break;
 		case SNAP_CONFIGURE: {
-			static_cast<SnapDialog *>(snap_dialog)->set_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
-			snap_dialog->popup_centered(Size2(220, 160) * EDSCALE);
+			static_cast<SnapDialog *>(snap_dialog)->set_fields(grid_offset, grid_step, primary_grid_step, snap_rotation_offset, snap_rotation_step, snap_scale_step);
+			snap_dialog->popup_centered(Size2(320, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -4712,7 +4740,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["ofs"] = view_offset;
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
-	state["primary_grid_steps"] = primary_grid_steps;
+	state["primary_grid_step"] = primary_grid_step;
 	state["snap_rotation_offset"] = snap_rotation_offset;
 	state["snap_rotation_step"] = snap_rotation_step;
 	state["snap_scale_step"] = snap_scale_step;
@@ -4764,8 +4792,15 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		grid_step = state["grid_step"];
 	}
 
+#ifndef DISABLE_DEPRECATED
 	if (state.has("primary_grid_steps")) {
-		primary_grid_steps = state["primary_grid_steps"];
+		primary_grid_step.x = state["primary_grid_steps"];
+		primary_grid_step.y = state["primary_grid_steps"];
+	}
+#endif // DISABLE_DEPRECATED
+
+	if (state.has("primary_grid_step")) {
+		primary_grid_step = state["primary_grid_step"];
 	}
 
 	if (state.has("snap_rotation_step")) {
@@ -4918,20 +4953,58 @@ void CanvasItemEditor::clear() {
 
 	grid_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_offset", Vector2());
 	grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_step", Vector2(8, 8));
-	primary_grid_steps = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "primary_grid_steps", 8);
+	primary_grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "primary_grid_step", Vector2i(8, 8));
 	snap_rotation_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
 	snap_rotation_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
 	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_scale_step", 0.1);
 }
 
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
-	ERR_FAIL_COND(!p_control);
+	ERR_FAIL_NULL(p_control);
+	ERR_FAIL_COND(p_control->get_parent());
 
-	context_menu_hbox->add_child(p_control);
+	VSeparator *sep = memnew(VSeparator);
+	context_toolbar_hbox->add_child(sep);
+	context_toolbar_hbox->add_child(p_control);
+	context_toolbar_separators[p_control] = sep;
+
+	p_control->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_update_context_toolbar));
+
+	_update_context_toolbar();
 }
 
 void CanvasItemEditor::remove_control_from_menu_panel(Control *p_control) {
-	context_menu_hbox->remove_child(p_control);
+	ERR_FAIL_NULL(p_control);
+	ERR_FAIL_COND(p_control->get_parent() != context_toolbar_hbox);
+
+	p_control->disconnect("visibility_changed", callable_mp(this, &CanvasItemEditor::_update_context_toolbar));
+
+	context_toolbar_hbox->remove_child(context_toolbar_separators[p_control]);
+	context_toolbar_hbox->remove_child(p_control);
+	context_toolbar_separators.erase(p_control);
+
+	_update_context_toolbar();
+}
+
+void CanvasItemEditor::_update_context_toolbar() {
+	bool has_visible = false;
+	bool first_visible = false;
+
+	for (int i = 0; i < context_toolbar_hbox->get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(context_toolbar_hbox->get_child(i));
+		if (!child || !context_toolbar_separators.has(child)) {
+			continue;
+		}
+		if (child->is_visible()) {
+			first_visible = !has_visible;
+			has_visible = true;
+		}
+
+		VSeparator *sep = context_toolbar_separators[child];
+		sep->set_visible(!first_visible && child->is_visible());
+	}
+
+	context_toolbar_panel->set_visible(has_visible);
 }
 
 void CanvasItemEditor::add_control_to_left_panel(Control *p_control) {
@@ -4981,9 +5054,17 @@ CanvasItemEditor::CanvasItemEditor() {
 	EditorRunBar::get_singleton()->call_deferred(SNAME("connect"), "play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
 	EditorRunBar::get_singleton()->call_deferred(SNAME("connect"), "stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
 
+	// Add some margin to the sides for better esthetics.
+	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
+	// which looks ugly.
+	MarginContainer *toolbar_margin = memnew(MarginContainer);
+	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
+	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	add_child(toolbar_margin);
+
 	// A fluid container for all toolbars.
 	HFlowContainer *main_flow = memnew(HFlowContainer);
-	add_child(main_flow);
+	toolbar_margin->add_child(main_flow);
 
 	// Main toolbars.
 	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
@@ -5090,13 +5171,6 @@ CanvasItemEditor::CanvasItemEditor() {
 	v_scroll->hide();
 
 	viewport->add_child(controls_vb);
-
-	// Add some margin to the left for better esthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
-	Control *margin_left = memnew(Control);
-	main_menu_hbox->add_child(margin_left);
-	margin_left->set_custom_minimum_size(Size2(2, 0) * EDSCALE);
 
 	select_button = memnew(Button);
 	select_button->set_flat(true);
@@ -5322,18 +5396,31 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale")), PREVIEW_CANVAS_SCALE);
 
+	theme_menu = memnew(PopupMenu);
+	theme_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_switch_theme_preview));
+	theme_menu->set_name("ThemeMenu");
+	theme_menu->add_radio_check_item(TTR("Project theme"), THEME_PREVIEW_PROJECT);
+	theme_menu->add_radio_check_item(TTR("Editor theme"), THEME_PREVIEW_EDITOR);
+	theme_menu->add_radio_check_item(TTR("Default theme"), THEME_PREVIEW_DEFAULT);
+	p->add_child(theme_menu);
+	p->add_submenu_item(TTR("Preview Theme"), "ThemeMenu");
+
+	theme_preview = (ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", THEME_PREVIEW_PROJECT);
+	for (int i = 0; i < THEME_PREVIEW_MAX; i++) {
+		theme_menu->set_item_checked(i, i == theme_preview);
+	}
+
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	// Contextual toolbars.
-	context_menu_panel = memnew(PanelContainer);
-	context_menu_hbox = memnew(HBoxContainer);
-	context_menu_panel->add_child(context_menu_hbox);
-	main_flow->add_child(context_menu_panel);
+	context_toolbar_panel = memnew(PanelContainer);
+	context_toolbar_hbox = memnew(HBoxContainer);
+	context_toolbar_panel->add_child(context_toolbar_hbox);
+	main_flow->add_child(context_toolbar_panel);
 
 	// Animation controls.
 	animation_hb = memnew(HBoxContainer);
-	context_menu_hbox->add_child(animation_hb);
-	animation_hb->add_child(memnew(VSeparator));
+	add_control_to_menu_panel(animation_hb);
 	animation_hb->hide();
 
 	key_loc_button = memnew(Button);
@@ -5522,7 +5609,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		if (texture != nullptr || scene != nullptr) {
 			bool root_node_selected = EditorNode::get_singleton()->get_editor_selection()->is_selected(EditorNode::get_singleton()->get_edited_scene());
-			String desc = TTR("Drag and drop to add as child of current scene's root node.") + "\n" + TTR("Hold Ctrl when dropping to add as child of selected node.");
+			String desc = TTR("Drag and drop to add as child of current scene's root node.") + "\n" + vformat(TTR("Hold %s when dropping to add as child of selected node."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
 			if (!root_node_selected) {
 				desc += "\n" + TTR("Hold Shift when dropping to add as sibling of selected node.");
 			}
@@ -5826,7 +5913,7 @@ bool CanvasItemEditorViewport::_only_packed_scenes_selected() const {
 
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);
-	bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
+	bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 	bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	selected_files.clear();

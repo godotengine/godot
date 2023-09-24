@@ -33,6 +33,8 @@
 
 #ifdef GLES3_ENABLED
 
+#include "platform_gl.h"
+
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -40,13 +42,6 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/utilities.h"
-
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
 
 namespace GLES3 {
 
@@ -212,7 +207,7 @@ public:
 	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) override;
 	virtual RS::LightType light_get_type(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+		ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL);
 
 		return light->type;
 	}
@@ -220,21 +215,21 @@ public:
 
 	virtual float light_get_param(RID p_light, RS::LightParam p_param) override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, 0);
+		ERR_FAIL_NULL_V(light, 0);
 
 		return light->param[p_param];
 	}
 
 	_FORCE_INLINE_ RID light_get_projector(RID p_light) {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RID());
+		ERR_FAIL_NULL_V(light, RID());
 
 		return light->projector;
 	}
 
 	virtual Color light_get_color(RID p_light) override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, Color());
+		ERR_FAIL_NULL_V(light, Color());
 
 		return light->color;
 	}
@@ -261,35 +256,35 @@ public:
 
 	virtual bool light_has_shadow(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+		ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL);
 
 		return light->shadow;
 	}
 
 	virtual bool light_has_projector(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+		ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL);
 
 		return TextureStorage::get_singleton()->owns_texture(light->projector);
 	}
 
 	_FORCE_INLINE_ bool light_is_negative(RID p_light) const {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+		ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL);
 
 		return light->negative;
 	}
 
 	_FORCE_INLINE_ float light_get_transmittance_bias(RID p_light) const {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, 0.0);
+		ERR_FAIL_NULL_V(light, 0.0);
 
 		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
 	}
 
 	virtual bool light_get_reverse_cull_face_mode(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, false);
+		ERR_FAIL_NULL_V(light, false);
 
 		return light->reverse_cull;
 	}

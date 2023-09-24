@@ -109,7 +109,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-13 22:46+0000\n"
+"PO-Revision-Date: 2023-08-30 14:58+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -118,7 +118,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "Ayarı Kaldır"
@@ -215,6 +215,9 @@ msgstr "Geri, Sony Select, Xbox Back, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Rehber, Sony PS, Xbox Ana Sayfası"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Başlat, Xbox Menüsü, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Sol Kol, Sony L3, Xbox L/LS"
@@ -1249,6 +1252,9 @@ msgstr "Satır Numarası:"
 msgid "%d replaced."
 msgstr "%d değiştirildi."
 
+msgid "No match"
+msgstr "Eşleşme yok"
+
 msgid "%d match"
 msgid_plural "%d matches"
 msgstr[0] "%d eşleşme"
@@ -1532,7 +1538,7 @@ msgid "ms"
 msgstr "ms"
 
 msgid "Monitors"
-msgstr "İleyiciler"
+msgstr "İzleyiciler"
 
 msgid "Monitor"
 msgstr "İzleyici"
@@ -1671,16 +1677,16 @@ msgid "C++ Source"
 msgstr "C++ Kaynağı"
 
 msgid "Video RAM"
-msgstr "Görüntü Belleği"
+msgstr "Video Belleği"
 
 msgid "Skip Breakpoints"
 msgstr "Kesme Noktalarını Atla"
 
 msgid "Step Into"
-msgstr "İçine gir"
+msgstr "İçine Gir"
 
 msgid "Step Over"
-msgstr "Üstünden geç"
+msgstr "Üstünden Geç"
 
 msgid "Break"
 msgstr "Duraklat"
@@ -1728,7 +1734,7 @@ msgid "Format"
 msgstr "Biçim"
 
 msgid "Usage"
-msgstr "Kullanım"
+msgstr "Kullanımı"
 
 msgid "Misc"
 msgstr "Çeşitli"
@@ -3099,6 +3105,9 @@ msgstr "'%s' dosyası ayrıştırılırken hata oluştu."
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "'%s' sahne dosyası geçersiz/bozuk görünüyor."
 
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "'%s' dosyası veya bağımlılıklarından biri eksik."
+
 msgid "Error while loading file '%s'."
 msgstr "'%s' dosyası yüklenirken bir hata oluştu."
 
@@ -3467,7 +3476,7 @@ msgstr ""
 "'%s' dosyasına yazılamıyor; dosya kullanımda, kilitli veya izinler eksik."
 
 msgid "Pan View"
-msgstr "Kaydırma Görünümü"
+msgstr "Görünümü Kaydır"
 
 msgid "Dock Position"
 msgstr "Yuva Konumu"
@@ -5028,7 +5037,7 @@ msgid "Favorited folder does not exist anymore and will be removed."
 msgstr "Sık kullanılan klasör artık mevcut değil, ve kaldırılacak."
 
 msgid "Go Back"
-msgstr "Geri Dön"
+msgstr "Geri Git"
 
 msgid "Go Forward"
 msgstr "İleri Git"
@@ -5920,7 +5929,7 @@ msgid "Remaps by Locale:"
 msgstr "Yerele Göre Yeniden Haritalamalar:"
 
 msgid "Locale"
-msgstr "Yerel"
+msgstr "Yerel kodu"
 
 msgid "POT Generation"
 msgstr "POT Üretimi"
@@ -8433,7 +8442,7 @@ msgid "Freelook Down"
 msgstr "Aşağı Serbest Bakış"
 
 msgid "Freelook Speed Modifier"
-msgstr "Serbest Bakış Hızı Değiştirici"
+msgstr "Serbest Bakış Hızlı Değiştirici"
 
 msgid "Freelook Slow Modifier"
 msgstr "Serbest Bakış Yavaş Değiştirici"
@@ -9151,7 +9160,7 @@ msgid "%s Class Reference"
 msgstr "%s Sınıf Başvurusu"
 
 msgid "Find Next"
-msgstr "Sonraki Bul"
+msgstr "Sonrakini Bul"
 
 msgid "Find Previous"
 msgstr "Öncekini Bul"
@@ -9317,7 +9326,7 @@ msgid "Lowercase"
 msgstr "Küçük harf"
 
 msgid "Capitalize"
-msgstr "Büyük harfe çevir"
+msgstr "İlk harfi büyük yap"
 
 msgid "Convert Case"
 msgstr "Büyük/Küçük Harf Dönüştür"
@@ -9341,7 +9350,7 @@ msgid "Toggle Comment"
 msgstr "Yorumu Aç/Kapat"
 
 msgid "Fold/Unfold Line"
-msgstr "Satırı Daralt/Aç"
+msgstr "Satırı Katla/Aç"
 
 msgid "Fold All Lines"
 msgstr "Tüm Satırları Daralt"
@@ -9377,13 +9386,13 @@ msgid "Contextual Help"
 msgstr "Bağlamsal Yardım"
 
 msgid "Toggle Bookmark"
-msgstr "Yer imleri Aç / Kapat"
+msgstr "Yer imlerini Aç / Kapat"
 
 msgid "Go to Next Bookmark"
-msgstr "Sonraki Yerimine Git"
+msgstr "Sonraki Yer İmine Git"
 
 msgid "Go to Previous Bookmark"
-msgstr "Önceki Yerimine Git"
+msgstr "Önceki Yer İmine Git"
 
 msgid "Remove All Bookmarks"
 msgstr "Bütün Yer imlerini Kaldır"
@@ -11122,7 +11131,7 @@ msgid "Add Output"
 msgstr "Çıkış Ekle"
 
 msgid "Float"
-msgstr "Ondalıklı (Float)"
+msgstr "Float"
 
 msgid "Int"
 msgstr "Int (Tamsayı)"
@@ -12457,6 +12466,14 @@ msgstr "Sürüm Denetimi Metaverileri:"
 msgid "Git"
 msgstr "Git"
 
+msgid "This project was last edited in a different Godot version: "
+msgstr ""
+"Bu projenin en son düzenlenmesi, Godot'nun farklı bir sürümüyle yapılmış. "
+
+msgid "This project uses features unsupported by the current build:"
+msgstr ""
+"Bu proje, mevcut derleme tarafından desteklenmeyen özellikler kullanıyor:"
+
 msgid "Error: Project is missing on the filesystem."
 msgstr "Hata: Proje, dosya sisteminde mevcut değil."
 
@@ -12598,6 +12615,15 @@ msgstr ""
 "Uyarı: Bu proje C# kullanıyor, ama Godot'nun bu derlemesi\n"
 "Mono modülü olmadan yapılmış. Devam ederseniz, hiç bir C# betiğini "
 "kullanamazsınız.\n"
+"\n"
+
+msgid ""
+"Warning: This project was last edited in Godot %s. Opening will change it to "
+"Godot %s.\n"
+"\n"
+msgstr ""
+"Uyarı: Bu projenin en son düzenlenmesi, Godot %s ile yaplımıştır. Açmaya "
+"devam etmek, projeyi Godot %s 'e değiştirecektir.\n"
 "\n"
 
 msgid ""
@@ -12743,6 +12769,28 @@ msgstr "Ayrıca proje içeriğini de sil (geri alınamaz!)"
 msgid "Convert Full Project"
 msgstr "Projeyi Tam Dönüştür"
 
+msgid ""
+"This option will perform full project conversion, updating scenes, resources "
+"and scripts from Godot 3 to work in Godot 4.\n"
+"\n"
+"Note that this is a best-effort conversion, i.e. it makes upgrading the "
+"project easier, but it will not open out-of-the-box and will still require "
+"manual adjustments.\n"
+"\n"
+"IMPORTANT: Make sure to backup your project before converting, as this "
+"operation makes it impossible to open it in older versions of Godot."
+msgstr ""
+"Bu seçenek, Godot 4 'te çalışmak üzere, Godot 3 ile oluşturulmuş sahneleri, "
+"kaynakları ve betikleri güncelleyerek, tam proje dönüşümü "
+"gerçekleştirecektir.\n"
+"\n"
+"Bunun en-iyi-çabalama dönüştürmesi olduğunu unutmayın, yani projeyi "
+"yükseltmeyi kolaylaştırır, ancak kutudan-yeni-çıkmış gibi açılmayacak ve yine "
+"de elle ayarlamalar gerektirecektir.\n"
+"\n"
+"ÖNEMLİ: Dönüştürmeden önce projenizi yedeklediğinizden emin olun, çünkü bu "
+"işlem Godot'un eski sürümleriyle açılmasını imkansız hale getirir."
+
 msgid "Can't run project"
 msgstr "Proje çalıştırılamıyor"
 
@@ -12839,7 +12887,7 @@ msgid "Select Virtual Method"
 msgstr "Sanal Yöntem Seç"
 
 msgid "Batch Rename"
-msgstr "Toplu Yeniden Adlandır"
+msgstr "Toplu Yeniden İsimlendir"
 
 msgid "Prefix:"
 msgstr "Ön Ek:"
@@ -13268,7 +13316,7 @@ msgid "(used %d times)"
 msgstr "( %d kez kullanıldı)"
 
 msgid "Add Child Node"
-msgstr "Alt-Düğüm Ekle"
+msgstr "Alt-öğe Düğümü Ekle"
 
 msgid "Expand/Collapse Branch"
 msgstr "Dalı Genişlet/Daralt"
@@ -13837,7 +13885,7 @@ msgid "Count"
 msgstr "Sayım"
 
 msgid "Network Profiler"
-msgstr "Ağ Profilcisi"
+msgstr "Ağ Profil Çıkarıcısı"
 
 msgid "Replication"
 msgstr "Çoğaltma"
@@ -16735,6 +16783,13 @@ msgstr "Örneğin indeksi negatif olamaz."
 
 msgid "Allowed instance uniform indices must be within [0..%d] range."
 msgstr "İzin verilen örnek düzenli dizinleri [0..%d] aralığında olmalıdır."
+
+msgid ""
+"'hint_normal_roughness_texture' is only available when using the Forward+ "
+"backend."
+msgstr ""
+"'hint_normal_roughness_texture' seçeneği sadece İleri+ arka-uç kullanırken "
+"kullanılabilir olur."
 
 msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
 msgstr "'hint_normal_roughness_texture', '%s' gölgelendiricilerde desteklenmez."

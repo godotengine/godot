@@ -202,8 +202,14 @@ void ThemeEditorPreview::_notification(int p_what) {
 			}
 
 			connect("visibility_changed", callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
-			[[fallthrough]];
-		}
+		} break;
+
+		case NOTIFICATION_READY: {
+			List<Ref<Theme>> preview_themes;
+			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
+			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_editor_theme_icon(SNAME("ColorPick")));
 
@@ -211,7 +217,7 @@ void ThemeEditorPreview::_notification(int p_what) {
 			theme_cache.preview_picker_overlay_color = get_theme_color(SNAME("preview_picker_overlay_color"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_label = get_theme_stylebox(SNAME("preview_picker_label"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
-			theme_cache.font_size = get_theme_font_size(SNAME("font_size"), EditorStringName(EditorFonts));
+			theme_cache.font_size = get_theme_default_font_size();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -247,9 +253,8 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_container = memnew(ScrollContainer);
 	preview_body->add_child(preview_container);
 
-	MarginContainer *preview_root = memnew(MarginContainer);
+	preview_root = memnew(MarginContainer);
 	preview_container->add_child(preview_root);
-	preview_root->set_theme(ThemeDB::get_singleton()->get_default_theme());
 	preview_root->set_clip_contents(true);
 	preview_root->set_custom_minimum_size(Size2(450, 0) * EDSCALE);
 	preview_root->set_v_size_flags(SIZE_EXPAND_FILL);

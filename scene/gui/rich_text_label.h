@@ -98,6 +98,7 @@ public:
 
 protected:
 	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -590,6 +591,9 @@ private:
 		int italics_font_size;
 		Ref<Font> mono_font;
 		int mono_font_size;
+
+		int text_highlight_h_padding;
+		int text_highlight_v_padding;
 
 		int table_h_separation;
 		int table_v_separation;

@@ -244,6 +244,9 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	if (!p.get_file().get_basename().is_valid_filename()) {
 		return TTR("Filename is invalid.");
 	}
+	if (p.get_file().begins_with(".")) {
+		return TTR("Name begins with a dot.");
+	}
 
 	p = ProjectSettings::get_singleton()->localize_path(p);
 	if (!p.begins_with("res://")) {

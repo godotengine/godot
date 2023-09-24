@@ -439,6 +439,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HSplitContainer);
 	GDREGISTER_CLASS(VSplitContainer);
 
+	GDREGISTER_CLASS(GraphElement);
 	GDREGISTER_CLASS(GraphNode);
 	GDREGISTER_CLASS(GraphEdit);
 

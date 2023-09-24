@@ -225,7 +225,7 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 			} else if (grabbing == GRAB_NONE) {
 				// Adding a new point. Insert a temporary point for the user to adjust, so it's not in the undo/redo.
 				Vector2 new_pos = get_world_pos(mpos).clamp(Vector2(0.0, curve->get_min_value()), Vector2(1.0, curve->get_max_value()));
-				if (snap_enabled || mb->is_ctrl_pressed()) {
+				if (snap_enabled || mb->is_command_or_control_pressed()) {
 					new_pos.x = Math::snapped(new_pos.x, 1.0 / snap_count);
 					new_pos.y = Math::snapped(new_pos.y - curve->get_min_value(), curve->get_range() / snap_count) + curve->get_min_value();
 				}
@@ -276,7 +276,7 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 					// Drag point.
 					Vector2 new_pos = get_world_pos(mpos).clamp(Vector2(0.0, curve->get_min_value()), Vector2(1.0, curve->get_max_value()));
 
-					if (snap_enabled || mm->is_ctrl_pressed()) {
+					if (snap_enabled || mm->is_command_or_control_pressed()) {
 						new_pos.x = Math::snapped(new_pos.x, 1.0 / snap_count);
 						new_pos.y = Math::snapped(new_pos.y - curve->get_min_value(), curve->get_range() / snap_count) + curve->get_min_value();
 					}
@@ -1041,7 +1041,7 @@ bool EditorInspectorPluginCurve::can_handle(Object *p_object) {
 
 void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
 	Curve *curve = Object::cast_to<Curve>(p_object);
-	ERR_FAIL_COND(!curve);
+	ERR_FAIL_NULL(curve);
 	Ref<Curve> c(curve);
 
 	CurveEditor *editor = memnew(CurveEditor);

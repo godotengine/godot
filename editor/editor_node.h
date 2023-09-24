@@ -295,7 +295,6 @@ private:
 	bool is_main_screen_editing = false;
 
 	PanelContainer *scene_root_parent = nullptr;
-	Control *theme_base = nullptr;
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
@@ -349,7 +348,6 @@ private:
 	PopupMenu *tool_menu = nullptr;
 	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
-	Button *prev_scene = nullptr;
 	Button *search_button = nullptr;
 	TextureProgressBar *audio_vu = nullptr;
 
@@ -525,6 +523,7 @@ private:
 	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
+	void _update_theme(bool p_skip_creation = false);
 	void _build_icon_type_cache();
 	void _enable_pending_addons();
 
@@ -851,6 +850,8 @@ public:
 	void stop_child_process(OS::ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
+	void update_preview_themes(int p_mode);
+
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
 	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
@@ -867,7 +868,6 @@ public:
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
 	Control *get_gui_base() { return gui_base; }
-	Control *get_theme_base() { return gui_base->get_parent_control(); }
 
 	void save_scene_to_path(String p_file, bool p_with_preview = true) {
 		if (p_with_preview) {

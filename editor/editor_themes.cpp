@@ -41,6 +41,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/style_box_texture.h"
+#include "scene/theme/theme_db.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
@@ -208,9 +209,108 @@ void EditorColorMap::create() {
 	add_conversion_exception("GuiSpace");
 	add_conversion_exception("CodeFoldedRightArrow");
 	add_conversion_exception("CodeFoldDownArrow");
+	add_conversion_exception("CodeRegionFoldedRightArrow");
+	add_conversion_exception("CodeRegionFoldDownArrow");
 	add_conversion_exception("TextEditorPlay");
 	add_conversion_exception("Breakpoint");
 }
+
+Vector<StringName> EditorTheme::editor_theme_types;
+
+// TODO: Refactor these and corresponding Theme methods to use the bool get_xxx(r_value) pattern internally.
+
+// Keep in sync with Theme::get_color.
+Color EditorTheme::get_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (color_map.has(p_theme_type) && color_map[p_theme_type].has(p_name)) {
+		return color_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme color '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return Color();
+	}
+}
+
+// Keep in sync with Theme::get_constant.
+int EditorTheme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (constant_map.has(p_theme_type) && constant_map[p_theme_type].has(p_name)) {
+		return constant_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme constant '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return 0;
+	}
+}
+
+// Keep in sync with Theme::get_font.
+Ref<Font> EditorTheme::get_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (font_map.has(p_theme_type) && font_map[p_theme_type].has(p_name) && font_map[p_theme_type][p_name].is_valid()) {
+		return font_map[p_theme_type][p_name];
+	} else if (has_default_font()) {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme font '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return default_font;
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme font '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return ThemeDB::get_singleton()->get_fallback_font();
+	}
+}
+
+// Keep in sync with Theme::get_font_size.
+int EditorTheme::get_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	if (font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0)) {
+		return font_size_map[p_theme_type][p_name];
+	} else if (has_default_font_size()) {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme font size '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return default_font_size;
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme font size '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return ThemeDB::get_singleton()->get_fallback_font_size();
+	}
+}
+
+// Keep in sync with Theme::get_icon.
+Ref<Texture2D> EditorTheme::get_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (icon_map.has(p_theme_type) && icon_map[p_theme_type].has(p_name) && icon_map[p_theme_type][p_name].is_valid()) {
+		return icon_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme icon '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return ThemeDB::get_singleton()->get_fallback_icon();
+	}
+}
+
+// Keep in sync with Theme::get_stylebox.
+Ref<StyleBox> EditorTheme::get_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (style_map.has(p_theme_type) && style_map[p_theme_type].has(p_name) && style_map[p_theme_type][p_name].is_valid()) {
+		return style_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme stylebox '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return ThemeDB::get_singleton()->get_fallback_stylebox();
+	}
+}
+
+EditorTheme::EditorTheme() {
+	if (editor_theme_types.is_empty()) {
+		editor_theme_types.append(EditorStringName(Editor));
+		editor_theme_types.append(EditorStringName(EditorFonts));
+		editor_theme_types.append(EditorStringName(EditorIcons));
+		editor_theme_types.append(EditorStringName(EditorStyles));
+	}
+}
+
+// Editor theme generatior.
 
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
@@ -428,7 +528,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 
 Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	OS::get_singleton()->benchmark_begin_measure("create_editor_theme");
-	Ref<Theme> theme = Ref<Theme>(memnew(Theme));
+	Ref<EditorTheme> theme = memnew(EditorTheme);
 
 	// Controls may rely on the scale for their internal drawing logic.
 	theme->set_default_base_scale(EDSCALE);
@@ -844,13 +944,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// even though it may not be immediately obvious at first.
 	Ref<StyleBoxFlat> toolbar_stylebox = memnew(StyleBoxFlat);
 	toolbar_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
-	toolbar_stylebox->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
-	toolbar_stylebox->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
 	toolbar_stylebox->set_anti_aliased(false);
 	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
 	toolbar_stylebox->set_border_color(accent_color);
 	toolbar_stylebox->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
 	toolbar_stylebox->set_content_margin(SIDE_BOTTOM, 0);
+	toolbar_stylebox->set_expand_margin_all(2 * EDSCALE);
 	theme->set_stylebox("ContextualToolbar", EditorStringName(EditorStyles), toolbar_stylebox);
 
 	// Script Editor
@@ -1830,8 +1929,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// GraphEdit
 	theme->set_stylebox("panel", "GraphEdit", style_tree_bg);
 	if (dark_theme) {
-		theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.15));
-		theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.07));
+		theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.1));
+		theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.05));
 	} else {
 		theme->set_color("grid_major", "GraphEdit", Color(0.0, 0.0, 0.0, 0.15));
 		theme->set_color("grid_minor", "GraphEdit", Color(0.0, 0.0, 0.0, 0.07));
@@ -1866,6 +1965,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		style_minimap_node = make_flat_stylebox(Color(0, 0, 0), 0, 0, 0, 0);
 	}
 	style_minimap_camera->set_border_width_all(1);
+	style_minimap_node->set_anti_aliased(false);
 	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
 	theme->set_stylebox("node", "GraphEditMinimap", style_minimap_node);
 
@@ -1879,38 +1979,43 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
 
 	// GraphNode
+
+	const int gn_margin_top = 2;
 	const int gn_margin_side = 2;
 	const int gn_margin_bottom = 2;
-
-	// StateMachine
-	const int sm_margin_side = 10;
 
 	Color graphnode_bg = dark_color_3;
 	if (!dark_theme) {
 		graphnode_bg = prop_section_color;
 	}
+	const Color graph_node_selected_border_color = graphnode_bg.lerp(accent_color, 0.275);
 
-	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(graphnode_bg.lerp(style_tree_bg->get_bg_color(), 0.3), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
-	graphsb->set_border_width_all(border_width);
-	graphsb->set_border_color(graphnode_bg);
-	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 1), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
-	graphsbselected->set_border_width_all(2 * EDSCALE + border_width);
-	graphsbselected->set_border_color(Color(accent_color.r, accent_color.g, accent_color.b, 0.6));
-	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.3), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
-	graphsbcomment->set_border_width_all(border_width);
-	graphsbcomment->set_border_color(graphnode_bg);
-	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.4), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, corner_width);
-	graphsbcommentselected->set_border_width_all(border_width);
-	graphsbcommentselected->set_border_color(graphnode_bg);
-	Ref<StyleBoxFlat> graphsbbreakpoint = graphsbselected->duplicate();
-	graphsbbreakpoint->set_draw_center(false);
-	graphsbbreakpoint->set_border_color(warning_color);
-	graphsbbreakpoint->set_shadow_color(warning_color * Color(1.0, 1.0, 1.0, 0.1));
-	Ref<StyleBoxFlat> graphsbposition = graphsbselected->duplicate();
-	graphsbposition->set_draw_center(false);
-	graphsbposition->set_border_color(error_color);
-	graphsbposition->set_shadow_color(error_color * Color(1.0, 1.0, 1.0, 0.2));
-	Ref<StyleBoxEmpty> graphsbslot = make_empty_stylebox(12, 0, 12, 0);
+	const Color graphnode_frame_bg = graphnode_bg.lerp(style_tree_bg->get_bg_color(), 0.3);
+
+	Ref<StyleBoxFlat> graphn_sb_panel = make_flat_stylebox(graphnode_frame_bg, gn_margin_side, gn_margin_top, gn_margin_side, gn_margin_bottom, corner_width);
+	graphn_sb_panel->set_border_width_all(border_width);
+	graphn_sb_panel->set_border_color(graphnode_bg);
+	graphn_sb_panel->set_corner_radius_individual(0, 0, corner_radius * EDSCALE, corner_radius * EDSCALE);
+	graphn_sb_panel->set_expand_margin(SIDE_TOP, 17 * EDSCALE);
+
+	Ref<StyleBoxFlat> graphn_sb_panel_selected = make_flat_stylebox(graphnode_frame_bg, gn_margin_side, gn_margin_top, gn_margin_side, gn_margin_bottom, corner_width);
+	graphn_sb_panel_selected->set_border_width_all(2 * EDSCALE + border_width);
+	graphn_sb_panel_selected->set_border_color(graph_node_selected_border_color);
+	graphn_sb_panel_selected->set_corner_radius_individual(0, 0, corner_radius * EDSCALE, corner_radius * EDSCALE);
+	graphn_sb_panel_selected->set_expand_margin(SIDE_TOP, 17 * EDSCALE);
+
+	const int gn_titlebar_margin_side = 12;
+	Ref<StyleBoxFlat> graphn_sb_titlebar = make_flat_stylebox(graphnode_bg, gn_titlebar_margin_side, gn_margin_top, gn_titlebar_margin_side, 0, corner_width);
+	graphn_sb_titlebar->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
+	graphn_sb_titlebar->set_corner_radius_individual(corner_radius * EDSCALE, corner_radius * EDSCALE, 0, 0);
+
+	Ref<StyleBoxFlat> graphn_sb_titlebar_selected = make_flat_stylebox(graph_node_selected_border_color, gn_titlebar_margin_side, gn_margin_top, gn_titlebar_margin_side, 0, corner_width);
+	graphn_sb_titlebar_selected->set_corner_radius_individual(corner_radius * EDSCALE, corner_radius * EDSCALE, 0, 0);
+	graphn_sb_titlebar_selected->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
+	Ref<StyleBoxEmpty> graphn_sb_slot = make_empty_stylebox(12, 0, 12, 0);
+
+	// StateMachine.
+	const int sm_margin_side = 10;
 	Ref<StyleBoxFlat> smgraphsb = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), sm_margin_side, 24, sm_margin_side, gn_margin_bottom, corner_width);
 	smgraphsb->set_border_width_all(border_width);
 	smgraphsb->set_border_color(graphnode_bg);
@@ -1920,45 +2025,42 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	smgraphsbselected->set_shadow_size(8 * EDSCALE);
 	smgraphsbselected->set_shadow_color(shadow_color);
 
-	graphsb->set_border_width(SIDE_TOP, 24 * EDSCALE);
-	graphsbselected->set_border_width(SIDE_TOP, 24 * EDSCALE);
-	graphsbcomment->set_border_width(SIDE_TOP, 24 * EDSCALE);
-	graphsbcommentselected->set_border_width(SIDE_TOP, 24 * EDSCALE);
+	theme->set_stylebox("panel", "GraphElement", graphn_sb_panel);
+	theme->set_stylebox("panel_selected", "GraphElement", graphn_sb_panel_selected);
+	theme->set_stylebox("titlebar", "GraphElement", graphn_sb_titlebar);
+	theme->set_stylebox("titlebar_selected", "GraphElement", graphn_sb_titlebar_selected);
 
-	graphsb->set_corner_detail(corner_radius * EDSCALE);
-	graphsbselected->set_corner_detail(corner_radius * EDSCALE);
-	graphsbcomment->set_corner_detail(corner_radius * EDSCALE);
-	graphsbcommentselected->set_corner_detail(corner_radius * EDSCALE);
+	// GraphNode's title Label.
+	theme->set_type_variation("GraphNodeTitleLabel", "Label");
 
-	theme->set_stylebox("frame", "GraphNode", graphsb);
-	theme->set_stylebox("selected_frame", "GraphNode", graphsbselected);
-	theme->set_stylebox("breakpoint", "GraphNode", graphsbbreakpoint);
-	theme->set_stylebox("position", "GraphNode", graphsbposition);
-	theme->set_stylebox("slot", "GraphNode", graphsbslot);
-	theme->set_stylebox("state_machine_frame", "GraphNode", smgraphsb);
-	theme->set_stylebox("state_machine_selected_frame", "GraphNode", smgraphsbselected);
+	theme->set_stylebox("normal", "GraphNodeTitleLabel", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_color("font_color", "GraphNodeTitleLabel", font_color);
+	theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * EDSCALE);
 
-	Color node_decoration_color = dark_color_1.inverted();
-	theme->set_color("title_color", "GraphNode", node_decoration_color);
-	node_decoration_color.a = 0.7;
-	theme->set_color("close_color", "GraphNode", node_decoration_color);
-	theme->set_color("resizer_color", "GraphNode", node_decoration_color);
+	Color graphnode_decoration_color = dark_color_1.inverted();
 
-	theme->set_constant("port_offset", "GraphNode", 0);
-	theme->set_constant("title_h_offset", "GraphNode", 12 * EDSCALE);
-	theme->set_constant("title_offset", "GraphNode", 21 * EDSCALE);
-	theme->set_constant("close_h_offset", "GraphNode", -2 * EDSCALE);
-	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
+	theme->set_color("resizer_color", "GraphElement", graphnode_decoration_color);
+	theme->set_icon("resizer", "GraphElement", theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons)));
+
+	// GraphNode.
+	theme->set_stylebox("panel", "GraphNode", graphn_sb_panel);
+	theme->set_stylebox("panel_selected", "GraphNode", graphn_sb_panel_selected);
+	theme->set_stylebox("titlebar", "GraphNode", graphn_sb_titlebar);
+	theme->set_stylebox("titlebar_selected", "GraphNode", graphn_sb_titlebar_selected);
+	theme->set_stylebox("slot", "GraphNode", graphn_sb_slot);
+
+	theme->set_color("resizer_color", "GraphNode", graphnode_decoration_color);
+
+	theme->set_constant("port_h_offset", "GraphNode", 0);
 	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
 
-	theme->set_icon("close", "GraphNode", theme->get_icon(SNAME("GuiCloseCustomizable"), EditorStringName(EditorIcons)));
-	theme->set_icon("resizer", "GraphNode", theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons)));
 	Ref<ImageTexture> port_icon = theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
 	// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
 	port_icon->set_size_override(Size2(12, 12));
 	theme->set_icon("port", "GraphNode", port_icon);
 
-	theme->set_font("title_font", "GraphNode", theme->get_font(SNAME("main_bold_msdf"), EditorStringName(EditorFonts)));
+	theme->set_stylebox("state_machine_frame", "GraphNode", smgraphsb);
+	theme->set_stylebox("state_machine_selected_frame", "GraphNode", smgraphsbselected);
 
 	// GridContainer
 	theme->set_constant("v_separation", "GridContainer", Math::round(widget_default_margin.y - 2 * EDSCALE));
@@ -2085,6 +2187,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color breakpoint_color = dark_theme ? error_color : Color(1, 0.27, 0.2, 1);
 	const Color executing_line_color = Color(0.98, 0.89, 0.27);
 	const Color code_folding_color = alpha3;
+	const Color folded_code_region_color = Color(0.68, 0.46, 0.77, 0.2);
 	const Color search_result_color = alpha1;
 	const Color search_result_border_color = dark_theme ? Color(0.41, 0.61, 0.91, 0.38) : Color(0, 0.4, 1, 0.38);
 
@@ -2125,6 +2228,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/theme/highlighting/breakpoint_color", breakpoint_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/executing_line_color", executing_line_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/code_folding_color", code_folding_color, true);
+		setting->set_initial_value("text_editor/theme/highlighting/folded_code_region_color", folded_code_region_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/search_result_color", search_result_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/search_result_border_color", search_result_border_color, true);
 	} else if (text_editor_color_theme == "Godot 2") {
@@ -2144,6 +2248,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("space", "CodeEdit", theme->get_icon(SNAME("GuiSpace"), EditorStringName(EditorIcons)));
 	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("CodeFoldedRightArrow"), EditorStringName(EditorIcons)));
 	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("CodeFoldDownArrow"), EditorStringName(EditorIcons)));
+	theme->set_icon("folded_code_region", "CodeEdit", theme->get_icon(SNAME("CodeRegionFoldedRightArrow"), EditorStringName(EditorIcons)));
+	theme->set_icon("can_fold_code_region", "CodeEdit", theme->get_icon(SNAME("CodeRegionFoldDownArrow"), EditorStringName(EditorIcons)));
 	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("TextEditorPlay"), EditorStringName(EditorIcons)));
 	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), EditorStringName(EditorIcons)));
 
@@ -2169,6 +2275,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("breakpoint_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/breakpoint_color"));
 	theme->set_color("executing_line_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/executing_line_color"));
 	theme->set_color("code_folding_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/code_folding_color"));
+	theme->set_color("folded_code_region_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/folded_code_region_color"));
 	theme->set_color("search_result_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/search_result_color"));
 	theme->set_color("search_result_border_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/search_result_border_color"));
 

@@ -17,6 +17,18 @@ Files extracted from upstream source:
 - `license.txt`
 
 
+## angle
+
+- Upstream: https://chromium.googlesource.com/angle/angle/
+- Version: git (chromium/5907, 430a4f559cbc2bcd5d026e8b36ee46ddd80e9651, 2023)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `include/*`
+- `LICENSE`
+
+
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder
@@ -243,7 +255,10 @@ Files extracted from upstream source:
 - `LICENSE`
 
 Files generated from [upstream web instance](https://gen.glad.sh/):
+- `EGL/eglplatform.h`
 - `KHR/khrplatform.h`
+- `egl.c`
+- `glad/egl.h`
 - `gl.c`
 - `glad/gl.h`
 - `glx.c`
@@ -251,6 +266,9 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 
 See the permalinks in `glad/gl.h` and `glad/glx.h` to regenrate the files with
 a new version of the web instance.
+
+Some changes have been made in order to allow loading OpenGL and OpenGLES APIs at the same time.
+See the patches in the `patches` directory.
 
 
 ## glslang
@@ -417,7 +435,7 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.3.1 (fd7bb21c0cb56e8a82e9bfa376164b842f433f3b, 2023)
+- Version: 1.3.2 (ca332209cb5567c9b249c86788cb2dbf8847e760, 2023)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -439,9 +457,8 @@ File extracted from upstream release tarball:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/` except `config_psa.h` and `psa_util.h`.
 - All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
 - The `LICENSE` file.
-- Applied the patch in `patches/1453.diff` to fix UWP build (upstream PR:
-  https://github.com/ARMmbed/mbedtls/pull/1453).
-  Applied the patch in `patches/windows-arm64-hardclock.diff`
+- Applied the patch in `patches/windows-arm64-hardclock.diff`.
+  Applied the patch in `aesni-no-arm-intrinsics.patch` to fix MSVC ARM build.
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 - Added the file `godot_module_mbedtls_config.h` to customize the build configuration when bundling the full library.

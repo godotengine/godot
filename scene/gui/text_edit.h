@@ -543,11 +543,6 @@ private:
 	struct ThemeCache {
 		float base_scale = 1.0;
 
-		/* Internal API for CodeEdit */
-		Color brace_mismatch_color;
-		Color code_folding_color = Color(1, 1, 1);
-		Ref<Texture2D> folded_eol_icon;
-
 		/* Search */
 		Color search_result_color = Color(1, 1, 1);
 		Color search_result_border_color = Color(1, 1, 1);
@@ -632,7 +627,7 @@ protected:
 	virtual void _update_theme_item_cache() override;
 
 	/* Internal API for CodeEdit, pending public API. */
-	// brace matching
+	// Brace matching.
 	struct BraceMatchingData {
 		int open_match_line = -1;
 		int open_match_column = -1;
@@ -660,6 +655,11 @@ protected:
 	// Symbol lookup.
 	String lookup_symbol_word;
 	void _set_symbol_lookup_word(const String &p_symbol);
+
+	// Theme items.
+	virtual Color _get_brace_mismatch_color() const { return Color(); };
+	virtual Color _get_code_folding_color() const { return Color(); };
+	virtual Ref<Texture2D> _get_folded_eol_icon() const { return Ref<Texture2D>(); };
 
 	/* Text manipulation */
 
@@ -1026,6 +1026,8 @@ public:
 
 	void set_draw_spaces(bool p_enabled);
 	bool is_drawing_spaces() const;
+
+	Color get_font_color() const;
 
 	TextEdit(const String &p_placeholder = String());
 };

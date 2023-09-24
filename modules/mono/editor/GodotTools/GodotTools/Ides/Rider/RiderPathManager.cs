@@ -5,10 +5,14 @@ using Godot;
 using GodotTools.Internals;
 using JetBrains.Rider.PathLocator;
 
+#nullable enable
+
 namespace GodotTools.Ides.Rider
 {
     public static class RiderPathManager
     {
+        private const string EditorPathSettingName = "dotnet/editor/editor_path_optional";
+
         private static readonly RiderPathLocator RiderPathLocator;
         private static readonly RiderFileOpener RiderFileOpener;
 
@@ -19,13 +23,14 @@ namespace GodotTools.Ides.Rider
             RiderFileOpener = new RiderFileOpener(riderLocatorEnvironment);
         }
 
-        public static readonly string EditorPathSettingName = "dotnet/editor/editor_path_optional";
-
-        private static string GetRiderPathFromSettings()
+        private static string? GetRiderPathFromSettings()
         {
             var editorSettings = EditorInterface.Singleton.GetEditorSettings();
             if (editorSettings.HasSetting(EditorPathSettingName))
+            {
                 return (string)editorSettings.GetSetting(EditorPathSettingName);
+            }
+
             return null;
         }
 
@@ -37,7 +42,7 @@ namespace GodotTools.Ides.Rider
             {
                 if (!editorSettings.HasSetting(EditorPathSettingName))
                 {
-                    Globals.EditorDef(EditorPathSettingName, "Optional");
+                    Globals.EditorDef(EditorPathSettingName, "");
                     editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
                     {
                         ["type"] = (int)Variant.Type.String,
@@ -55,9 +60,10 @@ namespace GodotTools.Ides.Rider
                 }
 
                 var paths = RiderPathLocator.GetAllRiderPaths();
-
-                if (!paths.Any())
+                if (paths.Length == 0)
+                {
                     return;
+                }
 
                 string newPath = paths.Last().Path;
                 Globals.EditorDef(EditorPathSettingName, newPath);
@@ -67,18 +73,16 @@ namespace GodotTools.Ides.Rider
 
         public static bool IsRider(string path)
         {
-            if (string.IsNullOrEmpty(path))
-                return false;
-
             if (path.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+            {
                 return false;
+            }
 
             var fileInfo = new FileInfo(path);
-            string filename = fileInfo.Name.ToLowerInvariant();
-            return filename.StartsWith("rider", StringComparison.Ordinal);
+            return fileInfo.Name.StartsWith("rider", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static string CheckAndUpdatePath(string riderPath)
+        private static string? CheckAndUpdatePath(string? riderPath)
         {
             if (File.Exists(riderPath))
             {
@@ -87,11 +91,14 @@ namespace GodotTools.Ides.Rider
 
             var allInfos = RiderPathLocator.GetAllRiderPaths();
             if (allInfos.Length == 0)
+            {
                 return null;
-            var riderInfos = allInfos.Where(info => IsRider(info.Path)).ToArray();
-            string newPath = riderInfos.Length > 0
-                ? riderInfos[riderInfos.Length - 1].Path
-                : allInfos[allInfos.Length - 1].Path;
+            }
+
+            // RiderPathLocator includes Rider and Fleet locations, prefer Rider when available.
+            var preferredInfo = allInfos.LastOrDefault(info => IsRider(info.Path), allInfos[allInfos.Length - 1]);
+            string newPath = preferredInfo.Path;
+
             var editorSettings = EditorInterface.Singleton.GetEditorSettings();
             editorSettings.SetSetting(EditorPathSettingName, newPath);
             Globals.EditorDef(EditorPathSettingName, newPath);
@@ -100,8 +107,14 @@ namespace GodotTools.Ides.Rider
 
         public static void OpenFile(string slnPath, string scriptPath, int line, int column)
         {
-            string pathFromSettings = GetRiderPathFromSettings();
-            string path = CheckAndUpdatePath(pathFromSettings);
+            string? pathFromSettings = GetRiderPathFromSettings();
+            string? path = CheckAndUpdatePath(pathFromSettings);
+            if (string.IsNullOrEmpty(path))
+            {
+                GD.PushError($"Error when trying to run code editor: JetBrains Rider or Fleet. Could not find path to the editor.");
+                return;
+            }
+
             RiderFileOpener.OpenFile(path, slnPath, scriptPath, line, column);
         }
     }

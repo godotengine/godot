@@ -155,8 +155,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
-	bool base_uniform_set_updated = false;
-	void _update_render_base_uniform_set();
+	void _update_render_base_uniform_set(const RendererRD::MaterialStorage::Samplers &p_samplers);
 	RID _setup_sdfgi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_geom_facing_texture);
 	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas = false, int p_index = 0);
 
@@ -633,10 +632,6 @@ public:
 	virtual void setup_added_decal(const Transform3D &p_transform, const Vector3 &p_half_size) override;
 
 	virtual void base_uniforms_changed() override;
-	_FORCE_INLINE_ virtual void update_uniform_sets() override {
-		base_uniform_set_updated = true;
-		_update_render_base_uniform_set();
-	}
 
 	/* SDFGI UPDATE */
 

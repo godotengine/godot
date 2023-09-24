@@ -29,14 +29,17 @@
 /**************************************************************************/
 
 #include "rasterizer_scene_gles3.h"
-#include "core/config/project_settings.h"
-#include "core/templates/sort_array.h"
-#include "servers/rendering/rendering_server_default.h"
-#include "servers/rendering/rendering_server_globals.h"
+
+#include "rasterizer_gles3.h"
 #include "storage/config.h"
 #include "storage/mesh_storage.h"
 #include "storage/particles_storage.h"
 #include "storage/texture_storage.h"
+
+#include "core/config/project_settings.h"
+#include "core/templates/sort_array.h"
+#include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #ifdef GLES3_ENABLED
 
@@ -95,7 +98,7 @@ void RasterizerSceneGLES3::GeometryInstanceGLES3::pair_light_instances(const RID
 
 void RasterizerSceneGLES3::geometry_instance_free(RenderGeometryInstance *p_geometry_instance) {
 	GeometryInstanceGLES3 *ginstance = static_cast<GeometryInstanceGLES3 *>(p_geometry_instance);
-	ERR_FAIL_COND(!ginstance);
+	ERR_FAIL_NULL(ginstance);
 	GeometryInstanceSurface *surf = ginstance->surface_caches;
 	while (surf) {
 		GeometryInstanceSurface *next = surf->next;
@@ -300,7 +303,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface(GeometryInstanceGLES3 
 		m_src = scene_globals.default_material;
 	}
 
-	ERR_FAIL_COND(!material_data);
+	ERR_FAIL_NULL(material_data);
 
 	_geometry_instance_add_surface_with_material_chain(ginstance, p_surface, material_data, m_src, p_mesh);
 
@@ -462,7 +465,7 @@ void RasterizerSceneGLES3::sky_initialize(RID p_rid) {
 
 void RasterizerSceneGLES3::sky_set_radiance_size(RID p_sky, int p_radiance_size) {
 	Sky *sky = sky_owner.get_or_null(p_sky);
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 	ERR_FAIL_COND_MSG(p_radiance_size < 32 || p_radiance_size > 2048, "Sky radiance size must be between 32 and 2048");
 
 	if (sky->radiance_size == p_radiance_size) {
@@ -477,7 +480,7 @@ void RasterizerSceneGLES3::sky_set_radiance_size(RID p_sky, int p_radiance_size)
 
 void RasterizerSceneGLES3::sky_set_mode(RID p_sky, RS::SkyMode p_mode) {
 	Sky *sky = sky_owner.get_or_null(p_sky);
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 
 	if (sky->mode == p_mode) {
 		return;
@@ -489,7 +492,7 @@ void RasterizerSceneGLES3::sky_set_mode(RID p_sky, RS::SkyMode p_mode) {
 
 void RasterizerSceneGLES3::sky_set_material(RID p_sky, RID p_material) {
 	Sky *sky = sky_owner.get_or_null(p_sky);
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 
 	if (sky->material == p_material) {
 		return;
@@ -501,7 +504,7 @@ void RasterizerSceneGLES3::sky_set_material(RID p_sky, RID p_material) {
 
 float RasterizerSceneGLES3::sky_get_baked_exposure(RID p_sky) const {
 	Sky *sky = sky_owner.get_or_null(p_sky);
-	ERR_FAIL_COND_V(!sky, 1.0);
+	ERR_FAIL_NULL_V(sky, 1.0);
 
 	return sky->baked_exposure;
 }
@@ -528,19 +531,24 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glGenTextures(1, &sky->radiance);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, sky->radiance);
 
-#ifdef GLES_OVER_GL
-			GLenum format = GL_RGBA;
-			GLenum type = GL_UNSIGNED_INT_2_10_10_10_REV;
-			//TODO, on low-end compare this to allocating each face of each mip individually
-			// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
-			for (int i = 0; i < 6; i++) {
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
-			}
+#ifdef GL_API_ENABLED
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				GLenum format = GL_RGBA;
+				GLenum type = GL_UNSIGNED_INT_2_10_10_10_REV;
+				//TODO, on low-end compare this to allocating each face of each mip individually
+				// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
+				for (int i = 0; i < 6; i++) {
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
+				}
 
-			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-#else
-			glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
-#endif
+				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			}
+#endif // GL_API_ENABLED
+#ifdef GLES_API_ENABLED
+			if (!RasterizerGLES3::is_gles_over_gl()) {
+				glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
+			}
+#endif // GLES_API_ENABLED
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -553,17 +561,24 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glGenTextures(1, &sky->raw_radiance);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, sky->raw_radiance);
 
-#ifdef GLES_OVER_GL
-			//TODO, on low-end compare this to allocating each face of each mip individually
-			// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
-			for (int i = 0; i < 6; i++) {
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
-			}
+#ifdef GL_API_ENABLED
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				GLenum format = GL_RGBA;
+				GLenum type = GL_UNSIGNED_INT_2_10_10_10_REV;
+				//TODO, on low-end compare this to allocating each face of each mip individually
+				// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
+				for (int i = 0; i < 6; i++) {
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
+				}
 
-			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-#else
-			glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
-#endif
+				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			}
+#endif // GL_API_ENABLED
+#ifdef GLES_API_ENABLED
+			if (!RasterizerGLES3::is_gles_over_gl()) {
+				glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
+			}
+#endif // GLES_API_ENABLED
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -615,11 +630,11 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 		material = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 	}
 
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	shader_data = material->shader_data;
 
-	ERR_FAIL_COND(!shader_data);
+	ERR_FAIL_NULL(shader_data);
 
 	if (sky) {
 		if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
@@ -757,7 +772,7 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	ERR_FAIL_COND(p_env.is_null());
 
 	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 
 	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
@@ -788,12 +803,12 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 	}
 
-	ERR_FAIL_COND(!material_data);
+	ERR_FAIL_NULL(material_data);
 	material_data->bind_uniforms();
 
 	GLES3::SkyShaderData *shader_data = material_data->shader_data;
 
-	ERR_FAIL_COND(!shader_data);
+	ERR_FAIL_NULL(shader_data);
 
 	// Camera
 	Projection camera;
@@ -836,7 +851,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	ERR_FAIL_COND(p_env.is_null());
 
 	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
-	ERR_FAIL_COND(!sky);
+	ERR_FAIL_NULL(sky);
 
 	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
@@ -844,7 +859,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	RS::EnvironmentBG background = environment_get_background(p_env);
 
 	if (sky) {
-		ERR_FAIL_COND(!sky);
+		ERR_FAIL_NULL(sky);
 		sky_material = sky->material;
 
 		if (sky_material.is_valid()) {
@@ -863,12 +878,12 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 	}
 
-	ERR_FAIL_COND(!material_data);
+	ERR_FAIL_NULL(material_data);
 	material_data->bind_uniforms();
 
 	GLES3::SkyShaderData *shader_data = material_data->shader_data;
 
-	ERR_FAIL_COND(!shader_data);
+	ERR_FAIL_NULL(shader_data);
 
 	bool update_single_frame = sky->mode == RS::SKY_MODE_REALTIME || sky->mode == RS::SKY_MODE_QUALITY;
 	RS::SkyMode sky_mode = sky->mode;
@@ -1731,7 +1746,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 
 	GLES3::RenderTarget *rt = texture_storage->get_render_target(rb->render_target);
-	ERR_FAIL_COND(!rt);
+	ERR_FAIL_NULL(rt);
 
 	// Assign render data
 	// Use the format from rendererRD
@@ -1944,7 +1959,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glDisable(GL_SCISSOR_TEST);
 
 		glColorMask(0, 0, 0, 0);
-		glClearDepth(1.0f);
+		RasterizerGLES3::clear_depth(1.0);
+
 		glClear(GL_DEPTH_BUFFER_BIT);
 		uint64_t spec_constant = SceneShaderGLES3::DISABLE_FOG | SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL |
 				SceneShaderGLES3::DISABLE_LIGHTMAP | SceneShaderGLES3::DISABLE_LIGHT_OMNI |
@@ -1979,7 +1995,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_ALWAYS;
 
 	if (!fb_cleared) {
-		glClearDepth(1.0f);
+		RasterizerGLES3::clear_depth(1.0);
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -2505,7 +2521,8 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 	scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 	glColorMask(0, 0, 0, 0);
-	glClearDepth(1.0f);
+	RasterizerGLES3::clear_depth(1.0);
+
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, 31, false);
@@ -2584,7 +2601,7 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 		environment_free(p_rid);
 	} else if (sky_owner.owns(p_rid)) {
 		Sky *sky = sky_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!sky, false);
+		ERR_FAIL_NULL_V(sky, false);
 		_free_sky_data(sky);
 		sky_owner.free(p_rid);
 	} else if (GLES3::LightStorage::get_singleton()->owns_light_instance(p_rid)) {
@@ -2666,7 +2683,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
 		global_defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(config->max_renderable_lights) + "\n";
 		global_defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
-		global_defines += "\n#define MAX_FORWARD_LIGHTS uint(" + itos(config->max_lights_per_object) + ")\n";
+		global_defines += "\n#define MAX_FORWARD_LIGHTS " + itos(config->max_lights_per_object) + "u\n";
 		material_storage->shaders.scene_shader.initialize(global_defines);
 		scene_globals.shader_default_version = material_storage->shaders.scene_shader.version_create();
 		material_storage->shaders.scene_shader.version_bind_shader(scene_globals.shader_default_version, SceneShaderGLES3::MODE_COLOR);
@@ -2778,9 +2795,11 @@ void sky() {
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
 
-#ifdef GLES_OVER_GL
-	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
-#endif
+#ifdef GL_API_ENABLED
+	if (RasterizerGLES3::is_gles_over_gl()) {
+		glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
+	}
+#endif // GL_API_ENABLED
 
 	// MultiMesh may read from color when color is disabled, so make sure that the color defaults to white instead of black;
 	glVertexAttrib4f(RS::ARRAY_COLOR, 1.0, 1.0, 1.0, 1.0);

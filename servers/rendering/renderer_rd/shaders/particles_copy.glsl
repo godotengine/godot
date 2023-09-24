@@ -182,7 +182,6 @@ void main() {
 			case TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY: {
 				vec3 v = particles.data[particle].velocity;
 				vec3 sv = v - params.sort_direction * dot(params.sort_direction, v); //screen velocity
-				float s = (length(txform[0]) + length(txform[1]) + length(txform[2])) / 3.0;
 
 				if (length(sv) == 0) {
 					sv = params.align_up;
@@ -190,9 +189,9 @@ void main() {
 
 				sv = normalize(sv);
 
-				txform[0].xyz = normalize(cross(sv, params.sort_direction)) * s;
-				txform[1].xyz = sv * s;
-				txform[2].xyz = params.sort_direction * s;
+				txform[0].xyz = normalize(cross(sv, params.sort_direction)) * length(txform[0]);
+				txform[1].xyz = sv * length(txform[1]);
+				txform[2].xyz = params.sort_direction * length(txform[2]);
 
 			} break;
 		}

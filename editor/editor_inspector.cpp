@@ -1897,7 +1897,7 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 
 void EditorInspectorArray::_clear_array() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Clear property array with prefix %s."), array_element_prefix));
+	undo_redo->create_action(vformat(TTR("Clear Property Array with Prefix %s"), array_element_prefix));
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 		for (int i = count - 1; i >= 0; i--) {
 			// Call the function.
@@ -1950,7 +1950,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Resize property array with prefix %s."), array_element_prefix));
+	undo_redo->create_action(vformat(TTR("Resize Property Array with Prefix %s"), array_element_prefix));
 	if (p_size > count) {
 		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 			for (int i = count; i < p_size; i++) {
@@ -2122,8 +2122,10 @@ void EditorInspectorArray::_setup() {
 		ae.panel->set_focus_mode(FOCUS_ALL);
 		ae.panel->set_mouse_filter(MOUSE_FILTER_PASS);
 		SET_DRAG_FORWARDING_GCD(ae.panel, EditorInspectorArray);
-		ae.panel->set_meta("index", begin_array_index + i);
-		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
+
+		int element_position = begin_array_index + i;
+		ae.panel->set_meta("index", element_position);
+		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), element_position, array_element_prefix, element_position));
 		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
 		ae.panel->connect("focus_exited", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
 		ae.panel->connect("draw", callable_mp(this, &EditorInspectorArray::_panel_draw).bind(i));
@@ -2149,7 +2151,6 @@ void EditorInspectorArray::_setup() {
 
 		// Move button.
 		if (movable) {
-			int element_position = begin_array_index + i;
 			VBoxContainer *move_vbox = memnew(VBoxContainer);
 			move_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 			move_vbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
@@ -2185,7 +2186,7 @@ void EditorInspectorArray::_setup() {
 			ae.number->set_custom_minimum_size(Size2(numbers_min_w, 0));
 			ae.number->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 			ae.number->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-			ae.number->set_text(itos(begin_array_index + i));
+			ae.number->set_text(itos(element_position));
 			ae.hbox->add_child(ae.number);
 		}
 
@@ -2198,7 +2199,7 @@ void EditorInspectorArray::_setup() {
 		ae.erase = memnew(Button);
 		ae.erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
 		ae.erase->set_v_size_flags(SIZE_SHRINK_CENTER);
-		ae.erase->connect("pressed", callable_mp(this, &EditorInspectorArray::_remove_item).bind(begin_array_index + i));
+		ae.erase->connect("pressed", callable_mp(this, &EditorInspectorArray::_remove_item).bind(element_position));
 		ae.hbox->add_child(ae.erase);
 	}
 
@@ -3855,7 +3856,8 @@ void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array
 		names += p_paths[i];
 	}
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set Multiple:") + " " + names, UndoRedo::MERGE_ENDS);
+	// TRANSLATORS: This is describing a change to multiple properties at once. The parameter is a list of property names.
+	undo_redo->create_action(vformat(TTR("Set Multiple: %s"), names), UndoRedo::MERGE_ENDS);
 	for (int i = 0; i < p_paths.size(); i++) {
 		_edit_set(p_paths[i], p_values[i], false, "");
 		if (restart_request_props.has(p_paths[i])) {
@@ -3953,7 +3955,7 @@ void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
 	}
 
 	Node *node = Object::cast_to<Node>(object);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(p_pinned ? TTR("Pinned %s") : TTR("Unpinned %s"), p_path));

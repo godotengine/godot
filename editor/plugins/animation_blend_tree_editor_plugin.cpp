@@ -106,7 +106,7 @@ void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_propert
 	}
 	updating = true;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Parameter Changed:") + " " + String(p_property), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(vformat(TTR("Parameter Changed: %s"), p_property), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_property(tree, p_property, p_value);
 	undo_redo->add_undo_property(tree, p_property, tree->get(p_property));
 	undo_redo->add_do_method(this, "update_graph");
@@ -169,8 +169,8 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
 			name->connect("text_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
-			node->set_show_close_button(true);
-			node->connect("close_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_request).bind(E), CONNECT_DEFERRED);
+			agnode->set_closable(true);
+			node->connect("close_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_close_request).bind(E), CONNECT_DEFERRED);
 		}
 
 		for (int i = 0; i < agnode->get_input_count(); i++) {
@@ -263,7 +263,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			mb->get_popup()->connect("index_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_anim_selected).bind(options, E), CONNECT_DEFERRED);
 		}
 
-		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SNAME("frame"), SNAME("GraphNode"));
+		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SNAME("panel"), SNAME("GraphNode"));
 		Color c = sb->get_border_color();
 		Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
 		mono_color.a = 0.85;
@@ -325,14 +325,14 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		base_name = anode->get_class();
 	} else if (!add_options[p_idx].type.is_empty()) {
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(add_options[p_idx].type));
-		ERR_FAIL_COND(!an);
+		ERR_FAIL_NULL(an);
 		anode = Ref<AnimationNode>(an);
 		base_name = add_options[p_idx].name;
 	} else {
 		ERR_FAIL_COND(add_options[p_idx].script.is_null());
 		StringName base_type = add_options[p_idx].script->get_instance_base_type();
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(base_type));
-		ERR_FAIL_COND(!an);
+		ERR_FAIL_NULL(an);
 		anode = Ref<AnimationNode>(an);
 		anode->set_script(add_options[p_idx].script);
 		base_name = add_options[p_idx].name;
@@ -498,7 +498,7 @@ void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, Array p_options, 
 	undo_redo->commit_action();
 }
 
-void AnimationNodeBlendTreeEditor::_delete_request(const String &p_which) {
+void AnimationNodeBlendTreeEditor::_close_request(const String &p_which) {
 	if (read_only) {
 		return;
 	}
@@ -522,7 +522,7 @@ void AnimationNodeBlendTreeEditor::_delete_request(const String &p_which) {
 	undo_redo->commit_action();
 }
 
-void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<StringName> &p_nodes) {
+void AnimationNodeBlendTreeEditor::_close_nodes_request(const TypedArray<StringName> &p_nodes) {
 	if (read_only) {
 		return;
 	}
@@ -532,15 +532,19 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 	if (p_nodes.is_empty()) {
 		for (int i = 0; i < graph->get_child_count(); i++) {
 			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-			if (gn) {
-				if (gn->is_selected() && gn->is_close_button_visible()) {
+			if (gn && gn->is_selected()) {
+				Ref<AnimationNode> anode = blend_tree->get_node(gn->get_name());
+				if (anode->is_closable()) {
 					to_erase.push_back(gn->get_name());
 				}
 			}
 		}
 	} else {
 		for (int i = 0; i < p_nodes.size(); i++) {
-			to_erase.push_back(p_nodes[i]);
+			Ref<AnimationNode> anode = blend_tree->get_node(p_nodes[i]);
+			if (anode->is_closable()) {
+				to_erase.push_back(p_nodes[i]);
+			}
 		}
 	}
 
@@ -552,7 +556,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 	undo_redo->create_action(TTR("Delete Node(s)"));
 
 	for (const StringName &F : to_erase) {
-		_delete_request(F);
+		_close_request(F);
 	}
 
 	undo_redo->commit_action();
@@ -564,7 +568,7 @@ void AnimationNodeBlendTreeEditor::_node_selected(Object *p_node) {
 	}
 
 	GraphNode *gn = Object::cast_to<GraphNode>(p_node);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	String name = gn->get_name();
 
@@ -594,7 +598,7 @@ void AnimationNodeBlendTreeEditor::_filter_toggled() {
 
 void AnimationNodeBlendTreeEditor::_filter_edited() {
 	TreeItem *edited = filters->get_edited();
-	ERR_FAIL_COND(!edited);
+	ERR_FAIL_NULL(edited);
 
 	NodePath edited_path = edited->get_metadata(0);
 	bool filtered = edited->is_checked(0);
@@ -962,7 +966,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	String prev_name = blend_tree->get_node_name(p_node);
 	ERR_FAIL_COND(prev_name.is_empty());
 	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(prev_name));
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	const String &new_name = p_text;
 
@@ -1083,7 +1087,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->connect("disconnection_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_disconnection_request), CONNECT_DEFERRED);
 	graph->connect("node_selected", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_selected));
 	graph->connect("scroll_offset_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_scroll_changed));
-	graph->connect("delete_nodes_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_nodes_request));
+	graph->connect("close_nodes_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_close_nodes_request));
 	graph->connect("popup_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_popup_request));
 	graph->connect("connection_to_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_to_empty));
 	graph->connect("connection_from_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_from_empty));

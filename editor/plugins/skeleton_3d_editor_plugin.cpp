@@ -712,12 +712,12 @@ void Skeleton3DEditor::create_editors() {
 	add_child(file_dialog);
 
 	// Create Top Menu Bar.
-	separator = memnew(VSeparator);
-	ne->add_control_to_menu_panel(separator);
+	HBoxContainer *topmenu_bar = memnew(HBoxContainer);
+	ne->add_control_to_menu_panel(topmenu_bar);
 
 	// Create Skeleton Option in Top Menu Bar.
 	skeleton_options = memnew(MenuButton);
-	ne->add_control_to_menu_panel(skeleton_options);
+	topmenu_bar->add_child(skeleton_options);
 
 	skeleton_options->set_text(TTR("Skeleton3D"));
 
@@ -737,7 +737,7 @@ void Skeleton3DEditor::create_editors() {
 	button_binds.resize(1);
 
 	edit_mode_button = memnew(Button);
-	ne->add_control_to_menu_panel(edit_mode_button);
+	topmenu_bar->add_child(edit_mode_button);
 	edit_mode_button->set_flat(true);
 	edit_mode_button->set_toggle_mode(true);
 	edit_mode_button->set_focus_mode(FOCUS_NONE);
@@ -753,7 +753,7 @@ void Skeleton3DEditor::create_editors() {
 
 	// Keying buttons.
 	animation_hb = memnew(HBoxContainer);
-	ne->add_control_to_menu_panel(animation_hb);
+	topmenu_bar->add_child(animation_hb);
 	animation_hb->add_child(memnew(VSeparator));
 	animation_hb->hide();
 
@@ -936,7 +936,7 @@ void fragment() {
 }
 )");
 	handle_material->set_shader(handle_shader);
-	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon(SNAME("EditorBoneHandle"));
+	Ref<Texture2D> handle = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorBoneHandle"), EditorStringName(EditorIcons));
 	handle_material->set_shader_parameter("point_size", handle->get_width());
 	handle_material->set_shader_parameter("texture_albedo", handle);
 
@@ -1122,7 +1122,7 @@ bool EditorInspectorPluginSkeleton::can_handle(Object *p_object) {
 
 void EditorInspectorPluginSkeleton::parse_begin(Object *p_object) {
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_object);
-	ERR_FAIL_COND(!skeleton);
+	ERR_FAIL_NULL(skeleton);
 
 	skel_editor = memnew(Skeleton3DEditor(this, skeleton));
 	add_custom_control(skel_editor);
@@ -1244,7 +1244,7 @@ int Skeleton3DGizmoPlugin::get_priority() const {
 
 int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const {
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
-	ERR_FAIL_COND_V(!skeleton, -1);
+	ERR_FAIL_NULL_V(skeleton, -1);
 
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 
@@ -1285,14 +1285,14 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 
 Transform3D Skeleton3DGizmoPlugin::get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const {
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
-	ERR_FAIL_COND_V(!skeleton, Transform3D());
+	ERR_FAIL_NULL_V(skeleton, Transform3D());
 
 	return skeleton->get_bone_global_pose(p_id);
 }
 
 void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) {
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
-	ERR_FAIL_COND(!skeleton);
+	ERR_FAIL_NULL(skeleton);
 
 	// Prepare for global to local.
 	Transform3D original_to_local;
@@ -1321,7 +1321,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 
 void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) {
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
-	ERR_FAIL_COND(!skeleton);
+	ERR_FAIL_NULL(skeleton);
 
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 	Node3DEditor *ne = Node3DEditor::get_singleton();

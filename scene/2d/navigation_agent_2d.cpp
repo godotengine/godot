@@ -560,7 +560,7 @@ Vector2 NavigationAgent2D::get_next_path_position() {
 
 	const Vector<Vector2> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
-		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector2(), "The agent has no parent.");
+		ERR_FAIL_NULL_V_MSG(agent_parent, Vector2(), "The agent has no parent.");
 		return agent_parent->get_global_position();
 	} else {
 		return navigation_path[navigation_path_index];
@@ -568,7 +568,7 @@ Vector2 NavigationAgent2D::get_next_path_position() {
 }
 
 real_t NavigationAgent2D::distance_to_target() const {
-	ERR_FAIL_COND_V_MSG(agent_parent == nullptr, 0.0, "The agent has no parent.");
+	ERR_FAIL_NULL_V_MSG(agent_parent, 0.0, "The agent has no parent.");
 	return agent_parent->get_global_position().distance_to(target_position);
 }
 

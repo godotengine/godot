@@ -111,11 +111,11 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -2013,7 +2013,7 @@ bool EditorInspectorPluginAnimationTrackKeyEdit::can_handle(Object *p_object) {
 
 void EditorInspectorPluginAnimationTrackKeyEdit::parse_begin(Object *p_object) {
 	AnimationTrackKeyEdit *atk = Object::cast_to<AnimationTrackKeyEdit>(p_object);
-	ERR_FAIL_COND(!atk);
+	ERR_FAIL_NULL(atk);
 
 	atk_editor = memnew(AnimationTrackKeyEditEditor(atk->animation, atk->track, atk->key_ofs, atk->use_fps));
 	add_custom_control(atk_editor);

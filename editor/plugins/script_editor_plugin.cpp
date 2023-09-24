@@ -1612,6 +1612,8 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
+			tab_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
+
 			help_search->set_icon(get_editor_theme_icon(SNAME("HelpSearch")));
 			site_search->set_icon(get_editor_theme_icon(SNAME("ExternalLink")));
 
@@ -1628,7 +1630,7 @@ void ScriptEditor::_notification(int p_what) {
 			filter_scripts->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			filter_methods->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			filename->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 
 			recent_scripts->reset_size();
 
@@ -1639,6 +1641,9 @@ void ScriptEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			// Can't set own styles in NOTIFICATION_THEME_CHANGED, so for now this will do.
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+
 			get_tree()->connect("tree_changed", callable_mp(this, &ScriptEditor::_tree_changed));
 			InspectorDock::get_singleton()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
 			EditorNode::get_singleton()->connect("request_help_search", callable_mp(this, &ScriptEditor::_help_search));
@@ -2371,7 +2376,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			break;
 		}
 	}
-	ERR_FAIL_COND_V(!se, false);
+	ERR_FAIL_NULL_V(se, false);
 
 	se->set_edited_resource(p_resource);
 
@@ -2690,7 +2695,7 @@ void ScriptEditor::_editor_stop() {
 }
 
 void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
-	ERR_FAIL_COND(!p_obj);
+	ERR_FAIL_NULL(p_obj);
 	Ref<Script> scr = p_obj->get_script();
 	ERR_FAIL_COND(!scr.is_valid());
 
@@ -3871,7 +3876,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	filename = memnew(Label);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("normal"), SNAME("LineEdit")));
 	buttons_hbox->add_child(filename);
 
 	members_overview_alphabeta_sort_button = memnew(Button);
@@ -4138,9 +4143,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
 
 	ScriptServer::edit_request_func = _open_script_request;
-
-	add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
-	tab_container->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
 
 	Ref<EditorJSONSyntaxHighlighter> json_syntax_highlighter;
 	json_syntax_highlighter.instantiate();

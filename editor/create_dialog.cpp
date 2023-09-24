@@ -136,6 +136,10 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true; // Wrong inheritance.
 		}
 
+		if (!ClassDB::is_class_exposed(p_type)) {
+			return true; // Unexposed types.
+		}
+
 		for (const StringName &E : type_blacklist) {
 			if (ClassDB::is_parent_class(p_type, E)) {
 				return true; // Parent type is blacklisted.
@@ -450,16 +454,10 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
-void CreateDialog::_update_theme() {
-	search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
-	favorite->set_icon(search_options->get_editor_theme_icon(SNAME("Favorites")));
-}
-
 void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
-			_update_theme();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -481,7 +479,8 @@ void CreateDialog::_notification(int p_what) {
 			favorites->add_theme_constant_override("icon_max_width", icon_width);
 			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
 
-			_update_theme();
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			favorite->set_icon(get_editor_theme_icon(SNAME("Favorites")));
 		} break;
 	}
 }

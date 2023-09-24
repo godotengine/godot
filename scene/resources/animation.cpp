@@ -2782,7 +2782,7 @@ void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double
 			p_indices->push_back(i);
 		}
 	} else {
-		for (int i = to; i >= to; i--) {
+		for (int i = to; i >= from; i--) {
 			p_indices->push_back(i);
 		}
 	}
@@ -4484,7 +4484,7 @@ struct AnimationCompressionDataState {
 
 	void commit_temp_packets() {
 		if (temp_packets.size() == 0) {
-			return; //nohing to do
+			return; // Nothing to do.
 		}
 //#define DEBUG_PACKET_PUSH
 #ifdef DEBUG_PACKET_PUSH

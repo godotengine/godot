@@ -1277,9 +1277,10 @@ void fragment_shader(in SceneData scene_data) {
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
 		uint ofs = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint slice = instances.data[instance_index].gi_offset >> 16;
 		vec3 uvw;
 		uvw.xy = uv2 * instances.data[instance_index].lightmap_uv_scale.zw + instances.data[instance_index].lightmap_uv_scale.xy;
-		uvw.z = float((instances.data[instance_index].gi_offset >> 16) & 0xFFFF);
+		uvw.z = float(slice);
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
@@ -1288,9 +1289,8 @@ void fragment_shader(in SceneData scene_data) {
 			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
 			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
 
-			uint idx = instances.data[instance_index].gi_offset >> 20;
-			vec3 n = normalize(lightmaps.data[idx].normal_xform * normal);
-			float en = lightmaps.data[idx].exposure_normalization;
+			vec3 n = normalize(lightmaps.data[ofs].normal_xform * normal);
+			float en = lightmaps.data[ofs].exposure_normalization;
 
 			ambient_light += lm_light_l0 * 0.282095f * en;
 			ambient_light += lm_light_l1n1 * 0.32573 * n.y * en;
@@ -1304,8 +1304,7 @@ void fragment_shader(in SceneData scene_data) {
 			}
 
 		} else {
-			uint idx = instances.data[instance_index].gi_offset >> 20;
-			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[idx].exposure_normalization;
+			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
 		}
 	}
 #else

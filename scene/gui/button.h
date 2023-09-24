@@ -100,8 +100,8 @@ private:
 
 protected:
 	void _set_internal_margin(Side p_side, float p_value);
-	virtual void _update_theme_item_cache() override;
 	virtual void _queue_update_size_cache();
+
 	void _notification(int p_what);
 	static void _bind_methods();
 

@@ -295,7 +295,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 
 		bool valid = false;
 		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-		ERR_FAIL_COND_V(!tile_data, false);
+		ERR_FAIL_NULL_V(tile_data, false);
 		tile_data->set(p_name, p_value, &valid);
 
 		any_valid |= valid;
@@ -383,7 +383,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		const int &alternative = E.alternative;
 
 		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-		ERR_FAIL_COND_V(!tile_data, false);
+		ERR_FAIL_NULL_V(tile_data, false);
 
 		bool valid = false;
 		r_ret = tile_data->get(p_name, &valid);
@@ -461,7 +461,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 		const int &alternative = E.alternative;
 
 		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-		ERR_FAIL_COND(!tile_data);
+		ERR_FAIL_NULL(tile_data);
 
 		List<PropertyInfo> list;
 		tile_data->get_property_list(&list);
@@ -1202,7 +1202,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
 						if (tools_settings_erase_button->is_pressed()) {
 							// Erasing
-							if (mb->is_ctrl_pressed() || mb->is_shift_pressed()) {
+							if (mb->is_command_or_control_pressed() || mb->is_shift_pressed()) {
 								// Remove tiles using rect.
 
 								// Setup the dragging info.
@@ -1241,7 +1241,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 									// Create a tile.
 									tile_set_atlas_source->create_tile(coords);
 								}
-							} else if (mb->is_ctrl_pressed()) {
+							} else if (mb->is_command_or_control_pressed()) {
 								// Create tiles using rect.
 								drag_type = DRAG_TYPE_CREATE_TILES_USING_RECT;
 								drag_start_mouse_pos = mouse_local_pos;
@@ -2157,7 +2157,7 @@ Vector2i TileSetAtlasSourceEditor::_get_drag_offset_tile_coords(const Vector2i &
 
 void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
-	ERR_FAIL_COND(!p_tile_set_atlas_source);
+	ERR_FAIL_NULL(p_tile_set_atlas_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
 
@@ -2406,7 +2406,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tool_setup_atlas_source_button->set_icon(get_editor_theme_icon(SNAME("Tools")));
 			tool_select_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-			tool_paint_button->set_icon(get_editor_theme_icon(SNAME("CanvasItem")));
+			tool_paint_button->set_icon(get_editor_theme_icon(SNAME("Paint")));
 
 			tools_settings_erase_button->set_icon(get_editor_theme_icon(SNAME("Eraser")));
 			tool_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
@@ -2771,7 +2771,7 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 
 void EditorPropertyTilePolygon::update_property() {
 	TileSetAtlasSourceEditor::AtlasTileProxyObject *atlas_tile_proxy_object = Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(get_edited_object());
-	ERR_FAIL_COND(!atlas_tile_proxy_object);
+	ERR_FAIL_NULL(atlas_tile_proxy_object);
 	ERR_FAIL_COND(atlas_tile_proxy_object->get_edited_tiles().is_empty());
 
 	Ref<TileSetAtlasSource> tile_set_atlas_source = atlas_tile_proxy_object->get_edited_tile_set_atlas_source();

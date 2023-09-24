@@ -48,6 +48,8 @@
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tree.h"
 
+class TileMapEditor;
+
 class TileMapSubEditorPlugin : public Object {
 public:
 	struct TabData {
@@ -67,6 +69,14 @@ public:
 
 class TileMapEditorTilesPlugin : public TileMapSubEditorPlugin {
 	GDCLASS(TileMapEditorTilesPlugin, TileMapSubEditorPlugin);
+
+public:
+	enum {
+		TRANSFORM_ROTATE_LEFT,
+		TRANSFORM_ROTATE_RIGHT,
+		TRANSFORM_FLIP_H,
+		TRANSFORM_FLIP_V,
+	};
 
 private:
 	ObjectID tile_map_id;
@@ -89,6 +99,12 @@ private:
 	Button *picker_button = nullptr;
 	Button *erase_button = nullptr;
 
+	HBoxContainer *transform_toolbar = nullptr;
+	Button *transform_button_rotate_left = nullptr;
+	Button *transform_button_rotate_right = nullptr;
+	Button *transform_button_flip_h = nullptr;
+	Button *transform_button_flip_v = nullptr;
+
 	VSeparator *tools_settings_vsep_2 = nullptr;
 	CheckBox *bucket_contiguous_checkbox = nullptr;
 	Button *random_tile_toggle = nullptr;
@@ -101,6 +117,8 @@ private:
 	void _on_scattering_spinbox_changed(double p_value);
 
 	void _update_toolbar();
+	void _update_transform_buttons();
+	void _set_transform_buttons_state(const Vector<Button *> &p_enabled_buttons, const Vector<Button *> &p_disabled_buttons, const String &p_why_disabled);
 
 	///// Tilemap editing. /////
 	bool has_mouse = false;
@@ -128,6 +146,9 @@ private:
 	HashMap<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
 	HashMap<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
 	void _stop_dragging();
+
+	void _apply_transform(int p_type);
+	int _get_transformed_alternative(int p_alternative_id, int p_transform);
 
 	///// Selection system. /////
 	RBSet<Vector2i> tile_map_selection;

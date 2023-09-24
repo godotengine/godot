@@ -35,7 +35,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-08 18:02+0000\n"
+"PO-Revision-Date: 2023-09-02 10:51+0000\n"
 "Last-Translator: Henrik Nilsson <nsmoooose@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
@@ -44,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Unset"
 msgstr "Nollställ"
@@ -141,6 +141,9 @@ msgstr "Tillbaka, Sony Select, XBox Back, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Guide, Sony PS, Xbox Home"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Start, Xbox meny, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Vänster Spak, Sony L3, XBox L/LS"
@@ -1116,6 +1119,9 @@ msgstr "Radnummer:"
 
 msgid "%d replaced."
 msgstr "%d ersatt."
+
+msgid "No match"
+msgstr "Ingen träff"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -2267,6 +2273,13 @@ msgstr ""
 msgid "Error codes returned:"
 msgstr "Returnerade felkoder:"
 
+msgid ""
+"There is currently no description for this %s. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Det finns för närvarande ingen beskrivning för denna %s. Snälla hjälp oss "
+"genom att [color=$color][url=$url]bidra med en[/url][/color]!"
+
 msgid "Top"
 msgstr "Topp"
 
@@ -3182,6 +3195,9 @@ msgstr "Redigera Text:"
 msgid "On"
 msgstr "På"
 
+msgid "Renaming layer %d:"
+msgstr "Byter namn på lager %d:"
+
 msgid "No name provided."
 msgstr "Inget namn har angetts."
 
@@ -3190,6 +3206,9 @@ msgstr "Namnet innehåller ogiltiga tecken."
 
 msgid "Rename"
 msgstr "Byt namn"
+
+msgid "Layer %d"
+msgstr "Lager %d"
 
 msgid "Assign..."
 msgstr "Tilldela..."
@@ -3257,6 +3276,9 @@ msgstr "Kunde inte öppna filen för läsning från sökväg \"%s\"."
 msgid "Packing"
 msgstr "Packar"
 
+msgid "Cannot create file \"%s\"."
+msgstr "Kunde inte skapa fil \"%s\"."
+
 msgid "Failed to export project files."
 msgstr "Misslyckades att exportera projektets filer."
 
@@ -3289,6 +3311,9 @@ msgstr "PCK Inbäddning"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Den inbäddade PCK får inte vara större än 4 GiB på 32 bitars exporter."
+
+msgid "There are no mirrors available."
+msgstr "Det finns inga tillgängliga speglar."
 
 msgid "Connecting to the mirror..."
 msgstr "Ansluter till spegeln..."
@@ -3401,6 +3426,9 @@ msgstr "Körbar"
 msgid "(Inherited)"
 msgstr "(Ärvd)"
 
+msgid "%s Export"
+msgstr "%s Exportera"
+
 msgid "Release"
 msgstr "Släpp"
 
@@ -3455,6 +3483,9 @@ msgstr "Misslyckades att spara resurs till %s: %s"
 msgid "Failed to load resource at %s: %s"
 msgstr "Misslyckades att ladda resurs från %s: %s"
 
+msgid "Unable to update dependencies:"
+msgstr "Kunde inte uppdatera beroenden:"
+
 msgid "A file or folder with this name already exists."
 msgstr "En fil eller mapp med detta namn finns redan."
 
@@ -3463,6 +3494,9 @@ msgstr "Duplicerar fil:"
 
 msgid "New Inherited Scene"
 msgstr "Ny Ärvd Scen"
+
+msgid "Create New"
+msgstr "Skapa ny"
 
 msgid "Add to Favorites"
 msgstr "Lägg till i Favoriter"
@@ -3500,6 +3534,9 @@ msgstr "Skriv över"
 
 msgid "Create Script"
 msgstr "Skapa Skript"
+
+msgid "Find in Files"
+msgstr "Sök i filer"
 
 msgid "Find:"
 msgstr "Hitta:"
@@ -3744,6 +3781,9 @@ msgstr "2D"
 msgid "<Unnamed Material>"
 msgstr "<Onamnat material>"
 
+msgid "Import ID: %s"
+msgstr "Importera ID: %s"
+
 msgid "Error opening scene"
 msgstr "Fel vid öppning av scen"
 
@@ -3857,8 +3897,14 @@ msgstr "Kopiera Resurs"
 msgid "Open documentation for this object."
 msgstr "Öppna dokumentationen för detta objektet."
 
+msgid "Add %d Translations"
+msgstr "Lägg till %d översättningar"
+
 msgid "Remove Translation"
 msgstr "Ta bort Översättning"
+
+msgid "%s cannot be found."
+msgstr "%s kan ej hittas."
 
 msgid "Translations"
 msgstr "Översättningar"
@@ -3871,6 +3917,9 @@ msgstr "Resurser:"
 
 msgid "Set %s on %d nodes"
 msgstr "Sätt %s på %d noder"
+
+msgid "%s (%d Selected)"
+msgstr "%s (%d valda)"
 
 msgid "Update"
 msgstr "Uppdatera"
@@ -3944,14 +3993,26 @@ msgstr "Lägg Till Node..."
 msgid "Animation name can't be empty."
 msgstr "Animationsnamnet kan inte vara tomt."
 
+msgid "Animation with the same name already exists."
+msgstr "En animation med samma namn existerar redan."
+
 msgid "Load Animation"
 msgstr "Ladda Animation"
+
+msgid "Make Animation Unique: %s"
+msgstr "Gör animation unik: %s"
 
 msgid "Invalid AnimationLibrary file."
 msgstr "Ogiltig AnimationLibrary-fil."
 
 msgid "Invalid Animation file."
 msgstr "Ogiltig animationsfil."
+
+msgid "Save Animation to File: %s"
+msgstr "Spara animation till fil: %s"
+
+msgid "Rename Animation: %s"
+msgstr "Byt namn på animation: %s"
 
 msgid "Pasted Animation"
 msgstr "Inklistrad Animation"
@@ -3980,8 +4041,14 @@ msgstr "Byt namn på Animation"
 msgid "Change Animation Name:"
 msgstr "Ändra Animationsnamn:"
 
+msgid "Delete Animation '%s'?"
+msgstr "Ta bort animation '%s'?"
+
 msgid "Remove Animation"
 msgstr "Ta bort Animation"
+
+msgid "Animation '%s' already exists!"
+msgstr "Animation '%s' finns redan!"
 
 msgid "Duplicate Animation"
 msgstr "Duplicera Animation"
@@ -4360,8 +4427,23 @@ msgid_plural "Run %d Instances"
 msgstr[0] "Kör %d instans"
 msgstr[1] "Kör %d instanser"
 
+msgid "Size: %s"
+msgstr "Storlek: %s"
+
+msgid "Type: %s"
+msgstr "Typ: %s"
+
+msgid "Add Feature"
+msgstr "Lägg till funktion"
+
 msgid " - Variation"
 msgstr " - Variation"
+
+msgid "Change Box Shape Size"
+msgstr "Ändra boxformsstorlek"
+
+msgid "Change Probe Size"
+msgstr "Ändra sondstorlek"
 
 msgid "Volume"
 msgstr "Volym"
@@ -4487,6 +4569,9 @@ msgstr "Z-Axel Transformering."
 msgid "Objects: %d\n"
 msgstr "Objekt: %d\n"
 
+msgid "FPS: %d"
+msgstr "FPS: %d"
+
 msgid "Top View."
 msgstr "Vy Ovanifrån."
 
@@ -4507,6 +4592,9 @@ msgstr "Vy Bakifrån."
 
 msgid "Rotating %s degrees."
 msgstr "Roterar %s grader."
+
+msgid "Scene Luminance"
+msgstr "Scen luminans"
 
 msgid "Display Advanced..."
 msgstr "Visa avancerad..."
@@ -4576,6 +4664,12 @@ msgstr "Inställningar..."
 
 msgid "Viewport Settings"
 msgstr "Vyinställningar"
+
+msgid "Sun Color"
+msgstr "Solens färg"
+
+msgid "Sky Color"
+msgstr "Himmelns färg"
 
 msgid "Ctrl: Rotate"
 msgstr "Ctrl: Rotera"
@@ -4699,6 +4793,9 @@ msgstr "Konvertera gemener/versaler"
 msgid "Delete Line"
 msgstr "Ta bort rad"
 
+msgid "Convert Indent to Tabs"
+msgstr "Konvertera indentering till tabbar"
+
 msgid "Auto Indent"
 msgstr "Automatisk Indentering"
 
@@ -4710,6 +4807,21 @@ msgstr "Gå till Rad..."
 
 msgid "Save File As"
 msgstr "Spara fil som"
+
+msgid "ShaderFile"
+msgstr "Shaderfil"
+
+msgid "Create MeshInstance2D"
+msgstr "Skapa MeshInstance2D"
+
+msgid "Convert to MeshInstance2D"
+msgstr "Konvertera till MeshInstance2D"
+
+msgid "Convert to Polygon2D"
+msgstr "Konvertera till Polygon2D"
+
+msgid "Simplification:"
+msgstr "Simplifiering:"
 
 msgid "Settings:"
 msgstr "Inställningar:"
@@ -4731,6 +4843,12 @@ msgstr "Ta bort animation"
 
 msgid "Size"
 msgstr "Storlek"
+
+msgid "Separation"
+msgstr "Separation"
+
+msgid "Memory: %s"
+msgstr "Minne: %s"
 
 msgid "1 color"
 msgid_plural "{num} colors"
@@ -4808,6 +4926,9 @@ msgstr "Välj en annan temaresurs:"
 msgid "Type name is empty!"
 msgstr "Typnamn är tomt!"
 
+msgid "Set Base Type"
+msgstr "Sätt bastyp"
+
 msgid "Override All"
 msgstr "Åsidosätt Alla"
 
@@ -4816,6 +4937,12 @@ msgstr "Tema:"
 
 msgid "Select UI Scene:"
 msgstr "Välj UI-scen:"
+
+msgid "Painting:"
+msgstr "Målning:"
+
+msgid "Index: %d"
+msgstr "Index: %d"
 
 msgid "Shift+Ctrl: Draw rectangle."
 msgstr "Skift+Ctrl: Rita rektangel."
@@ -4837,6 +4964,12 @@ msgstr "Teränger"
 
 msgid "No Layers"
 msgstr "Inga lager"
+
+msgid "Physics Layer %d"
+msgstr "Fysiklager %d"
+
+msgid "Paint Properties:"
+msgstr "Målningsegenskaper:"
 
 msgid "Yes"
 msgstr "Ja"
@@ -4915,6 +5048,9 @@ msgstr "Lägg till Utgångsport"
 
 msgid "Node(s) Moved"
 msgstr "Nod(er) Flyttade"
+
+msgid "Set Constant: %s"
+msgstr "Sätt konstant: %s"
 
 msgid "Add Node"
 msgstr "Lägg Till Node"
@@ -5012,6 +5148,9 @@ msgstr "Nytt Spelprojekt"
 msgid "It would be a good idea to name your project."
 msgstr "Det vore en bra idé att namnge ditt projekt."
 
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Kunde inte spara projekt vid '%s' (error %d)."
+
 msgid "Error opening package file, not in ZIP format."
 msgstr "Fel vid öppning av paketfil, är inte ZIP-format."
 
@@ -5080,6 +5219,9 @@ msgstr "Ta bort Alla"
 
 msgid "Can't run project"
 msgstr "Kan inte köra projektet"
+
+msgid "Create New Tag"
+msgstr "Skapa ny tag"
 
 msgid "Add Project Setting"
 msgstr "Lägg till projektinställning"
@@ -5312,6 +5454,9 @@ msgstr "Fel - Kunde inte skapa Skript i filsystemet."
 msgid "Error loading script from %s"
 msgstr "Fel vid laddning av Skript från %s"
 
+msgid "Inherit %s"
+msgstr "Ärver %s"
+
 msgid "Script path/name is valid."
 msgstr "Skript väg/namn är ogiltigt."
 
@@ -5395,6 +5540,9 @@ msgstr ""
 msgid "Delete Property?"
 msgstr "Radera egenskap?"
 
+msgid "Error saving file %s: %s"
+msgstr "Fel vid sparande av fil %s: %s"
+
 msgid "Error loading %s: %s."
 msgstr "Fel vid laddning %s: %s."
 
@@ -5437,6 +5585,9 @@ msgstr "Paket hittades ej: \"%s\"."
 
 msgid "Could not find template APK to export: \"%s\"."
 msgstr "Kunde inte hitta APK-mall för export: \"%s\"."
+
+msgid "Adding files..."
+msgstr "Lägger till filer..."
 
 msgid "Could not export project files."
 msgstr "Kunde inte exportera projektfiler."
@@ -5523,7 +5674,7 @@ msgid "No identity found."
 msgstr "Ingen identitet funnen."
 
 msgid "Invalid identity type."
-msgstr "Ogiltig identifierartyp:"
+msgstr "Ogiltig identitetstyp."
 
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "Kan inte ta bort temporär fil \"%s\"."
@@ -5649,8 +5800,45 @@ msgstr "Omdefiniering av '%s'."
 msgid "Shader include file does not exist:"
 msgstr "Shader inkluderingsfil saknas:"
 
+msgid "Invalid pragma directive."
+msgstr "Ogiltigt pragmadirektiv."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Makroexpansionsgräns överskriden."
+
+msgid "Invalid macro argument list."
+msgstr "Ogiltig makroargumentslista."
+
 msgid "Invalid macro argument."
 msgstr "Ogiltigt makroargument."
 
 msgid "Invalid macro argument count."
 msgstr "Ogiltigt antal makroargument."
+
+msgid "Invalid symbols placed before directive."
+msgstr "Ogiltiga symboler placerade före direktivet."
+
+msgid "The const '%s' is declared but never used."
+msgstr "Konstanten '%s' är deklarerad men aldrig använd."
+
+msgid "The function '%s' is declared but never used."
+msgstr "Funktionen '%s' är deklarerad men aldrig använd."
+
+msgid "The struct '%s' is declared but never used."
+msgstr "Strukten '%s' är deklarerad men aldrig använd."
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "Uniform '%s' är deklarerad men aldrig använd."
+
+msgid "The varying '%s' is declared but never used."
+msgstr "Varying '%s' är deklarerad men aldrig använd."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "Den lokala variabeln '%s' är deklarerad men aldrig använd."
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded (%d/"
+"%d). The shader may not work correctly."
+msgstr ""
+"Den totala storleken %s för denna shader på denna enhet har överskridit (%d/"
+"%d). Shadern kanske inte fungerar korrekt."

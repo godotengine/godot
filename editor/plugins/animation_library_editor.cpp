@@ -621,7 +621,7 @@ void AnimationLibraryEditor::update_tree() {
 	}
 
 	tree->clear();
-	ERR_FAIL_COND(!player);
+	ERR_FAIL_NULL(player);
 
 	Color ss_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 

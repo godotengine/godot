@@ -278,6 +278,11 @@ void GDScriptLanguageProtocol::stop() {
 }
 
 void GDScriptLanguageProtocol::notify_client(const String &p_method, const Variant &p_params, int p_client_id) {
+#ifdef TESTS_ENABLED
+	if (clients.is_empty()) {
+		return;
+	}
+#endif
 	if (p_client_id == -1) {
 		ERR_FAIL_COND_MSG(latest_client_id == -1,
 				"GDScript LSP: Can't notify client as none was connected.");
@@ -294,6 +299,11 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 }
 
 void GDScriptLanguageProtocol::request_client(const String &p_method, const Variant &p_params, int p_client_id) {
+#ifdef TESTS_ENABLED
+	if (clients.is_empty()) {
+		return;
+	}
+#endif
 	if (p_client_id == -1) {
 		ERR_FAIL_COND_MSG(latest_client_id == -1,
 				"GDScript LSP: Can't notify client as none was connected.");

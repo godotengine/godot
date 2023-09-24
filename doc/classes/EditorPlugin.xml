@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins. See also [EditorScript] to add functions to the editor.
+		[b]Note:[/b] Some names in this class contain "left" or "right" (e.g. [constant DOCK_SLOT_LEFT_UL]). These APIs assume left-to-right layout, and would be backwards when using right-to-left layout. These names are kept for compatibility reasons.
 	</description>
 	<tutorials>
 		<link title="Editor plugins documentation index">$DOCS_URL/tutorials/plugins/editor/index.html</link>
@@ -245,7 +246,7 @@
 				    # You can use a custom icon:
 				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
 				    # Or use a built-in icon:
-				    return EditorInterface.get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/gdscript]
 				[csharp]
 				public override Texture2D _GetPluginIcon()
@@ -253,7 +254,7 @@
 				    // You can use a custom icon:
 				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
 				    // Or use a built-in icon:
-				    return EditorInterface.Singleton.GetBaseControl().GetThemeIcon("Node", "EditorIcons");
+				    return EditorInterface.Singleton.GetEditorTheme().GetIcon("Node", "EditorIcons");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -353,7 +354,7 @@
 				    return "My Super Cool Plugin 3000"
 
 				func _get_plugin_icon():
-				    return EditorInterface.get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/codeblock]
 			</description>
 		</method>
@@ -824,13 +825,13 @@
 			Dock slot, left side, bottom-right (in default layout includes FileSystem dock).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UL" value="4" enum="DockSlot">
-			Dock slot, right side, upper-left (empty in default layout).
+			Dock slot, right side, upper-left (in default layout includes Inspector, Node, and History docks).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BL" value="5" enum="DockSlot">
 			Dock slot, right side, bottom-left (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_UR" value="6" enum="DockSlot">
-			Dock slot, right side, upper-right (in default layout includes Inspector, Node and History docks).
+			Dock slot, right side, upper-right (empty in default layout).
 		</constant>
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
 			Dock slot, right side, bottom-right (empty in default layout).

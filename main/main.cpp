@@ -114,7 +114,10 @@
 
 #ifdef MODULE_GDSCRIPT_ENABLED
 #include "modules/gdscript/gdscript.h"
-#endif
+#if defined(TOOLS_ENABLED) && !defined(GDSCRIPT_NO_LSP)
+#include "modules/gdscript/language_server/gdscript_language_server.h"
+#endif // TOOLS_ENABLED && !GDSCRIPT_NO_LSP
+#endif // MODULE_GDSCRIPT_ENABLED
 
 /* Static members */
 
@@ -289,7 +292,7 @@ void initialize_physics() {
 		// Physics server not found, Use the default physics
 		physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 	}
-	ERR_FAIL_COND(!physics_server_3d);
+	ERR_FAIL_NULL(physics_server_3d);
 	physics_server_3d->init();
 
 	// 2D Physics server
@@ -299,7 +302,7 @@ void initialize_physics() {
 		// Physics server not found, Use the default physics
 		physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 	}
-	ERR_FAIL_COND(!physics_server_2d);
+	ERR_FAIL_NULL(physics_server_2d);
 	physics_server_2d->init();
 }
 
@@ -389,7 +392,10 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -e, --editor                      Start the editor instead of running the scene.\n");
 	OS::get_singleton()->print("  -p, --project-manager             Start the project manager, even if a project is auto-detected.\n");
 	OS::get_singleton()->print("  --debug-server <uri>              Start the editor debug server (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007)\n");
-#endif
+#if defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
+	OS::get_singleton()->print("  --lsp-port <port>                 Use the specified port for the language server protocol. The port must be between 0 to 65535.\n");
+#endif // MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
+#endif // TOOLS_ENABLED
 	OS::get_singleton()->print("  --quit                            Quit after the first iteration.\n");
 	OS::get_singleton()->print("  --quit-after <int>                Quit after the given number of iterations. Set to 0 to disable.\n");
 	OS::get_singleton()->print("  -l, --language <locale>           Use a specific locale (<locale> being a two-letter code).\n");
@@ -727,8 +733,7 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
  *   responsible for the initialization of all low level singletons and core types, and parsing
  *   command line arguments to configure things accordingly.
  *   If p_second_phase is true, it will chain into setup2() (default behavior). This is
- *   disabled on some platforms (Android, iOS, UWP) which trigger the second step in their
- *   own time.
+ *   disabled on some platforms (Android, iOS) which trigger the second step in their own time.
  *
  * - setup2(p_main_tid_override) registers high level servers and singletons, displays the
  *   boot splash, then registers higher level types (scene, editor, etc.).
@@ -1313,6 +1318,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
 			main_args.push_back(I->get());
+#ifdef MODULE_GDSCRIPT_ENABLED
+		} else if (I->get() == "--gdscript-docs") {
+			if (I->next()) {
+				project_path = I->next()->get();
+				// Will be handled in start()
+				main_args.push_back(I->get());
+				main_args.push_back(I->next()->get());
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing relative or absolute path to project for --gdscript-docs, aborting.\n");
+				goto error;
+			}
+#endif // MODULE_GDSCRIPT_ENABLED
 #endif // TOOLS_ENABLED
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
@@ -1505,7 +1523,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing <path> argument for --benchmark-file <path>.\n");
 				goto error;
 			}
-
+#if defined(TOOLS_ENABLED) && !defined(GDSCRIPT_NO_LSP)
+		} else if (I->get() == "--lsp-port") {
+			if (I->next()) {
+				int port_override = I->next()->get().to_int();
+				if (port_override < 0 || port_override > 65535) {
+					OS::get_singleton()->print("<port> argument for --lsp-port <port> must be between 0 and 65535.\n");
+					goto error;
+				}
+				GDScriptLanguageServer::port_override = port_override;
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing <port> argument for --lsp-port <port>.\n");
+				goto error;
+			}
+#endif // TOOLS_ENABLED && !GDSCRIPT_NO_LSP
 		} else if (I->get() == "--" || I->get() == "++") {
 			adding_user_args = true;
 		} else {
@@ -1664,7 +1696,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 	if (bool(GLOBAL_GET("application/run/disable_stderr"))) {
 		CoreGlobals::print_error_enabled = false;
-	};
+	}
 
 	if (quiet_stdout) {
 		CoreGlobals::print_line_enabled = false;
@@ -1689,21 +1721,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+	}
 
-		driver_hints = "";
+	{
+		String driver_hints = "";
+		String driver_hints_angle = "";
 #ifdef GLES3_ENABLED
-		driver_hints += "opengl3";
+		driver_hints = "opengl3";
+		driver_hints_angle = "opengl3,opengl3_angle";
 #endif
 
-		default_driver = driver_hints.get_slice(",", 0);
+		String default_driver = driver_hints.get_slice(",", 0);
 
 		GLOBAL_DEF("rendering/gl_compatibility/driver", default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
+
 		GLOBAL_DEF_RST("rendering/gl_compatibility/nvidia_disable_threaded_optimization", true);
 	}
 
@@ -1778,7 +1815,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		// Set a default renderer if none selected. Try to choose one that matches the driver.
 		if (rendering_method.is_empty()) {
-			if (rendering_driver == "opengl3") {
+			if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle") {
 				rendering_method = "gl_compatibility";
 			} else {
 				rendering_method = "forward_plus";
@@ -1796,6 +1833,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef GLES3_ENABLED
 		if (rendering_method == "gl_compatibility") {
 			available_drivers.push_back("opengl3");
+			available_drivers.push_back("opengl3_angle");
 		}
 #endif
 		if (available_drivers.is_empty()) {
@@ -2049,6 +2087,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"), "0");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo"), "1"); // "Mono,Stereo,Quad,Observer"
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"), "1");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/environment_blend_mode", PROPERTY_HINT_ENUM, "Opaque,Additive,Alpha"), "0");
 
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
@@ -2780,39 +2819,7 @@ bool Main::start() {
 	}
 
 #ifdef TOOLS_ENABLED
-#ifdef MODULE_GDSCRIPT_ENABLED
-	if (!doc_tool_path.is_empty() && !gdscript_docs_path.is_empty()) {
-		DocTools docs;
-		Error err;
-
-		Vector<String> paths = get_files_with_extension(gdscript_docs_path, "gd");
-		ERR_FAIL_COND_V_MSG(paths.size() == 0, false, "Couldn't find any GDScript files under the given directory: " + gdscript_docs_path);
-
-		for (const String &path : paths) {
-			Ref<GDScript> gdscript = ResourceLoader::load(path);
-			for (const DocData::ClassDoc &class_doc : gdscript->get_documentation()) {
-				docs.add_doc(class_doc);
-			}
-		}
-
-		if (doc_tool_path == ".") {
-			doc_tool_path = "./docs";
-		}
-
-		Ref<DirAccess> da = DirAccess::create_for_path(doc_tool_path);
-		err = da->make_dir_recursive(doc_tool_path);
-		ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create GDScript docs directory: " + doc_tool_path + ": " + itos(err));
-
-		HashMap<String, String> doc_data_classes;
-		err = docs.save_classes(doc_tool_path, doc_data_classes, false);
-		ERR_FAIL_COND_V_MSG(err != OK, false, "Error saving GDScript docs:" + itos(err));
-
-		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
-		return false;
-	}
-#endif // MODULE_GDSCRIPT_ENABLED
-
-	if (!doc_tool_path.is_empty()) {
+	if (!doc_tool_path.is_empty() && gdscript_docs_path.is_empty()) {
 		// Needed to instance editor-only classes for their default values
 		Engine::get_singleton()->set_editor_hint(true);
 
@@ -3023,7 +3030,7 @@ bool Main::start() {
 			return false;
 		} else {
 			Object *ml = ClassDB::instantiate(main_loop_type);
-			ERR_FAIL_COND_V_MSG(!ml, false, "Can't instance MainLoop type.");
+			ERR_FAIL_NULL_V_MSG(ml, false, "Can't instance MainLoop type.");
 
 			main_loop = Object::cast_to<MainLoop>(ml);
 			if (!main_loop) {
@@ -3144,6 +3151,38 @@ bool Main::start() {
 		}
 
 #ifdef TOOLS_ENABLED
+#ifdef MODULE_GDSCRIPT_ENABLED
+		if (!doc_tool_path.is_empty() && !gdscript_docs_path.is_empty()) {
+			DocTools docs;
+			Error err;
+
+			Vector<String> paths = get_files_with_extension(gdscript_docs_path, "gd");
+			ERR_FAIL_COND_V_MSG(paths.size() == 0, false, "Couldn't find any GDScript files under the given directory: " + gdscript_docs_path);
+
+			for (const String &path : paths) {
+				Ref<GDScript> gdscript = ResourceLoader::load(path);
+				for (const DocData::ClassDoc &class_doc : gdscript->get_documentation()) {
+					docs.add_doc(class_doc);
+				}
+			}
+
+			if (doc_tool_path == ".") {
+				doc_tool_path = "./docs";
+			}
+
+			Ref<DirAccess> da = DirAccess::create_for_path(doc_tool_path);
+			err = da->make_dir_recursive(doc_tool_path);
+			ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create GDScript docs directory: " + doc_tool_path + ": " + itos(err));
+
+			HashMap<String, String> doc_data_classes;
+			err = docs.save_classes(doc_tool_path, doc_data_classes, false);
+			ERR_FAIL_COND_V_MSG(err != OK, false, "Error saving GDScript docs:" + itos(err));
+
+			OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
+			return false;
+		}
+#endif // MODULE_GDSCRIPT_ENABLED
+
 		EditorNode *editor_node = nullptr;
 		if (editor) {
 			OS::get_singleton()->benchmark_begin_measure("editor");
@@ -3303,7 +3342,7 @@ bool Main::start() {
 					scene = scenedata->instantiate();
 				}
 
-				ERR_FAIL_COND_V_MSG(!scene, false, "Failed loading scene: " + local_game_path);
+				ERR_FAIL_NULL_V_MSG(scene, false, "Failed loading scene: " + local_game_path + ".");
 				sml->add_current_scene(scene);
 
 #ifdef MACOS_ENABLED

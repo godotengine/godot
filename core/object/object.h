@@ -315,12 +315,14 @@ struct ObjectGDExtension {
 	bool editor_class = false;
 	bool is_virtual = false;
 	bool is_abstract = false;
+	bool is_exposed = true;
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;
 	GDExtensionClassFreePropertyList free_property_list;
 	GDExtensionClassPropertyCanRevert property_can_revert;
 	GDExtensionClassPropertyGetRevert property_get_revert;
+	GDExtensionClassValidateProperty validate_property;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassNotification notification;
 #endif // DISABLE_DEPRECATED
@@ -345,6 +347,8 @@ struct ObjectGDExtension {
 	GDExtensionClassCreateInstance create_instance;
 	GDExtensionClassFreeInstance free_instance;
 	GDExtensionClassGetVirtual get_virtual;
+	GDExtensionClassGetVirtualCallData get_virtual_call_data;
+	GDExtensionClassCallVirtualWithData call_virtual_with_data;
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call<false>(__VA_ARGS__)

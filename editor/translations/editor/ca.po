@@ -18,13 +18,14 @@
 # DFC <damiafluixacanals28@gmail.com>, 2021.
 # Roger VC <rogervilarasau@gmail.com>, 2022.
 # Jordi Borràs <jborras@centrekepler.com>, 2023.
+# Marc GB <marc.giralt.butjosa@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-19 23:59+0000\n"
-"Last-Translator: Jordi Borràs <jborras@centrekepler.com>\n"
+"PO-Revision-Date: 2023-08-22 15:34+0000\n"
+"Last-Translator: Marc GB <marc.giralt.butjosa@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -32,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Unset"
 msgstr "Desactiva"
@@ -177,6 +178,9 @@ msgstr "Botó del Joypad %d"
 
 msgid "Pressure:"
 msgstr "Pressió:"
+
+msgid "canceled"
+msgstr "cancel·lat"
 
 msgid "touched"
 msgstr "tocat"
@@ -1018,6 +1022,15 @@ msgstr "Crea pistes RESET"
 msgid "Animation Optimizer"
 msgstr "Optimitzador d'Animació"
 
+msgid "Max Velocity Error:"
+msgstr "Error Màx. Velocitat:"
+
+msgid "Max Angular Error:"
+msgstr "Error Màx. Angular:"
+
+msgid "Max Precision Error:"
+msgstr "Error Màx Precisió.:"
+
 msgid "Optimize"
 msgstr "Optimitza"
 
@@ -1038,6 +1051,9 @@ msgstr "Poleix"
 
 msgid "Scale Ratio:"
 msgstr "Relació d'Escala:"
+
+msgid "Select Transition and Easing"
+msgstr "Selecciona la transició i el suavitzat"
 
 msgid "Select Tracks to Copy"
 msgstr "Seleccioneu les Pistes a Copiar"
@@ -1971,6 +1987,9 @@ msgstr "Propietats"
 
 msgid "default:"
 msgstr "predeterminat:"
+
+msgid "Operators"
+msgstr "Operadors"
 
 msgid "Theme Properties"
 msgstr "Propietats del tema"

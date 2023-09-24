@@ -285,7 +285,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		if (mode == MODE_EDIT || (_is_line() && mode == MODE_CREATE)) {
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (mb->is_pressed()) {
-					if (mb->is_ctrl_pressed() || mb->is_shift_pressed() || mb->is_alt_pressed()) {
+					if (mb->is_meta_pressed() || mb->is_ctrl_pressed() || mb->is_shift_pressed() || mb->is_alt_pressed()) {
 						return false;
 					}
 
@@ -725,7 +725,6 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 	selected_point = Vertex();
 	edge_point = PosVertex();
 
-	add_child(memnew(VSeparator));
 	button_create = memnew(Button);
 	button_create->set_flat(true);
 	add_child(button_create);

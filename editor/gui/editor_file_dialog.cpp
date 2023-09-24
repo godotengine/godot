@@ -264,17 +264,17 @@ void EditorFileDialog::update_dir() {
 	}
 	dir->set_text(dir_access->get_current_dir(false));
 
-	file->set_text("");
-
 	// Disable "Open" button only when selecting file(s) mode.
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
 		case FILE_MODE_OPEN_FILES:
+			file->set_text("");
 			set_ok_button_text(TTR("Open"));
 			break;
 		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_OPEN_DIR:
+			file->set_text("");
 			set_ok_button_text(TTR("Select Current Folder"));
 			break;
 		case FILE_MODE_SAVE_FILE:
@@ -1535,7 +1535,7 @@ void EditorFileDialog::_recent_selected(int p_idx) {
 }
 
 void EditorFileDialog::_go_up() {
-	dir_access->change_dir(get_current_dir().get_base_dir());
+	dir_access->change_dir(get_current_dir().trim_suffix("/").get_base_dir());
 	update_file_list();
 	update_dir();
 	_push_history();

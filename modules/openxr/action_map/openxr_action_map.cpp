@@ -470,6 +470,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(primary_click, "/user/hand/left/input/trackpad/click,/user/hand/right/input/trackpad/click");
 	profile->add_new_binding(primary_touch, "/user/hand/left/input/trackpad/touch,/user/hand/right/input/trackpad/touch");
 	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
+	add_interaction_profile(profile);
 
 	// Create our HTC Vive tracker profile
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_tracker_htcx");

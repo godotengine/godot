@@ -147,7 +147,9 @@ public:
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
 		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == RESOLVING || kind == UNRESOLVED; }
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
+
 		String to_string() const;
+		PropertyInfo to_property_info(const String &p_name) const;
 
 		_FORCE_INLINE_ void set_container_element_type(const DataType &p_type) {
 			container_element_type = memnew(DataType(p_type));
@@ -749,6 +751,10 @@ public:
 		bool resolved_interface = false;
 		bool resolved_body = false;
 
+		StringName get_global_name() const {
+			return (outer == nullptr && identifier != nullptr) ? identifier->name : StringName();
+		}
+
 		Member get_member(const StringName &p_name) const {
 			return members[members_indices[p_name]];
 		}
@@ -836,8 +842,8 @@ public:
 		Variant rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
-#ifdef TOOLS_ENABLED
 		Vector<Variant> default_arg_values;
+#ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
@@ -1026,6 +1032,7 @@ public:
 		IdentifierNode *identifier = nullptr;
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
+		MethodInfo method_info;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -1510,10 +1517,11 @@ private:
 	TypeNode *parse_type(bool p_allow_void = false);
 
 #ifdef TOOLS_ENABLED
-	int class_doc_line = 0x7FFFFFFF;
+	int max_script_doc_line = INT_MAX;
+	int min_member_doc_line = 1;
 	bool has_comment(int p_line, bool p_must_be_doc = false);
 	MemberDocData parse_doc_comment(int p_line, bool p_single_line = false);
-	ClassDocData parse_class_doc_comment(int p_line, bool p_inner_class, bool p_single_line = false);
+	ClassDocData parse_class_doc_comment(int p_line, bool p_single_line = false);
 #endif // TOOLS_ENABLED
 
 public:

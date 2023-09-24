@@ -109,6 +109,13 @@
 				Returns the editor's [EditorSettings] instance.
 			</description>
 		</method>
+		<method name="get_editor_theme" qualifiers="const">
+			<return type="Theme" />
+			<description>
+				Returns the editor's [Theme].
+				[b]Note:[/b] When creating custom editor UI, prefer accessing theme items directly from your GUI nodes using the [code]get_theme_*[/code] methods.
+			</description>
+		</method>
 		<method name="get_file_system_dock" qualifiers="const">
 			<return type="FileSystemDock" />
 			<description>

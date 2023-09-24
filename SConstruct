@@ -579,6 +579,8 @@ if selected_platform in platform_list:
         if env["debug_symbols"]:
             env.Append(CCFLAGS=["/Zi", "/FS"])
             env.Append(LINKFLAGS=["/DEBUG:FULL"])
+        else:
+            env.Append(LINKFLAGS=["/DEBUG:NONE"])
 
         if env["optimize"] == "speed":
             env.Append(CCFLAGS=["/O2"])
@@ -978,7 +980,7 @@ if selected_platform in platform_list:
             print("Error: The `vsproj` option is only usable on Windows with Visual Studio.")
             Exit(255)
         env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
-        methods.generate_vs_project(env, GetOption("num_jobs"), env["vsproj_name"])
+        methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
         methods.generate_cpp_hint_file("cpp.hint")
 
     # Check for the existence of headers

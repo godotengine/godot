@@ -83,13 +83,14 @@
 # Omran Alsaedi <Omran2222@outlook.sa>, 2023.
 # Android Prime <abodinagdat16@gmail.com>, 2023.
 # Ibraheem Asad <ibo.asad.97@gmail.com>, 2023.
+# Aya Ichrak <ayaichrack@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-17 11:10+0000\n"
-"Last-Translator: Ibraheem Asad <ibo.asad.97@gmail.com>\n"
+"PO-Revision-Date: 2023-08-24 14:55+0000\n"
+"Last-Translator: Aya Ichrak <ayaichrack@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -198,6 +199,9 @@ msgstr ""
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "الدليل, Sony PS, زر الرئيسية على Xbox"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "البداية, زر الرئيسية على Xbox , زر + على Nintendo"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "الإتجاه الأيسر على عصا التحكم, زر L3 على Sony, زر L/LS على Xbox"

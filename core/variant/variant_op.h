@@ -1493,7 +1493,7 @@ public:
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		Object *l = right->get_validated_object();
-		ERR_FAIL_COND(l == nullptr);
+		ERR_FAIL_NULL(l);
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(left);
 
 		bool valid;
@@ -1527,7 +1527,7 @@ public:
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		Object *l = right->get_validated_object();
-		ERR_FAIL_COND(l == nullptr);
+		ERR_FAIL_NULL(l);
 		const StringName &a = *VariantGetInternalPtr<StringName>::get_ptr(left);
 
 		bool valid;

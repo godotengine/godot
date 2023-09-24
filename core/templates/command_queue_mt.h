@@ -409,7 +409,7 @@ public:
 	}
 
 	void wait_and_flush() {
-		ERR_FAIL_COND(!sync);
+		ERR_FAIL_NULL(sync);
 		sync->wait();
 		_flush();
 	}

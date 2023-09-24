@@ -158,7 +158,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	// Select node or push a field inside
-	if (mb.is_valid() && !mb->is_shift_pressed() && !mb->is_ctrl_pressed() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+	if (mb.is_valid() && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		selected_transition_from = StringName();
 		selected_transition_to = StringName();
 		selected_transition_index = -1;
@@ -337,7 +337,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				ABS(box_selecting_from.x - box_selecting_to.x),
 				ABS(box_selecting_from.y - box_selecting_to.y));
 
-		if (mb->is_ctrl_pressed() || mb->is_shift_pressed()) {
+		if (mb->is_command_or_control_pressed() || mb->is_shift_pressed()) {
 			previous_selected = selected_nodes;
 		} else {
 			selected_nodes.clear();
@@ -708,9 +708,9 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 		String type = menu->get_item_metadata(p_index);
 
 		Object *obj = ClassDB::instantiate(type);
-		ERR_FAIL_COND(!obj);
+		ERR_FAIL_NULL(obj);
 		AnimationNode *an = Object::cast_to<AnimationNode>(obj);
-		ERR_FAIL_COND(!an);
+		ERR_FAIL_NULL(an);
 
 		node = Ref<AnimationNode>(an);
 		base_name = type.replace_first("AnimationNode", "");

@@ -179,7 +179,14 @@ void ShaderTextEditor::set_edited_code(const String &p_code) {
 }
 
 void ShaderTextEditor::reload_text() {
-	ERR_FAIL_COND(shader.is_null());
+	ERR_FAIL_COND(shader.is_null() && shader_inc.is_null());
+
+	String code;
+	if (shader.is_valid()) {
+		code = shader->get_code();
+	} else {
+		code = shader_inc->get_code();
+	}
 
 	CodeEdit *te = get_text_editor();
 	int column = te->get_caret_column();
@@ -187,7 +194,7 @@ void ShaderTextEditor::reload_text() {
 	int h = te->get_h_scroll();
 	int v = te->get_v_scroll();
 
-	te->set_text(shader->get_code());
+	te->set_text(code);
 	te->set_caret_line(row);
 	te->set_caret_column(column);
 	te->set_h_scroll(h);
@@ -320,8 +327,8 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	if (warnings_panel) {
 		// Warnings panel.
-		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
-		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
+		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
+		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	}
 }
 
@@ -1160,7 +1167,7 @@ TextShaderEditor::TextShaderEditor() {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
+	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);
