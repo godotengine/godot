@@ -137,7 +137,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 
 		// Project settings defined here so doctool finds them.
-		GLOBAL_DEF_RST_BASIC("filesystem/import/blender/enabled", true);
+		GLOBAL_DEF_RST_BASIC("filesystem/import/blender/enabled", false);
 		GLOBAL_DEF_RST_BASIC("filesystem/import/fbx/enabled", true);
 		GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
 		GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
