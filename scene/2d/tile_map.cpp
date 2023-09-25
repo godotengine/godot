@@ -359,18 +359,38 @@ void TileMapLayer::_rendering_update() {
 					}
 
 					const Vector2 local_tile_pos = tile_map_node->map_to_local(cell_data.coords);
+					const Vector2 atlas_coords = cell_data.cell.get_atlas_coords();
 
-					// Random animation offset.
-					real_t random_animation_offset = 0.0;
-					if (atlas_source->get_tile_animation_mode(cell_data.cell.get_atlas_coords()) != TileSetAtlasSource::TILE_ANIMATION_MODE_DEFAULT) {
+					auto get_tile_hash = [this, local_tile_pos]() {
 						Array to_hash;
-						to_hash.push_back(local_tile_pos);
-						to_hash.push_back(get_instance_id()); // Use instance id as a random hash
-						random_animation_offset = RandomPCG(to_hash.hash()).randf();
+						to_hash.append(local_tile_pos);
+						to_hash.append(get_instance_id());
+						return to_hash.hash();
+					};
+
+					// Calculate the tile animation offset based on tile animation mode.
+					real_t animation_offset = 0.0;
+					if (atlas_source->get_tile_animation_mode(atlas_coords) == TileSetAtlasSource::TILE_ANIMATION_MODE_RANDOM_START_TIMES) {
+						animation_offset = RandomPCG(get_tile_hash()).randf();
+					} else if (atlas_source->get_tile_animation_mode(atlas_coords) == TileSetAtlasSource::TILE_ANIMATION_MODE_EXPLICIT_START_FRAME) {
+						uint32_t tile_hash = get_tile_hash();
+						int explicit_start_frame = 0;
+						if (explicit_start_frames.has(tile_hash)) {
+							explicit_start_frame = explicit_start_frames[tile_hash];
+						} else {
+							explicit_start_frame = atlas_source->get_tile_animation_explicit_start_frame(atlas_coords);
+							explicit_start_frames[tile_hash] = explicit_start_frame;
+						}
+						real_t speed = atlas_source->get_tile_animation_speed(atlas_coords);
+						real_t explicit_start_offset = 0.0;
+						for (int frame = 0; frame <= explicit_start_frame; frame++) {
+							explicit_start_offset += atlas_source->get_tile_animation_frame_duration(atlas_coords, frame) / speed;
+						}
+						animation_offset += explicit_start_offset;
 					}
 
 					// Drawing the tile in the canvas item.
-					tile_map_node->draw_tile(ci, local_tile_pos - ci_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, tile_map_node->get_self_modulate(), tile_data, random_animation_offset);
+					tile_map_node->draw_tile(ci, local_tile_pos - ci_position, tile_set, cell_data.cell.source_id, atlas_coords, cell_data.cell.alternative_tile, -1, tile_map_node->get_self_modulate(), tile_data, animation_offset);
 				}
 			} else {
 				// Free the quadrant.
@@ -3120,19 +3140,31 @@ void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<
 			Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, 0);
 			tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
 		} else {
+			int frame_count = atlas_source->get_tile_animation_frames_count(p_atlas_coords);
 			real_t speed = atlas_source->get_tile_animation_speed(p_atlas_coords);
-			real_t animation_duration = atlas_source->get_tile_animation_total_duration(p_atlas_coords) / speed;
-			real_t time = 0.0;
-			for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(p_atlas_coords); frame++) {
-				real_t frame_duration = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, frame) / speed;
-				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, time, time + frame_duration, p_animation_offset);
+			bool ping_pong = atlas_source->get_tile_animation_mode(p_atlas_coords) == TileSetAtlasSource::TILE_ANIMATION_MODE_PING_PONG;
+			int loop_frame_count = ping_pong ? 2 * frame_count - 2 : frame_count; // Adjust frame count for ping pong mode
 
-				Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, frame);
+			real_t total_duration = 0.0;
+			for (int frame = 0; frame < loop_frame_count; frame++) {
+				int actual_frame = frame < frame_count ? frame : loop_frame_count - frame; // Calculate actual frame considering ping pong mode
+
+				real_t frame_duration = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, actual_frame) / speed;
+				total_duration += frame_duration;
+			}
+
+			real_t time = 0.0;
+			for (int frame = 0; frame < loop_frame_count; frame++) {
+				int actual_frame = frame < frame_count ? frame : loop_frame_count - frame; // Calculate actual frame considering ping pong mode
+
+				real_t frame_duration = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, actual_frame) / speed;
+				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, total_duration, time, time + frame_duration, p_animation_offset);
+
+				Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, actual_frame);
 				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
 
 				time += frame_duration;
 			}
-			RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, 1.0, 0.0, 1.0, 0.0);
 		}
 	}
 }

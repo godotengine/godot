@@ -3947,6 +3947,9 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 			} else if (components[1] == "animation_mode") {
 				set_tile_animation_mode(coords, VariantCaster<TileSetAtlasSource::TileAnimationMode>::cast(p_value));
 				return true;
+			} else if (components[1] == "animation_explicit_start_frame") {
+				set_tile_animation_explicit_start_frame(coords, p_value);
+				return true;
 			} else if (components[1] == "animation_frames_count") {
 				set_tile_animation_frames_count(coords, p_value);
 				return true;
@@ -4016,6 +4019,9 @@ bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
 					return true;
 				} else if (components[1] == "animation_mode") {
 					r_ret = get_tile_animation_mode(coords);
+					return true;
+				} else if (components[1] == "animation_explicit_start_frame") {
+					r_ret = get_tile_animation_explicit_start_frame(coords);
 					return true;
 				} else if (components[1] == "animation_frames_count") {
 					r_ret = get_tile_animation_frames_count(coords);
@@ -4098,6 +4104,9 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 			property_info.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 		tile_property_list.push_back(property_info);
+
+		// animation_explicit_start_frame.
+		tile_property_list.push_back(PropertyInfo(Variant::INT, "animation_explicit_start_frame", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 		// animation_frames_count.
 		tile_property_list.push_back(PropertyInfo(Variant::INT, "animation_frames_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
@@ -4273,6 +4282,18 @@ TileSetAtlasSource::TileAnimationMode TileSetAtlasSource::get_tile_animation_mod
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TILE_ANIMATION_MODE_DEFAULT, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
 
 	return tiles[p_atlas_coords].animation_mode;
+}
+
+void TileSetAtlasSource::set_tile_animation_explicit_start_frame(const Vector2i p_atlas_coords, int p_frame_index) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	ERR_FAIL_INDEX(p_frame_index, (int)tiles[p_atlas_coords].animation_frames_durations.size());
+
+	tiles[p_atlas_coords].animation_explicit_start_frame = p_frame_index;
+}
+
+int TileSetAtlasSource::get_tile_animation_explicit_start_frame(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 0, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+	return tiles[p_atlas_coords].animation_explicit_start_frame;
 }
 
 void TileSetAtlasSource::set_tile_animation_frames_count(const Vector2i p_atlas_coords, int p_frames_count) {
@@ -4650,6 +4671,8 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tile_animation_speed", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_speed);
 	ClassDB::bind_method(D_METHOD("set_tile_animation_mode", "atlas_coords", "mode"), &TileSetAtlasSource::set_tile_animation_mode);
 	ClassDB::bind_method(D_METHOD("get_tile_animation_mode", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_mode);
+	ClassDB::bind_method(D_METHOD("set_tile_animation_explicit_start_frame", "atlas_coords", "frame_index"), &TileSetAtlasSource::set_tile_animation_explicit_start_frame);
+	ClassDB::bind_method(D_METHOD("get_tile_animation_explicit_start_frame", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_explicit_start_frame);
 	ClassDB::bind_method(D_METHOD("set_tile_animation_frames_count", "atlas_coords", "frames_count"), &TileSetAtlasSource::set_tile_animation_frames_count);
 	ClassDB::bind_method(D_METHOD("get_tile_animation_frames_count", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_frames_count);
 	ClassDB::bind_method(D_METHOD("set_tile_animation_frame_duration", "atlas_coords", "frame_index", "duration"), &TileSetAtlasSource::set_tile_animation_frame_duration);
@@ -4675,6 +4698,8 @@ void TileSetAtlasSource::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_DEFAULT)
 	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_RANDOM_START_TIMES)
+	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_EXPLICIT_START_FRAME)
+	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_PING_PONG)
 	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_MAX)
 
 	BIND_CONSTANT(TRANSFORM_FLIP_H)
