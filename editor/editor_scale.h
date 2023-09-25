@@ -32,7 +32,7 @@
 #define EDITOR_SCALE_H
 
 class EditorScale {
-	static float _scale;
+	static inline float _scale = 1.0f;
 
 public:
 	static void set_scale(float p_scale);

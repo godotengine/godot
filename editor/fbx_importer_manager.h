@@ -53,7 +53,7 @@ class FBXImporterManager : public ConfirmationDialog {
 	void _browse_install();
 	void _link_clicked();
 
-	static FBXImporterManager *singleton;
+	static inline FBXImporterManager *singleton = nullptr;
 
 protected:
 	void _notification(int p_what);

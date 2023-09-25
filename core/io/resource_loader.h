@@ -131,31 +131,31 @@ public:
 private:
 	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
 
-	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
-	static int loader_count;
-	static bool timestamp_on_load;
+	static inline Ref<ResourceFormatLoader> loader[MAX_LOADERS];
+	static inline int loader_count = 0;
+	static inline bool timestamp_on_load = false;
 
-	static void *err_notify_ud;
-	static ResourceLoadErrorNotify err_notify;
-	static void *dep_err_notify_ud;
-	static DependencyErrorNotify dep_err_notify;
-	static bool abort_on_missing_resource;
-	static bool create_missing_resources_if_class_unavailable;
-	static HashMap<String, Vector<String>> translation_remaps;
-	static HashMap<String, String> path_remaps;
+	static inline void *err_notify_ud;
+	static inline ResourceLoadErrorNotify err_notify = nullptr;
+	static inline void *dep_err_notify_ud = nullptr;
+	static inline DependencyErrorNotify dep_err_notify;
+	static inline bool abort_on_missing_resource = true;
+	static inline bool create_missing_resources_if_class_unavailable = false;
+	static inline HashMap<String, Vector<String>> translation_remaps;
+	static inline HashMap<String, String> path_remaps;
 
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
 
-	static SelfList<Resource>::List remapped_list;
+	static inline SelfList<Resource>::List remapped_list;
 
 	friend class ResourceFormatImporter;
 
 	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
-	static ResourceLoadedCallback _loaded_callback;
+	static inline ResourceLoadedCallback _loaded_callback;
 
-	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
+	static inline Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
 
 	struct ThreadLoadTask {
 		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.

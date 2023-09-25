@@ -40,8 +40,6 @@
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_run_bar.h"
 
-DebugAdapterProtocol *DebugAdapterProtocol::singleton = nullptr;
-
 Error DAPeer::handle_data() {
 	int read = 0;
 	// Read headers

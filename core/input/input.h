@@ -42,7 +42,7 @@ class Input : public Object {
 	GDCLASS(Input, Object);
 	_THREAD_SAFE_CLASS_
 
-	static Input *singleton;
+	static inline Input *singleton = nullptr;
 
 public:
 	enum MouseMode {

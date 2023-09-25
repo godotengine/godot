@@ -53,9 +53,6 @@ MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint3
 
 #endif
 
-ClassDB::APIType ClassDB::current_api = API_CORE;
-HashMap<ClassDB::APIType, uint32_t> ClassDB::api_hashes_cache;
-
 void ClassDB::set_current_api(APIType p_api) {
 	DEV_ASSERT(!api_hashes_cache.has(p_api)); // This API type may not be suitable for caching of hash if it can change later.
 	current_api = p_api;
@@ -64,10 +61,6 @@ void ClassDB::set_current_api(APIType p_api) {
 ClassDB::APIType ClassDB::get_current_api() {
 	return current_api;
 }
-
-HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
-HashMap<StringName, StringName> ClassDB::resource_base_extensions;
-HashMap<StringName, StringName> ClassDB::compat_classes;
 
 bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
 	if (!classes.has(p_class)) {
@@ -1581,9 +1574,6 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 	}
 }
 
-HashMap<StringName, HashMap<StringName, Variant>> ClassDB::default_values;
-HashSet<StringName> ClassDB::default_values_cached;
-
 Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid) {
 	if (!default_values_cached.has(p_class)) {
 		if (!default_values.has(p_class)) {
@@ -1729,8 +1719,6 @@ uint64_t ClassDB::get_native_struct_size(const StringName &p_name) {
 	ERR_FAIL_COND_V(!native_structs.has(p_name), 0);
 	return native_structs[p_name].struct_size;
 }
-
-RWLock ClassDB::lock;
 
 void ClassDB::cleanup_defaults() {
 	default_values.clear();

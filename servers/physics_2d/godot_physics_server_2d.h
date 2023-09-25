@@ -64,7 +64,7 @@ class GodotPhysicsServer2D : public PhysicsServer2D {
 	mutable RID_PtrOwner<GodotBody2D, true> body_owner;
 	mutable RID_PtrOwner<GodotJoint2D, true> joint_owner;
 
-	static GodotPhysicsServer2D *godot_singleton;
+	static inline GodotPhysicsServer2D *godot_singleton = nullptr;
 
 	friend class GodotCollisionObject2D;
 	SelfList<GodotCollisionObject2D>::List pending_shape_update_list;

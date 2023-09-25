@@ -34,8 +34,6 @@
 
 #include "core/io/file_access.h"
 
-ZipArchive *ZipArchive::instance = nullptr;
-
 extern "C" {
 
 struct ZipData {

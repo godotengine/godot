@@ -1664,8 +1664,6 @@ void AnimationNodeStateMachineEditor::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, playback_background_color, "playback_background_color", "GraphStateMachine");
 }
 
-AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = nullptr;
-
 AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	singleton = this;
 

@@ -36,7 +36,7 @@
 class EditorPropertyNameProcessor : public Node {
 	GDCLASS(EditorPropertyNameProcessor, Node);
 
-	static EditorPropertyNameProcessor *singleton;
+	static inline EditorPropertyNameProcessor *singleton = nullptr;
 
 	mutable HashMap<String, String> capitalize_string_cache;
 	HashMap<String, String> capitalize_string_remaps;

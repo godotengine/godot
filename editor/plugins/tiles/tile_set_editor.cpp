@@ -46,8 +46,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
-TileSetEditor *TileSetEditor::singleton = nullptr;
-
 void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 

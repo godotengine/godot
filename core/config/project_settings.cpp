@@ -49,8 +49,6 @@
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
 
-ProjectSettings *ProjectSettings::singleton = nullptr;
-
 ProjectSettings *ProjectSettings::get_singleton() {
 	return singleton;
 }

@@ -58,13 +58,6 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 }
 #endif
 
-#ifdef DEBUG_ENABLED
-SafeNumeric<uint64_t> Memory::mem_usage;
-SafeNumeric<uint64_t> Memory::max_usage;
-#endif
-
-SafeNumeric<uint64_t> Memory::alloc_count;
-
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 #ifdef DEBUG_ENABLED
 	bool prepad = true;

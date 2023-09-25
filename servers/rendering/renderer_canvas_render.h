@@ -35,7 +35,7 @@
 
 class RendererCanvasRender {
 public:
-	static RendererCanvasRender *singleton;
+	static inline RendererCanvasRender *singleton = nullptr;
 
 	enum CanvasRectFlags {
 		CANVAS_RECT_REGION = 1,

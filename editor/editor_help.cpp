@@ -79,10 +79,6 @@ const Vector<String> classes_with_csharp_differences = {
 };
 #endif
 
-// TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
-// Might this be a problem?
-DocTools *EditorHelp::doc = nullptr;
-
 static bool _attempt_doc_load(const String &p_class) {
 	// Docgen always happens in the outer-most class: it also generates docs for inner classes.
 	String outer_class = p_class.get_slice(".", 0);
@@ -2314,8 +2310,6 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 void EditorHelp::_add_text(const String &p_bbcode) {
 	_add_text_to_rt(p_bbcode, class_desc, this, edited_class);
 }
-
-Thread EditorHelp::thread;
 
 void EditorHelp::_wait_for_thread() {
 	if (thread.is_started()) {

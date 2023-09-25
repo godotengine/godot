@@ -46,8 +46,6 @@ namespace core_bind {
 
 ////// ResourceLoader //////
 
-ResourceLoader *ResourceLoader::singleton = nullptr;
-
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
 	return ::ResourceLoader::load_threaded_request(p_path, p_type_hint, p_use_sub_threads, ResourceFormatLoader::CacheMode(p_cache_mode));
 }
@@ -172,8 +170,6 @@ void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_
 void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
 	::ResourceSaver::remove_resource_format_saver(p_format_saver);
 }
-
-ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "resource", "path", "flags"), &ResourceSaver::save, DEFVAL(""), DEFVAL((uint32_t)FLAG_NONE));
@@ -557,8 +553,6 @@ String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
 
-OS *OS::singleton = nullptr;
-
 void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &OS::get_connected_midi_inputs);
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &OS::open_midi_inputs);
@@ -674,8 +668,6 @@ void OS::_bind_methods() {
 }
 
 ////// Geometry2D //////
-
-Geometry2D *Geometry2D::singleton = nullptr;
 
 Geometry2D *Geometry2D::get_singleton() {
 	return singleton;
@@ -923,8 +915,6 @@ void Geometry2D::_bind_methods() {
 
 ////// Geometry3D //////
 
-Geometry3D *Geometry3D::singleton = nullptr;
-
 Geometry3D *Geometry3D::get_singleton() {
 	return singleton;
 }
@@ -1063,8 +1053,6 @@ void Geometry3D::_bind_methods() {
 }
 
 ////// Marshalls //////
-
-Marshalls *Marshalls::singleton = nullptr;
 
 Marshalls *Marshalls::get_singleton() {
 	return singleton;
@@ -1777,8 +1765,6 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
 }
 
-Engine *Engine::singleton = nullptr;
-
 ////// EngineDebugger //////
 
 bool EngineDebugger::is_active() {
@@ -1863,8 +1849,6 @@ EngineDebugger::~EngineDebugger() {
 	}
 	captures.clear();
 }
-
-EngineDebugger *EngineDebugger::singleton = nullptr;
 
 void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &EngineDebugger::is_active);

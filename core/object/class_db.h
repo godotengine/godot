@@ -143,10 +143,10 @@ public:
 		return memnew(T);
 	}
 
-	static RWLock lock;
-	static HashMap<StringName, ClassInfo> classes;
-	static HashMap<StringName, StringName> resource_base_extensions;
-	static HashMap<StringName, StringName> compat_classes;
+	static inline RWLock lock;
+	static inline HashMap<StringName, ClassInfo> classes;
+	static inline HashMap<StringName, StringName> resource_base_extensions;
+	static inline HashMap<StringName, StringName> compat_classes;
 
 #ifdef DEBUG_METHODS_ENABLED
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
@@ -154,13 +154,13 @@ public:
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount);
 #endif
 
-	static APIType current_api;
-	static HashMap<APIType, uint32_t> api_hashes_cache;
+	static inline APIType current_api = API_CORE;
+	static inline HashMap<APIType, uint32_t> api_hashes_cache;
 
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 
-	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
-	static HashSet<StringName> default_values_cached;
+	static inline HashMap<StringName, HashMap<StringName, Variant>> default_values;
+	static inline HashSet<StringName> default_values_cached;
 
 	// Native structs, used by binder
 	struct NativeStruct {

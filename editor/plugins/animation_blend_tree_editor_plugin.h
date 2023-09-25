@@ -91,7 +91,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _add_node(int p_idx);
 	void _update_options_menu(bool p_has_input_ports = false);
 
-	static AnimationNodeBlendTreeEditor *singleton;
+	static inline AnimationNodeBlendTreeEditor *singleton = nullptr;
 
 	void _node_dragged(const Vector2 &p_from, const Vector2 &p_to, const StringName &p_which);
 	void _node_renamed(const String &p_text, Ref<AnimationNode> p_node);

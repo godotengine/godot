@@ -2645,12 +2645,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	return OK;
 }
 
-ResourceImporterScene *ResourceImporterScene::scene_singleton = nullptr;
-ResourceImporterScene *ResourceImporterScene::animation_singleton = nullptr;
-
-Vector<Ref<EditorSceneFormatImporter>> ResourceImporterScene::importers;
-Vector<Ref<EditorScenePostImportPlugin>> ResourceImporterScene::post_importer_plugins;
-
 bool ResourceImporterScene::ResourceImporterScene::has_advanced_options() const {
 	return true;
 }

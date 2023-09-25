@@ -207,7 +207,7 @@ class PhysicsTestMotionResult2D;
 class PhysicsServer2D : public Object {
 	GDCLASS(PhysicsServer2D, Object);
 
-	static PhysicsServer2D *singleton;
+	static inline PhysicsServer2D *singleton = nullptr;
 
 	virtual bool _body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters2D> &p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
 

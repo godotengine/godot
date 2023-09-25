@@ -40,8 +40,6 @@ void WorkerThreadPool::Task::free_template_userdata() {
 	memdelete(btu);
 }
 
-WorkerThreadPool *WorkerThreadPool::singleton = nullptr;
-
 void WorkerThreadPool::_process_task_queue() {
 	task_mutex.lock();
 	Task *task = task_queue.first()->self();

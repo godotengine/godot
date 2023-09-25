@@ -36,8 +36,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 
-int GDScriptLanguageServer::port_override = -1;
-
 GDScriptLanguageServer::GDScriptLanguageServer() {
 	_EDITOR_DEF("network/language_server/remote_host", host);
 	_EDITOR_DEF("network/language_server/remote_port", port);

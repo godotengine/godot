@@ -39,7 +39,7 @@ namespace RendererDummy {
 
 class MeshStorage : public RendererMeshStorage {
 private:
-	static MeshStorage *singleton;
+	static inline MeshStorage *singleton = nullptr;
 
 	struct DummyMesh {
 		Vector<RS::SurfaceData> surfaces;

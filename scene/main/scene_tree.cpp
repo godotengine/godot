@@ -1633,8 +1633,6 @@ void SceneTree::_bind_methods() {
 	BIND_ENUM_CONSTANT(GROUP_CALL_UNIQUE);
 }
 
-SceneTree *SceneTree::singleton = nullptr;
-
 SceneTree::IdleCallback SceneTree::idle_callbacks[SceneTree::MAX_IDLE_CALLBACKS];
 int SceneTree::idle_callback_count = 0;
 

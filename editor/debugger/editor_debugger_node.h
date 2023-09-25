@@ -124,7 +124,7 @@ private:
 
 	friend class DebuggerEditorPlugin;
 	friend class DebugAdapterParser;
-	static EditorDebuggerNode *singleton;
+	static inline EditorDebuggerNode *singleton = nullptr;
 	EditorDebuggerNode();
 
 protected:

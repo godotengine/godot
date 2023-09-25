@@ -5524,8 +5524,6 @@ CanvasItemEditor::CanvasItemEditor() {
 	callable_mp(this, &CanvasItemEditor::set_state).bind(get_state()).call_deferred();
 }
 
-CanvasItemEditor *CanvasItemEditor::singleton = nullptr;
-
 void CanvasItemEditorPlugin::edit(Object *p_object) {
 	canvas_item_editor->edit(Object::cast_to<CanvasItem>(p_object));
 }

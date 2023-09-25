@@ -128,7 +128,7 @@ public:
 #ifdef TOOLS_ENABLED
 class GDExtensionEditorPlugins {
 private:
-	static Vector<StringName> extension_classes;
+	static inline Vector<StringName> extension_classes;
 
 protected:
 	friend class EditorNode;
@@ -136,8 +136,8 @@ protected:
 	// Since this in core, we can't directly reference EditorNode, so it will
 	// set these function pointers in its constructor.
 	typedef void (*EditorPluginRegisterFunc)(const StringName &p_class_name);
-	static EditorPluginRegisterFunc editor_node_add_plugin;
-	static EditorPluginRegisterFunc editor_node_remove_plugin;
+	static inline EditorPluginRegisterFunc editor_node_add_plugin = nullptr;
+	static inline EditorPluginRegisterFunc editor_node_remove_plugin = nullptr;
 
 public:
 	static void add_extension_class(const StringName &p_class_name);

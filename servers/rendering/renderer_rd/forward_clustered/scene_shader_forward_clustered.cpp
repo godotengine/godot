@@ -450,8 +450,6 @@ RendererRD::MaterialStorage::MaterialData *SceneShaderForwardClustered::_create_
 	return material_data;
 }
 
-SceneShaderForwardClustered *SceneShaderForwardClustered::singleton = nullptr;
-
 SceneShaderForwardClustered::SceneShaderForwardClustered() {
 	// there should be only one of these, contained within our RenderFM singleton.
 	singleton = this;

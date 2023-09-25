@@ -231,7 +231,7 @@ class PhysicsTestMotionResult3D;
 class PhysicsServer3D : public Object {
 	GDCLASS(PhysicsServer3D, Object);
 
-	static PhysicsServer3D *singleton;
+	static inline PhysicsServer3D *singleton = nullptr;
 
 	virtual bool _body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters3D> &p_parameters, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>());
 

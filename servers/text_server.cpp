@@ -32,8 +32,6 @@
 #include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
 
-TextServerManager *TextServerManager::singleton = nullptr;
-
 void TextServerManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &TextServerManager::add_interface);
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &TextServerManager::get_interface_count);

@@ -82,7 +82,7 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 		BUTTON_REMOVE_VAR,
 	};
 
-	static DynamicFontImportSettings *singleton;
+	static inline DynamicFontImportSettings *singleton = nullptr;
 
 	String base_path;
 

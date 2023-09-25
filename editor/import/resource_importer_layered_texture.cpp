@@ -472,8 +472,6 @@ bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_p
 	return valid;
 }
 
-ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = nullptr;
-
 ResourceImporterLayeredTexture::ResourceImporterLayeredTexture(bool p_singleton) {
 	// This should only be set through the EditorNode.
 	if (p_singleton) {

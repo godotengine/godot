@@ -166,8 +166,6 @@ FileSystemList::FileSystemList() {
 	popup_editor->connect("popup_hide", callable_mp(this, &FileSystemList::_text_editor_popup_modal_close));
 }
 
-FileSystemDock *FileSystemDock::singleton = nullptr;
-
 Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_file_type) {
 	Ref<Texture2D> file_icon;
 	if (!p_is_valid) {

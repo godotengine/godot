@@ -95,7 +95,7 @@ public:
 	};
 
 protected:
-	static EditorVCSInterface *singleton;
+	static inline EditorVCSInterface *singleton;
 
 	static void _bind_methods();
 

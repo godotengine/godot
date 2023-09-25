@@ -63,7 +63,7 @@ public:
 	};
 
 private:
-	static VersionControlEditorPlugin *singleton;
+	static inline VersionControlEditorPlugin *singleton = nullptr;
 
 	List<StringName> available_plugins;
 

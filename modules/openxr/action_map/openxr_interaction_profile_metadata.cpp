@@ -32,8 +32,6 @@
 
 #include "../openxr_api.h"
 
-OpenXRInteractionProfileMetadata *OpenXRInteractionProfileMetadata::singleton = nullptr;
-
 OpenXRInteractionProfileMetadata::OpenXRInteractionProfileMetadata() {
 	singleton = this;
 

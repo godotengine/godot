@@ -234,7 +234,7 @@ class JavaClassWrapper : public Object {
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
 #endif
 
-	static JavaClassWrapper *singleton;
+        static inline JavaClassWrapper *singleton = nullptr;
 
 protected:
 	static void _bind_methods();

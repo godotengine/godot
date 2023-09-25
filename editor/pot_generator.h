@@ -38,7 +38,7 @@
 //#define DEBUG_POT
 
 class POTGenerator {
-	static POTGenerator *singleton;
+	static inline POTGenerator *singleton = nullptr;
 
 	struct MsgidData {
 		String ctx;

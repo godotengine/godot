@@ -54,8 +54,6 @@ void PhysicsServer3DRenderingServerHandler::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_aabb", "aabb"), &PhysicsServer3DRenderingServerHandler::set_aabb);
 }
 
-PhysicsServer3D *PhysicsServer3D::singleton = nullptr;
-
 void PhysicsDirectBodyState3D::integrate_forces() {
 	real_t step = get_step();
 	Vector3 lv = get_linear_velocity();

@@ -32,8 +32,6 @@
 
 using namespace RendererDummy;
 
-MeshStorage *MeshStorage::singleton = nullptr;
-
 MeshStorage::MeshStorage() {
 	singleton = this;
 }

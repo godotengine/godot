@@ -524,7 +524,7 @@ protected:
 
 	static void _bind_methods();
 
-	static CanvasItemEditor *singleton;
+	static inline CanvasItemEditor *singleton = nullptr;
 
 public:
 	enum SnapMode {

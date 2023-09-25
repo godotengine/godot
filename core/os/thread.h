@@ -80,8 +80,8 @@ private:
 	friend class Main;
 
 	ID id = UNASSIGNED_ID;
-	static SafeNumeric<uint64_t> id_counter;
-	static thread_local ID caller_id;
+	static inline SafeNumeric<uint64_t> id_counter{ 1 };
+	static inline thread_local ID caller_id = Thread::UNASSIGNED_ID;
 	std::thread thread;
 
 	static void callback(ID p_caller_id, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);

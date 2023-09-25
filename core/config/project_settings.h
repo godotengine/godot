@@ -121,7 +121,7 @@ protected:
 	void _queue_changed();
 	void _emit_changed();
 
-	static ProjectSettings *singleton;
+	static inline ProjectSettings *singleton = nullptr;
 
 	Error _load_settings_text(const String &p_path);
 	Error _load_settings_binary(const String &p_path);

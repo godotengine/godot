@@ -88,7 +88,7 @@ class GDScriptCache {
 	friend class GDScriptParserRef;
 	friend class GDScriptInstance;
 
-	static GDScriptCache *singleton;
+	static inline GDScriptCache *singleton = nullptr;
 
 	bool cleared = false;
 

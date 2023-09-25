@@ -35,8 +35,6 @@
 #include "editor/editor_translation_parser.h"
 #include "plugins/packed_scene_translation_parser_plugin.h"
 
-POTGenerator *POTGenerator::singleton = nullptr;
-
 #ifdef DEBUG_POT
 void POTGenerator::_print_all_translation_strings() {
 	for (HashMap<String, Vector<POTGenerator::MsgidData>>::Element E = all_translation_strings.front(); E; E = E.next()) {

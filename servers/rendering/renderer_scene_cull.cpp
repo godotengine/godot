@@ -4132,8 +4132,6 @@ void RendererSceneCull::update_visibility_notifiers() {
 
 /* ENVIRONMENT API */
 
-RendererSceneCull *RendererSceneCull::singleton = nullptr;
-
 void RendererSceneCull::set_scene_render(RendererSceneRender *p_scene_render) {
 	scene_render = p_scene_render;
 	geometry_instance_pair_mask = scene_render->geometry_instance_get_pair_mask();

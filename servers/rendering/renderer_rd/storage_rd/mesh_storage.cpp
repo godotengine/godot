@@ -32,8 +32,6 @@
 
 using namespace RendererRD;
 
-MeshStorage *MeshStorage::singleton = nullptr;
-
 MeshStorage *MeshStorage::get_singleton() {
 	return singleton;
 }

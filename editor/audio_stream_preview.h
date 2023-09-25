@@ -57,7 +57,7 @@ public:
 class AudioStreamPreviewGenerator : public Node {
 	GDCLASS(AudioStreamPreviewGenerator, Node);
 
-	static AudioStreamPreviewGenerator *singleton;
+	static inline AudioStreamPreviewGenerator *singleton = nullptr;
 
 	struct Preview {
 		Ref<AudioStreamPreview> preview;

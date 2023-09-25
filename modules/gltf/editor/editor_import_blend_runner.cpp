@@ -305,8 +305,6 @@ void EditorImportBlendRunner::_notification(int p_what) {
 	}
 }
 
-EditorImportBlendRunner *EditorImportBlendRunner::singleton = nullptr;
-
 EditorImportBlendRunner::EditorImportBlendRunner() {
 	ERR_FAIL_COND_MSG(singleton != nullptr, "EditorImportBlendRunner already created.");
 	singleton = this;

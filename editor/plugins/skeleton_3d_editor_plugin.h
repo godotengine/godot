@@ -139,7 +139,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	bool keyable = false;
 
-	static Skeleton3DEditor *singleton;
+	static inline Skeleton3DEditor *singleton = nullptr;
 
 	void _on_click_skeleton_option(int p_skeleton_option);
 	void _file_selected(const String &p_file);

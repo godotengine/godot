@@ -1372,8 +1372,6 @@ int GodotPhysicsServer2D::get_process_info(ProcessInfo p_info) {
 	return 0;
 }
 
-GodotPhysicsServer2D *GodotPhysicsServer2D::godot_singleton = nullptr;
-
 GodotPhysicsServer2D::GodotPhysicsServer2D(bool p_using_threads) {
 	godot_singleton = this;
 	GodotBroadPhase2D::create_func = GodotBroadPhase2DBVH::_create;

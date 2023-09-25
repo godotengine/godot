@@ -96,8 +96,6 @@ public:
 	}
 };
 
-ImportDock *ImportDock::singleton = nullptr;
-
 void ImportDock::set_edit_path(const String &p_path) {
 	Ref<ConfigFile> config;
 	config.instantiate();

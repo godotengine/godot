@@ -323,13 +323,9 @@ void IP::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_ANY);
 }
 
-IP *IP::singleton = nullptr;
-
 IP *IP::get_singleton() {
 	return singleton;
 }
-
-IP *(*IP::_create)() = nullptr;
 
 IP *IP::create() {
 	ERR_FAIL_COND_V_MSG(singleton, nullptr, "IP singleton already exist.");

@@ -51,7 +51,7 @@ public:
 };
 
 class EditorTranslationParser {
-	static EditorTranslationParser *singleton;
+	static inline EditorTranslationParser *singleton = nullptr;
 
 public:
 	enum ParserType {

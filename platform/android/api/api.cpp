@@ -76,8 +76,6 @@ Variant JavaObject::callp(const StringName &, const Variant **, int, Callable::C
 	return Variant();
 }
 
-JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
-
 Ref<JavaClass> JavaClassWrapper::wrap(const String &) {
 	return Ref<JavaClass>();
 }

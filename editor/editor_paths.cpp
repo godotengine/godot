@@ -36,8 +36,6 @@
 #include "core/os/os.h"
 #include "main/main.h"
 
-EditorPaths *EditorPaths::singleton = nullptr;
-
 bool EditorPaths::are_paths_valid() const {
 	return paths_valid;
 }

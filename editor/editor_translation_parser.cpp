@@ -35,8 +35,6 @@
 #include "core/object/script_language.h"
 #include "core/templates/hash_set.h"
 
-EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
-
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
 	TypedArray<String> ids;
 	TypedArray<Array> ids_ctx_plural;

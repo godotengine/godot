@@ -870,8 +870,6 @@ void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 	ClassDB::bind_method("_update_edited_point_pos", &AnimationNodeBlendSpace2DEditor::_update_edited_point_pos);
 }
 
-AnimationNodeBlendSpace2DEditor *AnimationNodeBlendSpace2DEditor::singleton = nullptr;
-
 AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	singleton = this;
 	updating = false;

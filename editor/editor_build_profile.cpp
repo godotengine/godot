@@ -808,8 +808,6 @@ Ref<EditorBuildProfile> EditorBuildProfileManager::get_current_profile() {
 	return edited;
 }
 
-EditorBuildProfileManager *EditorBuildProfileManager::singleton = nullptr;
-
 void EditorBuildProfileManager::_bind_methods() {
 	ClassDB::bind_method("_update_selected_profile", &EditorBuildProfileManager::_update_edited_profile);
 }

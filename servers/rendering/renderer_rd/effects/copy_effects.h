@@ -312,7 +312,7 @@ private:
 
 	} specular_merge;
 
-	static CopyEffects *singleton;
+	static inline CopyEffects *singleton = nullptr;
 
 public:
 	static CopyEffects *get_singleton();

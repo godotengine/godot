@@ -65,7 +65,7 @@ public:
 class EditorResourcePreview : public Node {
 	GDCLASS(EditorResourcePreview, Node);
 
-	static EditorResourcePreview *singleton;
+	static inline EditorResourcePreview *singleton = nullptr;
 
 	struct QueueItem {
 		Ref<Resource> resource;

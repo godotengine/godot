@@ -136,7 +136,7 @@ private:
 	static ShaderCacheFunction cache_function;
 	static ShaderSPIRVGetCacheKeyFunction get_spirv_cache_key_function;
 
-	static RenderingDevice *singleton;
+	static inline RenderingDevice *singleton = nullptr;
 
 protected:
 	static void _bind_methods();

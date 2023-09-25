@@ -55,7 +55,7 @@ class SceneImportSettingsData;
 class SceneImportSettings : public ConfirmationDialog {
 	GDCLASS(SceneImportSettings, ConfirmationDialog)
 
-	static SceneImportSettings *singleton;
+	static inline SceneImportSettings *singleton = nullptr;
 
 	enum Actions {
 		ACTION_EXTRACT_MATERIALS,

@@ -40,7 +40,7 @@
 class EditorImportBlendRunner : public Node {
 	GDCLASS(EditorImportBlendRunner, Node);
 
-	static EditorImportBlendRunner *singleton;
+        static inline EditorImportBlendRunner *singleton = nullptr;
 
 	Timer *kill_timer;
 	void _resources_reimported(const PackedStringArray &p_files);

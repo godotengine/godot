@@ -73,7 +73,7 @@ protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
-	static AnimationTreeEditor *singleton;
+	static inline AnimationTreeEditor *singleton = nullptr;
 
 public:
 	AnimationTree *get_animation_tree() { return tree; }

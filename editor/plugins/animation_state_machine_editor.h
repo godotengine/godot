@@ -127,7 +127,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	bool updating = false;
 
-	static AnimationNodeStateMachineEditor *singleton;
+	static inline AnimationNodeStateMachineEditor *singleton = nullptr;
 
 	void _state_machine_gui_input(const Ref<InputEvent> &p_event);
 	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group);

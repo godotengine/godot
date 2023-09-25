@@ -47,7 +47,7 @@ class AudioStreamWAV;
 class AudioStreamPlayback;
 
 class AudioDriver {
-	static AudioDriver *singleton;
+	static inline AudioDriver *singleton = nullptr;
 	uint64_t _last_mix_time = 0;
 	uint64_t _last_mix_frames = 0;
 
@@ -276,7 +276,7 @@ private:
 
 	void _update_bus_effects(int p_bus);
 
-	static AudioServer *singleton;
+	static inline AudioServer *singleton = nullptr;
 
 	void init_channels_and_buffers();
 

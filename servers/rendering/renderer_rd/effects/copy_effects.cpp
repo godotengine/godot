@@ -37,8 +37,6 @@
 
 using namespace RendererRD;
 
-CopyEffects *CopyEffects::singleton = nullptr;
-
 CopyEffects *CopyEffects::get_singleton() {
 	return singleton;
 }

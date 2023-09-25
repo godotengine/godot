@@ -3773,8 +3773,6 @@ void SceneTreeDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_created", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 }
 
-SceneTreeDock *SceneTreeDock::singleton = nullptr;
-
 void SceneTreeDock::_update_configuration_warning() {
 	if (singleton) {
 		MessageQueue::get_singleton()->push_callable(callable_mp(singleton->scene_tree, &SceneTreeEditor::update_warning));

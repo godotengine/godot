@@ -104,7 +104,7 @@ private:
 	void _close_button_theme_changed(Control *p_close_button);
 
 protected:
-	static EditorToaster *singleton;
+	static inline EditorToaster *singleton = nullptr;
 	static void _bind_methods();
 
 	void _notification(int p_what);

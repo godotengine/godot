@@ -54,8 +54,6 @@
 
 // PRIVATE METHODS
 
-Ref<EditorSettings> EditorSettings::singleton = nullptr;
-
 // Properties
 
 bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {

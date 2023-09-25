@@ -50,7 +50,7 @@ class NodeDock : public VBoxContainer {
 	Node *last_valid_node = nullptr;
 
 private:
-	static NodeDock *singleton;
+	static inline NodeDock *singleton;
 
 public:
 	static NodeDock *get_singleton() { return singleton; }

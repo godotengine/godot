@@ -355,7 +355,7 @@ private:
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 private:
-	static FileSystemDock *singleton;
+	static inline FileSystemDock *singleton = nullptr;
 
 public:
 	static FileSystemDock *get_singleton() { return singleton; }

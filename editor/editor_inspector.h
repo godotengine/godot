@@ -461,8 +461,8 @@ class EditorInspector : public ScrollContainer {
 	enum {
 		MAX_PLUGINS = 1024
 	};
-	static Ref<EditorInspectorPlugin> inspector_plugins[MAX_PLUGINS];
-	static int inspector_plugin_count;
+	static inline Ref<EditorInspectorPlugin> inspector_plugins[MAX_PLUGINS];
+	static inline int inspector_plugin_count = 0;
 
 	VBoxContainer *main_vbox = nullptr;
 

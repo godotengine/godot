@@ -48,7 +48,7 @@ class EditorInspectorPlugin;
 class TileSetEditor : public Control {
 	GDCLASS(TileSetEditor, Control);
 
-	static TileSetEditor *singleton;
+	static inline TileSetEditor *singleton = nullptr;
 
 private:
 	bool read_only = false;

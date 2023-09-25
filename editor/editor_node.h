@@ -262,7 +262,7 @@ private:
 		bool pack_only = false;
 	} export_defer;
 
-	static EditorNode *singleton;
+	static inline EditorNode *singleton = nullptr;
 
 	EditorData editor_data;
 	EditorFolding editor_folding;
@@ -493,11 +493,11 @@ private:
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
 
-	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
-	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
-	static int build_callback_count;
-	static int plugin_init_callback_count;
-	static Vector<EditorNodeInitCallback> _init_callbacks;
+	static inline EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
+	static inline EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
+	static inline int build_callback_count = 0;
+	static inline int plugin_init_callback_count = 0;
+	static inline Vector<EditorNodeInitCallback> _init_callbacks;
 
 	String _get_system_info() const;
 

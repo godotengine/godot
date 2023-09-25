@@ -74,7 +74,7 @@ namespace RendererRD {
 
 class SSEffects {
 private:
-	static SSEffects *singleton;
+	static inline SSEffects *singleton = nullptr;
 
 public:
 	static SSEffects *get_singleton() { return singleton; }

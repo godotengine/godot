@@ -30,8 +30,6 @@
 
 #include "core_string_names.h"
 
-CoreStringNames *CoreStringNames::singleton = nullptr;
-
 CoreStringNames::CoreStringNames() :
 		_free(StaticCString::create("free")),
 		changed(StaticCString::create("changed")),

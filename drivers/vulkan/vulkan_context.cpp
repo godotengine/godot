@@ -46,8 +46,6 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_SHORT_NAME "GodotEngine"
 
-VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
-
 Vector<VkAttachmentReference> VulkanContext::_convert_VkAttachmentReference2(uint32_t p_count, const VkAttachmentReference2 *p_refs) {
 	Vector<VkAttachmentReference> att_refs;
 
@@ -397,9 +395,6 @@ Error VulkanContext::_obtain_vulkan_version() {
 	return OK;
 }
 
-bool VulkanContext::instance_extensions_initialized = false;
-HashMap<CharString, bool> VulkanContext::requested_instance_extensions;
-
 void VulkanContext::register_requested_instance_extension(const CharString &extension_name, bool p_required) {
 	ERR_FAIL_COND_MSG(instance_extensions_initialized, "You can only registered extensions before the Vulkan instance is created");
 	ERR_FAIL_COND(requested_instance_extensions.has(extension_name));
@@ -477,9 +472,6 @@ Error VulkanContext::_initialize_instance_extensions() {
 	instance_extensions_initialized = true;
 	return OK;
 }
-
-bool VulkanContext::device_extensions_initialized = false;
-HashMap<CharString, bool> VulkanContext::requested_device_extensions;
 
 void VulkanContext::register_requested_device_extension(const CharString &extension_name, bool p_required) {
 	ERR_FAIL_COND_MSG(device_extensions_initialized, "You can only registered extensions before the Vulkan instance is created");

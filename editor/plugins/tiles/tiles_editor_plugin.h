@@ -41,7 +41,7 @@
 class TilesEditorUtils : public Object {
 	GDCLASS(TilesEditorUtils, Object);
 
-	static TilesEditorUtils *singleton;
+	static inline TilesEditorUtils *singleton = nullptr;
 
 public:
 	enum SourceSortOption {

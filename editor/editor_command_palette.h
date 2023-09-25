@@ -39,7 +39,7 @@
 class EditorCommandPalette : public ConfirmationDialog {
 	GDCLASS(EditorCommandPalette, ConfirmationDialog);
 
-	static EditorCommandPalette *singleton;
+	static inline EditorCommandPalette *singleton = nullptr;
 	LineEdit *command_search_box = nullptr;
 	Tree *search_options = nullptr;
 

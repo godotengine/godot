@@ -40,8 +40,6 @@
 #include "editor/gui/editor_object_selector.h"
 #include "editor/plugins/script_editor_plugin.h"
 
-InspectorDock *InspectorDock::singleton = nullptr;
-
 void InspectorDock::_prepare_menu() {
 	PopupMenu *menu = object_menu->get_popup();
 	for (int i = EditorPropertyNameProcessor::STYLE_RAW; i <= EditorPropertyNameProcessor::STYLE_LOCALIZED; i++) {

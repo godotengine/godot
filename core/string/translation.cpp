@@ -235,15 +235,6 @@ static _character_accent_pair _character_to_accented[] = {
 	{ 'z', U"ź" },
 };
 
-Vector<TranslationServer::LocaleScriptInfo> TranslationServer::locale_script_info;
-
-HashMap<String, String> TranslationServer::language_map;
-HashMap<String, String> TranslationServer::script_map;
-HashMap<String, String> TranslationServer::locale_rename_map;
-HashMap<String, String> TranslationServer::country_name_map;
-HashMap<String, String> TranslationServer::variant_map;
-HashMap<String, String> TranslationServer::country_rename_map;
-
 void TranslationServer::init_locale_info() {
 	// Init locale info.
 	language_map.clear();
@@ -651,8 +642,6 @@ StringName TranslationServer::_get_message_from_translations(const StringName &p
 
 	return res;
 }
-
-TranslationServer *TranslationServer::singleton = nullptr;
 
 bool TranslationServer::_load_translations(const String &p_from) {
 	if (ProjectSettings::get_singleton()->has_setting(p_from)) {

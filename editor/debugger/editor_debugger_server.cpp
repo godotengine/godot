@@ -122,7 +122,6 @@ Ref<RemoteDebuggerPeer> EditorDebuggerServerTCP::take_connection() {
 }
 
 /// EditorDebuggerServer
-HashMap<StringName, EditorDebuggerServer::CreateServerFunc> EditorDebuggerServer::protocols;
 
 EditorDebuggerServer *EditorDebuggerServer::create(const String &p_protocol) {
 	ERR_FAIL_COND_V(!protocols.has(p_protocol), nullptr);

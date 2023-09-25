@@ -44,7 +44,7 @@ class HBoxContainer;
 class EditorRunBar : public MarginContainer {
 	GDCLASS(EditorRunBar, MarginContainer);
 
-	static EditorRunBar *singleton;
+	static inline EditorRunBar *singleton = nullptr;
 
 	enum RunMode {
 		STOPPED = 0,

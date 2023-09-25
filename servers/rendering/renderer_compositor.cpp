@@ -35,8 +35,6 @@
 #include "core/string/print_string.h"
 #include "servers/xr_server.h"
 
-RendererCompositor *RendererCompositor::singleton = nullptr;
-
 RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
 bool RendererCompositor::low_end = false;
 
@@ -57,5 +55,3 @@ RendererCompositor::RendererCompositor() {
 		xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 	}
 }
-
-RendererCanvasRender *RendererCanvasRender::singleton = nullptr;

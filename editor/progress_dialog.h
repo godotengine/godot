@@ -81,7 +81,7 @@ class ProgressDialog : public PopupPanel {
 	VBoxContainer *main = nullptr;
 	uint64_t last_progress_tick;
 
-	static ProgressDialog *singleton;
+	static inline ProgressDialog *singleton = nullptr;
 	void _popup();
 
 	void _cancel_pressed();

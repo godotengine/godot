@@ -52,7 +52,6 @@
 #define MARK_EDITED
 #endif
 
-AudioDriver *AudioDriver::singleton = nullptr;
 AudioDriver *AudioDriver::get_singleton() {
 	return singleton;
 }
@@ -1523,8 +1522,6 @@ double AudioServer::get_time_to_next_mix() const {
 double AudioServer::get_time_since_last_mix() const {
 	return AudioDriver::get_singleton()->get_time_since_last_mix();
 }
-
-AudioServer *AudioServer::singleton = nullptr;
 
 void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata) {
 	CallbackItem *ci = new CallbackItem();

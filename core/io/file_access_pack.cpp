@@ -102,8 +102,6 @@ void PackedData::add_pack_source(PackSource *p_source) {
 	}
 }
 
-PackedData *PackedData::singleton = nullptr;
-
 PackedData::PackedData() {
 	singleton = this;
 	root = memnew(PackedDir);

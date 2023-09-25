@@ -33,8 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 
-EditorExport *EditorExport::singleton = nullptr;
-
 void EditorExport::_save() {
 	Ref<ConfigFile> config;
 	Ref<ConfigFile> credentials;

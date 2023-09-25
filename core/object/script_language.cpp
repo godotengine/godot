@@ -37,14 +37,6 @@
 
 #include <stdint.h>
 
-ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
-int ScriptServer::_language_count = 0;
-
-bool ScriptServer::scripting_enabled = true;
-bool ScriptServer::reload_scripts_on_save = false;
-SafeFlag ScriptServer::languages_finished; // Used until GH-76581 is fixed properly.
-ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
-
 void Script::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -258,10 +250,6 @@ void ScriptServer::thread_exit() {
 	}
 }
 
-HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;
-HashMap<StringName, Vector<StringName>> ScriptServer::inheriters_cache;
-bool ScriptServer::inheriters_cache_dirty = true;
-
 void ScriptServer::global_classes_clear() {
 	global_classes.clear();
 	inheriters_cache.clear();
@@ -389,7 +377,6 @@ String ScriptServer::get_global_class_cache_file_path() {
 
 ////////////////////
 
-ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
 ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
 	singleton = this;
 }

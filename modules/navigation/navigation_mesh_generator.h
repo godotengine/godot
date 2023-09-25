@@ -41,7 +41,7 @@ class NavigationMeshSourceGeometryData3D;
 class NavigationMeshGenerator : public Object {
 	GDCLASS(NavigationMeshGenerator, Object);
 
-	static NavigationMeshGenerator *singleton;
+	static inline NavigationMeshGenerator *singleton = nullptr;
 
 protected:
 	static void _bind_methods();

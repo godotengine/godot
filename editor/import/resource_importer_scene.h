@@ -157,11 +157,11 @@ VARIANT_ENUM_CAST(EditorScenePostImportPlugin::InternalImportCategory)
 class ResourceImporterScene : public ResourceImporter {
 	GDCLASS(ResourceImporterScene, ResourceImporter);
 
-	static Vector<Ref<EditorSceneFormatImporter>> importers;
-	static Vector<Ref<EditorScenePostImportPlugin>> post_importer_plugins;
+	static inline Vector<Ref<EditorSceneFormatImporter>> importers;
+	static inline Vector<Ref<EditorScenePostImportPlugin>> post_importer_plugins;
 
-	static ResourceImporterScene *scene_singleton;
-	static ResourceImporterScene *animation_singleton;
+	static inline ResourceImporterScene *scene_singleton = nullptr;
+	static inline ResourceImporterScene *animation_singleton = nullptr;
 
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,

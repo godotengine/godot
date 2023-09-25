@@ -106,14 +106,14 @@ protected:
 	virtual uint64_t _get_modified_time(const String &p_file) = 0;
 	virtual void _set_access_type(AccessType p_access);
 
-	static FileCloseFailNotify close_fail_notify;
+	static inline FileCloseFailNotify close_fail_notify = nullptr;
 
 private:
 	static bool backup_save;
 	thread_local static Error last_file_open_error;
 
 	AccessType _access_type = ACCESS_FILESYSTEM;
-	static CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
+	static inline CreateFunc create_func[ACCESS_MAX] = { nullptr, nullptr }; /** default file access creation function for a platform */
 	template <class T>
 	static Ref<FileAccess> _create_builtin() {
 		return memnew(T);

@@ -137,8 +137,8 @@ private:
 	int preview_wheel_index = 0;
 	float preview_wheel_timeout = 0.0f;
 
-	static bool default_show_hidden_files;
-	static DisplayMode default_display_mode;
+	static inline bool default_show_hidden_files = false;
+	static inline DisplayMode default_display_mode = DISPLAY_THUMBNAILS;
 	bool show_hidden_files;
 	DisplayMode display_mode;
 

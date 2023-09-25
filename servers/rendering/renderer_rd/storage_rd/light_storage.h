@@ -57,7 +57,7 @@ public:
 	};
 
 private:
-	static LightStorage *singleton;
+	static inline LightStorage *singleton = nullptr;
 	uint32_t max_cluster_elements = 512;
 
 	/* LIGHT */

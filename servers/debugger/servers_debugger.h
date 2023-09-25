@@ -114,7 +114,7 @@ private:
 	Ref<ServersProfiler> servers_profiler;
 	Ref<VisualProfiler> visual_profiler;
 
-	static ServersDebugger *singleton;
+	static inline ServersDebugger *singleton = nullptr;
 
 	static Error _capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
 

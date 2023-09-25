@@ -912,8 +912,6 @@ void DynamicFontImportSettings::_range_update(int32_t p_start, int32_t p_end) {
 /* Common                                                                */
 /*************************************************************************/
 
-DynamicFontImportSettings *DynamicFontImportSettings::singleton = nullptr;
-
 String DynamicFontImportSettings::_pad_zeros(const String &p_hex) const {
 	int len = CLAMP(5 - p_hex.length(), 0, 5);
 	return String("0").repeat(len) + p_hex;

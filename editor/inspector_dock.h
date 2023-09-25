@@ -134,7 +134,7 @@ class InspectorDock : public VBoxContainer {
 	void _prepare_history();
 
 private:
-	static InspectorDock *singleton;
+	static inline InspectorDock *singleton = nullptr;
 
 public:
 	static InspectorDock *get_singleton() { return singleton; }

@@ -126,8 +126,6 @@ GDScriptParserRef::~GDScriptParserRef() {
 	GDScriptCache::singleton->parser_map.erase(path);
 }
 
-GDScriptCache *GDScriptCache::singleton = nullptr;
-
 void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 	if (singleton == nullptr || p_from == p_to) {
 		return;

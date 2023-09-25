@@ -247,8 +247,6 @@ void ShaderFileEditor::_shader_changed() {
 	}
 }
 
-ShaderFileEditor *ShaderFileEditor::singleton = nullptr;
-
 ShaderFileEditor::ShaderFileEditor() {
 	singleton = this;
 	HSplitContainer *main_hs = memnew(HSplitContainer);

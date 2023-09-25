@@ -42,8 +42,6 @@ using namespace RendererRD;
 
 const Vector3i GI::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
 
-GI *GI::singleton = nullptr;
-
 ////////////////////////////////////////////////////////////////////////////////
 // VOXEL GI STORAGE
 

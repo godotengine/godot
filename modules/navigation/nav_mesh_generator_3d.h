@@ -42,7 +42,7 @@ class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
 
 class NavMeshGenerator3D : public Object {
-	static NavMeshGenerator3D *singleton;
+	static inline NavMeshGenerator3D *singleton = nullptr;
 
 	static Mutex baking_navmesh_mutex;
 	static Mutex generator_task_mutex;

@@ -59,14 +59,14 @@ class Image : public Resource {
 	GDCLASS(Image, Resource);
 
 public:
-	static SavePNGFunc save_png_func;
-	static SaveJPGFunc save_jpg_func;
-	static SaveEXRFunc save_exr_func;
-	static SavePNGBufferFunc save_png_buffer_func;
-	static SaveEXRBufferFunc save_exr_buffer_func;
-	static SaveJPGBufferFunc save_jpg_buffer_func;
-	static SaveWebPFunc save_webp_func;
-	static SaveWebPBufferFunc save_webp_buffer_func;
+	static inline SavePNGFunc save_png_func = nullptr;
+	static inline SaveJPGFunc save_jpg_func = nullptr;
+	static inline SaveEXRFunc save_exr_func = nullptr;
+	static inline SavePNGBufferFunc save_png_buffer_func = nullptr;
+	static inline SaveEXRBufferFunc save_exr_buffer_func = nullptr;
+	static inline SaveJPGBufferFunc save_jpg_buffer_func = nullptr;
+	static inline SaveWebPFunc save_webp_func = nullptr;
+	static inline SaveWebPBufferFunc save_webp_buffer_func = nullptr;
 
 	enum {
 		MAX_WIDTH = (1 << 24), // force a limit somehow
@@ -144,34 +144,34 @@ public:
 		ASTC_FORMAT_8x8,
 	};
 
-	static ImageMemLoadFunc _png_mem_loader_func;
-	static ImageMemLoadFunc _jpg_mem_loader_func;
-	static ImageMemLoadFunc _webp_mem_loader_func;
-	static ImageMemLoadFunc _tga_mem_loader_func;
-	static ImageMemLoadFunc _bmp_mem_loader_func;
-	static ScalableImageMemLoadFunc _svg_scalable_mem_loader_func;
-	static ImageMemLoadFunc _ktx_mem_loader_func;
+	static inline ImageMemLoadFunc _png_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _jpg_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _webp_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _tga_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _bmp_mem_loader_func = nullptr;
+	static inline ScalableImageMemLoadFunc _svg_scalable_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _ktx_mem_loader_func = nullptr;
 
-	static void (*_image_compress_bc_func)(Image *, UsedChannels p_channels);
-	static void (*_image_compress_bptc_func)(Image *, UsedChannels p_channels);
-	static void (*_image_compress_etc1_func)(Image *);
-	static void (*_image_compress_etc2_func)(Image *, UsedChannels p_channels);
-	static void (*_image_compress_astc_func)(Image *, ASTCFormat p_format);
+	static inline void (*_image_compress_bc_func)(Image *, UsedChannels p_channels) = nullptr;
+	static inline void (*_image_compress_bptc_func)(Image *, UsedChannels p_channels) = nullptr;
+	static inline void (*_image_compress_etc1_func)(Image *) = nullptr;
+	static inline void (*_image_compress_etc2_func)(Image *, UsedChannels p_channels) = nullptr;
+	static inline void (*_image_compress_astc_func)(Image *, ASTCFormat p_format) = nullptr;
 
-	static void (*_image_decompress_bc)(Image *);
-	static void (*_image_decompress_bptc)(Image *);
-	static void (*_image_decompress_etc1)(Image *);
-	static void (*_image_decompress_etc2)(Image *);
-	static void (*_image_decompress_astc)(Image *);
+	static inline void (*_image_decompress_bc)(Image *) = nullptr;
+	static inline void (*_image_decompress_bptc)(Image *) = nullptr;
+	static inline void (*_image_decompress_etc1)(Image *) = nullptr;
+	static inline void (*_image_decompress_etc2)(Image *) = nullptr;
+	static inline void (*_image_decompress_astc)(Image *) = nullptr;
 
-	static Vector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality);
-	static Vector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image);
-	static Ref<Image> (*webp_unpacker)(const Vector<uint8_t> &p_buffer);
-	static Vector<uint8_t> (*png_packer)(const Ref<Image> &p_image);
-	static Ref<Image> (*png_unpacker)(const Vector<uint8_t> &p_buffer);
-	static Vector<uint8_t> (*basis_universal_packer)(const Ref<Image> &p_image, UsedChannels p_channels);
-	static Ref<Image> (*basis_universal_unpacker)(const Vector<uint8_t> &p_buffer);
-	static Ref<Image> (*basis_universal_unpacker_ptr)(const uint8_t *p_data, int p_size);
+	static inline Vector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality) = nullptr;
+	static inline Vector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image) = nullptr;
+	static inline Ref<Image> (*webp_unpacker)(const Vector<uint8_t> &p_buffer) = nullptr;
+	static inline Vector<uint8_t> (*png_packer)(const Ref<Image> &p_image) = nullptr;
+	static inline Ref<Image> (*png_unpacker)(const Vector<uint8_t> &p_buffer) = nullptr;
+	static inline Vector<uint8_t> (*basis_universal_packer)(const Ref<Image> &p_image, UsedChannels p_channels) = nullptr;
+	static inline Ref<Image> (*basis_universal_unpacker)(const Vector<uint8_t> &p_buffer) = nullptr;
+	static inline Ref<Image> (*basis_universal_unpacker_ptr)(const uint8_t *p_data, int p_size) = nullptr;
 
 	_FORCE_INLINE_ Color _get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const;
 	_FORCE_INLINE_ void _set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color);

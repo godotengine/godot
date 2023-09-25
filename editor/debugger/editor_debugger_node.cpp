@@ -56,8 +56,6 @@ void _for_all(TabContainer *p_node, const Func &p_func) {
 	}
 }
 
-EditorDebuggerNode *EditorDebuggerNode::singleton = nullptr;
-
 EditorDebuggerNode::EditorDebuggerNode() {
 	if (!singleton) {
 		singleton = this;

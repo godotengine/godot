@@ -1122,8 +1122,6 @@ bool MaterialStorage::Samplers::is_null() const {
 ///////////////////////////////////////////////////////////////////////////
 // MaterialStorage
 
-MaterialStorage *MaterialStorage::singleton = nullptr;
-
 MaterialStorage *MaterialStorage::get_singleton() {
 	return singleton;
 }

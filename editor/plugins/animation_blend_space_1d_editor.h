@@ -82,7 +82,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 
 	bool updating = false;
 
-	static AnimationNodeBlendSpace1DEditor *singleton;
+	static inline AnimationNodeBlendSpace1DEditor *singleton = nullptr;
 
 	void _blend_space_gui_input(const Ref<InputEvent> &p_event);
 	void _blend_space_draw();

@@ -39,10 +39,10 @@
 class EditorColorMap {
 	// Godot Color values are used to avoid the ambiguity of strings
 	// (where "#ffffff", "fff", and "white" are all equivalent).
-	static HashMap<Color, Color> color_conversion_map;
+	static inline HashMap<Color, Color> color_conversion_map;
 	// The names of the icons to never convert, even if one of their colors
 	// are contained in the color map from above.
-	static HashSet<StringName> color_conversion_exceptions;
+	static inline HashSet<StringName> color_conversion_exceptions;
 
 public:
 	static void create();
@@ -56,7 +56,7 @@ public:
 class EditorTheme : public Theme {
 	GDCLASS(EditorTheme, Theme);
 
-	static Vector<StringName> editor_theme_types;
+	static inline Vector<StringName> editor_theme_types;
 
 public:
 	virtual Color get_color(const StringName &p_name, const StringName &p_theme_type) const override;

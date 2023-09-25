@@ -53,7 +53,7 @@ private:
 	void _notification(int p_what);
 
 public:
-	static int port_override;
+	static inline int port_override = -1;
 	GDScriptLanguageServer();
 	void start();
 	void stop();

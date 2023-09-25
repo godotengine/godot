@@ -187,7 +187,7 @@ class EditorFileSystem : public Node {
 
 	EditorFileSystemDirectory *filesystem = nullptr;
 
-	static EditorFileSystem *singleton;
+	static inline EditorFileSystem *singleton = nullptr;
 
 	/* Used for reading the filesystem cache file */
 	struct FileCache {

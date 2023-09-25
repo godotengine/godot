@@ -55,8 +55,6 @@ void CameraServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_CBCR_IMAGE);
 };
 
-CameraServer *CameraServer::singleton = nullptr;
-
 CameraServer *CameraServer::get_singleton() {
 	return singleton;
 };

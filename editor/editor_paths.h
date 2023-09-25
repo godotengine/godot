@@ -50,7 +50,7 @@ class EditorPaths : public Object {
 	String script_templates_folder = "script_templates";
 	String feature_profiles_folder = "feature_profiles";
 
-	static EditorPaths *singleton;
+	static inline EditorPaths *singleton = nullptr;
 
 protected:
 	static void _bind_methods();

@@ -52,7 +52,7 @@ class ResourceLoader : public Object {
 
 protected:
 	static void _bind_methods();
-	static ResourceLoader *singleton;
+	static inline ResourceLoader *singleton = nullptr;
 
 public:
 	enum ThreadLoadStatus {
@@ -92,7 +92,7 @@ class ResourceSaver : public Object {
 
 protected:
 	static void _bind_methods();
-	static ResourceSaver *singleton;
+	static inline ResourceSaver *singleton = nullptr;
 
 public:
 	enum SaverFlags {
@@ -123,7 +123,7 @@ class OS : public Object {
 
 protected:
 	static void _bind_methods();
-	static OS *singleton;
+	static inline OS *singleton = nullptr;
 
 public:
 	enum RenderingDriver {
@@ -249,7 +249,7 @@ public:
 class Geometry2D : public Object {
 	GDCLASS(Geometry2D, Object);
 
-	static Geometry2D *singleton;
+	static inline Geometry2D *singleton;
 
 protected:
 	static void _bind_methods();
@@ -313,7 +313,7 @@ public:
 class Geometry3D : public Object {
 	GDCLASS(Geometry3D, Object);
 
-	static Geometry3D *singleton;
+	static inline Geometry3D *singleton;
 
 protected:
 	static void _bind_methods();
@@ -343,7 +343,7 @@ public:
 class Marshalls : public Object {
 	GDCLASS(Marshalls, Object);
 
-	static Marshalls *singleton;
+	static inline Marshalls *singleton;
 
 protected:
 	static void _bind_methods();
@@ -467,7 +467,7 @@ class Engine : public Object {
 
 protected:
 	static void _bind_methods();
-	static Engine *singleton;
+	static inline Engine *singleton;
 
 public:
 	static Engine *get_singleton() { return singleton; }
@@ -537,7 +537,7 @@ class EngineDebugger : public Object {
 
 protected:
 	static void _bind_methods();
-	static EngineDebugger *singleton;
+	static inline EngineDebugger *singleton;
 
 public:
 	static EngineDebugger *get_singleton() { return singleton; }
