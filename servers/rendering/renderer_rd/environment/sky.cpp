@@ -973,7 +973,7 @@ SkyRD::~SkyRD() {
 	}
 }
 
-void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
+void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Size2i p_screen_size, Vector2 p_jitter, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
@@ -1173,18 +1173,21 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 		}
 	}
 
+	Projection correction;
+	correction.add_jitter_offset(p_jitter);
+
 	sky_scene_state.view_count = p_view_count;
 	sky_scene_state.cam_transform = p_cam_transform;
-	sky_scene_state.cam_projection = p_cam_projection; // We only use this when rendering a single view.
+	sky_scene_state.cam_projection = correction * p_cam_projection; // We only use this when rendering a single view.
 
 	// Our info in our UBO is only used if we're rendering stereo.
 	for (uint32_t i = 0; i < p_view_count; i++) {
-		Projection view_inv_projection = p_view_projections[i].inverse();
+		Projection view_inv_projection = (correction * p_view_projections[i]).inverse();
 		if (p_view_count > 1) {
 			RendererRD::MaterialStorage::store_camera(p_cam_projection * view_inv_projection, sky_scene_state.ubo.combined_reprojection[i]);
 		} else {
 			Projection ident;
-			RendererRD::MaterialStorage::store_camera(ident, sky_scene_state.ubo.combined_reprojection[i]);
+			RendererRD::MaterialStorage::store_camera(correction, sky_scene_state.ubo.combined_reprojection[i]);
 		}
 
 		RendererRD::MaterialStorage::store_camera(view_inv_projection, sky_scene_state.ubo.view_inv_projections[i]);

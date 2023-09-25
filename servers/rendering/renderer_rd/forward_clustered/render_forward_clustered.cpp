@@ -105,6 +105,12 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_voxelgi() 
 	}
 }
 
+void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_fsr2(RendererRD::FSR2Effect *p_effect) {
+	if (fsr2_context == nullptr) {
+		fsr2_context = p_effect->create_context(render_buffers->get_internal_size(), render_buffers->get_target_size());
+	}
+}
+
 void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 	// JIC, should already have been cleared
 	if (render_buffers) {
@@ -118,6 +124,11 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 	if (cluster_builder) {
 		memdelete(cluster_builder);
 		cluster_builder = nullptr;
+	}
+
+	if (fsr2_context) {
+		memdelete(fsr2_context);
+		fsr2_context = nullptr;
 	}
 
 	if (!render_sdfgi_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_sdfgi_uniform_set)) {
@@ -230,6 +241,14 @@ RID RenderForwardClustered::RenderBufferDataForwardClustered::get_specular_only_
 	return FramebufferCacheRD::get_singleton()->get_cache_multiview(render_buffers->get_view_count(), specular);
 }
 
+RID RenderForwardClustered::RenderBufferDataForwardClustered::get_velocity_only_fb() {
+	bool use_msaa = render_buffers->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED;
+
+	RID velocity = render_buffers->get_texture(RB_SCOPE_BUFFERS, use_msaa ? RB_TEX_VELOCITY_MSAA : RB_TEX_VELOCITY);
+
+	return FramebufferCacheRD::get_singleton()->get_cache_multiview(render_buffers->get_view_count(), velocity);
+}
+
 void RenderForwardClustered::setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) {
 	Ref<RenderBufferDataForwardClustered> data;
 	data.instantiate();
@@ -285,8 +304,10 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		const GeometryInstanceSurfaceDataCache *surf = p_params->elements[i];
 		const RenderElementInfo &element_info = p_params->element_info[i];
 
-		if ((p_pass_mode == PASS_MODE_COLOR && !(p_color_pass_flags & COLOR_PASS_FLAG_TRANSPARENT)) && !(surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE)) {
-			continue; // Objects with "Depth-prepass" transparency are included in both render lists, but should only be rendered in the transparent pass
+		if (p_pass_mode == PASS_MODE_COLOR && surf->color_pass_inclusion_mask && (p_color_pass_flags & surf->color_pass_inclusion_mask) == 0) {
+			// Some surfaces can be repeated in multiple render lists. We exclude them from being rendered on the color pass based on the
+			// features supported by the pass compared to the exclusion mask.
+			continue;
 		}
 
 		if (surf->owner->instance_count == 0) {
@@ -582,7 +603,7 @@ void RenderForwardClustered::_render_list_with_threads(RenderListParameters *p_p
 	}
 }
 
-void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_pancake_shadows, int p_index) {
+void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier, bool p_pancake_shadows, int p_index) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
 	Ref<RenderSceneBuffersRD> rd = p_render_data->render_buffers;
@@ -598,7 +619,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		}
 	}
 
-	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_flip_y, p_pancake_shadows, p_screen_size, p_default_bg_color, _render_buffers_get_luminance_multiplier(), p_opaque_render_buffers);
+	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_flip_y, p_pancake_shadows, p_screen_size, p_default_bg_color, _render_buffers_get_luminance_multiplier(), p_opaque_render_buffers, p_apply_alpha_multiplier);
 
 	// now do implementation UBO
 
@@ -775,8 +796,9 @@ _FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primit
 	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
 	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
 }
-void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, uint32_t p_color_pass_flags = 0, bool p_using_sdfgi, bool p_using_opaque_gi, bool p_append) {
+void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_using_sdfgi, bool p_using_opaque_gi, bool p_using_motion_pass, bool p_append) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	uint64_t frame = RSG::rasterizer->get_frame_number();
 
 	if (p_render_list == RENDER_LIST_OPAQUE) {
 		scene_state.used_sss = false;
@@ -797,7 +819,9 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 	if (!p_append) {
 		rl->clear();
 		if (p_render_list == RENDER_LIST_OPAQUE) {
-			render_list[RENDER_LIST_ALPHA].clear(); //opaque fills alpha too
+			// Opaque fills motion and alpha lists.
+			render_list[RENDER_LIST_MOTION].clear();
+			render_list[RENDER_LIST_ALPHA].clear();
 		}
 	}
 
@@ -827,6 +851,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 		}
 		bool uses_lightmap = false;
 		bool uses_gi = false;
+		bool uses_motion = false;
 		float fade_alpha = 1.0;
 
 		if (inst->fade_near || inst->fade_far) {
@@ -914,6 +939,14 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					inst->gi_offset_cache = 0xFFFFFFFF;
 				}
 			}
+
+			if (p_pass_mode == PASS_MODE_COLOR && p_using_motion_pass) {
+				bool transform_changed = inst->prev_transform_change_frame == frame;
+				bool has_mesh_instance = inst->mesh_instance.is_valid();
+				bool uses_particles = inst->base_flags & INSTANCE_DATA_FLAG_PARTICLES;
+				bool is_multimesh_with_motion = !uses_particles && (inst->base_flags & INSTANCE_DATA_FLAG_MULTIMESH) && mesh_storage->_multimesh_uses_motion_vectors_offsets(inst->data->base);
+				uses_motion = transform_changed || has_mesh_instance || uses_particles || is_multimesh_with_motion;
+			}
 		}
 		inst->flags_cache = flags;
 
@@ -990,11 +1023,18 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				if (!force_alpha && (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE))) {
 					rl->add_element(surf);
 				}
+
 				if (force_alpha || (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA)) {
+					surf->color_pass_inclusion_mask = COLOR_PASS_FLAG_TRANSPARENT;
 					render_list[RENDER_LIST_ALPHA].add_element(surf);
 					if (uses_gi) {
 						surf->sort.uses_forward_gi = 1;
 					}
+				} else if (p_using_motion_pass && (uses_motion || (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_MOTION_VECTOR))) {
+					surf->color_pass_inclusion_mask = COLOR_PASS_FLAG_MOTION_VECTORS;
+					render_list[RENDER_LIST_MOTION].add_element(surf);
+				} else {
+					surf->color_pass_inclusion_mask = 0;
 				}
 
 				if (uses_lightmap) {
@@ -1580,16 +1620,24 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
+	bool using_debug_mvs = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS;
+	bool using_taa = rb->get_use_taa();
+	bool using_fsr2 = rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR2;
+
 	// check if we need motion vectors
-	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
-		p_render_data->scene_data->calculate_motion_vectors = true;
-	} else if (!is_reflection_probe && rb->get_use_taa()) {
-		p_render_data->scene_data->calculate_motion_vectors = true;
+	bool motion_vectors_required;
+	if (using_debug_mvs) {
+		motion_vectors_required = true;
+	} else if (!is_reflection_probe && using_taa) {
+		motion_vectors_required = true;
+	} else if (!is_reflection_probe && using_fsr2) {
+		motion_vectors_required = true;
 	} else {
-		p_render_data->scene_data->calculate_motion_vectors = false;
+		motion_vectors_required = false;
 	}
 
 	//p_render_data->scene_data->subsurface_scatter_width = subsurface_scatter_size;
+	p_render_data->scene_data->calculate_motion_vectors = motion_vectors_required;
 	p_render_data->scene_data->directional_light_count = 0;
 	p_render_data->scene_data->opaque_prepass_threshold = 0.99f;
 
@@ -1607,6 +1655,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_voxelgi = false;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_ssil = !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
+	bool using_motion_pass = rb_data.is_valid() && using_fsr2;
 
 	if (is_reflection_probe) {
 		uint32_t resolution = light_storage->reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
@@ -1625,7 +1674,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	} else {
 		screen_size = rb->get_internal_size();
 
-		if (rb->get_use_taa() || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
+		if (p_render_data->scene_data->calculate_motion_vectors) {
 			color_pass_flags |= COLOR_PASS_FLAG_MOTION_VECTORS;
 			scene_shader.enable_advanced_shader_group();
 		}
@@ -1663,12 +1712,16 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	_setup_voxelgis(*p_render_data->voxel_gi_instances);
 	_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, false);
 
-	_update_render_base_uniform_set(rb->get_samplers()); //may have changed due to the above (light buffer enlarged, as an example)
+	_update_render_base_uniform_set(rb->get_samplers()); // May have changed due to the above (light buffer enlarged, as an example).
 
-	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR, color_pass_flags, using_sdfgi, using_sdfgi || using_voxelgi);
+	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR, using_sdfgi, using_sdfgi || using_voxelgi, using_motion_pass);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
+	render_list[RENDER_LIST_MOTION].sort_by_key();
 	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
-	_fill_instance_data(RENDER_LIST_OPAQUE, p_render_data->render_info ? p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE] : (int *)nullptr);
+
+	int *render_info = p_render_data->render_info ? p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE] : (int *)nullptr;
+	_fill_instance_data(RENDER_LIST_OPAQUE, render_info);
+	_fill_instance_data(RENDER_LIST_MOTION, render_info);
 	_fill_instance_data(RENDER_LIST_ALPHA);
 
 	RD::get_singleton()->draw_command_end_label();
@@ -1792,9 +1845,9 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				correction.set_depth_correction(true);
 				Projection projection = correction * p_render_data->scene_data->cam_projection;
 
-				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, 1, &projection, &eye_offset, p_render_data->scene_data->cam_transform, projection, screen_size, this);
+				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, 1, &projection, &eye_offset, p_render_data->scene_data->cam_transform, projection, screen_size, Vector2(0.0f, 0.0f), this);
 			} else {
-				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, p_render_data->scene_data->cam_projection, screen_size, this);
+				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, p_render_data->scene_data->cam_projection, screen_size, p_render_data->scene_data->taa_jitter, this);
 			}
 
 			sky_energy_multiplier *= bg_energy_multiplier;
@@ -1892,37 +1945,71 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	// Shadow pass can change the base uniform set samplers.
 	_update_render_base_uniform_set(rb->get_samplers());
 
-	_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, true);
+	_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, true, using_motion_pass);
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, true);
-
 	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !using_sss;
 	bool can_continue_depth = !(scene_state.used_depth_texture || scene_state.used_normal_texture) && !using_ssr && !using_sss;
 
 	{
+		bool render_motion_pass = !render_list[RENDER_LIST_MOTION].elements.is_empty();
 		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only || debug_voxelgis || debug_sdfgi_probes);
 		bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only || debug_voxelgis || debug_sdfgi_probes);
+		RD::FinalAction final_color_action = will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ;
+		RD::FinalAction final_depth_action = will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ;
 
-		Vector<Color> c;
 		{
-			Color cc = clear_color.srgb_to_linear();
-			if (using_separate_specular || rb_data.is_valid()) {
-				cc.a = 0; //subsurf scatter must be 0
-			}
-			c.push_back(cc);
+			Vector<Color> c;
+			{
+				Color cc = clear_color.srgb_to_linear();
+				if (using_separate_specular || rb_data.is_valid()) {
+					// Effects that rely on separate specular, like subsurface scattering, must clear the alpha to zero.
+					cc.a = 0;
+				}
+				c.push_back(cc);
 
-			if (rb_data.is_valid()) {
-				c.push_back(Color(0, 0, 0, 0)); // Separate specular
-				c.push_back(Color(0, 0, 0, 0)); // Motion vectors
+				if (rb_data.is_valid()) {
+					c.push_back(Color(0, 0, 0, 0)); // Separate specular.
+					c.push_back(Color(0, 0, 0, 0)); // Motion vector. Pushed to the clear color vector even if the framebuffer isn't bound.
+				}
+			}
+
+			uint32_t opaque_color_pass_flags = using_motion_pass ? (color_pass_flags & ~COLOR_PASS_FLAG_MOTION_VECTORS) : color_pass_flags;
+			RID opaque_framebuffer = using_motion_pass ? rb_data->get_color_pass_fb(opaque_color_pass_flags) : color_framebuffer;
+			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, opaque_color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+			_render_list_with_threads(&render_list_params, opaque_framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, render_motion_pass ? RD::FINAL_ACTION_CONTINUE : final_color_action, depth_pre_pass ? (continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP) : RD::INITIAL_ACTION_CLEAR, render_motion_pass ? RD::FINAL_ACTION_CONTINUE : final_depth_action, c, 1.0, 0);
+		}
+
+		RD::get_singleton()->draw_command_end_label();
+
+		if (using_motion_pass) {
+			Vector<Color> motion_vector_clear_colors;
+			motion_vector_clear_colors.push_back(Color(-1, -1, 0, 0));
+			RD::get_singleton()->draw_list_begin(rb_data->get_velocity_only_fb(), RD::INITIAL_ACTION_CLEAR, render_motion_pass ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_CONTINUE, motion_vector_clear_colors);
+			RD::get_singleton()->draw_list_end();
+		}
+
+		if (render_motion_pass) {
+			RD::get_singleton()->draw_command_begin_label("Render Motion Pass");
+
+			RENDER_TIMESTAMP("Render Motion Pass");
+
+			rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_MOTION, p_render_data, radiance_texture, true);
+
+			RenderListParameters render_list_params(render_list[RENDER_LIST_MOTION].elements.ptr(), render_list[RENDER_LIST_MOTION].element_info.ptr(), render_list[RENDER_LIST_MOTION].elements.size(), reverse_cull, PASS_MODE_COLOR, color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+			_render_list_with_threads(&render_list_params, color_framebuffer, RD::INITIAL_ACTION_CONTINUE, final_color_action, RD::INITIAL_ACTION_CONTINUE, final_depth_action);
+
+			if (will_continue_color) {
+				// Close the motion vectors framebuffer as it'll no longer be used.
+				RD::get_singleton()->draw_list_begin(rb_data->get_velocity_only_fb(), RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_CONTINUE);
+				RD::get_singleton()->draw_list_end();
 			}
 		}
 
-		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
-		_render_list_with_threads(&render_list_params, color_framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, depth_pre_pass ? (continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP) : RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
 		if (will_continue_color && using_separate_specular) {
-			// close the specular framebuffer, as it's no longer used
+			// Close the specular framebuffer as it'll no longer be used.
 			RD::get_singleton()->draw_list_begin(rb_data->get_specular_only_fb(), RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_CONTINUE);
 			RD::get_singleton()->draw_list_end();
 		}
@@ -2052,6 +2139,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	{
 		uint32_t transparent_color_pass_flags = (color_pass_flags | COLOR_PASS_FLAG_TRANSPARENT) & ~(COLOR_PASS_FLAG_SEPARATE_SPECULAR);
+		if (using_motion_pass) {
+			// Motion vectors on transparent draw calls are not required when using the reactive mask.
+			transparent_color_pass_flags &= ~(COLOR_PASS_FLAG_MOTION_VECTORS);
+		}
+
 		RID alpha_framebuffer = rb_data.is_valid() ? rb_data->get_color_pass_fb(transparent_color_pass_flags) : color_only_framebuffer;
 		RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), false, PASS_MODE_COLOR, transparent_color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 		_render_list_with_threads(&render_list_params, alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
@@ -2064,12 +2156,14 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	RD::get_singleton()->draw_command_begin_label("Resolve");
 
 	if (rb_data.is_valid() && rb->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
+		bool resolve_velocity_buffer = (using_taa || using_fsr2) && rb->has_velocity_buffer(true);
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
 			resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[rb->get_msaa_3d()]);
-		}
-		if (taa && rb->get_use_taa()) {
-			taa->msaa_resolve(rb);
+
+			if (resolve_velocity_buffer) {
+				RD::get_singleton()->texture_resolve_multisample(rb->get_velocity_buffer(true, v), rb->get_velocity_buffer(false, v));
+			}
 		}
 	}
 
@@ -2082,9 +2176,51 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 	RD::get_singleton()->draw_command_end_label();
 
-	if (rb_data.is_valid() && taa && rb->get_use_taa()) {
-		RENDER_TIMESTAMP("TAA")
-		taa->process(rb, _render_buffers_get_color_format(), p_render_data->scene_data->z_near, p_render_data->scene_data->z_far);
+	if (rb_data.is_valid() && (using_fsr2 || using_taa)) {
+		if (using_fsr2) {
+			rb->ensure_upscaled();
+			rb_data->ensure_fsr2(fsr2_effect);
+
+			RID exposure;
+			if (RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
+				exposure = luminance->get_current_luminance_buffer(rb);
+			}
+
+			RENDER_TIMESTAMP("FSR2");
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				real_t fov = p_render_data->scene_data->cam_projection.get_fov();
+				real_t aspect = p_render_data->scene_data->cam_projection.get_aspect();
+				real_t fovy = p_render_data->scene_data->cam_projection.get_fovy(fov, aspect);
+				Vector2 jitter = p_render_data->scene_data->taa_jitter * Vector2(rb->get_internal_size()) * 0.5f;
+				RendererRD::FSR2Effect::Parameters params;
+				params.context = rb_data->get_fsr2_context();
+				params.internal_size = rb->get_internal_size();
+				params.sharpness = CLAMP(1.0f - (rb->get_fsr_sharpness() / 2.0f), 0.0f, 1.0f);
+				params.color = rb->get_internal_texture(v);
+				params.depth = rb->get_depth_texture(v);
+				params.velocity = rb->get_velocity_buffer(false, v);
+				params.reactive = rb->get_internal_texture_reactive(v);
+				params.exposure = exposure;
+				params.output = rb->get_upscaled_texture(v);
+				params.z_near = p_render_data->scene_data->z_near;
+				params.z_far = p_render_data->scene_data->z_far;
+				params.fovy = fovy;
+				params.jitter = jitter;
+				params.delta_time = float(time_step);
+				params.reset_accumulation = false; // FIXME: The engine does not provide a way to reset the accumulation.
+
+				const Projection &prev_proj = p_render_data->scene_data->prev_cam_projection;
+				const Projection &cur_proj = p_render_data->scene_data->cam_projection;
+				const Transform3D &prev_transform = p_render_data->scene_data->prev_cam_transform;
+				const Transform3D &cur_transform = p_render_data->scene_data->cam_transform;
+				params.reprojection = prev_proj.flipped_y() * prev_transform.affine_inverse() * cur_transform * cur_proj.flipped_y().inverse();
+
+				fsr2_effect->upscale(params);
+			}
+		} else if (using_taa) {
+			RENDER_TIMESTAMP("TAA");
+			taa->process(rb, _render_buffers_get_color_format(), p_render_data->scene_data->z_near, p_render_data->scene_data->z_far);
+		}
 	}
 
 	if (rb_data.is_valid()) {
@@ -2357,7 +2493,7 @@ void RenderForwardClustered::_render_shadow_append(RID p_framebuffer, const Page
 	render_data.instances = &p_instances;
 	render_data.render_info = p_render_info;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), !p_flip_y, Color(), false, p_use_pancake, shadow_pass_index);
+	_setup_environment(&render_data, true, Vector2(1, 1), !p_flip_y, Color(), false, false, p_use_pancake, shadow_pass_index);
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 		scene_data.screen_mesh_lod_threshold = 0.0;
@@ -2368,7 +2504,7 @@ void RenderForwardClustered::_render_shadow_append(RID p_framebuffer, const Page
 	PassMode pass_mode = p_use_dp ? PASS_MODE_SHADOW_DP : PASS_MODE_SHADOW;
 
 	uint32_t render_list_from = render_list[RENDER_LIST_SECONDARY].elements.size();
-	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode, 0, false, false, true);
+	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode, false, false, false, true);
 	uint32_t render_list_size = render_list[RENDER_LIST_SECONDARY].elements.size() - render_list_from;
 	render_list[RENDER_LIST_SECONDARY].sort_by_key_range(render_list_from, render_list_size);
 	_fill_instance_data(RENDER_LIST_SECONDARY, p_render_info ? p_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW] : (int *)nullptr, render_list_from, render_list_size, false);
@@ -2453,7 +2589,7 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 
 	_update_render_base_uniform_set(RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
 
-	_setup_environment(&render_data, true, Vector2(1, 1), true, Color(), false, false);
+	_setup_environment(&render_data, true, Vector2(1, 1), true, Color(), false, false, false);
 
 	PassMode pass_mode = PASS_MODE_SHADOW;
 
@@ -3475,6 +3611,10 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS;
 	}
 
+	if (p_material->shader_data->is_animated()) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_MOTION_VECTOR;
+	}
+
 	SceneShaderForwardClustered::MaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
 	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_position && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_alpha_antialiasing && p_material->shader_data->cull_mode == SceneShaderForwardClustered::ShaderData::CULL_BACK && !p_material->shader_data->uses_point_size) {
@@ -3982,6 +4122,7 @@ RenderForwardClustered::RenderForwardClustered() {
 
 	resolve_effects = memnew(RendererRD::Resolve());
 	taa = memnew(RendererRD::TAA);
+	fsr2_effect = memnew(RendererRD::FSR2Effect);
 	ss_effects = memnew(RendererRD::SSEffects);
 }
 
@@ -3994,6 +4135,11 @@ RenderForwardClustered::~RenderForwardClustered() {
 	if (taa != nullptr) {
 		memdelete(taa);
 		taa = nullptr;
+	}
+
+	if (fsr2_effect) {
+		memdelete(fsr2_effect);
+		fsr2_effect = nullptr;
 	}
 
 	if (resolve_effects != nullptr) {

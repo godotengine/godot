@@ -37,6 +37,21 @@
 
 #include <new>
 
+/* HALTON SEQUENCE */
+
+#ifndef _3D_DISABLED
+static float get_halton_value(int p_index, int p_base) {
+	float f = 1;
+	float r = 0;
+	while (p_index > 0) {
+		f = f / static_cast<float>(p_base);
+		r = r + f * (p_index % p_base);
+		p_index = p_index / p_base;
+	}
+	return r * 2.0f - 1.0f;
+}
+#endif // _3D_DISABLED
+
 /* CAMERA API */
 
 RID RendererSceneCull::camera_allocate() {
@@ -2498,15 +2513,26 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 	return animated_material_found;
 }
 
-void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info) {
+void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info) {
 #ifndef _3D_DISABLED
 
 	Camera *camera = camera_owner.get_or_null(p_camera);
 	ERR_FAIL_COND(!camera);
 
 	Vector2 jitter;
-	if (p_use_taa) {
-		jitter = taa_jitter_array[RSG::rasterizer->get_frame_number() % TAA_JITTER_COUNT] / p_viewport_size;
+	if (p_jitter_phase_count > 0) {
+		uint32_t current_jitter_count = camera_jitter_array.size();
+		if (p_jitter_phase_count != current_jitter_count) {
+			// Resize the jitter array and fill it with the pre-computed Halton sequence.
+			camera_jitter_array.resize(p_jitter_phase_count);
+
+			for (uint32_t i = current_jitter_count; i < p_jitter_phase_count; i++) {
+				camera_jitter_array[i].x = get_halton_value(i, 2);
+				camera_jitter_array[i].y = get_halton_value(i, 3);
+			}
+		}
+
+		jitter = camera_jitter_array[RSG::rasterizer->get_frame_number() % p_jitter_phase_count] / p_viewport_size;
 	}
 
 	RendererSceneRender::CameraData camera_data;
@@ -4113,17 +4139,6 @@ void RendererSceneCull::set_scene_render(RendererSceneRender *p_scene_render) {
 	geometry_instance_pair_mask = scene_render->geometry_instance_get_pair_mask();
 }
 
-float get_halton_value(int index, int base) {
-	float f = 1;
-	float r = 0;
-	while (index > 0) {
-		f = f / static_cast<float>(base);
-		r = r + f * (index % base);
-		index = index / base;
-	}
-	return r * 2.0f - 1.0f;
-};
-
 RendererSceneCull::RendererSceneCull() {
 	render_pass = 1;
 	singleton = this;
@@ -4147,12 +4162,6 @@ RendererSceneCull::RendererSceneCull() {
 	indexer_update_iterations = GLOBAL_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
 	thread_cull_threshold = GLOBAL_GET("rendering/limits/spatial_indexer/threaded_cull_minimum_instances");
 	thread_cull_threshold = MAX(thread_cull_threshold, (uint32_t)WorkerThreadPool::get_singleton()->get_thread_count()); //make sure there is at least one thread per CPU
-
-	taa_jitter_array.resize(TAA_JITTER_COUNT);
-	for (int i = 0; i < TAA_JITTER_COUNT; i++) {
-		taa_jitter_array[i].x = get_halton_value(i, 2);
-		taa_jitter_array[i].y = get_halton_value(i, 3);
-	}
 
 	dummy_occlusion_culling = memnew(RendererSceneOcclusionCull);
 }

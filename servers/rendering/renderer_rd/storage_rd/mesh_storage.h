@@ -244,6 +244,7 @@ private:
 	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
 	_FORCE_INLINE_ void _multimesh_enable_motion_vectors(MultiMesh *multimesh);
 	_FORCE_INLINE_ void _multimesh_update_motion_vectors_data_cache(MultiMesh *multimesh);
+	_FORCE_INLINE_ bool _multimesh_uses_motion_vectors(MultiMesh *multimesh);
 	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
@@ -622,6 +623,8 @@ public:
 
 	void _update_dirty_multimeshes();
 	void _multimesh_get_motion_vectors_offsets(RID p_multimesh, uint32_t &r_current_offset, uint32_t &r_prev_offset);
+	bool _multimesh_uses_motion_vectors_offsets(RID p_multimesh);
+	bool _multimesh_uses_motion_vectors(RID p_multimesh);
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);

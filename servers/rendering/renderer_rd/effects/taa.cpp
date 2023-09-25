@@ -47,20 +47,6 @@ TAA::~TAA() {
 	taa_shader.version_free(shader_version);
 }
 
-void TAA::msaa_resolve(Ref<RenderSceneBuffersRD> p_render_buffers) {
-	if (!p_render_buffers->has_velocity_buffer(true)) {
-		// nothing to resolve
-		return;
-	}
-
-	for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
-		RID velocity_buffer_msaa = p_render_buffers->get_velocity_buffer(true, v);
-		RID velocity_buffer = p_render_buffers->get_velocity_buffer(false, v);
-
-		RD::get_singleton()->texture_resolve_multisample(velocity_buffer_msaa, velocity_buffer);
-	}
-}
-
 void TAA::resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
