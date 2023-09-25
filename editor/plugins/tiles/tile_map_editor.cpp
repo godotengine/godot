@@ -1866,21 +1866,23 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	for (const TileMapCell &E : tile_set_selection) {
 		if (E.source_id == source_id && E.alternative_tile == 0) {
-			for (int frame = 0; frame < atlas->get_tile_animation_frames_count(E.get_atlas_coords()); frame++) {
+			Vector2i coords = E.get_atlas_coords();
+			for (int frame = 0; frame < atlas->get_tile_animation_frames_count(coords); frame++) {
 				Color color = selection_color;
-				if (frame > 0) {
+				if (frame != (atlas->get_tile_animation_mode(coords) == TileSetAtlasSource::TILE_ANIMATION_MODE_EXPLICIT_START_FRAME ? atlas->get_tile_animation_explicit_start_frame(coords) : 0)) {
 					color.a *= 0.3;
 				}
-				TilesEditorUtils::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(E.get_atlas_coords(), frame), color);
+				TilesEditorUtils::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(coords, frame), color);
 			}
 		}
 	}
 
 	// Draw the hovered tile.
 	if (hovered_tile.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && hovered_tile.alternative_tile == 0 && !tile_set_dragging_selection) {
-		for (int frame = 0; frame < atlas->get_tile_animation_frames_count(hovered_tile.get_atlas_coords()); frame++) {
-			Color color = Color(1.0, 0.8, 0.0, frame == 0 ? 0.6 : 0.3);
-			TilesEditorUtils::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(hovered_tile.get_atlas_coords(), frame), color);
+		Vector2i coords = hovered_tile.get_atlas_coords();
+		for (int frame = 0; frame < atlas->get_tile_animation_frames_count(coords); frame++) {
+			Color color = Color(1.0, 0.8, 0.0, frame == (atlas->get_tile_animation_mode(coords) == TileSetAtlasSource::TILE_ANIMATION_MODE_EXPLICIT_START_FRAME ? atlas->get_tile_animation_explicit_start_frame(coords) : 0) ? 0.6 : 0.3);
+			TilesEditorUtils::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(coords, frame), color);
 		}
 	}
 
@@ -1945,6 +1947,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_gui_input(const Ref<InputEven
 	hovered_tile.set_atlas_coords(TileSetSource::INVALID_ATLAS_COORDS);
 	hovered_tile.alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
 	Vector2i coords = tile_atlas_view->get_atlas_tile_coords_at_pos(tile_atlas_control->get_local_mouse_position());
+	Vector2i original_coords = coords;
 	if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 		coords = atlas->get_tile_at_coords(coords);
 		if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
@@ -1973,6 +1976,20 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_gui_input(const Ref<InputEven
 					tile_set_selection.erase(TileMapCell(source_id, hovered_tile.get_atlas_coords(), 0));
 				} else {
 					tile_set_selection.insert(TileMapCell(source_id, hovered_tile.get_atlas_coords(), 0));
+				}
+			}
+
+			// Set the explicit start frame if needed.
+			if (atlas->get_tile_animation_mode(coords) == TileSetAtlasSource::TILE_ANIMATION_MODE_EXPLICIT_START_FRAME) {
+				int frames_count = atlas->get_tile_animation_frames_count(coords);
+				if (frames_count > 1) {
+					int columns = atlas->get_tile_animation_columns(coords);
+					if (columns > 0) {
+						int rows = (frames_count + columns - 1) / columns;
+						atlas->set_tile_animation_explicit_start_frame(coords, original_coords.x - coords.x + columns * (original_coords.y - coords.y % rows));
+					} else {
+						atlas->set_tile_animation_explicit_start_frame(coords, original_coords.x - coords.x);
+					}
 				}
 			}
 			_update_selection_pattern_from_tileset_tiles_selection();
