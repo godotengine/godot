@@ -32,33 +32,119 @@
 #define STRUCT_H
 
 #include "core/string/string_name.h"
+#include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 
 class Array;
 
 struct StructMember {
 	StringName name;
-	Variant::Type type; // TODO: should this be a union of type and class_name?
+	Variant::Type type; // TODO: should this be a union of type and struct_name?
 	StringName class_name;
+	Variant default_value;
 
-	StructMember(const StringName &p_name, const Variant::Type p_type, const StringName &p_class_name = StringName()) {
+	StructMember(const StringName &p_name = StringName(), const Variant::Type p_type = Variant::NIL, const StringName &p_class_name = StringName(), const Variant &p_default_value = Variant()) {
 		name = p_name;
 		type = p_type;
 		class_name = p_class_name;
+		default_value = p_default_value;
 	}
+};
+
+struct StructInfo {
+	StringName name = StringName();
+	uint32_t count = 0;
+
+	// TODO: Changing these to LocalVector from raw pointer arrays seemed to fix a race condition with StringName
+	LocalVector<StringName> names;
+	LocalVector<Variant::Type> types;
+	LocalVector<StringName> class_names;
+	LocalVector<Variant> default_values;
+
+	StructInfo(const StringName &p_name, uint32_t p_count, const LocalVector<StringName> &p_names, const LocalVector<Variant::Type> &p_types, const LocalVector<StringName> &p_class_names, const LocalVector<Variant> &p_default_values);
+	StructInfo(const StringName &p_name, uint32_t p_count, const StructMember *p_members);
+	StructInfo(){};
 };
 
 #define STRUCT_MEMBER(m_name, m_type) StructMember(SNAME(m_name), m_type)
 #define STRUCT_CLASS_MEMBER(m_name, m_class) StructMember(SNAME(m_name), Variant::OBJECT, m_class)
+
 // TODO: is there a way to define this so that the member count doesn't have to be passed?
-#define STRUCT_LAYOUT(m_name, m_member_count, ...)                               \
-    struct m_name {                                                              \
-        static const uint32_t member_count = m_member_count;                     \
-        _FORCE_INLINE_ static const StructMember *get_members() {                \
-            static const StructMember members[member_count] = { __VA_ARGS__ };   \
-            return members;                                                      \
-        }                                                                        \
-    };
+#define STRUCT_LAYOUT(m_name, m_alias, m_member_count, ...)                    \
+	struct m_name {                                                            \
+		static const uint32_t member_count = m_member_count;                   \
+		_FORCE_INLINE_ static const StructMember *get_members() {              \
+			static const StructMember members[member_count] = { __VA_ARGS__ }; \
+			return members;                                                    \
+		}                                                                      \
+		_FORCE_INLINE_ static const StringName get_name() {                    \
+			return StringName(m_alias);                                        \
+		}                                                                      \
+	};
+
+//// TODO: A different version I was playing around with
+//#define STRUCT_LAYOUT(m_name, m_member_count, ...)                                                                                          \
+//	struct m_name {                                                                                                                         \
+//		static const uint32_t member_count = m_member_count;                                                                                \
+//		_FORCE_INLINE_ static const StructInfo get_struct_info() {                                                                       \
+//			static const StructMember members[member_count] = { __VA_ARGS__ };                                                                     \
+//			StringName names[member_count];                                                                                                 \
+//			uint32_t types[member_count];                                                                                                   \
+//			StringName class_names[member_count];                                                                                                      \
+//			Variant default_values[member_count];                                                                                                   \
+//			for (uint32_t i = 0; i < member_count; i++) {                                                                                   \
+//				StructMember member = members[i];                                                                                            \
+//				names[i] = member.name;                                                                                                     \
+//				types[i] = member.type;                                                                                                     \
+//				class_names[i] = member.class_name;                                                                                         \
+//				default_values[i] = member.default_value;                                                                                   \
+//			}                                                                                                                               \
+//			static const StructInfo struct_info = StructInfo(StringName(#m_name), member_count, names, types, class_names, default_values); \
+//			return struct_info;                                                                                                             \
+//		}                                                                                                                                   \
+//	};
+
+//// TODO: Another different version
+//#define STRUCT_LAYOUT(m_name, m_member_count, ...)                             \
+//	struct m_name {                                                            \
+//		static const uint32_t member_count = m_member_count;                   \
+//		_FORCE_INLINE_ static const StructMember *get_members() {              \
+//			static const StructMember members[member_count] = { __VA_ARGS__ }; \
+//			return members;                                                    \
+//		}                                                                      \
+//		_FORCE_INLINE_ static const StringName *get_member_names() {           \
+//			const StructMember members[member_count] = get_members();          \
+//			StringName member_names[member_count];                             \
+//			for (uint32_t i = 0; i < member_count; i++) {                      \
+//				member_names[i] = members[i].name;                             \
+//			}                                                                  \
+//			return member_names;                                               \
+//		}                                                                      \
+//		_FORCE_INLINE_ static const uint32_t *get_member_types() {             \
+//			const StructMember members[member_count] = get_members();          \
+//			uint32_t member_types[member_count];                               \
+//			for (uint32_t i = 0; i < member_count; i++) {                      \
+//				member_types[i] = members[i].type;                             \
+//			}                                                                  \
+//			return member_types;                                               \
+//		}                                                                      \
+//		_FORCE_INLINE_ static const StringName *get_member_class_names() {     \
+//			const StructMember members[member_count] = get_members();          \
+//			StringName member_class_names[member_count];                       \
+//			for (uint32_t i = 0; i < member_count; i++) {                      \
+//				member_class_names[i] = members[i].class_name;                 \
+//			}                                                                  \
+//			return member_class_names;                                         \
+//		}                                                                      \
+//		_FORCE_INLINE_ static const Variant *get_member_default_values() {     \
+//			const StructMember members[member_count] = get_members();          \
+//			Variant member_default_values[member_count];                       \
+//			for (uint32_t i = 0; i < member_count; i++) {                      \
+//				member_default_values[i] = members[i].default_value;           \
+//			}                                                                  \
+//			return member_default_values;                                      \
+//		}                                                                      \
+//	};
 
 template <class T>
 class Struct : public Array {
@@ -68,24 +154,14 @@ public:
 		_ref(p_array);
 	}
 	_FORCE_INLINE_ Struct(const Variant &p_variant) :
-			Array(Array(p_variant), T::get_members(), T::member_count) {
+			Array(Array(p_variant), StructInfo(T::get_name(), T::member_count, T::get_members())) {
 	}
 	_FORCE_INLINE_ Struct(const Array &p_array) :
-			Array(p_array, T::get_members(), T::member_count) {
+			Array(p_array, StructInfo(T::get_name(), T::member_count, T::get_members())) {
 	}
 	_FORCE_INLINE_ Struct() :
-			Array(T::get_members(), T::member_count) {
+			Array(StructInfo(T::get_name(), T::member_count, T::get_members())) {
 	}
 };
-
-//#define STRUCT_LAYOUT(m_name, ...) \
-//struct m_name { \
-//    static constexpr uint32_t member_count = sizeof((StructMember[]){__VA_ARGS__}) / sizeof(StructMember); \
-//    _FORCE_INLINE_ static const StructMember& get_member(uint32_t p_index) { \
-//        CRASH_BAD_INDEX(p_index, member_count); \
-//        static StructMember members[] = {__VA_ARGS__}; \
-//        return members[p_index]; \
-//    } \
-//};
 
 #endif // STRUCT_H

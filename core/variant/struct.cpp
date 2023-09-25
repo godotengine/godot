@@ -30,4 +30,27 @@
 
 #include "core/variant/struct.h"
 
+StructInfo::StructInfo(const StringName &p_name, uint32_t p_count, const LocalVector<StringName> &p_names, const LocalVector<Variant::Type> &p_types, const LocalVector<StringName> &p_class_names, const LocalVector<Variant> &p_default_values) {
+	name = p_name;
+	count = p_count;
+	names = p_names;
+	types = p_types;
+	class_names = p_class_names;
+	default_values = p_default_values;
+}
 
+StructInfo::StructInfo(const StringName &p_name, uint32_t p_count, const StructMember *p_members) {
+	name = p_name;
+	count = p_count;
+	names.resize(count);
+	types.resize(count);
+	class_names.resize(count);
+	default_values.resize(count);
+	for (uint32_t i = 0; i < p_count; i++) {
+		StructMember member = p_members[i];
+		names[i] = member.name;
+		types[i] = member.type;
+		class_names[i] = member.class_name;
+		default_values[i] = member.default_value;
+	}
+}

@@ -314,6 +314,8 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 			hash = hash_murmur3_one_64(F.hint_string.hash(), hash);
 			hash = hash_murmur3_one_64(F.usage, hash);
 		}
+
+		// TODO: do I need to incorporate the structs into the hash?
 	}
 
 	hash = hash_fmix32(hash);
@@ -941,6 +943,83 @@ bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_na
 	return false;
 }
 
+void ClassDB::bind_struct(const StringName &p_class, const StructInfo &p_info) {
+	OBJTYPE_WLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	ERR_FAIL_NULL(type);
+
+	if (type->struct_map.has(p_info.name)) {
+		ERR_FAIL();
+	}
+
+	type->struct_map.insert(p_info.name, p_info);
+}
+
+void ClassDB::get_struct_list(const StringName &p_class, List<StructInfo> *r_structs, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		for (const KeyValue<StringName, StructInfo> &E : type->struct_map) {
+			r_structs->push_back(E.value);
+		}
+
+		if (p_no_inheritance) {
+			break;
+		}
+
+		type = type->inherits_ptr;
+	}
+}
+
+void ClassDB::get_struct_members(const StringName &p_class, const StringName &p_struct, List<StructMember> *r_members, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		const StructInfo *struct_info = type->struct_map.getptr(p_struct);
+
+		if (struct_info) {
+			for (uint32_t i = 0; i < struct_info->count; i++) {
+				r_members->push_back(StructMember(
+						struct_info->names[i],
+						(Variant::Type)struct_info->types[i],
+						struct_info->class_names[i],
+						struct_info->default_values[i]));
+			}
+		}
+
+		if (p_no_inheritance) {
+			break;
+		}
+
+		type = type->inherits_ptr;
+	}
+}
+
+bool ClassDB::has_struct(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->struct_map.has(p_name)) {
+			return true;
+		}
+		if (p_no_inheritance) {
+			return false;
+		}
+
+		type = type->inherits_ptr;
+	}
+
+	return false;
+}
+
 void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {
 	OBJTYPE_WLOCK;
 
@@ -1047,6 +1126,15 @@ void ClassDB::add_property_array_count(const StringName &p_class, const String &
 
 void ClassDB::add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
 	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
+}
+
+// TODO: This probably isn't right, I just copied the function above.
+void ClassDB::add_property_struct(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
+	OBJTYPE_WLOCK; // TODO: I'm not sure what this does but it's in the one above so I figure I need it
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL(type);
 

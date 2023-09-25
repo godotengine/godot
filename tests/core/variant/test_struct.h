@@ -32,9 +32,9 @@
 #define TEST_STRUCT_H
 
 #include "core/variant/array.h"
+#include "scene/main/node.h"
 #include "tests/test_macros.h"
 #include "tests/test_tools.h"
-#include "scene/main/node.h"
 
 namespace TestStruct {
 
@@ -43,7 +43,7 @@ TEST_CASE("[Struct] PropertyInfo") {
 	List<PropertyInfo> list;
 	my_node->get_property_list(&list);
 	PropertyInfo info = list[0];
-	print_line(convert_property_list(&list)[0]);
+
 	Struct<PropertyInfoLayout> prop = my_node->_get_property_struct(0);
 	prop.set_named(SNAME("name"), info.name);
 	prop.set_named(SNAME("class_name"), info.class_name);
@@ -51,8 +51,15 @@ TEST_CASE("[Struct] PropertyInfo") {
 	prop.set_named(SNAME("hint"), info.hint);
 	prop.set_named(SNAME("type"), info.type);
 
-	Variant nm = prop.get_named(SNAME("name"));
-	print_line(nm);
+	CHECK_EQ(list[0].name, StringName(prop.get_named(SNAME("name"))));
+}
+
+TEST_CASE("[Struct] ClassDB") {
+	List<StructMember> ls;
+	::ClassDB::get_struct_members(SNAME("Object"), SNAME("PropertyInfo"), &ls);
+	for (const StructMember &E : ls) {
+		print_line(vformat("name: %s, type: %s, class_name: %s, default: %s.", E.name, E.type, E.class_name, E.default_value));
+	}
 }
 
 } // namespace TestStruct

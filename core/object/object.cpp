@@ -40,6 +40,7 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/struct.h"
 #include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
@@ -64,7 +65,7 @@ struct _ObjectDebugLock {
 
 #endif
 
-STRUCT_LAYOUT(PropertyInfoLayout, 5,
+STRUCT_LAYOUT(PropertyInfoLayout, "PropertyInfo", 5,
 		STRUCT_MEMBER("name", Variant::STRING),
 		STRUCT_MEMBER("type", Variant::INT),
 		STRUCT_MEMBER("hint", Variant::INT),
@@ -1016,7 +1017,7 @@ TypedArray<Dictionary> Object::_get_property_list_bind() const {
 Struct<PropertyInfoLayout> Object::_get_property_struct(uint32_t p_index) const {
 	List<PropertyInfo> lpi;
 	get_property_list(&lpi);
-	return Struct<PropertyInfoLayout>((Variant) lpi[p_index]);
+	return Struct<PropertyInfoLayout>((Variant)lpi[p_index]);
 }
 
 TypedArray<Dictionary> Object::_get_method_list_bind() const {
@@ -1716,6 +1717,8 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
 	BIND_ENUM_CONSTANT(CONNECT_ONE_SHOT);
 	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
+
+	BIND_STRUCT(PropertyInfoLayout);
 }
 
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {

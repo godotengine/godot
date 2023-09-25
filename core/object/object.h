@@ -42,7 +42,6 @@
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/callable_bind.h"
-#include "core/variant/struct.h"
 #include "core/variant/variant.h"
 
 template <typename T>
@@ -142,6 +141,8 @@ enum PropertyUsageFlags {
 #define ADD_ARRAY_COUNT(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix)
 #define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix, m_property_usage_flags)
 #define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
+// TODO: This probably doesn't work yet as is.
+#define ADD_STRUCT(m_array_path, m_prefix) ClassDB::add_property_struct(get_class_static(), m_array_path, m_prefix)
 
 // Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
 // PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
@@ -602,8 +603,9 @@ public:
 		Connection(const Variant &p_variant);
 	};
 
+	// TODO: These methods are for testing purposes only and will be removed before release.
 	//	TypedArray<Struct<PropertyInfoLayout>> _get_property_list_struct() const;
-		Struct<PropertyInfoLayout> _get_property_struct(uint32_t p_index) const;
+	Struct<PropertyInfoLayout> _get_property_struct(uint32_t p_index) const;
 
 private:
 #ifdef DEBUG_ENABLED

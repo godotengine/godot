@@ -39,6 +39,7 @@
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/struct.h"
 #include "core/variant/variant.h"
 
 class ArrayPrivate {
@@ -48,24 +49,21 @@ public:
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
 
-	/// structs
-
-	uint32_t struct_size = 0;
-	const StructMember *struct_members = nullptr;
+	StructInfo struct_info;
 
 	_FORCE_INLINE_ bool is_struct() const {
-		return struct_size > 0;
+		return struct_info.count > 0;
 	}
 
 	_FORCE_INLINE_ bool is_struct_array() const {
-		return struct_size > 0; // TODO: this seems fishy
+		return struct_info.count > 0; // TODO: this seems fishy
 	}
 
 	_FORCE_INLINE_ int32_t find_member_index(const StringName &p_member) const {
 		// TODO: is there a better way to do this than linear search?
-		for (uint32_t i = 0; i < struct_size; i++) {
-			if (p_member == struct_members[i].name) {
-				return (int32_t) i; // TODO: is this cast necessary?
+		for (uint32_t i = 0; i < struct_info.count; i++) {
+			if (p_member == struct_info.names[i]) {
+				return (int32_t)i; // TODO: is this cast necessary?
 			}
 		}
 		return -1;
@@ -468,7 +466,6 @@ const Variant &Array::get_named(const StringName &p_member) const {
 	CRASH_COND_MSG(index < 0, vformat("member '%s' not found", p_member));
 	return get(index);
 }
-
 
 Array Array::duplicate(bool p_deep) const {
 	return recursive_duplicate(p_deep, 0);
@@ -874,20 +871,20 @@ Array::Array(const Array &p_from) {
 	_ref(p_from);
 }
 
-Array::Array(const Array &p_from, const StructMember *p_members, uint32_t p_member_count) {
+Array::Array(const Array &p_from, const StructInfo &p_info) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init(); // TODO: should this be _ref(p_from)?
 	assign(p_from);
-	set_struct(p_members, p_member_count);
+	set_struct_info(p_info);
 }
 
-Array::Array(const StructMember *p_members, uint32_t p_member_count) {
+Array::Array(const StructInfo &p_info) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
-	set_struct(p_members, p_member_count);
+	set_struct_info(p_info);
 }
 
-void Array::set_struct(const StructMember *p_members, uint32_t p_member_count) {
+void Array::set_struct_info(const StructInfo &p_info) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
@@ -895,19 +892,17 @@ void Array::set_struct(const StructMember *p_members, uint32_t p_member_count) {
 	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
 
 	// TODO: figure out what to do with this commented out section
-//	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
-//	Ref<Script> script = p_script;
-//	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
-//
-//	_p->typed.type = Variant::Type(p_type);
-//	_p->typed.class_name = p_class_name;
-//	_p->typed.script = script;
-	_p->array.resize(p_member_count);
+	//	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
+	//	Ref<Script> script = p_script;
+	//	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
+	//
+	//	_p->typed.type = Variant::Type(p_type);
+	//	_p->typed.class_name = p_class_name;
+	//	_p->typed.script = script;
+	_p->array.resize(p_info.count);
 	_p->typed.where = "Struct";
 
-	_p->struct_members = p_members;
-	_p->struct_size = p_member_count;
-
+	_p->struct_info = p_info;
 }
 
 Array::Array() {

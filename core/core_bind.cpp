@@ -1513,6 +1513,44 @@ StringName ClassDB::class_get_integer_constant_enum(const StringName &p_class, c
 	return ::ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
 }
 
+bool ClassDB::class_has_struct(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance) const {
+	return ::ClassDB::has_struct(p_class, p_struct, p_no_inheritance);
+}
+
+TypedArray<Dictionary> ClassDB::class_get_struct_list(const StringName &p_class, bool p_no_inheritance) const {
+	List<StructInfo> structs;
+	TypedArray<Dictionary> ret;
+	::ClassDB::get_struct_list(p_class, &structs, p_no_inheritance);
+	for (const StructInfo &struct_info : structs) {
+		Dictionary struct_dict;
+		for (uint32_t i = 0; i < struct_info.count; i++) {
+			Dictionary member_dict;
+			member_dict[SNAME("name")] = struct_info.names[i];
+			member_dict[SNAME("type")] = struct_info.types[i];
+			member_dict[SNAME("class_name")] = struct_info.class_names[i];
+			member_dict[SNAME("default_value")] = struct_info.default_values[i];
+			struct_dict[struct_info.name] = member_dict;
+		}
+		ret.push_back(struct_dict);
+	}
+	return ret;
+}
+
+TypedArray<Dictionary> ClassDB::class_get_struct_members(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance) const {
+	List<StructMember> members;
+	TypedArray<Dictionary> ret;
+	::ClassDB::get_struct_members(p_class, p_struct, &members, p_no_inheritance);
+	for (const StructMember &member : members) {
+		Dictionary dict;
+		dict[SNAME("name")] = member.name;
+		dict[SNAME("type")] = member.type;
+		dict[SNAME("class_name")] = member.class_name;
+		dict[SNAME("default_value")] = member.default_value;
+		ret.push_back(dict);
+	}
+	return ret;
+}
+
 bool ClassDB::is_class_enabled(const StringName &p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
@@ -1547,6 +1585,10 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::class_get_enum_list, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::class_get_enum_constants, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::class_get_integer_constant_enum, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("class_has_struct", "class", "struct", "no_inheritance"), &ClassDB::class_has_struct, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_struct_list", "class", "no_inheritance"), &ClassDB::class_get_struct_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_struct_members", "class", "struct", "no_inheritance"), &ClassDB::class_get_struct_members, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }
