@@ -347,7 +347,7 @@ bool CSharpLanguage::is_using_templates() {
 	return true;
 }
 
-Ref<Script> CSharpLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
+Ref<Script> CSharpLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name, const String &p_script_path) const {
 	Ref<CSharpScript> scr;
 	scr.instantiate();
 

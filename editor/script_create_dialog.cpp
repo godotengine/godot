@@ -345,14 +345,14 @@ void ScriptCreateDialog::_create_new() {
 	}
 
 	String class_name = file_path->get_text().get_file().get_basename();
-	scr = ScriptServer::get_language(language_menu->get_selected())->make_template(sinfo.content, class_name, parent_class);
+	String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
+	scr = ScriptServer::get_language(language_menu->get_selected())->make_template(sinfo.content, class_name, parent_class, lpath);
 
 	if (is_built_in) {
 		scr->set_name(built_in_name->get_text());
 		// Make sure the script is compiled to make its type recognizable.
 		scr->reload();
 	} else {
-		String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 		scr->set_path(lpath);
 		Error err = ResourceSaver::save(scr, lpath, ResourceSaver::FLAG_CHANGE_PATH);
 		if (err != OK) {

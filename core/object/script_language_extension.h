@@ -250,7 +250,7 @@ public:
 		}
 	}
 
-	EXBIND3RC(Ref<Script>, make_template, const String &, const String &, const String &)
+	EXBIND4RC(Ref<Script>, make_template, const String &, const String &, const String &, const String &)
 
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_built_in_templates, StringName)
 
