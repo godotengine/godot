@@ -63,7 +63,8 @@ private:
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 
-	void _bus_layout_changed();
+	void _on_bus_layout_changed();
+	void _on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name);
 
 	Vector<AudioFrame> _get_volume_vector();
 

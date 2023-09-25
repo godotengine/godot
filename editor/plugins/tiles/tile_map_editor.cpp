@@ -107,17 +107,33 @@ void TileMapEditorTilesPlugin::_update_transform_buttons() {
 		return;
 	}
 
-	if (tile_set->get_tile_shape() == TileSet::TILE_SHAPE_SQUARE || selection_pattern->get_size() == Vector2i(1, 1)) {
-		transform_button_rotate_left->set_disabled(false);
-		transform_button_rotate_left->set_tooltip_text("");
-		transform_button_rotate_right->set_disabled(false);
-		transform_button_rotate_right->set_tooltip_text("");
+	bool has_scene_tile = false;
+	for (const KeyValue<Vector2i, TileMapCell> &E : selection_pattern->get_pattern()) {
+		if (Object::cast_to<TileSetScenesCollectionSource>(tile_set->get_source(E.value.source_id).ptr())) {
+			has_scene_tile = true;
+			break;
+		}
+	}
+
+	if (has_scene_tile) {
+		_set_transform_buttons_state({}, { transform_button_rotate_left, transform_button_rotate_right, transform_button_flip_h, transform_button_flip_v },
+				TTR("Can't transform scene tiles."));
+	} else if (tile_set->get_tile_shape() != TileSet::TILE_SHAPE_SQUARE && selection_pattern->get_size() != Vector2i(1, 1)) {
+		_set_transform_buttons_state({ transform_button_flip_h, transform_button_flip_v }, { transform_button_rotate_left, transform_button_rotate_right },
+				TTR("Can't rotate patterns when using non-square tile grid."));
 	} else {
-		const String tooltip_text = TTR("Can't rotate patterns when using non-square tile grid.");
-		transform_button_rotate_left->set_disabled(true);
-		transform_button_rotate_left->set_tooltip_text(tooltip_text);
-		transform_button_rotate_right->set_disabled(true);
-		transform_button_rotate_right->set_tooltip_text(tooltip_text);
+		_set_transform_buttons_state({ transform_button_rotate_left, transform_button_rotate_right, transform_button_flip_h, transform_button_flip_v }, {}, "");
+	}
+}
+
+void TileMapEditorTilesPlugin::_set_transform_buttons_state(const Vector<Button *> &p_enabled_buttons, const Vector<Button *> &p_disabled_buttons, const String &p_why_disabled) {
+	for (Button *button : p_enabled_buttons) {
+		button->set_disabled(false);
+		button->set_tooltip_text("");
+	}
+	for (Button *button : p_disabled_buttons) {
+		button->set_disabled(true);
+		button->set_tooltip_text(p_why_disabled);
 	}
 }
 
@@ -675,7 +691,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 					}
 				} else if (tool_buttons_group->get_pressed_button() == select_tool_button) {
 					drag_start_mouse_pos = mpos;
-					if (tile_map_selection.has(tile_map->local_to_map(drag_start_mouse_pos)) && !mb->is_shift_pressed()) {
+					if (tile_map_selection.has(tile_map->local_to_map(drag_start_mouse_pos)) && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed()) {
 						// Move the selection
 						_update_selection_pattern_from_tilemap_selection(); // Make sure the pattern is up to date before moving.
 						drag_type = DRAG_TYPE_MOVE;
@@ -2217,7 +2233,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	paint_tool_button->set_toggle_mode(true);
 	paint_tool_button->set_button_group(tool_buttons_group);
 	paint_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/paint_tool", TTR("Paint"), Key::D));
-	paint_tool_button->set_tooltip_text(TTR("Shift: Draw line.") + "\n" + TTR("Shift+Ctrl: Draw rectangle."));
+	paint_tool_button->set_tooltip_text(TTR("Shift: Draw line.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Shift: Draw rectangle."));
 	paint_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(paint_tool_button);
 	viewport_shortcut_buttons.push_back(paint_tool_button);
@@ -2263,7 +2279,8 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
-	picker_button->set_tooltip_text(TTR("Alternatively hold Ctrl with other tools to pick tile."));
+	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+	picker_button->set_tooltip_text(vformat(TTR("Alternatively hold %s with other tools to pick tile."), find_keycode_name(key)));
 	picker_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	tools_settings->add_child(picker_button);
 	viewport_shortcut_buttons.push_back(picker_button);

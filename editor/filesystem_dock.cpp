@@ -2682,7 +2682,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				}
 			}
 			if (!to_move.is_empty()) {
-				if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+				if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 					_move_operation_confirm(to_dir, true);
 				} else {
 					_move_operation_confirm(to_dir);
@@ -2913,7 +2913,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 			p_popup->add_child(folder_colors_menu);
 			p_popup->add_submenu_item(TTR("Set Folder Color..."), "FolderColor");
-			p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("CanvasItem")));
+			p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("Paint")));
 
 			folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("Default (Reset)"));
 			folder_colors_menu->set_item_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));

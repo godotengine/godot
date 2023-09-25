@@ -126,7 +126,7 @@
 			<return type="Vector3" />
 			<param index="0" name="dir" type="Vector3" />
 			<description>
-				Returns the support point in a given direction. This is useful for collision detection algorithms.
+				Returns the vertex of the AABB that's the farthest in a given direction. This point is commonly known as the support point in collision detection algorithms.
 			</description>
 		</method>
 		<method name="get_volume" qualifiers="const">

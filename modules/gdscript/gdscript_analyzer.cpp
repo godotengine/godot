@@ -459,6 +459,10 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 				}
 				base = info_parser->get_parser()->head->get_datatype();
 			} else if (class_exists(name)) {
+				if (Engine::get_singleton()->has_singleton(name)) {
+					push_error(vformat(R"(Cannot inherit native class "%s" because it is an engine singleton.)", name), id);
+					return ERR_PARSE_ERROR;
+				}
 				base.kind = GDScriptParser::DataType::NATIVE;
 				base.native_type = name;
 			} else {
@@ -2609,7 +2613,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	}
 
 	// Check if assigned value is an array literal, so we can make it a typed array too if appropriate.
-	if (p_assignment->assigned_value->type == GDScriptParser::Node::ARRAY && assignee_type.has_container_element_type()) {
+	if (p_assignment->assigned_value->type == GDScriptParser::Node::ARRAY && assignee_type.is_hard_type() && assignee_type.has_container_element_type()) {
 		update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_assignment->assigned_value), assignee_type.get_container_element_type());
 	}
 
@@ -3203,11 +3207,23 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 	bool is_constructor = (base_type.is_meta_type || (p_call->callee && p_call->callee->type == GDScriptParser::Node::IDENTIFIER)) && p_call->function_name == SNAME("new");
 
+	if (is_constructor && Engine::get_singleton()->has_singleton(base_type.native_type)) {
+		push_error(vformat(R"(Cannot construct native class "%s" because it is an engine singleton.)", base_type.native_type), p_call);
+		p_call->set_datatype(call_type);
+		return;
+	}
+
 	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags)) {
-		// If the function require typed arrays we must make literals be typed.
+		// If the method is implemented in the class hierarchy, the virtual flag will not be set for that MethodInfo and the search stops there.
+		// Virtual check only possible for super() calls because class hierarchy is known. Node/Objects may have scripts attached we don't know of at compile-time.
+		if (p_call->is_super && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
+			push_error(vformat(R"*(Cannot call the parent class' virtual function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
+		}
+
+		// If the function requires typed arrays we must make literals be typed.
 		for (const KeyValue<int, GDScriptParser::ArrayNode *> &E : arrays) {
 			int index = E.key;
-			if (index < par_types.size() && par_types[index].has_container_element_type()) {
+			if (index < par_types.size() && par_types[index].is_hard_type() && par_types[index].has_container_element_type()) {
 				update_array_literal_element_type(E.value, par_types[index].get_container_element_type());
 			}
 		}
@@ -4093,7 +4109,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
 		bool valid = false;
 		// If the base is a metatype, use the analyzer instead.
-		if (p_subscript->base->is_constant && !base_type.is_meta_type) {
+		if (p_subscript->base->is_constant && !base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::CLASS) {
 			// Just try to get it.
 			Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
 			if (valid) {

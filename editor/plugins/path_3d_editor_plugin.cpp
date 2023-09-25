@@ -455,7 +455,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 			set_handle_clicked(false);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->is_ctrl_pressed()))) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->is_command_or_control_pressed()))) {
 			//click into curve, break it down
 			Vector<Vector3> v3a = c->tessellate();
 			int rc = v3a.size();

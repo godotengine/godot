@@ -989,9 +989,6 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 	p_output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 
-	p_output.append("\n#pragma warning disable CS1591 // Disable warning: "
-					"'Missing XML comment for publicly visible type or member'\n");
-
 	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
 
 	for (const ConstantInterface &iconstant : global_constants) {
@@ -1089,8 +1086,6 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			p_output.append(CLOSE_BLOCK);
 		}
 	}
-
-	p_output.append("\n#pragma warning restore CS1591\n");
 }
 
 Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
@@ -1405,12 +1400,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append("using System;\n"); // IntPtr
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
 	output.append("using Godot.NativeInterop;\n");
-
-	output.append("\n"
-				  "#pragma warning disable CS1591 // Disable warning: "
-				  "'Missing XML comment for publicly visible type or member'\n"
-				  "#pragma warning disable CS1573 // Disable warning: "
-				  "'Parameter has no matching param tag in the XML comment'\n");
 
 	output.append("\n#nullable disable\n");
 
@@ -1903,10 +1892,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output << INDENT1 "}\n";
 
 	output.append(CLOSE_BLOCK /* class */);
-
-	output.append("\n"
-				  "#pragma warning restore CS1591\n"
-				  "#pragma warning restore CS1573\n");
 
 	return _save_file(p_output_file, output);
 }

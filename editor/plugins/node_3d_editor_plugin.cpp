@@ -1977,7 +1977,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_shift_pressed()) {
 				nav_mode = NAVIGATION_PAN;
-			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_ctrl_pressed()) {
+			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_command_or_control_pressed()) {
 				nav_mode = NAVIGATION_ZOOM;
 			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ORBIT;
@@ -3157,7 +3157,7 @@ void Node3DEditorViewport::_draw() {
 							get_editor_theme_icon(SNAME("ViewportSpeed")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)),
+							vformat("%s m/s", String::num(freelook_speed).pad_decimals(precision)),
 							Color(1.0, 0.95, 0.7));
 				}
 
@@ -3180,7 +3180,7 @@ void Node3DEditorViewport::_draw() {
 							get_editor_theme_icon(SNAME("ViewportZoom")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)),
+							vformat("%s m", String::num(cursor.distance).pad_decimals(precision)),
 							Color(0.7, 0.95, 1.0));
 				}
 			}
@@ -5244,7 +5244,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_material_label_desc = memnew(Label);
 	preview_material_label_desc->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
 	preview_material_label_desc->set_offset(Side::SIDE_TOP, -50 * EDSCALE);
-	preview_material_label_desc->set_text(TTR("Drag and drop to override the material of any geometry node.\nHold Ctrl when dropping to override a specific surface."));
+	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+	preview_material_label_desc->set_text(vformat(TTR("Drag and drop to override the material of any geometry node.\nHold %s when dropping to override a specific surface."), find_keycode_name(key)));
 	preview_material_label_desc->add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1));
 	preview_material_label_desc->add_theme_constant_override("line_spacing", 0);
 	preview_material_label_desc->hide();
@@ -7694,9 +7695,11 @@ void Node3DEditor::remove_control_from_menu_panel(Control *p_control) {
 
 	p_control->disconnect("visibility_changed", callable_mp(this, &Node3DEditor::_update_context_toolbar));
 
-	context_toolbar_hbox->remove_child(context_toolbar_separators[p_control]);
+	VSeparator *sep = context_toolbar_separators[p_control];
+	context_toolbar_hbox->remove_child(sep);
 	context_toolbar_hbox->remove_child(p_control);
 	context_toolbar_separators.erase(p_control);
+	memdelete(sep);
 
 	_update_context_toolbar();
 }
@@ -8197,7 +8200,7 @@ Node3DEditor::Node3DEditor() {
 
 	camera_override_viewport_id = 0;
 
-	// Add some margin to the sides for better aesthetics.
+	// Add some margin to the sides for better esthetics.
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
 	// which looks ugly.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);

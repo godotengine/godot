@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "gdextension_manager.h"
+
+#include "core/extension/gdextension_compat_hashes.h"
 #include "core/io/file_access.h"
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &p_path) {
@@ -171,4 +173,8 @@ GDExtensionManager *GDExtensionManager::singleton = nullptr;
 GDExtensionManager::GDExtensionManager() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
+
+#ifndef DISABLE_DEPRECATED
+	GDExtensionCompatHashes::initialize();
+#endif
 }

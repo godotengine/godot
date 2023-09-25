@@ -1564,14 +1564,6 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 	show_all_nodes->show();
 }
 
-void SceneTreeDialog::_update_theme() {
-	filter->set_right_icon(tree->get_editor_theme_icon(SNAME("Search")));
-	for (TextureRect *trect : valid_type_icons) {
-		trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
-		trect->set_texture(EditorNode::get_singleton()->get_class_icon(trect->get_meta("type")));
-	}
-}
-
 void SceneTreeDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1585,11 +1577,14 @@ void SceneTreeDialog::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
-			_update_theme();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_theme();
+			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			for (TextureRect *trect : valid_type_icons) {
+				trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
+				trect->set_texture(EditorNode::get_singleton()->get_class_icon(trect->get_meta("type")));
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {

@@ -890,14 +890,19 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	Error lc_error = script->get_language()->lookup_code(code_text, p_symbol, script->get_path(), base, result);
 	if (ScriptServer::is_global_class(p_symbol)) {
 		EditorNode::get_singleton()->load_resource(ScriptServer::get_global_class_path(p_symbol));
-	} else if (p_symbol.is_resource_file()) {
+	} else if (p_symbol.is_resource_file() || p_symbol.begins_with("uid://")) {
+		String symbol = p_symbol;
+		if (symbol.begins_with("uid://")) {
+			symbol = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(symbol));
+		}
+
 		List<String> scene_extensions;
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
 
-		if (scene_extensions.find(p_symbol.get_extension())) {
-			EditorNode::get_singleton()->load_scene(p_symbol);
+		if (scene_extensions.find(symbol.get_extension())) {
+			EditorNode::get_singleton()->load_scene(symbol);
 		} else {
-			EditorNode::get_singleton()->load_resource(p_symbol);
+			EditorNode::get_singleton()->load_resource(symbol);
 		}
 
 	} else if (lc_error == OK) {
@@ -1024,7 +1029,7 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	String lc_text = code_editor->get_text_editor()->get_text_for_symbol_lookup();
 	Error lc_error = script->get_language()->lookup_code(lc_text, p_symbol, script->get_path(), base, result);
 	bool is_singleton = ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton;
-	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || lc_error == OK || is_singleton) {
+	if (lc_error == OK || is_singleton || ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || p_symbol.begins_with("uid://")) {
 		text_edit->set_symbol_lookup_word_as_valid(true);
 	} else if (p_symbol.is_relative_path()) {
 		String path = _get_absolute_path(p_symbol);
@@ -1747,7 +1752,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array files = d["files"];
 
 		String text_to_drop;
-		bool preload = Input::get_singleton()->is_key_pressed(Key::CTRL);
+		bool preload = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 		for (int i = 0; i < files.size(); i++) {
 			if (i > 0) {
 				text_to_drop += ", ";
@@ -1787,7 +1792,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array nodes = d["nodes"];
 		String text_to_drop;
 
-		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 			bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
 			for (int i = 0; i < nodes.size(); i++) {
 				NodePath np = nodes[i];

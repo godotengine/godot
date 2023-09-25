@@ -1184,6 +1184,7 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 		actions.render_mode_defines["light_only"] = "#define MODE_LIGHT_ONLY\n";
+		actions.render_mode_defines["world_vertex_coords"] = "#define USE_WORLD_VERTEX_COORDS\n";
 
 		actions.global_buffer_array_variable = "global_shader_uniforms";
 

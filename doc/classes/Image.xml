@@ -201,7 +201,8 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="renormalize" type="bool" default="false" />
 			<description>
-				Generates mipmaps for the image. Mipmaps are precalculated lower-resolution copies of the image that are automatically used if the image needs to be scaled down when rendered. They help improve image quality and performance when rendering. This method returns an error if the image is compressed, in a custom format, or if the image's width/height is [code]0[/code].
+				Generates mipmaps for the image. Mipmaps are precalculated lower-resolution copies of the image that are automatically used if the image needs to be scaled down when rendered. They help improve image quality and performance when rendering. This method returns an error if the image is compressed, in a custom format, or if the image's width/height is [code]0[/code]. Enabling [param renormalize] when generating mipmaps for normal textures will make sure all resulting vector values are normalized.
+				It is possible to check if the image has mipmaps by calling [method has_mipmaps] or [method get_mipmap_count].
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
@@ -220,6 +221,12 @@
 			<return type="int" />
 			<description>
 				Returns the image's height.
+			</description>
+		</method>
+		<method name="get_mipmap_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of mipmap levels or 0 if the image has no mipmaps. The largest main level image is not counted as a mipmap level by this method, so if you want to include it you can add 1 to this count.
 			</description>
 		</method>
 		<method name="get_mipmap_offset" qualifiers="const">
@@ -612,16 +619,16 @@
 			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 32-bit floating-point values.
 		</constant>
 		<constant name="FORMAT_RH" value="12" enum="Format">
-			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_R16F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGH" value="13" enum="Format">
-			OpenGL texture format [code]GL_RG32F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RG16F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBH" value="14" enum="Format">
-			OpenGL texture format [code]GL_RGB32F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RGB16F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBAH" value="15" enum="Format">
-			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RGBA16F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBE9995" value="16" enum="Format">
 			A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single 5-bit exponent.

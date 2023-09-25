@@ -77,7 +77,7 @@ public:
 	void set_exclude_nodes_from_collision(bool p_enable);
 	bool get_exclude_nodes_from_collision() const;
 
-	RID get_joint() const { return joint; }
+	RID get_rid() const { return joint; }
 	Joint3D();
 	~Joint3D();
 };

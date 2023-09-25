@@ -712,7 +712,7 @@ void Skeleton3DEditor::create_editors() {
 	add_child(file_dialog);
 
 	// Create Top Menu Bar.
-	HBoxContainer *topmenu_bar = memnew(HBoxContainer);
+	topmenu_bar = memnew(HBoxContainer);
 	ne->add_control_to_menu_panel(topmenu_bar);
 
 	// Create Skeleton Option in Top Menu Bar.
@@ -1095,25 +1095,8 @@ Skeleton3DEditor::~Skeleton3DEditor() {
 
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 
-	if (animation_hb) {
-		ne->remove_control_from_menu_panel(animation_hb);
-		memdelete(animation_hb);
-	}
-
-	if (separator) {
-		ne->remove_control_from_menu_panel(separator);
-		memdelete(separator);
-	}
-
-	if (skeleton_options) {
-		ne->remove_control_from_menu_panel(skeleton_options);
-		memdelete(skeleton_options);
-	}
-
-	if (edit_mode_button) {
-		ne->remove_control_from_menu_panel(edit_mode_button);
-		memdelete(edit_mode_button);
-	}
+	ne->remove_control_from_menu_panel(topmenu_bar);
+	memdelete(topmenu_bar);
 }
 
 bool EditorInspectorPluginSkeleton::can_handle(Object *p_object) {

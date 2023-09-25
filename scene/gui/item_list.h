@@ -148,7 +148,6 @@ private:
 	} theme_cache;
 
 	void _scroll_changed(double);
-	void _check_shape_changed();
 	void _shape_text(int p_idx);
 	void _mouse_exited();
 
@@ -280,6 +279,8 @@ public:
 	Size2 get_minimum_size() const override;
 
 	void set_autoscroll_to_bottom(const bool p_enable);
+
+	void force_update_list_size();
 
 	VScrollBar *get_v_scroll_bar() { return scroll_bar; }
 

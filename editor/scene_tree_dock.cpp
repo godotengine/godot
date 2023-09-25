@@ -2818,7 +2818,7 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 		Object *obj = ClassDB::instantiate(scr->get_instance_base_type());
 		ERR_FAIL_NULL(obj);
 
@@ -3841,7 +3841,8 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	// The "Filter Nodes" text input above the Scene Tree Editor.
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->set_placeholder(TTR("Filter Nodes"));
+	filter->set_placeholder(TTR("Filter: name, t:type, g:group"));
+	filter->set_tooltip_text(TTR("Filter nodes by entering a part of their name, type (if prefixed with \"type:\" or \"t:\")\nor group (if prefixed with \"group:\" or \"g:\"). Filtering is case-insensitive."));
 	filter_hbc->add_child(filter);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDock::_filter_changed));

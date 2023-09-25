@@ -415,7 +415,7 @@ void main() {
 			);
 
 			for (uint j = 0; j < 4; j++) {
-				sh_accum[j].rgb += light * c[j] * (1.0 / 3.0);
+				sh_accum[j].rgb += light * c[j] * 8.0;
 			}
 #endif
 

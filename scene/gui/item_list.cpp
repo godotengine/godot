@@ -1011,7 +1011,7 @@ void ItemList::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			_check_shape_changed();
+			force_update_list_size();
 
 			int scroll_bar_minwidth = scroll_bar->get_minimum_size().x;
 			scroll_bar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_bar_minwidth);
@@ -1082,14 +1082,16 @@ void ItemList::_notification(int p_what) {
 				first_visible_separator = lo;
 			}
 
-			// Draw visible separators.
-			for (int i = first_visible_separator; i < separators.size(); i++) {
-				if (separators[i] > clip.position.y + clip.size.y) {
-					break; // done
-				}
+			// If not in thumbnails mode, draw visible separators.
+			if (icon_mode != ICON_MODE_TOP) {
+				for (int i = first_visible_separator; i < separators.size(); i++) {
+					if (separators[i] > clip.position.y + clip.size.y) {
+						break; // done
+					}
 
-				const int y = base_ofs.y + separators[i];
-				draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+					const int y = base_ofs.y + separators[i];
+					draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+				}
 			}
 
 			// Do a binary search to find the first item whose rect reaches below clip.position.y.
@@ -1314,7 +1316,7 @@ void ItemList::_notification(int p_what) {
 	}
 }
 
-void ItemList::_check_shape_changed() {
+void ItemList::force_update_list_size() {
 	if (!shape_changed) {
 		return;
 	}
@@ -1854,6 +1856,8 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &ItemList::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &ItemList::get_text_overrun_behavior);
+
+	ClassDB::bind_method(D_METHOD("force_update_list_size"), &ItemList::force_update_list_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");

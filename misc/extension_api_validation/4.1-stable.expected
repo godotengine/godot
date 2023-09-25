@@ -176,3 +176,11 @@ Validate extension JSON: API was removed: classes/TileMap/methods/set_quadrant_s
 Validate extension JSON: API was removed: classes/TileMap/properties/cell_quadrant_size
 
 cell_quadrant_size/quadrant_size of the TileMap API was renamed to rendering_quadrant_size.
+
+
+GH-81298
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DRenderingServerHandler/methods/_set_vertex/arguments/1': type changed value in new API, from "const void*" to "Vector3".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DRenderingServerHandler/methods/_set_normal/arguments/1': type changed value in new API, from "const void*" to "Vector3".
+
+Intentional compatibility breakage to be consistent with the new non-virtual set_vertex/set_normal.

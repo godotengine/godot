@@ -1581,6 +1581,7 @@ SceneImportSettings::SceneImportSettings() {
 
 		node_selected = memnew(MeshInstance3D);
 		node_selected->set_mesh(selection_mesh);
+		node_selected->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 		base_viewport->add_child(node_selected);
 		node_selected->hide();
 	}

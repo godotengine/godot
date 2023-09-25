@@ -517,16 +517,41 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 		}
 
 		const PropertyInfo &pi = p_method.arguments[i];
-		String tname = "var";
-		if (pi.type == Variant::OBJECT && pi.class_name != StringName()) {
-			tname = pi.class_name.operator String();
-		} else if (pi.type != Variant::NIL) {
-			tname = Variant::get_type_name(pi.type);
+		String type_name;
+		switch (pi.type) {
+			case Variant::NIL:
+				type_name = "Variant";
+				break;
+			case Variant::INT:
+				if ((pi.usage & PROPERTY_USAGE_CLASS_IS_ENUM) && pi.class_name != StringName() && !String(pi.class_name).begins_with("res://")) {
+					type_name = pi.class_name;
+				} else {
+					type_name = "int";
+				}
+				break;
+			case Variant::ARRAY:
+				if (pi.hint == PROPERTY_HINT_ARRAY_TYPE && !pi.hint_string.is_empty() && !pi.hint_string.begins_with("res://")) {
+					type_name = "Array[" + pi.hint_string + "]";
+				} else {
+					type_name = "Array";
+				}
+				break;
+			case Variant::OBJECT:
+				if (pi.class_name != StringName()) {
+					type_name = pi.class_name;
+				} else {
+					type_name = "Object";
+				}
+				break;
+			default:
+				type_name = Variant::get_type_name(pi.type);
+				break;
 		}
 
-		signature.append((pi.name.is_empty() ? String("arg " + itos(i)) : pi.name) + ": " + tname);
+		String arg_name = pi.name.is_empty() ? "arg" + itos(i) : pi.name;
+		signature.append(arg_name + ": " + type_name);
 		if (r_arg_names) {
-			r_arg_names->push_back(pi.name + ":" + tname);
+			r_arg_names->push_back(arg_name + ":" + type_name);
 		}
 	}
 
@@ -1211,6 +1236,11 @@ void ConnectionsDock::_rmb_pressed(const Ref<InputEvent> &p_event) {
 	TreeItem *item = tree->get_item_at_position(mb_event->get_position());
 	if (!item) {
 		return;
+	}
+
+	if (item->is_selectable(0)) {
+		// Update selection now, before `about_to_popup` signal. Needed for SIGNAL and CONNECTION context menus.
+		tree->set_selected(item);
 	}
 
 	Vector2 screen_position = tree->get_screen_position() + mb_event->get_position();

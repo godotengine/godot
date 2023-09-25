@@ -137,6 +137,7 @@ public:
 	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
 	int get_cell_alternative_tile(const Vector2i &p_coords) const;
 
+	const HashMap<Vector2i, TileMapCell> &get_pattern() const { return pattern; }
 	TypedArray<Vector2i> get_used_cells() const;
 
 	Size2i get_size() const;
