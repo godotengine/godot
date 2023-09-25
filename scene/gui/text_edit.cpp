@@ -7356,7 +7356,6 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->show();
 		v_scroll->set_max(total_rows + _get_visible_lines_offset());
 		v_scroll->set_page(visible_rows + _get_visible_lines_offset());
-
 		set_v_scroll(get_v_scroll());
 
 	} else {
