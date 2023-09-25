@@ -974,7 +974,7 @@ Node *ResourceImporterScene::_pre_fix_animations(Node *p_node, Node *p_root, con
 					int end_frame = anim_settings["slice_" + itos(i + 1) + "/end_frame"];
 					Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)anim_settings["slice_" + itos(i + 1) + "/loop_mode"]);
 					bool save_to_file = anim_settings["slice_" + itos(i + 1) + "/save_to_file/enabled"];
-					bool save_to_path = anim_settings["slice_" + itos(i + 1) + "/save_to_file/path"];
+					String save_to_path = anim_settings["slice_" + itos(i + 1) + "/save_to_file/path"];
 					bool save_to_file_keep_custom = anim_settings["slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
 
 					animation_slices.push_back(slice_name);
