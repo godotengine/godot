@@ -99,11 +99,11 @@ String FuzzySearch::decorate(const FuzzySearchResult &p_result) {
 
 FuzzySearchResult FuzzySearch::fuzzy_search(const String &p_query, const String &p_target, int position_offset) {
 	if (p_query.is_empty()) {
-		return {};
+		return FuzzySearchResult{};
 	}
 
 	if (p_target.is_empty()) {
-		return {};
+		return FuzzySearchResult{};
 	}
 
 	// Convert strings to lowercase
