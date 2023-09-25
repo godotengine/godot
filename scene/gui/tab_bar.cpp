@@ -317,6 +317,8 @@ void TabBar::_notification(int p_what) {
 				_shape(i);
 			}
 
+			hover_has_diff_size = theme_cache.tab_unselected_style->get_minimum_size() != theme_cache.tab_hovered_style->get_minimum_size();
+
 			queue_redraw();
 
 			[[fallthrough]];
@@ -813,57 +815,82 @@ void TabBar::_update_hover() {
 
 	ERR_FAIL_COND(tabs.is_empty());
 
+	int previous_hover = hover;
 	const Point2 &pos = get_local_mouse_position();
-	// Test hovering to display right or close button.
-	int hover_now = -1;
-	int hover_buttons = -1;
-	for (int i = offset; i <= max_drawn_tab; i++) {
-		if (tabs[i].hidden) {
-			continue;
-		}
 
-		Rect2 rect = get_tab_rect(i);
-		if (rect.has_point(pos)) {
-			hover_now = i;
-		}
-
-		if (tabs[i].rb_rect.has_point(pos)) {
-			rb_hover = i;
-			cb_hover = -1;
-			hover_buttons = i;
-		} else if (!tabs[i].disabled && tabs[i].cb_rect.has_point(pos)) {
-			cb_hover = i;
-			rb_hover = -1;
-			hover_buttons = i;
-		}
-
-		if (hover_buttons != -1) {
-			queue_redraw();
-			break;
+	// First make sure to test the previous tab
+	bool should_update_hover = previous_hover == -1;
+	if (!should_update_hover) {
+		const Rect2 hover_rect = get_tab_rect(previous_hover);
+		if (!hover_rect.has_point(pos)) {
+			should_update_hover = true;
 		}
 	}
 
-	if (hover != hover_now) {
-		hover = hover_now;
+	if (should_update_hover) {
+		int hover_now = -1;
+		for (int i = offset; i <= max_drawn_tab; i++) {
+			if (tabs[i].hidden || i == previous_hover) {
+				continue;
+			}
 
-		if (hover != -1) {
+			const Rect2 hover_rect = get_tab_rect(i);
+			if (hover_rect.has_point(pos)) {
+				// If hovered tab change size, make sure that the mouse position is inside the new desired size.
+				if (hover_has_diff_size) {
+					hover = i;
+					_update_cache();
+
+					const Rect2 hover_rect_resized = get_tab_rect(i);
+					if (!hover_rect_resized.has_point(pos)) {
+						break;
+					}
+				}
+				hover_now = i;
+				break;
+			}
+		}
+
+		if (hover_now == -1) {
+			hover = -1;
+			_update_cache();
+		} else {
 			emit_signal(SNAME("tab_hovered"), hover);
+			hover = hover_now;
 		}
-
-		_update_cache();
-		queue_redraw();
 	}
 
-	if (hover_buttons == -1) { // No hover.
-		int rb_hover_old = rb_hover;
-		int cb_hover_old = cb_hover;
-
-		rb_hover = hover_buttons;
-		cb_hover = hover_buttons;
-
-		if (rb_hover != rb_hover_old || cb_hover != cb_hover_old) {
-			queue_redraw();
+	int hover_buttons = -1;
+	if (hover != -1) {
+		if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && hover != current) {
+			return;
 		}
+
+		if (tabs[hover].rb_rect.has_point(pos)) {
+			rb_hover = hover;
+			cb_hover = -1;
+			hover_buttons = hover;
+		} else if (!tabs[hover].disabled && tabs[hover].cb_rect.has_point(pos)) {
+			cb_hover = hover;
+			rb_hover = -1;
+			hover_buttons = hover;
+		}
+
+		if (hover_buttons == -1) { // No hover.
+			int rb_hover_old = rb_hover;
+			int cb_hover_old = cb_hover;
+
+			rb_hover = hover_buttons;
+			cb_hover = hover_buttons;
+
+			if (rb_hover != rb_hover_old || cb_hover != cb_hover_old) {
+				queue_redraw();
+			}
+		}
+	}
+
+	if (previous_hover != hover || hover_buttons != -1) {
+		queue_redraw();
 	}
 }
 
@@ -930,7 +957,6 @@ void TabBar::_update_cache() {
 	buttons_visible = offset > 0 || missing_right;
 
 	if (tab_alignment == ALIGNMENT_LEFT) {
-		_update_hover();
 		return;
 	}
 
@@ -947,8 +973,6 @@ void TabBar::_update_cache() {
 			w += tabs[i].size_cache;
 		}
 	}
-
-	_update_hover();
 }
 
 void TabBar::_on_mouse_exited() {

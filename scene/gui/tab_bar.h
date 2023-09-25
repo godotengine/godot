@@ -105,6 +105,7 @@ private:
 	bool drag_to_rearrange_enabled = false;
 	bool dragging_valid_tab = false;
 	bool scroll_to_selected = true;
+	bool hover_has_diff_size = false;
 	int tabs_rearrange_group = -1;
 
 	struct ThemeCache {
