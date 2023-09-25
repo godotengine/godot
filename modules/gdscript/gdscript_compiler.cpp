@@ -104,13 +104,24 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::NATIVE;
 				result.builtin_type = Variant::OBJECT;
-				result.native_type = GDScriptNativeClass::get_class_static();
+				// Fixes GH-82255. `GDScriptNativeClass` is obtainable in GDScript,
+				// but is not a registered and exposed class, so `GDScriptNativeClass`
+				// is missing from `GDScriptLanguage::get_singleton()->get_global_map()`.
+				//result.native_type = GDScriptNativeClass::get_class_static();
+				result.native_type = Object::get_class_static();
 				break;
 			}
 
 			result.kind = GDScriptDataType::NATIVE;
-			result.native_type = p_datatype.native_type;
 			result.builtin_type = p_datatype.builtin_type;
+			result.native_type = p_datatype.native_type;
+
+#ifdef DEBUG_ENABLED
+			if (unlikely(!GDScriptLanguage::get_singleton()->get_global_map().has(result.native_type))) {
+				ERR_PRINT(vformat(R"(GDScript bug: Native class "%s" not found.)", result.native_type));
+				result.native_type = Object::get_class_static();
+			}
+#endif
 		} break;
 		case GDScriptParser::DataType::SCRIPT: {
 			if (p_handle_metatype && p_datatype.is_meta_type) {
