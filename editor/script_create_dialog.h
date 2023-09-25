@@ -97,7 +97,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _path_hbox_sorted();
 	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
-	void _path_submitted(const String &p_path = String());
 	void _language_changed(int l = 0);
 	void _built_in_pressed();
 	void _use_template_pressed();
