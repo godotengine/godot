@@ -6627,7 +6627,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 			data_ptr[i] = sc.constant.int_value; // Just copy the 32 bits.
 
 			// Check the dictionary for an overridden value
-			if (specialization_constants_dict.find(sc.constant.constant_id) != specialization_constants_dict.end()) {
+			if (specialization_constants_dict.has(sc.constant.constant_id)) {
 				const PipelineSpecializationConstant &psc = specialization_constants_dict[sc.constant.constant_id];
 				ERR_FAIL_COND_V_MSG(psc.type != sc.constant.type, RID(), "Specialization constant provided for id (" + itos(sc.constant.constant_id) + ") is of the wrong type.");
 				data_ptr[i] = psc.int_value;
