@@ -354,10 +354,12 @@ Ref<Script> CSharpLanguage::make_template(const String &p_template, const String
 	String class_name_no_spaces = p_class_name.replace(" ", "_");
 	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
 	String processed_template = p_template;
+	String root_namespace = GLOBAL_GET("application/config/name");
 	processed_template = processed_template.replace("_BINDINGS_NAMESPACE_", BINDINGS_NAMESPACE)
 								 .replace("_BASE_", base_class_name)
 								 .replace("_CLASS_", class_name_no_spaces)
-								 .replace("_TS_", _get_indentation());
+								 .replace("_TS_", _get_indentation())
+								 .replace("_ROOT_NAMESPACE_");
 	scr->set_source_code(processed_template);
 	return scr;
 }
