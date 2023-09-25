@@ -937,7 +937,7 @@ def get_compiler_version(env):
             return None
     else:  # TODO: Implement for MSVC
         return None
-    match = re.search("[0-9]+\.[0-9.]+", version)
+    match = re.search(r"[0-9]+\.[0-9.]+", version)
     if match is not None:
         return list(map(int, match.group().split(".")))
     else:
