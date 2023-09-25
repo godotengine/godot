@@ -372,6 +372,7 @@ Variant AnimationNodeSub2::get_parameter_default_value(const StringName &p_param
 String AnimationNodeSub2::get_caption() const {
 	return "Sub2";
 }
+
 void AnimationNodeSub2::set_use_sync(bool p_sync) {
 	sync = p_sync;
 }
