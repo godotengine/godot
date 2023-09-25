@@ -45,11 +45,16 @@ public:
 		SPACE_OVERRIDE_REPLACE_COMBINE
 	};
 
+	enum GravityType {
+		GRAVITY_TYPE_DIRECTIONAL,
+		GRAVITY_TYPE_POINT,
+	};
+
 private:
 	SpaceOverride gravity_space_override = SPACE_OVERRIDE_DISABLED;
 	Vector3 gravity_vec;
 	real_t gravity = 0.0;
-	bool gravity_is_point = false;
+	GravityType gravity_type = GRAVITY_TYPE_DIRECTIONAL;
 	real_t gravity_point_unit_distance = 0.0;
 
 	SpaceOverride linear_damp_space_override = SPACE_OVERRIDE_DISABLED;
@@ -153,6 +158,9 @@ public:
 	void set_gravity_space_override_mode(SpaceOverride p_mode);
 	SpaceOverride get_gravity_space_override_mode() const;
 
+	void set_gravity_type(GravityType p_type);
+	GravityType get_gravity_type() const;
+
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
 
@@ -230,3 +238,4 @@ public:
 };
 
 VARIANT_ENUM_CAST(Area3D::SpaceOverride);
+VARIANT_ENUM_CAST(Area3D::GravityType);
