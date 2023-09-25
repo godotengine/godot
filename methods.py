@@ -975,13 +975,13 @@ def get_compiler_version(env):
     else:  # TODO: Implement for MSVC
         return None
     match = re.search(
-        "(?:(?<=version )|(?<=\) )|(?<=^))"
-        "(?P<major>\d+)"
-        "(?:\.(?P<minor>\d*))?"
-        "(?:\.(?P<patch>\d*))?"
-        "(?:-(?P<metadata1>[0-9a-zA-Z-]*))?"
-        "(?:\+(?P<metadata2>[0-9a-zA-Z-]*))?"
-        "(?: (?P<date>[0-9]{8}|[0-9]{6})(?![0-9a-zA-Z]))?",
+        r"(?:(?<=version )|(?<=\) )|(?<=^))"
+        r"(?P<major>\d+)"
+        r"(?:\.(?P<minor>\d*))?"
+        r"(?:\.(?P<patch>\d*))?"
+        r"(?:-(?P<metadata1>[0-9a-zA-Z-]*))?"
+        r"(?:\+(?P<metadata2>[0-9a-zA-Z-]*))?"
+        r"(?: (?P<date>[0-9]{8}|[0-9]{6})(?![0-9a-zA-Z]))?",
         version,
     )
     if match is not None:
