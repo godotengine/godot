@@ -120,7 +120,7 @@ private:
 	OverrideMode angular_damp_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
 
 	bool monitorable = false;
-	bool point_gravity = false;
+	PhysicsServer3D::AreaGravityType gravity_type = PhysicsServer3D::AREA_GRAVITY_TYPE_DIRECTIONAL;
 
 	virtual JPH::BroadPhaseLayer _get_broad_phase_layer() const override;
 	virtual JPH::ObjectLayer _get_object_layer() const override;
@@ -196,7 +196,10 @@ public:
 	float get_gravity() const { return gravity; }
 	void set_gravity(float p_gravity);
 
-	bool is_point_gravity() const { return point_gravity; }
+	PhysicsServer3D::AreaGravityType get_gravity_type() const { return gravity_type; }
+	void set_gravity_type(PhysicsServer3D::AreaGravityType p_gravity_type);
+
+	bool is_point_gravity() const { return gravity_type == PhysicsServer3D::AREA_GRAVITY_TYPE_POINT; }
 	void set_point_gravity(bool p_enabled);
 
 	float get_point_gravity_distance() const { return point_gravity_distance; }
@@ -232,7 +235,7 @@ public:
 	const Vector3 &get_wind_direction() const { return wind_direction; }
 	void set_wind_direction(const Vector3 &p_wind_direction) { wind_direction = p_wind_direction; }
 
-	Vector3 compute_gravity(const Vector3 &p_position) const;
+	Vector3 compute_gravity(const Vector3 &p_global_position) const;
 
 	void body_shape_entered(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
 	bool body_shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
