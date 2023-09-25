@@ -41,17 +41,33 @@
 #else
 
 // Include default mbedTLS config.
-#include <mbedtls/config.h>
+#include <mbedtls/mbedtls_config.h>
 
 // Disable weak cryptography.
 #undef MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
 #undef MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
-#undef MBEDTLS_SSL_CBC_RECORD_SPLITTING
-#undef MBEDTLS_SSL_PROTO_TLS1
-#undef MBEDTLS_SSL_PROTO_TLS1_1
-#undef MBEDTLS_ARC4_C
 #undef MBEDTLS_DES_C
 #undef MBEDTLS_DHM_C
+
+#ifndef __linux__
+// ARMv8 hardware AES operations. Detection only possible on linux.
+#undef MBEDTLS_AESCE_C
+#endif
+
+// Disable deprecated
+#define MBEDTLS_DEPRECATED_REMOVED
+
+// mbedTLS 3.6 finally enabled TLSv1.3 by default, but it requires some mobule
+// changes, and to enable PSA crypto (new "standard" API specification).
+// Disable it for now.
+#undef MBEDTLS_SSL_PROTO_TLS1_3
+
+// Disable PSA Crypto.
+#undef MBEDTLS_PSA_CRYPTO_CONFIG
+#undef MBEDTLS_PSA_CRYPTO_C
+#undef MBEDTLS_PSA_CRYPTO_STORAGE_C
+#undef MBEDTLS_PSA_ITS_FILE_C
+#undef MBEDTLS_LMS_C
 
 #endif // GODOT_MBEDTLS_INCLUDE_H
 
