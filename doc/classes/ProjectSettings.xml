@@ -2717,6 +2717,12 @@
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.
 		</member>
+		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
+			If true and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [code]xr/openxr/foveation_level[/code].
+		</member>
+		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
+			Applied foveation level if supported: 0 = off, 1 = low, 2 = medium, 3 = high.
+		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.
 		</member>
