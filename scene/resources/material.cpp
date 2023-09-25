@@ -1062,12 +1062,12 @@ void BaseMaterial3D::_update_shader() {
 		code += "	TANGENT = vec3(0.0,0.0,-1.0) * abs(NORMAL.x);\n";
 		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.y);\n";
 		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);\n";
-		code += "	TANGENT = normalize(TANGENT);\n";
+		code += "	TANGENT = normalize(TANGENT) * MODEL_NORMAL_MATRIX;\n";
 
 		code += "	BINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);\n";
 		code += "	BINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);\n";
 		code += "	BINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);\n";
-		code += "	BINORMAL = normalize(BINORMAL);\n";
+		code += "	BINORMAL = normalize(BINORMAL) * MODEL_NORMAL_MATRIX;\n";
 	}
 
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
