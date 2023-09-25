@@ -152,6 +152,7 @@ public:
 
 	AnimationNodeSub2();
 };
+
 class AnimationNodeAdd2 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd2, AnimationNode);
 
