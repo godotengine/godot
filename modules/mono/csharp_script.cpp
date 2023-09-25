@@ -346,6 +346,24 @@ static String get_base_class_name(const String &p_base_class_name, const String 
 bool CSharpLanguage::is_using_templates() {
 	return true;
 }
+static String nicify_namespace(const String &p_namespace, const String &p_root) {
+	String namesp = p_namespace.substr(6)
+							.to_pascal_case()
+							.replace(" ", "")
+							.replace("/", "\\")
+							.replacen("\\Script\\", "\\")
+							.replacen("\\Scripts\\", "\\");
+
+	int r_pos = namesp.rfind("\\");
+	namesp = namesp.substr(0, r_pos).replace("\\", ".");
+
+	if (namesp.size() == 0 || r_pos < 0) {
+		return p_root.to_pascal_case();
+	} else if (p_root.size() == 0) {
+		return namesp;
+	}
+	return p_root.to_pascal_case() + "." + namesp;
+}
 
 Ref<Script> CSharpLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name, const String &p_script_path) const {
 	Ref<CSharpScript> scr;
@@ -355,11 +373,17 @@ Ref<Script> CSharpLanguage::make_template(const String &p_template, const String
 	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
 	String processed_template = p_template;
 	String root_namespace = GLOBAL_GET("application/config/name");
+	String script_namespace = nicify_namespace(p_script_path, root_namespace);
 	processed_template = processed_template.replace("_BINDINGS_NAMESPACE_", BINDINGS_NAMESPACE)
 								 .replace("_BASE_", base_class_name)
 								 .replace("_CLASS_", class_name_no_spaces)
 								 .replace("_TS_", _get_indentation())
 								 .replace("_ROOT_NAMESPACE_");
+	if (script_namespace != ".") {
+		processed_template = processed_template.replace("_SCRIPT_NAMESPACE_", script_namespace);
+	} else {
+		processed_template = processed_template.replace("_SCRIPT_NAMESPACE_", root_namespace);
+	}
 	scr->set_source_code(processed_template);
 	return scr;
 }
