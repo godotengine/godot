@@ -891,10 +891,24 @@ void Object::set_custom_type_script(const Variant &p_script) {
 		return;
 	}
 
-	Ref<Script> s = p_script;
-	ERR_FAIL_COND_MSG(s.is_null() && !p_script.is_null(), "Parameter should be a reference to a valid script (or null).");
+	Ref<Script> c = p_script;
+	ERR_FAIL_COND_MSG(c.is_null() && !p_script.is_null(), "Parameter should be a reference to a valid script (or null).");
 
 	custom_type_script = p_script;
+
+	// If there is already an extension script present, check if it's compatbile with
+	// the new custom type script. If it's not, fallback to the custom type script.
+	if (!custom_type_script.is_null() && !script.is_null() && script != custom_type_script) {
+		Ref<Script> s = script;
+		if (!s->inherits_script(c)) {
+			set_script(custom_type_script);
+			ERR_FAIL_MSG(s->get_path() + " is not an extension of " + c->get_global_name());
+		}
+	}
+
+	if (script.is_null()) {
+		set_script(custom_type_script);
+	}
 }
 
 void Object::set_script(const Variant &p_script) {
@@ -908,6 +922,7 @@ void Object::set_script(const Variant &p_script) {
 		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
 	}
 
+	// Check if there is a custom type script present. If there is, then "script" cannot be null and must extend the custom type script
 	if (!custom_type_script.is_null()) {
 		if (s.is_null()) {
 			set_script(custom_type_script);
