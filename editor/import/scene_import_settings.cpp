@@ -225,7 +225,7 @@ void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, Tree
 
 	MeshData &mesh_data = mesh_map[import_id];
 
-	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Mesh"));
+	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("MeshItem"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
 	item->set_text(0, p_mesh->get_name());
@@ -1285,7 +1285,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 				String name = md.mesh_node->get_text(0);
 
 				item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				item->set_icon(0, get_editor_theme_icon(SNAME("Mesh")));
+				item->set_icon(0, get_editor_theme_icon(SNAME("MeshItem")));
 				item->set_text(0, name);
 
 				if (md.has_import_id) {
