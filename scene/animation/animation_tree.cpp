@@ -189,8 +189,8 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 
 	// If an animation node sets use_blend to false it must remain false
 	// this is a way to make it pass down the tree. Without this
-	// the next node, which will often set use_blend to true, will 
-	// override our request for use_blend false. 
+	// the next node, which will often set use_blend to true, will
+	// override our request for use_blend false.
 	if (p_use_blend) {
 		// use self
 		p_node->use_blend = this->use_blend;
