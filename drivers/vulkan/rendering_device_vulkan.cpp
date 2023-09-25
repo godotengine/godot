@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <unordered_map>
-
 #include "rendering_device_vulkan.h"
 
 #include "core/config/project_settings.h"
@@ -6618,8 +6616,8 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 		specialization_constant_data.resize(shader->specialization_constants.size());
 		uint32_t *data_ptr = specialization_constant_data.ptrw();
 
-		// Create a dictionary (unordered_map) for p_specialization_constants based on constant_id
-		std::unordered_map<int, PipelineSpecializationConstant> specialization_constants_dict;
+		// Create a dictionary (hashmap) for p_specialization_constants based on constant_id
+		HashMap<int, PipelineSpecializationConstant> specialization_constants_dict;
 		for (int j = 0; j < p_specialization_constants.size(); j++) {
 			specialization_constants_dict[p_specialization_constants[j].constant_id] = p_specialization_constants[j];
 		}
