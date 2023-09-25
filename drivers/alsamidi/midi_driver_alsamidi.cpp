@@ -82,13 +82,13 @@ size_t MIDIDriverALSAMidi::msg_expected_data(uint8_t status_byte) {
 }
 
 void MIDIDriverALSAMidi::InputConnection::parse_byte(uint8_t byte, MIDIDriverALSAMidi &driver,
-		uint64_t timestamp, int connectionIndex) {
+		uint64_t timestamp, int connection_index) {
 	switch (msg_category(byte)) {
 		case MessageCategory::RealTime:
 			// Real-Time messages are single byte messages that can
 			// occur at any point.
 			// We pass them straight through.
-			driver.receive_input_packet(timestamp, &byte, 1, connectionIndex);
+			driver.receive_input_packet(timestamp, &byte, 1, connection_index);
 			break;
 
 		case MessageCategory::Data:
@@ -100,7 +100,7 @@ void MIDIDriverALSAMidi::InputConnection::parse_byte(uint8_t byte, MIDIDriverALS
 
 				// Forward a complete message and reset relevant state.
 				if (received_data == expected_data) {
-					driver.receive_input_packet(timestamp, buffer, received_data + 1, connectionIndex);
+					driver.receive_input_packet(timestamp, buffer, received_data + 1, connection_index);
 					received_data = 0;
 
 					if (msg_category(buffer[0]) != MessageCategory::Voice) {
@@ -130,13 +130,13 @@ void MIDIDriverALSAMidi::InputConnection::parse_byte(uint8_t byte, MIDIDriverALS
 			expected_data = msg_expected_data(byte);
 			skipping_sys_ex = false;
 			if (expected_data == 0) {
-				driver.receive_input_packet(timestamp, &byte, 1, connectionIndex);
+				driver.receive_input_packet(timestamp, &byte, 1, connection_index);
 			}
 			break;
 	}
 }
 
-int MIDIDriverALSAMidi::InputConnection::read_in(MIDIDriverALSAMidi &driver, uint64_t timestamp, int connectionIndex) {
+int MIDIDriverALSAMidi::InputConnection::read_in(MIDIDriverALSAMidi &driver, uint64_t timestamp, int connection_index) {
 	int ret;
 	do {
 		uint8_t byte = 0;
@@ -147,7 +147,7 @@ int MIDIDriverALSAMidi::InputConnection::read_in(MIDIDriverALSAMidi &driver, uin
 				ERR_PRINT("snd_rawmidi_read error: " + String(snd_strerror(ret)));
 			}
 		} else {
-			parse_byte(byte, driver, timestamp, connectionIndex);
+			parse_byte(byte, driver, timestamp, connection_index);
 		}
 	} while (ret > 0);
 

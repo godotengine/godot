@@ -1717,14 +1717,6 @@ int InputEventMIDI::get_controller_value() const {
 	return controller_value;
 }
 
-void InputEventMIDI::set_connection_index(const int p_connection_index) {
-	connection_index = p_connection_index;
-}
-
-int InputEventMIDI::get_connection_index() const {
-	return connection_index;
-}
-
 String InputEventMIDI::as_text() const {
 	return vformat(RTR("MIDI Input on Channel=%s Message=%s"), itos(channel), itos((int64_t)message));
 }
@@ -1770,8 +1762,6 @@ void InputEventMIDI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_controller_number"), &InputEventMIDI::get_controller_number);
 	ClassDB::bind_method(D_METHOD("set_controller_value", "controller_value"), &InputEventMIDI::set_controller_value);
 	ClassDB::bind_method(D_METHOD("get_controller_value"), &InputEventMIDI::get_controller_value);
-	ClassDB::bind_method(D_METHOD("set_connection_index", "connection_index"), &InputEventMIDI::set_connection_index);
-	ClassDB::bind_method(D_METHOD("get_connection_index"), &InputEventMIDI::get_connection_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel"), "set_channel", "get_channel");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "message"), "set_message", "get_message");
@@ -1781,7 +1771,6 @@ void InputEventMIDI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_number"), "set_controller_number", "get_controller_number");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_value"), "set_controller_value", "get_controller_value");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "connection_index"), "set_connection_index", "get_connection_index");
 }
 
 ///////////////////////////////////

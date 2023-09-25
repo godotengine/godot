@@ -42,12 +42,12 @@ void MIDIDriver::set_singleton() {
 	singleton = this;
 }
 
-void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_t length, int connectionIndex) {
+void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_t length, int connection_index) {
 	Ref<InputEventMIDI> event;
 	event.instantiate();
 	uint32_t param_position = 1;
 
-	event->set_connection_index(connectionIndex);
+	event->set_device(connection_index);
 
 	if (length >= 1) {
 		if (data[0] >= 0xF0) {

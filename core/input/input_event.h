@@ -548,9 +548,6 @@ public:
 	void set_controller_value(const int p_controller_value);
 	int get_controller_value() const;
 
-	void set_connection_index(const int p_connection_index);
-	int get_connection_index() const;
-
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
