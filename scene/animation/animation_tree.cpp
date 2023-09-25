@@ -114,7 +114,6 @@ void AnimationNode::blend_animation(const StringName &p_animation, float p_time,
 	anim_state.seeked = p_seeked;
 	anim_state.use_blend = use_blend;
 
-
 	state->animation_states.push_back(anim_state);
 }
 
