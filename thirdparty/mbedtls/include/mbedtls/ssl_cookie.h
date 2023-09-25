@@ -9,24 +9,23 @@
  */
 #ifndef MBEDTLS_SSL_COOKIE_H
 #define MBEDTLS_SSL_COOKIE_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include "mbedtls/ssl.h"
 
+#if !defined(MBEDTLS_USE_PSA_CRYPTO)
 #if defined(MBEDTLS_THREADING_C)
 #include "mbedtls/threading.h"
 #endif
+#endif /* !MBEDTLS_USE_PSA_CRYPTO */
 
 /**
  * \name SECTION: Module settings
  *
  * The configuration options you can set for this module are in this section.
- * Either change them in config.h or define them on the compiler command line.
+ * Either change them in mbedtls_config.h or define them on the compiler command line.
  * \{
  */
 #ifndef MBEDTLS_SSL_COOKIE_TIMEOUT
@@ -43,16 +42,23 @@ extern "C" {
  * \brief          Context for the default cookie functions.
  */
 typedef struct mbedtls_ssl_cookie_ctx {
-    mbedtls_md_context_t    hmac_ctx;   /*!< context for the HMAC portion   */
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+    mbedtls_svc_key_id_t    MBEDTLS_PRIVATE(psa_hmac_key);  /*!< key id for the HMAC portion   */
+    psa_algorithm_t         MBEDTLS_PRIVATE(psa_hmac_alg);  /*!< key algorithm for the HMAC portion   */
+#else
+    mbedtls_md_context_t    MBEDTLS_PRIVATE(hmac_ctx);   /*!< context for the HMAC portion   */
+#endif /* MBEDTLS_USE_PSA_CRYPTO */
 #if !defined(MBEDTLS_HAVE_TIME)
-    unsigned long   serial;     /*!< serial number for expiration   */
+    unsigned long   MBEDTLS_PRIVATE(serial);     /*!< serial number for expiration   */
 #endif
-    unsigned long   timeout;    /*!< timeout delay, in seconds if HAVE_TIME,
-                                     or in number of tickets issued */
+    unsigned long   MBEDTLS_PRIVATE(timeout);    /*!< timeout delay, in seconds if HAVE_TIME,
+                                                    or in number of tickets issued */
 
+#if !defined(MBEDTLS_USE_PSA_CRYPTO)
 #if defined(MBEDTLS_THREADING_C)
-    mbedtls_threading_mutex_t mutex;
+    mbedtls_threading_mutex_t MBEDTLS_PRIVATE(mutex);
 #endif
+#endif /* !MBEDTLS_USE_PSA_CRYPTO */
 } mbedtls_ssl_cookie_ctx;
 
 /**
