@@ -114,6 +114,7 @@ void AnimationNode::blend_animation(const StringName &p_animation, float p_time,
 	anim_state.seeked = p_seeked;
 	anim_state.use_blend = use_blend;
 
+
 	state->animation_states.push_back(anim_state);
 }
 
@@ -142,7 +143,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	state->invalid_reasons += String::utf8("• ") + p_reason;
 }
 
-float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, bool use_blend) {
+float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, bool p_use_blend) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -155,16 +156,13 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 		String name = blend_tree->get_node_name(Ref<AnimationNode>(this));
 		make_invalid(vformat(RTR("Nothing connected to input '%s' of node '%s'."), get_input_name(p_input), name));
 		return 0;
-	} else {
-		Ref<AnimationNode> node = blend_tree->get_node(node_name);
-		node->use_blend = use_blend;
 	}
 
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
 	//inputs.write[p_input].last_pass = state->last_pass;
 	float activity = 0;
-	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
+	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity, p_use_blend);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
@@ -175,11 +173,11 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 	return ret;
 }
 
-float AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
-	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_blend, p_filter, p_optimize);
+float AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, bool p_use_blend) {
+	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_blend, p_filter, p_optimize, nullptr, p_use_blend);
 }
 
-float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, float *r_max) {
+float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, float *r_max, bool p_use_blend) {
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -187,6 +185,18 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 
 	if (p_node->blends.size() != blend_count) {
 		p_node->blends.resize(blend_count);
+	}
+
+	// If an animation node sets use_blend to false it must remain false
+	// this is a way to make it pass down the tree. Without this
+	// the next node, which will often set use_blend to true, will 
+	// override our request for use_blend false. 
+	if (p_use_blend) {
+		// use self
+		p_node->use_blend = this->use_blend;
+	} else {
+		// use parameter
+		p_node->use_blend = p_use_blend;
 	}
 
 	float *blendw = p_node->blends.ptrw();
@@ -219,7 +229,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (Math::abs(blendw[i]) > CMP_EPSILON) {
+					if (Math::absf(blendw[i]) > CMP_EPSILON) {
 						any_valid = true;
 					}
 				}
@@ -234,7 +244,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (Math::abs(blendw[i]) > CMP_EPSILON) {
+					if (Math::absf(blendw[i]) > CMP_EPSILON) {
 						any_valid = true;
 					}
 				}
@@ -250,7 +260,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 						blendw[i] = blendr[i]; //not filtered, do not blend
 					}
 
-					if (Math::abs(blendw[i]) > CMP_EPSILON) {
+					if (Math::absf(blendw[i]) > CMP_EPSILON) {
 						any_valid = true;
 					}
 				}
@@ -261,7 +271,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 		for (int i = 0; i < blend_count; i++) {
 			//regular blend
 			blendw[i] = blendr[i] * p_blend;
-			if (Math::abs(blendw[i]) > CMP_EPSILON) {
+			if (Math::absf(blendw[i]) > CMP_EPSILON) {
 				any_valid = true;
 			}
 		}
@@ -270,7 +280,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 	if (r_max) {
 		*r_max = 0;
 		for (int i = 0; i < blend_count; i++) {
-			*r_max = MAX(*r_max, Math::abs(blendw[i])); // to account for negative blend weights as used by Sub2 nodes
+			*r_max = MAX(*r_max, Math::absf(blendw[i])); // to account for negative blend weights as used by Sub2 nodes
 		}
 	}
 
@@ -828,7 +838,6 @@ void AnimationTree::_process_graph(float p_delta) {
 			float delta = as.delta;
 			float weight = as.blend;
 			bool seeked = as.seeked;
-			bool use_blend = as.use_blend;
 
 			for (int i = 0; i < a->get_track_count(); i++) {
 				NodePath path = a->track_get_path(i);
@@ -849,7 +858,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 				float blend = (*as.track_blends)[blend_idx] * weight;
 
-				if (blend < CMP_EPSILON) {
+				if (Math::absf(blend) < CMP_EPSILON) {
 					continue; //nothing to blend
 				}
 
@@ -929,21 +938,25 @@ void AnimationTree::_process_graph(float p_delta) {
 								continue;
 							}
 
-							if (use_blend) {
+							if (as.use_blend) {
+								blend = Math::absf(blend); // If negative rot_total could be 0, causing divide by 0 errors, inf numbers.
 								t->loc = t->loc.linear_interpolate(loc, blend);
+								if (t->rot_blend_accum == 0) {
+									t->rot = rot;
+									t->rot_blend_accum = blend;
+								} else {
+									float rot_total = t->rot_blend_accum + blend;
+									t->rot = rot.slerp(t->rot, t->rot_blend_accum / rot_total).normalized();
+									t->rot_blend_accum = rot_total;
+								}
 							} else {
-								// Direct adding. Used by Add and Sub
+								// Direct addition / subtraction
 								t->loc += loc * blend;
+								Quat q = Quat();
+								q = q.slerp(rot.normalized(), blend).normalized();
+								t->rot = (t->rot * q).normalized();
 							}
-							if (t->rot_blend_accum == 0) {
-								t->rot = rot;
-								t->rot_blend_accum = blend;
-							} else {
-								float rot_total = t->rot_blend_accum + blend;
-								t->rot = rot.slerp(t->rot, t->rot_blend_accum / rot_total).normalized();
-								t->rot_blend_accum = rot_total;
-							}
-							t->scale = t->scale.linear_interpolate(scale, blend);
+							t->scale = t->scale.linear_interpolate(scale, Math::absf(blend));
 						}
 
 					} break;

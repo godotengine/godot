@@ -133,7 +133,7 @@ class AnimationNodeSub2 : public AnimationNode {
 
 	bool sync;
 
-	StringName sub_amount = PNAME("sub_amount");
+	StringName sub_amount;
 
 protected:
 	static void _bind_methods();
