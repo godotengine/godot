@@ -35,6 +35,9 @@
 #endif
 
 #include "webrtc_peer_connection_extension.h"
+#if defined(ENABLE_LIBDATACHANNEL)
+#include "webrtc_lib_peer_connection.h"
+#endif
 
 StringName WebRTCPeerConnection::default_extension;
 
@@ -48,8 +51,12 @@ WebRTCPeerConnection *WebRTCPeerConnection::create() {
 	return memnew(WebRTCPeerConnectionJS);
 #else
 	if (default_extension == StringName()) {
+#if defined(ENABLE_LIBDATACHANNEL)
+		return memnew(WebRTCLibPeerConnection);
+#else
 		WARN_PRINT_ONCE("No default WebRTC extension configured.");
 		return memnew(WebRTCPeerConnectionExtension);
+#endif
 	}
 	Object *obj = ClassDB::instantiate(default_extension);
 	return Object::cast_to<WebRTCPeerConnectionExtension>(obj);

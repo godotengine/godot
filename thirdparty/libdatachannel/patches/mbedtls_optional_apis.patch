@@ -1,0 +1,46 @@
+diff --git a/thirdparty/libdatachannel/src/impl/tls.cpp b/thirdparty/libdatachannel/src/impl/tls.cpp
+index 650f90743b..4ea7d89cc0 100644
+--- a/thirdparty/libdatachannel/src/impl/tls.cpp
++++ b/thirdparty/libdatachannel/src/impl/tls.cpp
+@@ -104,10 +104,10 @@ bool check(int ret, const string &message) {
+ 		    ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY)
+ 			return false;
+ 
+-		const size_t bufferSize = 1024;
+-		char buffer[bufferSize];
+-		mbedtls_strerror(ret, reinterpret_cast<char *>(buffer), bufferSize);
+-		throw std::runtime_error(message + ": " + std::string(buffer));
++		// const size_t bufferSize = 1024;
++		// char buffer[bufferSize];
++		// mbedtls_strerror(ret, reinterpret_cast<char *>(buffer), bufferSize);
++		throw std::runtime_error(message + ": Error " + std::to_string(ret));
+ 	}
+ 	return true;
+ }
+diff --git a/thirdparty/libdatachannel/src/impl/dtlstransport.cpp b/thirdparty/libdatachannel/src/impl/dtlstransport.cpp
+index 3779c5671e..a0d6e69a64 100644
+--- a/thirdparty/libdatachannel/src/impl/dtlstransport.cpp
++++ b/thirdparty/libdatachannel/src/impl/dtlstransport.cpp
+@@ -367,10 +367,12 @@
+ 
+ #elif USE_MBEDTLS
+ 
++#if RTC_ENABLE_MEDIA // Godot added
+ const mbedtls_ssl_srtp_profile srtpSupportedProtectionProfiles[] = {
+     MBEDTLS_TLS_SRTP_AES128_CM_HMAC_SHA1_80,
+     MBEDTLS_TLS_SRTP_UNSET,
+ };
++#endif // RTC_ENABLE_MEDIA
+ 
+ DtlsTransport::DtlsTransport(shared_ptr<IceTransport> lower, certificate_ptr certificate,
+                              optional<size_t> mtu, verifier_callback verifierCallback,
+@@ -409,7 +411,9 @@
+ 		               "Failed creating Mbed TLS Context");
+ 
+ 		mbedtls_ssl_conf_dtls_cookies(&mConf, NULL, NULL, NULL);
++#if RTC_ENABLE_MEDIA // Godot added
+ 		mbedtls_ssl_conf_dtls_srtp_protection_profiles(&mConf, srtpSupportedProtectionProfiles);
++#endif // RTC_ENABLE_MEDIA
+ 
+ 		mbedtls::check(mbedtls_ssl_setup(&mSsl, &mConf), "Failed creating Mbed TLS Context");
+ 

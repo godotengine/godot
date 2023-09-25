@@ -5,8 +5,167 @@ Import("env_modules")
 
 env_webrtc = env_modules.Clone()
 
+thirdparty_obj = []
+
 if env["platform"] == "web":
     # Our JavaScript/C++ interface.
     env.AddJSLibraries(["library_godot_webrtc.js"])
 
-env_webrtc.add_source_files(env.modules_sources, "*.cpp")
+elif env["builtin_libdatachannel"] and env["libdatachannel"]:
+    # Thirdparty source files
+    thirdparty_dir = "#thirdparty/libdatachannel/"
+    thirdparty_sources = [
+        "deps/libjuice/src/addr.c",
+        "deps/libjuice/src/agent.c",
+        "deps/libjuice/src/base64.c",
+        "deps/libjuice/src/conn.c",
+        "deps/libjuice/src/conn_mux.c",
+        "deps/libjuice/src/conn_poll.c",
+        "deps/libjuice/src/conn_thread.c",
+        "deps/libjuice/src/const_time.c",
+        "deps/libjuice/src/crc32.c",
+        "deps/libjuice/src/hash.c",
+        "deps/libjuice/src/hmac.c",
+        "deps/libjuice/src/ice.c",
+        "deps/libjuice/src/juice.c",
+        "deps/libjuice/src/log.c",
+        "deps/libjuice/src/random.c",
+        "deps/libjuice/src/server.c",
+        "deps/libjuice/src/stun.c",
+        "deps/libjuice/src/timestamp.c",
+        "deps/libjuice/src/turn.c",
+        "deps/libjuice/src/udp.c",
+        "deps/usrsctp/usrsctplib/netinet/sctputil.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_asconf.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_auth.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_bsd_addr.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_callout.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_cc_functions.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_crc32.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_indata.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_input.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_output.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_pcb.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_peeloff.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_sha1.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_ss_functions.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_sysctl.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_timer.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_userspace.c",
+        "deps/usrsctp/usrsctplib/netinet/sctp_usrreq.c",
+        "deps/usrsctp/usrsctplib/netinet6/sctp6_usrreq.c",
+        "deps/usrsctp/usrsctplib/user_environment.c",
+        "deps/usrsctp/usrsctplib/user_mbuf.c",
+        "deps/usrsctp/usrsctplib/user_recv_thread.c",
+        "deps/usrsctp/usrsctplib/user_socket.c",
+        "src/candidate.cpp",
+        "src/channel.cpp",
+        "src/configuration.cpp",
+        "src/datachannel.cpp",
+        "src/description.cpp",
+        "src/global.cpp",
+        "src/exception_wrapper_godot.cpp",
+        "src/impl/certificate.cpp",
+        "src/impl/channel.cpp",
+        "src/impl/datachannel.cpp",
+        "src/impl/dtlstransport.cpp",
+        "src/impl/icetransport.cpp",
+        "src/impl/init.cpp",
+        "src/impl/logcounter.cpp",
+        "src/impl/peerconnection.cpp",
+        "src/impl/processor.cpp",
+        "src/impl/sctptransport.cpp",
+        "src/impl/threadpool.cpp",
+        "src/impl/tls.cpp",
+        "src/impl/track.cpp",
+        "src/impl/transport.cpp",
+        "src/impl/utils.cpp",
+        "src/message.cpp",
+        "src/peerconnection.cpp",
+        "src/rtp.cpp",
+        "src/track.cpp",
+    ]
+    thirdparty_sources = [thirdparty_dir + s for s in thirdparty_sources]
+
+    thirdparty_includes = [
+        "include",
+        "include/rtc",
+        "src",
+        "deps/usrsctp/usrsctplib",
+        "deps/plog/include",
+        "deps/libjuice/include",
+        "deps/libjuice/include/juice",
+    ]
+    thirdparty_includes = [thirdparty_dir + s for s in thirdparty_includes]
+
+    env_webrtc.Prepend(CPPPATH=thirdparty_includes)
+    if env["builtin_mbedtls"]:
+        env_webrtc.Prepend(CPPPATH=["#thirdparty/mbedtls/include"])
+        env_webrtc.Append(
+            CPPDEFINES=[("MBEDTLS_CONFIG_FILE", '\\"thirdparty/mbedtls/include/godot_module_mbedtls_config.h\\"')]
+        )
+        env_webrtc.Depends(thirdparty_obj, "#thirdparty/mbedtls/include/godot_module_mbedtls_config.h")
+
+    env_webrtc.Append(CPPDEFINES=["HAVE_CONFIG_H"])
+    if env["arch"] in ["x86_64", "x86_32"]:
+        env_webrtc.Append(CPPDEFINES=["HAVE_X86", "HAVE_CISC"])
+    else:
+        env_webrtc.Append(CPPDEFINES=["HAVE_RISC"])
+
+    if env["platform"] == "windows":
+        env_webrtc.Append(CPPDEFINES=["HAVE_WINSOCK2_H", "HAVE_WINDOWS_H", "WIN32_LEAN_AND_MEAN", "NOMINMAX"])
+    else:
+        env_webrtc.Append(CPPDEFINES=["HAVE_NETINET_IN_H", "HAVE_ARPA_INET_H", "HAVE_SYS_SOCKET_H", "HAVE_UNISTD_H"])
+
+    env_webrtc.Append(
+        CPPDEFINES=[
+            "RTC_STATIC",
+            "RTC_ENABLE_WEBSOCKET=0",
+            "RTC_ENABLE_MEDIA=0",
+            "USE_GNUTLS=0",
+            "USE_NICE=0",
+            "RTC_SYSTEM_SRTP=0",
+            "MBEDTLS",
+            "GCM",
+            "USE_MBEDTLS",
+            "USE_NICE=0",
+            "RTC_SYSTEM_JUICE=0" "USE_NETTLE=0",
+            "JUICE_STATIC",
+            "SCTP_PROCESS_LEVEL_LOCKS",
+            "SCTP_SIMPLE_ALLOCATOR",
+            "__Userspace__",
+        ]
+    )
+    if env["target"] == "template_release":
+        # Debug logging takes 100KB. May be better to check for env.debug_features
+        env_webrtc.Append(CPPDEFINES=["GODOT_JUICE_DISABLE_LOG", "GODOT_PLOG_DISABLE_LOG"])
+
+    env_thirdparty = env_webrtc.Clone()
+    env_thirdparty.disable_warnings()
+
+    if env["disable_exceptions"]:
+        # If exceptions were disabled, we have to undo this when compiling the thirdparty code.
+        if env.msvc:
+            env_thirdparty["CPPDEFINES"] = [x for x in env_thirdparty["CPPDEFINES"] if "_HAS_EXCEPTIONS" not in x]
+            env_thirdparty.Append(CCFLAGS=["/EHsc"])
+        else:
+            env_thirdparty["CCFLAGS"] = [x for x in env_thirdparty["CCFLAGS"] if "-fno-exceptions" not in x]
+
+    if env.msvc:
+        env_thirdparty["CCFLAGS"] = ["/O1" if x == "/O2" else x for x in env_thirdparty["CCFLAGS"]]
+    else:
+        env_thirdparty["CCFLAGS"] = ["-Os" if (x == "-O2" or x == "-O3") else x for x in env_thirdparty["CCFLAGS"]]
+
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
+
+if env["platform"] != "web" and env["libdatachannel"]:
+    env_webrtc.Append(CPPDEFINES=["ENABLE_LIBDATACHANNEL"])
+
+module_obj = []
+
+env_webrtc.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

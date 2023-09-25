@@ -1,0 +1,43 @@
+commit df6f495677fd09a749f061196e74d57a94621135
+Author: K. S. Ernest (iFire) Lee <ernest.lee@chibifire.com>
+Date:   Tue Sep 26 20:26:17 2023 -0700
+
+    Try to fix llvm-mingw.
+
+diff --git a/thirdparty/libdatachannel/deps/usrsctp/usrsctplib/user_environment.h b/thirdparty/libdatachannel/deps/usrsctp/usrsctplib/user_environment.h
+index a545accba0..4aa35201d5 100644
+--- a/thirdparty/libdatachannel/deps/usrsctp/usrsctplib/user_environment.h
++++ b/thirdparty/libdatachannel/deps/usrsctp/usrsctplib/user_environment.h
+@@ -62,7 +62,7 @@ extern int ipport_firstauto, ipport_lastauto;
+  */
+ extern int nmbclusters;
+ 
+-#if !defined(_MSC_VER) && !defined(__MINGW32__)
++#if !defined(_MSC_VER)
+ #define min(a,b) (((a)>(b))?(b):(a))
+ #define max(a,b) (((a)>(b))?(a):(b))
+ #endif
+diff --git a/thirdparty/libdatachannel/src/impl/certificate.cpp b/thirdparty/libdatachannel/src/impl/certificate.cpp
+index eb4c419c86..00b3544943 100644
+--- a/thirdparty/libdatachannel/src/impl/certificate.cpp
++++ b/thirdparty/libdatachannel/src/impl/certificate.cpp
+@@ -11,6 +11,7 @@
+ 
+ #include <cassert>
+ #include <chrono>
++#include <cstring>
+ #include <iomanip>
+ #include <mutex>
+ #include <sstream>
+diff --git a/thirdparty/libdatachannel/src/impl/icetransport.cpp b/thirdparty/libdatachannel/src/impl/icetransport.cpp
+index 3a19e92ac6..2057c1b4fc 100644
+--- a/thirdparty/libdatachannel/src/impl/icetransport.cpp
++++ b/thirdparty/libdatachannel/src/impl/icetransport.cpp
+@@ -12,6 +12,7 @@
+ #include "transport.hpp"
+ #include "utils.hpp"
+ 
++#include <cstring>
+ #include <iostream>
+ #include <random>
+ #include <sstream>

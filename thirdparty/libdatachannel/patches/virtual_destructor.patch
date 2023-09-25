@@ -1,0 +1,39 @@
+diff --git a/thirdparty/libdatachannel/include/rtc/mediahandler.hpp b/thirdparty/libdatachannel/include/rtc/mediahandler.hpp
+index 4dbc717a08..24c602e11b 100644
+--- a/thirdparty/libdatachannel/include/rtc/mediahandler.hpp
++++ b/thirdparty/libdatachannel/include/rtc/mediahandler.hpp
+@@ -21,6 +21,8 @@ protected:
+ 	synchronized_callback<message_ptr> outgoingCallback;
+ 
+ public:
++	virtual ~MediaHandler() = default;
++
+ 	// Called when there is traffic coming from the peer
+ 	virtual message_ptr incoming(message_ptr ptr) = 0;
+ 
+diff --git a/thirdparty/libdatachannel/include/rtc/mediahandlerelement.hpp b/thirdparty/libdatachannel/include/rtc/mediahandlerelement.hpp
+index bead429e89..600bf23384 100644
+--- a/thirdparty/libdatachannel/include/rtc/mediahandlerelement.hpp
++++ b/thirdparty/libdatachannel/include/rtc/mediahandlerelement.hpp
+@@ -60,6 +60,8 @@ class RTC_CPP_EXPORT MediaHandlerElement
+ public:
+ 	MediaHandlerElement();
+ 
++	virtual ~MediaHandlerElement() = default;
++
+ 	/// Creates response to incoming message
+ 	/// @param messages Current repsonse
+ 	/// @returns New response
+diff --git a/thirdparty/libdatachannel/include/rtc/rtppacketizer.hpp b/thirdparty/libdatachannel/include/rtc/rtppacketizer.hpp
+index cf096e9d17..f28afd5038 100644
+--- a/thirdparty/libdatachannel/include/rtc/rtppacketizer.hpp
++++ b/thirdparty/libdatachannel/include/rtc/rtppacketizer.hpp
+@@ -22,6 +22,8 @@ class RTC_CPP_EXPORT RtpPacketizer {
+ 	static const auto rtpExtHeaderCvoSize = 8;
+ 
+ public:
++	virtual ~RtpPacketizer() = default;
++
+ 	// RTP configuration
+ 	const shared_ptr<RtpPacketizationConfig> rtpConfig;
+ 
