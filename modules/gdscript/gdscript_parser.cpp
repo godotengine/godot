@@ -113,6 +113,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_avoidance"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_AVOIDANCE, Variant::INT>);
+	register_annotation(MethodInfo("@export_child"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 	// Export grouping annotations.
 	register_annotation(MethodInfo("@export_category", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
 	register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
@@ -4119,6 +4120,50 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != enum_type)) {
 			push_error(vformat(R"("@export_enum" annotation requires a variable of type "int" or "String" but type "%s" was given instead.)", export_type.to_string()), variable);
 			return false;
+		}
+	} else if (p_annotation->name == SNAME("@export_child")) {
+		variable->export_info.usage |= PROPERTY_USAGE_SUBCHILD;
+		switch (export_type.kind) {
+			case GDScriptParser::DataType::NATIVE:
+				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
+					variable->export_info.hint_string = export_type.native_type;
+				} else {
+					push_error(R"(export_child type can only be a node.)", variable);
+					return false;
+				}
+				break;
+			case GDScriptParser::DataType::CLASS:
+				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
+					variable->export_info.hint_string = export_type.to_string();
+				} else {
+					push_error(R"(export_child type can only be a node.)", variable);
+					return false;
+				}
+
+				break;
+			case GDScriptParser::DataType::SCRIPT: {
+				StringName class_name;
+				StringName native_base;
+				if (export_type.script_type.is_valid()) {
+					class_name = export_type.script_type->get_language()->get_global_class_name(export_type.script_type->get_path());
+					native_base = export_type.script_type->get_instance_base_type();
+				}
+				if (class_name == StringName()) {
+					Ref<Script> script = ResourceLoader::load(export_type.script_path, SNAME("Script"));
+					if (script.is_valid()) {
+						class_name = script->get_language()->get_global_class_name(export_type.script_path);
+						native_base = script->get_instance_base_type();
+					}
+				}
+			} break;
+			default:
+				push_error(vformat(R"("@export_child" annotation requires a variable of type "Node" but type "%s" was given instead.)", export_type.to_string()), variable);
+				//push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", variable);
+				break;
 		}
 	} else {
 		// Validate variable type with export.

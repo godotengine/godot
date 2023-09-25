@@ -3133,6 +3133,61 @@ void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 	unhandled_key_input(p_event);
 }
 
+bool Node::_set(const StringName &p_name, const Variant &p_value) {
+	List<PropertyInfo> p_list;
+	get_property_list(&p_list);
+	for (List<PropertyInfo>::Element *E_property = p_list.front(); E_property; E_property = E_property->next()) {
+		PropertyInfo &p = E_property->get();
+		if (!(p.usage & PROPERTY_USAGE_SUBCHILD)) {
+			p_list.erase(p);
+		}
+	}
+	for (List<PropertyInfo>::Element *E_property = p_list.front(); E_property; E_property = E_property->next()) {
+		PropertyInfo &p = E_property->get();
+		if (String(p_name).begins_with(p.name + "_")) {
+			ClassDB::set_property(get(p.name), String(p_name).trim_prefix(p.name + "_"), p_value);
+		}
+	}
+	return true;
+}
+
+bool Node::_get(const StringName &p_name, Variant &r_ret) const {
+	List<PropertyInfo> p_list;
+	get_property_list(&p_list);
+	for (List<PropertyInfo>::Element *E_property = p_list.front(); E_property; E_property = E_property->next()) {
+		PropertyInfo &p = E_property->get();
+		if (!(p.usage & PROPERTY_USAGE_SUBCHILD)) {
+			p_list.erase(p);
+		}
+	}
+	for (List<PropertyInfo>::Element *E_property = p_list.front(); E_property; E_property = E_property->next()) {
+		PropertyInfo &p = E_property->get();
+
+		if (String(p_name).begins_with(p.name + "_")) {
+			ClassDB::get_property(get(p.name), String(p_name).trim_prefix(p.name + "_"), r_ret);
+		}
+	}
+	return true;
+}
+
+void Node::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (List<PropertyInfo>::Element *E_property = p_list->front(); E_property; E_property = E_property->next()) {
+		PropertyInfo &p = E_property->get();
+		if (p.usage & PROPERTY_USAGE_SUBCHILD) {
+			ADD_GROUP(p.name, String(p.name + "_"));
+			List<PropertyInfo> plist;
+			get(p.name).get_property_list(&plist);
+			for (List<PropertyInfo>::Element *C_property = plist.front(); C_property; C_property = C_property->next()) {
+				PropertyInfo &c_p = C_property->get();
+				if (c_p.usage & PROPERTY_USAGE_DEFAULT) {
+					c_p.name = p.name + "_" + c_p.name;
+					p_list->push_back(c_p);
+				}
+			}
+		}
+	}
+}
+
 void Node::_validate_property(PropertyInfo &p_property) const {
 	if ((p_property.name == "process_thread_group_order" || p_property.name == "process_thread_messages") && data.process_thread_group == PROCESS_THREAD_GROUP_INHERIT) {
 		p_property.usage = 0;
