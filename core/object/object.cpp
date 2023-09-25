@@ -880,7 +880,10 @@ void Object::set_script(const Variant &p_script) {
 	}
 
 	Ref<Script> s = p_script;
-	ERR_FAIL_COND_MSG(s.is_null() && !p_script.is_null(), "Invalid parameter, it should be a reference to a valid script (or null).");
+	if (!p_script.is_null()) {
+		ERR_FAIL_COND_MSG(s.is_null(), "Cannot set object script. Parameter should be null or a reference to a valid script.");
+		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
+	}
 
 	script = p_script;
 

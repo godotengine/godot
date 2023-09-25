@@ -510,7 +510,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 				}
 			}
 
-			if (!is_custom_resource && !(ScriptServer::is_global_class(t) || ClassDB::can_instantiate(t))) {
+			if (!is_custom_resource && !ClassDB::can_instantiate(t)) {
 				continue;
 			}
 

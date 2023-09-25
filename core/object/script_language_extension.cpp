@@ -59,6 +59,7 @@ void ScriptExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_is_tool);
 	GDVIRTUAL_BIND(_is_valid);
+	GDVIRTUAL_BIND(_is_abstract);
 	GDVIRTUAL_BIND(_get_language);
 
 	GDVIRTUAL_BIND(_has_script_signal, "signal");
