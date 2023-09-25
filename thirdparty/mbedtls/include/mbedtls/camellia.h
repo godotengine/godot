@@ -21,12 +21,9 @@
  */
 #ifndef MBEDTLS_CAMELLIA_H
 #define MBEDTLS_CAMELLIA_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -36,19 +33,11 @@
 #define MBEDTLS_CAMELLIA_ENCRYPT     1
 #define MBEDTLS_CAMELLIA_DECRYPT     0
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-#define MBEDTLS_ERR_CAMELLIA_INVALID_KEY_LENGTH   MBEDTLS_DEPRECATED_NUMERIC_CONSTANT(-0x0024)
-#endif /* !MBEDTLS_DEPRECATED_REMOVED */
 /** Bad input data. */
 #define MBEDTLS_ERR_CAMELLIA_BAD_INPUT_DATA -0x0024
 
 /** Invalid data input length. */
 #define MBEDTLS_ERR_CAMELLIA_INVALID_INPUT_LENGTH -0x0026
-
-/* MBEDTLS_ERR_CAMELLIA_HW_ACCEL_FAILED is deprecated and should not be used.
- */
-/** Camellia hardware accelerator failed. */
-#define MBEDTLS_ERR_CAMELLIA_HW_ACCEL_FAILED              -0x0027
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,8 +51,8 @@ extern "C" {
  * \brief          CAMELLIA context structure
  */
 typedef struct mbedtls_camellia_context {
-    int nr;                     /*!<  number of rounds  */
-    uint32_t rk[68];            /*!<  CAMELLIA round keys    */
+    int MBEDTLS_PRIVATE(nr);                     /*!<  number of rounds  */
+    uint32_t MBEDTLS_PRIVATE(rk)[68];            /*!<  CAMELLIA round keys    */
 }
 mbedtls_camellia_context;
 
@@ -231,7 +220,7 @@ int mbedtls_camellia_crypt_cfb128(mbedtls_camellia_context *ctx,
  * *note       Due to the nature of CTR mode, you should use the same
  *             key for both encryption and decryption. In particular, calls
  *             to this function should be preceded by a key-schedule via
- *             mbedtls_camellia_setkey_enc() regardless of whether the mode
+ *             mbedtls_camellia_setkey_enc() regardless of whether \p mode
  *             is #MBEDTLS_CAMELLIA_ENCRYPT or #MBEDTLS_CAMELLIA_DECRYPT.
  *
  * \warning    You must never reuse a nonce value with the same key. Doing so

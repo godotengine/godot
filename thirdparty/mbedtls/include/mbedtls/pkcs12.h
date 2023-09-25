@@ -22,11 +22,7 @@
 #ifndef MBEDTLS_PKCS12_H
 #define MBEDTLS_PKCS12_H
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include "mbedtls/md.h"
 #include "mbedtls/cipher.h"
@@ -55,25 +51,6 @@ extern "C" {
 #endif
 
 #if defined(MBEDTLS_ASN1_PARSE_C)
-
-/**
- * \brief            PKCS12 Password Based function (encryption / decryption)
- *                   for pbeWithSHAAnd128BitRC4
- *
- * \param pbe_params an ASN1 buffer containing the pkcs-12PbeParams structure
- * \param mode       either MBEDTLS_PKCS12_PBE_ENCRYPT or MBEDTLS_PKCS12_PBE_DECRYPT
- * \param pwd        the password used (may be NULL if no password is used)
- * \param pwdlen     length of the password (may be 0)
- * \param input      the input data
- * \param len        data length
- * \param output     the output buffer
- *
- * \return           0 if successful, or a MBEDTLS_ERR_XXX code
- */
-int mbedtls_pkcs12_pbe_sha1_rc4_128(mbedtls_asn1_buf *pbe_params, int mode,
-                                    const unsigned char *pwd,  size_t pwdlen,
-                                    const unsigned char *input, size_t len,
-                                    unsigned char *output);
 
 /**
  * \brief            PKCS12 Password Based function (encryption / decryption)
@@ -117,7 +94,7 @@ int mbedtls_pkcs12_pbe(mbedtls_asn1_buf *pbe_params, int mode,
  *                   no byte order mark and with a null terminator (i.e. the
  *                   last two bytes should be 0x00 0x00).
  * \param pwdlen     length of the password (may be 0).
- * \param salt       Salt buffer to use This may only be \c NULL when
+ * \param salt       Salt buffer to use. This may only be \c NULL when
  *                   \p saltlen is 0.
  * \param saltlen    length of the salt (may be zero)
  * \param mbedtls_md mbedtls_md type to use during the derivation

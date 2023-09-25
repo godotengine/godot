@@ -20,10 +20,16 @@
 
 /*
  * Ensure gmtime_r is available even with -std=c99; must be defined before
- * config.h, which pulls in glibc's features.h. Harmless on other platforms.
+ * mbedtls_config.h, which pulls in glibc's features.h. Harmless on other platforms
+ * except OpenBSD, where it stops us accessing explicit_bzero.
  */
-#if !defined(_POSIX_C_SOURCE)
+#if !defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__)
 #define _POSIX_C_SOURCE 200112L
+#endif
+
+#if !defined(_GNU_SOURCE)
+/* Clang requires this to get support for explicit_bzero */
+#define _GNU_SOURCE
 #endif
 
 #include "common.h"
@@ -33,11 +39,40 @@
 #include "mbedtls/threading.h"
 
 #include <stddef.h>
+
+#ifndef __STDC_WANT_LIB_EXT1__
+#define __STDC_WANT_LIB_EXT1__ 1 /* Ask for the C11 gmtime_s() and memset_s() if available */
+#endif
 #include <string.h>
 
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
+// Detect platforms known to support explicit_bzero()
+#if defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 25)
+#define MBEDTLS_PLATFORM_HAS_EXPLICIT_BZERO 1
+#elif (defined(__FreeBSD__) && (__FreeBSD_version >= 1100037)) || defined(__OpenBSD__)
+#define MBEDTLS_PLATFORM_HAS_EXPLICIT_BZERO 1
+#endif
+
 #if !defined(MBEDTLS_PLATFORM_ZEROIZE_ALT)
+
+#undef HAVE_MEMORY_SANITIZER
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+#include <sanitizer/msan_interface.h>
+#define HAVE_MEMORY_SANITIZER
+#endif
+#endif
+
 /*
- * This implementation should never be optimized out by the compiler
+ * Where possible, we try to detect the presence of a platform-provided
+ * secure memset, such as explicit_bzero(), that is safe against being optimized
+ * out, and use that.
+ *
+ * For other platforms, we provide an implementation that aims not to be
+ * optimized out by the compiler.
  *
  * This implementation for mbedtls_platform_zeroize() was inspired from Colin
  * Percival's blog article at:
@@ -52,24 +87,44 @@
  * (refer to http://www.daemonology.net/blog/2014-09-05-erratum.html for
  * details), optimizations of the following form are still possible:
  *
- * if( memset_func != memset )
- *     memset_func( buf, 0, len );
+ * if (memset_func != memset)
+ *     memset_func(buf, 0, len);
  *
  * Note that it is extremely difficult to guarantee that
- * mbedtls_platform_zeroize() will not be optimized out by aggressive compilers
+ * the memset() call will not be optimized out by aggressive compilers
  * in a portable way. For this reason, Mbed TLS also provides the configuration
  * option MBEDTLS_PLATFORM_ZEROIZE_ALT, which allows users to configure
  * mbedtls_platform_zeroize() to use a suitable implementation for their
  * platform and needs.
  */
+#if !defined(MBEDTLS_PLATFORM_HAS_EXPLICIT_BZERO) && !defined(__STDC_LIB_EXT1__) \
+    && !defined(_WIN32)
 static void *(*const volatile memset_func)(void *, int, size_t) = memset;
+#endif
 
 void mbedtls_platform_zeroize(void *buf, size_t len)
 {
     MBEDTLS_INTERNAL_VALIDATE(len == 0 || buf != NULL);
 
     if (len > 0) {
+#if defined(MBEDTLS_PLATFORM_HAS_EXPLICIT_BZERO)
+        explicit_bzero(buf, len);
+#if defined(HAVE_MEMORY_SANITIZER)
+        /* You'd think that Msan would recognize explicit_bzero() as
+         * equivalent to bzero(), but it actually doesn't on several
+         * platforms, including Linux (Ubuntu 20.04).
+         * https://github.com/google/sanitizers/issues/1507
+         * https://github.com/openssh/openssh-portable/commit/74433a19bb6f4cef607680fa4d1d7d81ca3826aa
+         */
+        __msan_unpoison(buf, len);
+#endif
+#elif defined(__STDC_LIB_EXT1__)
+        memset_s(buf, len, 0, len);
+#elif defined(_WIN32)
+        SecureZeroMemory(buf, len);
+#else
         memset_func(buf, 0, len);
+#endif
     }
 }
 #endif /* MBEDTLS_PLATFORM_ZEROIZE_ALT */
@@ -93,9 +148,10 @@ void mbedtls_platform_zeroize(void *buf, size_t len)
  * threading.h. However, this macro is not part of the Mbed TLS public API, so
  * we keep it private by only defining it in this file
  */
-#if !(defined(_WIN32) && !defined(EFIX64) && !defined(EFI32))
+#if !(defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)) || \
+    (defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR))
 #define PLATFORM_UTIL_USE_GMTIME
-#endif /* ! ( defined(_WIN32) && !defined(EFIX64) && !defined(EFI32) ) */
+#endif
 
 #endif /* !( ( defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L ) || \
              ( defined(_POSIX_THREAD_SAFE_FUNCTIONS ) && \
@@ -104,8 +160,13 @@ void mbedtls_platform_zeroize(void *buf, size_t len)
 struct tm *mbedtls_platform_gmtime_r(const mbedtls_time_t *tt,
                                      struct tm *tm_buf)
 {
-#if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
+#if defined(_WIN32) && !defined(PLATFORM_UTIL_USE_GMTIME)
+#if defined(__STDC_LIB_EXT1__)
+    return (gmtime_s(tt, tm_buf) == 0) ? NULL : tm_buf;
+#else
+    /* MSVC and mingw64 argument order and return value are inconsistent with the C11 standard */
     return (gmtime_s(tm_buf, tt) == 0) ? tm_buf : NULL;
+#endif
 #elif !defined(PLATFORM_UTIL_USE_GMTIME)
     return gmtime_r(tt, tm_buf);
 #else
@@ -133,3 +194,28 @@ struct tm *mbedtls_platform_gmtime_r(const mbedtls_time_t *tt,
 #endif /* _WIN32 && !EFIX64 && !EFI32 */
 }
 #endif /* MBEDTLS_HAVE_TIME_DATE && MBEDTLS_PLATFORM_GMTIME_R_ALT */
+
+#if defined(MBEDTLS_TEST_HOOKS)
+void (*mbedtls_test_hook_test_fail)(const char *, int, const char *);
+#endif /* MBEDTLS_TEST_HOOKS */
+
+/*
+ * Provide external definitions of some inline functions so that the compiler
+ * has the option to not inline them
+ */
+extern inline void mbedtls_xor(unsigned char *r,
+                               const unsigned char *a,
+                               const unsigned char *b,
+                               size_t n);
+
+extern inline uint16_t mbedtls_get_unaligned_uint16(const void *p);
+
+extern inline void mbedtls_put_unaligned_uint16(void *p, uint16_t x);
+
+extern inline uint32_t mbedtls_get_unaligned_uint32(const void *p);
+
+extern inline void mbedtls_put_unaligned_uint32(void *p, uint32_t x);
+
+extern inline uint64_t mbedtls_get_unaligned_uint64(const void *p);
+
+extern inline void mbedtls_put_unaligned_uint64(void *p, uint64_t x);

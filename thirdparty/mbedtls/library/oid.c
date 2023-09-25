@@ -26,6 +26,9 @@
 #include "mbedtls/oid.h"
 #include "mbedtls/rsa.h"
 #include "mbedtls/error.h"
+#include "mbedtls/pk.h"
+
+#include "mbedtls/legacy_or_psa.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -36,6 +39,17 @@
  * Macro to automatically add the size of #define'd OIDs
  */
 #define ADD_LEN(s)      s, MBEDTLS_OID_SIZE(s)
+
+/*
+ * Macro to generate mbedtls_oid_descriptor_t
+ */
+#if !defined(MBEDTLS_X509_REMOVE_INFO)
+#define OID_DESCRIPTOR(s, name, description)  { ADD_LEN(s), name, description }
+#define NULL_OID_DESCRIPTOR                   { NULL, 0, NULL, NULL }
+#else
+#define OID_DESCRIPTOR(s, name, description)  { ADD_LEN(s) }
+#define NULL_OID_DESCRIPTOR                   { NULL, 0 }
+#endif
 
 /*
  * Macro to generate an internal function for oid_XXX_from_asn1() (used by
@@ -60,6 +74,7 @@
         return NULL;                                                 \
     }
 
+#if !defined(MBEDTLS_X509_REMOVE_INFO)
 /*
  * Macro to generate a function for retrieving a single attribute from the
  * descriptor of an mbedtls_oid_descriptor_t wrapper.
@@ -72,6 +87,7 @@
         *ATTR1 = data->descriptor.ATTR1;                                    \
         return 0;                                                        \
     }
+#endif /* MBEDTLS_X509_REMOVE_INFO */
 
 /*
  * Macro to generate a function for retrieving a single attribute from an
@@ -153,88 +169,102 @@ typedef struct {
 static const oid_x520_attr_t oid_x520_attr_type[] =
 {
     {
-        { ADD_LEN(MBEDTLS_OID_AT_CN),          "id-at-commonName",               "Common Name" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_CN,          "id-at-commonName",               "Common Name"),
         "CN",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_COUNTRY),     "id-at-countryName",              "Country" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_COUNTRY,     "id-at-countryName",              "Country"),
         "C",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_LOCALITY),    "id-at-locality",                 "Locality" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_LOCALITY,    "id-at-locality",                 "Locality"),
         "L",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_STATE),       "id-at-state",                    "State" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_STATE,       "id-at-state",                    "State"),
         "ST",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_ORGANIZATION), "id-at-organizationName",         "Organization" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_ORGANIZATION, "id-at-organizationName",
+                       "Organization"),
         "O",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_ORG_UNIT),    "id-at-organizationalUnitName",   "Org Unit" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_ORG_UNIT,    "id-at-organizationalUnitName",   "Org Unit"),
         "OU",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS9_EMAIL),    "emailAddress",                   "E-mail address" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS9_EMAIL,
+                       "emailAddress",
+                       "E-mail address"),
         "emailAddress",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_SERIAL_NUMBER), "id-at-serialNumber",            "Serial number" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_SERIAL_NUMBER,
+                       "id-at-serialNumber",
+                       "Serial number"),
         "serialNumber",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_POSTAL_ADDRESS), "id-at-postalAddress",
-          "Postal address" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_POSTAL_ADDRESS,
+                       "id-at-postalAddress",
+                       "Postal address"),
         "postalAddress",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_POSTAL_CODE), "id-at-postalCode",               "Postal code" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_POSTAL_CODE, "id-at-postalCode",               "Postal code"),
         "postalCode",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_SUR_NAME),    "id-at-surName",                  "Surname" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_SUR_NAME,    "id-at-surName",                  "Surname"),
         "SN",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_GIVEN_NAME),  "id-at-givenName",                "Given name" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_GIVEN_NAME,  "id-at-givenName",                "Given name"),
         "GN",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_INITIALS),    "id-at-initials",                 "Initials" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_INITIALS,    "id-at-initials",                 "Initials"),
         "initials",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_GENERATION_QUALIFIER), "id-at-generationQualifier",
-          "Generation qualifier" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_GENERATION_QUALIFIER,
+                       "id-at-generationQualifier",
+                       "Generation qualifier"),
         "generationQualifier",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_TITLE),       "id-at-title",                    "Title" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_TITLE,       "id-at-title",                    "Title"),
         "title",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_DN_QUALIFIER), "id-at-dnQualifier",
-          "Distinguished Name qualifier" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_DN_QUALIFIER,
+                       "id-at-dnQualifier",
+                       "Distinguished Name qualifier"),
         "dnQualifier",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_PSEUDONYM),   "id-at-pseudonym",                "Pseudonym" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_PSEUDONYM,   "id-at-pseudonym",                "Pseudonym"),
         "pseudonym",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_DOMAIN_COMPONENT), "id-domainComponent",
-          "Domain component" },
+        OID_DESCRIPTOR(MBEDTLS_OID_UID,            "id-uid",                         "User Id"),
+        "uid",
+    },
+    {
+        OID_DESCRIPTOR(MBEDTLS_OID_DOMAIN_COMPONENT,
+                       "id-domainComponent",
+                       "Domain component"),
         "DC",
     },
     {
-        { ADD_LEN(MBEDTLS_OID_AT_UNIQUE_IDENTIFIER), "id-at-uniqueIdentifier",
-          "Unique Identifier" },
+        OID_DESCRIPTOR(MBEDTLS_OID_AT_UNIQUE_IDENTIFIER,
+                       "id-at-uniqueIdentifier",
+                       "Unique Identifier"),
         "uniqueIdentifier",
     },
     {
-        { NULL, 0, NULL, NULL },
+        NULL_OID_DESCRIPTOR,
         NULL,
     }
 };
@@ -257,36 +287,41 @@ typedef struct {
 static const oid_x509_ext_t oid_x509_ext[] =
 {
     {
-        { ADD_LEN(MBEDTLS_OID_BASIC_CONSTRAINTS),    "id-ce-basicConstraints",
-          "Basic Constraints" },
+        OID_DESCRIPTOR(MBEDTLS_OID_BASIC_CONSTRAINTS,
+                       "id-ce-basicConstraints",
+                       "Basic Constraints"),
         MBEDTLS_OID_X509_EXT_BASIC_CONSTRAINTS,
     },
     {
-        { ADD_LEN(MBEDTLS_OID_KEY_USAGE),            "id-ce-keyUsage",            "Key Usage" },
+        OID_DESCRIPTOR(MBEDTLS_OID_KEY_USAGE,            "id-ce-keyUsage",            "Key Usage"),
         MBEDTLS_OID_X509_EXT_KEY_USAGE,
     },
     {
-        { ADD_LEN(MBEDTLS_OID_EXTENDED_KEY_USAGE),   "id-ce-extKeyUsage",
-          "Extended Key Usage" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EXTENDED_KEY_USAGE,
+                       "id-ce-extKeyUsage",
+                       "Extended Key Usage"),
         MBEDTLS_OID_X509_EXT_EXTENDED_KEY_USAGE,
     },
     {
-        { ADD_LEN(MBEDTLS_OID_SUBJECT_ALT_NAME),     "id-ce-subjectAltName",
-          "Subject Alt Name" },
+        OID_DESCRIPTOR(MBEDTLS_OID_SUBJECT_ALT_NAME,
+                       "id-ce-subjectAltName",
+                       "Subject Alt Name"),
         MBEDTLS_OID_X509_EXT_SUBJECT_ALT_NAME,
     },
     {
-        { ADD_LEN(MBEDTLS_OID_NS_CERT_TYPE),         "id-netscape-certtype",
-          "Netscape Certificate Type" },
+        OID_DESCRIPTOR(MBEDTLS_OID_NS_CERT_TYPE,
+                       "id-netscape-certtype",
+                       "Netscape Certificate Type"),
         MBEDTLS_OID_X509_EXT_NS_CERT_TYPE,
     },
     {
-        { ADD_LEN(MBEDTLS_OID_CERTIFICATE_POLICIES), "id-ce-certificatePolicies",
-          "Certificate Policies" },
+        OID_DESCRIPTOR(MBEDTLS_OID_CERTIFICATE_POLICIES,
+                       "id-ce-certificatePolicies",
+                       "Certificate Policies"),
         MBEDTLS_OID_X509_EXT_CERTIFICATE_POLICIES,
     },
     {
-        { NULL, 0, NULL, NULL },
+        NULL_OID_DESCRIPTOR,
         0,
     },
 };
@@ -294,19 +329,23 @@ static const oid_x509_ext_t oid_x509_ext[] =
 FN_OID_TYPED_FROM_ASN1(oid_x509_ext_t, x509_ext, oid_x509_ext)
 FN_OID_GET_ATTR1(mbedtls_oid_get_x509_ext_type, oid_x509_ext_t, x509_ext, int, ext_type)
 
+#if !defined(MBEDTLS_X509_REMOVE_INFO)
 static const mbedtls_oid_descriptor_t oid_ext_key_usage[] =
 {
-    { ADD_LEN(MBEDTLS_OID_SERVER_AUTH),      "id-kp-serverAuth",
-      "TLS Web Server Authentication" },
-    { ADD_LEN(MBEDTLS_OID_CLIENT_AUTH),      "id-kp-clientAuth",
-      "TLS Web Client Authentication" },
-    { ADD_LEN(MBEDTLS_OID_CODE_SIGNING),     "id-kp-codeSigning",      "Code Signing" },
-    { ADD_LEN(MBEDTLS_OID_EMAIL_PROTECTION), "id-kp-emailProtection",  "E-mail Protection" },
-    { ADD_LEN(MBEDTLS_OID_TIME_STAMPING),    "id-kp-timeStamping",     "Time Stamping" },
-    { ADD_LEN(MBEDTLS_OID_OCSP_SIGNING),     "id-kp-OCSPSigning",      "OCSP Signing" },
-    { ADD_LEN(MBEDTLS_OID_WISUN_FAN),        "id-kp-wisun-fan-device",
-      "Wi-SUN Alliance Field Area Network (FAN)" },
-    { NULL, 0, NULL, NULL },
+    OID_DESCRIPTOR(MBEDTLS_OID_SERVER_AUTH,
+                   "id-kp-serverAuth",
+                   "TLS Web Server Authentication"),
+    OID_DESCRIPTOR(MBEDTLS_OID_CLIENT_AUTH,
+                   "id-kp-clientAuth",
+                   "TLS Web Client Authentication"),
+    OID_DESCRIPTOR(MBEDTLS_OID_CODE_SIGNING,     "id-kp-codeSigning",     "Code Signing"),
+    OID_DESCRIPTOR(MBEDTLS_OID_EMAIL_PROTECTION, "id-kp-emailProtection", "E-mail Protection"),
+    OID_DESCRIPTOR(MBEDTLS_OID_TIME_STAMPING,    "id-kp-timeStamping",    "Time Stamping"),
+    OID_DESCRIPTOR(MBEDTLS_OID_OCSP_SIGNING,     "id-kp-OCSPSigning",     "OCSP Signing"),
+    OID_DESCRIPTOR(MBEDTLS_OID_WISUN_FAN,
+                   "id-kp-wisun-fan-device",
+                   "Wi-SUN Alliance Field Area Network (FAN)"),
+    NULL_OID_DESCRIPTOR,
 };
 
 FN_OID_TYPED_FROM_ASN1(mbedtls_oid_descriptor_t, ext_key_usage, oid_ext_key_usage)
@@ -318,8 +357,8 @@ FN_OID_GET_ATTR1(mbedtls_oid_get_extended_key_usage,
 
 static const mbedtls_oid_descriptor_t oid_certificate_policies[] =
 {
-    { ADD_LEN(MBEDTLS_OID_ANY_POLICY),      "anyPolicy",       "Any Policy" },
-    { NULL, 0, NULL, NULL },
+    OID_DESCRIPTOR(MBEDTLS_OID_ANY_POLICY,      "anyPolicy",       "Any Policy"),
+    NULL_OID_DESCRIPTOR,
 };
 
 FN_OID_TYPED_FROM_ASN1(mbedtls_oid_descriptor_t, certificate_policies, oid_certificate_policies)
@@ -328,8 +367,8 @@ FN_OID_GET_ATTR1(mbedtls_oid_get_certificate_policies,
                  certificate_policies,
                  const char *,
                  description)
+#endif /* MBEDTLS_X509_REMOVE_INFO */
 
-#if defined(MBEDTLS_MD_C)
 /*
  * For SignatureAlgorithmIdentifier
  */
@@ -342,103 +381,107 @@ typedef struct {
 static const oid_sig_alg_t oid_sig_alg[] =
 {
 #if defined(MBEDTLS_RSA_C)
-#if defined(MBEDTLS_MD2_C)
+#if defined(MBEDTLS_HAS_ALG_MD5_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS1_MD2),        "md2WithRSAEncryption",     "RSA with MD2" },
-        MBEDTLS_MD_MD2,      MBEDTLS_PK_RSA,
-    },
-#endif /* MBEDTLS_MD2_C */
-#if defined(MBEDTLS_MD4_C)
-    {
-        { ADD_LEN(MBEDTLS_OID_PKCS1_MD4),        "md4WithRSAEncryption",     "RSA with MD4" },
-        MBEDTLS_MD_MD4,      MBEDTLS_PK_RSA,
-    },
-#endif /* MBEDTLS_MD4_C */
-#if defined(MBEDTLS_MD5_C)
-    {
-        { ADD_LEN(MBEDTLS_OID_PKCS1_MD5),        "md5WithRSAEncryption",     "RSA with MD5" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS1_MD5,        "md5WithRSAEncryption",     "RSA with MD5"),
         MBEDTLS_MD_MD5,      MBEDTLS_PK_RSA,
     },
-#endif /* MBEDTLS_MD5_C */
-#if defined(MBEDTLS_SHA1_C)
+#endif /* MBEDTLS_HAS_ALG_MD5_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_1_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS1_SHA1),       "sha-1WithRSAEncryption",   "RSA with SHA1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS1_SHA1,       "sha-1WithRSAEncryption",   "RSA with SHA1"),
         MBEDTLS_MD_SHA1,     MBEDTLS_PK_RSA,
     },
-#endif /* MBEDTLS_SHA1_C */
-#if defined(MBEDTLS_SHA256_C)
+#endif /* MBEDTLS_HAS_ALG_SHA_1_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_224_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS1_SHA224),     "sha224WithRSAEncryption",  "RSA with SHA-224" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS1_SHA224,     "sha224WithRSAEncryption",
+                       "RSA with SHA-224"),
         MBEDTLS_MD_SHA224,   MBEDTLS_PK_RSA,
     },
+#endif /* MBEDTLS_HAS_ALG_SHA_224_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_256_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS1_SHA256),     "sha256WithRSAEncryption",  "RSA with SHA-256" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS1_SHA256,     "sha256WithRSAEncryption",
+                       "RSA with SHA-256"),
         MBEDTLS_MD_SHA256,   MBEDTLS_PK_RSA,
     },
-#endif /* MBEDTLS_SHA256_C */
-#if defined(MBEDTLS_SHA512_C)
+#endif /* MBEDTLS_HAS_ALG_SHA_256_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_384_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS1_SHA384),     "sha384WithRSAEncryption",  "RSA with SHA-384" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS1_SHA384,     "sha384WithRSAEncryption",
+                       "RSA with SHA-384"),
         MBEDTLS_MD_SHA384,   MBEDTLS_PK_RSA,
     },
+#endif /* MBEDTLS_HAS_ALG_SHA_384_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_512_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS1_SHA512),     "sha512WithRSAEncryption",  "RSA with SHA-512" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS1_SHA512,     "sha512WithRSAEncryption",
+                       "RSA with SHA-512"),
         MBEDTLS_MD_SHA512,   MBEDTLS_PK_RSA,
     },
-#endif /* MBEDTLS_SHA512_C */
-#if defined(MBEDTLS_SHA1_C)
+#endif /* MBEDTLS_HAS_ALG_SHA_512_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_1_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_RSA_SHA_OBS),      "sha-1WithRSAEncryption",   "RSA with SHA1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_RSA_SHA_OBS,      "sha-1WithRSAEncryption",   "RSA with SHA1"),
         MBEDTLS_MD_SHA1,     MBEDTLS_PK_RSA,
     },
-#endif /* MBEDTLS_SHA1_C */
+#endif /* MBEDTLS_HAS_ALG_SHA_1_VIA_LOWLEVEL_OR_PSA */
 #endif /* MBEDTLS_RSA_C */
-#if defined(MBEDTLS_ECDSA_C)
-#if defined(MBEDTLS_SHA1_C)
+#if defined(MBEDTLS_PK_CAN_ECDSA_SOME)
+#if defined(MBEDTLS_HAS_ALG_SHA_1_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_ECDSA_SHA1),       "ecdsa-with-SHA1",      "ECDSA with SHA1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_ECDSA_SHA1,       "ecdsa-with-SHA1",      "ECDSA with SHA1"),
         MBEDTLS_MD_SHA1,     MBEDTLS_PK_ECDSA,
     },
-#endif /* MBEDTLS_SHA1_C */
-#if defined(MBEDTLS_SHA256_C)
+#endif /* MBEDTLS_HAS_ALG_SHA_1_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_224_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_ECDSA_SHA224),     "ecdsa-with-SHA224",    "ECDSA with SHA224" },
+        OID_DESCRIPTOR(MBEDTLS_OID_ECDSA_SHA224,     "ecdsa-with-SHA224",    "ECDSA with SHA224"),
         MBEDTLS_MD_SHA224,   MBEDTLS_PK_ECDSA,
     },
+#endif
+#if defined(MBEDTLS_HAS_ALG_SHA_256_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_ECDSA_SHA256),     "ecdsa-with-SHA256",    "ECDSA with SHA256" },
+        OID_DESCRIPTOR(MBEDTLS_OID_ECDSA_SHA256,     "ecdsa-with-SHA256",    "ECDSA with SHA256"),
         MBEDTLS_MD_SHA256,   MBEDTLS_PK_ECDSA,
     },
-#endif /* MBEDTLS_SHA256_C */
-#if defined(MBEDTLS_SHA512_C)
+#endif /* MBEDTLS_HAS_ALG_SHA_256_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_384_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_ECDSA_SHA384),     "ecdsa-with-SHA384",    "ECDSA with SHA384" },
+        OID_DESCRIPTOR(MBEDTLS_OID_ECDSA_SHA384,     "ecdsa-with-SHA384",    "ECDSA with SHA384"),
         MBEDTLS_MD_SHA384,   MBEDTLS_PK_ECDSA,
     },
+#endif /* MBEDTLS_HAS_ALG_SHA_384_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_512_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_ECDSA_SHA512),     "ecdsa-with-SHA512",    "ECDSA with SHA512" },
+        OID_DESCRIPTOR(MBEDTLS_OID_ECDSA_SHA512,     "ecdsa-with-SHA512",    "ECDSA with SHA512"),
         MBEDTLS_MD_SHA512,   MBEDTLS_PK_ECDSA,
     },
-#endif /* MBEDTLS_SHA512_C */
-#endif /* MBEDTLS_ECDSA_C */
+#endif /* MBEDTLS_HAS_ALG_SHA_512_VIA_LOWLEVEL_OR_PSA */
+#endif /* MBEDTLS_PK_CAN_ECDSA_SOME */
 #if defined(MBEDTLS_RSA_C)
     {
-        { ADD_LEN(MBEDTLS_OID_RSASSA_PSS),        "RSASSA-PSS",           "RSASSA-PSS" },
+        OID_DESCRIPTOR(MBEDTLS_OID_RSASSA_PSS,        "RSASSA-PSS",           "RSASSA-PSS"),
         MBEDTLS_MD_NONE,     MBEDTLS_PK_RSASSA_PSS,
     },
 #endif /* MBEDTLS_RSA_C */
     {
-        { NULL, 0, NULL, NULL },
+        NULL_OID_DESCRIPTOR,
         MBEDTLS_MD_NONE, MBEDTLS_PK_NONE,
     },
 };
 
 FN_OID_TYPED_FROM_ASN1(oid_sig_alg_t, sig_alg, oid_sig_alg)
+
+#if !defined(MBEDTLS_X509_REMOVE_INFO)
 FN_OID_GET_DESCRIPTOR_ATTR1(mbedtls_oid_get_sig_alg_desc,
                             oid_sig_alg_t,
                             sig_alg,
                             const char *,
                             description)
+#endif
+
 FN_OID_GET_ATTR2(mbedtls_oid_get_sig_alg,
                  oid_sig_alg_t,
                  sig_alg,
@@ -453,7 +496,6 @@ FN_OID_GET_OID_BY_ATTR2(mbedtls_oid_get_oid_by_sig_alg,
                         pk_alg,
                         mbedtls_md_type_t,
                         md_alg)
-#endif /* MBEDTLS_MD_C */
 
 /*
  * For PublicKeyInfo (PKCS1, RFC 5480)
@@ -466,19 +508,19 @@ typedef struct {
 static const oid_pk_alg_t oid_pk_alg[] =
 {
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS1_RSA),      "rsaEncryption",   "RSA" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS1_RSA,           "rsaEncryption",    "RSA"),
         MBEDTLS_PK_RSA,
     },
     {
-        { ADD_LEN(MBEDTLS_OID_EC_ALG_UNRESTRICTED),  "id-ecPublicKey",   "Generic EC key" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_ALG_UNRESTRICTED, "id-ecPublicKey",   "Generic EC key"),
         MBEDTLS_PK_ECKEY,
     },
     {
-        { ADD_LEN(MBEDTLS_OID_EC_ALG_ECDH),          "id-ecDH",          "EC key for ECDH" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_ALG_ECDH,         "id-ecDH",          "EC key for ECDH"),
         MBEDTLS_PK_ECKEY_DH,
     },
     {
-        { NULL, 0, NULL, NULL },
+        NULL_OID_DESCRIPTOR,
         MBEDTLS_PK_NONE,
     },
 };
@@ -504,72 +546,72 @@ static const oid_ecp_grp_t oid_ecp_grp[] =
 {
 #if defined(MBEDTLS_ECP_DP_SECP192R1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_SECP192R1), "secp192r1",    "secp192r1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_SECP192R1, "secp192r1",    "secp192r1"),
         MBEDTLS_ECP_DP_SECP192R1,
     },
 #endif /* MBEDTLS_ECP_DP_SECP192R1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_SECP224R1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_SECP224R1), "secp224r1",    "secp224r1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_SECP224R1, "secp224r1",    "secp224r1"),
         MBEDTLS_ECP_DP_SECP224R1,
     },
 #endif /* MBEDTLS_ECP_DP_SECP224R1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_SECP256R1), "secp256r1",    "secp256r1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_SECP256R1, "secp256r1",    "secp256r1"),
         MBEDTLS_ECP_DP_SECP256R1,
     },
 #endif /* MBEDTLS_ECP_DP_SECP256R1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_SECP384R1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_SECP384R1), "secp384r1",    "secp384r1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_SECP384R1, "secp384r1",    "secp384r1"),
         MBEDTLS_ECP_DP_SECP384R1,
     },
 #endif /* MBEDTLS_ECP_DP_SECP384R1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_SECP521R1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_SECP521R1), "secp521r1",    "secp521r1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_SECP521R1, "secp521r1",    "secp521r1"),
         MBEDTLS_ECP_DP_SECP521R1,
     },
 #endif /* MBEDTLS_ECP_DP_SECP521R1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_SECP192K1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_SECP192K1), "secp192k1",    "secp192k1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_SECP192K1, "secp192k1",    "secp192k1"),
         MBEDTLS_ECP_DP_SECP192K1,
     },
 #endif /* MBEDTLS_ECP_DP_SECP192K1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_SECP224K1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_SECP224K1), "secp224k1",    "secp224k1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_SECP224K1, "secp224k1",    "secp224k1"),
         MBEDTLS_ECP_DP_SECP224K1,
     },
 #endif /* MBEDTLS_ECP_DP_SECP224K1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_SECP256K1), "secp256k1",    "secp256k1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_SECP256K1, "secp256k1",    "secp256k1"),
         MBEDTLS_ECP_DP_SECP256K1,
     },
 #endif /* MBEDTLS_ECP_DP_SECP256K1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_BP256R1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_BP256R1),   "brainpoolP256r1", "brainpool256r1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_BP256R1,   "brainpoolP256r1", "brainpool256r1"),
         MBEDTLS_ECP_DP_BP256R1,
     },
 #endif /* MBEDTLS_ECP_DP_BP256R1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_BP384R1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_BP384R1),   "brainpoolP384r1", "brainpool384r1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_BP384R1,   "brainpoolP384r1", "brainpool384r1"),
         MBEDTLS_ECP_DP_BP384R1,
     },
 #endif /* MBEDTLS_ECP_DP_BP384R1_ENABLED */
 #if defined(MBEDTLS_ECP_DP_BP512R1_ENABLED)
     {
-        { ADD_LEN(MBEDTLS_OID_EC_GRP_BP512R1),   "brainpoolP512r1", "brainpool512r1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_EC_GRP_BP512R1,   "brainpoolP512r1", "brainpool512r1"),
         MBEDTLS_ECP_DP_BP512R1,
     },
 #endif /* MBEDTLS_ECP_DP_BP512R1_ENABLED */
     {
-        { NULL, 0, NULL, NULL },
+        NULL_OID_DESCRIPTOR,
         MBEDTLS_ECP_DP_NONE,
     },
 };
@@ -595,15 +637,15 @@ typedef struct {
 static const oid_cipher_alg_t oid_cipher_alg[] =
 {
     {
-        { ADD_LEN(MBEDTLS_OID_DES_CBC),              "desCBC",       "DES-CBC" },
+        OID_DESCRIPTOR(MBEDTLS_OID_DES_CBC,              "desCBC",       "DES-CBC"),
         MBEDTLS_CIPHER_DES_CBC,
     },
     {
-        { ADD_LEN(MBEDTLS_OID_DES_EDE3_CBC),         "des-ede3-cbc", "DES-EDE3-CBC" },
+        OID_DESCRIPTOR(MBEDTLS_OID_DES_EDE3_CBC,         "des-ede3-cbc", "DES-EDE3-CBC"),
         MBEDTLS_CIPHER_DES_EDE3_CBC,
     },
     {
-        { NULL, 0, NULL, NULL },
+        NULL_OID_DESCRIPTOR,
         MBEDTLS_CIPHER_NONE,
     },
 };
@@ -616,7 +658,6 @@ FN_OID_GET_ATTR1(mbedtls_oid_get_cipher_alg,
                  cipher_alg)
 #endif /* MBEDTLS_CIPHER_C */
 
-#if defined(MBEDTLS_MD_C)
 /*
  * For digestAlgorithm
  */
@@ -627,58 +668,50 @@ typedef struct {
 
 static const oid_md_alg_t oid_md_alg[] =
 {
-#if defined(MBEDTLS_MD2_C)
+#if defined(MBEDTLS_HAS_ALG_MD5_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_DIGEST_ALG_MD2),       "id-md2",       "MD2" },
-        MBEDTLS_MD_MD2,
-    },
-#endif /* MBEDTLS_MD2_C */
-#if defined(MBEDTLS_MD4_C)
-    {
-        { ADD_LEN(MBEDTLS_OID_DIGEST_ALG_MD4),       "id-md4",       "MD4" },
-        MBEDTLS_MD_MD4,
-    },
-#endif /* MBEDTLS_MD4_C */
-#if defined(MBEDTLS_MD5_C)
-    {
-        { ADD_LEN(MBEDTLS_OID_DIGEST_ALG_MD5),       "id-md5",       "MD5" },
+        OID_DESCRIPTOR(MBEDTLS_OID_DIGEST_ALG_MD5,       "id-md5",       "MD5"),
         MBEDTLS_MD_MD5,
     },
-#endif /* MBEDTLS_MD5_C */
-#if defined(MBEDTLS_SHA1_C)
+#endif
+#if defined(MBEDTLS_HAS_ALG_SHA_1_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_DIGEST_ALG_SHA1),      "id-sha1",      "SHA-1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_DIGEST_ALG_SHA1,      "id-sha1",      "SHA-1"),
         MBEDTLS_MD_SHA1,
     },
-#endif /* MBEDTLS_SHA1_C */
-#if defined(MBEDTLS_SHA256_C)
+#endif
+#if defined(MBEDTLS_HAS_ALG_SHA_224_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_DIGEST_ALG_SHA224),    "id-sha224",    "SHA-224" },
+        OID_DESCRIPTOR(MBEDTLS_OID_DIGEST_ALG_SHA224,    "id-sha224",    "SHA-224"),
         MBEDTLS_MD_SHA224,
     },
+#endif
+#if defined(MBEDTLS_HAS_ALG_SHA_256_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_DIGEST_ALG_SHA256),    "id-sha256",    "SHA-256" },
+        OID_DESCRIPTOR(MBEDTLS_OID_DIGEST_ALG_SHA256,    "id-sha256",    "SHA-256"),
         MBEDTLS_MD_SHA256,
     },
-#endif /* MBEDTLS_SHA256_C */
-#if defined(MBEDTLS_SHA512_C)
+#endif
+#if defined(MBEDTLS_HAS_ALG_SHA_384_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_DIGEST_ALG_SHA384),    "id-sha384",    "SHA-384" },
+        OID_DESCRIPTOR(MBEDTLS_OID_DIGEST_ALG_SHA384,    "id-sha384",    "SHA-384"),
         MBEDTLS_MD_SHA384,
     },
+#endif
+#if defined(MBEDTLS_HAS_ALG_SHA_512_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_DIGEST_ALG_SHA512),    "id-sha512",    "SHA-512" },
+        OID_DESCRIPTOR(MBEDTLS_OID_DIGEST_ALG_SHA512,    "id-sha512",    "SHA-512"),
         MBEDTLS_MD_SHA512,
     },
-#endif /* MBEDTLS_SHA512_C */
-#if defined(MBEDTLS_RIPEMD160_C)
+#endif
+#if defined(MBEDTLS_HAS_ALG_RIPEMD160_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_DIGEST_ALG_RIPEMD160),       "id-ripemd160",       "RIPEMD-160" },
+        OID_DESCRIPTOR(MBEDTLS_OID_DIGEST_ALG_RIPEMD160, "id-ripemd160", "RIPEMD-160"),
         MBEDTLS_MD_RIPEMD160,
     },
-#endif /* MBEDTLS_RIPEMD160_C */
+#endif
     {
-        { NULL, 0, NULL, NULL },
+        NULL_OID_DESCRIPTOR,
         MBEDTLS_MD_NONE,
     },
 };
@@ -701,41 +734,44 @@ typedef struct {
 
 static const oid_md_hmac_t oid_md_hmac[] =
 {
-#if defined(MBEDTLS_SHA1_C)
+#if defined(MBEDTLS_HAS_ALG_SHA_1_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_HMAC_SHA1),      "hmacSHA1",      "HMAC-SHA-1" },
+        OID_DESCRIPTOR(MBEDTLS_OID_HMAC_SHA1,      "hmacSHA1",      "HMAC-SHA-1"),
         MBEDTLS_MD_SHA1,
     },
-#endif /* MBEDTLS_SHA1_C */
-#if defined(MBEDTLS_SHA256_C)
+#endif /* MBEDTLS_HAS_ALG_SHA_1_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_224_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_HMAC_SHA224),    "hmacSHA224",    "HMAC-SHA-224" },
+        OID_DESCRIPTOR(MBEDTLS_OID_HMAC_SHA224,    "hmacSHA224",    "HMAC-SHA-224"),
         MBEDTLS_MD_SHA224,
     },
+#endif
+#if defined(MBEDTLS_HAS_ALG_SHA_256_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_HMAC_SHA256),    "hmacSHA256",    "HMAC-SHA-256" },
+        OID_DESCRIPTOR(MBEDTLS_OID_HMAC_SHA256,    "hmacSHA256",    "HMAC-SHA-256"),
         MBEDTLS_MD_SHA256,
     },
-#endif /* MBEDTLS_SHA256_C */
-#if defined(MBEDTLS_SHA512_C)
+#endif /* MBEDTLS_HAS_ALG_SHA_256_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_384_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_HMAC_SHA384),    "hmacSHA384",    "HMAC-SHA-384" },
+        OID_DESCRIPTOR(MBEDTLS_OID_HMAC_SHA384,    "hmacSHA384",    "HMAC-SHA-384"),
         MBEDTLS_MD_SHA384,
     },
+#endif /* MBEDTLS_HAS_ALG_SHA_384_VIA_LOWLEVEL_OR_PSA */
+#if defined(MBEDTLS_HAS_ALG_SHA_512_VIA_LOWLEVEL_OR_PSA)
     {
-        { ADD_LEN(MBEDTLS_OID_HMAC_SHA512),    "hmacSHA512",    "HMAC-SHA-512" },
+        OID_DESCRIPTOR(MBEDTLS_OID_HMAC_SHA512,    "hmacSHA512",    "HMAC-SHA-512"),
         MBEDTLS_MD_SHA512,
     },
-#endif /* MBEDTLS_SHA512_C */
+#endif /* MBEDTLS_HAS_ALG_SHA_512_VIA_LOWLEVEL_OR_PSA */
     {
-        { NULL, 0, NULL, NULL },
+        NULL_OID_DESCRIPTOR,
         MBEDTLS_MD_NONE,
     },
 };
 
 FN_OID_TYPED_FROM_ASN1(oid_md_hmac_t, md_hmac, oid_md_hmac)
 FN_OID_GET_ATTR1(mbedtls_oid_get_md_hmac, oid_md_hmac_t, md_hmac, mbedtls_md_type_t, md_hmac)
-#endif /* MBEDTLS_MD_C */
 
 #if defined(MBEDTLS_PKCS12_C)
 /*
@@ -750,17 +786,19 @@ typedef struct {
 static const oid_pkcs12_pbe_alg_t oid_pkcs12_pbe_alg[] =
 {
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS12_PBE_SHA1_DES3_EDE_CBC), "pbeWithSHAAnd3-KeyTripleDES-CBC",
-          "PBE with SHA1 and 3-Key 3DES" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS12_PBE_SHA1_DES3_EDE_CBC,
+                       "pbeWithSHAAnd3-KeyTripleDES-CBC",
+                       "PBE with SHA1 and 3-Key 3DES"),
         MBEDTLS_MD_SHA1,      MBEDTLS_CIPHER_DES_EDE3_CBC,
     },
     {
-        { ADD_LEN(MBEDTLS_OID_PKCS12_PBE_SHA1_DES2_EDE_CBC), "pbeWithSHAAnd2-KeyTripleDES-CBC",
-          "PBE with SHA1 and 2-Key 3DES" },
+        OID_DESCRIPTOR(MBEDTLS_OID_PKCS12_PBE_SHA1_DES2_EDE_CBC,
+                       "pbeWithSHAAnd2-KeyTripleDES-CBC",
+                       "PBE with SHA1 and 2-Key 3DES"),
         MBEDTLS_MD_SHA1,      MBEDTLS_CIPHER_DES_EDE_CBC,
     },
     {
-        { NULL, 0, NULL, NULL },
+        NULL_OID_DESCRIPTOR,
         MBEDTLS_MD_NONE, MBEDTLS_CIPHER_NONE,
     },
 };

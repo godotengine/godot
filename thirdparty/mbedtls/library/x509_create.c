@@ -125,7 +125,7 @@ static const x509_attr_descriptor_t *x509_attr_descr_from_name(const char *name,
 
 int mbedtls_x509_string_to_names(mbedtls_asn1_named_data **head, const char *name)
 {
-    int ret = MBEDTLS_ERR_X509_INVALID_NAME;
+    int ret = 0;
     const char *s = name, *c = s;
     const char *end = s + strlen(s);
     const char *oid = NULL;
@@ -177,9 +177,6 @@ int mbedtls_x509_string_to_names(mbedtls_asn1_named_data **head, const char *nam
 
             s = c + 1;
             in_tag = 1;
-
-            /* Successfully parsed one name, update ret to success */
-            ret = 0;
         }
 
         if (!in_tag && s != c + 1) {

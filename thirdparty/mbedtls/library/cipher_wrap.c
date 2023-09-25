@@ -25,7 +25,7 @@
 
 #if defined(MBEDTLS_CIPHER_C)
 
-#include "mbedtls/cipher_internal.h"
+#include "cipher_wrap.h"
 #include "mbedtls/error.h"
 
 #if defined(MBEDTLS_CHACHAPOLY_C)
@@ -34,10 +34,6 @@
 
 #if defined(MBEDTLS_AES_C)
 #include "mbedtls/aes.h"
-#endif
-
-#if defined(MBEDTLS_ARC4_C)
-#include "mbedtls/arc4.h"
 #endif
 
 #if defined(MBEDTLS_CAMELLIA_C)
@@ -50,10 +46,6 @@
 
 #if defined(MBEDTLS_DES_C)
 #include "mbedtls/des.h"
-#endif
-
-#if defined(MBEDTLS_BLOWFISH_C)
-#include "mbedtls/blowfish.h"
 #endif
 
 #if defined(MBEDTLS_CHACHA20_C)
@@ -645,6 +637,39 @@ static const mbedtls_cipher_info_t aes_256_ccm_info = {
     16,
     &ccm_aes_info
 };
+
+static const mbedtls_cipher_info_t aes_128_ccm_star_no_tag_info = {
+    MBEDTLS_CIPHER_AES_128_CCM_STAR_NO_TAG,
+    MBEDTLS_MODE_CCM_STAR_NO_TAG,
+    128,
+    "AES-128-CCM*-NO-TAG",
+    12,
+    MBEDTLS_CIPHER_VARIABLE_IV_LEN,
+    16,
+    &ccm_aes_info
+};
+
+static const mbedtls_cipher_info_t aes_192_ccm_star_no_tag_info = {
+    MBEDTLS_CIPHER_AES_192_CCM_STAR_NO_TAG,
+    MBEDTLS_MODE_CCM_STAR_NO_TAG,
+    192,
+    "AES-192-CCM*-NO-TAG",
+    12,
+    MBEDTLS_CIPHER_VARIABLE_IV_LEN,
+    16,
+    &ccm_aes_info
+};
+
+static const mbedtls_cipher_info_t aes_256_ccm_star_no_tag_info = {
+    MBEDTLS_CIPHER_AES_256_CCM_STAR_NO_TAG,
+    MBEDTLS_MODE_CCM_STAR_NO_TAG,
+    256,
+    "AES-256-CCM*-NO-TAG",
+    12,
+    MBEDTLS_CIPHER_VARIABLE_IV_LEN,
+    16,
+    &ccm_aes_info
+};
 #endif /* MBEDTLS_CCM_C */
 
 #endif /* MBEDTLS_AES_C */
@@ -1016,6 +1041,39 @@ static const mbedtls_cipher_info_t camellia_256_ccm_info = {
     MBEDTLS_MODE_CCM,
     256,
     "CAMELLIA-256-CCM",
+    12,
+    MBEDTLS_CIPHER_VARIABLE_IV_LEN,
+    16,
+    &ccm_camellia_info
+};
+
+static const mbedtls_cipher_info_t camellia_128_ccm_star_no_tag_info = {
+    MBEDTLS_CIPHER_CAMELLIA_128_CCM_STAR_NO_TAG,
+    MBEDTLS_MODE_CCM_STAR_NO_TAG,
+    128,
+    "CAMELLIA-128-CCM*-NO-TAG",
+    12,
+    MBEDTLS_CIPHER_VARIABLE_IV_LEN,
+    16,
+    &ccm_camellia_info
+};
+
+static const mbedtls_cipher_info_t camellia_192_ccm_star_no_tag_info = {
+    MBEDTLS_CIPHER_CAMELLIA_192_CCM_STAR_NO_TAG,
+    MBEDTLS_MODE_CCM_STAR_NO_TAG,
+    192,
+    "CAMELLIA-192-CCM*-NO-TAG",
+    12,
+    MBEDTLS_CIPHER_VARIABLE_IV_LEN,
+    16,
+    &ccm_camellia_info
+};
+
+static const mbedtls_cipher_info_t camellia_256_ccm_star_no_tag_info = {
+    MBEDTLS_CIPHER_CAMELLIA_256_CCM_STAR_NO_TAG,
+    MBEDTLS_MODE_CCM_STAR_NO_TAG,
+    256,
+    "CAMELLIA-256-CCM*-NO-TAG",
     12,
     MBEDTLS_CIPHER_VARIABLE_IV_LEN,
     16,
@@ -1398,6 +1456,39 @@ static const mbedtls_cipher_info_t aria_256_ccm_info = {
     16,
     &ccm_aria_info
 };
+
+static const mbedtls_cipher_info_t aria_128_ccm_star_no_tag_info = {
+    MBEDTLS_CIPHER_ARIA_128_CCM_STAR_NO_TAG,
+    MBEDTLS_MODE_CCM_STAR_NO_TAG,
+    128,
+    "ARIA-128-CCM*-NO-TAG",
+    12,
+    MBEDTLS_CIPHER_VARIABLE_IV_LEN,
+    16,
+    &ccm_aria_info
+};
+
+static const mbedtls_cipher_info_t aria_192_ccm_star_no_tag_info = {
+    MBEDTLS_CIPHER_ARIA_192_CCM_STAR_NO_TAG,
+    MBEDTLS_MODE_CCM_STAR_NO_TAG,
+    192,
+    "ARIA-192-CCM*-NO-TAG",
+    12,
+    MBEDTLS_CIPHER_VARIABLE_IV_LEN,
+    16,
+    &ccm_aria_info
+};
+
+static const mbedtls_cipher_info_t aria_256_ccm_star_no_tag_info = {
+    MBEDTLS_CIPHER_ARIA_256_CCM_STAR_NO_TAG,
+    MBEDTLS_MODE_CCM_STAR_NO_TAG,
+    256,
+    "ARIA-256-CCM*-NO-TAG",
+    12,
+    MBEDTLS_CIPHER_VARIABLE_IV_LEN,
+    16,
+    &ccm_aria_info
+};
 #endif /* MBEDTLS_CCM_C */
 
 #endif /* MBEDTLS_ARIA_C */
@@ -1675,228 +1766,6 @@ static const mbedtls_cipher_info_t des_ede3_cbc_info = {
 };
 #endif /* MBEDTLS_CIPHER_MODE_CBC */
 #endif /* MBEDTLS_DES_C */
-
-#if defined(MBEDTLS_BLOWFISH_C)
-
-static int blowfish_crypt_ecb_wrap(void *ctx, mbedtls_operation_t operation,
-                                   const unsigned char *input, unsigned char *output)
-{
-    return mbedtls_blowfish_crypt_ecb((mbedtls_blowfish_context *) ctx, operation, input,
-                                      output);
-}
-
-#if defined(MBEDTLS_CIPHER_MODE_CBC)
-static int blowfish_crypt_cbc_wrap(void *ctx, mbedtls_operation_t operation,
-                                   size_t length, unsigned char *iv, const unsigned char *input,
-                                   unsigned char *output)
-{
-    return mbedtls_blowfish_crypt_cbc((mbedtls_blowfish_context *) ctx, operation, length, iv,
-                                      input, output);
-}
-#endif /* MBEDTLS_CIPHER_MODE_CBC */
-
-#if defined(MBEDTLS_CIPHER_MODE_CFB)
-static int blowfish_crypt_cfb64_wrap(void *ctx, mbedtls_operation_t operation,
-                                     size_t length, size_t *iv_off, unsigned char *iv,
-                                     const unsigned char *input, unsigned char *output)
-{
-    return mbedtls_blowfish_crypt_cfb64((mbedtls_blowfish_context *) ctx, operation, length,
-                                        iv_off, iv, input, output);
-}
-#endif /* MBEDTLS_CIPHER_MODE_CFB */
-
-#if defined(MBEDTLS_CIPHER_MODE_CTR)
-static int blowfish_crypt_ctr_wrap(void *ctx, size_t length, size_t *nc_off,
-                                   unsigned char *nonce_counter, unsigned char *stream_block,
-                                   const unsigned char *input, unsigned char *output)
-{
-    return mbedtls_blowfish_crypt_ctr((mbedtls_blowfish_context *) ctx, length, nc_off,
-                                      nonce_counter, stream_block, input, output);
-}
-#endif /* MBEDTLS_CIPHER_MODE_CTR */
-
-static int blowfish_setkey_wrap(void *ctx, const unsigned char *key,
-                                unsigned int key_bitlen)
-{
-    return mbedtls_blowfish_setkey((mbedtls_blowfish_context *) ctx, key, key_bitlen);
-}
-
-static void *blowfish_ctx_alloc(void)
-{
-    mbedtls_blowfish_context *ctx;
-    ctx = mbedtls_calloc(1, sizeof(mbedtls_blowfish_context));
-
-    if (ctx == NULL) {
-        return NULL;
-    }
-
-    mbedtls_blowfish_init(ctx);
-
-    return ctx;
-}
-
-static void blowfish_ctx_free(void *ctx)
-{
-    mbedtls_blowfish_free((mbedtls_blowfish_context *) ctx);
-    mbedtls_free(ctx);
-}
-
-static const mbedtls_cipher_base_t blowfish_info = {
-    MBEDTLS_CIPHER_ID_BLOWFISH,
-    blowfish_crypt_ecb_wrap,
-#if defined(MBEDTLS_CIPHER_MODE_CBC)
-    blowfish_crypt_cbc_wrap,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_CFB)
-    blowfish_crypt_cfb64_wrap,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_OFB)
-    NULL,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_CTR)
-    blowfish_crypt_ctr_wrap,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_XTS)
-    NULL,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_STREAM)
-    NULL,
-#endif
-    blowfish_setkey_wrap,
-    blowfish_setkey_wrap,
-    blowfish_ctx_alloc,
-    blowfish_ctx_free
-};
-
-static const mbedtls_cipher_info_t blowfish_ecb_info = {
-    MBEDTLS_CIPHER_BLOWFISH_ECB,
-    MBEDTLS_MODE_ECB,
-    128,
-    "BLOWFISH-ECB",
-    0,
-    MBEDTLS_CIPHER_VARIABLE_KEY_LEN,
-    8,
-    &blowfish_info
-};
-
-#if defined(MBEDTLS_CIPHER_MODE_CBC)
-static const mbedtls_cipher_info_t blowfish_cbc_info = {
-    MBEDTLS_CIPHER_BLOWFISH_CBC,
-    MBEDTLS_MODE_CBC,
-    128,
-    "BLOWFISH-CBC",
-    8,
-    MBEDTLS_CIPHER_VARIABLE_KEY_LEN,
-    8,
-    &blowfish_info
-};
-#endif /* MBEDTLS_CIPHER_MODE_CBC */
-
-#if defined(MBEDTLS_CIPHER_MODE_CFB)
-static const mbedtls_cipher_info_t blowfish_cfb64_info = {
-    MBEDTLS_CIPHER_BLOWFISH_CFB64,
-    MBEDTLS_MODE_CFB,
-    128,
-    "BLOWFISH-CFB64",
-    8,
-    MBEDTLS_CIPHER_VARIABLE_KEY_LEN,
-    8,
-    &blowfish_info
-};
-#endif /* MBEDTLS_CIPHER_MODE_CFB */
-
-#if defined(MBEDTLS_CIPHER_MODE_CTR)
-static const mbedtls_cipher_info_t blowfish_ctr_info = {
-    MBEDTLS_CIPHER_BLOWFISH_CTR,
-    MBEDTLS_MODE_CTR,
-    128,
-    "BLOWFISH-CTR",
-    8,
-    MBEDTLS_CIPHER_VARIABLE_KEY_LEN,
-    8,
-    &blowfish_info
-};
-#endif /* MBEDTLS_CIPHER_MODE_CTR */
-#endif /* MBEDTLS_BLOWFISH_C */
-
-#if defined(MBEDTLS_ARC4_C)
-static int arc4_crypt_stream_wrap(void *ctx, size_t length,
-                                  const unsigned char *input,
-                                  unsigned char *output)
-{
-    return mbedtls_arc4_crypt((mbedtls_arc4_context *) ctx, length, input, output);
-}
-
-static int arc4_setkey_wrap(void *ctx, const unsigned char *key,
-                            unsigned int key_bitlen)
-{
-    /* we get key_bitlen in bits, arc4 expects it in bytes */
-    if (key_bitlen % 8 != 0) {
-        return MBEDTLS_ERR_CIPHER_BAD_INPUT_DATA;
-    }
-
-    mbedtls_arc4_setup((mbedtls_arc4_context *) ctx, key, key_bitlen / 8);
-    return 0;
-}
-
-static void *arc4_ctx_alloc(void)
-{
-    mbedtls_arc4_context *ctx;
-    ctx = mbedtls_calloc(1, sizeof(mbedtls_arc4_context));
-
-    if (ctx == NULL) {
-        return NULL;
-    }
-
-    mbedtls_arc4_init(ctx);
-
-    return ctx;
-}
-
-static void arc4_ctx_free(void *ctx)
-{
-    mbedtls_arc4_free((mbedtls_arc4_context *) ctx);
-    mbedtls_free(ctx);
-}
-
-static const mbedtls_cipher_base_t arc4_base_info = {
-    MBEDTLS_CIPHER_ID_ARC4,
-    NULL,
-#if defined(MBEDTLS_CIPHER_MODE_CBC)
-    NULL,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_CFB)
-    NULL,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_OFB)
-    NULL,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_CTR)
-    NULL,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_XTS)
-    NULL,
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_STREAM)
-    arc4_crypt_stream_wrap,
-#endif
-    arc4_setkey_wrap,
-    arc4_setkey_wrap,
-    arc4_ctx_alloc,
-    arc4_ctx_free
-};
-
-static const mbedtls_cipher_info_t arc4_128_info = {
-    MBEDTLS_CIPHER_ARC4_128,
-    MBEDTLS_MODE_STREAM,
-    128,
-    "ARC4-128",
-    0,
-    0,
-    1,
-    &arc4_base_info
-};
-#endif /* MBEDTLS_ARC4_C */
 
 #if defined(MBEDTLS_CHACHA20_C)
 
@@ -2295,25 +2164,11 @@ const mbedtls_cipher_definition_t mbedtls_cipher_definitions[] =
     { MBEDTLS_CIPHER_AES_128_CCM,          &aes_128_ccm_info },
     { MBEDTLS_CIPHER_AES_192_CCM,          &aes_192_ccm_info },
     { MBEDTLS_CIPHER_AES_256_CCM,          &aes_256_ccm_info },
+    { MBEDTLS_CIPHER_AES_128_CCM_STAR_NO_TAG,          &aes_128_ccm_star_no_tag_info },
+    { MBEDTLS_CIPHER_AES_192_CCM_STAR_NO_TAG,          &aes_192_ccm_star_no_tag_info },
+    { MBEDTLS_CIPHER_AES_256_CCM_STAR_NO_TAG,          &aes_256_ccm_star_no_tag_info },
 #endif
 #endif /* MBEDTLS_AES_C */
-
-#if defined(MBEDTLS_ARC4_C)
-    { MBEDTLS_CIPHER_ARC4_128,             &arc4_128_info },
-#endif
-
-#if defined(MBEDTLS_BLOWFISH_C)
-    { MBEDTLS_CIPHER_BLOWFISH_ECB,         &blowfish_ecb_info },
-#if defined(MBEDTLS_CIPHER_MODE_CBC)
-    { MBEDTLS_CIPHER_BLOWFISH_CBC,         &blowfish_cbc_info },
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_CFB)
-    { MBEDTLS_CIPHER_BLOWFISH_CFB64,       &blowfish_cfb64_info },
-#endif
-#if defined(MBEDTLS_CIPHER_MODE_CTR)
-    { MBEDTLS_CIPHER_BLOWFISH_CTR,         &blowfish_ctr_info },
-#endif
-#endif /* MBEDTLS_BLOWFISH_C */
 
 #if defined(MBEDTLS_CAMELLIA_C)
     { MBEDTLS_CIPHER_CAMELLIA_128_ECB,     &camellia_128_ecb_info },
@@ -2343,6 +2198,9 @@ const mbedtls_cipher_definition_t mbedtls_cipher_definitions[] =
     { MBEDTLS_CIPHER_CAMELLIA_128_CCM,     &camellia_128_ccm_info },
     { MBEDTLS_CIPHER_CAMELLIA_192_CCM,     &camellia_192_ccm_info },
     { MBEDTLS_CIPHER_CAMELLIA_256_CCM,     &camellia_256_ccm_info },
+    { MBEDTLS_CIPHER_CAMELLIA_128_CCM_STAR_NO_TAG,     &camellia_128_ccm_star_no_tag_info },
+    { MBEDTLS_CIPHER_CAMELLIA_192_CCM_STAR_NO_TAG,     &camellia_192_ccm_star_no_tag_info },
+    { MBEDTLS_CIPHER_CAMELLIA_256_CCM_STAR_NO_TAG,     &camellia_256_ccm_star_no_tag_info },
 #endif
 #endif /* MBEDTLS_CAMELLIA_C */
 
@@ -2374,6 +2232,9 @@ const mbedtls_cipher_definition_t mbedtls_cipher_definitions[] =
     { MBEDTLS_CIPHER_ARIA_128_CCM,     &aria_128_ccm_info },
     { MBEDTLS_CIPHER_ARIA_192_CCM,     &aria_192_ccm_info },
     { MBEDTLS_CIPHER_ARIA_256_CCM,     &aria_256_ccm_info },
+    { MBEDTLS_CIPHER_ARIA_128_CCM_STAR_NO_TAG,     &aria_128_ccm_star_no_tag_info },
+    { MBEDTLS_CIPHER_ARIA_192_CCM_STAR_NO_TAG,     &aria_192_ccm_star_no_tag_info },
+    { MBEDTLS_CIPHER_ARIA_256_CCM_STAR_NO_TAG,     &aria_256_ccm_star_no_tag_info },
 #endif
 #endif /* MBEDTLS_ARIA_C */
 

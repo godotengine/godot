@@ -21,12 +21,9 @@
  */
 #ifndef MBEDTLS_BIGNUM_H
 #define MBEDTLS_BIGNUM_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -194,7 +191,7 @@ typedef uint64_t mbedtls_t_udbl;
 /** \typedef mbedtls_mpi_sint
  * \brief The signed type corresponding to #mbedtls_mpi_uint.
  *
- * This is always a signed integer type with no padding bits. The size
+ * This is always an signed integer type with no padding bits. The size
  * is platform-dependent.
  */
 
@@ -217,16 +214,16 @@ typedef struct mbedtls_mpi {
      * Note that this implies that calloc() or `... = {0}` does not create
      * a valid MPI representation. You must call mbedtls_mpi_init().
      */
-    int s;
+    int MBEDTLS_PRIVATE(s);
 
     /** Total number of limbs in \c p.  */
-    size_t n;
+    size_t MBEDTLS_PRIVATE(n);
 
     /** Pointer to limbs.
      *
      * This may be \c NULL if \c n is 0.
      */
-    mbedtls_mpi_uint *p;
+    mbedtls_mpi_uint *MBEDTLS_PRIVATE(p);
 }
 mbedtls_mpi;
 
@@ -533,7 +530,7 @@ int mbedtls_mpi_write_file(const char *p, const mbedtls_mpi *X,
  * \param X        The destination MPI. This must point to an initialized MPI.
  * \param buf      The input buffer. This must be a readable buffer of length
  *                 \p buflen Bytes.
- * \param buflen   The length of the input buffer \p buf in Bytes.
+ * \param buflen   The length of the input buffer \p p in Bytes.
  *
  * \return         \c 0 if successful.
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
@@ -548,7 +545,7 @@ int mbedtls_mpi_read_binary(mbedtls_mpi *X, const unsigned char *buf,
  * \param X        The destination MPI. This must point to an initialized MPI.
  * \param buf      The input buffer. This must be a readable buffer of length
  *                 \p buflen Bytes.
- * \param buflen   The length of the input buffer \p buf in Bytes.
+ * \param buflen   The length of the input buffer \p p in Bytes.
  *
  * \return         \c 0 if successful.
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
@@ -986,42 +983,11 @@ int mbedtls_mpi_gcd(mbedtls_mpi *G, const mbedtls_mpi *A,
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
  * \return         #MBEDTLS_ERR_MPI_BAD_INPUT_DATA if \p N is less than
  *                 or equal to one.
- * \return         #MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if \p A has no modular
- *                 inverse with respect to \p N.
+ * \return         #MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if \p has no modular inverse
+ *                 with respect to \p N.
  */
 int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
                         const mbedtls_mpi *N);
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-#if defined(MBEDTLS_DEPRECATED_WARNING)
-#define MBEDTLS_DEPRECATED      __attribute__((deprecated))
-#else
-#define MBEDTLS_DEPRECATED
-#endif
-/**
- * \brief          Perform a Miller-Rabin primality test with error
- *                 probability of 2<sup>-80</sup>.
- *
- * \deprecated     Superseded by mbedtls_mpi_is_prime_ext() which allows
- *                 specifying the number of Miller-Rabin rounds.
- *
- * \param X        The MPI to check for primality.
- *                 This must point to an initialized MPI.
- * \param f_rng    The RNG function to use. This must not be \c NULL.
- * \param p_rng    The RNG parameter to be passed to \p f_rng.
- *                 This may be \c NULL if \p f_rng doesn't use a
- *                 context parameter.
- *
- * \return         \c 0 if successful, i.e. \p X is probably prime.
- * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
- * \return         #MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if \p X is not prime.
- * \return         Another negative error code on other kinds of failure.
- */
-MBEDTLS_DEPRECATED int mbedtls_mpi_is_prime(const mbedtls_mpi *X,
-                                            int (*f_rng)(void *, unsigned char *, size_t),
-                                            void *p_rng);
-#undef MBEDTLS_DEPRECATED
-#endif /* !MBEDTLS_DEPRECATED_REMOVED */
 
 /**
  * \brief          Miller-Rabin primality test.

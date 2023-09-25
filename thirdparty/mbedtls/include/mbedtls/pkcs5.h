@@ -24,11 +24,7 @@
 #ifndef MBEDTLS_PKCS5_H
 #define MBEDTLS_PKCS5_H
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include "mbedtls/asn1.h"
 #include "mbedtls/md.h"
@@ -75,7 +71,31 @@ int mbedtls_pkcs5_pbes2(const mbedtls_asn1_buf *pbe_params, int mode,
 #endif /* MBEDTLS_ASN1_PARSE_C */
 
 /**
+ * \brief          PKCS#5 PBKDF2 using HMAC without using the HMAC context
+ *
+ * \param md_type  Hash algorithm used
+ * \param password Password to use when generating key
+ * \param plen     Length of password
+ * \param salt     Salt to use when generating key
+ * \param slen     Length of salt
+ * \param iteration_count       Iteration count
+ * \param key_length            Length of generated key in bytes
+ * \param output   Generated key. Must be at least as big as key_length
+ *
+ * \returns        0 on success, or a MBEDTLS_ERR_XXX code if verification fails.
+ */
+int mbedtls_pkcs5_pbkdf2_hmac_ext(mbedtls_md_type_t md_type,
+                                  const unsigned char *password,
+                                  size_t plen, const unsigned char *salt, size_t slen,
+                                  unsigned int iteration_count,
+                                  uint32_t key_length, unsigned char *output);
+
+#if defined(MBEDTLS_MD_C)
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+/**
  * \brief          PKCS#5 PBKDF2 using HMAC
+ *
+ * \deprecated     Superseded by mbedtls_pkcs5_pbkdf2_hmac_ext().
  *
  * \param ctx      Generic HMAC context
  * \param password Password to use when generating key
@@ -88,11 +108,16 @@ int mbedtls_pkcs5_pbes2(const mbedtls_asn1_buf *pbe_params, int mode,
  *
  * \returns        0 on success, or a MBEDTLS_ERR_XXX code if verification fails.
  */
-int mbedtls_pkcs5_pbkdf2_hmac(mbedtls_md_context_t *ctx, const unsigned char *password,
-                              size_t plen, const unsigned char *salt, size_t slen,
-                              unsigned int iteration_count,
-                              uint32_t key_length, unsigned char *output);
-
+int MBEDTLS_DEPRECATED mbedtls_pkcs5_pbkdf2_hmac(mbedtls_md_context_t *ctx,
+                                                 const unsigned char *password,
+                                                 size_t plen,
+                                                 const unsigned char *salt,
+                                                 size_t slen,
+                                                 unsigned int iteration_count,
+                                                 uint32_t key_length,
+                                                 unsigned char *output);
+#endif /* !MBEDTLS_DEPRECATED_REMOVED */
+#endif /* MBEDTLS_MD_C */
 #if defined(MBEDTLS_SELF_TEST)
 
 /**
