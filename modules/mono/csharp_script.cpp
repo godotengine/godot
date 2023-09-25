@@ -378,7 +378,7 @@ Ref<Script> CSharpLanguage::make_template(const String &p_template, const String
 								 .replace("_BASE_", base_class_name)
 								 .replace("_CLASS_", class_name_no_spaces)
 								 .replace("_TS_", _get_indentation())
-								 .replace("_ROOT_NAMESPACE_");
+								 .replace("_ROOT_NAMESPACE_", root_namespace);
 	if (script_namespace != ".") {
 		processed_template = processed_template.replace("_SCRIPT_NAMESPACE_", script_namespace);
 	} else {
