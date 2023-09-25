@@ -398,7 +398,13 @@ void (*type_init_function_table[])(Variant *) = {
 #define OPCODES_END
 #define OPCODES_OUT
 #define DISPATCH_OPCODE continue
+#ifdef _MSC_VER
+#define OPCODE_SWITCH(m_test)       \
+	__assume(m_test <= OPCODE_END); \
+	switch (m_test)
+#else
 #define OPCODE_SWITCH(m_test) switch (m_test)
+#endif
 #define OPCODE_BREAK break
 #define OPCODE_OUT break
 #endif
