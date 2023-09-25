@@ -1002,19 +1002,32 @@ def is_vanilla_clang(env):
 
 def get_compiler_version(env):
     """
-    Returns an array of version numbers as ints: [major, minor, patch].
-    The return array should have at least two values (major, minor).
+    Returns a dictionary with various version information:
+
+    - major, minor, patch: Version following semantic versioning system
+    - metadata1, metadata2: Extra information
+    - date: Date of the build
     """
+    ret = {
+        "major": -1,
+        "minor": -1,
+        "patch": -1,
+        "metadata1": None,
+        "metadata2": None,
+        "date": None,
+    }
+
     if not env.msvc:
         # Not using -dumpversion as some GCC distros only return major, and
         # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
         try:
-            version = subprocess.check_output([env.subst(env["CXX"]), "--version"]).strip().decode("utf-8")
+            version = subprocess.check_output([env.subst(env["CXX"]), "--version"], shell=True).strip().decode("utf-8")
         except (subprocess.CalledProcessError, OSError):
             print("Couldn't parse CXX environment variable to infer compiler version.")
-            return None
-    else:  # TODO: Implement for MSVC
-        return None
+            return ret
+    else:
+        # TODO: Implement for MSVC
+        return ret
     match = re.search(
         r"(?:(?<=version )|(?<=\) )|(?<=^))"
         r"(?P<major>\d+)"
@@ -1026,9 +1039,13 @@ def get_compiler_version(env):
         version,
     )
     if match is not None:
-        return match.groupdict()
-    else:
-        return None
+        for key, value in match.groupdict().items():
+            if value is not None:
+                ret[key] = value
+    # Transform semantic versioning to integers
+    for key in ["major", "minor", "patch"]:
+        ret[key] = int(ret[key] or -1)
+    return ret
 
 
 def using_gcc(env):
