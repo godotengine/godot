@@ -2,23 +2,11 @@
  *  TCP/IP or UDP/IP networking functions
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 /* Enable definition of getaddrinfo() even when compiling with -std=c99. Must
- * be set before config.h, which pulls in glibc's features.h indirectly.
+ * be set before mbedtls_config.h, which pulls in glibc's features.h indirectly.
  * Harmless on other platforms. */
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
@@ -34,7 +22,7 @@
 #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
     !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
     !defined(__HAIKU__) && !defined(__midipix__)
-#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
+#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in mbedtls_config.h"
 #endif
 
 #include "mbedtls/platform.h"
@@ -48,11 +36,6 @@
     !defined(EFI32)
 
 #define IS_EINTR(ret) ((ret) == WSAEINTR)
-
-#if !defined(_WIN32_WINNT)
-/* Enables getaddrinfo() & Co */
-#define _WIN32_WINNT 0x0501
-#endif
 
 #include <ws2tcpip.h>
 

@@ -5,39 +5,19 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_THREADING_H
 #define MBEDTLS_THREADING_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* MBEDTLS_ERR_THREADING_FEATURE_UNAVAILABLE is deprecated and should not be
- * used. */
-/** The selected feature is not available. */
-#define MBEDTLS_ERR_THREADING_FEATURE_UNAVAILABLE         -0x001A
 
 /** Bad input parameters to function. */
 #define MBEDTLS_ERR_THREADING_BAD_INPUT_DATA              -0x001C
@@ -47,11 +27,11 @@ extern "C" {
 #if defined(MBEDTLS_THREADING_PTHREAD)
 #include <pthread.h>
 typedef struct mbedtls_threading_mutex_t {
-    pthread_mutex_t mutex;
+    pthread_mutex_t MBEDTLS_PRIVATE(mutex);
     /* is_valid is 0 after a failed init or a free, and nonzero after a
      * successful init. This field is not considered part of the public
      * API of Mbed TLS and may change without notice. */
-    char is_valid;
+    char MBEDTLS_PRIVATE(is_valid);
 } mbedtls_threading_mutex_t;
 #endif
 

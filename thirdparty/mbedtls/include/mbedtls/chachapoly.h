@@ -14,29 +14,14 @@
 
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #ifndef MBEDTLS_CHACHAPOLY_H
 #define MBEDTLS_CHACHAPOLY_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 /* for shared error codes */
 #include "mbedtls/poly1305.h"
@@ -61,12 +46,12 @@ mbedtls_chachapoly_mode_t;
 #include "mbedtls/chacha20.h"
 
 typedef struct mbedtls_chachapoly_context {
-    mbedtls_chacha20_context chacha20_ctx;  /**< The ChaCha20 context. */
-    mbedtls_poly1305_context poly1305_ctx;  /**< The Poly1305 context. */
-    uint64_t aad_len;                       /**< The length (bytes) of the Additional Authenticated Data. */
-    uint64_t ciphertext_len;                /**< The length (bytes) of the ciphertext. */
-    int state;                              /**< The current state of the context. */
-    mbedtls_chachapoly_mode_t mode;         /**< Cipher mode (encrypt or decrypt). */
+    mbedtls_chacha20_context MBEDTLS_PRIVATE(chacha20_ctx);  /**< The ChaCha20 context. */
+    mbedtls_poly1305_context MBEDTLS_PRIVATE(poly1305_ctx);  /**< The Poly1305 context. */
+    uint64_t MBEDTLS_PRIVATE(aad_len);                       /**< The length (bytes) of the Additional Authenticated Data. */
+    uint64_t MBEDTLS_PRIVATE(ciphertext_len);                /**< The length (bytes) of the ciphertext. */
+    int MBEDTLS_PRIVATE(state);                              /**< The current state of the context. */
+    mbedtls_chachapoly_mode_t MBEDTLS_PRIVATE(mode);         /**< Cipher mode (encrypt or decrypt). */
 }
 mbedtls_chachapoly_context;
 

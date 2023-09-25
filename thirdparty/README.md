@@ -516,18 +516,15 @@ in the MSVC debugger.
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.5 (47e8cc9db2e469d902b0e3093ae9e482c3d87188, 2023)
+- Version: 3.5.1 (edb8fec9882084344a314368ac7fd957a187519c, 2023)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
 
-- All `.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
-  except `config_psa.h` and `psa_util.h`
-- All `.c` and `.h` from `library/` to `thirdparty/mbedtls/library/` except
-  those starting with `psa_*`
-- The `LICENSE` file
-- Applied the patch `windows-arm64-hardclock.diff` to fix Windows ARM64 build
-  Applied the patch `windows-entropy-bcrypt.diff` to fix Windows Store support
+- All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`.
+- All `*.h` from `include/psa/` to `thirdparty/mbedtls/include/psa/`
+- All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
+- The `LICENSE` file.
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
 - Added the file `godot_module_mbedtls_config.h` to customize the build
