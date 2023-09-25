@@ -1392,10 +1392,16 @@ void MeshStorage::_multimesh_get_motion_vectors_offsets(RID p_multimesh, uint32_
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	r_current_offset = multimesh->motion_vectors_current_offset;
-	if (RSG::rasterizer->get_frame_number() - multimesh->motion_vectors_last_change >= 2) {
+	if (!_multimesh_uses_motion_vectors(multimesh)) {
 		multimesh->motion_vectors_previous_offset = multimesh->motion_vectors_current_offset;
 	}
 	r_prev_offset = multimesh->motion_vectors_previous_offset;
+}
+
+bool MeshStorage::_multimesh_uses_motion_vectors_offsets(RID p_multimesh) {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL_V(multimesh, false);
+	return _multimesh_uses_motion_vectors(multimesh);
 }
 
 int MeshStorage::multimesh_get_instance_count(RID p_multimesh) const {
@@ -1498,6 +1504,10 @@ void MeshStorage::_multimesh_update_motion_vectors_data_cache(MultiMesh *multime
 			}
 		}
 	}
+}
+
+bool MeshStorage::_multimesh_uses_motion_vectors(MultiMesh *multimesh) {
+	return (RSG::rasterizer->get_frame_number() - multimesh->motion_vectors_last_change) < 2;
 }
 
 void MeshStorage::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb) {

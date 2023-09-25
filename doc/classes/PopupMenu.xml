@@ -192,8 +192,9 @@
 		</method>
 		<method name="clear">
 			<return type="void" />
+			<param index="0" name="free_submenus" type="bool" default="false" />
 			<description>
-				Removes all items from the [PopupMenu].
+				Removes all items from the [PopupMenu]. If [param free_submenus] is [code]true[/code], the submenu nodes are automatically freed.
 			</description>
 		</method>
 		<method name="get_focused_item" qualifiers="const">

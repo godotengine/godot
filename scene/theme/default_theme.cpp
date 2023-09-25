@@ -360,6 +360,28 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("check_v_offset", "CheckButton", 0);
 	theme->set_constant("outline_size", "CheckButton", 0);
 
+	// Button variations
+
+	theme->set_type_variation("FlatButton", "Button");
+	theme->set_type_variation("FlatMenuButton", "MenuButton");
+
+	Ref<StyleBoxEmpty> flat_button_normal = make_empty_stylebox();
+	for (int i = 0; i < 4; i++) {
+		flat_button_normal->set_content_margin((Side)i, button_normal->get_margin((Side)i) + button_normal->get_border_width((Side)i));
+	}
+	Ref<StyleBoxFlat> flat_button_pressed = button_pressed->duplicate();
+	flat_button_pressed->set_bg_color(style_pressed_color * Color(1, 1, 1, 0.85));
+
+	theme->set_stylebox("normal", "FlatButton", flat_button_normal);
+	theme->set_stylebox("hover", "FlatButton", flat_button_normal);
+	theme->set_stylebox("pressed", "FlatButton", flat_button_pressed);
+	theme->set_stylebox("disabled", "FlatButton", flat_button_normal);
+
+	theme->set_stylebox("normal", "FlatMenuButton", flat_button_normal);
+	theme->set_stylebox("hover", "FlatMenuButton", flat_button_normal);
+	theme->set_stylebox("pressed", "FlatMenuButton", flat_button_pressed);
+	theme->set_stylebox("disabled", "FlatMenuButton", flat_button_normal);
+
 	// Label
 
 	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
@@ -845,11 +867,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	style_tab_disabled->set_bg_color(style_disabled_color);
 	Ref<StyleBoxFlat> style_tab_hovered = style_tab_unselected->duplicate();
 	style_tab_hovered->set_bg_color(Color(0.1, 0.1, 0.1, 0.3));
+	Ref<StyleBoxFlat> style_tab_focus = focus->duplicate();
 
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
 	theme->set_stylebox("tab_hovered", "TabContainer", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
+	theme->set_stylebox("tab_focus", "TabContainer", style_tab_focus);
 	theme->set_stylebox("panel", "TabContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 	theme->set_stylebox("tabbar_background", "TabContainer", make_empty_stylebox(0, 0, 0, 0));
 
@@ -882,6 +906,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("tab_hovered", "TabBar", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
+	theme->set_stylebox("tab_focus", "TabBar", style_tab_focus);
 	theme->set_stylebox("button_pressed", "TabBar", button_pressed);
 	theme->set_stylebox("button_highlight", "TabBar", button_normal);
 

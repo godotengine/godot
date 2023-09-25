@@ -518,6 +518,22 @@ public:
 		TextureSwizzle swizzle_b;
 		TextureSwizzle swizzle_a;
 
+		bool operator==(const TextureView &p_view) const {
+			if (format_override != p_view.format_override) {
+				return false;
+			} else if (swizzle_r != p_view.swizzle_r) {
+				return false;
+			} else if (swizzle_g != p_view.swizzle_g) {
+				return false;
+			} else if (swizzle_b != p_view.swizzle_b) {
+				return false;
+			} else if (swizzle_a != p_view.swizzle_a) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+
 		TextureView() {
 			format_override = DATA_FORMAT_MAX; //means, use same as format
 			swizzle_r = TEXTURE_SWIZZLE_R;
@@ -1270,6 +1286,8 @@ public:
 		LIMIT_MAX_VIEWPORT_DIMENSIONS_X,
 		LIMIT_MAX_VIEWPORT_DIMENSIONS_Y,
 		LIMIT_SUBGROUP_SIZE,
+		LIMIT_SUBGROUP_MIN_SIZE,
+		LIMIT_SUBGROUP_MAX_SIZE,
 		LIMIT_SUBGROUP_IN_SHADERS, // Set flags using SHADER_STAGE_VERTEX_BIT, SHADER_STAGE_FRAGMENT_BIT, etc.
 		LIMIT_SUBGROUP_OPERATIONS,
 		LIMIT_VRS_TEXEL_WIDTH,

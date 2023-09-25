@@ -5268,7 +5268,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	varying_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
 
 	preview_shader = memnew(Button);
-	preview_shader->set_flat(true);
+	preview_shader->set_theme_type_variation("FlatButton");
 	preview_shader->set_toggle_mode(true);
 	preview_shader->set_tooltip_text(TTR("Show generated shader code."));
 	graph->get_menu_hbox()->add_child(preview_shader);

@@ -54,10 +54,23 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_render_target_size_multiplier", "multiplier"), &OpenXRInterface::set_render_target_size_multiplier);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "render_target_size_multiplier"), "set_render_target_size_multiplier", "get_render_target_size_multiplier");
 
+	// Foveation level
+	ClassDB::bind_method(D_METHOD("is_foveation_supported"), &OpenXRInterface::is_foveation_supported);
+
+	ClassDB::bind_method(D_METHOD("get_foveation_level"), &OpenXRInterface::get_foveation_level);
+	ClassDB::bind_method(D_METHOD("set_foveation_level", "foveation_level"), &OpenXRInterface::set_foveation_level);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "foveation_level"), "set_foveation_level", "get_foveation_level");
+
+	ClassDB::bind_method(D_METHOD("get_foveation_dynamic"), &OpenXRInterface::get_foveation_dynamic);
+	ClassDB::bind_method(D_METHOD("set_foveation_dynamic", "foveation_dynamic"), &OpenXRInterface::set_foveation_dynamic);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "foveation_dynamic"), "set_foveation_dynamic", "get_foveation_dynamic");
+
+	// Action sets
 	ClassDB::bind_method(D_METHOD("is_action_set_active", "name"), &OpenXRInterface::is_action_set_active);
 	ClassDB::bind_method(D_METHOD("set_action_set_active", "name", "active"), &OpenXRInterface::set_action_set_active);
 	ClassDB::bind_method(D_METHOD("get_action_sets"), &OpenXRInterface::get_action_sets);
 
+	// Refresh rates
 	ClassDB::bind_method(D_METHOD("get_available_display_refresh_rates"), &OpenXRInterface::get_available_display_refresh_rates);
 
 	// Hand tracking.
@@ -737,6 +750,46 @@ void OpenXRInterface::set_render_target_size_multiplier(double multiplier) {
 		return;
 	} else {
 		openxr_api->set_render_target_size_multiplier(multiplier);
+	}
+}
+
+bool OpenXRInterface::is_foveation_supported() const {
+	if (openxr_api == nullptr) {
+		return false;
+	} else {
+		return openxr_api->is_foveation_supported();
+	}
+}
+
+int OpenXRInterface::get_foveation_level() const {
+	if (openxr_api == nullptr) {
+		return 0;
+	} else {
+		return openxr_api->get_foveation_level();
+	}
+}
+
+void OpenXRInterface::set_foveation_level(int p_foveation_level) {
+	if (openxr_api == nullptr) {
+		return;
+	} else {
+		openxr_api->set_foveation_level(p_foveation_level);
+	}
+}
+
+bool OpenXRInterface::get_foveation_dynamic() const {
+	if (openxr_api == nullptr) {
+		return false;
+	} else {
+		return openxr_api->get_foveation_dynamic();
+	}
+}
+
+void OpenXRInterface::set_foveation_dynamic(bool p_foveation_dynamic) {
+	if (openxr_api == nullptr) {
+		return;
+	} else {
+		openxr_api->set_foveation_dynamic(p_foveation_dynamic);
 	}
 }
 

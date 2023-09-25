@@ -66,6 +66,7 @@ class TabContainer : public Container {
 		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
+		Ref<StyleBox> tab_focus_style;
 
 		Ref<Texture2D> increment_icon;
 		Ref<Texture2D> increment_hl_icon;
@@ -119,6 +120,9 @@ public:
 	void set_tab_alignment(TabBar::AlignmentMode p_alignment);
 	TabBar::AlignmentMode get_tab_alignment() const;
 
+	void set_tab_focus_mode(FocusMode p_focus_mode);
+	FocusMode get_tab_focus_mode() const;
+
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
@@ -150,6 +154,9 @@ public:
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
 	int get_previous_tab() const;
+
+	bool select_previous_available();
+	bool select_next_available();
 
 	Control *get_tab_control(int p_idx) const;
 	Control *get_current_tab_control() const;

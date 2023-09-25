@@ -195,6 +195,7 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_style_override(SNAME("tab_hovered"), theme_cache.tab_hovered_style);
 	tab_bar->add_theme_style_override(SNAME("tab_selected"), theme_cache.tab_selected_style);
 	tab_bar->add_theme_style_override(SNAME("tab_disabled"), theme_cache.tab_disabled_style);
+	tab_bar->add_theme_style_override(SNAME("tab_focus"), theme_cache.tab_focus_style);
 
 	tab_bar->add_theme_icon_override(SNAME("increment"), theme_cache.increment_icon);
 	tab_bar->add_theme_icon_override(SNAME("increment_highlight"), theme_cache.increment_hl_icon);
@@ -605,6 +606,14 @@ int TabContainer::get_previous_tab() const {
 	return tab_bar->get_previous_tab();
 }
 
+bool TabContainer::select_previous_available() {
+	return tab_bar->select_previous_available();
+}
+
+bool TabContainer::select_next_available() {
+	return tab_bar->select_next_available();
+}
+
 Control *TabContainer::get_tab_control(int p_idx) const {
 	Vector<Control *> controls = _get_tab_controls();
 	if (p_idx >= 0 && p_idx < controls.size()) {
@@ -647,6 +656,14 @@ void TabContainer::set_tab_alignment(TabBar::AlignmentMode p_alignment) {
 
 TabBar::AlignmentMode TabContainer::get_tab_alignment() const {
 	return tab_bar->get_tab_alignment();
+}
+
+void TabContainer::set_tab_focus_mode(Control::FocusMode p_focus_mode) {
+	tab_bar->set_focus_mode(p_focus_mode);
+}
+
+Control::FocusMode TabContainer::get_tab_focus_mode() const {
+	return tab_bar->get_focus_mode();
 }
 
 void TabContainer::set_clip_tabs(bool p_clip_tabs) {
@@ -915,6 +932,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabContainer::get_current_tab);
 	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
+	ClassDB::bind_method(D_METHOD("select_previous_available"), &TabContainer::select_previous_available);
+	ClassDB::bind_method(D_METHOD("select_next_available"), &TabContainer::select_next_available);
 	ClassDB::bind_method(D_METHOD("get_current_tab_control"), &TabContainer::get_current_tab_control);
 	ClassDB::bind_method(D_METHOD("get_tab_bar"), &TabContainer::get_tab_bar);
 	ClassDB::bind_method(D_METHOD("get_tab_control", "tab_idx"), &TabContainer::get_tab_control);
@@ -948,6 +967,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabContainer::get_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("set_use_hidden_tabs_for_min_size", "enabled"), &TabContainer::set_use_hidden_tabs_for_min_size);
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
+	ClassDB::bind_method(D_METHOD("set_tab_focus_mode", "focus_mode"), &TabContainer::set_tab_focus_mode);
+	ClassDB::bind_method(D_METHOD("get_tab_focus_mode"), &TabContainer::get_tab_focus_mode);
 
 	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
@@ -965,6 +986,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_tab_focus_mode", "get_tab_focus_mode");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, side_margin);
 
@@ -982,6 +1004,7 @@ void TabContainer::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_hovered_style, "tab_hovered");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_selected_style, "tab_selected");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_disabled_style, "tab_disabled");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_focus_style, "tab_focus");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, increment_icon, "increment");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, increment_hl_icon, "increment_highlight");

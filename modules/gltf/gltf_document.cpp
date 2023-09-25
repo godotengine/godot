@@ -3877,7 +3877,6 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		} else {
 			material->set_name(vformat("material_%s", itos(i)));
 		}
-		material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		Dictionary material_extensions;
 		if (material_dict.has("extensions")) {
 			material_extensions = material_dict["extensions"];

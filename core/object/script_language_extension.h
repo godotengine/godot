@@ -110,6 +110,12 @@ public:
 	EXBIND0RC(bool, is_tool)
 	EXBIND0RC(bool, is_valid)
 
+	virtual bool is_abstract() const override {
+		bool abst;
+		return GDVIRTUAL_CALL(_is_abstract, abst) && abst;
+	}
+	GDVIRTUAL0RC(bool, _is_abstract)
+
 	EXBIND0RC(ScriptLanguage *, get_language)
 	EXBIND1RC(bool, has_script_signal, const StringName &)
 
@@ -344,7 +350,9 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_create_script, ret);
 		return Object::cast_to<Script>(ret);
 	}
+#ifndef DISABLE_DEPRECATED
 	EXBIND0RC(bool, has_named_classes)
+#endif
 	EXBIND0RC(bool, supports_builtin_mode)
 	EXBIND0RC(bool, supports_documentation)
 	EXBIND0RC(bool, can_inherit_from_file)
