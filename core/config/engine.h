@@ -44,8 +44,11 @@ public:
 	struct Singleton {
 		StringName name;
 		Object *ptr = nullptr;
-		StringName class_name; //used for binding generation hinting
+		StringName class_name; // Used for binding generation hinting.
+		// Singleton scope flags.
 		bool user_created = false;
+		bool editor_only = false;
+
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
 	};
 
@@ -129,6 +132,7 @@ public:
 	Object *get_singleton_object(const StringName &p_name) const;
 	void remove_singleton(const StringName &p_name);
 	bool is_singleton_user_created(const StringName &p_name) const;
+	bool is_singleton_editor_only(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
