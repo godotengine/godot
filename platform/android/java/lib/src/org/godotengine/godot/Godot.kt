@@ -35,6 +35,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.*
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Rect
 import android.hardware.Sensor
@@ -692,6 +693,25 @@ class Godot(private val context: Context) : SensorEventListener {
 				getActivity()?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 			}
 		}
+	}
+
+	/**
+	 * Returns true if dark mode is supported, false otherwise.
+	 */
+	@Keep
+	private fun isDarkModeSupported(): Boolean {
+		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+	}
+
+	/**
+	 * Returns true if dark mode is supported and enabled, false otherwise.
+	 */
+	@Keep
+	private fun isDarkMode(): Boolean {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			return context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		}
+		return false
 	}
 
 	fun hasClipboard(): Boolean {
