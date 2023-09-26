@@ -377,7 +377,7 @@ public:
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!mesh, nullptr);
+		ERR_FAIL_NULL_V(mesh, nullptr);
 		r_surface_count = mesh->surface_count;
 		if (r_surface_count == 0) {
 			return nullptr;
@@ -394,7 +394,7 @@ public:
 
 	_FORCE_INLINE_ void *mesh_get_surface(RID p_mesh, uint32_t p_surface_index) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!mesh, nullptr);
+		ERR_FAIL_NULL_V(mesh, nullptr);
 		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
 
 		return mesh->surfaces[p_surface_index];
@@ -402,7 +402,7 @@ public:
 
 	_FORCE_INLINE_ RID mesh_get_shadow_mesh(RID p_mesh) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!mesh, RID());
+		ERR_FAIL_NULL_V(mesh, RID());
 
 		return mesh->shadow_mesh;
 	}
@@ -486,7 +486,7 @@ public:
 
 	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
-		ERR_FAIL_COND(!mi);
+		ERR_FAIL_NULL(mi);
 		Mesh *mesh = mi->mesh;
 		ERR_FAIL_UNSIGNED_INDEX(p_surface_index, mesh->surface_count);
 
@@ -719,7 +719,7 @@ public:
 
 	_FORCE_INLINE_ RID skeleton_get_3d_uniform_set(RID p_skeleton, RID p_shader, uint32_t p_set) const {
 		Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
-		ERR_FAIL_COND_V(!skeleton, RID());
+		ERR_FAIL_NULL_V(skeleton, RID());
 		if (skeleton->size == 0) {
 			return RID();
 		}

@@ -52,14 +52,14 @@ void MeshStorage::mesh_initialize(RID p_rid) {
 
 void MeshStorage::mesh_free(RID p_rid) {
 	DummyMesh *mesh = mesh_owner.get_or_null(p_rid);
-	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_NULL(mesh);
 
 	mesh_owner.free(p_rid);
 }
 
 void MeshStorage::mesh_clear(RID p_mesh) {
 	DummyMesh *m = mesh_owner.get_or_null(p_mesh);
-	ERR_FAIL_COND(!m);
+	ERR_FAIL_NULL(m);
 
 	m->surfaces.clear();
 }

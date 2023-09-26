@@ -396,7 +396,7 @@ void ServersDebugger::deinitialize() {
 }
 
 Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
-	ERR_FAIL_COND_V(!singleton, ERR_BUG);
+	ERR_FAIL_NULL_V(singleton, ERR_BUG);
 	r_captured = true;
 	if (p_cmd == "memory") {
 		singleton->_send_resource_usage();
