@@ -116,22 +116,6 @@ const SceneRPCInterface::RPCConfigCache &SceneRPCInterface::_get_node_config(con
 	return rpc_cache[oid];
 }
 
-_FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, int p_remote_id) {
-	switch (mode) {
-		case MultiplayerAPI::RPC_MODE_DISABLED: {
-			return false;
-		} break;
-		case MultiplayerAPI::RPC_MODE_ANY_PEER: {
-			return true;
-		} break;
-		case MultiplayerAPI::RPC_MODE_AUTHORITY: {
-			return !p_node->is_multiplayer_authority() && p_remote_id == p_node->get_multiplayer_authority();
-		} break;
-	}
-
-	return false;
-}
-
 String SceneRPCInterface::get_rpc_md5(const Object *p_obj) {
 	const Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_NULL_V(node, "");
@@ -252,7 +236,19 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 	ERR_FAIL_COND(!cache_config.configs.has(p_rpc_method_id));
 	const RPCConfig &config = cache_config.configs[p_rpc_method_id];
 
-	bool can_call = _can_call_mode(p_node, config.rpc_mode, p_from);
+	bool can_call = false;
+	switch (config.rpc_mode) {
+		case MultiplayerAPI::RPC_MODE_DISABLED: {
+			can_call = false;
+		} break;
+		case MultiplayerAPI::RPC_MODE_ANY_PEER: {
+			can_call = true;
+		} break;
+		case MultiplayerAPI::RPC_MODE_AUTHORITY: {
+			can_call = p_from == p_node->get_multiplayer_authority();
+		} break;
+	}
+
 	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
 
 	int argc = 0;

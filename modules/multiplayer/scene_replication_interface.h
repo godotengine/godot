@@ -95,6 +95,7 @@ private:
 	void _untrack(const ObjectID &p_id);
 	void _node_ready(const ObjectID &p_oid);
 
+	bool _has_authority(const Node *p_node);
 	bool _verify_synchronizer(int p_peer, MultiplayerSynchronizer *p_sync, uint32_t &r_net_id);
 	MultiplayerSynchronizer *_find_synchronizer(int p_peer, uint32_t p_net_ida);
 
