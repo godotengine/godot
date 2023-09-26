@@ -83,13 +83,6 @@ partial class RenderingDevice
 
 partial class RichTextLabel
 {
-    /// <inheritdoc cref="AddImage(Texture2D, int, int, Nullable{Color}, InlineAlignment, Nullable{Rect2}, Variant, bool, string, bool)"/>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public void AddImage(Texture2D image, int width, int height, Nullable<Color> color, InlineAlignment inlineAlign, Nullable<Rect2> region)
-    {
-        AddImage(image, width, height, color, inlineAlign, region, key: default, pad: false, tooltip: "", sizeInPercent: false);
-    }
-
     /// <inheritdoc cref="PushList(int, ListType, bool, string)"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public void PushList(int level, ListType type, bool capitalize)
