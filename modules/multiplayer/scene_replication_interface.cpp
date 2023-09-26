@@ -441,7 +441,7 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 		for (int pid : to_spawn) {
 			ERR_CONTINUE(!peers_info.has(pid));
 			int path_id;
-			multiplayer->get_path_cache()->send_object_cache(spawner, pid, path_id);
+			multiplayer_cache->send_object_cache(spawner, pid, path_id);
 			_send_raw(packet_cache.ptr(), len, pid, true);
 			peers_info[pid].spawn_nodes.insert(p_oid);
 		}
@@ -519,7 +519,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	}
 
 	// Encode scene ID, path ID, net ID, node name.
-	int path_id = multiplayer->get_path_cache()->make_object_cache(p_spawner);
+	int path_id = multiplayer_cache->make_object_cache(p_spawner);
 	CharString cname = p_node->get_name().operator String().utf8();
 	int nlen = encode_cstring(cname.get_data(), nullptr);
 	MAKE_ROOM(1 + 1 + 4 + 4 + 4 + 4 * sync_ids.size() + 4 + nlen + (is_custom ? 4 + spawn_arg_size : 0) + state_size);
@@ -573,7 +573,7 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	ofs += 1;
 	uint32_t node_target = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
-	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer->get_path_cache()->get_cached_object(p_from, node_target));
+	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer_cache->get_cached_object(p_from, node_target));
 	ERR_FAIL_NULL_V(spawner, ERR_DOES_NOT_EXIST);
 	ERR_FAIL_COND_V(p_from != spawner->get_multiplayer_authority(), ERR_UNAUTHORIZED);
 
@@ -684,7 +684,7 @@ bool SceneReplicationInterface::_verify_synchronizer(int p_peer, MultiplayerSync
 	r_net_id = p_sync->get_net_id();
 	if (r_net_id == 0 || (r_net_id & 0x80000000)) {
 		int path_id = 0;
-		bool verified = multiplayer->get_path_cache()->send_object_cache(p_sync, p_peer, path_id);
+		bool verified = multiplayer_cache->send_object_cache(p_sync, p_peer, path_id);
 		ERR_FAIL_COND_V_MSG(path_id < 0, false, "This should never happen!");
 		if (r_net_id == 0) {
 			// First time path based ID.
@@ -699,7 +699,7 @@ bool SceneReplicationInterface::_verify_synchronizer(int p_peer, MultiplayerSync
 MultiplayerSynchronizer *SceneReplicationInterface::_find_synchronizer(int p_peer, uint32_t p_net_id) {
 	MultiplayerSynchronizer *sync = nullptr;
 	if (p_net_id & 0x80000000) {
-		sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_path_cache()->get_cached_object(p_peer, p_net_id & 0x7FFFFFFF));
+		sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer_cache->get_cached_object(p_peer, p_net_id & 0x7FFFFFFF));
 	} else if (peers_info[p_peer].recv_sync_ids.has(p_net_id)) {
 		const ObjectID &sid = peers_info[p_peer].recv_sync_ids[p_net_id];
 		sync = get_id_as<MultiplayerSynchronizer>(sid);

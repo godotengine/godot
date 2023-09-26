@@ -151,7 +151,7 @@ Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, 
 		return node;
 	} else {
 		// Use cached path.
-		return Object::cast_to<Node>(multiplayer->get_path_cache()->get_cached_object(p_from, p_node_target));
+		return Object::cast_to<Node>(multiplayer_cache->get_cached_object(p_from, p_node_target));
 	}
 }
 
@@ -309,25 +309,24 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 
 	// See if all peers have cached path (if so, call can be fast) while building the RPC target list.
 	HashSet<int> targets;
-	Ref<SceneCacheInterface> cache = multiplayer->get_path_cache();
 	int psc_id = -1;
 	bool has_all_peers = true;
 	const ObjectID oid = p_node->get_instance_id();
 	if (p_to > 0) {
-		ERR_FAIL_COND_MSG(!multiplayer->get_replicator()->is_rpc_visible(oid, p_to), "Attempt to call an RPC to a peer that cannot see this node. Peer ID: " + itos(p_to));
+		ERR_FAIL_COND_MSG(!multiplayer_replicator->is_rpc_visible(oid, p_to), "Attempt to call an RPC to a peer that cannot see this node. Peer ID: " + itos(p_to));
 		targets.insert(p_to);
-		has_all_peers = cache->send_object_cache(p_node, p_to, psc_id);
+		has_all_peers = multiplayer_cache->send_object_cache(p_node, p_to, psc_id);
 	} else {
-		bool restricted = !multiplayer->get_replicator()->is_rpc_visible(oid, 0);
+		bool restricted = !multiplayer_replicator->is_rpc_visible(oid, 0);
 		for (const int &P : multiplayer->get_connected_peers()) {
 			if (p_to < 0 && P == -p_to) {
 				continue; // Excluded peer.
 			}
-			if (restricted && !multiplayer->get_replicator()->is_rpc_visible(oid, P)) {
+			if (restricted && !multiplayer_replicator->is_rpc_visible(oid, P)) {
 				continue; // Not visible to this peer.
 			}
 			targets.insert(P);
-			bool has_peer = cache->send_object_cache(p_node, P, psc_id);
+			bool has_peer = multiplayer_cache->send_object_cache(p_node, P, psc_id);
 			has_all_peers = has_all_peers && has_peer;
 		}
 	}
@@ -446,7 +445,7 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 
 		// Not all verified path, so check which needs the longer packet.
 		for (const int P : targets) {
-			bool confirmed = multiplayer->get_path_cache()->is_cache_confirmed(p_node, P);
+			bool confirmed = multiplayer_cache->is_cache_confirmed(p_node, P);
 			if (confirmed) {
 				// This one confirmed path, so use id.
 				encode_uint32(psc_id, &(packet_cache.write[1]));
