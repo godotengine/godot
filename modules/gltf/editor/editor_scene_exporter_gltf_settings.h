@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_scene_exporter_gltf_plugin.h                                   */
+/*  editor_scene_exporter_gltf_settings.h                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,35 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
-#define EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
+#ifndef EDITOR_SCENE_EXPORTER_GLTF_SETTINGS_H
+#define EDITOR_SCENE_EXPORTER_GLTF_SETTINGS_H
 
 #ifdef TOOLS_ENABLED
 
 #include "../gltf_document.h"
-#include "editor_scene_exporter_gltf_settings.h"
 
-#include "editor/editor_plugin.h"
+class EditorSceneExporterGLTFSettings : public RefCounted {
+	GDCLASS(EditorSceneExporterGLTFSettings, RefCounted);
+	List<PropertyInfo> _property_list;
+	Ref<GLTFDocument> _document;
+	HashMap<String, Ref<GLTFDocumentExtension>> _config_name_to_extension_map;
 
-class EditorFileDialog;
-class EditorInspector;
+	String _copyright;
 
-class SceneExporterGLTFPlugin : public EditorPlugin {
-	GDCLASS(SceneExporterGLTFPlugin, EditorPlugin);
+protected:
+	static void _bind_methods();
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	Ref<GLTFDocument> _gltf_document;
-	Ref<EditorSceneExporterGLTFSettings> _export_settings;
-	EditorInspector *_settings_inspector = nullptr;
-	EditorFileDialog *_file_dialog = nullptr;
-	void _popup_gltf_export_dialog();
-	void _export_scene_as_gltf(const String &p_file_path);
+	bool _set_extension_setting(const String &p_name_str, const Variant &p_value);
+	bool _get_extension_setting(const String &p_name_str, Variant &r_ret) const;
 
 public:
-	virtual String get_name() const override;
-	bool has_main_screen() const override;
-	SceneExporterGLTFPlugin();
+	void generate_property_list(Ref<GLTFDocument> p_document);
+
+	String get_copyright() const;
+	void set_copyright(const String &p_copyright);
 };
 
 #endif // TOOLS_ENABLED
 
-#endif // EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
+#endif // EDITOR_SCENE_EXPORTER_GLTF_SETTINGS_H
