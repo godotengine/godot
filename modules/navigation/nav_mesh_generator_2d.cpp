@@ -92,7 +92,7 @@ void NavMeshGenerator2D::sync() {
 			finished_task_ids.push_back(E.key);
 
 			NavMeshGeneratorTask2D *generator_task = E.value;
-			DEV_ASSERT(generator_task->status = NavMeshGeneratorTask2D::TaskStatus::BAKING_FINISHED);
+			DEV_ASSERT(generator_task->status == NavMeshGeneratorTask2D::TaskStatus::BAKING_FINISHED);
 
 			baking_navmeshes.erase(generator_task->navigation_mesh);
 			if (generator_task->callback.is_valid()) {
