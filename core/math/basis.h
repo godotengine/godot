@@ -138,6 +138,7 @@ struct _NO_DISCARD_ Basis {
 	_FORCE_INLINE_ Basis operator*(const real_t p_val) const;
 
 	bool is_orthogonal() const;
+	bool is_conformal() const;
 	bool is_diagonal() const;
 	bool is_rotation() const;
 
