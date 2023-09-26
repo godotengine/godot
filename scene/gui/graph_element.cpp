@@ -233,13 +233,15 @@ void GraphElement::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selectable"), "set_selectable", "is_selectable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
 
-	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 	ADD_SIGNAL(MethodInfo("node_selected"));
 	ADD_SIGNAL(MethodInfo("node_deselected"));
-	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
+
 	ADD_SIGNAL(MethodInfo("raise_request"));
-	ADD_SIGNAL(MethodInfo("close_request"));
+	ADD_SIGNAL(MethodInfo("delete_request"));
 	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
+
+	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
+	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphElement, resizer);
 }

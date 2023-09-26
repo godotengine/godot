@@ -27,9 +27,9 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="close_request">
+		<signal name="delete_request">
 			<description>
-				Emitted when closing the GraphElement is requested.
+				Emitted when removing the GraphElement is requested.
 			</description>
 		</signal>
 		<signal name="dragged">
