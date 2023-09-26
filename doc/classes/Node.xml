@@ -851,6 +851,7 @@
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. See [method SceneTree.get_multiplayer].
+			[b]Note:[/b] Renaming the node, or moving it in the tree, will not move the [MultiplayerAPI] to the new path, you will have to update this manually.
 		</member>
 		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.

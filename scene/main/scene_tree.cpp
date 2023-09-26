@@ -1483,15 +1483,18 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 
 Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
-	Ref<MultiplayerAPI> out = multiplayer;
+	if (p_for_path.is_empty()) {
+		return multiplayer;
+	}
+
+	const Vector<StringName> tnames = p_for_path.get_names();
+	const StringName *nptr = tnames.ptr();
 	for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
 		const Vector<StringName> snames = E.key.get_names();
-		const Vector<StringName> tnames = p_for_path.get_names();
 		if (tnames.size() < snames.size()) {
 			continue;
 		}
 		const StringName *sptr = snames.ptr();
-		const StringName *nptr = tnames.ptr();
 		bool valid = true;
 		for (int i = 0; i < snames.size(); i++) {
 			if (sptr[i] != nptr[i]) {
@@ -1500,11 +1503,11 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const
 			}
 		}
 		if (valid) {
-			out = E.value;
-			break;
+			return E.value;
 		}
 	}
-	return out;
+
+	return multiplayer;
 }
 
 void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path) {
@@ -1519,10 +1522,30 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 	} else {
 		if (custom_multiplayers.has(p_root_path)) {
 			custom_multiplayers[p_root_path]->object_configuration_remove(nullptr, p_root_path);
+		} else if (p_multiplayer.is_valid()) {
+			const Vector<StringName> tnames = p_root_path.get_names();
+			const StringName *nptr = tnames.ptr();
+			for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
+				const Vector<StringName> snames = E.key.get_names();
+				if (tnames.size() < snames.size()) {
+					continue;
+				}
+				const StringName *sptr = snames.ptr();
+				bool valid = true;
+				for (int i = 0; i < snames.size(); i++) {
+					if (sptr[i] != nptr[i]) {
+						valid = false;
+						break;
+					}
+				}
+				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + p_root_path + "' in '" + E.key + "'.");
+			}
 		}
 		if (p_multiplayer.is_valid()) {
 			custom_multiplayers[p_root_path] = p_multiplayer;
 			p_multiplayer->object_configuration_add(nullptr, p_root_path);
+		} else {
+			custom_multiplayers.erase(p_root_path);
 		}
 	}
 }

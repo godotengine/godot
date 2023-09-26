@@ -641,7 +641,7 @@ public:
 	const GDExtensionScriptInstanceInfo2 *native_info;
 	bool free_native_info = false;
 	struct {
-		GDExtensionClassNotification notification_func;
+		GDExtensionScriptInstanceNotification notification_func = nullptr;
 	} deprecated_native_info;
 
 	GDExtensionScriptInstanceDataPtr instance = nullptr;

@@ -1917,6 +1917,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("outline_size", "LinkButton", 0);
 
+	theme->set_type_variation("HeaderSmallLink", "LinkButton");
+	theme->set_font("font", "HeaderSmallLink", theme->get_font(SNAME("font"), SNAME("HeaderSmall")));
+	theme->set_font_size("font_size", "HeaderSmallLink", theme->get_font_size(SNAME("font_size"), SNAME("HeaderSmall")));
+
 	// TooltipPanel + TooltipLabel
 	// TooltipPanel is also used for custom tooltips, while TooltipLabel
 	// is only relevant for default tooltips.

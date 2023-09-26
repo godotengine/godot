@@ -70,6 +70,7 @@
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_2d_dummy.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/navigation_server_3d_dummy.h"
 #include "servers/physics_server_2d.h"
@@ -339,8 +340,14 @@ void initialize_navigation_server() {
 	navigation_server_3d->init();
 
 	// Init 2D Navigation Server
-	navigation_server_2d = memnew(NavigationServer2D);
+	navigation_server_2d = NavigationServer2DManager::new_default_server();
+	if (!navigation_server_2d) {
+		WARN_PRINT_ONCE("No NavigationServer2D implementation has been registered! Falling back to a dummy implementation: navigation features will be unavailable.");
+		navigation_server_2d = memnew(NavigationServer2DDummy);
+	}
+
 	ERR_FAIL_NULL_MSG(navigation_server_2d, "Failed to initialize NavigationServer2D.");
+	navigation_server_2d->init();
 }
 
 void finalize_navigation_server() {
@@ -350,6 +357,7 @@ void finalize_navigation_server() {
 	navigation_server_3d = nullptr;
 
 	ERR_FAIL_NULL(navigation_server_2d);
+	navigation_server_2d->finish();
 	memdelete(navigation_server_2d);
 	navigation_server_2d = nullptr;
 }
@@ -1018,13 +1026,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 		} else if (I->get() == "-f" || I->get() == "--fullscreen") { // force fullscreen
-
 			init_fullscreen = true;
+			window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
 		} else if (I->get() == "-m" || I->get() == "--maximized") { // force maximized window
-
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
-
 		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
 
 			init_windowed = true;
@@ -1605,6 +1611,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
+		Engine::get_singleton()->set_extension_reloading_enabled(true);
 	}
 #endif
 
@@ -1636,7 +1643,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor) {
 		packed_data->set_disabled(true);
 		main_args.push_back("--editor");
-		if (!init_windowed) {
+		if (!init_windowed && !init_fullscreen) {
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 		}
@@ -3489,6 +3496,9 @@ bool Main::iteration() {
 
 	// process all our active interfaces
 	XRServer::get_singleton()->_process();
+
+	NavigationServer2D::get_singleton()->sync();
+	NavigationServer3D::get_singleton()->sync();
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {

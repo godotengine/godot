@@ -203,7 +203,7 @@ def configure(env: "Environment"):
 
     # Get version info for checks below.
     cc_version = get_compiler_version(env)
-    cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
+    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
 
     if env["lto"] != "none":
         # Workaround https://github.com/emscripten-core/emscripten/issues/19781.

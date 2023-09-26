@@ -152,6 +152,12 @@
 				Perform an indent as if the user activated the "ui_text_indent" action.
 			</description>
 		</method>
+		<method name="duplicate_lines">
+			<return type="void" />
+			<description>
+				Duplicates all lines currently selected with any caret. Duplicates the entire line beneath the current one no matter where the caret is within the line.
+			</description>
+		</method>
 		<method name="fold_all_lines">
 			<return type="void" />
 			<description>

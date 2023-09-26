@@ -43,6 +43,7 @@ class NavigationPolygon : public Resource {
 	};
 	Vector<Polygon> polygons;
 	Vector<Vector<Vector2>> outlines;
+	Vector<Vector<Vector2>> baked_outlines;
 
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty = true;
@@ -55,6 +56,7 @@ class NavigationPolygon : public Resource {
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	void _set_polygons(const TypedArray<Vector<int32_t>> &p_array);
 	TypedArray<Vector<int32_t>> _get_polygons() const;
@@ -67,6 +69,28 @@ public:
 	Rect2 _edit_get_rect() const;
 	bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 #endif
+
+	enum ParsedGeometryType {
+		PARSED_GEOMETRY_MESH_INSTANCES = 0,
+		PARSED_GEOMETRY_STATIC_COLLIDERS,
+		PARSED_GEOMETRY_BOTH,
+		PARSED_GEOMETRY_MAX
+	};
+
+	enum SourceGeometryMode {
+		SOURCE_GEOMETRY_ROOT_NODE_CHILDREN = 0,
+		SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN,
+		SOURCE_GEOMETRY_GROUPS_EXPLICIT,
+		SOURCE_GEOMETRY_MAX
+	};
+
+	real_t agent_radius = 10.0f;
+
+	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_BOTH;
+	uint32_t parsed_collision_mask = 0xFFFFFFFF;
+
+	SourceGeometryMode source_geometry_mode = SOURCE_GEOMETRY_ROOT_NODE_CHILDREN;
+	StringName source_geometry_group_name = "navigation_polygon_source_group";
 
 	void set_vertices(const Vector<Vector2> &p_vertices);
 	Vector<Vector2> get_vertices() const;
@@ -82,10 +106,32 @@ public:
 	int get_outline_count() const;
 
 	void clear_outlines();
+#ifndef DISABLE_DEPRECATED
 	void make_polygons_from_outlines();
+#endif // DISABLE_DEPRECATED
 
+	void set_polygons(const Vector<Vector<int>> &p_polygons);
+	const Vector<Vector<int>> &get_polygons() const;
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
+
+	void set_parsed_geometry_type(ParsedGeometryType p_geometry_type);
+	ParsedGeometryType get_parsed_geometry_type() const;
+
+	void set_parsed_collision_mask(uint32_t p_mask);
+	uint32_t get_parsed_collision_mask() const;
+
+	void set_parsed_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_parsed_collision_mask_value(int p_layer_number) const;
+
+	void set_source_geometry_mode(SourceGeometryMode p_geometry_mode);
+	SourceGeometryMode get_source_geometry_mode() const;
+
+	void set_source_geometry_group_name(StringName p_group_name);
+	StringName get_source_geometry_group_name() const;
+
+	void set_agent_radius(real_t p_value);
+	real_t get_agent_radius() const;
 
 	Ref<NavigationMesh> get_navigation_mesh();
 
@@ -94,8 +140,11 @@ public:
 
 	void clear();
 
-	NavigationPolygon() {}
+	NavigationPolygon();
 	~NavigationPolygon() {}
 };
+
+VARIANT_ENUM_CAST(NavigationPolygon::ParsedGeometryType);
+VARIANT_ENUM_CAST(NavigationPolygon::SourceGeometryMode);
 
 #endif // NAVIGATION_POLYGON_H

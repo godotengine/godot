@@ -30,12 +30,11 @@
 
 #include "register_types.h"
 
-#include "glslang_resource_limits.h"
-
 #include "core/config/engine.h"
 #include "servers/rendering/rendering_device.h"
 
 #include <glslang/Include/Types.h>
+#include <glslang/Public/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
 
@@ -133,7 +132,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	const int DefaultVersion = 100;
 
 	//parse
-	if (!shader.parse(&DefaultTBuiltInResource, DefaultVersion, false, messages)) {
+	if (!shader.parse(GetDefaultResources(), DefaultVersion, false, messages)) {
 		if (r_error) {
 			(*r_error) = "Failed parse:\n";
 			(*r_error) += shader.getInfoLog();
