@@ -1030,9 +1030,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	}
 
 	Ref<StyleBoxFlat> style_flat_button_pressed = style_widget_pressed->duplicate();
-	Color flat_pressed_color = dark_color_1.lerp(accent_color, 0.2) * Color(0.8, 0.8, 0.8, 0.85);
+	Color flat_pressed_color = dark_color_1.lightened(0.24).lerp(accent_color, 0.2) * Color(0.8, 0.8, 0.8, 0.85);
 	if (dark_theme) {
-		flat_pressed_color = dark_color_1.lerp(accent_color, 0.2) * Color(0.6, 0.6, 0.6, 0.85);
+		flat_pressed_color = dark_color_1.lerp(accent_color, 0.12) * Color(0.6, 0.6, 0.6, 0.85);
 	}
 	style_flat_button_pressed->set_bg_color(flat_pressed_color);
 
@@ -1074,7 +1074,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_normal_color", "EditorLogFilterButton", icon_disabled_color);
 	// When pressed, add a small bottom border to the buttons to better show their active state,
 	// similar to active tabs.
-	Ref<StyleBoxFlat> editor_log_button_pressed = style_widget_pressed->duplicate();
+
+	Ref<StyleBoxFlat> editor_log_button_pressed = style_flat_button_pressed->duplicate();
 	editor_log_button_pressed->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
 	editor_log_button_pressed->set_border_color(accent_color);
 	theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
