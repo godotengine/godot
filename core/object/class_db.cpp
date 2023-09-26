@@ -349,7 +349,13 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 	}
 #endif
 	if (ti->gdextension && ti->gdextension->create_instance) {
-		return (Object *)ti->gdextension->create_instance(ti->gdextension->class_userdata);
+		Object *obj = (Object *)ti->gdextension->create_instance(ti->gdextension->class_userdata);
+#ifdef TOOLS_ENABLED
+		if (ti->gdextension->track_instance) {
+			ti->gdextension->track_instance(ti->gdextension->tracking_userdata, obj);
+		}
+#endif
+		return obj;
 	} else {
 		return ti->creation_func();
 	}
@@ -1555,6 +1561,14 @@ bool ClassDB::is_class_exposed(const StringName &p_class) {
 	return ti->exposed;
 }
 
+bool ClassDB::is_class_reloadable(const StringName &p_class) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(ti, false, "Cannot get class '" + String(p_class) + "'.");
+	return ti->reloadable;
+}
+
 void ClassDB::add_resource_base_extension(const StringName &p_extension, const StringName &p_class) {
 	if (resource_base_extensions.has(p_extension)) {
 		return;
@@ -1693,15 +1707,18 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 			parent = classes.getptr(parent->name);
 		}
 	}
+	c.reloadable = p_extension->reloadable;
 
 	classes[p_extension->class_name] = c;
 }
 
-void ClassDB::unregister_extension_class(const StringName &p_class) {
+void ClassDB::unregister_extension_class(const StringName &p_class, bool p_free_method_binds) {
 	ClassInfo *c = classes.getptr(p_class);
 	ERR_FAIL_NULL_MSG(c, "Class '" + String(p_class) + "' does not exist.");
-	for (KeyValue<StringName, MethodBind *> &F : c->method_map) {
-		memdelete(F.value);
+	if (p_free_method_binds) {
+		for (KeyValue<StringName, MethodBind *> &F : c->method_map) {
+			memdelete(F.value);
+		}
 	}
 	classes.erase(p_class);
 }

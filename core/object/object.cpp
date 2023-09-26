@@ -31,6 +31,7 @@
 #include "object.h"
 
 #include "core/core_string_names.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
@@ -1794,14 +1795,17 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 }
 
 void Object::set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
-	// This is only meant to be used on creation by the binder.
-	ERR_FAIL_COND(_instance_bindings != nullptr);
-	_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
+	// This is only meant to be used on creation by the binder, but we also
+	// need to account for reloading (where the 'binding' will be cleared).
+	ERR_FAIL_COND(_instance_bindings != nullptr && _instance_bindings[0].binding != nullptr);
+	if (_instance_bindings == nullptr) {
+		_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
+		_instance_binding_count = 1;
+	}
 	_instance_bindings[0].binding = p_binding;
 	_instance_bindings[0].free_callback = p_callbacks->free_callback;
 	_instance_bindings[0].reference_callback = p_callbacks->reference_callback;
 	_instance_bindings[0].token = p_token;
-	_instance_binding_count = 1;
 }
 
 void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
@@ -1828,6 +1832,12 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 		binding = p_callbacks->create_callback(p_token, this);
 		_instance_bindings[_instance_binding_count].binding = binding;
 
+#ifdef TOOLS_ENABLED
+		if (!_extension && Engine::get_singleton()->is_extension_reloading_enabled()) {
+			GDExtensionManager::get_singleton()->track_instance_binding(p_token, this);
+		}
+#endif
+
 		_instance_binding_count++;
 	}
 
@@ -1850,6 +1860,71 @@ bool Object::has_instance_binding(void *p_token) {
 
 	return found;
 }
+
+#ifdef TOOLS_ENABLED
+void Object::free_instance_binding(void *p_token) {
+	bool found = false;
+	_instance_binding_mutex.lock();
+	for (uint32_t i = 0; i < _instance_binding_count; i++) {
+		if (!found && _instance_bindings[i].token == p_token) {
+			if (_instance_bindings[i].free_callback) {
+				_instance_bindings[i].free_callback(_instance_bindings[i].token, this, _instance_bindings[i].binding);
+			}
+			found = true;
+		}
+		if (found) {
+			if (i + 1 < _instance_binding_count) {
+				_instance_bindings[i] = _instance_bindings[i + 1];
+			} else {
+				_instance_bindings[i] = { nullptr };
+			}
+		}
+	}
+	if (found) {
+		_instance_binding_count--;
+	}
+	_instance_binding_mutex.unlock();
+}
+
+void Object::clear_internal_extension() {
+	ERR_FAIL_NULL(_extension);
+
+	// Free the instance inside the GDExtension.
+	if (_extension->free_instance) {
+		_extension->free_instance(_extension->class_userdata, _extension_instance);
+	}
+	_extension = nullptr;
+	_extension_instance = nullptr;
+
+	// Clear the instance bindings.
+	_instance_binding_mutex.lock();
+	if (_instance_bindings[0].free_callback) {
+		_instance_bindings[0].free_callback(_instance_bindings[0].token, this, _instance_bindings[0].binding);
+	}
+	_instance_bindings[0].binding = nullptr;
+	_instance_bindings[0].token = nullptr;
+	_instance_bindings[0].free_callback = nullptr;
+	_instance_bindings[0].reference_callback = nullptr;
+	_instance_binding_mutex.unlock();
+
+	// Clear the virtual methods.
+	while (virtual_method_list) {
+		(*virtual_method_list->method) = nullptr;
+		(*virtual_method_list->initialized) = false;
+		virtual_method_list = virtual_method_list->next;
+	}
+}
+
+void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
+	ERR_FAIL_COND(_extension != nullptr);
+
+	if (p_extension) {
+		_extension_instance = p_extension->recreate_instance ? p_extension->recreate_instance(p_extension->class_userdata, (GDExtensionObjectPtr)this) : nullptr;
+		ERR_FAIL_NULL_MSG(_extension_instance, "Unable to recreate GDExtension instance - does this extension support hot reloading?");
+		_extension = p_extension;
+	}
+}
+#endif
 
 void Object::_construct_object(bool p_reference) {
 	type_is_reference = p_reference;
@@ -1881,11 +1956,25 @@ Object::~Object() {
 	}
 	script_instance = nullptr;
 
-	if (_extension && _extension->free_instance) {
-		_extension->free_instance(_extension->class_userdata, _extension_instance);
+	if (_extension) {
+#ifdef TOOLS_ENABLED
+		if (_extension->untrack_instance) {
+			_extension->untrack_instance(_extension->tracking_userdata, this);
+		}
+#endif
+		if (_extension->free_instance) {
+			_extension->free_instance(_extension->class_userdata, _extension_instance);
+		}
 		_extension = nullptr;
 		_extension_instance = nullptr;
 	}
+#ifdef TOOLS_ENABLED
+	else if (_instance_bindings != nullptr && Engine::get_singleton()->is_extension_reloading_enabled()) {
+		for (uint32_t i = 0; i < _instance_binding_count; i++) {
+			GDExtensionManager::get_singleton()->untrack_instance_binding(_instance_bindings[i].token, this);
+		}
+	}
+#endif
 
 	if (_emitting) {
 		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before

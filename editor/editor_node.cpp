@@ -31,6 +31,7 @@
 #include "editor_node.h"
 
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
@@ -435,6 +436,11 @@ void EditorNode::_update_from_settings() {
 #endif // DEBUG_ENABLED
 }
 
+void EditorNode::_gdextensions_reloaded() {
+	// In case the developer is inspecting an object that will be changed by the reload.
+	InspectorDock::get_inspector_singleton()->update_tree();
+}
+
 void EditorNode::_select_default_main_screen_plugin() {
 	if (EDITOR_3D < main_editor_buttons.size() && main_editor_buttons[EDITOR_3D]->is_visible()) {
 		// If the 3D editor is enabled, use this as the default.
@@ -714,6 +720,9 @@ void EditorNode::_notification(int p_what) {
 
 			EditorFileSystem::get_singleton()->scan_changes();
 			_scan_external_changes();
+
+			GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
+			callable_mp(gdextension_manager, &GDExtensionManager::reload_extensions).call_deferred();
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
@@ -3269,7 +3278,7 @@ void EditorNode::remove_extension_editor_plugin(const StringName &p_class_name) 
 
 	EditorPlugin *plugin = singleton->editor_data.get_extension_editor_plugin(p_class_name);
 	remove_editor_plugin(plugin);
-	memfree(plugin);
+	memdelete(plugin);
 	singleton->editor_data.remove_extension_editor_plugin(p_class_name);
 }
 
@@ -6710,6 +6719,7 @@ EditorNode::EditorNode() {
 	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
+	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// Load settings.

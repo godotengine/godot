@@ -1605,6 +1605,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
+		Engine::get_singleton()->set_extension_reloading_enabled(true);
 	}
 #endif
 
