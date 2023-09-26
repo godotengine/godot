@@ -443,15 +443,14 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 		// Not all verified path, so send one by one.
 
 		// Append path at the end, since we will need it for some packets.
-		NodePath from_path = multiplayer->get_root_path().rel_path_to(p_node->get_path());
-		CharString pname = String(from_path).utf8();
+		CharString pname = String(multiplayer->get_root_path().rel_path_to(p_node->get_path())).utf8();
 		int path_len = encode_cstring(pname.get_data(), nullptr);
 		MAKE_ROOM(ofs + path_len);
 		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
 
 		// Not all verified path, so check which needs the longer packet.
 		for (const int P : targets) {
-			bool confirmed = multiplayer->get_path_cache()->is_cache_confirmed(from_path, P);
+			bool confirmed = multiplayer->get_path_cache()->is_cache_confirmed(p_node, P);
 			if (confirmed) {
 				// This one confirmed path, so use id.
 				encode_uint32(psc_id, &(packet_cache.write[1]));
