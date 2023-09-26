@@ -16,6 +16,13 @@
 		<link title="Using NavigationRegions">$DOCS_URL/tutorials/navigation/navigation_using_navigationregions.html</link>
 	</tutorials>
 	<methods>
+		<method name="bake_navigation_polygon">
+			<return type="void" />
+			<param index="0" name="on_thread" type="bool" default="true" />
+			<description>
+				Bakes the [NavigationPolygon]. If [param on_thread] is set to [code]true[/code] (default), the baking is done on a separate thread.
+			</description>
+		</method>
 		<method name="get_avoidance_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -93,4 +100,16 @@
 			If enabled the navigation region will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 		</member>
 	</members>
+	<signals>
+		<signal name="bake_finished">
+			<description>
+				Emitted when a navigation polygon bake operation is completed.
+			</description>
+		</signal>
+		<signal name="navigation_polygon_changed">
+			<description>
+				Emitted when the used navigation polygon is replaced or changes to the internals of the current navigation polygon are committed.
+			</description>
+		</signal>
+	</signals>
 </class>

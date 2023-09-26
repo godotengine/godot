@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationMeshSourceGeometryData2D" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Container for parsed source geometry data used in navigation mesh baking.
+	</brief_description>
+	<description>
+		Container for parsed source geometry data used in navigation mesh baking.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_obstruction_outline">
+			<return type="void" />
+			<param index="0" name="shape_outline" type="PackedVector2Array" />
+			<description>
+				Adds the outline points of a shape as obstructed area.
+			</description>
+		</method>
+		<method name="add_traversable_outline">
+			<return type="void" />
+			<param index="0" name="shape_outline" type="PackedVector2Array" />
+			<description>
+				Adds the outline points of a shape as traversable area.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the internal data.
+			</description>
+		</method>
+		<method name="get_obstruction_outlines" qualifiers="const">
+			<return type="PackedVector2Array[]" />
+			<description>
+				Returns all the obstructed area outlines arrays.
+			</description>
+		</method>
+		<method name="get_traversable_outlines" qualifiers="const">
+			<return type="PackedVector2Array[]" />
+			<description>
+				Returns all the traversable area outlines arrays.
+			</description>
+		</method>
+		<method name="has_data">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] when parsed source geometry data exists.
+			</description>
+		</method>
+		<method name="set_obstruction_outlines">
+			<return type="void" />
+			<param index="0" name="obstruction_outlines" type="PackedVector2Array[]" />
+			<description>
+				Sets all the obstructed area outlines arrays.
+			</description>
+		</method>
+		<method name="set_traversable_outlines">
+			<return type="void" />
+			<param index="0" name="traversable_outlines" type="PackedVector2Array[]" />
+			<description>
+				Sets all the traversable area outlines arrays.
+			</description>
+		</method>
+	</methods>
+</class>

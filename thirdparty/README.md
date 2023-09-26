@@ -91,6 +91,18 @@ Files extracted from upstream source:
 - License: MPL 2.0
 
 
+## clipper2
+
+- Upstream: https://github.com/AngusJohnson/Clipper2
+- Version: 1.2.2  (756c5079aacab5837e812a143c59dc48a09f22e7, 2023)
+- License: Boost Software License 1.0
+
+Files extracted from upstream source:
+
+- `CPP/Clipper2Lib` folder
+- `LICENSE`
+
+
 ## cvtt
 
 - Upstream: https://github.com/elasota/ConvectionKernels

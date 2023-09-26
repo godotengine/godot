@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  navigation_mesh_source_geometry_data_2d.h                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,70 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
+#define NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
 
-#include "godot_navigation_server.h"
-#include "godot_navigation_server_2d.h"
+#include "scene/2d/node_2d.h"
+#include "scene/resources/navigation_polygon.h"
 
-#ifndef DISABLE_DEPRECATED
-#ifndef _3D_DISABLED
-#include "navigation_mesh_generator.h"
-#endif
-#endif // DISABLE_DEPRECATED
+class NavigationMeshSourceGeometryData2D : public Resource {
+	GDCLASS(NavigationMeshSourceGeometryData2D, Resource);
 
-#ifdef TOOLS_ENABLED
-#include "editor/navigation_mesh_editor_plugin.h"
-#endif
+	Vector<Vector<Vector2>> traversable_outlines;
+	Vector<Vector<Vector2>> obstruction_outlines;
 
-#include "core/config/engine.h"
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
+protected:
+	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-#ifndef _3D_DISABLED
-NavigationMeshGenerator *_nav_mesh_generator = nullptr;
-#endif
-#endif // DISABLE_DEPRECATED
+public:
+	void _set_traversable_outlines(const Vector<Vector<Vector2>> &p_traversable_outlines);
+	const Vector<Vector<Vector2>> &_get_traversable_outlines() const { return traversable_outlines; }
 
-NavigationServer3D *new_server() {
-	return memnew(GodotNavigationServer);
-}
+	void _set_obstruction_outlines(const Vector<Vector<Vector2>> &p_obstruction_outlines);
+	const Vector<Vector<Vector2>> &_get_obstruction_outlines() const { return obstruction_outlines; }
 
-NavigationServer2D *new_navigation_server_2d() {
-	return memnew(GodotNavigationServer2D);
-}
+	void _add_traversable_outline(const Vector<Vector2> &p_shape_outline);
+	void _add_obstruction_outline(const Vector<Vector2> &p_shape_outline);
 
-void initialize_navigation_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::set_default_server(new_server);
-		NavigationServer2DManager::set_default_server(new_navigation_server_2d);
+	// kept root node transform here on the geometry data
+	// if we add this transform to all exposed functions we need to break comp on all functions later
+	// when navmesh changes from global transform to relative to navregion
+	// but if it stays here we can just remove it and change the internal functions only
+	Transform2D root_node_transform;
 
-#ifndef DISABLE_DEPRECATED
-#ifndef _3D_DISABLED
-		_nav_mesh_generator = memnew(NavigationMeshGenerator);
-		GDREGISTER_CLASS(NavigationMeshGenerator);
-		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
-#endif
-#endif // DISABLE_DEPRECATED
-	}
+	void set_traversable_outlines(const TypedArray<Vector<Vector2>> &p_traversable_outlines);
+	TypedArray<Vector<Vector2>> get_traversable_outlines() const;
 
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
-	}
-#endif
-}
+	void set_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines);
+	TypedArray<Vector<Vector2>> get_obstruction_outlines() const;
 
-void uninitialize_navigation_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
-	}
+	void add_traversable_outline(const PackedVector2Array &p_shape_outline);
+	void add_obstruction_outline(const PackedVector2Array &p_shape_outline);
 
-#ifndef DISABLE_DEPRECATED
-#ifndef _3D_DISABLED
-	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
-	}
-#endif
-#endif // DISABLE_DEPRECATED
-}
+	bool has_data() { return traversable_outlines.size(); };
+	void clear();
+
+	NavigationMeshSourceGeometryData2D();
+	~NavigationMeshSourceGeometryData2D();
+};
+
+#endif // NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
