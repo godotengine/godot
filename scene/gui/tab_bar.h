@@ -148,7 +148,7 @@ private:
 	void _ensure_no_over_offset();
 
 	void _update_hover();
-	void _update_cache();
+	void _update_cache(bool p_update_hover = true);
 
 	void _on_mouse_exited();
 

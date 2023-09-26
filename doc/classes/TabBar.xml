@@ -414,6 +414,7 @@
 		</theme_item>
 		<theme_item name="tab_hovered" data_type="style" type="StyleBox">
 			The style of the currently hovered tab. Does not apply to the selected tab.
+			[b]Note:[/b] This style will be drawn with the same width as [theme_item tab_unselected] at minimum.
 		</theme_item>
 		<theme_item name="tab_selected" data_type="style" type="StyleBox">
 			The style of the currently selected tab.
