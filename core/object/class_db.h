@@ -34,8 +34,6 @@
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
 #include "core/string/print_string.h"
-// TODO: It would be nice to not have to include struct.h, but I seem to need it for HashMap<StringName, StructInfo>
-#include "core/variant/struct.h"
 
 // Makes callable_mp readily available in all classes connecting signals.
 // Needs to come after method_bind and object have been included.
@@ -78,6 +76,20 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 #define D_METHOD(m_c, ...) m_c
 
 #endif
+
+// Moved this here so that I don't have to #include struct.h
+struct StructInfo {
+	StringName name = StringName();
+	uint32_t count = 0;
+
+	LocalVector<StringName> names;
+	LocalVector<Variant::Type> types;
+	LocalVector<StringName> class_names;
+	LocalVector<Variant> default_values;
+
+	StructInfo(const StringName &p_name, uint32_t p_count, const StructMember &(*p_get_member)(uint32_t));
+	StructInfo(){};
+};
 
 class ClassDB {
 public:
@@ -427,7 +439,7 @@ public:
 	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static bool is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
-	static void bind_struct(const StringName &p_class, const StructInfo &p_info);
+	static void bind_struct(const StringName &p_class, const StringName &p_struct, uint32_t p_count, const StructMember &(*p_get_member)(uint32_t));
 	static void get_struct_list(const StringName &p_class, List<StructInfo> *r_structs, bool p_no_inheritance = false);
 	static void get_struct_members(const StringName &p_class, const StringName &p_struct, List<StructMember> *r_members, bool p_no_inheritance = false);
 	static bool has_struct(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance = false);
@@ -471,7 +483,7 @@ public:
 	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_STRUCT(m_struct) \
-	::ClassDB::bind_struct(get_class_static(), StructInfo(m_struct::get_name(), m_struct::member_count, m_struct::get_members()));
+	::ClassDB::bind_struct(get_class_static(), m_struct::get_name(), m_struct::get_member_count(), m_struct::get_member);
 
 #ifdef DEBUG_METHODS_ENABLED
 

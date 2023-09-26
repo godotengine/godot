@@ -32,7 +32,6 @@
 #define STRUCT_H
 
 #include "core/string/string_name.h"
-#include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 
 class Array;
@@ -51,35 +50,29 @@ struct StructMember {
 	}
 };
 
-struct StructInfo {
-	StringName name = StringName();
-	uint32_t count = 0;
-
-	// TODO: Changing these to LocalVector from raw pointer arrays seemed to fix a race condition with StringName
-	LocalVector<StringName> names;
-	LocalVector<Variant::Type> types;
-	LocalVector<StringName> class_names;
-	LocalVector<Variant> default_values;
-
-	StructInfo(const StringName &p_name, uint32_t p_count, const LocalVector<StringName> &p_names, const LocalVector<Variant::Type> &p_types, const LocalVector<StringName> &p_class_names, const LocalVector<Variant> &p_default_values);
-	StructInfo(const StringName &p_name, uint32_t p_count, const StructMember *p_members);
-	StructInfo(){};
-};
-
 #define STRUCT_MEMBER(m_name, m_type) StructMember(SNAME(m_name), m_type)
 #define STRUCT_CLASS_MEMBER(m_name, m_class) StructMember(SNAME(m_name), Variant::OBJECT, m_class)
 
 // TODO: is there a way to define this so that the member count doesn't have to be passed?
-#define STRUCT_LAYOUT(m_name, m_alias, m_member_count, ...)                    \
-	struct m_name {                                                            \
-		static const uint32_t member_count = m_member_count;                   \
-		_FORCE_INLINE_ static const StructMember *get_members() {              \
-			static const StructMember members[member_count] = { __VA_ARGS__ }; \
-			return members;                                                    \
-		}                                                                      \
-		_FORCE_INLINE_ static const StringName get_name() {                    \
-			return StringName(m_alias);                                        \
-		}                                                                      \
+#define STRUCT_LAYOUT(m_struct, m_name, ...)                                                 \
+	struct m_struct {                                                                        \
+		_FORCE_INLINE_ static const StringName get_class() {                                 \
+			return SNAME(#m_struct);                                                         \
+		}                                                                                    \
+		_FORCE_INLINE_ static const StringName get_name() {                                  \
+			return SNAME(m_name);                                                            \
+		}                                                                                    \
+		_FORCE_INLINE_ static const StructMember &get_member(uint32_t p_index) {             \
+			static const StructMember members[] = { __VA_ARGS__ };                           \
+			static constexpr uint32_t member_count = sizeof(members) / sizeof(StructMember); \
+			CRASH_BAD_INDEX(p_index, member_count);                                          \
+			return members[p_index];                                                         \
+		}                                                                                    \
+		_FORCE_INLINE_ static const uint32_t get_member_count() {                            \
+			static const StructMember members[] = { __VA_ARGS__ };                           \
+			static constexpr uint32_t member_count = sizeof(members) / sizeof(StructMember); \
+			return member_count;                                                             \
+		}                                                                                    \
 	};
 
 //// TODO: A different version I was playing around with
@@ -154,13 +147,13 @@ public:
 		_ref(p_array);
 	}
 	_FORCE_INLINE_ Struct(const Variant &p_variant) :
-			Array(Array(p_variant), StructInfo(T::get_name(), T::member_count, T::get_members())) {
+			Array(Array(p_variant), T::get_member_count(), T::get_name(), T::get_member) {
 	}
 	_FORCE_INLINE_ Struct(const Array &p_array) :
-			Array(p_array, StructInfo(T::get_name(), T::member_count, T::get_members())) {
+			Array(p_array, T::get_member_count(), T::get_name(), T::get_member) {
 	}
 	_FORCE_INLINE_ Struct() :
-			Array(StructInfo(T::get_name(), T::member_count, T::get_members())) {
+			Array(T::get_member_count(), T::get_name(), T::get_member) {
 	}
 };
 

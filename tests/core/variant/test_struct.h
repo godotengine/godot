@@ -32,6 +32,7 @@
 #define TEST_STRUCT_H
 
 #include "core/variant/array.h"
+#include "core/variant/struct.h"
 #include "scene/main/node.h"
 #include "tests/test_macros.h"
 #include "tests/test_tools.h"

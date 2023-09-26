@@ -65,7 +65,7 @@ struct _ObjectDebugLock {
 
 #endif
 
-STRUCT_LAYOUT(PropertyInfoLayout, "PropertyInfo", 5,
+STRUCT_LAYOUT(PropertyInfoLayout, "PropertyInfo",
 		STRUCT_MEMBER("name", Variant::STRING),
 		STRUCT_MEMBER("type", Variant::INT),
 		STRUCT_MEMBER("hint", Variant::INT),

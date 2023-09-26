@@ -183,16 +183,16 @@ public:
 	};
 
 // Important so we force SNAME to it, otherwise this will be leaked memory
-#define STRUCT_MEMBER(m_name,m_type,m_default_value) StructMember(SNAME(m_name),m_type,m_default_value)
-#define STRUCT_CLASS_MEMBER(m_name,m_class) StructMember(SNAME(m_name),Variant::OBJECT,Variant(),m_class)
+#define STRUCT_MEMBER(m_name, m_type, m_default_value) StructMember(SNAME(m_name), m_type, m_default_value)
+#define STRUCT_CLASS_MEMBER(m_name, m_class) StructMember(SNAME(m_name), Variant::OBJECT, Variant(), m_class)
 
 
 	// StructLayout should ideally be something that we can define like
 
-
-#define STRUCT_LAYOUT(m_class,m_name,...) \
-struct m_name { \
-        _FORCE_INLINE_ static  StringName get_class() { return SNAME(#m_class)); }
+#define STRUCT_LAYOUT(m_class, m_name, ...)                                     \
+	struct m_name {                                                             \
+		_FORCE_INLINE_ static StringName get_class() { return SNAME(#m_class)); \
+		}
 	_FORCE_INLINE_ static  StringName get_name() { return SNAME(#m_name)); }
 	static constexpr uint32_t member_count = GET_ARGUMENT_COUNT;\
 	_FORCE_INLINE_ static const StructMember& get_member(uint32_t p_index) {\
@@ -242,7 +242,7 @@ public:
 // call this inside _bind_methods of the relevant class
 
 // goes in object.h
-#define BIND_STRUCT(m_name) ClasDB::register_struct( m_name::get_class(), m_name::get_name(),  m_name::member_count, m_name::get_member);
+#define BIND_STRUCT(m_name) ClasDB::register_struct(m_name::get_class(), m_name::get_name(), m_name::member_count, m_name::get_member);
 
 	Then you will also have to add this function `Array ClassDB::instantiate_struct(const StringName &p_class, const StringName& p_struct);` in order to construct them on demand.
 

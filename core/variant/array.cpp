@@ -49,21 +49,23 @@ public:
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
 
-	StructInfo struct_info;
+	StringName struct_name = StringName();
+	uint32_t member_count = 0;
+	LocalVector<StringName> member_names;
 
 	_FORCE_INLINE_ bool is_struct() const {
-		return struct_info.count > 0;
+		return member_count > 0;
 	}
 
 	_FORCE_INLINE_ bool is_struct_array() const {
-		return struct_info.count > 0; // TODO: this seems fishy
+		return member_count > 0; // TODO: this seems fishy
 	}
 
 	_FORCE_INLINE_ int32_t find_member_index(const StringName &p_member) const {
 		// TODO: is there a better way to do this than linear search?
-		for (uint32_t i = 0; i < struct_info.count; i++) {
-			if (p_member == struct_info.names[i]) {
-				return (int32_t)i; // TODO: is this cast necessary?
+		for (uint32_t i = 0; i < member_count; i++) {
+			if (p_member == member_names[i]) {
+				return (int32_t)i;
 			}
 		}
 		return -1;
@@ -871,20 +873,20 @@ Array::Array(const Array &p_from) {
 	_ref(p_from);
 }
 
-Array::Array(const Array &p_from, const StructInfo &p_info) {
+Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init(); // TODO: should this be _ref(p_from)?
 	assign(p_from);
-	set_struct_info(p_info);
+	set_struct_info(p_size, p_name, p_get_member);
 }
 
-Array::Array(const StructInfo &p_info) {
+Array::Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
-	set_struct_info(p_info);
+	set_struct_info(p_size, p_name, p_get_member);
 }
 
-void Array::set_struct_info(const StructInfo &p_info) {
+void Array::set_struct_info(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
@@ -899,10 +901,15 @@ void Array::set_struct_info(const StructInfo &p_info) {
 	//	_p->typed.type = Variant::Type(p_type);
 	//	_p->typed.class_name = p_class_name;
 	//	_p->typed.script = script;
-	_p->array.resize(p_info.count);
+	_p->array.resize(p_size);
 	_p->typed.where = "Struct";
 
-	_p->struct_info = p_info;
+	_p->struct_name = p_name;
+	_p->member_count = p_size;
+	_p->member_names.resize(p_size);
+	for (uint32_t i = 0; i < p_size; i++) {
+		_p->member_names[i] = p_get_member(i).name;
+	}
 }
 
 Array::Array() {

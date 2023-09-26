@@ -40,7 +40,7 @@ class ArrayPrivate;
 class Object;
 class StringName;
 class Callable;
-struct StructInfo;
+struct StructMember;
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -129,15 +129,15 @@ public:
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
 
-	void set_struct_info(const StructInfo &p_info);
+	void set_struct_info(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
 
 	void make_read_only();
 	bool is_read_only() const;
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
-	Array(const Array &p_from, const StructInfo &p_info);
-	Array(const StructInfo &p_info);
+	Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
+	Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
 	Array();
 	~Array();
 };
