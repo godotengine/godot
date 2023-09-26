@@ -78,15 +78,6 @@
 
 #include "platform_gl.h"
 
-#if EGL_ENABLED
-#if GLAD_ENABLED
-#include "thirdparty/glad/glad/egl.h"
-#else
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#endif // GLAD_ENABLED
-#endif // EGL_ENABLED
-
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define strcpy strcpy_s
 #endif
