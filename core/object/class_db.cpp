@@ -479,11 +479,11 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 			continue;
 		}
 
-#ifdef DEBUG_METHODS_ENABLED
-
 		for (const MethodInfo &E : type->virtual_methods) {
 			p_methods->push_back(E);
 		}
+
+#ifdef DEBUG_METHODS_ENABLED
 
 		for (const StringName &E : type->method_order) {
 			if (p_exclude_from_properties && type->methods_in_properties.has(E)) {
@@ -529,7 +529,6 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			continue;
 		}
 
-#ifdef DEBUG_METHODS_ENABLED
 		MethodBind **method = type->method_map.getptr(p_method);
 		if (method && *method) {
 			if (r_info != nullptr) {
@@ -543,16 +542,6 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			}
 			return true;
 		}
-#else
-		if (type->method_map.has(p_method)) {
-			if (r_info) {
-				MethodBind *m = type->method_map[p_method];
-				MethodInfo minfo = info_from_bind(m);
-				*r_info = minfo;
-			}
-			return true;
-		}
-#endif
 
 		if (p_no_inheritance) {
 			break;
@@ -1482,7 +1471,6 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 
 	OBJTYPE_WLOCK;
 
-#ifdef DEBUG_METHODS_ENABLED
 	MethodInfo mi = p_method;
 	if (p_virtual) {
 		mi.flags |= METHOD_FLAG_VIRTUAL;
@@ -1507,14 +1495,10 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 	}
 	classes[p_class].virtual_methods.push_back(mi);
 	classes[p_class].virtual_methods_map[p_method.name] = mi;
-
-#endif
 }
 
 void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance) {
 	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
-
-#ifdef DEBUG_METHODS_ENABLED
 
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
@@ -1528,8 +1512,6 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 		}
 		check = check->inherits_ptr;
 	}
-
-#endif
 }
 
 void ClassDB::set_class_enabled(const StringName &p_class, bool p_enable) {
