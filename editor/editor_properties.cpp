@@ -2818,7 +2818,7 @@ void EditorPropertyNodePath::_node_assign() {
 }
 
 void EditorPropertyNodePath::_node_clear() {
-	emit_changed(get_edited_property(), NodePath());
+	emit_changed(get_edited_property(), Variant());
 	update_property();
 }
 
