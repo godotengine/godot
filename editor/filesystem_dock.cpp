@@ -1516,6 +1516,8 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	} else {
 		// Recursively duplicate all files inside the folder.
 		Ref<DirAccess> old_dir = DirAccess::open(old_path);
+		ERR_FAIL_COND(old_dir.is_null());
+
 		Ref<FileAccess> file_access = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 		old_dir->set_include_navigational(false);
 		old_dir->list_dir_begin();
@@ -3308,6 +3310,8 @@ bool FileSystemDock::_get_imported_files(const String &p_path, String &r_extensi
 	}
 
 	Ref<DirAccess> da = DirAccess::open(p_path);
+	ERR_FAIL_COND_V(da.is_null(), false);
+
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (!n.is_empty()) {
