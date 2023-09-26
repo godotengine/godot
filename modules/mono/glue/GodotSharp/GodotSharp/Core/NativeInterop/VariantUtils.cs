@@ -22,6 +22,9 @@ namespace Godot.NativeInterop
         public static godot_variant CreateFromInt(ulong from)
             => new() { Type = Variant.Type.Int, Int = (long)from };
 
+        public static godot_variant CreateFromIntPtr(IntPtr from)
+            => new() { Type = Variant.Type.Int, Int = (long)from };
+
         public static godot_variant CreateFromFloat(double from)
             => new() { Type = Variant.Type.Float, Float = from };
 
@@ -339,6 +342,9 @@ namespace Godot.NativeInterop
 
         public static long ConvertToInt64(in godot_variant p_var)
             => p_var.Type == Variant.Type.Int ? p_var.Int : NativeFuncs.godotsharp_variant_as_int(p_var);
+
+        public static nint ConvertToIntPtr(in godot_variant p_var)
+            => (nint)(p_var.Type == Variant.Type.Int ? p_var.Int : NativeFuncs.godotsharp_variant_as_int(p_var));
 
         public static byte ConvertToUInt8(in godot_variant p_var)
             => (byte)(p_var.Type == Variant.Type.Int ?

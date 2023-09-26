@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Godot.Bridge;
 
@@ -6,7 +7,7 @@ using Godot.Bridge;
 
 namespace Godot.NativeInterop
 {
-    internal static class InteropUtils
+    public static class InteropUtils
     {
         public static GodotObject UnmanagedGetManaged(IntPtr unmanaged)
         {
@@ -47,7 +48,7 @@ namespace Godot.NativeInterop
             return gcHandlePtr != IntPtr.Zero ? (GodotObject)GCHandle.FromIntPtr(gcHandlePtr).Target : null;
         }
 
-        public static void TieManagedToUnmanaged(GodotObject managed, IntPtr unmanaged,
+        internal static void TieManagedToUnmanaged(GodotObject managed, IntPtr unmanaged,
             StringName nativeName, bool refCounted, Type type, Type nativeType)
         {
             var gcHandle = refCounted ?
@@ -76,7 +77,7 @@ namespace Godot.NativeInterop
             }
         }
 
-        public static void TieManagedToUnmanagedWithPreSetup(GodotObject managed, IntPtr unmanaged,
+        internal static void TieManagedToUnmanagedWithPreSetup(GodotObject managed, IntPtr unmanaged,
             Type type, Type nativeType)
         {
             if (type == nativeType)
@@ -91,6 +92,18 @@ namespace Godot.NativeInterop
         {
             using godot_string src = Marshaling.ConvertStringToNative(name);
             return UnmanagedGetManaged(NativeFuncs.godotsharp_engine_get_singleton(src));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe static ref T AsRef<T>(nint target)
+        {
+            return ref Unsafe.AsRef<T>((void*)target);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe static nint AsIntPtr<T>(ref T target)
+        {
+            return (IntPtr)Unsafe.AsPointer<T>(ref target);
         }
     }
 }

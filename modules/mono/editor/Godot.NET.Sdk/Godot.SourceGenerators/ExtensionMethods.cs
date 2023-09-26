@@ -266,10 +266,17 @@ namespace Godot.SourceGenerators
             var parameters = method.Parameters;
 
             var paramTypes = parameters
-                // Currently we don't support `ref`, `out`, `in`, `ref readonly` parameters (and we never may)
-                .Where(p => p.RefKind == RefKind.None)
+                // Currently we don't support `out`, `in`, `ref readonly` parameters (and we never may)
+                .Where(p => p.RefKind == RefKind.None || p.RefKind == RefKind.Ref)
                 // Attempt to determine the variant type
-                .Select(p => MarshalUtils.ConvertManagedTypeToMarshalType(p.Type, typeCache))
+                .Select(p =>
+                {
+                    if (p.RefKind == RefKind.Ref)
+                    {
+                        return MarshalType.IntPtr;
+                    }
+                    return MarshalUtils.ConvertManagedTypeToMarshalType(p.Type, typeCache);
+                })
                 // Discard parameter types that couldn't be determined (null entries)
                 .Where(t => t != null).Cast<MarshalType>().ToImmutableArray();
 

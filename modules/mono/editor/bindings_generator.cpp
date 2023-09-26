@@ -1102,9 +1102,11 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	da->change_dir(p_proj_dir);
 	da->make_dir("Generated");
 	da->make_dir("Generated/GodotObjects");
+	da->make_dir("Generated/NativeStructures");
 
 	String base_gen_dir = path::join(p_proj_dir, "Generated");
 	String godot_objects_gen_dir = path::join(base_gen_dir, "GodotObjects");
+	String native_structures_gen_dir = path::join(base_gen_dir, "NativeStructures");
 
 	Vector<String> compile_items;
 
@@ -1129,6 +1131,23 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		Error save_err = _save_file(output_file, extensions_source);
 		if (save_err != OK) {
 			return save_err;
+		}
+
+		compile_items.push_back(output_file);
+	}
+
+	for (const KeyValue<StringName, TypeInterface> &E : native_structures_types) {
+		const TypeInterface &itype = E.value;
+
+		String output_file = path::join(native_structures_gen_dir, itype.proxy_name + ".cs");
+		Error err = _generate_cs_native_struct(itype, output_file);
+
+		if (err == ERR_SKIP) {
+			continue;
+		}
+
+		if (err != OK) {
+			return err;
 		}
 
 		compile_items.push_back(output_file);
@@ -1368,6 +1387,59 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 	_log("The Godot API sources were successfully generated\n");
 
 	return OK;
+}
+
+Error BindingsGenerator::_generate_cs_native_struct(const TypeInterface &itype, const String &p_output_file) {
+	CRASH_COND(!itype.is_native_structure);
+
+	_log("Generating %s.cs...\n", itype.proxy_name.utf8().get_data());
+
+	StringBuilder output;
+
+	output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
+
+	output.append("using System;\n"); // IntPtr
+	output.append("using System.Runtime.InteropServices;\n");
+
+	output.append("\n#nullable disable\n");
+
+	output << "[StructLayout(LayoutKind.Sequential, Size=" << String::num_int64(itype.native_structure_size) << ", CharSet=CharSet.Ansi)]\n";
+
+	output.append("public struct ");
+	output.append(itype.proxy_name);
+
+	output.append("\n{\n");
+
+	for (const StructFieldInterface &ifield : itype.fields) {
+		output.append(INDENT1);
+		output.append("public ");
+		bool is_fixed_array = ifield.proxy_name.contains("[") && ifield.proxy_name.contains("]");
+
+		const TypeInterface *field_type = _get_type_or_null(ifield.type);
+		ERR_FAIL_NULL_V(field_type, ERR_BUG); // Field type not found
+
+		if (is_fixed_array) {
+			output.append("unsafe fixed ");
+		}
+
+		if (field_type->is_object_type || ifield.type.is_pointer || field_type->c_type_is_disposable_struct || field_type->c_ret_needs_default_initialization) {
+			output.append("nint");
+		} else {
+			output.append(field_type->cs_type);
+		}
+
+		output.append(" ");
+		output.append(ifield.proxy_name);
+
+		if (!ifield.default_value.is_empty()) {
+			output.append(" = " + ifield.default_value);
+		}
+		output.append(";\n");
+	}
+
+	output.append(CLOSE_BLOCK);
+
+	return _save_file(p_output_file, output);
 }
 
 // FIXME: There are some members that hide other inherited members.
@@ -2731,6 +2803,19 @@ Error BindingsGenerator::_save_file(const String &p_path, const StringBuilder &p
 }
 
 const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(const TypeReference &p_typeref) {
+	if (p_typeref.is_pointer) {
+		HashMap<StringName, TypeInterface>::ConstIterator native_structure_match = native_structures_types.find(p_typeref.cname);
+
+		if (native_structure_match) {
+			return &native_structure_match->value;
+		}
+
+		// Native not found. Use nint instead.
+		HashMap<StringName, TypeInterface>::ConstIterator nint_match = builtin_types.find(name_cache.type_nint);
+		ERR_FAIL_NULL_V(nint_match, nullptr);
+		return &nint_match->value;
+	}
+
 	HashMap<StringName, TypeInterface>::ConstIterator builtin_type_match = builtin_types.find(p_typeref.cname);
 
 	if (builtin_type_match) {
@@ -3102,12 +3187,6 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				continue;
 			}
 
-			if (method_has_ptr_parameter(method_info)) {
-				// Pointers are not supported.
-				itype.ignored_members.insert(method_info.name);
-				continue;
-			}
-
 			MethodInterface imethod;
 			imethod.name = method_info.name;
 			imethod.cname = cname;
@@ -3151,6 +3230,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			} else if (return_info.type == Variant::INT && return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 				imethod.return_type.cname = return_info.class_name;
 				imethod.return_type.is_enum = true;
+			} else if (return_info.type == Variant::INT && (return_info.hint == PROPERTY_HINT_INT_IS_POINTER)) {
+				imethod.return_type.cname = return_info.class_name;
+				imethod.return_type.is_pointer = true;
 			} else if (return_info.class_name != StringName()) {
 				imethod.return_type.cname = return_info.class_name;
 
@@ -3183,6 +3265,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				if (arginfo.type == Variant::INT && arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					iarg.type.cname = arginfo.class_name;
 					iarg.type.is_enum = true;
+				} else if (arginfo.type == Variant::INT && (arginfo.hint == PROPERTY_HINT_INT_IS_POINTER)) {
+					iarg.type.cname = arginfo.hint_string;
+					iarg.type.is_pointer = true;
 				} else if (arginfo.class_name != StringName()) {
 					iarg.type.cname = arginfo.class_name;
 				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
@@ -3283,6 +3368,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				if (arginfo.type == Variant::INT && arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					iarg.type.cname = arginfo.class_name;
 					iarg.type.is_enum = true;
+				} else if (arginfo.type == Variant::INT && (arginfo.hint == PROPERTY_HINT_INT_IS_POINTER)) {
+					iarg.type.cname = arginfo.hint_string;
+					iarg.type.is_pointer = true;
 				} else if (arginfo.class_name != StringName()) {
 					iarg.type.cname = arginfo.class_name;
 				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
@@ -3695,6 +3783,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		INSERT_INT_TYPE("ushort", "UInt16");
 		INSERT_INT_TYPE("uint", "UInt32");
 		INSERT_INT_TYPE("ulong", "UInt64");
+		INSERT_INT_TYPE("nint", "IntPtr");
 
 #undef INSERT_INT_TYPE
 	}
@@ -3953,6 +4042,68 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	builtin_types.insert(itype.cname, itype);
 }
 
+void BindingsGenerator::_populate_native_structures() {
+	List<StringName> native_structs;
+	ClassDB::get_native_struct_list(&native_structs);
+	native_structs.sort_custom<StringName::AlphCompare>();
+
+	for (const StringName &Name : native_structs) {
+		String code = ClassDB::get_native_struct_code(Name);
+		TypeInterface itype = TypeInterface();
+		itype.native_structure_size = ClassDB::get_native_struct_size(Name);
+
+		bool invalid_struct = false;
+		Vector<String> fields = code.split(";");
+
+		for (const String &field : fields) {
+			Vector<String> field_data = field.split(" ");
+
+			if (field_data.size() == 0 || field_data.size() == 1) {
+				invalid_struct = true;
+				break;
+			} else if (field_data.size() == 2 || field_data.size() == 3) {
+				StructFieldInterface field_interface;
+				TypeReference type;
+				String formated_name = field_data[0].replace("::", ".");
+				if (formated_name.contains("*") || ((String)field_interface.cname).contains("*")) {
+					type.is_pointer = true;
+					formated_name = formated_name.replace("*", "");
+				} else {
+					type.is_enum = true;
+				}
+				type.cname = formated_name;
+				field_interface.type = type;
+				field_interface.cname = field_data[1];
+				field_interface.proxy_name = snake_to_pascal_case(((String)field_interface.cname).replace("*", ""));
+				if (field_data.size() == 3) {
+					field_interface.default_value = field_data[2];
+				}
+				itype.fields.push_back(field_interface);
+			} else {
+				invalid_struct = true;
+				break;
+			}
+		}
+
+		if (invalid_struct) {
+			continue;
+		}
+
+		itype.name = Name;
+		itype.cname = Name;
+		itype.proxy_name = snake_to_pascal_case(Name);
+		itype.cs_type = "ref " + itype.proxy_name;
+		itype.is_native_structure = true;
+		itype.c_arg_in = "&%s";
+		itype.c_type = itype.proxy_name;
+		itype.c_type_in = itype.c_type;
+		itype.c_type_out = itype.c_type;
+		itype.cs_variant_to_managed = "ref InteropUtils.AsRef<" + itype.proxy_name + ">(VariantUtils.ConvertToIntPtr(%0))";
+
+		native_structures_types.insert(itype.cname, itype);
+	}
+}
+
 void BindingsGenerator::_populate_global_constants() {
 	int global_constants_count = CoreConstants::get_global_constant_count();
 
@@ -4076,6 +4227,8 @@ void BindingsGenerator::_initialize() {
 	_populate_builtin_type_interfaces();
 
 	_populate_global_constants();
+
+	_populate_native_structures();
 
 	// Generate internal calls (after populating type interfaces and global constants)
 

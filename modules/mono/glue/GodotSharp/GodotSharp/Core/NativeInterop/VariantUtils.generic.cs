@@ -188,6 +188,9 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Variant))
             return NativeFuncs.godotsharp_variant_new_copy((godot_variant)UnsafeAs<Variant>(from).NativeVar);
 
+        if (typeof(T) == typeof(nint))
+            return CreateFromIntPtr(UnsafeAs<nint>(from));
+
         // More complex checks here at the end, to avoid screwing the simple ones in case they're not optimized away.
 
         // `typeof(X).IsAssignableFrom(typeof(T))` is optimized away
@@ -376,6 +379,9 @@ public partial class VariantUtils
 
         if (typeof(T) == typeof(Variant))
             return UnsafeAsT(Variant.CreateCopyingBorrowed(variant));
+
+        if (typeof(T) == typeof(nint))
+            return UnsafeAsT(ConvertToIntPtr(variant));
 
         // More complex checks here at the end, to avoid screwing the simple ones in case they're not optimized away.
 

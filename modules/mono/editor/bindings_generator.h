@@ -91,6 +91,7 @@ class BindingsGenerator {
 	struct TypeReference {
 		StringName cname;
 		bool is_enum = false;
+		bool is_pointer = false;
 
 		List<TypeReference> generic_type_parameters;
 
@@ -98,6 +99,14 @@ class BindingsGenerator {
 
 		TypeReference(const StringName &p_cname) :
 				cname(p_cname) {}
+	};
+
+	struct StructFieldInterface {
+		StringName cname;
+		String proxy_name;
+
+		TypeReference type;
+		String default_value;
 	};
 
 	struct ArgumentInterface {
@@ -227,6 +236,8 @@ class BindingsGenerator {
 
 		ClassDB::APIType api_type = ClassDB::API_NONE;
 
+		uint64_t native_structure_size = 0;
+		bool is_native_structure = false;
 		bool is_enum = false;
 		bool is_object_type = false;
 		bool is_singleton = false;
@@ -416,6 +427,7 @@ class BindingsGenerator {
 
 		const DocData::ClassDoc *class_doc = nullptr;
 
+		List<StructFieldInterface> fields;
 		List<ConstantInterface> constants;
 		List<EnumInterface> enums;
 		List<PropertyInterface> properties;
@@ -617,6 +629,7 @@ class BindingsGenerator {
 
 	HashMap<StringName, TypeInterface> builtin_types;
 	HashMap<StringName, TypeInterface> enum_types;
+	HashMap<StringName, TypeInterface> native_structures_types;
 
 	List<EnumInterface> global_enums;
 	List<ConstantInterface> global_constants;
@@ -667,6 +680,8 @@ class BindingsGenerator {
 		StringName type_Vector3i = StaticCString::create("Vector3i");
 		StringName type_Vector4 = StaticCString::create("Vector4");
 		StringName type_Vector4i = StaticCString::create("Vector4i");
+
+		StringName type_nint = StaticCString::create("nint");
 
 		// Object not included as it must be checked for all derived classes
 		static constexpr int nullable_types_count = 18;
@@ -787,6 +802,9 @@ class BindingsGenerator {
 
 	void _populate_global_constants();
 
+	void _populate_native_structures();
+
+	Error _generate_cs_native_struct(const TypeInterface &itype, const String &p_output_file);
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
 
 	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuilder &p_output);

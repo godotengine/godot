@@ -119,8 +119,12 @@ namespace Godot.SourceGenerators
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
                 .Cast<IFieldSymbol>();
 
-            var godotClassProperties = propertySymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
-            var godotClassFields = fieldSymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
+            var godotClassProperties = propertySymbols
+                .WhereIsGodotCompatibleType(typeCache)
+                .Where(x => x.Type != MarshalType.IntPtr).ToArray();
+
+            var godotClassFields = fieldSymbols.WhereIsGodotCompatibleType(typeCache)
+                .Where(x => x.Type != MarshalType.IntPtr).ToArray();
 
             var signalDelegateSymbols = members
                 .Where(s => s.Kind == SymbolKind.NamedType)
