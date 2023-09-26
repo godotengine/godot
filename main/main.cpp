@@ -2231,6 +2231,8 @@ Error Main::setup2() {
 		// Editor setting class is not available, load config directly.
 		if (!init_use_custom_screen && (editor || project_manager) && EditorPaths::get_singleton()->are_paths_valid()) {
 			Ref<DirAccess> dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
+			ERR_FAIL_COND_V(dir.is_null(), FAILED);
+
 			String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 			String config_file_path = EditorPaths::get_singleton()->get_config_dir().path_join(config_file_name);
 			if (dir->file_exists(config_file_name)) {
@@ -3302,6 +3304,8 @@ bool Main::start() {
 
 						if (sep == -1) {
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							ERR_FAIL_COND_V(da.is_null(), false);
+
 							local_game_path = da->get_current_dir().path_join(local_game_path);
 						} else {
 							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
