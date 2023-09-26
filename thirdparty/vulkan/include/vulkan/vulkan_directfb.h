@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_EXT_directfb_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_directfb_surface 1
 #define VK_EXT_DIRECTFB_SURFACE_SPEC_VERSION 1
 #define VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME "VK_EXT_directfb_surface"

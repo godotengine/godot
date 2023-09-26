@@ -174,6 +174,7 @@ const char* const E_GL_KHR_shader_subgroup_shuffle_relative = "GL_KHR_shader_sub
 const char* const E_GL_KHR_shader_subgroup_clustered        = "GL_KHR_shader_subgroup_clustered";
 const char* const E_GL_KHR_shader_subgroup_quad             = "GL_KHR_shader_subgroup_quad";
 const char* const E_GL_KHR_memory_scope_semantics           = "GL_KHR_memory_scope_semantics";
+const char* const E_GL_KHR_cooperative_matrix               = "GL_KHR_cooperative_matrix";
 
 const char* const E_GL_EXT_shader_atomic_int64              = "GL_EXT_shader_atomic_int64";
 

@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_EXT_acquire_xlib_display is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_acquire_xlib_display 1
 #define VK_EXT_ACQUIRE_XLIB_DISPLAY_SPEC_VERSION 1
 #define VK_EXT_ACQUIRE_XLIB_DISPLAY_EXTENSION_NAME "VK_EXT_acquire_xlib_display"

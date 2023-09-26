@@ -301,21 +301,17 @@ See the patches in the `patches` directory.
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: 12.2.0 / sdk-1.3.250.0 (d1517d64cfca91f573af1bf7341dc3a5113349c0, 2023)
+- Version: sdk-1.3.261.1 (76b52ebf77833908dc4c0dd6c70a9c357ac720bd, 2023)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
-section). Check Vulkan-ValidationLayers at the matching SDK tag for the known
-good glslang commit: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/scripts/known_good.json
-
-When updating, also review that our `modules/glslang/glslang_resource_limits.h`
-copy of `DefaultTBuiltInResource` is in sync with the one defined upstream in
-`StandAlone/ResourceLimits.cpp`.
+section).
 
 Files extracted from upstream source:
 
 - `glslang` (except `glslang/HLSL` and `glslang/ExtensionHeaders`),
-  `OGLCompilersDLL`, `SPIRV`, w/o `CInterface` folders (depend on `StandAlone`)
+  `OGLCompilersDLL`, `SPIRV`
+  * Remove C interface code: `CInterface` folders, files matching `"*_c[_\.]*"`
 - Run `cmake . && make` and copy generated `include/glslang/build_info.h`
   to `glslang/build_info.h`
 - `LICENSE.txt`
@@ -769,10 +765,11 @@ proposed by these libraries and better integrate them with Godot.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: sdk-1.3.250.0 (1fd43331f0bd77cc0f421745781f79a14d8f2bb1, 2023)
+- Version: sdk-1.3.261.1 (d7e316e7d592d16ac58f1fe39b1df7babfe65c0d, 2023)
 - License: Apache 2.0
 
-Now tracks Vulkan SDK releases, so keep it in sync with volk / vulkan.
+Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
+section).
 
 Files extracted from upstream source:
 
@@ -847,7 +844,7 @@ folder.
 ## volk
 
 - Upstream: https://github.com/zeux/volk
-- Version: sdk-1.3.250.0 (b3bc21e584f97400b6884cb2a541a56c6a5ddba3, 2023)
+- Version: sdk-1.3.261.1 (c1fc502109e539078d53c90ee1da9f32abbb0054, 2023)
 - License: MIT
 
 Unless there is a specific reason to package a more recent version, please stick
@@ -866,7 +863,7 @@ Files extracted from upstream source:
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Headers
-- Version: sdk-1.3.250 (bae9700cd9425541a0f6029957f005e5ad3ef660, 2023)
+- Version: sdk-1.3.261.1 (85c2334e92e215cce34e8e0ed8b2dce4700f4a50, 2023)
 - License: Apache 2.0
 
 The vendored version should be kept in sync with volk, see above.
@@ -874,13 +871,14 @@ The vendored version should be kept in sync with volk, see above.
 Files extracted from upstream source:
 
 - `include/`
-- `LICENSE.txt`
+- `LICENSE.md`
 
 `vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/layers/vulkan/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 3.0.1 (2022-06-10), commit `cfdc0f8775ab3258a3b9c4e47d8ce4b6f52a5441`
+Version: git (e88fff957b94f4b541ccac67a4290f07e52aa610), as advised by upstream:
+https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/issues/318
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.
