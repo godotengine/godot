@@ -60,7 +60,7 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 		scr = scr->_base;
 	}
 
-	ERR_FAIL_COND_V(!nc, false);
+	ERR_FAIL_NULL_V(nc, false);
 
 	return ClassDB::has_property(nc->get_name(), p_name);
 }

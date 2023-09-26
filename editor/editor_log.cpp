@@ -442,6 +442,9 @@ EditorLog::EditorLog() {
 	copy_button->connect("pressed", callable_mp(this, &EditorLog::_copy_request));
 	hb_tools->add_child(copy_button);
 
+	// Separate toggle buttons from normal buttons.
+	vb_right->add_child(memnew(HSeparator));
+
 	// A second hbox to make a 2x2 grid of buttons.
 	HBoxContainer *hb_tools2 = memnew(HBoxContainer);
 	hb_tools2->set_h_size_flags(SIZE_SHRINK_CENTER);

@@ -152,7 +152,7 @@ public:
 	}
 
 	GDScriptDataType get_container_element_type() const {
-		ERR_FAIL_COND_V(container_element_type == nullptr, GDScriptDataType());
+		ERR_FAIL_NULL_V(container_element_type, GDScriptDataType());
 		return *container_element_type;
 	}
 
