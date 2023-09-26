@@ -4633,9 +4633,9 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 }
 
 void RenderingDeviceVulkan::_append_uniform_info_to_lines(Vector<String> &r_lines, int p_set_index, const RenderingDeviceVulkan::Shader::Set &p_set) {
-	for (int j = 0; j < set.uniform_info.size(); j++) {
-		const UniformInfo &ui = set.uniform_info[j];
-		lines.push_back("Set: " + itos(set_index) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Writable: " + (ui.writable ? "Y" : "N") + " Length: " + itos(ui.length));
+	for (int j = 0; j < p_set.uniform_info.size(); j++) {
+		const UniformInfo &ui = p_set.uniform_info[j];
+		r_lines.push_back("Set: " + itos(p_set_index) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Writable: " + (ui.writable ? "Y" : "N") + " Length: " + itos(ui.length));
 	}
 }
 
