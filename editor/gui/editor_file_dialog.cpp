@@ -1619,6 +1619,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_thumbnail_result"), &EditorFileDialog::_thumbnail_result);
 	ClassDB::bind_method(D_METHOD("set_disable_overwrite_warning", "disable"), &EditorFileDialog::set_disable_overwrite_warning);
 	ClassDB::bind_method(D_METHOD("is_overwrite_warning_disabled"), &EditorFileDialog::is_overwrite_warning_disabled);
+	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &EditorFileDialog::invalidate);
 
@@ -1712,6 +1713,25 @@ bool EditorFileDialog::are_previews_enabled() {
 	return previews_enabled;
 }
 
+void EditorFileDialog::add_side_menu(Control *p_menu, const String &p_title) {
+	// HSplitContainer has 3 children at maximum capacity, 1 of them is the SplitContainerDragger.
+	ERR_FAIL_COND_MSG(body_hsplit->get_child_count() > 2, "EditorFileDialog: Only one side menu can be added.");
+	// Everything for the side menu goes inside of a VBoxContainer.
+	VBoxContainer *side_vbox = memnew(VBoxContainer);
+	side_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	side_vbox->set_stretch_ratio(0.5);
+	body_hsplit->add_child(side_vbox);
+	// Add a Label to the VBoxContainer.
+	if (!p_title.is_empty()) {
+		Label *title_label = memnew(Label(p_title));
+		title_label->set_theme_type_variation("HeaderSmall");
+		side_vbox->add_child(title_label);
+	}
+	// Add the given menu to the VBoxContainer.
+	p_menu->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	side_vbox->add_child(p_menu);
+}
+
 EditorFileDialog::EditorFileDialog() {
 	show_hidden_files = default_show_hidden_files;
 	display_mode = default_display_mode;
@@ -1739,6 +1759,7 @@ EditorFileDialog::EditorFileDialog() {
 	}
 
 	HBoxContainer *pathhb = memnew(HBoxContainer);
+	vbc->add_child(pathhb);
 
 	dir_prev = memnew(Button);
 	dir_prev->set_theme_type_variation("FlatButton");
@@ -1826,11 +1847,13 @@ EditorFileDialog::EditorFileDialog() {
 	makedir->connect("pressed", callable_mp(this, &EditorFileDialog::_make_dir));
 	pathhb->add_child(makedir);
 
-	list_hb = memnew(HSplitContainer);
+	body_hsplit = memnew(HSplitContainer);
+	body_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->add_child(body_hsplit);
 
-	vbc->add_child(pathhb);
-	vbc->add_child(list_hb);
-	list_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	list_hb = memnew(HSplitContainer);
+	list_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	body_hsplit->add_child(list_hb);
 
 	VSplitContainer *vsc = memnew(VSplitContainer);
 	list_hb->add_child(vsc);
