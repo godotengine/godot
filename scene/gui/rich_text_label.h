@@ -33,9 +33,11 @@
 
 #include "core/object/worker_thread_pool.h"
 #include "scene/gui/popup_menu.h"
-#include "scene/gui/rich_text_effect.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
+
+class CharFXTransform;
+class RichTextEffect;
 
 class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
@@ -374,17 +376,9 @@ private:
 		Ref<CharFXTransform> char_fx_transform;
 		Ref<RichTextEffect> custom_effect;
 
-		ItemCustomFX() {
-			type = ITEM_CUSTOMFX;
-			char_fx_transform.instantiate();
-		}
+		ItemCustomFX();
 
-		virtual ~ItemCustomFX() {
-			_clear_children();
-
-			char_fx_transform.unref();
-			custom_effect.unref();
-		}
+		virtual ~ItemCustomFX();
 	};
 
 	struct ItemContext : public Item {

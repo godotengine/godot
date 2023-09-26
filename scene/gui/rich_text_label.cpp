@@ -36,6 +36,7 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 #include "scene/gui/label.h"
+#include "scene/gui/rich_text_effect.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
@@ -45,6 +46,18 @@
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif
+
+RichTextLabel::ItemCustomFX::ItemCustomFX() {
+	type = ITEM_CUSTOMFX;
+	char_fx_transform.instantiate();
+}
+
+RichTextLabel::ItemCustomFX::~ItemCustomFX() {
+	_clear_children();
+
+	char_fx_transform.unref();
+	custom_effect.unref();
+}
 
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) const {
 	if (p_free) {
@@ -1028,6 +1041,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 
 			bool txt_visible = (font_outline_color.a != 0) || (font_shadow_color.a != 0);
+			Transform2D char_xform;
+			char_xform.set_origin(gloff + p_ofs);
 
 			for (int j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
@@ -1051,10 +1066,12 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						charfx->glyph_count = gl_cn;
 						charfx->offset = fx_offset;
 						charfx->color = font_color;
+						charfx->transform = char_xform;
 
 						bool effect_status = custom_effect->_process_effect_impl(charfx);
 						custom_fx_ok = effect_status;
 
+						char_xform = charfx->transform;
 						fx_offset += charfx->offset;
 						font_color = charfx->color;
 						frid = charfx->font;
@@ -1108,6 +1125,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				fx_offset = fx_offset.round();
 			}
 
+			Vector2i char_off = char_xform.get_origin();
+
 			// Draw glyph outlines.
 			const Color modulated_outline_color = font_outline_color * Color(1, 1, 1, font_color.a);
 			const Color modulated_shadow_color = font_shadow_color * Color(1, 1, 1, font_color.a);
@@ -1116,13 +1135,24 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 					if (!skip && frid != RID()) {
 						if (modulated_shadow_color.a > 0) {
-							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, modulated_shadow_color);
-						}
-						if (modulated_shadow_color.a > 0 && p_shadow_outline_size > 0) {
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, modulated_shadow_color);
+							Transform2D char_reverse_xform;
+							char_reverse_xform.set_origin(-char_off - p_shadow_ofs);
+							Transform2D char_final_xform = char_xform * char_reverse_xform;
+							char_final_xform.columns[2] += p_shadow_ofs;
+							draw_set_transform_matrix(char_final_xform);
+
+							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off + p_shadow_ofs, gl, modulated_shadow_color);
+							if (p_shadow_outline_size > 0) {
+								TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, fx_offset + char_off + p_shadow_ofs, gl, modulated_shadow_color);
+							}
 						}
 						if (modulated_outline_color.a != 0.0 && size > 0) {
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff, gl, modulated_outline_color);
+							Transform2D char_reverse_xform;
+							char_reverse_xform.set_origin(-char_off);
+							Transform2D char_final_xform = char_xform * char_reverse_xform;
+							draw_set_transform_matrix(char_final_xform);
+
+							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, fx_offset + char_off, gl, modulated_outline_color);
 						}
 					}
 					processed_glyphs_ol++;
@@ -1130,6 +1160,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				gloff.x += glyphs[i].advance;
 			}
 		}
+		draw_set_transform_matrix(Transform2D());
 
 		Vector2 fbg_line_off = off + p_ofs;
 		// Draw background color box
@@ -1256,6 +1287,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 			bool txt_visible = (font_color.a != 0);
 
+			Transform2D char_xform;
+			char_xform.set_origin(p_ofs + off);
+
 			for (int j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
 				bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
@@ -1278,10 +1312,12 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						charfx->glyph_count = gl_cn;
 						charfx->offset = fx_offset;
 						charfx->color = font_color;
+						charfx->transform = char_xform;
 
 						bool effect_status = custom_effect->_process_effect_impl(charfx);
 						custom_fx_ok = effect_status;
 
+						char_xform = charfx->transform;
 						fx_offset += charfx->offset;
 						font_color = charfx->color;
 						frid = charfx->font;
@@ -1335,6 +1371,12 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				fx_offset = fx_offset.round();
 			}
 
+			Vector2i char_off = char_xform.get_origin();
+			Transform2D char_reverse_xform;
+			char_reverse_xform.set_origin(-char_off);
+			char_xform = char_xform * char_reverse_xform;
+			draw_set_transform_matrix(char_xform);
+
 			if (selected && use_selected_font_color) {
 				font_color = theme_cache.font_selected_color;
 			}
@@ -1345,9 +1387,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				if (txt_visible) {
 					if (!skip) {
 						if (frid != RID()) {
-							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, font_color);
+							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
 						} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
-							TS->draw_hex_code_box(ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, font_color);
+							TS->draw_hex_code_box(ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
 						}
 					}
 					r_processed_glyphs++;
@@ -1375,6 +1417,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				}
 				off.x += glyphs[i].advance;
 			}
+
+			draw_set_transform_matrix(Transform2D());
 		}
 		if (ul_started) {
 			ul_started = false;
