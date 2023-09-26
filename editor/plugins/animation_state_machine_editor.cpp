@@ -557,7 +557,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 		return;
 	}
 
-	menu->clear();
+	menu->clear(false);
 	animations_menu->clear();
 	animations_to_add.clear();
 

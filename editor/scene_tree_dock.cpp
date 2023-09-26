@@ -2924,7 +2924,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 
 void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (!EditorNode::get_singleton()->get_edited_scene()) {
-		menu->clear();
+		menu->clear(false);
 		if (profile_allow_editing) {
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
@@ -2943,7 +2943,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		return;
 	}
 
-	menu->clear();
+	menu->clear(false);
 
 	Ref<Script> existing_script;
 	bool existing_script_removable = true;
