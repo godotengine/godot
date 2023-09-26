@@ -1,0 +1,95 @@
+{
+  "revision" : 4,
+  "instructions" : [
+    {
+      "opname" : "FMin3AMD",
+      "opcode" : 1,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'z'" }
+      ],
+      "extensions" : [ "SPV_AMD_shader_trinary_minmax" ]
+    },
+    {
+      "opname" : "UMin3AMD",
+      "opcode" : 2,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'z'" }
+      ],
+      "extensions" : [ "SPV_AMD_shader_trinary_minmax" ]
+    },
+    {
+      "opname" : "SMin3AMD",
+      "opcode" : 3,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'z'" }
+      ],
+      "extensions" : [ "SPV_AMD_shader_trinary_minmax" ]
+    },
+    {
+      "opname" : "FMax3AMD",
+      "opcode" : 4,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'z'" }
+      ],
+      "extensions" : [ "SPV_AMD_shader_trinary_minmax" ]
+    },
+    {
+      "opname" : "UMax3AMD",
+      "opcode" : 5,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'z'" }
+      ],
+      "extensions" : [ "SPV_AMD_shader_trinary_minmax" ]
+    },
+    {
+      "opname" : "SMax3AMD",
+      "opcode" : 6,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'z'" }
+      ],
+      "extensions" : [ "SPV_AMD_shader_trinary_minmax" ]
+    },
+    {
+      "opname" : "FMid3AMD",
+      "opcode" : 7,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'z'" }
+      ],
+      "extensions" : [ "SPV_AMD_shader_trinary_minmax" ]
+    },
+    {
+      "opname" : "UMid3AMD",
+      "opcode" : 8,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'z'" }
+      ],
+      "extensions" : [ "SPV_AMD_shader_trinary_minmax" ]
+    },
+    {
+      "opname" : "SMid3AMD",
+      "opcode" : 9,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'x'" },
+        { "kind" : "IdRef", "name" : "'y'" },
+        { "kind" : "IdRef", "name" : "'z'" }
+      ],
+      "extensions" : [ "SPV_AMD_shader_trinary_minmax" ]
+    }
+  ]
+}
