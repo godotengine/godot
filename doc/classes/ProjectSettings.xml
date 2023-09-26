@@ -2366,6 +2366,13 @@
 		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;opengl3&quot;">
 			Windows override for [member rendering/gl_compatibility/driver].
 		</member>
+		<member name="rendering/gl_compatibility/fallback_to_angle" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
+		</member>
+		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="" default="[]">
+			An [Array] of devices which should always use the ANGLE renderer.
+			Each entry is a [Dictionary] with the following keys: [code]vendor[/code] and [code]name[/code]. [code]name[/code] can be set to [code]*[/code] to add all devices with the specified [code]vendor[/code].
+		</member>
 		<member name="rendering/gl_compatibility/item_buffer_size" type="int" setter="" getter="" default="16384">
 			Maximum number of canvas items commands that can be drawn in a single viewport update. If more render commands are issued they will be ignored. Decreasing this limit may improve performance on bandwidth limited devices. Increase this limit if you find that not all objects are being drawn in a frame.
 		</member>
