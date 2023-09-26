@@ -89,13 +89,13 @@ int NavRegion::get_connections_count() const {
 }
 
 Vector3 NavRegion::get_connection_pathway_start(int p_connection_id) const {
-	ERR_FAIL_COND_V(!map, Vector3());
+	ERR_FAIL_NULL_V(map, Vector3());
 	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
 	return connections[p_connection_id].pathway_start;
 }
 
 Vector3 NavRegion::get_connection_pathway_end(int p_connection_id) const {
-	ERR_FAIL_COND_V(!map, Vector3());
+	ERR_FAIL_NULL_V(map, Vector3());
 	ERR_FAIL_INDEX_V(p_connection_id, connections.size(), Vector3());
 	return connections[p_connection_id].pathway_end;
 }

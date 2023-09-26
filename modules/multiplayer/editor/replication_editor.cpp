@@ -112,9 +112,9 @@ void ReplicationEditor::_pick_node_filter_input(const Ref<InputEvent> &p_ie) {
 
 void ReplicationEditor::_pick_node_selected(NodePath p_path) {
 	Node *root = current->get_node(current->get_root_path());
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 	Node *node = get_node(p_path);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 	NodePath path_to = root->get_path_to(node);
 	adding_node_path = path_to;
 	prop_selector->select_property_from_instance(node);

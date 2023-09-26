@@ -484,7 +484,7 @@ void enet_socket_destroy(ENetSocket socket) {
 }
 
 int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBuffer *buffers, size_t bufferCount) {
-	ERR_FAIL_COND_V(address == nullptr, -1);
+	ERR_FAIL_NULL_V(address, -1);
 
 	ENetGodotSocket *sock = (ENetGodotSocket *)socket;
 	IPAddress dest;
