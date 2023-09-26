@@ -83,9 +83,16 @@ TEST_CASE("[RegEx] Searching") {
 	REQUIRE(match != nullptr);
 	CHECK(match->get_string(0) == "ea");
 
+	match = re.search(s, 1, 2);
+	REQUIRE(match != nullptr);
+	CHECK(match->get_string(0) == "e");
 	match = re.search(s, 2, 4);
 	REQUIRE(match != nullptr);
 	CHECK(match->get_string(0) == "a");
+	match = re.search(s, 3, 5);
+	CHECK(match == nullptr);
+	match = re.search(s, 6, 2);
+	CHECK(match == nullptr);
 
 	const Array all_results = re.search_all(s);
 	CHECK(all_results.size() == 2);
@@ -103,11 +110,45 @@ TEST_CASE("[RegEx] Searching") {
 }
 
 TEST_CASE("[RegEx] Substitution") {
-	String s = "Double all the vowels.";
+	const String s1 = "Double all the vowels.";
 
-	RegEx re("(?<vowel>[aeiou])");
-	REQUIRE(re.is_valid());
-	CHECK(re.sub(s, "$0$vowel", true) == "Doouublee aall thee vooweels.");
+	RegEx re1("(?<vowel>[aeiou])");
+	REQUIRE(re1.is_valid());
+	CHECK(re1.sub(s1, "$0$vowel", true) == "Doouublee aall thee vooweels.");
+
+	const String s2 = "Substitution with group.";
+
+	RegEx re2("Substitution (.+)");
+	REQUIRE(re2.is_valid());
+	CHECK(re2.sub(s2, "Test ${1}") == "Test with group.");
+
+	const String s3 = "Useless substitution";
+
+	RegEx re3("Anything");
+	REQUIRE(re3.is_valid());
+	CHECK(re3.sub(s3, "Something") == "Useless substitution");
+
+	const String s4 = "acacac";
+
+	RegEx re4("(a)(b){0}(c)");
+	REQUIRE(re4.is_valid());
+	CHECK(re4.sub(s4, "${1}.${3}.", true) == "a.c.a.c.a.c.");
+}
+
+TEST_CASE("[RegEx] Substitution with empty input and/or replacement") {
+	const String s1 = "";
+	const String s2 = "gogogo";
+
+	RegEx re1("");
+	REQUIRE(re1.is_valid());
+	CHECK(re1.sub(s1, "") == "");
+	CHECK(re1.sub(s1, "a") == "a");
+	CHECK(re1.sub(s2, "") == "gogogo");
+
+	RegEx re2("go");
+	REQUIRE(re2.is_valid());
+	CHECK(re2.sub(s2, "") == "gogo");
+	CHECK(re2.sub(s2, "", true) == "");
 }
 
 TEST_CASE("[RegEx] Uninitialized use") {
@@ -149,6 +190,37 @@ TEST_CASE("[RegEx] Invalid end position") {
 	CHECK(match->get_string(0) == String("o"));
 
 	CHECK(re.sub(s, "", true, 0, 10) == "Gdt");
+}
+
+TEST_CASE("[RegEx] Get match string list") {
+	const String s = "Godot Engine";
+
+	RegEx re("(Go)(dot)");
+	Ref<RegExMatch> match = re.search(s);
+	REQUIRE(match != nullptr);
+	PackedStringArray result;
+	result.append("Godot");
+	result.append("Go");
+	result.append("dot");
+	CHECK(match->get_strings() == result);
+}
+
+TEST_CASE("[RegEx] Match start and end positions") {
+	const String s = "Whole pattern";
+
+	RegEx re1("pattern");
+	REQUIRE(re1.is_valid());
+	Ref<RegExMatch> match = re1.search(s);
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 6);
+	CHECK(match->get_end(0) == 13);
+
+	RegEx re2("(?<vowel>[aeiou])");
+	REQUIRE(re2.is_valid());
+	match = re2.search(s);
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start("vowel") == 2);
+	CHECK(match->get_end("vowel") == 3);
 }
 } // namespace TestRegEx
 
