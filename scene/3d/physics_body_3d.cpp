@@ -502,9 +502,12 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	lock_callback();
 
 	set_ignore_transform_notification(true);
-	_sync_body_state(p_state);
 
-	GDVIRTUAL_CALL(_integrate_forces, p_state);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
+		_sync_body_state(p_state);
+
+		GDVIRTUAL_CALL(_integrate_forces, p_state);
+	}
 
 	_sync_body_state(p_state);
 	set_ignore_transform_notification(false);
@@ -2935,9 +2938,12 @@ void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	}
 
 	set_ignore_transform_notification(true);
-	_sync_body_state(p_state);
 
-	GDVIRTUAL_CALL(_integrate_forces, p_state);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
+		_sync_body_state(p_state);
+
+		GDVIRTUAL_CALL(_integrate_forces, p_state);
+	}
 
 	_sync_body_state(p_state);
 	set_ignore_transform_notification(false);
