@@ -232,13 +232,31 @@ namespace Godot.NativeInterop
         }
 
         public static godot_variant CreateFromSystemArrayOfStringName(Span<StringName> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from.IsEmpty)
+            {
+                from = System.Array.Empty<StringName>();
+            }
+            return CreateFromArray(new Collections.Array(from));
+        }
 
         public static godot_variant CreateFromSystemArrayOfNodePath(Span<NodePath> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from.IsEmpty)
+            {
+                from = System.Array.Empty<NodePath>();
+            }
+            return CreateFromArray(new Collections.Array(from));
+        }
 
         public static godot_variant CreateFromSystemArrayOfRid(Span<Rid> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from.IsEmpty)
+            {
+                from = System.Array.Empty<Rid>();
+            }
+            return CreateFromArray(new Collections.Array(from));
+        }
 
         // ReSharper disable once RedundantNameQualifier
         public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
