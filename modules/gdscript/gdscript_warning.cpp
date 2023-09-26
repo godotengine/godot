@@ -94,6 +94,9 @@ String GDScriptWarning::get_message() const {
 				return vformat(R"*(%s "%s()" has no static return type.)*", symbols[0], symbols[1]);
 			}
 			return vformat(R"(%s "%s" has no static type.)", symbols[0], symbols[1]);
+		case INFERRED_DECLARATION:
+			CHECK_SYMBOLS(2);
+			return vformat(R"(%s "%s" has an implicitly inferred static type.)", symbols[0], symbols[1]);
 		case UNSAFE_PROPERTY_ACCESS:
 			CHECK_SYMBOLS(2);
 			return vformat(R"(The property "%s" is not present on the inferred type "%s" (but may be present on a subtype).)", symbols[0], symbols[1]);
@@ -207,6 +210,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"CONSTANT_USED_AS_FUNCTION",
 		"FUNCTION_USED_AS_PROPERTY",
 		"UNTYPED_DECLARATION",
+		"INFERRED_DECLARATION",
 		"UNSAFE_PROPERTY_ACCESS",
 		"UNSAFE_METHOD_ACCESS",
 		"UNSAFE_CAST",
