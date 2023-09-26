@@ -967,7 +967,11 @@ void Node::set_process_priority(int p_priority) {
 
 	if (_is_any_processing()) {
 		_remove_from_process_thread_group();
-		data.process_priority = p_priority;
+	}
+
+	data.process_priority = p_priority;
+
+	if (_is_any_processing()) {
 		_add_to_process_thread_group();
 	}
 }
@@ -989,7 +993,11 @@ void Node::set_physics_process_priority(int p_priority) {
 
 	if (_is_any_processing()) {
 		_remove_from_process_thread_group();
-		data.physics_process_priority = p_priority;
+	}
+
+	data.physics_process_priority = p_priority;
+
+	if (_is_any_processing()) {
 		_add_to_process_thread_group();
 	}
 }
