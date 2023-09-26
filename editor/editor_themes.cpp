@@ -1130,7 +1130,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "MenuBar", style_widget);
 	theme->set_stylebox("hover", "MenuBar", style_widget_hover);
 	theme->set_stylebox("pressed", "MenuBar", style_widget_pressed);
-	theme->set_stylebox("focus", "MenuBar", style_widget_focus);
 	theme->set_stylebox("disabled", "MenuBar", style_widget_disabled);
 
 	theme->set_color("font_color", "MenuBar", font_color);
@@ -2330,7 +2329,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("completion_existing_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_existing_color"));
 	theme->set_color("completion_scroll_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_scroll_color"));
 	theme->set_color("completion_scroll_hovered_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_scroll_hovered_color"));
-	theme->set_color("completion_font_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_font_color"));
 	theme->set_color("font_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/text_color"));
 	theme->set_color("line_number_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/line_number_color"));
 	theme->set_color("caret_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/caret_color"));

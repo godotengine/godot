@@ -142,7 +142,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="center_slider_grabbers" data_type="constant" type="int" default="1">
-			Overrides the [theme_item HSlider.center_grabber] theme property of the sliders.
+			Overrides the [theme_item Slider.center_grabber] theme property of the sliders.
 		</theme_item>
 		<theme_item name="h_width" data_type="constant" type="int" default="30">
 			The width of the hue selection slider.

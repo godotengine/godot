@@ -191,7 +191,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("hover", "MenuBar", button_hover);
 	theme->set_stylebox("pressed", "MenuBar", button_pressed);
 	theme->set_stylebox("disabled", "MenuBar", button_disabled);
-	theme->set_stylebox("focus", "MenuBar", focus);
 
 	theme->set_font("font", "MenuBar", Ref<Font>());
 	theme->set_font_size("font_size", "MenuBar", -1);
@@ -451,7 +450,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "ProgressBar", -1);
 
 	theme->set_color("font_color", "ProgressBar", control_font_hover_color);
-	theme->set_color("font_shadow_color", "ProgressBar", Color(0, 0, 0));
 	theme->set_color("font_outline_color", "ProgressBar", Color(1, 1, 1));
 
 	theme->set_constant("outline_size", "ProgressBar", 0);
@@ -513,7 +511,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
 	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.29));
 	theme->set_color("completion_scroll_hovered_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.4));
-	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "CodeEdit", control_font_color);
 	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
@@ -680,11 +677,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxFlat> style_popup_panel = make_flat_stylebox(style_popup_color);
 	style_popup_panel->set_border_width_all(2);
 	style_popup_panel->set_border_color(style_popup_border_color);
-	Ref<StyleBoxFlat> style_popup_panel_disabled = style_popup_panel->duplicate();
-	style_popup_panel_disabled->set_bg_color(style_disabled_color);
 
 	theme->set_stylebox("panel", "PopupMenu", style_popup_panel);
-	theme->set_stylebox("panel_disabled", "PopupMenu", style_popup_panel_disabled);
 	theme->set_stylebox("hover", "PopupMenu", make_flat_stylebox(style_popup_hover_color));
 	theme->set_stylebox("separator", "PopupMenu", separator_horizontal);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", separator_horizontal);
