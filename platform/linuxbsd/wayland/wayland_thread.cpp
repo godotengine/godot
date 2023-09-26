@@ -1114,17 +1114,17 @@ void WaylandThread::_xdg_toplevel_on_wm_capabilities(void *data, struct xdg_topl
 		switch (*capability) {
 			case XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE: {
 				ws->can_maximize = true;
-			}; break;
+			} break;
 			case XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN: {
 				ws->can_fullscreen = true;
-			}; break;
+			} break;
 
 			case XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE: {
 				ws->can_minimize = true;
-			}; break;
+			} break;
 
 			default: {
-			}; break;
+			} break;
 		}
 	}
 }
@@ -3218,7 +3218,7 @@ void WaylandThread::window_set_idle_inhibition(DisplayServer::WindowID p_window_
 
 	if (p_enable) {
 		if (ws.registry->wp_idle_inhibit_manager && !ws.wp_idle_inhibitor) {
-			ERR_FAIL_COND(!ws.wl_surface);
+			ERR_FAIL_NULL(ws.wl_surface);
 			ws.wp_idle_inhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(ws.registry->wp_idle_inhibit_manager, ws.wl_surface);
 		}
 	} else {
@@ -3340,7 +3340,7 @@ Error WaylandThread::init() {
 	KeyMappingXKB::initialize();
 
 	wl_display = wl_display_connect(nullptr);
-	ERR_FAIL_COND_V_MSG(!wl_display, ERR_CANT_CREATE, "Can't connect to a Wayland display.");
+	ERR_FAIL_NULL_V_MSG(wl_display, ERR_CANT_CREATE, "Can't connect to a Wayland display.");
 
 	thread_data.wl_display = wl_display;
 
@@ -3348,7 +3348,7 @@ Error WaylandThread::init() {
 
 	wl_registry = wl_display_get_registry(wl_display);
 
-	ERR_FAIL_COND_V_MSG(!wl_registry, ERR_UNAVAILABLE, "Can't obtain the Wayland registry global.");
+	ERR_FAIL_NULL_V_MSG(wl_registry, ERR_UNAVAILABLE, "Can't obtain the Wayland registry global.");
 
 	registry.wayland_thread = this;
 
@@ -3357,12 +3357,12 @@ Error WaylandThread::init() {
 	// Wait for registry to get notified from the compositor.
 	wl_display_roundtrip(wl_display);
 
-	ERR_FAIL_COND_V_MSG(!registry.wl_shm, ERR_UNAVAILABLE, "Can't obtain the Wayland shared memory global.");
-	ERR_FAIL_COND_V_MSG(!registry.wl_compositor, ERR_UNAVAILABLE, "Can't obtain the Wayland compositor global.");
-	ERR_FAIL_COND_V_MSG(!registry.wl_subcompositor, ERR_UNAVAILABLE, "Can't obtain the Wayland subcompositor global.");
-	ERR_FAIL_COND_V_MSG(!registry.wl_data_device_manager, ERR_UNAVAILABLE, "Can't obtain the Wayland data device manager global.");
-	ERR_FAIL_COND_V_MSG(!registry.wp_pointer_constraints, ERR_UNAVAILABLE, "Can't obtain the Wayland pointer constraints global.");
-	ERR_FAIL_COND_V_MSG(!registry.xdg_wm_base, ERR_UNAVAILABLE, "Can't obtain the Wayland XDG shell global.");
+	ERR_FAIL_NULL_V_MSG(registry.wl_shm, ERR_UNAVAILABLE, "Can't obtain the Wayland shared memory global.");
+	ERR_FAIL_NULL_V_MSG(registry.wl_compositor, ERR_UNAVAILABLE, "Can't obtain the Wayland compositor global.");
+	ERR_FAIL_NULL_V_MSG(registry.wl_subcompositor, ERR_UNAVAILABLE, "Can't obtain the Wayland subcompositor global.");
+	ERR_FAIL_NULL_V_MSG(registry.wl_data_device_manager, ERR_UNAVAILABLE, "Can't obtain the Wayland data device manager global.");
+	ERR_FAIL_NULL_V_MSG(registry.wp_pointer_constraints, ERR_UNAVAILABLE, "Can't obtain the Wayland pointer constraints global.");
+	ERR_FAIL_NULL_V_MSG(registry.xdg_wm_base, ERR_UNAVAILABLE, "Can't obtain the Wayland XDG shell global.");
 
 	if (!registry.xdg_decoration_manager) {
 #ifdef LIBDECOR_ENABLED

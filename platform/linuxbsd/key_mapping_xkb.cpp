@@ -350,8 +350,10 @@ xkb_keycode_t KeyMappingXKB::get_xkb_keycode(Key p_keysym) {
 Key KeyMappingXKB::get_keycode(xkb_keysym_t p_keysym) {
 	// Kinda bruteforce.. could optimize.
 
-	if (p_keysym < 0x100) // Latin 1, maps 1-1
+	// Latin 1, maps 1-1
+	if (p_keysym < 0x100) {
 		return (Key)p_keysym;
+	}
 
 	// Look for special key.
 	for (int idx = 0; _xkb_keysym_to_keycode[idx].keysym != 0; idx++) {

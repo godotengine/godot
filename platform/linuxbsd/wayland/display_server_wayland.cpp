@@ -159,37 +159,37 @@ String DisplayServerWayland::get_name() const {
 #ifdef SPEECHD_ENABLED
 
 bool DisplayServerWayland::tts_is_speaking() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_speaking();
 }
 
 bool DisplayServerWayland::tts_is_paused() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerWayland::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
+	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
 	return tts->get_voices();
 }
 
 void DisplayServerWayland::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_NULL(tts);
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerWayland::tts_pause() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_NULL(tts);
 	tts->pause();
 }
 
 void DisplayServerWayland::tts_resume() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_NULL(tts);
 	tts->resume();
 }
 
 void DisplayServerWayland::tts_stop() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_NULL(tts);
 	tts->stop();
 }
 
