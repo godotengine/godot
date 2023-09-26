@@ -574,7 +574,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				String lang = _find_language(it);
 				String tx = t->text;
 				if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters >= 0) {
-					tx = tx.substr(0, remaining_characters);
+					tx = tx.left(remaining_characters);
 				}
 				remaining_characters -= tx.length();
 
@@ -4019,7 +4019,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				const String &expr = split_tag_block[i];
 				int value_pos = expr.find("=");
 				if (value_pos > -1) {
-					bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1).unquote();
+					bbcode_options[expr.left(value_pos)] = expr.substr(value_pos + 1).unquote();
 				}
 			}
 		} else {
@@ -4031,7 +4031,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		int main_value_pos = bbcode_name.find("=");
 		if (main_value_pos > -1) {
 			bbcode_value = bbcode_name.substr(main_value_pos + 1);
-			bbcode_name = bbcode_name.substr(0, main_value_pos);
+			bbcode_name = bbcode_name.left(main_value_pos);
 		}
 
 		if (tag.begins_with("/") && tag_stack.size()) {
@@ -4598,7 +4598,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					if (sep == -1) {
 						width = bbcode_value.to_int();
 					} else {
-						width = bbcode_value.substr(0, sep).to_int();
+						width = bbcode_value.left(sep).to_int();
 						height = bbcode_value.substr(sep + 1).to_int();
 					}
 				} else {
@@ -5384,7 +5384,7 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 		}
 	}
 	if ((l.from != nullptr) && (p_frame == p_selection.to_frame) && (p_selection.to_item != nullptr) && (p_selection.to_item->index >= l.from->index) && (p_selection.to_item->index < end_idx)) {
-		txt = txt.substr(0, p_selection.to_char);
+		txt = txt.left(p_selection.to_char);
 	}
 	if ((l.from != nullptr) && (p_frame == p_selection.from_frame) && (p_selection.from_item != nullptr) && (p_selection.from_item->index >= l.from->index) && (p_selection.from_item->index < end_idx)) {
 		txt = txt.substr(p_selection.from_char, -1);

@@ -76,7 +76,7 @@ void NavigationMeshEditor::_bake_pressed() {
 	if (!path.is_resource_file()) {
 		int srpos = path.find("::");
 		if (srpos != -1) {
-			String base = path.substr(0, srpos);
+			String base = path.left(srpos);
 			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
 				if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
 					err_dialog->set_text(TTR("Cannot generate navigation mesh because it does not belong to the edited scene. Make it unique first."));

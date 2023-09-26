@@ -46,7 +46,7 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 				if (!path.is_resource_file()) {
 					int srpos = path.find("::");
 					if (srpos != -1) {
-						String base = path.substr(0, srpos);
+						String base = path.left(srpos);
 						if (ResourceLoader::get_resource_type(base) == "PackedScene") {
 							if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
 								err = LightmapGI::BAKE_ERROR_FOREIGN_DATA;

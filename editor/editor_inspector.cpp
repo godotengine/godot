@@ -3013,7 +3013,7 @@ void EditorInspector::update_tree() {
 			const int dot = name_override.find(".");
 			if (dot != -1) {
 				feature_tag = name_override.substr(dot);
-				name_override = name_override.substr(0, dot);
+				name_override = name_override.left(dot);
 			}
 		}
 

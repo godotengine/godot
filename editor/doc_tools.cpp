@@ -1035,7 +1035,7 @@ void DocTools::generate(bool p_basic_types) {
 
 static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &methods) {
 	String section = parser->get_node_name();
-	String element = section.substr(0, section.length() - 1);
+	String element = section.left(-1);
 
 	while (parser->read() == OK) {
 		if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {

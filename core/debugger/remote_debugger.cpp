@@ -141,7 +141,7 @@ void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p
 	}
 
 	if (allowed_chars < s.length()) {
-		s = s.substr(0, allowed_chars);
+		s = s.left(allowed_chars);
 	}
 
 	MutexLock lock(rd->mutex);
@@ -341,7 +341,7 @@ Error RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data, boo
 	if (idx < 0) { // No prefix, unknown message.
 		return OK;
 	}
-	const String cap = p_msg.substr(0, idx);
+	const String cap = p_msg.left(idx);
 	if (!has_capture(cap)) {
 		return ERR_UNAVAILABLE; // Unknown message...
 	}
@@ -581,7 +581,7 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 			continue;
 		}
 
-		const String cap = cmd.substr(0, idx);
+		const String cap = cmd.left(idx);
 		if (!has_capture(cap)) {
 			continue; // Unknown message...
 		}

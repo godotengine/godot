@@ -317,7 +317,7 @@ static bool _teststr(const String &p_what, const String &p_str) {
 	// Remove trailing spaces and numbers, some apps like blender add ".number" to duplicates
 	// (dot is replaced with _ as invalid character) so also compensate for this.
 	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '_')) {
-		what = what.substr(0, what.length() - 1);
+		what = what.left(-1);
 	}
 
 	if (what.findn("$" + p_str) != -1) { //blender and other stuff
@@ -338,7 +338,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	// Remove trailing spaces and numbers, some apps like blender add ".number" to duplicates
 	// (dot is replaced with _ as invalid character) so also compensate for this.
 	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '_')) {
-		what = what.substr(0, what.length() - 1);
+		what = what.left(-1);
 	}
 
 	String end = p_what.substr(what.length(), p_what.length() - what.length());
@@ -347,10 +347,10 @@ static String _fixstr(const String &p_what, const String &p_str) {
 		return what.replace("$" + p_str, "") + end;
 	}
 	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
-		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
+		return what.left(-p_str.length() - 1) + end;
 	}
 	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
-		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
+		return what.left(-p_str.length() - 1) + end;
 	}
 	return what;
 }

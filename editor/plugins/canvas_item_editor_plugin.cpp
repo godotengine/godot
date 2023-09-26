@@ -5844,7 +5844,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		for (int i = 0; i < error_files.size(); i++) {
 			files_str += error_files[i].get_file().get_basename() + ",";
 		}
-		files_str = files_str.substr(0, files_str.length() - 1);
+		files_str = files_str.left(-1);
 		accept->set_text(vformat(TTR("Error instantiating scene from %s"), files_str.get_data()));
 		accept->popup_centered();
 	}

@@ -814,7 +814,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 		}
 	}
 	if (sample.is_empty()) {
-		sample = sampled_font->get_supported_chars().substr(0, 6);
+		sample = sampled_font->get_supported_chars().left(6);
 	}
 	Vector2 size = sampled_font->get_string_size(sample, HORIZONTAL_ALIGNMENT_LEFT, -1, 50);
 

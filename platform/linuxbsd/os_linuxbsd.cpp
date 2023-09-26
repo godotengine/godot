@@ -1054,7 +1054,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	// Assumes that the file name length limit is 255 characters.
 	String file_name = path.get_file();
 	if (file_name.length() > 240) {
-		file_name = file_name.substr(0, file_name.length() - 15);
+		file_name = file_name.left(-15);
 	}
 
 	String dest_path = trash_path + "/files/" + file_name;

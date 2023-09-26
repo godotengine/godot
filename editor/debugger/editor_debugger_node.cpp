@@ -242,7 +242,7 @@ Error EditorDebuggerNode::start(const String &p_uri) {
 	} else {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
-	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_uri.substr(0, p_uri.find("://") + 3)));
+	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_uri.left(p_uri.find("://") + 3)));
 	const Error err = server->start(p_uri);
 	if (err != OK) {
 		return err;
@@ -764,7 +764,7 @@ bool EditorDebuggerNode::plugins_capture(ScriptEditorDebugger *p_debugger, const
 	int colon_index = p_message.find_char(':');
 	ERR_FAIL_COND_V_MSG(colon_index < 1, false, "Invalid message received.");
 
-	const String cap = p_message.substr(0, colon_index);
+	const String cap = p_message.left(colon_index);
 	bool parsed = false;
 	for (Ref<EditorDebuggerPlugin> plugin : debugger_plugins) {
 		if (plugin->has_capture(cap)) {

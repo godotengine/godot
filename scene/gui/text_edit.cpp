@@ -1575,7 +1575,7 @@ void TextEdit::_notification(int p_what) {
 				for (int i = 0; i < carets.size(); i++) {
 					String t;
 					if (get_caret_column(i) >= 0) {
-						t = text[get_caret_line(i)].substr(0, get_caret_column(i)) + ime_text + text[get_caret_line(i)].substr(get_caret_column(i), text[get_caret_line(i)].length());
+						t = text[get_caret_line(i)].left(get_caret_column(i)) + ime_text + text[get_caret_line(i)].substr(get_caret_column(i), text[get_caret_line(i)].length());
 					} else {
 						t = ime_text;
 					}
@@ -3571,7 +3571,7 @@ void TextEdit::insert_text_at_caret(const String &p_text, int p_caret) {
 		for (int i = 0; i < carets.size(); i++) {
 			String t;
 			if (get_caret_column(i) >= 0) {
-				t = text[get_caret_line(i)].substr(0, get_caret_column(i)) + ime_text + text[get_caret_line(i)].substr(get_caret_column(i), text[get_caret_line(i)].length());
+				t = text[get_caret_line(i)].left(get_caret_column(i)) + ime_text + text[get_caret_line(i)].substr(get_caret_column(i), text[get_caret_line(i)].length());
 			} else {
 				t = ime_text;
 			}
@@ -7787,7 +7787,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	/* STEP 3: Separate dest string in pre and post text. */
 	String postinsert_text = text[p_line].substr(p_char, text[p_line].size());
 
-	substrings.write[0] = text[p_line].substr(0, p_char) + substrings[0];
+	substrings.write[0] = text[p_line].left(p_char) + substrings[0];
 	substrings.write[substrings.size() - 1] += postinsert_text;
 
 	Vector<Array> bidi_override;
@@ -7853,7 +7853,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 	ERR_FAIL_COND(p_to_line < p_from_line); // 'from > to'.
 	ERR_FAIL_COND(p_to_line == p_from_line && p_to_column < p_from_column); // 'from > to'.
 
-	String pre_text = text[p_from_line].substr(0, p_from_column);
+	String pre_text = text[p_from_line].left(p_from_column);
 	String post_text = text[p_to_line].substr(p_to_column, text[p_to_line].length());
 
 	text.remove_range(p_from_line, p_to_line);

@@ -124,10 +124,8 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 
 	for (int i = 0; i < files[p_idx]->deps.size(); i++) {
 		String dep = files[p_idx]->deps[i];
-		int sep_idx = dep.find("::"); //may contain type information, unwanted
-		if (sep_idx != -1) {
-			dep = dep.substr(0, sep_idx);
-		}
+		dep = dep.get_slice("::", 0); // May contain type information, unwanted.
+
 		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(dep);
 		if (uid != ResourceUID::INVALID_ID) {
 			//return proper dependency resource from uid
@@ -1464,9 +1462,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 		return filesystem;
 	}
 
-	if (f.ends_with("/")) {
-		f = f.substr(0, f.length() - 1);
-	}
+	f = f.trim_suffix("/");
 
 	Vector<String> path = f.split("/");
 

@@ -211,7 +211,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				// then slash_idx is the second '/', so that we select just "folder", and
 				// append that to yield "folder/foo.tscn".
 				if (difference > 0) {
-					String parent = full_path.substr(0, difference);
+					String parent = full_path.left(difference);
 					int slash_idx = parent.rfind("/");
 					slash_idx = parent.rfind("/", slash_idx - 1);
 					parent = (slash_idx >= 0 && parent.length() > 1) ? parent.substr(slash_idx + 1) : parent;
@@ -1263,7 +1263,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		if (!path.is_resource_file()) {
 			int srpos = path.find("::");
 			if (srpos != -1) {
-				String base = path.substr(0, srpos);
+				String base = path.left(srpos);
 				if (!get_edited_scene() || get_edited_scene()->get_scene_file_path() != base) {
 					show_warning(TTR("This resource can't be saved because it does not belong to the edited scene. Make it unique first."));
 					return;
@@ -1671,13 +1671,7 @@ int EditorNode::_save_external_resources() {
 
 		String path = res->get_path();
 		if (path.begins_with("res://")) {
-			int subres_pos = path.find("::");
-			if (subres_pos == -1) {
-				// Actual resource.
-				edited_resources.insert(path);
-			} else {
-				edited_resources.insert(path.substr(0, subres_pos));
-			}
+			edited_resources.insert(path.get_slice("::", 0));
 		}
 
 		res->set_edited(false);
@@ -2300,7 +2294,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 
 		int subr_idx = current_res->get_path().find("::");
 		if (subr_idx != -1) {
-			String base_path = current_res->get_path().substr(0, subr_idx);
+			String base_path = current_res->get_path().left(subr_idx);
 			if (!base_path.is_resource_file()) {
 				if (FileAccess::exists(base_path + ".import")) {
 					if (get_edited_scene() && get_edited_scene()->get_scene_file_path() == base_path) {
@@ -3994,7 +3988,7 @@ bool EditorNode::is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_
 		// If the resource name contains '::', that means it is a subresource embedded in another resource.
 		int srpos = path.find("::");
 		if (srpos != -1) {
-			String base = path.substr(0, srpos);
+			String base = path.left(srpos);
 			// If the base resource is a packed scene, we treat it as read-only if it is not the currently edited scene.
 			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
 				if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
@@ -5883,7 +5877,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 		Label *label = memnew(Label);
 
 		if (p_paths[i].ends_with("/")) {
-			label->set_text(p_paths[i].substr(0, p_paths[i].length() - 1).get_file());
+			label->set_text(p_paths[i].left(-1).get_file());
 			icon->set_texture(theme->get_icon(SNAME("Folder"), EditorStringName(EditorIcons)));
 		} else {
 			label->set_text(p_paths[i].get_file());

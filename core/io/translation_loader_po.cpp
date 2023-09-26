@@ -286,7 +286,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 
 			ERR_FAIL_COND_V_MSG(end_pos == -1, Ref<Resource>(), "Expected '\"' at end of message while parsing: " + path + ":" + itos(line));
 
-			l = l.substr(0, end_pos);
+			l = l.left(end_pos);
 			l = l.c_unescape();
 
 			if (status == STATUS_READING_ID) {
@@ -329,7 +329,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 		if (p == -1) {
 			continue;
 		}
-		String prop = c.substr(0, p).strip_edges();
+		String prop = c.left(p).strip_edges();
 		String value = c.substr(p + 1, c.length()).strip_edges();
 
 		if (prop == "X-Language" || prop == "Language") {

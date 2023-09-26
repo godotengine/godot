@@ -1319,7 +1319,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	for (int i = name_string.length() - 1; i >= 0; i--) {
 		char32_t n = name_string[i];
 		if (is_digit(n)) {
-			nums = String::chr(name_string[i]) + nums;
+			nums = String::chr(n) + nums;
 		} else {
 			break;
 		}
@@ -1328,9 +1328,9 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	String nnsep = _get_name_num_separator();
 	int name_last_index = name_string.length() - nnsep.length() - nums.length();
 
-	// Assign the base name + separator to name if we have numbers preceded by a separator
+	// Assign the base name + separator to name if we have numbers preceded by a separator.
 	if (nums.length() > 0 && name_string.substr(name_last_index, nnsep.length()) == nnsep) {
-		name_string = name_string.substr(0, name_last_index + nnsep.length());
+		name_string = name_string.left(name_last_index + nnsep.length());
 	} else {
 		nums = "";
 	}

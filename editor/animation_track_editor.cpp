@@ -3861,7 +3861,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			} else {
 				int sep = track_path.rfind(":");
 				if (sep != -1) {
-					String base_path = track_path.substr(0, sep);
+					String base_path = track_path.left(sep);
 					if (base_path == np) {
 						String value_name = track_path.substr(sep + 1);
 						value = p_value.get(value_name);
@@ -3959,7 +3959,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 			} else {
 				String tpath = animation->track_get_path(i);
 				int index = tpath.rfind(":");
-				if (NodePath(tpath.substr(0, index + 1)) == np) {
+				if (NodePath(tpath.left(index + 1)) == np) {
 					String subindex = tpath.substr(index + 1, tpath.length() - index);
 					value = p_value.get(subindex);
 				} else {
@@ -4329,7 +4329,7 @@ void AnimationTrackEditor::_update_tracks() {
 	if (!animation->get_path().is_resource_file()) {
 		int srpos = animation->get_path().find("::");
 		if (srpos != -1) {
-			String base = animation->get_path().substr(0, srpos);
+			String base = animation->get_path().left(srpos);
 			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
 				if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
 					file_read_only = true;

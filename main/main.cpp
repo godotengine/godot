@@ -1383,7 +1383,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (sep == -1) {
 				path = ".";
 			} else {
-				path = file.substr(0, sep);
+				path = file.left(sep);
 			}
 			if (OS::get_singleton()->set_cwd(path) == OK) {
 				// path already specified, don't override
@@ -3321,7 +3321,7 @@ bool Main::start() {
 
 							local_game_path = da->get_current_dir().path_join(local_game_path);
 						} else {
-							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
+							Ref<DirAccess> da = DirAccess::open(local_game_path.left(sep));
 							if (da.is_valid()) {
 								local_game_path = da->get_current_dir().path_join(
 										local_game_path.substr(sep + 1, local_game_path.length()));

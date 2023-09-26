@@ -314,7 +314,7 @@ String DirAccessWindows::get_filesystem_type() const {
 
 	int unit_end = path.find(":");
 	ERR_FAIL_COND_V(unit_end == -1, String());
-	String unit = path.substr(0, unit_end + 1) + "\\";
+	String unit = path.left(unit_end + 1) + "\\";
 
 	if (path.is_network_share_path()) {
 		return "Network Share";

@@ -145,7 +145,7 @@ void CodeEdit::_notification(int p_what) {
 
 					for (int j = 0; j < code_completion_options[l].matches.size(); j++) {
 						Pair<int, int> match_segment = code_completion_options[l].matches[j];
-						int match_offset = theme_cache.font->get_string_size(code_completion_options[l].display.substr(0, match_segment.first), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
+						int match_offset = theme_cache.font->get_string_size(code_completion_options[l].display.left(match_segment.first), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
 						int match_len = theme_cache.font->get_string_size(code_completion_options[l].display.substr(match_segment.first, match_segment.second), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
 
 						draw_rect(Rect2(match_pos + Point2(match_offset, 0), Size2(match_len, row_height)), theme_cache.code_completion_existing_color);
@@ -176,7 +176,7 @@ void CodeEdit::_notification(int p_what) {
 				}
 				Size2 minsize = theme_cache.code_hint_style->get_minimum_size() + Size2(max_width, line_count * font_height + (theme_cache.line_spacing * line_count - 1));
 
-				int offset = theme_cache.font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
+				int offset = theme_cache.font->get_string_size(code_hint_lines[0].get_slice(String::chr(0xFFFF), 0), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
 				if (code_hint_xpos == -0xFFFF) {
 					code_hint_xpos = get_caret_draw_pos().x - offset;
 				}
@@ -196,8 +196,8 @@ void CodeEdit::_notification(int p_what) {
 					int begin = 0;
 					int end = 0;
 					if (line.contains(String::chr(0xFFFF))) {
-						begin = theme_cache.font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
-						end = theme_cache.font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
+						begin = theme_cache.font->get_string_size(line.get_slice(String::chr(0xFFFF), 0), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
+						end = theme_cache.font->get_string_size(line.get_slice(String::chr(0xFFFF), 0), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
 					}
 
 					Point2 round_ofs = hint_ofs + theme_cache.code_hint_style->get_offset() + Vector2(0, theme_cache.font->get_ascent(theme_cache.font_size) + font_height * i + yofs);
@@ -2078,7 +2078,7 @@ String CodeEdit::get_text_for_code_completion() const {
 		String line = get_line(i);
 
 		if (i == get_caret_line()) {
-			completion_text += line.substr(0, get_caret_column());
+			completion_text += line.left(get_caret_column());
 			/* Not unicode, represents the caret. */
 			completion_text += String::chr(0xFFFF);
 			completion_text += line.substr(get_caret_column(), line.size());
@@ -2273,7 +2273,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 			set_caret_column(get_caret_column(i) - code_completion_base.length(), false, i);
 
 			// Merge with text.
-			insert_text_at_caret(insert_text.substr(0, code_completion_base.length()), i);
+			insert_text_at_caret(insert_text.left(code_completion_base.length()), i);
 			set_caret_column(caret_col, false, i);
 			insert_text_at_caret(insert_text.substr(matching_chars), i);
 		}
@@ -2375,7 +2375,7 @@ String CodeEdit::get_text_with_cursor_char(int p_line, int p_column) const {
 	for (int i = 0; i < text_size; i++) {
 		String line_text = get_line(i);
 		if (i == p_line && p_column >= 0 && p_column <= line_text.size()) {
-			result += line_text.substr(0, p_column);
+			result += line_text.left(p_column);
 			/* Not unicode, represents the cursor. */
 			result += String::chr(0xFFFF);
 			result += line_text.substr(p_column, line_text.size());

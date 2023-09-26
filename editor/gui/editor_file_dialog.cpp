@@ -1072,7 +1072,7 @@ void EditorFileDialog::set_current_path(const String &p_path) {
 	if (pos == -1) {
 		set_current_file(p_path);
 	} else {
-		String path_dir = p_path.substr(0, pos);
+		String path_dir = p_path.left(pos);
 		String path_file = p_path.substr(pos + 1, p_path.length());
 		set_current_dir(path_dir);
 		set_current_file(path_file);
@@ -1418,7 +1418,7 @@ void EditorFileDialog::_update_favorites() {
 			if (name == current || name == current + "/") {
 				current_favorite = favorited_paths.size();
 			}
-			name = name.substr(0, name.length() - 1);
+			name = name.left(-1);
 			name = name.get_file();
 			favorited_paths.append(favorited[i]);
 			favorited_names.append(name);
@@ -1505,10 +1505,7 @@ void EditorFileDialog::_update_recent() {
 		if (res && name == "res://") {
 			name = "/";
 		} else {
-			if (name.ends_with("/")) {
-				name = name.substr(0, name.length() - 1);
-			}
-			name = name.get_file();
+			name = name.trim_suffix("/").get_file();
 		}
 		recentd_paths.append(recentd[i]);
 		recentd_names.append(name);

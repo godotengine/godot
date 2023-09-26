@@ -1033,7 +1033,7 @@ void TextShaderEditor::_update_bookmark_list() {
 		String line = shader_editor->get_text_editor()->get_line(bookmark_list[i]).strip_edges();
 		// Limit the size of the line if too big.
 		if (line.length() > 50) {
-			line = line.substr(0, 50);
+			line = line.left(50);
 		}
 
 		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");

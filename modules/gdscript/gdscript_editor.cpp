@@ -3065,21 +3065,14 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			}
 
 			for (const MethodInfo &mi : virtual_methods) {
-				String method_hint = mi.name;
-				if (method_hint.contains(":")) {
-					method_hint = method_hint.get_slice(":", 0);
-				}
-				method_hint += "(";
+				String method_hint = mi.name.get_slice(":", 0) + "(";
 
 				if (mi.arguments.size()) {
 					for (int i = 0; i < mi.arguments.size(); i++) {
 						if (i > 0) {
 							method_hint += ", ";
 						}
-						String arg = mi.arguments[i].name;
-						if (arg.contains(":")) {
-							arg = arg.substr(0, arg.find(":"));
-						}
+						String arg = mi.arguments[i].name.get_slice(":", 0);
 						method_hint += arg;
 						if (use_type_hint) {
 							method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);

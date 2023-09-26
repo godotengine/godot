@@ -1391,7 +1391,7 @@ String VisualShader::validate_parameter_name(const String &p_name, const Ref<Vis
 			//remove numbers, put new and try again
 			attempt++;
 			while (param_name.length() && is_digit(param_name[param_name.length() - 1])) {
-				param_name = param_name.substr(0, param_name.length() - 1);
+				param_name = param_name.left(-1);
 			}
 			ERR_FAIL_COND_V(param_name.is_empty(), String());
 			param_name += itos(attempt);
@@ -4242,10 +4242,10 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 	inputs = inputs.left(index) + inputs.substr(index + count);
 
 	inputs_strings = inputs.split(";", false);
-	inputs = inputs.substr(0, index);
+	inputs = inputs.left(index);
 
 	for (int i = p_id; i < inputs_strings.size(); i++) {
-		inputs += inputs_strings[i].replace_first(inputs_strings[i].split(",")[0], itos(i)) + ";";
+		inputs += inputs_strings[i].replace_first(inputs_strings[i].get_slice(",", 0), itos(i)) + ";";
 	}
 
 	_apply_port_changes();
@@ -4317,10 +4317,10 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 	outputs = outputs.left(index) + outputs.substr(index + count);
 
 	outputs_strings = outputs.split(";", false);
-	outputs = outputs.substr(0, index);
+	outputs = outputs.left(index);
 
 	for (int i = p_id; i < outputs_strings.size(); i++) {
-		outputs += outputs_strings[i].replace_first(outputs_strings[i].split(",")[0], itos(i)) + ";";
+		outputs += outputs_strings[i].replace_first(outputs_strings[i].get_slice(",", 0), itos(i)) + ";";
 	}
 
 	_apply_port_changes();

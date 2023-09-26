@@ -556,7 +556,7 @@ void ProjectDialog::ok_pressed() {
 
 					String name = String::utf8(fname);
 					if (name.ends_with("project.godot")) {
-						zip_root = name.substr(0, name.rfind("project.godot"));
+						zip_root = name.trim_suffix("project.godot");
 						break;
 					}
 
@@ -581,7 +581,7 @@ void ProjectDialog::ok_pressed() {
 					if (path.is_empty() || path == zip_root || !zip_root.is_subsequence_of(path)) {
 						//
 					} else if (path.ends_with("/")) { // a dir
-						path = path.substr(0, path.length() - 1);
+						path = path.left(-1);
 						String rel_path = path.substr(zip_root.length());
 
 						Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -630,10 +630,7 @@ void ProjectDialog::ok_pressed() {
 			}
 		}
 
-		dir = dir.replace("\\", "/");
-		if (dir.ends_with("/")) {
-			dir = dir.substr(0, dir.length() - 1);
-		}
+		dir = dir.replace("\\", "/").trim_suffix("/");
 
 		hide();
 		emit_signal(SNAME("project_created"), dir);
@@ -1059,7 +1056,7 @@ void ProjectListItemControl::set_project_icon(const Ref<Texture2D> &p_icon) {
 }
 
 bool _project_feature_looks_like_version(const String &p_feature) {
-	return p_feature.contains(".") && p_feature.substr(0, 3).is_numeric();
+	return p_feature.contains(".") && p_feature.left(3).is_numeric();
 }
 
 void ProjectListItemControl::set_unsupported_features(PackedStringArray p_features) {
@@ -2653,7 +2650,7 @@ void ProjectManager::_install_project(const String &p_zip_path, const String &p_
 void ProjectManager::_files_dropped(PackedStringArray p_files) {
 	if (p_files.size() == 1 && p_files[0].ends_with(".zip")) {
 		const String file = p_files[0].get_file();
-		_install_project(p_files[0], file.substr(0, file.length() - 4).capitalize());
+		_install_project(p_files[0], file.left(-4).capitalize());
 		return;
 	}
 	HashSet<String> folders_set;

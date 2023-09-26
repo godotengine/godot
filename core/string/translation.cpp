@@ -1016,9 +1016,9 @@ void TranslationServer::_bind_methods() {
 
 void TranslationServer::load_translations() {
 	_load_translations("internationalization/locale/translations"); //all
-	_load_translations("internationalization/locale/translations_" + locale.substr(0, 2));
+	_load_translations("internationalization/locale/translations_" + locale.left(2));
 
-	if (locale.substr(0, 2) != locale) {
+	if (locale.left(2) != locale) {
 		_load_translations("internationalization/locale/translations_" + locale);
 	}
 }

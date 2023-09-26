@@ -233,10 +233,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, HashSet<Ref<Resource>> 
 		}
 		if (E.usage & PROPERTY_USAGE_GROUP) {
 			group = E.name;
-			group_base = E.hint_string;
-			if (group_base.ends_with("_")) {
-				group_base = group_base.substr(0, group_base.length() - 1);
-			}
+			group_base = E.hint_string.trim_suffix("_");
 		}
 
 		//can unfold
@@ -253,7 +250,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, HashSet<Ref<Resource>> 
 				if (last != -1) {
 					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E.name);
 					if (can_revert) {
-						unfold_group.insert(E.name.substr(0, last));
+						unfold_group.insert(E.name.left(last));
 					}
 				}
 			}

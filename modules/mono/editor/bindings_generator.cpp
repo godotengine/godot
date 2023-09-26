@@ -266,7 +266,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_pos + 1;
 		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
 			const int tag_end = tag.find(" ");
-			const String link_tag = tag.substr(0, tag_end);
+			const String link_tag = tag.left(tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
 			const Vector<String> link_target_parts = link_target.split(".");
@@ -2157,7 +2157,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			String cs_type = arg_cs_type;
 			if (cs_type.ends_with("[]")) {
-				cs_type = cs_type.substr(0, cs_type.length() - 2);
+				cs_type = cs_type.left(-2);
 			}
 
 			String def_arg = sformat(iarg.default_argument, cs_type);

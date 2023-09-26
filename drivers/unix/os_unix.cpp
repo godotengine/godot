@@ -619,12 +619,7 @@ String OS_Unix::get_locale() const {
 		return "en";
 	}
 
-	String locale = get_environment("LANG");
-	int tp = locale.find(".");
-	if (tp != -1) {
-		locale = locale.substr(0, tp);
-	}
-	return locale;
+	return get_environment("LANG").get_slice(".", 0);
 }
 
 Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {

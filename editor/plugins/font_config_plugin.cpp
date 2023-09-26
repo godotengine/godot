@@ -929,7 +929,7 @@ void FontPreview::_notification(int p_what) {
 						}
 					}
 					if (sample.is_empty()) {
-						sample = prev_font->get_supported_chars().substr(0, 6);
+						sample = prev_font->get_supported_chars().left(6);
 					}
 					if (sample.is_empty()) {
 						prev_ok = false;

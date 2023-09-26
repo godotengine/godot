@@ -400,7 +400,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			icon = folder_icon;
 			color = default_folder_color;
 		} else if (favorite.ends_with("/")) {
-			text = favorite.substr(0, favorite.length() - 1).get_file();
+			text = favorite.left(-1).get_file();
 			icon = folder_icon;
 			color = assigned_folder_colors.has(favorite) ? folder_colors[assigned_folder_colors[favorite]] : default_folder_color;
 		} else {
@@ -698,11 +698,8 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	if (p_path == "Favorites") {
 		current_path = p_path;
 	} else {
-		String target_path = p_path;
 		// If the path is a file, do not only go to the directory in the tree, also select the file in the file list.
-		if (target_path.ends_with("/")) {
-			target_path = target_path.substr(0, target_path.length() - 1);
-		}
+		String target_path = p_path.trim_suffix("/");
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->file_exists(p_path)) {
 			current_path = target_path;
@@ -959,7 +956,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					files->set_item_metadata(-1, favorite);
 				}
 			} else if (favorite.ends_with("/")) {
-				text = favorite.substr(0, favorite.length() - 1).get_file();
+				text = favorite.left(-1).get_file();
 				icon = folder_icon;
 				if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
 					files->add_item(text, icon, true);
@@ -989,8 +986,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		}
 	} else {
 		// Get infos on the directory + file.
-		if (directory.ends_with("/") && directory != "res://") {
-			directory = directory.substr(0, directory.length() - 1);
+		if (directory != "res://") {
+			directory = directory.trim_suffix("/");
 		}
 		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(directory);
 		if (!efd) {
@@ -1147,7 +1144,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 	String fpath = p_path;
 	if (fpath.ends_with("/")) {
 		if (fpath != "res://") {
-			fpath = fpath.substr(0, fpath.length() - 1);
+			fpath = fpath.left(-1);
 		}
 	} else if (fpath != "Favorites") {
 		if (FileAccess::exists(fpath + ".import")) {
@@ -1440,7 +1437,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		}
 		for (int i = 0; i < folder_changed_paths.size(); ++i) {
 			p_folder_renames[folder_changed_paths[i]] = folder_changed_paths[i].replace_first(old_path, new_path);
-			emit_signal(SNAME("folder_moved"), folder_changed_paths[i], p_folder_renames[folder_changed_paths[i]].substr(0, p_folder_renames[folder_changed_paths[i]].length() - 1));
+			emit_signal(SNAME("folder_moved"), folder_changed_paths[i], p_folder_renames[folder_changed_paths[i]].left(-1));
 		}
 	} else {
 		EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + "\n");
@@ -1551,7 +1548,7 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 		int sep_pos = r->get_path().find("::");
 		if (sep_pos >= 0) {
 			extra_path = base_path.substr(sep_pos, base_path.length());
-			base_path = base_path.substr(0, sep_pos);
+			base_path = base_path.left(sep_pos);
 		}
 
 		if (p_renames.has(base_path)) {
@@ -2251,7 +2248,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					duplicate_dialog_text->set_text(name);
 					duplicate_dialog_text->select(0, name.rfind("."));
 				} else {
-					String name = to_duplicate.path.substr(0, to_duplicate.path.length() - 1).get_file();
+					String name = to_duplicate.path.left(-1).get_file();
 					duplicate_dialog->set_title(TTR("Duplicating folder:") + " " + name);
 					duplicate_dialog_text->set_text(name);
 					duplicate_dialog_text->select(0, name.length());
@@ -2757,9 +2754,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 						// Not in the favorite section.
 						if (fpath != "res://") {
 							// We drop between two files
-							if (fpath.ends_with("/")) {
-								fpath = fpath.substr(0, fpath.length() - 1);
-							}
+							fpath = fpath.trim_suffix("/");
 							target = fpath.get_base_dir();
 							return;
 						}

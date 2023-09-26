@@ -1113,7 +1113,7 @@ void CodeTextEditor::trim_trailing_whitespace() {
 					break;
 				}
 			}
-			text_editor->set_line(i, line.substr(0, end));
+			text_editor->set_line(i, line.left(end));
 		}
 	}
 

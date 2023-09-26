@@ -1079,7 +1079,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 		}
 	}
 	if (sample.is_empty()) {
-		sample = font_preview->get_supported_chars().substr(0, 6);
+		sample = font_preview->get_supported_chars().left(6);
 	}
 	font_preview_label->set_text(sample);
 

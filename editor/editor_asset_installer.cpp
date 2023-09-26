@@ -104,7 +104,7 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 		// We are only interested in subfolders, so skip the root slash.
 		int separator = source_name.find("/", 1);
 		while (separator != -1) {
-			String dir_name = source_name.substr(0, separator + 1);
+			String dir_name = source_name.left(separator + 1);
 			if (!dir_name.is_empty() && !asset_files.has(dir_name)) {
 				asset_files.insert(dir_name);
 			}
@@ -190,7 +190,7 @@ void EditorAssetInstaller::_rebuild_source_tree() {
 		if (separator == -1) {
 			parent_item = root;
 		} else {
-			String parent_path = path.substr(0, separator);
+			String parent_path = path.left(separator);
 			HashMap<String, TreeItem *>::Iterator I = directory_item_map.find(parent_path);
 			ERR_CONTINUE(!I);
 			parent_item = I->value;

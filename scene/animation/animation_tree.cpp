@@ -2106,7 +2106,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 			activity.push_back(a);
 		}
 		input_activity_map[p_base_path] = activity;
-		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = &input_activity_map[p_base_path];
+		input_activity_map_get[String(p_base_path).left(-1)] = &input_activity_map[p_base_path];
 	}
 
 	List<PropertyInfo> plist;

@@ -766,7 +766,7 @@ void FileDialog::set_current_path(const String &p_path) {
 	if (pos == -1) {
 		set_current_file(p_path);
 	} else {
-		String path_dir = p_path.substr(0, pos);
+		String path_dir = p_path.left(pos);
 		String path_file = p_path.substr(pos + 1, p_path.length());
 		set_current_dir(path_dir);
 		set_current_file(path_file);

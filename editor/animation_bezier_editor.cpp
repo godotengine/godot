@@ -281,7 +281,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 				int end = base_path.find(":");
 				if (end != -1) {
-					base_path = base_path.substr(0, end + 1);
+					base_path = base_path.left(end + 1);
 				}
 				Vector<int> indices = track_indices.has(base_path) ? track_indices[base_path] : Vector<int>();
 				indices.push_back(i);

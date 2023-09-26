@@ -965,7 +965,7 @@ void EditorAssetLibrary::_search(int p_page) {
 		}
 	}
 	if (!support_list.is_empty()) {
-		args += "&support=" + support_list.substr(0, support_list.length() - 1);
+		args += "&support=" + support_list.left(-1);
 	}
 
 	if (categories->get_selected() > 0) {

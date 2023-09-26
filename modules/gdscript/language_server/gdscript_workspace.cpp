@@ -71,9 +71,9 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 	int first_class = source.find("\nclass ");
 	int start_line = 0;
 	if (first_class != -1) {
-		start_line = source.substr(0, first_class).split("\n").size();
+		start_line = source.left(first_class).get_slice_count("\n");
 	} else {
-		start_line = source.split("\n").size();
+		start_line = source.get_slice_count("\n");
 	}
 
 	String function_body = "\n\n" + function_signature + "(";

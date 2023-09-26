@@ -601,11 +601,11 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 	if (!p_hint_string.is_empty()) {
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
-			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
+			String subtype_string = p_hint_string.left(hint_subtype_separator);
 			int slash_pos = subtype_string.find("/");
 			if (slash_pos >= 0) {
 				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
-				subtype_string = subtype_string.substr(0, slash_pos);
+				subtype_string = subtype_string.left(slash_pos);
 			}
 
 			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);

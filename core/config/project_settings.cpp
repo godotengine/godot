@@ -197,7 +197,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 			return "res://" + path;
 		}
 
-		String parent = path.substr(0, sep);
+		String parent = path.left(sep);
 
 		String plocal = localize_path(parent);
 		if (plocal.is_empty()) {
@@ -426,9 +426,8 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (const _VCSort &E : vclist) {
 		String prop_info_name = E.name;
-		int dot = prop_info_name.find(".");
-		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
-			prop_info_name = prop_info_name.substr(0, dot);
+		if (!custom_prop_info.has(prop_info_name)) {
+			prop_info_name = prop_info_name.get_slice(".", 0);
 		}
 
 		if (custom_prop_info.has(prop_info_name)) {
@@ -522,9 +521,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.
 		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
-		if (!resource_path.is_empty() && resource_path[resource_path.length() - 1] == '/') {
-			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
-		}
+		resource_path = resource_path.trim_suffix("/");
 	}
 
 	// Attempt with a user-defined main pack first
@@ -645,9 +642,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		return err;
 	}
 
-	if (resource_path.length() && resource_path[resource_path.length() - 1] == '/') {
-		resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
-	}
+	resource_path = resource_path.trim_suffix("/");
 
 	return OK;
 }
@@ -1060,7 +1055,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		if (div < 0) {
 			category = "";
 		} else {
-			category = category.substr(0, div);
+			category = category.left(div);
 			name = name.substr(div + 1, name.size());
 		}
 		save_props[category].push_back(name);

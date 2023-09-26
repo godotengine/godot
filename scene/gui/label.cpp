@@ -117,7 +117,7 @@ void Label::_shape() {
 		ERR_FAIL_COND(font.is_null());
 		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			txt = txt.substr(0, visible_chars);
+			txt = txt.left(visible_chars);
 		}
 		if (dirty) {
 			TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);

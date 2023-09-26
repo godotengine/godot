@@ -705,7 +705,7 @@ void ScriptTextEditor::_update_bookmark_list() {
 
 		// Limit the size of the line if too big.
 		if (line.length() > 50) {
-			line = line.substr(0, 50);
+			line = line.left(50);
 		}
 
 		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - `" + line + "`");
@@ -858,7 +858,7 @@ void ScriptTextEditor::_update_breakpoint_list() {
 
 		// Limit the size of the line if too big.
 		if (line.length() > 50) {
-			line = line.substr(0, 50);
+			line = line.left(50);
 		}
 
 		breakpoints_menu->add_item(String::num((int)breakpoint_list[i] + 1) + " - `" + line + "`");
@@ -1397,7 +1397,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 				for (int i = 0; i < lines.size(); i++) {
 					String line = lines[i];
-					String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); // Extract the whitespace at the beginning.
+					String whitespace = line.left(line.size() - line.strip_edges(true, false).size()); // Extract the whitespace at the beginning.
 					if (expression.parse(line) == OK) {
 						Variant result = expression.execute(Array(), Variant(), false, true);
 						if (expression.get_error_text().is_empty()) {

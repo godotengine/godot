@@ -79,11 +79,7 @@ Error AudioDriverALSA::init_output_device() {
 	if (output_device_name == "Default") {
 		status = snd_pcm_open(&pcm_handle, "default", SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
 	} else {
-		String device = output_device_name;
-		int pos = device.find(";");
-		if (pos != -1) {
-			device = device.substr(0, pos);
-		}
+		String device = output_device_name.get_slice(";", 0);
 		status = snd_pcm_open(&pcm_handle, device.utf8().get_data(), SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
 	}
 

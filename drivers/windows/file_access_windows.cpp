@@ -60,12 +60,7 @@ void FileAccessWindows::check_errors() const {
 
 bool FileAccessWindows::is_path_invalid(const String &p_path) {
 	// Check for invalid operating system file.
-	String fname = p_path;
-	int dot = fname.find(".");
-	if (dot != -1) {
-		fname = fname.substr(0, dot);
-	}
-	fname = fname.to_lower();
+	String fname = p_path.get_slice(".", 0).to_lower();
 	return invalid_files.has(fname);
 }
 
@@ -362,8 +357,8 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	}
 
 	String file = fix_path(p_file);
-	if (file.ends_with("/") && file != "/") {
-		file = file.substr(0, file.length() - 1);
+	if (file != "/") {
+		file = file.trim_suffix("/");
 	}
 
 	struct _stat st;

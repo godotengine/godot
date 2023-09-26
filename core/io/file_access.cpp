@@ -417,7 +417,7 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 	} while (qc % 2);
 
 	// Remove the extraneous newline we've added above.
-	line = line.substr(0, line.length() - 1);
+	line = line.left(-1);
 
 	Vector<String> strings;
 

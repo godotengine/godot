@@ -194,7 +194,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		String class_name;
 		int rfind = select.rfind(".");
 		if (rfind != -1) {
-			class_name = select.substr(0, rfind);
+			class_name = select.left(rfind);
 			select = select.substr(rfind + 1);
 		} else {
 			class_name = "@GlobalScope";
@@ -273,7 +273,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 
 			if (link.contains(".")) {
 				int class_end = link.find(".");
-				emit_signal(SNAME("go_to_help"), topic + ":" + link.substr(0, class_end) + ":" + link.substr(class_end + 1, link.length()));
+				emit_signal(SNAME("go_to_help"), topic + ":" + link.left(class_end) + ":" + link.substr(class_end + 1, link.length()));
 			}
 		}
 	} else if (p_select.begins_with("http")) {
@@ -610,10 +610,10 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods)
 
 		String group_prefix;
 		for (int i = 0; i < m.size(); i++) {
-			const String new_prefix = m[i].name.substr(0, 3);
+			const String new_prefix = m[i].name.left(3);
 			bool is_new_group = false;
 
-			if (i < m.size() - 1 && new_prefix == m[i + 1].name.substr(0, 3) && new_prefix != group_prefix) {
+			if (i < m.size() - 1 && new_prefix == m[i + 1].name.left(3) && new_prefix != group_prefix) {
 				is_new_group = i > 0;
 				group_prefix = new_prefix;
 			} else if (!group_prefix.is_empty() && new_prefix != group_prefix) {
@@ -2116,7 +2116,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
 			const int tag_end = tag.find(" ");
-			const String link_tag = tag.substr(0, tag_end);
+			const String link_tag = tag.left(tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
 			// Use monospace font to make clickable references
@@ -2601,7 +2601,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 		String class_name;
 		int rfind = select.rfind(".");
 		if (rfind != -1) {
-			class_name = select.substr(0, rfind);
+			class_name = select.left(rfind);
 			select = select.substr(rfind + 1);
 		} else {
 			class_name = "@GlobalScope";

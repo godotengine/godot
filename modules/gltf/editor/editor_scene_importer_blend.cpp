@@ -314,7 +314,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 		}
 		return false;
 	}
-	String v = pipe.substr(0, pp);
+	String v = pipe.left(pp);
 	int version = v.to_int();
 	if (version < 3) {
 		if (r_err) {

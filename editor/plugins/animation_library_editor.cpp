@@ -165,7 +165,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 				if (!al_path.is_resource_file()) {
 					int srpos = al_path.find("::");
 					if (srpos != -1) {
-						String base = al_path.substr(0, srpos);
+						String base = al_path.left(srpos);
 						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
 							error_dialog->set_text(TTR("This animation library can't be saved because it does not belong to the edited scene. Make it unique first."));
 							error_dialog->popup_centered();
@@ -243,7 +243,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 				if (!anim_path.is_resource_file()) {
 					int srpos = anim_path.find("::");
 					if (srpos != -1) {
-						String base = anim_path.substr(0, srpos);
+						String base = anim_path.left(srpos);
 						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
 							error_dialog->set_text(TTR("This animation can't be saved because it does not belong to the edited scene. Make it unique first."));
 							error_dialog->popup_centered();
@@ -646,7 +646,7 @@ void AnimationLibraryEditor::update_tree() {
 			libitem->set_tooltip_text(1, al_path);
 			int srpos = al_path.find("::");
 			if (srpos != -1) {
-				String base = al_path.substr(0, srpos);
+				String base = al_path.left(srpos);
 				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
 					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
 						animation_library_is_foreign = true;
@@ -698,7 +698,7 @@ void AnimationLibraryEditor::update_tree() {
 				anitem->set_tooltip_text(1, anim_path);
 				int srpos = anim_path.find("::");
 				if (srpos != -1) {
-					String base = anim_path.substr(0, srpos);
+					String base = anim_path.left(srpos);
 					if (ResourceLoader::get_resource_type(base) == "PackedScene") {
 						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
 							anitem->set_text(1, TTR("[foreign]"));

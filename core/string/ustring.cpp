@@ -231,14 +231,14 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 	int pos = base.find("://");
 	// Scheme
 	if (pos != -1) {
-		r_scheme = base.substr(0, pos + 3).to_lower();
+		r_scheme = base.left(pos + 3).to_lower();
 		base = base.substr(pos + 3, base.length() - pos - 3);
 	}
 	pos = base.find("/");
 	// Path
 	if (pos != -1) {
 		r_path = base.substr(pos, base.length() - pos);
-		base = base.substr(0, pos);
+		base = base.left(pos);
 	}
 	// Host
 	pos = base.find("@");
@@ -264,7 +264,7 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 			r_host = base;
 			base = "";
 		} else {
-			r_host = base.substr(0, pos);
+			r_host = base.left(pos);
 			base = base.substr(pos, base.length() - pos);
 		}
 	}
@@ -1285,9 +1285,9 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 
 	while (true) {
 		if (remaining_len < p_splitter.length() || (p_maxsplit > 0 && p_maxsplit == ret.size())) {
-			// no room for another splitter or hit max splits, push what's left and we're done
+			// No room for another splitter or hit max splits, push what's left and we're done.
 			if (p_allow_empty || remaining_len > 0) {
-				ret.push_back(substr(0, remaining_len));
+				ret.push_back(left(remaining_len));
 			}
 			break;
 		}
@@ -1303,8 +1303,8 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 		}
 
 		if (left_edge < 0) {
-			// no more splitters, we're done
-			ret.push_back(substr(0, remaining_len));
+			// No more splitters, we're done.
+			ret.push_back(left(remaining_len));
 			break;
 		}
 
@@ -2369,7 +2369,7 @@ int64_t String::to_int(const char *p_str, int p_len) {
 		char c = p_str[i];
 		if (is_digit(c)) {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
-			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).left(to) + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -2400,7 +2400,7 @@ int64_t String::to_int(const wchar_t *p_str, int p_len) {
 		wchar_t c = p_str[i];
 		if (is_digit(c)) {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
-			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).left(to) + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -2929,21 +2929,15 @@ String String::insert(int p_at_pos, const String &p_string) const {
 		return *this;
 	}
 
-	if (p_at_pos > length()) {
-		p_at_pos = length();
+	if (p_at_pos >= length()) {
+		return *this + p_string;
 	}
 
-	String pre;
-	if (p_at_pos > 0) {
-		pre = substr(0, p_at_pos);
+	if (p_at_pos == 0) {
+		return p_string + *this;
 	}
 
-	String post;
-	if (p_at_pos < length()) {
-		post = substr(p_at_pos, length() - p_at_pos);
-	}
-
-	return pre + p_string + post;
+	return left(p_at_pos) + p_string + right(-p_at_pos);
 }
 
 String String::erase(int p_pos, int p_chars) const {
@@ -3591,7 +3585,7 @@ String String::replace(const char *p_key, const char *p_with) const {
 String String::replace_first(const String &p_key, const String &p_with) const {
 	int pos = find(p_key);
 	if (pos >= 0) {
-		return substr(0, pos) + p_with + substr(pos + p_key.length(), length());
+		return left(pos) + p_with + substr(pos + p_key.length(), length());
 	}
 
 	return *this;
@@ -3840,7 +3834,7 @@ String String::rstrip(const String &p_chars) const {
 		return *this;
 	}
 
-	return substr(0, end + 1);
+	return left(end + 1);
 }
 
 bool String::is_network_share_path() const {
@@ -3864,18 +3858,18 @@ String String::simplify_path() const {
 		}
 		if (only_chars) {
 			found = true;
-			drive = s.substr(0, p + 3);
+			drive = s.left(p + 3);
 			s = s.substr(p + 3);
 		}
 	}
 	if (!found) {
 		if (is_network_share_path()) {
 			// Network path, beginning with // or \\.
-			drive = s.substr(0, 2);
+			drive = s.left(2);
 			s = s.substr(2);
 		} else if (s.begins_with("/") || s.begins_with("\\")) {
 			// Absolute path.
-			drive = s.substr(0, 1);
+			drive = s.left(1);
 			s = s.substr(1);
 		} else {
 			// Windows-style drive path, like C:/ or C:\.
@@ -3884,7 +3878,7 @@ String String::simplify_path() const {
 				p = s.find(":\\");
 			}
 			if (p != -1 && p < s.find("/")) {
-				drive = s.substr(0, p + 2);
+				drive = s.left(p + 2);
 				s = s.substr(p + 2);
 			}
 		}
@@ -4280,12 +4274,12 @@ String String::pad_decimals(int p_digits) const {
 		c = s.length() - 1;
 	} else {
 		if (p_digits <= 0) {
-			return s.substr(0, c);
+			return s.left(c);
 		}
 	}
 
 	if (s.length() - (c + 1) > p_digits) {
-		return s.substr(0, c + p_digits + 1);
+		return s.left(c + p_digits + 1);
 	} else {
 		int zeros_to_add = p_digits - s.length() + (c + 1);
 		return s + String("0").repeat(zeros_to_add);
@@ -4322,7 +4316,7 @@ String String::pad_zeros(int p_digits) const {
 String String::trim_prefix(const String &p_prefix) const {
 	String s = *this;
 	if (s.begins_with(p_prefix)) {
-		return s.substr(p_prefix.length(), s.length() - p_prefix.length());
+		return s.right(-p_prefix.length());
 	}
 	return s;
 }
@@ -4330,7 +4324,7 @@ String String::trim_prefix(const String &p_prefix) const {
 String String::trim_suffix(const String &p_suffix) const {
 	String s = *this;
 	if (s.ends_with(p_suffix)) {
-		return s.substr(0, s.length() - p_suffix.length());
+		return s.left(-p_suffix.length());
 	}
 	return s;
 }
@@ -4349,7 +4343,7 @@ bool String::is_valid_int() const {
 
 	for (int i = from; i < len; i++) {
 		if (!is_digit(operator[](i))) {
-			return false; // no start with number plz
+			return false; // I hereby desire to not start with a number.
 		}
 	}
 
@@ -4639,7 +4633,7 @@ String String::get_base_dir() const {
 	String base;
 	if (end != 0) {
 		rs = substr(end, length());
-		base = substr(0, end);
+		base = left(end);
 	} else {
 		rs = *this;
 	}
@@ -4649,7 +4643,7 @@ String String::get_base_dir() const {
 		return base;
 	}
 
-	return base + rs.substr(0, sep);
+	return base + rs.left(sep);
 }
 
 String String::get_file() const {
@@ -4761,7 +4755,7 @@ String String::get_basename() const {
 		return *this;
 	}
 
-	return substr(0, pos);
+	return left(pos);
 }
 
 String itos(int64_t p_val) {

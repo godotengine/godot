@@ -2027,7 +2027,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		if (cached_id.is_empty() || cached_ids_found.has(cached_id)) {
 			int sep_pos = E.value.find("_");
 			if (sep_pos != -1) {
-				E.value = E.value.substr(0, sep_pos + 1); // Keep the order found, for improved thread loading performance.
+				E.value = E.value.left(sep_pos + 1); // Keep the order found, for improved thread loading performance.
 			} else {
 				E.value = "";
 			}

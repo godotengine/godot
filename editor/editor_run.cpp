@@ -271,7 +271,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		if (placeholder_pos != -1) {
 			// Prepend executable-specific custom arguments.
 			// If nothing is placed before `%command%`, behave as if no placeholder was specified.
-			Vector<String> exec_args = _split_cmdline_args(raw_custom_args.substr(0, placeholder_pos));
+			Vector<String> exec_args = _split_cmdline_args(raw_custom_args.left(placeholder_pos));
 			if (exec_args.size() >= 1) {
 				exec = exec_args[0];
 				exec_args.remove_at(0);

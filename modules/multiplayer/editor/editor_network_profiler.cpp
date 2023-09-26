@@ -139,7 +139,7 @@ void EditorNetworkProfiler::refresh_replication_data() {
 		int cfg_idx = cfg_info.path.find("::");
 		if (cfg_info.path.begins_with("res://") && ResourceLoader::exists(cfg_info.path) && cfg_idx > 0) {
 			String res_idstr = cfg_info.path.substr(cfg_idx + 2).replace("SceneReplicationConfig_", "");
-			String scene_path = cfg_info.path.substr(0, cfg_idx);
+			String scene_path = cfg_info.path.left(cfg_idx);
 			node->set_text(2, vformat("%s (%s)", res_idstr, scene_path.get_file()));
 			node->add_button(2, theme_cache.instance_options_icon);
 			node->set_tooltip_text(2, cfg_info.path);

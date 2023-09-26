@@ -340,10 +340,10 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 		return prepare_error_response(p_params, DAP::ErrorType::WRONG_PATH, variables);
 	}
 
-	// If path contains \, it's a Windows path, so we need to convert it to /, and make the drive letter uppercase
+	// If path contains \, it's a Windows path, so we need to convert it to /, and make the drive letter uppercase.
 	if (source.path.find("\\") != -1) {
 		source.path = source.path.replace("\\", "/");
-		source.path = source.path.substr(0, 1).to_upper() + source.path.substr(1);
+		source.path = source.path.left(1).to_upper() + source.path.substr(1);
 	}
 
 	Array breakpoints = args["breakpoints"], lines;

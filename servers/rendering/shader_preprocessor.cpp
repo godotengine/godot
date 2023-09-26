@@ -674,7 +674,7 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 			break;
 		}
 	}
-	path = path.substr(0, path.length() - 1);
+	path = path.left(-1);
 
 	if (path.is_empty() || !p_tokenizer->consume_empty_line()) {
 		set_error(RTR("Invalid path."), line);
@@ -956,7 +956,7 @@ Error ShaderPreprocessor::expand_condition(const String &p_string, int p_line, S
 			String body = state->defines.has(vector_to_string(text)) ? "true" : "false";
 			String temp = result;
 
-			result = result.substr(0, index) + body;
+			result = result.left(index) + body;
 			index_start = result.length();
 			if (index_end > 0) {
 				result += temp.substr(index_end);
@@ -1074,7 +1074,7 @@ bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_num
 				int arg_index_start = 0;
 				int arg_index = 0;
 				while (find_match(body, arg_name, arg_index, arg_index_start)) {
-					body = body.substr(0, arg_index) + args[i] + body.substr(arg_index + arg_name.length(), body.length() - (arg_index + arg_name.length()));
+					body = body.left(arg_index) + args[i] + body.substr(arg_index + arg_name.length(), body.length() - (arg_index + arg_name.length()));
 					// Manually reset arg_index_start to where the arg value of the define finishes.
 					// This ensures we don't skip the other args of this macro in the string.
 					arg_index_start = arg_index + args[i].length() + 1;
@@ -1083,11 +1083,11 @@ bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_num
 
 			concatenate_macro_body(body);
 
-			result = result.substr(0, index) + " " + body + " " + result.substr(args_end + 1, result.length());
+			result = result.left(index) + " " + body + " " + result.substr(args_end + 1, result.length());
 		} else {
 			concatenate_macro_body(body);
 
-			result = result.substr(0, index) + " " + body + " " + result.substr(index + key.length(), result.length() - (index + key.length()));
+			result = result.left(index) + " " + body + " " + result.substr(index + key.length(), result.length() - (index + key.length()));
 		}
 
 		r_expanded = result;
@@ -1154,7 +1154,7 @@ void ShaderPreprocessor::concatenate_macro_body(String &r_body) {
 			index_start--;
 		}
 
-		r_body = r_body.substr(0, index_start) + r_body.substr(index_end, r_body.length() - index_end);
+		r_body = r_body.left(index_start) + r_body.substr(index_end, r_body.length() - index_end);
 
 		index_start = r_body.find("##", index_start);
 	}

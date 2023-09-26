@@ -625,7 +625,7 @@ String ExtendGDScriptParser::get_text_for_completion(const lsp::Position &p_curs
 	int len = lines.size();
 	for (int i = 0; i < len; i++) {
 		if (i == p_cursor.line) {
-			longthing += lines[i].substr(0, p_cursor.character);
+			longthing += lines[i].left(p_cursor.character);
 			longthing += String::chr(0xFFFF); // Not unicode, represents the cursor.
 			longthing += lines[i].substr(p_cursor.character, lines[i].size());
 		} else {
@@ -646,14 +646,14 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 	for (int i = 0; i < len; i++) {
 		if (i == p_cursor.line) {
 			String line = lines[i];
-			String first_part = line.substr(0, p_cursor.character);
+			String first_part = line.left(p_cursor.character);
 			String last_part = line.substr(p_cursor.character, lines[i].length());
 			if (!p_symbol.is_empty()) {
 				String left_cursor_text;
 				for (int c = p_cursor.character - 1; c >= 0; c--) {
 					left_cursor_text = line.substr(c, p_cursor.character - c);
 					if (p_symbol.begins_with(left_cursor_text)) {
-						first_part = line.substr(0, c);
+						first_part = line.left(c);
 						first_part += p_symbol;
 						break;
 					}

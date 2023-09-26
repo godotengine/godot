@@ -1363,7 +1363,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 	if (_save_text_editor_theme(p_file)) {
 		// switch to theme is saved in the theme directory
 		list_text_editor_themes();
-		String theme_name = p_file.substr(0, p_file.length() - 4).get_file();
+		String theme_name = p_file.left(-4).get_file();
 
 		if (p_file.get_base_dir() == EditorPaths::get_singleton()->get_text_editor_themes_dir()) {
 			_initial_set("text_editor/theme/color_theme", theme_name);

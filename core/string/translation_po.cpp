@@ -172,7 +172,7 @@ void TranslationPO::_cache_plural_tests(const String &p_plural_rule) {
 		return;
 	}
 
-	String equi_test = p_plural_rule.substr(0, first_ques_mark).strip_edges();
+	String equi_test = p_plural_rule.left(first_ques_mark).strip_edges();
 	equi_tests.push_back(equi_test);
 
 	String after_colon = p_plural_rule.substr(p_plural_rule.find(":") + 1, p_plural_rule.length());
