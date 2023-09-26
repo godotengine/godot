@@ -1492,14 +1492,22 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		}
 		// Check first if there's any uncommented lines in selection.
 		bool is_commented = true;
+		bool is_all_empty = true;
 		for (int line = from; line <= to; line++) {
 			// `+ delimiter.length()` here because comment delimiter is not actually `in comment` so we check first character after it
 			int delimiter_idx = text_editor->is_in_comment(line, text_editor->get_first_non_whitespace_column(line) + delimiter.length());
-			if (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx) != delimiter) {
+			// Empty lines should not be counted.
+			bool is_empty = text_editor->get_line(line).strip_edges().is_empty();
+			is_all_empty = is_all_empty && is_empty;
+			if (!is_empty && (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx) != delimiter)) {
 				is_commented = false;
 				break;
 			}
 		}
+
+		// Special case for commenting empty lines, treat it/them as uncommented lines.
+		is_commented = is_commented && !is_all_empty;
+
 		// Caret positions need to be saved since they could be moved at the eol.
 		Vector<int> caret_cols;
 		Vector<int> selection_to_cols;
@@ -1515,10 +1523,11 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		// Comment/uncomment.
 		for (int line = from; line <= to; line++) {
 			String line_text = text_editor->get_line(line);
-			if (line_text.strip_edges().is_empty()) {
+			if (is_all_empty) {
 				text_editor->set_line(line, delimiter);
 				continue;
 			}
+
 			if (is_commented) {
 				text_editor->set_line(line, line_text.replace_first(delimiter, ""));
 			} else {
