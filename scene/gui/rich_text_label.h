@@ -33,9 +33,11 @@
 
 #include "core/object/worker_thread_pool.h"
 #include "scene/gui/popup_menu.h"
-#include "scene/gui/rich_text_effect.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
+
+class CharFXTransform;
+class RichTextEffect;
 
 class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
@@ -96,11 +98,27 @@ public:
 		CUSTOM_FONT,
 	};
 
+	enum ImageUpdateMask {
+		UPDATE_TEXTURE = 1 << 0,
+		UPDATE_SIZE = 1 << 1,
+		UPDATE_COLOR = 1 << 2,
+		UPDATE_ALIGNMENT = 1 << 3,
+		UPDATE_REGION = 1 << 4,
+		UPDATE_PAD = 1 << 5,
+		UPDATE_TOOLTIP = 1 << 6,
+		UPDATE_WIDTH_IN_PERCENT = 1 << 7,
+	};
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
+	static void _bind_compatibility_methods();
+#endif
 
 private:
 	struct Item;
@@ -187,8 +205,14 @@ private:
 	struct ItemImage : public Item {
 		Ref<Texture2D> image;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
+		bool pad = false;
+		bool size_in_percent = false;
+		Rect2 region;
 		Size2 size;
+		Size2 rq_size;
 		Color color;
+		Variant key;
+		String tooltip;
 		ItemImage() { type = ITEM_IMAGE; }
 	};
 
@@ -374,17 +398,9 @@ private:
 		Ref<CharFXTransform> char_fx_transform;
 		Ref<RichTextEffect> custom_effect;
 
-		ItemCustomFX() {
-			type = ITEM_CUSTOMFX;
-			char_fx_transform.instantiate();
-		}
+		ItemCustomFX();
 
-		virtual ~ItemCustomFX() {
-			_clear_children();
-
-			char_fx_transform.unref();
-			custom_effect.unref();
-		}
+		virtual ~ItemCustomFX();
 	};
 
 	struct ItemContext : public Item {
@@ -550,6 +566,8 @@ private:
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 
+	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
+
 	void _draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item *it_from, Item *it_to, int start, int end, int fbg_flag);
 #ifndef DISABLE_DEPRECATED
 	// Kept for compatibility from 3.x to 4.0.
@@ -607,7 +625,8 @@ private:
 public:
 	String get_parsed_text() const;
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(0, 0, 0, 0));
+	void add_image(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
+	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
 	void add_newline();
 	bool remove_paragraph(const int p_paragraph);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
@@ -785,5 +804,6 @@ public:
 
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
+VARIANT_BITFIELD_CAST(RichTextLabel::ImageUpdateMask);
 
 #endif // RICH_TEXT_LABEL_H

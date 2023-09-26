@@ -914,6 +914,8 @@ void EditorSettings::create() {
 	if (EditorPaths::get_singleton()->are_paths_valid()) {
 		// Validate editor config file.
 		Ref<DirAccess> dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
+		ERR_FAIL_COND(dir.is_null());
+
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().path_join(config_file_name);
 		if (!dir->file_exists(config_file_name)) {

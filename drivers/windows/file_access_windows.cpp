@@ -34,6 +34,7 @@
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
 #define WIN32_LEAN_AND_MEAN

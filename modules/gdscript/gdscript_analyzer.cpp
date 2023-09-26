@@ -1936,9 +1936,14 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 	}
 
 #ifdef DEBUG_ENABLED
-	if (!has_specified_type && !p_assignable->infer_datatype && !is_constant) {
+	if (!has_specified_type) {
 		const bool is_parameter = p_assignable->type == GDScriptParser::Node::PARAMETER;
-		parser->push_warning(p_assignable, GDScriptWarning::UNTYPED_DECLARATION, is_parameter ? "Parameter" : "Variable", p_assignable->identifier->name);
+		const String declaration_type = is_constant ? "Constant" : (is_parameter ? "Parameter" : "Variable");
+		if (p_assignable->infer_datatype || is_constant) {
+			parser->push_warning(p_assignable, GDScriptWarning::INFERRED_DECLARATION, declaration_type, p_assignable->identifier->name);
+		} else {
+			parser->push_warning(p_assignable, GDScriptWarning::UNTYPED_DECLARATION, declaration_type, p_assignable->identifier->name);
+		}
 	}
 #endif
 
@@ -2152,7 +2157,9 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 		} else {
 			p_for->variable->set_datatype(variable_type);
 #ifdef DEBUG_ENABLED
-			if (!variable_type.is_hard_type()) {
+			if (variable_type.is_hard_type()) {
+				parser->push_warning(p_for->variable, GDScriptWarning::INFERRED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
+			} else {
 				parser->push_warning(p_for->variable, GDScriptWarning::UNTYPED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
 			}
 #endif
@@ -5036,7 +5043,11 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
 			return;
 		} else if (ClassDB::class_exists(name)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "global class");
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "native class");
+			return;
+		} else if (ScriptServer::is_global_class(name)) {
+			String class_path = ScriptServer::get_global_class_path(name).get_file();
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, vformat(R"(global class defined in "%s")", class_path));
 			return;
 		} else if (GDScriptParser::get_builtin_type(name) != Variant::VARIANT_MAX) {
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in type");

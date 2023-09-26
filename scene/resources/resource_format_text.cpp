@@ -1389,6 +1389,8 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 	wf->store_buffer(data.ptr(), data.size());
 	{
 		Ref<DirAccess> dar = DirAccess::open(temp_file.get_base_dir());
+		ERR_FAIL_COND_V(dar.is_null(), FAILED);
+
 		dar->remove(temp_file);
 	}
 

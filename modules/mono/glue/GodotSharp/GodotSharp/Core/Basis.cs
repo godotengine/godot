@@ -1123,7 +1123,7 @@ namespace Godot
         /// <returns>A hash code for this basis.</returns>
         public override readonly int GetHashCode()
         {
-            return Row0.GetHashCode() ^ Row1.GetHashCode() ^ Row2.GetHashCode();
+            return HashCode.Combine(Row0, Row1, Row2);
         }
 
         /// <summary>

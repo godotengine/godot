@@ -3051,6 +3051,8 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 			String relative_texture_dir = "textures";
 			String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
 			Ref<DirAccess> da = DirAccess::open(p_state->base_path);
+			ERR_FAIL_COND_V(da.is_null(), FAILED);
+
 			if (!da->dir_exists(full_texture_dir)) {
 				da->make_dir(full_texture_dir);
 			}

@@ -480,7 +480,6 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 		}
 
 #ifdef DEBUG_METHODS_ENABLED
-
 		for (const MethodInfo &E : type->virtual_methods) {
 			p_methods->push_back(E);
 		}
@@ -495,16 +494,73 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 
 			p_methods->push_back(minfo);
 		}
-
 #else
-
 		for (KeyValue<StringName, MethodBind *> &E : type->method_map) {
 			MethodBind *m = E.value;
 			MethodInfo minfo = info_from_bind(m);
 			p_methods->push_back(minfo);
 		}
-
 #endif
+
+		if (p_no_inheritance) {
+			break;
+		}
+
+		type = type->inherits_ptr;
+	}
+}
+
+void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->disabled) {
+			if (p_no_inheritance) {
+				break;
+			}
+
+			type = type->inherits_ptr;
+			continue;
+		}
+
+#ifdef DEBUG_METHODS_ENABLED
+		for (const MethodInfo &E : type->virtual_methods) {
+			Pair<MethodInfo, uint32_t> pair(E, 0);
+			p_methods->push_back(pair);
+		}
+
+		for (const StringName &E : type->method_order) {
+			if (p_exclude_from_properties && type->methods_in_properties.has(E)) {
+				continue;
+			}
+
+			MethodBind *method = type->method_map.get(E);
+			MethodInfo minfo = info_from_bind(method);
+
+			Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
+			p_methods->push_back(pair);
+		}
+#else
+		for (KeyValue<StringName, MethodBind *> &E : type->method_map) {
+			MethodBind *method = E.value;
+			MethodInfo minfo = info_from_bind(method);
+
+			Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
+			p_methods->push_back(pair);
+		}
+#endif
+
+		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->method_map_compatibility) {
+			LocalVector<MethodBind *> compat = E.value;
+			for (MethodBind *method : compat) {
+				MethodInfo minfo = info_from_bind(method);
+
+				Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
+				p_methods->push_back(pair);
+			}
+		}
 
 		if (p_no_inheritance) {
 			break;

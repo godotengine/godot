@@ -5968,6 +5968,7 @@ void EditorNode::_dropped_files(const Vector<String> &p_files) {
 
 void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, String to_path) {
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND(dir.is_null());
 
 	for (int i = 0; i < p_files.size(); i++) {
 		String from = p_files[i];
@@ -5977,6 +5978,8 @@ void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, Str
 			Vector<String> sub_files;
 
 			Ref<DirAccess> sub_dir = DirAccess::open(from);
+			ERR_FAIL_COND(sub_dir.is_null());
+
 			sub_dir->list_dir_begin();
 
 			String next_file = sub_dir->get_next();

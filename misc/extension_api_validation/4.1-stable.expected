@@ -169,6 +169,8 @@ Validate extension JSON: API was removed: classes/GraphNode/signals/raise_reques
 Validate extension JSON: API was removed: classes/GraphNode/signals/resize_request
 
 Refactor GraphNode (splitup in GraphElement and GraphNode)
+
+
 GH-81070
 --------
 Validate extension JSON: API was removed: classes/TileMap/methods/get_quadrant_size
@@ -189,5 +191,10 @@ Intentional compatibility breakage to be consistent with the new non-virtual set
 GH-79965
 --------
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/PopupMenu/methods/clear': arguments
+
+
+GH-80410
+--------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments': size changed value in new API, from 6 to 10.
 
 Added optional argument. Compatibility method registered.

@@ -63,7 +63,7 @@ void RendererSceneCull::camera_initialize(RID p_rid) {
 
 void RendererSceneCull::camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 	camera->type = Camera::PERSPECTIVE;
 	camera->fov = p_fovy_degrees;
 	camera->znear = p_z_near;
@@ -72,7 +72,7 @@ void RendererSceneCull::camera_set_perspective(RID p_camera, float p_fovy_degree
 
 void RendererSceneCull::camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 	camera->type = Camera::ORTHOGONAL;
 	camera->size = p_size;
 	camera->znear = p_z_near;
@@ -81,7 +81,7 @@ void RendererSceneCull::camera_set_orthogonal(RID p_camera, float p_size, float 
 
 void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 	camera->type = Camera::FRUSTUM;
 	camera->size = p_size;
 	camera->offset = p_offset;
@@ -91,32 +91,32 @@ void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 
 void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 	camera->transform = p_transform.orthonormalized();
 }
 
 void RendererSceneCull::camera_set_cull_mask(RID p_camera, uint32_t p_layers) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 
 	camera->visible_layers = p_layers;
 }
 
 void RendererSceneCull::camera_set_environment(RID p_camera, RID p_env) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 	camera->env = p_env;
 }
 
 void RendererSceneCull::camera_set_camera_attributes(RID p_camera, RID p_attributes) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 	camera->attributes = p_attributes;
 }
 
 void RendererSceneCull::camera_set_use_vertical_aspect(RID p_camera, bool p_enable) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 	camera->vaspect = p_enable;
 }
 
@@ -390,25 +390,25 @@ void RendererSceneCull::scenario_initialize(RID p_rid) {
 
 void RendererSceneCull::scenario_set_environment(RID p_scenario, RID p_environment) {
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND(!scenario);
+	ERR_FAIL_NULL(scenario);
 	scenario->environment = p_environment;
 }
 
 void RendererSceneCull::scenario_set_camera_attributes(RID p_scenario, RID p_camera_attributes) {
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND(!scenario);
+	ERR_FAIL_NULL(scenario);
 	scenario->camera_attributes = p_camera_attributes;
 }
 
 void RendererSceneCull::scenario_set_fallback_environment(RID p_scenario, RID p_environment) {
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND(!scenario);
+	ERR_FAIL_NULL(scenario);
 	scenario->fallback_environment = p_environment;
 }
 
 void RendererSceneCull::scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count) {
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND(!scenario);
+	ERR_FAIL_NULL(scenario);
 	RSG::light_storage->reflection_atlas_set_size(scenario->reflection_atlas, p_reflection_size, p_reflection_count);
 }
 
@@ -418,13 +418,13 @@ bool RendererSceneCull::is_scenario(RID p_scenario) const {
 
 RID RendererSceneCull::scenario_get_environment(RID p_scenario) {
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND_V(!scenario, RID());
+	ERR_FAIL_NULL_V(scenario, RID());
 	return scenario->environment;
 }
 
 void RendererSceneCull::scenario_remove_viewport_visibility_mask(RID p_scenario, RID p_viewport) {
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND(!scenario);
+	ERR_FAIL_NULL(scenario);
 	if (!scenario->viewport_visibility_masks.has(p_viewport)) {
 		return;
 	}
@@ -436,7 +436,7 @@ void RendererSceneCull::scenario_remove_viewport_visibility_mask(RID p_scenario,
 
 void RendererSceneCull::scenario_add_viewport_visibility_mask(RID p_scenario, RID p_viewport) {
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND(!scenario);
+	ERR_FAIL_NULL(scenario);
 	ERR_FAIL_COND(scenario->viewport_visibility_masks.has(p_viewport));
 
 	uint64_t new_mask = 1;
@@ -510,7 +510,7 @@ void RendererSceneCull::_instance_update_mesh_instance(Instance *p_instance) {
 
 void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	Scenario *scenario = instance->scenario;
 
@@ -753,7 +753,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 
 void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	if (instance->scenario) {
 		instance->scenario->instances.remove(&instance->scenario_item);
@@ -819,7 +819,7 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 
 	if (p_scenario.is_valid()) {
 		Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-		ERR_FAIL_COND(!scenario);
+		ERR_FAIL_NULL(scenario);
 
 		instance->scenario = scenario;
 
@@ -852,7 +852,7 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 
 void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	if (instance->layer_mask == p_mask) {
 		return;
@@ -879,7 +879,7 @@ void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 
 void RendererSceneCull::instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	instance->sorting_offset = p_sorting_offset;
 	instance->use_aabb_center = p_use_aabb_center;
@@ -896,7 +896,7 @@ void RendererSceneCull::instance_set_pivot_data(RID p_instance, float p_sorting_
 
 void RendererSceneCull::instance_geometry_set_transparency(RID p_instance, float p_transparency) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	instance->transparency = p_transparency;
 
@@ -909,7 +909,7 @@ void RendererSceneCull::instance_geometry_set_transparency(RID p_instance, float
 
 void RendererSceneCull::instance_set_transform(RID p_instance, const Transform3D &p_transform) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	if (instance->transform == p_transform) {
 		return; //must be checked to avoid worst evil
@@ -929,14 +929,14 @@ void RendererSceneCull::instance_set_transform(RID p_instance, const Transform3D
 
 void RendererSceneCull::instance_attach_object_instance_id(RID p_instance, ObjectID p_id) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	instance->object_id = p_id;
 }
 
 void RendererSceneCull::instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	if (instance->update_item.in_list()) {
 		_update_dirty_instance(instance);
@@ -949,7 +949,7 @@ void RendererSceneCull::instance_set_blend_shape_weight(RID p_instance, int p_sh
 
 void RendererSceneCull::instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	if (instance->base_type == RS::INSTANCE_MESH) {
 		//may not have been updated yet, may also have not been set yet. When updated will be correcte, worst case
@@ -965,7 +965,7 @@ void RendererSceneCull::instance_set_surface_override_material(RID p_instance, i
 
 void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	if (instance->visible == p_visible) {
 		return;
@@ -1015,7 +1015,7 @@ inline bool is_geometry_instance(RenderingServer::InstanceType p_type) {
 
 void RendererSceneCull::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 	ERR_FAIL_COND(!is_geometry_instance(instance->base_type));
 
 	if (p_aabb != AABB()) {
@@ -1040,7 +1040,7 @@ void RendererSceneCull::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
 
 void RendererSceneCull::instance_attach_skeleton(RID p_instance, RID p_skeleton) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	if (instance->skeleton == p_skeleton) {
 		return;
@@ -1066,7 +1066,7 @@ void RendererSceneCull::instance_attach_skeleton(RID p_instance, RID p_skeleton)
 
 void RendererSceneCull::instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	instance->extra_margin = p_margin;
 	_instance_queue_update(instance, true, false);
@@ -1074,7 +1074,7 @@ void RendererSceneCull::instance_set_extra_visibility_margin(RID p_instance, rea
 
 void RendererSceneCull::instance_set_ignore_culling(RID p_instance, bool p_enabled) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 	instance->ignore_all_culling = p_enabled;
 
 	if (instance->scenario && instance->array_index >= 0) {
@@ -1090,7 +1090,7 @@ void RendererSceneCull::instance_set_ignore_culling(RID p_instance, bool p_enabl
 Vector<ObjectID> RendererSceneCull::instances_cull_aabb(const AABB &p_aabb, RID p_scenario) const {
 	Vector<ObjectID> instances;
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND_V(!scenario, instances);
+	ERR_FAIL_NULL_V(scenario, instances);
 
 	const_cast<RendererSceneCull *>(this)->update_dirty_instances(); // check dirty instances before culling
 
@@ -1114,7 +1114,7 @@ Vector<ObjectID> RendererSceneCull::instances_cull_aabb(const AABB &p_aabb, RID 
 Vector<ObjectID> RendererSceneCull::instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario) const {
 	Vector<ObjectID> instances;
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND_V(!scenario, instances);
+	ERR_FAIL_NULL_V(scenario, instances);
 	const_cast<RendererSceneCull *>(this)->update_dirty_instances(); // check dirty instances before culling
 
 	struct CullRay {
@@ -1137,7 +1137,7 @@ Vector<ObjectID> RendererSceneCull::instances_cull_ray(const Vector3 &p_from, co
 Vector<ObjectID> RendererSceneCull::instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario) const {
 	Vector<ObjectID> instances;
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
-	ERR_FAIL_COND_V(!scenario, instances);
+	ERR_FAIL_NULL_V(scenario, instances);
 	const_cast<RendererSceneCull *>(this)->update_dirty_instances(); // check dirty instances before culling
 
 	Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&p_convex[0], p_convex.size());
@@ -1161,7 +1161,7 @@ Vector<ObjectID> RendererSceneCull::instances_cull_convex(const Vector<Plane> &p
 
 void RendererSceneCull::instance_geometry_set_flag(RID p_instance, RS::InstanceFlags p_flags, bool p_enabled) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	//ERR_FAIL_COND(((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK));
 
@@ -1238,7 +1238,7 @@ void RendererSceneCull::instance_geometry_set_flag(RID p_instance, RS::InstanceF
 
 void RendererSceneCull::instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	instance->cast_shadows = p_shadow_casting_setting;
 
@@ -1270,7 +1270,7 @@ void RendererSceneCull::instance_geometry_set_cast_shadows_setting(RID p_instanc
 
 void RendererSceneCull::instance_geometry_set_material_override(RID p_instance, RID p_material) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	instance->material_override = p_material;
 	_instance_queue_update(instance, false, true);
@@ -1284,7 +1284,7 @@ void RendererSceneCull::instance_geometry_set_material_override(RID p_instance, 
 
 void RendererSceneCull::instance_geometry_set_material_overlay(RID p_instance, RID p_material) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	instance->material_overlay = p_material;
 	_instance_queue_update(instance, false, true);
@@ -1298,7 +1298,7 @@ void RendererSceneCull::instance_geometry_set_material_overlay(RID p_instance, R
 
 void RendererSceneCull::instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RS::VisibilityRangeFadeMode p_fade_mode) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	instance->visibility_range_begin = p_min;
 	instance->visibility_range_end = p_max;
@@ -1320,7 +1320,7 @@ void RendererSceneCull::instance_geometry_set_visibility_range(RID p_instance, f
 
 void RendererSceneCull::instance_set_visibility_parent(RID p_instance, RID p_parent_instance) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	Instance *old_parent = instance->visibility_parent;
 	if (old_parent) {
@@ -1440,7 +1440,7 @@ void RendererSceneCull::_update_instance_visibility_dependencies(Instance *p_ins
 
 void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	if (instance->lightmap) {
 		InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(((Instance *)instance->lightmap)->base_data);
@@ -1471,7 +1471,7 @@ void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lig
 
 void RendererSceneCull::instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	instance->lod_bias = p_lod_bias;
 
@@ -1484,7 +1484,7 @@ void RendererSceneCull::instance_geometry_set_lod_bias(RID p_instance, float p_l
 
 void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
 
@@ -1522,7 +1522,7 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 
 Variant RendererSceneCull::instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const {
 	const Instance *instance = const_cast<RendererSceneCull *>(this)->instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND_V(!instance, Variant());
+	ERR_FAIL_NULL_V(instance, Variant());
 
 	if (instance->instance_shader_uniforms.has(p_parameter)) {
 		return instance->instance_shader_uniforms[p_parameter].value;
@@ -1532,7 +1532,7 @@ Variant RendererSceneCull::instance_geometry_get_shader_parameter(RID p_instance
 
 Variant RendererSceneCull::instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const {
 	const Instance *instance = const_cast<RendererSceneCull *>(this)->instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND_V(!instance, Variant());
+	ERR_FAIL_NULL_V(instance, Variant());
 
 	if (instance->instance_shader_uniforms.has(p_parameter)) {
 		return instance->instance_shader_uniforms[p_parameter].default_value;
@@ -1542,7 +1542,7 @@ Variant RendererSceneCull::instance_geometry_get_shader_parameter_default_value(
 
 void RendererSceneCull::instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const {
 	const Instance *instance = const_cast<RendererSceneCull *>(this)->instance_owner.get_or_null(p_instance);
-	ERR_FAIL_COND(!instance);
+	ERR_FAIL_NULL(instance);
 
 	const_cast<RendererSceneCull *>(this)->update_dirty_instances();
 
@@ -2517,7 +2517,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 #ifndef _3D_DISABLED
 
 	Camera *camera = camera_owner.get_or_null(p_camera);
-	ERR_FAIL_COND(!camera);
+	ERR_FAIL_NULL(camera);
 
 	Vector2 jitter;
 	if (p_jitter_phase_count > 0) {
@@ -3397,7 +3397,7 @@ void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_rend
 bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int p_step) {
 	InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(p_instance->base_data);
 	Scenario *scenario = p_instance->scenario;
-	ERR_FAIL_COND_V(!scenario, true);
+	ERR_FAIL_NULL_V(scenario, true);
 
 	RenderingServerDefault::redraw_request(); //update, so it updates in editor
 

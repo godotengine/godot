@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  crash_handler_windows.h                                               */
+/*  rich_text_label.compat.inc                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,30 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CRASH_HANDLER_WINDOWS_H
-#define CRASH_HANDLER_WINDOWS_H
+#ifndef DISABLE_DEPRECATED
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+void RichTextLabel::_add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region) {
+	add_image(p_image, p_width, p_height, p_color, p_alignment, p_region, Variant(), false, String(), false);
+}
 
-// Crash handler exception only enabled with MSVC
-#if defined(DEBUG_ENABLED) && defined(_MSC_VER)
-#define CRASH_HANDLER_EXCEPTION 1
+void RichTextLabel::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region"), &RichTextLabel::_add_image_bind_compat_80410, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()));
+}
 
-extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
-#endif
-
-class CrashHandler {
-	bool disabled;
-
-public:
-	void initialize();
-
-	void disable();
-	bool is_disabled() const { return disabled; };
-
-	CrashHandler();
-	~CrashHandler();
-};
-
-#endif // CRASH_HANDLER_WINDOWS_H
+#endif // DISABLE_DEPRECATED
