@@ -150,11 +150,11 @@ public:
 	struct RayResult {
 		Vector3 position;
 		Vector3 normal;
-		int face_index = -1;
 		RID rid;
 		ObjectID collider_id;
 		Object *collider = nullptr;
 		int shape = 0;
+		int face_index = -1;
 	};
 
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
