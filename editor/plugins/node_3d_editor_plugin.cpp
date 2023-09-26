@@ -5832,6 +5832,7 @@ void Node3DEditor::_generate_selection_boxes() {
 
 	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	const Color selection_box_color = EDITOR_GET("editors/3d/selection_box_color");
 	mat->set_albedo(selection_box_color);
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
@@ -5840,6 +5841,7 @@ void Node3DEditor::_generate_selection_boxes() {
 
 	Ref<StandardMaterial3D> mat_xray = memnew(StandardMaterial3D);
 	mat_xray->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 	mat_xray->set_albedo(selection_box_color * Color(1, 1, 1, 0.15));
 	mat_xray->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
@@ -6484,6 +6486,7 @@ void Node3DEditor::_init_indicators() {
 		indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		indicator_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		indicator_mat->set_transparency(StandardMaterial3D::Transparency::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 
 		Vector<Color> origin_colors;
@@ -6541,7 +6544,7 @@ void Node3DEditor::_init_indicators() {
 
 shader_type spatial;
 
-render_mode unshaded;
+render_mode unshaded, fog_disabled;
 
 uniform bool orthogonal;
 uniform float grid_size;
@@ -6638,6 +6641,7 @@ void fragment() {
 
 			Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 			mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+			mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 			mat->set_on_top_of_alpha();
 			mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 			mat->set_albedo(col);
@@ -6722,6 +6726,7 @@ void fragment() {
 
 				Ref<StandardMaterial3D> plane_mat = memnew(StandardMaterial3D);
 				plane_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+				plane_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 				plane_mat->set_on_top_of_alpha();
 				plane_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 				plane_mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
@@ -6782,7 +6787,7 @@ void fragment() {
 
 shader_type spatial;
 
-render_mode unshaded, depth_test_disabled;
+render_mode unshaded, depth_test_disabled, fog_disabled;
 
 uniform vec4 albedo;
 
@@ -6790,14 +6795,14 @@ mat3 orthonormalize(mat3 m) {
 	vec3 x = normalize(m[0]);
 	vec3 y = normalize(m[1] - x * dot(x, m[1]));
 	vec3 z = m[2] - x * dot(x, m[2]);
-	z = normalize(z - y * (dot(y,m[2])));
+	z = normalize(z - y * (dot(y, m[2])));
 	return mat3(x,y,z);
 }
 
 void vertex() {
 	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX));
 	vec3 n = mv * VERTEX;
-	float orientation = dot(vec3(0, 0, -1), n);
+	float orientation = dot(vec3(0.0, 0.0, -1.0), n);
 	if (orientation <= 0.005) {
 		VERTEX += NORMAL * 0.02;
 	}
@@ -6832,7 +6837,7 @@ void fragment() {
 
 shader_type spatial;
 
-render_mode unshaded, depth_test_disabled;
+render_mode unshaded, depth_test_disabled, fog_disabled;
 
 uniform vec4 albedo;
 
@@ -6840,16 +6845,16 @@ mat3 orthonormalize(mat3 m) {
 	vec3 x = normalize(m[0]);
 	vec3 y = normalize(m[1] - x * dot(x, m[1]));
 	vec3 z = m[2] - x * dot(x, m[2]);
-	z = normalize(z - y * (dot(y,m[2])));
-	return mat3(x,y,z);
+	z = normalize(z - y * (dot(y, m[2])));
+	return mat3(x, y, z);
 }
 
 void vertex() {
 	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX));
 	mv = inverse(mv);
-	VERTEX += NORMAL*0.008;
-	vec3 camera_dir_local = mv * vec3(0,0,1);
-	vec3 camera_up_local = mv * vec3(0,1,0);
+	VERTEX += NORMAL * 0.008;
+	vec3 camera_dir_local = mv * vec3(0.0, 0.0, 1.0);
+	vec3 camera_up_local = mv * vec3(0.0, 1.0, 0.0);
 	mat3 rotation_matrix = mat3(cross(camera_dir_local, camera_up_local), camera_up_local, camera_dir_local);
 	VERTEX = rotation_matrix * VERTEX;
 }
@@ -6944,6 +6949,7 @@ void fragment() {
 
 				Ref<StandardMaterial3D> plane_mat = memnew(StandardMaterial3D);
 				plane_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+				plane_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 				plane_mat->set_on_top_of_alpha();
 				plane_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 				plane_mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);

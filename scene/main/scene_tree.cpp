@@ -789,6 +789,7 @@ Ref<Material> SceneTree::get_debug_paths_material() {
 	_debug_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	_debug_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	_debug_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	_debug_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	_debug_material->set_albedo(get_debug_paths_color());
 
 	debug_paths_material = _debug_material;
@@ -808,6 +809,7 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	line_material->set_albedo(get_debug_collisions_color());
 
 	collision_material = line_material;
@@ -829,6 +831,7 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	mat->set_albedo(get_debug_collision_contact_color());
 
 	Vector3 diamond[6] = {

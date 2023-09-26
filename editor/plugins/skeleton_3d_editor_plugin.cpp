@@ -916,24 +916,32 @@ Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skel
 // Skeleton 3D gizmo handle shader.
 
 shader_type spatial;
-render_mode unshaded, shadows_disabled, depth_draw_always;
+render_mode unshaded, shadows_disabled, depth_draw_always, fog_disabled;
+
 uniform sampler2D texture_albedo : source_color;
-uniform float point_size : hint_range(0,128) = 32;
+uniform float point_size : hint_range(0, 128) = 32;
+
 void vertex() {
 	if (!OUTPUT_IS_SRGB) {
-		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
+		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));
 	}
+
 	VERTEX = VERTEX;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
-	POSITION.z = mix(POSITION.z, 0, 0.999);
+	POSITION.z = mix(POSITION.z, 0.0, 0.999);
 	POINT_SIZE = point_size;
 }
+
 void fragment() {
-	vec4 albedo_tex = texture(texture_albedo,POINT_COORD);
+	vec4 albedo_tex = texture(texture_albedo, POINT_COORD);
 	vec3 col = albedo_tex.rgb + COLOR.rgb;
-	col = vec3(min(col.r,1.0),min(col.g,1.0),min(col.b,1.0));
+	col = vec3(min(col.r, 1.0), min(col.g, 1.0), min(col.b, 1.0));
 	ALBEDO = col;
-	if (albedo_tex.a < 0.5) { discard; }
+
+	if (albedo_tex.a < 0.5) {
+		discard;
+	}
+
 	ALPHA = albedo_tex.a;
 }
 )");
@@ -1184,6 +1192,7 @@ Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
 	unselected_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	unselected_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	unselected_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	unselected_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 	selected_mat = Ref<ShaderMaterial>(memnew(ShaderMaterial));
 	selected_sh = Ref<Shader>(memnew(Shader));

@@ -458,6 +458,7 @@ MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 		sm->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		sm->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		sm->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		sm->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 		Ref<ArrayMesh> am;
 		am.instantiate();
