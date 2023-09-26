@@ -526,12 +526,6 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	validation_panel->update();
 }
 
-void ScriptCreateDialog::_path_submitted(const String &p_path) {
-	if (!get_ok_button()->is_disabled()) {
-		ok_pressed();
-	}
-}
-
 void ScriptCreateDialog::_update_template_menu() {
 	bool is_language_using_templates = language->is_using_templates();
 	template_menu->set_disabled(false);
@@ -960,6 +954,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	file_path->connect("text_changed", callable_mp(this, &ScriptCreateDialog::_path_changed));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
+	register_text_enter(file_path);
 	path_button = memnew(Button);
 	path_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path).bind(false, true));
 	hb->add_child(path_button);
@@ -973,7 +968,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	built_in_name = memnew(LineEdit);
 	built_in_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	built_in_name->connect("text_submitted", callable_mp(this, &ScriptCreateDialog::_path_submitted));
+	register_text_enter(built_in_name);
 	label = memnew(Label(TTR("Name:")));
 	gc->add_child(label);
 	gc->add_child(built_in_name);
