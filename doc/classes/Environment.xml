@@ -225,9 +225,6 @@
 		<member name="sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3(0, 0, 0)">
 			The rotation to use for sky rendering.
 		</member>
-		<member name="ssao_ao_channel_affect" type="float" setter="set_ssao_ao_channel_affect" getter="get_ssao_ao_channel_affect" default="0.0">
-			The screen-space ambient occlusion intensity on materials that have an AO texture defined. Values higher than [code]0[/code] will make the SSAO effect visible in areas darkened by AO textures.
-		</member>
 		<member name="ssao_detail" type="float" setter="set_ssao_detail" getter="get_ssao_detail" default="0.5">
 			Sets the strength of the additional level of detail for the screen-space ambient occlusion effect. A high value makes the detail pass more prominent, but it may contribute to aliasing in your final image.
 		</member>
