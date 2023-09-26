@@ -912,7 +912,7 @@
 		<method name="to_ascii_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to an [url=https://en.wikipedia.org/wiki/ASCII]ASCII[/url]/Latin-1 encoded [PackedByteArray]. This method is slightly faster than [method to_utf8_buffer], but replaces all unsupported characters with spaces.
+				Converts the string to an [url=https://en.wikipedia.org/wiki/ASCII]ASCII[/url]/Latin-1 encoded [PackedByteArray]. This method is slightly faster than [method to_utf8_buffer], but replaces all unsupported characters with spaces. This is the inverse of [method PackedByteArray.get_string_from_ascii].
 			</description>
 		</method>
 		<method name="to_camel_case" qualifiers="const">
@@ -973,25 +973,25 @@
 		<method name="to_utf8_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method.
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method. This is the inverse of [method PackedByteArray.get_string_from_utf8].
 			</description>
 		</method>
 		<method name="to_utf16_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-16]UTF-16[/url] encoded [PackedByteArray].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-16]UTF-16[/url] encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_utf16].
 			</description>
 		</method>
 		<method name="to_utf32_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-32]UTF-32[/url] encoded [PackedByteArray].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-32]UTF-32[/url] encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_utf32].
 			</description>
 		</method>
 		<method name="to_wchar_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/Wide_character]wide character[/url] ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded [PackedByteArray].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/Wide_character]wide character[/url] ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_wchar].
 			</description>
 		</method>
 		<method name="trim_prefix" qualifiers="const">
