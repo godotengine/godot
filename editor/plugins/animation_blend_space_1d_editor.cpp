@@ -68,7 +68,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	if (mb.is_valid() && mb->is_pressed() && ((tool_select->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) || (mb->get_button_index() == MouseButton::LEFT && tool_create->is_pressed()))) {
 		if (!read_only) {
-			menu->clear();
+			menu->clear(false);
 			animations_menu->clear();
 			animations_to_add.clear();
 
