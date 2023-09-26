@@ -304,6 +304,13 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
 
+					// If there's a custom type script present, make this script it's baseline
+					if (snames[nprops[j].name] == CoreStringNames::get_singleton()->_custom_type_script) {
+						if (!props[nprops[j].value].is_null()) {
+							node->set(CoreStringNames::get_singleton()->_script, props[nprops[j].value], &valid);
+						}
+					}
+
 					if (snames[nprops[j].name] == CoreStringNames::get_singleton()->_script) {
 						//work around to avoid old script variables from disappearing, should be the proper fix to:
 						//https://github.com/godotengine/godot/issues/2958
