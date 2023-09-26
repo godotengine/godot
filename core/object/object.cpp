@@ -518,7 +518,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	_get_property_listv(p_list, p_reversed);
 
 	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_type_script", PROPERTY_HINT_RESOURCE_TYPE, "Script", /* PROPERTY_USAGE_DEFAULT | */ PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_NEVER_DUPLICATE | PROPERTY_USAGE_READ_ONLY));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_type_script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | /* PROPERTY_USAGE_NO_EDITOR | */ PROPERTY_USAGE_NEVER_DUPLICATE | PROPERTY_USAGE_READ_ONLY));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
 	}
 
@@ -896,18 +896,12 @@ void Object::set_custom_type_script(const Variant &p_script) {
 
 	custom_type_script = p_script;
 
-	// If there is already an extension script present, check if it's compatbile with
-	// the new custom type script. If it's not, fallback to the custom type script.
+	// Check if existing script is compatible with underlying custom type script being set here
 	if (!custom_type_script.is_null() && !script.is_null() && script != custom_type_script) {
 		Ref<Script> s = script;
 		if (!s->inherits_script(c)) {
-			set_script(custom_type_script);
 			ERR_FAIL_MSG(s->get_path() + " is not an extension of " + c->get_global_name());
 		}
-	}
-
-	if (script.is_null()) {
-		set_script(custom_type_script);
 	}
 }
 
@@ -919,15 +913,15 @@ void Object::set_script(const Variant &p_script) {
 	Ref<Script> s = p_script;
 	ERR_FAIL_COND_MSG(s.is_null() && !p_script.is_null(), "Invalid parameter, it should be a reference to a valid script (or null).");
 
-	// Check if there is a custom type script present. If there is, then "script" cannot be null and must extend the custom type script
+	// Check if there is a custom type script present. If there is, then "script" should never be null
 	if (!custom_type_script.is_null()) {
 		if (s.is_null()) {
-			set_script(custom_type_script);
-			ERR_FAIL_MSG("Script cannot be null when object has a custom type script. Falling back to custom type script.");
-		}
-		Ref<Script> cts = custom_type_script;
-		if (!s->inherits_script(cts)) {
-			ERR_FAIL_MSG(s->get_path() + " is not an extension of " + cts->get_global_name());
+			WARN_PRINT_ED("Setting Script to null while object has a custom type script.");
+		} else {
+			Ref<Script> cts = custom_type_script;
+			if (!s->inherits_script(cts)) {
+				WARN_PRINT_ED(s->get_path() + " is not an extension of " + cts->get_global_name());
+			}
 		}
 	}
 
