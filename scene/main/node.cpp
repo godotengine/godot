@@ -3145,7 +3145,7 @@ bool Node::_set(const StringName &p_name, const Variant &p_value) {
 	for (List<PropertyInfo>::Element *E_property = p_list.front(); E_property; E_property = E_property->next()) {
 		PropertyInfo &p = E_property->get();
 		if (String(p_name).begins_with(p.name + "_")) {
-			ClassDB::set_property(get(p.name), String(p_name).trim_prefix(p.name + "_"), p_value);
+			get(p.name).set(String(p_name).trim_prefix(p.name + "_"), p_value);
 		}
 	}
 	return true;
@@ -3164,7 +3164,7 @@ bool Node::_get(const StringName &p_name, Variant &r_ret) const {
 		PropertyInfo &p = E_property->get();
 
 		if (String(p_name).begins_with(p.name + "_")) {
-			ClassDB::get_property(get(p.name), String(p_name).trim_prefix(p.name + "_"), r_ret);
+			r_ret = get(p.name).get(String(p_name).trim_prefix(p.name + "_"));
 		}
 	}
 	return true;

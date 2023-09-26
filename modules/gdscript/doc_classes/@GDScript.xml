@@ -306,6 +306,15 @@
 				[b]Note:[/b] Categories in the Inspector dock's list usually divide properties coming from different classes (Node, Node2D, Sprite, etc.). For better clarity, it's recommended to use [annotation @export_group] and [annotation @export_subgroup], instead.
 			</description>
 		</annotation>
+		<annotation name="@export_child">
+			<return type="void" />
+			<description>
+				Exports assigned child's exposed variables to the inspector. And defines a new group using the variable name for the child's exported properties. This helps to change child's variables when the whole scene is instantiated.
+				[codeblock]
+				@export_child var child : Node
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_color_no_alpha">
 			<return type="void" />
 			<description>
