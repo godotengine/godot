@@ -19,7 +19,7 @@
 #include <thread>
 
 #if defined(_WIN32)
-#include <Windows.h>
+#include <windows.h>
 
 typedef HRESULT(WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
 #endif

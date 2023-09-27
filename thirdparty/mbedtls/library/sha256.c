@@ -122,7 +122,7 @@ static int mbedtls_a64_crypto_sha256_determine_support(void)
 }
 #elif defined(_M_ARM64)
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 #include <processthreadsapi.h>
 
 static int mbedtls_a64_crypto_sha256_determine_support(void)
