@@ -65,16 +65,6 @@ struct _ObjectDebugLock {
 
 #endif
 
-STRUCT_LAYOUT(PropertyInfoLayout, "PropertyInfo",
-		STRUCT_MEMBER("name", Variant::STRING),
-		STRUCT_MEMBER("class_name", Variant::STRING_NAME),
-		STRUCT_MEMBER("type", Variant::INT),
-		STRUCT_MEMBER("hint", Variant::INT),
-		STRUCT_MEMBER("hint_string", Variant::STRING),
-		STRUCT_MEMBER("usage", Variant::INT));
-
-template class Struct<PropertyInfoLayout>;
-
 PropertyInfo::operator Dictionary() const {
 	Dictionary d;
 	d["name"] = name;

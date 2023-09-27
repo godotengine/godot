@@ -70,11 +70,6 @@ public:
 		}
 		return -1;
 	}
-
-	_FORCE_INLINE_ bool validate_member(uint32_t p_index, const Variant &p_value) {
-		// TODO: check in with ContainerValidate
-		return true;
-	}
 };
 
 void Array::_ref(const Array &p_from) const {
@@ -230,7 +225,10 @@ void Array::assign(const Array &p_array) {
 	const ContainerTypeValidate &typed = _p->typed;
 	const ContainerTypeValidate &source_typed = p_array._p->typed;
 
-	if (typed == source_typed || typed.type == Variant::NIL || (source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
+	// TODO: I will probably need to add some logic here for structs.
+
+	// assign if we don't have a type yet, our type exactly matches the source, or our type can reference the source's
+	if (typed.type == Variant::NIL || typed == source_typed || (source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
 		// from same to same or
 		// from anything to variants or
 		// from subclasses to base classes
@@ -241,13 +239,16 @@ void Array::assign(const Array &p_array) {
 	const Variant *source = p_array._p->array.ptr();
 	int size = p_array._p->array.size();
 
+	// if (we are an object and the source is untyped) or (the source is an object, and it can reference us)
 	if ((source_typed.type == Variant::NIL && typed.type == Variant::OBJECT) || (source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
 		// from variants to objects or
 		// from base classes to subclasses
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
-			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(element.get_type()), Variant::get_type_name(typed.type)));
+			const Variant::Type type = source[i].get_type();
+			// if source's ith element has a type but that type is an invalid object
+			if (type != Variant::NIL && (type != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
+				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(type), Variant::get_type_name(typed.type)));
 			}
 		}
 		_p->array = p_array._p->array;
@@ -446,8 +447,11 @@ void Array::set(int p_idx, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->is_struct() && (p_idx >= size()), "Array is a struct."); // TODO: better error message
 	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "set"));
-
+	if (_p->is_struct()) {
+		ERR_FAIL_COND(!_p->typed.struct_members[p_idx].validate(value, "set")); // TODO: wrong error message
+	} else {
+		ERR_FAIL_COND(!_p->typed.validate(value, "set"));
+	}
 	operator[](p_idx) = value;
 }
 
@@ -825,7 +829,7 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 Error Array::validate_set_type() {
 	// TODO: better return values?
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
-	ERR_FAIL_COND_V_MSG(_p->is_struct(), ERR_LOCKED,"Array is a struct."); // TODO: better error message
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), ERR_LOCKED, "Array is a struct."); // TODO: better error message
 	ERR_FAIL_COND_V_MSG(_p->array.size() > 0, ERR_LOCKED, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_V_MSG(_p->refcount.get() > 1, ERR_LOCKED, "Type can only be set when array has no more than one user.");
 	ERR_FAIL_COND_V_MSG(_p->typed.type != Variant::NIL, ERR_LOCKED, "Type can only be set once.");
@@ -884,43 +888,51 @@ Array::Array(const Array &p_from) {
 Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init(); // TODO: should this be _ref(p_from)?
-	assign(p_from);
 	if (validate_set_type() != OK) {
 		return;
 	}
-	// TODO: figure out what to do with this commented out section
-	//	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
-	//	Ref<Script> script = p_script;
-	//	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
-	//
-	//	_p->typed.type = Variant::Type(p_type);
-	//	_p->typed.class_name = p_class_name;
-	//	_p->typed.script = script;
+	assign(p_from);
+
 	_p->array.resize(p_size);
+	_p->typed.type = Variant::ARRAY;
 	_p->typed.where = "Struct"; // TODO: is this right?
 
 	_p->struct_name = p_name;
 	_p->member_count = p_size;
 	_p->member_names.resize(p_size);
+	_p->typed.struct_members.resize(p_size);
 	for (uint32_t i = 0; i < p_size; i++) {
-		_p->member_names[i] = p_get_member(i).name;
+		StructMember source_member = p_get_member(i);
+		ContainerTypeValidate *member_type = &_p->typed.struct_members[i];
+		_p->member_names[i] = source_member.name;
+		member_type->type = source_member.type;
+		member_type->class_name = source_member.class_name;
+		// TODO: this is not yet doing a recursive type assignment.
 	}
 }
 
 Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const Vector<StringName> &p_member_names) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
-	assign(p_from);
 	if (validate_set_type() != OK) {
 		return;
 	}
+	assign(p_from);
+
 	_p->array.resize(p_size);
 	_p->typed.where = "Struct"; // TODO: is this right?
 
 	_p->struct_name = p_name;
 	_p->member_count = p_size;
+	_p->member_names.resize(p_size);
+	_p->typed.struct_members.resize(p_size);
 	for (uint32_t i = 0; i < p_size; i++) {
-		_p->member_names[i] = p_member_names[i]; // TODO: do I need to check that this exists before accessing it?
+		StructMember source_member = p_member_names[i];
+		ContainerTypeValidate *member_type = &_p->typed.struct_members[i];
+		_p->member_names[i] = source_member.name;
+		member_type->type = source_member.type;
+		member_type->class_name = source_member.class_name;
+		// TODO: this is not yet doing a recursive type assignment.
 	}
 }
 
@@ -936,8 +948,14 @@ Array::Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_
 	_p->struct_name = p_name;
 	_p->member_count = p_size;
 	_p->member_names.resize(p_size);
+	_p->typed.struct_members.resize(p_size);
 	for (uint32_t i = 0; i < p_size; i++) {
-		_p->member_names[i] = p_get_member(i).name;
+		StructMember source_member = p_get_member(i);
+		ContainerTypeValidate *member_type = &_p->typed.struct_members[i];
+		_p->member_names[i] = source_member.name;
+		member_type->type = source_member.type;
+		member_type->class_name = source_member.class_name;
+		// TODO: this is not yet doing a recursive type assignment.
 	}
 }
 

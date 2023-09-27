@@ -66,6 +66,7 @@ struct ContainerTypeValidate {
 		return true;
 	}
 
+private:
 	_FORCE_INLINE_ bool can_reference_base(const ContainerTypeValidate &p_type) const {
 		if (type != p_type.type) {
 			return false;
@@ -91,10 +92,12 @@ struct ContainerTypeValidate {
 		return true;
 	}
 
+public:
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
 		return equal_recursive(p_type, 0);
 	}
 
+private:
 	_FORCE_INLINE_ bool equal_recursive(const ContainerTypeValidate &p_type, uint32_t r_recursion_count = 0) const {
 		bool equals = equal_base(p_type);
 		if (!equals) {
@@ -124,31 +127,13 @@ struct ContainerTypeValidate {
 		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
 	}
 
+public:
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
 		return !equal_recursive(p_type, 0);
 	}
 
-	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use", uint32_t r_recursion_count = 0) const {
-		bool valid = validate_base(inout_variant);
-		if (!valid) {
-			return false;
-		}
-		if (r_recursion_count > MAX_RECURSION) {
-			ERR_PRINT("Max recursion reached");
-			return true;
-		}
-		r_recursion_count++;
-		for (const ContainerTypeValidate &member : struct_members) {
-			valid = member.validate(inout_variant, p_operation, r_recursion_count);
-			if (!valid) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	// Coerces String and StringName into each other and int into float when needed.
-	_FORCE_INLINE_ bool validate_base(Variant &inout_variant, const char *p_operation = "use") const {
+	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
+		// Coerces String and StringName into each other and int into float when needed.
 		if (type == Variant::NIL) {
 			return true;
 		}
@@ -178,6 +163,7 @@ struct ContainerTypeValidate {
 		return validate_object(inout_variant, p_operation);
 	}
 
+public:
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
 		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
 

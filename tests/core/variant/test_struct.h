@@ -54,20 +54,35 @@ TEST_CASE("[Struct] PropertyInfo") {
 	prop.set_named(SNAME("hint_string"), info.hint_string);
 	prop.set_named(SNAME("usage"), info.usage);
 
-	CHECK_EQ(info.name, String(prop.get_named(SNAME("name"))));
-	CHECK_EQ(info.class_name, StringName(prop.get_named(SNAME("class_name"))));
-	CHECK_EQ(info.type, (Variant::Type) (int) prop.get_named(SNAME("type")));
-	CHECK_EQ(info.hint, (PropertyHint) (int) prop.get_named(SNAME("hint")));
-	CHECK_EQ(info.hint_string, String(prop.get_named(SNAME("name"))));
-	CHECK_EQ(info.usage, (PropertyUsageFlags) (int) prop.get_named(SNAME("usage")));
+	SUBCASE("Equality") {
+		CHECK_EQ(info.name, String(prop.get_named(SNAME("name"))));
+		CHECK_EQ(info.class_name, StringName(prop.get_named(SNAME("class_name"))));
+		CHECK_EQ(info.type, (Variant::Type)(int)prop.get_named(SNAME("type")));
+		CHECK_EQ(info.hint, (PropertyHint)(int)prop.get_named(SNAME("hint")));
+		CHECK_EQ(info.hint_string, String(prop.get_named(SNAME("name"))));
+		CHECK_EQ(info.usage, (PropertyUsageFlags)(int)prop.get_named(SNAME("usage")));
+	}
 
-	Variant var = prop;
-	CHECK_EQ(var.get_type(), Variant::ARRAY);
-	Variant var_dup = prop.duplicate();
-	CHECK_EQ(var_dup.get_type(), Variant::ARRAY);
+	SUBCASE("Duplication") {
+		Variant var = prop;
+		CHECK_EQ(var.get_type(), Variant::ARRAY);
+		Variant var_dup = prop.duplicate();
+		CHECK_EQ(var_dup.get_type(), Variant::ARRAY);
 
-	print_line(var);
-	print_line(var_dup);
+		print_line(var);
+		print_line(var_dup);
+	}
+
+	SUBCASE("Type Validation") {
+		CHECK(prop.is_same_typed(prop));
+		CHECK(prop.is_same_typed((Variant)prop));
+		Variant var = prop;
+		Struct<PropertyInfoLayout> prop2 = var;
+		print_line(prop2);
+
+		CHECK_THROWS(prop.set_named(SNAME("name"), 4));
+		CHECK_NOTHROW(prop.set_named(SNAME("name"), "Node")); // TODO: not sure if these tests are working correclty
+	}
 }
 
 TEST_CASE("[Struct] ClassDB") {

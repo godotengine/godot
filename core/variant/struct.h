@@ -31,49 +31,9 @@
 #ifndef STRUCT_H
 #define STRUCT_H
 
-#include "core/string/string_name.h"
 #include "core/variant/variant.h"
 
 class Array;
-
-struct StructMember {
-	StringName name;
-	Variant::Type type; // TODO: should this be a union of type and struct_name?
-	StringName class_name;
-	Variant default_value;
-
-	StructMember(const StringName &p_name = StringName(), const Variant::Type p_type = Variant::NIL, const StringName &p_class_name = StringName(), const Variant &p_default_value = Variant()) {
-		name = p_name;
-		type = p_type;
-		class_name = p_class_name;
-		default_value = p_default_value;
-	}
-};
-
-#define STRUCT_MEMBER(m_name, m_type) StructMember(SNAME(m_name), m_type)
-#define STRUCT_CLASS_MEMBER(m_name, m_class) StructMember(SNAME(m_name), Variant::OBJECT, m_class)
-
-// TODO: is there a way to define this so that the member count doesn't have to be passed?
-#define STRUCT_LAYOUT(m_struct, m_name, ...)                                                 \
-	struct m_struct {                                                                        \
-		_FORCE_INLINE_ static const StringName get_class() {                                 \
-			return SNAME(#m_struct);                                                         \
-		}                                                                                    \
-		_FORCE_INLINE_ static const StringName get_name() {                                  \
-			return SNAME(m_name);                                                            \
-		}                                                                                    \
-		_FORCE_INLINE_ static const StructMember &get_member(uint32_t p_index) {             \
-			static const StructMember members[] = { __VA_ARGS__ };                           \
-			static constexpr uint32_t member_count = sizeof(members) / sizeof(StructMember); \
-			CRASH_BAD_INDEX(p_index, member_count);                                          \
-			return members[p_index];                                                         \
-		}                                                                                    \
-		_FORCE_INLINE_ static const uint32_t get_member_count() {                            \
-			static const StructMember members[] = { __VA_ARGS__ };                           \
-			static constexpr uint32_t member_count = sizeof(members) / sizeof(StructMember); \
-			return member_count;                                                             \
-		}                                                                                    \
-	};
 
 //// TODO: A different version I was playing around with
 //#define STRUCT_LAYOUT(m_name, m_member_count, ...)                                                                                          \
