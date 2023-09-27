@@ -473,6 +473,18 @@ const Variant &Array::get_named(const StringName &p_member) const {
 	return get(index);
 }
 
+const StringName Array::get_member_name(int p_idx) const {
+	if (p_idx < 0) {
+		return StringName();
+	}
+	const uint32_t index = p_idx;
+	if (index < _p->member_names.size()) {
+		return _p->member_names[index];
+	} else {
+		return StringName(); // TODO: should there be an error or empty string?
+	}
+}
+
 Array Array::duplicate(bool p_deep) const {
 	return recursive_duplicate(p_deep, 0);
 }
@@ -852,6 +864,10 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 
 bool Array::is_typed() const {
 	return _p->typed.type != Variant::NIL;
+}
+
+bool Array::is_struct() const {
+	return _p->is_struct();
 }
 
 bool Array::is_same_typed(const Array &p_other) const {

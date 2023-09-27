@@ -58,6 +58,7 @@ public:
 	const Variant &get(int p_idx) const;
 	void set_named(const StringName &p_member, const Variant &p_value);
 	const Variant &get_named(const StringName &p_member) const; // TODO: should be & return?
+	const StringName get_member_name(int p_idx) const;
 
 	int size() const;
 	bool is_empty() const;
@@ -127,6 +128,7 @@ public:
 	Error validate_set_type();
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	bool is_typed() const;
+	bool is_struct() const;
 	bool is_same_typed(const Array &p_other) const;
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;

@@ -81,7 +81,7 @@ TEST_CASE("[Struct] PropertyInfo") {
 		print_line(prop2);
 
 		CHECK_THROWS(prop.set_named(SNAME("name"), 4));
-		CHECK_NOTHROW(prop.set_named(SNAME("name"), "Node")); // TODO: not sure if these tests are working correclty
+		CHECK_NOTHROW(prop.set_named(SNAME("name"), "Node")); // TODO: not sure if these tests are working correctly
 	}
 }
 
