@@ -245,6 +245,7 @@ public:
 	WindowID _get_focused_window_or_popup() const;
 	void mouse_enter_window(WindowID p_window);
 	void mouse_exit_window(WindowID p_window);
+	void update_presentation_mode();
 
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
