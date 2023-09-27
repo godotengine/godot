@@ -83,6 +83,7 @@ public:
 	int get_process_id() const override;
 	bool is_process_running(const ProcessID &p_pid) const override;
 	int get_processor_count() const override;
+	String get_unique_id() const override;
 	int get_default_thread_pool_size() const override { return 1; }
 
 	String get_executable_path() const override;
