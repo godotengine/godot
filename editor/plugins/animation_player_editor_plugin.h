@@ -136,20 +136,18 @@ class AnimationPlayerEditor : public VBoxContainer {
 	AnimationTrackEditor *track_editor = nullptr;
 	static AnimationPlayerEditor *singleton;
 
-	bool hack_disable_onion_skinning = true; // Temporary hack for GH-53870.
-
 	// Onion skinning.
 	struct {
 		// Settings.
 		bool enabled = false;
-		bool past = false;
+		bool past = true;
 		bool future = false;
-		int steps = 0;
+		uint32_t steps = 1;
 		bool differences_only = false;
 		bool force_white_modulate = false;
 		bool include_gizmos = false;
 
-		int get_needed_capture_count() const {
+		uint32_t get_capture_count() const {
 			// 'Differences only' needs a capture of the present.
 			return (past && future ? 2 * steps : steps) + (differences_only ? 1 : 0);
 		}
@@ -158,14 +156,23 @@ class AnimationPlayerEditor : public VBoxContainer {
 		int64_t last_frame = 0;
 		int can_overlay = 0;
 		Size2 capture_size;
-		Vector<RID> captures;
-		Vector<bool> captures_valid;
+		LocalVector<RID> captures;
+		LocalVector<bool> captures_valid;
 		struct {
 			RID canvas;
 			RID canvas_item;
 			Ref<ShaderMaterial> material;
 			Ref<Shader> shader;
 		} capture;
+
+		// Cross-call state.
+		struct {
+			double anim_player_position = 0.0;
+			Ref<AnimatedValuesBackup> anim_values_backup;
+			Rect2 screen_rect;
+			Dictionary canvas_edit_state;
+			Dictionary spatial_edit_state;
+		} temp;
 	} onion;
 
 	void _select_anim_by_name(const String &p_anim);
@@ -215,8 +222,10 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _allocate_onion_layers();
 	void _free_onion_layers();
 	void _prepare_onion_layers_1();
-	void _prepare_onion_layers_1_deferred();
-	void _prepare_onion_layers_2();
+	void _prepare_onion_layers_2_prolog();
+	void _prepare_onion_layers_2_step_prepare(int p_step_offset, uint32_t p_capture_idx);
+	void _prepare_onion_layers_2_step_capture(int p_step_offset, uint32_t p_capture_idx);
+	void _prepare_onion_layers_2_epilog();
 	void _start_onion_skinning();
 	void _stop_onion_skinning();
 
