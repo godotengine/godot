@@ -1061,7 +1061,7 @@ void MeshStorage::update_mesh_instances() {
 	RD::get_singleton()->compute_list_end();
 }
 
-void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, bool p_input_motion_vectors, MeshInstance::Surface *mis) {
+void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint32_t p_input_mask, bool p_input_motion_vectors, MeshInstance::Surface *mis, uint32_t p_current_buffer, uint32_t p_previous_buffer) {
 	Vector<RD::VertexAttribute> attributes;
 	Vector<RID> buffers;
 
@@ -1134,7 +1134,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					}
 
 					if (mis) {
-						buffer = mis->vertex_buffer[mis->current_buffer];
+						buffer = mis->vertex_buffer[p_current_buffer];
 					} else {
 						buffer = s->vertex_buffer;
 					}
@@ -1146,7 +1146,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					stride += sizeof(uint16_t) * 2;
 
 					if (mis) {
-						buffer = mis->vertex_buffer[mis->current_buffer];
+						buffer = mis->vertex_buffer[p_current_buffer];
 					} else {
 						buffer = s->vertex_buffer;
 					}
@@ -1157,7 +1157,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					stride += sizeof(uint16_t) * 2;
 
 					if (mis) {
-						buffer = mis->vertex_buffer[mis->current_buffer];
+						buffer = mis->vertex_buffer[p_current_buffer];
 					} else {
 						buffer = s->vertex_buffer;
 					}
@@ -1241,7 +1241,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 
 			if (int(vd.location) != i) {
 				if (mis && buffer != mesh_default_rd_buffers[i]) {
-					buffer = mis->vertex_buffer[mis->previous_buffer];
+					buffer = mis->vertex_buffer[p_previous_buffer];
 				}
 
 				attributes.push_back(vd);
@@ -1267,8 +1267,8 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	}
 
 	v.input_mask = p_input_mask;
-	v.current_buffer = mis ? mis->current_buffer : 0;
-	v.previous_buffer = mis ? mis->previous_buffer : 0;
+	v.current_buffer = p_current_buffer;
+	v.previous_buffer = p_previous_buffer;
 	v.input_motion_vectors = p_input_motion_vectors;
 	v.vertex_format = RD::get_singleton()->vertex_format_create(attributes);
 	v.vertex_array = RD::get_singleton()->vertex_array_create(s->vertex_count, v.vertex_format, buffers);
