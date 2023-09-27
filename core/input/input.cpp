@@ -270,6 +270,17 @@ bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
 }
 
+bool Input::is_buffered_key_pressed(Key p_keycode) const {
+	_THREAD_SAFE_METHOD_
+	for (Ref<InputEvent> event : buffered_events) {
+		Ref<InputEventKey> k = event;
+		if (k.is_valid() && k->get_keycode() == p_keycode && k->is_pressed()) {
+			return true;
+		}
+	}
+	return false;
+}
+
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
 	return JoyAxis((int)p_value | (p_device << 20));
 }

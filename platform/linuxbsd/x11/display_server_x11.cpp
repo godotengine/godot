@@ -3448,8 +3448,9 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	}
 
 	bool last_is_pressed = Input::get_singleton()->is_key_pressed(k->get_keycode());
+	bool last_is_pressed_buffered = Input::get_singleton()->is_buffered_key_pressed(k->get_keycode());
 	if (k->is_pressed()) {
-		if (last_is_pressed) {
+		if (last_is_pressed || last_is_pressed_buffered) {
 			k->set_echo(true);
 		}
 	}
