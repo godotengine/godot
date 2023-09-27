@@ -1005,6 +1005,10 @@ int OS_JavaScript::get_processor_count() const {
 	return godot_js_os_hw_concurrency_get();
 }
 
+String OS_JavaScript::get_unique_id() const {
+	ERR_FAIL_V_MSG("", "OS::get_unique_id() is not available on the HTML5 platform.");
+}
+
 bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "HTML5" || p_feature == "web") {
 		return true;
