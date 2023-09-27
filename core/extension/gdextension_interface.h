@@ -430,6 +430,8 @@ typedef GDExtensionBool (*GDExtensionScriptInstanceSet)(GDExtensionScriptInstanc
 typedef GDExtensionBool (*GDExtensionScriptInstanceGet)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
 typedef const GDExtensionPropertyInfo *(*GDExtensionScriptInstanceGetPropertyList)(GDExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
 typedef void (*GDExtensionScriptInstanceFreePropertyList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionPropertyInfo *p_list);
+typedef GDExtensionBool (*GDExtensionScriptInstanceGetClassCategory)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionPropertyInfo *p_class_category);
+
 typedef GDExtensionVariantType (*GDExtensionScriptInstanceGetPropertyType)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionBool *r_is_valid);
 typedef GDExtensionBool (*GDExtensionScriptInstanceValidateProperty)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionPropertyInfo *p_property);
 
@@ -508,6 +510,7 @@ typedef struct {
 	GDExtensionScriptInstanceGet get_func;
 	GDExtensionScriptInstanceGetPropertyList get_property_list_func;
 	GDExtensionScriptInstanceFreePropertyList free_property_list_func;
+	GDExtensionScriptInstanceGetClassCategory get_class_category_func;
 
 	GDExtensionScriptInstancePropertyCanRevert property_can_revert_func;
 	GDExtensionScriptInstancePropertyGetRevert property_get_revert_func;
