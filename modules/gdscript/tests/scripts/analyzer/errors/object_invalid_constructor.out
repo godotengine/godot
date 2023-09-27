@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Invalid constructor "Object()", use "Object.new()" instead.

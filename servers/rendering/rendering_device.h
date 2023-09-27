@@ -1401,6 +1401,13 @@ protected:
 	};
 
 	Error _reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, SpirvReflectionData &r_reflection_data);
+
+#ifndef DISABLE_DEPRECATED
+	BitField<BarrierMask> _convert_barrier_mask_81356(BitField<BarrierMask> p_old_barrier);
+	void _draw_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
+	void _compute_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
+	void _barrier_bind_compat_81356(BitField<BarrierMask> p_from, BitField<BarrierMask> p_to);
+#endif
 };
 
 VARIANT_ENUM_CAST(RenderingDevice::DeviceType)

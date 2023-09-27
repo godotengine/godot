@@ -1,0 +1,33 @@
+GDTEST_OK
+>> WARNING
+>> Line: 24
+>> UNSAFE_CALL_ARGUMENT
+>> The argument 1 of the function "int_func()" requires the subtype "int" but the supertype "Variant" was provided.
+>> WARNING
+>> Line: 25
+>> UNSAFE_CALL_ARGUMENT
+>> The argument 1 of the function "int_func()" requires the subtype "int" but the supertype "Variant" was provided.
+>> WARNING
+>> Line: 26
+>> UNSAFE_CALL_ARGUMENT
+>> The argument 1 of the function "int_func()" requires the subtype "int" but the supertype "Variant" was provided.
+>> WARNING
+>> Line: 27
+>> UNSAFE_CALL_ARGUMENT
+>> The argument 1 of the function "int_func()" requires the subtype "int" but the supertype "Variant" was provided.
+>> WARNING
+>> Line: 30
+>> UNSAFE_CALL_ARGUMENT
+>> The argument 1 of the function "float_func()" requires the subtype "float" but the supertype "Variant" was provided.
+>> WARNING
+>> Line: 31
+>> UNSAFE_CALL_ARGUMENT
+>> The argument 1 of the function "float_func()" requires the subtype "float" but the supertype "Variant" was provided.
+>> WARNING
+>> Line: 32
+>> UNSAFE_CALL_ARGUMENT
+>> The argument 1 of the function "float_func()" requires the subtype "float" but the supertype "Variant" was provided.
+>> WARNING
+>> Line: 33
+>> UNSAFE_CALL_ARGUMENT
+>> The argument 1 of the function "float_func()" requires the subtype "float" but the supertype "Variant" was provided.

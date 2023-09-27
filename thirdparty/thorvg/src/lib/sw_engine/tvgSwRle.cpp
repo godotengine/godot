@@ -716,11 +716,11 @@ static void _decomposeOutline(RleWorker& rw)
     for (auto cntr = outline->cntrs.data; cntr < outline->cntrs.end(); ++cntr) {
         auto last = *cntr;
         auto limit = outline->pts.data + last;
-        auto start = UPSCALE(outline->pts.data[first]);
+        auto start = UPSCALE(outline->pts[first]);
         auto pt = outline->pts.data + first;
         auto types = outline->types.data + first;
 
-        _moveTo(rw, UPSCALE(outline->pts.data[first]));
+        _moveTo(rw, UPSCALE(outline->pts[first]));
 
         while (pt < limit) {
             ++pt;

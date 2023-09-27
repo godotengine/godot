@@ -40,9 +40,6 @@ namespace GodotTools.Build
             plugin.MakeBottomPanelItemVisible(plugin.MSBuildPanel);
         }
 
-        public static void RestartBuild(BuildOutputView buildOutputView) => throw new NotImplementedException();
-        public static void StopBuild(BuildOutputView buildOutputView) => throw new NotImplementedException();
-
         private static string GetLogFilePath(BuildInfo buildInfo)
         {
             return Path.Combine(buildInfo.LogsDirPath, MsBuildLogFileName);

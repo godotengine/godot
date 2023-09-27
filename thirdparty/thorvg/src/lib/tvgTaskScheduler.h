@@ -38,6 +38,7 @@ struct TaskScheduler
     static void init(unsigned threads);
     static void term();
     static void request(Task* task);
+    static void async(bool on);
 };
 
 struct Task

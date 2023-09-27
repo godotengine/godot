@@ -670,9 +670,20 @@ public:
 			const GDExtensionPropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
 
 #ifdef TOOLS_ENABLED
-			Ref<Script> script = get_script();
-			if (script.is_valid() && pcount > 0) {
-				p_list->push_back(script->get_class_category());
+			if (pcount > 0) {
+				if (native_info->get_class_category_func) {
+					GDExtensionPropertyInfo gdext_class_category;
+					if (native_info->get_class_category_func(instance, &gdext_class_category)) {
+						p_list->push_back(PropertyInfo(gdext_class_category));
+					}
+#ifndef DISABLE_DEPRECATED
+				} else {
+					Ref<Script> script = get_script();
+					if (script.is_valid()) {
+						p_list->push_back(script->get_class_category());
+					}
+#endif // DISABLE_DEPRECATED
+				}
 			}
 #endif // TOOLS_ENABLED
 

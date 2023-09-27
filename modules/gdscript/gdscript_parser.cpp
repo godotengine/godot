@@ -52,11 +52,18 @@
 #include "editor/editor_settings.h"
 #endif
 
+// This function is used to determine that a type is "built-in" as opposed to native
+// and custom classes. So `Variant::NIL` and `Variant::OBJECT` are excluded:
+// `Variant::NIL` - `null` is literal, not a type.
+// `Variant::OBJECT` - `Object` should be treated as a class, not as a built-in type.
 static HashMap<StringName, Variant::Type> builtin_types;
 Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
-	if (builtin_types.is_empty()) {
-		for (int i = 1; i < Variant::VARIANT_MAX; i++) {
-			builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
+	if (unlikely(builtin_types.is_empty())) {
+		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+			Variant::Type type = (Variant::Type)i;
+			if (type != Variant::NIL && type != Variant::OBJECT) {
+				builtin_types[Variant::get_type_name(type)] = type;
+			}
 		}
 	}
 
