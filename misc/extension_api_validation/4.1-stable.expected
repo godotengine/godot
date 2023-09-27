@@ -20,12 +20,9 @@ Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_r
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_update/arguments/4': default_value changed value in new API, from "7" to "32767".
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_clear/arguments/3': default_value changed value in new API, from "7" to "32767".
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_end/arguments/0': default_value changed value in new API, from "7" to "32767".
-Validate extension JSON: Error: Hash changed for 'classes/RenderingDevice/methods/draw_list_end', from 19365687 to E9B4FA8E. This means that the function has changed and no compatibility function was provided.
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/compute_list_end/arguments/0': default_value changed value in new API, from "7" to "32767".
-Validate extension JSON: Error: Hash changed for 'classes/RenderingDevice/methods/compute_list_end', from 19365687 to E9B4FA8E. This means that the function has changed and no compatibility function was provided.
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/barrier/arguments/0': default_value changed value in new API, from "7" to "32767".
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/barrier/arguments/1': default_value changed value in new API, from "7" to "32767".
-Validate extension JSON: Error: Hash changed for 'classes/RenderingDevice/methods/barrier', from 0FE50041 to DD9E8DAB. This means that the function has changed and no compatibility function was provided.
 
 Raster barrier was split into vertex and fragment barriers for use in mobile renderer.
 
