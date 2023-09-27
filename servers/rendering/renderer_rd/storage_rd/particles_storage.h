@@ -206,7 +206,7 @@ private:
 		RID particles_sort_uniform_set;
 
 		bool dirty = false;
-		Particles *update_list = nullptr;
+		SelfList<Particles> update_list;
 
 		RID sub_emitter;
 
@@ -250,7 +250,8 @@ private:
 		LocalVector<ParticlesFrameParams> frame_history;
 		LocalVector<ParticlesFrameParams> trail_params;
 
-		Particles() {
+		Particles() :
+				update_list(this) {
 		}
 	};
 
@@ -322,7 +323,7 @@ private:
 
 	} particles_shader;
 
-	Particles *particle_update_list = nullptr;
+	SelfList<Particles>::List particle_update_list;
 
 	mutable RID_Owner<Particles, true> particles_owner;
 
