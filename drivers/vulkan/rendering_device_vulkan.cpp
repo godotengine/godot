@@ -2718,26 +2718,33 @@ Vector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex
 			VkSubresourceLayout layout;
 			vkGetImageSubresourceLayout(device, p_image, &image_sub_resorce, &layout);
 
-			for (uint32_t z = 0; z < depth; z++) {
-				uint8_t *write_ptr = write_ptr_mipmap + z * image_size / depth;
-				const uint8_t *slice_read_ptr = ((uint8_t *)img_mem) + layout.offset + z * layout.depthPitch;
+			uint32_t uncompressed_line_size = pixel_size * width;
+			uint32_t compressed_line_width = block_size * (width / blockw);
 
-				if (block_size > 1) {
-					// Compressed.
-					uint32_t line_width = (block_size * (width / blockw));
+			if (block_size > 1) {
+				// Compressed.
+				for (uint32_t z = 0; z < depth; z++) {
+					uint8_t *write_ptr = write_ptr_mipmap + z * image_size / depth;
+					const uint8_t *slice_read_ptr = ((uint8_t *)img_mem) + layout.offset + z * layout.depthPitch;
+
 					for (uint32_t y = 0; y < height / blockh; y++) {
 						const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
-						uint8_t *wptr = write_ptr + y * line_width;
+						uint8_t *wptr = write_ptr + y * compressed_line_width;
 
-						memcpy(wptr, rptr, line_width);
+						memcpy(wptr, rptr, compressed_line_width);
 					}
+				}
+			} else {
+				// Uncompressed.
+				for (uint32_t z = 0; z < depth; z++) {
+					uint8_t *write_ptr = write_ptr_mipmap + z * image_size / depth;
+					const uint8_t *slice_read_ptr = ((uint8_t *)img_mem) + layout.offset + z * layout.depthPitch;
 
-				} else {
-					// Uncompressed.
 					for (uint32_t y = 0; y < height; y++) {
 						const uint8_t *rptr = slice_read_ptr + y * layout.rowPitch;
-						uint8_t *wptr = write_ptr + y * pixel_size * width;
-						memcpy(wptr, rptr, (uint64_t)pixel_size * width);
+						uint8_t *wptr = write_ptr + y * uncompressed_line_size;
+						
+						memcpy(wptr, rptr, uncompressed_line_size);
 					}
 				}
 			}
