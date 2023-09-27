@@ -867,7 +867,7 @@ void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 	// Find the property to use.
 	String property;
 	if (tools_button_group->get_pressed_button() == tool_select_button && tile_inspector->is_visible() && !tile_inspector->get_selected_path().is_empty()) {
-		Vector<String> components = tile_inspector->get_selected_path().split("/");
+		Vector<String> components = tile_inspector->get_selected_path().split("/", true, 1);
 		if (components.size() >= 1) {
 			property = components[0];
 

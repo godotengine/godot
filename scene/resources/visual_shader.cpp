@@ -4641,8 +4641,7 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 	int count = 0;
 	int index = 0;
 	for (int i = 0; i < inputs_strings.size(); i++) {
-		Vector<String> arr = inputs_strings[i].split(",");
-		if (arr[0].to_int() == p_id) {
+		if (inputs_strings[i].get_slicec(',', 0).to_int() == p_id) {
 			count = inputs_strings[i].size();
 			break;
 		}
@@ -4654,7 +4653,7 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 	inputs = inputs.substr(0, index);
 
 	for (int i = p_id; i < inputs_strings.size(); i++) {
-		inputs += inputs_strings[i].replace_first(inputs_strings[i].split(",")[0], itos(i)) + ";";
+		inputs += inputs_strings[i].replace_first(inputs_strings[i].get_slicec(',', 0), itos(i)) + ";";
 	}
 
 	_apply_port_changes();
@@ -4716,8 +4715,7 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 	int count = 0;
 	int index = 0;
 	for (int i = 0; i < outputs_strings.size(); i++) {
-		Vector<String> arr = outputs_strings[i].split(",");
-		if (arr[0].to_int() == p_id) {
+		if (outputs_strings[i].get_slicec(',', 0).to_int() == p_id) {
 			count = outputs_strings[i].size();
 			break;
 		}
@@ -4729,7 +4727,7 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 	outputs = outputs.substr(0, index);
 
 	for (int i = p_id; i < outputs_strings.size(); i++) {
-		outputs += outputs_strings[i].replace_first(outputs_strings[i].split(",")[0], itos(i)) + ";";
+		outputs += outputs_strings[i].replace_first(outputs_strings[i].get_slicec(',', 0), itos(i)) + ";";
 	}
 
 	_apply_port_changes();
