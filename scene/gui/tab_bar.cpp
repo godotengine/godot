@@ -948,7 +948,7 @@ void TabBar::_update_hover() {
 	}
 }
 
-void TabBar::_update_cache() {
+void TabBar::_update_cache(bool p_update_hover) {
 	if (tabs.is_empty()) {
 		buttons_visible = false;
 		return;
@@ -1011,7 +1011,9 @@ void TabBar::_update_cache() {
 	buttons_visible = offset > 0 || missing_right;
 
 	if (tab_alignment == ALIGNMENT_LEFT) {
-		_update_hover();
+		if (p_update_hover) {
+			_update_hover();
+		}
 		return;
 	}
 
@@ -1029,7 +1031,9 @@ void TabBar::_update_cache() {
 		}
 	}
 
-	_update_hover();
+	if (p_update_hover) {
+		_update_hover();
+	}
 }
 
 void TabBar::_on_mouse_exited() {
@@ -1039,7 +1043,7 @@ void TabBar::_on_mouse_exited() {
 	highlight_arrow = -1;
 	dragging_valid_tab = false;
 
-	_update_cache();
+	_update_cache(false);
 	queue_redraw();
 }
 
@@ -1373,7 +1377,8 @@ int TabBar::get_tab_width(int p_idx) const {
 		style = theme_cache.tab_disabled_style;
 	} else if (current == p_idx) {
 		style = theme_cache.tab_selected_style;
-	} else if (hover == p_idx) {
+		// Use the unselected style's width if the hovered one is shorter, to avoid an infinite loop when switching tabs with the mouse.
+	} else if (hover == p_idx && theme_cache.tab_hovered_style->get_minimum_size().width >= theme_cache.tab_unselected_style->get_minimum_size().width) {
 		style = theme_cache.tab_hovered_style;
 	} else {
 		style = theme_cache.tab_unselected_style;
