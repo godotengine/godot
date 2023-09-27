@@ -149,6 +149,7 @@ public:
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
 
 		String to_string() const;
+		_FORCE_INLINE_ String to_string_strict() const { return is_hard_type() ? to_string() : "Variant"; }
 		PropertyInfo to_property_info(const String &p_name) const;
 
 		_FORCE_INLINE_ void set_container_element_type(const DataType &p_type) {
@@ -1530,7 +1531,7 @@ public:
 	bool is_tool() const { return _is_tool; }
 	ClassNode *find_class(const String &p_qualified_name) const;
 	bool has_class(const GDScriptParser::ClassNode *p_class) const;
-	static Variant::Type get_builtin_type(const StringName &p_type);
+	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
 
 	CompletionContext get_completion_context() const { return completion_context; }
 	CompletionCall get_completion_call() const { return completion_call; }
