@@ -3583,6 +3583,8 @@ void ThemeEditor::_remove_preview_tab(int p_tab) {
 		}
 
 		preview_tabs_content->remove_child(preview_tab);
+		preview_tab->queue_free();
+
 		preview_tabs->remove_tab(p_tab);
 		_change_preview_tab(preview_tabs->get_current_tab());
 	}
