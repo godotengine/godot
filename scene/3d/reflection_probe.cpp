@@ -68,8 +68,9 @@ Color ReflectionProbe::get_ambient_color() const {
 }
 
 void ReflectionProbe::set_max_distance(float p_distance) {
-	max_distance = p_distance;
-	RS::get_singleton()->reflection_probe_set_max_distance(probe, p_distance);
+	max_distance = CLAMP(p_distance, 0.0, 262'144.0);
+	// Reflection rendering breaks if distance exceeds 262,144 units (due to floating-point precision with the near plane being 0.01).
+	RS::get_singleton()->reflection_probe_set_max_distance(probe, max_distance);
 }
 
 float ReflectionProbe::get_max_distance() const {
