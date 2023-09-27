@@ -115,6 +115,17 @@ class GDScriptCompiler {
 		}
 	};
 
+	struct MatchBranch {
+		const GDScriptParser::MatchBranchNode *branch = nullptr;
+		// Constant cases that are possible for the branch (duplicates excluded).
+		List<Variant> cases;
+
+		MatchBranch() {}
+		MatchBranch(const GDScriptParser::MatchBranchNode *p_branch) {
+			branch = p_branch;
+		}
+	};
+
 	bool _is_class_member_property(CodeGen &codegen, const StringName &p_name);
 	bool _is_class_member_property(GDScript *owner, const StringName &p_name);
 	bool _is_local_or_parameter(CodeGen &codegen, const StringName &p_name);
@@ -128,6 +139,8 @@ class GDScriptCompiler {
 
 	GDScriptCodeGenerator::Address _parse_assign_right_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::AssignmentNode *p_assignmentint, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
 	GDScriptCodeGenerator::Address _parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root = false, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
+	Error _parse_match(CodeGen &codegen, const GDScriptParser::MatchNode *p_match);
+	Error _parse_match_branch_group(CodeGen &codegen, const GDScriptCodeGenerator::Address &p_value, const List<MatchBranch> &p_branches);
 	GDScriptCodeGenerator::Address _parse_match_pattern(CodeGen &codegen, Error &r_error, const GDScriptParser::PatternNode *p_pattern, const GDScriptCodeGenerator::Address &p_value_addr, const GDScriptCodeGenerator::Address &p_type_addr, const GDScriptCodeGenerator::Address &p_previous_test, bool p_is_first, bool p_is_nested);
 	List<GDScriptCodeGenerator::Address> _add_locals_in_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block);
 	void _clear_addresses(CodeGen &codegen, const List<GDScriptCodeGenerator::Address> &p_addresses);

@@ -283,6 +283,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_JUMP_IF_NOT,                        \
 		&&OPCODE_JUMP_TO_DEF_ARGUMENT,               \
 		&&OPCODE_JUMP_IF_SHARED,                     \
+		&&OPCODE_JUMP_TABLE_RANGE,                   \
+		&&OPCODE_JUMP_TABLE_BSEARCH,                 \
 		&&OPCODE_RETURN,                             \
 		&&OPCODE_RETURN_TYPED_BUILTIN,               \
 		&&OPCODE_RETURN_TYPED_ARRAY,                 \
@@ -2593,6 +2595,44 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				} else {
 					ip += 3;
 				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_JUMP_TABLE_RANGE) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(val, 0);
+				GD_ERR_BREAK(val->get_type() != Variant::INT);
+
+				int value = *val;
+				int offset = _code_ptr[ip + 2];
+				int size = _code_ptr[ip + 3];
+
+				CHECK_SPACE(4 + size + 1);
+
+				int index = value - offset;
+				ip = (index >= 0 && index < size) ? _code_ptr[ip + 4 + index] : _code_ptr[ip + 4 + size];
+				GD_ERR_BREAK(ip < 0 || ip >= _code_size);
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_JUMP_TABLE_BSEARCH) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(val, 0);
+				int arr_idx = _code_ptr[ip + 2];
+				GD_ERR_BREAK(arr_idx < 0 || arr_idx >= variant_vector_constants.size());
+
+				Variant value = *val;
+				Vector<Variant> array = variant_vector_constants[arr_idx];
+
+				CHECK_SPACE(3 + array.size() + 1);
+
+				SearchArray<Variant, SafeVariantSort> sa;
+				int index = sa.bisect(array.ptr(), array.size(), value, true);
+				bool found = index < array.size() && array[index].get_type() == value.get_type() && array[index] == value;
+				ip = found ? _code_ptr[ip + 3 + index] : _code_ptr[ip + 3 + array.size()];
+				GD_ERR_BREAK(ip < 0 || ip >= _code_size);
 			}
 			DISPATCH_OPCODE;
 

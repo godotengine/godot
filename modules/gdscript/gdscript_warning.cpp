@@ -122,6 +122,8 @@ String GDScriptWarning::get_message() const {
 			return R"(The "@static_unload" annotation is redundant because the file does not have a class with static variables.)";
 		case REDUNDANT_AWAIT:
 			return R"("await" keyword not needed in this case, because the expression isn't a coroutine nor a signal.)";
+		case REDUNDANT_PATTERN:
+			return R"(There is no point to use multiple patterns with a wildcard pattern.)";
 		case ASSERT_ALWAYS_TRUE:
 			return "Assert statement is redundant because the expression is always true.";
 		case ASSERT_ALWAYS_FALSE:
@@ -220,6 +222,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"STATIC_CALLED_ON_INSTANCE",
 		"REDUNDANT_STATIC_UNLOAD",
 		"REDUNDANT_AWAIT",
+		"REDUNDANT_PATTERN",
 		"ASSERT_ALWAYS_TRUE",
 		"ASSERT_ALWAYS_FALSE",
 		"INTEGER_DIVISION",

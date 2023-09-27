@@ -37,6 +37,11 @@ Variant GDScriptFunction::get_constant(int p_idx) const {
 	return constants[p_idx];
 }
 
+Vector<Variant> GDScriptFunction::get_variant_vector_constant(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, variant_vector_constants.size(), Vector<Variant>());
+	return variant_vector_constants[p_idx];
+}
+
 StringName GDScriptFunction::get_global_name(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, global_names.size(), "<errgname>");
 	return global_names[p_idx];

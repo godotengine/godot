@@ -1387,439 +1387,235 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 	}
 }
 
-GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &codegen, Error &r_error, const GDScriptParser::PatternNode *p_pattern, const GDScriptCodeGenerator::Address &p_value_addr, const GDScriptCodeGenerator::Address &p_type_addr, const GDScriptCodeGenerator::Address &p_previous_test, bool p_is_first, bool p_is_nested) {
-	switch (p_pattern->pattern_type) {
-		case GDScriptParser::PatternNode::PT_LITERAL: {
-			if (p_is_nested) {
-				codegen.generator->write_and_left_operand(p_previous_test);
-			} else if (!p_is_first) {
-				codegen.generator->write_or_left_operand(p_previous_test);
-			}
-
-			// Get literal type into constant map.
-			Variant::Type literal_type = p_pattern->literal->value.get_type();
-			GDScriptCodeGenerator::Address literal_type_addr = codegen.add_constant(literal_type);
-
-			// Equality is always a boolean.
-			GDScriptDataType equality_type;
-			equality_type.has_type = true;
-			equality_type.kind = GDScriptDataType::BUILTIN;
-			equality_type.builtin_type = Variant::BOOL;
-
-			// Check type equality.
-			GDScriptCodeGenerator::Address type_equality_addr = codegen.add_temporary(equality_type);
-			codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_EQUAL, p_type_addr, literal_type_addr);
-
-			if (literal_type == Variant::STRING) {
-				GDScriptCodeGenerator::Address type_stringname_addr = codegen.add_constant(Variant::STRING_NAME);
-
-				// Check StringName <-> String type equality.
-				GDScriptCodeGenerator::Address tmp_comp_addr = codegen.add_temporary(equality_type);
-
-				codegen.generator->write_binary_operator(tmp_comp_addr, Variant::OP_EQUAL, p_type_addr, type_stringname_addr);
-				codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, tmp_comp_addr);
-
-				codegen.generator->pop_temporary(); // Remove tmp_comp_addr from stack.
-			} else if (literal_type == Variant::STRING_NAME) {
-				GDScriptCodeGenerator::Address type_string_addr = codegen.add_constant(Variant::STRING);
-
-				// Check String <-> StringName type equality.
-				GDScriptCodeGenerator::Address tmp_comp_addr = codegen.add_temporary(equality_type);
-
-				codegen.generator->write_binary_operator(tmp_comp_addr, Variant::OP_EQUAL, p_type_addr, type_string_addr);
-				codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, tmp_comp_addr);
-
-				codegen.generator->pop_temporary(); // Remove tmp_comp_addr from stack.
-			}
-
-			codegen.generator->write_and_left_operand(type_equality_addr);
-
-			// Get literal.
-			GDScriptCodeGenerator::Address literal_addr = _parse_expression(codegen, r_error, p_pattern->literal);
-			if (r_error) {
-				return GDScriptCodeGenerator::Address();
-			}
-
-			// Check value equality.
-			GDScriptCodeGenerator::Address equality_addr = codegen.add_temporary(equality_type);
-			codegen.generator->write_binary_operator(equality_addr, Variant::OP_EQUAL, p_value_addr, literal_addr);
-			codegen.generator->write_and_right_operand(equality_addr);
-
-			// AND both together (reuse temporary location).
-			codegen.generator->write_end_and(type_equality_addr);
-
-			codegen.generator->pop_temporary(); // Remove equality_addr from stack.
-
-			if (literal_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				codegen.generator->pop_temporary();
-			}
-
-			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
-			if (p_is_nested) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_and_right_operand(type_equality_addr);
-				codegen.generator->write_end_and(p_previous_test);
-			} else if (!p_is_first) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_or_right_operand(type_equality_addr);
-				codegen.generator->write_end_or(p_previous_test);
-			} else {
-				// Just assign this value to the accumulator temporary.
-				codegen.generator->write_assign(p_previous_test, type_equality_addr);
-			}
-			codegen.generator->pop_temporary(); // Remove type_equality_addr.
-
-			return p_previous_test;
-		} break;
-		case GDScriptParser::PatternNode::PT_EXPRESSION: {
-			if (p_is_nested) {
-				codegen.generator->write_and_left_operand(p_previous_test);
-			} else if (!p_is_first) {
-				codegen.generator->write_or_left_operand(p_previous_test);
-			}
-
-			GDScriptCodeGenerator::Address type_string_addr = codegen.add_constant(Variant::STRING);
-			GDScriptCodeGenerator::Address type_stringname_addr = codegen.add_constant(Variant::STRING_NAME);
-
-			// Equality is always a boolean.
-			GDScriptDataType equality_type;
-			equality_type.has_type = true;
-			equality_type.kind = GDScriptDataType::BUILTIN;
-			equality_type.builtin_type = Variant::BOOL;
-
-			// Create the result temps first since it's the last to go away.
-			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary(equality_type);
-			GDScriptCodeGenerator::Address equality_test_addr = codegen.add_temporary(equality_type);
-			GDScriptCodeGenerator::Address stringy_comp_addr = codegen.add_temporary(equality_type);
-			GDScriptCodeGenerator::Address stringy_comp_addr_2 = codegen.add_temporary(equality_type);
-			GDScriptCodeGenerator::Address expr_type_addr = codegen.add_temporary();
-
-			// Evaluate expression.
-			GDScriptCodeGenerator::Address expr_addr;
-			expr_addr = _parse_expression(codegen, r_error, p_pattern->expression);
-			if (r_error) {
-				return GDScriptCodeGenerator::Address();
-			}
-
-			// Evaluate expression type.
-			Vector<GDScriptCodeGenerator::Address> typeof_args;
-			typeof_args.push_back(expr_addr);
-			codegen.generator->write_call_utility(expr_type_addr, "typeof", typeof_args);
-
-			// Check type equality.
-			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, expr_type_addr);
-
-			// Check for String <-> StringName comparison.
-			codegen.generator->write_binary_operator(stringy_comp_addr, Variant::OP_EQUAL, p_type_addr, type_string_addr);
-			codegen.generator->write_binary_operator(stringy_comp_addr_2, Variant::OP_EQUAL, expr_type_addr, type_stringname_addr);
-			codegen.generator->write_binary_operator(stringy_comp_addr, Variant::OP_AND, stringy_comp_addr, stringy_comp_addr_2);
-			codegen.generator->write_binary_operator(result_addr, Variant::OP_OR, result_addr, stringy_comp_addr);
-
-			// Check for StringName <-> String comparison.
-			codegen.generator->write_binary_operator(stringy_comp_addr, Variant::OP_EQUAL, p_type_addr, type_stringname_addr);
-			codegen.generator->write_binary_operator(stringy_comp_addr_2, Variant::OP_EQUAL, expr_type_addr, type_string_addr);
-			codegen.generator->write_binary_operator(stringy_comp_addr, Variant::OP_AND, stringy_comp_addr, stringy_comp_addr_2);
-			codegen.generator->write_binary_operator(result_addr, Variant::OP_OR, result_addr, stringy_comp_addr);
-
-			codegen.generator->pop_temporary(); // Remove expr_type_addr from stack.
-			codegen.generator->pop_temporary(); // Remove stringy_comp_addr_2 from stack.
-			codegen.generator->pop_temporary(); // Remove stringy_comp_addr from stack.
-
-			codegen.generator->write_and_left_operand(result_addr);
-
-			// Check value equality.
-			codegen.generator->write_binary_operator(equality_test_addr, Variant::OP_EQUAL, p_value_addr, expr_addr);
-			codegen.generator->write_and_right_operand(equality_test_addr);
-
-			// AND both type and value equality.
-			codegen.generator->write_end_and(result_addr);
-
-			// We don't need the expression temporary anymore.
-			if (expr_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				codegen.generator->pop_temporary();
-			}
-			codegen.generator->pop_temporary(); // Remove equality_test_addr from stack.
-
-			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
-			if (p_is_nested) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_and_right_operand(result_addr);
-				codegen.generator->write_end_and(p_previous_test);
-			} else if (!p_is_first) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_or_right_operand(result_addr);
-				codegen.generator->write_end_or(p_previous_test);
-			} else {
-				// Just assign this value to the accumulator temporary.
-				codegen.generator->write_assign(p_previous_test, result_addr);
-			}
-			codegen.generator->pop_temporary(); // Remove temp result addr.
-
-			return p_previous_test;
-		} break;
-		case GDScriptParser::PatternNode::PT_ARRAY: {
-			if (p_is_nested) {
-				codegen.generator->write_and_left_operand(p_previous_test);
-			} else if (!p_is_first) {
-				codegen.generator->write_or_left_operand(p_previous_test);
-			}
-			// Get array type into constant map.
-			GDScriptCodeGenerator::Address array_type_addr = codegen.add_constant((int)Variant::ARRAY);
-
-			// Equality is always a boolean.
-			GDScriptDataType temp_type;
-			temp_type.has_type = true;
-			temp_type.kind = GDScriptDataType::BUILTIN;
-			temp_type.builtin_type = Variant::BOOL;
-
-			// Check type equality.
-			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary(temp_type);
-			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, array_type_addr);
-			codegen.generator->write_and_left_operand(result_addr);
-
-			// Store pattern length in constant map.
-			GDScriptCodeGenerator::Address array_length_addr = codegen.add_constant(p_pattern->rest_used ? p_pattern->array.size() - 1 : p_pattern->array.size());
-
-			// Get value length.
-			temp_type.builtin_type = Variant::INT;
-			GDScriptCodeGenerator::Address value_length_addr = codegen.add_temporary(temp_type);
-			Vector<GDScriptCodeGenerator::Address> len_args;
-			len_args.push_back(p_value_addr);
-			codegen.generator->write_call_gdscript_utility(value_length_addr, "len", len_args);
-
-			// Test length compatibility.
-			temp_type.builtin_type = Variant::BOOL;
-			GDScriptCodeGenerator::Address length_compat_addr = codegen.add_temporary(temp_type);
-			codegen.generator->write_binary_operator(length_compat_addr, p_pattern->rest_used ? Variant::OP_GREATER_EQUAL : Variant::OP_EQUAL, value_length_addr, array_length_addr);
-			codegen.generator->write_and_right_operand(length_compat_addr);
-
-			// AND type and length check.
-			codegen.generator->write_end_and(result_addr);
-
-			// Remove length temporaries.
-			codegen.generator->pop_temporary();
-			codegen.generator->pop_temporary();
-
-			// Create temporaries outside the loop so they can be reused.
-			GDScriptCodeGenerator::Address element_addr = codegen.add_temporary();
-			GDScriptCodeGenerator::Address element_type_addr = codegen.add_temporary();
-
-			// Evaluate element by element.
-			for (int i = 0; i < p_pattern->array.size(); i++) {
-				if (p_pattern->array[i]->pattern_type == GDScriptParser::PatternNode::PT_REST) {
-					// Don't want to access an extra element of the user array.
-					break;
-				}
-
-				// Use AND here too, as we don't want to be checking elements if previous test failed (which means this might be an invalid get).
-				codegen.generator->write_and_left_operand(result_addr);
-
-				// Add index to constant map.
-				GDScriptCodeGenerator::Address index_addr = codegen.add_constant(i);
-
-				// Get the actual element from the user-sent array.
-				codegen.generator->write_get(element_addr, index_addr, p_value_addr);
-
-				// Also get type of element.
-				Vector<GDScriptCodeGenerator::Address> typeof_args;
-				typeof_args.push_back(element_addr);
-				codegen.generator->write_call_utility(element_type_addr, "typeof", typeof_args);
-
-				// Try the pattern inside the element.
-				result_addr = _parse_match_pattern(codegen, r_error, p_pattern->array[i], element_addr, element_type_addr, result_addr, false, true);
-				if (r_error != OK) {
-					return GDScriptCodeGenerator::Address();
-				}
-
-				codegen.generator->write_and_right_operand(result_addr);
-				codegen.generator->write_end_and(result_addr);
-			}
-			// Remove element temporaries.
-			codegen.generator->pop_temporary();
-			codegen.generator->pop_temporary();
-
-			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
-			if (p_is_nested) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_and_right_operand(result_addr);
-				codegen.generator->write_end_and(p_previous_test);
-			} else if (!p_is_first) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_or_right_operand(result_addr);
-				codegen.generator->write_end_or(p_previous_test);
-			} else {
-				// Just assign this value to the accumulator temporary.
-				codegen.generator->write_assign(p_previous_test, result_addr);
-			}
-			codegen.generator->pop_temporary(); // Remove temp result addr.
-
-			return p_previous_test;
-		} break;
-		case GDScriptParser::PatternNode::PT_DICTIONARY: {
-			if (p_is_nested) {
-				codegen.generator->write_and_left_operand(p_previous_test);
-			} else if (!p_is_first) {
-				codegen.generator->write_or_left_operand(p_previous_test);
-			}
-			// Get dictionary type into constant map.
-			GDScriptCodeGenerator::Address dict_type_addr = codegen.add_constant((int)Variant::DICTIONARY);
-
-			// Equality is always a boolean.
-			GDScriptDataType temp_type;
-			temp_type.has_type = true;
-			temp_type.kind = GDScriptDataType::BUILTIN;
-			temp_type.builtin_type = Variant::BOOL;
-
-			// Check type equality.
-			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary(temp_type);
-			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, dict_type_addr);
-			codegen.generator->write_and_left_operand(result_addr);
-
-			// Store pattern length in constant map.
-			GDScriptCodeGenerator::Address dict_length_addr = codegen.add_constant(p_pattern->rest_used ? p_pattern->dictionary.size() - 1 : p_pattern->dictionary.size());
-
-			// Get user's dictionary length.
-			temp_type.builtin_type = Variant::INT;
-			GDScriptCodeGenerator::Address value_length_addr = codegen.add_temporary(temp_type);
-			Vector<GDScriptCodeGenerator::Address> func_args;
-			func_args.push_back(p_value_addr);
-			codegen.generator->write_call_gdscript_utility(value_length_addr, "len", func_args);
-
-			// Test length compatibility.
-			temp_type.builtin_type = Variant::BOOL;
-			GDScriptCodeGenerator::Address length_compat_addr = codegen.add_temporary(temp_type);
-			codegen.generator->write_binary_operator(length_compat_addr, p_pattern->rest_used ? Variant::OP_GREATER_EQUAL : Variant::OP_EQUAL, value_length_addr, dict_length_addr);
-			codegen.generator->write_and_right_operand(length_compat_addr);
-
-			// AND type and length check.
-			codegen.generator->write_end_and(result_addr);
-
-			// Remove length temporaries.
-			codegen.generator->pop_temporary();
-			codegen.generator->pop_temporary();
-
-			// Create temporaries outside the loop so they can be reused.
-			GDScriptCodeGenerator::Address element_addr = codegen.add_temporary();
-			GDScriptCodeGenerator::Address element_type_addr = codegen.add_temporary();
-
-			// Evaluate element by element.
-			for (int i = 0; i < p_pattern->dictionary.size(); i++) {
-				const GDScriptParser::PatternNode::Pair &element = p_pattern->dictionary[i];
-				if (element.value_pattern && element.value_pattern->pattern_type == GDScriptParser::PatternNode::PT_REST) {
-					// Ignore rest pattern.
-					break;
-				}
-
-				// Use AND here too, as we don't want to be checking elements if previous test failed (which means this might be an invalid get).
-				codegen.generator->write_and_left_operand(result_addr);
-
-				// Get the pattern key.
-				GDScriptCodeGenerator::Address pattern_key_addr = _parse_expression(codegen, r_error, element.key);
-				if (r_error) {
-					return GDScriptCodeGenerator::Address();
-				}
-
-				// Check if pattern key exists in user's dictionary. This will be AND-ed with next result.
-				func_args.clear();
-				func_args.push_back(pattern_key_addr);
-				codegen.generator->write_call(result_addr, p_value_addr, "has", func_args);
-
-				if (element.value_pattern != nullptr) {
-					// Use AND here too, as we don't want to be checking elements if previous test failed (which means this might be an invalid get).
-					codegen.generator->write_and_left_operand(result_addr);
-
-					// Get actual value from user dictionary.
-					codegen.generator->write_get(element_addr, pattern_key_addr, p_value_addr);
-
-					// Also get type of value.
-					func_args.clear();
-					func_args.push_back(element_addr);
-					codegen.generator->write_call_utility(element_type_addr, "typeof", func_args);
-
-					// Try the pattern inside the value.
-					result_addr = _parse_match_pattern(codegen, r_error, element.value_pattern, element_addr, element_type_addr, result_addr, false, true);
-					if (r_error != OK) {
-						return GDScriptCodeGenerator::Address();
-					}
-					codegen.generator->write_and_right_operand(result_addr);
-					codegen.generator->write_end_and(result_addr);
-				}
-
-				codegen.generator->write_and_right_operand(result_addr);
-				codegen.generator->write_end_and(result_addr);
-
-				// Remove pattern key temporary.
-				if (pattern_key_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
-				}
-			}
-
-			// Remove element temporaries.
-			codegen.generator->pop_temporary();
-			codegen.generator->pop_temporary();
-
-			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
-			if (p_is_nested) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_and_right_operand(result_addr);
-				codegen.generator->write_end_and(p_previous_test);
-			} else if (!p_is_first) {
-				// Use the previous value as target, since we only need one temporary variable.
-				codegen.generator->write_or_right_operand(result_addr);
-				codegen.generator->write_end_or(p_previous_test);
-			} else {
-				// Just assign this value to the accumulator temporary.
-				codegen.generator->write_assign(p_previous_test, result_addr);
-			}
-			codegen.generator->pop_temporary(); // Remove temp result addr.
-
-			return p_previous_test;
-		} break;
-		case GDScriptParser::PatternNode::PT_REST:
-			// Do nothing.
-			return p_previous_test;
-			break;
-		case GDScriptParser::PatternNode::PT_BIND: {
-			if (p_is_nested) {
-				codegen.generator->write_and_left_operand(p_previous_test);
-			} else if (!p_is_first) {
-				codegen.generator->write_or_left_operand(p_previous_test);
-			}
-			// Get the bind address.
-			GDScriptCodeGenerator::Address bind = codegen.locals[p_pattern->bind->name];
-
-			// Assign value to bound variable.
-			codegen.generator->write_assign(bind, p_value_addr);
-		}
-			[[fallthrough]]; // Act like matching anything too.
-		case GDScriptParser::PatternNode::PT_WILDCARD:
-			// If this is a fall through we don't want to do this again.
-			if (p_pattern->pattern_type != GDScriptParser::PatternNode::PT_BIND) {
-				if (p_is_nested) {
-					codegen.generator->write_and_left_operand(p_previous_test);
-				} else if (!p_is_first) {
-					codegen.generator->write_or_left_operand(p_previous_test);
-				}
-			}
-			// This matches anything so just do the same as `if(true)`.
-			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
-			if (p_is_nested) {
-				// Use the operator with the `true` constant so it works as always matching.
-				GDScriptCodeGenerator::Address constant = codegen.add_constant(true);
-				codegen.generator->write_and_right_operand(constant);
-				codegen.generator->write_end_and(p_previous_test);
-			} else if (!p_is_first) {
-				// Use the operator with the `true` constant so it works as always matching.
-				GDScriptCodeGenerator::Address constant = codegen.add_constant(true);
-				codegen.generator->write_or_right_operand(constant);
-				codegen.generator->write_end_or(p_previous_test);
-			} else {
-				// Just assign this value to the accumulator temporary.
-				codegen.generator->write_assign_true(p_previous_test);
-			}
-			return p_previous_test;
+Error GDScriptCompiler::_parse_match(CodeGen &codegen, const GDScriptParser::MatchNode *p_match) {
+	Error err = OK;
+	GDScriptCodeGenerator *gen = codegen.generator;
+
+	codegen.start_block();
+
+	// Evaluate the match expression.
+	GDScriptDataType value_type = _gdtype_from_datatype(p_match->test->get_datatype(), codegen.script);
+	GDScriptCodeGenerator::Address value = codegen.add_local("@match_value", value_type);
+	GDScriptCodeGenerator::Address value_expr = _parse_expression(codegen, err, p_match->test);
+	if (err) {
+		return err;
 	}
-	ERR_FAIL_V_MSG(p_previous_test, "Reaching the end of pattern compilation without matching a pattern.");
+
+	// Assign to local.
+	// TODO: This can be improved by passing the target to parse_expression().
+	gen->write_assign(value, value_expr);
+	if (value_expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+		gen->pop_temporary();
+	}
+
+	// Check the type if needed.
+	GDScriptDataType typeof_type;
+	typeof_type.has_type = true;
+	typeof_type.kind = GDScriptDataType::BUILTIN;
+	typeof_type.builtin_type = Variant::INT;
+	GDScriptCodeGenerator::Address type;
+	if (!value_type.has_type) {
+		type = codegen.add_local("@match_type", typeof_type);
+
+		Vector<GDScriptCodeGenerator::Address> typeof_args;
+		typeof_args.push_back(value);
+		gen->write_call_utility(type, "typeof", typeof_args);
+	}
+
+	// Collect constant case branches to write the group using a jump table.
+	// Variable and destructuring patterns break `match` into several groups.
+	List<MatchBranch> branches;
+	HashSet<Variant, VariantHasher, VariantComparator> handled_const_cases;
+	for (int i = 0; i < p_match->branches.size(); i++) {
+		const GDScriptParser::MatchBranchNode *branch_node = p_match->branches[i];
+		MatchBranch branch(branch_node);
+
+		if (branch_node->has_wildcard) {
+			branches.push_back(branch);
+			break;
+		}
+
+		bool all_constant = true;
+		for (int j = 0; j < branch_node->patterns.size(); j++) {
+			const GDScriptParser::PatternNode *pattern_node = branch_node->patterns[j];
+			bool is_constant = false;
+			Variant pt_value;
+
+			switch (pattern_node->pattern_type) {
+				case GDScriptParser::PatternNode::PT_LITERAL:
+					is_constant = true;
+					pt_value = pattern_node->literal->value;
+					break;
+				case GDScriptParser::PatternNode::PT_EXPRESSION:
+					if (pattern_node->expression->is_constant) {
+						is_constant = true;
+						pt_value = pattern_node->expression->reduced_value;
+					} else {
+						all_constant = false;
+					}
+					break;
+				case GDScriptParser::PatternNode::PT_ARRAY:
+				case GDScriptParser::PatternNode::PT_DICTIONARY:
+					all_constant = false;
+					break;
+				case GDScriptParser::PatternNode::PT_BIND:
+				case GDScriptParser::PatternNode::PT_REST:
+				case GDScriptParser::PatternNode::PT_WILDCARD:
+					return ERR_BUG; // This shouldn't happen.
+			}
+
+			if (is_constant && !handled_const_cases.has(pt_value)) {
+				handled_const_cases.insert(pt_value);
+				branch.cases.push_back(pt_value);
+			}
+		}
+
+		if (all_constant) {
+			if (!branch.cases.is_empty()) {
+				branches.push_back(branch);
+			}
+		} else {
+			// The constant patterns **before the first variable/destructuring pattern**
+			// can be included in the jump table (and the jump addresses patched later).
+			// But this is a rare case, so let's skip the optimization.
+			if (!branches.is_empty()) {
+				err = _parse_match_branch_group(codegen, value, branches);
+				if (err) {
+					return err;
+				}
+				branches.clear();
+			}
+			/*err = _parse_match_branch(codegen, value, branch);
+			if (err) {
+				return err;
+			}*/
+			all_constant = true; // Resume.
+		}
+	}
+
+	if (!branches.is_empty()) {
+		err = _parse_match_branch_group(codegen, value, branches);
+		if (err) {
+			return err;
+		}
+	}
+
+	codegen.end_block();
+
+	return OK;
+}
+
+// TODO
+Error GDScriptCompiler::_parse_match_branch_group(CodeGen &codegen, const GDScriptCodeGenerator::Address &p_value, const List<MatchBranch> &p_branches) {
+	Error err = OK;
+	GDScriptCodeGenerator *gen = codegen.generator;
+
+	constexpr int RANGE_TABLE_MAX_SIZE = 256;
+
+	int branch_index = 0;
+	int min_int = 0;
+	int max_int = 0;
+	bool use_bsearch = false;
+	HashMap<Variant, int, VariantHasher, VariantComparator> case_to_branch_index;
+	Vector<Variant> array;
+
+	// TODO: Use `if` if there are few cases.
+	// TODO: always use bsearch if value is not hard int (enum).
+	// TODO: default branch
+	// TODO: make correct Variant comparator for sort and bsearch!
+	// For example, if types are different, first compare their Variant::Type.
+	// NB: String vs StringName.
+
+	for (const List<MatchBranch>::Element *E = p_branches.front(); E; E = E->next()) {
+		const MatchBranch &branch = E->get();
+		for (const List<Variant>::Element *F = branch.cases.front(); F; F = F->next()) {
+			const Variant &_case = F->get();
+			if (_case.get_type() == Variant::INT) {
+				int value = _case;
+				if (array.is_empty()) {
+					min_int = value;
+					max_int = value;
+				} else if (value > max_int) {
+					max_int = value;
+				} else if (value < min_int) {
+					min_int = value;
+				}
+			} else {
+				use_bsearch = true;
+			}
+			case_to_branch_index[_case] = branch_index;
+			array.push_back(_case);
+		}
+		branch_index++;
+	}
+
+	if (max_int - min_int > RANGE_TABLE_MAX_SIZE) {
+		use_bsearch = true;
+	}
+
+	int default_case_index = 0;
+	if (use_bsearch) {
+		default_case_index = array.size();
+		array.sort_custom<GDScriptFunction::SafeVariantSort>();
+		gen->write_jump_table_bsearch(p_value, array, p_branches.size());
+	} else {
+		default_case_index = max_int - min_int + 1;
+		gen->write_jump_table_range(p_value, min_int, max_int - min_int + 1, p_branches.size());
+	}
+
+	for (const List<MatchBranch>::Element *E = p_branches.front(); E; E = E->next()) {
+		const MatchBranch &branch = E->get();
+		gen->write_jump_table_branch();
+
+		codegen.start_block(); // Create an extra block around for binds.
+
+		// Add locals in block before patterns, so temporaries don't use the stack address for binds.
+		List<GDScriptCodeGenerator::Address> branch_locals = _add_locals_in_block(codegen, branch.branch->block);
+
+#ifdef DEBUG_ENABLED
+		// Add a newline before each branch, since the debugger needs those.
+		gen->write_newline(branch.branch->start_line);
+#endif
+
+		err = _parse_block(codegen, branch.branch->block, false); // Don't add locals again.
+		if (err) {
+			return err;
+		}
+
+		_clear_addresses(codegen, branch_locals);
+
+		codegen.end_block(); // Get out of extra block.
+	}
+
+	if (use_bsearch) {
+		for (int i = 0; i < array.size(); i++) {
+			HashMap<Variant, int, VariantHasher, VariantComparator>::ConstIterator E = case_to_branch_index.find(array[i]);
+			if (E) {
+				gen->write_jump_table_set_case_branch(i, E->value);
+			}
+		}
+	} else {
+		for (int i = min_int; i <= max_int; i++) {
+			HashMap<Variant, int, VariantHasher, VariantComparator>::ConstIterator E = case_to_branch_index.find(i);
+			if (E) {
+				gen->write_jump_table_set_case_branch(i - min_int, E->value);
+			}
+		}
+	}
+
+	const MatchBranch &last_branch = p_branches.back()->get();
+	if (last_branch.branch->has_wildcard) {
+		// Set default case to default branch.
+		gen->write_jump_table_set_case_branch(default_case_index, p_branches.size() - 1);
+	}
+
+	gen->write_end_jump_table();
+
+	return OK;
+}
+
+GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &codegen, Error &r_error, const GDScriptParser::PatternNode *p_pattern, const GDScriptCodeGenerator::Address &p_value_addr, const GDScriptCodeGenerator::Address &p_type_addr, const GDScriptCodeGenerator::Address &p_previous_test, bool p_is_first, bool p_is_nested) {
+	// TODO
 }
 
 List<GDScriptCodeGenerator::Address> GDScriptCompiler::_add_locals_in_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block) {
@@ -1867,84 +1663,9 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 		switch (s->type) {
 			case GDScriptParser::Node::MATCH: {
-				const GDScriptParser::MatchNode *match = static_cast<const GDScriptParser::MatchNode *>(s);
-
-				codegen.start_block();
-
-				// Evaluate the match expression.
-				GDScriptCodeGenerator::Address value = codegen.add_local("@match_value", _gdtype_from_datatype(match->test->get_datatype(), codegen.script));
-				GDScriptCodeGenerator::Address value_expr = _parse_expression(codegen, err, match->test);
-				if (err) {
+				err = _parse_match(codegen, static_cast<const GDScriptParser::MatchNode *>(s));
+				if (err != OK) {
 					return err;
-				}
-
-				// Assign to local.
-				// TODO: This can be improved by passing the target to parse_expression().
-				gen->write_assign(value, value_expr);
-
-				if (value_expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
-				}
-
-				// Then, let's save the type of the value in the stack too, so we can reuse for later comparisons.
-				GDScriptDataType typeof_type;
-				typeof_type.has_type = true;
-				typeof_type.kind = GDScriptDataType::BUILTIN;
-				typeof_type.builtin_type = Variant::INT;
-				GDScriptCodeGenerator::Address type = codegen.add_local("@match_type", typeof_type);
-
-				Vector<GDScriptCodeGenerator::Address> typeof_args;
-				typeof_args.push_back(value);
-				gen->write_call_utility(type, "typeof", typeof_args);
-
-				// Now we can actually start testing.
-				// For each branch.
-				for (int j = 0; j < match->branches.size(); j++) {
-					if (j > 0) {
-						// Use `else` to not check the next branch after matching.
-						gen->write_else();
-					}
-
-					const GDScriptParser::MatchBranchNode *branch = match->branches[j];
-
-					codegen.start_block(); // Create an extra block around for binds.
-
-					// Add locals in block before patterns, so temporaries don't use the stack address for binds.
-					List<GDScriptCodeGenerator::Address> branch_locals = _add_locals_in_block(codegen, branch->block);
-
-#ifdef DEBUG_ENABLED
-					// Add a newline before each branch, since the debugger needs those.
-					gen->write_newline(branch->start_line);
-#endif
-					// For each pattern in branch.
-					GDScriptCodeGenerator::Address pattern_result = codegen.add_temporary();
-					for (int k = 0; k < branch->patterns.size(); k++) {
-						pattern_result = _parse_match_pattern(codegen, err, branch->patterns[k], value, type, pattern_result, k == 0, false);
-						if (err != OK) {
-							return err;
-						}
-					}
-
-					// Check if pattern did match.
-					gen->write_if(pattern_result);
-
-					// Remove the result from stack.
-					gen->pop_temporary();
-
-					// Parse the branch block.
-					err = _parse_block(codegen, branch->block, false); // Don't add locals again.
-					if (err) {
-						return err;
-					}
-
-					_clear_addresses(codegen, branch_locals);
-
-					codegen.end_block(); // Get out of extra block.
-				}
-
-				// End all nested `if`s.
-				for (int j = 0; j < match->branches.size(); j++) {
-					gen->write_endif();
 				}
 			} break;
 			case GDScriptParser::Node::IF: {

@@ -1967,10 +1967,10 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 }
 
 GDScriptParser::MatchNode *GDScriptParser::parse_match() {
-	MatchNode *match = alloc_node<MatchNode>();
+	MatchNode *match_node = alloc_node<MatchNode>();
 
-	match->test = parse_expression(false);
-	if (match->test == nullptr) {
+	match_node->test = parse_expression(false);
+	if (match_node->test == nullptr) {
 		push_error(R"(Expected expression to test after "match".)");
 	}
 
@@ -1978,14 +1978,19 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	consume(GDScriptTokenizer::Token::NEWLINE, R"(Expected a newline after "match" statement.)");
 
 	if (!consume(GDScriptTokenizer::Token::INDENT, R"(Expected an indented block after "match" statement.)")) {
-		complete_extents(match);
-		return match;
+		complete_extents(match_node);
+		return match_node;
 	}
 
 	bool all_have_return = true;
 	bool have_wildcard = false;
 
 	while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
+		if (match(GDScriptTokenizer::Token::PASS)) {
+			consume(GDScriptTokenizer::Token::NEWLINE, R"(Expected newline after "pass".)");
+			continue;
+		}
+
 		MatchBranchNode *branch = parse_match_branch();
 		if (branch == nullptr) {
 			advance();
@@ -2000,9 +2005,9 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 
 		have_wildcard = have_wildcard || branch->has_wildcard;
 		all_have_return = all_have_return && branch->block->has_return;
-		match->branches.push_back(branch);
+		match_node->branches.push_back(branch);
 	}
-	complete_extents(match);
+	complete_extents(match_node);
 
 	consume(GDScriptTokenizer::Token::DEDENT, R"(Expected an indented block after "match" statement.)");
 
@@ -2010,7 +2015,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		current_suite->has_return = true;
 	}
 
-	return match;
+	return match_node;
 }
 
 GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
@@ -2027,8 +2032,14 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		if (pattern->binds.size() > 0) {
 			has_bind = true;
 		}
-		if (branch->patterns.size() > 0 && has_bind) {
-			push_error(R"(Cannot use a variable bind with multiple patterns.)");
+		if (branch->patterns.size() > 0) {
+			if (has_bind) {
+				push_error(R"(Cannot use a variable bind with multiple patterns.)");
+#ifdef DEBUG_ENABLED
+			} else if (branch->has_wildcard || pattern->pattern_type == PatternNode::PT_BIND || pattern->pattern_type == PatternNode::PT_WILDCARD) {
+				push_warning(branch->has_wildcard ? pattern : branch->patterns[0], GDScriptWarning::REDUNDANT_PATTERN);
+#endif
+			}
 		}
 		if (pattern->pattern_type == PatternNode::PT_REST) {
 			push_error(R"(Rest pattern can only be used inside array and dictionary patterns.)");
