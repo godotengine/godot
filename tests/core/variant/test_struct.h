@@ -44,17 +44,30 @@ TEST_CASE("[Struct] PropertyInfo") {
 	List<PropertyInfo> list;
 	my_node->get_property_list(&list);
 	PropertyInfo info = list[0];
+	print_line((Dictionary)info);
 
 	Struct<PropertyInfoLayout> prop = my_node->_get_property_struct(0);
 	prop.set_named(SNAME("name"), info.name);
 	prop.set_named(SNAME("class_name"), info.class_name);
-	prop.set_named(SNAME("hint_string"), info.hint_string);
-	prop.set_named(SNAME("hint"), info.hint);
 	prop.set_named(SNAME("type"), info.type);
+	prop.set_named(SNAME("hint"), info.hint);
+	prop.set_named(SNAME("hint_string"), info.hint_string);
+	prop.set_named(SNAME("usage"), info.usage);
 
-	CHECK_EQ(list[0].name, StringName(prop.get_named(SNAME("name"))));
+	CHECK_EQ(info.name, String(prop.get_named(SNAME("name"))));
+	CHECK_EQ(info.class_name, StringName(prop.get_named(SNAME("class_name"))));
+	CHECK_EQ(info.type, (Variant::Type) (int) prop.get_named(SNAME("type")));
+	CHECK_EQ(info.hint, (PropertyHint) (int) prop.get_named(SNAME("hint")));
+	CHECK_EQ(info.hint_string, String(prop.get_named(SNAME("name"))));
+	CHECK_EQ(info.usage, (PropertyUsageFlags) (int) prop.get_named(SNAME("usage")));
+
 	Variant var = prop;
 	CHECK_EQ(var.get_type(), Variant::ARRAY);
+	Variant var_dup = prop.duplicate();
+	CHECK_EQ(var_dup.get_type(), Variant::ARRAY);
+
+	print_line(var);
+	print_line(var_dup);
 }
 
 TEST_CASE("[Struct] ClassDB") {
