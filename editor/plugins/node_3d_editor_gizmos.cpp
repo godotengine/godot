@@ -876,6 +876,7 @@ void EditorNode3DGizmoPlugin::create_material(const String &p_name, const Color 
 		material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 		material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
 		material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
+		material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 		if (p_use_vertex_color) {
 			material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
@@ -918,6 +919,7 @@ void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const R
 		icon->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		icon->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		icon->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		icon->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		icon->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 		icon->set_depth_draw_mode(StandardMaterial3D::DEPTH_DRAW_DISABLED);
 		icon->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
@@ -947,6 +949,7 @@ void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool 
 	handle_material->set_albedo(Color(1, 1, 1));
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	handle_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	handle_material->set_on_top_of_alpha();
 	if (p_billboard) {
 		handle_material->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
