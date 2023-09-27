@@ -32,7 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
+#include "core/string/string_name.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
@@ -45,6 +47,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/texture.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 const char *FindInFiles::SIGNAL_FINISHED = "finished";
@@ -549,6 +552,7 @@ void FindInFilesDialog::_bind_methods() {
 const char *FindInFilesPanel::SIGNAL_RESULT_SELECTED = "result_selected";
 const char *FindInFilesPanel::SIGNAL_FILES_MODIFIED = "files_modified";
 
+
 FindInFilesPanel::FindInFilesPanel() {
 	_finder = memnew(FindInFiles);
 	_finder->connect(FindInFiles::SIGNAL_RESULT_FOUND, callable_mp(this, &FindInFilesPanel::_on_result_found));
@@ -600,6 +604,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	_results_display->connect("item_selected", callable_mp(this, &FindInFilesPanel::_on_result_selected));
 	_results_display->connect("item_edited", callable_mp(this, &FindInFilesPanel::_on_item_edited));
+	_results_display->connect("button_clicked", callable_mp(this, &FindInFilesPanel::_on_button_clicked));
 	_results_display->set_hide_root(true);
 	_results_display->set_select_mode(Tree::SELECT_ROW);
 	_results_display->set_allow_rmb_select(true);
@@ -705,12 +710,13 @@ void FindInFilesPanel::_notification(int p_what) {
 
 void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin, int end, String text) {
 	TreeItem *file_item;
+	Ref<Texture2D> remove_texture = get_editor_theme_icon(SNAME("RemoveEntry"));
 	HashMap<String, TreeItem *>::Iterator E = _file_items.find(fpath);
-
 	if (!E) {
 		file_item = _results_display->create_item();
 		file_item->set_text(0, fpath);
 		file_item->set_metadata(0, fpath);
+		file_item->add_button(0, remove_texture, -1, false, TTR("Remove result"));
 
 		// The width of this column is restrained to checkboxes,
 		// but that doesn't make sense for the parent items,
@@ -724,7 +730,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 
 	Color file_item_color = _results_display->get_theme_color(SNAME("font_color")) * Color(1, 1, 1, 0.67);
 	file_item->set_custom_color(0, file_item_color);
-	file_item->set_selectable(0, false);
+	file_item->set_selectable(0, true);
 
 	int text_index = _with_replace ? 1 : 0;
 
@@ -753,6 +759,10 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		item->set_checked(0, true);
 		item->set_editable(0, true);
+		item->add_button(1, remove_texture, -1, false, TTR("Remove result"));
+	}
+	else {
+		item->add_button(0, remove_texture, -1, false, TTR("Remove result"));
 	}
 }
 
@@ -793,6 +803,8 @@ void FindInFilesPanel::_on_item_edited() {
 	}
 	item->set_custom_color(1, use_color);
 }
+
+
 
 void FindInFilesPanel::_on_finished() {
 	String results_text;
@@ -872,6 +884,20 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 	_replace_container->hide();
 
 	emit_signal(SNAME(SIGNAL_FILES_MODIFIED), modified_files);
+}
+
+void FindInFilesPanel::_on_button_clicked(TreeItem *item, int column, int id, int mouse_button_index) {
+	String const file_path = item->get_text(0);
+
+	if (_result_items.find(item)) {
+		_result_items.erase(item);
+	}
+
+	if (_file_items.find(file_path)) {
+		_file_items.erase(file_path);
+	}
+
+	memdelete(item);
 }
 
 // Same as get_line, but preserves line ending characters.
