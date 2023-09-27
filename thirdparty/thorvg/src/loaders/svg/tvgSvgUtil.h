@@ -25,11 +25,6 @@
 
 #include "tvgCommon.h"
 
-float svgUtilStrtof(const char *nPtr, char **endPtr);
-
 string svgUtilURLDecode(const char *src);
-string svgUtilBase64Decode(const char *src);
-
-char* svgUtilStrndup(const char* str, size_t n);
 
 #endif //_TVG_SVG_UTIL_H_

@@ -20,70 +20,18 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_TASK_SCHEDULER_H_
-#define _TVG_TASK_SCHEDULER_H_
+#ifndef _TVG_STR_H_
+#define _TVG_STR_H_
 
-#include <mutex>
-#include <condition_variable>
-#include "tvgCommon.h"
+#include <cstddef>
 
 namespace tvg
 {
 
-struct Task;
-
-struct TaskScheduler
-{
-    static unsigned threads();
-    static void init(unsigned threads);
-    static void term();
-    static void request(Task* task);
-    static void async(bool on);
-};
-
-struct Task
-{
-private:
-    mutex                   mtx;
-    condition_variable      cv;
-    bool                    ready = true;
-    bool                    pending = false;
-
-public:
-    virtual ~Task() = default;
-
-    void done()
-    {
-        if (!pending) return;
-
-        unique_lock<mutex> lock(mtx);
-        while (!ready) cv.wait(lock);
-        pending = false;
-    }
-
-protected:
-    virtual void run(unsigned tid) = 0;
-
-private:
-    void operator()(unsigned tid)
-    {
-        run(tid);
-
-        lock_guard<mutex> lock(mtx);
-        ready = true;
-        cv.notify_one();
-    }
-
-    void prepare()
-    {
-        ready = false;
-        pending = true;
-    }
-
-    friend struct TaskSchedulerImpl;
-};
+float strToFloat(const char *nPtr, char **endPtr);  //convert to float
+int str2int(const char* str, size_t n);             //convert to integer
+char* strDuplicate(const char *str, size_t n);      //copy the string
+char* strDirname(const char* path);                 //return the full directory name
 
 }
-
-#endif //_TVG_TASK_SCHEDULER_H_
- 
+#endif //_TVG_STR_H_

@@ -373,10 +373,6 @@ void _firstSubPath(SwStroke& stroke, SwFixed startAngle, SwFixed lineLength)
 static void _lineTo(SwStroke& stroke, const SwPoint& to)
 {
     auto delta = to - stroke.center;
-
-    //a zero-length lineto is a no-op; avoid creating a spurious corner
-    if (delta.zero()) return;
-
     //compute length of line
     auto angle = mathAtan(delta);
 
@@ -428,12 +424,6 @@ static void _lineTo(SwStroke& stroke, const SwPoint& to)
 
 static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl2, const SwPoint& to)
 {
-    //if all control points are coincident, this is a no-op; avoid creating a spurious corner
-    if ((stroke.center - ctrl1).small() && (ctrl1 - ctrl2).small() && (ctrl2 - to).small()) {
-        stroke.center = to;
-        return;
-    }
-
     SwPoint bezStack[37];   //TODO: static?
     auto limit = bezStack + 32;
     auto arc = bezStack;
@@ -852,7 +842,7 @@ bool strokeParseOutline(SwStroke* stroke, const SwOutline& outline)
             continue;
         }
 
-        auto start = outline.pts.data[first];
+        auto start = outline.pts[first];
         auto pt = outline.pts.data + first;
         auto types = outline.types.data + first;
         auto type = types[0];

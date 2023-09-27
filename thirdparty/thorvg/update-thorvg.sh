@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=0.10.0
+VERSION=0.10.7
 
 rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/
 
@@ -32,7 +32,7 @@ cat << EOF > ../inc/config.h
 EOF
 
 mkdir ../src
-cp -rv src/lib ../src/
+cp -rv src/lib src/utils ../src/
 # Only sw_engine is enabled.
 rm -rfv ../src/lib/gl_engine
 

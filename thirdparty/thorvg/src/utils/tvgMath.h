@@ -29,6 +29,8 @@
 #include <math.h>
 #include "tvgCommon.h"
 
+#define MATH_PI  3.14159265358979323846f
+#define MATH_PI2 1.57079632679489661923f
 
 #define mathMin(x, y) (((x) < (y)) ? (x) : (y))
 #define mathMax(x, y) (((x) > (y)) ? (x) : (y))
@@ -45,6 +47,7 @@ static inline bool mathEqual(float a, float b)
     return (fabsf(a - b) < FLT_EPSILON);
 }
 
+
 static inline bool mathEqual(const Matrix& a, const Matrix& b)
 {
     if (!mathEqual(a.e11, b.e11) || !mathEqual(a.e12, b.e12) || !mathEqual(a.e13, b.e13) ||
@@ -54,6 +57,7 @@ static inline bool mathEqual(const Matrix& a, const Matrix& b)
     }
     return true;
 }
+
 
 static inline bool mathRightAngle(const Matrix* m)
 {
@@ -118,10 +122,32 @@ static inline void mathIdentity(Matrix* m)
 }
 
 
+static inline void mathTransform(Matrix* transform, Point* coord)
+{
+    auto x = coord->x;
+    auto y = coord->y;
+    coord->x = x * transform->e11 + y * transform->e12 + transform->e13;
+    coord->y = x * transform->e21 + y * transform->e22 + transform->e23;
+}
+
+
 static inline void mathScale(Matrix* m, float sx, float sy)
 {
     m->e11 *= sx;
     m->e22 *= sy;
+}
+
+
+static inline void mathScaleR(Matrix* m, float x, float y)
+{
+    if (x != 1.0f) {
+        m->e11 *= x;
+        m->e21 *= x;
+    }
+    if (y != 1.0f) {
+        m->e22 *= y;
+        m->e12 *= y;
+    }
 }
 
 
@@ -171,6 +197,32 @@ static inline Matrix mathMultiply(const Matrix* lhs, const Matrix* rhs)
     m.e33 = lhs->e31 * rhs->e13 + lhs->e32 * rhs->e23 + lhs->e33 * rhs->e33;
 
     return m;
+}
+
+
+static inline void mathTranslateR(Matrix* m, float x, float y)
+{
+    if (x == 0.0f && y == 0.0f) return;
+    m->e13 += (x * m->e11 + y * m->e12);
+    m->e23 += (x * m->e21 + y * m->e22);
+}
+
+
+static inline void mathLog(Matrix* m)
+{
+    TVGLOG("MATH", "Matrix: [%f %f %f] [%f %f %f] [%f %f %f]", m->e11, m->e12, m->e13, m->e21, m->e22, m->e23, m->e31, m->e32, m->e33);
+}
+
+
+static inline float mathLength(const Point* a, const Point* b)
+{
+    auto x = b->x - a->x;
+    auto y = b->y - a->y;
+
+    if (x < 0) x = -x;
+    if (y < 0) y = -y;
+
+    return (x > y) ? (x + 0.375f * y) : (y + 0.375f * x);
 }
 
 
