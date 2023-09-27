@@ -82,10 +82,10 @@ static const float earth_gravity = 9.80665;
 		layer = [GodotMetalLayer layer];
 #endif
 	} else if ([driverName isEqualToString:@"opengl3"]) {
-		if (@available(iOS 13, *)) {
-			NSLog(@"OpenGL ES is deprecated on iOS 13");
-		}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in iOS 12.0
 		layer = [GodotOpenGLLayer layer];
+#pragma clang diagnostic pop
 	} else {
 		return nil;
 	}
