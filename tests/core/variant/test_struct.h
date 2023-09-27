@@ -53,6 +53,8 @@ TEST_CASE("[Struct] PropertyInfo") {
 	prop.set_named(SNAME("type"), info.type);
 
 	CHECK_EQ(list[0].name, StringName(prop.get_named(SNAME("name"))));
+	Variant var = prop;
+	CHECK_EQ(var.get_type(), Variant::ARRAY);
 }
 
 TEST_CASE("[Struct] ClassDB") {

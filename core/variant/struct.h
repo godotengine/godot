@@ -157,4 +157,54 @@ public:
 	}
 };
 
+// TODO: not sure if all this stuff is necessary, but I saw it in TypedArray so YOLO
+template <class T>
+struct VariantInternalAccessor<Struct<T>> {
+	_FORCE_INLINE_ static Struct<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
+	_FORCE_INLINE_ static void set(Variant *v, const Struct<T> &p_array) { *VariantInternal::get_array(v) = p_array; }
+};
+
+template <class T>
+struct VariantInternalAccessor<const Struct<T> &> {
+	_FORCE_INLINE_ static Struct<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
+	_FORCE_INLINE_ static void set(Variant *v, const Struct<T> &p_array) { *VariantInternal::get_array(v) = p_array; }
+};
+
+template <class T>
+struct PtrToArg<Struct<T>> {
+	_FORCE_INLINE_ static Struct<T> convert(const void *p_ptr) {
+		return Struct<T>(*reinterpret_cast<const Array *>(p_ptr));
+	}
+	typedef Array EncodeT;
+	_FORCE_INLINE_ static void encode(Struct<T> p_val, void *p_ptr) {
+		*(Array *)p_ptr = p_val;
+	}
+};
+
+template <class T>
+struct PtrToArg<const Struct<T> &> {
+	typedef Array EncodeT;
+	_FORCE_INLINE_ static Struct<T> convert(const void *p_ptr) {
+		return Struct<T>(*reinterpret_cast<const Array *>(p_ptr));
+	}
+};
+
+template <class T>
+struct GetTypeInfo<Struct<T>> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	_FORCE_INLINE_ static PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
+	}
+};
+
+template <class T>
+struct GetTypeInfo<const Struct<T> &> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	_FORCE_INLINE_ static PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
+	}
+};
+
 #endif // STRUCT_H

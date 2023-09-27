@@ -822,12 +822,20 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 	assign(p_from);
 }
 
+Error Array::validate_set_type() {
+	// TODO: better return values?
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), ERR_LOCKED,"Array is a struct."); // TODO: better error message
+	ERR_FAIL_COND_V_MSG(_p->array.size() > 0, ERR_LOCKED, "Type can only be set when array is empty.");
+	ERR_FAIL_COND_V_MSG(_p->refcount.get() > 1, ERR_LOCKED, "Type can only be set when array has no more than one user.");
+	ERR_FAIL_COND_V_MSG(_p->typed.type != Variant::NIL, ERR_LOCKED, "Type can only be set once.");
+	return OK;
+}
+
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
-	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
-	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
-	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
-	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
+	if (validate_set_type() != OK) {
+		return;
+	}
 	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
 	Ref<Script> script = p_script;
 	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
@@ -877,22 +885,9 @@ Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, con
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init(); // TODO: should this be _ref(p_from)?
 	assign(p_from);
-	set_struct_info(p_size, p_name, p_get_member);
-}
-
-Array::Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
-	_p = memnew(ArrayPrivate);
-	_p->refcount.init();
-	set_struct_info(p_size, p_name, p_get_member);
-}
-
-void Array::set_struct_info(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
-	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
-	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
-	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
-	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
-
+	if (validate_set_type() != OK) {
+		return;
+	}
 	// TODO: figure out what to do with this commented out section
 	//	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
 	//	Ref<Script> script = p_script;
@@ -902,7 +897,41 @@ void Array::set_struct_info(uint32_t p_size, const StringName &p_name, const Str
 	//	_p->typed.class_name = p_class_name;
 	//	_p->typed.script = script;
 	_p->array.resize(p_size);
-	_p->typed.where = "Struct";
+	_p->typed.where = "Struct"; // TODO: is this right?
+
+	_p->struct_name = p_name;
+	_p->member_count = p_size;
+	_p->member_names.resize(p_size);
+	for (uint32_t i = 0; i < p_size; i++) {
+		_p->member_names[i] = p_get_member(i).name;
+	}
+}
+
+Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const Vector<StringName> &p_member_names) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	assign(p_from);
+	if (validate_set_type() != OK) {
+		return;
+	}
+	_p->array.resize(p_size);
+	_p->typed.where = "Struct"; // TODO: is this right?
+
+	_p->struct_name = p_name;
+	_p->member_count = p_size;
+	for (uint32_t i = 0; i < p_size; i++) {
+		_p->member_names[i] = p_member_names[i]; // TODO: do I need to check that this exists before accessing it?
+	}
+}
+
+Array::Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	if (validate_set_type() != OK) {
+		return;
+	}
+	_p->array.resize(p_size);
+	_p->typed.where = "Struct"; // TODO: is this right?
 
 	_p->struct_name = p_name;
 	_p->member_count = p_size;

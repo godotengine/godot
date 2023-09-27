@@ -41,6 +41,8 @@ class Object;
 class StringName;
 class Callable;
 struct StructMember;
+template<typename T>
+class Vector;
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -122,6 +124,7 @@ public:
 
 	const void *id() const;
 
+	Error validate_set_type();
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
@@ -129,14 +132,13 @@ public:
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
 
-	void set_struct_info(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
-
 	void make_read_only();
 	bool is_read_only() const;
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
+	Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const Vector<StringName> &p_member_names);
 	Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
 	Array();
 	~Array();
