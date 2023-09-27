@@ -843,11 +843,10 @@ void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	HashMap<int64_t, Vector<String>> items;
 	int64_t current_val = 0;
 	for (const String &option : p_options) {
-		Vector<String> text_split = option.split(":");
-		if (text_split.size() != 1) {
-			current_val = text_split[1].to_int();
+		if (option.get_slice_count(":") != 1) {
+			current_val = option.get_slicec(':', 1).to_int();
 		}
-		items[current_val].push_back(text_split[0]);
+		items[current_val].push_back(option.get_slicec(':', 0));
 		current_val += 1;
 	}
 

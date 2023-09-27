@@ -332,7 +332,7 @@
 			<param index="1" name="slice" type="int" />
 			<description>
 				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns the original string if [param delimiter] does not occur in the string. Returns an empty string if the [param slice] does not exist.
-				This is faster than [method split], if you only need one substring.
+				This is faster than [method split], if you only need one or two substrings.
 				[codeblock]
 				print("i/am/example/hi".get_slice("/", 2)) # Prints "example"
 				[/codeblock]
@@ -343,6 +343,11 @@
 			<param index="0" name="delimiter" type="String" />
 			<description>
 				Returns the total number of slices when the string is split with the given [param delimiter] (see [method split]).
+				Use [method get_slice] to extract a specific slice.
+				[codeblock]
+				print("i/am/example/string".get_slice_count("/")) # Prints '4'.
+				print("i am example string".get_slice_count("/")) # Prints '1'.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_slicec" qualifiers="const">
@@ -351,7 +356,8 @@
 			<param index="1" name="slice" type="int" />
 			<description>
 				Splits the string using a Unicode character with code [param delimiter] and returns the substring at index [param slice]. Returns an empty string if the [param slice] does not exist.
-				This is faster than [method split], if you only need one substring.
+				This is faster than [method split], if you only need one or two substrings.
+				This is a Unicode version of [method get_slice].
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">

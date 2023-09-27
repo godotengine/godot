@@ -602,7 +602,7 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 		font_name = font_aliases[font_name];
 	}
 	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
-	String lang_prefix = p_locale.split("_")[0];
+	String lang_prefix = p_locale.get_slicec('_', 0);
 	Vector<String> ret;
 	int best_score = 0;
 	for (const List<FontInfo>::Element *E = fonts.front(); E; E = E->next()) {
