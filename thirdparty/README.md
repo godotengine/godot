@@ -650,37 +650,6 @@ Files extracted from the upstream source:
 - `nvapi_minimal.h` was created by using `nvapi.h` from upstream and removing unnecessary code.
 
 
-## oidn
-
-- Upstream: https://github.com/OpenImageDenoise/oidn
-- Version: 1.1.0 (c58c5216db05ceef4cde5a096862f2eeffd14c06, 2019)
-- License: Apache 2.0
-
-Files extracted from upstream source:
-
-- common/* (except tasking.* and CMakeLists.txt)
-- core/*
-- include/OpenImageDenoise/* (except version.h.in)
-- LICENSE.txt
-- mkl-dnn/include/*
-- mkl-dnn/src/* (except CMakeLists.txt)
-- weights/rtlightmap_hdr.tza
-- scripts/resource_to_cpp.py
-
-Modified files:
-Modifications are marked with `// -- GODOT start --` and `// -- GODOT end --`.
-Patch files are provided in `oidn/patches/`.
-
-- core/autoencoder.cpp
-- core/autoencoder.h
-- core/common.h
-- core/device.cpp
-- core/device.h
-- core/transfer_function.cpp
-
-- scripts/resource_to_cpp.py (used in modules/denoise/resource_to_cpp.py)
-
-
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
