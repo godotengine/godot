@@ -1693,7 +1693,7 @@ Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 
-static String rtos_fix(double p_value) {
+static String rtos_special_case(double p_value) {
 	if (p_value == 0.0) {
 		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
 	} else if (isnan(p_value)) {
@@ -1705,7 +1705,25 @@ static String rtos_fix(double p_value) {
 			return "inf_neg";
 		}
 	} else {
-		return rtoss(p_value);
+		return String();
+	}
+}
+
+static String rtos_fix(double p_value) {
+	String result = rtos_special_case(p_value);
+	if (result.is_empty()) {
+		return rtos(p_value);
+	} else {
+		return result;
+	}
+}
+
+static String rtos_real(double p_value) {
+	String result = rtos_special_case(p_value);
+	if (result.is_empty()) {
+		return String::num_real(p_value);
+	} else {
+		return result;
 	}
 }
 
@@ -1738,7 +1756,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		// Math types.
 		case Variant::VECTOR2: {
 			Vector2 v = p_variant;
-			p_store_string_func(p_store_string_ud, "Vector2(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ")");
+			p_store_string_func(p_store_string_ud, "Vector2(" + rtos_real(v.x) + ", " + rtos_real(v.y) + ")");
 		} break;
 		case Variant::VECTOR2I: {
 			Vector2i v = p_variant;
@@ -1746,7 +1764,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::RECT2: {
 			Rect2 aabb = p_variant;
-			p_store_string_func(p_store_string_ud, "Rect2(" + rtos_fix(aabb.position.x) + ", " + rtos_fix(aabb.position.y) + ", " + rtos_fix(aabb.size.x) + ", " + rtos_fix(aabb.size.y) + ")");
+			p_store_string_func(p_store_string_ud, "Rect2(" + rtos_real(aabb.position.x) + ", " + rtos_real(aabb.position.y) + ", " + rtos_real(aabb.size.x) + ", " + rtos_real(aabb.size.y) + ")");
 		} break;
 		case Variant::RECT2I: {
 			Rect2i aabb = p_variant;
@@ -1754,7 +1772,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::VECTOR3: {
 			Vector3 v = p_variant;
-			p_store_string_func(p_store_string_ud, "Vector3(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ", " + rtos_fix(v.z) + ")");
+			p_store_string_func(p_store_string_ud, "Vector3(" + rtos_real(v.x) + ", " + rtos_real(v.y) + ", " + rtos_real(v.z) + ")");
 		} break;
 		case Variant::VECTOR3I: {
 			Vector3i v = p_variant;
@@ -1762,7 +1780,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::VECTOR4: {
 			Vector4 v = p_variant;
-			p_store_string_func(p_store_string_ud, "Vector4(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ", " + rtos_fix(v.z) + ", " + rtos_fix(v.w) + ")");
+			p_store_string_func(p_store_string_ud, "Vector4(" + rtos_real(v.x) + ", " + rtos_real(v.y) + ", " + rtos_real(v.z) + ", " + rtos_real(v.w) + ")");
 		} break;
 		case Variant::VECTOR4I: {
 			Vector4i v = p_variant;
@@ -1770,15 +1788,15 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::PLANE: {
 			Plane p = p_variant;
-			p_store_string_func(p_store_string_ud, "Plane(" + rtos_fix(p.normal.x) + ", " + rtos_fix(p.normal.y) + ", " + rtos_fix(p.normal.z) + ", " + rtos_fix(p.d) + ")");
+			p_store_string_func(p_store_string_ud, "Plane(" + rtos_real(p.normal.x) + ", " + rtos_real(p.normal.y) + ", " + rtos_real(p.normal.z) + ", " + rtos_real(p.d) + ")");
 		} break;
 		case Variant::AABB: {
 			AABB aabb = p_variant;
-			p_store_string_func(p_store_string_ud, "AABB(" + rtos_fix(aabb.position.x) + ", " + rtos_fix(aabb.position.y) + ", " + rtos_fix(aabb.position.z) + ", " + rtos_fix(aabb.size.x) + ", " + rtos_fix(aabb.size.y) + ", " + rtos_fix(aabb.size.z) + ")");
+			p_store_string_func(p_store_string_ud, "AABB(" + rtos_real(aabb.position.x) + ", " + rtos_real(aabb.position.y) + ", " + rtos_real(aabb.position.z) + ", " + rtos_real(aabb.size.x) + ", " + rtos_real(aabb.size.y) + ", " + rtos_real(aabb.size.z) + ")");
 		} break;
 		case Variant::QUATERNION: {
 			Quaternion quaternion = p_variant;
-			p_store_string_func(p_store_string_ud, "Quaternion(" + rtos_fix(quaternion.x) + ", " + rtos_fix(quaternion.y) + ", " + rtos_fix(quaternion.z) + ", " + rtos_fix(quaternion.w) + ")");
+			p_store_string_func(p_store_string_ud, "Quaternion(" + rtos_real(quaternion.x) + ", " + rtos_real(quaternion.y) + ", " + rtos_real(quaternion.z) + ", " + rtos_real(quaternion.w) + ")");
 		} break;
 		case Variant::TRANSFORM2D: {
 			String s = "Transform2D(";
@@ -1788,7 +1806,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.columns[i][j]);
+					s += rtos_real(m3.columns[i][j]);
 				}
 			}
 
@@ -1802,7 +1820,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.rows[i][j]);
+					s += rtos_real(m3.rows[i][j]);
 				}
 			}
 
@@ -1817,11 +1835,11 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.rows[i][j]);
+					s += rtos_real(m3.rows[i][j]);
 				}
 			}
 
-			s = s + ", " + rtos_fix(t.origin.x) + ", " + rtos_fix(t.origin.y) + ", " + rtos_fix(t.origin.z);
+			s = s + ", " + rtos_real(t.origin.x) + ", " + rtos_real(t.origin.y) + ", " + rtos_real(t.origin.z);
 
 			p_store_string_func(p_store_string_ud, s + ")");
 		} break;
@@ -1833,7 +1851,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(t.columns[i][j]);
+					s += rtos_real(t.columns[i][j]);
 				}
 			}
 
@@ -2128,7 +2146,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y));
+				p_store_string_func(p_store_string_ud, rtos_real(ptr[i].x) + ", " + rtos_real(ptr[i].y));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2143,7 +2161,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y) + ", " + rtos_fix(ptr[i].z));
+				p_store_string_func(p_store_string_ud, rtos_real(ptr[i].x) + ", " + rtos_real(ptr[i].y) + ", " + rtos_real(ptr[i].z));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
