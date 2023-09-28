@@ -1236,7 +1236,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 }
 
 void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
-	ERR_FAIL_COND(!state.canvas_instance_batches[state.current_batch_index].command);
+	ERR_FAIL_NULL(state.canvas_instance_batches[state.current_batch_index].command);
 
 	// Used by Polygon and Mesh.
 	static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
@@ -2157,7 +2157,7 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 	GLES3::Texture *t = texture_storage->get_texture(p_texture);
 
 	if (t) {
-		ERR_FAIL_COND(!t->canvas_texture);
+		ERR_FAIL_NULL(t->canvas_texture);
 		ct = t->canvas_texture;
 		if (t->render_target) {
 			t->render_target->used_in_frame = true;

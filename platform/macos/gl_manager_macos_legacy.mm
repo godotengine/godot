@@ -50,10 +50,10 @@ Error GLManagerLegacy_MacOS::create_context(GLWindow &win) {
 	};
 
 	NSOpenGLPixelFormat *pixel_format = [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
-	ERR_FAIL_COND_V(pixel_format == nil, ERR_CANT_CREATE);
+	ERR_FAIL_NULL_V(pixel_format, ERR_CANT_CREATE);
 
 	win.context = [[NSOpenGLContext alloc] initWithFormat:pixel_format shareContext:shared_context];
-	ERR_FAIL_COND_V(win.context == nil, ERR_CANT_CREATE);
+	ERR_FAIL_NULL_V(win.context, ERR_CANT_CREATE);
 	if (shared_context == nullptr) {
 		shared_context = win.context;
 	}

@@ -2874,7 +2874,7 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 			*(cursor_image->pixels + index) = image->get_pixel(column_index, row_index).to_argb32();
 		}
 
-		ERR_FAIL_COND(cursor_image->pixels == nullptr);
+		ERR_FAIL_NULL(cursor_image->pixels);
 
 		// Save it for a further usage
 		cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_image);

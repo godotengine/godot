@@ -2117,7 +2117,7 @@ Variant::operator ::RID() const {
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
-			ERR_FAIL_COND_V_MSG(ObjectDB::get_instance(_get_obj().id) == nullptr, ::RID(), "Invalid pointer (object was freed).");
+			ERR_FAIL_NULL_V_MSG(ObjectDB::get_instance(_get_obj().id), ::RID(), "Invalid pointer (object was freed).");
 		}
 #endif
 		Callable::CallError ce;

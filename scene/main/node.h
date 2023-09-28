@@ -411,7 +411,7 @@ public:
 	Window *get_last_exclusive_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
-		ERR_FAIL_COND_V(!data.tree, nullptr);
+		ERR_FAIL_NULL_V(data.tree, nullptr);
 		return data.tree;
 	}
 

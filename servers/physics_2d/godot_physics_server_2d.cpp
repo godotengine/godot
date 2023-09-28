@@ -994,7 +994,7 @@ void GodotPhysicsServer2D::body_set_pickable(RID p_body, bool p_pickable) {
 bool GodotPhysicsServer2D::body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, false);
-	ERR_FAIL_COND_V(!body->get_space(), false);
+	ERR_FAIL_NULL_V(body->get_space(), false);
 	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
 
 	_update_shapes();

@@ -363,7 +363,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 
 void Skeleton3DEditor::create_physical_skeleton() {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ERR_FAIL_COND(!get_tree());
+	ERR_FAIL_NULL(get_tree());
 	Node *owner = get_tree()->get_edited_scene_root();
 
 	const int bone_count = skeleton->get_bone_count();

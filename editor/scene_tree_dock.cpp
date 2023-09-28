@@ -651,8 +651,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				Node *top_node = selection[i];
 				Node *bottom_node = selection[selection.size() - 1 - i];
 
-				ERR_FAIL_COND(!top_node->get_parent());
-				ERR_FAIL_COND(!bottom_node->get_parent());
+				ERR_FAIL_NULL(top_node->get_parent());
+				ERR_FAIL_NULL(bottom_node->get_parent());
 
 				int bottom_node_pos = bottom_node->get_index(false);
 				int top_node_pos_next = top_node->get_index(false) + (MOVING_DOWN ? 1 : -1);

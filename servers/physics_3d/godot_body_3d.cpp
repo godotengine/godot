@@ -477,7 +477,7 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		return;
 	}
 
-	ERR_FAIL_COND(!get_space());
+	ERR_FAIL_NULL(get_space());
 
 	int ac = areas.size();
 

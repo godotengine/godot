@@ -544,12 +544,12 @@ bool AnimationPlayer::is_valid() const {
 }
 
 double AnimationPlayer::get_current_animation_position() const {
-	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
+	ERR_FAIL_NULL_V_MSG(playback.current.from, 0, "AnimationPlayer has no current animation.");
 	return playback.current.pos;
 }
 
 double AnimationPlayer::get_current_animation_length() const {
-	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
+	ERR_FAIL_NULL_V_MSG(playback.current.from, 0, "AnimationPlayer has no current animation.");
 	return playback.current.from->animation->get_length();
 }
 

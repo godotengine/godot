@@ -779,7 +779,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 		return;
 	}
 
-	ERR_FAIL_COND(!get_tree());
+	ERR_FAIL_NULL(get_tree());
 
 	HashSet<Ref<Script>> scripts;
 
