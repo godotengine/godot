@@ -3895,7 +3895,7 @@ bool TileSetAtlasSource::get_use_texture_padding() const {
 TypedArray<Vector2i> TileSetAtlasSource::get_all_tile_coords() const {
 	TypedArray<Vector2i> typed_tile_coords;
 
-	for(Vector2i tile_coords : tiles_ids) {
+	for (Vector2i tile_coords : tiles_ids) {
 		typed_tile_coords.append(tile_coords);
 	}
 
