@@ -425,6 +425,57 @@ public:
 	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(double p_time);
 
+	int get_state_track_count() const { return state.track_count; }
+	void set_state_track_count(int p_track_count) { state.track_count = p_track_count; }
+
+	HashMap<NodePath, int> get_state_track_map() const { return state.track_map; }
+	void set_state_track_map(const HashMap<NodePath, int> &p_track_map) { state.track_map = p_track_map; }
+	Dictionary get_state_track_map_bind() const;
+	void set_state_track_map_bind(const Dictionary &p_track_map);
+
+	List<AnimationNode::AnimationState> get_state_animation_states() const { return state.animation_states; }
+	void set_state_animation_states(const List<AnimationNode::AnimationState> &p_animation_states) { state.animation_states = p_animation_states; }
+	TypedArray<Dictionary> get_state_animation_states_bind() const; // May be should used a new reference class instead of Dictionary.
+	void set_state_animation_states_bind(const TypedArray<Dictionary> &p_animation_states); //
+
+	void set_state_invalid(bool p_invalid) { state.valid = !p_invalid; }
+
+	AnimationPlayer *get_state_player() const { return state.player; }
+	void set_state_player(AnimationPlayer *p_player) { state.player = p_player; }
+
+	void set_invalid_state_reasons(const String &p_invalid_reasons) { state.invalid_reasons = p_invalid_reasons; }
+
+	uint64_t get_state_last_pass() const { return state.last_pass; }
+	void set_state_last_pass(const uint64_t &p_last_pass) { state.last_pass = p_last_pass; }
+
+	void set_last_process_pass(uint64_t p_process_pass) { process_pass = p_process_pass; }
+
+	bool is_started() const { return started; }
+	void set_started(bool p_started) { started = p_started; }
+
+	void set_root_motion_position(Vector3 p_root_motion_position) { root_motion_position = p_root_motion_position; }
+	void set_root_motion_rotation(Quaternion p_root_motion_rotation) { root_motion_rotation = p_root_motion_rotation; }
+	void set_root_motion_scale(Vector3 p_root_motion_scale) { root_motion_scale = p_root_motion_scale; }
+
+	void set_root_motion_position_accumulator(Vector3 p_root_motion_position_accumulator) { root_motion_position_accumulator = p_root_motion_position_accumulator; }
+	void set_root_motion_rotation_accumulator(Quaternion p_root_motion_rotation_accumulator) { root_motion_rotation_accumulator = p_root_motion_rotation_accumulator; }
+	void set_root_motion_scale_accumulator(Vector3 p_root_motion_scale_accumulator) { root_motion_scale_accumulator = p_root_motion_scale_accumulator; }
+
+	// It seem the bool value in Pair is not used.
+	HashMap<StringName, Pair<Variant, bool>> get_property_map() const { return property_map; };
+	void set_property_map(HashMap<StringName, Pair<Variant, bool>> p_property_map) { property_map = p_property_map; };
+	Dictionary get_property_map_bind() const;
+	void set_property_map_bind(Dictionary p_property_map);
+
+	// "root_motion_cache", "track_cache" and "playing_caches" and "cache_valid" are no need to be saved as state.
+	// The feature of playing audio is not getting AudioStreamPlayer from "playing_audio_stream_players", expose this property is not make sense.
+	// "setup_pass" is used in caching tracks, not need to be saved as state, too.
+	// "properties", "property_parent_map", "property_reference_map" may not need to be exposed
+	// "input_activity_map" is updated when update properties, expose it is not make sense.
+	// It seem "input_activity_map_get" only used in edior.
+	// "properties_dirty", "last_animation_player" are changed automatically and not effect the work logic, expose them is not make sense.
+	// ================================
+
 	uint64_t get_last_process_pass() const;
 	AnimationTree();
 	~AnimationTree();

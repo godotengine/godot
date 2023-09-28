@@ -1890,6 +1890,7 @@ void AnimationTree::_notification(int p_what) {
 				Object *player = ObjectDB::get_instance(last_animation_player);
 				if (player) {
 					player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
+					last_animation_player = player->get_instance_id();
 				}
 			}
 		} break;
@@ -1988,6 +1989,121 @@ bool AnimationTree::is_state_invalid() const {
 String AnimationTree::get_invalid_state_reason() const {
 	return state.invalid_reasons;
 }
+
+// ===============================
+Dictionary AnimationTree::get_state_track_map_bind() const {
+	Dictionary ret;
+	for (auto &&E : state.track_map) {
+		ret[E.key] = E.value;
+	}
+	return ret;
+}
+
+void AnimationTree::set_state_track_map_bind(const Dictionary &p_track_map) {
+	state.track_map.clear();
+	auto k = p_track_map.next();
+	while (k) {
+		ERR_FAIL_COND(k->get_type() != Variant::NODE_PATH && k->get_type() != Variant::STRING_NAME && k->get_type() != Variant::STRING);
+		ERR_FAIL_COND(p_track_map[*k].get_type() != Variant::INT);
+
+		state.track_map.insert(*k, p_track_map[*k]);
+
+		k = p_track_map.next(k);
+	}
+}
+
+TypedArray<Dictionary> AnimationTree::get_state_animation_states_bind() const {
+	TypedArray<Dictionary> ret;
+	for (auto &&E : state.animation_states) {
+		Dictionary anim_state;
+		anim_state[SNAME("animation")] = E.animation;
+		anim_state[SNAME("time")] = E.time;
+		anim_state[SNAME("delta")] = E.delta;
+#ifdef REAL_T_IS_DOUBLE
+		PackedFloat64Array track_blends;
+#else
+		PackedFloat32Array track_blends;
+#endif
+		track_blends.resize(E.track_blends.size());
+		for (auto i = 0; i < track_blends.size(); ++i) {
+			track_blends.set(i, E.track_blends[i]);
+		}
+		anim_state[SNAME("track_blends")] = track_blends;
+		anim_state[SNAME("blend")] = E.blend;
+		anim_state[SNAME("seeked")] = E.seeked;
+		anim_state[SNAME("is_external_seeking")] = E.is_external_seeking;
+		anim_state[SNAME("looped_flag")] = E.looped_flag;
+	}
+	return ret;
+}
+
+void AnimationTree::set_state_animation_states_bind(const TypedArray<Dictionary> &p_animation_states) {
+	state.animation_states.clear();
+	for (auto i = 0; i < p_animation_states.size(); ++i) {
+		Dictionary anim_state = p_animation_states[i];
+		ERR_FAIL_COND(!anim_state.has(SNAME("animation")));
+		ERR_FAIL_COND(!anim_state.has(SNAME("time")));
+		ERR_FAIL_COND(!anim_state.has(SNAME("delta")));
+		ERR_FAIL_COND(!anim_state.has(SNAME("track_blends")));
+		ERR_FAIL_COND(!anim_state.has(SNAME("blend")));
+		ERR_FAIL_COND(!anim_state.has(SNAME("seeked")));
+		ERR_FAIL_COND(!anim_state.has(SNAME("is_external_seeking")));
+		ERR_FAIL_COND(!anim_state.has(SNAME("looped_flag")));
+
+		AnimationNode::AnimationState anim_state_to_add;
+
+#ifdef REAL_T_IS_DOUBLE
+		PackedFloat64Array track_blends = anim_state[SNAME("track_blends")];
+#else
+		PackedFloat32Array track_blends = anim_state[SNAME("track_blends")];
+#endif
+		anim_state_to_add.track_blends.resize(track_blends.size());
+		for (auto track_idx = 0; track_idx < track_blends.size(); ++track_idx) {
+			anim_state_to_add.track_blends.set(track_idx, track_blends[track_idx]);
+		}
+
+		anim_state_to_add.blend = anim_state[SNAME("blend")];
+		anim_state_to_add.delta = anim_state[SNAME("delta")];
+		anim_state_to_add.time = anim_state[SNAME("time")];
+		anim_state_to_add.animation = anim_state[SNAME("animation")];
+		anim_state_to_add.seeked = anim_state[SNAME("seeked")];
+		anim_state_to_add.looped_flag = Animation::LoopedFlag(anim_state[SNAME("looped_flag")].operator int8_t());
+		anim_state_to_add.is_external_seeking = anim_state[SNAME("is_external_seeking")];
+
+		state.animation_states.push_back(anim_state_to_add);
+	}
+}
+
+Dictionary AnimationTree::get_property_map_bind() const {
+	Dictionary ret;
+	for (auto &&E : property_map) {
+		Array prop;
+		prop.resize(2);
+		prop[0] = E.value.first;
+		prop[1] = E.value.second;
+		ret[E.key] = prop;
+	}
+	return ret;
+}
+
+void AnimationTree::set_property_map_bind(Dictionary p_property_map) {
+	property_map.clear();
+	auto k = p_property_map.next();
+	while (k) {
+		ERR_FAIL_COND(k->get_type() != Variant::STRING_NAME && k->get_type() != Variant::STRING && k->get_type() != Variant::NODE_PATH);
+		ERR_FAIL_COND(p_property_map[*k].get_type() != Variant::ARRAY);
+
+		Array val = p_property_map[*k];
+		ERR_FAIL_COND(val.size() != 2);
+		ERR_FAIL_COND(val[1].get_type() != Variant::BOOL);
+
+		property_map.insert(*k, Pair<Variant, bool>(val[0], val[1]));
+
+		k = p_property_map.next(k);
+	}
+}
+
+// ===============================
 
 uint64_t AnimationTree::get_last_process_pass() const {
 	return process_pass;
@@ -2243,6 +2359,66 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
+
+	//
+	ClassDB::bind_method(D_METHOD("set_state_track_count", "track_count"), &AnimationTree::set_state_track_count);
+	ClassDB::bind_method(D_METHOD("get_state_track_count"), &AnimationTree::get_state_track_count);
+
+	ClassDB::bind_method(D_METHOD("set_state_track_map", "track_map"), &AnimationTree::set_state_track_map_bind);
+	ClassDB::bind_method(D_METHOD("get_state_track_map"), &AnimationTree::get_state_track_map_bind);
+
+	ClassDB::bind_method(D_METHOD("set_state_animation_states", "animation_states"), &AnimationTree::set_state_animation_states_bind);
+	ClassDB::bind_method(D_METHOD("get_state_animation_states"), &AnimationTree::get_state_animation_states_bind);
+
+	ClassDB::bind_method(D_METHOD("set_state_invalid", "invalid"), &AnimationTree::set_state_invalid);
+	ClassDB::bind_method(D_METHOD("is_state_invalid"), &AnimationTree::is_state_invalid);
+
+	ClassDB::bind_method(D_METHOD("set_state_invalid_reasons", "invalid_reasons"), &AnimationTree::set_invalid_state_reasons);
+	ClassDB::bind_method(D_METHOD("get_state_invalid_reasons"), &AnimationTree::get_invalid_state_reason);
+
+	ClassDB::bind_method(D_METHOD("set_state_player", "player"), &AnimationTree::set_state_player);
+	ClassDB::bind_method(D_METHOD("get_state_player"), &AnimationTree::get_state_player);
+
+	ClassDB::bind_method(D_METHOD("set_state_last_pass", "last_pass"), &AnimationTree::set_state_last_pass);
+	ClassDB::bind_method(D_METHOD("get_state_last_pass"), &AnimationTree::get_state_last_pass);
+
+	ClassDB::bind_method(D_METHOD("set_started", "started"), &AnimationTree::set_started);
+	ClassDB::bind_method(D_METHOD("is_started"), &AnimationTree::is_started);
+
+	ClassDB::bind_method(D_METHOD("set_root_motion_position", "root_motion_position"), &AnimationTree::set_root_motion_position);
+	ClassDB::bind_method(D_METHOD("set_root_motion_rotation", "root_motion_rotation"), &AnimationTree::set_root_motion_rotation);
+	ClassDB::bind_method(D_METHOD("set_root_motion_scale", "root_motion_scale"), &AnimationTree::set_root_motion_scale);
+
+	ClassDB::bind_method(D_METHOD("set_root_motion_position_accumulator", "root_motion_position_accumulator"), &AnimationTree::set_root_motion_position_accumulator);
+	ClassDB::bind_method(D_METHOD("set_root_motion_rotation_accumulator", "root_motion_rotation_accumulator"), &AnimationTree::set_root_motion_rotation_accumulator);
+	ClassDB::bind_method(D_METHOD("set_root_motion_scale_accumulator", "root_motion_scale_accumulator"), &AnimationTree::set_root_motion_scale_accumulator);
+
+	ClassDB::bind_method(D_METHOD("set_property_map", "property_map"), &AnimationTree::set_property_map_bind);
+	ClassDB::bind_method(D_METHOD("get_property_map"), &AnimationTree::get_property_map_bind);
+
+	ClassDB::bind_method(D_METHOD("set_last_process_pass", "process_pass"), &AnimationTree::set_last_process_pass);
+	ClassDB::bind_method(D_METHOD("get_last_process_pass"), &AnimationTree::get_last_process_pass);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "state_track_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_state_track_count", "get_state_track_count");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "state_track_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_state_track_map", "get_state_track_map");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "state_animation_states", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_state_animation_states", "get_state_animation_states");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "state_invalid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_state_invalid", "is_state_invalid");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "state_invalid_reasons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_state_invalid_reasons", "get_state_invalid_reasons");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "state_player", PROPERTY_HINT_NODE_TYPE, AnimationPlayer::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_state_player", "get_state_player");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "state_last_pass", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_state_last_pass", "get_state_last_pass");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "started", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_started", "is_started");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "last_process_pass", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_last_process_pass", "get_last_process_pass");
+
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "property_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_property_map", "get_property_map");
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "root_motion_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_root_motion_position", "get_root_motion_position");
+	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "root_motion_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_root_motion_rotation", "get_root_motion_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "root_motion_scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_root_motion_scale", "get_root_motion_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "root_motion_position_accumulator", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_root_motion_position_accumulator", "get_root_motion_position_accumulator");
+	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "root_motion_rotation_accumulator", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_root_motion_rotation_accumulator", "get_root_motion_rotation_accumulator");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "root_motion_scale_accumulator", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_root_motion_scale_accumulator", "get_root_motion_scale_accumulator");
+	//
 
 	GDVIRTUAL_BIND(_post_process_key_value, "animation", "track", "value", "object", "object_idx");
 
