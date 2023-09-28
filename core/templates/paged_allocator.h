@@ -144,7 +144,7 @@ public:
 		if (thread_safe) {
 			spin_lock.lock();
 		}
-		ERR_FAIL_COND(page_pool != nullptr); //sanity check
+		ERR_FAIL_COND(page_pool != nullptr); // Safety check.
 		ERR_FAIL_COND(p_page_size == 0);
 		page_size = nearest_power_of_2_templated(p_page_size);
 		page_mask = page_size - 1;
