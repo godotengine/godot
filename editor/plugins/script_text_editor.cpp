@@ -1724,6 +1724,27 @@ static String _quote_drop_data(const String &str) {
 	return escaped.quote(using_single_quotes ? "'" : "\"");
 }
 
+static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p_create_field) {
+	const String &path = p_resource->get_path();
+	const bool is_script = ClassDB::is_parent_class(p_resource->get_class(), "Script");
+
+	if (!p_create_field) {
+		return vformat("preload(%s)", _quote_drop_data(path));
+	}
+
+	String variable_name = p_resource->get_name();
+	if (variable_name.is_empty()) {
+		variable_name = path.get_file().get_basename();
+	}
+
+	if (is_script) {
+		variable_name = variable_name.to_pascal_case().validate_identifier();
+	} else {
+		variable_name = variable_name.to_snake_case().to_upper().validate_identifier();
+	}
+	return vformat("const %s = preload(%s)", variable_name, _quote_drop_data(path));
+}
+
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
@@ -1732,39 +1753,60 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	int row = pos.y;
 	int col = pos.x;
 
+	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const String &line = te->get_line(row);
+	const bool is_empty_line = line.is_empty() || te->get_first_non_whitespace_column(row) == line.length();
+
 	if (d.has("type") && String(d["type"]) == "resource") {
 		te->remove_secondary_carets();
-		Ref<Resource> res = d["resource"];
-		if (!res.is_valid()) {
+		Ref<Resource> resource = d["resource"];
+		if (resource.is_null()) {
 			return;
 		}
 
-		if (res->get_path().is_resource_file()) {
-			EditorNode::get_singleton()->show_warning(TTR("Only resources from filesystem can be dropped."));
+		const String &path = resource->get_path();
+		if (path.is_empty() || path.ends_with("::")) {
+			String warning = TTR("The resource does not have a valid path because it has not been saved.\nPlease save the scene or resource that contains this resource and try again.");
+			EditorToaster::get_singleton()->popup_str(warning, EditorToaster::SEVERITY_ERROR);
 			return;
+		}
+
+		String text_to_drop;
+		if (drop_modifier_pressed) {
+			if (resource->is_built_in()) {
+				String warning = TTR("Preloading internal resources is not supported.");
+				EditorToaster::get_singleton()->popup_str(warning, EditorToaster::SEVERITY_ERROR);
+			} else {
+				text_to_drop = _get_dropped_resource_line(resource, is_empty_line);
+			}
+		} else {
+			text_to_drop = _quote_drop_data(path);
 		}
 
 		te->set_caret_line(row);
 		te->set_caret_column(col);
-		te->insert_text_at_caret(res->get_path());
+		te->insert_text_at_caret(text_to_drop);
 		te->grab_focus();
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
 		te->remove_secondary_carets();
-		Array files = d["files"];
 
+		Array files = d["files"];
 		String text_to_drop;
-		bool preload = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+
 		for (int i = 0; i < files.size(); i++) {
-			if (i > 0) {
-				text_to_drop += ", ";
+			const String &path = String(files[i]);
+
+			if (drop_modifier_pressed && ResourceLoader::exists(path)) {
+				Ref<Resource> resource = ResourceLoader::load(path);
+				text_to_drop += _get_dropped_resource_line(resource, is_empty_line);
+			} else {
+				text_to_drop += _quote_drop_data(path);
 			}
 
-			if (preload) {
-				text_to_drop += "preload(" + _quote_drop_data(String(files[i])) + ")";
-			} else {
-				text_to_drop += _quote_drop_data(String(files[i]));
+			if (i < files.size() - 1) {
+				text_to_drop += is_empty_line ? "\n" : ", ";
 			}
 		}
 
@@ -1795,8 +1837,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array nodes = d["nodes"];
 		String text_to_drop;
 
-		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-			bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+		if (drop_modifier_pressed) {
+			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+
 			for (int i = 0; i < nodes.size(); i++) {
 				NodePath np = nodes[i];
 				Node *node = get_node(np);
