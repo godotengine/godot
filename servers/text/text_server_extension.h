@@ -80,6 +80,9 @@ public:
 	virtual RID create_font() override;
 	GDVIRTUAL0R(RID, _create_font);
 
+	virtual RID create_font_linked_variation(const RID &p_font_rid) override;
+	GDVIRTUAL1R(RID, _create_font_linked_variation, RID);
+
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) override;
 	GDVIRTUAL2(_font_set_data, RID, const PackedByteArray &);

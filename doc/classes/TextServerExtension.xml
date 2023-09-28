@@ -19,6 +19,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_create_font_linked_variation" qualifiers="virtual">
+			<return type="RID" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_create_shaped_text" qualifiers="virtual">
 			<return type="RID" />
 			<param index="0" name="direction" type="int" enum="TextServer.Direction" />
