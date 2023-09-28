@@ -243,6 +243,8 @@ public:
 	virtual String get_caption() const override;
 
 	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
+
+	virtual bool has_filter() const override;
 	AnimationNodeBlend3();
 };
 

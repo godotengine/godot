@@ -645,11 +645,15 @@ String AnimationNodeBlend3::get_caption() const {
 
 double AnimationNodeBlend3::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
 	double amount = get_parameter(blend_amount);
-	double rem0 = blend_input(0, p_time, p_seek, p_is_external_seeking, MAX(0, -amount), FILTER_IGNORE, sync, p_test_only);
-	double rem1 = blend_input(1, p_time, p_seek, p_is_external_seeking, 1.0 - ABS(amount), FILTER_IGNORE, sync, p_test_only);
-	double rem2 = blend_input(2, p_time, p_seek, p_is_external_seeking, MAX(0, amount), FILTER_IGNORE, sync, p_test_only);
+	double rem0 = blend_input(0, p_time, p_seek, p_is_external_seeking, MAX(0, -amount), FILTER_PASS, sync, p_test_only);
+	double rem1 = blend_input(1, p_time, p_seek, p_is_external_seeking, 1.0 - ABS(amount), FILTER_BLEND, sync, p_test_only);
+	double rem2 = blend_input(2, p_time, p_seek, p_is_external_seeking, MAX(0, amount), FILTER_PASS, sync, p_test_only);
 
 	return amount > 0.5 ? rem2 : (amount < -0.5 ? rem0 : rem1); // Hacky but good enough.
+}
+
+bool AnimationNodeBlend3::has_filter() const {
+	return true;
 }
 
 void AnimationNodeBlend3::_bind_methods() {
