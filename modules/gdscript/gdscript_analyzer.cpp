@@ -2214,6 +2214,10 @@ void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_m
 		resolve_match_pattern(p_match_branch->patterns[i], p_match_test);
 	}
 
+	if (p_match_branch->guard_body) {
+		resolve_suite(p_match_branch->guard_body);
+	}
+
 	resolve_suite(p_match_branch->block);
 
 	decide_suite_type(p_match_branch, p_match_branch->block);
