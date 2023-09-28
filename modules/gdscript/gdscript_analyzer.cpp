@@ -2147,6 +2147,9 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 				} else if (!is_type_compatible(specified_type, variable_type)) {
 					p_for->use_conversion_assign = true;
 				}
+				if (p_for->list && p_for->list->type == GDScriptParser::Node::ARRAY) {
+					update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_for->list), specified_type);
+				}
 			}
 			p_for->variable->set_datatype(specified_type);
 		} else {
@@ -2551,28 +2554,31 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 // When an array literal is stored (or passed as function argument) to a typed context, we then assume the array is typed.
 // This function determines which type is that (if any).
 void GDScriptAnalyzer::update_array_literal_element_type(GDScriptParser::ArrayNode *p_array, const GDScriptParser::DataType &p_element_type) {
+	GDScriptParser::DataType expected_type = p_element_type;
+	expected_type.unset_container_element_type(); // Nested types (like `Array[Array[int]]`) are not currently supported.
+
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element_node = p_array->elements[i];
 		if (element_node->is_constant) {
-			update_const_expression_builtin_type(element_node, p_element_type, "include");
+			update_const_expression_builtin_type(element_node, expected_type, "include");
 		}
-		const GDScriptParser::DataType &element_type = element_node->get_datatype();
-		if (element_type.has_no_type() || element_type.is_variant() || !element_type.is_hard_type()) {
+		const GDScriptParser::DataType &actual_type = element_node->get_datatype();
+		if (actual_type.has_no_type() || actual_type.is_variant() || !actual_type.is_hard_type()) {
 			mark_node_unsafe(element_node);
 			continue;
 		}
-		if (!is_type_compatible(p_element_type, element_type, true, p_array)) {
-			if (is_type_compatible(element_type, p_element_type)) {
+		if (!is_type_compatible(expected_type, actual_type, true, p_array)) {
+			if (is_type_compatible(actual_type, expected_type)) {
 				mark_node_unsafe(element_node);
 				continue;
 			}
-			push_error(vformat(R"(Cannot have an element of type "%s" in an array of type "Array[%s]".)", element_type.to_string(), p_element_type.to_string()), element_node);
+			push_error(vformat(R"(Cannot have an element of type "%s" in an array of type "Array[%s]".)", actual_type.to_string(), expected_type.to_string()), element_node);
 			return;
 		}
 	}
 
 	GDScriptParser::DataType array_type = p_array->get_datatype();
-	array_type.set_container_element_type(p_element_type);
+	array_type.set_container_element_type(expected_type);
 	p_array->set_datatype(array_type);
 }
 
