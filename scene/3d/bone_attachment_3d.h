@@ -89,6 +89,10 @@ public:
 
 	virtual void on_bone_pose_update(int p_bone_index);
 
+#ifdef TOOLS_ENABLED
+	virtual void notify_rebind_required();
+#endif
+
 	BoneAttachment3D();
 };
 
