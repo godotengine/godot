@@ -3892,6 +3892,16 @@ bool TileSetAtlasSource::get_use_texture_padding() const {
 	return use_texture_padding;
 }
 
+TypedArray<Vector2i> TileSetAtlasSource::get_all_tile_coords() const {
+	TypedArray<Vector2i> typed_tile_coords;
+
+	for(Vector2i tile_coords : tiles_ids) {
+		typed_tile_coords.append(tile_coords);
+	}
+
+	return typed_tile_coords;
+}
+
 Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
 	Ref<Texture2D> txt = get_texture();
 	if (!txt.is_valid()) {
@@ -4665,6 +4675,7 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tile_data", "atlas_coords", "alternative_tile"), &TileSetAtlasSource::get_tile_data);
 
 	// Helpers.
+	ClassDB::bind_method(D_METHOD("get_all_tile_coords"), &TileSetAtlasSource::get_all_tile_coords);
 	ClassDB::bind_method(D_METHOD("get_atlas_grid_size"), &TileSetAtlasSource::get_atlas_grid_size);
 	ClassDB::bind_method(D_METHOD("get_tile_texture_region", "atlas_coords", "frame"), &TileSetAtlasSource::get_tile_texture_region, DEFVAL(0));
 

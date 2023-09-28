@@ -739,6 +739,7 @@ public:
 	TileData *get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const;
 
 	// Helpers.
+	TypedArray<Vector2i> get_all_tile_coords() const;
 	Vector2i get_atlas_grid_size() const;
 	Rect2i get_tile_texture_region(Vector2i p_atlas_coords, int p_frame = 0) const;
 	bool is_position_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Vector2 p_position) const;
