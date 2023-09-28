@@ -264,9 +264,12 @@ DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
 	return mouse_mode;
 }
 
+// NOTE: This is hacked together (and not guaranteed to work in the first place)
+// as for some reason the there's no proper way to ask the compositor to warp
+// the pointer, although, at the time of writing, there's a proposal for a
+// proper protocol for this. See:
+// https://gitlab.freedesktop.org/wayland/wayland-protocols/-/issues/158
 void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
-	// NOTE: This is hacked together as for some reason the pointer constraints
-	// protocol doesn't implement pointer warping (not even in the window).
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WaylandThread::PointerConstraint old_constraint = wayland_thread.pointer_get_constraint();
