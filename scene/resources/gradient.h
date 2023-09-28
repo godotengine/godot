@@ -55,8 +55,8 @@ public:
 	struct Point {
 		float offset = 0.0;
 		Color color;
-		bool operator<(const Point &p_ponit) const {
-			return offset < p_ponit.offset;
+		bool operator<(const Point &p_point) const {
+			return offset < p_point.offset;
 		}
 	};
 

@@ -83,7 +83,7 @@ void GDScriptNativeClass::_bind_methods() {
 
 Variant GDScriptNativeClass::_new() {
 	Object *o = instantiate();
-	ERR_FAIL_COND_V_MSG(!o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
+	ERR_FAIL_NULL_V_MSG(o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
 
 	RefCounted *rc = Object::cast_to<RefCounted>(o);
 	if (rc) {
@@ -215,7 +215,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	} else {
 		owner = memnew(RefCounted); //by default, no base means use reference
 	}
-	ERR_FAIL_COND_V_MSG(!owner, Variant(), "Can't inherit from a virtual class.");
+	ERR_FAIL_NULL_V_MSG(owner, Variant(), "Can't inherit from a virtual class.");
 
 	RefCounted *r = Object::cast_to<RefCounted>(owner);
 	if (r) {

@@ -1084,13 +1084,13 @@ FileDialog::FileDialog() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	dir_prev = memnew(Button);
-	dir_prev->set_flat(true);
+	dir_prev->set_theme_type_variation("FlatButton");
 	dir_prev->set_tooltip_text(RTR("Go to previous folder."));
 	dir_next = memnew(Button);
-	dir_next->set_flat(true);
+	dir_next->set_theme_type_variation("FlatButton");
 	dir_next->set_tooltip_text(RTR("Go to next folder."));
 	dir_up = memnew(Button);
-	dir_up->set_flat(true);
+	dir_up->set_theme_type_variation("FlatButton");
 	dir_up->set_tooltip_text(RTR("Go to parent folder."));
 	hbc->add_child(dir_prev);
 	hbc->add_child(dir_next);
@@ -1114,13 +1114,13 @@ FileDialog::FileDialog() {
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	refresh = memnew(Button);
-	refresh->set_flat(true);
+	refresh->set_theme_type_variation("FlatButton");
 	refresh->set_tooltip_text(RTR("Refresh files."));
 	refresh->connect("pressed", callable_mp(this, &FileDialog::update_file_list));
 	hbc->add_child(refresh);
 
 	show_hidden = memnew(Button);
-	show_hidden->set_flat(true);
+	show_hidden->set_theme_type_variation("FlatButton");
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(RTR("Toggle the visibility of hidden files."));

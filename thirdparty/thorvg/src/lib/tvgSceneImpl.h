@@ -75,7 +75,7 @@ struct Scene::Impl
     ~Impl()
     {
         for (auto paint : paints) {
-            delete(paint);
+            if (paint->pImpl->unref() == 0) delete(paint);
         }
     }
 
@@ -85,11 +85,11 @@ struct Scene::Impl
             paint->pImpl->dispose(renderer);
         }
 
-        auto ret = renderer.dispose(rd);
+        renderer.dispose(rd);
         this->renderer = nullptr;
         this->rd = nullptr;
 
-        return ret;
+        return true;
     }
 
     bool needComposition(uint8_t opacity)
@@ -181,7 +181,7 @@ struct Scene::Impl
         return {x1, y1, (x2 - x1), (y2 - y1)};
     }
 
-    bool bounds(float* px, float* py, float* pw, float* ph)
+    bool bounds(float* px, float* py, float* pw, float* ph, bool stroking)
     {
         if (paints.empty()) return false;
 
@@ -196,7 +196,7 @@ struct Scene::Impl
             auto w = 0.0f;
             auto h = 0.0f;
 
-            if (paint->bounds(&x, &y, &w, &h, true) != tvg::Result::Success) continue;
+            if (!P(paint)->bounds(&x, &y, &w, &h, true, stroking)) continue;
 
             //Merge regions
             if (x < x1) x1 = x;
@@ -231,7 +231,7 @@ struct Scene::Impl
         auto dispose = renderer ? true : false;
 
         for (auto paint : paints) {
-            if (dispose) paint->pImpl->dispose(*renderer);
+            if (dispose) free &= paint->pImpl->dispose(*renderer);
             if (free) delete(paint);
         }
         paints.clear();

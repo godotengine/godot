@@ -221,7 +221,7 @@ void RaycastOcclusionCull::occluder_initialize(RID p_occluder) {
 
 void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) {
 	Occluder *occluder = occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 
 	occluder->vertices = p_vertices;
 	occluder->indices = p_indices;
@@ -242,7 +242,7 @@ void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3
 
 void RaycastOcclusionCull::free_occluder(RID p_occluder) {
 	Occluder *occluder = occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 	memdelete(occluder);
 	occluder_owner.free(p_occluder);
 }
@@ -291,7 +291,7 @@ void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance,
 
 		if (p_occluder.is_valid()) {
 			Occluder *occluder = occluder_owner.get_or_null(p_occluder);
-			ERR_FAIL_COND(!occluder);
+			ERR_FAIL_NULL(occluder);
 			occluder->users.insert(InstanceID(p_scenario, p_instance));
 		}
 		changed = true;
@@ -398,7 +398,7 @@ void RaycastOcclusionCull::Scenario::_commit_scene(void *p_ud) {
 }
 
 bool RaycastOcclusionCull::Scenario::update() {
-	ERR_FAIL_COND_V(singleton == nullptr, false);
+	ERR_FAIL_NULL_V(singleton, false);
 
 	if (commit_thread == nullptr) {
 		commit_thread = memnew(Thread);
@@ -492,7 +492,7 @@ void RaycastOcclusionCull::Scenario::_raycast(uint32_t p_idx, const RaycastThrea
 }
 
 void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const {
-	ERR_FAIL_COND(singleton == nullptr);
+	ERR_FAIL_NULL(singleton);
 	if (raycast_singleton->ebr_device == nullptr) {
 		return; // Embree is initialized on demand when there is some scenario with occluders in it.
 	}

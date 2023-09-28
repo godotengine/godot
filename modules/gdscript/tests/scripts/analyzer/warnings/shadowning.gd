@@ -1,3 +1,5 @@
+class_name ShadowedClass
+
 var member: int = 0
 
 var print_debug := 'print_debug'
@@ -12,5 +14,6 @@ func test():
 	var sqrt := 'sqrt'
 	var member := 'member'
 	var reference := 'reference'
+	var ShadowedClass := 'ShadowedClass'
 
 	print('warn')

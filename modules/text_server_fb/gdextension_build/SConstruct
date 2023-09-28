@@ -47,23 +47,22 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/lib/sw_engine/tvgSwShape.cpp",
         "src/lib/sw_engine/tvgSwStroke.cpp",
         "src/lib/tvgAccessor.cpp",
-        "src/lib/tvgBezier.cpp",
         "src/lib/tvgCanvas.cpp",
         "src/lib/tvgFill.cpp",
         "src/lib/tvgGlCanvas.cpp",
         "src/lib/tvgInitializer.cpp",
-        "src/lib/tvgLinearGradient.cpp",
         "src/lib/tvgLoader.cpp",
-        "src/lib/tvgLzw.cpp",
         "src/lib/tvgPaint.cpp",
         "src/lib/tvgPicture.cpp",
-        "src/lib/tvgRadialGradient.cpp",
         "src/lib/tvgRender.cpp",
         "src/lib/tvgSaver.cpp",
         "src/lib/tvgScene.cpp",
         "src/lib/tvgShape.cpp",
         "src/lib/tvgSwCanvas.cpp",
         "src/lib/tvgTaskScheduler.cpp",
+        "src/utils/tvgBezier.cpp",
+        "src/utils/tvgCompressor.cpp",
+        "src/utils/tvgStr.cpp",
         "src/loaders/raw/tvgRawLoader.cpp",
         "src/loaders/svg/tvgSvgCssStyle.cpp",
         "src/loaders/svg/tvgSvgLoader.cpp",
@@ -81,6 +80,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
             "../../../thirdparty/thorvg/src/lib/sw_engine",
             "../../../thirdparty/thorvg/src/loaders/raw",
             "../../../thirdparty/thorvg/src/loaders/svg",
+            "../../../thirdparty/thorvg/src/utils",
             "../../../thirdparty/libpng",
         ]
     )
@@ -88,7 +88,13 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     # Enable ThorVG static object linking.
     env_tvg.Append(CPPDEFINES=["TVG_STATIC"])
 
-    env.Append(CPPPATH=["../../../thirdparty/thorvg/inc", "../../../thirdparty/thorvg/src/lib"])
+    env.Append(
+        CPPPATH=[
+            "../../../thirdparty/thorvg/inc",
+            "../../../thirdparty/thorvg/src/lib",
+            "../../../thirdparty/thorvg/src/utils",
+        ]
+    )
     env.Append(CPPDEFINES=["MODULE_SVG_ENABLED"])
 
     lib = env_tvg.Library(

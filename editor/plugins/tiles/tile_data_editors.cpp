@@ -846,7 +846,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	tools_button_group.instantiate();
 
 	button_expand = memnew(Button);
-	button_expand->set_flat(true);
+	button_expand->set_theme_type_variation("FlatButton");
 	button_expand->set_toggle_mode(true);
 	button_expand->set_pressed(false);
 	button_expand->set_tooltip_text(TTR("Expand editor"));
@@ -856,7 +856,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	toolbar->add_child(memnew(VSeparator));
 
 	button_create = memnew(Button);
-	button_create->set_flat(true);
+	button_create->set_theme_type_variation("FlatButton");
 	button_create->set_toggle_mode(true);
 	button_create->set_button_group(tools_button_group);
 	button_create->set_pressed(true);
@@ -864,21 +864,22 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	toolbar->add_child(button_create);
 
 	button_edit = memnew(Button);
-	button_edit->set_flat(true);
+	button_edit->set_theme_type_variation("FlatButton");
 	button_edit->set_toggle_mode(true);
 	button_edit->set_button_group(tools_button_group);
 	button_edit->set_tooltip_text(TTR("Edit points tool"));
 	toolbar->add_child(button_edit);
 
 	button_delete = memnew(Button);
-	button_delete->set_flat(true);
+	button_delete->set_theme_type_variation("FlatButton");
 	button_delete->set_toggle_mode(true);
 	button_delete->set_button_group(tools_button_group);
 	button_delete->set_tooltip_text(TTR("Delete points tool"));
 	toolbar->add_child(button_delete);
 
 	button_advanced_menu = memnew(MenuButton);
-	button_advanced_menu->set_flat(true);
+	button_advanced_menu->set_flat(false);
+	button_advanced_menu->set_theme_type_variation("FlatMenuButton");
 	button_advanced_menu->set_toggle_mode(true);
 	button_advanced_menu->get_popup()->add_item(TTR("Reset to default tile shape"), RESET_TO_DEFAULT_TILE, Key::F);
 	button_advanced_menu->get_popup()->add_item(TTR("Clear"), CLEAR_TILE, Key::C);
@@ -895,7 +896,8 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 
 	button_pixel_snap = memnew(MenuButton);
 	toolbar->add_child(button_pixel_snap);
-	button_pixel_snap->set_flat(true);
+	button_pixel_snap->set_flat(false);
+	button_pixel_snap->set_theme_type_variation("FlatMenuButton");
 	button_pixel_snap->set_tooltip_text(TTR("Toggle Grid Snap"));
 	button_pixel_snap->get_popup()->add_item(TTR("Disable Snap"), SNAP_NONE);
 	button_pixel_snap->get_popup()->add_item(TTR("Half-Pixel Snap"), SNAP_HALF_PIXEL);
@@ -939,7 +941,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_center_view = memnew(Button);
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
 	button_center_view->connect("pressed", callable_mp(this, &GenericTilePolygonEditor::_center_view));
-	button_center_view->set_flat(true);
+	button_center_view->set_theme_type_variation("FlatButton");
 	button_center_view->set_disabled(true);
 	root->add_child(button_center_view);
 
@@ -1302,7 +1304,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	add_child(label);
 
 	picker_button = memnew(Button);
-	picker_button->set_flat(true);
+	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
 	toolbar->add_child(picker_button);
@@ -2789,7 +2791,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 
 	// Toolbar
 	picker_button = memnew(Button);
-	picker_button->set_flat(true);
+	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
 	toolbar->add_child(picker_button);

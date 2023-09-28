@@ -15,6 +15,7 @@
 */
 
 #include "spirv_reflect.h"
+
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
@@ -27,7 +28,7 @@
   #include <stdlib.h>
 #endif
 
-#if defined(__clang__)
+#if defined(__clang__) || defined(__GNUC__) || defined(__APPLE_CC__)
   #define FALLTHROUGH __attribute__((fallthrough))
 #else
   #define FALLTHROUGH
@@ -47,7 +48,7 @@ enum {
   SpvReflectOpDecorateStringGOOGLE            = 5632,
   SpvReflectOpMemberDecorateStringGOOGLE      = 5633,
   SpvReflectDecorationHlslCounterBufferGOOGLE = 5634,
-  SpvReflectDecorationHlslSemanticGOOGLE      = 5635
+  SpvReflectDecorationHlslSemanticGOOGLE      = 5635,
 };
 // clang-format on
 
@@ -70,14 +71,16 @@ enum {
 
 // clang-format off
 enum {
-  MAX_NODE_NAME_LENGTH      = 1024,
+  MAX_NODE_NAME_LENGTH        = 1024,
+  // Number of unique PhysicalStorageBuffer structs tracked to detect recursion
+  MAX_RECURSIVE_PHYSICAL_POINTER_CHECK = 128,
 };
 // clang-format on
 
 // clang-format off
 enum {
   IMAGE_SAMPLED = 1,
-  IMAGE_STORAGE = 2
+  IMAGE_STORAGE = 2,
 };
 // clang-format on
 
@@ -130,9 +133,10 @@ typedef struct SpvReflectPrvDecorations {
   SpvReflectPrvNumberDecoration   binding;
   SpvReflectPrvNumberDecoration   input_attachment_index;
   SpvReflectPrvNumberDecoration   location;
+  SpvReflectPrvNumberDecoration   component;
   SpvReflectPrvNumberDecoration   offset;
   SpvReflectPrvNumberDecoration   uav_counter_buffer;
-  // -- GODOT begin --
+// -- GODOT begin --
   SpvReflectPrvNumberDecoration   specialization_constant;
 // -- GODOT end --
   SpvReflectPrvStringDecoration   semantic;
@@ -199,6 +203,9 @@ typedef struct SpvReflectPrvAccessChain {
   //   of the base composite
   uint32_t                        index_count;
   uint32_t*                       indexes;
+  //
+  // Block variable ac is pointing to (for block references)
+  SpvReflectBlockVariable*        block_var;
 } SpvReflectPrvAccessChain;
 // clang-format on
 
@@ -224,15 +231,14 @@ typedef struct SpvReflectPrvParser {
   uint32_t                        type_count;
   uint32_t                        descriptor_count;
   uint32_t                        push_constant_count;
+
+  uint32_t                        physical_pointer_check[MAX_RECURSIVE_PHYSICAL_POINTER_CHECK];
+  uint32_t                        physical_pointer_count;
 } SpvReflectPrvParser;
 // clang-format on
 
-static uint32_t Max(
-   uint32_t a,
-   uint32_t b)
-{
-  return a > b ? a : b;
-}
+static uint32_t Max(uint32_t a, uint32_t b) { return a > b ? a : b; }
+static uint32_t Min(uint32_t a, uint32_t b) { return a < b ? a : b; }
 
 static uint32_t RoundUp(
    uint32_t value,
@@ -388,6 +394,11 @@ static SpvReflectResult ReadU32(
   }
   return result;
 }
+
+#define UNCHECKED_READU32(parser, word_offset, value)             \
+  {                                                               \
+    (void) ReadU32(parser, word_offset, (uint32_t*)&(value)); \
+  }
 
 #define CHECKED_READU32(parser, word_offset, value)                                      \
   {                                                                                      \
@@ -545,6 +556,77 @@ static SpvReflectTypeDescription* FindType(SpvReflectShaderModule* p_module, uin
   return p_type;
 }
 
+static SpvReflectPrvAccessChain* FindAccessChain(SpvReflectPrvParser* p_parser,
+                                                 uint32_t id) {
+  uint32_t ac_cnt = p_parser->access_chain_count;
+  for (uint32_t i = 0; i < ac_cnt; i++) {
+    if (p_parser->access_chains[i].result_id == id) {
+      return &p_parser->access_chains[i];
+    }
+  }
+  return 0;
+}
+
+static uint32_t FindBaseId(SpvReflectPrvParser* p_parser,
+                           SpvReflectPrvAccessChain* ac) {
+  uint32_t base_id = ac->base_id;
+  SpvReflectPrvNode* base_node = FindNode(p_parser, base_id);
+  // TODO - This is just a band-aid to fix crashes.
+  // Need to understand why here and hopefully remove
+  // https://github.com/KhronosGroup/SPIRV-Reflect/pull/206
+  if (IsNull(base_node)) {
+    return 0;
+  }
+  while (base_node->op != SpvOpVariable) {
+	switch (base_node->op) {
+	  case SpvOpLoad: {
+		UNCHECKED_READU32(p_parser, base_node->word_offset + 3, base_id);
+	  }
+	  break;
+	  case SpvOpFunctionParameter: {
+		UNCHECKED_READU32(p_parser, base_node->word_offset + 2, base_id);
+	  }
+	  break;
+	  default: {
+	    assert(false);
+	  }
+	  break;
+	}
+
+	SpvReflectPrvAccessChain* base_ac = FindAccessChain(p_parser, base_id);
+    if (base_ac == 0) {
+      return 0;
+    }
+    base_id = base_ac->base_id;
+    base_node = FindNode(p_parser, base_id);
+  }
+  return base_id;
+}
+
+static SpvReflectBlockVariable* GetRefBlkVar(SpvReflectPrvParser* p_parser,
+                                             SpvReflectPrvAccessChain* ac) {
+  uint32_t base_id = ac->base_id;
+  SpvReflectPrvNode* base_node = FindNode(p_parser, base_id);
+  assert(base_node->op == SpvOpLoad);
+  UNCHECKED_READU32(p_parser, base_node->word_offset + 3, base_id);
+  SpvReflectPrvAccessChain* base_ac = FindAccessChain(p_parser, base_id);
+  assert(base_ac != 0);
+  SpvReflectBlockVariable* base_var = base_ac->block_var;
+  assert(base_var != 0);
+  return base_var;
+}
+
+bool IsPointerToPointer(SpvReflectPrvParser* p_parser, uint32_t type_id) {
+  SpvReflectPrvNode* ptr_node = FindNode(p_parser, type_id);
+  if (ptr_node->op != SpvOpTypePointer) {
+    return false;
+  }
+  uint32_t pte_id = 0;
+  UNCHECKED_READU32(p_parser, ptr_node->word_offset + 3, pte_id);
+  SpvReflectPrvNode* pte_node = FindNode(p_parser, pte_id);
+  return pte_node->op == SpvOpTypePointer;
+}
+
 static SpvReflectResult CreateParser(
   size_t               size,
   void*                p_code,
@@ -647,10 +729,11 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
     p_parser->nodes[i].decorations.set.value = (uint32_t)INVALID_VALUE;
     p_parser->nodes[i].decorations.binding.value = (uint32_t)INVALID_VALUE;
     p_parser->nodes[i].decorations.location.value = (uint32_t)INVALID_VALUE;
+    p_parser->nodes[i].decorations.component.value = (uint32_t)INVALID_VALUE;
     p_parser->nodes[i].decorations.offset.value = (uint32_t)INVALID_VALUE;
     p_parser->nodes[i].decorations.uav_counter_buffer.value = (uint32_t)INVALID_VALUE;
     p_parser->nodes[i].decorations.built_in = (SpvBuiltIn)INVALID_VALUE;
-    // -- GODOT begin --
+// -- GODOT begin --
     p_parser->nodes[i].decorations.specialization_constant.value = (SpvBuiltIn)INVALID_VALUE;
 // -- GODOT end --
   }
@@ -768,6 +851,10 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
         p_node->member_count = p_node->word_count - 2;
         FALLTHROUGH;
       } // Fall through
+
+      // This is all the rest of OpType* that need to be tracked
+      // Possible new extensions might expose new type, will need to be added
+      // here
       case SpvOpTypeVoid:
       case SpvOpTypeBool:
       case SpvOpTypeInt:
@@ -784,11 +871,12 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
       case SpvOpTypePipe:
       case SpvOpTypeAccelerationStructureKHR:
       case SpvOpTypeRayQueryKHR:
-      {
+      case SpvOpTypeHitObjectNV:
+      case SpvOpTypeCooperativeMatrixNV:
+      case SpvOpTypeCooperativeMatrixKHR: {
         CHECKED_READU32(p_parser, p_node->word_offset + 1, p_node->result_id);
         p_node->is_type = true;
-      }
-      break;
+      } break;
 
       case SpvOpTypeImage: {
         CHECKED_READU32(p_parser, p_node->word_offset + 1, p_node->result_id);
@@ -826,7 +914,15 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
       break;
 
       case SpvOpTypePointer: {
-        CHECKED_READU32(p_parser, p_node->word_offset + 1, p_node->result_id);
+        uint32_t result_id;
+        CHECKED_READU32(p_parser, p_node->word_offset + 1, result_id);
+        // Look for forward pointer. Clear result id if found
+        SpvReflectPrvNode* p_fwd_node = FindNode(p_parser, result_id);
+        if (p_fwd_node) {
+          p_fwd_node->result_id = 0;
+        }
+        // Register pointer type
+        p_node->result_id = result_id;
         CHECKED_READU32(p_parser, p_node->word_offset + 2, p_node->storage_class);
         CHECKED_READU32(p_parser, p_node->word_offset + 3, p_node->type_id);
         p_node->is_type = true;
@@ -851,6 +947,7 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
         CHECKED_READU32(p_parser, p_node->word_offset + 2, p_node->result_id);
       }
       break;
+
       case SpvOpSpecConstantTrue:
       case SpvOpSpecConstantFalse:
 // -- GODOT begin --
@@ -861,6 +958,7 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
       }
       break;
 // -- GODOT end --
+
       case SpvOpSpecConstantComposite:
       case SpvOpSpecConstantOp: {
         CHECKED_READU32(p_parser, p_node->word_offset + 1, p_node->result_type_id);
@@ -947,6 +1045,11 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser)
         function_node = (uint32_t)INVALID_VALUE;
       }
       break;
+	  case SpvOpFunctionParameter:
+	  {
+		CHECKED_READU32(p_parser, p_node->word_offset + 2, p_node->result_id);
+	  }
+	  break;
     }
 
     if (p_node->is_type) {
@@ -1391,6 +1494,7 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
       case SpvDecorationNonWritable:
       case SpvDecorationNonReadable:
       case SpvDecorationLocation:
+      case SpvDecorationComponent:
       case SpvDecorationBinding:
       case SpvDecorationDescriptorSet:
       case SpvDecorationOffset:
@@ -1500,6 +1604,13 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
       }
       break;
 
+      case SpvDecorationComponent: {
+        uint32_t word_offset = p_node->word_offset + member_offset + 3;
+        CHECKED_READU32(p_parser, word_offset,
+                        p_target_decorations->component.value);
+        p_target_decorations->component.word_offset = word_offset;
+      } break;
+
       case SpvDecorationBinding: {
         uint32_t word_offset = p_node->word_offset + member_offset+ 3;
         CHECKED_READU32(p_parser, word_offset, p_target_decorations->binding.value);
@@ -1527,6 +1638,7 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
         p_target_decorations->input_attachment_index.word_offset = word_offset;
       }
       break;
+
 // -- GODOT begin --
       case SpvDecorationSpecId: {
         uint32_t word_offset = p_node->word_offset + member_offset+ 3;
@@ -1535,6 +1647,7 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
       }
       break;
 // -- GODOT end --
+
       case SpvReflectDecorationHlslCounterBufferGOOGLE: {
         uint32_t word_offset = p_node->word_offset + member_offset+ 3;
         CHECKED_READU32(p_parser, word_offset, p_target_decorations->uav_counter_buffer.value);
@@ -1588,6 +1701,7 @@ static SpvReflectResult ParseType(
   SpvReflectResult result = SPV_REFLECT_RESULT_SUCCESS;
 
   if (p_node->member_count > 0) {
+    p_type->struct_type_description = FindType(p_module, p_node->result_id);
     p_type->member_count = p_node->member_count;
     p_type->members = (SpvReflectTypeDescription*)calloc(p_type->member_count, sizeof(*(p_type->members)));
     if (IsNotNull(p_type->members)) {
@@ -1734,7 +1848,8 @@ static SpvReflectResult ParseType(
             uint32_t dim_index = p_type->traits.array.dims_count;
             if (p_length_node->op == SpvOpSpecConstant ||
                 p_length_node->op == SpvOpSpecConstantOp) {
-              p_type->traits.array.dims[dim_index] = 0xFFFFFFFF;
+              p_type->traits.array.dims[dim_index] =
+                  (uint32_t)SPV_REFLECT_ARRAY_DIM_SPEC_CONSTANT;
               p_type->traits.array.spec_constant_op_ids[dim_index] = length_id;
               p_type->traits.array.dims_count += 1;
             } else {
@@ -1743,7 +1858,8 @@ static SpvReflectResult ParseType(
               if (result == SPV_REFLECT_RESULT_SUCCESS) {
                 // Write the array dim and increment the count and offset
                 p_type->traits.array.dims[dim_index] = length;
-                p_type->traits.array.spec_constant_op_ids[dim_index] = 0xFFFFFFFF;
+                p_type->traits.array.spec_constant_op_ids[dim_index] =
+                    (uint32_t)SPV_REFLECT_ARRAY_DIM_SPEC_CONSTANT;
                 p_type->traits.array.dims_count += 1;
               } else {
                 result = SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE;
@@ -1770,7 +1886,8 @@ static SpvReflectResult ParseType(
         IF_READU32(result, p_parser, p_node->word_offset + 2, element_type_id);
         p_type->traits.array.stride = p_node->decorations.array_stride;
         uint32_t dim_index = p_type->traits.array.dims_count;
-        p_type->traits.array.dims[dim_index] = 0;
+        p_type->traits.array.dims[dim_index] =
+            (uint32_t)SPV_REFLECT_ARRAY_DIM_RUNTIME;
         p_type->traits.array.spec_constant_op_ids[dim_index] = 0;
         p_type->traits.array.dims_count += 1;
         // Parse next dimension or element type
@@ -1823,17 +1940,39 @@ static SpvReflectResult ParseType(
       case SpvOpTypeOpaque: break;
 
       case SpvOpTypePointer: {
+        p_type->type_flags |= SPV_REFLECT_TYPE_FLAG_REF;
         IF_READU32_CAST(result, p_parser, p_node->word_offset + 2, SpvStorageClass, p_type->storage_class);
+
+        bool found_recursion = false;
+        if (p_type->storage_class == SpvStorageClassPhysicalStorageBuffer) {
+          // Need to make sure we haven't started an infinite recursive loop
+          for (uint32_t i = 0; i < p_parser->physical_pointer_count; i++) {
+            if (p_type->id == p_parser->physical_pointer_check[i]) {
+              found_recursion = true;
+              break;  // still need to fill in p_type values
+            }
+          }
+          if (!found_recursion) {
+            p_parser->physical_pointer_check[p_parser->physical_pointer_count] =
+                p_type->id;
+            p_parser->physical_pointer_count++;
+            if (p_parser->physical_pointer_count >=
+                MAX_RECURSIVE_PHYSICAL_POINTER_CHECK) {
+              return SPV_REFLECT_RESULT_ERROR_SPIRV_MAX_RECURSIVE_EXCEEDED;
+            }
+          }
+        }
+
         uint32_t type_id = (uint32_t)INVALID_VALUE;
         IF_READU32(result, p_parser, p_node->word_offset + 3, type_id);
         // Parse type
         SpvReflectPrvNode* p_next_node = FindNode(p_parser, type_id);
-        if (IsNotNull(p_next_node)) {
-          result = ParseType(p_parser, p_next_node, NULL, p_module, p_type);
-        }
-        else {
+        if (IsNull(p_next_node)) {
           result = SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE;
           SPV_REFLECT_ASSERT(false);
+        }
+        else if (!found_recursion) {
+          result = ParseType(p_parser, p_next_node, NULL, p_module, p_type);
         }
       }
       break;
@@ -1842,6 +1981,7 @@ static SpvReflectResult ParseType(
         p_type->type_flags |= SPV_REFLECT_TYPE_FLAG_EXTERNAL_ACCELERATION_STRUCTURE;
       }
       break;
+
 // -- GODOT begin --
       case SpvOpSpecConstantTrue:
       case SpvOpSpecConstantFalse:
@@ -1894,6 +2034,7 @@ static SpvReflectResult ParseTypes(
     }
 
     SpvReflectTypeDescription* p_type = &(p_module->_internal->type_descriptions[type_index]);
+    p_parser->physical_pointer_count = 0;
     SpvReflectResult result = ParseType(p_parser, p_node, NULL, p_module, p_type);
     if (result != SPV_REFLECT_RESULT_SUCCESS) {
       return result;
@@ -2290,12 +2431,56 @@ static SpvReflectResult ParseDescriptorBlockVariable(
     for (uint32_t member_index = 0; member_index < p_type->member_count; ++member_index) {
       SpvReflectTypeDescription* p_member_type = &p_type->members[member_index];
       SpvReflectBlockVariable* p_member_var = &p_var->members[member_index];
+      // If pointer type, treat like reference and resolve to pointee type
+      SpvReflectTypeDescription* p_member_ptr_type = 0;
+      bool found_recursion = false;
+
+      if (p_member_type->op == SpvOpTypePointer) {
+        if (p_member_type->storage_class ==
+            SpvStorageClassPhysicalStorageBuffer) {
+          // Need to make sure we haven't started an infinite recursive loop
+          for (uint32_t i = 0; i < p_parser->physical_pointer_count; i++) {
+            if (p_member_type->id == p_parser->physical_pointer_check[i]) {
+              found_recursion = true;
+              break;  // still need to fill in p_member_type values
+            }
+          }
+          if (!found_recursion) {
+            p_parser->physical_pointer_check[p_parser->physical_pointer_count] =
+                p_member_type->id;
+            p_parser->physical_pointer_count++;
+            if (p_parser->physical_pointer_count >=
+                MAX_RECURSIVE_PHYSICAL_POINTER_CHECK) {
+              return SPV_REFLECT_RESULT_ERROR_SPIRV_MAX_RECURSIVE_EXCEEDED;
+            }
+          }
+        }
+
+        // Remember the original type
+        p_member_ptr_type = p_member_type;
+        SpvReflectPrvNode* p_member_type_node =
+            FindNode(p_parser, p_member_type->id);
+        if (IsNull(p_member_type_node)) {
+          return SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE;
+        }
+        // Should be the pointee type
+        p_member_type = FindType(p_module, p_member_type_node->type_id);
+        if (IsNull(p_member_type)) {
+          return SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE;
+        }
+      }
       bool is_struct = (p_member_type->type_flags & SPV_REFLECT_TYPE_FLAG_STRUCT) == SPV_REFLECT_TYPE_FLAG_STRUCT;
-      if (is_struct) {
+      if (is_struct && !found_recursion) {
         SpvReflectResult result = ParseDescriptorBlockVariable(p_parser, p_module, p_member_type, p_member_var);
         if (result != SPV_REFLECT_RESULT_SUCCESS) {
           return result;
         }
+      }
+
+      if (p_type_node->storage_class == SpvStorageClassPhysicalStorageBuffer &&
+          !p_type_node->member_names) {
+        // TODO 212 - If a buffer ref has an array of itself, all members are null
+        continue;
       }
 
       p_member_var->name = p_type_node->member_names[member_index];
@@ -2311,7 +2496,8 @@ static SpvReflectResult ParseDescriptorBlockVariable(
       }
 
       p_member_var->word_offset.offset = p_type_node->member_decorations[member_index].offset.word_offset;
-      p_member_var->type_description = p_member_type;
+      p_member_var->type_description =
+          p_member_ptr_type ? p_member_ptr_type : p_member_type;
     }
   }
 
@@ -2337,14 +2523,19 @@ static SpvReflectResult ParseDescriptorBlockVariableSizes(
     return SPV_REFLECT_RESULT_SUCCESS;
   }
 
+  bool is_parent_ref = p_var->type_description->op == SpvOpTypePointer;
+
   // Absolute offsets
   for (uint32_t member_index = 0; member_index < p_var->member_count; ++member_index) {
     SpvReflectBlockVariable* p_member_var = &p_var->members[member_index];
     if (is_parent_root) {
       p_member_var->absolute_offset = p_member_var->offset;
-    }
-    else {
-      p_member_var->absolute_offset = is_parent_aos ? 0 : p_member_var->offset + p_var->absolute_offset;
+    } else {
+      p_member_var->absolute_offset =
+          is_parent_aos
+              ? 0
+              : (is_parent_ref ? p_member_var->offset
+                               : p_member_var->offset + p_var->absolute_offset);
     }
   }
 
@@ -2353,6 +2544,10 @@ static SpvReflectResult ParseDescriptorBlockVariableSizes(
     SpvReflectBlockVariable* p_member_var = &p_var->members[member_index];
     SpvReflectTypeDescription* p_member_type = p_member_var->type_description;
 
+    if (!p_member_type) {
+      // TODO 212 - If a buffer ref has an array of itself, all members are null
+      continue;
+    }
     switch (p_member_type->op) {
       case SpvOpTypeBool: {
         p_member_var->size = SPIRV_WORD_SIZE;
@@ -2411,6 +2606,21 @@ static SpvReflectResult ParseDescriptorBlockVariableSizes(
       }
       break;
 
+      case SpvOpTypePointer: {
+        // Reference. Get to underlying struct type.
+        SpvReflectPrvNode* p_member_type_node = FindNode(p_parser, p_member_type->id);
+        if (IsNull(p_member_type_node)) {
+          return SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE;
+        }
+        // Get the pointee type
+        p_member_type = FindType(p_module, p_member_type_node->type_id);
+        if (IsNull(p_member_type)) {
+          return SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE;
+        }
+        assert(p_member_type->op == SpvOpTypeStruct);
+        FALLTHROUGH;
+      }
+
       case SpvOpTypeStruct: {
         SpvReflectResult result = ParseDescriptorBlockVariableSizes(p_parser, p_module, false, is_parent_aos, is_parent_rta, p_member_var);
         if (result != SPV_REFLECT_RESULT_SUCCESS) {
@@ -2447,6 +2657,12 @@ static SpvReflectResult ParseDescriptorBlockVariableSizes(
     if (is_parent_rta) {
       p_member_var->padded_size = p_member_var->size;
     }
+  }
+
+  // If buffer ref, sizes are same as uint64_t
+  if (is_parent_ref) {
+    p_var->size = p_var->padded_size = 8;
+    return SPV_REFLECT_RESULT_SUCCESS;
   }
 
   // @TODO validate this with assertion
@@ -2489,16 +2705,13 @@ static SpvReflectResult ParseDescriptorBlockVariableUsage(
   SpvReflectBlockVariable*  p_var
 )
 {
-  (void)p_parser;
-  (void)p_access_chain;
-  (void)p_var;
-
   // Clear the current variable's UNUSED flag
   p_var->flags &= ~SPV_REFLECT_VARIABLE_FLAGS_UNUSED;
 
   // Parsing arrays requires overriding the op type for
   // for the lowest dim's element type.
-  SpvOp op_type = p_var->type_description->op;
+  SpvReflectTypeDescription* p_type = p_var->type_description;
+  SpvOp op_type = p_type->op;
   if (override_op_type != (SpvOp)INVALID_VALUE) {
     op_type = override_op_type;
   }
@@ -2508,7 +2721,6 @@ static SpvReflectResult ParseDescriptorBlockVariableUsage(
 
     case SpvOpTypeArray: {
       // Parse through array's type hierarchy to find the actual/non-array element type
-      SpvReflectTypeDescription* p_type = p_var->type_description;
       while ((p_type->op == SpvOpTypeArray) && (index_index < p_access_chain->index_count)) {
         // Find the array element type id
         SpvReflectPrvNode* p_node = FindNode(p_parser, p_type->id);
@@ -2544,19 +2756,41 @@ static SpvReflectResult ParseDescriptorBlockVariableUsage(
         if (result != SPV_REFLECT_RESULT_SUCCESS) {
           return result;
         }
-      }
-      else {
+      } else {
         // Clear UNUSED flag for remaining variables
         MarkSelfAndAllMemberVarsAsUsed(p_var);
       }
     }
     break;
 
+    case SpvOpTypePointer: {
+      // Reference. Get to underlying struct type.
+      SpvReflectPrvNode* p_type_node = FindNode(p_parser, p_type->id);
+      if (IsNull(p_type_node)) {
+        return SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE;
+      }
+      // Get the pointee type
+      p_type = FindType(p_module, p_type_node->type_id);
+      if (IsNull(p_type)) {
+        return SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE;
+      }
+      if (p_type->op != SpvOpTypeStruct) {
+        break;
+      }
+      FALLTHROUGH;
+    }
+
     case SpvOpTypeStruct: {
       assert(p_var->member_count > 0);
       if (p_var->member_count == 0) {
         return SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_BLOCK_DATA;
       }
+
+      // The access chain can have zero indexes, if used for a runtime array
+      if (p_access_chain->index_count == 0) {
+        return SPV_REFLECT_RESULT_SUCCESS;
+      }
+
       // Get member variable at the access's chain current index
       uint32_t index = p_access_chain->indexes[index_index];
       if (index >= p_var->member_count) {
@@ -2586,23 +2820,13 @@ static SpvReflectResult ParseDescriptorBlockVariableUsage(
            return result;
          }
       }
-      else {
+      else if (IsPointerToPointer(p_parser, p_access_chain->result_type_id)) {
+        // Remember block var for this access chain for downstream dereference
+        p_access_chain->block_var = p_member_var;
+      } else {
         // Clear UNUSED flag for remaining variables
         MarkSelfAndAllMemberVarsAsUsed(p_member_var);
       }
-      //SpvReflectBlockVariable* p_member_var = &p_var->members[index];
-      //if (index_index < p_access_chain->index_count) {
-      //  SpvReflectResult result = ParseDescriptorBlockVariableUsage(
-      //    p_parser,
-      //    p_module,
-      //    p_access_chain,
-      //    index_index + 1,
-      //    (SpvOp)INVALID_VALUE,
-      //    p_member_var);
-      //  if (result != SPV_REFLECT_RESULT_SUCCESS) {
-      //    return result;
-      //  }
-      //}
     }
     break;
   }
@@ -2629,6 +2853,7 @@ static SpvReflectResult ParseDescriptorBlocks(
 
     // Mark UNUSED
     p_descriptor->block.flags |= SPV_REFLECT_VARIABLE_FLAGS_UNUSED;
+    p_parser->physical_pointer_count = 0;
     // Parse descriptor block
     SpvReflectResult result = ParseDescriptorBlockVariable(p_parser, p_module, p_type, &p_descriptor->block);
     if (result != SPV_REFLECT_RESULT_SUCCESS) {
@@ -2682,6 +2907,15 @@ static SpvReflectResult ParseFormat(
     uint32_t component_count = p_type->traits.numeric.vector.component_count;
     if (p_type->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
       switch (bit_width) {
+        case 16: {
+          switch (component_count) {
+            case 2: *p_format = SPV_REFLECT_FORMAT_R16G16_SFLOAT; break;
+            case 3: *p_format = SPV_REFLECT_FORMAT_R16G16B16_SFLOAT; break;
+            case 4: *p_format = SPV_REFLECT_FORMAT_R16G16B16A16_SFLOAT; break;
+          }
+        }
+        break;
+
         case 32: {
           switch (component_count) {
             case 2: *p_format = SPV_REFLECT_FORMAT_R32G32_SFLOAT; break;
@@ -2703,6 +2937,15 @@ static SpvReflectResult ParseFormat(
     }
     else if (p_type->type_flags & (SPV_REFLECT_TYPE_FLAG_INT | SPV_REFLECT_TYPE_FLAG_BOOL)) {
       switch (bit_width) {
+        case 16: {
+          switch (component_count) {
+            case 2: *p_format = signedness ? SPV_REFLECT_FORMAT_R16G16_SINT : SPV_REFLECT_FORMAT_R16G16_UINT; break;
+            case 3: *p_format = signedness ? SPV_REFLECT_FORMAT_R16G16B16_SINT : SPV_REFLECT_FORMAT_R16G16B16_UINT; break;
+            case 4: *p_format = signedness ? SPV_REFLECT_FORMAT_R16G16B16A16_SINT : SPV_REFLECT_FORMAT_R16G16B16A16_UINT; break;
+          }
+        }
+        break;
+
         case 32: {
           switch (component_count) {
             case 2: *p_format = signedness ? SPV_REFLECT_FORMAT_R32G32_SINT : SPV_REFLECT_FORMAT_R32G32_UINT; break;
@@ -2725,6 +2968,9 @@ static SpvReflectResult ParseFormat(
   }
   else if (p_type->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
     switch(bit_width) {
+      case 16:
+        *p_format = SPV_REFLECT_FORMAT_R16_SFLOAT;
+        break;
       case 32:
         *p_format = SPV_REFLECT_FORMAT_R32_SFLOAT;
         break;
@@ -2736,6 +2982,9 @@ static SpvReflectResult ParseFormat(
   }
   else if (p_type->type_flags & (SPV_REFLECT_TYPE_FLAG_INT | SPV_REFLECT_TYPE_FLAG_BOOL)) {
     switch(bit_width) {
+      case 16:
+        *p_format = signedness ? SPV_REFLECT_FORMAT_R16_SINT : SPV_REFLECT_FORMAT_R16_UINT; break;
+        break;
       case 32:
         *p_format = signedness ? SPV_REFLECT_FORMAT_R32_SINT : SPV_REFLECT_FORMAT_R32_UINT; break;
         break;
@@ -2777,6 +3026,10 @@ static SpvReflectResult ParseInterfaceVariable(
       SpvReflectPrvDecorations* p_member_decorations = &p_type_node->member_decorations[member_index];
       SpvReflectTypeDescription* p_member_type = &p_type->members[member_index];
       SpvReflectInterfaceVariable* p_member_var = &p_var->members[member_index];
+
+      // Storage class is the same throughout the whole struct
+      p_member_var->storage_class = p_var->storage_class;
+
       SpvReflectResult result = ParseInterfaceVariable(p_parser, NULL, p_member_decorations, p_module, p_member_type, p_member_var, p_has_built_in);
       if (result != SPV_REFLECT_RESULT_SUCCESS) {
         SPV_REFLECT_ASSERT(false);
@@ -2789,7 +3042,12 @@ static SpvReflectResult ParseInterfaceVariable(
   p_var->decoration_flags = ApplyDecorations(p_type_node_decorations);
   if (p_var_node_decorations != NULL) {
     p_var->decoration_flags |= ApplyDecorations(p_var_node_decorations);
+  } else {
+    // Apply member decoration values to struct members
+    p_var->location = p_type_node_decorations->location.value;
+    p_var->component = p_type_node_decorations->component.value;
   }
+
   p_var->built_in = p_type_node_decorations->built_in;
   ApplyNumericTraits(p_type, &p_var->numeric);
   if (p_type->op == SpvOpTypeArray) {
@@ -2936,6 +3194,7 @@ static SpvReflectResult ParseInterfaceVariables(
 
     // Location is decorated on OpVariable node, not the type node.
     p_var->location = p_node->decorations.location.value;
+    p_var->component = p_node->decorations.component.value;
     p_var->word_offset.location = p_node->decorations.location.word_offset;
 
     // Built in
@@ -3370,6 +3629,10 @@ static SpvReflectResult ParseExecutionModes(
         case SpvExecutionModeOutputLinesNV:
         case SpvExecutionModeOutputPrimitivesNV:
         case SpvExecutionModeOutputTrianglesNV:
+        case SpvExecutionModePixelInterlockOrderedEXT:
+        case SpvExecutionModePixelInterlockUnorderedEXT:
+        case SpvExecutionModeSampleInterlockOrderedEXT:
+        case SpvExecutionModeSampleInterlockUnorderedEXT:
           break;
       }
       p_entry_point->execution_mode_count++;
@@ -3538,6 +3801,7 @@ static SpvReflectResult ParsePushConstantBlocks(
 
     SpvReflectBlockVariable* p_push_constant = &p_module->push_constant_blocks[push_constant_index];
     p_push_constant->spirv_id = p_node->result_id;
+    p_parser->physical_pointer_count = 0;
     SpvReflectResult result = ParseDescriptorBlockVariable(p_parser, p_module, p_type, p_push_constant);
     if (result != SPV_REFLECT_RESULT_SUCCESS) {
       return result;
@@ -3549,12 +3813,15 @@ static SpvReflectResult ParsePushConstantBlocks(
       SpvReflectPrvAccessChain* p_access_chain =
           &(p_parser->access_chains[access_chain_index]);
       // Skip any access chains that aren't touching this push constant block
-      if (p_push_constant->spirv_id != p_access_chain->base_id) {
+      if (p_push_constant->spirv_id != FindBaseId(p_parser, p_access_chain)) {
         continue;
       }
+      SpvReflectBlockVariable* p_var =
+          (p_access_chain->base_id == p_push_constant->spirv_id)
+              ? p_push_constant
+              : GetRefBlkVar(p_parser, p_access_chain);
       result = ParseDescriptorBlockVariableUsage(
-          p_parser, p_module, p_access_chain, 0, (SpvOp)INVALID_VALUE,
-          p_push_constant);
+          p_parser, p_module, p_access_chain, 0, (SpvOp)INVALID_VALUE, p_var);
       if (result != SPV_REFLECT_RESULT_SUCCESS) {
         return result;
       }
@@ -3564,6 +3831,14 @@ static SpvReflectResult ParsePushConstantBlocks(
     result = ParseDescriptorBlockVariableSizes(p_parser, p_module, true, false, false, p_push_constant);
     if (result != SPV_REFLECT_RESULT_SUCCESS) {
       return result;
+    }
+
+    // Get minimum offset for whole Push Constant block
+    // It is not valid SPIR-V to have an empty Push Constant Block
+    p_push_constant->offset = UINT32_MAX;
+    for (uint32_t k = 0; k < p_push_constant->member_count; ++k) {
+      const uint32_t member_offset = p_push_constant->members[k].offset;
+      p_push_constant->offset = Min(p_push_constant->offset, member_offset);
     }
 
     ++push_constant_index;
@@ -5242,7 +5517,6 @@ SpvReflectResult spvReflectChangeOutputVariableLocation(
 const char* spvReflectSourceLanguage(SpvSourceLanguage source_lang)
 {
   switch (source_lang) {
-    case SpvSourceLanguageUnknown        : return "Unknown";
     case SpvSourceLanguageESSL           : return "ESSL";
     case SpvSourceLanguageGLSL           : return "GLSL";
     case SpvSourceLanguageOpenCL_C       : return "OpenCL_C";
@@ -5250,10 +5524,14 @@ const char* spvReflectSourceLanguage(SpvSourceLanguage source_lang)
     case SpvSourceLanguageHLSL           : return "HLSL";
     case SpvSourceLanguageCPP_for_OpenCL : return "CPP_for_OpenCL";
     case SpvSourceLanguageSYCL           : return "SYCL";
-    case SpvSourceLanguageMax:
+    case SpvSourceLanguageHERO_C         : return "Hero C";
+    case SpvSourceLanguageNZSL           : return "NZSL";
+    default:
       break;
   }
-  return "";
+  // The source language is SpvSourceLanguageUnknown, SpvSourceLanguageMax, or
+  // some other value that does not correspond to a knonwn language.
+  return "Unknown";
 }
 
 const char* spvReflectBlockVariableTypeName(

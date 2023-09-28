@@ -1516,6 +1516,8 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	} else {
 		// Recursively duplicate all files inside the folder.
 		Ref<DirAccess> old_dir = DirAccess::open(old_path);
+		ERR_FAIL_COND(old_dir.is_null());
+
 		Ref<FileAccess> file_access = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 		old_dir->set_include_navigational(false);
 		old_dir->list_dir_begin();
@@ -1970,15 +1972,15 @@ Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) co
 	Vector<String> selected_strings;
 
 	TreeItem *favorites_item = tree->get_root()->get_first_child();
-	TreeItem *active_selected = tree->get_selected();
-	if (active_selected && active_selected != favorites_item) {
-		selected_strings.push_back(active_selected->get_metadata(0));
+	TreeItem *cursor_item = tree->get_selected();
+	if (cursor_item && cursor_item->is_selected(0) && cursor_item != favorites_item) {
+		selected_strings.push_back(cursor_item->get_metadata(0));
 	}
 
 	TreeItem *selected = tree->get_root();
 	selected = tree->get_next_selected(selected);
 	while (selected) {
-		if (selected != active_selected && selected != favorites_item) {
+		if (selected != cursor_item && selected != favorites_item) {
 			selected_strings.push_back(selected->get_metadata(0));
 		}
 		selected = tree->get_next_selected(selected);
@@ -3308,6 +3310,8 @@ bool FileSystemDock::_get_imported_files(const String &p_path, String &r_extensi
 	}
 
 	Ref<DirAccess> da = DirAccess::open(p_path);
+	ERR_FAIL_COND_V(da.is_null(), false);
+
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (!n.is_empty()) {

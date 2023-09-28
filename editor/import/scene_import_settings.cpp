@@ -225,7 +225,7 @@ void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, Tree
 
 	MeshData &mesh_data = mesh_map[import_id];
 
-	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Mesh"));
+	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("MeshItem"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
 	item->set_text(0, p_mesh->get_name());
@@ -1285,7 +1285,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 				String name = md.mesh_node->get_text(0);
 
 				item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				item->set_icon(0, get_editor_theme_icon(SNAME("Mesh")));
+				item->set_icon(0, get_editor_theme_icon(SNAME("MeshItem")));
 				item->set_text(0, name);
 
 				if (md.has_import_id) {
@@ -1556,6 +1556,7 @@ SceneImportSettings::SceneImportSettings() {
 		Ref<StandardMaterial3D> selection_mat;
 		selection_mat.instantiate();
 		selection_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		selection_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		selection_mat->set_albedo(Color(1, 0.8, 1.0));
 
 		Ref<SurfaceTool> st;
@@ -1581,6 +1582,7 @@ SceneImportSettings::SceneImportSettings() {
 
 		node_selected = memnew(MeshInstance3D);
 		node_selected->set_mesh(selection_mesh);
+		node_selected->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 		base_viewport->add_child(node_selected);
 		node_selected->hide();
 	}
@@ -1596,6 +1598,7 @@ SceneImportSettings::SceneImportSettings() {
 	{
 		collider_mat.instantiate();
 		collider_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		collider_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		collider_mat->set_albedo(Color(0.5, 0.5, 1.0));
 	}
 

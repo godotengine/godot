@@ -164,7 +164,7 @@ static LoadModule* _findByType(const string& mimeType)
 
     if (mimeType == "tvg") type = FileType::Tvg;
     else if (mimeType == "svg" || mimeType == "svg+xml") type = FileType::Svg;
-    else if (mimeType == "lottie" || mimeType == "json") type = FileType::Lottie;
+    else if (mimeType == "lottie") type = FileType::Lottie;
     else if (mimeType == "raw") type = FileType::Raw;
     else if (mimeType == "png") type = FileType::Png;
     else if (mimeType == "jpg" || mimeType == "jpeg") type = FileType::Jpg;
@@ -214,22 +214,24 @@ shared_ptr<LoadModule> LoaderMgr::loader(const string& path, bool* invalid)
 
 shared_ptr<LoadModule> LoaderMgr::loader(const char* data, uint32_t size, const string& mimeType, bool copy)
 {
-    //Try first with the given MimeType
-    if (auto loader = _findByType(mimeType)) {
-        if (loader->open(data, size, copy)) {
-            return shared_ptr<LoadModule>(loader);
-        } else {
-            TVGLOG("LOADER", "Given mimetype \"%s\" seems incorrect or not supported. Will try again with other types.", mimeType.c_str());
-            delete(loader);
+    //Try with the given MimeType
+    if (!mimeType.empty()) {
+        if (auto loader = _findByType(mimeType)) {
+            if (loader->open(data, size, copy)) {
+                return shared_ptr<LoadModule>(loader);
+            } else {
+                TVGLOG("LOADER", "Given mimetype \"%s\" seems incorrect or not supported. Will try again with other types.", mimeType.c_str());
+                delete(loader);
+            }
         }
-    }
-
-    //Abnormal MimeType. Try with the candidates in the order
-    for (int i = 0; i < static_cast<int>(FileType::Unknown); i++) {
-        auto loader = _find(static_cast<FileType>(i));
-        if (loader) {
-            if (loader->open(data, size, copy)) return shared_ptr<LoadModule>(loader);
-            else delete(loader);
+    //Unkown MimeType. Try with the candidates in the order
+    } else {
+        for (int i = 0; i < static_cast<int>(FileType::Unknown); i++) {
+            auto loader = _find(static_cast<FileType>(i));
+            if (loader) {
+                if (loader->open(data, size, copy)) return shared_ptr<LoadModule>(loader);
+                else delete(loader);
+            }
         }
     }
     return nullptr;

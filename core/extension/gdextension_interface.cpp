@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
+#include "core/extension/gdextension_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/xml_parser.h"
 #include "core/object/class_db.h"
@@ -753,25 +754,25 @@ static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitiali
 	dest->parse_utf8(p_contents, p_size);
 }
 
-static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_size) {
+static void gdextension_string_new_with_utf16_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char16_t *p_contents, GDExtensionInt p_char_count) {
 	memnew_placement(r_dest, String);
 	String *dest = reinterpret_cast<String *>(r_dest);
-	dest->parse_utf16(p_contents, p_size);
+	dest->parse_utf16(p_contents, p_char_count);
 }
 
-static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_size) {
-	memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
+static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
+	memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
 }
 
-static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_size) {
+static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count) {
 	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit, parse.
 		memnew_placement(r_dest, String);
 		String *dest = reinterpret_cast<String *>(r_dest);
-		dest->parse_utf16((const char16_t *)p_contents, p_size);
+		dest->parse_utf16((const char16_t *)p_contents, p_char_count);
 	} else {
 		// wchar_t is 32 bit, copy.
-		memnew_placement(r_dest, String((const char32_t *)p_contents, p_size));
+		memnew_placement(r_dest, String((const char32_t *)p_contents, p_char_count));
 	}
 }
 
@@ -875,6 +876,24 @@ static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_se
 static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDExtensionInt p_length) {
 	String *self = (String *)p_self;
 	return (*self).resize(p_length);
+}
+
+static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
+	memnew_placement(r_dest, StringName(p_contents, static_cast<bool>(p_is_static)));
+}
+
+static void gdextension_string_name_new_with_utf8_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents) {
+	String tmp;
+	tmp.parse_utf8(p_contents);
+
+	memnew_placement(r_dest, StringName(tmp));
+}
+
+static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	String tmp;
+	tmp.parse_utf8(p_contents, p_size);
+
+	memnew_placement(r_dest, StringName(tmp));
 }
 
 static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
@@ -1194,6 +1213,7 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 	info_2->get_func = p_info->get_func;
 	info_2->get_property_list_func = p_info->get_property_list_func;
 	info_2->free_property_list_func = p_info->free_property_list_func;
+	info_2->get_class_category_func = nullptr;
 	info_2->property_can_revert_func = p_info->property_can_revert_func;
 	info_2->property_get_revert_func = p_info->property_get_revert_func;
 	info_2->get_owner_func = p_info->get_owner_func;
@@ -1306,15 +1326,22 @@ static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionC
 	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
 	bool exists = false;
 	MethodBind *mb = ClassDB::get_method_with_compatibility(classname, methodname, p_hash, &exists);
+
+#ifndef DISABLE_DEPRECATED
+	// If lookup failed, see if this is one of the broken hashes from issue #81386.
+	if (!mb && exists) {
+		uint32_t mapped_hash;
+		if (GDExtensionCompatHashes::lookup_current_hash(classname, methodname, p_hash, &mapped_hash)) {
+			mb = ClassDB::get_method_with_compatibility(classname, methodname, mapped_hash, &exists);
+		}
+	}
+#endif
+
 	if (!mb && exists) {
 		ERR_PRINT("Method '" + classname + "." + methodname + "' has changed and no compatibility fallback has been provided. Please open an issue.");
 		return nullptr;
 	}
 	ERR_FAIL_NULL_V(mb, nullptr);
-	if (mb->get_hash() != p_hash) {
-		ERR_PRINT("Hash mismatch for method '" + classname + "." + methodname + "'.");
-		return nullptr;
-	}
 	return (GDExtensionMethodBindPtr)mb;
 }
 
@@ -1426,6 +1453,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_wcstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_c32str);
 	REGISTER_INTERFACE_FUNC(string_resize);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_latin1_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(xml_parser_open_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_store_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_get_buffer);

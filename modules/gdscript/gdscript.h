@@ -195,6 +195,7 @@ public:
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
 	virtual bool is_valid() const override { return valid; }
+	virtual bool is_abstract() const override { return false; } // GDScript does not support abstract classes.
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -501,7 +502,9 @@ public:
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
-	virtual bool has_named_classes() const override;
+#ifndef DISABLE_DEPRECATED
+	virtual bool has_named_classes() const override { return false; }
+#endif
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }

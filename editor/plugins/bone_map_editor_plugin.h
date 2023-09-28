@@ -179,6 +179,7 @@ class BoneMapper : public VBoxContainer {
 		BONE_SEGREGATION_LEFT,
 		BONE_SEGREGATION_RIGHT
 	};
+	bool is_match_with_bone_name(String p_bone_name, String p_word);
 	int search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_picklist, BoneSegregation p_segregation = BONE_SEGREGATION_NONE, int p_parent = -1, int p_child = -1, int p_children_count = -1);
 	BoneSegregation guess_bone_segregation(String p_bone_name);
 	void auto_mapping_process(Ref<BoneMap> &p_bone_map);

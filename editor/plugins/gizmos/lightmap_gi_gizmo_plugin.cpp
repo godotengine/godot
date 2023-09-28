@@ -47,6 +47,7 @@ LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 	mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, false);
+	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 	add_material("lightmap_probe_material", mat);
 

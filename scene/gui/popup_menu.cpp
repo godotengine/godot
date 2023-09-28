@@ -1908,10 +1908,18 @@ void PopupMenu::add_separator(const String &p_text, int p_id) {
 	_menu_changed();
 }
 
-void PopupMenu::clear() {
-	for (int i = 0; i < items.size(); i++) {
-		if (items[i].shortcut.is_valid()) {
-			_unref_shortcut(items[i].shortcut);
+void PopupMenu::clear(bool p_free_submenus) {
+	for (const Item &I : items) {
+		if (I.shortcut.is_valid()) {
+			_unref_shortcut(I.shortcut);
+		}
+
+		if (p_free_submenus && !I.submenu.is_empty()) {
+			Node *submenu = get_node_or_null(I.submenu);
+			if (submenu) {
+				remove_child(submenu);
+				submenu->queue_free();
+			}
 		}
 	}
 	items.clear();
@@ -2236,7 +2244,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_item", "index"), &PopupMenu::remove_item);
 
 	ClassDB::bind_method(D_METHOD("add_separator", "label", "id"), &PopupMenu::add_separator, DEFVAL(String()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("clear"), &PopupMenu::clear);
+	ClassDB::bind_method(D_METHOD("clear", "free_submenus"), &PopupMenu::clear, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_hide_on_item_selection", "enable"), &PopupMenu::set_hide_on_item_selection);
 	ClassDB::bind_method(D_METHOD("is_hide_on_item_selection"), &PopupMenu::is_hide_on_item_selection);

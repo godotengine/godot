@@ -723,7 +723,7 @@ namespace Godot
         /// <returns>A hash code for this AABB.</returns>
         public override readonly int GetHashCode()
         {
-            return _position.GetHashCode() ^ _size.GetHashCode();
+            return HashCode.Combine(_position, _size);
         }
 
         /// <summary>

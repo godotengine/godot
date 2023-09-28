@@ -26,6 +26,50 @@
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
+Fill* RadialGradient::Impl::duplicate()
+{
+    auto ret = RadialGradient::gen();
+    if (!ret) return nullptr;
+
+    ret->pImpl->cx = cx;
+    ret->pImpl->cy = cy;
+    ret->pImpl->r = r;
+    ret->pImpl->fx = fx;
+    ret->pImpl->fy = fy;
+    ret->pImpl->fr = fr;
+
+    return ret.release();
+}
+
+
+Result RadialGradient::Impl::radial(float cx, float cy, float r, float fx, float fy, float fr)
+{
+    if (r < 0 || fr < 0) return Result::InvalidArguments;
+
+    this->cx = cx;
+    this->cy = cy;
+    this->r = r;
+    this->fx = fx;
+    this->fy = fy;
+    this->fr = fr;
+
+    return Result::Success;
+};
+
+
+Fill* LinearGradient::Impl::duplicate()
+{
+    auto ret = LinearGradient::gen();
+    if (!ret) return nullptr;
+
+    ret->pImpl->x1 = x1;
+    ret->pImpl->y1 = y1;
+    ret->pImpl->x2 = x2;
+    ret->pImpl->y2 = y2;
+
+    return ret.release();
+};
+
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -110,7 +154,97 @@ Fill* Fill::duplicate() const noexcept
     return pImpl->duplicate();
 }
 
+
 uint32_t Fill::identifier() const noexcept
 {
     return pImpl->id;
 }
+
+
+RadialGradient::RadialGradient():pImpl(new Impl())
+{
+    Fill::pImpl->id = TVG_CLASS_ID_RADIAL;
+    Fill::pImpl->method(new FillDup<RadialGradient::Impl>(pImpl));
+}
+
+
+RadialGradient::~RadialGradient()
+{
+    delete(pImpl);
+}
+
+
+Result RadialGradient::radial(float cx, float cy, float r) noexcept
+{
+    return pImpl->radial(cx, cy, r, cx, cy, 0.0f);
+}
+
+
+Result RadialGradient::radial(float* cx, float* cy, float* r) const noexcept
+{
+    if (cx) *cx = pImpl->cx;
+    if (cy) *cy = pImpl->cy;
+    if (r) *r = pImpl->r;
+
+    return Result::Success;
+}
+
+
+unique_ptr<RadialGradient> RadialGradient::gen() noexcept
+{
+    return unique_ptr<RadialGradient>(new RadialGradient);
+}
+
+
+uint32_t RadialGradient::identifier() noexcept
+{
+    return TVG_CLASS_ID_RADIAL;
+}
+
+
+LinearGradient::LinearGradient():pImpl(new Impl())
+{
+    Fill::pImpl->id = TVG_CLASS_ID_LINEAR;
+    Fill::pImpl->method(new FillDup<LinearGradient::Impl>(pImpl));
+}
+
+
+LinearGradient::~LinearGradient()
+{
+    delete(pImpl);
+}
+
+
+Result LinearGradient::linear(float x1, float y1, float x2, float y2) noexcept
+{
+    pImpl->x1 = x1;
+    pImpl->y1 = y1;
+    pImpl->x2 = x2;
+    pImpl->y2 = y2;
+
+    return Result::Success;
+}
+
+
+Result LinearGradient::linear(float* x1, float* y1, float* x2, float* y2) const noexcept
+{
+    if (x1) *x1 = pImpl->x1;
+    if (x2) *x2 = pImpl->x2;
+    if (y1) *y1 = pImpl->y1;
+    if (y2) *y2 = pImpl->y2;
+
+    return Result::Success;
+}
+
+
+unique_ptr<LinearGradient> LinearGradient::gen() noexcept
+{
+    return unique_ptr<LinearGradient>(new LinearGradient);
+}
+
+
+uint32_t LinearGradient::identifier() noexcept
+{
+    return TVG_CLASS_ID_LINEAR;
+}
+

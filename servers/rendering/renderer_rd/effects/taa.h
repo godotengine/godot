@@ -45,7 +45,6 @@ public:
 	TAA();
 	~TAA();
 
-	void msaa_resolve(Ref<RenderSceneBuffersRD> p_render_buffers);
 	void process(Ref<RenderSceneBuffersRD> p_render_buffers, RD::DataFormat p_format, float p_z_near, float p_z_far);
 
 private:

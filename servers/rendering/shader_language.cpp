@@ -610,19 +610,39 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					incp.push_back(0); // Zero end it.
 					String include_path(incp.ptr());
 					include_positions.write[include_positions.size() - 1].line = tk_line;
-					FilePosition fp;
-					fp.file = include_path;
-					fp.line = 0;
-					tk_line = 0;
-					include_positions.push_back(fp);
+
+					String marker = ">>" + include_path;
+					if (!include_markers_handled.has(marker)) {
+						include_markers_handled.insert(marker);
+
+						FilePosition fp;
+						fp.file = include_path;
+						fp.line = 0;
+						tk_line = 0;
+						include_positions.push_back(fp);
+					}
 
 				} else if (GETCHAR(0) == '@' && GETCHAR(1) == '<') {
-					if (include_positions.size() == 1) {
-						return _make_token(TK_ERROR, "Invalid include exit hint @@< without matching enter hint.");
-					}
 					char_idx += 2;
 
-					include_positions.resize(include_positions.size() - 1); // Pop back.
+					LocalVector<char32_t> incp;
+					while (GETCHAR(0) != '\n') {
+						incp.push_back(GETCHAR(0));
+						char_idx++;
+					}
+					incp.push_back(0); // Zero end it.
+					String include_path(incp.ptr());
+
+					String marker = "<<" + include_path;
+					if (!include_markers_handled.has(marker)) {
+						include_markers_handled.insert(marker);
+
+						if (include_positions.size() == 1) {
+							return _make_token(TK_ERROR, "Invalid include exit hint @@< without matching enter hint.");
+						}
+						include_positions.resize(include_positions.size() - 1); // Pop back.
+					}
+
 					tk_line = include_positions[include_positions.size() - 1].line - 1; // Restore line.
 
 				} else {
@@ -1216,6 +1236,8 @@ void ShaderLanguage::clear() {
 
 	include_positions.clear();
 	include_positions.push_back(FilePosition());
+
+	include_markers_handled.clear();
 
 #ifdef DEBUG_ENABLED
 	keyword_completion_context = CF_UNSPECIFIED;
@@ -5297,7 +5319,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								}
 							}
 
-							ERR_FAIL_COND_V(!base_function, nullptr); //bug, wtf
+							ERR_FAIL_NULL_V(base_function, nullptr); // Bug, wtf.
 
 							for (int i = 0; i < call_function->arguments.size(); i++) {
 								int argidx = i + 1;
@@ -5729,7 +5751,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			}
 		}
 
-		ERR_FAIL_COND_V(!expr, nullptr);
+		ERR_FAIL_NULL_V(expr, nullptr);
 
 		/* OK now see what's NEXT to the operator.. */
 

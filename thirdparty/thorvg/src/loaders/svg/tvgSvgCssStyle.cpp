@@ -123,7 +123,7 @@ static void _copyStyle(SvgStyleProperty* to, const SvgStyleProperty* from)
             to->stroke.dash.array.clear();
             to->stroke.dash.array.reserve(from->stroke.dash.array.count);
             for (uint32_t i = 0; i < from->stroke.dash.array.count; ++i) {
-                to->stroke.dash.array.push(from->stroke.dash.array.data[i]);
+                to->stroke.dash.array.push(from->stroke.dash.array[i]);
             }
             to->stroke.flags = (to->stroke.flags | SvgStrokeFlags::Dash);
             to->flags = (to->flags | SvgStyleFlags::StrokeDashArray);
@@ -236,7 +236,7 @@ void cssUpdateStyle(SvgNode* doc, SvgNode* style)
 void cssApplyStyleToPostponeds(Array<SvgNodeIdPair>& postponeds, SvgNode* style)
 {
     for (uint32_t i = 0; i < postponeds.count; ++i) {
-        auto nodeIdPair = postponeds.data[i];
+        auto nodeIdPair = postponeds[i];
 
         //css styling: tag.name has higher priority than .name
         if (auto cssNode = cssFindStyleNode(style, nodeIdPair.id, nodeIdPair.node->type)) {
