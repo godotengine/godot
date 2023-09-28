@@ -150,13 +150,13 @@ Result Shape::appendArc(float cx, float cy, float radius, float startAngle, floa
     //just circle
     if (sweep >= 360.0f || sweep <= -360.0f) return appendCircle(cx, cy, radius, radius);
 
-    startAngle = (startAngle * M_PI) / 180.0f;
-    sweep = sweep * M_PI / 180.0f;
+    startAngle = (startAngle * MATH_PI) / 180.0f;
+    sweep = sweep * MATH_PI / 180.0f;
 
-    auto nCurves = ceil(fabsf(sweep / float(M_PI_2)));
+    auto nCurves = ceil(fabsf(sweep / MATH_PI2));
     auto sweepSign = (sweep < 0 ? -1 : 1);
-    auto fract = fmodf(sweep, float(M_PI_2));
-    fract = (mathZero(fract)) ? float(M_PI_2) * sweepSign : fract;
+    auto fract = fmodf(sweep, MATH_PI2);
+    fract = (mathZero(fract)) ? MATH_PI2 * sweepSign : fract;
 
     //Start from here
     Point start = {radius * cosf(startAngle), radius * sinf(startAngle)};
@@ -342,22 +342,13 @@ const Fill* Shape::strokeFill() const noexcept
 
 Result Shape::stroke(const float* dashPattern, uint32_t cnt) noexcept
 {
-    if ((cnt == 1) || (!dashPattern && cnt > 0) || (dashPattern && cnt == 0)) {
-        return Result::InvalidArguments;
-    }
-
-    for (uint32_t i = 0; i < cnt; i++)
-        if (dashPattern[i] < FLT_EPSILON) return Result::InvalidArguments;
-
-    if (!pImpl->strokeDash(dashPattern, cnt)) return Result::FailedAllocation;
-
-    return Result::Success;
+    return pImpl->strokeDash(dashPattern, cnt, 0);
 }
 
 
 uint32_t Shape::strokeDash(const float** dashPattern) const noexcept
 {
-    return pImpl->rs.strokeDash(dashPattern);
+    return pImpl->rs.strokeDash(dashPattern, nullptr);
 }
 
 

@@ -46,9 +46,9 @@ struct Shape::Impl
 
     bool dispose(RenderMethod& renderer)
     {
-        auto ret = renderer.dispose(rd);
+        renderer.dispose(rd);
         rd = nullptr;
-        return ret;
+        return true;
     }
 
     bool render(RenderMethod& renderer)
@@ -70,7 +70,7 @@ struct Shape::Impl
         if (opacity == 0) return false;
 
         //Shape composition is only necessary when stroking & fill are valid.
-        if (!rs.stroke || rs.stroke->width < FLT_EPSILON || rs.stroke->color[3] == 0) return false;
+        if (!rs.stroke || rs.stroke->width < FLT_EPSILON || (!rs.stroke->fill && rs.stroke->color[3] == 0)) return false;
         if (!rs.fill && rs.color[3] == 0) return false;
 
         //translucent fill & stroke
@@ -104,7 +104,7 @@ struct Shape::Impl
         return renderer.region(rd);
     }
 
-    bool bounds(float* x, float* y, float* w, float* h)
+    bool bounds(float* x, float* y, float* w, float* h, bool stroking)
     {
         //Path bounding size
         if (rs.path.pts.count > 0 ) {
@@ -126,7 +126,7 @@ struct Shape::Impl
         }
 
         //Stroke feathering
-        if (rs.stroke) {
+        if (stroking && rs.stroke) {
             if (x) *x -= rs.stroke->width * 0.5f;
             if (y) *y -= rs.stroke->width * 0.5f;
             if (w) *w += rs.stroke->width;
@@ -199,10 +199,24 @@ struct Shape::Impl
 
     bool strokeWidth(float width)
     {
-        //TODO: Size Exception?
-
         if (!rs.stroke) rs.stroke = new RenderStroke();
         rs.stroke->width = width;
+        flag |= RenderUpdateFlag::Stroke;
+
+        return true;
+    }
+
+    bool strokeTrim(float begin, float end)
+    {
+        if (!rs.stroke) {
+            if (begin == 0.0f && end == 1.0f) return true;
+            rs.stroke = new RenderStroke();
+        }
+
+        if (mathEqual(rs.stroke->trim.begin, begin) && mathEqual(rs.stroke->trim.end, end)) return true;
+
+        rs.stroke->trim.begin = begin;
+        rs.stroke->trim.end = end;
         flag |= RenderUpdateFlag::Stroke;
 
         return true;
@@ -269,8 +283,16 @@ struct Shape::Impl
         return Result::Success;
     }
 
-    bool strokeDash(const float* pattern, uint32_t cnt)
+    Result strokeDash(const float* pattern, uint32_t cnt, float offset)
     {
+        if ((cnt == 1) || (!pattern && cnt > 0) || (pattern && cnt == 0)) {
+            return Result::InvalidArguments;
+        }
+
+        for (uint32_t i = 0; i < cnt; i++) {
+            if (pattern[i] < FLT_EPSILON) return Result::InvalidArguments;
+        }
+
         //Reset dash
         if (!pattern && cnt == 0) {
             free(rs.stroke->dashPattern);
@@ -283,16 +305,17 @@ struct Shape::Impl
             }
             if (!rs.stroke->dashPattern) {
                 rs.stroke->dashPattern = static_cast<float*>(malloc(sizeof(float) * cnt));
-                if (!rs.stroke->dashPattern) return false;
+                if (!rs.stroke->dashPattern) return Result::FailedAllocation;
             }
             for (uint32_t i = 0; i < cnt; ++i) {
                 rs.stroke->dashPattern[i] = pattern[i];
             }
         }
         rs.stroke->dashCnt = cnt;
+        rs.stroke->dashOffset = offset;
         flag |= RenderUpdateFlag::Stroke;
 
-        return true;
+        return Result::Success;
     }
 
     bool strokeFirst()
@@ -336,24 +359,17 @@ struct Shape::Impl
         //Stroke
         if (rs.stroke) {
             dup->rs.stroke = new RenderStroke();
-            dup->rs.stroke->width = rs.stroke->width;
-            dup->rs.stroke->dashCnt = rs.stroke->dashCnt;
-            dup->rs.stroke->cap = rs.stroke->cap;
-            dup->rs.stroke->join = rs.stroke->join;
-            dup->rs.stroke->strokeFirst = rs.stroke->strokeFirst;
+            *dup->rs.stroke = *rs.stroke;
             memcpy(dup->rs.stroke->color, rs.stroke->color, sizeof(rs.stroke->color));
-
             if (rs.stroke->dashCnt > 0) {
                 dup->rs.stroke->dashPattern = static_cast<float*>(malloc(sizeof(float) * rs.stroke->dashCnt));
                 memcpy(dup->rs.stroke->dashPattern, rs.stroke->dashPattern, sizeof(float) * rs.stroke->dashCnt);
             }
-
-            dup->flag |= RenderUpdateFlag::Stroke;
-
             if (rs.stroke->fill) {
                 dup->rs.stroke->fill = rs.stroke->fill->duplicate();
                 dup->flag |= RenderUpdateFlag::GradientStroke;
             }
+            dup->flag |= RenderUpdateFlag::Stroke;
         }
 
         //Fill

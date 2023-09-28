@@ -70,190 +70,17 @@ static bool _arrange(const SwImage* image, const SwBBox* region, int& yStart, in
 }
 
 
-static void _rasterMaskedPolygonImageSegmentInt(SwSurface* surface, const SwImage* image, const SwBBox* region, int yStart, int yEnd, AASpans* aaSpans, uint8_t opacity, uint8_t dirFlag)
+static bool _rasterMaskedPolygonImageSegment(SwSurface* surface, const SwImage* image, const SwBBox* region, int yStart, int yEnd, AASpans* aaSpans, uint8_t opacity, uint8_t dirFlag = 0)
 {
+    return false;
+
+#if 0 //Enable it when GRAYSCALE image is supported
+    auto maskOp = _getMaskOp(surface->compositor->method);
+    auto direct = _direct(surface->compositor->method);
     float _dudx = dudx, _dvdx = dvdx;
     float _dxdya = dxdya, _dxdyb = dxdyb, _dudya = dudya, _dvdya = dvdya;
     float _xa = xa, _xb = xb, _ua = ua, _va = va;
-    auto sbuf = image->buf32;
-    int32_t sw = static_cast<int32_t>(image->stride);
-    int32_t sh = image->h;
-    int32_t x1, x2, ar, ab, iru, irv, px, ay;
-    int32_t vv = 0, uu = 0;
-    int32_t minx = INT32_MAX, maxx = INT32_MIN;
-    float dx, u, v, iptr;
-    auto cbuffer = surface->compositor->image.buf32;
-    SwSpan* span = nullptr;         //used only when rle based.
-
-    if (!_arrange(image, region, yStart, yEnd)) return;
-
-    //Clear out of the Polygon vertical ranges
-    auto size = surface->compositor->bbox.max.x - surface->compositor->bbox.min.x;
-    if (dirFlag == 1) {     //left top case.
-        for(int y = surface->compositor->bbox.min.y; y < yStart; ++y) {
-            rasterPixel32(surface->compositor->image.buf32 + y * surface->compositor->image.stride, 0, surface->compositor->bbox.min.x, size);
-        }
-    }
-    if (dirFlag == 4) {     //right bottom case.
-        for(int y = yEnd; y < surface->compositor->bbox.max.y; ++y) {
-            rasterPixel32(surface->compositor->image.buf32 + y * surface->compositor->image.stride, 0, surface->compositor->bbox.min.x, size);
-        }
-    }
-
-    //Loop through all lines in the segment
-    uint32_t spanIdx = 0;
-
-    if (region) {
-        minx = region->min.x;
-        maxx = region->max.x;
-    } else {
-        span = image->rle->spans;
-        while (span->y < yStart) {
-            ++span;
-            ++spanIdx;
-        }
-    }
-
-    for (int32_t y = yStart; y < yEnd; ++y) {
-        auto cmp = &cbuffer[y * surface->compositor->image.stride];
-        x1 = (int32_t)_xa;
-        x2 = (int32_t)_xb;
-
-        if (!region) {
-            minx = INT32_MAX;
-            maxx = INT32_MIN;
-            //one single row, could be consisted of multiple spans.
-            while (span->y == y && spanIdx < image->rle->size) {
-                if (minx > span->x) minx = span->x;
-                if (maxx < span->x + span->len) maxx = span->x + span->len;
-                ++span;
-                ++spanIdx;
-            }
-        }
-
-        if (x1 < minx) x1 = minx;
-        if (x2 > maxx) x2 = maxx;
-
-        //Anti-Aliasing frames
-        //FIXME: this aa must be applied before masking op
-        ay = y - aaSpans->yStart;
-        if (aaSpans->lines[ay].x[0] > x1) aaSpans->lines[ay].x[0] = x1;
-        if (aaSpans->lines[ay].x[1] < x2) aaSpans->lines[ay].x[1] = x2;
-
-        //Range allowed
-        if ((x2 - x1) >= 1 && (x1 < maxx) && (x2 > minx)) {
-            for (int32_t x = surface->compositor->bbox.min.x; x < surface->compositor->bbox.max.x; ++x) {
-                //Range allowed
-                if (x >= x1 && x < x2) {
-                    //Perform subtexel pre-stepping on UV
-                    dx = 1 - (_xa - x1);
-                    u = _ua + dx * _dudx;
-                    v = _va + dx * _dvdx;
-                    if ((uint32_t)v >= image->h) {
-                        cmp[x] = 0;
-                    } else {
-                        if (opacity == 255) {
-                            uu = (int) u;
-                            if (uu >= sw) continue;
-                            vv = (int) v;
-                            if (vv >= sh) continue;
-
-                            ar = (int)(255 * (1 - modff(u, &iptr)));
-                            ab = (int)(255 * (1 - modff(v, &iptr)));
-                            iru = uu + 1;
-                            irv = vv + 1;
-
-                            px = *(sbuf + (vv * sw) + uu);
-
-                            /* horizontal interpolate */
-                            if (iru < sw) {
-                                /* right pixel */
-                                int px2 = *(sbuf + (vv * sw) + iru);
-                                px = INTERPOLATE(px, px2, ar);
-                            }
-                            /* vertical interpolate */
-                            if (irv < sh) {
-                                /* bottom pixel */
-                                int px2 = *(sbuf + (irv * sw) + uu);
-
-                                /* horizontal interpolate */
-                                if (iru < sw) {
-                                    /* bottom right pixel */
-                                    int px3 = *(sbuf + (irv * sw) + iru);
-                                    px2 = INTERPOLATE(px2, px3, ar);
-                                }
-                                px = INTERPOLATE(px, px2, ab);
-                            }
-                            cmp[x] = ALPHA_BLEND(cmp[x], A(px));
-
-                            //Step UV horizontally
-                            u += _dudx;
-                            v += _dvdx;
-                        } else {
-                            uu = (int) u;
-                            if (uu >= sw) continue;
-                            vv = (int) v;
-                            if (vv >= sh) continue;
-
-                            ar = (int)(255 * (1 - modff(u, &iptr)));
-                            ab = (int)(255 * (1 - modff(v, &iptr)));
-                            iru = uu + 1;
-                            irv = vv + 1;
-
-                            px = *(sbuf + (vv * sw) + uu);
-
-                            /* horizontal interpolate */
-                            if (iru < sw) {
-                                /* right pixel */
-                                int px2 = *(sbuf + (vv * sw) + iru);
-                                px = INTERPOLATE(px, px2, ar);
-                            }
-                            /* vertical interpolate */
-                            if (irv < sh) {
-                                /* bottom pixel */
-                                int px2 = *(sbuf + (irv * sw) + uu);
-
-                                /* horizontal interpolate */
-                                if (iru < sw) {
-                                    /* bottom right pixel */
-                                    int px3 = *(sbuf + (irv * sw) + iru);
-                                    px2 = INTERPOLATE(px2, px3, ar);
-                                }
-                                px = INTERPOLATE(px, px2, ab);
-                            }
-                            cmp[x] = ALPHA_BLEND(cmp[x], MULTIPLY(A(px), opacity));
-
-                            //Step UV horizontally
-                            u += _dudx;
-                            v += _dvdx;
-                        }
-                    }
-                } else {
-                    //Clear out of polygon horizontal range
-                    if (x < x1 && (dirFlag == 1 || dirFlag == 2)) cmp[x] = 0;
-                    else if (x >= x2 && (dirFlag == 3 || dirFlag == 4)) cmp[x] = 0;
-                }
-            }
-        }
-        //Step along both edges
-        _xa += _dxdya;
-        _xb += _dxdyb;
-        _ua += _dudya;
-        _va += _dvdya;
-    }
-    xa = _xa;
-    xb = _xb;
-    ua = _ua;
-    va = _va;
-}
-
-
-static void _rasterMaskedPolygonImageSegmentDup(SwSurface* surface, const SwImage* image, const SwBBox* region, SwBlender maskOp, SwBlender amaskOp, int yStart, int yEnd, AASpans* aaSpans, uint8_t opacity)
-{
-    float _dudx = dudx, _dvdx = dvdx;
-    float _dxdya = dxdya, _dxdyb = dxdyb, _dudya = dudya, _dvdya = dvdya;
-    float _xa = xa, _xb = xb, _ua = ua, _va = va;
-    auto sbuf = image->buf32;
+    auto sbuf = image->buf8;
     int32_t sw = static_cast<int32_t>(image->stride);
     int32_t sh = image->h;
     int32_t x1, x2, x, y, ar, ab, iru, irv, px, ay;
@@ -262,7 +89,7 @@ static void _rasterMaskedPolygonImageSegmentDup(SwSurface* surface, const SwImag
     float dx, u, v, iptr;
     SwSpan* span = nullptr;         //used only when rle based.
 
-    if (!_arrange(image, region, yStart, yEnd)) return;
+    if (!_arrange(image, region, yStart, yEnd)) return false;
 
     //Loop through all lines in the segment
     uint32_t spanIdx = 0;
@@ -313,7 +140,8 @@ static void _rasterMaskedPolygonImageSegmentDup(SwSurface* surface, const SwImag
 
             x = x1;
 
-            auto cmp = &surface->compositor->image.buf32[y * surface->compositor->image.stride + x1];
+            auto cmp = &surface->compositor->image.buf8[y * surface->compositor->image.stride + x1];
+            auto dst = &surface->buf8[y * surface->stride + x1];
 
             if (opacity == 255) {
                 //Draw horizontal line
@@ -349,7 +177,13 @@ static void _rasterMaskedPolygonImageSegmentDup(SwSurface* surface, const SwImag
                         }
                         px = INTERPOLATE(px, px2, ab);
                     }
-                    *cmp = maskOp(px, *cmp, IA(px));
+                    if (direct) {
+                        auto tmp = maskOp(px, *cmp, 0);  //not use alpha
+                        *dst = tmp + MULTIPLY(*dst, ~tmp);
+                        ++dst;
+                    } else {
+                        *cmp = maskOp(px, *cmp, ~px);
+                    }
                     ++cmp;
 
                     //Step UV horizontally
@@ -392,7 +226,15 @@ static void _rasterMaskedPolygonImageSegmentDup(SwSurface* surface, const SwImag
                         }
                         px = INTERPOLATE(px, px2, ab);
                     }
-                    *cmp = amaskOp(px, *cmp, opacity);
+
+                    if (direct) {
+                        auto tmp = maskOp(MULTIPLY(px, opacity), *cmp, 0);
+                        *dst = tmp + MULTIPLY(*dst, ~tmp);
+                        ++dst;
+                    } else {
+                        auto tmp = MULTIPLY(px, opacity);
+                        *cmp = maskOp(tmp, *cmp, ~px);
+                    }
                     ++cmp;
 
                     //Step UV horizontally
@@ -418,17 +260,9 @@ static void _rasterMaskedPolygonImageSegmentDup(SwSurface* surface, const SwImag
     xb = _xb;
     ua = _ua;
     va = _va;
-}
 
-
-static void _rasterMaskedPolygonImageSegment(SwSurface* surface, const SwImage* image, const SwBBox* region, int yStart, int yEnd, AASpans* aaSpans, uint8_t opacity, uint8_t dirFlag = 0)
-{
-    if (surface->compositor->method == CompositeMethod::IntersectMask) {
-        _rasterMaskedPolygonImageSegmentInt(surface, image, region, yStart, yEnd, aaSpans, opacity, dirFlag);
-    } else if (auto opMask = _getMaskOp(surface->compositor->method)) {
-        //Other Masking operations: Add, Subtract, Difference ...
-        _rasterMaskedPolygonImageSegmentDup(surface, image, region, opMask, _getAMaskOp(surface->compositor->method), yStart, yEnd, aaSpans, opacity);
-    }
+    return true;
+#endif
 }
 
 
@@ -1256,6 +1090,11 @@ static bool _apply(SwSurface* surface, AASpans* aaSpans)
 */
 static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const Matrix* transform, const SwBBox* region, uint8_t opacity)
 {
+    if (surface->channelSize == sizeof(uint8_t)) {
+        TVGERR("SW_ENGINE", "Not supported grayscale Textmap polygon!");
+        return false;
+    }
+
     //Exceptions: No dedicated drawing area?
     if ((!image->rle && !region) || (image->rle && image->rle->size == 0)) return false;
 
@@ -1294,6 +1133,11 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
 
     _rasterPolygonImage(surface, image, region, polygon, aaSpans, opacity);
 
+#if 0
+    if (_compositing(surface) && _masking(surface) && !_direct(surface->compositor->method)) {
+        _compositeMaskImage(surface, &surface->compositor->image, surface->compositor->bbox);
+    }
+#endif
     return _apply(surface, aaSpans);
 }
 
@@ -1313,6 +1157,11 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
 */
 static bool _rasterTexmapPolygonMesh(SwSurface* surface, const SwImage* image, const RenderMesh* mesh, const Matrix* transform, const SwBBox* region, uint8_t opacity)
 {
+    if (surface->channelSize == sizeof(uint8_t)) {
+        TVGERR("SW_ENGINE", "Not supported grayscale Textmap polygon mesh!");
+        return false;
+    }
+
     //Exceptions: No dedicated drawing area?
     if ((!image->rle && !region) || (image->rle && image->rle->size == 0)) return false;
 
@@ -1342,15 +1191,17 @@ static bool _rasterTexmapPolygonMesh(SwSurface* surface, const SwImage* image, c
     }
 
     // Get AA spans and step polygons again to draw
-    auto aaSpans = _AASpans(ys, ye, image, region);
-    if (aaSpans) {
+    if (auto aaSpans = _AASpans(ys, ye, image, region)) {
         for (uint32_t i = 0; i < mesh->triangleCnt; i++) {
             _rasterPolygonImage(surface, image, region, transformedTris[i], aaSpans, opacity);
         }
-        // Apply to surface (note: frees the AA spans)
+#if 0
+        if (_compositing(surface) && _masking(surface) && !_direct(surface->compositor->method)) {
+            _compositeMaskImage(surface, &surface->compositor->image, surface->compositor->bbox);
+        }
+#endif
         _apply(surface, aaSpans);
     }
     free(transformedTris);
-
     return true;
 }

@@ -23,6 +23,7 @@
 //#include "tvgAnimationImpl.h"
 #include "tvgCommon.h"
 #include "tvgFrameModule.h"
+#include "tvgPaint.h"
 #include "tvgPictureImpl.h"
 
 /************************************************************************/
@@ -31,8 +32,20 @@
 
 struct Animation::Impl
 {
-    //TODO: Memory Safety
-    Picture picture;
+    Picture* picture = nullptr;
+
+    Impl()
+    {
+        picture = Picture::gen().release();
+        static_cast<Paint*>(picture)->pImpl->ref();
+    }
+
+    ~Impl()
+    {
+        if (static_cast<Paint*>(picture)->pImpl->unref() == 0) {
+            delete(picture);
+        }
+    }
 };
 
 /************************************************************************/
@@ -41,19 +54,18 @@ struct Animation::Impl
 
 Animation::~Animation()
 {
-
+    delete(pImpl);
 }
 
 
 Animation::Animation() : pImpl(new Impl)
 {
-    pImpl->picture.pImpl->animated = true;
 }
 
 
 Result Animation::frame(uint32_t no) noexcept
 {
-    auto loader = pImpl->picture.pImpl->loader.get();
+    auto loader = pImpl->picture->pImpl->loader.get();
 
     if (!loader) return Result::InsufficientCondition;
     if (!loader->animatable()) return Result::NonSupport;
@@ -65,13 +77,13 @@ Result Animation::frame(uint32_t no) noexcept
 
 Picture* Animation::picture() const noexcept
 {
-    return &pImpl->picture;
+    return pImpl->picture;
 }
 
 
 uint32_t Animation::curFrame() const noexcept
 {
-    auto loader = pImpl->picture.pImpl->loader.get();
+    auto loader = pImpl->picture->pImpl->loader.get();
 
     if (!loader) return 0;
     if (!loader->animatable()) return 0;
@@ -82,7 +94,7 @@ uint32_t Animation::curFrame() const noexcept
 
 uint32_t Animation::totalFrame() const noexcept
 {
-    auto loader = pImpl->picture.pImpl->loader.get();
+    auto loader = pImpl->picture->pImpl->loader.get();
 
     if (!loader) return 0;
     if (!loader->animatable()) return 0;
@@ -93,7 +105,7 @@ uint32_t Animation::totalFrame() const noexcept
 
 float Animation::duration() const noexcept
 {
-    auto loader = pImpl->picture.pImpl->loader.get();
+    auto loader = pImpl->picture->pImpl->loader.get();
 
     if (!loader) return 0;
     if (!loader->animatable()) return 0;

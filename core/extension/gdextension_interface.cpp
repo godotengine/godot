@@ -1213,6 +1213,7 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 	info_2->get_func = p_info->get_func;
 	info_2->get_property_list_func = p_info->get_property_list_func;
 	info_2->free_property_list_func = p_info->free_property_list_func;
+	info_2->get_class_category_func = nullptr;
 	info_2->property_can_revert_func = p_info->property_can_revert_func;
 	info_2->property_get_revert_func = p_info->property_get_revert_func;
 	info_2->get_owner_func = p_info->get_owner_func;
