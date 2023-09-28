@@ -1671,15 +1671,42 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		StringName native_base;
 		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
-			valid = valid && parent_return_type == p_function->get_datatype();
+
+			if (p_function->return_type != nullptr) {
+				// Check return type covariance.
+				GDScriptParser::DataType return_type = p_function->get_datatype();
+				if (return_type.is_variant()) {
+					// `is_type_compatible()` returns `true` if one of the types is `Variant`.
+					// Don't allow an explicitly specified `Variant` if the parent return type is narrower.
+					valid = valid && parent_return_type.is_variant();
+				} else if (return_type.kind == GDScriptParser::DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
+					// `is_type_compatible()` returns `true` if target is an `Object` and source is `null`.
+					// Don't allow `void` if the parent return type is a hard non-`void` type.
+					if (parent_return_type.is_hard_type() && !(parent_return_type.kind == GDScriptParser::DataType::BUILTIN && parent_return_type.builtin_type == Variant::NIL)) {
+						valid = false;
+					}
+				} else {
+					valid = valid && is_type_compatible(parent_return_type, return_type);
+				}
+			}
 
 			int par_count_diff = p_function->parameters.size() - parameters_types.size();
 			valid = valid && par_count_diff >= 0;
 			valid = valid && default_value_count >= default_par_count + par_count_diff;
 
-			int i = 0;
-			for (const GDScriptParser::DataType &par_type : parameters_types) {
-				valid = valid && par_type == p_function->parameters[i++]->get_datatype();
+			if (valid) {
+				int i = 0;
+				for (const GDScriptParser::DataType &parent_par_type : parameters_types) {
+					// Check parameter type contravariance.
+					GDScriptParser::DataType current_par_type = p_function->parameters[i++]->get_datatype();
+					if (parent_par_type.is_variant() && parent_par_type.is_hard_type()) {
+						// `is_type_compatible()` returns `true` if one of the types is `Variant`.
+						// Don't allow narrowing a hard `Variant`.
+						valid = valid && current_par_type.is_variant();
+					} else {
+						valid = valid && is_type_compatible(current_par_type, parent_par_type);
+					}
+				}
 			}
 
 			if (!valid) {
