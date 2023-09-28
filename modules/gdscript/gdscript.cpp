@@ -306,6 +306,9 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 	while (sptr) {
 		Vector<_GDScriptMemberSort> msort;
 		for (const KeyValue<StringName, MemberInfo> &E : sptr->member_indices) {
+			if (!sptr->members.has(E.key)) {
+				continue; // Skip base class members.
+			}
 			_GDScriptMemberSort ms;
 			ms.index = E.value.index;
 			ms.name = E.key;
@@ -1648,15 +1651,11 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 }
 
 Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
-	const GDScript *sptr = script.ptr();
-	while (sptr) {
-		if (sptr->member_indices.has(p_name)) {
-			if (r_is_valid) {
-				*r_is_valid = true;
-			}
-			return sptr->member_indices[p_name].property_info.type;
+	if (script->member_indices.has(p_name)) {
+		if (r_is_valid) {
+			*r_is_valid = true;
 		}
-		sptr = sptr->_base;
+		return script->member_indices[p_name].property_info.type;
 	}
 
 	if (r_is_valid) {
@@ -1732,6 +1731,9 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 
 		Vector<_GDScriptMemberSort> msort;
 		for (const KeyValue<StringName, GDScript::MemberInfo> &F : sptr->member_indices) {
+			if (!sptr->members.has(F.key)) {
+				continue; // Skip base class members.
+			}
 			_GDScriptMemberSort ms;
 			ms.index = F.value.index;
 			ms.name = F.key;

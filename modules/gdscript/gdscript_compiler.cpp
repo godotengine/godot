@@ -2811,7 +2811,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				minfo.property_info = prop_info;
 
 				p_script->member_indices[name] = minfo;
-				p_script->members.insert(Variant());
+				p_script->members.insert(name);
 			} break;
 
 			case GDScriptParser::ClassNode::Member::FUNCTION: {
