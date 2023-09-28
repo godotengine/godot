@@ -1049,6 +1049,7 @@ void AnimationTree::_process_graph(double p_delta) {
 			//if started, seek
 			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, 0, true, false, Vector<StringName>());
 			started = false;
+			recording_accumulator = 0.0;
 		}
 
 		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, p_delta, false, false, Vector<StringName>());
@@ -1906,13 +1907,17 @@ void AnimationTree::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (active && process_callback == ANIMATION_PROCESS_IDLE) {
-				_process_graph(get_process_delta_time());
+				double delta = get_process_delta_time();
+				_process_graph(delta);
+				try_record_by_process_or_physics_process(delta);
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (active && process_callback == ANIMATION_PROCESS_PHYSICS) {
-				_process_graph(get_physics_process_delta_time());
+				double delta = get_process_delta_time();
+				_process_graph(delta);
+				try_record_by_process_or_physics_process(delta);
 			}
 		} break;
 	}
@@ -2211,6 +2216,83 @@ real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_co
 	return (*activity)[p_connection].activity;
 }
 
+void AnimationTree::set_record_buffer_max_size(uint32_t p_max_size) {
+	record_buffer_max_size = p_max_size;
+
+	record_buffer.adjust_capacity(record_buffer_max_size);
+}
+
+void AnimationTree::resize_record_buffer(int p_size) {
+	record_buffer.resize(p_size);
+}
+
+void AnimationTree::discard_latest_records(uint32_t p_length) {
+	ERR_FAIL_COND(p_length > static_cast<uint32_t>(record_buffer.size()));
+
+	for (; p_length > 0; --p_length) {
+		record_buffer.pop_front();
+	}
+}
+
+void AnimationTree::set_recording_rate(real_t p_rate) {
+	recording_rate = p_rate;
+	real_t min_rate = 1.0 / Engine::get_singleton()->get_frames_per_second();
+	if (recording_rate > min_rate) {
+		recording_rate = min_rate;
+	}
+}
+
+void AnimationTree::save_record() {
+	Record new_record;
+
+	new_record.state_animation_states.reserve(state.animation_states.size());
+	for (const AnimationNode::AnimationState &E : state.animation_states) {
+		new_record.state_animation_states.push_back(E);
+	}
+
+#ifdef TOOLS_ENABLED
+	new_record.process_pass = process_pass;
+	new_record.state_valid = state.valid;
+	new_record.state_invalid_reasons = state.invalid_reasons;
+#endif // TOOLS_ENABLED
+
+	new_record.root_motion_position = root_motion_position;
+	new_record.root_motion_rotation = root_motion_rotation;
+	new_record.root_motion_scale = root_motion_scale;
+	new_record.root_motion_position_accumulator = root_motion_position_accumulator;
+	new_record.root_motion_rotation_accumulator = root_motion_rotation_accumulator;
+	new_record.root_motion_scale_accumulator = root_motion_scale_accumulator;
+	new_record.property_map = property_map;
+
+	record_buffer.push_front(new_record);
+}
+
+bool AnimationTree::load_record(uint32_t p_record_index) {
+	ERR_FAIL_COND_V(p_record_index >= static_cast<uint32_t>(record_buffer.size()), false);
+	const Record &record = record_buffer[p_record_index];
+
+	property_map = record.property_map;
+	root_motion_scale_accumulator = record.root_motion_scale_accumulator;
+	root_motion_rotation_accumulator = record.root_motion_rotation_accumulator;
+	root_motion_position_accumulator = record.root_motion_position_accumulator;
+	root_motion_scale = record.root_motion_scale;
+	root_motion_rotation = record.root_motion_rotation;
+	root_motion_position = record.root_motion_position;
+
+#ifdef TOOLS_ENABLED
+	state.invalid_reasons = record.state_invalid_reasons;
+	state.valid = record.state_valid;
+	process_pass = record.process_pass;
+#endif // TOOLS_ENABLED
+
+	state.animation_states.clear();
+	for (const AnimationNode::AnimationState &E : state.animation_states) {
+		state.animation_states.push_back(E);
+	}
+
+	return true;
+}
+
 void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &AnimationTree::set_active);
 	ClassDB::bind_method(D_METHOD("is_active"), &AnimationTree::is_active);
@@ -2244,6 +2326,19 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
 
+	ClassDB::bind_method(D_METHOD("set_record_buffer_max_size", "record_buffer_max_size"), &AnimationTree::set_record_buffer_max_size);
+	ClassDB::bind_method(D_METHOD("get_record_buffer_max_size"), &AnimationTree::get_record_buffer_max_size);
+	ClassDB::bind_method(D_METHOD("set_recording_enabled", "enabled"), &AnimationTree::set_recording_enabled);
+	ClassDB::bind_method(D_METHOD("is_recording_enabled"), &AnimationTree::is_recording_enabled);
+	ClassDB::bind_method(D_METHOD("set_recording_rate", "rate"), &AnimationTree::set_recording_rate);
+	ClassDB::bind_method(D_METHOD("get_recording_rate"), &AnimationTree::get_recording_rate);
+	ClassDB::bind_method(D_METHOD("get_record_buffer_size"), &AnimationTree::get_record_buffer_size);
+	ClassDB::bind_method(D_METHOD("resize_record_buffer", "resize"), &AnimationTree::resize_record_buffer);
+	ClassDB::bind_method(D_METHOD("clear_records"), &AnimationTree::clear_records);
+	ClassDB::bind_method(D_METHOD("discard_latest_records", "length"), &AnimationTree::discard_latest_records);
+	ClassDB::bind_method(D_METHOD("save_record"), &AnimationTree::save_record);
+	ClassDB::bind_method(D_METHOD("load_record", "record_index"), &AnimationTree::load_record);
+
 	GDVIRTUAL_BIND(_post_process_key_value, "animation", "track", "value", "object", "object_idx");
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
@@ -2256,19 +2351,22 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_max_polyphony", PROPERTY_HINT_RANGE, "1,127,1"), "set_audio_max_polyphony", "get_audio_max_polyphony");
 	ADD_GROUP("Root Motion", "root_motion_");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_motion_track"), "set_root_motion_track", "get_root_motion_track");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "record_buffer_max_size"), "set_record_buffer_max_size", "get_record_buffer_max_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recording_enabled"), "set_recording_enabled", "is_recording_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "recording_rate"), "set_recording_rate", "get_recording_rate");
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_MANUAL);
 
 	ADD_SIGNAL(MethodInfo("animation_player_changed"));
-
 	// Signals from AnimationNodes.
 	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 }
 
 AnimationTree::AnimationTree() {
+	record_buffer.adjust_capacity(record_buffer_max_size);
 }
 
 AnimationTree::~AnimationTree() {

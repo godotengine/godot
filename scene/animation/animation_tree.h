@@ -32,6 +32,7 @@
 #define ANIMATION_TREE_H
 
 #include "animation_player.h"
+#include "core/templates/circular_deque.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
@@ -375,6 +376,16 @@ private:
 
 	ObjectID last_animation_player;
 
+	real_t recording_accumulator = 0.0;
+
+	void try_record_by_process_or_physics_process(real_t p_delta) {
+		recording_accumulator += p_delta;
+		if (recording_accumulator > recording_rate) {
+			save_record();
+			recording_accumulator -= recording_rate;
+		}
+	}
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -386,6 +397,29 @@ protected:
 	GDVIRTUAL5RC(Variant, _post_process_key_value, Ref<Animation>, int, Variant, Object *, int);
 	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx = -1);
 	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx = -1);
+
+	struct Record {
+		TightLocalVector<AnimationNode::AnimationState> state_animation_states;
+#ifdef TOOLS_ENABLED
+		bool state_valid;
+		String state_invalid_reasons = ""; // Should be set optionally.
+		uint64_t process_pass;
+#endif // TOOLS_ENABLED
+
+		Vector3 root_motion_position;
+		Quaternion root_motion_rotation;
+		Vector3 root_motion_scale;
+		Vector3 root_motion_position_accumulator;
+		Quaternion root_motion_rotation_accumulator;
+		Vector3 root_motion_scale_accumulator;
+
+		HashMap<StringName, Pair<Variant, bool>> property_map;
+	};
+
+	uint32_t record_buffer_max_size = 1024;
+	CircularDeque<Record> record_buffer;
+	bool recording_enabled = false;
+	real_t recording_rate = 0.1;
 
 public:
 	void set_tree_root(const Ref<AnimationNode> &p_root);
@@ -426,6 +460,27 @@ public:
 	void advance(double p_time);
 
 	uint64_t get_last_process_pass() const;
+
+	void set_record_buffer_max_size(uint32_t P_record_buffer_max_size);
+	uint32_t get_record_buffer_max_size() const { return record_buffer_max_size; }
+
+	void set_recording_enabled(bool p_enabled) { recording_enabled = p_enabled; }
+	bool is_recording_enabled() const { return recording_enabled; }
+
+	void set_recording_rate(real_t p_rate);
+	real_t get_recording_rate() const { return recording_rate; }
+
+	int get_record_buffer_size() const { return record_buffer.size(); }
+	void resize_record_buffer(int p_size);
+
+	void clear_records() { record_buffer.clear(); }
+
+	void discard_latest_records(uint32_t p_length);
+
+	bool load_record(uint32_t p_record_index);
+
+	void save_record();
+
 	AnimationTree();
 	~AnimationTree();
 };
