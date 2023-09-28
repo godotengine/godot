@@ -6,6 +6,7 @@ mode_copy_section = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY
 mode_gaussian_blur = #define MODE_GAUSSIAN_BLUR
 mode_mipmap = #define MODE_MIPMAP
 mode_simple_color = #define MODE_SIMPLE_COLOR \n#define USE_COPY_SECTION
+mode_cube_to_octahedral = #define CUBE_TO_OCTAHEDRAL \n#define USE_COPY_SECTION
 
 #[specializations]
 
@@ -50,7 +51,19 @@ uniform vec4 color_in;
 uniform highp vec2 pixel_size;
 #endif
 
+#ifdef CUBE_TO_OCTAHEDRAL
+uniform samplerCube source_cube; // texunit:0
+
+vec3 oct_to_vec3(vec2 e) {
+	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return normalize(v);
+}
+#else
 uniform sampler2D source; // texunit:0
+
+#endif
 
 layout(location = 0) out vec4 frag_color;
 
@@ -89,5 +102,12 @@ void main() {
 	frag_color += (B + C + H + G) * lesser_weight;
 	frag_color += (F + G + L + K) * lesser_weight;
 	frag_color += (G + H + M + L) * lesser_weight;
+#endif
+
+#ifdef CUBE_TO_OCTAHEDRAL
+	// Treat the UV coordinates as 0-1 encoded octahedral coordinates.
+	vec3 dir = oct_to_vec3(uv_interp * 2.0 - 1.0);
+	frag_color = texture(source_cube, dir);
+
 #endif
 }

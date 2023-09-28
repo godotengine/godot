@@ -949,6 +949,7 @@ public:
 		Vector<PatternNode *> patterns;
 		SuiteNode *block = nullptr;
 		bool has_wildcard = false;
+		SuiteNode *guard_body = nullptr;
 
 		MatchBranchNode() {
 			type = MATCH_BRANCH;

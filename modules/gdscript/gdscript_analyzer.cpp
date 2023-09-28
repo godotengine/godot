@@ -1671,15 +1671,42 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		StringName native_base;
 		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
-			valid = valid && parent_return_type == p_function->get_datatype();
+
+			if (p_function->return_type != nullptr) {
+				// Check return type covariance.
+				GDScriptParser::DataType return_type = p_function->get_datatype();
+				if (return_type.is_variant()) {
+					// `is_type_compatible()` returns `true` if one of the types is `Variant`.
+					// Don't allow an explicitly specified `Variant` if the parent return type is narrower.
+					valid = valid && parent_return_type.is_variant();
+				} else if (return_type.kind == GDScriptParser::DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
+					// `is_type_compatible()` returns `true` if target is an `Object` and source is `null`.
+					// Don't allow `void` if the parent return type is a hard non-`void` type.
+					if (parent_return_type.is_hard_type() && !(parent_return_type.kind == GDScriptParser::DataType::BUILTIN && parent_return_type.builtin_type == Variant::NIL)) {
+						valid = false;
+					}
+				} else {
+					valid = valid && is_type_compatible(parent_return_type, return_type);
+				}
+			}
 
 			int par_count_diff = p_function->parameters.size() - parameters_types.size();
 			valid = valid && par_count_diff >= 0;
 			valid = valid && default_value_count >= default_par_count + par_count_diff;
 
-			int i = 0;
-			for (const GDScriptParser::DataType &par_type : parameters_types) {
-				valid = valid && par_type == p_function->parameters[i++]->get_datatype();
+			if (valid) {
+				int i = 0;
+				for (const GDScriptParser::DataType &parent_par_type : parameters_types) {
+					// Check parameter type contravariance.
+					GDScriptParser::DataType current_par_type = p_function->parameters[i++]->get_datatype();
+					if (parent_par_type.is_variant() && parent_par_type.is_hard_type()) {
+						// `is_type_compatible()` returns `true` if one of the types is `Variant`.
+						// Don't allow narrowing a hard `Variant`.
+						valid = valid && current_par_type.is_variant();
+					} else {
+						valid = valid && is_type_compatible(current_par_type, parent_par_type);
+					}
+				}
 			}
 
 			if (!valid) {
@@ -2147,6 +2174,9 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 				} else if (!is_type_compatible(specified_type, variable_type)) {
 					p_for->use_conversion_assign = true;
 				}
+				if (p_for->list && p_for->list->type == GDScriptParser::Node::ARRAY) {
+					update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_for->list), specified_type);
+				}
 			}
 			p_for->variable->set_datatype(specified_type);
 		} else {
@@ -2212,6 +2242,10 @@ void GDScriptAnalyzer::resolve_match(GDScriptParser::MatchNode *p_match) {
 void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_match_branch, GDScriptParser::ExpressionNode *p_match_test) {
 	for (int i = 0; i < p_match_branch->patterns.size(); i++) {
 		resolve_match_pattern(p_match_branch->patterns[i], p_match_test);
+	}
+
+	if (p_match_branch->guard_body) {
+		resolve_suite(p_match_branch->guard_body);
 	}
 
 	resolve_suite(p_match_branch->block);
@@ -2547,28 +2581,31 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 // When an array literal is stored (or passed as function argument) to a typed context, we then assume the array is typed.
 // This function determines which type is that (if any).
 void GDScriptAnalyzer::update_array_literal_element_type(GDScriptParser::ArrayNode *p_array, const GDScriptParser::DataType &p_element_type) {
+	GDScriptParser::DataType expected_type = p_element_type;
+	expected_type.unset_container_element_type(); // Nested types (like `Array[Array[int]]`) are not currently supported.
+
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element_node = p_array->elements[i];
 		if (element_node->is_constant) {
-			update_const_expression_builtin_type(element_node, p_element_type, "include");
+			update_const_expression_builtin_type(element_node, expected_type, "include");
 		}
-		const GDScriptParser::DataType &element_type = element_node->get_datatype();
-		if (element_type.has_no_type() || element_type.is_variant() || !element_type.is_hard_type()) {
+		const GDScriptParser::DataType &actual_type = element_node->get_datatype();
+		if (actual_type.has_no_type() || actual_type.is_variant() || !actual_type.is_hard_type()) {
 			mark_node_unsafe(element_node);
 			continue;
 		}
-		if (!is_type_compatible(p_element_type, element_type, true, p_array)) {
-			if (is_type_compatible(element_type, p_element_type)) {
+		if (!is_type_compatible(expected_type, actual_type, true, p_array)) {
+			if (is_type_compatible(actual_type, expected_type)) {
 				mark_node_unsafe(element_node);
 				continue;
 			}
-			push_error(vformat(R"(Cannot have an element of type "%s" in an array of type "Array[%s]".)", element_type.to_string(), p_element_type.to_string()), element_node);
+			push_error(vformat(R"(Cannot have an element of type "%s" in an array of type "Array[%s]".)", actual_type.to_string(), expected_type.to_string()), element_node);
 			return;
 		}
 	}
 
 	GDScriptParser::DataType array_type = p_array->get_datatype();
-	array_type.set_container_element_type(p_element_type);
+	array_type.set_container_element_type(expected_type);
 	p_array->set_datatype(array_type);
 }
 

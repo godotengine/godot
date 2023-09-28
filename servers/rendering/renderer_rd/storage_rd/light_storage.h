@@ -677,8 +677,7 @@ public:
 		return li->shadow_transform[p_index].camera;
 	}
 
-	_FORCE_INLINE_ Transform3D
-	light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ Transform3D light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->shadow_transform[p_index].transform;
 	}
@@ -1005,15 +1004,15 @@ public:
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
 	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) override;
-	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_intance) {
+	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_instance) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, false);
-		return atlas->shadow_owners.has(p_light_intance);
+		return atlas->shadow_owners.has(p_light_instance);
 	}
-	_FORCE_INLINE_ uint32_t shadow_atlas_get_light_instance_key(RID p_atlas, RID p_light_intance) {
+	_FORCE_INLINE_ uint32_t shadow_atlas_get_light_instance_key(RID p_atlas, RID p_light_instance) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, -1);
-		return atlas->shadow_owners[p_light_intance];
+		return atlas->shadow_owners[p_light_instance];
 	}
 
 	_FORCE_INLINE_ RID shadow_atlas_get_texture(RID p_atlas) {
@@ -1053,7 +1052,7 @@ public:
 	/* DIRECTIONAL SHADOW */
 
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override;
-	virtual int get_directional_light_shadow_size(RID p_light_intance) override;
+	virtual int get_directional_light_shadow_size(RID p_light_instance) override;
 	virtual void set_directional_shadow_count(int p_count) override;
 
 	Rect2i get_directional_shadow_rect();
