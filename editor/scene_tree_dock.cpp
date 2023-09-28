@@ -2972,8 +2972,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			existing_script_removable = false;
 		}
 
-		Ref<Script> custom_type_script = selected->get_custom_type_script();
-		if (custom_type_script.is_valid()) {
+		Ref<Script> cts = selected->get_custom_type_script();
+		if (cts.is_valid()) {
 			allow_attach_new_script = false;
 		}
 	}
