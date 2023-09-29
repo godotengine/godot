@@ -74,6 +74,7 @@
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
+#include "scene/animation/animation_mixer.h"
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
@@ -454,8 +455,6 @@ void register_scene_types() {
 #endif
 
 	/* REGISTER ANIMATION */
-
-	GDREGISTER_CLASS(AnimationPlayer);
 	GDREGISTER_CLASS(Tween);
 	GDREGISTER_ABSTRACT_CLASS(Tweener);
 	GDREGISTER_CLASS(PropertyTweener);
@@ -463,6 +462,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CallbackTweener);
 	GDREGISTER_CLASS(MethodTweener);
 
+	GDREGISTER_ABSTRACT_CLASS(AnimationMixer);
+	GDREGISTER_CLASS(AnimationPlayer);
 	GDREGISTER_CLASS(AnimationTree);
 	GDREGISTER_CLASS(AnimationNode);
 	GDREGISTER_CLASS(AnimationRootNode);

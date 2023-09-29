@@ -595,7 +595,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		// Node paths in animation tracks are relative to the following path (this is used to fix node paths below).
-		Node *ap_root = ap->get_node(ap->get_root());
+		Node *ap_root = ap->get_node(ap->get_root_node());
 		NodePath path_prefix = p_root->get_path_to(ap_root);
 
 		bool nodes_were_renamed = r_node_renames.size() != 0;
