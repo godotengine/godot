@@ -22,15 +22,45 @@
 
 #include "tvgMath.h"
 #include "tvgSwCommon.h"
-
+#include "tvgFill.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
+#define RADIAL_A_THRESHOLD 0.0005f
 #define GRADIENT_STOP_SIZE 1024
 #define FIXPT_BITS 8
 #define FIXPT_SIZE (1<<FIXPT_BITS)
+
+/*
+ * quadratic equation with the following coefficients (rx and ry defined in the _calculateCoefficients()):
+ * A = a  // fill->radial.a
+ * B = 2 * (dr * fr + rx * dx + ry * dy)
+ * C = fr^2 - rx^2 - ry^2
+ * Derivatives are computed with respect to dx.
+ * This procedure aims to optimize and eliminate the need to calculate all values from the beginning
+ * for consecutive x values with a constant y. The Taylor series expansions are computed as long as
+ * its terms are non-zero.
+ */
+static void _calculateCoefficients(const SwFill* fill, uint32_t x, uint32_t y, float& b, float& deltaB, float& det, float& deltaDet, float& deltaDeltaDet)
+{
+    auto radial = &fill->radial;
+
+    auto rx = (x + 0.5f) * radial->a11 + (y + 0.5f) * radial->a12 + radial->a13 - radial->fx;
+    auto ry = (x + 0.5f) * radial->a21 + (y + 0.5f) * radial->a22 + radial->a23 - radial->fy;
+
+    b = (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy) * radial->invA;
+    deltaB = (radial->a11 * radial->dx + radial->a21 * radial->dy) * radial->invA;
+
+    auto rr = rx * rx + ry * ry;
+    auto deltaRr = 2.0f * (rx * radial->a11 + ry * radial->a21) * radial->invA;
+    auto deltaDeltaRr = 2.0f * (radial->a11 * radial->a11 + radial->a21 * radial->a21) * radial->invA;
+
+    det = b * b + (rr - radial->fr * radial->fr) * radial->invA;
+    deltaDet = 2.0f * b * deltaB + deltaB * deltaB + deltaRr + deltaDeltaRr;
+    deltaDeltaDet = 2.0f * deltaB * deltaB + deltaDeltaRr;
+}
 
 
 static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* surface, uint8_t opacity)
@@ -146,46 +176,62 @@ bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix* tr
 
 bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix* transform)
 {
-    float radius, cx, cy;
-    if (radial->radial(&cx, &cy, &radius) != Result::Success) return false;
-    if (radius < FLT_EPSILON) return true;
+    auto cx = P(radial)->cx;
+    auto cy = P(radial)->cy;
+    auto r = P(radial)->r;
+    auto fx = P(radial)->fx;
+    auto fy = P(radial)->fy;
+    auto fr = P(radial)->fr;
 
-    float invR = 1.0f / radius;
-    fill->radial.shiftX = -cx;
-    fill->radial.shiftY = -cy;
-    fill->radial.a = radius;
+    if (r < FLT_EPSILON) return true;
+
+    fill->radial.dr = r - fr;
+    fill->radial.dx = cx - fx;
+    fill->radial.dy = cy - fy;
+    fill->radial.fr = fr;
+    fill->radial.fx = fx;
+    fill->radial.fy = fy;
+    fill->radial.a = fill->radial.dr * fill->radial.dr - fill->radial.dx * fill->radial.dx - fill->radial.dy * fill->radial.dy;
+
+    //This condition fulfills the SVG 1.1 std:
+    //the focal point, if outside the end circle, is moved to be on the end circle
+    //See: the SVG 2 std requirements: https://www.w3.org/TR/SVG2/pservers.html#RadialGradientNotes
+    if (fill->radial.a < 0) {
+        auto dist = sqrtf(fill->radial.dx * fill->radial.dx + fill->radial.dy * fill->radial.dy);
+        fill->radial.fx = cx + r * (fx - cx) / dist;
+        fill->radial.fy = cy + r * (fy - cy) / dist;
+        fill->radial.dx = cx - fill->radial.fx;
+        fill->radial.dy = cy - fill->radial.fy;
+        fill->radial.a = fill->radial.dr * fill->radial.dr - fill->radial.dx * fill->radial.dx - fill->radial.dy * fill->radial.dy;
+    }
+
+    if (fill->radial.a > 0) fill->radial.invA = 1.0f / fill->radial.a;
 
     auto gradTransform = radial->transform();
     bool isTransformation = !mathIdentity((const Matrix*)(&gradTransform));
 
-    if (isTransformation) {
-        if (transform) gradTransform = mathMultiply(transform, &gradTransform);
-    } else if (transform) {
-        gradTransform = *transform;
-        isTransformation = true;
+    if (transform) {
+        if (isTransformation) gradTransform = mathMultiply(transform, &gradTransform);
+        else {
+            gradTransform = *transform;
+            isTransformation = true;
+        }
     }
 
     if (isTransformation) {
         Matrix invTransform;
         if (!mathInverse(&gradTransform, &invTransform)) return false;
-
-        fill->radial.a11 = invTransform.e11 * invR;
-        fill->radial.a12 = invTransform.e12 * invR;
-        fill->radial.shiftX += invTransform.e13;
-        fill->radial.a21 = invTransform.e21 * invR;
-        fill->radial.a22 = invTransform.e22 * invR;
-        fill->radial.shiftY += invTransform.e23;
-        fill->radial.detSecDeriv = 2.0f * fill->radial.a11 * fill->radial.a11 + 2 * fill->radial.a21 * fill->radial.a21;
-
-        fill->radial.a *= sqrt(pow(invTransform.e11, 2) + pow(invTransform.e21, 2));
+        fill->radial.a11 = invTransform.e11;
+        fill->radial.a12 = invTransform.e12;
+        fill->radial.a13 = invTransform.e13;
+        fill->radial.a21 = invTransform.e21;
+        fill->radial.a22 = invTransform.e22;
+        fill->radial.a23 = invTransform.e23;
     } else {
-        fill->radial.a11 = fill->radial.a22 = invR;
-        fill->radial.a12 = fill->radial.a21 = 0.0f;
-        fill->radial.detSecDeriv = 2.0f * invR * invR;
+        fill->radial.a11 = fill->radial.a22 = 1.0f;
+        fill->radial.a12 = fill->radial.a13 = 0.0f;
+        fill->radial.a21 = fill->radial.a23 = 0.0f;
     }
-    fill->radial.shiftX *= invR;
-    fill->radial.shiftY *= invR;
-
     return true;
 }
 
@@ -233,28 +279,48 @@ static inline uint32_t _pixel(const SwFill* fill, float pos)
 /* External Class Implementation                                        */
 /************************************************************************/
 
+
 void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwAlpha alpha, uint8_t csize, uint8_t opacity)
 {
-    auto rx = (x + 0.5f) * fill->radial.a11 + (y + 0.5f) * fill->radial.a12 + fill->radial.shiftX;
-    auto ry = (x + 0.5f) * fill->radial.a21 + (y + 0.5f) * fill->radial.a22 + fill->radial.shiftY;
+    //edge case
+    if (fill->radial.a < RADIAL_A_THRESHOLD) {
+        auto radial = &fill->radial;
+        auto rx = (x + 0.5f) * radial->a11 + (y + 0.5f) * radial->a12 + radial->a13 - radial->fx;
+        auto ry = (x + 0.5f) * radial->a21 + (y + 0.5f) * radial->a22 + radial->a23 - radial->fy;
 
-    // detSecondDerivative = d(detFirstDerivative)/dx = d( d(det)/dx )/dx
-    auto detSecondDerivative = fill->radial.detSecDeriv;
-    // detFirstDerivative = d(det)/dx
-    auto detFirstDerivative = 2.0f * (fill->radial.a11 * rx + fill->radial.a21 * ry) + 0.5f * detSecondDerivative;
-    auto det = rx * rx + ry * ry;
-
-    if (opacity == 255) {
-        for (uint32_t i = 0 ; i < len ; ++i, ++dst, cmp += csize) {
-            *dst = opBlendNormal(_pixel(fill, sqrtf(det)), *dst, alpha(cmp));
-            det += detFirstDerivative;
-            detFirstDerivative += detSecondDerivative;
+        if (opacity == 255) {
+            for (uint32_t i = 0 ; i < len ; ++i, ++dst, cmp += csize) {
+                auto x0 = 0.5f * (rx * rx + ry * ry - radial->fr * radial->fr) / (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy);
+                *dst = opBlendNormal(_pixel(fill, x0), *dst, alpha(cmp));
+                rx += radial->a11;
+                ry += radial->a21;
+            }
+        } else {
+            for (uint32_t i = 0 ; i < len ; ++i, ++dst, cmp += csize) {
+                auto x0 = 0.5f * (rx * rx + ry * ry - radial->fr * radial->fr) / (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy);
+                *dst = opBlendNormal(_pixel(fill, x0), *dst, MULTIPLY(opacity, alpha(cmp)));
+                rx += radial->a11;
+                ry += radial->a21;
+            }
         }
     } else {
-        for (uint32_t i = 0 ; i < len ; ++i, ++dst, cmp += csize) {
-            *dst = opBlendNormal(_pixel(fill, sqrtf(det)), *dst, MULTIPLY(opacity, alpha(cmp)));
-            det += detFirstDerivative;
-            detFirstDerivative += detSecondDerivative;
+        float b, deltaB, det, deltaDet, deltaDeltaDet;
+        _calculateCoefficients(fill, x, y, b, deltaB, det, deltaDet, deltaDeltaDet);
+
+        if (opacity == 255) {
+            for (uint32_t i = 0 ; i < len ; ++i, ++dst, cmp += csize) {
+                *dst = opBlendNormal(_pixel(fill, sqrtf(det) - b), *dst, alpha(cmp));
+                det += deltaDet;
+                deltaDet += deltaDeltaDet;
+                b += deltaB;
+            }
+        } else {
+            for (uint32_t i = 0 ; i < len ; ++i, ++dst, cmp += csize) {
+                *dst = opBlendNormal(_pixel(fill, sqrtf(det) - b), *dst, MULTIPLY(opacity, alpha(cmp)));
+                det += deltaDet;
+                deltaDet += deltaDeltaDet;
+                b += deltaB;
+            }
         }
     }
 }
@@ -262,48 +328,132 @@ void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
 
 void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, uint8_t a)
 {
-    auto rx = (x + 0.5f) * fill->radial.a11 + (y + 0.5f) * fill->radial.a12 + fill->radial.shiftX;
-    auto ry = (x + 0.5f) * fill->radial.a21 + (y + 0.5f) * fill->radial.a22 + fill->radial.shiftY;
+    if (fill->radial.a < RADIAL_A_THRESHOLD) {
+        auto radial = &fill->radial;
+        auto rx = (x + 0.5f) * radial->a11 + (y + 0.5f) * radial->a12 + radial->a13 - radial->fx;
+        auto ry = (x + 0.5f) * radial->a21 + (y + 0.5f) * radial->a22 + radial->a23 - radial->fy;
+        for (uint32_t i = 0; i < len; ++i, ++dst) {
+            auto x0 = 0.5f * (rx * rx + ry * ry - radial->fr * radial->fr) / (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy);
+            *dst = op(_pixel(fill, x0), *dst, a);
+            rx += radial->a11;
+            ry += radial->a21;
+        }
+    } else {
+        float b, deltaB, det, deltaDet, deltaDeltaDet;
+        _calculateCoefficients(fill, x, y, b, deltaB, det, deltaDet, deltaDeltaDet);
 
-    // detSecondDerivative = d(detFirstDerivative)/dx = d( d(det)/dx )/dx
-    auto detSecondDerivative = fill->radial.detSecDeriv;
-    // detFirstDerivative = d(det)/dx
-    auto detFirstDerivative = 2.0f * (fill->radial.a11 * rx + fill->radial.a21 * ry) + 0.5f * detSecondDerivative;
-    auto det = rx * rx + ry * ry;
+        for (uint32_t i = 0; i < len; ++i, ++dst) {
+            *dst = op(_pixel(fill, sqrtf(det) - b), *dst, a);
+            det += deltaDet;
+            deltaDet += deltaDeltaDet;
+            b += deltaB;
+        }
+    }
+}
 
-    for (uint32_t i = 0 ; i < len ; ++i, ++dst) {
-        *dst = op(_pixel(fill, sqrtf(det)), *dst, a);
-        det += detFirstDerivative;
-        detFirstDerivative += detSecondDerivative;
+
+void fillRadial(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32_t len, SwMask maskOp, uint8_t a)
+{
+    if (fill->radial.a < RADIAL_A_THRESHOLD) {
+        auto radial = &fill->radial;
+        auto rx = (x + 0.5f) * radial->a11 + (y + 0.5f) * radial->a12 + radial->a13 - radial->fx;
+        auto ry = (x + 0.5f) * radial->a21 + (y + 0.5f) * radial->a22 + radial->a23 - radial->fy;
+        for (uint32_t i = 0 ; i < len ; ++i, ++dst) {
+            auto x0 = 0.5f * (rx * rx + ry * ry - radial->fr * radial->fr) / (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy);
+            auto src = MULTIPLY(a, A(_pixel(fill, x0)));
+            *dst = maskOp(src, *dst, ~src);
+            rx += radial->a11;
+            ry += radial->a21;
+        }
+    } else {
+        float b, deltaB, det, deltaDet, deltaDeltaDet;
+        _calculateCoefficients(fill, x, y, b, deltaB, det, deltaDet, deltaDeltaDet);
+
+        for (uint32_t i = 0 ; i < len ; ++i, ++dst) {
+            auto src = MULTIPLY(a, A(_pixel(fill, sqrtf(det) - b)));
+            *dst = maskOp(src, *dst, ~src);
+            det += deltaDet;
+            deltaDet += deltaDeltaDet;
+            b += deltaB;
+        }
+    }
+}
+
+
+void fillRadial(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwMask maskOp, uint8_t a)
+{
+    if (fill->radial.a < RADIAL_A_THRESHOLD) {
+        auto radial = &fill->radial;
+        auto rx = (x + 0.5f) * radial->a11 + (y + 0.5f) * radial->a12 + radial->a13 - radial->fx;
+        auto ry = (x + 0.5f) * radial->a21 + (y + 0.5f) * radial->a22 + radial->a23 - radial->fy;
+        for (uint32_t i = 0 ; i < len ; ++i, ++dst, ++cmp) {
+            auto x0 = 0.5f * (rx * rx + ry * ry - radial->fr * radial->fr) / (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy);
+            auto src = MULTIPLY(A(A(_pixel(fill, x0))), a);
+            auto tmp = maskOp(src, *cmp, 0);
+            *dst = tmp + MULTIPLY(*dst, ~tmp);
+            rx += radial->a11;
+            ry += radial->a21;
+        }
+    } else {
+        float b, deltaB, det, deltaDet, deltaDeltaDet;
+        _calculateCoefficients(fill, x, y, b, deltaB, det, deltaDet, deltaDeltaDet);
+
+        for (uint32_t i = 0 ; i < len ; ++i, ++dst, ++cmp) {
+            auto src = MULTIPLY(A(_pixel(fill, sqrtf(det))), a);
+            auto tmp = maskOp(src, *cmp, 0);
+            *dst = tmp + MULTIPLY(*dst, ~tmp);
+            deltaDet += deltaDeltaDet;
+            b += deltaB;
+        }
     }
 }
 
 
 void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, SwBlender op2, uint8_t a)
 {
-    auto rx = (x + 0.5f) * fill->radial.a11 + (y + 0.5f) * fill->radial.a12 + fill->radial.shiftX;
-    auto ry = (x + 0.5f) * fill->radial.a21 + (y + 0.5f) * fill->radial.a22 + fill->radial.shiftY;
+    if (fill->radial.a < RADIAL_A_THRESHOLD) {
+        auto radial = &fill->radial;
+        auto rx = (x + 0.5f) * radial->a11 + (y + 0.5f) * radial->a12 + radial->a13 - radial->fx;
+        auto ry = (x + 0.5f) * radial->a21 + (y + 0.5f) * radial->a22 + radial->a23 - radial->fy;
 
-    // detSecondDerivative = d(detFirstDerivative)/dx = d( d(det)/dx )/dx
-    auto detSecondDerivative = fill->radial.detSecDeriv;
-    // detFirstDerivative = d(det)/dx
-    auto detFirstDerivative = 2.0f * (fill->radial.a11 * rx + fill->radial.a21 * ry) + 0.5f * detSecondDerivative;
-    auto det = rx * rx + ry * ry;
-
-    if (a == 255) {
-        for (uint32_t i = 0 ; i < len ; ++i, ++dst) {
-            auto tmp = op(_pixel(fill, sqrtf(det)), *dst, 255);
-            *dst = op2(tmp, *dst, 255);
-            det += detFirstDerivative;
-            detFirstDerivative += detSecondDerivative;
+        if (a == 255) {
+            for (uint32_t i = 0; i < len; ++i, ++dst) {
+                auto x0 = 0.5f * (rx * rx + ry * ry - radial->fr * radial->fr) / (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy);
+                auto tmp = op(_pixel(fill, x0), *dst, 255);
+                *dst = op2(tmp, *dst, 255);
+                rx += radial->a11;
+                ry += radial->a21;
+            }
+        } else {
+            for (uint32_t i = 0; i < len; ++i, ++dst) {
+                auto x0 = 0.5f * (rx * rx + ry * ry - radial->fr * radial->fr) / (radial->dr * radial->fr + rx * radial->dx + ry * radial->dy);
+                auto tmp = op(_pixel(fill, x0), *dst, 255);
+                auto tmp2 = op2(tmp, *dst, 255);
+                *dst = INTERPOLATE(tmp2, *dst, a);
+                rx += radial->a11;
+                ry += radial->a21;
+            }
         }
     } else {
-        for (uint32_t i = 0 ; i < len ; ++i, ++dst) {
-            auto tmp = op(_pixel(fill, sqrtf(det)), *dst, 255);
-            auto tmp2 = op2(tmp, *dst, 255);
-            *dst = INTERPOLATE(tmp2, *dst, a);
-            det += detFirstDerivative;
-            detFirstDerivative += detSecondDerivative;
+        float b, deltaB, det, deltaDet, deltaDeltaDet;
+        _calculateCoefficients(fill, x, y, b, deltaB, det, deltaDet, deltaDeltaDet);
+        if (a == 255) {
+            for (uint32_t i = 0 ; i < len ; ++i, ++dst) {
+                auto tmp = op(_pixel(fill, sqrtf(det) - b), *dst, 255);
+                *dst = op2(tmp, *dst, 255);
+                det += deltaDet;
+                deltaDet += deltaDeltaDet;
+                b += deltaB;
+            }
+        } else {
+            for (uint32_t i = 0 ; i < len ; ++i, ++dst) {
+                auto tmp = op(_pixel(fill, sqrtf(det) - b), *dst, 255);
+                auto tmp2 = op2(tmp, *dst, 255);
+                *dst = INTERPOLATE(tmp2, *dst, a);
+                det += deltaDet;
+                deltaDet += deltaDeltaDet;
+                b += deltaB;
+            }
         }
     }
 }
@@ -378,6 +528,95 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
                 t += inc;
                 cmp += csize;
             }
+        }
+    }
+}
+
+
+void fillLinear(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32_t len, SwMask maskOp, uint8_t a)
+{
+    //Rotation
+    float rx = x + 0.5f;
+    float ry = y + 0.5f;
+    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (GRADIENT_STOP_SIZE - 1);
+    float inc = (fill->linear.dx) * (GRADIENT_STOP_SIZE - 1);
+
+    if (mathZero(inc)) {
+        auto src = MULTIPLY(a, A(_fixedPixel(fill, static_cast<int32_t>(t * FIXPT_SIZE))));
+        for (uint32_t i = 0; i < len; ++i, ++dst) {
+            *dst = maskOp(src, *dst, ~src);
+        }
+        return;
+    }
+
+    auto vMax = static_cast<float>(INT32_MAX >> (FIXPT_BITS + 1));
+    auto vMin = -vMax;
+    auto v = t + (inc * len);
+
+    //we can use fixed point math
+    if (v < vMax && v > vMin) {
+        auto t2 = static_cast<int32_t>(t * FIXPT_SIZE);
+        auto inc2 = static_cast<int32_t>(inc * FIXPT_SIZE);
+        for (uint32_t j = 0; j < len; ++j, ++dst) {
+            auto src = MULTIPLY(_fixedPixel(fill, t2), a);
+            *dst = maskOp(src, *dst, ~src);
+            t2 += inc2;
+        }
+    //we have to fallback to float math
+    } else {
+        uint32_t counter = 0;
+        while (counter++ < len) {
+            auto src = MULTIPLY(_pixel(fill, t / GRADIENT_STOP_SIZE), a);
+            *dst = maskOp(src, *dst, ~src);
+            ++dst;
+            t += inc;
+        }
+    }
+}
+
+
+void fillLinear(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwMask maskOp, uint8_t a)
+{
+    //Rotation
+    float rx = x + 0.5f;
+    float ry = y + 0.5f;
+    float t = (fill->linear.dx * rx + fill->linear.dy * ry + fill->linear.offset) * (GRADIENT_STOP_SIZE - 1);
+    float inc = (fill->linear.dx) * (GRADIENT_STOP_SIZE - 1);
+
+    if (mathZero(inc)) {
+        auto src = A(_fixedPixel(fill, static_cast<int32_t>(t * FIXPT_SIZE)));
+        src = MULTIPLY(src, a);
+        for (uint32_t i = 0; i < len; ++i, ++dst, ++cmp) {
+            auto tmp = maskOp(src, *cmp, 0);
+            *dst = tmp + MULTIPLY(*dst, ~tmp);
+        }
+        return;
+    }
+
+    auto vMax = static_cast<float>(INT32_MAX >> (FIXPT_BITS + 1));
+    auto vMin = -vMax;
+    auto v = t + (inc * len);
+
+    //we can use fixed point math
+    if (v < vMax && v > vMin) {
+        auto t2 = static_cast<int32_t>(t * FIXPT_SIZE);
+        auto inc2 = static_cast<int32_t>(inc * FIXPT_SIZE);
+        for (uint32_t j = 0; j < len; ++j, ++dst, ++cmp) {
+            auto src = MULTIPLY(a, A(_fixedPixel(fill, t2)));
+            auto tmp = maskOp(src, *cmp, 0);
+            *dst = tmp + MULTIPLY(*dst, ~tmp);
+            t2 += inc2;
+        }
+    //we have to fallback to float math
+    } else {
+        uint32_t counter = 0;
+        while (counter++ < len) {
+            auto src = MULTIPLY(A(_pixel(fill, t / GRADIENT_STOP_SIZE)), a);
+            auto tmp = maskOp(src, *cmp, 0);
+            *dst = tmp + MULTIPLY(*dst, ~tmp);
+            ++dst;
+            ++cmp;
+            t += inc;
         }
     }
 }

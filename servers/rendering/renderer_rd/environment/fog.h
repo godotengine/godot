@@ -257,25 +257,25 @@ public:
 
 	void fog_volume_instance_set_transform(RID p_fog_volume_instance, const Transform3D &p_transform) {
 		Fog::FogVolumeInstance *fvi = fog_volume_instance_owner.get_or_null(p_fog_volume_instance);
-		ERR_FAIL_COND(!fvi);
+		ERR_FAIL_NULL(fvi);
 		fvi->transform = p_transform;
 	}
 
 	void fog_volume_instance_set_active(RID p_fog_volume_instance, bool p_active) {
 		Fog::FogVolumeInstance *fvi = fog_volume_instance_owner.get_or_null(p_fog_volume_instance);
-		ERR_FAIL_COND(!fvi);
+		ERR_FAIL_NULL(fvi);
 		fvi->active = p_active;
 	}
 
 	RID fog_volume_instance_get_volume(RID p_fog_volume_instance) const {
 		Fog::FogVolumeInstance *fvi = fog_volume_instance_owner.get_or_null(p_fog_volume_instance);
-		ERR_FAIL_COND_V(!fvi, RID());
+		ERR_FAIL_NULL_V(fvi, RID());
 		return fvi->volume;
 	}
 
 	Vector3 fog_volume_instance_get_position(RID p_fog_volume_instance) const {
 		Fog::FogVolumeInstance *fvi = fog_volume_instance_owner.get_or_null(p_fog_volume_instance);
-		ERR_FAIL_COND_V(!fvi, Vector3());
+		ERR_FAIL_NULL_V(fvi, Vector3());
 		return fvi->transform.get_origin();
 	}
 

@@ -1082,14 +1082,16 @@ void ItemList::_notification(int p_what) {
 				first_visible_separator = lo;
 			}
 
-			// Draw visible separators.
-			for (int i = first_visible_separator; i < separators.size(); i++) {
-				if (separators[i] > clip.position.y + clip.size.y) {
-					break; // done
-				}
+			// If not in thumbnails mode, draw visible separators.
+			if (icon_mode != ICON_MODE_TOP) {
+				for (int i = first_visible_separator; i < separators.size(); i++) {
+					if (separators[i] > clip.position.y + clip.size.y) {
+						break; // done
+					}
 
-				const int y = base_ofs.y + separators[i];
-				draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+					const int y = base_ofs.y + separators[i];
+					draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+				}
 			}
 
 			// Do a binary search to find the first item whose rect reaches below clip.position.y.

@@ -78,6 +78,30 @@ struct SwShapeTask : SwTask
     bool cmpStroking = false;
     bool clipper = false;
 
+    /* We assume that if the stroke width is greater than 2,
+       the shape's outline beneath the stroke could be adequately covered by the stroke drawing.
+       Therefore, antialiasing is disabled under this condition.
+       Additionally, the stroke style should not be dashed. */
+    bool antialiasing(float strokeWidth)
+    {
+        return strokeWidth < 2.0f || rshape->stroke->dashCnt > 0 || rshape->stroke->strokeFirst;
+    }
+
+    float validStrokeWidth()
+    {
+        if (!rshape->stroke) return 0.0f;
+
+        auto width = rshape->stroke->width;
+        if (mathZero(width)) return 0.0f;
+
+        if (!rshape->stroke->fill && (MULTIPLY(rshape->stroke->color[3], opacity) == 0)) return 0.0f;
+        if (mathZero(rshape->stroke->trim.begin - rshape->stroke->trim.end)) return 0.0f;
+
+        if (transform) return (width * sqrt(transform->e11 * transform->e11 + transform->e12 * transform->e12));
+        else return width;
+    }
+
+
     bool clip(SwRleData* target) override
     {
         if (shape.fastTrack) rleClipRect(target, &bbox);
@@ -99,15 +123,9 @@ struct SwShapeTask : SwTask
     {
         if (opacity == 0 && !clipper) return;  //Invisible
 
-        uint8_t strokeAlpha = 0;
-        auto visibleStroke = false;
+        auto strokeWidth = validStrokeWidth();
         bool visibleFill = false;
         auto clipRegion = bbox;
-
-        if (HALF_STROKE(rshape->strokeWidth()) > 0) {
-            rshape->strokeColor(nullptr, nullptr, nullptr, &strokeAlpha);
-            visibleStroke = rshape->strokeFill() || (MULTIPLY(strokeAlpha, opacity) > 0);
-        }
 
         //This checks also for the case, if the invisible shape turned to visible by alpha.
         auto prepareShape = false;
@@ -119,22 +137,15 @@ struct SwShapeTask : SwTask
             rshape->fillColor(nullptr, nullptr, nullptr, &alpha);
             alpha = MULTIPLY(alpha, opacity);
             visibleFill = (alpha > 0 || rshape->fill);
-            if (visibleFill || visibleStroke || clipper) {
+            if (visibleFill || clipper) {
                 shapeReset(&shape);
                 if (!shapePrepare(&shape, rshape, transform, clipRegion, bbox, mpool, tid, clips.count > 0 ? true : false)) goto err;
             }
         }
-
         //Fill
         if (flags & (RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform | RenderUpdateFlag::Color)) {
             if (visibleFill || clipper) {
-                /* We assume that if stroke width is bigger than 2,
-                   shape outline below stroke could be full covered by stroke drawing.
-                   Thus it turns off antialising in that condition.
-                   Also, it shouldn't be dash style. */
-                auto antiAlias = strokeAlpha < 255 || rshape->strokeWidth() <= 2 || rshape->strokeDash(nullptr) > 0 || (rshape->stroke && rshape->stroke->strokeFirst);
-
-                if (!shapeGenRle(&shape, rshape, antiAlias)) goto err;
+                if (!shapeGenRle(&shape, rshape, antialiasing(strokeWidth))) goto err;
             }
             if (auto fill = rshape->fill) {
                 auto ctable = (flags & RenderUpdateFlag::Gradient) ? true : false;
@@ -144,10 +155,9 @@ struct SwShapeTask : SwTask
                 shapeDelFill(&shape);
             }
         }
-
         //Stroke
         if (flags & (RenderUpdateFlag::Stroke | RenderUpdateFlag::Transform)) {
-            if (visibleStroke) {
+            if (strokeWidth > 0.0f) {
                 shapeResetStroke(&shape, rshape, transform);
                 if (!shapeGenStrokeRle(&shape, rshape, transform, clipRegion, bbox, mpool, tid)) goto err;
 
@@ -640,8 +650,6 @@ Compositor* SwRenderer::target(const RenderRegion& region, ColorSpace cs)
     //Boundary Check
     if (x + w > sw) w = (sw - x);
     if (y + h > sh) h = (sh - y);
-
-    TVGLOG("SW_ENGINE", "Using intermediate composition [Region: %d %d %d %d]", x, y, w, h);
 
     cmp->compositor->recoverSfc = surface;
     cmp->compositor->recoverCmp = surface->compositor;

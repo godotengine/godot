@@ -71,7 +71,7 @@ public:
 
 	virtual void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND(!m);
+		ERR_FAIL_NULL(m);
 		m->surfaces.push_back(RS::SurfaceData());
 		RS::SurfaceData *s = &m->surfaces.write[m->surfaces.size() - 1];
 		s->format = p_surface.format;
@@ -99,7 +99,7 @@ public:
 
 	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!m, RS::SurfaceData());
+		ERR_FAIL_NULL_V(m, RS::SurfaceData());
 		ERR_FAIL_INDEX_V(p_surface, m->surfaces.size(), RS::SurfaceData());
 		RS::SurfaceData s = m->surfaces[p_surface];
 		return s;
@@ -107,7 +107,7 @@ public:
 
 	virtual int mesh_get_surface_count(RID p_mesh) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
+		ERR_FAIL_NULL_V(m, 0);
 		return m->surfaces.size();
 	}
 

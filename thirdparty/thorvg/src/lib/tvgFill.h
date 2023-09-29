@@ -86,4 +86,27 @@ struct Fill::Impl
     }
 };
 
+
+struct RadialGradient::Impl
+{
+    float cx = 0.0f, cy = 0.0f;
+    float fx = 0.0f, fy = 0.0f;
+    float r = 0.0f, fr = 0.0f;
+
+    Fill* duplicate();
+    Result radial(float cx, float cy, float r, float fx, float fy, float fr);
+};
+
+
+struct LinearGradient::Impl
+{
+    float x1 = 0.0f;
+    float y1 = 0.0f;
+    float x2 = 0.0f;
+    float y2 = 0.0f;
+
+    Fill* duplicate();
+};
+
+
 #endif  //_TVG_FILL_H_

@@ -177,12 +177,12 @@ void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const Ref<Anim
 }
 
 float AnimationNodeBlendSpace1D::get_blend_point_position(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, blend_points_used, 0);
+	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, 0);
 	return blend_points[p_point].position;
 }
 
 Ref<AnimationRootNode> AnimationNodeBlendSpace1D::get_blend_point_node(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, blend_points_used, Ref<AnimationRootNode>());
+	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, Ref<AnimationRootNode>());
 	return blend_points[p_point].node;
 }
 
@@ -272,14 +272,17 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 	}
 }
 
-double AnimationNodeBlendSpace1D::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
+double AnimationNodeBlendSpace1D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	if (blend_points_used == 0) {
 		return 0.0;
 	}
 
+	AnimationMixer::PlaybackInfo pi = p_playback_info;
+
 	if (blend_points_used == 1) {
 		// only one point available, just play that animation
-		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
+		pi.weight = 1.0;
+		return blend_node(blend_points[0].node, blend_points[0].name, pi, FILTER_IGNORE, true, p_test_only);
 	}
 
 	double blend_pos = get_parameter(blend_position);
@@ -341,10 +344,12 @@ double AnimationNodeBlendSpace1D::_process(double p_time, bool p_seek, bool p_is
 
 		for (int i = 0; i < blend_points_used; i++) {
 			if (i == point_lower || i == point_higher) {
-				double remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, weights[i], FILTER_IGNORE, true, p_test_only);
+				pi.weight = weights[i];
+				double remaining = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
 				max_time_remaining = MAX(max_time_remaining, remaining);
 			} else if (sync) {
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true, p_test_only);
+				pi.weight = 0;
+				blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
 			}
 		}
 	} else {
@@ -369,22 +374,28 @@ double AnimationNodeBlendSpace1D::_process(double p_time, bool p_seek, bool p_is
 					na_n->set_backward(na_c->is_backward());
 				}
 				//see how much animation remains
-				from = cur_length_internal - blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, false, p_is_external_seeking, 0.0, FILTER_IGNORE, true, p_test_only);
+				pi.seeked = false;
+				pi.weight = 0;
+				from = cur_length_internal - blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, p_test_only);
 			}
 
-			max_time_remaining = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
+			pi.time = from;
+			pi.seeked = true;
+			pi.weight = 1.0;
+			max_time_remaining = blend_node(blend_points[new_closest].node, blend_points[new_closest].name, pi, FILTER_IGNORE, true, p_test_only);
 			cur_length_internal = from + max_time_remaining;
-
 			cur_closest = new_closest;
-
 		} else {
-			max_time_remaining = blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
+			pi.weight = 1.0;
+			max_time_remaining = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, p_test_only);
 		}
 
 		if (sync) {
+			pi = p_playback_info;
+			pi.weight = 0;
 			for (int i = 0; i < blend_points_used; i++) {
 				if (i != cur_closest) {
-					blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_is_external_seeking, 0, FILTER_IGNORE, true, p_test_only);
+					blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
 				}
 			}
 		}

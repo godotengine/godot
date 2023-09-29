@@ -94,12 +94,16 @@ class GDScript : public Script {
 	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
-	HashSet<StringName> members; //members are just indices to the instantiated script.
-	HashMap<StringName, Variant> constants;
+	// Members are just indices to the instantiated script.
+	HashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
+	HashSet<StringName> members; // Only members of the current class.
+
+	// Only static variables of the current class.
 	HashMap<StringName, MemberInfo> static_variables_indices;
-	Vector<Variant> static_variables;
+	Vector<Variant> static_variables; // Static variable values.
+
+	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
-	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
@@ -195,6 +199,7 @@ public:
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
 	virtual bool is_valid() const override { return valid; }
+	virtual bool is_abstract() const override { return false; } // GDScript does not support abstract classes.
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -501,7 +506,9 @@ public:
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
-	virtual bool has_named_classes() const override;
+#ifndef DISABLE_DEPRECATED
+	virtual bool has_named_classes() const override { return false; }
+#endif
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }

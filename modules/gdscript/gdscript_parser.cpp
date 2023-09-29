@@ -52,11 +52,18 @@
 #include "editor/editor_settings.h"
 #endif
 
+// This function is used to determine that a type is "built-in" as opposed to native
+// and custom classes. So `Variant::NIL` and `Variant::OBJECT` are excluded:
+// `Variant::NIL` - `null` is literal, not a type.
+// `Variant::OBJECT` - `Object` should be treated as a class, not as a built-in type.
 static HashMap<StringName, Variant::Type> builtin_types;
 Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
-	if (builtin_types.is_empty()) {
-		for (int i = 1; i < Variant::VARIANT_MAX; i++) {
-			builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
+	if (unlikely(builtin_types.is_empty())) {
+		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+			Variant::Type type = (Variant::Type)i;
+			if (type != Variant::NIL && type != Variant::OBJECT) {
+				builtin_types[Variant::get_type_name(type)] = type;
+			}
 		}
 	}
 
@@ -170,7 +177,7 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 
 #ifdef DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
-	ERR_FAIL_COND(p_source == nullptr);
+	ERR_FAIL_NULL(p_source);
 	if (is_ignoring_warnings) {
 		return;
 	}
@@ -2035,7 +2042,37 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		push_error(R"(No pattern found for "match" branch.)");
 	}
 
-	if (!consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "match" patterns.)")) {
+	bool has_guard = false;
+	if (match(GDScriptTokenizer::Token::WHEN)) {
+		// Pattern guard.
+		// Create block for guard because it also needs to access the bound variables from patterns, and we don't want to add them to the outer scope.
+		branch->guard_body = alloc_node<SuiteNode>();
+		if (branch->patterns.size() > 0) {
+			for (const KeyValue<StringName, IdentifierNode *> &E : branch->patterns[0]->binds) {
+				SuiteNode::Local local(E.value, current_function);
+				local.type = SuiteNode::Local::PATTERN_BIND;
+				branch->guard_body->add_local(local);
+			}
+		}
+
+		SuiteNode *parent_block = current_suite;
+		branch->guard_body->parent_block = parent_block;
+		current_suite = branch->guard_body;
+
+		ExpressionNode *guard = parse_expression(false);
+		if (guard == nullptr) {
+			push_error(R"(Expected expression for pattern guard after "when".)");
+		} else {
+			branch->guard_body->statements.append(guard);
+		}
+		current_suite = parent_block;
+		complete_extents(branch->guard_body);
+
+		has_guard = true;
+		branch->has_wildcard = false; // If it has a guard, the wildcard might still not match.
+	}
+
+	if (!consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":"%s after "match" %s.)", has_guard ? "" : R"( or "when")", has_guard ? "pattern guard" : "patterns"))) {
 		complete_extents(branch);
 		return nullptr;
 	}
@@ -3674,6 +3711,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PASS,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // RETURN,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // MATCH,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // WHEN,
 		// Keywords
 		{ nullptr,                                          &GDScriptParser::parse_cast,                 	PREC_CAST }, // AS,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ASSERT,

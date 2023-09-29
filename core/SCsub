@@ -89,6 +89,24 @@ if env["brotli"] and env["builtin_brotli"]:
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_brotli_sources)
 
+# Clipper2 Thirdparty source files used for polygon and polyline boolean operations.
+if env["builtin_clipper2"]:
+    thirdparty_clipper_dir = "#thirdparty/clipper2/"
+    thirdparty_clipper_sources = [
+        "src/clipper.engine.cpp",
+        "src/clipper.offset.cpp",
+        "src/clipper.rectclip.cpp",
+    ]
+    thirdparty_clipper_sources = [thirdparty_clipper_dir + file for file in thirdparty_clipper_sources]
+
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
+    env.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
+
+    env_thirdparty.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
+    env.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
+
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_clipper_sources)
+
 # Zlib library, can be unbundled
 if env["builtin_zlib"]:
     thirdparty_zlib_dir = "#thirdparty/zlib/"

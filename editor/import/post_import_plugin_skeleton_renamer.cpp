@@ -102,7 +102,7 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 						continue;
 					}
 					String track_path = String(anim->track_get_path(i).get_concatenated_names());
-					Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+					Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
 					if (node) {
 						Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
 						if (track_skeleton && track_skeleton == skeleton) {
@@ -219,8 +219,8 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 					int track_len = anim->get_track_count();
 					for (int i = 0; i < track_len; i++) {
 						String track_path = String(anim->track_get_path(i).get_concatenated_names());
-						Node *orig_node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
-						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+						Node *orig_node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
+						Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
 						while (node) {
 							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
 							if (track_skeleton && track_skeleton == skeleton) {

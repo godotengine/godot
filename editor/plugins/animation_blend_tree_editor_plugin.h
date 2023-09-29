@@ -127,7 +127,6 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 
 	void _update_editor_settings();
-	void _update_theme();
 
 	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;

@@ -1243,7 +1243,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	snap_show_grid = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "show_grid", false);
 
 	button_uv = memnew(Button);
-	button_uv->set_flat(true);
+	button_uv->set_theme_type_variation("FlatButton");
 	add_child(button_uv);
 	button_uv->set_tooltip_text(TTR("Open Polygon 2D UV editor."));
 	button_uv->connect("pressed", callable_mp(this, &Polygon2DEditor::_menu_option).bind(MODE_EDIT_UV));
@@ -1294,7 +1294,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_main_vb->add_child(uv_mode_hb);
 	for (int i = 0; i < UV_MODE_MAX; i++) {
 		uv_button[i] = memnew(Button);
-		uv_button[i]->set_flat(true);
+		uv_button[i]->set_theme_type_variation("FlatButton");
 		uv_button[i]->set_toggle_mode(true);
 		uv_mode_hb->add_child(uv_button[i]);
 		uv_button[i]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_mode).bind(i));
@@ -1359,6 +1359,8 @@ Polygon2DEditor::Polygon2DEditor() {
 
 	uv_menu = memnew(MenuButton);
 	uv_mode_hb->add_child(uv_menu);
+	uv_menu->set_flat(false);
+	uv_menu->set_theme_type_variation("FlatMenuButton");
 	uv_menu->set_text(TTR("Edit"));
 	uv_menu->get_popup()->add_item(TTR("Copy Polygon to UV"), UVEDIT_POLYGON_TO_UV);
 	uv_menu->get_popup()->add_item(TTR("Copy UV to Polygon"), UVEDIT_UV_TO_POLYGON);
@@ -1371,7 +1373,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_mode_hb->add_child(memnew(VSeparator));
 
 	b_snap_enable = memnew(Button);
-	b_snap_enable->set_flat(true);
+	b_snap_enable->set_theme_type_variation("FlatButton");
 	uv_mode_hb->add_child(b_snap_enable);
 	b_snap_enable->set_text(TTR("Snap"));
 	b_snap_enable->set_focus_mode(FOCUS_NONE);
@@ -1381,7 +1383,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_enable->connect("toggled", callable_mp(this, &Polygon2DEditor::_set_use_snap));
 
 	b_snap_grid = memnew(Button);
-	b_snap_grid->set_flat(true);
+	b_snap_grid->set_theme_type_variation("FlatButton");
 	uv_mode_hb->add_child(b_snap_grid);
 	b_snap_grid->set_text(TTR("Grid"));
 	b_snap_grid->set_focus_mode(FOCUS_NONE);

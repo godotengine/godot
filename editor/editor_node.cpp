@@ -31,6 +31,7 @@
 #include "editor_node.h"
 
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
@@ -435,6 +436,11 @@ void EditorNode::_update_from_settings() {
 #endif // DEBUG_ENABLED
 }
 
+void EditorNode::_gdextensions_reloaded() {
+	// In case the developer is inspecting an object that will be changed by the reload.
+	InspectorDock::get_inspector_singleton()->update_tree();
+}
+
 void EditorNode::_select_default_main_screen_plugin() {
 	if (EDITOR_3D < main_editor_buttons.size() && main_editor_buttons[EDITOR_3D]->is_visible()) {
 		// If the 3D editor is enabled, use this as the default.
@@ -714,6 +720,9 @@ void EditorNode::_notification(int p_what) {
 
 			EditorFileSystem::get_singleton()->scan_changes();
 			_scan_external_changes();
+
+			GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
+			callable_mp(gdextension_manager, &GDExtensionManager::reload_extensions).call_deferred();
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
@@ -1692,16 +1701,19 @@ int EditorNode::_save_external_resources() {
 	return saved;
 }
 
-static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup>> *r_anim_backups) {
+static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> *r_anim_backups) {
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(p_node->get_child(i));
-		if (player && player->is_reset_on_save_enabled() && player->can_apply_reset()) {
-			Ref<AnimatedValuesBackup> old_values = player->apply_reset();
-			if (old_values.is_valid()) {
-				r_anim_backups->push_back(old_values);
+		AnimationMixer *mixer = Object::cast_to<AnimationMixer>(p_node->get_child(i));
+		if (mixer && mixer->is_reset_on_save_enabled() && mixer->can_apply_reset()) {
+			Ref<AnimatedValuesBackup> backup = mixer->apply_reset();
+			if (backup.is_valid()) {
+				Pair<AnimationMixer *, Ref<AnimatedValuesBackup>> pair;
+				pair.first = mixer;
+				pair.second = backup;
+				r_anim_backups->push_back(pair);
 			}
 		}
-		_reset_animation_players(p_node->get_child(i), r_anim_backups);
+		_reset_animation_mixers(p_node->get_child(i), r_anim_backups);
 	}
 }
 
@@ -1721,8 +1733,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
 
 	editor_data.apply_changes_in_editors();
-	List<Ref<AnimatedValuesBackup>> anim_backups;
-	_reset_animation_players(scene, &anim_backups);
+	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
+	_reset_animation_mixers(scene, &anim_backups);
 	save_default_environment();
 
 	_save_editor_states(p_file, idx);
@@ -1764,8 +1776,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	_save_external_resources();
 	editor_data.save_editor_external_data();
 
-	for (Ref<AnimatedValuesBackup> &E : anim_backups) {
-		E->restore();
+	for (Pair<AnimationMixer *, Ref<AnimatedValuesBackup>> &E : anim_backups) {
+		E.first->restore(E.second);
 	}
 
 	if (err == OK) {
@@ -3269,7 +3281,7 @@ void EditorNode::remove_extension_editor_plugin(const StringName &p_class_name) 
 
 	EditorPlugin *plugin = singleton->editor_data.get_extension_editor_plugin(p_class_name);
 	remove_editor_plugin(plugin);
-	memfree(plugin);
+	memdelete(plugin);
 	singleton->editor_data.remove_extension_editor_plugin(p_class_name);
 }
 
@@ -5954,6 +5966,7 @@ void EditorNode::_dropped_files(const Vector<String> &p_files) {
 
 void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, String to_path) {
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND(dir.is_null());
 
 	for (int i = 0; i < p_files.size(); i++) {
 		String from = p_files[i];
@@ -5963,6 +5976,8 @@ void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, Str
 			Vector<String> sub_files;
 
 			Ref<DirAccess> sub_dir = DirAccess::open(from);
+			ERR_FAIL_COND(sub_dir.is_null());
+
 			sub_dir->list_dir_begin();
 
 			String next_file = sub_dir->get_next();
@@ -6710,6 +6725,7 @@ EditorNode::EditorNode() {
 	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
+	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// Load settings.

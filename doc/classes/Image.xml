@@ -619,16 +619,16 @@
 			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 32-bit floating-point values.
 		</constant>
 		<constant name="FORMAT_RH" value="12" enum="Format">
-			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_R16F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGH" value="13" enum="Format">
-			OpenGL texture format [code]GL_RG32F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RG16F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBH" value="14" enum="Format">
-			OpenGL texture format [code]GL_RGB32F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RGB16F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBAH" value="15" enum="Format">
-			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RGBA16F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBE9995" value="16" enum="Format">
 			A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single 5-bit exponent.

@@ -842,7 +842,8 @@ TileSetEditor::TileSetEditor() {
 	split_container->add_child(split_container_left_side);
 
 	source_sort_button = memnew(MenuButton);
-	source_sort_button->set_flat(true);
+	source_sort_button->set_flat(false);
+	source_sort_button->set_theme_type_variation("FlatButton");
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
@@ -871,20 +872,22 @@ TileSetEditor::TileSetEditor() {
 	split_container_left_side->add_child(sources_bottom_actions);
 
 	sources_delete_button = memnew(Button);
-	sources_delete_button->set_flat(true);
+	sources_delete_button->set_theme_type_variation("FlatButton");
 	sources_delete_button->set_disabled(true);
 	sources_delete_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_delete_pressed));
 	sources_bottom_actions->add_child(sources_delete_button);
 
 	sources_add_button = memnew(MenuButton);
-	sources_add_button->set_flat(true);
+	sources_add_button->set_flat(false);
+	sources_add_button->set_theme_type_variation("FlatButton");
 	sources_add_button->get_popup()->add_item(TTR("Atlas"));
 	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
 	sources_add_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
 	sources_advanced_menu_button = memnew(MenuButton);
-	sources_advanced_menu_button->set_flat(true);
+	sources_advanced_menu_button->set_flat(false);
+	sources_advanced_menu_button->set_theme_type_variation("FlatButton");
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
 	sources_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));

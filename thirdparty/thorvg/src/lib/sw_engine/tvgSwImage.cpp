@@ -93,7 +93,7 @@ static bool _genOutline(SwImage* image, const RenderMesh* mesh, const Matrix* tr
         outline->types.push(SW_CURVE_TYPE_POINT);
     }
 
-    outline->pts.push(outline->pts.data[0]);
+    outline->pts.push(outline->pts[0]);
     outline->types.push(SW_CURVE_TYPE_POINT);
     outline->cntrs.push(outline->pts.count - 1);
     outline->closed.push(true);

@@ -38,17 +38,29 @@
 #include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
 
+class GDExtensionMethodBind;
+
 class GDExtension : public Resource {
 	GDCLASS(GDExtension, Resource)
+
+	friend class GDExtensionManager;
 
 	void *library = nullptr; // pointer if valid,
 	String library_path;
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	String temp_lib_path;
 #endif
+	bool reloadable = false;
 
 	struct Extension {
 		ObjectGDExtension gdextension;
+
+#ifdef TOOLS_ENABLED
+		bool is_reloading = false;
+		HashMap<StringName, GDExtensionMethodBind *> methods;
+		HashSet<ObjectID> instances;
+		HashMap<ObjectID, List<Pair<String, Variant>>> instance_state;
+#endif
 	};
 
 	HashMap<StringName, Extension> extension_classes;
@@ -77,6 +89,23 @@ class GDExtension : public Resource {
 	GDExtensionInitialization initialization;
 	int32_t level_initialized = -1;
 
+#ifdef TOOLS_ENABLED
+	uint64_t last_modified_time = 0;
+	bool is_reloading = false;
+	Vector<GDExtensionMethodBind *> invalid_methods;
+	Vector<ObjectID> instance_bindings;
+
+	static void _track_instance(void *p_user_data, void *p_instance);
+	static void _untrack_instance(void *p_user_data, void *p_instance);
+
+	void _clear_extension(Extension *p_extension);
+
+	// Only called by GDExtensionManager during the reload process.
+	void prepare_reload();
+	void finish_reload();
+	void clear_instance_bindings();
+#endif
+
 protected:
 	static void _bind_methods();
 
@@ -103,6 +132,19 @@ public:
 
 	bool is_library_open() const;
 
+#ifdef TOOLS_ENABLED
+	bool is_reloadable() const { return reloadable; }
+	void set_reloadable(bool p_reloadable) { reloadable = p_reloadable; }
+
+	bool has_library_changed() const;
+	void update_last_modified_time(uint64_t p_last_modified_time) {
+		last_modified_time = MAX(last_modified_time, p_last_modified_time);
+	}
+
+	void track_instance_binding(Object *p_object);
+	void untrack_instance_binding(Object *p_object);
+#endif
+
 	InitializationLevel get_minimum_library_initialization_level() const;
 	void initialize_library(InitializationLevel p_level);
 	void deinitialize_library(InitializationLevel p_level);
@@ -119,6 +161,8 @@ VARIANT_ENUM_CAST(GDExtension::InitializationLevel)
 
 class GDExtensionResourceLoader : public ResourceFormatLoader {
 public:
+	static Error load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension);
+
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;

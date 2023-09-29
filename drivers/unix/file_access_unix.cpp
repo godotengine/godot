@@ -39,18 +39,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#if defined(UNIX_ENABLED)
 #include <unistd.h>
-#endif
-
-#ifdef MSVC
-#define S_ISREG(m) ((m)&_S_IFREG)
-#include <io.h>
-#endif
-#ifndef S_ISREG
-#define S_ISREG(m) ((m)&S_IFREG)
-#endif
 
 void FileAccessUnix::check_errors() const {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
@@ -279,16 +268,10 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 		return false;
 	}
 
-#ifdef UNIX_ENABLED
 	// See if we have access to the file
 	if (access(filename.utf8().get_data(), F_OK)) {
 		return false;
 	}
-#else
-	if (_access(filename.utf8().get_data(), 4) == -1) {
-		return false;
-	}
-#endif
 
 	// See if this is a regular file
 	switch (st.st_mode & S_IFMT) {

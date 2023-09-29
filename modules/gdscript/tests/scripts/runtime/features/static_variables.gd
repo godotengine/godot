@@ -44,6 +44,7 @@ func test():
 
 	@warning_ignore("unsafe_method_access")
 	var path = get_script().get_path().get_base_dir()
+	@warning_ignore("unsafe_call_argument")
 	var other = load(path + "/static_variables_load.gd")
 
 	prints("load.perm:", other.perm)

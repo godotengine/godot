@@ -1619,6 +1619,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_thumbnail_result"), &EditorFileDialog::_thumbnail_result);
 	ClassDB::bind_method(D_METHOD("set_disable_overwrite_warning", "disable"), &EditorFileDialog::set_disable_overwrite_warning);
 	ClassDB::bind_method(D_METHOD("is_overwrite_warning_disabled"), &EditorFileDialog::is_overwrite_warning_disabled);
+	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &EditorFileDialog::invalidate);
 
@@ -1712,6 +1713,25 @@ bool EditorFileDialog::are_previews_enabled() {
 	return previews_enabled;
 }
 
+void EditorFileDialog::add_side_menu(Control *p_menu, const String &p_title) {
+	// HSplitContainer has 3 children at maximum capacity, 1 of them is the SplitContainerDragger.
+	ERR_FAIL_COND_MSG(body_hsplit->get_child_count() > 2, "EditorFileDialog: Only one side menu can be added.");
+	// Everything for the side menu goes inside of a VBoxContainer.
+	VBoxContainer *side_vbox = memnew(VBoxContainer);
+	side_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	side_vbox->set_stretch_ratio(0.5);
+	body_hsplit->add_child(side_vbox);
+	// Add a Label to the VBoxContainer.
+	if (!p_title.is_empty()) {
+		Label *title_label = memnew(Label(p_title));
+		title_label->set_theme_type_variation("HeaderSmall");
+		side_vbox->add_child(title_label);
+	}
+	// Add the given menu to the VBoxContainer.
+	p_menu->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	side_vbox->add_child(p_menu);
+}
+
 EditorFileDialog::EditorFileDialog() {
 	show_hidden_files = default_show_hidden_files;
 	display_mode = default_display_mode;
@@ -1739,15 +1759,16 @@ EditorFileDialog::EditorFileDialog() {
 	}
 
 	HBoxContainer *pathhb = memnew(HBoxContainer);
+	vbc->add_child(pathhb);
 
 	dir_prev = memnew(Button);
-	dir_prev->set_flat(true);
+	dir_prev->set_theme_type_variation("FlatButton");
 	dir_prev->set_tooltip_text(TTR("Go to previous folder."));
 	dir_next = memnew(Button);
-	dir_next->set_flat(true);
+	dir_next->set_theme_type_variation("FlatButton");
 	dir_next->set_tooltip_text(TTR("Go to next folder."));
 	dir_up = memnew(Button);
-	dir_up->set_flat(true);
+	dir_up->set_theme_type_variation("FlatButton");
 	dir_up->set_tooltip_text(TTR("Go to parent folder."));
 
 	pathhb->add_child(dir_prev);
@@ -1771,20 +1792,20 @@ EditorFileDialog::EditorFileDialog() {
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	refresh = memnew(Button);
-	refresh->set_flat(true);
+	refresh->set_theme_type_variation("FlatButton");
 	refresh->set_tooltip_text(TTR("Refresh files."));
 	refresh->connect("pressed", callable_mp(this, &EditorFileDialog::update_file_list));
 	pathhb->add_child(refresh);
 
 	favorite = memnew(Button);
-	favorite->set_flat(true);
+	favorite->set_theme_type_variation("FlatButton");
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip_text(TTR("(Un)favorite current folder."));
 	favorite->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_pressed));
 	pathhb->add_child(favorite);
 
 	show_hidden = memnew(Button);
-	show_hidden->set_flat(true);
+	show_hidden->set_theme_type_variation("FlatButton");
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(TTR("Toggle the visibility of hidden files."));
@@ -1797,7 +1818,7 @@ EditorFileDialog::EditorFileDialog() {
 	view_mode_group.instantiate();
 
 	mode_thumbnails = memnew(Button);
-	mode_thumbnails->set_flat(true);
+	mode_thumbnails->set_theme_type_variation("FlatButton");
 	mode_thumbnails->connect("pressed", callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
@@ -1806,7 +1827,7 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(mode_thumbnails);
 
 	mode_list = memnew(Button);
-	mode_list->set_flat(true);
+	mode_list->set_theme_type_variation("FlatButton");
 	mode_list->connect("pressed", callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
@@ -1826,11 +1847,13 @@ EditorFileDialog::EditorFileDialog() {
 	makedir->connect("pressed", callable_mp(this, &EditorFileDialog::_make_dir));
 	pathhb->add_child(makedir);
 
-	list_hb = memnew(HSplitContainer);
+	body_hsplit = memnew(HSplitContainer);
+	body_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->add_child(body_hsplit);
 
-	vbc->add_child(pathhb);
-	vbc->add_child(list_hb);
-	list_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	list_hb = memnew(HSplitContainer);
+	list_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	body_hsplit->add_child(list_hb);
 
 	VSplitContainer *vsc = memnew(VSplitContainer);
 	list_hb->add_child(vsc);
@@ -1848,11 +1871,11 @@ EditorFileDialog::EditorFileDialog() {
 
 	fav_hb->add_spacer();
 	fav_up = memnew(Button);
-	fav_up->set_flat(true);
+	fav_up->set_theme_type_variation("FlatButton");
 	fav_hb->add_child(fav_up);
 	fav_up->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_move_up));
 	fav_down = memnew(Button);
-	fav_down->set_flat(true);
+	fav_down->set_theme_type_variation("FlatButton");
 	fav_hb->add_child(fav_down);
 	fav_down->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_move_down));
 

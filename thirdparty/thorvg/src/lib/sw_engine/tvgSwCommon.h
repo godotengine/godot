@@ -26,6 +26,8 @@
 #include "tvgCommon.h"
 #include "tvgRender.h"
 
+#include <algorithm>
+
 #if 0
 #include <sys/time.h>
 static double timeStamp()
@@ -139,10 +141,11 @@ struct SwFill
     };
 
     struct SwRadial {
-        float a11, a12, shiftX;
-        float a21, a22, shiftY;
-        float detSecDeriv;
-        float a;
+        float a11, a12, a13;
+        float a21, a22, a23;
+        float fx, fy, fr;
+        float dx, dy, dr;
+        float invA, a;
     };
 
     union {
@@ -194,14 +197,14 @@ struct SwStroke
 
 struct SwDashStroke
 {
-    SwOutline* outline;
-    float curLen;
-    int32_t curIdx;
-    Point ptStart;
-    Point ptCur;
-    float* pattern;
-    uint32_t cnt;
-    bool curOpGap;
+    SwOutline* outline = nullptr;
+    float curLen = 0;
+    int32_t curIdx = 0;
+    Point ptStart = {0, 0};
+    Point ptCur = {0, 0};
+    float* pattern = nullptr;
+    uint32_t cnt = 0;
+    bool curOpGap = false;
 };
 
 struct SwShape
@@ -235,6 +238,7 @@ struct SwImage
     bool         scaled = false;  //draw scaled image
 };
 
+typedef uint8_t(*SwMask)(uint8_t s, uint8_t d, uint8_t a);                  //src, dst, alpha
 typedef uint32_t(*SwBlender)(uint32_t s, uint32_t d, uint8_t a);            //src, dst, alpha
 typedef uint32_t(*SwJoin)(uint8_t r, uint8_t g, uint8_t b, uint8_t a);      //color channel join
 typedef uint8_t(*SwAlpha)(uint8_t*);                                        //blending alpha
@@ -295,7 +299,7 @@ static inline uint32_t INTERPOLATE(uint32_t s, uint32_t d, uint8_t a)
 
 static inline uint8_t INTERPOLATE8(uint8_t s, uint8_t d, uint8_t a)
 {
-    return ((s * a + 0xff) >> 8) + ((d * ~a + 0xff) >> 8);
+    return (((s) * (a) + 0xff) >> 8) + (((d) * ~(a) + 0xff) >> 8);
 }
 
 static inline SwCoord HALF_STROKE(float width)
@@ -363,18 +367,18 @@ static inline uint32_t opBlendDifference(uint32_t s, uint32_t d, TVG_UNUSED uint
 static inline uint32_t opBlendExclusion(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     //A + B - 2AB
-    auto c1 = min(255, C1(s) + C1(d) - min(255, (C1(s) * C1(d)) << 1));
-    auto c2 = min(255, C2(s) + C2(d) - min(255, (C2(s) * C2(d)) << 1));
-    auto c3 = min(255, C3(s) + C3(d) - min(255, (C3(s) * C3(d)) << 1));
+    auto c1 = std::min(255, C1(s) + C1(d) - std::min(255, (C1(s) * C1(d)) << 1));
+    auto c2 = std::min(255, C2(s) + C2(d) - std::min(255, (C2(s) * C2(d)) << 1));
+    auto c3 = std::min(255, C3(s) + C3(d) - std::min(255, (C3(s) * C3(d)) << 1));
     return JOIN(255, c1, c2, c3);
 }
 
 static inline uint32_t opBlendAdd(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     // s + d
-    auto c1 = min(C1(s) + C1(d), 255);
-    auto c2 = min(C2(s) + C2(d), 255);
-    auto c3 = min(C3(s) + C3(d), 255);
+    auto c1 = std::min(C1(s) + C1(d), 255);
+    auto c2 = std::min(C2(s) + C2(d), 255);
+    auto c3 = std::min(C3(s) + C3(d), 255);
     return JOIN(255, c1, c2, c3);
 }
 
@@ -402,27 +406,27 @@ static inline uint32_t opBlendOverlay(uint32_t s, uint32_t d, TVG_UNUSED uint8_t
 {
     // if (2 * d < da) => 2 * s * d,
     // else => 1 - 2 * (1 - s) * (1 - d)
-    auto c1 = (C1(d) < 128) ? min(255, 2 * MULTIPLY(C1(s), C1(d))) : (255 - min(255, 2 * MULTIPLY(255 - C1(s), 255 - C1(d))));
-    auto c2 = (C2(d) < 128) ? min(255, 2 * MULTIPLY(C2(s), C2(d))) : (255 - min(255, 2 * MULTIPLY(255 - C2(s), 255 - C2(d))));
-    auto c3 = (C3(d) < 128) ? min(255, 2 * MULTIPLY(C3(s), C3(d))) : (255 - min(255, 2 * MULTIPLY(255 - C3(s), 255 - C3(d))));
+    auto c1 = (C1(d) < 128) ? std::min(255, 2 * MULTIPLY(C1(s), C1(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C1(s), 255 - C1(d))));
+    auto c2 = (C2(d) < 128) ? std::min(255, 2 * MULTIPLY(C2(s), C2(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C2(s), 255 - C2(d))));
+    auto c3 = (C3(d) < 128) ? std::min(255, 2 * MULTIPLY(C3(s), C3(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C3(s), 255 - C3(d))));
     return JOIN(255, c1, c2, c3);
 }
 
 static inline uint32_t opBlendDarken(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     // min(s, d)
-    auto c1 = min(C1(s), C1(d));
-    auto c2 = min(C2(s), C2(d));
-    auto c3 = min(C3(s), C3(d));
+    auto c1 = std::min(C1(s), C1(d));
+    auto c2 = std::min(C2(s), C2(d));
+    auto c3 = std::min(C3(s), C3(d));
     return JOIN(255, c1, c2, c3);
 }
 
 static inline uint32_t opBlendLighten(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     // max(s, d)
-    auto c1 = max(C1(s), C1(d));
-    auto c2 = max(C2(s), C2(d));
-    auto c3 = max(C3(s), C3(d));
+    auto c1 = std::max(C1(s), C1(d));
+    auto c2 = std::max(C2(s), C2(d));
+    auto c3 = std::max(C3(s), C3(d));
     return JOIN(255, c1, c2, c3);
 }
 
@@ -448,61 +452,21 @@ static inline uint32_t opBlendColorBurn(uint32_t s, uint32_t d, TVG_UNUSED uint8
 
 static inline uint32_t opBlendHardLight(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
-    auto c1 = (C1(s) < 128) ? min(255, 2 * MULTIPLY(C1(s), C1(d))) : (255 - min(255, 2 * MULTIPLY(255 - C1(s), 255 - C1(d))));
-    auto c2 = (C2(s) < 128) ? min(255, 2 * MULTIPLY(C2(s), C2(d))) : (255 - min(255, 2 * MULTIPLY(255 - C2(s), 255 - C2(d))));
-    auto c3 = (C3(s) < 128) ? min(255, 2 * MULTIPLY(C3(s), C3(d))) : (255 - min(255, 2 * MULTIPLY(255 - C3(s), 255 - C3(d))));
+    auto c1 = (C1(s) < 128) ? std::min(255, 2 * MULTIPLY(C1(s), C1(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C1(s), 255 - C1(d))));
+    auto c2 = (C2(s) < 128) ? std::min(255, 2 * MULTIPLY(C2(s), C2(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C2(s), 255 - C2(d))));
+    auto c3 = (C3(s) < 128) ? std::min(255, 2 * MULTIPLY(C3(s), C3(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C3(s), 255 - C3(d))));
     return JOIN(255, c1, c2, c3);
 }
 
 static inline uint32_t opBlendSoftLight(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     //(255 - 2 * s) * (d * d) + (2 * s * b)
-    auto c1 = min(255, MULTIPLY(255 - min(255, 2 * C1(s)), MULTIPLY(C1(d), C1(d))) + 2 * MULTIPLY(C1(s), C1(d)));
-    auto c2 = min(255, MULTIPLY(255 - min(255, 2 * C2(s)), MULTIPLY(C2(d), C2(d))) + 2 * MULTIPLY(C2(s), C2(d)));
-    auto c3 = min(255, MULTIPLY(255 - min(255, 2 * C3(s)), MULTIPLY(C3(d), C3(d))) + 2 * MULTIPLY(C3(s), C3(d)));
+    auto c1 = std::min(255, MULTIPLY(255 - std::min(255, 2 * C1(s)), MULTIPLY(C1(d), C1(d))) + 2 * MULTIPLY(C1(s), C1(d)));
+    auto c2 = std::min(255, MULTIPLY(255 - std::min(255, 2 * C2(s)), MULTIPLY(C2(d), C2(d))) + 2 * MULTIPLY(C2(s), C2(d)));
+    auto c3 = std::min(255, MULTIPLY(255 - std::min(255, 2 * C3(s)), MULTIPLY(C3(d), C3(d))) + 2 * MULTIPLY(C3(s), C3(d)));
     return JOIN(255, c1, c2, c3);
 }
 
-static inline uint32_t opMaskAdd(uint32_t s, uint32_t d, uint8_t a)
-{
-    return opBlendNormal(s, d, a);
-}
-
-static inline uint32_t opMaskSubtract(uint32_t s, uint32_t d, uint8_t a)
-{
-    return ALPHA_BLEND(d, MULTIPLY(IA(s), a));
-}
-
-static inline uint32_t opMaskDifference(uint32_t s, uint32_t d, uint8_t a)
-{
-    auto t = ALPHA_BLEND(s, a);
-    return ALPHA_BLEND(t, IA(d)) + ALPHA_BLEND(d, IA(t));
-}
-
-static inline uint32_t opMaskIntersect(uint32_t s, uint32_t d, uint8_t a)
-{
-   return ALPHA_BLEND(d, MULTIPLY(IA(s), a));
-}
-
-static inline uint32_t opMaskPreAdd(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
-{
-    return opBlendPreNormal(s, d, a);
-}
-
-static inline uint32_t opMaskPreSubtract(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
-{
-    return ALPHA_BLEND(d, IA(s));
-}
-
-static inline uint32_t opMaskPreDifference(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
-{
-   return ALPHA_BLEND(s, IA(d)) + ALPHA_BLEND(d, IA(s));
-}
-
-static inline uint32_t opMaskPreIntersect(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
-{
-   return ALPHA_BLEND(d, MULTIPLY(a, IA(s)));
-}
 
 int64_t mathMultiply(int64_t a, int64_t b);
 int64_t mathDivide(int64_t a, int64_t b);
@@ -551,13 +515,19 @@ void imageFree(SwImage* image);
 bool fillGenColorTable(SwFill* fill, const Fill* fdata, const Matrix* transform, SwSurface* surface, uint8_t opacity, bool ctable);
 void fillReset(SwFill* fill);
 void fillFree(SwFill* fill);
+
 //OPTIMIZE_ME: Skip the function pointer access
+void fillLinear(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32_t len, SwMask maskOp, uint8_t opacity);                                   //composite masking ver.
+void fillLinear(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwMask maskOp, uint8_t opacity);                     //direct masking ver.
 void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, uint8_t a);                                         //blending ver.
 void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, SwBlender op2, uint8_t a);                          //blending + BlendingMethod(op2) ver.
-void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwAlpha alpha, uint8_t csize, uint8_t opacity);     //masking ver.
+void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwAlpha alpha, uint8_t csize, uint8_t opacity);     //matting ver.
+
+void fillRadial(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32_t len, SwMask op, uint8_t a);                                             //composite masking ver.
+void fillRadial(const SwFill* fill, uint8_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwMask op, uint8_t a) ;                              //direct masking ver.
 void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, uint8_t a);                                         //blending ver.
 void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlender op, SwBlender op2, uint8_t a);                          //blending + BlendingMethod(op2) ver.
-void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwAlpha alpha, uint8_t csize, uint8_t opacity);     //masking ver.
+void fillRadial(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, uint8_t* cmp, SwAlpha alpha, uint8_t csize, uint8_t opacity);     //matting ver.
 
 SwRleData* rleRender(SwRleData* rle, const SwOutline* outline, const SwBBox& renderRegion, bool antiAlias);
 SwRleData* rleRender(const SwBBox* bbox);

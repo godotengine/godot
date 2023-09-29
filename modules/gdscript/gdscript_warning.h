@@ -64,7 +64,8 @@ public:
 		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
 		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
 		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name.
-		UNTYPED_DECLARATION, // Variable/parameter/function has no static type, explicitly specified or inferred (`:=`).
+		UNTYPED_DECLARATION, // Variable/parameter/function has no static type, explicitly specified or implicitly inferred.
+		INFERRED_DECLARATION, // Variable/constant/parameter has an implicitly inferred static type.
 		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes).
 		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes).
 		UNSAFE_CAST, // Cast used in an unknown type.
@@ -113,6 +114,7 @@ public:
 		WARN, // CONSTANT_USED_AS_FUNCTION
 		WARN, // FUNCTION_USED_AS_PROPERTY
 		IGNORE, // UNTYPED_DECLARATION // Static typing is optional, we don't want to spam warnings.
+		IGNORE, // INFERRED_DECLARATION // Static typing is optional, we don't want to spam warnings.
 		IGNORE, // UNSAFE_PROPERTY_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_METHOD_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_CAST // Too common in untyped scenarios.

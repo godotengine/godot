@@ -670,7 +670,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 
 		// Update add menu items.
-		menu->clear();
+		menu->clear(false);
 		bool have_sub[FGRP_MAX];
 		for (int i = 0; i < FGRP_MAX; i++) {
 			menu_sub[i]->clear();
