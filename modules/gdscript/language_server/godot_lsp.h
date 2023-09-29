@@ -83,6 +83,18 @@ struct Position {
 	 */
 	int character = 0;
 
+	_FORCE_INLINE_ bool operator >= (const Position& other) const {
+		if (line > other.line) return true;
+		if (line == other.line && character >= other.character) return true;
+		return false;
+	}
+
+	_FORCE_INLINE_ bool operator <= (const Position& other) const {
+		if (line < other.line) return true;
+		if (line == other.line && character <= other.character) return true;
+		return false;
+	}
+
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		line = p_params["line"];
 		character = p_params["character"];
@@ -111,6 +123,10 @@ struct Range {
 	 * The range's end position.
 	 */
 	Position end;
+
+	_FORCE_INLINE_ bool is_within(const Range& other) const {
+		return start >= other.start && end <= other.end;
+	}
 
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		start.load(p_params["start"]);
