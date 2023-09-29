@@ -466,6 +466,13 @@ void Array::set_named(const StringName &p_member, const Variant &p_value) {
 	set(index, p_value);
 }
 
+Variant &Array::get_named(const StringName &p_member) {
+	CRASH_COND_MSG(!_p->is_struct(), "Array is not a struct"); // TODO: should this crash?
+	int32_t index = _p->find_member_index(p_member);
+	CRASH_COND_MSG(index < 0, vformat("member '%s' not found", p_member));
+	return operator[](index);
+}
+
 const Variant &Array::get_named(const StringName &p_member) const {
 	CRASH_COND_MSG(!_p->is_struct(), "Array is not a struct"); // TODO: should this crash?
 	int32_t index = _p->find_member_index(p_member);

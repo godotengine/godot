@@ -106,6 +106,29 @@ PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
 	return pi;
 }
 
+PropertyInfo::operator Array() const {
+	Struct<PropertyInfoLayout> a;
+	a[SNAME("name")] = name;
+	a[SNAME("class_name")] = class_name;
+	a[SNAME("type")] = type;
+	a[SNAME("hint")] = hint;
+	a[SNAME("hint_string")] = hint_string;
+	a[SNAME("usage")] = usage;
+	return a;
+}
+
+PropertyInfo PropertyInfo::from_struct(const Array &p_struct) {
+	Struct<PropertyInfoLayout> a = p_struct;
+	PropertyInfo pi;
+	pi.name = a[SNAME("name")];
+	pi.class_name = a[SNAME("class_name")];
+	pi.type = Variant::Type((uint32_t)a[SNAME("type")]);
+	pi.hint = PropertyHint((uint32_t)a[SNAME("hint")]);
+	pi.hint_string = a[SNAME("hint_string")];
+	pi.usage = a[SNAME("usage")];
+	return pi;
+}
+
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
 	TypedArray<Dictionary> va;
 	for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
@@ -1008,7 +1031,8 @@ TypedArray<Dictionary> Object::_get_property_list_bind() const {
 Struct<PropertyInfoLayout> Object::_get_property_struct(uint32_t p_index) const {
 	List<PropertyInfo> lpi;
 	get_property_list(&lpi);
-	return Struct<PropertyInfoLayout>((Variant)lpi[p_index]);
+	PropertyInfo pi = lpi[p_index];
+	return Struct<PropertyInfoLayout>(pi);
 }
 
 TypedArray<Dictionary> Object::_get_method_list_bind() const {

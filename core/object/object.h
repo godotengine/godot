@@ -150,7 +150,7 @@ enum PropertyUsageFlags {
 
 struct StructMember {
 	StringName name;
-	Variant::Type type; // TODO: should this be a union of type and struct_name?
+	Variant::Type type;
 	StringName class_name;
 	Variant default_value;
 
@@ -165,7 +165,6 @@ struct StructMember {
 #define STRUCT_MEMBER(m_name, m_type) StructMember(SNAME(m_name), m_type)
 #define STRUCT_CLASS_MEMBER(m_name, m_class) StructMember(SNAME(m_name), Variant::OBJECT, m_class)
 
-// TODO: is there a way to define this so that the member count doesn't have to be passed?
 #define STRUCT_LAYOUT(m_struct, m_name, ...)                                                 \
 	struct m_struct {                                                                        \
 		_FORCE_INLINE_ static const StringName get_class() {                                 \
@@ -206,6 +205,10 @@ struct PropertyInfo {
 	operator Dictionary() const;
 
 	static PropertyInfo from_dict(const Dictionary &p_dict);
+
+	operator Array() const;
+
+	static PropertyInfo from_struct(const Array &p_struct);
 
 	PropertyInfo() {}
 

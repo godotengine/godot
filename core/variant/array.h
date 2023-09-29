@@ -56,7 +56,9 @@ public:
 
 	void set(int p_idx, const Variant &p_value);
 	const Variant &get(int p_idx) const;
+
 	void set_named(const StringName &p_member, const Variant &p_value);
+	Variant &get_named(const StringName &p_member);
 	const Variant &get_named(const StringName &p_member) const; // TODO: should be & return?
 	const StringName get_member_name(int p_idx) const;
 	const int find_member(const StringName &p_member) const;

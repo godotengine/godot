@@ -33,6 +33,7 @@
 
 #include "core/variant/array.h"
 #include "core/variant/struct.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
 #include "tests/test_macros.h"
 #include "tests/test_tools.h"
@@ -44,23 +45,19 @@ TEST_CASE("[Struct] PropertyInfo") {
 	List<PropertyInfo> list;
 	my_node->get_property_list(&list);
 	PropertyInfo info = list[0];
-	print_line((Dictionary)info);
+	CHECK_EQ((((Variant)(Dictionary)info)).stringify(), "{ \"name\": \"Node\", \"class_name\": &\"\", \"type\": 0, \"hint\": 0, \"hint_string\": \"Node\", \"usage\": 128 }");
+	CHECK_EQ((((Variant)(Array)info)).stringify(), "[name: \"Node\", class_name: &\"\", type: 0, hint: 0, hint_string: \"Node\", usage: 128]");
 
 	Struct<PropertyInfoLayout> prop = my_node->_get_property_struct(0);
-	prop.set_named(SNAME("name"), info.name);
-	prop.set_named(SNAME("class_name"), info.class_name);
-	prop.set_named(SNAME("type"), info.type);
-	prop.set_named(SNAME("hint"), info.hint);
-	prop.set_named(SNAME("hint_string"), info.hint_string);
-	prop.set_named(SNAME("usage"), info.usage);
+	CHECK_EQ(((Variant)prop).stringify(), "[name: \"Node\", class_name: &\"\", type: 0, hint: 0, hint_string: \"Node\", usage: 128]");
 
 	SUBCASE("Equality") {
-		CHECK_EQ(info.name, String(prop.get_named(SNAME("name"))));
-		CHECK_EQ(info.class_name, StringName(prop.get_named(SNAME("class_name"))));
-		CHECK_EQ(info.type, (Variant::Type)(int)prop.get_named(SNAME("type")));
-		CHECK_EQ(info.hint, (PropertyHint)(int)prop.get_named(SNAME("hint")));
-		CHECK_EQ(info.hint_string, String(prop.get_named(SNAME("name"))));
-		CHECK_EQ(info.usage, (PropertyUsageFlags)(int)prop.get_named(SNAME("usage")));
+		CHECK_EQ(info.name, String(prop[SNAME("name")]));
+		CHECK_EQ(info.class_name, StringName(prop[SNAME("class_name")]));
+		CHECK_EQ(info.type, (Variant::Type)(int)prop[SNAME("type")]);
+		CHECK_EQ(info.hint, (PropertyHint)(int)prop[SNAME("hint")]);
+		CHECK_EQ(info.hint_string, String(prop[SNAME("name")]));
+		CHECK_EQ(info.usage, (PropertyUsageFlags)(int)prop[SNAME("usage")]);
 	}
 
 	SUBCASE("Duplication") {
@@ -68,9 +65,6 @@ TEST_CASE("[Struct] PropertyInfo") {
 		CHECK_EQ(var.get_type(), Variant::ARRAY);
 		Variant var_dup = prop.duplicate();
 		CHECK_EQ(var_dup.get_type(), Variant::ARRAY);
-
-		print_line(var);
-		print_line(var_dup);
 	}
 
 	SUBCASE("Type Validation") {
@@ -78,7 +72,7 @@ TEST_CASE("[Struct] PropertyInfo") {
 		CHECK(prop.is_same_typed((Variant)prop));
 		Variant var = prop;
 		Struct<PropertyInfoLayout> prop2 = var;
-		print_line(prop2);
+		CHECK_EQ(prop2, var);
 
 		CHECK_THROWS(prop.set_named(SNAME("name"), 4));
 		CHECK_NOTHROW(prop.set_named(SNAME("name"), "Node")); // TODO: not sure if these tests are working correctly
