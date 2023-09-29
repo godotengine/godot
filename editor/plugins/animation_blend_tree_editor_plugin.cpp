@@ -238,21 +238,16 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 			ProgressBar *pb = memnew(ProgressBar);
 
-			if (tree->has_node(tree->get_animation_player())) {
-				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
-				if (ap) {
-					List<StringName> anims;
-					ap->get_animation_list(&anims);
+			List<StringName> anims;
+			tree->get_animation_list(&anims);
 
-					for (const StringName &F : anims) {
-						mb->get_popup()->add_item(F);
-						options.push_back(F);
-					}
+			for (const StringName &F : anims) {
+				mb->get_popup()->add_item(F);
+				options.push_back(F);
+			}
 
-					if (ap->has_animation(anim->get_animation())) {
-						pb->set_max(ap->get_animation(anim->get_animation())->get_length());
-					}
-				}
+			if (tree->has_animation(anim->get_animation())) {
+				pb->set_max(tree->get_animation(anim->get_animation())->get_length());
 			}
 
 			pb->set_show_percentage(false);
@@ -625,21 +620,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 		return false;
 	}
 
-	NodePath player_path = tree->get_animation_player();
-
-	if (!tree->has_node(player_path)) {
-		EditorNode::get_singleton()->show_warning(TTR("No animation player set, so unable to retrieve track names."));
-		return false;
-	}
-
-	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(tree->get_node(player_path));
-	if (!player) {
-		EditorNode::get_singleton()->show_warning(TTR("Player path set is invalid, so unable to retrieve track names."));
-		return false;
-	}
-
-	Node *base = player->get_node(player->get_root());
-
+	Node *base = tree->get_node(tree->get_root_node());
 	if (!base) {
 		EditorNode::get_singleton()->show_warning(TTR("Animation player has no valid root node path, so unable to retrieve track names."));
 		return false;
@@ -651,10 +632,10 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 	HashMap<String, RBSet<String>> types;
 	{
 		List<StringName> animation_list;
-		player->get_animation_list(&animation_list);
+		tree->get_animation_list(&animation_list);
 
 		for (const StringName &E : animation_list) {
-			Ref<Animation> anim = player->get_animation(E);
+			Ref<Animation> anim = tree->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				String track_path = anim->track_get_path(i);
 				paths.insert(track_path);
@@ -885,23 +866,16 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 				graph->set_connection_activity(E.output_node, 0, E.input_node, E.input_index, activity);
 			}
 
-			AnimationPlayer *player = nullptr;
-			if (tree->has_node(tree->get_animation_player())) {
-				player = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
-			}
-
-			if (player) {
-				for (const KeyValue<StringName, ProgressBar *> &E : animations) {
-					Ref<AnimationNodeAnimation> an = blend_tree->get_node(E.key);
-					if (an.is_valid()) {
-						if (player->has_animation(an->get_animation())) {
-							Ref<Animation> anim = player->get_animation(an->get_animation());
-							if (anim.is_valid()) {
-								E.value->set_max(anim->get_length());
-								//StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
-								StringName time_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E.key) + "/time";
-								E.value->set_value(tree->get(time_path));
-							}
+			for (const KeyValue<StringName, ProgressBar *> &E : animations) {
+				Ref<AnimationNodeAnimation> an = blend_tree->get_node(E.key);
+				if (an.is_valid()) {
+					if (tree->has_animation(an->get_animation())) {
+						Ref<Animation> anim = tree->get_animation(an->get_animation());
+						if (anim.is_valid()) {
+							E.value->set_max(anim->get_length());
+							//StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
+							StringName time_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E.key) + "/time";
+							E.value->set_value(tree->get(time_path));
 						}
 					}
 				}

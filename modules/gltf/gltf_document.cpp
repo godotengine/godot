@@ -7347,6 +7347,12 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 }
 
 Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
+	// Generate the skeletons and skins (if any).
+	Error err = _create_skeletons(p_state);
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "GLTF: Failed to create skeletons.");
+	err = _create_skins(p_state);
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "GLTF: Failed to create skins.");
+	// Generate the node tree.
 	Node *single_root;
 	if (p_state->extensions_used.has("GODOT_single_root")) {
 		_generate_scene_node(p_state, 0, nullptr, nullptr);
@@ -7537,14 +7543,6 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 
 	/* DETERMINE SKELETONS */
 	err = _determine_skeletons(p_state);
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* CREATE SKELETONS */
-	err = _create_skeletons(p_state);
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* CREATE SKINS */
-	err = _create_skins(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* PARSE MESHES (we have enough info now) */
