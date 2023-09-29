@@ -24,7 +24,6 @@ func test():
 	print(StringName("hello"))
 	print(NodePath("hello/world"))
 	var node := Node.new()
-	@warning_ignore("unsafe_call_argument")
 	print(RID(node)) # TODO: Why is the constructor (or implicit cast) not documented?
 	print(node.get_name)
 	print(node.property_list_changed)
