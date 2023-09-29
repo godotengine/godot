@@ -2748,12 +2748,17 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss->wayland_thread);
 
 	if (p_ss->wl_pointer && p_ss->cursor_surface) {
+		// NOTE: Those values are valid by default and will hide the cursor when
+		// unchanged, which happens when both the current custom cursor and the
+		// current wl_cursor are `nullptr`.
 		struct wl_buffer *cursor_buffer = nullptr;
 		uint32_t hotspot_x = 0;
 		uint32_t hotspot_y = 0;
 		int scale = 1;
 
 		CustomCursor *custom_cursor = p_ss->wayland_thread->current_custom_cursor;
+		struct wl_cursor *wl_cursor = p_ss->wayland_thread->current_wl_cursor;
+
 		if (custom_cursor) {
 			cursor_buffer = custom_cursor->wl_buffer;
 			hotspot_x = custom_cursor->hotspot.x;
@@ -2762,13 +2767,10 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 			// We can't really reasonably scale custom cursors, so we'll let the
 			// compositor do it for us (badly).
 			scale = 1;
-		} else {
-			struct wl_cursor *wl_cursor = p_ss->wayland_thread->current_wl_cursor;
-			ERR_FAIL_NULL(wl_cursor);
+		} else if (wl_cursor) {
+			int frame_idx = wl_cursor_frame(wl_cursor, p_ss->cursor_time_ms);
 
-			int frame = wl_cursor_frame(wl_cursor, p_ss->cursor_time_ms);
-
-			struct wl_cursor_image *wl_cursor_image = wl_cursor->images[frame];
+			struct wl_cursor_image *wl_cursor_image = wl_cursor->images[frame_idx];
 
 			scale = p_ss->wayland_thread->cursor_scale;
 
