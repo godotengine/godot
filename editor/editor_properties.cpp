@@ -2929,6 +2929,14 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 		if (dropped_node->is_class(E) ||
 				EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, E)) {
 			return true;
+		} else {
+			Ref<Script> dropped_node_script = dropped_node->get_script();
+			while (dropped_node_script.is_valid()) {
+				if (dropped_node_script->get_path() == E) {
+					return true;
+				}
+				dropped_node_script = dropped_node_script->get_base_script();
+			}
 		}
 	}
 
