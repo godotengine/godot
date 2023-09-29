@@ -290,12 +290,6 @@ void EGLManager::window_make_current(DisplayServer::WindowID p_window_id) {
 }
 
 void EGLManager::set_use_vsync(bool p_use) {
-	// Force vsync in the editor for now, as a safety measure.
-	bool is_editor = Engine::get_singleton()->is_editor_hint();
-	if (is_editor) {
-		p_use = true;
-	}
-
 	// We need an active window to get a display to set the vsync.
 	if (!current_window) {
 		return;

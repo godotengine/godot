@@ -112,9 +112,9 @@ void ReplicationEditor::_pick_node_filter_input(const Ref<InputEvent> &p_ie) {
 
 void ReplicationEditor::_pick_node_selected(NodePath p_path) {
 	Node *root = current->get_node(current->get_root_path());
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 	Node *node = get_node(p_path);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 	NodePath path_to = root->get_path_to(node);
 	adding_node_path = path_to;
 	prop_selector->select_property_from_instance(node);
@@ -245,24 +245,29 @@ ReplicationEditor::ReplicationEditor() {
 	add_pick_button->connect("pressed", callable_mp(this, &ReplicationEditor::_pick_new_property));
 	add_pick_button->set_text(TTR("Add property to sync..."));
 	hb->add_child(add_pick_button);
+
 	VSeparator *vs = memnew(VSeparator);
 	vs->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
 	hb->add_child(vs);
 	hb->add_child(memnew(Label(TTR("Path:"))));
+
 	np_line_edit = memnew(LineEdit);
 	np_line_edit->set_placeholder(":property");
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	np_line_edit->connect("text_submitted", callable_mp(this, &ReplicationEditor::_np_text_submitted));
 	hb->add_child(np_line_edit);
+
 	add_from_path_button = memnew(Button);
 	add_from_path_button->connect("pressed", callable_mp(this, &ReplicationEditor::_add_pressed));
 	add_from_path_button->set_text(TTR("Add from path"));
 	hb->add_child(add_from_path_button);
+
 	vs = memnew(VSeparator);
 	vs->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
 	hb->add_child(vs);
+
 	pin = memnew(Button);
-	pin->set_flat(true);
+	pin->set_theme_type_variation("FlatButton");
 	pin->set_toggle_mode(true);
 	hb->add_child(pin);
 

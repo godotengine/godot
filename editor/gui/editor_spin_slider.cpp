@@ -203,7 +203,6 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !is_read_only()) {
 		double step = get_step();
-		double real_step = step;
 		if (step < 1) {
 			double divisor = 1.0 / get_step();
 
@@ -221,30 +220,22 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		Key code = k->get_keycode();
+
 		switch (code) {
-			case Key::UP: {
-				_evaluate_input_text();
-
-				double last_value = get_value();
-				set_value(last_value + step);
-				double new_value = get_value();
-
-				if (new_value < CLAMP(last_value + step, get_min(), get_max())) {
-					set_value(last_value + real_step);
-				}
-
-				value_input_dirty = true;
-				set_process_internal(true);
-			} break;
+			case Key::UP:
 			case Key::DOWN: {
 				_evaluate_input_text();
 
 				double last_value = get_value();
-				set_value(last_value - step);
+				if (code == Key::DOWN) {
+					step *= -1;
+				}
+				set_value(last_value + step);
 				double new_value = get_value();
 
-				if (new_value > CLAMP(last_value - step, get_min(), get_max())) {
-					set_value(last_value - real_step);
+				double clamp_value = CLAMP(new_value, get_min(), get_max());
+				if (new_value != clamp_value) {
+					set_value(clamp_value);
 				}
 
 				value_input_dirty = true;
@@ -534,17 +525,24 @@ String EditorSpinSlider::get_suffix() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
-	// Replace comma with dot to support it as decimal separator (GH-6028).
-	// This prevents using functions like `pow()`, but using functions
-	// in EditorSpinSlider is a barely known (and barely used) feature.
-	// Instead, we'd rather support German/French keyboard layouts out of the box.
-	const String text = TS->parse_number(value_input->get_text().replace(",", "."));
-
 	Ref<Expression> expr;
 	expr.instantiate();
+
+	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
+	String text = value_input->get_text().replace(",", ".");
+	text = text.replace(";", ",");
+	text = TS->parse_number(text);
+
 	Error err = expr->parse(text);
 	if (err != OK) {
-		return;
+		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
+		text = value_input->get_text();
+		text = TS->parse_number(text);
+
+		err = expr->parse(text);
+		if (err != OK) {
+			return;
+		}
 	}
 
 	Variant v = expr->execute(Array(), nullptr, false, true);

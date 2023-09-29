@@ -70,6 +70,7 @@
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_2d_dummy.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/navigation_server_3d_dummy.h"
 #include "servers/physics_server_2d.h"
@@ -224,6 +225,7 @@ static bool print_fps = false;
 #ifdef TOOLS_ENABLED
 static bool dump_gdextension_interface = false;
 static bool dump_extension_api = false;
+static bool include_docs_in_extension_api_dump = false;
 static bool validate_extension_api = false;
 static String validate_extension_api_file;
 #endif
@@ -339,8 +341,14 @@ void initialize_navigation_server() {
 	navigation_server_3d->init();
 
 	// Init 2D Navigation Server
-	navigation_server_2d = memnew(NavigationServer2D);
+	navigation_server_2d = NavigationServer2DManager::new_default_server();
+	if (!navigation_server_2d) {
+		WARN_PRINT_ONCE("No NavigationServer2D implementation has been registered! Falling back to a dummy implementation: navigation features will be unavailable.");
+		navigation_server_2d = memnew(NavigationServer2DDummy);
+	}
+
 	ERR_FAIL_NULL_MSG(navigation_server_2d, "Failed to initialize NavigationServer2D.");
+	navigation_server_2d->init();
 }
 
 void finalize_navigation_server() {
@@ -350,6 +358,7 @@ void finalize_navigation_server() {
 	navigation_server_3d = nullptr;
 
 	ERR_FAIL_NULL(navigation_server_2d);
+	navigation_server_2d->finish();
 	memdelete(navigation_server_2d);
 	navigation_server_2d = nullptr;
 }
@@ -513,7 +522,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --build-solutions                 Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 	OS::get_singleton()->print("  --dump-gdextension-interface      Generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.\n");
 	OS::get_singleton()->print("  --dump-extension-api              Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
-	OS::get_singleton()->print("  --validate-extension-api <path>   Validate an extension API file dumped (with the option above) from a previous version of the engine to ensure API compatibility. If incompatibilities or errors are detected, the return code will be non zero.\n");
+	OS::get_singleton()->print("  --dump-extension-api-with-docs    Generate JSON dump of the Godot API like the previous option, but including documentation.\n");
+	OS::get_singleton()->print("  --validate-extension-api <path>   Validate an extension API file dumped (with one of the two previous options) from a previous version of the engine to ensure API compatibility. If incompatibilities or errors are detected, the return code will be non zero.\n");
 	OS::get_singleton()->print("  --benchmark                       Benchmark the run time and print it to console.\n");
 	OS::get_singleton()->print("  --benchmark-file <path>           Benchmark the run time and save it to a given file in JSON format. The path should be absolute.\n");
 #ifdef TESTS_ENABLED
@@ -1018,13 +1028,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 		} else if (I->get() == "-f" || I->get() == "--fullscreen") { // force fullscreen
-
 			init_fullscreen = true;
+			window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
 		} else if (I->get() == "-m" || I->get() == "--maximized") { // force maximized window
-
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
-
 		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
 
 			init_windowed = true;
@@ -1245,6 +1253,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			cmdline_tool = true;
 			dump_extension_api = true;
 			print_line("Dumping Extension API");
+			// Hack. Not needed but otherwise we end up detecting that this should
+			// run the project instead of a cmdline tool.
+			// Needs full refactoring to fix properly.
+			main_args.push_back(I->get());
+		} else if (I->get() == "--dump-extension-api-with-docs") {
+			// Register as an editor instance to use low-end fallback if relevant.
+			editor = true;
+			cmdline_tool = true;
+			dump_extension_api = true;
+			include_docs_in_extension_api_dump = true;
+			print_line("Dumping Extension API including documentation");
 			// Hack. Not needed but otherwise we end up detecting that this should
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
@@ -1605,6 +1624,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
+		Engine::get_singleton()->set_extension_reloading_enabled(true);
 	}
 #endif
 
@@ -1636,7 +1656,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor) {
 		packed_data->set_disabled(true);
 		main_args.push_back("--editor");
-		if (!init_windowed) {
+		if (!init_windowed && !init_fullscreen) {
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 		}
@@ -1715,12 +1735,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		String default_driver = driver_hints.get_slice(",", 0);
 
 		// For now everything defaults to vulkan when available. This can change in future updates.
-		GLOBAL_DEF("rendering/rendering_device/driver", default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST("rendering/rendering_device/driver", default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 	}
 
 	{
@@ -1733,14 +1753,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		String default_driver = driver_hints.get_slice(",", 0);
 
-		GLOBAL_DEF("rendering/gl_compatibility/driver", default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
-
+		GLOBAL_DEF_RST("rendering/gl_compatibility/driver", default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/nvidia_disable_threaded_optimization", true);
 	}
 
@@ -2088,6 +2107,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo"), "1"); // "Mono,Stereo,Quad,Observer"
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"), "1");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/environment_blend_mode", PROPERTY_HINT_ENUM, "Opaque,Additive,Alpha"), "0");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/foveation_level", PROPERTY_HINT_ENUM, "Off,Low,Medium,High"), "0");
+	GLOBAL_DEF_BASIC("xr/openxr/foveation_dynamic", false);
 
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
@@ -2223,6 +2244,8 @@ Error Main::setup2() {
 		// Editor setting class is not available, load config directly.
 		if (!init_use_custom_screen && (editor || project_manager) && EditorPaths::get_singleton()->are_paths_valid()) {
 			Ref<DirAccess> dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
+			ERR_FAIL_COND_V(dir.is_null(), FAILED);
+
 			String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 			String config_file_path = EditorPaths::get_singleton()->get_config_dir().path_join(config_file_name);
 			if (dir->file_exists(config_file_name)) {
@@ -2911,7 +2934,7 @@ bool Main::start() {
 	}
 
 	if (dump_extension_api) {
-		GDExtensionAPIDump::generate_extension_json_file("extension_api.json");
+		GDExtensionAPIDump::generate_extension_json_file("extension_api.json", include_docs_in_extension_api_dump);
 	}
 
 	if (dump_gdextension_interface || dump_extension_api) {
@@ -3294,6 +3317,8 @@ bool Main::start() {
 
 						if (sep == -1) {
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							ERR_FAIL_COND_V(da.is_null(), false);
+
 							local_game_path = da->get_current_dir().path_join(local_game_path);
 						} else {
 							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
@@ -3488,6 +3513,9 @@ bool Main::iteration() {
 
 	// process all our active interfaces
 	XRServer::get_singleton()->_process();
+
+	NavigationServer2D::get_singleton()->sync();
+	NavigationServer3D::get_singleton()->sync();
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {

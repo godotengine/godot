@@ -67,8 +67,6 @@ void TParseContextBase::outputMessage(const TSourceLoc& loc, const char* szReaso
     }
 }
 
-#if !defined(GLSLANG_WEB) || defined(GLSLANG_WEB_DEVEL)
-
 void C_DECL TParseContextBase::error(const TSourceLoc& loc, const char* szReason, const char* szToken,
                                      const char* szExtraInfoFormat, ...)
 {
@@ -118,8 +116,6 @@ void C_DECL TParseContextBase::ppWarn(const TSourceLoc& loc, const char* szReaso
     va_end(args);
 }
 
-#endif
-
 //
 // Both test and if necessary, spit out an error, to see if the node is really
 // an l-value that can be operated on this way.
@@ -140,7 +136,6 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
     case EvqConst:          message = "can't modify a const";        break;
     case EvqConstReadOnly:  message = "can't modify a const";        break;
     case EvqUniform:        message = "can't modify a uniform";      break;
-#ifndef GLSLANG_WEB
     case EvqBuffer:
         if (node->getQualifier().isReadOnly())
             message = "can't modify a readonly buffer";
@@ -151,7 +146,6 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         if (language != EShLangIntersect)
             message = "cannot modify hitAttributeNV in this stage";
         break;
-#endif
 
     default:
         //
@@ -165,7 +159,6 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         case EbtVoid:
             message = "can't modify void";
             break;
-#ifndef GLSLANG_WEB
         case EbtAtomicUint:
             message = "can't modify an atomic_uint";
             break;
@@ -178,7 +171,6 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         case EbtHitObjectNV:
             message = "can't modify hitObjectNV";
             break;
-#endif
         default:
             break;
         }

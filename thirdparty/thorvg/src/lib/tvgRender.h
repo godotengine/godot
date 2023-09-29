@@ -137,10 +137,16 @@ struct RenderStroke
     Fill *fill = nullptr;
     float* dashPattern = nullptr;
     uint32_t dashCnt = 0;
+    float dashOffset = 0.0f;
     StrokeCap cap = StrokeCap::Square;
     StrokeJoin join = StrokeJoin::Bevel;
     float miterlimit = 4.0f;
     bool strokeFirst = false;
+
+    struct {
+        float begin = 0.0f;
+        float end = 1.0f;
+    } trim;
 
     ~RenderStroke()
     {
@@ -182,6 +188,14 @@ struct RenderShape
         return stroke->width;
     }
 
+    bool strokeTrim() const
+    {
+        if (!stroke) return false;
+        if (stroke->trim.begin == 0.0f && stroke->trim.end == 1.0f) return false;
+        if (stroke->trim.begin == 1.0f && stroke->trim.end == 0.0f) return false;
+        return true;
+    }
+
     bool strokeColor(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a) const
     {
         if (!stroke) return false;
@@ -200,10 +214,11 @@ struct RenderShape
         return stroke->fill;
     }
 
-    uint32_t strokeDash(const float** dashPattern) const
+    uint32_t strokeDash(const float** dashPattern, float* offset) const
     {
         if (!stroke) return 0;
         if (dashPattern) *dashPattern = stroke->dashPattern;
+        if (offset) *offset = stroke->dashOffset;
         return stroke->dashCnt;
     }
 
@@ -253,21 +268,22 @@ public:
     virtual bool endComposite(Compositor* cmp) = 0;
 };
 
-static inline bool MASK_OPERATION(CompositeMethod method)
+static inline bool MASK_REGION_MERGING(CompositeMethod method)
 {
     switch(method) {
         case CompositeMethod::AlphaMask:
         case CompositeMethod::InvAlphaMask:
         case CompositeMethod::LumaMask:
         case CompositeMethod::InvLumaMask:
-            return false;
-        case CompositeMethod::AddMask:
         case CompositeMethod::SubtractMask:
         case CompositeMethod::IntersectMask:
+            return false;
+        //these might expand the rendering region
+        case CompositeMethod::AddMask:
         case CompositeMethod::DifferenceMask:
             return true;
         default:
-            TVGERR("COMMON", "Unsupported Composite Size! = %d", (int)method);
+            TVGERR("RENDERER", "Unsupported Composite Method! = %d", (int)method);
             return false;
     }
 }
@@ -284,7 +300,7 @@ static inline uint8_t CHANNEL_SIZE(ColorSpace cs)
             return sizeof(uint8_t);
         case ColorSpace::Unsupported:
         default:
-            TVGERR("SW_ENGINE", "Unsupported Channel Size! = %d", (int)cs);
+            TVGERR("RENDERER", "Unsupported Channel Size! = %d", (int)cs);
             return 0;
     }
 }
@@ -294,16 +310,17 @@ static inline ColorSpace COMPOSITE_TO_COLORSPACE(RenderMethod& renderer, Composi
     switch(method) {
         case CompositeMethod::AlphaMask:
         case CompositeMethod::InvAlphaMask:
-            return ColorSpace::Grayscale8;
-        case CompositeMethod::LumaMask:
-        case CompositeMethod::InvLumaMask:
         case CompositeMethod::AddMask:
+        case CompositeMethod::DifferenceMask:
         case CompositeMethod::SubtractMask:
         case CompositeMethod::IntersectMask:
-        case CompositeMethod::DifferenceMask:
+            return ColorSpace::Grayscale8;
+        //TODO: Optimize Luma/InvLuma colorspace to Grayscale8
+        case CompositeMethod::LumaMask:
+        case CompositeMethod::InvLumaMask:
             return renderer.colorSpace();
         default:
-            TVGERR("COMMON", "Unsupported Composite Size! = %d", (int)method);
+            TVGERR("RENDERER", "Unsupported Composite Size! = %d", (int)method);
             return ColorSpace::Unsupported;
     }
 }

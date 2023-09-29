@@ -472,6 +472,10 @@
 		<member name="debug/gdscript/warnings/inference_on_variant" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a static inferred type uses a [Variant] as initial value, which makes the static type to also be Variant.
 		</member>
+		<member name="debug/gdscript/warnings/inferred_declaration" type="int" setter="" getter="" default="0">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable, constant, or parameter has an implicitly inferred static type.
+			[b]Note:[/b] This warning is recommended [i]in addition[/i] to [member debug/gdscript/warnings/untyped_declaration] if you want to always specify the type explicitly. Having [code]INFERRED_DECLARATION[/code] warning level higher than [code]UNTYPED_DECLARATION[/code] warning level makes little sense and is not recommended.
+		</member>
 		<member name="debug/gdscript/warnings/int_as_enum_without_cast" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to use an integer as an enum without an explicit cast.
 		</member>
@@ -2716,6 +2720,12 @@
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.
+		</member>
+		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
+			If true and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [code]xr/openxr/foveation_level[/code].
+		</member>
+		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
+			Applied foveation level if supported: 0 = off, 1 = low, 2 = medium, 3 = high.
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.

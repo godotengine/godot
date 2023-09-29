@@ -70,7 +70,6 @@ struct Picture::Impl
     Picture* picture = nullptr;
     bool resizing = false;
     bool needComp = false;            //need composition
-    bool animated = false;            //picture is belonged to Animation
 
     Impl(Picture* p) : picture(p)
     {
@@ -84,12 +83,10 @@ struct Picture::Impl
 
     bool dispose(RenderMethod& renderer)
     {
-        bool ret = true;
-        if (paint) ret = paint->pImpl->dispose(renderer);
-        else if (surface) ret =  renderer.dispose(rd);
+        if (paint) paint->pImpl->dispose(renderer);
+        else if (surface) renderer.dispose(rd);
         rd = nullptr;
-
-        return ret;
+        return true;
     }
 
     RenderUpdateFlag load()
@@ -191,7 +188,7 @@ struct Picture::Impl
         return true;
     }
 
-    bool bounds(float* x, float* y, float* w, float* h)
+    bool bounds(float* x, float* y, float* w, float* h, bool stroking)
     {
         if (rm.triangleCnt > 0) {
             auto triangles = rm.triangles;

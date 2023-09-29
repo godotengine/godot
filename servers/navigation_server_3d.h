@@ -302,6 +302,7 @@ public:
 	/// Note: This function is not thread safe.
 	virtual void process(real_t delta_time) = 0;
 	virtual void init() = 0;
+	virtual void sync() = 0;
 	virtual void finish() = 0;
 
 	/// Returns a customized navigation path using a query parameters object

@@ -290,7 +290,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_COND(peer == nullptr);
+	ERR_FAIL_NULL(peer);
 
 	Dictionary message = make_notification(p_method, p_params);
 	String msg = Variant(message).to_json_string();
@@ -311,7 +311,7 @@ void GDScriptLanguageProtocol::request_client(const String &p_method, const Vari
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_COND(peer == nullptr);
+	ERR_FAIL_NULL(peer);
 
 	Dictionary message = make_request(p_method, p_params, next_server_id);
 	next_server_id++;

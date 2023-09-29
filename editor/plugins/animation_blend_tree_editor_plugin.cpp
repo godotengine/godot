@@ -263,7 +263,8 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			mb->get_popup()->connect("index_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_anim_selected).bind(options, E), CONNECT_DEFERRED);
 		}
 
-		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SNAME("panel"), SNAME("GraphNode"));
+		// TODO: Avoid using strings, expose a method on GraphNode instead.
+		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SNAME("panel"));
 		Color c = sb->get_border_color();
 		Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
 		mono_color.a = 0.85;
@@ -831,16 +832,10 @@ void AnimationNodeBlendTreeEditor::_update_editor_settings() {
 	graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
 }
 
-void AnimationNodeBlendTreeEditor::_update_theme() {
-	error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-	error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-}
-
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_editor_settings();
-			_update_theme();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -848,7 +843,8 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_theme();
+			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			if (is_visible_in_tree()) {
 				update_graph();

@@ -2220,7 +2220,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	tool_buttons_group.instantiate();
 
 	select_tool_button = memnew(Button);
-	select_tool_button->set_flat(true);
+	select_tool_button->set_theme_type_variation("FlatButton");
 	select_tool_button->set_toggle_mode(true);
 	select_tool_button->set_button_group(tool_buttons_group);
 	select_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/selection_tool", TTR("Selection"), Key::S));
@@ -2229,7 +2229,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	viewport_shortcut_buttons.push_back(select_tool_button);
 
 	paint_tool_button = memnew(Button);
-	paint_tool_button->set_flat(true);
+	paint_tool_button->set_theme_type_variation("FlatButton");
 	paint_tool_button->set_toggle_mode(true);
 	paint_tool_button->set_button_group(tool_buttons_group);
 	paint_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/paint_tool", TTR("Paint"), Key::D));
@@ -2239,7 +2239,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	viewport_shortcut_buttons.push_back(paint_tool_button);
 
 	line_tool_button = memnew(Button);
-	line_tool_button->set_flat(true);
+	line_tool_button->set_theme_type_variation("FlatButton");
 	line_tool_button->set_toggle_mode(true);
 	line_tool_button->set_button_group(tool_buttons_group);
 	// TRANSLATORS: This refers to the line tool in the tilemap editor.
@@ -2249,7 +2249,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	viewport_shortcut_buttons.push_back(line_tool_button);
 
 	rect_tool_button = memnew(Button);
-	rect_tool_button->set_flat(true);
+	rect_tool_button->set_theme_type_variation("FlatButton");
 	rect_tool_button->set_toggle_mode(true);
 	rect_tool_button->set_button_group(tool_buttons_group);
 	rect_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/rect_tool", TTR("Rect"), Key::R));
@@ -2258,7 +2258,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	viewport_shortcut_buttons.push_back(rect_tool_button);
 
 	bucket_tool_button = memnew(Button);
-	bucket_tool_button->set_flat(true);
+	bucket_tool_button->set_theme_type_variation("FlatButton");
 	bucket_tool_button->set_toggle_mode(true);
 	bucket_tool_button->set_button_group(tool_buttons_group);
 	bucket_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/bucket_tool", TTR("Bucket"), Key::B));
@@ -2276,7 +2276,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	// Picker
 	picker_button = memnew(Button);
-	picker_button->set_flat(true);
+	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
 	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
@@ -2287,7 +2287,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	// Erase button.
 	erase_button = memnew(Button);
-	erase_button->set_flat(true);
+	erase_button->set_theme_type_variation("FlatButton");
 	erase_button->set_toggle_mode(true);
 	erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E));
 	erase_button->set_tooltip_text(TTR("Alternatively use RMB to erase tiles."));
@@ -2301,28 +2301,28 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	transform_toolbar->add_child(memnew(VSeparator));
 
 	transform_button_rotate_left = memnew(Button);
-	transform_button_rotate_left->set_flat(true);
+	transform_button_rotate_left->set_theme_type_variation("FlatButton");
 	transform_button_rotate_left->set_shortcut(ED_SHORTCUT("tiles_editor/rotate_tile_left", TTR("Rotate Tile Left"), Key::Z));
 	transform_toolbar->add_child(transform_button_rotate_left);
 	transform_button_rotate_left->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_apply_transform).bind(TRANSFORM_ROTATE_LEFT));
 	viewport_shortcut_buttons.push_back(transform_button_rotate_left);
 
 	transform_button_rotate_right = memnew(Button);
-	transform_button_rotate_right->set_flat(true);
+	transform_button_rotate_right->set_theme_type_variation("FlatButton");
 	transform_button_rotate_right->set_shortcut(ED_SHORTCUT("tiles_editor/rotate_tile_right", TTR("Rotate Tile Right"), Key::X));
 	transform_toolbar->add_child(transform_button_rotate_right);
 	transform_button_rotate_right->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_apply_transform).bind(TRANSFORM_ROTATE_RIGHT));
 	viewport_shortcut_buttons.push_back(transform_button_rotate_right);
 
 	transform_button_flip_h = memnew(Button);
-	transform_button_flip_h->set_flat(true);
+	transform_button_flip_h->set_theme_type_variation("FlatButton");
 	transform_button_flip_h->set_shortcut(ED_SHORTCUT("tiles_editor/flip_tile_horizontal", TTR("Flip Tile Horizontally"), Key::C));
 	transform_toolbar->add_child(transform_button_flip_h);
 	transform_button_flip_h->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_apply_transform).bind(TRANSFORM_FLIP_H));
 	viewport_shortcut_buttons.push_back(transform_button_flip_h);
 
 	transform_button_flip_v = memnew(Button);
-	transform_button_flip_v->set_flat(true);
+	transform_button_flip_v->set_theme_type_variation("FlatButton");
 	transform_button_flip_v->set_shortcut(ED_SHORTCUT("tiles_editor/flip_tile_vertical", TTR("Flip Tile Vertically"), Key::V));
 	transform_toolbar->add_child(transform_button_flip_v);
 	transform_button_flip_v->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_apply_transform).bind(TRANSFORM_FLIP_V));
@@ -2341,7 +2341,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	// Random tile checkbox.
 	random_tile_toggle = memnew(Button);
-	random_tile_toggle->set_flat(true);
+	random_tile_toggle->set_theme_type_variation("FlatButton");
 	random_tile_toggle->set_toggle_mode(true);
 	random_tile_toggle->set_tooltip_text(TTR("Place Random Tile"));
 	random_tile_toggle->connect("toggled", callable_mp(this, &TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled));
@@ -2404,7 +2404,8 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	sources_bottom_actions->set_alignment(HBoxContainer::ALIGNMENT_END);
 
 	source_sort_button = memnew(MenuButton);
-	source_sort_button->set_flat(true);
+	source_sort_button->set_flat(false);
+	source_sort_button->set_theme_type_variation("FlatMenuButton");
 	source_sort_button->set_tooltip_text(TTR("Sort sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
@@ -3569,7 +3570,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	tool_buttons_group.instantiate();
 
 	paint_tool_button = memnew(Button);
-	paint_tool_button->set_flat(true);
+	paint_tool_button->set_theme_type_variation("FlatButton");
 	paint_tool_button->set_toggle_mode(true);
 	paint_tool_button->set_button_group(tool_buttons_group);
 	paint_tool_button->set_pressed(true);
@@ -3579,7 +3580,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	viewport_shortcut_buttons.push_back(paint_tool_button);
 
 	line_tool_button = memnew(Button);
-	line_tool_button->set_flat(true);
+	line_tool_button->set_theme_type_variation("FlatButton");
 	line_tool_button->set_toggle_mode(true);
 	line_tool_button->set_button_group(tool_buttons_group);
 	line_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/line_tool", TTR("Line"), Key::L));
@@ -3588,7 +3589,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	viewport_shortcut_buttons.push_back(line_tool_button);
 
 	rect_tool_button = memnew(Button);
-	rect_tool_button->set_flat(true);
+	rect_tool_button->set_theme_type_variation("FlatButton");
 	rect_tool_button->set_toggle_mode(true);
 	rect_tool_button->set_button_group(tool_buttons_group);
 	rect_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/rect_tool", TTR("Rect"), Key::R));
@@ -3597,7 +3598,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	viewport_shortcut_buttons.push_back(rect_tool_button);
 
 	bucket_tool_button = memnew(Button);
-	bucket_tool_button->set_flat(true);
+	bucket_tool_button->set_theme_type_variation("FlatButton");
 	bucket_tool_button->set_toggle_mode(true);
 	bucket_tool_button->set_button_group(tool_buttons_group);
 	bucket_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/bucket_tool", TTR("Bucket"), Key::B));
@@ -3616,7 +3617,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 
 	// Picker
 	picker_button = memnew(Button);
-	picker_button->set_flat(true);
+	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
 	picker_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
@@ -3625,7 +3626,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 
 	// Erase button.
 	erase_button = memnew(Button);
-	erase_button->set_flat(true);
+	erase_button->set_theme_type_variation("FlatButton");
 	erase_button->set_toggle_mode(true);
 	erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E));
 	erase_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
@@ -4240,7 +4241,7 @@ TileMapEditor::TileMapEditor() {
 	tile_map_toolbar->add_child(layers_selection_button);
 
 	toggle_highlight_selected_layer_button = memnew(Button);
-	toggle_highlight_selected_layer_button->set_flat(true);
+	toggle_highlight_selected_layer_button->set_theme_type_variation("FlatButton");
 	toggle_highlight_selected_layer_button->set_toggle_mode(true);
 	toggle_highlight_selected_layer_button->set_pressed(true);
 	toggle_highlight_selected_layer_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_layers_selection));
@@ -4251,7 +4252,7 @@ TileMapEditor::TileMapEditor() {
 
 	// Grid toggle.
 	toggle_grid_button = memnew(Button);
-	toggle_grid_button->set_flat(true);
+	toggle_grid_button->set_theme_type_variation("FlatButton");
 	toggle_grid_button->set_toggle_mode(true);
 	toggle_grid_button->set_tooltip_text(TTR("Toggle grid visibility."));
 	toggle_grid_button->connect("toggled", callable_mp(this, &TileMapEditor::_on_grid_toggled));
@@ -4259,7 +4260,8 @@ TileMapEditor::TileMapEditor() {
 
 	// Advanced settings menu button.
 	advanced_menu_button = memnew(MenuButton);
-	advanced_menu_button->set_flat(true);
+	advanced_menu_button->set_flat(false);
+	advanced_menu_button->set_theme_type_variation("FlatButton");
 	advanced_menu_button->get_popup()->add_item(TTR("Automatically Replace Tiles with Proxies"));
 	advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileMapEditor::_advanced_menu_button_id_pressed));
 	tile_map_toolbar->add_child(advanced_menu_button);

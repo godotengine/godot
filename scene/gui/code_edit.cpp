@@ -2399,6 +2399,68 @@ void CodeEdit::set_symbol_lookup_word_as_valid(bool p_valid) {
 	}
 }
 
+/* Text manipulation */
+void CodeEdit::duplicate_lines() {
+	begin_complex_operation();
+
+	Vector<int> caret_edit_order = get_caret_index_edit_order();
+	for (const int &caret_index : caret_edit_order) {
+		// The text that will be inserted. All lines in one string.
+		String insert_text;
+
+		// The new line position of the caret after the operation.
+		int new_caret_line = get_caret_line(caret_index);
+		// The new column position of the caret after the operation.
+		int new_caret_column = get_caret_column(caret_index);
+		// The caret positions of the selection. Stays -1 if there is no selection.
+		int select_from_line = -1;
+		int select_to_line = -1;
+		int select_from_column = -1;
+		int select_to_column = -1;
+		// Number of lines of the selection.
+		int select_num_lines = -1;
+
+		if (has_selection(caret_index)) {
+			select_from_line = get_selection_from_line(caret_index);
+			select_to_line = get_selection_to_line(caret_index);
+			select_from_column = get_selection_from_column(caret_index);
+			select_to_column = get_selection_to_column(caret_index);
+			select_num_lines = select_to_line - select_from_line + 1;
+
+			for (int i = select_from_line; i <= select_to_line; i++) {
+				insert_text += "\n" + get_line(i);
+				unfold_line(i);
+			}
+			new_caret_line = select_to_line + select_num_lines;
+		} else {
+			insert_text = "\n" + get_line(new_caret_line);
+			new_caret_line++;
+
+			unfold_line(get_caret_line(caret_index));
+		}
+
+		// The text will be inserted at the end of the current line.
+		set_caret_column(get_line(get_caret_line(caret_index)).length(), false, caret_index);
+
+		deselect(caret_index);
+
+		insert_text_at_caret(insert_text, caret_index);
+		set_caret_line(new_caret_line, false, true, 0, caret_index);
+		set_caret_column(new_caret_column, true, caret_index);
+
+		if (select_from_line != -1) {
+			// Advance the selection by the number of duplicated lines.
+			select_from_line += select_num_lines;
+			select_to_line += select_num_lines;
+
+			select(select_from_line, select_from_column, select_to_line, select_to_column, caret_index);
+		}
+	}
+
+	end_complex_operation();
+	queue_redraw();
+}
+
 /* Visual */
 Color CodeEdit::_get_brace_mismatch_color() const {
 	return theme_cache.brace_mismatch_color;
@@ -2597,6 +2659,9 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_with_cursor_char", "line", "column"), &CodeEdit::get_text_with_cursor_char);
 
 	ClassDB::bind_method(D_METHOD("set_symbol_lookup_word_as_valid", "valid"), &CodeEdit::set_symbol_lookup_word_as_valid);
+
+	/* Text manipulation */
+	ClassDB::bind_method(D_METHOD("duplicate_lines"), &CodeEdit::duplicate_lines);
 
 	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");

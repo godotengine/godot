@@ -962,6 +962,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 #ifdef TOOLS_ENABLED
 bool _csproj_exists(String p_root_dir) {
 	Ref<DirAccess> dir = DirAccess::open(p_root_dir);
+	ERR_FAIL_COND_V(dir.is_null(), false);
 
 	dir->list_dir_begin();
 	String file_name = dir->_get_next();

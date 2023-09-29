@@ -62,12 +62,24 @@ void SpinBox::_text_submitted(const String &p_string) {
 	Ref<Expression> expr;
 	expr.instantiate();
 
-	String num = TS->parse_number(p_string);
+	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
+	String text = p_string.replace(",", ".");
+	text = text.replace(";", ",");
+	text = TS->parse_number(text);
 	// Ignore the prefix and suffix in the expression.
-	Error err = expr->parse(num.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
+	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+
+	Error err = expr->parse(text);
 	if (err != OK) {
-		_update_text();
-		return;
+		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
+		text = p_string;
+		text = TS->parse_number(text);
+		text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+
+		err = expr->parse(text);
+		if (err != OK) {
+			return;
+		}
 	}
 
 	Variant value = expr->execute(Array(), nullptr, false, true);

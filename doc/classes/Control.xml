@@ -343,6 +343,14 @@
 				Finds the previous (above in the tree) [Control] that can receive the focus.
 			</description>
 		</method>
+		<method name="find_valid_focus_neighbor" qualifiers="const">
+			<return type="Control" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<description>
+				Finds the next [Control] that can receive the focus on the specified [enum Side].
+				[b]Note:[/b] This is different from [method get_focus_neighbor], which returns the path of a specified focus neighbor.
+			</description>
+		</method>
 		<method name="force_drag">
 			<return type="void" />
 			<param index="0" name="data" type="Variant" />
@@ -389,6 +397,7 @@
 			<param index="0" name="side" type="int" enum="Side" />
 			<description>
 				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
+				[b]Note:[/b] To find the next [Control] on the specific [enum Side], even if a neighbor is not assigned, use [method find_valid_focus_neighbor].
 			</description>
 		</method>
 		<method name="get_global_rect" qualifiers="const">

@@ -2307,6 +2307,10 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 	return result;
 }
 
+Control *Control::find_valid_focus_neighbor(Side p_side) const {
+	return const_cast<Control *>(this)->_get_focus_neighbor(p_side);
+}
+
 void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest) {
 	if (Object::cast_to<Viewport>(p_at)) {
 		return; //bye
@@ -3366,6 +3370,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
 	ClassDB::bind_method(D_METHOD("find_prev_valid_focus"), &Control::find_prev_valid_focus);
 	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
+	ClassDB::bind_method(D_METHOD("find_valid_focus_neighbor", "side"), &Control::find_valid_focus_neighbor);
 
 	ClassDB::bind_method(D_METHOD("set_h_size_flags", "flags"), &Control::set_h_size_flags);
 	ClassDB::bind_method(D_METHOD("get_h_size_flags"), &Control::get_h_size_flags);
@@ -3518,7 +3523,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians"), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees"), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_pivot_offset", "get_pivot_offset");

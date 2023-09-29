@@ -910,6 +910,7 @@ private:
 	int error_line = 0;
 
 	Vector<FilePosition> include_positions;
+	HashSet<String> include_markers_handled;
 
 #ifdef DEBUG_ENABLED
 	struct Usage {

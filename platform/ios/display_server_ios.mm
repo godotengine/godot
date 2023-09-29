@@ -354,6 +354,22 @@ void DisplayServerIOS::tts_stop() {
 	[tts stopSpeaking];
 }
 
+bool DisplayServerIOS::is_dark_mode_supported() const {
+	if (@available(iOS 13.0, *)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool DisplayServerIOS::is_dark_mode() const {
+	if (@available(iOS 13.0, *)) {
+		return [UITraitCollection currentTraitCollection].userInterfaceStyle == UIUserInterfaceStyleDark;
+	} else {
+		return false;
+	}
+}
+
 Rect2i DisplayServerIOS::get_display_safe_area() const {
 	if (@available(iOS 11, *)) {
 		UIEdgeInsets insets = UIEdgeInsetsZero;

@@ -389,7 +389,7 @@ void AudioServer::_mix_step() {
 		}
 
 		AudioStreamPlaybackBusDetails *ptr = playback->bus_details.load();
-		ERR_FAIL_COND(ptr == nullptr);
+		ERR_FAIL_NULL(ptr);
 		// By putting null into the bus details pointers, we're taking ownership of their memory for the duration of this mix.
 		AudioStreamPlaybackBusDetails bus_details = *ptr;
 
@@ -620,8 +620,8 @@ void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_sou
 		filter.set_stages(1);
 		filter.set_gain(p_highshelf_gain);
 
-		ERR_FAIL_COND(p_processor_l == nullptr);
-		ERR_FAIL_COND(p_processor_r == nullptr);
+		ERR_FAIL_NULL(p_processor_l);
+		ERR_FAIL_NULL(p_processor_r);
 
 		bool is_just_started = p_vol_start.l == 0 && p_vol_start.r == 0;
 		p_processor_l->set_filter(&filter, /* clear_history= */ is_just_started);

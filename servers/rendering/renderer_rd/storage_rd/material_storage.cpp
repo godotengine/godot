@@ -1834,7 +1834,7 @@ void MaterialStorage::shader_initialize(RID p_rid) {
 
 void MaterialStorage::shader_free(RID p_rid) {
 	Shader *shader = shader_owner.get_or_null(p_rid);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 
 	//make material unreference this
 	while (shader->owners.size()) {
@@ -1850,7 +1850,7 @@ void MaterialStorage::shader_free(RID p_rid) {
 
 void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 
 	shader->code = p_code;
 	String mode_string = ShaderLanguage::get_shader_type(p_code);
@@ -1927,7 +1927,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 
 void MaterialStorage::shader_set_path_hint(RID p_shader, const String &p_path) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 
 	shader->path_hint = p_path;
 	if (shader->data) {
@@ -1937,13 +1937,13 @@ void MaterialStorage::shader_set_path_hint(RID p_shader, const String &p_path) {
 
 String MaterialStorage::shader_get_code(RID p_shader) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, String());
+	ERR_FAIL_NULL_V(shader, String());
 	return shader->code;
 }
 
 void MaterialStorage::get_shader_parameter_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 	if (shader->data) {
 		return shader->data->get_shader_uniform_list(p_param_list);
 	}
@@ -1951,7 +1951,7 @@ void MaterialStorage::get_shader_parameter_list(RID p_shader, List<PropertyInfo>
 
 void MaterialStorage::shader_set_default_texture_parameter(RID p_shader, const StringName &p_name, RID p_texture, int p_index) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 
 	if (p_texture.is_valid() && TextureStorage::get_singleton()->owns_texture(p_texture)) {
 		if (!shader->default_texture_parameter.has(p_name)) {
@@ -1978,7 +1978,7 @@ void MaterialStorage::shader_set_default_texture_parameter(RID p_shader, const S
 
 RID MaterialStorage::shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, RID());
+	ERR_FAIL_NULL_V(shader, RID());
 	if (shader->default_texture_parameter.has(p_name) && shader->default_texture_parameter[p_name].has(p_index)) {
 		return shader->default_texture_parameter[p_name][p_index];
 	}
@@ -1988,7 +1988,7 @@ RID MaterialStorage::shader_get_default_texture_parameter(RID p_shader, const St
 
 Variant MaterialStorage::shader_get_parameter_default(RID p_shader, const StringName &p_param) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, Variant());
+	ERR_FAIL_NULL_V(shader, Variant());
 	if (shader->data) {
 		return shader->data->get_default_parameter(p_param);
 	}
@@ -2002,7 +2002,7 @@ void MaterialStorage::shader_set_data_request_function(ShaderType p_shader_type,
 
 RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_shader) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
-	ERR_FAIL_COND_V(!shader, RS::ShaderNativeSourceCode());
+	ERR_FAIL_NULL_V(shader, RS::ShaderNativeSourceCode());
 	if (shader->data) {
 		return shader->data->get_native_source_code();
 	}
@@ -2067,7 +2067,7 @@ void MaterialStorage::material_initialize(RID p_rid) {
 
 void MaterialStorage::material_free(RID p_rid) {
 	Material *material = material_owner.get_or_null(p_rid);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	// Need to clear texture arrays to prevent spin locking of their RID's.
 	// This happens when the app is being closed.
@@ -2085,7 +2085,7 @@ void MaterialStorage::material_free(RID p_rid) {
 
 void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	if (material->data) {
 		memdelete(material->data);
@@ -2105,7 +2105,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	}
 
 	Shader *shader = get_shader(p_shader);
-	ERR_FAIL_COND(!shader);
+	ERR_FAIL_NULL(shader);
 	material->shader = shader;
 	material->shader_type = shader->type;
 	material->shader_id = p_shader.get_local_index();
@@ -2137,7 +2137,7 @@ MaterialStorage::ShaderData *MaterialStorage::material_get_shader_data(RID p_mat
 
 void MaterialStorage::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	if (p_value.get_type() == Variant::NIL) {
 		material->params.erase(p_param);
@@ -2156,7 +2156,7 @@ void MaterialStorage::material_set_param(RID p_material, const StringName &p_par
 
 Variant MaterialStorage::material_get_param(RID p_material, const StringName &p_param) const {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND_V(!material, Variant());
+	ERR_FAIL_NULL_V(material, Variant());
 	if (material->params.has(p_param)) {
 		return material->params[p_param];
 	} else {
@@ -2166,7 +2166,7 @@ Variant MaterialStorage::material_get_param(RID p_material, const StringName &p_
 
 void MaterialStorage::material_set_next_pass(RID p_material, RID p_next_material) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 
 	if (material->next_pass == p_next_material) {
 		return;
@@ -2182,7 +2182,7 @@ void MaterialStorage::material_set_next_pass(RID p_material, RID p_next_material
 
 void MaterialStorage::material_set_render_priority(RID p_material, int priority) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 	material->priority = priority;
 	if (material->data) {
 		material->data->set_render_priority(priority);
@@ -2192,7 +2192,7 @@ void MaterialStorage::material_set_render_priority(RID p_material, int priority)
 
 bool MaterialStorage::material_is_animated(RID p_material) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND_V(!material, false);
+	ERR_FAIL_NULL_V(material, false);
 	if (material->shader && material->shader->data) {
 		if (material->shader->data->is_animated()) {
 			return true;
@@ -2205,7 +2205,7 @@ bool MaterialStorage::material_is_animated(RID p_material) {
 
 bool MaterialStorage::material_casts_shadows(RID p_material) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND_V(!material, true);
+	ERR_FAIL_NULL_V(material, true);
 	if (material->shader && material->shader->data) {
 		if (material->shader->data->casts_shadows()) {
 			return true;
@@ -2218,7 +2218,7 @@ bool MaterialStorage::material_casts_shadows(RID p_material) {
 
 void MaterialStorage::material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 	if (material->shader && material->shader->data) {
 		material->shader->data->get_instance_param_list(r_parameters);
 
@@ -2230,7 +2230,7 @@ void MaterialStorage::material_get_instance_shader_parameters(RID p_material, Li
 
 void MaterialStorage::material_update_dependency(RID p_material, DependencyTracker *p_instance) {
 	Material *material = material_owner.get_or_null(p_material);
-	ERR_FAIL_COND(!material);
+	ERR_FAIL_NULL(material);
 	p_instance->update_dependency(&material->dependency);
 	if (material->next_pass.is_valid()) {
 		material_update_dependency(material->next_pass, p_instance);

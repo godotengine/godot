@@ -839,12 +839,29 @@
 				Sets the value of the given joint parameter. See [enum JointParam] for the list of available parameters.
 			</description>
 		</method>
+		<method name="pin_joint_get_flag" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
+			<description>
+				Gets a pin joint flag (see [enum PinJointFlag] constants).
+			</description>
+		</method>
 		<method name="pin_joint_get_param" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
 			<description>
 				Returns the value of a pin joint parameter. See [enum PinJointParam] for a list of available parameters.
+			</description>
+		</method>
+		<method name="pin_joint_set_flag">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
+			<param index="2" name="enabled" type="bool" />
+			<description>
+				Sets a pin joint flag (see [enum PinJointFlag] constants).
 			</description>
 		</method>
 		<method name="pin_joint_set_param">
@@ -1159,6 +1176,21 @@
 		</constant>
 		<constant name="PIN_JOINT_SOFTNESS" value="0" enum="PinJointParam">
 			Constant to set/get a how much the bond of the pin joint can flex. The default value of this parameter is [code]0.0[/code].
+		</constant>
+		<constant name="PIN_JOINT_LIMIT_UPPER" value="1" enum="PinJointParam">
+			The maximum rotation around the pin.
+		</constant>
+		<constant name="PIN_JOINT_LIMIT_LOWER" value="2" enum="PinJointParam">
+			The minimum rotation around the pin.
+		</constant>
+		<constant name="PIN_JOINT_MOTOR_TARGET_VELOCITY" value="3" enum="PinJointParam">
+			Target speed for the motor. In radians per second.
+		</constant>
+		<constant name="PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED" value="0" enum="PinJointFlag">
+			If [code]true[/code], the pin has a maximum and a minimum rotation.
+		</constant>
+		<constant name="PIN_JOINT_FLAG_MOTOR_ENABLED" value="1" enum="PinJointFlag">
+			If [code]true[/code], a motor turns the pin.
 		</constant>
 		<constant name="DAMPED_SPRING_REST_LENGTH" value="0" enum="DampedSpringParam">
 			Sets the resting length of the spring joint. The joint will always try to go to back this length when pulled apart. The default value of this parameter is the distance between the joint's anchor points.

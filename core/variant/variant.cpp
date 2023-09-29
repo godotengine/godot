@@ -3235,8 +3235,11 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 	return 0;
 }
 
+#define hash_compare_scalar_base(p_lhs, p_rhs, semantic_comparison) \
+	(((p_lhs) == (p_rhs)) || (semantic_comparison && Math::is_nan(p_lhs) && Math::is_nan(p_rhs)))
+
 #define hash_compare_scalar(p_lhs, p_rhs) \
-	(((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs)))
+	(hash_compare_scalar_base(p_lhs, p_rhs, true))
 
 #define hash_compare_vector2(p_lhs, p_rhs)        \
 	(hash_compare_scalar((p_lhs).x, (p_rhs).x) && \
@@ -3282,7 +3285,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
                                                                         \
 	return true
 
-bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const {
+bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool semantic_comparison) const {
 	if (type != p_variant.type) {
 		return false;
 	}
@@ -3293,7 +3296,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 		} break;
 
 		case FLOAT: {
-			return hash_compare_scalar(_data._float, p_variant._data._float);
+			return hash_compare_scalar_base(_data._float, p_variant._data._float, semantic_comparison);
 		} break;
 
 		case STRING: {

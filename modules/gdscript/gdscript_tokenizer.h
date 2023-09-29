@@ -105,6 +105,7 @@ public:
 			PASS,
 			RETURN,
 			MATCH,
+			WHEN,
 			// Keywords
 			AS,
 			ASSERT,

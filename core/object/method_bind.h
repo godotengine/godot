@@ -111,6 +111,10 @@ public:
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
+#ifdef TOOLS_ENABLED
+	virtual bool is_valid() const { return true; }
+#endif
+
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const = 0;
 	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const = 0;
 
