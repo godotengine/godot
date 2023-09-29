@@ -102,6 +102,8 @@
 			<return type="String" />
 			<description>
 				Obtain the text version of this config file (the same text that would be written to a file).
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_str] method.
+				[b]Note:[/b] When serializing objects, not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object.get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags. In GDScript, [code]@export[/code]ed variables automatically have the [constant PROPERTY_USAGE_STORAGE] flag.
 			</description>
 		</method>
 		<method name="erase_section">
@@ -198,6 +200,8 @@
 			<description>
 				Saves the contents of the [ConfigFile] object to the file specified as a parameter. The output file uses an INI-style structure.
 				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_str] method.
+				[b]Note:[/b] When serializing objects, not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object.get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags. In GDScript, [code]@export[/code]ed variables automatically have the [constant PROPERTY_USAGE_STORAGE] flag.
 			</description>
 		</method>
 		<method name="save_encrypted">
@@ -205,8 +209,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="key" type="PackedByteArray" />
 			<description>
-				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param key] to encrypt it. The output file uses an INI-style structure.
-				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param key] to encrypt it. The output file uses an INI-style structure. See [method save] for details.
 			</description>
 		</method>
 		<method name="save_encrypted_pass">
@@ -214,8 +217,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="password" type="String" />
 			<description>
-				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param password] to encrypt it. The output file uses an INI-style structure.
-				Returns one of the [enum Error] code constants ([constant OK] on success).
+				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param password] to encrypt it. The output file uses an INI-style structure. See [method save] for details.
 			</description>
 		</method>
 		<method name="set_value">
