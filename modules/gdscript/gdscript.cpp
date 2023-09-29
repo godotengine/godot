@@ -2368,62 +2368,60 @@ void GDScriptLanguage::frame() {
 
 /* EDITOR FUNCTIONS */
 void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
-	// TODO: Add annotations here?
+	// Please keep alphabetical order within categories.
 	static const char *_reserved_words[] = {
-		// operators
-		"and",
-		"in",
-		"not",
-		"or",
-		// types and values
-		"false",
-		"float",
-		"int",
-		"bool",
-		"null",
-		"PI",
-		"TAU",
-		"INF",
-		"NAN",
-		"self",
-		"true",
-		"void",
-		// functions
-		"as",
-		"assert",
-		"await",
-		"breakpoint",
-		"class",
-		"class_name",
-		"extends",
-		"is",
-		"func",
-		"preload",
-		"signal",
-		"super",
-		// var
-		"const",
-		"enum",
-		"static",
-		"var",
-		// control flow
+		// Control flow.
 		"break",
 		"continue",
-		"if",
 		"elif",
 		"else",
 		"for",
+		"if",
+		"match",
 		"pass",
 		"return",
-		"match",
-		"while",
 		"when",
-		// These keywords are not implemented currently, but reserved for (potential) future use.
-		// We highlight them as keywords to make errors easier to understand.
-		"trait",
-		"namespace",
-		"yield",
-		nullptr
+		"while",
+		// Declarations.
+		"class",
+		"class_name",
+		"const",
+		"enum",
+		"extends",
+		"func",
+		"namespace", // Reserved for potential future use.
+		"signal",
+		"static",
+		"trait", // Reserved for potential future use.
+		"var",
+		// Other keywords.
+		"await",
+		"breakpoint",
+		"self",
+		"super",
+		"yield", // Reserved for potential future use.
+		// Operators.
+		"and",
+		"as",
+		"in",
+		"is",
+		"not",
+		"or",
+		// Special values (tokenizer treats them as literals, not as tokens).
+		"false",
+		"null",
+		"true",
+		// Constants.
+		"INF",
+		"NAN",
+		"PI",
+		"TAU",
+		// Functions (highlighter uses global function color instead).
+		"assert",
+		"preload",
+		// Types (highlighter uses type color instead).
+		"void",
+		nullptr,
 	};
 
 	const char **w = _reserved_words;
@@ -2432,22 +2430,16 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		p_words->push_back(*w);
 		w++;
 	}
-
-	List<StringName> functions;
-	GDScriptUtilityFunctions::get_function_list(&functions);
-
-	for (const StringName &E : functions) {
-		p_words->push_back(String(E));
-	}
 }
 
 bool GDScriptLanguage::is_control_flow_keyword(String p_keyword) const {
+	// Please keep alphabetical order.
 	return p_keyword == "break" ||
 			p_keyword == "continue" ||
 			p_keyword == "elif" ||
 			p_keyword == "else" ||
-			p_keyword == "if" ||
 			p_keyword == "for" ||
+			p_keyword == "if" ||
 			p_keyword == "match" ||
 			p_keyword == "pass" ||
 			p_keyword == "return" ||
