@@ -59,6 +59,8 @@ public:
 	void set_named(const StringName &p_member, const Variant &p_value);
 	const Variant &get_named(const StringName &p_member) const; // TODO: should be & return?
 	const StringName get_member_name(int p_idx) const;
+	const int find_member(const StringName &p_member) const;
+	const Variant *getptr(const StringName &p_member) const;
 
 	int size() const;
 	bool is_empty() const;

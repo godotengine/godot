@@ -485,6 +485,18 @@ const StringName Array::get_member_name(int p_idx) const {
 	}
 }
 
+const int Array::find_member(const StringName &p_member) const {
+	return _p->find_member_index(p_member);
+}
+
+const Variant *Array::getptr(const StringName &p_member) const {
+	int index = _p->find_member_index(p_member);
+	if (index < 0) {
+		return nullptr;
+	}
+	return &get(index);
+}
+
 Array Array::duplicate(bool p_deep) const {
 	return recursive_duplicate(p_deep, 0);
 }

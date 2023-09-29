@@ -83,6 +83,24 @@ TEST_CASE("[Struct] PropertyInfo") {
 		CHECK_THROWS(prop.set_named(SNAME("name"), 4));
 		CHECK_NOTHROW(prop.set_named(SNAME("name"), "Node")); // TODO: not sure if these tests are working correctly
 	}
+
+	SUBCASE("Setget Named") {
+		Variant variant_prop = prop;
+		bool valid = false;
+		Variant changed = SNAME("Changed");
+		variant_prop.set_named(SNAME("name"), SNAME("Changed"), valid);
+		CHECK_EQ(valid, true);
+		Variant val = variant_prop.get_named(SNAME("name"), valid);
+		CHECK_EQ(valid, true);
+		CHECK_EQ((StringName)val, SNAME("Changed"));
+
+		val = variant_prop.get_named(SNAME("oops"), valid);
+		CHECK_EQ(valid, false);
+		CHECK_EQ(val, Variant());
+
+		variant_prop.set_named(SNAME("oops"), SNAME("oh no"), valid);
+		CHECK_EQ(valid, false);
+	}
 }
 
 TEST_CASE("[Struct] ClassDB") {
