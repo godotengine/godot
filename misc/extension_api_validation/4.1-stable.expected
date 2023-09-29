@@ -256,7 +256,6 @@ Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animat
 Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_list_changed
 Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_started
 Validate extension JSON: API was removed: classes/AnimationPlayer/signals/caches_cleared
-Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_changed
 Validate extension JSON: API was removed: classes/AnimationTree/signals/animation_finished
 Validate extension JSON: API was removed: classes/AnimationTree/signals/animation_started
 Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/seek/arguments': size changed value in new API, from 2 to 3.
