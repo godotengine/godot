@@ -89,6 +89,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
 	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_mode, BLEND_MODE_SUB);
 	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MUL);
+	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_mode, BLEND_MODE_PREMULT_ALPHA);
 
 	actions.render_mode_values["alpha_to_coverage"] = Pair<int *, int>(&alpha_antialiasing_mode, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE);
 	actions.render_mode_values["alpha_to_coverage_and_one"] = Pair<int *, int>(&alpha_antialiasing_mode, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE);
@@ -245,7 +246,17 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
-		}
+		} break;
+		case BLEND_MODE_PREMULT_ALPHA: {
+			blend_attachment.enable_blend = true;
+			blend_attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			blend_attachment.color_blend_op = RD::BLEND_OP_ADD;
+			blend_attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			uses_blend_alpha = true; // Force alpha used because of blend.
+		} break;
 	}
 
 	RD::PipelineColorBlendState blend_state_blend;

@@ -238,6 +238,7 @@ struct SceneShaderData : public ShaderData {
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
+		BLEND_MODE_PREMULT_ALPHA,
 		BLEND_MODE_ALPHA_TO_COVERAGE
 	};
 

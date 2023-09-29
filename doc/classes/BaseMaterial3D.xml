@@ -608,6 +608,9 @@
 		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			The color of the object is multiplied by the background.
 		</constant>
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
+			The color of the object is added to the background and the alpha channel is used to mask out the background. This is effectively a hybrid of blend mix and add mode, useful for FX like fire where you want the flame to add but the smoke to mix. By default, this works with unshaded materials using premultiplied textures. This may not behave as expected with a shaded material, and if you write your own shader, you will need to manually premultiply the albedo with the alpha.
+		</constant>
 		<constant name="ALPHA_ANTIALIASING_OFF" value="0" enum="AlphaAntiAliasing">
 			Disables Alpha AntiAliasing for the material.
 		</constant>
