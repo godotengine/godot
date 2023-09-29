@@ -1548,7 +1548,7 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const {
 	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 	if (ap) {
-		Node *root = ap->get_node(ap->get_root());
+		Node *root = ap->get_node(ap->get_root_node());
 		if (root && !p_to_delete.find(root)) {
 			List<StringName> anims;
 			ap->get_animation_list(&anims);
@@ -1735,7 +1735,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_base);
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
-		Node *root = ap->get_node(ap->get_root());
+		Node *root = ap->get_node(ap->get_root_node());
 
 		if (root) {
 			HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(root);

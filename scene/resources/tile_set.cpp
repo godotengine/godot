@@ -327,22 +327,22 @@ TileSet::TerrainsPattern::TerrainsPattern(const TileSet *p_tile_set, int p_terra
 const int TileSet::INVALID_SOURCE = -1;
 
 const char *TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[] = {
-	"right_side",
-	"right_corner",
-	"bottom_right_side",
-	"bottom_right_corner",
-	"bottom_side",
-	"bottom_corner",
-	"bottom_left_side",
-	"bottom_left_corner",
-	"left_side",
-	"left_corner",
-	"top_left_side",
-	"top_left_corner",
-	"top_side",
-	"top_corner",
-	"top_right_side",
-	"top_right_corner"
+	PNAME("right_side"),
+	PNAME("right_corner"),
+	PNAME("bottom_right_side"),
+	PNAME("bottom_right_corner"),
+	PNAME("bottom_side"),
+	PNAME("bottom_corner"),
+	PNAME("bottom_left_side"),
+	PNAME("bottom_left_corner"),
+	PNAME("left_side"),
+	PNAME("left_corner"),
+	PNAME("top_left_side"),
+	PNAME("top_left_corner"),
+	PNAME("top_side"),
+	PNAME("top_corner"),
+	PNAME("top_right_side"),
+	PNAME("top_right_corner"),
 };
 
 // -- Shape and layout --
@@ -5839,7 +5839,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 				if (is_valid_terrain_peering_bit(bit)) {
-					property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]));
+					property_info = PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("terrains_peering_bit"), TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]));
 					if (get_terrain_peering_bit(bit) == -1) {
 						property_info.usage ^= PROPERTY_USAGE_STORAGE;
 					}
