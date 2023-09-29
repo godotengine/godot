@@ -37,8 +37,16 @@ bool GodotAreaPair2D::setup(real_t p_step) {
 		result = true;
 	}
 
-	process_collision = false;
-	has_space_override = false;
+	if (result && colliding) {
+		return process_collision;
+	}
+
+	if (!result && !colliding) {
+		process_collision = false;
+		has_space_override = false;
+		return process_collision;
+	}
+
 	if (result != colliding) {
 		if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
 			has_space_override = true;
@@ -46,7 +54,10 @@ bool GodotAreaPair2D::setup(real_t p_step) {
 			has_space_override = true;
 		} else if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
 			has_space_override = true;
+		} else {
+			has_space_override = false;
 		}
+
 		process_collision = has_space_override;
 
 		if (area->has_monitor_callback()) {
@@ -81,6 +92,8 @@ bool GodotAreaPair2D::pre_solve(real_t p_step) {
 			area->remove_body_from_query(body, body_shape, area_shape);
 		}
 	}
+
+	process_collision = false; // collision processed, don't do it again
 
 	return false; // Never do any post solving.
 }
