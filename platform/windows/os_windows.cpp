@@ -576,9 +576,9 @@ OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 }
 
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
-	TIME_ZONE_INFORMATION info;
+	DYNAMIC_TIME_ZONE_INFORMATION info;
 	bool is_daylight = false;
-	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
+	if (GetDynamicTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
 		is_daylight = true;
 	}
 
@@ -588,7 +588,7 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 		ret.name = info.DaylightName;
 		ret.bias = info.Bias + info.DaylightBias;
 	} else {
-		ret.name = info.StandardName;
+		ret.name = info.TimeZoneKeyName;
 		ret.bias = info.Bias + info.StandardBias;
 	}
 
