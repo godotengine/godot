@@ -115,10 +115,10 @@ void SymbolTooltip::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 			// Note: Child components prevent NOTIFICATION_MOUSE_ENTER and NOTIFICATION_MOUSE_EXIT from working properly.
 			// Get the local mouse position
-			Vector2 local_mouse_position = get_global_mouse_position() - get_global_position();
+			Point2i local_mouse_position = get_global_mouse_position() - get_global_position();
 
 			// Check if it's within the rect of the PanelContainer
-			Rect2 tooltip_rect = Rect2(Vector2(0, 0), get_size());
+			Rect2 tooltip_rect = Rect2(Point2i(0, 0), get_size());
 			if (tooltip_rect.has_point(local_mouse_position)) {
 				if (is_visible() && !mouse_inside) {
 					// Mouse just entered
@@ -148,38 +148,39 @@ void SymbolTooltip::_close_tooltip() {
 	hide();
 }
 
-void SymbolTooltip::update_symbol_tooltip(const Vector2 &p_mouse_position, const Ref<Script> &p_script) {
-	String symbol_word = _get_symbol_word(p_mouse_position);
-	if (symbol_word.is_empty()) {
-		last_symbol_word = "";
+void SymbolTooltip::update_symbol_tooltip(const Point2i &p_mouse_pos, const Ref<Script> &p_script) {
+	String symbol = _get_symbol(p_mouse_pos);
+	if (symbol.is_empty()) {
+		last_symbol = "";
 		_close_tooltip();
 		return;
 	}
 
-	if (symbol_word == last_symbol_word && is_visible()) { // Symbol has not changed.
+	if (symbol == last_symbol && is_visible()) { // Symbol has not changed.
 		return;
 	} else {
 		// Symbol has changed, reset the timer.
 		_close_tooltip();
-		last_symbol_word = symbol_word;
+		last_symbol = symbol;
 	}
 
-	if (!_update_tooltip_content(p_script, symbol_word)) {
+	lsp::Range symbol_range;
+	if (!_try_get_symbol_range_at_pos(symbol,p_mouse_pos, symbol_range)) {
+		_close_tooltip();
+		return;
+	}
+
+	if (!_update_tooltip_content(p_script, symbol, symbol_range)) {
 		_close_tooltip();
 		return;
 	}
 	_update_tooltip_size();
 
 	Rect2 tooltip_rect = Rect2(get_position(), get_size());
-	bool mouse_over_tooltip = tooltip_rect.has_point(p_mouse_position) && is_visible();
+	bool mouse_over_tooltip = tooltip_rect.has_point(p_mouse_pos) && is_visible();
 	if (!mouse_over_tooltip) {
-		Vector2 tooltip_position = _calculate_tooltip_position(symbol_word, p_mouse_position);
-		if (tooltip_position == Vector2(-1, -1)) { // If position is invalid.
-			_close_tooltip();
-			return;
-		} else {
-			set_position(tooltip_position);
-		}
+		Point2i tooltip_pos = _calculate_tooltip_position(symbol_range);
+		set_position(tooltip_pos);
 	}
 
 	// Start the timer to show the tooltip after a delay.
@@ -188,12 +189,12 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &p_mouse_position, const
 	}
 }
 
-String SymbolTooltip::_get_symbol_word(const Vector2 &p_mouse_position) {
+String SymbolTooltip::_get_symbol(const Point2i &p_mouse_pos) {
 	// Get the word under the mouse cursor.
-	return text_editor->get_word_at_pos(p_mouse_position);
+	return text_editor->get_word_at_pos(p_mouse_pos);
 }
 
-bool SymbolTooltip::_update_tooltip_content(const Ref<Script> &p_script, const String &p_symbol_word) {
+bool SymbolTooltip::_update_tooltip_content(const Ref<Script> &p_script, const String &p_symbol, const lsp::Range &p_symbol_range) {
 	// Update the tooltip's header and body.
 
 	bool is_built_in = false;
@@ -201,7 +202,7 @@ bool SymbolTooltip::_update_tooltip_content(const Ref<Script> &p_script, const S
 	String built_in_body = "";
 	Vector<const DocData::ClassDoc *> class_docs = _get_built_in_class_docs();
 	for (const DocData::ClassDoc *class_doc : class_docs) {
-		const DocData::ConstantDoc *constant_doc = _get_class_constant_doc(class_doc, p_symbol_word);
+		const DocData::ConstantDoc *constant_doc = _get_class_constant_doc(class_doc, p_symbol);
 		if (constant_doc) {
 			built_in_header = constant_doc->name + " = " + constant_doc->value;
 			if (!constant_doc->enumeration.is_empty()) {
@@ -211,7 +212,7 @@ bool SymbolTooltip::_update_tooltip_content(const Ref<Script> &p_script, const S
 			is_built_in = true;
 			break;
 		} else {
-			const DocData::MethodDoc *method_doc = _get_class_method_doc(class_doc, p_symbol_word);
+			const DocData::MethodDoc *method_doc = _get_class_method_doc(class_doc, p_symbol);
 			if (method_doc) {
 				built_in_header = _get_class_method_doc_definition(method_doc);
 				built_in_body = method_doc->description.strip_edges();
@@ -221,11 +222,12 @@ bool SymbolTooltip::_update_tooltip_content(const Ref<Script> &p_script, const S
 		}
 	}
 
-	// String official_documentation = _get_doc_of_word(p_symbol_word);
+	// String official_documentation = _get_doc_of_word(p_symbol);
+	// ScriptLanguage::LookupResult symbol_info = _lookup_symbol(p_script, p_symbol);
+	//ExtendGDScriptParser *parser = _get_script_parser(p_script);
+	//const lsp::DocumentSymbol *member_symbol = parser->get_member_symbol(p_symbol);
 
-	ExtendGDScriptParser *parser = _get_script_parser(p_script);
-	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
-	const lsp::DocumentSymbol *member_symbol = _get_member_symbol(members, p_symbol_word);
+	const lsp::DocumentSymbol *member_symbol = _get_member_symbol(p_script, p_symbol, p_symbol_range);
 
 	if (member_symbol == nullptr && !is_built_in) { // Symbol is not a member of the script.
 		return false;
@@ -233,7 +235,7 @@ bool SymbolTooltip::_update_tooltip_content(const Ref<Script> &p_script, const S
 
 	// TODO: Improve header content. Add the ability to see documentation comments or official documentation.
 	// Add constant value to the header content. e.g. "PI" becomes "PI = 3.141592653589793" (similar to how we do with ENUMs)
-	String header_content = _get_header_content(p_symbol_word, member_symbol, built_in_header);
+	String header_content = _get_header_content(p_symbol, member_symbol, built_in_header);
 	String body_content = _get_body_content(member_symbol, built_in_body);
 
 	_update_header_label(header_content);
@@ -269,23 +271,12 @@ void SymbolTooltip::_update_tooltip_size() {
 	// Set sizes
 	header_label->set_custom_minimum_size(Size2(tooltip_width, -1)); // TODO: Calculate this accurately instead of using -1.
 	body_label->set_custom_minimum_size(Size2(tooltip_width, MIN(body_label->get_content_height() + body_v_padding, 400)));
-	set_size(Vector2(tooltip_width, -1));
+	set_size(Size2(tooltip_width, -1));
 }
 
-Vector2 SymbolTooltip::_calculate_tooltip_position(const String &p_symbol_word, const Vector2 &p_mouse_position) {
-	Vector2 line_col = text_editor->get_line_column_at_pos(p_mouse_position);
-	int row = line_col.y;
-	int col = line_col.x;
-	int num_lines = text_editor->get_line_count();
-	if (row >= 0 && row < num_lines) {
-		String line = text_editor->get_line(row);
-		int symbol_col = _get_word_pos_under_mouse(p_symbol_word, line, col);
-		if (symbol_col >= 0) {
-			Vector2 symbol_position = text_editor->get_pos_at_line_column(row, symbol_col);
-			return text_editor->get_global_position() + symbol_position;
-		}
-	}
-	return Vector2(-1, -1); // Indicates an invalid position.
+Point2i SymbolTooltip::_calculate_tooltip_position(const lsp::Range &p_symbol_range) {
+	Point2i symbol_position = text_editor->get_pos_at_line_column(p_symbol_range.start.line, p_symbol_range.start.character);
+	return text_editor->get_global_position() + symbol_position;
 }
 
 Vector<const DocData::ClassDoc *> SymbolTooltip::_get_built_in_class_docs() {
@@ -309,15 +300,31 @@ ExtendGDScriptParser *SymbolTooltip::_get_script_parser(const Ref<Script> &p_scr
 	return parser;
 }
 
+/*ScriptLanguage::LookupResult SymbolTooltip::_lookup_symbol(const Ref<Script> &p_script, const String &p_symbol) {
+	Node *base = get_tree()->get_edited_scene_root();
+	if (base) {
+		base = _find_node_for_script(base, base, p_script);
+	}
+
+	ScriptLanguage::LookupResult result;
+	String lc_text = text_editor->get_text_for_symbol_lookup();
+	Error lc_error = p_script->get_language()->lookup_code(lc_text, p_symbol, p_script->get_path(), base, result);
+	return result;
+}*/
+
 // TODO: Need to find the correct symbol instance instead of just the first match.
 const lsp::DocumentSymbol *SymbolTooltip::_get_member_symbol(
-		HashMap<String, const lsp::DocumentSymbol *> &p_members,
-		const String &p_symbol_word) { // , const Vector2 &symbol_position) {
+		const Ref<Script> &p_script,
+		const String &p_symbol,
+		const lsp::Range &p_symbol_range) {
+	ExtendGDScriptParser *parser = _get_script_parser(p_script);
+	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
+
 	// Use a queue to implement breadth-first search.
 	std::queue<const lsp::DocumentSymbol *> queue;
 
 	// Add all members to the queue.
-	for (const KeyValue<String, const lsp::DocumentSymbol *> &E : p_members) {
+	for (const KeyValue<String, const lsp::DocumentSymbol *> &E : members) {
 		queue.push(E.value);
 	}
 
@@ -327,8 +334,16 @@ const lsp::DocumentSymbol *SymbolTooltip::_get_member_symbol(
 		const lsp::DocumentSymbol *symbol = queue.front();
 		queue.pop();
 
+		/*bool range_matches = symbol->range.to_json() == p_symbol_range.to_json();
+		bool is_within_range = p_symbol_range.is_within(symbol->range);
+
+		if (symbol->name == p_symbol && !symbol->detail.is_empty()) {
+			print_line("symbol: ", symbol->name, ", range_matches: ", range_matches, ", is_within_range: ", is_within_range, ", range: ", symbol->range.to_json(), ", symbol_range: ", p_symbol_range.to_json());
+		}*/
+
 		// If the name matches, return the symbol.
-		if (symbol->name == p_symbol_word && !symbol->detail.is_empty()) { // && symbol->range.is_point_inside(symbol_position)) {
+		// TODO: Add '&& is_within_range' once the range of member symbols is corrected. They are currently incorrect.
+		if (symbol->name == p_symbol && !symbol->detail.is_empty()) {
 			return symbol;
 		}
 
@@ -341,22 +356,22 @@ const lsp::DocumentSymbol *SymbolTooltip::_get_member_symbol(
 	return nullptr; // If the symbol is not found, return nullptr.
 }
 
-const DocData::MethodDoc *SymbolTooltip::_get_class_method_doc(const DocData::ClassDoc *p_class_doc, const String &p_symbol_word) {
+const DocData::MethodDoc *SymbolTooltip::_get_class_method_doc(const DocData::ClassDoc *p_class_doc, const String &p_symbol) {
 	for (int i = 0; i < p_class_doc->methods.size(); ++i) {
 		const DocData::MethodDoc &method_doc = p_class_doc->methods[i];
 
-		if (method_doc.name == p_symbol_word) {
+		if (method_doc.name == p_symbol) {
 			return &method_doc;
 		}
 	}
 	return nullptr;
 }
 
-const DocData::ConstantDoc *SymbolTooltip::_get_class_constant_doc(const DocData::ClassDoc *p_class_doc, const String &p_symbol_word) {
+const DocData::ConstantDoc *SymbolTooltip::_get_class_constant_doc(const DocData::ClassDoc *p_class_doc, const String &p_symbol) {
 	for (int i = 0; i < p_class_doc->constants.size(); ++i) {
 		const DocData::ConstantDoc &constant_doc = p_class_doc->constants[i];
 
-		if (constant_doc.name == p_symbol_word) {
+		if (constant_doc.name == p_symbol) {
 			if (constant_doc.is_value_valid) {
 				return &constant_doc;
 			}
@@ -390,14 +405,14 @@ String SymbolTooltip::_get_class_method_doc_definition(const DocData::MethodDoc 
 	return definition;
 }
 
-String SymbolTooltip::_get_header_content(const String &p_symbol_word, const lsp::DocumentSymbol *p_member_symbol, String p_built_in_header) {
+String SymbolTooltip::_get_header_content(const String &p_symbol, const lsp::DocumentSymbol *p_member_symbol, String p_built_in_header) {
 	if (p_member_symbol && !p_member_symbol->reduced_detail.is_empty()) {
 		return p_member_symbol->reduced_detail;
 	}
 	if (!p_built_in_header.is_empty()) {
 		return p_built_in_header;
 	}
-	return p_symbol_word;
+	return p_symbol;
 }
 
 String SymbolTooltip::_get_body_content(const lsp::DocumentSymbol *p_member_symbol, String p_built_in_body) {
@@ -433,33 +448,67 @@ void SymbolTooltip::_update_body_label(const String &p_body_content) {
 	}
 }
 
-int SymbolTooltip::_get_word_pos_under_mouse(const String &p_symbol_word, const String &p_search, int p_mouse_x) const {
-	// Created this because _get_column_pos_of_word() only gets the column position of the first occurrence of the word in the line.
-
-	// Early exit if the symbol word is empty, the search string is empty, or the mouse is outside the string.
-	if (p_symbol_word.is_empty() || p_search.is_empty() || p_mouse_x < 0 || p_mouse_x >= p_search.length()) {
-		return -1;
+bool SymbolTooltip::_is_valid_line(const String &p_line) const {
+	// Check if the line is empty or only contains whitespace.
+	if (p_line.is_empty() || p_line.strip_edges().is_empty()) {
+		return false;
 	}
 
-	int start = p_mouse_x;
-	int end = p_mouse_x;
+	// Check if the line is a comment.
+	if (p_line.begins_with("#")) {
+		return false;
+	}
+
+	// Check if the line is a docstring. TODO: Need a better way to detect docstrings.
+	if (p_line.begins_with("\"\"\"") || p_line.begins_with("'''")) {
+		return false;
+	}
+
+	return true;
+}
+
+bool SymbolTooltip::_try_get_symbol_range_at_pos(const String &p_symbol, const Point2i &p_pos, lsp::Range &r_symbol_range) const {
+	Point2i line_column = text_editor->get_line_column_at_pos(p_pos, false);
+	int row = line_column.y;
+	int column = line_column.x;
+	if (line_column == Point2i(-1, -1)) { // If the position is outside the text editor.
+		return false;
+	}
+
+	String line = text_editor->get_line(row);
+	if(!_is_valid_line(line)) {
+		return false;
+	}
+
+	bool is_outside_line = column < 0 || column >= line.length();
+	// Invalid if the symbol word is empty or if the column is outside of the line.
+	if (p_symbol.is_empty() || is_outside_line) {
+		return false;
+	}
+
+	int start = column;
+	int end = column;
 
 	// Extend the start and end until they reach the beginning or end of the word.
-	while (start > 0 && is_ascii_identifier_char(p_search[start - 1])) {
+	while (start > 0 && is_ascii_identifier_char(line[start - 1])) {
 		start--;
 	}
-	while (end < p_search.length() && is_ascii_identifier_char(p_search[end])) {
+	while (end < line.length() && is_ascii_identifier_char(line[end])) {
 		end++;
 	}
 
-	String word_under_mouse = p_search.substr(start, end - start);
+	String word_under_mouse = line.substr(start, end - start);
 
-	// If the word under the mouse matches the symbol word, return the start position.
-	if (word_under_mouse == p_symbol_word) {
-		return start + 1; // Note: +1 is added to account for zero-based indexing.
+	// Invalid if the word under the mouse is not the symbol word.
+	if (word_under_mouse != p_symbol) {
+		return false;
 	}
 
-	return -1; // Return -1 if no match is found.
+	r_symbol_range = {
+		{ row, start + 1 }, // Note: +1 is added to account for zero-based indexing.
+		{ row, end }
+	};
+	return true;
 }
 
 Ref<Theme> SymbolTooltip::_create_panel_theme() {
@@ -507,15 +556,15 @@ Ref<Theme> SymbolTooltip::_create_body_label_theme() {
 	return theme;
 }
 
-/*const GDScriptParser::ClassNode::Member *find_symbol(const GDScriptParser::ClassNode *node, const String &p_symbol_word) {
+/*const GDScriptParser::ClassNode::Member *find_symbol(const GDScriptParser::ClassNode *node, const String &p_symbol) {
 	for (int i = 0; i < node->members.size(); ++i) {
 		const GDScriptParser::ClassNode::Member &member = node->members[i];
 
-		if (member.get_name() == p_symbol_word) {
+		if (member.get_name() == p_symbol) {
 			// Found the symbol.
 			return &member;
 		} else if (member.type == GDScriptParser::ClassNode::Member::CLASS) {
-			const GDScriptParser::ClassNode::Member *found_symbol = find_symbol(member.m_class, p_symbol_word);
+			const GDScriptParser::ClassNode::Member *found_symbol = find_symbol(member.m_class, p_symbol);
 			if (found_symbol) {
 				return found_symbol;
 			}
@@ -525,14 +574,14 @@ Ref<Theme> SymbolTooltip::_create_body_label_theme() {
 	return nullptr;
 }*/
 
-/*String SymbolTooltip::_get_doc_of_word(const String &p_symbol_word) {
+/*String SymbolTooltip::_get_doc_of_word(const String &p_symbol) {
 	String documentation;
 
 	const HashMap<String, DocData::ClassDoc> &class_list = EditorHelp::get_doc_data()->class_list;
 	for (const KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		const DocData::ClassDoc &class_doc = E.value;
 
-		if (class_doc.name == p_symbol_word) {
+		if (class_doc.name == p_symbol) {
 			documentation = class_doc.brief_description.strip_edges(); //class_doc.brief_description + "\n\n" + class_doc.description;
 			if (documentation.is_empty()) {
 				documentation = class_doc.description.strip_edges();
@@ -543,7 +592,7 @@ Ref<Theme> SymbolTooltip::_create_body_label_theme() {
 		for (int i = 0; i < class_doc.methods.size(); ++i) {
 			const DocData::MethodDoc &method_doc = class_doc.methods[i];
 
-			if (method_doc.name == p_symbol_word) {
+			if (method_doc.name == p_symbol) {
 				documentation = method_doc.description.strip_edges();
 				break;
 			}
@@ -552,7 +601,7 @@ Ref<Theme> SymbolTooltip::_create_body_label_theme() {
 		for (int i = 0; i < class_doc.constants.size(); ++i) {
 			const DocData::ConstantDoc &constant_doc = class_doc.constants[i];
 
-			if (constant_doc.name == p_symbol_word) {
+			if (constant_doc.name == p_symbol) {
 				if (constant_doc.is_value_valid) {
 					documentation = constant_doc.value.strip_edges();
 				}
