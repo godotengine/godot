@@ -1363,15 +1363,15 @@ void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Ve
 	}
 }
 
-void FileSystemDock::_find_remaps(EditorFileSystemDirectory *p_efsd, const Vector<String> &r_renames, Vector<String> &r_to_remaps) const {
+void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const Vector<String> &p_renames, Vector<String> &r_file_owners) const {
 	for (int i = 0; i < p_efsd->get_subdir_count(); i++) {
-		_find_remaps(p_efsd->get_subdir(i), r_renames, r_to_remaps);
+		_find_file_owners(p_efsd->get_subdir(i), p_renames, r_file_owners);
 	}
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		Vector<String> deps = p_efsd->get_file_deps(i);
 		for (int j = 0; j < deps.size(); j++) {
-			if (r_renames.has(deps[j])) {
-				r_to_remaps.push_back(p_efsd->get_file_path(i));
+			if (p_renames.has(deps[j])) {
+				r_file_owners.push_back(p_efsd->get_file_path(i));
 				break;
 			}
 		}
@@ -1562,22 +1562,22 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 	}
 }
 
-void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const Vector<String> &p_remaps) const {
+void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const Vector<String> &p_file_owners) const {
 	// The following code assumes that the following holds:
 	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
 	// 2) ResourceLoader can use the new paths without needing to call rescan.
 	List<String> scenes_to_reload;
-	for (int i = 0; i < p_remaps.size(); ++i) {
+	for (int i = 0; i < p_file_owners.size(); ++i) {
 		// Because we haven't called a rescan yet the found remap might still be an old path itself.
-		String file = p_renames.has(p_remaps[i]) ? p_renames[p_remaps[i]] : p_remaps[i];
+		const String file = p_renames.has(p_file_owners[i]) ? p_renames[p_file_owners[i]] : p_file_owners[i];
 		print_verbose("Remapping dependencies for: " + file);
-		Error err = ResourceLoader::rename_dependencies(file, p_renames);
+		const Error err = ResourceLoader::rename_dependencies(file, p_renames);
 		if (err == OK) {
 			if (ResourceLoader::get_resource_type(file) == "PackedScene") {
 				scenes_to_reload.push_back(file);
 			}
 		} else {
-			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies:") + "\n" + p_remaps[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies for:") + "\n" + p_file_owners[i] + "\n");
 		}
 	}
 
@@ -1773,10 +1773,9 @@ void FileSystemDock::_rename_operation_confirm() {
 		return;
 	}
 
-	Vector<String> old_paths;
 	HashMap<String, ResourceUID::ID> uids;
-	Vector<String> remaps;
-	_before_move(old_paths, uids, remaps);
+	Vector<String> file_owners; // The files that use these moved/renamed resource files.
+	_before_move(uids, file_owners);
 
 	HashMap<String, String> file_renames;
 	HashMap<String, String> folder_renames;
@@ -1784,7 +1783,7 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 	_update_resource_paths_after_move(file_renames, uids);
-	_update_dependencies_after_move(file_renames, remaps);
+	_update_dependencies_after_move(file_renames, file_owners);
 	_update_project_settings_after_move(file_renames, folder_renames);
 	_update_favorites_list_after_move(file_renames, folder_renames);
 
@@ -1910,10 +1909,9 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			}
 		}
 
-		Vector<String> old_paths;
 		HashMap<String, ResourceUID::ID> uids;
-		Vector<String> remaps;
-		_before_move(old_paths, uids, remaps);
+		Vector<String> file_owners; // The files that use these moved/renamed resource files.
+		_before_move(uids, file_owners);
 
 		bool is_moved = false;
 		HashMap<String, String> file_renames;
@@ -1936,7 +1934,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		if (is_moved) {
 			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 			_update_resource_paths_after_move(file_renames, uids);
-			_update_dependencies_after_move(file_renames, remaps);
+			_update_dependencies_after_move(file_renames, file_owners);
 			_update_project_settings_after_move(file_renames, folder_renames);
 			_update_favorites_list_after_move(file_renames, folder_renames);
 
@@ -1951,20 +1949,43 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 }
 
-void FileSystemDock::_before_move(Vector<String> &r_old_paths, HashMap<String, ResourceUID::ID> &r_uids, Vector<String> &r_remaps) const {
+void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Vector<String> &r_file_owners) const {
+	Vector<String> renamed_files;
 	for (int i = 0; i < to_move.size(); i++) {
-		r_old_paths.push_back(to_move[i].path);
-		ResourceUID::ID uid = ResourceLoader::get_resource_uid(to_move[i].path);
-		if (uid != ResourceUID::INVALID_ID) {
-			r_uids[to_move[i].path] = uid;
+		if (to_move[i].is_file) {
+			renamed_files.push_back(to_move[i].path);
+			ResourceUID::ID uid = ResourceLoader::get_resource_uid(to_move[i].path);
+			if (uid != ResourceUID::INVALID_ID) {
+				r_uids[to_move[i].path] = uid;
+			}
+		} else {
+			EditorFileSystemDirectory *current_folder = EditorFileSystem::get_singleton()->get_filesystem_path(to_move[i].path);
+			List<EditorFileSystemDirectory *> folders;
+			folders.push_back(current_folder);
+			while (folders.front()) {
+				current_folder = folders.front()->get();
+				for (int j = 0; j < current_folder->get_file_count(); j++) {
+					const String file_path = current_folder->get_file_path(j);
+					renamed_files.push_back(file_path);
+					ResourceUID::ID uid = ResourceLoader::get_resource_uid(file_path);
+					if (uid != ResourceUID::INVALID_ID) {
+						r_uids[file_path] = uid;
+					}
+				}
+				for (int j = 0; j < current_folder->get_subdir_count(); j++) {
+					folders.push_back(current_folder->get_subdir(j));
+				}
+				folders.pop_front();
+			}
 		}
 	}
 
-	_find_remaps(EditorFileSystem::get_singleton()->get_filesystem(), r_old_paths, r_remaps);
+	// Look for files that use these moved/renamed resource files.
+	_find_file_owners(EditorFileSystem::get_singleton()->get_filesystem(), renamed_files, r_file_owners);
 
 	// Open scenes with dependencies on the ones about to be moved will be reloaded,
 	// so save them first to prevent losing unsaved changes.
-	EditorNode::get_singleton()->save_scene_list(r_remaps);
+	EditorNode::get_singleton()->save_scene_list(r_file_owners);
 }
 
 Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) const {
@@ -2200,6 +2221,10 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				if (to_rename.path == "res://") {
 					break;
 				}
+
+				// Rename has same logic as move for resource files.
+				to_move.clear();
+				to_move.push_back(to_rename);
 
 				if (tree->has_focus()) {
 					// Edit node in Tree.

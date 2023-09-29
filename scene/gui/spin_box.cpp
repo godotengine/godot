@@ -263,6 +263,9 @@ void SpinBox::_notification(int p_what) {
 			_update_text();
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED:
+			drag.allowed = false;
+			[[fallthrough]];
 		case NOTIFICATION_EXIT_TREE: {
 			_release_mouse();
 		} break;

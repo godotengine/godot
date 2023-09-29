@@ -1493,14 +1493,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-	{
-		SWAP(light_accum_tex, light_accum_tex2);
-		BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices * (p_bake_sh ? 4 : 1));
-		if (unlikely(error != BAKE_OK)) {
-			return error;
-		}
-	}
-
 	/* DENOISE */
 
 	if (p_use_denoiser) {
@@ -1515,13 +1507,13 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				return error;
 			}
 		}
+	}
 
-		{
-			SWAP(light_accum_tex, light_accum_tex2);
-			BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices * (p_bake_sh ? 4 : 1));
-			if (unlikely(error != BAKE_OK)) {
-				return error;
-			}
+	{
+		SWAP(light_accum_tex, light_accum_tex2);
+		BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices * (p_bake_sh ? 4 : 1));
+		if (unlikely(error != BAKE_OK)) {
+			return error;
 		}
 	}
 

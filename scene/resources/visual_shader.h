@@ -257,12 +257,12 @@ class VisualShaderNode : public Resource {
 
 	int port_preview = -1;
 
-	HashMap<int, Variant> default_input_values;
 	HashMap<int, bool> connected_input_ports;
 	HashMap<int, int> connected_output_ports;
 	HashMap<int, bool> expanded_output_ports;
 
 protected:
+	HashMap<int, Variant> default_input_values;
 	bool simple_decl = true;
 	bool disabled = false;
 	bool closable = false;
@@ -363,8 +363,19 @@ class VisualShaderNodeCustom : public VisualShaderNode {
 	bool is_initialized = false;
 	List<Port> input_ports;
 	List<Port> output_ports;
+	struct Property {
+		String name;
+	};
+	struct DropDownListProperty : public Property {
+		Vector<String> options;
+	};
+	HashMap<int, int> dp_selected_cache;
+	HashMap<int, int> dp_default_cache;
+	List<DropDownListProperty> dp_props;
+	String properties;
 
 	friend class VisualShaderEditor;
+	friend class VisualShaderGraphPlugin;
 
 protected:
 	virtual String get_caption() const override;
@@ -390,10 +401,15 @@ protected:
 	GDVIRTUAL0RC(int, _get_input_port_count)
 	GDVIRTUAL1RC(PortType, _get_input_port_type, int)
 	GDVIRTUAL1RC(String, _get_input_port_name, int)
+	GDVIRTUAL1RC(Variant, _get_input_port_default_value, int)
 	GDVIRTUAL1RC(int, _get_default_input_port, PortType)
 	GDVIRTUAL0RC(int, _get_output_port_count)
 	GDVIRTUAL1RC(PortType, _get_output_port_type, int)
 	GDVIRTUAL1RC(String, _get_output_port_name, int)
+	GDVIRTUAL0RC(int, _get_property_count)
+	GDVIRTUAL1RC(String, _get_property_name, int)
+	GDVIRTUAL1RC(int, _get_property_default_index, int)
+	GDVIRTUAL1RC(Vector<String>, _get_property_options, int)
 	GDVIRTUAL4RC(String, _get_code, TypedArray<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
 	GDVIRTUAL2RC(String, _get_func_code, Shader::Mode, VisualShader::Type)
 	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode)
@@ -414,16 +430,24 @@ protected:
 
 public:
 	VisualShaderNodeCustom();
+	void update_property_default_values();
+	void update_input_port_default_values();
 	void update_ports();
+	void update_properties();
 
 	bool _is_initialized();
 	void _set_initialized(bool p_enabled);
+	void _set_properties(const String &p_properties);
+	String _get_properties() const;
 
 	String _get_name() const;
 	String _get_description() const;
 	String _get_category() const;
 	PortType _get_return_icon_type() const;
 	bool _is_highend() const;
+	void _set_option_index(int p_op, int p_index);
+
+	int get_option_index(int p_op) const;
 };
 
 /////

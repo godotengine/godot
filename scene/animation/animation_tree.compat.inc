@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  root_motion_view.h                                                    */
+/*  animation_tree.compat.inc                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,52 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ROOT_MOTION_VIEW_H
-#define ROOT_MOTION_VIEW_H
+#ifndef DISABLE_DEPRECATED
 
-#include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/immediate_mesh.h"
-class RootMotionView : public VisualInstance3D {
-	GDCLASS(RootMotionView, VisualInstance3D);
+void AnimationTree::_set_process_callback_bind_compat_80813(AnimationTree::AnimationProcessCallback p_mode) {
+	set_callback_mode_process(static_cast<AnimationMixer::AnimationCallbackModeProcess>(static_cast<int>(p_mode)));
+}
 
-public:
-	Ref<ImmediateMesh> immediate;
-	NodePath path;
-	real_t cell_size = 1.0;
-	real_t radius = 10.0;
-	bool use_in_game = false;
-	Color color = Color(0.5, 0.5, 1.0);
-	bool first = true;
-	bool zero_y = true;
+AnimationTree::AnimationProcessCallback AnimationTree::_get_process_callback_bind_compat_80813() const {
+	return static_cast<AnimationProcessCallback>(static_cast<int>(get_callback_mode_process()));
+}
 
-	Ref<Material> immediate_material;
+void AnimationTree::_set_tree_root_bind_compat_80813(const Ref<AnimationNode> &p_root) {
+	const Ref<AnimationRootNode> rn = Ref<AnimationRootNode>(p_root.ptr());
+	if (rn.is_null()) {
+		return;
+	}
+	return (set_root_animation_node(rn));
+}
 
-	Transform3D accumulated;
+Ref<AnimationNode> AnimationTree::_get_tree_root_bind_compat_80813() const {
+	const Ref<AnimationRootNode> rn = Ref<AnimationNode>(get_root_animation_node().ptr());
+	return rn;
+}
 
-private:
-	void _notification(int p_what);
-	static void _bind_methods();
+void AnimationTree::_bind_compatibility_methods() {
+	ClassDB::bind_method(D_METHOD("set_process_callback", "mode"), &AnimationTree::_set_process_callback_bind_compat_80813);
+	ClassDB::bind_method(D_METHOD("get_process_callback"), &AnimationTree::_get_process_callback_bind_compat_80813);
+	ClassDB::bind_compatibility_method(D_METHOD("set_tree_root", "root"), &AnimationTree::_set_tree_root_bind_compat_80813);
+	ClassDB::bind_compatibility_method(D_METHOD("get_tree_root"), &AnimationTree::_get_tree_root_bind_compat_80813);
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_MANUAL);
+}
 
-public:
-	void set_animation_mixer(const NodePath &p_path);
-	NodePath get_animation_mixer() const;
-
-	void set_color(const Color &p_color);
-	Color get_color() const;
-
-	void set_cell_size(float p_size);
-	float get_cell_size() const;
-
-	void set_radius(float p_radius);
-	float get_radius() const;
-
-	void set_zero_y(bool p_zero_y);
-	bool get_zero_y() const;
-
-	virtual AABB get_aabb() const override;
-
-	RootMotionView();
-	~RootMotionView();
-};
-
-#endif // ROOT_MOTION_VIEW_H
+#endif // DISABLE_DEPRECATED

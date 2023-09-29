@@ -44,6 +44,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "editor/scene_tree_dock.h"
+#include "scene/animation/animation_tree.h"
 #include "scene/gui/separator.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
@@ -54,7 +55,11 @@
 ///////////////////////////////////
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
-	if (player && player == p_node) {
+	if (player && original_node == p_node) {
+		if (is_dummy) {
+			plugin->_clear_dummy_player();
+		}
+
 		player = nullptr;
 
 		set_process(false);
@@ -63,12 +68,20 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 		track_editor->set_root(nullptr);
 		track_editor->show_select_node_warning(true);
 		_update_player();
+
+		_ensure_dummy_player();
 	}
 }
 
 void AnimationPlayerEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PROCESS: {
+			if (!player || is_dummy) {
+				track_editor->show_inactive_player_warning(false);
+			} else {
+				track_editor->show_inactive_player_warning(!player->is_active());
+			}
+
 			if (!player) {
 				return;
 			}
@@ -103,13 +116,13 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			tool_anim->get_popup()->connect("id_pressed", callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
+			tool_anim->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 
-			onion_skinning->get_popup()->connect("id_pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
+			onion_skinning->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 
-			blend_editor.next->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
+			blend_editor.next->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 
-			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
+			get_tree()->connect(SNAME("node_removed"), callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
 			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
@@ -166,6 +179,10 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			ITEM_ICON(TOOL_REMOVE_ANIM, "Remove");
 
 			_update_animation_list_icons();
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_ensure_dummy_player();
 		} break;
 	}
 }
@@ -303,19 +320,18 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 			bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
 
 			track_editor->set_animation(anim, animation_library_is_foreign);
-			Node *root = player->get_node(player->get_root());
+			Node *root = player->get_node_or_null(player->get_root_node());
 			if (root) {
 				track_editor->set_root(root);
 			}
 		}
 		frame->set_max((double)anim->get_length());
-
+		autoplay->set_pressed(current == player->get_autoplay());
 	} else {
 		track_editor->set_animation(Ref<Animation>(), true);
 		track_editor->set_root(nullptr);
+		autoplay->set_pressed(false);
 	}
-
-	autoplay->set_pressed(current == player->get_autoplay());
 
 	AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 	_animation_key_editor_seek(timeline_position, false);
@@ -506,6 +522,9 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			undo_redo->add_undo_method(this, "_animation_player_changed", player);
 			undo_redo->commit_action();
 
+			if (is_dummy) {
+				plugin->_update_dummy_player(original_node);
+			}
 			_select_anim_by_name(new_library_prefix + new_name);
 		} break;
 
@@ -534,7 +553,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			if (al.is_null()) {
 				al.instantiate();
 				lib_added = true;
-				undo_redo->add_do_method(player, "add_animation_library", "", al);
+				undo_redo->add_do_method(fetch_mixer_for_library(), "add_animation_library", "", al);
 				library_name = "";
 			}
 
@@ -547,12 +566,16 @@ void AnimationPlayerEditor::_animation_name_edited() {
 				undo_redo->add_undo_method(this, "_stop_onion_skinning");
 			}
 			if (lib_added) {
-				undo_redo->add_undo_method(player, "remove_animation_library", "");
+				undo_redo->add_undo_method(fetch_mixer_for_library(), "remove_animation_library", "");
 			}
 			undo_redo->commit_action();
 
 			if (library_name != "") {
 				library_name = library_name + "/";
+			}
+
+			if (is_dummy) {
+				plugin->_update_dummy_player(original_node);
 			}
 			_select_anim_by_name(library_name + new_name);
 
@@ -601,6 +624,10 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 			if (library_name != "") {
 				library_name = library_name + "/";
+			}
+
+			if (is_dummy) {
+				plugin->_update_dummy_player(original_node);
 			}
 			_select_anim_by_name(library_name + new_name);
 		} break;
@@ -714,7 +741,7 @@ void AnimationPlayerEditor::_blend_edited() {
 }
 
 void AnimationPlayerEditor::ensure_visibility() {
-	if (player && pin->is_pressed()) {
+	if (player) {
 		return; // another player is pinned, don't reset
 	}
 
@@ -724,11 +751,13 @@ void AnimationPlayerEditor::ensure_visibility() {
 Dictionary AnimationPlayerEditor::get_state() const {
 	Dictionary d;
 
-	d["visible"] = is_visible_in_tree();
-	if (EditorNode::get_singleton()->get_edited_scene() && is_visible_in_tree() && player) {
-		d["player"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(player);
-		d["animation"] = player->get_assigned_animation();
-		d["track_editor_state"] = track_editor->get_state();
+	if (!is_dummy) {
+		d["visible"] = is_visible_in_tree();
+		if (EditorNode::get_singleton()->get_edited_scene() && is_visible_in_tree() && player) {
+			d["player"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(player);
+			d["animation"] = player->get_assigned_animation();
+			d["track_editor_state"] = track_editor->get_state();
+		}
 	}
 
 	return d;
@@ -746,14 +775,20 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
 		if (Object::cast_to<AnimationPlayer>(n) && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
 			if (player) {
-				if (player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
-					player->disconnect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+				if (player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+					player->disconnect(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+				}
+				if (player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
+					player->disconnect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed));
 				}
 			}
 			player = Object::cast_to<AnimationPlayer>(n);
 			if (player) {
-				if (!player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
-					player->connect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+				if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+					player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated), CONNECT_DEFERRED);
+				}
+				if (!player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
+					player->connect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed), CONNECT_DEFERRED);
 				}
 			}
 
@@ -794,7 +829,7 @@ void AnimationPlayerEditor::_animation_edit() {
 
 		track_editor->set_animation(anim, animation_library_is_foreign);
 
-		Node *root = player->get_node(player->get_root());
+		Node *root = player->get_node_or_null(player->get_root_node());
 		if (root) {
 			track_editor->set_root(root);
 		}
@@ -935,7 +970,7 @@ void AnimationPlayerEditor::_update_player() {
 		bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
 
 		track_editor->set_animation(anim, animation_library_is_foreign);
-		Node *root = player->get_node(player->get_root());
+		Node *root = player->get_node_or_null(player->get_root_node());
 		if (root) {
 			track_editor->set_root(root);
 		}
@@ -1007,21 +1042,69 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 	}
 }
 
-void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
+void AnimationPlayerEditor::_ensure_dummy_player() {
+	bool dummy_exists = is_dummy && player && original_node;
+	if (dummy_exists) {
+		if (is_visible()) {
+			player->set_active(true);
+			original_node->set_editing(true);
+		} else {
+			player->set_active(false);
+			original_node->set_editing(false);
+		}
+	}
+
+	// Make some options disabled.
+	tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(TOOL_EDIT_TRANSITIONS), dummy_exists);
+	onion_toggle->set_disabled(dummy_exists);
+	onion_skinning->set_disabled(dummy_exists);
+	int selected = animation->get_selected();
+	autoplay->set_disabled(selected != -1 ? (animation->get_item_text(selected).is_empty() ? true : dummy_exists) : true);
+
+	// Show warning.
+	if (track_editor) {
+		track_editor->show_dummy_player_warning(dummy_exists);
+	}
+}
+
+void AnimationPlayerEditor::edit(AnimationMixer *p_node, AnimationPlayer *p_player, bool p_is_dummy) {
 	if (player && pin->is_pressed()) {
 		return; // Ignore, pinned.
 	}
 
 	if (player) {
-		if (player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
-			player->disconnect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+		if (player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+			player->disconnect(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+		}
+		if (player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
+			player->disconnect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed));
 		}
 	}
+
+	AnimationTree *tree = Object::cast_to<AnimationTree>(p_node);
+
+	if (tree) {
+		if (tree->is_connected(SNAME("animation_player_changed"), callable_mp(this, &AnimationPlayerEditor::unpin))) {
+			tree->disconnect(SNAME("animation_player_changed"), callable_mp(this, &AnimationPlayerEditor::unpin));
+		}
+	}
+
+	original_node = p_node;
 	player = p_player;
+	is_dummy = p_is_dummy;
+
+	if (tree) {
+		if (!tree->is_connected(SNAME("animation_player_changed"), callable_mp(this, &AnimationPlayerEditor::unpin))) {
+			tree->connect(SNAME("animation_player_changed"), callable_mp(this, &AnimationPlayerEditor::unpin));
+		}
+	}
 
 	if (player) {
-		if (!player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
-			player->connect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+		if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+			player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated), CONNECT_DEFERRED);
+		}
+		if (!player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
+			player->connect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed));
 		}
 		_update_player();
 
@@ -1042,7 +1125,9 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 		track_editor->show_select_node_warning(true);
 	}
 
-	library_editor->set_animation_player(player);
+	library_editor->set_animation_mixer(fetch_mixer_for_library());
+
+	_ensure_dummy_player();
 }
 
 void AnimationPlayerEditor::forward_force_draw_over_viewport(Control *p_overlay) {
@@ -1181,12 +1266,12 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 
 	if (!p_timeline_only) {
 		if (player->is_valid() && !p_set) {
-			float cpos = player->get_current_animation_position();
-
-			player->seek_delta(pos, pos - cpos);
+			double delta = pos - player->get_current_animation_position();
+			player->seek(pos, true, true);
+			player->seek(pos + delta, true, true);
 		} else {
 			player->stop();
-			player->seek(pos, true);
+			player->seek(pos, true, true);
 		}
 	}
 
@@ -1194,14 +1279,12 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 };
 
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
-	if (player == p_pl && is_visible_in_tree()) {
-		_update_player();
-		if (blend_editor.dialog->is_visible()) {
-			_animation_blend(); // Update.
-		}
-		if (library_editor->is_visible()) {
-			library_editor->update_tree();
-		}
+	_update_player();
+	if (blend_editor.dialog->is_visible()) {
+		_animation_blend(); // Update.
+	}
+	if (library_editor->is_visible()) {
+		library_editor->update_tree();
 	}
 }
 
@@ -1212,6 +1295,25 @@ void AnimationPlayerEditor::_animation_libraries_updated() {
 void AnimationPlayerEditor::_list_changed() {
 	if (is_visible_in_tree()) {
 		_update_player();
+	}
+}
+
+void AnimationPlayerEditor::_current_animation_changed(const String &p_name) {
+	if (is_visible_in_tree()) {
+		if (p_name.is_empty()) {
+			// Means [stop].
+			frame->set_value(0);
+			track_editor->set_anim_pos(0);
+			_update_animation();
+			return;
+		}
+		Ref<Animation> anim = player->get_animation(p_name);
+		if (anim.is_null()) {
+			return;
+		}
+		bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
+		track_editor->set_animation(anim, animation_library_is_foreign);
+		_update_animation();
 	}
 }
 
@@ -1257,7 +1359,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			_animation_new();
 		} break;
 		case TOOL_ANIM_LIBRARY: {
-			library_editor->set_animation_player(player);
+			library_editor->set_animation_mixer(fetch_mixer_for_library());
 			library_editor->show_dialog();
 		} break;
 		case TOOL_DUPLICATE_ANIM: {
@@ -1267,6 +1369,9 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			_animation_rename();
 		} break;
 		case TOOL_EDIT_TRANSITIONS: {
+			if (is_dummy) {
+				break;
+			}
 			_animation_blend();
 		} break;
 		case TOOL_REMOVE_ANIM: {
@@ -1506,7 +1611,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	}
 
 	// Backup current animation state.
-	Ref<AnimatedValuesBackup> values_backup = player->backup_animated_values();
+	Ref<AnimatedValuesBackup> backup_current = player->make_backup();
 	float cpos = player->get_current_animation_position();
 
 	// Render every past/future step with the capture shader.
@@ -1536,7 +1641,6 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 		if (valid) {
 			player->seek(pos, true);
 			get_tree()->flush_transform_notifications(); // Needed for transforms of Node3Ds.
-			values_backup->update_skeletons(); // Needed for Skeletons (2D & 3D).
 
 			RS::get_singleton()->viewport_set_active(onion.captures[cidx], true);
 			RS::get_singleton()->viewport_set_parent_viewport(root_vp, onion.captures[cidx]);
@@ -1556,7 +1660,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	// (Seeking with update=true wouldn't do the trick because the current value of the properties
 	// may not match their value for the current point in the animation).
 	player->seek(cpos, false);
-	values_backup->restore();
+	player->restore(backup_current);
 
 	// Restore state of main editors.
 	if (Node3DEditor::get_singleton()->is_visible()) {
@@ -1574,14 +1678,14 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 void AnimationPlayerEditor::_start_onion_skinning() {
 	// FIXME: Using "process_frame" makes onion layers update one frame behind the current.
-	if (!get_tree()->is_connected("process_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
-		get_tree()->connect("process_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
+	if (!get_tree()->is_connected(SNAME("process_frame"), callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
+		get_tree()->connect(SNAME("process_frame"), callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
 	}
 }
 
 void AnimationPlayerEditor::_stop_onion_skinning() {
-	if (get_tree()->is_connected("process_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
-		get_tree()->disconnect("process_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
+	if (get_tree()->is_connected(SNAME("process_frame"), callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
+		get_tree()->disconnect(SNAME("process_frame"), callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
 
 		_free_onion_layers();
 
@@ -1593,6 +1697,21 @@ void AnimationPlayerEditor::_stop_onion_skinning() {
 
 void AnimationPlayerEditor::_pin_pressed() {
 	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
+}
+
+AnimationMixer *AnimationPlayerEditor::fetch_mixer_for_library() const {
+	if (!original_node) {
+		return nullptr;
+	}
+	// Does AnimationTree have AnimationPlayer?
+	if (original_node->is_class("AnimationTree")) {
+		AnimationTree *src_tree = Object::cast_to<AnimationTree>(original_node);
+		Node *src_player = src_tree->get_node_or_null(src_tree->get_animation_player());
+		if (src_player) {
+			return Object::cast_to<AnimationMixer>(src_player);
+		}
+	}
+	return original_node;
 }
 
 bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
@@ -1668,6 +1787,10 @@ AnimationPlayer *AnimationPlayerEditor::get_player() const {
 	return player;
 }
 
+AnimationMixer *AnimationPlayerEditor::get_editing_node() const {
+	return original_node;
+}
+
 AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plugin) {
 	plugin = p_plugin;
 	singleton = this;
@@ -1724,7 +1847,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);
-	delete_dialog->connect("confirmed", callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
+	delete_dialog->connect(SNAME("confirmed"), callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
 
 	tool_anim = memnew(MenuButton);
 	tool_anim->set_shortcut_context(this);
@@ -1769,7 +1892,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_toggle->set_theme_type_variation("FlatButton");
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip_text(TTR("Enable Onion Skinning"));
-	onion_toggle->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
+	onion_toggle->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
 	hb->add_child(onion_toggle);
 
 	onion_skinning = memnew(MenuButton);
@@ -1808,7 +1931,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);
-	pin->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
+	pin->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
 
 	file = memnew(EditorFileDialog);
 	add_child(file);
@@ -1838,7 +1961,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	error_dialog->set_title(TTR("Error!"));
 	add_child(error_dialog);
 
-	name_dialog->connect("confirmed", callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
+	name_dialog->connect(SNAME("confirmed"), callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
 
 	blend_editor.dialog = memnew(AcceptDialog);
 	add_child(blend_editor.dialog);
@@ -1855,20 +1978,20 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
 	updating_blends = false;
 
-	blend_editor.tree->connect("item_edited", callable_mp(this, &AnimationPlayerEditor::_blend_edited));
+	blend_editor.tree->connect(SNAME("item_edited"), callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
-	autoplay->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
+	autoplay->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
 	autoplay->set_toggle_mode(true);
-	play->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_pressed));
-	play_from->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_from_pressed));
-	play_bw->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_bw_pressed));
-	play_bw_from->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
-	stop->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
+	play->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_pressed));
+	play_from->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_from_pressed));
+	play_bw->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_bw_pressed));
+	play_bw_from->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
+	stop->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
 
-	animation->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_animation_selected));
+	animation->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
-	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(true, false));
-	scale->connect("text_submitted", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
+	frame->connect(SNAME("value_changed"), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(true, false));
+	scale->connect(SNAME("text_submitted"), callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	last_active = false;
 	timeline_position = 0;
@@ -1877,18 +2000,18 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	add_child(track_editor);
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	track_editor->connect("timeline_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_seek));
-	track_editor->connect("animation_len_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_anim_len_changed));
+	track_editor->connect(SNAME("timeline_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_seek));
+	track_editor->connect(SNAME("animation_len_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_anim_len_changed));
 
 	_update_player();
 
 	library_editor = memnew(AnimationLibraryEditor);
 	add_child(library_editor);
-	library_editor->connect("update_editor", callable_mp(this, &AnimationPlayerEditor::_animation_player_changed));
+	library_editor->connect(SNAME("update_editor"), callable_mp(this, &AnimationPlayerEditor::_animation_player_changed));
 
 	// Onion skinning.
 
-	track_editor->connect("visibility_changed", callable_mp(this, &AnimationPlayerEditor::_editor_visibility_changed));
+	track_editor->connect(SNAME("visibility_changed"), callable_mp(this, &AnimationPlayerEditor::_editor_visibility_changed));
 
 	onion.enabled = false;
 	onion.past = true;
@@ -1943,10 +2066,10 @@ AnimationPlayerEditor::~AnimationPlayerEditor() {
 void AnimationPlayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			Node3DEditor::get_singleton()->connect("transform_key_request", callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
-			InspectorDock::get_inspector_singleton()->connect("property_keyed", callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
-			anim_editor->get_track_editor()->connect("keying_changed", callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
-			InspectorDock::get_inspector_singleton()->connect("edited_object_changed", callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
+			Node3DEditor::get_singleton()->connect(SNAME("transform_key_request"), callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
+			InspectorDock::get_inspector_singleton()->connect(SNAME("property_keyed"), callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
+			anim_editor->get_track_editor()->connect(SNAME("keying_changed"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
+			InspectorDock::get_inspector_singleton()->connect(SNAME("edited_object_changed"), callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
 			set_force_draw_over_forwarding_enabled();
 		} break;
 	}
@@ -1979,14 +2102,88 @@ void AnimationPlayerEditorPlugin::_update_keying() {
 }
 
 void AnimationPlayerEditorPlugin::edit(Object *p_object) {
+	if (player && anim_editor && anim_editor->is_pinned()) {
+		return; // Ignore, pinned.
+	}
+
+	player = nullptr;
 	if (!p_object) {
 		return;
 	}
-	anim_editor->edit(Object::cast_to<AnimationPlayer>(p_object));
+	last_mixer = p_object->get_instance_id();
+
+	AnimationMixer *src_node = Object::cast_to<AnimationMixer>(p_object);
+	bool is_dummy = false;
+	if (!p_object->is_class("AnimationPlayer")) {
+		// If it needs dummy AnimationPlayer, assign original AnimationMixer to LibraryEditor.
+		_update_dummy_player(src_node);
+
+		is_dummy = true;
+
+		if (!src_node->is_connected(SNAME("mixer_updated"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_dummy_player))) {
+			src_node->connect(SNAME("mixer_updated"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_dummy_player).bind(src_node), CONNECT_DEFERRED);
+		}
+		if (!src_node->is_connected(SNAME("animation_libraries_updated"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_dummy_player))) {
+			src_node->connect(SNAME("animation_libraries_updated"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_dummy_player).bind(src_node), CONNECT_DEFERRED);
+		}
+	} else {
+		_clear_dummy_player();
+		player = Object::cast_to<AnimationPlayer>(p_object);
+	}
+	player->set_dummy(is_dummy);
+
+	anim_editor->edit(src_node, player, is_dummy);
+}
+
+void AnimationPlayerEditorPlugin::_clear_dummy_player() {
+	if (!dummy_player) {
+		return;
+	}
+	Node *parent = dummy_player->get_parent();
+	if (parent) {
+		parent->call_deferred("remove_child", dummy_player);
+	}
+	dummy_player->queue_free();
+	dummy_player = nullptr;
+}
+
+void AnimationPlayerEditorPlugin::_update_dummy_player(AnimationMixer *p_mixer) {
+	// Check current editing object.
+	if (p_mixer->get_instance_id() != last_mixer && p_mixer->is_connected(SNAME("mixer_updated"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_dummy_player))) {
+		p_mixer->disconnect(SNAME("mixer_updated"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_dummy_player));
+		return;
+	}
+
+	// Add dummy player to scene.
+	if (!dummy_player) {
+		Node *parent = p_mixer->get_parent();
+		ERR_FAIL_NULL(parent);
+		dummy_player = memnew(AnimationPlayer);
+		parent->add_child(dummy_player);
+	}
+	player = dummy_player;
+
+	// Convert AnimationTree (AnimationMixer) to AnimationPlayer.
+	AnimationMixer *default_node = memnew(AnimationMixer);
+	List<PropertyInfo> pinfo;
+	default_node->get_property_list(&pinfo);
+	for (const PropertyInfo &E : pinfo) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+		if (E.name != "script" && E.name != "active" && E.name != "deterministic" && E.name != "root_motion_track") {
+			dummy_player->set(E.name, p_mixer->get(E.name));
+		}
+	}
+	memdelete(default_node);
+
+	if (anim_editor) {
+		anim_editor->_update_player();
+	}
 }
 
 bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("AnimationPlayer");
+	return p_object->is_class("AnimationPlayer") || p_object->is_class("AnimationTree") || p_object->is_class("AnimationMixer");
 }
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
@@ -2003,6 +2200,12 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
+	if (dummy_player) {
+		memdelete(dummy_player);
+	}
+	if (player) {
+		memdelete(player);
+	}
 }
 
 // AnimationTrackKeyEditEditorPlugin

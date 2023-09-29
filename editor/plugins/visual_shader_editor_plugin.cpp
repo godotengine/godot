@@ -551,6 +551,47 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		}
 	}
 
+	if (custom_node.is_valid()) {
+		bool first = true;
+		VBoxContainer *vbox = nullptr;
+
+		for (int i = 0; i < custom_node->dp_props.size(); i++) {
+			const VisualShaderNodeCustom::DropDownListProperty &dp = custom_node->dp_props[i];
+
+			if (first) {
+				first = false;
+				vbox = memnew(VBoxContainer);
+				node->add_child(vbox);
+				port_offset++;
+			}
+
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			vbox->add_child(hbox);
+			hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+			String prop_name = dp.name.strip_edges();
+			if (!prop_name.is_empty()) {
+				Label *label = memnew(Label);
+				label->set_text(prop_name + ":");
+				hbox->add_child(label);
+			}
+
+			OptionButton *op = memnew(OptionButton);
+			hbox->add_child(op);
+			op->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			op->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_set_custom_node_option).bind(p_id, i), CONNECT_DEFERRED);
+
+			for (const String &s : dp.options) {
+				op->add_item(s);
+			}
+			if (custom_node->dp_selected_cache.has(i)) {
+				op->select(custom_node->dp_selected_cache[i]);
+			} else {
+				op->select(0);
+			}
+		}
+	}
+
 	Ref<VisualShaderNodeCurveTexture> curve = vsnode;
 	Ref<VisualShaderNodeCurveXYZTexture> curve_xyz = vsnode;
 
@@ -2704,6 +2745,22 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	editing_port = p_port;
 }
 
+void VisualShaderEditor::_set_custom_node_option(int p_index, int p_node, int p_op) {
+	VisualShader::Type type = get_current_shader_type();
+	Ref<VisualShaderNodeCustom> node = visual_shader->get_node(type, p_node);
+	if (node.is_null()) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Set Custom Node Option"));
+	undo_redo->add_do_method(node.ptr(), "_set_option_index", p_op, p_index);
+	undo_redo->add_undo_method(node.ptr(), "_set_option_index", p_op, node->get_option_index(p_op));
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type, p_node);
+	undo_redo->commit_action();
+}
+
 void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Variant> &p_ops) {
 	// INPUT
 	{
@@ -3084,7 +3141,9 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 		}
 		VisualShaderNodeCustom *custom_node = Object::cast_to<VisualShaderNodeCustom>(vsn);
 		ERR_FAIL_NULL(custom_node);
-		custom_node->update_ports();
+		custom_node->update_property_default_values();
+		custom_node->update_input_port_default_values();
+		custom_node->update_properties();
 	}
 
 	bool is_texture2d = (Object::cast_to<VisualShaderNodeTexture>(vsnode.ptr()) != nullptr);
