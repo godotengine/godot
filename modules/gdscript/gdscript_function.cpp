@@ -140,7 +140,7 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 
 	if (p_argcount == 0) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 1;
+		r_error.expected = 1;
 		return Variant();
 	} else if (p_argcount == 1) {
 		//noooneee

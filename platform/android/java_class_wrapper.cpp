@@ -50,14 +50,14 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		}
 
 		int pc = E.param_types.size();
-		if (pc > p_argcount) {
+		if (p_argcount < pc) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = pc;
+			r_error.expected = pc;
 			continue;
 		}
-		if (pc < p_argcount) {
+		if (p_argcount > pc) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-			r_error.argument = pc;
+			r_error.expected = pc;
 			continue;
 		}
 		uint32_t *ptypes = E.param_types.ptrw();
