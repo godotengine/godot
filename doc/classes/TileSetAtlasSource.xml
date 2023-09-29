@@ -36,6 +36,12 @@
 				Creates a new tile at coordinates [param atlas_coords] with the given [param size].
 			</description>
 		</method>
+		<method name="get_all_tile_coords()" qualifiers="const">
+			<return type="Array[Vector2i]" />
+			<description>
+				Returns an array of all tile coordinates.
+			</description>
+		</method>
 		<method name="get_atlas_grid_size" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
