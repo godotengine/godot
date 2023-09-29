@@ -493,6 +493,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _varying_unselected();
 	void _update_varying_tree();
 
+	void _set_custom_node_option(int p_index, int p_node, int p_op);
+
 	Vector2 menu_point;
 	void _node_menu_id_pressed(int p_idx);
 
