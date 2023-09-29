@@ -369,6 +369,7 @@ elif PLATFORM == 'ios' or PLATFORM == 'tvos'
 else
     EXEC_GODOT = executable('godot', MAIN_SOURCES,
         dependencies: [DEP_GODOT_ALL, MODULE_DEPENDENCIES, DEPENDENCIES],
+        cpp_args: _module_gdscript_cpp_args, # FIXME: needed for -DGDSCRIPT_NO_LSP
         win_subsystem: get_option('windows_subsystem')
     )
 endif
