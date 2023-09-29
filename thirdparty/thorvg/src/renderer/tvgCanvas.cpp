@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-#include "tvgCanvasImpl.h"
+#include "tvgCanvas.h"
 
 /************************************************************************/
 /* External Class Implementation                                        */

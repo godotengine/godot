@@ -220,7 +220,9 @@ struct Scene::Impl
         auto dup = ret.get()->pImpl;
 
         for (auto paint : paints) {
-            dup->paints.push_back(paint->duplicate());
+            auto cdup = paint->duplicate();
+            P(cdup)->ref();
+            dup->paints.push_back(cdup);
         }
 
         return ret.release();
@@ -231,8 +233,8 @@ struct Scene::Impl
         auto dispose = renderer ? true : false;
 
         for (auto paint : paints) {
-            if (dispose) free &= paint->pImpl->dispose(*renderer);
-            if (free) delete(paint);
+            if (dispose) free &= P(paint)->dispose(*renderer);
+            if (P(paint)->unref() == 0 && free) delete(paint);
         }
         paints.clear();
         renderer = nullptr;

@@ -556,6 +556,7 @@ struct SvgLoaderData
     SvgParser* svgParse = nullptr;
     Array<SvgNodeIdPair> cloneNodes;
     Array<SvgNodeIdPair> nodesToStyle;
+    Array<char*> images;        //embedded images
     int level = 0;
     bool result = false;
     bool style = false;
