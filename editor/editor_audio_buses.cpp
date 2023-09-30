@@ -298,8 +298,6 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 	StringName current = AudioServer::get_singleton()->get_bus_name(get_index());
 
 	ur->create_action(TTR("Rename Audio Bus"));
-	ur->add_do_method(buses, "_set_renaming_buses", true);
-	ur->add_undo_method(buses, "_set_renaming_buses", true);
 
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_name", get_index(), attempt);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_name", get_index(), current);
@@ -317,8 +315,6 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 	ur->add_do_method(buses, "_update_sends");
 	ur->add_undo_method(buses, "_update_sends");
 
-	ur->add_do_method(buses, "_set_renaming_buses", false);
-	ur->add_undo_method(buses, "_set_renaming_buses", false);
 	ur->commit_action();
 
 	updating_bus = false;
@@ -333,7 +329,7 @@ void EditorAudioBus::_volume_changed(float p_normalized) {
 
 	const float p_db = this->_normalized_volume_to_scaled_db(p_normalized);
 
-	if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 		// Snap the value when holding Ctrl for easier editing.
 		// To do so, it needs to be converted back to normalized volume (as the slider uses that unit).
 		slider->set_value(_scaled_db_to_normalized_volume(Math::round(p_db)));
@@ -393,7 +389,7 @@ float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 
 void EditorAudioBus::_show_value(float slider_value) {
 	float db;
-	if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 		// Display the correct (snapped) value when holding Ctrl
 		db = Math::round(_normalized_volume_to_scaled_db(slider_value));
 	} else {
@@ -545,9 +541,9 @@ void EditorAudioBus::_effect_add(int p_which) {
 	StringName name = effect_options->get_item_metadata(p_which);
 
 	Object *fx = ClassDB::instantiate(name);
-	ERR_FAIL_COND(!fx);
+	ERR_FAIL_NULL(fx);
 	AudioEffect *afx = Object::cast_to<AudioEffect>(fx);
-	ERR_FAIL_COND(!afx);
+	ERR_FAIL_NULL(afx);
 	Ref<AudioEffect> afxr = Ref<AudioEffect>(afx);
 
 	afxr->set_name(effect_options->get_item_text(p_which));
@@ -807,21 +803,21 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vb->add_child(hbc);
 	solo = memnew(Button);
-	solo->set_flat(true);
+	solo->set_theme_type_variation("FlatButton");
 	solo->set_toggle_mode(true);
 	solo->set_tooltip_text(TTR("Solo"));
 	solo->set_focus_mode(FOCUS_NONE);
 	solo->connect("pressed", callable_mp(this, &EditorAudioBus::_solo_toggled));
 	hbc->add_child(solo);
 	mute = memnew(Button);
-	mute->set_flat(true);
+	mute->set_theme_type_variation("FlatButton");
 	mute->set_toggle_mode(true);
 	mute->set_tooltip_text(TTR("Mute"));
 	mute->set_focus_mode(FOCUS_NONE);
 	mute->connect("pressed", callable_mp(this, &EditorAudioBus::_mute_toggled));
 	hbc->add_child(mute);
 	bypass = memnew(Button);
-	bypass->set_flat(true);
+	bypass->set_theme_type_variation("FlatButton");
 	bypass->set_toggle_mode(true);
 	bypass->set_tooltip_text(TTR("Bypass"));
 	bypass->set_focus_mode(FOCUS_NONE);
@@ -1011,18 +1007,7 @@ void EditorAudioBusDrop::_bind_methods() {
 EditorAudioBusDrop::EditorAudioBusDrop() {
 }
 
-void EditorAudioBuses::_set_renaming_buses(bool p_renaming) {
-	renaming_buses = p_renaming;
-}
-
-void EditorAudioBuses::_update_buses() {
-	if (renaming_buses) {
-		// This case will be handled more gracefully, no need to trigger a full rebuild.
-		// This is possibly a mistake in the AudioServer, which fires bus_layout_changed
-		// on a rename. This may not be intended, but no way to tell at the moment.
-		return;
-	}
-
+void EditorAudioBuses::_rebuild_buses() {
 	for (int i = bus_hb->get_child_count() - 1; i >= 0; i--) {
 		EditorAudioBus *audio_bus = Object::cast_to<EditorAudioBus>(bus_hb->get_child(i));
 		if (audio_bus) {
@@ -1063,7 +1048,7 @@ void EditorAudioBuses::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			_update_buses();
+			_rebuild_buses();
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -1102,8 +1087,6 @@ void EditorAudioBuses::_add_bus() {
 	ur->create_action(TTR("Add Audio Bus"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_count", AudioServer::get_singleton()->get_bus_count() + 1);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_count", AudioServer::get_singleton()->get_bus_count());
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
 	ur->commit_action();
 }
 
@@ -1144,8 +1127,6 @@ void EditorAudioBuses::_delete_bus(Object *p_which) {
 		ur->add_undo_method(AudioServer::get_singleton(), "add_bus_effect", index, AudioServer::get_singleton()->get_bus_effect(index, i));
 		ur->add_undo_method(AudioServer::get_singleton(), "set_bus_effect_enabled", index, i, AudioServer::get_singleton()->is_bus_effect_enabled(index, i));
 	}
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
 	ur->commit_action();
 }
 
@@ -1165,8 +1146,6 @@ void EditorAudioBuses::_duplicate_bus(int p_which) {
 		ur->add_do_method(AudioServer::get_singleton(), "set_bus_effect_enabled", add_at_pos, i, AudioServer::get_singleton()->is_bus_effect_enabled(p_which, i));
 	}
 	ur->add_undo_method(AudioServer::get_singleton(), "remove_bus", add_at_pos);
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
 	ur->commit_action();
 }
 
@@ -1178,8 +1157,8 @@ void EditorAudioBuses::_reset_bus_volume(Object *p_which) {
 	ur->create_action(TTR("Reset Bus Volume"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_volume_db", index, 0.f);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_volume_db", index, AudioServer::get_singleton()->get_bus_volume_db(index));
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
+	ur->add_do_method(this, "_update_bus", index);
+	ur->add_undo_method(this, "_update_bus", index);
 	ur->commit_action();
 }
 
@@ -1202,8 +1181,6 @@ void EditorAudioBuses::_drop_at_index(int p_bus, int p_index) {
 	int real_index = p_index > p_bus ? p_index - 1 : p_index;
 	ur->add_undo_method(AudioServer::get_singleton(), "move_bus", real_index, real_bus);
 
-	ur->add_do_method(this, "_update_buses");
-	ur->add_undo_method(this, "_update_buses");
 	ur->commit_action();
 }
 
@@ -1252,7 +1229,7 @@ void EditorAudioBuses::_load_default_layout() {
 	edited_path = layout_path;
 	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
-	_update_buses();
+	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
 	call_deferred(SNAME("_select_layout"));
 }
@@ -1268,7 +1245,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		edited_path = p_string;
 		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		AudioServer::get_singleton()->set_bus_layout(state);
-		_update_buses();
+		_rebuild_buses();
 		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
 		call_deferred(SNAME("_select_layout"));
 
@@ -1288,15 +1265,13 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 
 		edited_path = p_string;
 		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
-		_update_buses();
+		_rebuild_buses();
 		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
 		call_deferred(SNAME("_select_layout"));
 	}
 }
 
 void EditorAudioBuses::_bind_methods() {
-	ClassDB::bind_method("_set_renaming_buses", &EditorAudioBuses::_set_renaming_buses);
-	ClassDB::bind_method("_update_buses", &EditorAudioBuses::_update_buses);
 	ClassDB::bind_method("_update_bus", &EditorAudioBuses::_update_bus);
 	ClassDB::bind_method("_update_sends", &EditorAudioBuses::_update_sends);
 	ClassDB::bind_method("_select_layout", &EditorAudioBuses::_select_layout);
@@ -1373,7 +1348,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));
 
-	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &EditorAudioBuses::_update_buses));
+	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &EditorAudioBuses::_rebuild_buses));
 
 	set_process(true);
 }
@@ -1390,7 +1365,7 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	edited_path = p_path;
 	file->set_text(p_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
-	_update_buses();
+	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
 	call_deferred(SNAME("_select_layout"));
 }

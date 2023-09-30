@@ -71,7 +71,7 @@ void PhysicalBone2D::_position_at_bone2d() {
 	// Reset to Bone2D position
 	if (parent_skeleton) {
 		Bone2D *bone_to_use = parent_skeleton->get_bone(bone2d_index);
-		ERR_FAIL_COND_MSG(bone_to_use == nullptr, "It's not possible to position the bone with ID: " + itos(bone2d_index));
+		ERR_FAIL_NULL_MSG(bone_to_use, "It's not possible to position the bone with ID: " + itos(bone2d_index) + ".");
 		set_global_transform(bone_to_use->get_global_transform());
 	}
 }

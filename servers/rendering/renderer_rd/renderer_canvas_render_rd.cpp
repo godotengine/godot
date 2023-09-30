@@ -329,7 +329,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 
 void RendererCanvasRenderRD::free_polygon(PolygonID p_polygon) {
 	PolygonBuffers *pb_ptr = polygon_buffers.polygons.getptr(p_polygon);
-	ERR_FAIL_COND(!pb_ptr);
+	ERR_FAIL_NULL(pb_ptr);
 
 	PolygonBuffers &pb = *pb_ptr;
 
@@ -1045,7 +1045,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		uniforms.push_back(u);
 	}
 
-	uniforms.append_array(material_storage->get_default_sampler_uniforms(SAMPLERS_BINDING_FIRST_INDEX));
+	uniforms.append_array(material_storage->samplers_rd_get_default().get_uniforms(SAMPLERS_BINDING_FIRST_INDEX));
 
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, BASE_UNIFORM_SET);
 	if (p_backbuffer) {
@@ -1561,7 +1561,7 @@ void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
-	ERR_FAIL_COND(!cl);
+	ERR_FAIL_NULL(cl);
 	if (cl->texture == p_texture) {
 		return;
 	}
@@ -1580,7 +1580,7 @@ void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
 
 void RendererCanvasRenderRD::light_set_use_shadow(RID p_rid, bool p_enable) {
 	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
-	ERR_FAIL_COND(!cl);
+	ERR_FAIL_NULL(cl);
 
 	cl->shadow.enabled = p_enable;
 }
@@ -1849,7 +1849,7 @@ RID RendererCanvasRenderRD::occluder_polygon_create() {
 
 void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) {
 	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!oc);
+	ERR_FAIL_NULL(oc);
 
 	Vector<Vector2> lines;
 
@@ -2020,7 +2020,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 
 void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
 	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!oc);
+	ERR_FAIL_NULL(oc);
 	oc->cull_mode = p_mode;
 }
 
@@ -2250,7 +2250,7 @@ RS::ShaderNativeSourceCode RendererCanvasRenderRD::CanvasShaderData::get_native_
 
 RendererCanvasRenderRD::CanvasShaderData::~CanvasShaderData() {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
-	ERR_FAIL_COND(!canvas_singleton);
+	ERR_FAIL_NULL(canvas_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
 		canvas_singleton->shader.canvas_shader.version_free(version);
@@ -2480,6 +2480,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 		actions.render_mode_defines["light_only"] = "#define MODE_LIGHT_ONLY\n";
+		actions.render_mode_defines["world_vertex_coords"] = "#define USE_WORLD_VERTEX_COORDS\n";
 
 		actions.custom_samplers["TEXTURE"] = "texture_sampler";
 		actions.custom_samplers["NORMAL_TEXTURE"] = "texture_sampler";
@@ -2703,7 +2704,7 @@ void fragment() {
 bool RendererCanvasRenderRD::free(RID p_rid) {
 	if (canvas_light_owner.owns(p_rid)) {
 		CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!cl, false);
+		ERR_FAIL_NULL_V(cl, false);
 		light_set_use_shadow(p_rid, false);
 		canvas_light_owner.free(p_rid);
 	} else if (occluder_polygon_owner.owns(p_rid)) {

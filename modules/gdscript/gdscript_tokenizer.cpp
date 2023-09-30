@@ -99,6 +99,7 @@ static const char *token_names[] = {
 	"pass", // PASS,
 	"return", // RETURN,
 	"match", // MATCH,
+	"when", // WHEN,
 	// Keywords
 	"as", // AS,
 	"assert", // ASSERT,
@@ -187,6 +188,7 @@ bool GDScriptTokenizer::Token::is_identifier() const {
 	switch (type) {
 		case IDENTIFIER:
 		case MATCH: // Used in String.match().
+		case WHEN: // New keyword, avoid breaking existing code.
 		// Allow constants to be treated as regular identifiers.
 		case CONST_PI:
 		case CONST_INF:
@@ -241,6 +243,7 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case VAR:
 		case VOID:
 		case WHILE:
+		case WHEN:
 		case YIELD:
 			return true;
 		default:
@@ -531,6 +534,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::annotation() {
 	KEYWORD("void", Token::VOID)             \
 	KEYWORD_GROUP('w')                       \
 	KEYWORD("while", Token::WHILE)           \
+	KEYWORD("when", Token::WHEN)             \
 	KEYWORD_GROUP('y')                       \
 	KEYWORD("yield", Token::YIELD)           \
 	KEYWORD_GROUP('I')                       \
@@ -857,10 +861,14 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 		STRING_NODEPATH,
 	};
 
+	bool is_raw = false;
 	bool is_multiline = false;
 	StringType type = STRING_REGULAR;
 
-	if (_peek(-1) == '&') {
+	if (_peek(-1) == 'r') {
+		is_raw = true;
+		_advance();
+	} else if (_peek(-1) == '&') {
 		type = STRING_NAME;
 		_advance();
 	} else if (_peek(-1) == '^') {
@@ -890,7 +898,12 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 		char32_t ch = _peek();
 
 		if (ch == 0x200E || ch == 0x200F || (ch >= 0x202A && ch <= 0x202E) || (ch >= 0x2066 && ch <= 0x2069)) {
-			Token error = make_error("Invisible text direction control character present in the string, escape it (\"\\u" + String::num_int64(ch, 16) + "\") to avoid confusion.");
+			Token error;
+			if (is_raw) {
+				error = make_error("Invisible text direction control character present in the string, use regular string literal instead of r-string.");
+			} else {
+				error = make_error("Invisible text direction control character present in the string, escape it (\"\\u" + String::num_int64(ch, 16) + "\") to avoid confusion.");
+			}
 			error.start_column = column;
 			error.leftmost_column = error.start_column;
 			error.end_column = column + 1;
@@ -905,144 +918,164 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 				return make_error("Unterminated string.");
 			}
 
-			// Grab escape character.
-			char32_t code = _peek();
-			_advance();
-			if (_is_at_end()) {
-				return make_error("Unterminated string.");
-			}
+			if (is_raw) {
+				if (_peek() == quote_char) {
+					_advance();
+					if (_is_at_end()) {
+						return make_error("Unterminated string.");
+					}
+					result += '\\';
+					result += quote_char;
+				} else if (_peek() == '\\') { // For `\\\"`.
+					_advance();
+					if (_is_at_end()) {
+						return make_error("Unterminated string.");
+					}
+					result += '\\';
+					result += '\\';
+				} else {
+					result += '\\';
+				}
+			} else {
+				// Grab escape character.
+				char32_t code = _peek();
+				_advance();
+				if (_is_at_end()) {
+					return make_error("Unterminated string.");
+				}
 
-			char32_t escaped = 0;
-			bool valid_escape = true;
+				char32_t escaped = 0;
+				bool valid_escape = true;
 
-			switch (code) {
-				case 'a':
-					escaped = '\a';
-					break;
-				case 'b':
-					escaped = '\b';
-					break;
-				case 'f':
-					escaped = '\f';
-					break;
-				case 'n':
-					escaped = '\n';
-					break;
-				case 'r':
-					escaped = '\r';
-					break;
-				case 't':
-					escaped = '\t';
-					break;
-				case 'v':
-					escaped = '\v';
-					break;
-				case '\'':
-					escaped = '\'';
-					break;
-				case '\"':
-					escaped = '\"';
-					break;
-				case '\\':
-					escaped = '\\';
-					break;
-				case 'U':
-				case 'u': {
-					// Hexadecimal sequence.
-					int hex_len = (code == 'U') ? 6 : 4;
-					for (int j = 0; j < hex_len; j++) {
-						if (_is_at_end()) {
-							return make_error("Unterminated string.");
+				switch (code) {
+					case 'a':
+						escaped = '\a';
+						break;
+					case 'b':
+						escaped = '\b';
+						break;
+					case 'f':
+						escaped = '\f';
+						break;
+					case 'n':
+						escaped = '\n';
+						break;
+					case 'r':
+						escaped = '\r';
+						break;
+					case 't':
+						escaped = '\t';
+						break;
+					case 'v':
+						escaped = '\v';
+						break;
+					case '\'':
+						escaped = '\'';
+						break;
+					case '\"':
+						escaped = '\"';
+						break;
+					case '\\':
+						escaped = '\\';
+						break;
+					case 'U':
+					case 'u': {
+						// Hexadecimal sequence.
+						int hex_len = (code == 'U') ? 6 : 4;
+						for (int j = 0; j < hex_len; j++) {
+							if (_is_at_end()) {
+								return make_error("Unterminated string.");
+							}
+
+							char32_t digit = _peek();
+							char32_t value = 0;
+							if (is_digit(digit)) {
+								value = digit - '0';
+							} else if (digit >= 'a' && digit <= 'f') {
+								value = digit - 'a';
+								value += 10;
+							} else if (digit >= 'A' && digit <= 'F') {
+								value = digit - 'A';
+								value += 10;
+							} else {
+								// Make error, but keep parsing the string.
+								Token error = make_error("Invalid hexadecimal digit in unicode escape sequence.");
+								error.start_column = column;
+								error.leftmost_column = error.start_column;
+								error.end_column = column + 1;
+								error.rightmost_column = error.end_column;
+								push_error(error);
+								valid_escape = false;
+								break;
+							}
+
+							escaped <<= 4;
+							escaped |= value;
+
+							_advance();
 						}
-
-						char32_t digit = _peek();
-						char32_t value = 0;
-						if (is_digit(digit)) {
-							value = digit - '0';
-						} else if (digit >= 'a' && digit <= 'f') {
-							value = digit - 'a';
-							value += 10;
-						} else if (digit >= 'A' && digit <= 'F') {
-							value = digit - 'A';
-							value += 10;
-						} else {
-							// Make error, but keep parsing the string.
-							Token error = make_error("Invalid hexadecimal digit in unicode escape sequence.");
-							error.start_column = column;
-							error.leftmost_column = error.start_column;
-							error.end_column = column + 1;
-							error.rightmost_column = error.end_column;
-							push_error(error);
-							valid_escape = false;
+					} break;
+					case '\r':
+						if (_peek() != '\n') {
+							// Carriage return without newline in string. (???)
+							// Just add it to the string and keep going.
+							result += ch;
+							_advance();
 							break;
 						}
-
-						escaped <<= 4;
-						escaped |= value;
-
-						_advance();
-					}
-				} break;
-				case '\r':
-					if (_peek() != '\n') {
-						// Carriage return without newline in string. (???)
-						// Just add it to the string and keep going.
-						result += ch;
-						_advance();
+						[[fallthrough]];
+					case '\n':
+						// Escaping newline.
+						newline(false);
+						valid_escape = false; // Don't add to the string.
 						break;
-					}
-					[[fallthrough]];
-				case '\n':
-					// Escaping newline.
-					newline(false);
-					valid_escape = false; // Don't add to the string.
-					break;
-				default:
-					Token error = make_error("Invalid escape in string.");
-					error.start_column = column - 2;
-					error.leftmost_column = error.start_column;
-					push_error(error);
-					valid_escape = false;
-					break;
-			}
-			// Parse UTF-16 pair.
-			if (valid_escape) {
-				if ((escaped & 0xfffffc00) == 0xd800) {
-					if (prev == 0) {
-						prev = escaped;
-						prev_pos = column - 2;
-						continue;
-					} else {
-						Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+					default:
+						Token error = make_error("Invalid escape in string.");
 						error.start_column = column - 2;
 						error.leftmost_column = error.start_column;
 						push_error(error);
 						valid_escape = false;
-						prev = 0;
+						break;
+				}
+				// Parse UTF-16 pair.
+				if (valid_escape) {
+					if ((escaped & 0xfffffc00) == 0xd800) {
+						if (prev == 0) {
+							prev = escaped;
+							prev_pos = column - 2;
+							continue;
+						} else {
+							Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate.");
+							error.start_column = column - 2;
+							error.leftmost_column = error.start_column;
+							push_error(error);
+							valid_escape = false;
+							prev = 0;
+						}
+					} else if ((escaped & 0xfffffc00) == 0xdc00) {
+						if (prev == 0) {
+							Token error = make_error("Invalid UTF-16 sequence in string, unpaired trail surrogate.");
+							error.start_column = column - 2;
+							error.leftmost_column = error.start_column;
+							push_error(error);
+							valid_escape = false;
+						} else {
+							escaped = (prev << 10UL) + escaped - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+							prev = 0;
+						}
 					}
-				} else if ((escaped & 0xfffffc00) == 0xdc00) {
-					if (prev == 0) {
-						Token error = make_error("Invalid UTF-16 sequence in string, unpaired trail surrogate");
-						error.start_column = column - 2;
+					if (prev != 0) {
+						Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate.");
+						error.start_column = prev_pos;
 						error.leftmost_column = error.start_column;
 						push_error(error);
-						valid_escape = false;
-					} else {
-						escaped = (prev << 10UL) + escaped - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
 						prev = 0;
 					}
 				}
-				if (prev != 0) {
-					Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
-					error.start_column = prev_pos;
-					error.leftmost_column = error.start_column;
-					push_error(error);
-					prev = 0;
-				}
-			}
 
-			if (valid_escape) {
-				result += escaped;
+				if (valid_escape) {
+					result += escaped;
+				}
 			}
 		} else if (ch == quote_char) {
 			if (prev != 0) {
@@ -1216,7 +1249,7 @@ void GDScriptTokenizer::check_indent() {
 
 		if (line_continuation || multiline_mode) {
 			// We cleared up all the whitespace at the beginning of the line.
-			// But if this is a continuation or multiline mode and we don't want any indentation change.
+			// If this is a line continuation or we're in multiline mode then we don't want any indentation changes.
 			return;
 		}
 
@@ -1416,6 +1449,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 
 	if (is_digit(c)) {
 		return number();
+	} else if (c == 'r' && (_peek() == '"' || _peek() == '\'')) {
+		// Raw string literals.
+		return string();
 	} else if (is_unicode_identifier_start(c)) {
 		return potential_identifier();
 	}

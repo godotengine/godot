@@ -147,39 +147,12 @@ public:
 		return false;
 	}
 
-	operator PropertyInfo() const {
-		PropertyInfo info;
-		info.usage = PROPERTY_USAGE_NONE;
-		if (has_type) {
-			switch (kind) {
-				case UNINITIALIZED:
-					break;
-				case BUILTIN: {
-					info.type = builtin_type;
-				} break;
-				case NATIVE: {
-					info.type = Variant::OBJECT;
-					info.class_name = native_type;
-				} break;
-				case SCRIPT:
-				case GDSCRIPT: {
-					info.type = Variant::OBJECT;
-					info.class_name = script_type->get_instance_base_type();
-				} break;
-			}
-		} else {
-			info.type = Variant::NIL;
-			info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-		}
-		return info;
-	}
-
 	void set_container_element_type(const GDScriptDataType &p_element_type) {
 		container_element_type = memnew(GDScriptDataType(p_element_type));
 	}
 
 	GDScriptDataType get_container_element_type() const {
-		ERR_FAIL_COND_V(container_element_type == nullptr, GDScriptDataType());
+		ERR_FAIL_NULL_V(container_element_type, GDScriptDataType());
 		return *container_element_type;
 	}
 
@@ -437,59 +410,32 @@ private:
 	friend class GDScript;
 	friend class GDScriptCompiler;
 	friend class GDScriptByteCodeGenerator;
+	friend class GDScriptLanguage;
 
+	StringName name;
 	StringName source;
+	bool _static = false;
+	Vector<GDScriptDataType> argument_types;
+	GDScriptDataType return_type;
+	MethodInfo method_info;
+	Variant rpc_config;
 
-	mutable Variant nil;
-	mutable Variant *_constants_ptr = nullptr;
-	int _constant_count = 0;
-	const StringName *_global_names_ptr = nullptr;
-	int _global_names_count = 0;
-	const int *_default_arg_ptr = nullptr;
-	int _default_arg_count = 0;
-	int _operator_funcs_count = 0;
-	const Variant::ValidatedOperatorEvaluator *_operator_funcs_ptr = nullptr;
-	int _setters_count = 0;
-	const Variant::ValidatedSetter *_setters_ptr = nullptr;
-	int _getters_count = 0;
-	const Variant::ValidatedGetter *_getters_ptr = nullptr;
-	int _keyed_setters_count = 0;
-	const Variant::ValidatedKeyedSetter *_keyed_setters_ptr = nullptr;
-	int _keyed_getters_count = 0;
-	const Variant::ValidatedKeyedGetter *_keyed_getters_ptr = nullptr;
-	int _indexed_setters_count = 0;
-	const Variant::ValidatedIndexedSetter *_indexed_setters_ptr = nullptr;
-	int _indexed_getters_count = 0;
-	const Variant::ValidatedIndexedGetter *_indexed_getters_ptr = nullptr;
-	int _builtin_methods_count = 0;
-	const Variant::ValidatedBuiltInMethod *_builtin_methods_ptr = nullptr;
-	int _constructors_count = 0;
-	const Variant::ValidatedConstructor *_constructors_ptr = nullptr;
-	int _utilities_count = 0;
-	const Variant::ValidatedUtilityFunction *_utilities_ptr = nullptr;
-	int _gds_utilities_count = 0;
-	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
-	int _methods_count = 0;
-	MethodBind **_methods_ptr = nullptr;
-	int _lambdas_count = 0;
-	GDScriptFunction **_lambdas_ptr = nullptr;
-	int *_code_ptr = nullptr;
-	int _code_size = 0;
+	GDScript *_script = nullptr;
+	int _initial_line = 0;
 	int _argument_count = 0;
 	int _stack_size = 0;
 	int _instruction_args_size = 0;
 	int _ptrcall_args_size = 0;
 
-	int _initial_line = 0;
-	bool _static = false;
-	Variant rpc_config;
+	SelfList<GDScriptFunction> function_list{ this };
+	mutable Variant nil;
+	HashMap<int, Variant::Type> temporary_slots;
+	List<StackDebug> stack_debug;
 
-	GDScript *_script = nullptr;
-
-	StringName name;
+	Vector<int> code;
+	Vector<int> default_arguments;
 	Vector<Variant> constants;
 	Vector<StringName> global_names;
-	Vector<int> default_arguments;
 	Vector<Variant::ValidatedOperatorEvaluator> operator_funcs;
 	Vector<Variant::ValidatedSetter> setters;
 	Vector<Variant::ValidatedGetter> getters;
@@ -503,18 +449,47 @@ private:
 	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
 	Vector<MethodBind *> methods;
 	Vector<GDScriptFunction *> lambdas;
-	Vector<int> code;
-	Vector<GDScriptDataType> argument_types;
-	GDScriptDataType return_type;
 
-	HashMap<int, Variant::Type> temporary_slots;
+	int _code_size = 0;
+	int _default_arg_count = 0;
+	int _constant_count = 0;
+	int _global_names_count = 0;
+	int _operator_funcs_count = 0;
+	int _setters_count = 0;
+	int _getters_count = 0;
+	int _keyed_setters_count = 0;
+	int _keyed_getters_count = 0;
+	int _indexed_setters_count = 0;
+	int _indexed_getters_count = 0;
+	int _builtin_methods_count = 0;
+	int _constructors_count = 0;
+	int _utilities_count = 0;
+	int _gds_utilities_count = 0;
+	int _methods_count = 0;
+	int _lambdas_count = 0;
 
-#ifdef TOOLS_ENABLED
-	Vector<StringName> arg_names;
-	Vector<Variant> default_arg_values;
-#endif
+	int *_code_ptr = nullptr;
+	const int *_default_arg_ptr = nullptr;
+	mutable Variant *_constants_ptr = nullptr;
+	const StringName *_global_names_ptr = nullptr;
+	const Variant::ValidatedOperatorEvaluator *_operator_funcs_ptr = nullptr;
+	const Variant::ValidatedSetter *_setters_ptr = nullptr;
+	const Variant::ValidatedGetter *_getters_ptr = nullptr;
+	const Variant::ValidatedKeyedSetter *_keyed_setters_ptr = nullptr;
+	const Variant::ValidatedKeyedGetter *_keyed_getters_ptr = nullptr;
+	const Variant::ValidatedIndexedSetter *_indexed_setters_ptr = nullptr;
+	const Variant::ValidatedIndexedGetter *_indexed_getters_ptr = nullptr;
+	const Variant::ValidatedBuiltInMethod *_builtin_methods_ptr = nullptr;
+	const Variant::ValidatedConstructor *_constructors_ptr = nullptr;
+	const Variant::ValidatedUtilityFunction *_utilities_ptr = nullptr;
+	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
+	MethodBind **_methods_ptr = nullptr;
+	GDScriptFunction **_lambdas_ptr = nullptr;
 
 #ifdef DEBUG_ENABLED
+	CharString func_cname;
+	const char *_func_cname = nullptr;
+
 	Vector<String> operator_names;
 	Vector<String> setter_names;
 	Vector<String> getter_names;
@@ -522,20 +497,6 @@ private:
 	Vector<String> constructors_names;
 	Vector<String> utilities_names;
 	Vector<String> gds_utilities_names;
-#endif
-
-	List<StackDebug> stack_debug;
-
-	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
-
-	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
-
-	friend class GDScriptLanguage;
-
-	SelfList<GDScriptFunction> function_list{ this };
-#ifdef DEBUG_ENABLED
-	CharString func_cname;
-	const char *_func_cname = nullptr;
 
 	struct Profile {
 		StringName signature;
@@ -549,8 +510,10 @@ private:
 		uint64_t last_frame_self_time = 0;
 		uint64_t last_frame_total_time = 0;
 	} profile;
-
 #endif
+
+	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
+	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
 public:
 	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
@@ -571,51 +534,24 @@ public:
 		Variant result;
 	};
 
+	_FORCE_INLINE_ StringName get_name() const { return name; }
+	_FORCE_INLINE_ StringName get_source() const { return source; }
+	_FORCE_INLINE_ GDScript *get_script() const { return _script; }
 	_FORCE_INLINE_ bool is_static() const { return _static; }
+	_FORCE_INLINE_ MethodInfo get_method_info() const { return method_info; }
+	_FORCE_INLINE_ Variant get_rpc_config() const { return rpc_config; }
+	_FORCE_INLINE_ int get_max_stack_size() const { return _stack_size; }
 
-	const int *get_code() const; //used for debug
-	int get_code_size() const;
 	Variant get_constant(int p_idx) const;
 	StringName get_global_name(int p_idx) const;
-	StringName get_name() const;
-	int get_max_stack_size() const;
-	int get_default_argument_count() const;
-	int get_default_argument_addr(int p_idx) const;
-	GDScriptDataType get_return_type() const;
-	GDScriptDataType get_argument_type(int p_idx) const;
-	GDScript *get_script() const { return _script; }
-	StringName get_source() const { return source; }
-
-	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
-
-	_FORCE_INLINE_ bool is_empty() const { return _code_size == 0; }
-
-	int get_argument_count() const { return _argument_count; }
-	StringName get_argument_name(int p_idx) const {
-#ifdef TOOLS_ENABLED
-		ERR_FAIL_INDEX_V(p_idx, arg_names.size(), StringName());
-		return arg_names[p_idx];
-#else
-		return StringName();
-#endif
-	}
-	Variant get_default_argument(int p_idx) const {
-		ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), Variant());
-		return default_arguments[p_idx];
-	}
-#ifdef TOOLS_ENABLED
-	const Vector<Variant> &get_default_arg_values() const {
-		return default_arg_values;
-	}
-#endif // TOOLS_ENABLED
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
+	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
 #ifdef DEBUG_ENABLED
 	void disassemble(const Vector<String> &p_code_lines) const;
 #endif
 
-	_FORCE_INLINE_ const Variant get_rpc_config() const { return rpc_config; }
 	GDScriptFunction();
 	~GDScriptFunction();
 };

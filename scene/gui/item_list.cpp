@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/string/translation.h"
+#include "scene/theme/theme_db.h"
 
 void ItemList::_shape_text(int p_idx) {
 	Item &item = items.write[p_idx];
@@ -992,33 +993,6 @@ static Rect2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
 	return Rect2(ofs_x, ofs_y, tex_width, tex_height);
 }
 
-void ItemList::_update_theme_item_cache() {
-	Control::_update_theme_item_cache();
-
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
-	theme_cache.focus_style = get_theme_stylebox(SNAME("focus"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_hovered_color = get_theme_color(SNAME("font_hovered_color"));
-	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
-	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.line_separation = get_theme_constant(SNAME("line_separation"));
-	theme_cache.icon_margin = get_theme_constant(SNAME("icon_margin"));
-	theme_cache.hovered_style = get_theme_stylebox(SNAME("hovered"));
-	theme_cache.selected_style = get_theme_stylebox(SNAME("selected"));
-	theme_cache.selected_focus_style = get_theme_stylebox(SNAME("selected_focus"));
-	theme_cache.cursor_style = get_theme_stylebox(SNAME("cursor_unfocused"));
-	theme_cache.cursor_focus_style = get_theme_stylebox(SNAME("cursor"));
-	theme_cache.guide_color = get_theme_color(SNAME("guide_color"));
-}
-
 void ItemList::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_RESIZED: {
@@ -1037,7 +1011,7 @@ void ItemList::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			_check_shape_changed();
+			force_update_list_size();
 
 			int scroll_bar_minwidth = scroll_bar->get_minimum_size().x;
 			scroll_bar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_bar_minwidth);
@@ -1108,14 +1082,16 @@ void ItemList::_notification(int p_what) {
 				first_visible_separator = lo;
 			}
 
-			// Draw visible separators.
-			for (int i = first_visible_separator; i < separators.size(); i++) {
-				if (separators[i] > clip.position.y + clip.size.y) {
-					break; // done
-				}
+			// If not in thumbnails mode, draw visible separators.
+			if (icon_mode != ICON_MODE_TOP) {
+				for (int i = first_visible_separator; i < separators.size(); i++) {
+					if (separators[i] > clip.position.y + clip.size.y) {
+						break; // done
+					}
 
-				const int y = base_ofs.y + separators[i];
-				draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+					const int y = base_ofs.y + separators[i];
+					draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+				}
 			}
 
 			// Do a binary search to find the first item whose rect reaches below clip.position.y.
@@ -1340,7 +1316,7 @@ void ItemList::_notification(int p_what) {
 	}
 }
 
-void ItemList::_check_shape_changed() {
+void ItemList::force_update_list_size() {
 	if (!shape_changed) {
 		return;
 	}
@@ -1881,6 +1857,8 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &ItemList::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &ItemList::get_text_overrun_behavior);
 
+	ClassDB::bind_method(D_METHOD("force_update_list_size"), &ItemList::force_update_list_size);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
@@ -1909,6 +1887,29 @@ void ItemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_clicked", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, v_separation);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, panel_style, "panel");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, focus_style, "focus");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, ItemList, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, ItemList, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_hovered_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_selected_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ItemList, font_outline_size, "outline_size");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, line_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, icon_margin);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, hovered_style, "hovered");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, selected_style, "selected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, selected_focus_style, "selected_focus");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_style, "cursor_unfocused");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_focus_style, "cursor");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, guide_color);
 }
 
 ItemList::ItemList() {

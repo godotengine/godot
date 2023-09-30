@@ -29,8 +29,8 @@
 /**************************************************************************/
 
 #include "render_scene_buffers_rd.h"
+#include "core/config/project_settings.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 
 RenderSceneBuffersRD::RenderSceneBuffersRD() {
@@ -40,6 +40,8 @@ RenderSceneBuffersRD::~RenderSceneBuffersRD() {
 	cleanup();
 
 	data_buffers.clear();
+
+	RendererRD::MaterialStorage::get_singleton()->samplers_rd_free(samplers);
 }
 
 void RenderSceneBuffersRD::_bind_methods() {
@@ -50,6 +52,7 @@ void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture", "context", "name"), &RenderSceneBuffersRD::get_texture);
 	ClassDB::bind_method(D_METHOD("get_texture_format", "context", "name"), &RenderSceneBuffersRD::_get_texture_format);
 	ClassDB::bind_method(D_METHOD("get_texture_slice", "context", "name", "layer", "mipmap", "layers", "mipmaps"), &RenderSceneBuffersRD::get_texture_slice);
+	ClassDB::bind_method(D_METHOD("get_texture_slice_view", "context", "name", "layer", "mipmap", "layers", "mipmaps", "view"), &RenderSceneBuffersRD::_get_texture_slice_view);
 	ClassDB::bind_method(D_METHOD("get_texture_slice_size", "context", "name", "mipmap"), &RenderSceneBuffersRD::get_texture_slice_size);
 	ClassDB::bind_method(D_METHOD("clear_context", "context"), &RenderSceneBuffersRD::clear_context);
 
@@ -90,6 +93,27 @@ void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
 	p_named_texture.slices.clear(); // slices should be freed automatically as dependents...
 }
 
+void RenderSceneBuffersRD::update_samplers() {
+	float computed_mipmap_bias = texture_mipmap_bias;
+
+	if (use_taa || (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2)) {
+		// Use negative mipmap LOD bias when TAA or FSR2 is enabled to compensate for loss of sharpness.
+		// This restores sharpness in still images to be roughly at the same level as without TAA,
+		// but moving scenes will still be blurrier.
+		computed_mipmap_bias -= 0.5;
+	}
+
+	if (screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
+		// Use negative mipmap LOD bias when FXAA is enabled to compensate for loss of sharpness.
+		// If both TAA and FXAA are enabled, combine their negative LOD biases together.
+		computed_mipmap_bias -= 0.25;
+	}
+
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	material_storage->samplers_rd_free(samplers);
+	samplers = material_storage->samplers_rd_allocate(computed_mipmap_bias);
+}
+
 void RenderSceneBuffersRD::cleanup() {
 	// Free our data buffers (but don't destroy them)
 	for (KeyValue<StringName, Ref<RenderBufferCustomDataRD>> &E : data_buffers) {
@@ -105,7 +129,6 @@ void RenderSceneBuffersRD::cleanup() {
 
 void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_config) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	render_target = p_config->get_render_target();
 	target_size = p_config->get_target_size();
@@ -123,23 +146,10 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	ERR_FAIL_COND_MSG(view_count == 0, "Must have at least 1 view");
 
-	if (use_taa) {
-		// Use negative mipmap LOD bias when TAA is enabled to compensate for loss of sharpness.
-		// This restores sharpness in still images to be roughly at the same level as without TAA,
-		// but moving scenes will still be blurrier.
-		texture_mipmap_bias -= 0.5;
-	}
+	update_samplers();
 
-	if (screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
-		// Use negative mipmap LOD bias when FXAA is enabled to compensate for loss of sharpness.
-		// If both TAA and FXAA are enabled, combine their negative LOD biases together.
-		texture_mipmap_bias -= 0.25;
-	}
-
-	material_storage->sampler_rd_configure_custom(texture_mipmap_bias);
-
-	// need to check if we really need to do this here..
-	RendererSceneRenderRD::get_singleton()->update_uniform_sets();
+	// Notify the renderer the base uniform needs to be recreated.
+	RendererSceneRenderRD::get_singleton()->base_uniforms_changed();
 
 	// cleanout any old buffers we had.
 	cleanup();
@@ -243,8 +253,9 @@ void RenderSceneBuffersRD::set_fsr_sharpness(float p_fsr_sharpness) {
 }
 
 void RenderSceneBuffersRD::set_texture_mipmap_bias(float p_texture_mipmap_bias) {
-	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	material_storage->sampler_rd_configure_custom(p_texture_mipmap_bias);
+	texture_mipmap_bias = p_texture_mipmap_bias;
+
+	update_samplers();
 }
 
 void RenderSceneBuffersRD::set_use_debanding(bool p_use_debanding) {
@@ -378,6 +389,15 @@ Ref<RDTextureFormat> RenderSceneBuffersRD::_get_texture_format(const StringName 
 	return tf;
 }
 
+RID RenderSceneBuffersRD::_get_texture_slice_view(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap, const uint32_t p_layers, const uint32_t p_mipmaps, const Ref<RDTextureView> p_view) {
+	RD::TextureView texture_view;
+	if (p_view.is_valid()) {
+		texture_view = p_view->base;
+	}
+
+	return get_texture_slice_view(p_context, p_texture_name, p_layer, p_mipmap, p_layers, p_mipmaps, texture_view);
+}
+
 const RD::TextureFormat RenderSceneBuffersRD::get_texture_format(const StringName &p_context, const StringName &p_texture_name) const {
 	NTKey key(p_context, p_texture_name);
 
@@ -387,6 +407,10 @@ const RD::TextureFormat RenderSceneBuffersRD::get_texture_format(const StringNam
 }
 
 RID RenderSceneBuffersRD::get_texture_slice(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap, const uint32_t p_layers, const uint32_t p_mipmaps) {
+	return get_texture_slice_view(p_context, p_texture_name, p_layer, p_mipmap, p_layers, p_mipmaps, RD::TextureView());
+}
+
+RID RenderSceneBuffersRD::get_texture_slice_view(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap, const uint32_t p_layers, const uint32_t p_mipmaps, RD::TextureView p_view) {
 	NTKey key(p_context, p_texture_name);
 
 	// check if this is a known texture
@@ -403,19 +427,20 @@ RID RenderSceneBuffersRD::get_texture_slice(const StringName &p_context, const S
 	ERR_FAIL_COND_V(p_mipmap + p_mipmaps > named_texture.format.mipmaps, RID());
 
 	// asking the whole thing? just return the original
-	if (p_layer == 0 && p_mipmap == 0 && named_texture.format.array_layers == p_layers && named_texture.format.mipmaps == p_mipmaps) {
+	RD::TextureView default_view = RD::TextureView();
+	if (p_layer == 0 && p_mipmap == 0 && named_texture.format.array_layers == p_layers && named_texture.format.mipmaps == p_mipmaps && p_view == default_view) {
 		return named_texture.texture;
 	}
 
 	// see if we have this
-	NTSliceKey slice_key(p_layer, p_layers, p_mipmap, p_mipmaps);
+	NTSliceKey slice_key(p_layer, p_layers, p_mipmap, p_mipmaps, p_view);
 	if (named_texture.slices.has(slice_key)) {
 		return named_texture.slices[slice_key];
 	}
 
 	// create our slice
 	RID &slice = named_texture.slices[slice_key];
-	slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), named_texture.texture, p_layer, p_mipmap, p_mipmaps, p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D, p_layers);
+	slice = RD::get_singleton()->texture_create_shared_from_slice(p_view, named_texture.texture, p_layer, p_mipmap, p_mipmaps, p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D, p_layers);
 
 	Array arr;
 	arr.push_back(p_context);
@@ -424,7 +449,12 @@ RID RenderSceneBuffersRD::get_texture_slice(const StringName &p_context, const S
 	arr.push_back(itos(p_layers));
 	arr.push_back(itos(p_mipmap));
 	arr.push_back(itos(p_mipmaps));
-	RD::get_singleton()->set_resource_name(slice, String("RenderBuffer {0}/{1}, layer {2}/{3}, mipmap {4}/{5}").format(arr));
+	arr.push_back(itos(p_view.format_override));
+	arr.push_back(itos(p_view.swizzle_r));
+	arr.push_back(itos(p_view.swizzle_g));
+	arr.push_back(itos(p_view.swizzle_b));
+	arr.push_back(itos(p_view.swizzle_a));
+	RD::get_singleton()->set_resource_name(slice, String("RenderBuffer {0}/{1}, layer {2}/{3}, mipmap {4}/{5}, view {6}/{7}/{8}/{9}/{10}").format(arr));
 
 	// and return our slice
 	return slice;
@@ -469,7 +499,13 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 		return;
 	}
 
-	uint32_t mipmaps_required = Image::get_image_required_mipmaps(internal_size.x, internal_size.y, Image::FORMAT_RGBAH);
+	Size2i blur_size = internal_size;
+	if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2) {
+		// The blur texture should be as big as the target size when using an upscaler.
+		blur_size = target_size;
+	}
+
+	uint32_t mipmaps_required = Image::get_image_required_mipmaps(blur_size.x, blur_size.y, Image::FORMAT_RGBAH);
 
 	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	if (can_be_storage) {
@@ -478,12 +514,12 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 		usage_bits += RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	}
 
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, internal_size, view_count, mipmaps_required);
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(internal_size.x >> 1, internal_size.y >> 1), view_count, mipmaps_required - 1);
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, blur_size, view_count, mipmaps_required);
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(blur_size.x >> 1, blur_size.y >> 1), view_count, mipmaps_required - 1);
 
 	// if !can_be_storage we need a half width version
 	if (!can_be_storage) {
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_HALF_BLUR, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(internal_size.x >> 1, internal_size.y), 1, mipmaps_required);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_HALF_BLUR, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(blur_size.x >> 1, blur_size.y), 1, mipmaps_required);
 	}
 
 	// TODO redo this:
@@ -492,8 +528,8 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R16_SFLOAT; // We could probably use DATA_FORMAT_R8_SNORM if we don't pre-multiply by blur_size but that depends on whether we can remove DEPTH_GAP
-		tf.width = internal_size.x;
-		tf.height = internal_size.y;
+		tf.width = blur_size.x;
+		tf.height = blur_size.y;
 		tf.texture_type = RD::TEXTURE_TYPE_2D;
 		tf.array_layers = 1; // Our DOF effect handles one eye per turn
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -593,6 +629,16 @@ RID RenderSceneBuffersRD::get_depth_texture(const uint32_t p_layer) {
 	}
 }
 
+// Upscaled texture.
+
+void RenderSceneBuffersRD::ensure_upscaled() {
+	if (!has_upscaled_texture()) {
+		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | (can_be_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0) | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		usage_bits |= RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT;
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_UPSCALED, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, target_size);
+	}
+}
+
 // Velocity texture.
 
 void RenderSceneBuffersRD::ensure_velocity() {
@@ -600,7 +646,7 @@ void RenderSceneBuffersRD::ensure_velocity() {
 		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
-			uint32_t msaa_usage_bits = usage_bits | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+			uint32_t msaa_usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 			usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 
 			create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA, RD::DATA_FORMAT_R16G16_SFLOAT, msaa_usage_bits, texture_samples);

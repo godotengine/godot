@@ -75,7 +75,9 @@ private:
 
 	StringName _get_actual_bus();
 	void _update_panning();
-	void _bus_layout_changed();
+
+	void _on_bus_layout_changed();
+	void _on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name);
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
 

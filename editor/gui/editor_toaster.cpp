@@ -456,7 +456,7 @@ void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_t
 
 	// Retrieve the label back, then update the text.
 	Label *message_label = toasts[control].message_label;
-	ERR_FAIL_COND(!message_label);
+	ERR_FAIL_NULL(message_label);
 	message_label->set_text(p_message);
 	message_label->set_text_overrun_behavior(TextServer::OVERRUN_NO_TRIMMING);
 	message_label->set_custom_minimum_size(Size2());

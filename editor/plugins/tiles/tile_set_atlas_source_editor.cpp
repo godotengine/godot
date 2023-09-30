@@ -54,6 +54,8 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
+#include "servers/navigation_server_2d.h"
+
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::set_id(int p_id) {
 	ERR_FAIL_COND(p_id < 0);
 	if (source_id == p_id) {
@@ -295,7 +297,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 
 		bool valid = false;
 		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-		ERR_FAIL_COND_V(!tile_data, false);
+		ERR_FAIL_NULL_V(tile_data, false);
 		tile_data->set(p_name, p_value, &valid);
 
 		any_valid |= valid;
@@ -383,7 +385,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		const int &alternative = E.alternative;
 
 		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-		ERR_FAIL_COND_V(!tile_data, false);
+		ERR_FAIL_NULL_V(tile_data, false);
 
 		bool valid = false;
 		r_ret = tile_data->get(p_name, &valid);
@@ -461,7 +463,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 		const int &alternative = E.alternative;
 
 		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-		ERR_FAIL_COND(!tile_data);
+		ERR_FAIL_NULL(tile_data);
 
 		List<PropertyInfo> list;
 		tile_data->get_property_list(&list);
@@ -1202,7 +1204,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
 						if (tools_settings_erase_button->is_pressed()) {
 							// Erasing
-							if (mb->is_ctrl_pressed() || mb->is_shift_pressed()) {
+							if (mb->is_command_or_control_pressed() || mb->is_shift_pressed()) {
 								// Remove tiles using rect.
 
 								// Setup the dragging info.
@@ -1241,7 +1243,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 									// Create a tile.
 									tile_set_atlas_source->create_tile(coords);
 								}
-							} else if (mb->is_ctrl_pressed()) {
+							} else if (mb->is_command_or_control_pressed()) {
 								// Create tiles using rect.
 								drag_type = DRAG_TYPE_CREATE_TILES_USING_RECT;
 								drag_start_mouse_pos = mouse_local_pos;
@@ -2157,7 +2159,7 @@ Vector2i TileSetAtlasSourceEditor::_get_drag_offset_tile_coords(const Vector2i &
 
 void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
-	ERR_FAIL_COND(!p_tile_set_atlas_source);
+	ERR_FAIL_NULL(p_tile_set_atlas_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
 
@@ -2406,7 +2408,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tool_setup_atlas_source_button->set_icon(get_editor_theme_icon(SNAME("Tools")));
 			tool_select_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-			tool_paint_button->set_icon(get_editor_theme_icon(SNAME("CanvasItem")));
+			tool_paint_button->set_icon(get_editor_theme_icon(SNAME("Paint")));
 
 			tools_settings_erase_button->set_icon(get_editor_theme_icon(SNAME("Eraser")));
 			tool_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
@@ -2491,7 +2493,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_setup_atlas_source_button = memnew(Button);
 	tool_setup_atlas_source_button->set_text(TTR("Setup"));
-	tool_setup_atlas_source_button->set_flat(true);
+	tool_setup_atlas_source_button->set_theme_type_variation("FlatButton");
 	tool_setup_atlas_source_button->set_toggle_mode(true);
 	tool_setup_atlas_source_button->set_pressed(true);
 	tool_setup_atlas_source_button->set_button_group(tools_button_group);
@@ -2500,7 +2502,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_select_button = memnew(Button);
 	tool_select_button->set_text(TTR("Select"));
-	tool_select_button->set_flat(true);
+	tool_select_button->set_theme_type_variation("FlatButton");
 	tool_select_button->set_toggle_mode(true);
 	tool_select_button->set_pressed(false);
 	tool_select_button->set_button_group(tools_button_group);
@@ -2509,7 +2511,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_paint_button = memnew(Button);
 	tool_paint_button->set_text(TTR("Paint"));
-	tool_paint_button->set_flat(true);
+	tool_paint_button->set_theme_type_variation("FlatButton");
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
 	tool_paint_button->set_tooltip_text(TTR("Paint properties."));
@@ -2592,14 +2594,15 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(tool_settings_tile_data_toolbar_container);
 
 	tools_settings_erase_button = memnew(Button);
-	tools_settings_erase_button->set_flat(true);
+	tools_settings_erase_button->set_theme_type_variation("FlatButton");
 	tools_settings_erase_button->set_toggle_mode(true);
 	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E));
 	tools_settings_erase_button->set_shortcut_context(this);
 	tool_settings->add_child(tools_settings_erase_button);
 
 	tool_advanced_menu_button = memnew(MenuButton);
-	tool_advanced_menu_button->set_flat(true);
+	tool_advanced_menu_button->set_flat(false);
+	tool_advanced_menu_button->set_theme_type_variation("FlatMenuButton");
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
 	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles Outside the Texture"), ADVANCED_CLEANUP_TILES);
@@ -2744,11 +2747,20 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 			Ref<NavigationPolygon> navigation_polygon;
 			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
 				navigation_polygon.instantiate();
-				for (int i = 0; i < generic_tile_polygon_editor->get_polygon_count(); i++) {
-					Vector<Vector2> polygon = generic_tile_polygon_editor->get_polygon(i);
-					navigation_polygon->add_outline(polygon);
+
+				if (generic_tile_polygon_editor->get_polygon_count() > 0) {
+					Ref<NavigationMeshSourceGeometryData2D> source_geometry_data;
+					source_geometry_data.instantiate();
+					for (int i = 0; i < generic_tile_polygon_editor->get_polygon_count(); i++) {
+						Vector<Vector2> polygon = generic_tile_polygon_editor->get_polygon(i);
+						navigation_polygon->add_outline(polygon);
+						source_geometry_data->add_traversable_outline(polygon);
+					}
+					navigation_polygon->set_agent_radius(0.0);
+					NavigationServer2D::get_singleton()->bake_from_source_geometry_data(navigation_polygon, source_geometry_data);
+				} else {
+					navigation_polygon->clear();
 				}
-				navigation_polygon->make_polygons_from_outlines();
 			}
 			emit_changed(get_edited_property(), navigation_polygon);
 		}
@@ -2771,7 +2783,7 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 
 void EditorPropertyTilePolygon::update_property() {
 	TileSetAtlasSourceEditor::AtlasTileProxyObject *atlas_tile_proxy_object = Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(get_edited_object());
-	ERR_FAIL_COND(!atlas_tile_proxy_object);
+	ERR_FAIL_NULL(atlas_tile_proxy_object);
 	ERR_FAIL_COND(atlas_tile_proxy_object->get_edited_tiles().is_empty());
 
 	Ref<TileSetAtlasSource> tile_set_atlas_source = atlas_tile_proxy_object->get_edited_tile_set_atlas_source();

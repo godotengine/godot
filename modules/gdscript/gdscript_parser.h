@@ -147,14 +147,17 @@ public:
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
 		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == RESOLVING || kind == UNRESOLVED; }
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
+
 		String to_string() const;
+		_FORCE_INLINE_ String to_string_strict() const { return is_hard_type() ? to_string() : "Variant"; }
+		PropertyInfo to_property_info(const String &p_name) const;
 
 		_FORCE_INLINE_ void set_container_element_type(const DataType &p_type) {
 			container_element_type = memnew(DataType(p_type));
 		}
 
 		_FORCE_INLINE_ DataType get_container_element_type() const {
-			ERR_FAIL_COND_V(container_element_type == nullptr, DataType());
+			ERR_FAIL_NULL_V(container_element_type, DataType());
 			return *container_element_type;
 		}
 
@@ -749,6 +752,10 @@ public:
 		bool resolved_interface = false;
 		bool resolved_body = false;
 
+		StringName get_global_name() const {
+			return (outer == nullptr && identifier != nullptr) ? identifier->name : StringName();
+		}
+
 		Member get_member(const StringName &p_name) const {
 			return members[members_indices[p_name]];
 		}
@@ -836,8 +843,8 @@ public:
 		Variant rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
-#ifdef TOOLS_ENABLED
 		Vector<Variant> default_arg_values;
+#ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
@@ -942,6 +949,7 @@ public:
 		Vector<PatternNode *> patterns;
 		SuiteNode *block = nullptr;
 		bool has_wildcard = false;
+		SuiteNode *guard_body = nullptr;
 
 		MatchBranchNode() {
 			type = MATCH_BRANCH;
@@ -1026,6 +1034,7 @@ public:
 		IdentifierNode *identifier = nullptr;
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
+		MethodInfo method_info;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -1510,10 +1519,11 @@ private:
 	TypeNode *parse_type(bool p_allow_void = false);
 
 #ifdef TOOLS_ENABLED
-	int class_doc_line = 0x7FFFFFFF;
+	int max_script_doc_line = INT_MAX;
+	int min_member_doc_line = 1;
 	bool has_comment(int p_line, bool p_must_be_doc = false);
 	MemberDocData parse_doc_comment(int p_line, bool p_single_line = false);
-	ClassDocData parse_class_doc_comment(int p_line, bool p_inner_class, bool p_single_line = false);
+	ClassDocData parse_class_doc_comment(int p_line, bool p_single_line = false);
 #endif // TOOLS_ENABLED
 
 public:
@@ -1522,7 +1532,7 @@ public:
 	bool is_tool() const { return _is_tool; }
 	ClassNode *find_class(const String &p_qualified_name) const;
 	bool has_class(const GDScriptParser::ClassNode *p_class) const;
-	static Variant::Type get_builtin_type(const StringName &p_type);
+	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
 
 	CompletionContext get_completion_context() const { return completion_context; }
 	CompletionCall get_completion_call() const { return completion_call; }

@@ -59,7 +59,7 @@ class ShortcutBin : public Node {
 			return;
 		}
 		Window *grandparent_window = get_window()->get_parent_visible_window();
-		ERR_FAIL_COND(!grandparent_window);
+		ERR_FAIL_NULL(grandparent_window);
 
 		if (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventShortcut>(p_event.ptr())) {
 			// HACK: Propagate the window input to the editor main window to handle global shortcuts.
@@ -385,7 +385,7 @@ void ScreenSelect::_notification(int p_what) {
 			connect("gui_input", callable_mp(this, &ScreenSelect::_handle_mouse_shortcut));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			set_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon("MakeFloating"));
+			set_icon(get_editor_theme_icon("MakeFloating"));
 			popup_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
 
 			const real_t popup_height = real_t(get_theme_font_size("font_size")) * 2.0;

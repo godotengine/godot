@@ -34,6 +34,7 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "scene/gui/line_edit.h"
+#include "scene/theme/theme_db.h"
 
 // AcceptDialog
 
@@ -47,13 +48,6 @@ void AcceptDialog::_parent_focused() {
 	if (!is_exclusive() && get_flag(FLAG_POPUP)) {
 		_cancel_pressed();
 	}
-}
-
-void AcceptDialog::_update_theme_item_cache() {
-	Window::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
-	theme_cache.buttons_separation = get_theme_constant(SNAME("buttons_separation"));
 }
 
 void AcceptDialog::_notification(int p_what) {
@@ -395,6 +389,9 @@ void AcceptDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_close_on_escape"), "set_close_on_escape", "get_close_on_escape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, AcceptDialog, panel_style, "panel");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_separation);
 }
 
 bool AcceptDialog::swap_cancel_ok = false;

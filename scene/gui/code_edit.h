@@ -125,6 +125,11 @@ private:
 
 	/* Line Folding */
 	bool line_folding_enabled = false;
+	String code_region_start_string;
+	String code_region_end_string;
+	String code_region_start_tag = "region";
+	String code_region_end_tag = "endregion";
+	void _update_code_region_tags();
 
 	/* Delimiters */
 	enum DelimiterType {
@@ -232,8 +237,11 @@ private:
 	struct ThemeCache {
 		/* Gutters */
 		Color code_folding_color = Color(1, 1, 1);
+		Color folded_code_region_color = Color(1, 1, 1);
 		Ref<Texture2D> can_fold_icon;
 		Ref<Texture2D> folded_icon;
+		Ref<Texture2D> can_fold_code_region_icon;
+		Ref<Texture2D> folded_code_region_icon;
 		Ref<Texture2D> folded_eol_icon;
 
 		Color breakpoint_color = Color(1, 1, 1);
@@ -270,10 +278,16 @@ private:
 		/* Other visuals */
 		Ref<StyleBox> style_normal;
 
+		Color brace_mismatch_color;
+
 		Ref<Font> font;
 		int font_size = 16;
 		int line_spacing = 1;
 	} theme_cache;
+
+	virtual Color _get_brace_mismatch_color() const override;
+	virtual Color _get_code_folding_color() const override;
+	virtual Ref<Texture2D> _get_folded_eol_icon() const override;
 
 	/* Callbacks */
 	int lines_edited_changed = 0;
@@ -292,8 +306,6 @@ protected:
 	String _get_text_for_symbol_lookup_bind_compat_73196();
 	static void _bind_compatibility_methods();
 #endif
-
-	virtual void _update_theme_item_cache() override;
 
 	/* Text manipulation */
 
@@ -399,6 +411,14 @@ public:
 	bool is_line_folded(int p_line) const;
 	TypedArray<int> get_folded_lines() const;
 
+	/* Code region */
+	void create_code_region();
+	String get_code_region_start_tag() const;
+	String get_code_region_end_tag() const;
+	void set_code_region_tags(const String &p_start = "region", const String &p_end = "endregion");
+	bool is_line_code_region_start(int p_line) const;
+	bool is_line_code_region_end(int p_line) const;
+
 	/* Delimiters */
 	void add_string_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only = false);
 	void remove_string_delimiter(const String &p_start_key);
@@ -465,6 +485,9 @@ public:
 	String get_text_with_cursor_char(int p_line, int p_column) const;
 
 	void set_symbol_lookup_word_as_valid(bool p_valid);
+
+	/* Text manipulation */
+	void duplicate_lines();
 
 	CodeEdit();
 	~CodeEdit();

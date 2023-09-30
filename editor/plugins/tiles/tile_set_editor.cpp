@@ -568,7 +568,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 				for (int k = 0; k < tas->get_alternative_tiles_count(tile_id); k++) {
 					int alternative_id = tas->get_alternative_tile_id(tile_id, k);
 					TileData *tile_data = tas->get_tile_data(tile_id, alternative_id);
-					ERR_FAIL_COND(!tile_data);
+					ERR_FAIL_NULL(tile_data);
 
 					// Actually saving stuff.
 					if (p_array_prefix == "occlusion_layer_") {
@@ -687,7 +687,7 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 					for (int k = 0; k < tas->get_alternative_tiles_count(tile_id); k++) {
 						int alternative_id = tas->get_alternative_tile_id(tile_id, k);
 						TileData *tile_data = tas->get_tile_data(tile_id, alternative_id);
-						ERR_FAIL_COND(!tile_data);
+						ERR_FAIL_NULL(tile_data);
 
 						if (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "mode") {
 							ADD_UNDO(tile_data, "terrain_set");
@@ -842,7 +842,8 @@ TileSetEditor::TileSetEditor() {
 	split_container->add_child(split_container_left_side);
 
 	source_sort_button = memnew(MenuButton);
-	source_sort_button->set_flat(true);
+	source_sort_button->set_flat(false);
+	source_sort_button->set_theme_type_variation("FlatButton");
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
@@ -871,20 +872,22 @@ TileSetEditor::TileSetEditor() {
 	split_container_left_side->add_child(sources_bottom_actions);
 
 	sources_delete_button = memnew(Button);
-	sources_delete_button->set_flat(true);
+	sources_delete_button->set_theme_type_variation("FlatButton");
 	sources_delete_button->set_disabled(true);
 	sources_delete_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_delete_pressed));
 	sources_bottom_actions->add_child(sources_delete_button);
 
 	sources_add_button = memnew(MenuButton);
-	sources_add_button->set_flat(true);
+	sources_add_button->set_flat(false);
+	sources_add_button->set_theme_type_variation("FlatButton");
 	sources_add_button->get_popup()->add_item(TTR("Atlas"));
 	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
 	sources_add_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
 	sources_advanced_menu_button = memnew(MenuButton);
-	sources_advanced_menu_button->set_flat(true);
+	sources_advanced_menu_button->set_flat(false);
+	sources_advanced_menu_button->set_theme_type_variation("FlatButton");
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
 	sources_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));

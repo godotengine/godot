@@ -64,6 +64,8 @@ public:
 		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
 		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
 		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name.
+		UNTYPED_DECLARATION, // Variable/parameter/function has no static type, explicitly specified or implicitly inferred.
+		INFERRED_DECLARATION, // Variable/constant/parameter has an implicitly inferred static type.
 		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes).
 		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes).
 		UNSAFE_CAST, // Cast used in an unknown type.
@@ -73,7 +75,6 @@ public:
 		STATIC_CALLED_ON_INSTANCE, // A static method was called on an instance of a class instead of on the class itself.
 		REDUNDANT_STATIC_UNLOAD, // The `@static_unload` annotation is used but the class does not have static data.
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
-		REDUNDANT_FOR_VARIABLE_TYPE, // The for variable type specifier is a supertype of the inferred type.
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
 		ASSERT_ALWAYS_FALSE, // Expression for assert argument is always false.
 		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded.
@@ -112,6 +113,8 @@ public:
 		WARN, // PROPERTY_USED_AS_FUNCTION
 		WARN, // CONSTANT_USED_AS_FUNCTION
 		WARN, // FUNCTION_USED_AS_PROPERTY
+		IGNORE, // UNTYPED_DECLARATION // Static typing is optional, we don't want to spam warnings.
+		IGNORE, // INFERRED_DECLARATION // Static typing is optional, we don't want to spam warnings.
 		IGNORE, // UNSAFE_PROPERTY_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_METHOD_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_CAST // Too common in untyped scenarios.
@@ -121,7 +124,6 @@ public:
 		WARN, // STATIC_CALLED_ON_INSTANCE
 		WARN, // REDUNDANT_STATIC_UNLOAD
 		WARN, // REDUNDANT_AWAIT
-		WARN, // REDUNDANT_FOR_VARIABLE_TYPE
 		WARN, // ASSERT_ALWAYS_TRUE
 		WARN, // ASSERT_ALWAYS_FALSE
 		WARN, // INTEGER_DIVISION

@@ -155,11 +155,11 @@ Variant EditorScenePostImportPlugin::get_option_value(const StringName &p_name) 
 	return Variant();
 }
 void EditorScenePostImportPlugin::add_import_option(const String &p_name, Variant p_default_value) {
-	ERR_FAIL_COND_MSG(current_option_list == nullptr, "add_import_option() can only be called from get_import_options()");
+	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option() can only be called from get_import_options().");
 	add_import_option_advanced(p_default_value.get_type(), p_name, p_default_value);
 }
 void EditorScenePostImportPlugin::add_import_option_advanced(Variant::Type p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint, const String &p_hint_string, int p_usage_flags) {
-	ERR_FAIL_COND_MSG(current_option_list == nullptr, "add_import_option_advanced() can only be called from get_import_options()");
+	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option_advanced() can only be called from get_import_options().");
 	current_option_list->push_back(ResourceImporter::ImportOption(PropertyInfo(p_type, p_name, p_hint, p_hint_string, p_usage_flags), p_default_value));
 }
 
@@ -356,7 +356,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 }
 
 static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
-	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
+	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value.");
 	if (!p_convex) {
 		Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
@@ -595,7 +595,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		// Node paths in animation tracks are relative to the following path (this is used to fix node paths below).
-		Node *ap_root = ap->get_node(ap->get_root());
+		Node *ap_root = ap->get_node(ap->get_root_node());
 		NodePath path_prefix = p_root->get_path_to(ap_root);
 
 		bool nodes_were_renamed = r_node_renames.size() != 0;
@@ -1374,6 +1374,40 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		}
 	}
 
+	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+
+		if (node_settings.has("mesh_instance/layers")) {
+			mi->set_layer_mask(node_settings["mesh_instance/layers"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_begin")) {
+			mi->set_visibility_range_begin(node_settings["mesh_instance/visibility_range_begin"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_begin_margin")) {
+			mi->set_visibility_range_begin_margin(node_settings["mesh_instance/visibility_range_begin_margin"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_end")) {
+			mi->set_visibility_range_end(node_settings["mesh_instance/visibility_range_end"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_end_margin")) {
+			mi->set_visibility_range_end_margin(node_settings["mesh_instance/visibility_range_end_margin"]);
+		}
+
+		if (node_settings.has("mesh_instance/visibility_range_fade_mode")) {
+			const GeometryInstance3D::VisibilityRangeFadeMode range_fade_mode = (GeometryInstance3D::VisibilityRangeFadeMode)node_settings["mesh_instance/visibility_range_fade_mode"].operator int();
+			mi->set_visibility_range_fade_mode(range_fade_mode);
+		}
+
+		if (node_settings.has("mesh_instance/cast_shadow")) {
+			const GeometryInstance3D::ShadowCastingSetting cast_shadows = (GeometryInstance3D::ShadowCastingSetting)node_settings["mesh_instance/cast_shadow"].operator int();
+			mi->set_cast_shadows_setting(cast_shadows);
+		}
+	}
+
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
@@ -1624,6 +1658,14 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
+
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mesh_instance/layers", PROPERTY_HINT_LAYERS_3D_RENDER), 1));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mesh_instance/visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), 0.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mesh_instance/visibility_range_begin_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), 0.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mesh_instance/visibility_range_end", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), 0.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mesh_instance/visibility_range_end_margin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), 0.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mesh_instance/visibility_range_fade_mode", PROPERTY_HINT_ENUM, "Disabled,Self,Dependencies"), GeometryInstance3D::VISIBILITY_RANGE_FADE_DISABLED));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mesh_instance/cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), GeometryInstance3D::SHADOW_CASTING_SETTING_ON));
 
 			// Decomposition
 			Ref<MeshConvexDecompositionSettings> decomposition_default = Ref<MeshConvexDecompositionSettings>();
@@ -2118,6 +2160,14 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 			} break;
 		}
 
+		mesh_node->set_layer_mask(src_mesh_node->get_layer_mask());
+		mesh_node->set_cast_shadows_setting(src_mesh_node->get_cast_shadows_setting());
+		mesh_node->set_visibility_range_begin(src_mesh_node->get_visibility_range_begin());
+		mesh_node->set_visibility_range_begin_margin(src_mesh_node->get_visibility_range_begin_margin());
+		mesh_node->set_visibility_range_end(src_mesh_node->get_visibility_range_end());
+		mesh_node->set_visibility_range_end_margin(src_mesh_node->get_visibility_range_end_margin());
+		mesh_node->set_visibility_range_fade_mode(src_mesh_node->get_visibility_range_fade_mode());
+
 		p_node->replace_by(mesh_node);
 		p_node->set_owner(nullptr);
 		memdelete(p_node);
@@ -2143,7 +2193,7 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 	List<StringName> anims;
 	p_player->get_animation_list(&anims);
 	Node *parent = p_player->get_parent();
-	ERR_FAIL_COND(parent == nullptr);
+	ERR_FAIL_NULL(parent);
 	HashMap<NodePath, uint32_t> used_tracks[TRACK_CHANNEL_MAX];
 	bool tracks_to_add = false;
 	static const Animation::TrackType track_types[TRACK_CHANNEL_MAX] = { Animation::TYPE_POSITION_3D, Animation::TYPE_ROTATION_3D, Animation::TYPE_SCALE_3D, Animation::TYPE_BLEND_SHAPE };
@@ -2727,7 +2777,7 @@ Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t
 		}
 	}
 
-	ERR_FAIL_COND_V(!scene, nullptr);
+	ERR_FAIL_NULL_V(scene, nullptr);
 
 	return scene;
 }

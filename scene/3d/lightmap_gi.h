@@ -132,6 +132,7 @@ public:
 		BAKE_ERROR_MESHES_INVALID,
 		BAKE_ERROR_CANT_CREATE_IMAGE,
 		BAKE_ERROR_USER_ABORTED,
+		BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL,
 	};
 
 	enum EnvironmentMode {
@@ -144,6 +145,7 @@ public:
 private:
 	BakeQuality bake_quality = BAKE_QUALITY_MEDIUM;
 	bool use_denoiser = true;
+	float denoiser_strength = 0.1f;
 	int bounces = 3;
 	float bias = 0.0005;
 	int max_texture_size = 16384;
@@ -237,6 +239,9 @@ public:
 
 	void set_use_denoiser(bool p_enable);
 	bool is_using_denoiser() const;
+
+	void set_denoiser_strength(float p_denoiser_strength);
+	float get_denoiser_strength() const;
 
 	void set_directional(bool p_enable);
 	bool is_directional() const;

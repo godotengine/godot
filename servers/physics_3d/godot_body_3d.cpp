@@ -35,7 +35,7 @@
 #include "godot_space_3d.h"
 
 void GodotBody3D::_mass_properties_changed() {
-	if (get_space() && !mass_properties_update_list.in_list() && (calculate_inertia || calculate_center_of_mass)) {
+	if (get_space() && !mass_properties_update_list.in_list()) {
 		get_space()->body_add_to_mass_properties_update_list(&mass_properties_update_list);
 	}
 }
@@ -565,7 +565,7 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 	// Add default gravity and damping from space area.
 	if (!stopped) {
 		GodotArea3D *default_area = get_space()->get_default_area();
-		ERR_FAIL_COND(!default_area);
+		ERR_FAIL_NULL(default_area);
 
 		if (!gravity_done) {
 			Vector3 default_gravity;

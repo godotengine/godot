@@ -348,7 +348,6 @@ private:
 	PopupMenu *tool_menu = nullptr;
 	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
-	Button *prev_scene = nullptr;
 	Button *search_button = nullptr;
 	TextureProgressBar *audio_vu = nullptr;
 
@@ -598,6 +597,7 @@ private:
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 
 	void _update_from_settings();
+	void _gdextensions_reloaded();
 
 	void _renderer_selected(int);
 	void _update_renderer_color();

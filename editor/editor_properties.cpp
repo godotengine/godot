@@ -1454,7 +1454,7 @@ void EditorPropertyFloat::_value_changed(double val) {
 		return;
 	}
 
-	if (angle_in_radians) {
+	if (radians_as_degrees) {
 		val = Math::deg_to_rad(val);
 	}
 	emit_changed(get_edited_property(), val);
@@ -1462,7 +1462,7 @@ void EditorPropertyFloat::_value_changed(double val) {
 
 void EditorPropertyFloat::update_property() {
 	double val = get_edited_property_value();
-	if (angle_in_radians) {
+	if (radians_as_degrees) {
 		val = Math::rad_to_deg(val);
 	}
 	setting = true;
@@ -1473,8 +1473,8 @@ void EditorPropertyFloat::update_property() {
 void EditorPropertyFloat::_bind_methods() {
 }
 
-void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_angle_in_radians) {
-	angle_in_radians = p_angle_in_radians;
+void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees) {
+	radians_as_degrees = p_radians_as_degrees;
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
@@ -2786,7 +2786,7 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
 	if (!base_node && Object::cast_to<RefCounted>(get_edited_object())) {
 		Node *to_node = get_node(p_path);
-		ERR_FAIL_COND(!to_node);
+		ERR_FAIL_NULL(to_node);
 		path = get_tree()->get_edited_scene_root()->get_path_to(to_node);
 	}
 
@@ -2818,7 +2818,7 @@ void EditorPropertyNodePath::_node_assign() {
 }
 
 void EditorPropertyNodePath::_node_clear() {
-	emit_changed(get_edited_property(), NodePath());
+	emit_changed(get_edited_property(), Variant());
 	update_property();
 }
 
@@ -2899,7 +2899,7 @@ void EditorPropertyNodePath::update_property() {
 	}
 
 	Node *target_node = base_node->get_node(p);
-	ERR_FAIL_COND(!target_node);
+	ERR_FAIL_NULL(target_node);
 
 	if (String(target_node->get_name()).contains("@")) {
 		assign->set_icon(Ref<Texture2D>());
@@ -3457,7 +3457,7 @@ struct EditorPropertyRangeHint {
 	String suffix;
 	bool exp_range = false;
 	bool hide_slider = true;
-	bool radians = false;
+	bool radians_as_degrees = false;
 };
 
 static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const String &p_hint_text, double p_default_step, bool is_int = false) {
@@ -3498,8 +3498,12 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	bool degrees = false;
 	for (int i = 0; i < slices.size(); i++) {
 		String slice = slices[i].strip_edges();
-		if (slice == "radians") {
-			hint.radians = true;
+		if (slice == "radians_as_degrees"
+#ifndef DISABLE_DEPRECATED
+				|| slice == "radians"
+#endif // DISABLE_DEPRECATED
+		) {
+			hint.radians_as_degrees = true;
 		} else if (slice == "degrees") {
 			degrees = true;
 		} else if (slice.begins_with("suffix:")) {
@@ -3507,7 +3511,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		}
 	}
 
-	if ((hint.radians || degrees) && hint.suffix.is_empty()) {
+	if ((hint.radians_as_degrees || degrees) && hint.suffix.is_empty()) {
 		hint.suffix = U"\u00B0";
 	}
 
@@ -3616,7 +3620,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians);
+				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians_as_degrees);
 
 				return editor;
 			}
@@ -3697,7 +3701,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR3: {
 			EditorPropertyVector3 *editor = memnew(EditorPropertyVector3(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, p_hint == PROPERTY_HINT_LINK, hint.suffix, hint.radians);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, p_hint == PROPERTY_HINT_LINK, hint.suffix, hint.radians_as_degrees);
 			return editor;
 
 		} break;

@@ -31,6 +31,7 @@
 #include "object.h"
 
 #include "core/core_string_names.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
@@ -527,6 +528,27 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 void Object::validate_property(PropertyInfo &p_property) const {
 	_validate_propertyv(p_property);
 
+	if (_extension && _extension->validate_property) {
+		// GDExtension uses a StringName rather than a String for property name.
+		StringName prop_name = p_property.name;
+		GDExtensionPropertyInfo gdext_prop = {
+			(GDExtensionVariantType)p_property.type,
+			&prop_name,
+			&p_property.class_name,
+			(uint32_t)p_property.hint,
+			&p_property.hint_string,
+			p_property.usage,
+		};
+		if (_extension->validate_property(_extension_instance, &gdext_prop)) {
+			p_property.type = (Variant::Type)gdext_prop.type;
+			p_property.name = *reinterpret_cast<StringName *>(gdext_prop.name);
+			p_property.class_name = *reinterpret_cast<StringName *>(gdext_prop.class_name);
+			p_property.hint = (PropertyHint)gdext_prop.hint;
+			p_property.hint_string = *reinterpret_cast<String *>(gdext_prop.hint_string);
+			p_property.usage = gdext_prop.usage;
+		};
+	}
+
 	if (script_instance) { // Call it last to allow user altering already validated properties.
 		script_instance->validate_property(p_property);
 	}
@@ -846,7 +868,7 @@ String Object::to_string() {
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
 	//this function is not meant to be used in any of these ways
 	ERR_FAIL_COND(p_script.is_null());
-	ERR_FAIL_COND(!p_instance);
+	ERR_FAIL_NULL(p_instance);
 	ERR_FAIL_COND(script_instance != nullptr || !script.is_null());
 
 	script = p_script;
@@ -859,7 +881,10 @@ void Object::set_script(const Variant &p_script) {
 	}
 
 	Ref<Script> s = p_script;
-	ERR_FAIL_COND_MSG(s.is_null() && !p_script.is_null(), "Invalid parameter, it should be a reference to a valid script (or null).");
+	if (!p_script.is_null()) {
+		ERR_FAIL_COND_MSG(s.is_null(), "Cannot set object script. Parameter should be null or a reference to a valid script.");
+		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
+	}
 
 	script = p_script;
 
@@ -1279,7 +1304,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is null.");
 
 	Object *target_object = p_callable.get_object();
-	ERR_FAIL_COND_V_MSG(!target_object, ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+	ERR_FAIL_NULL_V_MSG(target_object, ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1364,7 +1389,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot disconnect from '" + p_signal + "': the provided callable is null.");
 
 	Object *target_object = p_callable.get_object();
-	ERR_FAIL_COND_V_MSG(!target_object, false, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
+	ERR_FAIL_NULL_V_MSG(target_object, false, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1372,7 +1397,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
 		ERR_FAIL_COND_V_MSG(signal_is_valid, false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 	}
-	ERR_FAIL_COND_V_MSG(!s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
+	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
 	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 
@@ -1770,14 +1795,17 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 }
 
 void Object::set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
-	// This is only meant to be used on creation by the binder.
-	ERR_FAIL_COND(_instance_bindings != nullptr);
-	_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
+	// This is only meant to be used on creation by the binder, but we also
+	// need to account for reloading (where the 'binding' will be cleared).
+	ERR_FAIL_COND(_instance_bindings != nullptr && _instance_bindings[0].binding != nullptr);
+	if (_instance_bindings == nullptr) {
+		_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
+		_instance_binding_count = 1;
+	}
 	_instance_bindings[0].binding = p_binding;
 	_instance_bindings[0].free_callback = p_callbacks->free_callback;
 	_instance_bindings[0].reference_callback = p_callbacks->reference_callback;
 	_instance_bindings[0].token = p_token;
-	_instance_binding_count = 1;
 }
 
 void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
@@ -1804,6 +1832,12 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 		binding = p_callbacks->create_callback(p_token, this);
 		_instance_bindings[_instance_binding_count].binding = binding;
 
+#ifdef TOOLS_ENABLED
+		if (!_extension && Engine::get_singleton()->is_extension_reloading_enabled()) {
+			GDExtensionManager::get_singleton()->track_instance_binding(p_token, this);
+		}
+#endif
+
 		_instance_binding_count++;
 	}
 
@@ -1826,6 +1860,71 @@ bool Object::has_instance_binding(void *p_token) {
 
 	return found;
 }
+
+#ifdef TOOLS_ENABLED
+void Object::free_instance_binding(void *p_token) {
+	bool found = false;
+	_instance_binding_mutex.lock();
+	for (uint32_t i = 0; i < _instance_binding_count; i++) {
+		if (!found && _instance_bindings[i].token == p_token) {
+			if (_instance_bindings[i].free_callback) {
+				_instance_bindings[i].free_callback(_instance_bindings[i].token, this, _instance_bindings[i].binding);
+			}
+			found = true;
+		}
+		if (found) {
+			if (i + 1 < _instance_binding_count) {
+				_instance_bindings[i] = _instance_bindings[i + 1];
+			} else {
+				_instance_bindings[i] = { nullptr };
+			}
+		}
+	}
+	if (found) {
+		_instance_binding_count--;
+	}
+	_instance_binding_mutex.unlock();
+}
+
+void Object::clear_internal_extension() {
+	ERR_FAIL_NULL(_extension);
+
+	// Free the instance inside the GDExtension.
+	if (_extension->free_instance) {
+		_extension->free_instance(_extension->class_userdata, _extension_instance);
+	}
+	_extension = nullptr;
+	_extension_instance = nullptr;
+
+	// Clear the instance bindings.
+	_instance_binding_mutex.lock();
+	if (_instance_bindings[0].free_callback) {
+		_instance_bindings[0].free_callback(_instance_bindings[0].token, this, _instance_bindings[0].binding);
+	}
+	_instance_bindings[0].binding = nullptr;
+	_instance_bindings[0].token = nullptr;
+	_instance_bindings[0].free_callback = nullptr;
+	_instance_bindings[0].reference_callback = nullptr;
+	_instance_binding_mutex.unlock();
+
+	// Clear the virtual methods.
+	while (virtual_method_list) {
+		(*virtual_method_list->method) = nullptr;
+		(*virtual_method_list->initialized) = false;
+		virtual_method_list = virtual_method_list->next;
+	}
+}
+
+void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
+	ERR_FAIL_COND(_extension != nullptr);
+
+	if (p_extension) {
+		_extension_instance = p_extension->recreate_instance ? p_extension->recreate_instance(p_extension->class_userdata, (GDExtensionObjectPtr)this) : nullptr;
+		ERR_FAIL_NULL_MSG(_extension_instance, "Unable to recreate GDExtension instance - does this extension support hot reloading?");
+		_extension = p_extension;
+	}
+}
+#endif
 
 void Object::_construct_object(bool p_reference) {
 	type_is_reference = p_reference;
@@ -1857,11 +1956,25 @@ Object::~Object() {
 	}
 	script_instance = nullptr;
 
-	if (_extension && _extension->free_instance) {
-		_extension->free_instance(_extension->class_userdata, _extension_instance);
+	if (_extension) {
+#ifdef TOOLS_ENABLED
+		if (_extension->untrack_instance) {
+			_extension->untrack_instance(_extension->tracking_userdata, this);
+		}
+#endif
+		if (_extension->free_instance) {
+			_extension->free_instance(_extension->class_userdata, _extension_instance);
+		}
 		_extension = nullptr;
 		_extension_instance = nullptr;
 	}
+#ifdef TOOLS_ENABLED
+	else if (_instance_bindings != nullptr && Engine::get_singleton()->is_extension_reloading_enabled()) {
+		for (uint32_t i = 0; i < _instance_binding_count; i++) {
+			GDExtensionManager::get_singleton()->untrack_instance_binding(_instance_bindings[i].token, this);
+		}
+	}
+#endif
 
 	if (_emitting) {
 		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before

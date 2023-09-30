@@ -73,7 +73,7 @@ int NodePath::get_name_count() const {
 }
 
 StringName NodePath::get_name(int p_idx) const {
-	ERR_FAIL_COND_V(!data, StringName());
+	ERR_FAIL_NULL_V(data, StringName());
 	ERR_FAIL_INDEX_V(p_idx, data->path.size(), StringName());
 	return data->path[p_idx];
 }
@@ -87,7 +87,7 @@ int NodePath::get_subname_count() const {
 }
 
 StringName NodePath::get_subname(int p_idx) const {
-	ERR_FAIL_COND_V(!data, StringName());
+	ERR_FAIL_NULL_V(data, StringName());
 	ERR_FAIL_INDEX_V(p_idx, data->subpath.size(), StringName());
 	return data->subpath[p_idx];
 }
@@ -200,7 +200,7 @@ Vector<StringName> NodePath::get_subnames() const {
 }
 
 StringName NodePath::get_concatenated_names() const {
-	ERR_FAIL_COND_V(!data, StringName());
+	ERR_FAIL_NULL_V(data, StringName());
 
 	if (!data->concatenated_path) {
 		int pc = data->path.size();
@@ -215,7 +215,7 @@ StringName NodePath::get_concatenated_names() const {
 }
 
 StringName NodePath::get_concatenated_subnames() const {
-	ERR_FAIL_COND_V(!data, StringName());
+	ERR_FAIL_NULL_V(data, StringName());
 
 	if (!data->concatenated_subpath) {
 		int spc = data->subpath.size();

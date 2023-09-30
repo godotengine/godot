@@ -59,8 +59,8 @@ private:
 	void commit_changes();
 
 public:
-	void set_vertex(int p_vertex_id, const void *p_vector3) override;
-	void set_normal(int p_vertex_id, const void *p_vector3) override;
+	void set_vertex(int p_vertex_id, const Vector3 &p_vertex) override;
+	void set_normal(int p_vertex_id, const Vector3 &p_normal) override;
 	void set_aabb(const AABB &p_aabb) override;
 };
 

@@ -111,7 +111,7 @@ void GLTFLight::set_outer_cone_angle(float p_outer_cone_angle) {
 Ref<GLTFLight> GLTFLight::from_node(const Light3D *p_light) {
 	Ref<GLTFLight> l;
 	l.instantiate();
-	ERR_FAIL_COND_V_MSG(!p_light, l, "Tried to create a GLTFLight from a Light3D node, but the given node was null.");
+	ERR_FAIL_NULL_V_MSG(p_light, l, "Tried to create a GLTFLight from a Light3D node, but the given node was null.");
 	l->color = p_light->get_color();
 	if (cast_to<DirectionalLight3D>(p_light)) {
 		l->light_type = "directional";

@@ -35,8 +35,8 @@
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
-#include "scene/gui/separator.h"
 
+class HBoxContainer;
 class MenuButton;
 
 class Path3DGizmo : public EditorNode3DGizmo {
@@ -87,7 +87,7 @@ public:
 class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
-	Separator *sep = nullptr;
+	HBoxContainer *topmenu_bar = nullptr;
 	Button *curve_create = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;

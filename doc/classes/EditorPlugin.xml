@@ -246,7 +246,7 @@
 				    # You can use a custom icon:
 				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
 				    # Or use a built-in icon:
-				    return EditorInterface.get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/gdscript]
 				[csharp]
 				public override Texture2D _GetPluginIcon()
@@ -254,7 +254,7 @@
 				    // You can use a custom icon:
 				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
 				    // Or use a built-in icon:
-				    return EditorInterface.Singleton.GetBaseControl().GetThemeIcon("Node", "EditorIcons");
+				    return EditorInterface.Singleton.GetEditorTheme().GetIcon("Node", "EditorIcons");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -354,7 +354,7 @@
 				    return "My Super Cool Plugin 3000"
 
 				func _get_plugin_icon():
-				    return EditorInterface.get_base_control().get_theme_icon("Node", "EditorIcons")
+				    return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 				[/codeblock]
 			</description>
 		</method>

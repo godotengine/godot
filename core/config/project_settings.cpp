@@ -962,6 +962,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 #ifdef TOOLS_ENABLED
 bool _csproj_exists(String p_root_dir) {
 	Ref<DirAccess> dir = DirAccess::open(p_root_dir);
+	ERR_FAIL_COND_V(dir.is_null(), false);
 
 	dir->list_dir_begin();
 	String file_name = dir->_get_next();
@@ -1397,6 +1398,8 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
+
+	GLOBAL_DEF("collada/use_ambient", false);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());

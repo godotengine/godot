@@ -110,8 +110,7 @@
 			<return type="MultiplayerAPI" />
 			<param index="0" name="for_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
-				Return the [MultiplayerAPI] configured for the given path, or the default one if [param for_path] is empty.
-				[b]Note:[/b] Only one [MultiplayerAPI] may be configured for any subpath. If one is configured for [code]"/root/Foo"[/code] then calling this for [code]"/root/Foo/Bar"[/code] will return the one configured for [code]"/root/Foo"[/code], regardless if one is configured for that path.
+				Searches for the [MultiplayerAPI] configured for the given path, if one does not exist it searches the parent paths until one is found. If the path is empty, or none is found, the default one is returned. See [method set_multiplayer].
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const">
@@ -211,7 +210,7 @@
 			<param index="1" name="root_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
 				Sets a custom [MultiplayerAPI] with the given [param root_path] (controlling also the relative subpaths), or override the default one if [param root_path] is empty.
-				[b]Note:[/b] Only one [MultiplayerAPI] may be configured for any subpath. If one is configured for [code]"/root/Foo"[/code] setting one for [code]"/root/Foo/Bar"[/code] will be ignored. See [method get_multiplayer].
+				[b]Note:[/b] No [MultiplayerAPI] must be configured for the subpath containing [param root_path], nested custom multiplayers are not allowed. I.e. if one is configured for [code]"/root/Foo"[/code] setting one for [code]"/root/Foo/Bar"[/code] will cause an error.
 			</description>
 		</method>
 		<method name="unload_current_scene">

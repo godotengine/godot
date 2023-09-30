@@ -188,7 +188,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 					// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
 					frames_toggled_by_mouse_hover.insert(this_idx);
 
-					if (mb->is_ctrl_pressed()) {
+					if (mb->is_command_or_control_pressed()) {
 						frames_selected.erase(this_idx);
 					} else if (!frames_selected.has(this_idx)) {
 						frames_selected.insert(this_idx, selected_count);
@@ -255,6 +255,7 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 		// Zoom in/out using Ctrl + mouse wheel. This is done on the ScrollContainer
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
+		// keep CTRL and not CMD_OR_CTRL as CTRL is expected even on MacOS.
 		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_sheet_zoom_on_position(scale_ratio, mb->get_position());
 			// Don't scroll up after zooming in.
@@ -855,7 +856,7 @@ void SpriteFramesEditor::_animation_selected() {
 	}
 
 	TreeItem *selected = animations->get_selected();
-	ERR_FAIL_COND(!selected);
+	ERR_FAIL_NULL(selected);
 	edited_anim = selected->get_text(0);
 
 	if (animated_sprite) {
@@ -1485,7 +1486,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 			_prepare_sprite_sheet(files[0]);
 		} else {
 			_file_load_request(files, at_pos);
@@ -1656,12 +1657,12 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(hbc_animlist);
 
 	add_anim = memnew(Button);
-	add_anim->set_flat(true);
+	add_anim->set_theme_type_variation("FlatButton");
 	hbc_animlist->add_child(add_anim);
 	add_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
 
 	delete_anim = memnew(Button);
-	delete_anim->set_flat(true);
+	delete_anim->set_theme_type_variation("FlatButton");
 	hbc_animlist->add_child(delete_anim);
 	delete_anim->set_disabled(true);
 	delete_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
@@ -1672,7 +1673,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	autoplay_container->add_child(memnew(VSeparator));
 
 	autoplay = memnew(Button);
-	autoplay->set_flat(true);
+	autoplay->set_theme_type_variation("FlatButton");
 	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
 	autoplay_container->add_child(autoplay);
 
@@ -1680,7 +1681,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	anim_loop = memnew(Button);
 	anim_loop->set_toggle_mode(true);
-	anim_loop->set_flat(true);
+	anim_loop->set_theme_type_variation("FlatButton");
 	anim_loop->set_tooltip_text(TTR("Animation Looping"));
 	anim_loop->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
 	hbc_animlist->add_child(anim_loop);
@@ -1739,27 +1740,27 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hfc->add_child(playback_container);
 
 	play_bw_from = memnew(Button);
-	play_bw_from->set_flat(true);
+	play_bw_from->set_theme_type_variation("FlatButton");
 	play_bw_from->set_tooltip_text(TTR("Play selected animation backwards from current pos. (A)"));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
-	play_bw->set_flat(true);
+	play_bw->set_theme_type_variation("FlatButton");
 	play_bw->set_tooltip_text(TTR("Play selected animation backwards from end. (Shift+A)"));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
-	stop->set_flat(true);
+	stop->set_theme_type_variation("FlatButton");
 	stop->set_tooltip_text(TTR("Pause/stop animation playback. (S)"));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
-	play->set_flat(true);
+	play->set_theme_type_variation("FlatButton");
 	play->set_tooltip_text(TTR("Play selected animation from start. (Shift+D)"));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
-	play_from->set_flat(true);
+	play_from->set_theme_type_variation("FlatButton");
 	play_from->set_tooltip_text(TTR("Play selected animation from current pos. (D)"));
 	playback_container->add_child(play_from);
 
@@ -1777,45 +1778,45 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hfc->add_child(hbc_actions);
 
 	load = memnew(Button);
-	load->set_flat(true);
+	load->set_theme_type_variation("FlatButton");
 	hbc_actions->add_child(load);
 
 	load_sheet = memnew(Button);
-	load_sheet->set_flat(true);
+	load_sheet->set_theme_type_variation("FlatButton");
 	hbc_actions->add_child(load_sheet);
 
 	hbc_actions->add_child(memnew(VSeparator));
 
 	copy = memnew(Button);
-	copy->set_flat(true);
+	copy->set_theme_type_variation("FlatButton");
 	hbc_actions->add_child(copy);
 
 	paste = memnew(Button);
-	paste->set_flat(true);
+	paste->set_theme_type_variation("FlatButton");
 	hbc_actions->add_child(paste);
 
 	hbc_actions->add_child(memnew(VSeparator));
 
 	empty_before = memnew(Button);
-	empty_before->set_flat(true);
+	empty_before->set_theme_type_variation("FlatButton");
 	hbc_actions->add_child(empty_before);
 
 	empty_after = memnew(Button);
-	empty_after->set_flat(true);
+	empty_after->set_theme_type_variation("FlatButton");
 	hbc_actions->add_child(empty_after);
 
 	hbc_actions->add_child(memnew(VSeparator));
 
 	move_up = memnew(Button);
-	move_up->set_flat(true);
+	move_up->set_theme_type_variation("FlatButton");
 	hbc_actions->add_child(move_up);
 
 	move_down = memnew(Button);
-	move_down->set_flat(true);
+	move_down->set_theme_type_variation("FlatButton");
 	hbc_actions->add_child(move_down);
 
 	delete_frame = memnew(Button);
-	delete_frame->set_flat(true);
+	delete_frame->set_theme_type_variation("FlatButton");
 	hbc_actions->add_child(delete_frame);
 
 	hbc_actions->add_child(memnew(VSeparator));
@@ -1981,7 +1982,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	toggle_settings_button = memnew(Button);
 	toggle_settings_button->set_h_size_flags(SIZE_SHRINK_END);
-	toggle_settings_button->set_flat(true);
+	toggle_settings_button->set_theme_type_variation("FlatButton");
 	toggle_settings_button->connect("pressed", callable_mp(this, &SpriteFramesEditor::_toggle_show_settings));
 	toggle_settings_button->set_tooltip_text(TTR("Toggle Settings Panel"));
 	split_sheet_menu_hb->add_child(toggle_settings_button);
@@ -2019,21 +2020,21 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_zoom_margin->add_child(split_sheet_zoom_hb);
 
 	split_sheet_zoom_out = memnew(Button);
-	split_sheet_zoom_out->set_flat(true);
+	split_sheet_zoom_out->set_theme_type_variation("FlatButton");
 	split_sheet_zoom_out->set_focus_mode(FOCUS_NONE);
 	split_sheet_zoom_out->set_tooltip_text(TTR("Zoom Out"));
 	split_sheet_zoom_out->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_out);
 
 	split_sheet_zoom_reset = memnew(Button);
-	split_sheet_zoom_reset->set_flat(true);
+	split_sheet_zoom_reset->set_theme_type_variation("FlatButton");
 	split_sheet_zoom_reset->set_focus_mode(FOCUS_NONE);
 	split_sheet_zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
 	split_sheet_zoom_reset->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_reset);
 
 	split_sheet_zoom_in = memnew(Button);
-	split_sheet_zoom_in->set_flat(true);
+	split_sheet_zoom_in->set_theme_type_variation("FlatButton");
 	split_sheet_zoom_in->set_focus_mode(FOCUS_NONE);
 	split_sheet_zoom_in->set_tooltip_text(TTR("Zoom In"));
 	split_sheet_zoom_in->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));

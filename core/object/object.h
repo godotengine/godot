@@ -49,7 +49,7 @@ class TypedArray;
 
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
-	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians][,degrees][,exp][,suffix:<keyword>] range.
+	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease) use "attenuation" hint string to revert (flip h), "positive_only" to exclude in-out and out-in. (ie: "attenuation,positive_only")
@@ -313,14 +313,17 @@ struct ObjectGDExtension {
 	StringName parent_class_name;
 	StringName class_name;
 	bool editor_class = false;
+	bool reloadable = false;
 	bool is_virtual = false;
 	bool is_abstract = false;
+	bool is_exposed = true;
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;
 	GDExtensionClassFreePropertyList free_property_list;
 	GDExtensionClassPropertyCanRevert property_can_revert;
 	GDExtensionClassPropertyGetRevert property_get_revert;
+	GDExtensionClassValidateProperty validate_property;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassNotification notification;
 #endif // DISABLE_DEPRECATED
@@ -345,6 +348,15 @@ struct ObjectGDExtension {
 	GDExtensionClassCreateInstance create_instance;
 	GDExtensionClassFreeInstance free_instance;
 	GDExtensionClassGetVirtual get_virtual;
+	GDExtensionClassGetVirtualCallData get_virtual_call_data;
+	GDExtensionClassCallVirtualWithData call_virtual_with_data;
+	GDExtensionClassRecreateInstance recreate_instance;
+
+#ifdef TOOLS_ENABLED
+	void *tracking_userdata = nullptr;
+	void (*track_instance)(void *p_userdata, void *p_instance);
+	void (*untrack_instance)(void *p_userdata, void *p_instance);
+#endif
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call<false>(__VA_ARGS__)
@@ -746,6 +758,16 @@ protected:
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 
+#ifdef TOOLS_ENABLED
+	struct VirtualMethodTracker {
+		void **method;
+		bool *initialized;
+		VirtualMethodTracker *next;
+	};
+
+	mutable VirtualMethodTracker *virtual_method_list = nullptr;
+#endif
+
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
@@ -777,7 +799,8 @@ public:
 
 	enum {
 		NOTIFICATION_POSTINITIALIZE = 0,
-		NOTIFICATION_PREDELETE = 1
+		NOTIFICATION_PREDELETE = 1,
+		NOTIFICATION_EXTENSION_RELOADED = 2,
 	};
 
 	/* TYPE API */
@@ -947,6 +970,12 @@ public:
 	// Used on creation by binding only.
 	void set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks);
 	bool has_instance_binding(void *p_token);
+
+#ifdef TOOLS_ENABLED
+	void free_instance_binding(void *p_token);
+	void clear_internal_extension();
+	void reset_internal_extension(ObjectGDExtension *p_extension);
+#endif
 
 	void clear_internal_resource_paths();
 

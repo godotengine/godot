@@ -103,7 +103,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 			ERR_FAIL_MSG("Failed to create iOS OpenGLES rendering layer.");
 		}
 
-		RasterizerGLES3::make_current();
+		RasterizerGLES3::make_current(false);
 	}
 #endif
 
@@ -352,6 +352,22 @@ void DisplayServerIOS::tts_resume() {
 void DisplayServerIOS::tts_stop() {
 	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts stopSpeaking];
+}
+
+bool DisplayServerIOS::is_dark_mode_supported() const {
+	if (@available(iOS 13.0, *)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool DisplayServerIOS::is_dark_mode() const {
+	if (@available(iOS 13.0, *)) {
+		return [UITraitCollection currentTraitCollection].userInterfaceStyle == UIUserInterfaceStyleDark;
+	} else {
+		return false;
+	}
 }
 
 Rect2i DisplayServerIOS::get_display_safe_area() const {

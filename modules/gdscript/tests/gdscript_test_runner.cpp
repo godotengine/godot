@@ -149,6 +149,10 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
+		if (i == GDScriptWarning::UNTYPED_DECLARATION || i == GDScriptWarning::INFERRED_DECLARATION) {
+			// TODO: Add ability for test scripts to specify which warnings to enable/disable for testing.
+			continue;
+		}
 		String warning_setting = GDScriptWarning::get_settings_path_from_code((GDScriptWarning::Code)i);
 		ProjectSettings::get_singleton()->set_setting(warning_setting, (int)GDScriptWarning::WARN);
 	}

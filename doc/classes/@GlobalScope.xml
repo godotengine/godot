@@ -1168,11 +1168,13 @@
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
 			<description>
-				Returns the same type of [Variant] as [param x], with [code]-1[/code] for negative values, [code]1[/code] for positive values, and [code]0[/code] for zeros. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
+				Returns the same type of [Variant] as [param x], with [code]-1[/code] for negative values, [code]1[/code] for positive values, and [code]0[/code] for zeros. For [code]nan[/code] values it returns 0.
+				Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				sign(-6.0) # Returns -1
 				sign(0.0)  # Returns 0
 				sign(6.0)  # Returns 1
+				sign(NAN)  # Returns 0
 
 				sign(Vector3(-6.0, 0.0, 6.0)) # Returns (-1, 0, 1)
 				[/codeblock]
@@ -1183,11 +1185,12 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if [param x] is zero.
+				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if [param x] is zero. For [code]nan[/code] values of [param x] it returns 0.0.
 				[codeblock]
 				signf(-6.5) # Returns -1.0
 				signf(0.0)  # Returns 0.0
 				signf(6.5)  # Returns 1.0
+				signf(NAN)  # Returns 0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1361,6 +1364,23 @@
 				[codeblock]
 				var a = log(2.0) # Returns 0.693147
 				tanh(a)          # Returns 0.6
+				[/codeblock]
+			</description>
+		</method>
+		<method name="type_convert">
+			<return type="Variant" />
+			<param index="0" name="variant" type="Variant" />
+			<param index="1" name="type" type="int" />
+			<description>
+				Converts the given [param variant] to the given [param type], using the [enum Variant.Type] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
+				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [code]Vector2.ZERO[/code]. This method will never show error messages as long as [param type] is a valid Variant type.
+				The returned value is a [Variant], but the data inside and the [enum Variant.Type] will be the same as the requested type.
+				[codeblock]
+				type_convert("Hi!", TYPE_INT) # Returns 0
+				type_convert("123", TYPE_INT) # Returns 123
+				type_convert(123.4, TYPE_INT) # Returns 123
+				type_convert(5, TYPE_VECTOR2) # Returns (0, 0)
+				type_convert("Hi!", TYPE_NIL) # Returns null
 				[/codeblock]
 			</description>
 		</method>
@@ -2699,7 +2719,7 @@
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
 			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
 			[b]Example:[/b] [code]"-360,360,1,or_greater,or_less"[/code].
-			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians"[/code] for editing radian angles in degrees, [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
+			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians_as_degrees"[/code] for editing radian angles in degrees (the range values are also in degrees), [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
 			Hints that an [int] or [String] property is an enumerated value to pick in a list specified via a hint string.

@@ -217,7 +217,7 @@ void ThemeEditorPreview::_notification(int p_what) {
 			theme_cache.preview_picker_overlay_color = get_theme_color(SNAME("preview_picker_overlay_color"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_label = get_theme_stylebox(SNAME("preview_picker_label"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
-			theme_cache.font_size = get_theme_font_size(SNAME("font_size"), EditorStringName(EditorFonts));
+			theme_cache.font_size = get_theme_default_font_size();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -240,7 +240,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	picker_button = memnew(Button);
 	preview_toolbar->add_child(picker_button);
-	picker_button->set_flat(true);
+	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
 	picker_button->set_tooltip_text(TTR("Toggle the control picker, allowing to visually select control types for edit."));
 	picker_button->connect("pressed", callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));

@@ -34,6 +34,7 @@
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
+#include "scene/theme/theme_db.h"
 
 void CodeEdit::_notification(int p_what) {
 	switch (p_what) {
@@ -226,55 +227,6 @@ void CodeEdit::_notification(int p_what) {
 			queue_redraw();
 		} break;
 	}
-}
-
-void CodeEdit::_update_theme_item_cache() {
-	TextEdit::_update_theme_item_cache();
-
-	/* Gutters */
-	theme_cache.code_folding_color = get_theme_color(SNAME("code_folding_color"));
-	theme_cache.can_fold_icon = get_theme_icon(SNAME("can_fold"));
-	theme_cache.folded_icon = get_theme_icon(SNAME("folded"));
-	theme_cache.folded_eol_icon = get_theme_icon(SNAME("folded_eol_icon"));
-
-	theme_cache.breakpoint_color = get_theme_color(SNAME("breakpoint_color"));
-	theme_cache.breakpoint_icon = get_theme_icon(SNAME("breakpoint"));
-
-	theme_cache.bookmark_color = get_theme_color(SNAME("bookmark_color"));
-	theme_cache.bookmark_icon = get_theme_icon(SNAME("bookmark"));
-
-	theme_cache.executing_line_color = get_theme_color(SNAME("executing_line_color"));
-	theme_cache.executing_line_icon = get_theme_icon(SNAME("executing_line"));
-
-	theme_cache.line_number_color = get_theme_color(SNAME("line_number_color"));
-
-	/* Code Completion */
-	theme_cache.code_completion_style = get_theme_stylebox(SNAME("completion"));
-	theme_cache.code_completion_icon_separation = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
-
-	theme_cache.code_completion_max_width = get_theme_constant(SNAME("completion_max_width"));
-	theme_cache.code_completion_max_lines = get_theme_constant(SNAME("completion_lines"));
-	theme_cache.code_completion_scroll_width = get_theme_constant(SNAME("completion_scroll_width"));
-	theme_cache.code_completion_scroll_color = get_theme_color(SNAME("completion_scroll_color"));
-	theme_cache.code_completion_scroll_hovered_color = get_theme_color(SNAME("completion_scroll_hovered_color"));
-	theme_cache.code_completion_background_color = get_theme_color(SNAME("completion_background_color"));
-	theme_cache.code_completion_selected_color = get_theme_color(SNAME("completion_selected_color"));
-	theme_cache.code_completion_existing_color = get_theme_color(SNAME("completion_existing_color"));
-
-	/* Code hint */
-	theme_cache.code_hint_style = get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel"));
-	theme_cache.code_hint_color = get_theme_color(SNAME("font_color"), SNAME("TooltipLabel"));
-
-	/* Line length guideline */
-	theme_cache.line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
-
-	/* Other visuals */
-	theme_cache.style_normal = get_theme_stylebox(SNAME("normal"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-
-	theme_cache.line_spacing = get_theme_constant(SNAME("line_spacing"));
 }
 
 void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
@@ -481,7 +433,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	// Allow unicode handling if:
 	// No modifiers are pressed (except Shift and CapsLock)
-	bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
+	bool allow_unicode_handling = !(k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 	/* AUTO-COMPLETE */
 	if (code_completion_enabled && k->is_action("ui_text_completion_query", true)) {
@@ -1571,7 +1523,19 @@ void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_regi
 	p_region.position += Point2(horizontal_padding, vertical_padding);
 	p_region.size -= Point2(horizontal_padding, vertical_padding) * 2;
 
-	if (can_fold_line(p_line)) {
+	bool can_fold = can_fold_line(p_line);
+
+	if (is_line_code_region_start(p_line)) {
+		Color region_icon_color = theme_cache.folded_code_region_color;
+		region_icon_color.a = MAX(region_icon_color.a, 0.4f);
+		if (can_fold) {
+			theme_cache.can_fold_code_region_icon->draw_rect(get_canvas_item(), p_region, false, region_icon_color);
+		} else {
+			theme_cache.folded_code_region_icon->draw_rect(get_canvas_item(), p_region, false, region_icon_color);
+		}
+		return;
+	}
+	if (can_fold) {
 		theme_cache.can_fold_icon->draw_rect(get_canvas_item(), p_region, false, theme_cache.code_folding_color);
 		return;
 	}
@@ -1602,6 +1566,27 @@ bool CodeEdit::can_fold_line(int p_line) const {
 		return false;
 	}
 
+	// Check for code region.
+	if (is_line_code_region_end(p_line)) {
+		return false;
+	}
+	if (is_line_code_region_start(p_line)) {
+		int region_level = 0;
+		// Check if there is a valid end region tag.
+		for (int next_line = p_line + 1; next_line < get_line_count(); next_line++) {
+			if (is_line_code_region_end(next_line)) {
+				region_level -= 1;
+				if (region_level == -1) {
+					return true;
+				}
+			}
+			if (is_line_code_region_start(next_line)) {
+				region_level += 1;
+			}
+		}
+		return false;
+	}
+
 	/* Check for full multiline line or block strings / comments. */
 	int in_comment = is_in_comment(p_line);
 	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
@@ -1610,13 +1595,13 @@ bool CodeEdit::can_fold_line(int p_line) const {
 			return false;
 		}
 
-		int delimter_end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
+		int delimiter_end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
 		/* No end line, therefore we have a multiline region over the rest of the file. */
-		if (delimter_end_line == -1) {
+		if (delimiter_end_line == -1) {
 			return true;
 		}
 		/* End line is the same therefore we have a block. */
-		if (delimter_end_line == p_line) {
+		if (delimiter_end_line == p_line) {
 			/* Check we are the start of the block. */
 			if (p_line - 1 >= 0) {
 				if ((in_string != -1 && is_in_string(p_line - 1) != -1) || (in_comment != -1 && is_in_comment(p_line - 1) != -1)) {
@@ -1626,7 +1611,7 @@ bool CodeEdit::can_fold_line(int p_line) const {
 			/* Check it continues for at least one line. */
 			return ((in_string != -1 && is_in_string(p_line + 1) != -1) || (in_comment != -1 && is_in_comment(p_line + 1) != -1));
 		}
-		return ((in_string != -1 && is_in_string(delimter_end_line) != -1) || (in_comment != -1 && is_in_comment(delimter_end_line) != -1));
+		return ((in_string != -1 && is_in_string(delimiter_end_line) != -1) || (in_comment != -1 && is_in_comment(delimiter_end_line) != -1));
 	}
 
 	/* Otherwise check indent levels. */
@@ -1650,31 +1635,51 @@ void CodeEdit::fold_line(int p_line) {
 	const int line_count = get_line_count() - 1;
 	int end_line = line_count;
 
-	int in_comment = is_in_comment(p_line);
-	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
-	if (in_string != -1 || in_comment != -1) {
-		end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
-		/* End line is the same therefore we have a block of single line delimiters. */
-		if (end_line == p_line) {
-			for (int i = p_line + 1; i <= line_count; i++) {
-				if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
+	// Fold code region.
+	if (is_line_code_region_start(p_line)) {
+		int region_level = 0;
+		for (int endregion_line = p_line + 1; endregion_line < get_line_count(); endregion_line++) {
+			if (is_line_code_region_start(endregion_line)) {
+				region_level += 1;
+			}
+			if (is_line_code_region_end(endregion_line)) {
+				region_level -= 1;
+				if (region_level == -1) {
+					end_line = endregion_line;
 					break;
 				}
-				end_line = i;
 			}
 		}
-	} else {
-		int start_indent = get_indent_level(p_line);
-		for (int i = p_line + 1; i <= line_count; i++) {
-			if (get_line(i).strip_edges().size() == 0) {
-				continue;
+		set_line_background_color(p_line, theme_cache.folded_code_region_color);
+	}
+
+	int in_comment = is_in_comment(p_line);
+	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
+	if (!is_line_code_region_start(p_line)) {
+		if (in_string != -1 || in_comment != -1) {
+			end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
+			// End line is the same therefore we have a block of single line delimiters.
+			if (end_line == p_line) {
+				for (int i = p_line + 1; i <= line_count; i++) {
+					if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
+						break;
+					}
+					end_line = i;
+				}
 			}
-			if (get_indent_level(i) > start_indent) {
-				end_line = i;
-				continue;
-			}
-			if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
-				break;
+		} else {
+			int start_indent = get_indent_level(p_line);
+			for (int i = p_line + 1; i <= line_count; i++) {
+				if (get_line(i).strip_edges().size() == 0) {
+					continue;
+				}
+				if (get_indent_level(i) > start_indent) {
+					end_line = i;
+					continue;
+				}
+				if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
+					break;
+				}
 			}
 		}
 	}
@@ -1725,6 +1730,9 @@ void CodeEdit::unfold_line(int p_line) {
 			break;
 		}
 		_set_line_as_hidden(i, false);
+		if (is_line_code_region_start(i - 1)) {
+			set_line_background_color(i - 1, Color(0.0, 0.0, 0.0, 0.0));
+		}
 	}
 	queue_redraw();
 }
@@ -1762,6 +1770,95 @@ TypedArray<int> CodeEdit::get_folded_lines() const {
 		}
 	}
 	return folded_lines;
+}
+
+/* Code region */
+void CodeEdit::create_code_region() {
+	// Abort if there is no selected text.
+	if (!has_selection()) {
+		return;
+	}
+	// Check that region tag find a comment delimiter and is valid.
+	if (code_region_start_string.is_empty()) {
+		WARN_PRINT_ONCE("Cannot create code region without any one line comment delimiters");
+		return;
+	}
+	begin_complex_operation();
+	// Merge selections if selection starts on the same line the previous one ends.
+	Vector<int> caret_edit_order = get_caret_index_edit_order();
+	Vector<int> carets_to_remove;
+	for (int i = 1; i < caret_edit_order.size(); i++) {
+		int current_caret = caret_edit_order[i - 1];
+		int next_caret = caret_edit_order[i];
+		if (get_selection_from_line(current_caret) == get_selection_to_line(next_caret)) {
+			select(get_selection_from_line(next_caret), get_selection_from_column(next_caret), get_selection_to_line(current_caret), get_selection_to_column(current_caret), next_caret);
+			carets_to_remove.append(current_caret);
+		}
+	}
+	// Sort and remove backwards to preserve indices.
+	carets_to_remove.sort();
+	for (int i = carets_to_remove.size() - 1; i >= 0; i--) {
+		remove_caret(carets_to_remove[i]);
+	}
+
+	// Adding start and end region tags.
+	int first_region_start = -1;
+	for (int caret_idx : get_caret_index_edit_order()) {
+		if (!has_selection(caret_idx)) {
+			continue;
+		}
+		int from_line = get_selection_from_line(caret_idx);
+		if (first_region_start == -1 || from_line < first_region_start) {
+			first_region_start = from_line;
+		}
+		int to_line = get_selection_to_line(caret_idx);
+		set_line(to_line, get_line(to_line) + "\n" + code_region_end_string);
+		insert_line_at(from_line, code_region_start_string + " " + RTR("New Code Region"));
+		fold_line(from_line);
+	}
+
+	// Select name of the first region to allow quick edit.
+	remove_secondary_carets();
+	set_caret_line(first_region_start);
+	int tag_length = code_region_start_string.length() + RTR("New Code Region").length() + 1;
+	set_caret_column(tag_length);
+	select(first_region_start, code_region_start_string.length() + 1, first_region_start, tag_length);
+
+	end_complex_operation();
+	queue_redraw();
+}
+
+String CodeEdit::get_code_region_start_tag() const {
+	return code_region_start_tag;
+}
+
+String CodeEdit::get_code_region_end_tag() const {
+	return code_region_end_tag;
+}
+
+void CodeEdit::set_code_region_tags(const String &p_start, const String &p_end) {
+	ERR_FAIL_COND_MSG(p_start == p_end, "Starting and ending region tags cannot be identical.");
+	ERR_FAIL_COND_MSG(p_start.is_empty(), "Starting region tag cannot be empty.");
+	ERR_FAIL_COND_MSG(p_end.is_empty(), "Ending region tag cannot be empty.");
+	code_region_start_tag = p_start;
+	code_region_end_tag = p_end;
+	_update_code_region_tags();
+}
+
+bool CodeEdit::is_line_code_region_start(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
+	if (code_region_start_string.is_empty()) {
+		return false;
+	}
+	return get_line(p_line).strip_edges().begins_with(code_region_start_string);
+}
+
+bool CodeEdit::is_line_code_region_end(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
+	if (code_region_start_string.is_empty()) {
+		return false;
+	}
+	return get_line(p_line).strip_edges().begins_with(code_region_end_string);
 }
 
 /* Delimiters */
@@ -2302,6 +2399,81 @@ void CodeEdit::set_symbol_lookup_word_as_valid(bool p_valid) {
 	}
 }
 
+/* Text manipulation */
+void CodeEdit::duplicate_lines() {
+	begin_complex_operation();
+
+	Vector<int> caret_edit_order = get_caret_index_edit_order();
+	for (const int &caret_index : caret_edit_order) {
+		// The text that will be inserted. All lines in one string.
+		String insert_text;
+
+		// The new line position of the caret after the operation.
+		int new_caret_line = get_caret_line(caret_index);
+		// The new column position of the caret after the operation.
+		int new_caret_column = get_caret_column(caret_index);
+		// The caret positions of the selection. Stays -1 if there is no selection.
+		int select_from_line = -1;
+		int select_to_line = -1;
+		int select_from_column = -1;
+		int select_to_column = -1;
+		// Number of lines of the selection.
+		int select_num_lines = -1;
+
+		if (has_selection(caret_index)) {
+			select_from_line = get_selection_from_line(caret_index);
+			select_to_line = get_selection_to_line(caret_index);
+			select_from_column = get_selection_from_column(caret_index);
+			select_to_column = get_selection_to_column(caret_index);
+			select_num_lines = select_to_line - select_from_line + 1;
+
+			for (int i = select_from_line; i <= select_to_line; i++) {
+				insert_text += "\n" + get_line(i);
+				unfold_line(i);
+			}
+			new_caret_line = select_to_line + select_num_lines;
+		} else {
+			insert_text = "\n" + get_line(new_caret_line);
+			new_caret_line++;
+
+			unfold_line(get_caret_line(caret_index));
+		}
+
+		// The text will be inserted at the end of the current line.
+		set_caret_column(get_line(get_caret_line(caret_index)).length(), false, caret_index);
+
+		deselect(caret_index);
+
+		insert_text_at_caret(insert_text, caret_index);
+		set_caret_line(new_caret_line, false, true, 0, caret_index);
+		set_caret_column(new_caret_column, true, caret_index);
+
+		if (select_from_line != -1) {
+			// Advance the selection by the number of duplicated lines.
+			select_from_line += select_num_lines;
+			select_to_line += select_num_lines;
+
+			select(select_from_line, select_from_column, select_to_line, select_to_column, caret_index);
+		}
+	}
+
+	end_complex_operation();
+	queue_redraw();
+}
+
+/* Visual */
+Color CodeEdit::_get_brace_mismatch_color() const {
+	return theme_cache.brace_mismatch_color;
+}
+
+Color CodeEdit::_get_code_folding_color() const {
+	return theme_cache.code_folding_color;
+}
+
+Ref<Texture2D> CodeEdit::_get_folded_eol_icon() const {
+	return theme_cache.folded_eol_icon;
+}
+
 void CodeEdit::_bind_methods() {
 	/* Indent management */
 	ClassDB::bind_method(D_METHOD("set_indent_size", "size"), &CodeEdit::set_indent_size);
@@ -2392,6 +2564,14 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_line_folded", "line"), &CodeEdit::is_line_folded);
 	ClassDB::bind_method(D_METHOD("get_folded_lines"), &CodeEdit::get_folded_lines);
 
+	/* Code region */
+	ClassDB::bind_method(D_METHOD("create_code_region"), &CodeEdit::create_code_region);
+	ClassDB::bind_method(D_METHOD("get_code_region_start_tag"), &CodeEdit::get_code_region_start_tag);
+	ClassDB::bind_method(D_METHOD("get_code_region_end_tag"), &CodeEdit::get_code_region_end_tag);
+	ClassDB::bind_method(D_METHOD("set_code_region_tags", "start", "end"), &CodeEdit::set_code_region_tags, DEFVAL("region"), DEFVAL("endregion"));
+	ClassDB::bind_method(D_METHOD("is_line_code_region_start", "line"), &CodeEdit::is_line_code_region_start);
+	ClassDB::bind_method(D_METHOD("is_line_code_region_end", "line"), &CodeEdit::is_line_code_region_end);
+
 	/* Delimiters */
 	// Strings
 	ClassDB::bind_method(D_METHOD("add_string_delimiter", "start_key", "end_key", "line_only"), &CodeEdit::add_string_delimiter, DEFVAL(false));
@@ -2480,6 +2660,9 @@ void CodeEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_symbol_lookup_word_as_valid", "valid"), &CodeEdit::set_symbol_lookup_word_as_valid);
 
+	/* Text manipulation */
+	ClassDB::bind_method(D_METHOD("duplicate_lines"), &CodeEdit::duplicate_lines);
+
 	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
@@ -2527,6 +2710,57 @@ void CodeEdit::_bind_methods() {
 	/* Symbol lookup */
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
+
+	/* Theme items */
+	/* Gutters */
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, code_folding_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, folded_code_region_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, can_fold_icon, "can_fold");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, folded_icon, "folded");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, can_fold_code_region_icon, "can_fold_code_region");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, folded_code_region_icon, "folded_code_region");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CodeEdit, folded_eol_icon);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, breakpoint_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, breakpoint_icon, "breakpoint");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, bookmark_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, bookmark_icon, "bookmark");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, executing_line_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, executing_line_icon, "executing_line");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, line_number_color);
+
+	/* Code Completion */
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, code_completion_style, "completion");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_icon_separation, "h_separation", "ItemList");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_max_width, "completion_max_width");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_max_lines, "completion_lines");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_scroll_width, "completion_scroll_width");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_scroll_color, "completion_scroll_color");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_scroll_hovered_color, "completion_scroll_hovered_color");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_background_color, "completion_background_color");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_selected_color, "completion_selected_color");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_existing_color, "completion_existing_color");
+
+	/* Code hint */
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, CodeEdit, code_hint_style, "panel", "TooltipPanel");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, CodeEdit, code_hint_color, "font_color", "TooltipLabel");
+
+	/* Line length guideline */
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, line_length_guideline_color);
+
+	/* Other visuals */
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, style_normal, "normal");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, brace_mismatch_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, CodeEdit, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, CodeEdit, font_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CodeEdit, line_spacing);
 }
 
 /* Auto brace completion */
@@ -2626,6 +2860,27 @@ void CodeEdit::_update_gutter_indexes() {
 		if (get_gutter_name(i) == "fold_gutter") {
 			fold_gutter = i;
 			continue;
+		}
+	}
+}
+
+/* Code Region */
+void CodeEdit::_update_code_region_tags() {
+	code_region_start_string = "";
+	code_region_end_string = "";
+
+	if (code_region_start_tag.is_empty() || code_region_end_tag.is_empty()) {
+		return;
+	}
+
+	for (int i = 0; i < delimiters.size(); i++) {
+		if (delimiters[i].type != DelimiterType::TYPE_COMMENT) {
+			continue;
+		}
+		if (delimiters[i].end_key.is_empty() && delimiters[i].line_only == true) {
+			code_region_start_string = delimiters[i].start_key + code_region_start_tag;
+			code_region_end_string = delimiters[i].start_key + code_region_end_tag;
+			return;
 		}
 	}
 }
@@ -2873,6 +3128,9 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 		delimiter_cache.clear();
 		_update_delimiter_cache();
 	}
+	if (p_type == DelimiterType::TYPE_COMMENT) {
+		_update_code_region_tags();
+	}
 }
 
 void CodeEdit::_remove_delimiter(const String &p_start_key, DelimiterType p_type) {
@@ -2889,6 +3147,9 @@ void CodeEdit::_remove_delimiter(const String &p_start_key, DelimiterType p_type
 		if (!setting_delimiters) {
 			delimiter_cache.clear();
 			_update_delimiter_cache();
+		}
+		if (p_type == DelimiterType::TYPE_COMMENT) {
+			_update_code_region_tags();
 		}
 		break;
 	}
@@ -2932,6 +3193,9 @@ void CodeEdit::_clear_delimiters(DelimiterType p_type) {
 	delimiter_cache.clear();
 	if (!setting_delimiters) {
 		_update_delimiter_cache();
+	}
+	if (p_type == DelimiterType::TYPE_COMMENT) {
+		_update_code_region_tags();
 	}
 }
 

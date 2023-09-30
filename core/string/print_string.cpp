@@ -65,7 +65,7 @@ void remove_print_handler(const PrintHandlerList *p_handler) {
 	//OS::get_singleton()->print("print handler list is %p\n",print_handler_list);
 
 	_global_unlock();
-	ERR_FAIL_COND(l == nullptr);
+	ERR_FAIL_NULL(l);
 }
 
 void __print_line(String p_string) {

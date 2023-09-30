@@ -186,7 +186,7 @@ bool TTS_Linux::is_paused() const {
 Array TTS_Linux::get_voices() const {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!synth, Array());
+	ERR_FAIL_NULL_V(synth, Array());
 	const_cast<TTS_Linux *>(this)->_load_voices();
 
 	Array list;
@@ -204,7 +204,7 @@ Array TTS_Linux::get_voices() const {
 void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	if (p_interrupt) {
 		stop();
 	}
@@ -233,7 +233,7 @@ void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume,
 void TTS_Linux::pause() {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	if (spd_pause(synth) == 0) {
 		paused = true;
 	}
@@ -242,7 +242,7 @@ void TTS_Linux::pause() {
 void TTS_Linux::resume() {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	spd_resume(synth);
 	paused = false;
 }
@@ -250,7 +250,7 @@ void TTS_Linux::resume() {
 void TTS_Linux::stop() {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!synth);
+	ERR_FAIL_NULL(synth);
 	for (DisplayServer::TTSUtterance &message : queue) {
 		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, message.id);
 	}

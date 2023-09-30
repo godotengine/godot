@@ -40,6 +40,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/window.h"
+#include "scene/theme/theme_db.h"
 
 #include <limits.h>
 
@@ -1699,76 +1700,6 @@ TreeItem::~TreeItem() {
 
 void Tree::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
-	theme_cache.focus_style = get_theme_stylebox(SNAME("focus"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.tb_font = get_theme_font(SNAME("title_button_font"));
-	theme_cache.tb_font_size = get_theme_font_size(SNAME("title_button_font_size"));
-
-	theme_cache.selected = get_theme_stylebox(SNAME("selected"));
-	theme_cache.selected_focus = get_theme_stylebox(SNAME("selected_focus"));
-	theme_cache.cursor = get_theme_stylebox(SNAME("cursor"));
-	theme_cache.cursor_unfocus = get_theme_stylebox(SNAME("cursor_unfocused"));
-	theme_cache.button_pressed = get_theme_stylebox(SNAME("button_pressed"));
-
-	theme_cache.checked = get_theme_icon(SNAME("checked"));
-	theme_cache.unchecked = get_theme_icon(SNAME("unchecked"));
-	theme_cache.indeterminate = get_theme_icon(SNAME("indeterminate"));
-	theme_cache.arrow = get_theme_icon(SNAME("arrow"));
-	theme_cache.arrow_collapsed = get_theme_icon(SNAME("arrow_collapsed"));
-	theme_cache.arrow_collapsed_mirrored = get_theme_icon(SNAME("arrow_collapsed_mirrored"));
-	theme_cache.select_arrow = get_theme_icon(SNAME("select_arrow"));
-	theme_cache.updown = get_theme_icon(SNAME("updown"));
-
-	theme_cache.custom_button = get_theme_stylebox(SNAME("custom_button"));
-	theme_cache.custom_button_hover = get_theme_stylebox(SNAME("custom_button_hover"));
-	theme_cache.custom_button_pressed = get_theme_stylebox(SNAME("custom_button_pressed"));
-	theme_cache.custom_button_font_highlight = get_theme_color(SNAME("custom_button_font_highlight"));
-
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
-	theme_cache.drop_position_color = get_theme_color(SNAME("drop_position_color"));
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
-	theme_cache.inner_item_margin_bottom = get_theme_constant(SNAME("inner_item_margin_bottom"));
-	theme_cache.inner_item_margin_left = get_theme_constant(SNAME("inner_item_margin_left"));
-	theme_cache.inner_item_margin_right = get_theme_constant(SNAME("inner_item_margin_right"));
-	theme_cache.inner_item_margin_top = get_theme_constant(SNAME("inner_item_margin_top"));
-	theme_cache.item_margin = get_theme_constant(SNAME("item_margin"));
-	theme_cache.button_margin = get_theme_constant(SNAME("button_margin"));
-	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
-
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
-
-	theme_cache.draw_guides = get_theme_constant(SNAME("draw_guides"));
-	theme_cache.guide_color = get_theme_color(SNAME("guide_color"));
-	theme_cache.draw_relationship_lines = get_theme_constant(SNAME("draw_relationship_lines"));
-	theme_cache.relationship_line_width = get_theme_constant(SNAME("relationship_line_width"));
-	theme_cache.parent_hl_line_width = get_theme_constant(SNAME("parent_hl_line_width"));
-	theme_cache.children_hl_line_width = get_theme_constant(SNAME("children_hl_line_width"));
-	theme_cache.parent_hl_line_margin = get_theme_constant(SNAME("parent_hl_line_margin"));
-	theme_cache.relationship_line_color = get_theme_color(SNAME("relationship_line_color"));
-	theme_cache.parent_hl_line_color = get_theme_color(SNAME("parent_hl_line_color"));
-	theme_cache.children_hl_line_color = get_theme_color(SNAME("children_hl_line_color"));
-
-	theme_cache.scroll_border = get_theme_constant(SNAME("scroll_border"));
-	theme_cache.scroll_speed = get_theme_constant(SNAME("scroll_speed"));
-
-	theme_cache.scrollbar_margin_top = get_theme_constant(SNAME("scrollbar_margin_top"));
-	theme_cache.scrollbar_margin_right = get_theme_constant(SNAME("scrollbar_margin_right"));
-	theme_cache.scrollbar_margin_bottom = get_theme_constant(SNAME("scrollbar_margin_bottom"));
-	theme_cache.scrollbar_margin_left = get_theme_constant(SNAME("scrollbar_margin_left"));
-	theme_cache.scrollbar_h_separation = get_theme_constant(SNAME("scrollbar_h_separation"));
-	theme_cache.scrollbar_v_separation = get_theme_constant(SNAME("scrollbar_v_separation"));
-
-	theme_cache.title_button = get_theme_stylebox(SNAME("title_button_normal"));
-	theme_cache.title_button_pressed = get_theme_stylebox(SNAME("title_button_pressed"));
-	theme_cache.title_button_hover = get_theme_stylebox(SNAME("title_button_hover"));
-	theme_cache.title_button_color = get_theme_color(SNAME("title_button_color"));
 
 	theme_cache.base_scale = get_theme_default_base_scale();
 }
@@ -3884,7 +3815,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					}
 
 					if (mb->get_button_index() == MouseButton::LEFT) {
-						if (get_item_at_position(mb->get_position()) == nullptr && !mb->is_shift_pressed() && !mb->is_ctrl_pressed() && !mb->is_command_or_control_pressed()) {
+						if (get_item_at_position(mb->get_position()) == nullptr && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed()) {
 							emit_signal(SNAME("nothing_selected"));
 						}
 					}
@@ -5577,6 +5508,76 @@ void Tree::_bind_methods() {
 	BIND_ENUM_CONSTANT(DROP_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(DROP_MODE_ON_ITEM);
 	BIND_ENUM_CONSTANT(DROP_MODE_INBETWEEN);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Tree, panel_style, "panel");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Tree, focus_style, "focus");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Tree, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, Tree, font_size);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT, Tree, tb_font, "title_button_font");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT_SIZE, Tree, tb_font_size, "title_button_font_size");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, selected_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, cursor);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Tree, cursor_unfocus, "cursor_unfocused");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, button_pressed);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, checked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, unchecked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, indeterminate);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, arrow);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, arrow_collapsed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, arrow_collapsed_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, select_arrow);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, updown);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, custom_button);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, custom_button_hover);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, custom_button_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, custom_button_font_highlight);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, drop_position_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, v_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_bottom);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, item_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, button_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, icon_max_width);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_outline_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Tree, font_outline_size, "outline_size");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, draw_guides);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, guide_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, draw_relationship_lines);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, relationship_line_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, parent_hl_line_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, children_hl_line_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, parent_hl_line_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, relationship_line_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, parent_hl_line_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, children_hl_line_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scroll_border);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scroll_speed);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_margin_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_margin_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_margin_bottom);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_margin_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_v_separation);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button, "title_button_normal");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_hover);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, title_button_color);
 }
 
 Tree::Tree() {

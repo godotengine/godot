@@ -155,11 +155,9 @@ void GodotSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHand
 	for (uint32_t i = 0; i < vertex_count; ++i) {
 		const uint32_t node_index = map_visual_to_physics[i];
 		const Node &node = nodes[node_index];
-		const Vector3 &vertex_position = node.x;
-		const Vector3 &vertex_normal = node.n;
 
-		p_rendering_server_handler->set_vertex(i, &vertex_position);
-		p_rendering_server_handler->set_normal(i, &vertex_normal);
+		p_rendering_server_handler->set_vertex(i, node.x);
+		p_rendering_server_handler->set_normal(i, node.n);
 	}
 
 	p_rendering_server_handler->set_aabb(bounds);
@@ -1012,7 +1010,7 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	// Add default gravity and damping from space area.
 	if (!gravity_done) {
 		GodotArea3D *default_area = get_space()->get_default_area();
-		ERR_FAIL_COND(!default_area);
+		ERR_FAIL_NULL(default_area);
 
 		Vector3 default_gravity;
 		default_area->compute_gravity(get_transform().get_origin(), default_gravity);
@@ -1225,7 +1223,7 @@ void GodotSoftBody3D::destroy() {
 }
 
 void GodotSoftBodyShape3D::update_bounds() {
-	ERR_FAIL_COND(!soft_body);
+	ERR_FAIL_NULL(soft_body);
 
 	AABB collision_aabb = soft_body->get_bounds();
 	collision_aabb.grow_by(soft_body->get_collision_margin());

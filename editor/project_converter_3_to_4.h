@@ -75,6 +75,7 @@ class ProjectConverter3To4 {
 	void fix_pause_mode(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
 
 	void rename_colors(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
+	void convert_hexadecimal_colors(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
 	Vector<String> check_for_rename_colors(Vector<String> &lines, const RegExContainer &reg_container);
 
 	void rename_classes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);

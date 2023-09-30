@@ -38,7 +38,6 @@
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
-#include "scene/resources/theme.h"
 #include "scene/theme/default_theme.h"
 #include "servers/text_server.h"
 
@@ -324,6 +323,79 @@ ThemeContext *ThemeDB::get_nearest_theme_context(Node *p_for_node) const {
 	}
 
 	return nullptr;
+}
+
+// Theme item binding.
+
+void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter) {
+	ERR_FAIL_COND_MSG(theme_item_binds[p_class_name].has(p_prop_name), vformat("Failed to bind theme item '%s' in class '%s': already bound", p_prop_name, p_class_name));
+
+	ThemeItemBind bind;
+	bind.data_type = p_data_type;
+	bind.class_name = p_class_name;
+	bind.item_name = p_item_name;
+	bind.setter = p_setter;
+
+	theme_item_binds[p_class_name][p_prop_name] = bind;
+}
+
+void ThemeDB::bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter) {
+	ERR_FAIL_COND_MSG(theme_item_binds[p_class_name].has(p_prop_name), vformat("Failed to bind theme item '%s' in class '%s': already bound", p_prop_name, p_class_name));
+
+	ThemeItemBind bind;
+	bind.data_type = p_data_type;
+	bind.class_name = p_class_name;
+	bind.item_name = p_item_name;
+	bind.type_name = p_type_name;
+	bind.external = true;
+	bind.setter = p_setter;
+
+	theme_item_binds[p_class_name][p_prop_name] = bind;
+}
+
+void ThemeDB::update_class_instance_items(Node *p_instance) {
+	ERR_FAIL_NULL(p_instance);
+
+	// Use the hierarchy to initialize all inherited theme caches. Setters carry the necessary
+	// context and will set the values appropriately.
+	StringName class_name = p_instance->get_class();
+	while (class_name != StringName()) {
+		HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(class_name);
+		if (E) {
+			for (const KeyValue<StringName, ThemeItemBind> &F : E->value) {
+				F.value.setter(p_instance);
+			}
+		}
+
+		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	}
+}
+
+void ThemeDB::get_class_own_items(const StringName &p_class_name, List<ThemeItemBind> *r_list) {
+	List<StringName> class_hierarchy;
+	StringName class_name = p_class_name;
+	while (class_name != StringName()) {
+		class_hierarchy.push_front(class_name); // Put parent classes in front.
+		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	}
+
+	HashSet<StringName> inherited_props;
+	for (const StringName &theme_type : class_hierarchy) {
+		HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(theme_type);
+		if (E) {
+			for (const KeyValue<StringName, ThemeItemBind> &F : E->value) {
+				if (inherited_props.has(F.value.item_name)) {
+					continue; // Skip inherited properties.
+				}
+				if (F.value.external || F.value.class_name != p_class_name) {
+					inherited_props.insert(F.value.item_name);
+					continue; // Track properties defined in parent classes, and skip them.
+				}
+
+				r_list->push_back(F.value);
+			}
+		}
+	}
 }
 
 // Object methods.

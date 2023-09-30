@@ -77,10 +77,10 @@ void AnimationTrackKeyEdit::_fix_node_path(Variant &value) {
 	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 
 	Node *np_node = root->get_node(np);
-	ERR_FAIL_COND(!np_node);
+	ERR_FAIL_NULL(np_node);
 
 	Node *edited_node = root->get_node(base);
-	ERR_FAIL_COND(!edited_node);
+	ERR_FAIL_NULL(edited_node);
 
 	value = edited_node->get_path_to(np_node);
 }
@@ -136,22 +136,22 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 			if (name == "position" || name == "rotation" || name == "scale") {
 				Variant old = animation->track_get_key_value(track, key);
 				setting = true;
-				String chan;
+				String action_name;
 				switch (animation->track_get_type(track)) {
 					case Animation::TYPE_POSITION_3D:
-						chan = "Position3D";
+						action_name = TTR("Animation Change Position3D");
 						break;
 					case Animation::TYPE_ROTATION_3D:
-						chan = "Rotation3D";
+						action_name = TTR("Animation Change Rotation3D");
 						break;
 					case Animation::TYPE_SCALE_3D:
-						chan = "Scale3D";
+						action_name = TTR("Animation Change Scale3D");
 						break;
 					default: {
 					}
 				}
 
-				undo_redo->create_action(vformat(TTR("Animation Change %s"), chan));
+				undo_redo->create_action(action_name);
 				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, p_value);
 				undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
 				undo_redo->add_do_method(this, "_update_obj", animation);
@@ -656,10 +656,10 @@ void AnimationMultiTrackKeyEdit::_fix_node_path(Variant &value, NodePath &base) 
 	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 
 	Node *np_node = root->get_node(np);
-	ERR_FAIL_COND(!np_node);
+	ERR_FAIL_NULL(np_node);
 
 	Node *edited_node = root->get_node(base);
-	ERR_FAIL_COND(!edited_node);
+	ERR_FAIL_NULL(edited_node);
 
 	value = edited_node->get_path_to(np_node);
 }
@@ -730,23 +730,23 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 				case Animation::TYPE_SCALE_3D: {
 					Variant old = animation->track_get_key_value(track, key);
 					if (!setting) {
-						String chan;
+						String action_name;
 						switch (animation->track_get_type(track)) {
 							case Animation::TYPE_POSITION_3D:
-								chan = "Position3D";
+								action_name = TTR("Animation Multi Change Position3D");
 								break;
 							case Animation::TYPE_ROTATION_3D:
-								chan = "Rotation3D";
+								action_name = TTR("Animation Multi Change Rotation3D");
 								break;
 							case Animation::TYPE_SCALE_3D:
-								chan = "Scale3D";
+								action_name = TTR("Animation Multi Change Scale3D");
 								break;
 							default: {
 							}
 						}
 
 						setting = true;
-						undo_redo->create_action(vformat(TTR("Animation Multi Change %s"), chan));
+						undo_redo->create_action(action_name);
 					}
 					undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, p_value);
 					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
@@ -2177,7 +2177,7 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 
 	Variant current = animation->track_get_key_value(get_track(), p_index);
 	Variant next = animation->track_get_key_value(get_track(), p_index + 1);
-	if (current != next) {
+	if (current != next || animation->track_get_type(get_track()) == Animation::TrackType::TYPE_METHOD) {
 		return;
 	}
 
@@ -2695,11 +2695,15 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					AnimationPlayer *ap = ape->get_player();
 					if (ap) {
 						NodePath npath = animation->track_get_path(track);
-						Node *nd = ap->get_node(ap->get_root())->get_node(NodePath(npath.get_concatenated_names()));
+						Node *nd = ap->get_node(ap->get_root_node())->get_node(NodePath(npath.get_concatenated_names()));
 						StringName prop = npath.get_concatenated_subnames();
 						PropertyInfo prop_info;
 						ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
+#ifdef DISABLE_DEPRECATED
+						bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians_as_degrees") != -1;
+#else
 						bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians") != -1;
+#endif // DISABLE_DEPRECATED
 						if (is_angle) {
 							menu->add_icon_item(get_editor_theme_icon(SNAME("InterpLinearAngle")), TTR("Linear Angle"), MENU_INTERPOLATION_LINEAR_ANGLE);
 							menu->add_icon_item(get_editor_theme_icon(SNAME("InterpCubicAngle")), TTR("Cubic Angle"), MENU_INTERPOLATION_CUBIC_ANGLE);
@@ -3703,7 +3707,7 @@ void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_bezi
 }
 
 void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value) {
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND_MSG(
 			(p_type != Animation::TYPE_POSITION_3D && p_type != Animation::TYPE_ROTATION_3D && p_type != Animation::TYPE_SCALE_3D),
 			"Track type must be Position/Rotation/Scale 3D.");
@@ -3746,7 +3750,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 }
 
 bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type) {
-	ERR_FAIL_COND_V(!root, false);
+	ERR_FAIL_NULL_V(root, false);
 	if (!keying) {
 		return false;
 	}
@@ -3802,7 +3806,7 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 }
 
 void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists) {
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 
 	// Let's build a node path.
 	Node *node = p_node;
@@ -3899,7 +3903,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 void AnimationTrackEditor::insert_value_key(const String &p_property, const Variant &p_value, bool p_advance) {
 	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
 
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND(history->get_path_size() == 0);
 	Object *obj = ObjectDB::get_instance(history->get_path_object(0));
 	ERR_FAIL_COND(!Object::cast_to<Node>(obj));
@@ -3996,13 +4000,15 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 		return player->get_animation(SceneStringNames::get_singleton()->RESET);
 	} else {
 		Ref<AnimationLibrary> al;
-		if (!player->has_animation_library("")) {
-			al.instantiate();
-			player->add_animation_library("", al);
-		} else {
-			al = player->get_animation_library("");
+		AnimationMixer *mixer = AnimationPlayerEditor::get_singleton()->fetch_mixer_for_library();
+		if (mixer) {
+			if (!mixer->has_animation_library("")) {
+				al.instantiate();
+				mixer->add_animation_library("", al);
+			} else {
+				al = mixer->get_animation_library("");
+			}
 		}
-
 		Ref<Animation> reset_anim;
 		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
@@ -4289,6 +4295,14 @@ void AnimationTrackEditor::show_select_node_warning(bool p_show) {
 	info_message->set_visible(p_show);
 }
 
+void AnimationTrackEditor::show_dummy_player_warning(bool p_show) {
+	dummy_player_warning->set_visible(p_show);
+}
+
+void AnimationTrackEditor::show_inactive_player_warning(bool p_show) {
+	inactive_player_warning->set_visible(p_show);
+}
+
 bool AnimationTrackEditor::is_key_selected(int p_track, int p_key) const {
 	SelectedKey sk;
 	sk.key = p_key;
@@ -4302,7 +4316,7 @@ bool AnimationTrackEditor::is_selection_active() const {
 }
 
 bool AnimationTrackEditor::is_snap_enabled() const {
-	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CTRL);
+	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 }
 
 void AnimationTrackEditor::_update_tracks() {
@@ -4622,6 +4636,8 @@ void AnimationTrackEditor::_notification(int p_what) {
 			view_group->set_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 			selected_filter->set_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 			imported_anim_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+			dummy_player_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+			inactive_player_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_editor_theme_icon(SNAME("Reload")));
 		} break;
@@ -4685,9 +4701,9 @@ void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
 }
 
 void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 	Node *node = get_node(p_path);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 	NodePath path_to = root->get_path_to(node, true);
 
 	if (adding_track_type == Animation::TYPE_BLEND_SHAPE && !node->is_class("MeshInstance3D")) {
@@ -6052,7 +6068,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 		case EDIT_BAKE_ANIMATION_CONFIRM: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Bake Animation as Linear keys."));
+			undo_redo->create_action(TTR("Bake Animation as Linear Keys"));
 
 			int track_len = animation->get_track_count();
 			bool b_trs = bake_trs->is_pressed();
@@ -6299,8 +6315,17 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 void AnimationTrackEditor::_show_imported_anim_warning() {
 	// It looks terrible on a single line but the TTR extractor doesn't support line breaks yet.
 	EditorNode::get_singleton()->show_warning(
-			TTR("This animation belongs to an imported scene, so changes to imported tracks will not be saved.\n\nTo modify this animation, navigate to the scene's Advanced Import settings and select the animation.\nSome options, including looping, are available here. To add custom tracks, enable \"Save To File\" and\n\"Keep Custom Tracks\"."),
-			TTR("Warning: Editing imported animation"));
+			TTR("This animation belongs to an imported scene, so changes to imported tracks will not be saved.\n\nTo modify this animation, navigate to the scene's Advanced Import settings and select the animation.\nSome options, including looping, are available here. To add custom tracks, enable \"Save To File\" and\n\"Keep Custom Tracks\"."));
+}
+
+void AnimationTrackEditor::_show_dummy_player_warning() {
+	EditorNode::get_singleton()->show_warning(
+			TTR("Some AnimationPlayerEditor's options are disabled since this is the dummy AnimationPlayer for preview.\n\nThe dummy player is forced active, non-deterministic and doesn't have the root motion track. Furthermore, the original node is inactive temporary."));
+}
+
+void AnimationTrackEditor::_show_inactive_player_warning() {
+	EditorNode::get_singleton()->show_warning(
+			TTR("AnimationPlayer is inactive. The playback will not be processed."));
 }
 
 void AnimationTrackEditor::_select_all_tracks_for_copy() {
@@ -6484,6 +6509,20 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	imported_anim_warning->set_tooltip_text(TTR("Warning: Editing imported animation"));
 	imported_anim_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_imported_anim_warning));
 	bottom_hb->add_child(imported_anim_warning);
+
+	dummy_player_warning = memnew(Button);
+	dummy_player_warning->hide();
+	dummy_player_warning->set_text(TTR("Dummy Player"));
+	dummy_player_warning->set_tooltip_text(TTR("Warning: Editing dummy AnimationPlayer"));
+	dummy_player_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_dummy_player_warning));
+	bottom_hb->add_child(dummy_player_warning);
+
+	inactive_player_warning = memnew(Button);
+	inactive_player_warning->hide();
+	inactive_player_warning->set_text(TTR("Inactive Player"));
+	inactive_player_warning->set_tooltip_text(TTR("Warning: AnimationPlayer is inactive"));
+	inactive_player_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_inactive_player_warning));
+	bottom_hb->add_child(inactive_player_warning);
 
 	bottom_hb->add_spacer();
 

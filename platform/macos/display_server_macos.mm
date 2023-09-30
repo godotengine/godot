@@ -139,7 +139,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 
 		// initWithContentRect uses bottom-left corner of the window’s frame as origin.
 		wd.window_object = [[GodotWindow alloc]
-				initWithContentRect:NSMakeRect(100, 100, p_rect.size.width / scale, p_rect.size.height / scale)
+				initWithContentRect:NSMakeRect(100, 100, MAX(1, p_rect.size.width / scale), MAX(1, p_rect.size.height / scale))
 						  styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
 							backing:NSBackingStoreBuffered
 							  defer:NO];
@@ -185,9 +185,13 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		}
 #endif
 #if defined(GLES3_ENABLED)
-		if (gl_manager) {
-			Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
+		if (gl_manager_legacy) {
+			Error err = gl_manager_legacy->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context.");
+		}
+		if (gl_manager_angle) {
+			Error err = gl_manager_angle->window_create(window_id_counter, nullptr, (__bridge void *)[wd.window_view layer], p_rect.size.width, p_rect.size.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context.");
 		}
 		window_set_vsync_mode(p_vsync_mode, window_id_counter);
 #endif
@@ -219,8 +223,11 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 	}
 
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_resize(id, wd.size.width, wd.size.height);
+	if (gl_manager_legacy) {
+		gl_manager_legacy->window_resize(id, wd.size.width, wd.size.height);
+	}
+	if (gl_manager_angle) {
+		gl_manager_angle->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -279,8 +286,8 @@ void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabl
 				[layer setOpaque:NO];
 			}
 #if defined(GLES3_ENABLED)
-			if (gl_manager) {
-				gl_manager->window_set_per_pixel_transparency_enabled(p_window, true);
+			if (gl_manager_legacy) {
+				gl_manager_legacy->window_set_per_pixel_transparency_enabled(p_window, true);
 			}
 #endif
 			wd.layered_window = true;
@@ -299,8 +306,8 @@ void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabl
 				[layer setOpaque:YES];
 			}
 #if defined(GLES3_ENABLED)
-			if (gl_manager) {
-				gl_manager->window_set_per_pixel_transparency_enabled(p_window, false);
+			if (gl_manager_legacy) {
+				gl_manager_legacy->window_set_per_pixel_transparency_enabled(p_window, false);
 			}
 #endif
 			wd.layered_window = false;
@@ -730,18 +737,10 @@ bool DisplayServerMacOS::get_is_resizing() const {
 	return is_resizing;
 }
 
-void DisplayServerMacOS::window_update(WindowID p_window) {
-#if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_update(p_window);
-	}
-#endif
-}
-
 void DisplayServerMacOS::window_destroy(WindowID p_window) {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_destroy(p_window);
+	if (gl_manager_legacy) {
+		gl_manager_legacy->window_destroy(p_window);
 	}
 #endif
 #ifdef VULKAN_ENABLED
@@ -754,8 +753,11 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 
 void DisplayServerMacOS::window_resize(WindowID p_window, int p_width, int p_height) {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_resize(p_window, p_width, p_height);
+	if (gl_manager_legacy) {
+		gl_manager_legacy->window_resize(p_window, p_width, p_height);
+	}
+	if (gl_manager_angle) {
+		gl_manager_angle->window_resize(p_window, p_width, p_height);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -1451,7 +1453,7 @@ void DisplayServerMacOS::global_menu_set_item_checkable(const String &p_menu_roo
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->checkable_type = (p_checkable) ? CHECKABLE_TYPE_CHECK_BOX : CHECKABLE_TYPE_NONE;
 		}
 	}
@@ -1470,7 +1472,7 @@ void DisplayServerMacOS::global_menu_set_item_radio_checkable(const String &p_me
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->checkable_type = (p_checkable) ? CHECKABLE_TYPE_RADIO_BUTTON : CHECKABLE_TYPE_NONE;
 		}
 	}
@@ -1489,7 +1491,7 @@ void DisplayServerMacOS::global_menu_set_item_callback(const String &p_menu_root
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->callback = p_callback;
 		}
 	}
@@ -1508,7 +1510,7 @@ void DisplayServerMacOS::global_menu_set_item_key_callback(const String &p_menu_
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->key_callback = p_key_callback;
 		}
 	}
@@ -1527,7 +1529,7 @@ void DisplayServerMacOS::global_menu_set_item_tag(const String &p_menu_root, int
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->meta = p_tag;
 		}
 	}
@@ -1642,7 +1644,7 @@ void DisplayServerMacOS::global_menu_set_item_state(const String &p_menu_root, i
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->state = p_state;
 		}
 	}
@@ -1661,7 +1663,7 @@ void DisplayServerMacOS::global_menu_set_item_max_states(const String &p_menu_ro
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			obj->max_states = p_max_states;
 		}
 	}
@@ -1680,7 +1682,7 @@ void DisplayServerMacOS::global_menu_set_item_icon(const String &p_menu_root, in
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GodotMenuItem *obj = [menu_item representedObject];
-			ERR_FAIL_COND(!obj);
+			ERR_FAIL_NULL(obj);
 			if (p_icon.is_valid()) {
 				obj->img = p_icon->get_image();
 				obj->img = obj->img->duplicate();
@@ -1761,37 +1763,37 @@ void DisplayServerMacOS::global_menu_clear(const String &p_menu_root) {
 }
 
 bool DisplayServerMacOS::tts_is_speaking() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isSpeaking];
 }
 
 bool DisplayServerMacOS::tts_is_paused() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isPaused];
 }
 
 TypedArray<Dictionary> DisplayServerMacOS::tts_get_voices() const {
-	ERR_FAIL_COND_V_MSG(!tts, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts getVoices];
 }
 
 void DisplayServerMacOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void DisplayServerMacOS::tts_pause() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts pauseSpeaking];
 }
 
 void DisplayServerMacOS::tts_resume() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts resumeSpeaking];
 }
 
 void DisplayServerMacOS::tts_stop() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts stopSpeaking];
 }
 
@@ -2912,7 +2914,7 @@ void DisplayServerMacOS::window_set_size(const Size2i p_size, WindowID p_window)
 	top_left.x = old_frame.origin.x;
 	top_left.y = NSMaxY(old_frame);
 
-	NSRect new_frame = NSMakeRect(0, 0, size.x, size.y);
+	NSRect new_frame = NSMakeRect(0, 0, MAX(1, size.x), MAX(1, size.y));
 	new_frame = [wd.window_object frameRectForContentRect:new_frame];
 
 	new_frame.origin.x = top_left.x;
@@ -3370,8 +3372,11 @@ int64_t DisplayServerMacOS::window_get_native_handle(HandleType p_handle_type, W
 		}
 #ifdef GLES3_ENABLED
 		case OPENGL_CONTEXT: {
-			if (gl_manager) {
-				return (int64_t)gl_manager->get_context(p_window);
+			if (gl_manager_legacy) {
+				return (int64_t)gl_manager_legacy->get_context(p_window);
+			}
+			if (gl_manager_angle) {
+				return (int64_t)gl_manager_angle->get_context(p_window);
 			}
 			return 0;
 		}
@@ -3398,8 +3403,11 @@ ObjectID DisplayServerMacOS::window_get_attached_instance_id(WindowID p_window) 
 
 void DisplayServerMacOS::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_make_current(p_window_id);
+	if (gl_manager_legacy) {
+		gl_manager_legacy->window_make_current(p_window_id);
+	}
+	if (gl_manager_angle) {
+		gl_manager_angle->window_make_current(p_window_id);
 	}
 #endif
 }
@@ -3407,8 +3415,11 @@ void DisplayServerMacOS::gl_window_make_current(DisplayServer::WindowID p_window
 void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	if (gl_manager_angle) {
+		gl_manager_angle->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+	if (gl_manager_legacy) {
+		gl_manager_legacy->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3421,8 +3432,11 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		return (gl_manager->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
+	if (gl_manager_angle) {
+		return (gl_manager_angle->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
+	}
+	if (gl_manager_legacy) {
+		return (gl_manager_legacy->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3805,8 +3819,11 @@ void DisplayServerMacOS::make_rendering_thread() {
 
 void DisplayServerMacOS::swap_buffers() {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->swap_buffers();
+	if (gl_manager_angle) {
+		gl_manager_angle->swap_buffers();
+	}
+	if (gl_manager_legacy) {
+		gl_manager_legacy->swap_buffers();
 	}
 #endif
 }
@@ -3826,10 +3843,10 @@ void DisplayServerMacOS::set_native_icon(const String &p_filename) {
 
 	@try {
 		NSData *icon_data = [[NSData alloc] initWithBytes:&data.write[0] length:len];
-		ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
+		ERR_FAIL_NULL_MSG(icon_data, "Error reading icon data.");
 
 		NSImage *icon = [[NSImage alloc] initWithData:icon_data];
-		ERR_FAIL_COND_MSG(!icon, "Error loading icon.");
+		ERR_FAIL_NULL_MSG(icon, "Error loading icon.");
 
 		[NSApp setApplicationIconImage:icon];
 	} @catch (NSException *exception) {
@@ -3917,6 +3934,7 @@ Vector<String> DisplayServerMacOS::get_rendering_drivers_func() {
 #endif
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
+	drivers.push_back("opengl3_angle");
 #endif
 
 	return drivers;
@@ -4155,13 +4173,22 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
-		GLManager_MacOS::ContextType opengl_api_type = GLManager_MacOS::GLES_3_0_COMPATIBLE;
-		gl_manager = memnew(GLManager_MacOS(opengl_api_type));
-		if (gl_manager->initialize() != OK) {
-			memdelete(gl_manager);
-			gl_manager = nullptr;
+		gl_manager_legacy = memnew(GLManagerLegacy_MacOS);
+		if (gl_manager_legacy->initialize() != OK) {
+			memdelete(gl_manager_legacy);
+			gl_manager_legacy = nullptr;
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Could not initialize OpenGL");
+			ERR_FAIL_MSG("Could not initialize OpenGL.");
+			return;
+		}
+	}
+	if (rendering_driver == "opengl3_angle") {
+		gl_manager_angle = memnew(GLManagerANGLE_MacOS);
+		if (gl_manager_angle->initialize() != OK) {
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Could not initialize OpenGL.");
 		}
 	}
 #endif
@@ -4199,7 +4226,10 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
-		RasterizerGLES3::make_current();
+		RasterizerGLES3::make_current(true);
+	}
+	if (rendering_driver == "opengl3_angle") {
+		RasterizerGLES3::make_current(false);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -4230,9 +4260,13 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 
 	// Destroy drivers.
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		memdelete(gl_manager);
-		gl_manager = nullptr;
+	if (gl_manager_legacy) {
+		memdelete(gl_manager_legacy);
+		gl_manager_legacy = nullptr;
+	}
+	if (gl_manager_angle) {
+		memdelete(gl_manager_angle);
+		gl_manager_angle = nullptr;
 	}
 #endif
 #if defined(VULKAN_ENABLED)

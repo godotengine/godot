@@ -67,9 +67,8 @@ class ColorPresetButton : public BaseButton {
 	} theme_cache;
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int);
+	static void _bind_methods();
 
 public:
 	void set_preset_color(const Color &p_color);
@@ -81,6 +80,12 @@ public:
 
 class ColorPicker : public VBoxContainer {
 	GDCLASS(ColorPicker, VBoxContainer);
+
+	// These classes poke into theme items for their internal logic.
+	friend class ColorModeRGB;
+	friend class ColorModeHSV;
+	friend class ColorModeRAW;
+	friend class ColorModeOKHSL;
 
 public:
 	enum ColorModeType {
@@ -230,10 +235,11 @@ private:
 		Ref<Texture2D> shape_circle;
 
 		Ref<Texture2D> bar_arrow;
-		Ref<Texture2D> sample_background_icon;
+		Ref<Texture2D> sample_bg;
 		Ref<Texture2D> overbright_indicator;
 		Ref<Texture2D> picker_cursor;
-		Ref<Texture2D> color_hue_icon;
+		Ref<Texture2D> color_hue;
+		Ref<Texture2D> color_okhsl_hue;
 
 		/* Mode buttons */
 		Ref<StyleBox> mode_button_normal;
@@ -393,8 +399,6 @@ class ColorPickerButton : public Button {
 	void _update_picker();
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int);
 	static void _bind_methods();
 

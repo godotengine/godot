@@ -74,7 +74,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 
 	ClipperLib::PolyNode *p = solution.GetFirst();
 
-	ERR_FAIL_COND_V(!p, points);
+	ERR_FAIL_NULL_V(p, points);
 
 	while (p->IsHole()) {
 		p = p->GetNext();
@@ -97,7 +97,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 
 	Vector<Vector2> outPoints;
 	ClipperLib::PolyNode *p2 = out.GetFirst();
-	ERR_FAIL_COND_V(!p2, points);
+	ERR_FAIL_NULL_V(p2, points);
 
 	while (p2->IsHole()) {
 		p2 = p2->GetNext();

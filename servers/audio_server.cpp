@@ -389,7 +389,7 @@ void AudioServer::_mix_step() {
 		}
 
 		AudioStreamPlaybackBusDetails *ptr = playback->bus_details.load();
-		ERR_FAIL_COND(ptr == nullptr);
+		ERR_FAIL_NULL(ptr);
 		// By putting null into the bus details pointers, we're taking ownership of their memory for the duration of this mix.
 		AudioStreamPlaybackBusDetails bus_details = *ptr;
 
@@ -620,8 +620,8 @@ void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_sou
 		filter.set_stages(1);
 		filter.set_gain(p_highshelf_gain);
 
-		ERR_FAIL_COND(p_processor_l == nullptr);
-		ERR_FAIL_COND(p_processor_r == nullptr);
+		ERR_FAIL_NULL(p_processor_l);
+		ERR_FAIL_NULL(p_processor_r);
 
 		bool is_just_started = p_vol_start.l == 0 && p_vol_start.r == 0;
 		p_processor_l->set_filter(&filter, /* clear_history= */ is_just_started);
@@ -857,14 +857,16 @@ int AudioServer::get_bus_count() const {
 void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 	ERR_FAIL_INDEX(p_bus, buses.size());
 	if (p_bus == 0 && p_name != "Master") {
-		return; //bus 0 is always master
+		return; // Bus 0 is always "Master".
 	}
 
 	MARK_EDITED
 
 	lock();
 
-	if (buses[p_bus]->name == p_name) {
+	StringName old_name = buses[p_bus]->name;
+
+	if (old_name == p_name) {
 		unlock();
 		return;
 	}
@@ -888,12 +890,12 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 		attempts++;
 		attempt = p_name + " " + itos(attempts);
 	}
-	bus_map.erase(buses[p_bus]->name);
+	bus_map.erase(old_name);
 	buses[p_bus]->name = attempt;
 	bus_map[attempt] = buses[p_bus];
 	unlock();
 
-	emit_signal(SNAME("bus_layout_changed"));
+	emit_signal(SNAME("bus_renamed"), p_bus, old_name, attempt);
 }
 
 String AudioServer::get_bus_name(int p_bus) const {
@@ -1751,6 +1753,7 @@ void AudioServer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed_scale"), "set_playback_speed_scale", "get_playback_speed_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
+	ADD_SIGNAL(MethodInfo("bus_renamed", PropertyInfo(Variant::INT, "bus_index"), PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
 
 	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_31);

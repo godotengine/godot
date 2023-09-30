@@ -33,7 +33,7 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 
-Error ZIPPacker::open(String p_path, ZipAppend p_append) {
+Error ZIPPacker::open(const String &p_path, ZipAppend p_append) {
 	if (fa.is_valid()) {
 		close();
 	}
@@ -55,7 +55,7 @@ Error ZIPPacker::close() {
 	return err;
 }
 
-Error ZIPPacker::start_file(String p_path) {
+Error ZIPPacker::start_file(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
 	zip_fileinfo zipfi;
@@ -76,7 +76,7 @@ Error ZIPPacker::start_file(String p_path) {
 	return err == ZIP_OK ? OK : FAILED;
 }
 
-Error ZIPPacker::write_file(Vector<uint8_t> p_data) {
+Error ZIPPacker::write_file(const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
 	return zipWriteInFileInZip(zf, p_data.ptr(), p_data.size()) == ZIP_OK ? OK : FAILED;

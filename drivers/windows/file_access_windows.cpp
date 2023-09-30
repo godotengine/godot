@@ -34,6 +34,7 @@
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
 #define WIN32_LEAN_AND_MEAN
@@ -50,7 +51,7 @@
 #endif
 
 void FileAccessWindows::check_errors() const {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_NULL(f);
 
 	if (feof(f)) {
 		last_error = ERR_FILE_EOF;
@@ -223,7 +224,7 @@ bool FileAccessWindows::is_open() const {
 }
 
 void FileAccessWindows::seek(uint64_t p_position) {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_NULL(f);
 
 	last_error = OK;
 	if (_fseeki64(f, p_position, SEEK_SET)) {
@@ -233,7 +234,7 @@ void FileAccessWindows::seek(uint64_t p_position) {
 }
 
 void FileAccessWindows::seek_end(int64_t p_position) {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_NULL(f);
 
 	if (_fseeki64(f, p_position, SEEK_END)) {
 		check_errors();
@@ -250,7 +251,7 @@ uint64_t FileAccessWindows::get_position() const {
 }
 
 uint64_t FileAccessWindows::get_length() const {
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_NULL_V(f, 0);
 
 	uint64_t pos = get_position();
 	_fseeki64(f, 0, SEEK_END);
@@ -266,7 +267,7 @@ bool FileAccessWindows::eof_reached() const {
 }
 
 uint8_t FileAccessWindows::get_8() const {
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_NULL_V(f, 0);
 
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == WRITE) {
@@ -285,7 +286,7 @@ uint8_t FileAccessWindows::get_8() const {
 
 uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
-	ERR_FAIL_COND_V(!f, -1);
+	ERR_FAIL_NULL_V(f, -1);
 
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == WRITE) {
@@ -303,7 +304,7 @@ Error FileAccessWindows::get_error() const {
 }
 
 void FileAccessWindows::flush() {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_NULL(f);
 
 	fflush(f);
 	if (prev_op == WRITE) {
@@ -312,7 +313,7 @@ void FileAccessWindows::flush() {
 }
 
 void FileAccessWindows::store_8(uint8_t p_dest) {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_NULL(f);
 
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == READ) {
@@ -326,7 +327,7 @@ void FileAccessWindows::store_8(uint8_t p_dest) {
 }
 
 void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_NULL(f);
 	ERR_FAIL_COND(!p_src && p_length > 0);
 
 	if (flags == READ_WRITE || flags == WRITE_READ) {

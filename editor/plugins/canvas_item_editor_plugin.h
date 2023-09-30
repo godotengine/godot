@@ -48,6 +48,7 @@ class PanelContainer;
 class StyleBoxTexture;
 class ViewPanner;
 class VScrollBar;
+class VSeparator;
 class VSplitContainer;
 
 class CanvasItemEditorSelectedItem : public Object {
@@ -192,10 +193,14 @@ private:
 
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
+
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_panel = nullptr;
-	HBoxContainer *context_menu_hbox = nullptr;
+	PanelContainer *context_toolbar_panel = nullptr;
+	HBoxContainer *context_toolbar_hbox = nullptr;
+	HashMap<Control *, VSeparator *> context_toolbar_separators;
+
+	void _update_context_toolbar();
 
 	Transform2D transform;
 	GridVisibility grid_visibility = GRID_VISIBILITY_SHOW_WHEN_SNAPPING;
@@ -216,7 +221,7 @@ private:
 	// Defaults are defined in clear().
 	Point2 grid_offset;
 	Point2 grid_step;
-	int primary_grid_steps = 0;
+	Vector2i primary_grid_step;
 	int grid_step_multiplier = 0;
 
 	real_t snap_rotation_step = 0.0;

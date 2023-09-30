@@ -465,20 +465,20 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 
 Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
 	Object *obj = get_object();
-	ERR_FAIL_COND_V(!obj, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(obj, ERR_UNCONFIGURED);
 
 	return obj->connect(name, p_callable, p_flags);
 }
 
 void Signal::disconnect(const Callable &p_callable) {
 	Object *obj = get_object();
-	ERR_FAIL_COND(!obj);
+	ERR_FAIL_NULL(obj);
 	obj->disconnect(name, p_callable);
 }
 
 bool Signal::is_connected(const Callable &p_callable) const {
 	Object *obj = get_object();
-	ERR_FAIL_COND_V(!obj, false);
+	ERR_FAIL_NULL_V(obj, false);
 
 	return obj->is_connected(name, p_callable);
 }
@@ -500,7 +500,7 @@ Array Signal::get_connections() const {
 }
 
 Signal::Signal(const Object *p_object, const StringName &p_name) {
-	ERR_FAIL_COND_MSG(p_object == nullptr, "Object argument to Signal constructor must be non-null");
+	ERR_FAIL_NULL_MSG(p_object, "Object argument to Signal constructor must be non-null.");
 
 	object = p_object->get_instance_id();
 	name = p_name;

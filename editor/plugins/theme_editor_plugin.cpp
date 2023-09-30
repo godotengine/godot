@@ -164,7 +164,7 @@ void ThemeItemImportTree::_update_items_tree() {
 					break;
 
 				case Theme::DATA_TYPE_FONT:
-					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("Font")));
+					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("FontItem")));
 					data_type_node->set_text(0, TTR("Fonts"));
 
 					item_list = &tree_font_items;
@@ -876,7 +876,7 @@ void ThemeItemImportTree::_notification(int p_what) {
 			select_all_constants_button->set_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
 			select_full_constants_button->set_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
 
-			select_fonts_icon->set_texture(get_editor_theme_icon(SNAME("Font")));
+			select_fonts_icon->set_texture(get_editor_theme_icon(SNAME("FontItem")));
 			deselect_all_fonts_button->set_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
 			select_all_fonts_button->set_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
 			select_full_fonts_button->set_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
@@ -1387,7 +1387,7 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 		if (names.size() > 0) {
 			TreeItem *font_root = edit_items_tree->create_item(root);
 			font_root->set_metadata(0, Theme::DATA_TYPE_FONT);
-			font_root->set_icon(0, get_editor_theme_icon(SNAME("Font")));
+			font_root->set_icon(0, get_editor_theme_icon(SNAME("FontItem")));
 			font_root->set_text(0, TTR("Fonts"));
 			font_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Font Items"));
 
@@ -1875,7 +1875,7 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			edit_items_add_color->set_icon(get_editor_theme_icon(SNAME("Color")));
 			edit_items_add_constant->set_icon(get_editor_theme_icon(SNAME("MemberConstant")));
-			edit_items_add_font->set_icon(get_editor_theme_icon(SNAME("Font")));
+			edit_items_add_font->set_icon(get_editor_theme_icon(SNAME("FontItem")));
 			edit_items_add_font_size->set_icon(get_editor_theme_icon(SNAME("FontSize")));
 			edit_items_add_icon->set_icon(get_editor_theme_icon(SNAME("ImageTexture")));
 			edit_items_add_stylebox->set_icon(get_editor_theme_icon(SNAME("StyleBoxFlat")));
@@ -3318,7 +3318,7 @@ void ThemeTypeEditor::_notification(int p_what) {
 
 			data_type_tabs->set_tab_icon(0, get_editor_theme_icon(SNAME("Color")));
 			data_type_tabs->set_tab_icon(1, get_editor_theme_icon(SNAME("MemberConstant")));
-			data_type_tabs->set_tab_icon(2, get_editor_theme_icon(SNAME("Font")));
+			data_type_tabs->set_tab_icon(2, get_editor_theme_icon(SNAME("FontItem")));
 			data_type_tabs->set_tab_icon(3, get_editor_theme_icon(SNAME("FontSize")));
 			data_type_tabs->set_tab_icon(4, get_editor_theme_icon(SNAME("ImageTexture")));
 			data_type_tabs->set_tab_icon(5, get_editor_theme_icon(SNAME("StyleBoxFlat")));
@@ -3548,7 +3548,7 @@ void ThemeEditor::_add_preview_tab(ThemeEditorPreview *p_preview_tab, const Stri
 
 	preview_tabs->add_tab(p_preview_name, p_icon);
 	preview_tabs_content->add_child(p_preview_tab);
-	preview_tabs->set_tab_button_icon(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("close"), SNAME("TabBar")));
+	preview_tabs->set_tab_button_icon(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("close"), SNAME("TabBar")));
 	p_preview_tab->connect("control_picked", callable_mp(this, &ThemeEditor::_preview_control_picked));
 
 	preview_tabs->set_current_tab(preview_tabs->get_tab_count() - 1);
@@ -3583,6 +3583,8 @@ void ThemeEditor::_remove_preview_tab(int p_tab) {
 		}
 
 		preview_tabs_content->remove_child(preview_tab);
+		preview_tab->queue_free();
+
 		preview_tabs->remove_tab(p_tab);
 		_change_preview_tab(preview_tabs->get_current_tab());
 	}

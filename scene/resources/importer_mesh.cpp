@@ -475,6 +475,14 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			if (new_index_count == 0 || (new_index_count >= (index_count * 0.75f))) {
 				break;
 			}
+			if (new_index_count > 5000000) {
+				// This limit theoretically shouldn't be needed, but it's here
+				// as an ad-hoc fix to prevent a crash with complex meshes.
+				// The crash still happens with limit of 6000000, but 5000000 works.
+				// In the future, identify what's causing that crash and fix it.
+				WARN_PRINT("Mesh LOD generation failed for mesh " + get_name() + " surface " + itos(i) + ", mesh is too complex. Some automatic LODs were not generated.");
+				break;
+			}
 
 			new_indices.resize(new_index_count);
 
@@ -506,6 +514,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					const Vector3 &v2 = vertices_ptr[new_indices_ptr[j + 2]];
 					Vector3 face_normal = vec3_cross(v0 - v2, v0 - v1);
 					float face_area = face_normal.length(); // Actually twice the face area, since it's the same error_factor on all faces, we don't care
+					if (!Math::is_finite(face_area) || face_area == 0) {
+						WARN_PRINT_ONCE("Ignoring face with non-finite normal in LOD generation.");
+						continue;
+					}
 
 					Vector3 dir = face_normal / face_area;
 					int ray_count = CLAMP(5.0 * face_area * error_factor, 16, 64);
@@ -1225,6 +1237,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	for (int i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;
 		st.instantiate();
+		st->set_skin_weight_count((lightmap_surfaces[i].format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? SurfaceTool::SKIN_8_WEIGHTS : SurfaceTool::SKIN_4_WEIGHTS);
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
 		st->set_material(lightmap_surfaces[i].material);
 		st->set_meta("name", lightmap_surfaces[i].name);
@@ -1292,7 +1305,15 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 		Ref<SurfaceTool> &tool = surfaces_tools[i];
 		tool->index();
 		Array arrays = tool->commit_to_arrays();
-		add_surface(tool->get_primitive_type(), arrays, Array(), Dictionary(), tool->get_material(), tool->get_meta("name"), lightmap_surfaces[i].format);
+
+		uint64_t format = lightmap_surfaces[i].format;
+		if (tool->get_skin_weight_count() == SurfaceTool::SKIN_8_WEIGHTS) {
+			format |= RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+		} else {
+			format &= ~RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+		}
+
+		add_surface(tool->get_primitive_type(), arrays, Array(), Dictionary(), tool->get_material(), tool->get_meta("name"), format);
 	}
 
 	set_lightmap_size_hint(Size2(size_x, size_y));

@@ -98,6 +98,7 @@ public:
 	enum Scaling3DMode {
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
+		SCALING_3D_MODE_FSR2,
 		SCALING_3D_MODE_MAX
 	};
 
@@ -167,6 +168,7 @@ public:
 		DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 		DEBUG_DRAW_OCCLUDERS,
 		DEBUG_DRAW_MOTION_VECTORS,
+		DEBUG_DRAW_INTERNAL_BUFFER,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -366,6 +368,7 @@ private:
 		Control *tooltip_control = nullptr;
 		Window *tooltip_popup = nullptr;
 		Label *tooltip_label = nullptr;
+		String tooltip_text;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;
 		Point2 drag_accum;

@@ -88,6 +88,15 @@ String GDScriptWarning::get_message() const {
 		case FUNCTION_USED_AS_PROPERTY:
 			CHECK_SYMBOLS(2);
 			return vformat(R"(The property "%s" was not found in base "%s" but there's a method with the same name. Did you mean to call it?)", symbols[0], symbols[1]);
+		case UNTYPED_DECLARATION:
+			CHECK_SYMBOLS(2);
+			if (symbols[0] == "Function") {
+				return vformat(R"*(%s "%s()" has no static return type.)*", symbols[0], symbols[1]);
+			}
+			return vformat(R"(%s "%s" has no static type.)", symbols[0], symbols[1]);
+		case INFERRED_DECLARATION:
+			CHECK_SYMBOLS(2);
+			return vformat(R"(%s "%s" has an implicitly inferred static type.)", symbols[0], symbols[1]);
 		case UNSAFE_PROPERTY_ACCESS:
 			CHECK_SYMBOLS(2);
 			return vformat(R"(The property "%s" is not present on the inferred type "%s" (but may be present on a subtype).)", symbols[0], symbols[1]);
@@ -99,7 +108,7 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"(The value is cast to "%s" but has an unknown type.)", symbols[0]);
 		case UNSAFE_CALL_ARGUMENT:
 			CHECK_SYMBOLS(4);
-			return vformat(R"*(The argument %s of the function "%s()" requires a the subtype "%s" but the supertype "%s" was provided.)*", symbols[0], symbols[1], symbols[2], symbols[3]);
+			return vformat(R"*(The argument %s of the function "%s()" requires the subtype "%s" but the supertype "%s" was provided.)*", symbols[0], symbols[1], symbols[2], symbols[3]);
 		case UNSAFE_VOID_RETURN:
 			CHECK_SYMBOLS(2);
 			return vformat(R"*(The method "%s()" returns "void" but it's trying to return a call to "%s()" that can't be ensured to also be "void".)*", symbols[0], symbols[1]);
@@ -113,14 +122,6 @@ String GDScriptWarning::get_message() const {
 			return R"(The "@static_unload" annotation is redundant because the file does not have a class with static variables.)";
 		case REDUNDANT_AWAIT:
 			return R"("await" keyword not needed in this case, because the expression isn't a coroutine nor a signal.)";
-		case REDUNDANT_FOR_VARIABLE_TYPE:
-			CHECK_SYMBOLS(3);
-			if (symbols[1] == symbols[2]) {
-				return vformat(R"(The for loop iterator "%s" already has inferred type "%s", the specified type is redundant.)", symbols[0], symbols[1]);
-			} else {
-				return vformat(R"(The for loop iterator "%s" has inferred type "%s" but its supertype "%s" is specified.)", symbols[0], symbols[1], symbols[2]);
-			}
-			break;
 		case ASSERT_ALWAYS_TRUE:
 			return "Assert statement is redundant because the expression is always true.";
 		case ASSERT_ALWAYS_FALSE:
@@ -208,6 +209,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
 		"FUNCTION_USED_AS_PROPERTY",
+		"UNTYPED_DECLARATION",
+		"INFERRED_DECLARATION",
 		"UNSAFE_PROPERTY_ACCESS",
 		"UNSAFE_METHOD_ACCESS",
 		"UNSAFE_CAST",
@@ -217,7 +220,6 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"STATIC_CALLED_ON_INSTANCE",
 		"REDUNDANT_STATIC_UNLOAD",
 		"REDUNDANT_AWAIT",
-		"REDUNDANT_FOR_VARIABLE_TYPE",
 		"ASSERT_ALWAYS_TRUE",
 		"ASSERT_ALWAYS_FALSE",
 		"INTEGER_DIVISION",

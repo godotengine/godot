@@ -31,6 +31,7 @@
 #include "display_server_windows.h"
 
 #include "os_windows.h"
+#include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -184,37 +185,37 @@ void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window)
 }
 
 bool DisplayServerWindows::tts_is_speaking() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_speaking();
 }
 
 bool DisplayServerWindows::tts_is_paused() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
-	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->get_voices();
 }
 
 void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerWindows::tts_pause() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->pause();
 }
 
 void DisplayServerWindows::tts_resume() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->resume();
 }
 
 void DisplayServerWindows::tts_stop() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->stop();
 }
 
@@ -413,7 +414,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 
 	Char16String utf16 = text.utf16();
 	HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (utf16.length() + 1) * sizeof(WCHAR));
-	ERR_FAIL_COND_MSG(mem == nullptr, "Unable to allocate memory for clipboard contents.");
+	ERR_FAIL_NULL_MSG(mem, "Unable to allocate memory for clipboard contents.");
 
 	LPWSTR lptstrCopy = (LPWSTR)GlobalLock(mem);
 	memcpy(lptstrCopy, utf16.get_data(), (utf16.length() + 1) * sizeof(WCHAR));
@@ -424,7 +425,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 	// Set the CF_TEXT version (not needed?).
 	CharString utf8 = text.utf8();
 	mem = GlobalAlloc(GMEM_MOVEABLE, utf8.length() + 1);
-	ERR_FAIL_COND_MSG(mem == nullptr, "Unable to allocate memory for clipboard contents.");
+	ERR_FAIL_NULL_MSG(mem, "Unable to allocate memory for clipboard contents.");
 
 	LPTSTR ptr = (LPTSTR)GlobalLock(mem);
 	memcpy(ptr, utf8.get_data(), utf8.length());
@@ -1070,8 +1071,11 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 #endif
 #ifdef GLES3_ENABLED
-	if (gl_manager) {
-		gl_manager->window_destroy(p_window);
+	if (gl_manager_angle) {
+		gl_manager_angle->window_destroy(p_window);
+	}
+	if (gl_manager_native) {
+		gl_manager_native->window_destroy(p_window);
 	}
 #endif
 
@@ -1089,8 +1093,11 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 void DisplayServerWindows::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_make_current(p_window_id);
+	if (gl_manager_angle) {
+		gl_manager_angle->window_make_current(p_window_id);
+	}
+	if (gl_manager_native) {
+		gl_manager_native->window_make_current(p_window_id);
 	}
 #endif
 }
@@ -1106,14 +1113,18 @@ int64_t DisplayServerWindows::window_get_native_handle(HandleType p_handle_type,
 		}
 #if defined(GLES3_ENABLED)
 		case WINDOW_VIEW: {
-			if (gl_manager) {
-				return (int64_t)gl_manager->get_hdc(p_window);
+			if (gl_manager_native) {
+				return (int64_t)gl_manager_native->get_hdc(p_window);
+			} else {
+				return (int64_t)GetDC(windows[p_window].hWnd);
 			}
-			return 0;
 		}
 		case OPENGL_CONTEXT: {
-			if (gl_manager) {
-				return (int64_t)gl_manager->get_hglrc(p_window);
+			if (gl_manager_native) {
+				return (int64_t)gl_manager_native->get_hglrc(p_window);
+			}
+			if (gl_manager_angle) {
+				return (int64_t)gl_manager_angle->get_context(p_window);
 			}
 			return 0;
 		}
@@ -1447,8 +1458,11 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	}
 #endif
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->window_resize(p_window, w, h);
+	if (gl_manager_native) {
+		gl_manager_native->window_resize(p_window, w, h);
+	}
+	if (gl_manager_angle) {
+		gl_manager_angle->window_resize(p_window, w, h);
 	}
 #endif
 
@@ -1511,7 +1525,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 
 	if (p_fullscreen || p_borderless) {
 		r_style |= WS_POPUP; // p_borderless was WS_EX_TOOLWINDOW in the past.
-		if (p_fullscreen && p_multiwindow_fs) {
+		if ((p_fullscreen && p_multiwindow_fs) || p_maximized) {
 			r_style |= WS_BORDER; // Allows child windows to be displayed on top of full screen.
 		}
 	} else {
@@ -2318,8 +2332,11 @@ void DisplayServerWindows::make_rendering_thread() {
 
 void DisplayServerWindows::swap_buffers() {
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->swap_buffers();
+	if (gl_manager_angle) {
+		gl_manager_angle->swap_buffers();
+	}
+	if (gl_manager_native) {
+		gl_manager_native->swap_buffers();
 	}
 #endif
 }
@@ -2390,7 +2407,7 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	f->seek(pos);
 	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
 	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
-	ERR_FAIL_COND_MSG(!icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
+	ERR_FAIL_NULL_MSG(icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon.
 	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
@@ -2400,7 +2417,7 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	f->seek(pos);
 	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
 	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
-	ERR_FAIL_COND_MSG(!icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
+	ERR_FAIL_NULL_MSG(icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first.
 	int err = 0;
@@ -2465,7 +2482,7 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 		}
 
 		HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
-		ERR_FAIL_COND(!hicon);
+		ERR_FAIL_NULL(hicon);
 
 		icon = img;
 
@@ -2490,8 +2507,11 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 #endif
 
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->set_use_vsync(p_window, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	if (gl_manager_native) {
+		gl_manager_native->set_use_vsync(p_window, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+	if (gl_manager_angle) {
+		gl_manager_angle->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 }
@@ -2505,8 +2525,11 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 #endif
 
 #if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		return gl_manager->is_using_vsync(p_window) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	if (gl_manager_native) {
+		return gl_manager_native->is_using_vsync(p_window) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	}
+	if (gl_manager_angle) {
+		return gl_manager_angle->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
 #endif
 
@@ -2829,6 +2852,30 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_NCPAINT: {
+			if (RenderingServer::get_singleton() && (windows[window_id].borderless || (windows[window_id].fullscreen && windows[window_id].multiwindow_fs))) {
+				Color color = RenderingServer::get_singleton()->get_default_clear_color();
+				HDC hdc = GetWindowDC(hWnd);
+				if (hdc) {
+					HPEN pen = CreatePen(PS_SOLID, 1, RGB(color.r * 255.f, color.g * 255.f, color.b * 255.f));
+					if (pen) {
+						HGDIOBJ prev_pen = SelectObject(hdc, pen);
+						HGDIOBJ prev_brush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
+
+						RECT rc;
+						GetWindowRect(hWnd, &rc);
+						OffsetRect(&rc, -rc.left, -rc.top);
+						Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom);
+
+						SelectObject(hdc, prev_pen);
+						SelectObject(hdc, prev_brush);
+						DeleteObject(pen);
+					}
+					ReleaseDC(hWnd, hdc);
+				}
+				return 0;
+			}
+		} break;
 		case WM_NCHITTEST: {
 			if (windows[window_id].mpass) {
 				return HTTRANSPARENT;
@@ -4224,10 +4271,20 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 #endif
 
 #ifdef GLES3_ENABLED
-		if (gl_manager) {
-			if (gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
-				memdelete(gl_manager);
-				gl_manager = nullptr;
+		if (gl_manager_native) {
+			if (gl_manager_native->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
+				memdelete(gl_manager_native);
+				gl_manager_native = nullptr;
+				windows.erase(id);
+				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
+			}
+			window_set_vsync_mode(p_vsync_mode, id);
+		}
+
+		if (gl_manager_angle) {
+			if (gl_manager_angle->window_create(id, nullptr, wd.hWnd, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
+				memdelete(gl_manager_angle);
+				gl_manager_angle = nullptr;
 				windows.erase(id);
 				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
 			}
@@ -4523,18 +4580,36 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(GLES3_ENABLED)
 
 	if (rendering_driver == "opengl3") {
-		GLManager_Windows::ContextType opengl_api_type = GLManager_Windows::GLES_3_0_COMPATIBLE;
+		int gl_version = detect_wgl_version();
+		if (gl_version < 30003) {
+			WARN_PRINT("Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE.");
+			rendering_driver = "opengl3_angle";
+		}
+	}
 
-		gl_manager = memnew(GLManager_Windows(opengl_api_type));
+	if (rendering_driver == "opengl3") {
+		gl_manager_native = memnew(GLManagerNative_Windows);
 
-		if (gl_manager->initialize() != OK) {
-			memdelete(gl_manager);
-			gl_manager = nullptr;
+		if (gl_manager_native->initialize() != OK) {
+			memdelete(gl_manager_native);
+			gl_manager_native = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
-		RasterizerGLES3::make_current();
+		RasterizerGLES3::make_current(true);
+	}
+	if (rendering_driver == "opengl3_angle") {
+		gl_manager_angle = memnew(GLManagerANGLE_Windows);
+
+		if (gl_manager_angle->initialize() != OK) {
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+
+		RasterizerGLES3::make_current(false);
 	}
 #endif
 
@@ -4608,6 +4683,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 #endif
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
+	drivers.push_back("opengl3_angle");
 #endif
 
 	return drivers;
@@ -4693,9 +4769,13 @@ DisplayServerWindows::~DisplayServerWindows() {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
 	}
 #ifdef GLES3_ENABLED
-	if (gl_manager) {
-		memdelete(gl_manager);
-		gl_manager = nullptr;
+	if (gl_manager_angle) {
+		memdelete(gl_manager_angle);
+		gl_manager_angle = nullptr;
+	}
+	if (gl_manager_native) {
+		memdelete(gl_manager_native);
+		gl_manager_native = nullptr;
 	}
 #endif
 	if (tts) {

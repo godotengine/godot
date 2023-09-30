@@ -68,7 +68,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	if (mb.is_valid() && mb->is_pressed() && ((tool_select->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) || (mb->get_button_index() == MouseButton::LEFT && tool_create->is_pressed()))) {
 		if (!read_only) {
-			menu->clear();
+			menu->clear(false);
 			animations_menu->clear();
 			animations_to_add.clear();
 
@@ -78,18 +78,12 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-			if (tree->has_node(tree->get_animation_player())) {
-				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
+			List<StringName> names;
+			tree->get_animation_list(&names);
 
-				if (ap) {
-					List<StringName> names;
-					ap->get_animation_list(&names);
-
-					for (const StringName &E : names) {
-						animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
-						animations_to_add.push_back(E);
-					}
-				}
+			for (const StringName &E : names) {
+				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
+				animations_to_add.push_back(E);
 			}
 
 			for (const StringName &E : classes) {
@@ -423,9 +417,9 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 		String type = menu->get_item_metadata(p_index);
 
 		Object *obj = ClassDB::instantiate(type);
-		ERR_FAIL_COND(!obj);
+		ERR_FAIL_NULL(obj);
 		AnimationNode *an = Object::cast_to<AnimationNode>(obj);
-		ERR_FAIL_COND(!an);
+		ERR_FAIL_NULL(an);
 
 		node = Ref<AnimationNode>(an);
 	}
@@ -663,7 +657,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	bg.instantiate();
 
 	tool_blend = memnew(Button);
-	tool_blend->set_flat(true);
+	tool_blend->set_theme_type_variation("FlatButton");
 	tool_blend->set_toggle_mode(true);
 	tool_blend->set_button_group(bg);
 	top_hb->add_child(tool_blend);
@@ -672,7 +666,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_blend->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(3));
 
 	tool_select = memnew(Button);
-	tool_select->set_flat(true);
+	tool_select->set_theme_type_variation("FlatButton");
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
@@ -680,7 +674,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_select->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
-	tool_create->set_flat(true);
+	tool_create->set_theme_type_variation("FlatButton");
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
@@ -690,7 +684,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_erase_sep = memnew(VSeparator);
 	top_hb->add_child(tool_erase_sep);
 	tool_erase = memnew(Button);
-	tool_erase->set_flat(true);
+	tool_erase->set_theme_type_variation("FlatButton");
 	top_hb->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points."));
 	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
@@ -698,7 +692,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
-	snap->set_flat(true);
+	snap->set_theme_type_variation("FlatButton");
 	snap->set_toggle_mode(true);
 	top_hb->add_child(snap);
 	snap->set_pressed(true);

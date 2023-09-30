@@ -69,6 +69,7 @@ class GDScript : public Script {
 		StringName setter;
 		StringName getter;
 		GDScriptDataType data_type;
+		PropertyInfo property_info;
 	};
 
 	struct ClearData {
@@ -93,14 +94,18 @@ class GDScript : public Script {
 	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
-	HashSet<StringName> members; //members are just indices to the instantiated script.
-	HashMap<StringName, Variant> constants;
+	// Members are just indices to the instantiated script.
+	HashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
+	HashSet<StringName> members; // Only members of the current class.
+
+	// Only static variables of the current class.
 	HashMap<StringName, MemberInfo> static_variables_indices;
-	Vector<Variant> static_variables;
+	Vector<Variant> static_variables; // Static variable values.
+
+	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
-	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
-	HashMap<StringName, Vector<StringName>> _signals;
+	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
 
 #ifdef TOOLS_ENABLED
@@ -126,8 +131,6 @@ class GDScript : public Script {
 	void _add_doc(const DocData::ClassDoc &p_inner_class);
 #endif
 
-	HashMap<StringName, PropertyInfo> member_info;
-
 	GDScriptFunction *implicit_initializer = nullptr;
 	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
 	GDScriptFunction *implicit_ready = nullptr;
@@ -142,7 +145,8 @@ class GDScript : public Script {
 	//exported members
 	String source;
 	String path;
-	String name;
+	StringName local_name; // Inner class identifier or `class_name`.
+	StringName global_name; // `class_name`.
 	String fully_qualified_name;
 	String simplified_icon_path;
 	SelfList<GDScript> script_list;
@@ -168,14 +172,10 @@ class GDScript : public Script {
 	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
 	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
-	void _init_rpc_methods_properties();
 
 	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
 	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
 	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
-
-	// This method will map the class name from "RefCounted" to "MyClass.InnerClass".
-	static String _get_gdscript_reference_class_name(const GDScript *p_gdscript);
 
 	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
 	void _get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
@@ -194,9 +194,12 @@ public:
 	static String debug_get_script_name(const Ref<Script> &p_script);
 #endif
 
+	_FORCE_INLINE_ StringName get_local_name() const { return local_name; }
+
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
 	virtual bool is_valid() const override { return valid; }
+	virtual bool is_abstract() const override { return false; } // GDScript does not support abstract classes.
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -214,7 +217,6 @@ public:
 	}
 	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
-	const String &get_script_class_name() const { return name; }
 
 	RBSet<GDScript *> get_dependencies();
 	RBSet<GDScript *> get_inverted_dependencies();
@@ -504,7 +506,9 @@ public:
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
-	virtual bool has_named_classes() const override;
+#ifndef DISABLE_DEPRECATED
+	virtual bool has_named_classes() const override { return false; }
+#endif
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }

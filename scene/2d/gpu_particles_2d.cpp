@@ -49,11 +49,11 @@ void GPUParticles2D::set_emitting(bool p_emitting) {
 			// Last cycle ended.
 			active = true;
 			time = 0;
-			signal_cancled = false;
+			signal_canceled = false;
 			emission_time = lifetime;
 			active_time = lifetime * (2 - explosiveness_ratio);
 		} else {
-			signal_cancled = true;
+			signal_canceled = true;
 		}
 		set_process_internal(true);
 	} else if (!p_emitting) {
@@ -429,7 +429,7 @@ void GPUParticles2D::restart() {
 
 	emitting = true;
 	active = true;
-	signal_cancled = false;
+	signal_canceled = false;
 	time = 0;
 	emission_time = lifetime;
 	active_time = lifetime * (2 - explosiveness_ratio);
@@ -701,7 +701,7 @@ void GPUParticles2D::_notification(int p_what) {
 					}
 				}
 				if (time > active_time) {
-					if (active && !signal_cancled) {
+					if (active && !signal_canceled) {
 						emit_signal(SceneStringNames::get_singleton()->finished);
 					}
 					active = false;

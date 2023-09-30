@@ -62,7 +62,7 @@ private:
 
 	bool emitting = false;
 	bool active = false;
-	bool signal_cancled = false;
+	bool signal_canceled = false;
 	bool one_shot = false;
 	int amount = 0;
 	double lifetime = 0.0;

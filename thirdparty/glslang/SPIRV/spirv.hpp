@@ -1,19 +1,19 @@
 // Copyright (c) 2014-2020 The Khronos Group Inc.
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and/or associated documentation files (the "Materials"),
 // to deal in the Materials without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Materials, and to permit persons to whom the
 // Materials are furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Materials.
-// 
+//
 // MODIFICATIONS TO THIS FILE MAY MEAN IT NO LONGER ACCURATELY REFLECTS KHRONOS
 // STANDARDS. THE UNMODIFIED, NORMATIVE VERSIONS OF KHRONOS SPECIFICATIONS AND
-// HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/ 
-// 
+// HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/
+//
 // THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -27,7 +27,7 @@
 
 // Enumeration tokens for SPIR-V, in various styles:
 //   C, C++, C++11, JSON, Lua, Python, C#, D, Beef
-// 
+//
 // - C will have tokens with a "Spv" prefix, e.g.: SpvSourceLanguageGLSL
 // - C++ will have tokens in the "spv" name space, e.g.: spv::SourceLanguageGLSL
 // - C++11 will use enum classes in the spv namespace, e.g.: spv::SourceLanguage::GLSL
@@ -38,7 +38,7 @@
 // - D will have tokens under the "spv" module, e.g: spv.SourceLanguage.GLSL
 // - Beef will use enum classes in the Specification class located in the "Spv" namespace,
 //     e.g.: Spv.Specification.SourceLanguage.GLSL
-// 
+//
 // Some tokens act like mask values, which can be OR'd together,
 // while others are mutually exclusive.  The mask-like ones have
 // "Mask" in their name, and a parallel enum that has the shift
@@ -1144,6 +1144,7 @@ enum Capability {
     CapabilityDotProduct = 6019,
     CapabilityDotProductKHR = 6019,
     CapabilityRayCullMaskKHR = 6020,
+    CapabilityCooperativeMatrixKHR = 6022,
     CapabilityBitInstructions = 6025,
     CapabilityGroupNonUniformRotateKHR = 6026,
     CapabilityAtomicFloat32AddEXT = 6033,
@@ -1259,6 +1260,37 @@ enum PackedVectorFormat {
     PackedVectorFormatPackedVectorFormat4x8Bit = 0,
     PackedVectorFormatPackedVectorFormat4x8BitKHR = 0,
     PackedVectorFormatMax = 0x7fffffff,
+};
+
+enum CooperativeMatrixOperandsShift {
+    CooperativeMatrixOperandsMatrixASignedComponentsShift = 0,
+    CooperativeMatrixOperandsMatrixBSignedComponentsShift = 1,
+    CooperativeMatrixOperandsMatrixCSignedComponentsShift = 2,
+    CooperativeMatrixOperandsMatrixResultSignedComponentsShift = 3,
+    CooperativeMatrixOperandsSaturatingAccumulationShift = 4,
+    CooperativeMatrixOperandsMax = 0x7fffffff,
+};
+
+enum CooperativeMatrixOperandsMask {
+    CooperativeMatrixOperandsMaskNone = 0,
+    CooperativeMatrixOperandsMatrixASignedComponentsMask = 0x00000001,
+    CooperativeMatrixOperandsMatrixBSignedComponentsMask = 0x00000002,
+    CooperativeMatrixOperandsMatrixCSignedComponentsMask = 0x00000004,
+    CooperativeMatrixOperandsMatrixResultSignedComponentsMask = 0x00000008,
+    CooperativeMatrixOperandsSaturatingAccumulationMask = 0x00000010,
+};
+
+enum CooperativeMatrixLayout {
+    CooperativeMatrixLayoutCooperativeMatrixRowMajorKHR = 0,
+    CooperativeMatrixLayoutCooperativeMatrixColumnMajorKHR = 1,
+    CooperativeMatrixLayoutMax = 0x7fffffff,
+};
+
+enum CooperativeMatrixUse {
+    CooperativeMatrixUseMatrixAKHR = 0,
+    CooperativeMatrixUseMatrixBKHR = 1,
+    CooperativeMatrixUseMatrixAccumulatorKHR = 2,
+    CooperativeMatrixUseMax = 0x7fffffff,
 };
 
 enum Op {
@@ -1634,6 +1666,11 @@ enum Op {
     OpUDotAccSatKHR = 4454,
     OpSUDotAccSat = 4455,
     OpSUDotAccSatKHR = 4455,
+    OpTypeCooperativeMatrixKHR = 4456,
+    OpCooperativeMatrixLoadKHR = 4457,
+    OpCooperativeMatrixStoreKHR = 4458,
+    OpCooperativeMatrixMulAddKHR = 4459,
+    OpCooperativeMatrixLengthKHR = 4460,
     OpTypeRayQueryKHR = 4472,
     OpRayQueryInitializeKHR = 4473,
     OpRayQueryTerminateKHR = 4474,
@@ -2346,6 +2383,11 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpSDotAccSat: *hasResult = true; *hasResultType = true; break;
     case OpUDotAccSat: *hasResult = true; *hasResultType = true; break;
     case OpSUDotAccSat: *hasResult = true; *hasResultType = true; break;
+    case OpTypeCooperativeMatrixKHR: *hasResult = true; *hasResultType = false; break;
+    case OpCooperativeMatrixLoadKHR: *hasResult = true; *hasResultType = true; break;
+    case OpCooperativeMatrixStoreKHR: *hasResult = false; *hasResultType = false; break;
+    case OpCooperativeMatrixMulAddKHR: *hasResult = true; *hasResultType = true; break;
+    case OpCooperativeMatrixLengthKHR: *hasResult = true; *hasResultType = true; break;
     case OpTypeRayQueryKHR: *hasResult = true; *hasResultType = false; break;
     case OpRayQueryInitializeKHR: *hasResult = false; *hasResultType = false; break;
     case OpRayQueryTerminateKHR: *hasResult = false; *hasResultType = false; break;
@@ -2722,6 +2764,10 @@ inline FragmentShadingRateMask operator|(FragmentShadingRateMask a, FragmentShad
 inline FragmentShadingRateMask operator&(FragmentShadingRateMask a, FragmentShadingRateMask b) { return FragmentShadingRateMask(unsigned(a) & unsigned(b)); }
 inline FragmentShadingRateMask operator^(FragmentShadingRateMask a, FragmentShadingRateMask b) { return FragmentShadingRateMask(unsigned(a) ^ unsigned(b)); }
 inline FragmentShadingRateMask operator~(FragmentShadingRateMask a) { return FragmentShadingRateMask(~unsigned(a)); }
+inline CooperativeMatrixOperandsMask operator|(CooperativeMatrixOperandsMask a, CooperativeMatrixOperandsMask b) { return CooperativeMatrixOperandsMask(unsigned(a) | unsigned(b)); }
+inline CooperativeMatrixOperandsMask operator&(CooperativeMatrixOperandsMask a, CooperativeMatrixOperandsMask b) { return CooperativeMatrixOperandsMask(unsigned(a) & unsigned(b)); }
+inline CooperativeMatrixOperandsMask operator^(CooperativeMatrixOperandsMask a, CooperativeMatrixOperandsMask b) { return CooperativeMatrixOperandsMask(unsigned(a) ^ unsigned(b)); }
+inline CooperativeMatrixOperandsMask operator~(CooperativeMatrixOperandsMask a) { return CooperativeMatrixOperandsMask(~unsigned(a)); }
 
 }  // end namespace spv
 

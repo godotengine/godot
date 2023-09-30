@@ -8,33 +8,4 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<theme_items>
-		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
-			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.
-		</theme_item>
-		<theme_item name="grabber_offset" data_type="constant" type="int" default="0">
-			Vertical offset of the grabber.
-		</theme_item>
-		<theme_item name="grabber" data_type="icon" type="Texture2D">
-			The texture for the grabber (the draggable element).
-		</theme_item>
-		<theme_item name="grabber_disabled" data_type="icon" type="Texture2D">
-			The texture for the grabber when it's disabled.
-		</theme_item>
-		<theme_item name="grabber_highlight" data_type="icon" type="Texture2D">
-			The texture for the grabber when it's focused.
-		</theme_item>
-		<theme_item name="tick" data_type="icon" type="Texture2D">
-			The texture for the ticks, visible when [member Slider.tick_count] is greater than 0.
-		</theme_item>
-		<theme_item name="grabber_area" data_type="style" type="StyleBox">
-			The background of the area to the left of the grabber.
-		</theme_item>
-		<theme_item name="grabber_area_highlight" data_type="style" type="StyleBox">
-			The background of the area to the left of the grabber that displays when it's being hovered or focused.
-		</theme_item>
-		<theme_item name="slider" data_type="style" type="StyleBox">
-			The background for the whole slider. Determines the height of the [code]grabber_area[/code].
-		</theme_item>
-	</theme_items>
 </class>

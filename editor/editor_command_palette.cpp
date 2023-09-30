@@ -34,6 +34,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_toaster.h"
 #include "scene/gui/control.h"
 #include "scene/gui/tree.h"
 
@@ -184,10 +185,10 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 void EditorCommandPalette::_confirmed() {
 	TreeItem *selected_option = search_options->get_selected();
-	String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
+	const String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
 	if (!command_key.is_empty()) {
 		hide();
-		execute_command(command_key);
+		callable_mp(this, &EditorCommandPalette::execute_command).call_deferred(command_key);
 	}
 }
 
@@ -248,11 +249,19 @@ void EditorCommandPalette::_add_command(String p_command_name, String p_key_name
 	commands[p_key_name] = command;
 }
 
-void EditorCommandPalette::execute_command(String &p_command_key) {
+void EditorCommandPalette::execute_command(const String &p_command_key) {
 	ERR_FAIL_COND_MSG(!commands.has(p_command_key), p_command_key + " not found.");
 	commands[p_command_key].last_used = OS::get_singleton()->get_unix_time();
-	commands[p_command_key].callable.call_deferred();
 	_save_history();
+
+	Variant ret;
+	Callable::CallError ce;
+	const Callable &callable = commands[p_command_key].callable;
+	callable.callp(nullptr, 0, ret, ce);
+
+	if (ce.error != Callable::CallError::CALL_OK) {
+		EditorToaster::get_singleton()->popup_str(vformat(TTR("Failed to execute command \"%s\":\n%s."), p_command_key, Variant::get_callable_error_text(callable, nullptr, 0, ce)), EditorToaster::SEVERITY_ERROR);
+	}
 }
 
 void EditorCommandPalette::register_shortcuts_as_command() {
@@ -354,6 +363,16 @@ Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name
 	}
 
 	Ref<Shortcut> shortcut = ED_SHORTCUT(p_path, p_name, p_keycode);
+	EditorCommandPalette::get_singleton()->add_shortcut_command(p_command_name, p_path, shortcut);
+	return shortcut;
+}
+
+Ref<Shortcut> ED_SHORTCUT_ARRAY_AND_COMMAND(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes, String p_command_name) {
+	if (p_command_name.is_empty()) {
+		p_command_name = p_name;
+	}
+
+	Ref<Shortcut> shortcut = ED_SHORTCUT_ARRAY(p_path, p_name, p_keycodes);
 	EditorCommandPalette::get_singleton()->add_shortcut_command(p_command_name, p_path, shortcut);
 	return shortcut;
 }

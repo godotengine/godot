@@ -589,8 +589,12 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 		raster_push_constant.grid_size[0] = grid_size;
 		raster_push_constant.grid_size[1] = grid_size;
 		raster_push_constant.grid_size[2] = grid_size;
-		raster_push_constant.uv_offset[0] = 0;
-		raster_push_constant.uv_offset[1] = 0;
+
+		// Half pixel offset is required so the rasterizer doesn't output face edges directly aligned into pixels.
+		// This fixes artifacts where the pixel would be traced from the edge of a face, causing half the rays to
+		// be outside of the boundaries of the geometry. See <https://github.com/godotengine/godot/issues/69126>.
+		raster_push_constant.uv_offset[0] = -0.5f / float(atlas_size.x);
+		raster_push_constant.uv_offset[1] = -0.5f / float(atlas_size.y);
 
 		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
 		//draw opaque
@@ -610,24 +614,28 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 	}
 }
 
-LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices) {
+static Vector<RD::Uniform> dilate_or_denoise_common_uniforms(RID &p_source_light_tex, RID &p_dest_light_tex) {
 	Vector<RD::Uniform> uniforms;
 	{
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.binding = 0;
-			u.append_id(dest_light_tex);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 1;
-			u.append_id(source_light_tex);
-			uniforms.push_back(u);
-		}
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+		u.binding = 0;
+		u.append_id(p_dest_light_tex);
+		uniforms.push_back(u);
 	}
+	{
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 1;
+		u.append_id(p_source_light_tex);
+		uniforms.push_back(u);
+	}
+
+	return uniforms;
+}
+
+LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices) {
+	Vector<RD::Uniform> uniforms = dilate_or_denoise_common_uniforms(source_light_tex, dest_light_tex);
 
 	RID compute_shader_dilate = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("dilate"));
 	ERR_FAIL_COND_V(compute_shader_dilate.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
@@ -663,7 +671,77 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	return BAKE_OK;
 }
 
-LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization) {
+LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, float p_denoiser_strength, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function) {
+	RID denoise_params_buffer = p_rd->uniform_buffer_create(sizeof(DenoiseParams));
+	DenoiseParams denoise_params;
+	denoise_params.spatial_bandwidth = 5.0f;
+	denoise_params.light_bandwidth = p_denoiser_strength;
+	denoise_params.albedo_bandwidth = 1.0f;
+	denoise_params.normal_bandwidth = 0.1f;
+	denoise_params.filter_strength = 10.0f;
+	p_rd->buffer_update(denoise_params_buffer, 0, sizeof(DenoiseParams), &denoise_params);
+
+	Vector<RD::Uniform> uniforms = dilate_or_denoise_common_uniforms(p_source_light_tex, p_dest_light_tex);
+	{
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 2;
+		u.append_id(p_source_normal_tex);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+		u.binding = 3;
+		u.append_id(denoise_params_buffer);
+		uniforms.push_back(u);
+	}
+
+	RID compute_shader_denoise = p_rd->shader_create_from_spirv(p_compute_shader->get_spirv_stages("denoise"));
+	ERR_FAIL_COND_V(compute_shader_denoise.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
+
+	RID compute_shader_denoise_pipeline = p_rd->compute_pipeline_create(compute_shader_denoise);
+	RID denoise_uniform_set = p_rd->uniform_set_create(uniforms, compute_shader_denoise, 1);
+
+	// We denoise in fixed size regions and synchronize execution to avoid GPU timeouts.
+	// We use a region with 1/4 the amount of pixels if we're denoising SH lightmaps, as
+	// all four of them are denoised in the shader in one dispatch.
+	const int max_region_size = p_bake_sh ? 512 : 1024;
+	int x_regions = (p_atlas_size.width - 1) / max_region_size + 1;
+	int y_regions = (p_atlas_size.height - 1) / max_region_size + 1;
+	for (int s = 0; s < p_atlas_slices; s++) {
+		p_push_constant.atlas_slice = s;
+
+		for (int i = 0; i < x_regions; i++) {
+			for (int j = 0; j < y_regions; j++) {
+				int x = i * max_region_size;
+				int y = j * max_region_size;
+				int w = MIN((i + 1) * max_region_size, p_atlas_size.width) - x;
+				int h = MIN((j + 1) * max_region_size, p_atlas_size.height) - y;
+				p_push_constant.region_ofs[0] = x;
+				p_push_constant.region_ofs[1] = y;
+
+				RD::ComputeListID compute_list = p_rd->compute_list_begin();
+				p_rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_denoise_pipeline);
+				p_rd->compute_list_bind_uniform_set(compute_list, p_compute_base_uniform_set, 0);
+				p_rd->compute_list_bind_uniform_set(compute_list, denoise_uniform_set, 1);
+				p_rd->compute_list_set_push_constant(compute_list, &p_push_constant, sizeof(PushConstant));
+				p_rd->compute_list_dispatch(compute_list, (w - 1) / 8 + 1, (h - 1) / 8 + 1, 1);
+				p_rd->compute_list_end();
+
+				p_rd->submit();
+				p_rd->sync();
+			}
+		}
+	}
+
+	p_rd->free(compute_shader_denoise);
+	p_rd->free(denoise_params_buffer);
+
+	return BAKE_OK;
+}
+
+LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization) {
 	if (p_step_function) {
 		p_step_function(0.0, RTR("Begin Bake"), p_bake_userdata, true);
 	}
@@ -1415,14 +1493,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-	{
-		SWAP(light_accum_tex, light_accum_tex2);
-		BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices * (p_bake_sh ? 4 : 1));
-		if (unlikely(error != BAKE_OK)) {
-			return error;
-		}
-	}
-
 	/* DENOISE */
 
 	if (p_use_denoiser) {
@@ -1430,36 +1500,20 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			p_step_function(0.8, RTR("Denoising"), p_bake_userdata, true);
 		}
 
-		Ref<LightmapDenoiser> denoiser = LightmapDenoiser::create();
-		if (denoiser.is_valid()) {
-			for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
-				Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
-				Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-
-				Ref<Image> denoised = denoiser->denoise_image(img);
-				if (denoised != img) {
-					denoised->convert(Image::FORMAT_RGBAH);
-					Vector<uint8_t> ds = denoised->get_data();
-					denoised.unref(); //avoid copy on write
-					{ //restore alpha
-						uint32_t count = s.size() / 2; //uint16s
-						const uint16_t *src = (const uint16_t *)s.ptr();
-						uint16_t *dst = (uint16_t *)ds.ptrw();
-						for (uint32_t j = 0; j < count; j += 4) {
-							dst[j + 3] = src[j + 3];
-						}
-					}
-					rd->texture_update(light_accum_tex, i, ds);
-				}
-			}
-		}
-
 		{
 			SWAP(light_accum_tex, light_accum_tex2);
-			BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices * (p_bake_sh ? 4 : 1));
+			BakeError error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, atlas_size, atlas_slices, p_bake_sh, p_step_function);
 			if (unlikely(error != BAKE_OK)) {
 				return error;
 			}
+		}
+	}
+
+	{
+		SWAP(light_accum_tex, light_accum_tex2);
+		BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices * (p_bake_sh ? 4 : 1));
+		if (unlikely(error != BAKE_OK)) {
+			return error;
 		}
 	}
 
@@ -1579,8 +1633,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				{
 					seams_push_constant.base_index = seam_offset;
 					rd->draw_list_bind_render_pipeline(draw_list, blendseams_line_raster_pipeline);
-					seams_push_constant.uv_offset[0] = uv_offsets[0].x / float(atlas_size.width);
-					seams_push_constant.uv_offset[1] = uv_offsets[0].y / float(atlas_size.height);
+					seams_push_constant.uv_offset[0] = (uv_offsets[0].x - 0.5f) / float(atlas_size.width);
+					seams_push_constant.uv_offset[1] = (uv_offsets[0].y - 0.5f) / float(atlas_size.height);
 					seams_push_constant.blend = uv_offsets[0].z;
 
 					rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));
@@ -1603,8 +1657,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 				for (int j = 1; j < uv_offset_count; j++) {
 					seams_push_constant.base_index = seam_offset;
-					seams_push_constant.uv_offset[0] = uv_offsets[j].x / float(atlas_size.width);
-					seams_push_constant.uv_offset[1] = uv_offsets[j].y / float(atlas_size.height);
+					seams_push_constant.uv_offset[0] = (uv_offsets[j].x - 0.5f) / float(atlas_size.width);
+					seams_push_constant.uv_offset[1] = (uv_offsets[j].y - 0.5f) / float(atlas_size.height);
 					seams_push_constant.blend = uv_offsets[0].z;
 
 					rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));

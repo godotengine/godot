@@ -138,12 +138,13 @@ static void recursively_disassemble_functions(const Ref<GDScript> script, const 
 	for (const KeyValue<StringName, GDScriptFunction *> &E : script->get_member_functions()) {
 		const GDScriptFunction *func = E.value;
 
-		String signature = "Disassembling " + func->get_name().operator String() + "(";
-		for (int i = 0; i < func->get_argument_count(); i++) {
+		const MethodInfo &mi = func->get_method_info();
+		String signature = "Disassembling " + mi.name + "(";
+		for (int i = 0; i < mi.arguments.size(); i++) {
 			if (i > 0) {
 				signature += ", ";
 			}
-			signature += func->get_argument_name(i);
+			signature += mi.arguments[i].name;
 		}
 		print_line(signature + ")");
 #ifdef TOOLS_ENABLED
@@ -156,7 +157,7 @@ static void recursively_disassemble_functions(const Ref<GDScript> script, const 
 	for (const KeyValue<StringName, Ref<GDScript>> &F : script->get_subclasses()) {
 		const Ref<GDScript> inner_script = F.value;
 		print_line("");
-		print_line(vformat("Inner Class: %s", inner_script->get_script_class_name()));
+		print_line(vformat("Inner Class: %s", inner_script->get_local_name()));
 		print_line("");
 		recursively_disassemble_functions(inner_script, p_lines);
 	}

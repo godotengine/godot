@@ -40,12 +40,7 @@
 #include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-#include "platform_config.h"
-#ifndef OPENGL_INCLUDE_H
-#include <GLES3/gl3.h>
-#else
-#include OPENGL_INCLUDE_H
-#endif
+#include "platform_gl.h"
 
 namespace GLES3 {
 
@@ -367,13 +362,13 @@ public:
 
 	_FORCE_INLINE_ RS::ParticlesMode particles_get_mode(RID p_particles) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
-		ERR_FAIL_COND_V(!particles, RS::PARTICLES_MODE_2D);
+		ERR_FAIL_NULL_V(particles, RS::PARTICLES_MODE_2D);
 		return particles->mode;
 	}
 
 	_FORCE_INLINE_ uint32_t particles_get_amount(RID p_particles) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
-		ERR_FAIL_COND_V(!particles, 0);
+		ERR_FAIL_NULL_V(particles, 0);
 
 		return particles->amount;
 	}
@@ -389,14 +384,14 @@ public:
 
 	_FORCE_INLINE_ bool particles_has_collision(RID p_particles) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
-		ERR_FAIL_COND_V(!particles, 0);
+		ERR_FAIL_NULL_V(particles, 0);
 
 		return particles->has_collision_cache;
 	}
 
 	_FORCE_INLINE_ uint32_t particles_is_using_local_coords(RID p_particles) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
-		ERR_FAIL_COND_V(!particles, false);
+		ERR_FAIL_NULL_V(particles, false);
 
 		return particles->use_local_coords;
 	}
@@ -427,7 +422,7 @@ public:
 
 	_FORCE_INLINE_ Size2i particles_collision_get_heightfield_size(RID p_particles_collision) const {
 		ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
-		ERR_FAIL_COND_V(!particles_collision, Size2i());
+		ERR_FAIL_NULL_V(particles_collision, Size2i());
 		ERR_FAIL_COND_V(particles_collision->type != RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE, Size2i());
 
 		return particles_collision->heightfield_fb_size;

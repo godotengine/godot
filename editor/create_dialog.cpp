@@ -136,6 +136,10 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true; // Wrong inheritance.
 		}
 
+		if (!ClassDB::is_class_exposed(p_type)) {
+			return true; // Unexposed types.
+		}
+
 		for (const StringName &E : type_blacklist) {
 			if (ClassDB::is_parent_class(p_type, E)) {
 				return true; // Parent type is blacklisted.
@@ -275,6 +279,7 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category) {
 	bool script_type = ScriptServer::is_global_class(p_type);
+	bool is_abstract = false;
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		r_item->set_text(0, p_type);
 	} else if (p_type_category == TypeCategory::PATH_TYPE) {
@@ -282,14 +287,19 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
-		r_item->set_suffix(0, "(" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+		String script_path = ScriptServer::get_global_class_path(p_type);
+		r_item->set_suffix(0, "(" + script_path.get_file() + ")");
+
+		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
+		ERR_FAIL_COND(!scr.is_valid());
+		is_abstract = scr->is_abstract();
 	} else {
 		r_item->set_metadata(0, custom_type_parents[p_type]);
 		r_item->set_text(0, p_type);
 	}
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
-			p_type_category == TypeCategory::OTHER_TYPE;
+			(p_type_category == TypeCategory::OTHER_TYPE && !is_abstract);
 	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
 
 	r_item->set_meta(SNAME("__instantiable"), instantiable);
@@ -450,16 +460,10 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
-void CreateDialog::_update_theme() {
-	search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
-	favorite->set_icon(search_options->get_editor_theme_icon(SNAME("Favorites")));
-}
-
 void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
-			_update_theme();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -481,7 +485,8 @@ void CreateDialog::_notification(int p_what) {
 			favorites->add_theme_constant_override("icon_max_width", icon_width);
 			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
 
-			_update_theme();
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			favorite->set_icon(get_editor_theme_icon(SNAME("Favorites")));
 		} break;
 	}
 }

@@ -41,6 +41,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/style_box_texture.h"
+#include "scene/theme/theme_db.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
@@ -208,9 +209,108 @@ void EditorColorMap::create() {
 	add_conversion_exception("GuiSpace");
 	add_conversion_exception("CodeFoldedRightArrow");
 	add_conversion_exception("CodeFoldDownArrow");
+	add_conversion_exception("CodeRegionFoldedRightArrow");
+	add_conversion_exception("CodeRegionFoldDownArrow");
 	add_conversion_exception("TextEditorPlay");
 	add_conversion_exception("Breakpoint");
 }
+
+Vector<StringName> EditorTheme::editor_theme_types;
+
+// TODO: Refactor these and corresponding Theme methods to use the bool get_xxx(r_value) pattern internally.
+
+// Keep in sync with Theme::get_color.
+Color EditorTheme::get_color(const StringName &p_name, const StringName &p_theme_type) const {
+	if (color_map.has(p_theme_type) && color_map[p_theme_type].has(p_name)) {
+		return color_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme color '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return Color();
+	}
+}
+
+// Keep in sync with Theme::get_constant.
+int EditorTheme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	if (constant_map.has(p_theme_type) && constant_map[p_theme_type].has(p_name)) {
+		return constant_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme constant '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return 0;
+	}
+}
+
+// Keep in sync with Theme::get_font.
+Ref<Font> EditorTheme::get_font(const StringName &p_name, const StringName &p_theme_type) const {
+	if (font_map.has(p_theme_type) && font_map[p_theme_type].has(p_name) && font_map[p_theme_type][p_name].is_valid()) {
+		return font_map[p_theme_type][p_name];
+	} else if (has_default_font()) {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme font '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return default_font;
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme font '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return ThemeDB::get_singleton()->get_fallback_font();
+	}
+}
+
+// Keep in sync with Theme::get_font_size.
+int EditorTheme::get_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	if (font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0)) {
+		return font_size_map[p_theme_type][p_name];
+	} else if (has_default_font_size()) {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme font size '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return default_font_size;
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme font size '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return ThemeDB::get_singleton()->get_fallback_font_size();
+	}
+}
+
+// Keep in sync with Theme::get_icon.
+Ref<Texture2D> EditorTheme::get_icon(const StringName &p_name, const StringName &p_theme_type) const {
+	if (icon_map.has(p_theme_type) && icon_map[p_theme_type].has(p_name) && icon_map[p_theme_type][p_name].is_valid()) {
+		return icon_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme icon '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return ThemeDB::get_singleton()->get_fallback_icon();
+	}
+}
+
+// Keep in sync with Theme::get_stylebox.
+Ref<StyleBox> EditorTheme::get_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
+	if (style_map.has(p_theme_type) && style_map[p_theme_type].has(p_name) && style_map[p_theme_type][p_name].is_valid()) {
+		return style_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme stylebox '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return ThemeDB::get_singleton()->get_fallback_stylebox();
+	}
+}
+
+EditorTheme::EditorTheme() {
+	if (editor_theme_types.is_empty()) {
+		editor_theme_types.append(EditorStringName(Editor));
+		editor_theme_types.append(EditorStringName(EditorFonts));
+		editor_theme_types.append(EditorStringName(EditorIcons));
+		editor_theme_types.append(EditorStringName(EditorStyles));
+	}
+}
+
+// Editor theme generatior.
 
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
@@ -428,7 +528,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 
 Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	OS::get_singleton()->benchmark_begin_measure("create_editor_theme");
-	Ref<Theme> theme = Ref<Theme>(memnew(Theme));
+	Ref<EditorTheme> theme = memnew(EditorTheme);
 
 	// Controls may rely on the scale for their internal drawing logic.
 	theme->set_default_base_scale(EDSCALE);
@@ -813,6 +913,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_disabled->set_bg_color(disabled_bg_color);
 	style_tab_disabled->set_border_color(disabled_bg_color);
 
+	Ref<StyleBoxFlat> style_tab_focus = style_widget_focus->duplicate();
+
 	// Editor background
 	Color background_color_opaque = background_color;
 	background_color_opaque.a = 1.0;
@@ -844,13 +946,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// even though it may not be immediately obvious at first.
 	Ref<StyleBoxFlat> toolbar_stylebox = memnew(StyleBoxFlat);
 	toolbar_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
-	toolbar_stylebox->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
-	toolbar_stylebox->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
 	toolbar_stylebox->set_anti_aliased(false);
 	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
 	toolbar_stylebox->set_border_color(accent_color);
 	toolbar_stylebox->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
 	toolbar_stylebox->set_content_margin(SIDE_BOTTOM, 0);
+	toolbar_stylebox->set_expand_margin_individual(4 * EDSCALE, 2 * EDSCALE, 4 * EDSCALE, 4 * EDSCALE);
 	theme->set_stylebox("ContextualToolbar", EditorStringName(EditorStyles), toolbar_stylebox);
 
 	// Script Editor
@@ -921,6 +1022,30 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("h_separation", "Button", 4 * EDSCALE);
 	theme->set_constant("outline_size", "Button", 0);
 
+	// Flat button variations.
+
+	Ref<StyleBoxEmpty> style_flat_button = make_empty_stylebox();
+	for (int i = 0; i < 4; i++) {
+		style_flat_button->set_content_margin((Side)i, style_widget->get_margin((Side)i) + style_widget->get_border_width((Side)i));
+	}
+
+	Ref<StyleBoxFlat> style_flat_button_pressed = style_widget_pressed->duplicate();
+	Color flat_pressed_color = dark_color_1.lightened(0.24).lerp(accent_color, 0.2) * Color(0.8, 0.8, 0.8, 0.85);
+	if (dark_theme) {
+		flat_pressed_color = dark_color_1.lerp(accent_color, 0.12) * Color(0.6, 0.6, 0.6, 0.85);
+	}
+	style_flat_button_pressed->set_bg_color(flat_pressed_color);
+
+	theme->set_stylebox("normal", "FlatButton", style_flat_button);
+	theme->set_stylebox("hover", "FlatButton", style_flat_button);
+	theme->set_stylebox("pressed", "FlatButton", style_flat_button_pressed);
+	theme->set_stylebox("disabled", "FlatButton", style_flat_button);
+
+	theme->set_stylebox("normal", "FlatMenuButton", style_flat_button);
+	theme->set_stylebox("hover", "FlatMenuButton", style_flat_button);
+	theme->set_stylebox("pressed", "FlatMenuButton", style_flat_button_pressed);
+	theme->set_stylebox("disabled", "FlatMenuButton", style_flat_button);
+
 	const float ACTION_BUTTON_EXTRA_MARGIN = 32 * EDSCALE;
 
 	theme->set_type_variation("InspectorActionButton", "Button");
@@ -949,7 +1074,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_normal_color", "EditorLogFilterButton", icon_disabled_color);
 	// When pressed, add a small bottom border to the buttons to better show their active state,
 	// similar to active tabs.
-	Ref<StyleBoxFlat> editor_log_button_pressed = style_widget_pressed->duplicate();
+
+	Ref<StyleBoxFlat> editor_log_button_pressed = style_flat_button_pressed->duplicate();
 	editor_log_button_pressed->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
 	editor_log_button_pressed->set_border_color(accent_color);
 	theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
@@ -1004,7 +1130,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "MenuBar", style_widget);
 	theme->set_stylebox("hover", "MenuBar", style_widget_hover);
 	theme->set_stylebox("pressed", "MenuBar", style_widget_pressed);
-	theme->set_stylebox("focus", "MenuBar", style_widget_focus);
 	theme->set_stylebox("disabled", "MenuBar", style_widget_disabled);
 
 	theme->set_color("font_color", "MenuBar", font_color);
@@ -1437,10 +1562,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("tab_hovered", "TabContainer", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
+	theme->set_stylebox("tab_focus", "TabContainer", style_tab_focus);
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
 	theme->set_stylebox("tab_hovered", "TabBar", style_tab_hovered);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
+	theme->set_stylebox("tab_focus", "TabBar", style_tab_focus);
 	theme->set_stylebox("button_pressed", "TabBar", style_menu);
 	theme->set_stylebox("button_highlight", "TabBar", style_menu);
 	theme->set_color("font_selected_color", "TabContainer", font_color);
@@ -1790,6 +1917,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("outline_size", "LinkButton", 0);
 
+	theme->set_type_variation("HeaderSmallLink", "LinkButton");
+	theme->set_font("font", "HeaderSmallLink", theme->get_font(SNAME("font"), SNAME("HeaderSmall")));
+	theme->set_font_size("font_size", "HeaderSmallLink", theme->get_font_size(SNAME("font_size"), SNAME("HeaderSmall")));
+
 	// TooltipPanel + TooltipLabel
 	// TooltipPanel is also used for custom tooltips, while TooltipLabel
 	// is only relevant for default tooltips.
@@ -1915,17 +2046,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphn_sb_titlebar_selected->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
 	Ref<StyleBoxEmpty> graphn_sb_slot = make_empty_stylebox(12, 0, 12, 0);
 
-	// StateMachine.
-	const int sm_margin_side = 10;
-	Ref<StyleBoxFlat> smgraphsb = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), sm_margin_side, 24, sm_margin_side, gn_margin_bottom, corner_width);
-	smgraphsb->set_border_width_all(border_width);
-	smgraphsb->set_border_color(graphnode_bg);
-	Ref<StyleBoxFlat> smgraphsbselected = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.9), sm_margin_side, 24, sm_margin_side, gn_margin_bottom, corner_width);
-	smgraphsbselected->set_border_width_all(2 * EDSCALE + border_width);
-	smgraphsbselected->set_border_color(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
-	smgraphsbselected->set_shadow_size(8 * EDSCALE);
-	smgraphsbselected->set_shadow_color(shadow_color);
-
 	theme->set_stylebox("panel", "GraphElement", graphn_sb_panel);
 	theme->set_stylebox("panel_selected", "GraphElement", graphn_sb_panel_selected);
 	theme->set_stylebox("titlebar", "GraphElement", graphn_sb_titlebar);
@@ -1960,8 +2080,55 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	port_icon->set_size_override(Size2(12, 12));
 	theme->set_icon("port", "GraphNode", port_icon);
 
-	theme->set_stylebox("state_machine_frame", "GraphNode", smgraphsb);
-	theme->set_stylebox("state_machine_selected_frame", "GraphNode", smgraphsbselected);
+	// StateMachine graph
+	theme->set_stylebox("panel", "GraphStateMachine", style_tree_bg);
+	theme->set_stylebox("error_panel", "GraphStateMachine", style_tree_bg);
+	theme->set_color("error_color", "GraphStateMachine", error_color);
+
+	const int sm_margin_side = 10 * EDSCALE;
+
+	Ref<StyleBoxFlat> sm_node_style = make_flat_stylebox(dark_color_3 * Color(1, 1, 1, 0.7), sm_margin_side, 24 * EDSCALE, sm_margin_side, gn_margin_bottom, corner_width);
+	sm_node_style->set_border_width_all(border_width);
+	sm_node_style->set_border_color(graphnode_bg);
+
+	Ref<StyleBoxFlat> sm_node_selected_style = make_flat_stylebox(graphnode_bg * Color(1, 1, 1, 0.9), sm_margin_side, 24 * EDSCALE, sm_margin_side, gn_margin_bottom, corner_width);
+	sm_node_selected_style->set_border_width_all(2 * EDSCALE + border_width);
+	sm_node_selected_style->set_border_color(accent_color * Color(1, 1, 1, 0.9));
+	sm_node_selected_style->set_shadow_size(8 * EDSCALE);
+	sm_node_selected_style->set_shadow_color(shadow_color);
+
+	Ref<StyleBoxFlat> sm_node_playing_style = sm_node_selected_style->duplicate();
+	sm_node_playing_style->set_border_color(warning_color);
+	sm_node_playing_style->set_shadow_color(warning_color * Color(1, 1, 1, 0.2));
+
+	theme->set_stylebox("node_frame", "GraphStateMachine", sm_node_style);
+	theme->set_stylebox("node_frame_selected", "GraphStateMachine", sm_node_selected_style);
+	theme->set_stylebox("node_frame_playing", "GraphStateMachine", sm_node_playing_style);
+
+	Ref<StyleBoxFlat> sm_node_start_style = sm_node_style->duplicate();
+	sm_node_start_style->set_border_width_all(1 * EDSCALE);
+	sm_node_start_style->set_border_color(success_color.lightened(0.24));
+	theme->set_stylebox("node_frame_start", "GraphStateMachine", sm_node_start_style);
+
+	Ref<StyleBoxFlat> sm_node_end_style = sm_node_style->duplicate();
+	sm_node_end_style->set_border_width_all(1 * EDSCALE);
+	sm_node_end_style->set_border_color(error_color);
+	theme->set_stylebox("node_frame_end", "GraphStateMachine", sm_node_end_style);
+
+	theme->set_font("node_title_font", "GraphStateMachine", theme->get_font(SNAME("font"), SNAME("Label")));
+	theme->set_font_size("node_title_font_size", "GraphStateMachine", theme->get_font_size(SNAME("font_size"), SNAME("Label")));
+	theme->set_color("node_title_font_color", "GraphStateMachine", font_color);
+
+	theme->set_color("transition_color", "GraphStateMachine", font_color);
+	theme->set_color("transition_disabled_color", "GraphStateMachine", font_color * Color(1, 1, 1, 0.2));
+	theme->set_color("transition_icon_color", "GraphStateMachine", Color(1, 1, 1));
+	theme->set_color("transition_icon_disabled_color", "GraphStateMachine", Color(1, 1, 1, 0.2));
+	theme->set_color("highlight_color", "GraphStateMachine", accent_color);
+	theme->set_color("highlight_disabled_color", "GraphStateMachine", accent_color * Color(1, 1, 1, 0.6));
+	theme->set_color("guideline_color", "GraphStateMachine", font_color * Color(1, 1, 1, 0.3));
+
+	theme->set_color("playback_color", "GraphStateMachine", font_color);
+	theme->set_color("playback_background_color", "GraphStateMachine", font_color * Color(1, 1, 1, 0.3));
 
 	// GridContainer
 	theme->set_constant("v_separation", "GridContainer", Math::round(widget_default_margin.y - 2 * EDSCALE));
@@ -2088,6 +2255,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color breakpoint_color = dark_theme ? error_color : Color(1, 0.27, 0.2, 1);
 	const Color executing_line_color = Color(0.98, 0.89, 0.27);
 	const Color code_folding_color = alpha3;
+	const Color folded_code_region_color = Color(0.68, 0.46, 0.77, 0.2);
 	const Color search_result_color = alpha1;
 	const Color search_result_border_color = dark_theme ? Color(0.41, 0.61, 0.91, 0.38) : Color(0, 0.4, 1, 0.38);
 
@@ -2128,6 +2296,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/theme/highlighting/breakpoint_color", breakpoint_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/executing_line_color", executing_line_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/code_folding_color", code_folding_color, true);
+		setting->set_initial_value("text_editor/theme/highlighting/folded_code_region_color", folded_code_region_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/search_result_color", search_result_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/search_result_border_color", search_result_border_color, true);
 	} else if (text_editor_color_theme == "Godot 2") {
@@ -2147,6 +2316,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("space", "CodeEdit", theme->get_icon(SNAME("GuiSpace"), EditorStringName(EditorIcons)));
 	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("CodeFoldedRightArrow"), EditorStringName(EditorIcons)));
 	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("CodeFoldDownArrow"), EditorStringName(EditorIcons)));
+	theme->set_icon("folded_code_region", "CodeEdit", theme->get_icon(SNAME("CodeRegionFoldedRightArrow"), EditorStringName(EditorIcons)));
+	theme->set_icon("can_fold_code_region", "CodeEdit", theme->get_icon(SNAME("CodeRegionFoldDownArrow"), EditorStringName(EditorIcons)));
 	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("TextEditorPlay"), EditorStringName(EditorIcons)));
 	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), EditorStringName(EditorIcons)));
 
@@ -2158,7 +2329,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("completion_existing_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_existing_color"));
 	theme->set_color("completion_scroll_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_scroll_color"));
 	theme->set_color("completion_scroll_hovered_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_scroll_hovered_color"));
-	theme->set_color("completion_font_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_font_color"));
 	theme->set_color("font_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/text_color"));
 	theme->set_color("line_number_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/line_number_color"));
 	theme->set_color("caret_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/caret_color"));
@@ -2172,6 +2342,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("breakpoint_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/breakpoint_color"));
 	theme->set_color("executing_line_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/executing_line_color"));
 	theme->set_color("code_folding_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/code_folding_color"));
+	theme->set_color("folded_code_region_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/folded_code_region_color"));
 	theme->set_color("search_result_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/search_result_color"));
 	theme->set_color("search_result_border_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/search_result_border_color"));
 

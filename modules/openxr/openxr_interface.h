@@ -130,6 +130,14 @@ public:
 	double get_render_target_size_multiplier() const;
 	void set_render_target_size_multiplier(double multiplier);
 
+	bool is_foveation_supported() const;
+
+	int get_foveation_level() const;
+	void set_foveation_level(int p_foveation_level);
+
+	bool get_foveation_dynamic() const;
+	void set_foveation_dynamic(bool p_foveation_dynamic);
+
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
@@ -152,6 +160,7 @@ public:
 
 	/** environment blend mode. */
 	virtual Array get_supported_environment_blend_modes() override;
+	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const override;
 	virtual bool set_environment_blend_mode(XRInterface::EnvironmentBlendMode mode) override;
 
 	void on_state_ready();
