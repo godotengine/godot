@@ -53,7 +53,6 @@ class RayCast3D : public Node3D {
 	uint32_t collision_mask = 1;
 	bool exclude_parent_body = true;
 
-	Node *debug_shape = nullptr;
 	Ref<Material> debug_material;
 	Color debug_shape_custom_color = Color(0.0, 0.0, 0.0);
 	int debug_shape_thickness = 2;
@@ -71,6 +70,9 @@ class RayCast3D : public Node3D {
 
 	bool hit_from_inside = false;
 	bool hit_back_faces = true;
+
+	RID debug_instance;
+	Ref<ArrayMesh> debug_mesh;
 
 protected:
 	void _notification(int p_what);

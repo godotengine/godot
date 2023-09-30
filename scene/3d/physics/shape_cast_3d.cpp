@@ -64,8 +64,14 @@ void ShapeCast3D::_notification(int p_what) {
 				set_physics_process_internal(false);
 			}
 
-			if (debug_shape) {
+			if (debug_instance.is_valid()) {
 				_clear_debug_shape();
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_inside_tree() && debug_instance.is_valid()) {
+				RenderingServer::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
 			}
 		} break;
 
@@ -85,6 +91,9 @@ void ShapeCast3D::_notification(int p_what) {
 				}
 				if (prev_collision_state == collided && !collided) {
 					_update_debug_shape();
+				}
+				if (is_inside_tree() && debug_instance.is_valid()) {
+					RenderingServer::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 				}
 			}
 		} break;
@@ -217,7 +226,7 @@ void ShapeCast3D::set_target_position(const Vector3 &p_point) {
 		if (is_inside_tree()) {
 			_update_debug_shape_vertices();
 		}
-	} else if (debug_shape) {
+	} else if (debug_instance.is_valid()) {
 		_update_debug_shape();
 	}
 }
@@ -532,13 +541,13 @@ const Color &ShapeCast3D::get_debug_shape_custom_color() const {
 void ShapeCast3D::_create_debug_shape() {
 	_update_debug_shape_material();
 
-	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+	if (!debug_instance.is_valid()) {
+		debug_instance = RenderingServer::get_singleton()->instance_create();
+	}
 
-	MeshInstance3D *mi = memnew(MeshInstance3D);
-	mi->set_mesh(mesh);
-
-	add_child(mi);
-	debug_shape = mi;
+	if (debug_mesh.is_null()) {
+		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	}
 }
 
 void ShapeCast3D::_update_debug_shape_material(bool p_check_collision) {
@@ -578,7 +587,7 @@ void ShapeCast3D::_update_debug_shape() {
 		return;
 	}
 
-	if (!debug_shape) {
+	if (!debug_instance.is_valid()) {
 		_create_debug_shape();
 	}
 
@@ -588,13 +597,11 @@ void ShapeCast3D::_update_debug_shape() {
 		return;
 	}
 
-	MeshInstance3D *mi = static_cast<MeshInstance3D *>(debug_shape);
-	Ref<ArrayMesh> mesh = mi->get_mesh();
-	if (!mesh.is_valid()) {
+	if (!debug_instance.is_valid() || debug_mesh.is_null()) {
 		return;
 	}
 
-	mesh->clear_surfaces();
+	debug_mesh->clear_surfaces();
 
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
@@ -604,30 +611,34 @@ void ShapeCast3D::_update_debug_shape() {
 
 	if (!debug_shape_vertices.is_empty()) {
 		a[Mesh::ARRAY_VERTEX] = debug_shape_vertices;
-		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a, Array(), Dictionary(), flags);
-		mesh->surface_set_material(surface_count, debug_material);
+		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a, Array(), Dictionary(), flags);
+		debug_mesh->surface_set_material(surface_count, debug_material);
 		++surface_count;
 	}
 
 	if (!debug_line_vertices.is_empty()) {
 		a[Mesh::ARRAY_VERTEX] = debug_line_vertices;
-		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a, Array(), Dictionary(), flags);
-		mesh->surface_set_material(surface_count, debug_material);
+		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a, Array(), Dictionary(), flags);
+		debug_mesh->surface_set_material(surface_count, debug_material);
 		++surface_count;
+	}
+
+	RenderingServer::get_singleton()->instance_set_base(debug_instance, debug_mesh->get_rid());
+	if (is_inside_tree()) {
+		RenderingServer::get_singleton()->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
+		RenderingServer::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
+		RenderingServer::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 	}
 }
 
 void ShapeCast3D::_clear_debug_shape() {
-	if (!debug_shape) {
-		return;
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	if (debug_instance.is_valid()) {
+		RenderingServer::get_singleton()->free(debug_instance);
+		debug_instance = RID();
 	}
-
-	MeshInstance3D *mi = static_cast<MeshInstance3D *>(debug_shape);
-	if (mi->is_inside_tree()) {
-		mi->queue_free();
-	} else {
-		memdelete(mi);
+	if (debug_mesh.is_valid()) {
+		RenderingServer::get_singleton()->free(debug_mesh->get_rid());
+		debug_mesh = Ref<ArrayMesh>();
 	}
-
-	debug_shape = nullptr;
 }

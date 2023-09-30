@@ -55,7 +55,6 @@ class ShapeCast3D : public Node3D {
 	bool collide_with_areas = false;
 	bool collide_with_bodies = true;
 
-	Node *debug_shape = nullptr;
 	Ref<Material> debug_material;
 	Color debug_shape_custom_color = Color(0.0, 0.0, 0.0);
 	Vector<Vector3> debug_shape_vertices;
@@ -75,6 +74,9 @@ class ShapeCast3D : public Node3D {
 	real_t collision_unsafe_fraction = 1.0;
 
 	Array _get_collision_result() const;
+
+	RID debug_instance;
+	Ref<ArrayMesh> debug_mesh;
 
 protected:
 	void _notification(int p_what);
