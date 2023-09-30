@@ -31,6 +31,7 @@
 #include "symbol_tooltip.h"
 #include "core/config/project_settings.h"
 #include "editor/plugins/script_text_editor.h"
+#include "editor/editor_string_names.h"
 #include "editor_help.h"
 #include "modules/gdscript/editor/gdscript_highlighter.h"
 #include <queue>
@@ -248,8 +249,8 @@ void SymbolTooltip::_update_tooltip_size() {
 	const int MAX_WIDTH = 800;
 	Ref<Theme> header_theme = header_label->get_theme();
 	Ref<StyleBox> header_style_box = header_theme->get_stylebox("normal", "TextEdit");
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Editor"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Editor"));
+	Ref<Font> font = get_theme_font(SNAME("doc"), EditorStringName(EditorFonts));
+	int font_size = get_theme_font_size(SNAME("doc_size"), EditorStringName(EditorFonts));
 	String header_text = header_label->get_text();
 	String body_text = body_label->get_parsed_text();
 	Ref<Theme> body_theme = body_label->get_theme();
@@ -334,12 +335,12 @@ const lsp::DocumentSymbol *SymbolTooltip::_get_member_symbol(
 		const lsp::DocumentSymbol *symbol = queue.front();
 		queue.pop();
 
-		/*bool range_matches = symbol->range.to_json() == p_symbol_range.to_json();
+		bool range_matches = symbol->range.to_json() == p_symbol_range.to_json();
 		bool is_within_range = p_symbol_range.is_within(symbol->range);
 
 		if (symbol->name == p_symbol && !symbol->detail.is_empty()) {
 			print_line("symbol: ", symbol->name, ", range_matches: ", range_matches, ", is_within_range: ", is_within_range, ", range: ", symbol->range.to_json(), ", symbol_range: ", p_symbol_range.to_json());
-		}*/
+		}
 
 		// If the name matches, return the symbol.
 		// TODO: Add '&& is_within_range' once the range of member symbols is corrected. They are currently incorrect.
@@ -419,7 +420,8 @@ String SymbolTooltip::_get_body_content(const lsp::DocumentSymbol *p_member_symb
 	String body_content = "";
 	if (p_member_symbol) {
 		// Append relevant docstrings.
-		body_content += p_member_symbol->documentation.replace("\n ", " ");
+		// TODO: Docstring formatting currently has no built-in formatting for documentation comments.
+		body_content += p_member_symbol->documentation.replace("\n\n", "\n");
 	}
 	if (!p_built_in_body.is_empty()) {
 		// Append official documentation.
