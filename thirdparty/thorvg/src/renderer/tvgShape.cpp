@@ -21,7 +21,7 @@
  */
 
 #include "tvgMath.h"
-#include "tvgShapeImpl.h"
+#include "tvgShape.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */

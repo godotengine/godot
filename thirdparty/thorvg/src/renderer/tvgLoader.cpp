@@ -220,7 +220,7 @@ shared_ptr<LoadModule> LoaderMgr::loader(const char* data, uint32_t size, const 
             if (loader->open(data, size, copy)) {
                 return shared_ptr<LoadModule>(loader);
             } else {
-                TVGLOG("LOADER", "Given mimetype \"%s\" seems incorrect or not supported. Will try again with other types.", mimeType.c_str());
+                TVGLOG("LOADER", "Given mimetype \"%s\" seems incorrect or not supported.", mimeType.c_str());
                 delete(loader);
             }
         }

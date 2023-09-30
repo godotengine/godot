@@ -53,6 +53,7 @@ struct Canvas::Impl
 
         auto p = paint.release();
         if (!p) return Result::MemoryCorruption;
+        PP(p)->ref();
         paints.push_back(p);
 
         return update(p, true);
@@ -64,14 +65,15 @@ struct Canvas::Impl
         if (!renderer || !renderer->clear()) return Result::InsufficientCondition;
 
         //Free paints
-        for (auto paint : paints) {
-            if (paint->pImpl->dispose(*renderer)) {
-            	if (free && paint->pImpl->unref() == 0) delete(paint);
-	    }
+        if (free) {
+            for (auto paint : paints) {
+                P(paint)->unref();
+                if (paint->pImpl->dispose(*renderer) && P(paint)->refCnt == 0) {
+                    delete(paint);
+                }
+            }
+            paints.clear();
         }
-
-        paints.clear();
-
         drawing = false;
 
         return Result::Success;
