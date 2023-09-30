@@ -155,6 +155,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the whole [param path] file contents as a [PackedByteArray] without any decoding.
+				Returns an empty [PackedByteArray] if an error occurred while opening the file. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="get_file_as_string" qualifiers="static">
@@ -162,6 +163,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the whole [param path] file contents as a [String]. Text is interpreted as being UTF-8 encoded.
+				Returns an empty [String] if an error occurred while opening the file. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="get_float" qualifiers="const">
