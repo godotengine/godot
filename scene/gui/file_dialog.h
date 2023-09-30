@@ -171,6 +171,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void set_visible(bool p_visible) override;
 	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 
 	void popup_file_dialog();
