@@ -89,35 +89,6 @@ struct Picture::Impl
         return true;
     }
 
-    RenderUpdateFlag load()
-    {
-        if (loader) {
-            if (!paint) {
-                if (auto p = loader->paint()) {
-                    paint = p.release();
-                    loader->close();
-                    if (w != loader->w || h != loader->h) {
-                        if (!resizing) {
-                            w = loader->w;
-                            h = loader->h;
-                        }
-                        loader->resize(paint, w, h);
-                        resizing = false;
-                    }
-                    if (paint) return RenderUpdateFlag::None;
-                }
-            } else loader->sync();
-
-            if (!surface) {
-                if ((surface = loader->bitmap().release())) {
-                    loader->close();
-                    return RenderUpdateFlag::Image;
-                }
-            }
-        }
-        return RenderUpdateFlag::None;
-    }
-
     RenderTransform resizeTransform(const RenderTransform* pTransform)
     {
         //Overriding Transformation by the desired image size
@@ -317,6 +288,24 @@ struct Picture::Impl
         load();
         return new PictureIterator(paint);
     }
+
+    uint32_t* data(uint32_t* w, uint32_t* h)
+    {
+        //Try it, If not loaded yet.
+        load();
+
+        if (loader) {
+            if (w) *w = static_cast<uint32_t>(loader->w);
+            if (h) *h = static_cast<uint32_t>(loader->h);
+        } else {
+            if (w) *w = 0;
+            if (h) *h = 0;
+        }
+        if (surface) return surface->buf32;
+        else return nullptr;
+    }
+
+    RenderUpdateFlag load();
 };
 
 #endif //_TVG_PICTURE_IMPL_H_
