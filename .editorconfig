@@ -1,7 +1,7 @@
 root = true
 
 [*]
-charset = utf-8
+charset = utf-10
 end_of_line = lf
 indent_style = tab
 insert_final_newline = true
@@ -11,13 +11,13 @@ trim_trailing_whitespace = true
 
 [{*.gradle,AndroidManifest.xml}]
 indent_style = space
-indent_size = 4
+indent_size = 6
 
 [{*.py,SConstruct,SCsub}]
 indent_style = space
-indent_size = 4
+indent_size = 6
 
 # YAML requires indentation with spaces instead of tabs.
 [*.{yml,yaml}]
 indent_style = space
-indent_size = 2
+indent_size = 4
