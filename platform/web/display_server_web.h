@@ -88,14 +88,18 @@ private:
 	static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape);
 
 	// events
+	static void _fullscreen_change_callback(int p_fullscreen);
 	static void fullscreen_change_callback(int p_fullscreen);
 	static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
 	static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
 	static int mouse_wheel_callback(double p_delta_x, double p_delta_y);
 	static void touch_callback(int p_type, int p_count);
-	static void key_callback(int p_pressed, int p_repeat, int p_modifiers);
-	static void vk_input_text_callback(const char *p_text, int p_cursor);
-	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
+	static void _key_callback(int p_pressed, int p_repeat, int p_modifiers);
+	static void key_callback(String p_key_event_code, String p_key_event_key, int p_pressed, int p_repeat, int p_modifiers);
+	static void _vk_input_text_callback(const char *p_text, int p_cursor);
+	static void vk_input_text_callback(const String p_text, int p_cursor);
+	static void _gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
+	static void gamepad_callback(int p_index, int p_connected, const String p_id, const String p_guid);
 	void process_joypads();
 	static void _js_utterance_callback(int p_event, int p_id, int p_pos);
 
@@ -106,10 +110,13 @@ private:
 
 	static void request_quit_callback();
 	static void window_blur_callback();
-	static void update_voices_callback(int p_size, const char **p_voice);
-	static void update_clipboard_callback(const char *p_text);
+	static void _update_voices_callback(int p_size, const char **p_voice);
+	static void update_voices_callback(const Vector<String> &p_voices);
+	static void _update_clipboard_callback(const char *p_text);
+	static void update_clipboard_callback(String p_text);
 	static void send_window_event_callback(int p_notification);
-	static void drop_files_js_callback(char **p_filev, int p_filec);
+	static void _drop_files_js_callback(const char **p_filev, int p_filec);
+	static void drop_files_js_callback(const Vector<String> &p_files);
 
 protected:
 	int get_current_video_driver() const;

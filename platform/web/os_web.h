@@ -54,6 +54,11 @@ class OS_Web : public OS_Unix {
 	static void fs_sync_callback();
 	static void update_pwa_state_callback();
 
+	static int low_processor_usage_mode_get_callback();
+	static void low_processor_usage_mode_set_callback(int p_enabled);
+	static int low_processor_usage_mode_sleep_usec_get_callback();
+	static void low_processor_usage_mode_sleep_usec_set_callback(int p_sleep_usec);
+
 protected:
 	void initialize() override;
 
@@ -88,9 +93,12 @@ public:
 	String get_executable_path() const override;
 	Error shell_open(String p_uri) override;
 	String get_name() const override;
+
+#ifndef PROXY_TO_PTHREAD_ENABLED
 	// Override default OS implementation which would block the main thread with delay_usec.
 	// Implemented in web_main.cpp loop callback instead.
 	void add_frame_delay(bool p_can_draw) override {}
+#endif
 
 	void vibrate_handheld(int p_duration_ms) override;
 
