@@ -690,6 +690,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 			}
 
 			if (ss->wp_primary_selection_offer) {
+				memfree(wp_primary_selection_offer_get_offer_state(ss->wp_primary_selection_offer));
 				zwp_primary_selection_offer_v1_destroy(ss->wp_primary_selection_offer);
 				ss->wp_primary_selection_offer = nullptr;
 			}
@@ -1842,10 +1843,10 @@ void WaylandThread::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *
 	ss->repeat_start_delay_msec = delay;
 }
 
+// NOTE: Don't forget to `memfree` the offer's state.
 void WaylandThread::_wl_data_device_on_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id) {
-	ERR_FAIL_NULL(data);
-
-	wl_data_offer_add_listener(id, &wl_data_offer_listener, data);
+	wl_proxy_tag_godot((struct wl_proxy *)id);
+	wl_data_offer_add_listener(id, &wl_data_offer_listener, memnew(OfferState));
 }
 
 void WaylandThread::_wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id) {
@@ -1853,7 +1854,10 @@ void WaylandThread::_wl_data_device_on_enter(void *data, struct wl_data_device *
 	ERR_FAIL_NULL(ss);
 
 	ss->dnd_enter_serial = serial;
+	ss->wl_data_offer_dnd = id;
 
+	// Godot only supports DnD file copying for now.
+	wl_data_offer_accept(id, serial, "text/uri-list");
 	wl_data_offer_set_actions(id, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
 }
 
@@ -1862,6 +1866,7 @@ void WaylandThread::_wl_data_device_on_leave(void *data, struct wl_data_device *
 	ERR_FAIL_NULL(ss);
 
 	if (ss->wl_data_offer_dnd) {
+		memdelete(wl_data_offer_get_offer_state(ss->wl_data_offer_dnd));
 		wl_data_offer_destroy(ss->wl_data_offer_dnd);
 		ss->wl_data_offer_dnd = nullptr;
 	}
@@ -1877,35 +1882,40 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 	WaylandThread *wayland_thread = ss->wayland_thread;
 	ERR_FAIL_NULL(wayland_thread);
 
-	ERR_FAIL_NULL(ss->wl_data_offer_dnd);
+	OfferState *os = wl_data_offer_get_offer_state(ss->wl_data_offer_dnd);
+	ERR_FAIL_NULL(os);
 
-	int fds[2];
-	if (pipe(fds) == 0) {
-		wl_data_offer_receive(ss->wl_data_offer_dnd, "text/uri-list", fds[1]);
+	if (os) {
+		int fds[2];
+		if (pipe(fds) == 0) {
+			wl_data_offer_receive(ss->wl_data_offer_dnd, "text/uri-list", fds[1]);
 
-		// Let the compositor know about the pipe, but don't handle any event. For
-		// some cursed reason both leave and drop events are released at the same
-		// time, although both of them clean up the offer. I'm still not sure why.
-		wl_display_flush(wayland_thread->wl_display);
+			// Let the compositor know about the pipe, but don't handle any event. For
+			// some cursed reason both leave and drop events are released at the same
+			// time, although both of them clean up the offer. I'm still not sure why.
+			wl_display_flush(wayland_thread->wl_display);
 
-		// Close the write end of the pipe, which we don't need and would otherwise
-		// just stall our next `read`s.
-		close(fds[1]);
+			// Close the write end of the pipe, which we don't need and would otherwise
+			// just stall our next `read`s.
+			close(fds[1]);
 
-		Ref<DropFilesEventMessage> msg;
-		msg.instantiate();
+			Ref<DropFilesEventMessage> msg;
+			msg.instantiate();
 
-		LocalVector<uint8_t> list_data = _read_fd(fds[0]);
+			LocalVector<uint8_t> list_data = _read_fd(fds[0]);
 
-		msg->files = String::utf8((const char *)list_data.ptr(), list_data.size()).split("\r\n", false);
-		for (int i = 0; i < msg->files.size(); i++) {
-			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
+			msg->files = String::utf8((const char *)list_data.ptr(), list_data.size()).split("\r\n", false);
+			for (int i = 0; i < msg->files.size(); i++) {
+				msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
+			}
+
+			wayland_thread->push_message(msg);
 		}
 
-		wayland_thread->push_message(msg);
+		wl_data_offer_finish(ss->wl_data_offer_dnd);
 	}
 
-	wl_data_offer_finish(ss->wl_data_offer_dnd);
+	memdelete(wl_data_offer_get_offer_state(ss->wl_data_offer_dnd));
 	wl_data_offer_destroy(ss->wl_data_offer_dnd);
 	ss->wl_data_offer_dnd = nullptr;
 }
@@ -1915,6 +1925,7 @@ void WaylandThread::_wl_data_device_on_selection(void *data, struct wl_data_devi
 	ERR_FAIL_NULL(ss);
 
 	if (ss->wl_data_offer_selection) {
+		memdelete(wl_data_offer_get_offer_state(ss->wl_data_offer_selection));
 		wl_data_offer_destroy(ss->wl_data_offer_selection);
 	}
 
@@ -1922,12 +1933,11 @@ void WaylandThread::_wl_data_device_on_selection(void *data, struct wl_data_devi
 }
 
 void WaylandThread::_wl_data_offer_on_offer(void *data, struct wl_data_offer *wl_data_offer, const char *mime_type) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	OfferState *os = (OfferState *)data;
+	ERR_FAIL_NULL(os);
 
-	if (strcmp(mime_type, "text/uri-list") == 0) {
-		ss->wl_data_offer_dnd = wl_data_offer;
-		wl_data_offer_accept(wl_data_offer, ss->dnd_enter_serial, mime_type);
+	if (os) {
+		os->mime_types.insert(String::utf8(mime_type));
 	}
 }
 
@@ -2097,11 +2107,10 @@ void WaylandThread::_wp_pointer_gesture_pinch_on_end(void *data, struct zwp_poin
 	ss->active_gesture = Gesture::NONE;
 }
 
+// NOTE: Don't forget to `memfree` the offer's state.
 void WaylandThread::_wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer) {
-	// This method is purposely left unimplemented as we don't care about the
-	// offered MIME type, as we only want `text/plain` data.
-
-	// TODO: Perhaps we could try to detect other text types such as `TEXT`?
+	wl_proxy_tag_godot((struct wl_proxy *)offer);
+	zwp_primary_selection_offer_v1_add_listener(offer, &wp_primary_selection_offer_listener, memnew(OfferState));
 }
 
 void WaylandThread::_wp_primary_selection_device_on_selection(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *id) {
@@ -2109,10 +2118,20 @@ void WaylandThread::_wp_primary_selection_device_on_selection(void *data, struct
 	ERR_FAIL_NULL(ss);
 
 	if (ss->wp_primary_selection_offer) {
+		memfree(wp_primary_selection_offer_get_offer_state(ss->wp_primary_selection_offer));
 		zwp_primary_selection_offer_v1_destroy(ss->wp_primary_selection_offer);
 	}
 
 	ss->wp_primary_selection_offer = id;
+}
+
+void WaylandThread::_wp_primary_selection_offer_on_offer(void *data, struct zwp_primary_selection_offer_v1 *zwp_primary_selection_offer_v1, const char *mime_type) {
+	OfferState *os = (OfferState *)data;
+	ERR_FAIL_NULL(os);
+
+	if (os) {
+		os->mime_types.insert(String::utf8(mime_type));
+	}
 }
 
 void WaylandThread::_wp_primary_selection_source_on_send(void *data, struct zwp_primary_selection_source_v1 *wp_primary_selection_source_v1, const char *mime_type, int32_t fd) {
@@ -2606,9 +2625,31 @@ WaylandThread::ScreenState *WaylandThread::wl_output_get_screen_state(struct wl_
 	return nullptr;
 }
 
+// Returns the wl_seat's `SeatState`, otherwise `nullptr`.
+// NOTE: This will fail if the output isn't tagged as ours.
 WaylandThread::SeatState *WaylandThread::wl_seat_get_seat_state(struct wl_seat *p_seat) {
 	if (p_seat && wl_proxy_is_godot((wl_proxy *)p_seat)) {
 		return (SeatState *)wl_seat_get_user_data(p_seat);
+	}
+
+	return nullptr;
+}
+
+// Returns the wl_data_offer's `OfferState`, otherwise `nullptr`.
+// NOTE: This will fail if the output isn't tagged as ours.
+WaylandThread::OfferState *WaylandThread::wl_data_offer_get_offer_state(struct wl_data_offer *p_offer) {
+	if (p_offer && wl_proxy_is_godot((wl_proxy *)p_offer)) {
+		return (OfferState *)wl_data_offer_get_user_data(p_offer);
+	}
+
+	return nullptr;
+}
+
+// Returns the wl_data_offer's `OfferState`, otherwise `nullptr`.
+// NOTE: This will fail if the output isn't tagged as ours.
+WaylandThread::OfferState *WaylandThread::wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer) {
+	if (p_offer && wl_proxy_is_godot((wl_proxy *)p_offer)) {
+		return (OfferState *)zwp_primary_selection_offer_v1_get_user_data(p_offer);
 	}
 
 	return nullptr;
@@ -3635,8 +3676,26 @@ String WaylandThread::selection_get_text() const {
 		return "";
 	}
 
-	LocalVector<uint8_t> data = _wl_data_offer_read(wl_display, "text/plain", ss->wl_data_offer_selection);
-	print_line("size of string:", data.size());
+	OfferState *os = wl_data_offer_get_offer_state(ss->wl_data_offer_selection);
+	if (!os) {
+		return "";
+	}
+
+	LocalVector<uint8_t> data;
+
+	const String text_mimes[] = {
+		"text/plain;charset=utf-8",
+		"text/plain",
+	};
+
+	for (String mime : text_mimes) {
+		if (os->mime_types.has(mime)) {
+			print_verbose(vformat("Selecting media type \"%s\" from offered types.", mime));
+			data = _wl_data_offer_read(wl_display, mime.utf8().ptr(), ss->wl_data_offer_selection);
+			break;
+		}
+	}
+
 	return String::utf8((const char *)data.ptr(), data.size());
 }
 
@@ -3674,11 +3733,30 @@ String WaylandThread::primary_get_text() const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss == nullptr) {
-		DEBUG_LOG_WAYLAND_THREAD("Couldn't get primary, current seat not set.");
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't get primary: no current seat set.");
 		return "";
 	}
 
-	LocalVector<uint8_t> data = _wp_primary_selection_offer_read(wl_display, "text/plain", ss->wp_primary_selection_offer);
+	OfferState *os = wp_primary_selection_offer_get_offer_state(ss->wp_primary_selection_offer);
+	if (!os) {
+		return "";
+	}
+
+	LocalVector<uint8_t> data;
+
+	const String text_mimes[] = {
+		"text/plain;charset=utf-8",
+		"text/plain",
+	};
+
+	for (String mime : text_mimes) {
+		if (os->mime_types.has(mime)) {
+			print_verbose(vformat("Asking for media type \"%s\".", mime));
+			data = _wp_primary_selection_offer_read(wl_display, mime.utf8().ptr(), ss->wp_primary_selection_offer);
+			break;
+		}
+	}
+
 	return String::utf8((const char *)data.ptr(), data.size());
 }
 

@@ -305,6 +305,10 @@ public:
 		bool touching = false;
 	};
 
+	struct OfferState {
+		HashSet<String> mime_types;
+	};
+
 	struct SeatState {
 		RegistryState *registry = nullptr;
 
@@ -382,17 +386,17 @@ public:
 
 		// Clipboard.
 		struct wl_data_source *wl_data_source_selection = nullptr;
-		struct wl_data_offer *wl_data_offer_selection = nullptr;
-
 		Vector<uint8_t> selection_data;
+
+		struct wl_data_offer *wl_data_offer_selection = nullptr;
 
 		// Primary selection.
 		struct zwp_primary_selection_device_v1 *wp_primary_selection_device = nullptr;
 
 		struct zwp_primary_selection_source_v1 *wp_primary_selection_source = nullptr;
-		struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer = nullptr;
-
 		Vector<uint8_t> primary_data;
+
+		struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer = nullptr;
 
 		// Tablet.
 		struct zwp_tablet_seat_v2 *wp_tablet_seat = nullptr;
@@ -549,6 +553,8 @@ private:
 	static void _wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer);
 	static void _wp_primary_selection_device_on_selection(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *id);
 
+	static void _wp_primary_selection_offer_on_offer(void *data, struct zwp_primary_selection_offer_v1 *zwp_primary_selection_offer_v1, const char *mime_type);
+
 	static void _wp_primary_selection_source_on_send(void *data, struct zwp_primary_selection_source_v1 *wp_primary_selection_source_v1, const char *mime_type, int32_t fd);
 	static void _wp_primary_selection_source_on_cancelled(void *data, struct zwp_primary_selection_source_v1 *wp_primary_selection_source_v1);
 
@@ -695,6 +701,10 @@ private:
 		.selection = _wp_primary_selection_device_on_selection,
 	};
 
+	static constexpr struct zwp_primary_selection_offer_v1_listener wp_primary_selection_offer_listener = {
+		.offer = _wp_primary_selection_offer_on_offer,
+	};
+
 	static constexpr struct zwp_primary_selection_source_v1_listener wp_primary_selection_source_listener = {
 		.send = _wp_primary_selection_source_on_send,
 		.cancelled = _wp_primary_selection_source_on_cancelled,
@@ -812,6 +822,9 @@ public:
 	static WindowState *wl_surface_get_window_state(struct wl_surface *p_surface);
 	static ScreenState *wl_output_get_screen_state(struct wl_output *p_output);
 	static SeatState *wl_seat_get_seat_state(struct wl_seat *p_seat);
+	static OfferState *wl_data_offer_get_offer_state(struct wl_data_offer *p_offer);
+
+	static OfferState *wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer);
 
 	void seat_state_unlock_pointer(SeatState *p_ss);
 	void seat_state_lock_pointer(SeatState *p_ss);
