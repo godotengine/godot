@@ -626,6 +626,11 @@
 				[b]Note:[/b] This method ignores [code]class_name[/code] declarations. If this object's script has defined a [code]class_name[/code], the base, built-in class name is returned instead.
 			</description>
 		</method>
+		<method name="get_custom_type_script" qualifiers="const">
+			<return type="Variant" />
+			<description>
+			</description>
+		</method>
 		<method name="get_incoming_connections" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>
@@ -893,6 +898,12 @@
 			<param index="0" name="enable" type="bool" />
 			<description>
 				If set to [code]true[/code], the object becomes unable to emit signals. As such, [method emit_signal] and signal connections will not work, until it is set to [code]false[/code].
+			</description>
+		</method>
+		<method name="set_custom_type_script">
+			<return type="void" />
+			<param index="0" name="script" type="Variant" />
+			<description>
 			</description>
 		</method>
 		<method name="set_deferred">
