@@ -159,6 +159,7 @@ struct _NO_DISCARD_ Vector2 {
 	}
 
 	Vector2 rotated(const real_t p_by) const;
+	Vector2 rotated_around(Vector2 p_origin, const real_t p_by) const;
 	Vector2 orthogonal() const {
 		return Vector2(y, -x);
 	}
