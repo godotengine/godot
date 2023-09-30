@@ -54,7 +54,8 @@ class ScriptServer {
 	static int _language_count;
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
-	static SafeFlag languages_finished; // Used until GH-76581 is fixed properly.
+	static bool languages_finished; // Used until GH-76581 is fixed properly.
+	static SafeFlag languages_initialized;
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -99,7 +100,7 @@ public:
 	static void init_languages();
 	static void finish_languages();
 
-	static bool are_languages_finished() { return languages_finished.is_set(); }
+	static bool are_languages_finished() { return languages_finished; }
 };
 
 class PlaceHolderScriptInstance;
