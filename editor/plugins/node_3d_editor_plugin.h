@@ -472,9 +472,14 @@ private:
 	Button* stop_piloting_button = nullptr;
 	bool pilot_preview_camera = true;
 	Node3D* node_being_piloted = nullptr;
+	Transform3D node_being_piloted_initial_transform;
 	void pilot_selection();
-	void pilot(Node3D* node);
+	void pilot(Node3D *p_node);
 	void stop_piloting();
+	void start_pilot_transform();
+	void update_pilot_transform(const Transform3D &p_transform);
+	void end_pilot_transform(bool p_commit_using_cursor_transform = false);
+	void _undo_redo_pilot_transform(Node3D *p_node, const Transform3D &p_transform);
 	void resetCursorToCamera();
 
 protected:

@@ -587,10 +587,7 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 			camera->set_perspective(get_fov(), get_znear(), get_zfar());
 		}
 
-		if (node_being_piloted != nullptr) {
-			node_being_piloted->set_global_transform(camera->get_global_transform());
-		}
-
+		update_pilot_transform(camera->get_global_transform());
 		update_transform_gizmo_view();
 		rotation_control->queue_redraw();
 		position_control->queue_redraw();
@@ -1601,9 +1598,9 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
-	//if (previewing) {
-	//	return; //do NONE
-	//}
+	if (previewing) {
+		return; //do NONE
+	}
 
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 	{
@@ -2497,6 +2494,8 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 
 void Node3DEditorViewport::set_freelook_active(bool active_now) {
 	if (!freelook_active && active_now) {
+		start_pilot_transform();
+
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
 		cursor = camera_cursor;
 
@@ -2528,6 +2527,8 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 		// This is done because leaving `Input.MOUSE_MODE_CAPTURED` will center the cursor
 		// due to OS limitations.
 		warp_mouse(previous_mouse_position);
+
+		end_pilot_transform(true);
 	}
 
 	freelook_active = active_now;
@@ -2544,6 +2545,7 @@ void Node3DEditorViewport::reset_fov() {
 }
 
 void Node3DEditorViewport::scale_cursor_distance(real_t scale) {
+	start_pilot_transform();
 	real_t min_distance = MAX(camera->get_near() * 4, ZOOM_FREELOOK_MIN);
 	real_t max_distance = MIN(camera->get_far() / 4, ZOOM_FREELOOK_MAX);
 	if (unlikely(min_distance > max_distance)) {
@@ -2560,6 +2562,7 @@ void Node3DEditorViewport::scale_cursor_distance(real_t scale) {
 
 	zoom_indicator_delay = ZOOM_FREELOOK_INDICATOR_DELAY_S;
 	surface->queue_redraw();
+	end_pilot_transform(true);
 }
 
 void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
@@ -4020,6 +4023,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 
 void Node3DEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &Node3DEditorViewport::update_transform_gizmo_view); // Used by call_deferred.
+	ClassDB::bind_method(D_METHOD("_undo_redo_pilot_transform"), &Node3DEditorViewport::_undo_redo_pilot_transform);
 
 	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
 	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
@@ -5046,17 +5050,17 @@ void Node3DEditorViewport::pilot_selection() {
 	}
 }
 
-void Node3DEditorViewport::pilot(Node3D* node) {
-	if (node == nullptr) {
+void Node3DEditorViewport::pilot(Node3D *p_node) {
+	if (p_node == nullptr) {
 		return;
 	}
 	stop_piloting();
-	node_being_piloted = node;
-	node->connect("tree_exited", callable_mp(this, &Node3DEditorViewport::stop_piloting));
-	camera->set_global_transform(node->get_global_transform());
+	node_being_piloted = p_node;
+	node_being_piloted->connect("tree_exited", callable_mp(this, &Node3DEditorViewport::stop_piloting));
+	camera->set_global_transform(node_being_piloted->get_global_transform());
 	resetCursorToCamera();
 	stop_piloting_button->show();
-	stop_piloting_button->set_text(vformat(TTR("Stop Piloting '%s'"), node->get_name()));
+	stop_piloting_button->set_text(vformat(TTR("Stop Piloting '%s'"), node_being_piloted->get_name()));
 }
 
 void Node3DEditorViewport::stop_piloting() {
@@ -5065,6 +5069,46 @@ void Node3DEditorViewport::stop_piloting() {
 	}
 	node_being_piloted = nullptr;
 	stop_piloting_button->hide();
+}
+
+void Node3DEditorViewport::start_pilot_transform() {
+	if (node_being_piloted == nullptr) {
+		return;
+	}
+	node_being_piloted_initial_transform = node_being_piloted->get_global_transform();
+}
+
+void Node3DEditorViewport::update_pilot_transform(const Transform3D& p_transform) {
+	if (node_being_piloted == nullptr) {
+		return;
+	}
+	node_being_piloted->set_global_transform(p_transform);
+}
+
+void Node3DEditorViewport::end_pilot_transform(bool p_commit_using_cursor_transform) {
+	if (node_being_piloted == nullptr) {
+		return;
+	}
+	Transform3D transform_to_commit;
+	if (p_commit_using_cursor_transform) {
+		transform_to_commit = to_camera_transform(cursor);
+	}
+	else {
+		transform_to_commit = node_being_piloted->get_global_transform();
+	}
+	EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Piloting Transform"));
+	undo_redo->add_do_method(this, "_undo_redo_pilot_transform", node_being_piloted, transform_to_commit);
+	undo_redo->add_undo_method(this, "_undo_redo_pilot_transform", node_being_piloted, node_being_piloted_initial_transform);
+	undo_redo->commit_action(false);
+}
+
+void Node3DEditorViewport::_undo_redo_pilot_transform(Node3D *p_node, const Transform3D &p_transform) {
+	p_node->set_global_transform(p_transform);
+	if (p_node == node_being_piloted) {
+		stop_piloting();
+		pilot(p_node);
+	}
 }
 
 void Node3DEditorViewport::resetCursorToCamera() {
