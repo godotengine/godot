@@ -737,7 +737,15 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		if (!pinned_props.has(name)) {
 			bool is_valid_default = false;
 			Variant default_value = PropertyUtils::get_property_default_value(p_node, name, &is_valid_default, &states_stack, true);
-			if (is_valid_default && !PropertyUtils::is_property_value_different(value, default_value)) {
+
+			// Property "script" needs special handling because its default value is tied to "custom_type_script". We cannot ignore
+			// "script" just based on it having a default value, because the default value might actually be a script. So we want to
+			// check if it's actually null before ignoring it.
+			if (name == SNAME("script")) {
+				if (p_node->get_script().is_null()) {
+					continue;
+				}
+			} else if (is_valid_default && !PropertyUtils::is_property_value_different(value, default_value)) {
 				continue;
 			}
 		}
