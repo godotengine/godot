@@ -162,6 +162,8 @@ class Node3DEditorViewport : public Control {
 
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
+		VIEW_PILOT,
+		VIEW_STOP_PILOT,
 		VIEW_AUTO_ORTHOGONAL,
 		VIEW_MAX
 	};
@@ -468,7 +470,9 @@ private:
 
 	bool pilot_preview_camera = true;
 	Node3D* node_being_piloted = nullptr;
+	void pilot_selection();
 	void pilot(Node3D* node);
+	void stop_pilot();
 	void resetCursorToCamera();
 
 protected:

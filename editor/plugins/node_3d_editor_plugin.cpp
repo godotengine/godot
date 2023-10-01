@@ -3425,6 +3425,12 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				}
 			}
 		} break;
+		case VIEW_PILOT: {
+			pilot_selection();
+		} break;
+		case VIEW_STOP_PILOT: {
+			stop_pilot();
+		} break;
 		case VIEW_GIZMOS: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
 			bool current = view_menu->get_popup()->is_item_checked(idx);
@@ -3667,7 +3673,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	previewing_camera = p_activate;
 	_update_navigation_controls_visibility();
 
-	node_being_piloted = nullptr;
+	stop_pilot();
 
 	if (!p_activate) {
 		previewing->disconnect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
@@ -5014,10 +5020,21 @@ void Node3DEditorViewport::_set_lock_view_rotation(bool p_lock_rotation) {
 	}
 }
 
+void Node3DEditorViewport::pilot_selection() {
+	Node3D* selected_node = Node3DEditor::get_singleton()->get_single_selected_node();
+	if (selected_node != nullptr) {
+		pilot(selected_node);
+	}
+}
+
 void Node3DEditorViewport::pilot(Node3D* node) {
 	node_being_piloted = node;
-	camera->set_global_transform(previewing->get_global_transform());
+	camera->set_global_transform(node->get_global_transform());
 	resetCursorToCamera();
+}
+
+void Node3DEditorViewport::stop_pilot() {
+	node_being_piloted = nullptr;
 }
 
 void Node3DEditorViewport::resetCursorToCamera() {
@@ -5176,6 +5193,10 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_cinematic_preview", TTR("Cinematic Preview")), VIEW_CINEMATIC_PREVIEW);
+
+	view_menu->get_popup()->add_separator();
+	view_menu->get_popup()->add_shortcut(ED_SHORTCUT("spatial_editor/view_pilot", TTR("Pilot")), VIEW_PILOT);
+	view_menu->get_popup()->add_shortcut(ED_SHORTCUT("spatial_editor/view_stop_pilot", TTR("Stop Pilot")), VIEW_STOP_PILOT);
 
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
