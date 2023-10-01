@@ -39,29 +39,32 @@ static uint8_t _hexCharToDec(const char c)
 /* External Class Implementation                                        */
 /************************************************************************/
 
-string svgUtilURLDecode(const char *src)
+size_t svgUtilURLDecode(const char *src, char** dst)
 {
-    if (!src) return nullptr;
+    if (!src) return 0;
 
     auto length = strlen(src);
-    if (length == 0) return nullptr;
+    if (length == 0) return 0;
 
-    string decoded;
-    decoded.reserve(length);
+    char* decoded = (char*)malloc(sizeof(char) * length + 1);
+    decoded[length] = '\0';
 
     char a, b;
+    int idx =0;
     while (*src) {
         if (*src == '%' &&
             ((a = src[1]) && (b = src[2])) &&
             (isxdigit(a) && isxdigit(b))) {
-            decoded += (_hexCharToDec(a) << 4) + _hexCharToDec(b);
+            decoded[idx++] = (_hexCharToDec(a) << 4) + _hexCharToDec(b);
             src+=3;
         } else if (*src == '+') {
-            decoded += ' ';
+            decoded[idx++] = ' ';
             src++;
         } else {
-            decoded += *src++;
+            decoded[idx++] = *src++;
         }
     }
-    return decoded;
+
+    *dst = decoded;
+    return length + 1;
 }
