@@ -1914,12 +1914,15 @@ bool LineEdit::is_secret() const {
 }
 
 void LineEdit::set_secret_character(const String &p_string) {
-	if (secret_character == p_string) {
+	String c = p_string;
+	if (c.length() > 1) {
+		WARN_PRINT("Secret character must be exactly one character long (" + itos(c.length()) + " characters given).");
+		c = c.left(1);
+	}
+	if (secret_character == c) {
 		return;
 	}
-
-	secret_character = p_string;
-	update_configuration_warnings();
+	secret_character = c;
 	_shape();
 	queue_redraw();
 }
@@ -2285,14 +2288,8 @@ void LineEdit::_shape() {
 	if (text.length() == 0 && ime_text.length() == 0) {
 		t = placeholder_translated;
 	} else if (pass) {
-		// TODO: Integrate with text server to add support for non-latin scripts.
-		// Allow secret_character as empty strings, act like if a space was used as a secret character.
-		String secret = " ";
-		// Allow values longer than 1 character in the property, but trim characters after the first one.
-		if (!secret_character.is_empty()) {
-			secret = secret_character.left(1);
-		}
-		t = secret.repeat(text.length() + ime_text.length());
+		String s = (secret_character.length() > 0) ? secret_character.left(1) : U"•";
+		t = s.repeat(text.length() + ime_text.length());
 	} else {
 		if (ime_text.length() > 0) {
 			t = text.substr(0, caret_column) + ime_text + text.substr(caret_column, text.length());

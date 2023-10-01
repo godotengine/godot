@@ -427,6 +427,9 @@ public:
 	virtual void shaped_text_set_custom_punctuation(const RID &p_shaped, const String &p_punct) = 0;
 	virtual String shaped_text_get_custom_punctuation(const RID &p_shaped) const = 0;
 
+	virtual void shaped_text_set_custom_ellipsis(const RID &p_shaped, int64_t p_char) = 0;
+	virtual int64_t shaped_text_get_custom_ellipsis(const RID &p_shaped) const = 0;
+
 	virtual void shaped_text_set_orientation(const RID &p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) = 0;
 	virtual Orientation shaped_text_get_orientation(const RID &p_shaped) const = 0;
 
