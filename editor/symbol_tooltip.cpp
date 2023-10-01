@@ -335,11 +335,16 @@ const lsp::DocumentSymbol *SymbolTooltip::_get_member_symbol(
 		const lsp::DocumentSymbol *symbol = queue.front();
 		queue.pop();
 
-		bool range_matches = symbol->range.to_json() == p_symbol_range.to_json();
-		bool is_within_range = p_symbol_range.is_within(symbol->range);
+		bool is_within_range = p_symbol_range.is_within(symbol->parent->range);
 
 		if (symbol->name == p_symbol && !symbol->detail.is_empty()) {
-			print_line("symbol: ", symbol->name, ", range_matches: ", range_matches, ", is_within_range: ", is_within_range, ", range: ", symbol->range.to_json(), ", symbol_range: ", p_symbol_range.to_json());
+			print_line(
+				"symbol: ", symbol->name,
+				"parent: ", symbol->parent->name,
+				", is_within_range: ", is_within_range,
+				", parent_range: ", symbol->parent->range.to_json(),
+				", symbol_range: ", p_symbol_range.to_json()
+			);
 		}
 
 		// If the name matches, return the symbol.
@@ -350,7 +355,7 @@ const lsp::DocumentSymbol *SymbolTooltip::_get_member_symbol(
 
 		// Add the children to the queue for later processing.
 		for (int i = 0; i < symbol->children.size(); ++i) {
-			queue.push(&symbol->children[i]);
+			queue.push(symbol->children[i]);
 		}
 	}
 

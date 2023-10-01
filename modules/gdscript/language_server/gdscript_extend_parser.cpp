@@ -171,18 +171,18 @@ void ExtendGDScriptParser::update_symbols() {
 	if (const GDScriptParser::ClassNode *gdclass = dynamic_cast<const GDScriptParser::ClassNode *>(get_tree())) {
 		parse_class_symbol(gdclass, class_symbol);
 
-		for (int i = 0; i < class_symbol.children.size(); i++) {
-			const lsp::DocumentSymbol &symbol = class_symbol.children[i];
-			members.insert(symbol.name, &symbol);
+		for (int i = 0; i < class_symbol->children.size(); i++) {
+			const lsp::DocumentSymbol *symbol = class_symbol->children[i];
+			members.insert(symbol->name, symbol);
 
 			// Cache level one inner classes.
-			if (symbol.kind == lsp::SymbolKind::Class) {
+			if (symbol->kind == lsp::SymbolKind::Class) {
 				ClassMembers inner_class;
-				for (int j = 0; j < symbol.children.size(); j++) {
-					const lsp::DocumentSymbol &s = symbol.children[j];
-					inner_class.insert(s.name, &s);
+				for (int j = 0; j < symbol->children.size(); j++) {
+					const lsp::DocumentSymbol *s = symbol->children[j];
+					inner_class.insert(s->name, s);
 				}
-				inner_classes.insert(symbol.name, inner_class);
+				inner_classes.insert(symbol->name, inner_class);
 			}
 		}
 	}
@@ -225,25 +225,25 @@ lsp::Range ExtendGDScriptParser::range_of_node(const GDScriptParser::Node *p_nod
 	return GodotRange(start, end).to_lsp(this->lines);
 }
 
-void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol) {
+void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol *r_symbol) {
 	const String uri = get_uri();
 
-	r_symbol.uri = uri;
-	r_symbol.script_path = path;
-	r_symbol.children.clear();
-	r_symbol.name = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
-	if (r_symbol.name.is_empty()) {
-		r_symbol.name = path.get_file();
+	r_symbol->uri = uri;
+	r_symbol->script_path = path;
+	r_symbol->children.clear();
+	r_symbol->name = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
+	if (r_symbol->name.is_empty()) {
+		r_symbol->name = path.get_file();
 	}
-	r_symbol.kind = lsp::SymbolKind::Class;
-	r_symbol.deprecated = false;
-	r_symbol.range = range_of_node(p_class);
-	r_symbol.range.start.line = MAX(r_symbol.range.start.line, 0);
+	r_symbol->kind = lsp::SymbolKind::Class;
+	r_symbol->deprecated = false;
+	r_symbol->range = range_of_node(p_class);
+	r_symbol->range.start.line = MAX(r_symbol->range.start.line, 0);
 	if (p_class->identifier) {
-		r_symbol.selectionRange = range_of_node(p_class->identifier);
+		r_symbol->selectionRange = range_of_node(p_class->identifier);
 	}
-	r_symbol.detail = "class " + r_symbol.name;
-	r_symbol.reduced_detail = r_symbol.detail;
+	r_symbol->detail = "class " + r_symbol->name;
+	r_symbol->reduced_detail = r_symbol->detail;
 	{
 		String doc = "";
 		if (!p_class->doc_data.brief.is_empty()) {
@@ -262,7 +262,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				}
 			}
 		}
-		r_symbol.documentation = doc;
+		r_symbol->documentation = doc;
 	}
 
 	for (int i = 0; i < p_class->members.size(); i++) {
@@ -270,68 +270,74 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 
 		switch (m.type) {
 			case ClassNode::Member::VARIABLE: {
-				lsp::DocumentSymbol symbol;
-				symbol.name = m.variable->identifier->name;
-				symbol.kind = m.variable->property == VariableNode::PROP_NONE ? lsp::SymbolKind::Variable : lsp::SymbolKind::Property;
-				symbol.deprecated = false;
-				symbol.range = range_of_node(m.variable);
-				symbol.selectionRange = range_of_node(m.variable->identifier);
+				lsp::DocumentSymbol *symbol = memnew(lsp::DocumentSymbol);
+				symbol->name = m.variable->identifier->name;
+				symbol->kind = m.variable->property == VariableNode::PROP_NONE ? lsp::SymbolKind::Variable : lsp::SymbolKind::Property;
+				symbol->deprecated = false;
+				symbol->range = range_of_node(m.variable);
+				symbol->selectionRange = range_of_node(m.variable->identifier);
 				if (m.variable->exported) {
-					symbol.detail += "@export ";
+					symbol->detail += "@export ";
 				}
-				symbol.detail += "var " + m.variable->identifier->name;
+				symbol->detail += "var " + m.variable->identifier->name;
 				if (m.get_datatype().is_hard_type()) {
-					symbol.detail += ": " + m.get_datatype().to_string();
+					symbol->detail += ": " + m.get_datatype().to_string();
 				}
-				symbol.reduced_detail = symbol.detail;
+				symbol->reduced_detail = symbol->detail;
 				if (m.variable->initializer != nullptr && m.variable->initializer->is_constant) {
-					symbol.detail += " = " + m.variable->initializer->reduced_value.to_json_string();
+					symbol->detail += " = " + m.variable->initializer->reduced_value.to_json_string();
 				}
 
-				symbol.documentation = m.variable->doc_data.description;
-				symbol.uri = uri;
-				symbol.script_path = path;
+				symbol->documentation = m.variable->doc_data.description;
+				symbol->uri = uri;
+				symbol->script_path = path;
 
 				if (m.variable->initializer && m.variable->initializer->type == GDScriptParser::Node::LAMBDA) {
 					GDScriptParser::LambdaNode *lambda_node = (GDScriptParser::LambdaNode *)m.variable->initializer;
-					lsp::DocumentSymbol lambda;
+					lsp::DocumentSymbol *lambda = memnew(lsp::DocumentSymbol);
 					parse_function_symbol(lambda_node->function, lambda);
 					// Merge lambda into current variable.
-					symbol.children.append_array(lambda.children);
+					for (lsp::DocumentSymbol *lambda_symbol : lambda->children) {
+						lambda_symbol->parent = symbol;
+						symbol->children.push_back(lambda_symbol);
+					}
 				}
 
 				if (m.variable->getter && m.variable->getter->type == GDScriptParser::Node::FUNCTION) {
-					lsp::DocumentSymbol get_symbol;
+					lsp::DocumentSymbol *get_symbol = memnew(lsp::DocumentSymbol);
 					parse_function_symbol(m.variable->getter, get_symbol);
-					get_symbol.local = true;
-					symbol.children.push_back(get_symbol);
+					get_symbol->local = true;
+					get_symbol->parent = symbol;
+					symbol->children.push_back(get_symbol);
 				}
 				if (m.variable->setter && m.variable->setter->type == GDScriptParser::Node::FUNCTION) {
-					lsp::DocumentSymbol set_symbol;
+					lsp::DocumentSymbol *set_symbol = memnew(lsp::DocumentSymbol);
 					parse_function_symbol(m.variable->setter, set_symbol);
-					set_symbol.local = true;
-					symbol.children.push_back(set_symbol);
+					set_symbol->local = true;
+					set_symbol->parent = symbol;
+					symbol->children.push_back(set_symbol);
 				}
 
-				r_symbol.children.push_back(symbol);
+				symbol->parent = r_symbol;
+				r_symbol->children.push_back(symbol);
 			} break;
 			case ClassNode::Member::CONSTANT: {
-				lsp::DocumentSymbol symbol;
+				lsp::DocumentSymbol *symbol = memnew(lsp::DocumentSymbol);
 
-				symbol.name = m.constant->identifier->name;
-				symbol.kind = lsp::SymbolKind::Constant;
-				symbol.deprecated = false;
-				symbol.range = range_of_node(m.constant);
-				symbol.selectionRange = range_of_node(m.constant->identifier);
-				symbol.documentation = m.constant->doc_data.description;
-				symbol.uri = uri;
-				symbol.script_path = path;
+				symbol->name = m.constant->identifier->name;
+				symbol->kind = lsp::SymbolKind::Constant;
+				symbol->deprecated = false;
+				symbol->range = range_of_node(m.constant);
+				symbol->selectionRange = range_of_node(m.constant->identifier);
+				symbol->documentation = m.constant->doc_data.description;
+				symbol->uri = uri;
+				symbol->script_path = path;
 
-				symbol.detail = "const " + symbol.name;
+				symbol->detail = "const " + symbol->name;
 				if (m.constant->get_datatype().is_hard_type()) {
-					symbol.detail += ": " + m.constant->get_datatype().to_string();
+					symbol->detail += ": " + m.constant->get_datatype().to_string();
 				}
-				symbol.reduced_detail = symbol.detail;
+				symbol->reduced_detail = symbol->detail;
 
 				const Variant &default_value = m.constant->initializer->reduced_value;
 				String value_text;
@@ -339,9 +345,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					Ref<Resource> res = default_value;
 					if (res.is_valid() && !res->get_path().is_empty()) {
 						value_text = "preload(\"" + res->get_path() + "\")";
-						if (symbol.documentation.is_empty()) {
+						if (symbol->documentation.is_empty()) {
 							if (HashMap<String, ExtendGDScriptParser *>::Iterator S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
-								symbol.documentation = S->value->class_symbol.documentation;
+								symbol->documentation = S->value->class_symbol->documentation;
 							}
 						}
 					} else {
@@ -351,94 +357,103 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					value_text = default_value.to_json_string();
 				}
 				if (!value_text.is_empty()) {
-					symbol.detail += " = " + value_text;
+					symbol->detail += " = " + value_text;
 				}
 
-				r_symbol.children.push_back(symbol);
+				symbol->parent = r_symbol;
+				r_symbol->children.push_back(symbol);
 			} break;
 			case ClassNode::Member::SIGNAL: {
-				lsp::DocumentSymbol symbol;
-				symbol.name = m.signal->identifier->name;
-				symbol.kind = lsp::SymbolKind::Event;
-				symbol.deprecated = false;
-				symbol.range = range_of_node(m.signal);
-				symbol.selectionRange = range_of_node(m.signal->identifier);
-				symbol.documentation = m.signal->doc_data.description;
-				symbol.uri = uri;
-				symbol.script_path = path;
-				symbol.detail = "signal " + String(m.signal->identifier->name) + "(";
+				lsp::DocumentSymbol *symbol = memnew(lsp::DocumentSymbol);
+				symbol->name = m.signal->identifier->name;
+				symbol->kind = lsp::SymbolKind::Event;
+				symbol->deprecated = false;
+				symbol->range = range_of_node(m.signal);
+				symbol->selectionRange = range_of_node(m.signal->identifier);
+				symbol->documentation = m.signal->doc_data.description;
+				symbol->uri = uri;
+				symbol->script_path = path;
+				symbol->detail = "signal " + String(m.signal->identifier->name) + "(";
 				for (int j = 0; j < m.signal->parameters.size(); j++) {
 					const ParameterNode *parameter = m.signal->parameters[j];
 					if (j > 0) {
-						symbol.detail += ", ";
+						symbol->detail += ", ";
 					}
-					symbol.detail += parameter->identifier->name;
+					symbol->detail += parameter->identifier->name;
 					if (parameter->get_datatype().is_hard_type()) {
-						symbol.detail += ": " + parameter->get_datatype().to_string();
+						symbol->detail += ": " + parameter->get_datatype().to_string();
 					}
 				}
-				symbol.detail += ")";
-				symbol.reduced_detail = symbol.detail;
+				symbol->detail += ")";
+				symbol->reduced_detail = symbol->detail;
 
 				for (GDScriptParser::ParameterNode *param : m.signal->parameters) {
-					lsp::DocumentSymbol param_symbol;
-					param_symbol.name = param->identifier->name;
-					param_symbol.kind = lsp::SymbolKind::Variable;
-					param_symbol.deprecated = false;
-					param_symbol.local = true;
-					param_symbol.range = range_of_node(param);
-					param_symbol.selectionRange = range_of_node(param->identifier);
-					param_symbol.uri = uri;
-					param_symbol.script_path = path;
-					param_symbol.detail = "var " + param_symbol.name;
+					lsp::DocumentSymbol *param_symbol = memnew(lsp::DocumentSymbol);
+					param_symbol->name = param->identifier->name;
+					param_symbol->kind = lsp::SymbolKind::Variable;
+					param_symbol->deprecated = false;
+					param_symbol->local = true;
+					param_symbol->range = range_of_node(param);
+					param_symbol->selectionRange = range_of_node(param->identifier);
+					param_symbol->uri = uri;
+					param_symbol->script_path = path;
+					param_symbol->detail = "var " + param_symbol->name;
 					if (param->get_datatype().is_hard_type()) {
-						param_symbol.detail += ": " + param->get_datatype().to_string();
+						param_symbol->detail += ": " + param->get_datatype().to_string();
 					}
-					param_symbol.reduced_detail = param_symbol.detail;
-					symbol.children.push_back(param_symbol);
+					param_symbol->reduced_detail = param_symbol->detail;
+					param_symbol->parent = symbol;
+					symbol->children.push_back(param_symbol);
 				}
-				r_symbol.children.push_back(symbol);
+
+				symbol->parent = r_symbol;
+				r_symbol->children.push_back(symbol);
 			} break;
 			case ClassNode::Member::ENUM_VALUE: {
-				lsp::DocumentSymbol symbol;
+				lsp::DocumentSymbol *symbol = memnew(lsp::DocumentSymbol);
 				parse_enum_value_symbol(&m.enum_value, symbol);
-				r_symbol.children.push_back(symbol);
+				symbol->parent = r_symbol;
+				r_symbol->children.push_back(symbol);
 			} break;
 			case ClassNode::Member::ENUM: {
-				lsp::DocumentSymbol symbol;
-				symbol.name = m.m_enum->identifier->name;
-				symbol.kind = lsp::SymbolKind::Enum;
-				symbol.range = range_of_node(m.m_enum);
-				symbol.selectionRange = range_of_node(m.m_enum->identifier);
-				symbol.documentation = m.m_enum->doc_data.description;
-				symbol.uri = uri;
-				symbol.script_path = path;
+				lsp::DocumentSymbol *symbol = memnew(lsp::DocumentSymbol);
+				symbol->name = m.m_enum->identifier->name;
+				symbol->kind = lsp::SymbolKind::Enum;
+				symbol->range = range_of_node(m.m_enum);
+				symbol->selectionRange = range_of_node(m.m_enum->identifier);
+				symbol->documentation = m.m_enum->doc_data.description;
+				symbol->uri = uri;
+				symbol->script_path = path;
 
-				symbol.detail = "enum " + String(m.m_enum->identifier->name) + "{";
+				symbol->detail = "enum " + String(m.m_enum->identifier->name) + "{";
 				for (int j = 0; j < m.m_enum->values.size(); j++) {
 					if (j > 0) {
-						symbol.detail += ", ";
+						symbol->detail += ", ";
 					}
 					const EnumNode::Value *enum_value = &m.m_enum->values[j];
-					symbol.detail += String(enum_value->identifier->name) + " = " + itos(enum_value->value);
+					symbol->detail += String(enum_value->identifier->name) + " = " + itos(enum_value->value);
 
-					lsp::DocumentSymbol ev_symbol;
+					lsp::DocumentSymbol *ev_symbol = memnew(lsp::DocumentSymbol);
 					parse_enum_value_symbol(enum_value, ev_symbol);
-					symbol.children.push_back(ev_symbol);
+					ev_symbol->parent = symbol;
+					symbol->children.push_back(ev_symbol);
 				}
-				symbol.detail += "}";
-				symbol.reduced_detail = "enum " + String(m.m_enum->identifier->name);
-				r_symbol.children.push_back(symbol);
+				symbol->detail += "}";
+				symbol->reduced_detail = "enum " + String(m.m_enum->identifier->name);
+				symbol->parent = r_symbol;
+				r_symbol->children.push_back(symbol);
 			} break;
 			case ClassNode::Member::FUNCTION: {
-				lsp::DocumentSymbol symbol;
+				lsp::DocumentSymbol *symbol = memnew(lsp::DocumentSymbol);
 				parse_function_symbol(m.function, symbol);
-				r_symbol.children.push_back(symbol);
+				symbol->parent = r_symbol;
+				r_symbol->children.push_back(symbol);
 			} break;
 			case ClassNode::Member::CLASS: {
-				lsp::DocumentSymbol symbol;
+				lsp::DocumentSymbol *symbol = memnew(lsp::DocumentSymbol);
 				parse_class_symbol(m.m_class, symbol);
-				r_symbol.children.push_back(symbol);
+				symbol->parent = r_symbol;
+				r_symbol->children.push_back(symbol);
 			} break;
 			case ClassNode::Member::GROUP:
 				break; // No-op, but silences warnings.
@@ -448,48 +463,49 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	}
 }
 
-void ExtendGDScriptParser::parse_enum_value_symbol(const GDScriptParser::EnumNode::Value *p_value, lsp::DocumentSymbol &r_symbol) {
-	r_symbol.name = p_value->identifier->name;
-	r_symbol.kind = lsp::SymbolKind::EnumMember;
-	r_symbol.deprecated = false;
-	r_symbol.range.start = GodotPosition(p_value->line, p_value->leftmost_column).to_lsp(this->lines);
-	r_symbol.range.end = GodotPosition(p_value->line, p_value->rightmost_column).to_lsp(this->lines);
-	r_symbol.selectionRange = range_of_node(p_value->identifier);
-	r_symbol.documentation = p_value->doc_data.description;
-	r_symbol.uri = get_uri();
-	r_symbol.script_path = path;
+void ExtendGDScriptParser::parse_enum_value_symbol(const GDScriptParser::EnumNode::Value *p_value, lsp::DocumentSymbol *r_symbol) {
+	r_symbol->name = p_value->identifier->name;
+	r_symbol->kind = lsp::SymbolKind::EnumMember;
+	r_symbol->deprecated = false;
+	r_symbol->range.start = GodotPosition(p_value->line, p_value->leftmost_column).to_lsp(this->lines);
+	r_symbol->range.end = GodotPosition(p_value->line, p_value->rightmost_column).to_lsp(this->lines);
+	r_symbol->selectionRange = range_of_node(p_value->identifier);
+	r_symbol->documentation = p_value->doc_data.description;
+	r_symbol->uri = get_uri();
+	r_symbol->script_path = path;
 
 	if (p_value->parent_enum->identifier != nullptr) {
-		r_symbol.detail = String(p_value->parent_enum->identifier->name) + "." + r_symbol.name + " = " + itos(p_value->value);
+		r_symbol->detail = String(p_value->parent_enum->identifier->name) + "." + r_symbol->name + " = " + itos(p_value->value);
 	} else {
-		r_symbol.detail = r_symbol.name + " = " + itos(p_value->value);
+		r_symbol->detail = r_symbol->name + " = " + itos(p_value->value);
 	}
 
-	r_symbol.reduced_detail = r_symbol.detail;
+	r_symbol->reduced_detail = r_symbol->detail;
 }
 
-void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol) {
+
+void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol *r_symbol) {
 	const String uri = get_uri();
 
 	bool is_named = p_func->identifier != nullptr;
 
-	r_symbol.name = is_named ? p_func->identifier->name : "";
-	r_symbol.kind = (p_func->is_static || p_func->source_lambda != nullptr) ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
-	r_symbol.detail = "func";
+	r_symbol->name = is_named ? p_func->identifier->name : "";
+	r_symbol->kind = (p_func->is_static || p_func->source_lambda != nullptr) ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
+	r_symbol->detail = "func";
 	if (is_named) {
-		r_symbol.detail += " " + String(p_func->identifier->name);
+		r_symbol->detail += " " + String(p_func->identifier->name);
 	}
-	r_symbol.detail += "(";
-	r_symbol.deprecated = false;
-	r_symbol.range = range_of_node(p_func);
+	r_symbol->detail += "(";
+	r_symbol->deprecated = false;
+	r_symbol->range = range_of_node(p_func);
 	if (is_named) {
-		r_symbol.selectionRange = range_of_node(p_func->identifier);
+		r_symbol->selectionRange = range_of_node(p_func->identifier);
 	} else {
-		r_symbol.selectionRange.start = r_symbol.selectionRange.end = r_symbol.range.start;
+		r_symbol->selectionRange.start = r_symbol->selectionRange.end = r_symbol->range.start;
 	}
-	r_symbol.documentation = p_func->doc_data.description;
-	r_symbol.uri = uri;
-	r_symbol.script_path = path;
+	r_symbol->documentation = p_func->doc_data.description;
+	r_symbol->uri = uri;
+	r_symbol->script_path = path;
 
 	String parameters;
 	for (int i = 0; i < p_func->parameters.size(); i++) {
@@ -505,13 +521,13 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			parameters += " = " + parameter->initializer->reduced_value.to_json_string();
 		}
 	}
-	r_symbol.detail += parameters + ")";
-	r_symbol.reduced_detail = r_symbol.detail;
+	r_symbol->detail += parameters + ")";
+	r_symbol->reduced_detail = r_symbol->detail;
 	if (p_func->get_datatype().is_hard_type()) {
-		r_symbol.detail += " -> " + p_func->get_datatype().to_string();
+		r_symbol->detail += " -> " + p_func->get_datatype().to_string();
 
-		String return_type = r_symbol.name == "_init" ? "void" : p_func->get_datatype().to_string();
-		r_symbol.reduced_detail += " -> " + return_type;
+		String return_type = r_symbol->name == "_init" ? "void" : p_func->get_datatype().to_string();
+		r_symbol->reduced_detail += " -> " + return_type;
 	}
 
 	List<GDScriptParser::SuiteNode *> function_nodes;
@@ -571,62 +587,66 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		const GDScriptParser::SuiteNode *suite_node = N->get();
 		for (int i = 0; i < suite_node->locals.size(); i++) {
 			const SuiteNode::Local &local = suite_node->locals[i];
-			lsp::DocumentSymbol symbol;
-			symbol.name = local.name;
-			symbol.kind = local.type == SuiteNode::Local::CONSTANT ? lsp::SymbolKind::Constant : lsp::SymbolKind::Variable;
+			lsp::DocumentSymbol *symbol = memnew(lsp::DocumentSymbol);
+			symbol->name = local.name;
+			symbol->kind = local.type == SuiteNode::Local::CONSTANT ? lsp::SymbolKind::Constant : lsp::SymbolKind::Variable;
 			switch (local.type) {
 				case SuiteNode::Local::CONSTANT:
-					symbol.range = range_of_node(local.constant);
-					symbol.selectionRange = range_of_node(local.constant->identifier);
+					symbol->range = range_of_node(local.constant);
+					symbol->selectionRange = range_of_node(local.constant->identifier);
 					break;
 				case SuiteNode::Local::VARIABLE:
-					symbol.range = range_of_node(local.variable);
-					symbol.selectionRange = range_of_node(local.variable->identifier);
+					symbol->range = range_of_node(local.variable);
+					symbol->selectionRange = range_of_node(local.variable->identifier);
 					if (local.variable->initializer && local.variable->initializer->type == GDScriptParser::Node::LAMBDA) {
 						GDScriptParser::LambdaNode *lambda_node = (GDScriptParser::LambdaNode *)local.variable->initializer;
-						lsp::DocumentSymbol lambda;
+						lsp::DocumentSymbol *lambda = memnew(lsp::DocumentSymbol);
 						parse_function_symbol(lambda_node->function, lambda);
 						// Merge lambda into current variable.
 						// -> Only interested in new variables, not lambda itself.
-						symbol.children.append_array(lambda.children);
+						for (lsp::DocumentSymbol *lambda_symbol : lambda->children) {
+							lambda_symbol->parent = symbol;
+							symbol->children.push_back(lambda_symbol);
+						}
 					}
 					break;
 				case SuiteNode::Local::PARAMETER:
-					symbol.range = range_of_node(local.parameter);
-					symbol.selectionRange = range_of_node(local.parameter->identifier);
+					symbol->range = range_of_node(local.parameter);
+					symbol->selectionRange = range_of_node(local.parameter->identifier);
 					break;
 				case SuiteNode::Local::FOR_VARIABLE:
 				case SuiteNode::Local::PATTERN_BIND:
-					symbol.range = range_of_node(local.bind);
-					symbol.selectionRange = range_of_node(local.bind);
+					symbol->range = range_of_node(local.bind);
+					symbol->selectionRange = range_of_node(local.bind);
 					break;
 				default:
 					// Fallback.
-					symbol.range.start = GodotPosition(local.start_line, local.start_column).to_lsp(get_lines());
-					symbol.range.end = GodotPosition(local.end_line, local.end_column).to_lsp(get_lines());
-					symbol.selectionRange = symbol.range;
+					symbol->range.start = GodotPosition(local.start_line, local.start_column).to_lsp(get_lines());
+					symbol->range.end = GodotPosition(local.end_line, local.end_column).to_lsp(get_lines());
+					symbol->selectionRange = symbol->range;
 					break;
 			}
-			symbol.local = true;
-			symbol.uri = uri;
-			symbol.script_path = path;
-			symbol.detail = local.type == SuiteNode::Local::CONSTANT ? "const " : "var ";
-			symbol.detail += symbol.name;
+			symbol->local = true;
+			symbol->uri = uri;
+			symbol->script_path = path;
+			symbol->detail = local.type == SuiteNode::Local::CONSTANT ? "const " : "var ";
+			symbol->detail += symbol->name;
 			if (local.get_datatype().is_hard_type()) {
-				symbol.detail += ": " + local.get_datatype().to_string();
+				symbol->detail += ": " + local.get_datatype().to_string();
 			}
-			symbol.reduced_detail = symbol.detail;
+			symbol->reduced_detail = symbol->detail;
 			switch (local.type) {
 				case SuiteNode::Local::CONSTANT:
-					symbol.documentation = local.constant->doc_data.description;
+					symbol->documentation = local.constant->doc_data.description;
 					break;
 				case SuiteNode::Local::VARIABLE:
-					symbol.documentation = local.variable->doc_data.description;
+					symbol->documentation = local.variable->doc_data.description;
 					break;
 				default:
 					break;
 			}
-			r_symbol.children.push_back(symbol);
+			symbol->parent = r_symbol;
+			r_symbol->children.push_back(symbol);
 		}
 	}
 }
@@ -755,15 +775,15 @@ String ExtendGDScriptParser::get_uri() const {
 	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(path);
 }
 
-const lsp::DocumentSymbol *ExtendGDScriptParser::search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent, const String &p_symbol_name) const {
+const lsp::DocumentSymbol *ExtendGDScriptParser::search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol *p_parent, const String &p_symbol_name) const {
 	const lsp::DocumentSymbol *ret = nullptr;
-	if (p_line < p_parent.range.start.line) {
+	if (p_line < p_parent->range.start.line) {
 		return ret;
-	} else if (p_parent.range.start.line == p_line && (p_symbol_name.is_empty() || p_parent.name == p_symbol_name)) {
-		return &p_parent;
+	} else if (p_parent->range.start.line == p_line && (p_symbol_name.is_empty() || p_parent->name == p_symbol_name)) {
+		return p_parent;
 	} else {
-		for (int i = 0; i < p_parent.children.size(); i++) {
-			ret = search_symbol_defined_at_line(p_line, p_parent.children[i], p_symbol_name);
+		for (int i = 0; i < p_parent->children.size(); i++) {
+			ret = search_symbol_defined_at_line(p_line, p_parent->children[i], p_symbol_name);
 			if (ret) {
 				break;
 			}
@@ -818,7 +838,7 @@ Error ExtendGDScriptParser::get_left_function_call(const lsp::Position &p_positi
 
 const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int p_line, const String &p_symbol_name) const {
 	if (p_line <= 0) {
-		return &class_symbol;
+		return class_symbol;
 	}
 	return search_symbol_defined_at_line(p_line, class_symbol, p_symbol_name);
 }

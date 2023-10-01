@@ -1225,10 +1225,12 @@ struct DocumentSymbol {
 	DocumentUri uri;
 	String script_path;
 
+	DocumentSymbol *parent = nullptr;
+
 	/**
 	 * Children of this symbol, e.g. properties of a class.
 	 */
-	Vector<DocumentSymbol> children;
+	Vector<DocumentSymbol *> children;
 
 	Dictionary to_json(bool with_doc = false) const {
 		Dictionary dict;
@@ -1245,10 +1247,10 @@ struct DocumentSymbol {
 		if (!children.is_empty()) {
 			Array arr;
 			for (int i = 0; i < children.size(); i++) {
-				if (children[i].local) {
+				if (children[i]->local) {
 					continue;
 				}
-				arr.push_back(children[i].to_json(with_doc));
+				arr.push_back(children[i]->to_json(with_doc));
 			}
 			if (!children.is_empty()) {
 				dict["children"] = arr;

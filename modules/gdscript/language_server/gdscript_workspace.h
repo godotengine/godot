@@ -49,7 +49,7 @@ protected:
 	static void _bind_methods();
 	void remove_cache_parser(const String &p_path);
 	bool initialized = false;
-	HashMap<StringName, lsp::DocumentSymbol> native_symbols;
+	HashMap<StringName, lsp::DocumentSymbol *> native_symbols;
 
 	const lsp::DocumentSymbol *get_native_symbol(const String &p_class, const String &p_member = "") const;
 	const lsp::DocumentSymbol *get_script_symbol(const String &p_path) const;
@@ -93,9 +93,9 @@ public:
 	Error resolve_signature(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::SignatureHelp &r_signature);
 	void did_delete_files(const Dictionary &p_params);
 	Dictionary rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name);
-	bool can_rename(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::DocumentSymbol &r_symbol, lsp::Range &r_range);
-	Vector<lsp::Location> find_usages_in_file(const lsp::DocumentSymbol &p_symbol, const String &p_file_path);
-	Vector<lsp::Location> find_all_usages(const lsp::DocumentSymbol &p_symbol);
+	bool can_rename(const lsp::TextDocumentPositionParams &p_doc_pos, const lsp::DocumentSymbol *r_symbol, lsp::Range &r_range);
+	Vector<lsp::Location> find_usages_in_file(const lsp::DocumentSymbol *p_symbol, const String &p_file_path);
+	Vector<lsp::Location> find_all_usages(const lsp::DocumentSymbol *p_symbol);
 
 	GDScriptWorkspace();
 	~GDScriptWorkspace();

@@ -163,8 +163,8 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(uri);
 	Array arr;
 	if (HashMap<String, ExtendGDScriptParser *>::ConstIterator parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
-		lsp::DocumentSymbol symbol = parser->value->get_symbols();
-		arr.push_back(symbol.to_json(true));
+		const lsp::DocumentSymbol *symbol = parser->value->get_symbols();
+		arr.push_back(symbol->to_json(true));
 	}
 	return arr;
 }
@@ -256,7 +256,7 @@ Variant GDScriptTextDocument::prepareRename(const Dictionary &p_params) {
 	lsp::TextDocumentPositionParams params;
 	params.load(p_params);
 
-	lsp::DocumentSymbol symbol;
+	lsp::DocumentSymbol *symbol = memnew(lsp::DocumentSymbol);
 	lsp::Range range;
 	if (GDScriptLanguageProtocol::get_singleton()->get_workspace()->can_rename(params, symbol, range)) {
 		return Variant(range.to_json());
@@ -274,7 +274,7 @@ Array GDScriptTextDocument::references(const Dictionary &p_params) {
 
 	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
 	if (symbol) {
-		Vector<lsp::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_all_usages(*symbol);
+		Vector<lsp::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_all_usages(symbol);
 		res.resize(usages.size());
 		int declaration_adjustment = 0;
 		for (int i = 0; i < usages.size(); i++) {

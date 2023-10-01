@@ -115,7 +115,7 @@ class ExtendGDScriptParser : public GDScriptParser {
 	String path;
 	Vector<String> lines;
 
-	lsp::DocumentSymbol class_symbol;
+	lsp::DocumentSymbol *class_symbol = memnew(lsp::DocumentSymbol);
 	Vector<lsp::Diagnostic> diagnostics;
 	List<lsp::DocumentLink> document_links;
 	ClassMembers members;
@@ -127,21 +127,21 @@ class ExtendGDScriptParser : public GDScriptParser {
 
 	void update_symbols();
 	void update_document_links(const String &p_code);
-	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol);
-	void parse_enum_value_symbol(const GDScriptParser::EnumNode::Value *p_value, lsp::DocumentSymbol &r_symbol);
-	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol);
+	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol *r_symbol);
+	void parse_enum_value_symbol(const GDScriptParser::EnumNode::Value *p_value, lsp::DocumentSymbol *r_symbol);
+	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol *r_symbol);
 
 	Dictionary dump_function_api(const GDScriptParser::FunctionNode *p_func) const;
 	Dictionary dump_class_api(const GDScriptParser::ClassNode *p_class) const;
 
-	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;
+	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol *p_parent, const String &p_symbol_name = "") const;
 
 	Array member_completions;
 
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
-	_FORCE_INLINE_ const lsp::DocumentSymbol &get_symbols() const { return class_symbol; }
+	_FORCE_INLINE_ const lsp::DocumentSymbol *get_symbols() const { return class_symbol; }
 	_FORCE_INLINE_ const Vector<lsp::Diagnostic> &get_diagnostics() const { return diagnostics; }
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
