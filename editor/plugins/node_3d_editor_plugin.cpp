@@ -3207,11 +3207,11 @@ void Node3DEditorViewport::_view_menu_popped_up() {
 		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_PILOT), TTR("Pilot Selected Node"));
 	}
 	if (node_being_piloted) {
-		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_STOP_PILOT), false);
-		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_STOP_PILOT), vformat(TTR("Stop Piloting '%s'"), node_being_piloted->get_name()));
+		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_STOP_PILOTING), false);
+		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_STOP_PILOTING), vformat(TTR("Stop Piloting '%s'"), node_being_piloted->get_name()));
 	} else {
-		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_STOP_PILOT), true);
-		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_STOP_PILOT), TTR("Stop Piloting"));
+		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_STOP_PILOTING), true);
+		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_STOP_PILOTING), TTR("Stop Piloting"));
 	}
 }
 
@@ -3447,8 +3447,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_PILOT: {
 			pilot_selection();
 		} break;
-		case VIEW_STOP_PILOT: {
-			stop_pilot();
+		case VIEW_STOP_PILOTING: {
+			stop_piloting();
 		} break;
 		case VIEW_GIZMOS: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
@@ -3692,7 +3692,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	previewing_camera = p_activate;
 	_update_navigation_controls_visibility();
 
-	stop_pilot();
+	stop_piloting();
 
 	if (!p_activate) {
 		previewing->disconnect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
@@ -5050,10 +5050,13 @@ void Node3DEditorViewport::pilot(Node3D* node) {
 	node_being_piloted = node;
 	camera->set_global_transform(node->get_global_transform());
 	resetCursorToCamera();
+	stop_piloting_button->show();
+	stop_piloting_button->set_text(vformat(TTR("Stop Piloting '%s'"), node->get_name()));
 }
 
-void Node3DEditorViewport::stop_pilot() {
+void Node3DEditorViewport::stop_piloting() {
 	node_being_piloted = nullptr;
+	stop_piloting_button->hide();
 }
 
 void Node3DEditorViewport::resetCursorToCamera() {
@@ -5205,7 +5208,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_SHORTCUT("spatial_editor/view_pilot", TTR("Pilot Selected Node")), VIEW_PILOT);
-	view_menu->get_popup()->add_shortcut(ED_SHORTCUT("spatial_editor/view_stop_pilot", TTR("Stop Piloting")), VIEW_STOP_PILOT);
+	view_menu->get_popup()->add_shortcut(ED_SHORTCUT("spatial_editor/view_stop_piloting", TTR("Stop Piloting")), VIEW_STOP_PILOTING);
 
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
@@ -5265,6 +5268,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 	previewing = nullptr;
 	gizmo_scale = 1.0;
+
+	stop_piloting_button = memnew(Button);
+	stop_piloting_button->set_text(TTR("Stop Piloting"));
+	stop_piloting_button->set_shortcut(ED_SHORTCUT("spatial_editor/view_stop_piloting", TTR("Stop Piloting")));
+	vbox->add_child(stop_piloting_button);
+	stop_piloting_button->set_h_size_flags(0);
+	stop_piloting_button->hide();
+	stop_piloting_button->connect("pressed", callable_mp(this, &Node3DEditorViewport::stop_piloting));
 
 	preview_node = nullptr;
 
