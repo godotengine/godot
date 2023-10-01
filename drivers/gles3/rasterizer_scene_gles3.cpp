@@ -463,6 +463,7 @@ int RasterizerSceneGLES3::get_directional_light_shadow_size(RID p_light_intance)
 		case VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
 			break; //none
 		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
+		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_3_SPLITS:
 		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
 			shadow_size /= 2;
 			break;
@@ -2040,8 +2041,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHT_DIRECTIONAL, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_DIRECTIONAL_SHADOW, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM4, false);
+					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM3, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM2, false);
-					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM_BLEND, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM_BLEND, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_5, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_13, false);
@@ -2067,6 +2068,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHT_DIRECTIONAL, use_directional);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_DIRECTIONAL_SHADOW, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM4, false);
+					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM3, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM2, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM_BLEND, false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_5, shadow_filter_mode == SHADOW_FILTER_PCF5);
@@ -2083,6 +2085,10 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 									break; //none
 								case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
 									state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM2, true);
+									state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM_BLEND, directional_light->light_ptr->directional_blend_splits);
+									break;
+								case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_3_SPLITS:
+									state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM3, true);
 									state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM_BLEND, directional_light->light_ptr->directional_blend_splits);
 									break;
 								case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
@@ -2227,6 +2233,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHT_DIRECTIONAL, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_DIRECTIONAL_SHADOW, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM4, false);
+	state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM3, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM2, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM_BLEND, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS, false);
@@ -2724,6 +2731,9 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 			case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS: {
 				shadow_count = 2;
 			} break;
+			case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_3_SPLITS: {
+				shadow_count = 3;
+			} break;
 			case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: {
 				shadow_count = 4;
 			} break;
@@ -2735,7 +2745,7 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 			uint32_t width = li->directional_rect.size.x;
 			uint32_t height = li->directional_rect.size.y;
 
-			if (li->light_ptr->directional_shadow_mode == VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
+			if (li->light_ptr->directional_shadow_mode == VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_3_SPLITS || li->light_ptr->directional_shadow_mode == VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
 				width /= 2;
 				height /= 2;
 
@@ -4742,7 +4752,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 		width = light_instance->directional_rect.size.x;
 		height = light_instance->directional_rect.size.y;
 
-		if (light->directional_shadow_mode == VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
+		if (light->directional_shadow_mode == VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_3_SPLITS || light->directional_shadow_mode == VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
 			width /= 2;
 			height /= 2;
 

@@ -2129,10 +2129,14 @@ FRAGMENT_SHADER_CODE
 #ifdef LIGHT_USE_PSSM4 //ubershader-runtime
 	value = shadow_split_offsets.w;
 #else //ubershader-runtime
+#ifdef LIGHT_USE_PSSM3 //ubershader-runtime
+	value = shadow_split_offsets.z;
+#else //ubershader-runtime
 #ifdef LIGHT_USE_PSSM2 //ubershader-runtime
 	value = shadow_split_offsets.y;
 #else //ubershader-runtime
 	value = shadow_split_offsets.x;
+#endif //ubershader-runtime
 #endif //ubershader-runtime
 #endif //LIGHT_USE_PSSM4 //ubershader-runtime
 	if (depth_z < value) {
@@ -2194,6 +2198,42 @@ FRAGMENT_SHADER_CODE
 
 #endif //LIGHT_USE_PSSM4 //ubershader-runtime
 
+#ifdef LIGHT_USE_PSSM3 //ubershader-runtime
+
+		if (depth_z < shadow_split_offsets.y) {
+			if (depth_z < shadow_split_offsets.x) {
+				highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
+				pssm_coord = splane.xyz / splane.w;
+
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
+
+				splane = (shadow_matrix2 * vec4(vertex, 1.0));
+				pssm_coord2 = splane.xyz / splane.w;
+				pssm_blend = smoothstep(0.0, shadow_split_offsets.x, depth_z);
+#endif //ubershader-runtime
+
+			} else {
+				highp vec4 splane = (shadow_matrix2 * vec4(vertex, 1.0));
+				pssm_coord = splane.xyz / splane.w;
+
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
+				splane = (shadow_matrix3 * vec4(vertex, 1.0));
+				pssm_coord2 = splane.xyz / splane.w;
+				pssm_blend = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
+#endif //ubershader-runtime
+			}
+		} else {
+			highp vec4 splane = (shadow_matrix3 * vec4(vertex, 1.0));
+			pssm_coord = splane.xyz / splane.w;
+			pssm_fade = smoothstep(shadow_split_offsets.y, shadow_split_offsets.z, depth_z);
+
+#ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
+			use_blend = false;
+#endif //ubershader-runtime
+		}
+
+#endif //LIGHT_USE_PSSM3 //ubershader-runtime
+
 #ifdef LIGHT_USE_PSSM2 //ubershader-runtime
 
 		if (depth_z < shadow_split_offsets.x) {
@@ -2220,11 +2260,13 @@ FRAGMENT_SHADER_CODE
 #endif //LIGHT_USE_PSSM2 //ubershader-runtime
 
 #ifndef LIGHT_USE_PSSM2 //ubershader-runtime
+#ifndef LIGHT_USE_PSSM3 //ubershader-runtime
 #ifndef LIGHT_USE_PSSM4 //ubershader-runtime
 		{ //regular orthogonal
 			highp vec4 splane = (shadow_matrix1 * vec4(vertex, 1.0));
 			pssm_coord = splane.xyz / splane.w;
 		}
+#endif //ubershader-runtime
 #endif //ubershader-runtime
 #endif //ubershader-runtime
 

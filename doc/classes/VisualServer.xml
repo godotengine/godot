@@ -3675,7 +3675,10 @@
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS" value="1" enum="LightDirectionalShadowMode">
 			Use 2 splits for shadow projection when using directional light.
 		</constant>
-		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS" value="2" enum="LightDirectionalShadowMode">
+		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_3_SPLITS" value="2" enum="LightDirectionalShadowMode">
+			Use 3 splits for shadow projection when using directional light.
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS" value="3" enum="LightDirectionalShadowMode">
 			Use 4 splits for shadow projection when using directional light.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE" value="0" enum="LightDirectionalShadowDepthRangeMode">
