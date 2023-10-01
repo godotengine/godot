@@ -587,6 +587,10 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 			camera->set_perspective(get_fov(), get_znear(), get_zfar());
 		}
 
+		if (node_being_piloted != nullptr) {
+			node_being_piloted->set_global_transform(camera->get_global_transform());
+		}
+
 		update_transform_gizmo_view();
 		rotation_control->queue_redraw();
 		position_control->queue_redraw();
@@ -1597,9 +1601,9 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
-	if (previewing) {
-		return; //do NONE
-	}
+	//if (previewing) {
+	//	return; //do NONE
+	//}
 
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 	{
@@ -3663,6 +3667,8 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	previewing_camera = p_activate;
 	_update_navigation_controls_visibility();
 
+	node_being_piloted = nullptr;
+
 	if (!p_activate) {
 		previewing->disconnect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		previewing = nullptr;
@@ -3675,6 +3681,9 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	} else {
 		previewing = preview;
 		previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+		if (pilot_preview_camera) {
+			pilot(previewing);
+		}
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
 		surface->queue_redraw();
 	}
@@ -5005,6 +5014,36 @@ void Node3DEditorViewport::_set_lock_view_rotation(bool p_lock_rotation) {
 	}
 }
 
+void Node3DEditorViewport::pilot(Node3D* node) {
+	node_being_piloted = node;
+	camera->set_global_transform(previewing->get_global_transform());
+	resetCursorToCamera();
+}
+
+void Node3DEditorViewport::resetCursorToCamera() {
+	cursor = Cursor();
+	Transform3D transform = camera->get_global_transform();
+	Transform3D eye_transform = transform;
+	transform.translate_local(0, 0, -cursor.distance);
+	cursor.pos = transform.origin;
+	cursor.eye_pos = eye_transform.origin;
+	Vector3 euler = transform.basis.get_euler();
+	cursor.x_rot = -euler.x;
+	cursor.y_rot = -euler.y;
+	camera_cursor = cursor;
+}
+
+/*
+Transform3D Node3DEditorViewport::to_camera_transform(const Cursor& p_cursor) const {
+	Transform3D camera_transform;
+	camera_transform.translate_local(p_cursor.pos);
+	camera_transform.basis.rotate(Vector3(1, 0, 0), -p_cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(0, 1, 0), -p_cursor.y_rot);
+	camera_transform.translate_local(0, 0, p_cursor.distance);
+	return camera_transform;
+}
+*/
+
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {
 	cpu_time_history_index = 0;
 	gpu_time_history_index = 0;
@@ -5335,6 +5374,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_update_name();
 
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view));
+
+	node_being_piloted = nullptr;
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {

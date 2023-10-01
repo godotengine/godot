@@ -466,6 +466,11 @@ private:
 
 	void _set_lock_view_rotation(bool p_lock_rotation);
 
+	bool pilot_preview_camera = true;
+	Node3D* node_being_piloted = nullptr;
+	void pilot(Node3D* node);
+	void resetCursorToCamera();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
