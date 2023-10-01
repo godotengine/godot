@@ -208,6 +208,7 @@ private:
 
 	int index;
 	ViewType view_type;
+	void _view_menu_popped_up();
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
 	Node3D *preview_node = nullptr;
