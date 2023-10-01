@@ -683,9 +683,45 @@ GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(StringName p
 }
 
 Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol) {
-	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true, &library_path);
+	library_path = p_path;
+
+	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
+	// If running on the editor on Windows, we copy the library and open the copy.
+	// This is so the original file isn't locked and can be updated by a compiler.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (!FileAccess::exists(abs_path)) {
+			ERR_PRINT("GDExtension library not found: " + library_path);
+			return ERR_FILE_NOT_FOUND;
+		}
+
+		// Copy the file to the same directory as the original with a prefix in the name.
+		// This is so relative path to dependencies are satisfied.
+		String copy_path = abs_path.get_base_dir().path_join("~" + abs_path.get_file());
+
+		// If there's a left-over copy (possibly from a crash) then delete it first.
+		if (FileAccess::exists(copy_path)) {
+			DirAccess::remove_absolute(copy_path);
+		}
+
+		Error copy_err = DirAccess::copy_absolute(abs_path, copy_path);
+		if (copy_err) {
+			ERR_PRINT("Error copying GDExtension library: " + library_path);
+			return ERR_CANT_CREATE;
+		}
+		FileAccess::set_hidden_attribute(copy_path, true);
+
+		// Save the copied path so it can be deleted later.
+		temp_lib_path = copy_path;
+
+		// Use the copy to open the library.
+		abs_path = copy_path;
+	}
+#endif
+
+	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true);
 	if (err != OK) {
-		ERR_PRINT("GDExtension dynamic library not found: " + p_path);
+		ERR_PRINT("GDExtension dynamic library not found: " + abs_path);
 		return err;
 	}
 
@@ -694,7 +730,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 	err = OS::get_singleton()->get_dynamic_library_symbol_handle(library, p_entry_symbol, entry_funcptr, false);
 
 	if (err != OK) {
-		ERR_PRINT("GDExtension entry point '" + p_entry_symbol + "' not found in library " + p_path);
+		ERR_PRINT("GDExtension entry point '" + p_entry_symbol + "' not found in library " + abs_path);
 		OS::get_singleton()->close_dynamic_library(library);
 		return err;
 	}
@@ -884,41 +920,7 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 			FileAccess::get_modified_time(p_path)));
 #endif
 
-	String abs_path = ProjectSettings::get_singleton()->globalize_path(library_path);
-#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
-	// If running on the editor on Windows, we copy the library and open the copy.
-	// This is so the original file isn't locked and can be updated by a compiler.
-	if (Engine::get_singleton()->is_editor_hint()) {
-		if (!FileAccess::exists(abs_path)) {
-			ERR_PRINT("GDExtension library not found: " + library_path);
-			return ERR_FILE_NOT_FOUND;
-		}
-
-		// Copy the file to the same directory as the original with a prefix in the name.
-		// This is so relative path to dependencies are satisfied.
-		String copy_path = abs_path.get_base_dir().path_join("~" + abs_path.get_file());
-
-		// If there's a left-over copy (possibly from a crash) then delete it first.
-		if (FileAccess::exists(copy_path)) {
-			DirAccess::remove_absolute(copy_path);
-		}
-
-		Error copy_err = DirAccess::copy_absolute(abs_path, copy_path);
-		if (copy_err) {
-			ERR_PRINT("Error copying GDExtension library: " + library_path);
-			return ERR_CANT_CREATE;
-		}
-		FileAccess::set_hidden_attribute(copy_path, true);
-
-		// Save the copied path so it can be deleted later.
-		p_extension->set_temp_library_path(copy_path);
-
-		// Use the copy to open the library.
-		abs_path = copy_path;
-	}
-#endif
-
-	err = p_extension->open_library(abs_path, entry_symbol);
+	err = p_extension->open_library(library_path, entry_symbol);
 	if (err != OK) {
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 		// If the DLL fails to load, make sure that temporary DLL copies are cleaned up.
