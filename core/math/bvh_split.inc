@@ -30,8 +30,8 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 
 	int order[POINT::AXIS_COUNT];
 
-	order[0] = size.min_axis();
-	order[POINT::AXIS_COUNT - 1] = size.max_axis();
+	order[0] = size.max_axis();
+	order[POINT::AXIS_COUNT - 1] = size.min_axis();
 
 	static_assert(POINT::AXIS_COUNT <= 3, "BVH POINT::AXIS_COUNT has unexpected size");
 	if (POINT::AXIS_COUNT == 3) {
