@@ -884,7 +884,7 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 	emit_signal(SNAME(SIGNAL_FILES_MODIFIED), modified_files);
 }
 
-void FindInFilesPanel::_on_button_clicked(TreeItem *item, int column, int id, int mouse_button_index) {
+void FindInFilesPanel::_on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index) {
 	String const file_path = item->get_text(0);
 
 	if (_result_items.find(item)) {
