@@ -690,9 +690,9 @@ double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, An
 			if (p_state_machine->get_state_machine_type() != AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
 				path.clear();
 				_clear_path_children(tree, p_state_machine, p_test_only);
+				_start(p_state_machine);
 			}
 			reset_request = true;
-			_start(p_state_machine);
 		} else {
 			// Reset current state.
 			reset_request = true;

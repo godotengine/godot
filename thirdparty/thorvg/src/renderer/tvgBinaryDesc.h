@@ -36,7 +36,7 @@ using TvgBinFlag = TvgBinByte;
 #define TVG_HEADER_SIZE 33                //TVG_HEADER_SIGNATURE_LENGTH + TVG_HEADER_VERSION_LENGTH + 2*SIZE(float) + TVG_HEADER_RESERVED_LENGTH + TVG_HEADER_COMPRESS_SIZE
 #define TVG_HEADER_SIGNATURE "ThorVG"
 #define TVG_HEADER_SIGNATURE_LENGTH 6
-#define TVG_HEADER_VERSION "001000"       //Major 00, Minor 10, Micro 00
+#define TVG_HEADER_VERSION "001100"       //Major 00, Minor 11, Micro 00
 #define TVG_HEADER_VERSION_LENGTH 6
 #define TVG_HEADER_RESERVED_LENGTH 1      //Storing flags for extensions
 #define TVG_HEADER_COMPRESS_SIZE 12       //TVG_HEADER_UNCOMPRESSED_SIZE + TVG_HEADER_COMPRESSED_SIZE + TVG_HEADER_COMPRESSED_SIZE_BITS
@@ -82,6 +82,7 @@ using TvgBinFlag = TvgBinByte;
 #define TVG_TAG_SHAPE_STROKE_DASHPTRN               (TvgBinTag)0x55
 #define TVG_TAG_SHAPE_STROKE_MITERLIMIT             (TvgBinTag)0x56
 #define TVG_TAG_SHAPE_STROKE_ORDER                  (TvgBinTag)0x57
+#define TVG_TAG_SHAPE_STROKE_DASH_OFFSET            (TvgBinTag)0x58
 
 
 //Fill
@@ -90,7 +91,7 @@ using TvgBinFlag = TvgBinByte;
 #define TVG_TAG_FILL_COLORSTOPS                     (TvgBinTag)0x62
 #define TVG_TAG_FILL_FILLSPREAD                     (TvgBinTag)0x63
 #define TVG_TAG_FILL_TRANSFORM                      (TvgBinTag)0x64
-
+#define TVG_TAG_FILL_RADIAL_GRADIENT_FOCAL          (TvgBinTag)0x65
 
 //Picture
 #define TVG_TAG_PICTURE_RAW_IMAGE                   (TvgBinTag)0x70

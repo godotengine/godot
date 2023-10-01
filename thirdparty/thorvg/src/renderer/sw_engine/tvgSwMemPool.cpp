@@ -62,54 +62,52 @@ void mpoolRetStrokeOutline(SwMpool* mpool, unsigned idx)
 }
 
 
+SwOutline* mpoolReqDashOutline(SwMpool* mpool, unsigned idx)
+{
+    return &mpool->dashOutline[idx];
+}
+
+
+void mpoolRetDashOutline(SwMpool* mpool, unsigned idx)
+{
+    mpool->dashOutline[idx].pts.clear();
+    mpool->dashOutline[idx].cntrs.clear();
+    mpool->dashOutline[idx].types.clear();
+    mpool->dashOutline[idx].closed.clear();
+}
+
+
 SwMpool* mpoolInit(unsigned threads)
 {
     auto allocSize = threads + 1;
 
     auto mpool = static_cast<SwMpool*>(calloc(sizeof(SwMpool), 1));
     mpool->outline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * allocSize));
-    if (!mpool->outline) goto err;
-
     mpool->strokeOutline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * allocSize));
-    if (!mpool->strokeOutline) goto err;
-
+    mpool->dashOutline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * allocSize));
     mpool->allocSize = allocSize;
 
     return mpool;
-
-err:
-    if (mpool->outline) {
-        free(mpool->outline);
-        mpool->outline = nullptr;
-    }
-
-    if (mpool->strokeOutline) {
-        free(mpool->strokeOutline);
-        mpool->strokeOutline = nullptr;
-    }
-    free(mpool);
-    return nullptr;
 }
 
 
 bool mpoolClear(SwMpool* mpool)
 {
-    SwOutline* p;
-
     for (unsigned i = 0; i < mpool->allocSize; ++i) {
-        //Outline
-        p = &mpool->outline[i];
-        p->pts.reset();
-        p->cntrs.reset();
-        p->types.reset();
-        p->closed.reset();
+        mpool->outline[i].pts.reset();
+        mpool->outline[i].cntrs.reset();
+        mpool->outline[i].types.reset();
+        mpool->outline[i].closed.reset();
 
-        //StrokeOutline
-        p = &mpool->strokeOutline[i];
-        p->pts.reset();
-        p->cntrs.reset();
-        p->types.reset();
-        p->closed.reset();
+        mpool->strokeOutline[i].pts.reset();
+        mpool->strokeOutline[i].cntrs.reset();
+        mpool->strokeOutline[i].types.reset();
+        mpool->strokeOutline[i].closed.reset();
+
+        mpool->dashOutline[i].pts.reset();
+        mpool->dashOutline[i].cntrs.reset();
+        mpool->dashOutline[i].types.reset();
+        mpool->dashOutline[i].closed.reset();
     }
 
     return true;
@@ -122,16 +120,9 @@ bool mpoolTerm(SwMpool* mpool)
 
     mpoolClear(mpool);
 
-    if (mpool->outline) {
-        free(mpool->outline);
-        mpool->outline = nullptr;
-    }
-
-    if (mpool->strokeOutline) {
-        free(mpool->strokeOutline);
-        mpool->strokeOutline = nullptr;
-    }
-
+    free(mpool->outline);
+    free(mpool->strokeOutline);
+    free(mpool->dashOutline);
     free(mpool);
 
     return true;

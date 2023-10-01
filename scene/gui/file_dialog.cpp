@@ -63,6 +63,16 @@ void FileDialog::popup(const Rect2i &p_rect) {
 	}
 }
 
+void FileDialog::set_visible(bool p_visible) {
+	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+		if (p_visible) {
+			DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+		}
+	} else {
+		ConfirmationDialog::set_visible(p_visible);
+	}
+}
+
 void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
 	if (p_ok) {
 		if (p_files.size() > 0) {

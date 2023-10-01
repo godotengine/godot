@@ -742,6 +742,12 @@ void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform, 
         task->transform = nullptr;
     }
 
+    //zero size?
+    if (task->transform) {
+        if (task->transform->e11 == 0.0f && task->transform->e12 == 0.0f) return task; //zero width
+        if (task->transform->e21 == 0.0f && task->transform->e22 == 0.0f) return task; //zero height
+    }
+
     task->opacity = opacity;
     task->surface = surface;
     task->mpool = mpool;
@@ -767,10 +773,8 @@ RenderData SwRenderer::prepare(Surface* surface, const RenderMesh* mesh, RenderD
     //prepare task
     auto task = static_cast<SwImageTask*>(data);
     if (!task) task = new SwImageTask;
-    if (flags & RenderUpdateFlag::Image) {
-        task->source = surface;
-        task->mesh = mesh;
-    }
+    task->source = surface;
+    task->mesh = mesh;
     return prepareCommon(task, transform, clips, opacity, flags);
 }
 

@@ -273,6 +273,7 @@ struct SwMpool
 {
     SwOutline* outline;
     SwOutline* strokeOutline;
+    SwOutline* dashOutline;
     unsigned allocSize;
 };
 
@@ -544,6 +545,8 @@ SwOutline* mpoolReqOutline(SwMpool* mpool, unsigned idx);
 void mpoolRetOutline(SwMpool* mpool, unsigned idx);
 SwOutline* mpoolReqStrokeOutline(SwMpool* mpool, unsigned idx);
 void mpoolRetStrokeOutline(SwMpool* mpool, unsigned idx);
+SwOutline* mpoolReqDashOutline(SwMpool* mpool, unsigned idx);
+void mpoolRetDashOutline(SwMpool* mpool, unsigned idx);
 
 bool rasterCompositor(SwSurface* surface);
 bool rasterGradientShape(SwSurface* surface, SwShape* shape, unsigned id);

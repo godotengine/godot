@@ -48,7 +48,7 @@ static bool _genOutline(SwImage* image, const RenderMesh* mesh, const Matrix* tr
     if (mesh->triangleCnt > 0) {
         // TODO: Optimise me. We appear to calculate this exact min/max bounding area in multiple
         // places. We should be able to re-use one we have already done? Also see:
-        //   tvgPictureImpl.h --> bounds
+        //   tvgPicture.h --> bounds
         //   tvgSwRasterTexmap.h --> _rasterTexmapPolygonMesh
         //
         // TODO: Should we calculate the exact path(s) of the triangle mesh instead?

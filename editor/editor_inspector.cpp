@@ -1188,7 +1188,8 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	Size2 ms;
 	ms.height = font->get_height(font_size);
 	if (icon.is_valid()) {
-		ms.height = MAX(icon->get_height(), ms.height);
+		int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+		ms.height = MAX(icon_size, ms.height);
 	}
 	ms.height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 

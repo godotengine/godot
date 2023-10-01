@@ -293,7 +293,7 @@ public:
 	void request_attention();
 	void move_to_foreground();
 
-	void set_visible(bool p_visible);
+	virtual void set_visible(bool p_visible);
 	bool is_visible() const;
 
 	void update_mouse_cursor_state() override;

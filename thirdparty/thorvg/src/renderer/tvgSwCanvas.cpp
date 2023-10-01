@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-#include "tvgCanvasImpl.h"
+#include "tvgCanvas.h"
 
 #ifdef THORVG_SW_RASTER_SUPPORT
     #include "tvgSwRenderer.h"

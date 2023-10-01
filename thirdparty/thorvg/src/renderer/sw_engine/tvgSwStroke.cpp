@@ -373,6 +373,10 @@ void _firstSubPath(SwStroke& stroke, SwFixed startAngle, SwFixed lineLength)
 static void _lineTo(SwStroke& stroke, const SwPoint& to)
 {
     auto delta = to - stroke.center;
+
+    //a zero-length lineto is a no-op; avoid creating a spurious corner
+    if (delta.zero()) return;
+
     //compute length of line
     auto angle = mathAtan(delta);
 

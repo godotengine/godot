@@ -20,7 +20,40 @@
  * SOFTWARE.
  */
 
-#include "tvgPictureImpl.h"
+#include "tvgPicture.h"
+
+/************************************************************************/
+/* Internal Class Implementation                                        */
+/************************************************************************/
+
+RenderUpdateFlag Picture::Impl::load()
+{
+    if (loader) {
+        if (!paint) {
+            if (auto p = loader->paint()) {
+                paint = p.release();
+                loader->close();
+                if (w != loader->w || h != loader->h) {
+                    if (!resizing) {
+                        w = loader->w;
+                        h = loader->h;
+                    }
+                    loader->resize(paint, w, h);
+                    resizing = false;
+                }
+                if (paint) return RenderUpdateFlag::None;
+            }
+        } else loader->sync();
+
+        if (!surface) {
+            if ((surface = loader->bitmap().release())) {
+                loader->close();
+                return RenderUpdateFlag::Image;
+            }
+        }
+    }
+    return RenderUpdateFlag::None;
+}
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -94,23 +127,6 @@ Result Picture::size(float* w, float* h) const noexcept
     if (w) *w = pImpl->w;
     if (h) *h = pImpl->h;
     return Result::Success;
-}
-
-
-const uint32_t* Picture::data(uint32_t* w, uint32_t* h) const noexcept
-{
-    //Try it, If not loaded yet.
-    pImpl->load();
-
-    if (pImpl->loader) {
-        if (w) *w = static_cast<uint32_t>(pImpl->loader->w);
-        if (h) *h = static_cast<uint32_t>(pImpl->loader->h);
-    } else {
-        if (w) *w = 0;
-        if (h) *h = 0;
-    }
-    if (pImpl->surface) return pImpl->surface->buf32;
-    else return nullptr;
 }
 
 

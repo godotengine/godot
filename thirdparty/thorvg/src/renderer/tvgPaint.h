@@ -24,7 +24,7 @@
 #define _TVG_PAINT_H_
 
 #include "tvgRender.h"
-
+#include "tvgMath.h"
 
 namespace tvg
 {
@@ -68,7 +68,7 @@ namespace tvg
         uint8_t ctxFlag = ContextFlag::Invalid;
         uint8_t id;
         uint8_t opacity = 255;
-        uint8_t refCnt = 1;
+        uint8_t refCnt = 0;
 
         ~Impl()
         {
@@ -100,6 +100,7 @@ namespace tvg
         bool transform(const Matrix& m)
         {
             if (!rTransform) {
+                if (mathIdentity(&m)) return true;
                 rTransform = new RenderTransform();
                 if (!rTransform) return false;
             }

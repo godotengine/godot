@@ -212,7 +212,7 @@ static void _dashCubicTo(SwDashStroke& dash, const Point* ctrl1, const Point* ct
 }
 
 
-static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix* transform, float length)
+static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix* transform, float length, SwMpool* mpool, unsigned tid)
 {
     const PathCommand* cmds = rshape->path.cmds.data;
     auto cmdCnt = rshape->path.cmds.count;
@@ -283,8 +283,7 @@ static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix* trans
         }
     }
 
-    //OPTMIZE ME: Use mempool???
-    dash.outline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline)));
+    dash.outline = mpoolReqDashOutline(mpool, tid);
 
     //smart reservation
     auto closeCnt = 0;
@@ -567,16 +566,16 @@ bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix* 
 {
     SwOutline* shapeOutline = nullptr;
     SwOutline* strokeOutline = nullptr;
-    bool freeOutline = false;
-    bool ret = true;
+    auto dashStroking = false;
+    auto ret = true;
 
     auto length = rshape->strokeTrim() ? _outlineLength(rshape) : 0.0f;
 
     //Dash style (+trimming)
     if (rshape->stroke->dashCnt > 0 || length > 0) {
-        shapeOutline = _genDashOutline(rshape, transform, length);
+        shapeOutline = _genDashOutline(rshape, transform, length, mpool, tid);
         if (!shapeOutline) return false;
-        freeOutline = true;
+        dashStroking = true;
     //Normal style
     } else {
         if (!shape->outline) {
@@ -587,26 +586,20 @@ bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix* 
 
     if (!strokeParseOutline(shape->stroke, *shapeOutline)) {
         ret = false;
-        goto fail;
+        goto clear;
     }
 
     strokeOutline = strokeExportOutline(shape->stroke, mpool, tid);
 
     if (!mathUpdateOutlineBBox(strokeOutline, clipRegion, renderRegion, false)) {
         ret = false;
-        goto fail;
+        goto clear;
     }
 
     shape->strokeRle = rleRender(shape->strokeRle, strokeOutline, renderRegion, true);
 
-fail:
-    if (freeOutline) {
-        free(shapeOutline->cntrs.data);
-        free(shapeOutline->pts.data);
-        free(shapeOutline->types.data);
-        free(shapeOutline->closed.data);
-        free(shapeOutline);
-    }
+clear:
+    if (dashStroking) mpoolRetDashOutline(mpool, tid);
     mpoolRetStrokeOutline(mpool, tid);
 
     return ret;

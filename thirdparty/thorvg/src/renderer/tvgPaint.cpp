@@ -132,7 +132,7 @@ bool Paint::Impl::scale(float factor)
     if (rTransform) {
         if (mathEqual(factor, rTransform->scale)) return true;
     } else {
-        if (mathZero(factor)) return true;
+        if (mathEqual(factor, 1.0f)) return true;
         rTransform = new RenderTransform();
     }
     rTransform->scale = factor;

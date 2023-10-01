@@ -20,69 +20,50 @@
  * SOFTWARE.
  */
 
-#include "tvgCanvasImpl.h"
-
-#ifdef THORVG_GL_RASTER_SUPPORT
-    #include "tvgGlRenderer.h"
-#else
-    class GlRenderer : public RenderMethod
-    {
-        //Non Supported. Dummy Class */
-    };
-#endif
+#include "tvgMath.h"
+#include "tvgRender.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
-
-struct GlCanvas::Impl
-{
-};
 
 
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
-#ifdef THORVG_GL_RASTER_SUPPORT
-GlCanvas::GlCanvas() : Canvas(GlRenderer::gen()), pImpl(new Impl)
-#else
-GlCanvas::GlCanvas() : Canvas(nullptr), pImpl(new Impl)
-#endif
+void RenderTransform::override(const Matrix& m)
+{
+    this->m = m;
+    overriding = true;
+}
+
+
+bool RenderTransform::update()
+{
+    if (overriding) return true;
+
+    //Init Status
+    if (mathZero(x) && mathZero(y) && mathZero(degree) && mathEqual(scale, 1)) return false;
+
+    mathIdentity(&m);
+
+    mathScale(&m, scale, scale);
+
+    if (!mathZero(degree)) mathRotate(&m, degree);
+
+    mathTranslate(&m, x, y);
+
+    return true;
+}
+
+
+RenderTransform::RenderTransform()
 {
 }
 
 
-
-GlCanvas::~GlCanvas()
+RenderTransform::RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs)
 {
-    delete(pImpl);
-}
-
-
-Result GlCanvas::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t h) noexcept
-{
-#ifdef THORVG_GL_RASTER_SUPPORT
-    //We know renderer type, avoid dynamic_cast for performance.
-    auto renderer = static_cast<GlRenderer*>(Canvas::pImpl->renderer);
-    if (!renderer) return Result::MemoryCorruption;
-
-    if (!renderer->target(buffer, stride, w, h)) return Result::Unknown;
-
-    //Paints must be updated again with this new target.
-    Canvas::pImpl->needRefresh();
-
-    return Result::Success;
-#endif
-    return Result::NonSupport;
-}
-
-
-unique_ptr<GlCanvas> GlCanvas::gen() noexcept
-{
-#ifdef THORVG_GL_RASTER_SUPPORT
-    if (GlRenderer::init() <= 0) return nullptr;
-    return unique_ptr<GlCanvas>(new GlCanvas);
-#endif
-    return nullptr;
+    m = mathMultiply(&lhs->m, &rhs->m);
 }

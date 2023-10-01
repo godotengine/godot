@@ -371,19 +371,15 @@ bool DisplayServerIOS::is_dark_mode() const {
 }
 
 Rect2i DisplayServerIOS::get_display_safe_area() const {
-	if (@available(iOS 11, *)) {
-		UIEdgeInsets insets = UIEdgeInsetsZero;
-		UIView *view = AppDelegate.viewController.godotView;
-		if ([view respondsToSelector:@selector(safeAreaInsets)]) {
-			insets = [view safeAreaInsets];
-		}
-		float scale = screen_get_scale();
-		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
-		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
-		return Rect2i(screen_get_position() + insets_position, screen_get_size() - insets_size);
-	} else {
-		return Rect2i(screen_get_position(), screen_get_size());
+	UIEdgeInsets insets = UIEdgeInsetsZero;
+	UIView *view = AppDelegate.viewController.godotView;
+	if ([view respondsToSelector:@selector(safeAreaInsets)]) {
+		insets = [view safeAreaInsets];
 	}
+	float scale = screen_get_scale();
+	Size2i insets_position = Size2i(insets.left, insets.top) * scale;
+	Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
+	return Rect2i(screen_get_position() + insets_position, screen_get_size() - insets_size);
 }
 
 int DisplayServerIOS::get_screen_count() const {
