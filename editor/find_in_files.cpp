@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "core/string/string_name.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
@@ -549,7 +548,6 @@ void FindInFilesDialog::_bind_methods() {
 //-----------------------------------------------------------------------------
 const char *FindInFilesPanel::SIGNAL_RESULT_SELECTED = "result_selected";
 const char *FindInFilesPanel::SIGNAL_FILES_MODIFIED = "files_modified";
-
 
 FindInFilesPanel::FindInFilesPanel() {
 	_finder = memnew(FindInFiles);

@@ -33,8 +33,6 @@
 
 #include "core/templates/hash_map.h"
 #include "scene/gui/dialogs.h"
-#include "scene/resources/placeholder_textures.h"
-#include "scene/resources/texture.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
@@ -179,7 +177,7 @@ protected:
 
 private:
 	void _on_result_found(String fpath, int line_number, int begin, int end, String text);
-	void _on_button_clicked(TreeItem *item, int column, int id, int mouse_button_index);
+	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
 	void _on_finished();
 	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
