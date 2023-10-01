@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-#include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
 #include "core/string/string_name.h"
 #include "editor/editor_node.h"
