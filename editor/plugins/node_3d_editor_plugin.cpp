@@ -5047,7 +5047,12 @@ void Node3DEditorViewport::pilot_selection() {
 }
 
 void Node3DEditorViewport::pilot(Node3D* node) {
+	if (node == nullptr) {
+		return;
+	}
+	stop_piloting();
 	node_being_piloted = node;
+	node->connect("tree_exited", callable_mp(this, &Node3DEditorViewport::stop_piloting));
 	camera->set_global_transform(node->get_global_transform());
 	resetCursorToCamera();
 	stop_piloting_button->show();
@@ -5055,6 +5060,9 @@ void Node3DEditorViewport::pilot(Node3D* node) {
 }
 
 void Node3DEditorViewport::stop_piloting() {
+	if (node_being_piloted != nullptr) {
+		node_being_piloted->disconnect("tree_exited", callable_mp(this, &Node3DEditorViewport::stop_piloting));
+	}
 	node_being_piloted = nullptr;
 	stop_piloting_button->hide();
 }
