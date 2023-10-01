@@ -1107,10 +1107,10 @@ String String::get_with_code_lines() const {
 
 int String::get_slice_count(String p_splitter) const {
 	if (is_empty()) {
-		return 0;
+		return 1;
 	}
 	if (p_splitter.is_empty()) {
-		return 0;
+		return length();
 	}
 
 	int pos = 0;
@@ -1125,7 +1125,7 @@ int String::get_slice_count(String p_splitter) const {
 }
 
 String String::get_slice(String p_splitter, int p_slice) const {
-	if (is_empty() || p_splitter.is_empty()) {
+	if (is_empty()) {
 		return "";
 	}
 
@@ -1135,6 +1135,12 @@ String String::get_slice(String p_splitter, int p_slice) const {
 	if (p_slice < 0) {
 		return "";
 	}
+
+	// Shortcut / hack for splitting by empty strings.
+	if (p_splitter.is_empty()) {
+		return p_slice < length() ? substr(p_slice, 1) : "";
+	}
+
 	if (find(p_splitter) == -1) {
 		return *this;
 	}
