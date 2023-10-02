@@ -617,7 +617,7 @@ void Object::get_method_list(List<MethodInfo> *p_list) const {
 Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Variant();
 	}
 
@@ -636,7 +636,7 @@ Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::Cal
 Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Variant();
 	}
 
@@ -715,12 +715,11 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 //free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
 		if (p_argcount != 0) {
-			r_error.argument = 0;
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.expected = 0;
 			return Variant();
 		}
 		if (Object::cast_to<RefCounted>(this)) {
-			r_error.argument = 0;
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
 		}
@@ -1036,14 +1035,17 @@ struct _ObjectSignalDisconnectData {
 };
 
 Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+	if (unlikely(p_argcount < 1)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.expected = 1;
+		ERR_FAIL_V(Error::ERR_INVALID_PARAMETER);
+	}
 
-	ERR_FAIL_COND_V(p_argcount < 1, Error::ERR_INVALID_PARAMETER);
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (unlikely(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING)) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
-		ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING, Error::ERR_INVALID_PARAMETER);
+		ERR_FAIL_V(Error::ERR_INVALID_PARAMETER);
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;

@@ -289,7 +289,7 @@ Ref<JavaScriptObject> JavaScriptBridge::get_interface(const String &p_interface)
 Variant JavaScriptBridge::_create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Ref<JavaScriptObject>();
 	}
 	if (p_args[0]->get_type() != Variant::STRING) {
