@@ -206,17 +206,19 @@ namespace GodotTools.Build
             if (!File.Exists(buildInfo.Project))
                 return true; // No project to build.
 
-            using var pr = new EditorProgress("dotnet_build_project", "Building .NET project...", 1);
-
-            pr.Step("Building project", 0);
-
-            if (!Build(buildInfo))
+            bool success;
+            using (var pr = new EditorProgress("dotnet_build_project", "Building .NET project...", 1))
             {
-                ShowBuildErrorDialog("Failed to build project");
-                return false;
+                pr.Step("Building project", 0);
+                success = Build(buildInfo);
             }
 
-            return true;
+            if (!success)
+            {
+                ShowBuildErrorDialog("Failed to build project");
+            }
+
+            return success;
         }
 
         private static bool CleanProjectBlocking(BuildInfo buildInfo)
@@ -224,32 +226,36 @@ namespace GodotTools.Build
             if (!File.Exists(buildInfo.Project))
                 return true; // No project to clean.
 
-            using var pr = new EditorProgress("dotnet_clean_project", "Cleaning .NET project...", 1);
-
-            pr.Step("Cleaning project", 0);
-
-            if (!Build(buildInfo))
+            bool success;
+            using (var pr = new EditorProgress("dotnet_clean_project", "Cleaning .NET project...", 1))
             {
-                ShowBuildErrorDialog("Failed to clean project");
-                return false;
+                pr.Step("Cleaning project", 0);
+                success = Build(buildInfo);
             }
 
-            return true;
+            if (!success)
+            {
+                ShowBuildErrorDialog("Failed to clean project");
+            }
+
+            return success;
         }
 
         private static bool PublishProjectBlocking(BuildInfo buildInfo)
         {
-            using var pr = new EditorProgress("dotnet_publish_project", "Publishing .NET project...", 1);
-
-            pr.Step("Running dotnet publish", 0);
-
-            if (!Publish(buildInfo))
+            bool success;
+            using (var pr = new EditorProgress("dotnet_publish_project", "Publishing .NET project...", 1))
             {
-                ShowBuildErrorDialog("Failed to publish .NET project");
-                return false;
+                pr.Step("Running dotnet publish", 0);
+                success = Publish(buildInfo);
             }
 
-            return true;
+            if (!success)
+            {
+                ShowBuildErrorDialog("Failed to publish .NET project");
+            }
+
+            return success;
         }
 
         private static BuildInfo CreateBuildInfo(
