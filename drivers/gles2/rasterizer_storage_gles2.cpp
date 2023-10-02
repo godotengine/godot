@@ -1466,6 +1466,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			p_shader->spatial.uses_screen_texture = false;
 			p_shader->spatial.uses_depth_texture = false;
 			p_shader->spatial.uses_vertex = false;
+			p_shader->spatial.no_blob_shadows = false;
 			p_shader->spatial.uses_tangent = false;
 			p_shader->spatial.uses_ensure_correct_normals = false;
 			p_shader->spatial.writes_modelview_or_projection = false;
@@ -1487,6 +1488,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 
 			shaders.actions_scene.render_mode_flags["unshaded"] = &p_shader->spatial.unshaded;
 			shaders.actions_scene.render_mode_flags["depth_test_disable"] = &p_shader->spatial.no_depth_test;
+			shaders.actions_scene.render_mode_flags["blob_shadows_disabled"] = &p_shader->spatial.no_blob_shadows;
 
 			shaders.actions_scene.render_mode_flags["vertex_lighting"] = &p_shader->spatial.uses_vertex_lighting;
 
@@ -6524,6 +6526,13 @@ void RasterizerStorageGLES2::initialize() {
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &config.max_cubemap_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, config.max_viewport_dimensions);
+	int max_frag_uniform_vectors = 0;
+
+#ifndef GL_MAX_FRAGMENT_UNIFORM_VECTORS
+#define GL_MAX_FRAGMENT_UNIFORM_VECTORS 0x8DFD
+#endif
+	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &max_frag_uniform_vectors);
+	print_verbose("GL_MAX_FRAGMENT_UNIFORM_VECTORS " + itos(max_frag_uniform_vectors));
 
 	// the use skeleton software path should be used if either float texture is not supported,
 	// OR max_vertex_texture_image_units is zero

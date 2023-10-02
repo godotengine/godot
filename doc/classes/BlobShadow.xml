@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BlobShadow" inherits="Spatial" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Casts spherical or capsular geometrical shadows.
+	</brief_description>
+	<description>
+		[BlobShadow] provides an alternative to traditional shadow maps, by casting simple geometrical soft shadows.
+		Provided the number of runtime shadows is kept low, this can provide better performance than shadow maps.
+		It is a good option when combined with lightmaps.
+		[BlobShadow] requires a [Light] set to cast blob shadows, and should usually be used in conjunction with a [BlobFocus], to determine where shadows should be prioritized.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_radius" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_radius">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="radius" type="float" />
+			<description>
+				Only radius index 0 is used with spheres.
+				Radius index 0 and 1 are used with capsules.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="offset" type="Vector3" setter="set_offset" getter="get_offset">
+			Offset is used to determine the shape of capsules, allowing elongation in any direction.
+		</member>
+		<member name="offset_radius" type="float" setter="set_radius" getter="get_radius">
+			Radius of offset side of a capsule.
+			[b]Note:[/b] Unused for spheres.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+			Radius of the sphere (or origin side of a capsule).
+		</member>
+		<member name="type" type="int" setter="set_shadow_type" getter="get_shadow_type" enum="BlobShadow.BlobShadowType" default="0">
+			Allows choosing caster type, sphere or capsule.
+		</member>
+	</members>
+	<constants>
+		<constant name="BLOB_SHADOW_SPHERE" value="0" enum="BlobShadowType">
+		</constant>
+		<constant name="BLOB_SHADOW_CAPSULE" value="1" enum="BlobShadowType">
+		</constant>
+	</constants>
+</class>
