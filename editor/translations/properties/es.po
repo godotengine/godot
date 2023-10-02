@@ -95,14 +95,14 @@
 # Sebas Echazú <sebastianechazu@outlook.com>, 2023.
 # Pedro Zebenzui Ortega Diaz <pipo.tf@gmail.com>, 2023.
 # Braulio León Madrid Escobar <brauliomadrid.developer@gmail.com>, 2023.
+# Víctor Mardones <vnicolas.mb.ni@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-15 16:33+0000\n"
-"Last-Translator: Braulio León Madrid Escobar <brauliomadrid.developer@gmail."
-"com>\n"
+"PO-Revision-Date: 2023-09-21 15:42+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -110,7 +110,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"

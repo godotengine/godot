@@ -24,13 +24,16 @@
 # Marinos Tsitsos <ikoturso@hotmail.com>, 2023.
 # kilkistanproductions <ddimitr@uth.gr>, 2023.
 # Pavlos Orfanidis <pavlos@orfanidis.net.gr>, 2023.
+# Alexander Petrache <petrache.dev@gmail.com>, 2023.
+# mrbeast mrban <screenmax1234@gmail.com>, 2023.
+# Marios1Gr <Marios1Gr@users.noreply.hosted.weblate.org>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-14 22:44+0000\n"
-"Last-Translator: Pavlos Orfanidis <pavlos@orfanidis.net.gr>\n"
+"PO-Revision-Date: 2023-10-01 21:58+0000\n"
+"Last-Translator: Marios1Gr <Marios1Gr@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -38,7 +41,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Απενεργοποίηση"
@@ -136,6 +139,9 @@ msgstr "Πίσω, Sony Select, Xbox Back, Nintendo -"
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Οδηγός, Sony PS, Xbox Home"
 
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Εκκίνηση, Μενού Xbox, Nintendo +"
+
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Αριστερός Μοχλός, Sony L3, Xbox L/LS"
 
@@ -194,6 +200,15 @@ msgid ""
 "Screen dragged with %s touch points at position (%s) with velocity of (%s)"
 msgstr "Η οθόνη σύρθηκε με %s σημεία αφής στη θέση (%s) με ταχύτητα (%s)"
 
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Κίνηση μεγεύθυνσης στα (%s) με συντελεστή %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Κίνηση Αφής στα (%s) με delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "MIDI Είσοδος στο Κανάλι=%s Μήνυμα=%s"
+
 msgid "Input Event with Shortcut=%s"
 msgstr "Πατήθηκε πλήκτρο με κωδικό=%s"
 
@@ -251,14 +266,23 @@ msgstr "Αναίρεση"
 msgid "Redo"
 msgstr "Ακύρωση αναίρεσης"
 
+msgid "Completion Query"
+msgstr "Ερώτημα Ολοκλήρωσης"
+
 msgid "New Line"
 msgstr "Νέα Γραμμή"
 
 msgid "New Blank Line"
 msgstr "Νέα Κενή Γραμμή"
 
+msgid "New Line Above"
+msgstr "Νέα Γραμμή από πάνω"
+
 msgid "Indent"
 msgstr "Στοιχειοθέτηση"
+
+msgid "Backspace"
+msgstr "Backspace"
 
 msgid "Delete"
 msgstr "Διαγραφή"
@@ -2274,6 +2298,9 @@ msgstr "Υποστηρίξτε την ανάπτυξη του Godot"
 msgid "Choose a renderer."
 msgstr "Επιλέξτε έναν οδηγό βίντεο."
 
+msgid "Forward+"
+msgstr "Εμπρός+"
+
 msgid "Update Continuously"
 msgstr "Συνεχόμενη Ανανέωση"
 
@@ -3085,6 +3112,12 @@ msgstr "Σφάλμα κατά την εκτέλεση της δέσμης ενε
 
 msgid "Saving..."
 msgstr "Αποθήκευση..."
+
+msgid "Error opening scene"
+msgstr "Σφάλμα κατά την φόρτωση σκηνής"
+
+msgid "Extract"
+msgstr "Εξαγωγή"
 
 msgid "Select Importer"
 msgstr "Επιλογή Εισαγωγέα"
@@ -4492,6 +4525,9 @@ msgstr ""
 msgid "Animation Key Inserted."
 msgstr "Το κλειδί κίνησης έχει εισαχθεί."
 
+msgid "FPS: %d"
+msgstr "FPS: %d"
+
 msgid "Top View."
 msgstr "Πάνω όψη."
 
@@ -5697,6 +5733,9 @@ msgstr "Προσθήκη εισόδου"
 msgid "Add Output"
 msgstr "Προσθήκη Εξόδου"
 
+msgid "Float"
+msgstr "Επιπλέω"
+
 msgid "Boolean"
 msgstr "Λογική Τιμή"
 
@@ -5732,6 +5771,9 @@ msgstr "Τμήμα"
 
 msgid "Light"
 msgstr "Φως"
+
+msgid "Fog"
+msgstr "Ομίχλη"
 
 msgid "Add Node"
 msgstr "Προσθήκη κόμβου"
@@ -6578,6 +6620,9 @@ msgstr "Δημιουργία Ριζικού Κόμβου:"
 msgid "Other Node"
 msgstr "Άλλος Κόμβος"
 
+msgid "Filters"
+msgstr "Φίλτρα"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Δεν είναι δυνατή η λειτουργία σε κόμβους από ξένη σκηνή!"
 
@@ -6622,9 +6667,6 @@ msgstr "Επεξεργάσιμα παιδιά"
 
 msgid "Load As Placeholder"
 msgstr "Φόρτωση ως μέσο κράτησης"
-
-msgid "Filters"
-msgstr "Φίλτρα"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"

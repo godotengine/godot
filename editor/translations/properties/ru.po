@@ -145,13 +145,17 @@
 # ZIP2020 <folstagking@gmail.com>, 2023.
 # Daniil Ryakhinov <danik.relien@gmail.com>, 2023.
 # 0que <0que@users.noreply.hosted.weblate.org>, 2023.
+# MaksKraft <makskraft35@gmail.com>, 2023.
+# Oleg <olegase123@gmail.com>, 2023.
+# "Anton Zhuchkov (fireton)" <zhuchkov.anton@gmail.com>, 2023.
+# drowerer24cd38f74c9b4fd2 <aleks_tikh@mail.ru>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-30 14:58+0000\n"
-"Last-Translator: 0que <0que@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2023-09-28 04:12+0000\n"
+"Last-Translator: drowerer24cd38f74c9b4fd2 <aleks_tikh@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -160,7 +164,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -497,6 +501,9 @@ msgstr "Устройства ввода"
 
 msgid "Compatibility"
 msgstr "Совместимость"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "Поведение при нажатии (Устаревшее)"
 
 msgid "Device"
 msgstr "Устройство"
@@ -876,6 +883,9 @@ msgstr "Movie Maker Включен"
 msgid "Interface"
 msgstr "Интерфейс"
 
+msgid "Save on Focus Loss"
+msgstr "Сохраняться при потери фокуса"
+
 msgid "Show Update Spinner"
 msgstr "Показывать индикатор обновления"
 
@@ -908,6 +918,9 @@ msgstr "Горизонтальное редактирование Vector2"
 
 msgid "Horizontal Vector Types Editing"
 msgstr "Горизонтальных редактирование векторных типов"
+
+msgid "Resources to Open in New Inspector"
+msgstr "Ресурсы для Открытия в новом экземпляре Инспектора"
 
 msgid "Default Color Picker Mode"
 msgstr "Режим выбора цвета по умолчанию"
@@ -972,8 +985,14 @@ msgstr "Режим раздельного отвлечения"
 msgid "Automatically Open Screenshots"
 msgstr "Автоматически открывать скриншоты"
 
+msgid "Single Window Mode"
+msgstr "Режим однооконный"
+
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "Навигация по истории дополнительными кнопками мыши"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "Кнопки ОК Отмена диалога подтверждения"
 
 msgid "Show Internal Errors in Toast Notifications"
 msgstr "Показывать внутренние ошибки во всплывающих уведомлениях"
@@ -1068,6 +1087,9 @@ msgstr "Дерево сцены"
 msgid "Start Create Dialog Fully Expanded"
 msgstr "Начальный диалог создания полностью развёрнут"
 
+msgid "Auto Expand to Selected"
+msgstr "Авто-раскрыть дерево до выбранного элемента"
+
 msgid "Always Show Folders"
 msgstr "Всегда показывать папки"
 
@@ -1097,6 +1119,9 @@ msgstr "Подсвечивать текущую строку"
 
 msgid "Highlight All Occurrences"
 msgstr "Подсвечивать все вхождения"
+
+msgid "Guidelines"
+msgstr "Рекомендации"
 
 msgid "Show Line Length Guidelines"
 msgstr "Показывать рекомендации по длине строк"
@@ -1377,6 +1402,12 @@ msgstr "Размер контура кости"
 msgid "Viewport Border Color"
 msgstr "Цвет границы Viewport"
 
+msgid "Sub Editors Panning Scheme"
+msgstr "Схема панорамирования подредакторов"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "Схема панорамирования редакторов анимации"
+
 msgid "Simple Panning"
 msgstr "Простое панорамирование"
 
@@ -1641,6 +1672,9 @@ msgstr "Язык"
 msgid "Variation"
 msgstr "Вариация"
 
+msgid "Embolden"
+msgstr "Выделить"
+
 msgid "Transform"
 msgstr "Преобразование"
 
@@ -1653,11 +1687,20 @@ msgstr "Использовать Ambient"
 msgid "Make Unique"
 msgstr "Сделать уникальным"
 
+msgid "Rest Fixer"
+msgstr "Исправление покоя"
+
+msgid "Fix Silhouette"
+msgstr "Исправить силуэт"
+
 msgid "Filter"
 msgstr "Фильтр"
 
 msgid "Threshold"
 msgstr "Порог"
+
+msgid "Unmapped Bones"
+msgstr "Ненайденные кости"
 
 msgid "Create From"
 msgstr "Сотворить из"
@@ -1715,6 +1758,9 @@ msgstr "Дополнительно"
 
 msgid "Precision"
 msgstr "Точность"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "Плоскости симметрии смещение отсечения"
 
 msgid "Height"
 msgstr "Высота"
@@ -2005,7 +2051,7 @@ msgid "V-Sync"
 msgstr "Вертикальная синхронизация"
 
 msgid "stdout"
-msgstr "Стандартный вывод"
+msgstr "stdout"
 
 msgid "Print FPS"
 msgstr "Печатать FPS"
@@ -2694,6 +2740,9 @@ msgstr "Авторские права"
 msgid "Xcode"
 msgstr "Xcоde"
 
+msgid "Xcode Build"
+msgstr "Сборка Xcode"
+
 msgid "Provisioning Profile"
 msgstr "Профиль предоставления"
 
@@ -3358,7 +3407,7 @@ msgid "Parameters"
 msgstr "Параметры"
 
 msgid "Modulate"
-msgstr "Модуляция"
+msgstr "Модулировать"
 
 msgid "Visibility AABB"
 msgstr "Видимость AABB"
@@ -3955,7 +4004,7 @@ msgid "Light Mask"
 msgstr "Маска света"
 
 msgid "Z Index"
-msgstr "Z-индекс"
+msgstr "Z-позиция"
 
 msgid "Repeat"
 msgstr "Повторить"
@@ -4449,6 +4498,9 @@ msgstr "Солнце"
 msgid "Panorama"
 msgstr "Панорама"
 
+msgid "Ground Color"
+msgstr "Цвет земли"
+
 msgid "Blend"
 msgstr "Смешивание"
 
@@ -4500,8 +4552,20 @@ msgstr "Шрифт по умолчанию"
 msgid "Terrains"
 msgstr "Местность"
 
+msgid "Custom Data"
+msgstr "Пользовательские данные"
+
 msgid "Transpose"
 msgstr "Транспонировать"
+
+msgid "Texture Origin"
+msgstr "Центр координат текстуры"
+
+msgid "Y Sort Origin"
+msgstr "Y сортировочный центр координат"
+
+msgid "Probability"
+msgstr "Вероятность"
 
 msgid "Modes"
 msgstr "Режимы"

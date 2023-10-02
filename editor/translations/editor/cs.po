@@ -38,13 +38,16 @@
 # Matej Fary <farymatej@gmail.com>, 2023.
 # Petr Novák <novakpeta06@gmail.com>, 2023.
 # Erik Mičulek <erikmiculek@gmail.com>, 2023.
+# Michal Walach <misa17965@gmail.com>, 2023.
+# Marek Douběta <mrocklon420@gmail.com>, 2023.
+# Matěj Šroub <matejsroub@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-11 23:45+0000\n"
-"Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
+"PO-Revision-Date: 2023-09-25 08:36+0000\n"
+"Last-Translator: Marek Douběta <mrocklon420@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -52,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Nenastaveno"
@@ -150,6 +153,9 @@ msgstr "Zpět, Sony Vybrat, Xbox Zpět, Nintendo -"
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Průvodce, Sony PS, Xbox Home"
 
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Start, Xbox Menu a Nintendo +"
+
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Levá páčka, Sony L3, Xbox L/LS"
 
@@ -203,6 +209,9 @@ msgstr "zrušený"
 
 msgid "touched"
 msgstr "stisknutý"
+
+msgid "released"
+msgstr "uvolněný"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Obrazovka %s v (%s) s %s dotykovými body"
@@ -810,6 +819,9 @@ msgstr "Použít Bézierovy křivky"
 msgid "Create RESET Track(s)"
 msgstr "Vytvořit RESET stopu/stopy"
 
+msgid "Animation Optimizer"
+msgstr "Optimalizátor animace"
+
 msgid "Optimize"
 msgstr "Optimalizuj"
 
@@ -833,6 +845,26 @@ msgstr "Poměr zvětšení:"
 
 msgid "Select Transition and Easing"
 msgstr "Vybrat přechod a dynamiku"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sinus"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "Do"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Z"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "DoZ"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "ZDo"
 
 msgid "FPS:"
 msgstr "FPS:"
@@ -1033,6 +1065,12 @@ msgstr "Vytvořit nový %s"
 
 msgid "No results for \"%s\"."
 msgstr "Žádné výsledky pro \"%s\"."
+
+msgid "This class is marked as deprecated."
+msgstr "Tato třída je označena jako zastaralá."
+
+msgid "This class is marked as experimental."
+msgstr "Tato třída je označena jako experimentální."
 
 msgid "No description available for %s."
 msgstr "Pro %s není dostupný popis."
@@ -1386,6 +1424,10 @@ msgstr "Zakladatelé projektu"
 
 msgid "Lead Developer"
 msgstr "Vedoucí vývojář"
+
+msgctxt "Job Title"
+msgid "Project Manager"
+msgstr "Manažer projektů"
 
 msgid "Developers"
 msgstr "Vývojáři"
@@ -1866,8 +1908,14 @@ msgstr "(Re)Importování assetů"
 msgid "Import resources of type: %s"
 msgstr "Importovat zdroje typu: %s"
 
+msgid "Experimental"
+msgstr "Experimentální"
+
 msgid "Error codes returned:"
 msgstr "Vráceny chybové kódy:"
+
+msgid "There is currently no description for this %s."
+msgstr "Momentálně zde není žádný popis pro %s."
 
 msgid "Top"
 msgstr "Horní"
@@ -1880,6 +1928,10 @@ msgstr "Dědí z:"
 
 msgid "Inherited by:"
 msgstr "Děděná z:"
+
+msgid ""
+"This class is marked as deprecated. It will be removed in future versions."
+msgstr "Třída je označena jako zastaralá. Bude odebrána v budoucích verzích."
 
 msgid "Description"
 msgstr "Popis"
@@ -1928,6 +1980,9 @@ msgstr "Popisy vlastnosti"
 
 msgid "(value)"
 msgstr "(hodnota)"
+
+msgid "There is currently no description for this property."
+msgstr "Momentálně zde není žádný popis pro tuto vlastnost."
 
 msgid ""
 "There is currently no description for this property. Please help us by "
@@ -2030,6 +2085,9 @@ msgstr "Přesunout dolů"
 msgid "Resize Array"
 msgstr "Změnit velikost pole"
 
+msgid "Add Metadata"
+msgstr "Přidat metadata"
+
 msgid "Set %s"
 msgstr "Nastav %s"
 
@@ -2045,6 +2103,12 @@ msgstr "Připnuté %s"
 msgid "Unpinned %s"
 msgstr "Nepřipnuté %s"
 
+msgid "Add metadata %s"
+msgstr "Přidat metadata %s"
+
+msgid "Metadata name can't be empty."
+msgstr "Název metadat nemůže být prázdný."
+
 msgid "Name:"
 msgstr "Jméno:"
 
@@ -2056,6 +2120,9 @@ msgstr "Náhled..."
 
 msgid "Select existing layout:"
 msgstr "Vybrat existující rozložení:"
+
+msgid "Or enter new layout name"
+msgstr "Nebo zadejte nový název rozložení"
 
 msgid "Changed Locale Filter Mode"
 msgstr "Změněn režim filtru pro nastavení jazyka"
@@ -2206,6 +2273,9 @@ msgstr "Jméno rozložení nenalezeno!"
 msgid "Restored the Default layout to its base settings."
 msgstr "Obnoveno výchozí rozložení na základní nastavení."
 
+msgid "This object is marked as read-only, so it's not editable."
+msgstr "Tento objekt slouží pouze pro čtení, proto ho nelze upravit."
+
 msgid ""
 "This resource belongs to a scene that was imported, so it's not editable.\n"
 "Please read the documentation relevant to importing scenes to better "
@@ -2224,6 +2294,9 @@ msgstr ""
 
 msgid "Changes may be lost!"
 msgstr "Změny mohou být ztraceny!"
+
+msgid "This object is read-only."
+msgstr "Tento objekt slouží pouze pro čtení."
 
 msgid "Open Base Scene"
 msgstr "Otevřít základní scénu"
@@ -2363,6 +2436,9 @@ msgstr "Vymazat nedávné scény"
 msgid "There is no defined scene to run."
 msgstr "Neexistuje žádná scéna pro spuštění."
 
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Engine"
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2435,7 +2511,7 @@ msgstr "%d více souborů"
 msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
-"Není možné zapisovat do souboru '%s', soubour je používán, uzamčen nebo chybí "
+"Není možné zapisovat do souboru '%s', soubor je používán, uzamčen nebo chybí "
 "oprávnění."
 
 msgid "Pan View"
@@ -4295,6 +4371,10 @@ msgstr "Testované"
 msgid "Loading..."
 msgstr "Načítání..."
 
+msgctxt "Pagination"
+msgid "Last"
+msgstr "Poslední"
+
 msgid "All"
 msgstr "všichni"
 
@@ -4579,6 +4659,9 @@ msgstr "Zobrazit kosti"
 msgid "View"
 msgstr "Zobrazení"
 
+msgid "Show"
+msgstr "Zobrazit"
+
 msgid "Show When Snapping"
 msgstr "Zobrazit při přichytávání"
 
@@ -4861,6 +4944,10 @@ msgid_plural "Run %d Instances"
 msgstr[0] "Spustit %d instanci"
 msgstr[1] "Spustit %d instance"
 msgstr[2] "Spustit %d instancí"
+
+msgctxt "Locale"
+msgid "Add Script"
+msgstr "Přídat Skript"
 
 msgid " - Variation"
 msgstr " - Variace"
@@ -7254,6 +7341,10 @@ msgstr ""
 "Opravdu hledat projekty Godot ve složce %s?\n"
 "Může to chvíli trvat."
 
+msgctxt "Application"
+msgid "Project Manager"
+msgstr "Správce projektů"
+
 msgid "Loading, please wait..."
 msgstr "Načítání, prosím čekejte..."
 
@@ -7518,6 +7609,9 @@ msgstr "Vytvořit kořenový uzel:"
 
 msgid "Other Node"
 msgstr "Jiný uzel"
+
+msgid "Filters"
+msgstr "Filtry"
 
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Nelze manipulovat s uzly z cizí scény!"
@@ -7835,6 +7929,14 @@ msgstr "Nedostatek bajtů pro dekódování bajtů, nebo neplatný formát."
 
 msgid "%s/s"
 msgstr "%s/s"
+
+msgctxt "Network"
+msgid "Down"
+msgstr "Dolů"
+
+msgctxt "Network"
+msgid "Up"
+msgstr "Nahoru"
 
 msgid "Incoming RPC"
 msgstr "Příchozí RPC"

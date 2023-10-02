@@ -99,7 +99,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-08 02:18+0000\n"
+"PO-Revision-Date: 2023-10-02 14:32+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
@@ -108,7 +108,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -312,7 +312,7 @@ msgid "Crash Handler"
 msgstr "Çökme İşleyicisi"
 
 msgid "Message"
-msgstr "İleti"
+msgstr "Message"
 
 msgid "Rendering"
 msgstr "İşleme"
@@ -2868,7 +2868,7 @@ msgid "Light Type"
 msgstr "Işık Türü"
 
 msgid "Range"
-msgstr "Aralık"
+msgstr "Menzil"
 
 msgid "Inner Cone Angle"
 msgstr "Koni İç Açısı"
@@ -3009,7 +3009,7 @@ msgid "Normalized"
 msgstr "Normalize Edilmiş"
 
 msgid "Count"
-msgstr "Sayım"
+msgstr "Count"
 
 msgid "Min"
 msgstr "En Az"
@@ -4497,7 +4497,7 @@ msgid "Sphere Radius"
 msgstr "Küre Yarıçapı"
 
 msgid "Rect Extents"
-msgstr "Dikdörtgen Boyutları"
+msgstr "Dikdörtgen Uzanımları"
 
 msgid "Points"
 msgstr "Noktalar"
@@ -4728,7 +4728,7 @@ msgid "Default Color"
 msgstr "Varsayılan Renk"
 
 msgid "Fill"
-msgstr "Doldur"
+msgstr "Fill"
 
 msgid "Gradient"
 msgstr "Eğim"
@@ -4761,7 +4761,7 @@ msgid "Antialiased"
 msgstr "Kusuru giderilmiş"
 
 msgid "Gizmo Extents"
-msgstr "Alet Boyutları"
+msgstr "Alet Uzanımları"
 
 msgid "Multimesh"
 msgstr "Çokluörgü"
@@ -5247,7 +5247,7 @@ msgid "Capture on Drag"
 msgstr "Sürüklerken Yakala"
 
 msgid "Box Extents"
-msgstr "Kutu Boyutları"
+msgstr "Kutu Uzanımları"
 
 msgid "Ring Axis"
 msgstr "Halka Ekseni"
@@ -7611,7 +7611,7 @@ msgid "Caret Width"
 msgstr "İmleç Genişliği"
 
 msgid "Clear"
-msgstr "Temizle"
+msgstr "Clear"
 
 msgid "Background"
 msgstr "Arkaplan"
@@ -8175,10 +8175,10 @@ msgid "Activity"
 msgstr "Etkinlik"
 
 msgid "Port Hotzone Inner Extent"
-msgstr "Port Sıcakbölge İç Boyutları"
+msgstr "Port Sıcakbölge İç Uzanımı"
 
 msgid "Port Hotzone Outer Extent"
-msgstr "Port Sıcakbölge Dış Boyutları"
+msgstr "Port Sıcakbölge Dış Uzanımı"
 
 msgid "Node"
 msgstr "Düğüm"

@@ -24,13 +24,14 @@
 # Edvard Ekrem Sæther <edvardekrem@gmail.com>, 2022.
 # Changry <c@changry.no>, 2022.
 # Karl-Robert Rønning <karlyarly@gmail.com>, 2023.
+# Simon <ratchetfan92@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-10 08:37+0000\n"
-"Last-Translator: Karl-Robert Rønning <karlyarly@gmail.com>\n"
+"PO-Revision-Date: 2023-09-26 12:03+0000\n"
+"Last-Translator: Simon <ratchetfan92@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -38,10 +39,73 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
+
+msgid "Unset"
+msgstr "Deaktiver"
+
+msgid "Physical"
+msgstr "Fysisk"
+
+msgid "Left Mouse Button"
+msgstr "Venstre museknapp"
+
+msgid "Right Mouse Button"
+msgstr "Høyre museknapp"
+
+msgid "Middle Mouse Button"
+msgstr "Midterste museknapp"
+
+msgid "Mouse Wheel Up"
+msgstr "Musehjul opp"
+
+msgid "Mouse Wheel Down"
+msgstr "Musehjul ned"
+
+msgid "Mouse Wheel Left"
+msgstr "Musehjul venstre"
+
+msgid "Mouse Wheel Right"
+msgstr "Musehjul høyre"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Museknapp tommel 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Museknapp tommel 2"
 
 msgid "Button"
 msgstr "Knapp"
+
+msgid "Double Click"
+msgstr "Dobbeltklikk"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Musebevegelse ved posisjon (%s) med hastighet (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Venstre stikke X-akse, styrespake 0 X-akse"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Venstre stikke Y-akse, styrespake 0 Y-akse"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Høyre stikke X-akse, styrespake 1 X-akse"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Høyre stikke Y-akse, styrespake 1 Y-akse"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Styrespake 2 X-akse, venstre avtrekker, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Styrespake 2 Y-akse, høyre avtrekker, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Styrespake 3 X-akse"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Styrespake 3 Y-akse"
 
 msgid "Select"
 msgstr "Velg"
@@ -3103,11 +3167,11 @@ msgstr "Opprett rot-node:"
 msgid "Other Node"
 msgstr "Andre noder"
 
-msgid "This operation requires a single selected node."
-msgstr "Denne operasjonen krever én valgt node."
-
 msgid "Filters"
 msgstr "Filter"
+
+msgid "This operation requires a single selected node."
+msgstr "Denne operasjonen krever én valgt node."
 
 msgid "Remote"
 msgstr "Ekstern"

@@ -92,13 +92,14 @@
 # matrixant <yuan545@hotmail.com>, 2023.
 # GarliCat <phoenixkaze@live.com>, 2023.
 # GT-610 <myddz1005@163.com>, 2023.
+# 墨尘 <180598130@qq.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-09-05 13:09+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2023-10-01 21:58+0000\n"
+"Last-Translator: 墨尘 <180598130@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -106,7 +107,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "未设置"
@@ -12734,6 +12735,9 @@ msgstr "其他节点"
 msgid "Paste From Clipboard"
 msgstr "从剪贴板粘贴"
 
+msgid "Filters"
+msgstr "过滤"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "无法操作外部场景的节点！"
 
@@ -12798,9 +12802,6 @@ msgstr "自动展开至选定项"
 
 msgid "All Scene Sub-Resources"
 msgstr "所有场景子资源"
-
-msgid "Filters"
-msgstr "过滤"
 
 msgid "Filter by Type"
 msgstr "按类型过滤"
@@ -14492,13 +14493,6 @@ msgid ""
 "order for AnimatedSprite2D to display frames."
 msgstr ""
 "必须在“Frames”属性中创建或设置 SpriteFrames 资源，让 AnimatedSprite2D 显示帧。"
-
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instantiated "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"每个场景（或一组实例化的场景）只允许一个可见的CanvasModulate。第一个创建的将会"
-"起作用，而其他的将会被忽略。"
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"

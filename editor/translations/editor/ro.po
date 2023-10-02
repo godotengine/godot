@@ -26,13 +26,16 @@
 # "Hash Volt[ing]" <hashvolting@gmail.com>, 2023.
 # RaresX22 <raresadv22@gmail.com>, 2023.
 # omoNattie <omonattie@gmail.com>, 2023.
+# Alexandra Moroz <allemoroz14@gmail.com>, 2023.
+# Alin Andrei Bălașa <alin.andrei.balasa+godotweblate@gmail.com>, 2023.
+# Cătălin George Feștilă <catalinfest@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-27 20:09+0000\n"
-"Last-Translator: omoNattie <omonattie@gmail.com>\n"
+"PO-Revision-Date: 2023-09-26 22:41+0000\n"
+"Last-Translator: Cătălin George Feștilă <catalinfest@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -41,7 +44,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.18.1\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Nesetat"
@@ -97,8 +100,67 @@ msgstr "Joystick Dreapta axa X, Joystick 1 axa X"
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
 msgstr "Joystick Dreapta axa Y, Joystick 1 axa Y"
 
+msgid "Joystick 3 X-Axis"
+msgstr "Joystick 3 axa X"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Joystick 3 axa Y"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Joystick 4 axa X"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Joystick 4 axa Y"
+
 msgid "Unknown Joypad Axis"
 msgstr "Axa necunoscută a joypad-ului"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Mișcare a joypad-ului pe axa %d (%s) are valoarea %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Buton Acțiune, Buton Cruce Sony, Buton A Xbox, Buton B Nintendo"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Acțiunea dreapta, Sony Circle, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Acțiunea stănga, Sony Circle, Xbox B, Nintendo A"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Acțiunea sus, Sony Circle, Xbox B, Nintendo A"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Acțiunea spate, Sony Circle, Xbox B, Nintendo A"
+
+msgid "D-pad Up"
+msgstr "D-pad sus"
+
+msgid "D-pad Down"
+msgstr "D-pad jos"
+
+msgid "D-pad Left"
+msgstr "D-pad stânga"
+
+msgid "D-pad Right"
+msgstr "D-pad dreapta"
+
+msgid "canceled"
+msgstr "anulat"
+
+msgid "touched"
+msgstr "atins"
+
+msgid "released"
+msgstr "eliberat"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"Ecran mutat cu %s puncte de atingere la poziția (%s) cu velocitatea de (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Intrare MIDI pe Canalul=%s Mesajul=%s"
 
 msgid "Select"
 msgstr "Selectează"
@@ -163,8 +225,14 @@ msgstr "Șterge cuvânt"
 msgid "Delete all to Right"
 msgstr "Șterge tot la Dreapta"
 
+msgid "Delete Nodes"
+msgstr "Șterge noduri"
+
 msgid "Refresh"
 msgstr "Reîmprospătare"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "Intrarea invalidă %d (nu a fost transmisă) în expresie"
 
 msgid "self can't be used because instance is null (not passed)"
 msgstr "self nu poate fi folosit deoarece instanța este nulă (nefurnizat)"
@@ -204,6 +272,22 @@ msgstr "PiB"
 
 msgid "EiB"
 msgstr "EiB"
+
+msgid "Example: %s"
+msgstr "Exemplu: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d obiect"
+msgstr[1] "%d obiecte"
+msgstr[2] "%d obiecte"
+
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
+"Nume de acțiune invalid. Acesta nu poate fi gol și nu poate conține '/', ':', "
+"'=', '\\' sau '\"'"
 
 msgid "An action with the name '%s' already exists."
 msgstr "Există deja o acțiune cu numele '%s'."
@@ -1977,9 +2061,6 @@ msgstr "Acolo este o scenă deja editată."
 msgid "Editor Settings"
 msgstr "Setări ale Editorului"
 
-msgid "General"
-msgstr "General"
-
 msgid "Device"
 msgstr "Dispozitiv"
 
@@ -3556,7 +3637,7 @@ msgid "Zoom Reset"
 msgstr "Resetare zoom"
 
 msgid "Size"
-msgstr "Mărimea"
+msgstr "Mărime"
 
 msgid "Snap Mode:"
 msgstr "Mod Snap:"
@@ -3569,6 +3650,9 @@ msgstr "Snap Grilă"
 
 msgid "Base Type"
 msgstr "Tip de bază"
+
+msgid "Physics"
+msgstr "Cadru Fizic"
 
 msgid "Yes"
 msgstr "Da"
@@ -3665,11 +3749,11 @@ msgstr "Ștergeți nodul \"%s\"?"
 msgid "Create Root Node:"
 msgstr "Creare nod rădăcină:"
 
-msgid "Clear Inheritance"
-msgstr "Curăță Derivarea"
-
 msgid "Filters"
 msgstr "Filtre"
+
+msgid "Clear Inheritance"
+msgstr "Curăță Derivarea"
 
 msgid "Add/Create a New Node."
 msgstr "Adaugă/Creează un Nod nou."
@@ -3790,3 +3874,58 @@ msgstr "Dacă (este) Definit invalid."
 
 msgid "Invalid ifndef."
 msgstr "Dacă Nu Este Definit invalid."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Limita de extindere a macrocomenzii a fost depășită."
+
+msgid "Invalid macro argument list."
+msgstr "Lista argumente invalidă a macrocomenzi"
+
+msgid "Invalid macro argument."
+msgstr "Argument invalid pentru macrocomendă"
+
+msgid "Invalid macro argument count."
+msgstr "Contor argument invalid pentru macrocomendă"
+
+msgid "Can't find matching branch directive."
+msgstr "Nu se găsește directiva de ramură care se potrivește."
+
+msgid "Invalid symbols placed before directive."
+msgstr "Simboluri nevalide plasate înaintea directivei."
+
+msgid "Unmatched conditional statement."
+msgstr "Declarație condițională nepotrivită."
+
+msgid ""
+"Direct floating-point comparison (this may not evaluate to `true` as you "
+"expect). Instead, use `abs(a - b) < 0.0001` for an approximate but "
+"predictable comparison."
+msgstr ""
+"Comparație directă în virgulă mobilă (este posibil să nu fie evaluată drept "
+"„adevărat” așa cum vă așteptați). În schimb, utilizați `abs(a - b) < 0,0001` "
+"pentru o comparație aproximativă, dar previzibilă."
+
+msgid "The const '%s' is declared but never used."
+msgstr "Constanta '%s' este declarată, dar nu este niciodată folosită."
+
+msgid "The function '%s' is declared but never used."
+msgstr "Funcția '%s' este declarată, dar nu este niciodată utilizată."
+
+msgid "The struct '%s' is declared but never used."
+msgstr "Structura '%s' este declarată, dar nu este niciodată folosită."
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "Uniforma '%s' este declarată, dar niciodată folosită."
+
+msgid "The varying '%s' is declared but never used."
+msgstr "Varianta '%s' este declarată, dar nu este niciodată folosită."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "Variabila locală '%s' este declarată, dar nu este niciodată utilizată."
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded (%d/"
+"%d). The shader may not work correctly."
+msgstr ""
+"Dimensiunea totală a %s pentru acest shader pe acest dispozitiv a fost "
+"depășită (%d/%d). Shader-ul poate să nu funcționeze corect."

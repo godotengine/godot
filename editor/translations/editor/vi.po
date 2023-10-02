@@ -31,13 +31,15 @@
 # Phạm Minh Tấn <phamtiens289@gmail.com>, 2023.
 # Long Phan <phangg255@gmail.com>, 2023.
 # duong cfa <duongcfa1@gmail.com>, 2023.
+# plantcraft94 <plantcraft60@gmail.com>, 2023.
+# Anh Hoang Nguyen <iam@hoanganh.dev>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-22 15:34+0000\n"
-"Last-Translator: duong cfa <duongcfa1@gmail.com>\n"
+"PO-Revision-Date: 2023-09-21 15:42+0000\n"
+"Last-Translator: Anh Hoang Nguyen <iam@hoanganh.dev>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -45,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Hủy bỏ"
@@ -94,6 +96,36 @@ msgstr "Trục X của tay cầm phải, Trục X của tay cầm 1"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
 msgstr "Trục Y của tay cầm phải, Trục Y của tay cầm 1"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Trục X của cần điều khiển 2, Cò Trái, nút L2 Sony, nút LT Xbox"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Trục Y của cần điều khiển 2, Cò Phải, nút R2 Sony, nút RT Xbox"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Trục X của cần điều khiển 3"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Trục Y của cần điều khiển 3"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Trục X của cần điều khiển 4"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Trục Y của cần điều khiển 4"
+
+msgid "Unknown Joypad Axis"
+msgstr "Trục chưa định danh của bàn di chuột"
+
+msgid "D-pad Left"
+msgstr "D-pad trái"
+
+msgid "D-pad Right"
+msgstr "D-pad phải"
+
+msgid "canceled"
+msgstr "Huỷ bỏ"
 
 msgid "Accept"
 msgstr "Xác nhận"
@@ -175,9 +207,6 @@ msgstr "Xoá các nút"
 
 msgid "Refresh"
 msgstr "Làm mới"
-
-msgid "self can't be used because instance is null (not passed)"
-msgstr "Không thể sử dụng self vì instance là null (không thông qua)"
 
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Toán hạng không hợp lệ cho toán tử %s, %s và %s."
@@ -2872,8 +2901,14 @@ msgstr "Sao chép Tài nguyên"
 msgid "History of recently edited objects."
 msgstr "Lịch sử các đối tượng được chỉnh sửa gần đây."
 
+msgid "This cannot be undone. Are you sure?"
+msgstr "Việc này không thể hoàn tác. Bạn chắc chắn chưa?"
+
 msgid "Remove Translation"
 msgstr "Xóa bản dịch"
+
+msgid "%s cannot be found."
+msgstr "%s không thể tìm thấy."
 
 msgid "Translations"
 msgstr "Bản dịch"
@@ -2886,6 +2921,9 @@ msgstr "Tài nguyên:"
 
 msgid "Locale"
 msgstr "Vùng vị trí"
+
+msgid "%s (%d Selected)"
+msgstr "%s(%d Đã chọn)"
 
 msgid "Select a single node to edit its signals and groups."
 msgstr "Chọn nút duy nhất để chỉnh sửa tính hiệu và nhóm của nó."
@@ -5379,6 +5417,9 @@ msgstr "Tạo Nút Gốc:"
 msgid "Other Node"
 msgstr "Nút khác"
 
+msgid "Filters"
+msgstr "Bộ lọc"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Không thể hoạt động trên các nút từ ngoại cảnh!"
 
@@ -5417,9 +5458,6 @@ msgstr "Xóa Kế thừa"
 
 msgid "Editable Children"
 msgstr "Các nút Con có thể sửa"
-
-msgid "Filters"
-msgstr "Bộ lọc"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"

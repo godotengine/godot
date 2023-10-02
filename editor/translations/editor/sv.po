@@ -30,13 +30,15 @@
 # Ludvig Svenonius <ludvig.svenonius@protonmail.com>, 2023.
 # Daniel Ljung <weblate@bazonic.mozmail.com>, 2023.
 # Henrik Nilsson <nsmoooose@gmail.com>, 2023.
+# Flashbox <kalle.frosta@gmail.com>, 2023.
+# Emil Åsberg <02asb01@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-02 10:51+0000\n"
-"Last-Translator: Henrik Nilsson <nsmoooose@gmail.com>\n"
+"PO-Revision-Date: 2023-10-01 21:59+0000\n"
+"Last-Translator: Emil Åsberg <02asb01@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -44,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Nollställ"
@@ -517,7 +519,7 @@ msgid "Insert Key Here"
 msgstr "Infoga Nyckel Här"
 
 msgid "Duplicate Selected Key(s)"
-msgstr "Duplicera valda nycklar"
+msgstr "Duplicera valda punkter"
 
 msgid "Delete Selected Key(s)"
 msgstr "Ta bort valda nycklar"
@@ -556,10 +558,10 @@ msgid "Focus"
 msgstr "Fokus"
 
 msgid "Select All Keys"
-msgstr "Välj Alla Nycklar"
+msgstr "Välj Alla Punkter"
 
 msgid "Deselect All Keys"
-msgstr "Avmarkera alla nycklar"
+msgstr "Avmarkera alla Punkter"
 
 msgid "Animation Change Transition"
 msgstr "Animation Ändra Övergång"
@@ -610,6 +612,9 @@ msgstr "3D rotationsspår"
 msgid "3D Scale Track"
 msgstr "3D skalspår"
 
+msgid "Blend Shape Track"
+msgstr "Blend Shape Track"
+
 msgid "Call Method Track"
 msgstr "Anropa Metod Spår"
 
@@ -620,7 +625,7 @@ msgid "Audio Playback Track"
 msgstr "Ljuduppspelningsspår"
 
 msgid "Animation Playback Track"
-msgstr "Animationsuppspelningsspår"
+msgstr "Animation Playback Track"
 
 msgid "Animation length (frames)"
 msgstr "Animation längd (bildrutor)"
@@ -648,6 +653,9 @@ msgstr "Ändra spårväg"
 
 msgid "Toggle this track on/off."
 msgstr "Ändra spårets läge till på/av."
+
+msgid "Use Blend"
+msgstr "Använd Blend"
 
 msgid "Update Mode (How this property is set)"
 msgstr "Uppdateringsläge (Hur denna egenskap sätts)"
@@ -714,6 +722,9 @@ msgstr "Animationsklipp:"
 
 msgid "Toggle Track Enabled"
 msgstr "Växla Spår På"
+
+msgid "Don't Use Blend"
+msgstr "Använd Inte Blend"
 
 msgid "Continuous"
 msgstr "Kontinuerlig"
@@ -1054,16 +1065,40 @@ msgid "Sine"
 msgstr "Sinus"
 
 msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Kvint"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Kvart"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Quad"
+
+msgctxt "Transition Type"
 msgid "Expo"
 msgstr "Exponentiell"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elastisk"
 
 msgctxt "Transition Type"
 msgid "Circ"
 msgstr "Cirkulär"
 
 msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Studsa"
+
+msgctxt "Transition Type"
 msgid "Back"
 msgstr "Tillbaka"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Spring"
 
 msgctxt "Ease Type"
 msgid "In"
@@ -1374,6 +1409,12 @@ msgstr ""
 msgid "Toggle Visibility"
 msgstr "Växla synlighet"
 
+msgid "Updating assets on target device:"
+msgstr "Uppdaterar filer på den utvalda enheten:"
+
+msgid "Syncing headers"
+msgstr "Synkroniserar headers"
+
 msgid "Getting remote file system"
 msgstr "Hämtar fjärrfilsystem"
 
@@ -1400,6 +1441,9 @@ msgstr "Skärm"
 
 msgid "Value"
 msgstr "Värde"
+
+msgid "Pick one or more items from the list to display the graph."
+msgstr "Välj en eller flera föremål från listan för att visa i grafen."
 
 msgid "Stop"
 msgstr "Stanna"
@@ -1479,6 +1523,9 @@ msgstr "%s Källa"
 msgid "%s Source:"
 msgstr "%s Källa:"
 
+msgid "Stack Trace"
+msgstr "Stack Trace"
+
 msgid "Stack Trace:"
 msgstr "Stackspårning:"
 
@@ -1500,26 +1547,71 @@ msgstr "Ta bort alla brytpunkter i:"
 msgid "Delete All Breakpoints"
 msgstr "Ta bort alla brytpunkter"
 
+msgid "Open C++ Source on GitHub"
+msgstr "Öppen C++ källkod på GitHub"
+
 msgid "C++ Source"
 msgstr "C++ Källa"
+
+msgid "Video RAM"
+msgstr "Video RAM"
+
+msgid "Step Into"
+msgstr "Stig in"
+
+msgid "Step Over"
+msgstr "Hoppa över"
+
+msgid "Break"
+msgstr "Bryt"
+
+msgid "Continue"
+msgstr "Fortsätt"
+
+msgid "Stack Frames"
+msgstr "Stack Frames"
 
 msgid "Filter Stack Variables"
 msgstr "Filtrera stackvariabler"
 
+msgid "Profiler"
+msgstr "Profiler"
+
 msgid "Visual Profiler"
 msgstr "Visuell profilering"
+
+msgid "List of Video Memory Usage by Resource:"
+msgstr "Lista över Videominnes-användning av Resource:"
 
 msgid "Total:"
 msgstr "Totalt:"
 
+msgid "Resource Path"
+msgstr "Resource Path"
+
 msgid "Type"
 msgstr "Typ"
+
+msgid "Format"
+msgstr "Format"
 
 msgid "Usage"
 msgstr "Användning"
 
 msgid "Misc"
 msgstr "Övrigt"
+
+msgid "Clicked Control:"
+msgstr "Klickad Kontroll:"
+
+msgid "Clicked Control Type:"
+msgstr "Klickad Kontrolltyp:"
+
+msgid "Live Edit Root:"
+msgstr "Realtids Redigering Root:"
+
+msgid "Set From Tree"
+msgstr "Set From Tree"
 
 msgid "Export measures as CSV"
 msgstr "Exportera mätvärden som CSV"
@@ -1641,6 +1733,9 @@ msgstr "Resurser Utan Explicit Ägande:"
 
 msgid "Folder name cannot be empty."
 msgstr "Katalognamnet kan inte vara tomt."
+
+msgid "Using slashes in folder names will create subfolders recursively."
+msgstr "Användandet av snedstreck i mappnamn skapar undermappar rekursivt."
 
 msgid "Could not create folder."
 msgstr "Kunde inte skapa mapp."
@@ -1932,6 +2027,9 @@ msgstr "Lägg till Auto laddning"
 msgid "Path:"
 msgstr "Sökväg:"
 
+msgid "Set path or press \"%s\" to create a script."
+msgstr "Ställ in sökväg eller tryck \"%s\" för att skapa ett script."
+
 msgid "Node Name:"
 msgstr "Node Namn:"
 
@@ -2002,6 +2100,37 @@ msgstr "OpenGL-backend (om den är inaktiverad krävs RenderingDevice-backend)."
 msgid "Vulkan back-end of RenderingDevice."
 msgstr "Vulkan-back-end av RenderingDevice."
 
+msgid ""
+"Fallback implementation of Text Server\n"
+"Supports basic text layouts."
+msgstr ""
+"Reserv implementation av Text Server\n"
+"Stöder enklare text formatering."
+
+msgid ""
+"Text Server implementation powered by ICU and HarfBuzz libraries.\n"
+"Supports complex text layouts, BiDi, and contextual OpenType font features."
+msgstr ""
+"Text Server implementation drivs av ICU och HarfBuzz biblioteken.\n"
+"Stöder komplex textformatering, BiDi, och kontextuella OpenType funktioner."
+
+msgid ""
+"TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
+"library (if disabled, WOFF2 support is also disabled)."
+msgstr ""
+"TrueType, OpenType, Type 1 och WOFF1 font format stöds av FreeType library "
+"(om detta slutar stödas slutar även WOFF2)."
+
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr "WOFF2 font format stöds av FreeType och Brotli biblioteken."
+
+msgid ""
+"SIL Graphite smart font technology support (supported by Advanced Text Server "
+"only)."
+msgstr ""
+"Stöd för SIL Graphite smart typsnitts teknologi(stöds enbart av Advanced Text "
+"Server)."
+
 msgid "General Features:"
 msgstr "Väsentliga funktioner:"
 
@@ -2038,11 +2167,17 @@ msgstr "Åtgärder:"
 msgid "Please Confirm:"
 msgstr "Vänligen bekräfta:"
 
+msgid "Engine Build Profile"
+msgstr "Engine Build Profile"
+
 msgid "Load Profile"
 msgstr "Ladda profil"
 
 msgid "Export Profile"
 msgstr "Exportera profil"
+
+msgid "Forced classes on detect:"
+msgstr "Forcera klasser vid detektion:"
 
 msgid "Edit Build Configuration Profile"
 msgstr "Editera byggkonfigurationsprofilen"
@@ -2273,6 +2408,9 @@ msgstr ""
 msgid "Error codes returned:"
 msgstr "Returnerade felkoder:"
 
+msgid "There is currently no description for this %s."
+msgstr "Det finns för närvarande ingen beskrivning för detta %s."
+
 msgid ""
 "There is currently no description for this %s. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
@@ -2292,6 +2430,12 @@ msgstr "Ärver:"
 msgid "Inherited by:"
 msgstr "Ärvd av:"
 
+msgid ""
+"This class is marked as deprecated. It will be removed in future versions."
+msgstr ""
+"Den här klassen är markerad som utfasad. Den kommer raderas i framtida "
+"versioner."
+
 msgid "Description"
 msgstr "Beskrivning"
 
@@ -2302,7 +2446,7 @@ msgid "default:"
 msgstr "standard:"
 
 msgid "Constructors"
-msgstr "Konstruktör"
+msgstr "Konstruktorer"
 
 msgid "Operators"
 msgstr "Operatorer"
@@ -2314,7 +2458,7 @@ msgid "Constants"
 msgstr "Begränsningar"
 
 msgid "Enumerations"
-msgstr "Uppräkningar"
+msgstr "Enumerations"
 
 msgid "Annotations"
 msgstr "Anteckningar"
@@ -3747,6 +3891,9 @@ msgstr "Slinga:"
 msgid "Beat Count:"
 msgstr "Taktslagsräknare:"
 
+msgid "Music Playback:"
+msgstr "Musikuppspelning:"
+
 msgid "Configuration:"
 msgstr "Konfiguration:"
 
@@ -3796,8 +3943,17 @@ msgstr "Varning: Filen existerar"
 msgid "Will create new file"
 msgstr "Kommer att skapa ny fil"
 
+msgid "No import ID"
+msgstr "Inget import-ID"
+
+msgid "Extract Materials to Resource Files"
+msgstr "Extrahera material till resursfiler"
+
 msgid "Extract"
 msgstr "Extrahera"
+
+msgid "Existing file with the same name will be replaced on import."
+msgstr "Befintlig fil med samma namn kommer ersättas vid import."
 
 msgid "Will save to new file"
 msgstr "Kommer att spara till en ny fil"
@@ -3849,6 +4005,9 @@ msgstr ""
 msgid "Import As:"
 msgstr "Importera Som:"
 
+msgid "Preset"
+msgstr "Förinställning"
+
 msgid "Advanced..."
 msgstr "Avancerad..."
 
@@ -3869,6 +4028,12 @@ msgstr "Enhet:"
 
 msgid "Failed to load resource."
 msgstr "Misslyckades att ladda resurs."
+
+msgid "Property Name Style"
+msgstr "Egenskapsnamnstil"
+
+msgid "Localized"
+msgstr "Lokaliserad"
 
 msgid "Copy Properties"
 msgstr "Kopiera egenskaper"
@@ -3966,6 +4131,9 @@ msgstr "Triangel existerar redan."
 msgid "Parameter Changed:"
 msgstr "Parameter ändrad:"
 
+msgid "Inspect Filters"
+msgstr "Inspektera filter"
+
 msgid "Node Moved"
 msgstr "Nod Flyttad"
 
@@ -4011,6 +4179,9 @@ msgstr "Ogiltig animationsfil."
 msgid "Save Animation to File: %s"
 msgstr "Spara animation till fil: %s"
 
+msgid "[Global]"
+msgstr "[Global]"
+
 msgid "Rename Animation: %s"
 msgstr "Byt namn på animation: %s"
 
@@ -4025,6 +4196,9 @@ msgstr "Kopiera animation till klippbordet"
 
 msgid "Save animation to resource on disk"
 msgstr "Spara animation till resurs på disk"
+
+msgid "Storage"
+msgstr "Lagring"
 
 msgid "Toggle Autoplay"
 msgstr "Slå på/av Autoplay"
@@ -4052,6 +4226,12 @@ msgstr "Animation '%s' finns redan!"
 
 msgid "Duplicate Animation"
 msgstr "Duplicera Animation"
+
+msgid "[Global] (create)"
+msgstr "[Global] (skapa)"
+
+msgid "Duplicated Animation Name:"
+msgstr "Duplicerat animationsnamn:"
 
 msgid "Animation Tools"
 msgstr "Animeringsverktyg"
@@ -4093,7 +4273,7 @@ msgid "Play Mode:"
 msgstr "Spel Läge:"
 
 msgid "AnimationTree"
-msgstr "Animationsträd"
+msgstr "AnimationTree"
 
 msgid "Contents:"
 msgstr "Innehåll:"
@@ -4451,6 +4631,9 @@ msgstr "Volym"
 msgid "No editor scene root found."
 msgstr "Ingen editor scenrot funnen."
 
+msgid "Mesh"
+msgstr "Mesh"
+
 msgid ""
 "Creates a StaticBody3D and assigns a polygon-based collision shape to it "
 "automatically.\n"
@@ -4636,7 +4819,7 @@ msgid "Increase Field of View"
 msgstr "Öka synfält"
 
 msgid "Transform"
-msgstr "Transformera"
+msgstr "Förvandla"
 
 msgid "1 Viewport"
 msgstr "1 vy"
@@ -5001,6 +5184,9 @@ msgstr "Datum:"
 msgid "Local Settings"
 msgstr "Lokala inställningar"
 
+msgid "Connect to VCS"
+msgstr "Anslut till VCS"
+
 msgid "Remote Login"
 msgstr "Fjärrlogin"
 
@@ -5031,8 +5217,14 @@ msgstr "Förkasta alla ändringar"
 msgid "Permanentally delete my changes"
 msgstr "Ta bort mina ändringar permanent"
 
+msgid "Branches"
+msgstr "Grenar"
+
 msgid "Add Output"
 msgstr "Lägg till Utdata"
+
+msgid "Float"
+msgstr "Float"
 
 msgid "Boolean"
 msgstr "Boolsk"
@@ -5046,8 +5238,14 @@ msgstr "Lägg till Ingångsport"
 msgid "Add Output Port"
 msgstr "Lägg till Utgångsport"
 
+msgid "Set Parameter Name"
+msgstr "Sätt parameternamn"
+
 msgid "Node(s) Moved"
 msgstr "Nod(er) Flyttade"
+
+msgid "ParameterRef Name Changed"
+msgstr "ParameterRef-namn ändrad"
 
 msgid "Set Constant: %s"
 msgstr "Sätt konstant: %s"
@@ -5187,6 +5385,9 @@ msgstr "Sökväg till projektet:"
 msgid "Renderer:"
 msgstr "Renderare:"
 
+msgid "Version Control Metadata:"
+msgstr "Versionshanteringsmetadata:"
+
 msgid "Can't open project at '%s'."
 msgstr "Kan inte öppna projekt vid '%s'."
 
@@ -5217,6 +5418,9 @@ msgstr "Välj en mapp att skanna"
 msgid "Remove All"
 msgstr "Ta bort Alla"
 
+msgid "Convert Full Project"
+msgstr "Konvertera hela projektet"
+
 msgid "Can't run project"
 msgstr "Kan inte köra projektet"
 
@@ -5231,6 +5435,9 @@ msgstr "Ändra Åtgärdens Dödzon"
 
 msgid "Localization"
 msgstr "Lokalisering"
+
+msgid "Autoload"
+msgstr "Ladda automatiskt"
 
 msgid "Select Property"
 msgstr "Välj egenskap"
@@ -5397,8 +5604,14 @@ msgstr "Ny Scenrot"
 msgid "Create Root Node:"
 msgstr "Skapa Rot Nod:"
 
+msgid "Filters"
+msgstr "Filter"
+
 msgid "Attach Script"
 msgstr "Fäst Skript"
+
+msgid "Set Shader"
+msgstr "Sätt shader"
 
 msgid "Cut Node(s)"
 msgstr "Klipp ut nod(er)"
@@ -5457,6 +5670,9 @@ msgstr "Fel vid laddning av Skript från %s"
 msgid "Inherit %s"
 msgstr "Ärver %s"
 
+msgid "Inherit"
+msgstr "Ärver"
+
 msgid "Script path/name is valid."
 msgstr "Skript väg/namn är ogiltigt."
 
@@ -5481,6 +5697,9 @@ msgstr "Klassnamn:"
 msgid "Built-in Script:"
 msgstr "Inbyggd Skript:"
 
+msgid "Mode:"
+msgstr "Läge:"
+
 msgid "Global shader parameter '%s' already exists'"
 msgstr "Global shader parameter '%s' finns redan'"
 
@@ -5496,6 +5715,9 @@ msgstr "Inte baserad på ett Skript"
 msgid "Not based on a resource file"
 msgstr "Inte baserad på en resursfil"
 
+msgid "Configure Blender Importer"
+msgstr "Konfigurera Blenderimporteraren"
+
 msgid "Edit X Axis"
 msgstr "Redigera X-Axel"
 
@@ -5507,6 +5729,9 @@ msgstr "Redigera Z-Axel"
 
 msgid "Clear Selection"
 msgstr "Rensa Urval"
+
+msgid "Retrieving textures"
+msgstr "Hämtar texturer"
 
 msgid "Class name must be a valid identifier"
 msgstr "Klassnamnet måste vara en giltig identifierare"
@@ -5545,6 +5770,9 @@ msgstr "Fel vid sparande av fil %s: %s"
 
 msgid "Error loading %s: %s."
 msgstr "Fel vid laddning %s: %s."
+
+msgid "Pose"
+msgstr "Ställning"
 
 msgid "Invalid package name:"
 msgstr "Ogiltigt paket namn:"
@@ -5736,6 +5964,9 @@ msgstr "Varning!"
 msgid "Please Confirm..."
 msgstr "Vänligen Bekräfta..."
 
+msgid "Insert Control Character"
+msgstr "Infoga kontroltecken"
+
 msgid "(Other)"
 msgstr "(Annat)"
 
@@ -5751,6 +5982,9 @@ msgid ""
 msgstr ""
 "Shader nyckelord kan inte användas som parameternamn.\n"
 "Välj ett annat namn."
+
+msgid "Filter"
+msgstr "Filter"
 
 msgid "Invalid comparison function for that type."
 msgstr "Ogiltig jämförelsefunktion för den typen."
@@ -5784,6 +6018,12 @@ msgstr "Ogiltiga argument för operator '%s': '%s'."
 
 msgid "Invalid shader type. Valid types are: %s"
 msgstr "Ogiltig shadertyp. Giltiga typer är: %s"
+
+msgid "Expected data type."
+msgstr "Förväntad datatyp."
+
+msgid "Invalid data type for varying."
+msgstr "Ogiltig datatyp för varying."
 
 msgid "Duplicated filter mode: '%s'."
 msgstr "Duplicerat filterläge: '%s'."

@@ -29,13 +29,14 @@
 # Alex <anna.loban@yahoo.com>, 2023.
 # Maksym <maksym@mowemax.com>, 2023.
 # Dan <jonweblin2205@protonmail.com>, 2023.
+# Siked Siked <siked3@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-30 21:28+0000\n"
-"Last-Translator: Dan <jonweblin2205@protonmail.com>\n"
+"PO-Revision-Date: 2023-09-21 15:42+0000\n"
+"Last-Translator: Siked Siked <siked3@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "Застосунок"
@@ -182,13 +183,13 @@ msgid "Physics"
 msgstr "Фізика"
 
 msgid "2D"
-msgstr "Двовимірна графіка"
+msgstr "2D"
 
 msgid "Run on Separate Thread"
 msgstr "Запуск на окремому потоці"
 
 msgid "3D"
-msgstr "Просторова графіка"
+msgstr "3D"
 
 msgid "Stretch"
 msgstr "Розтягнути"
@@ -4768,10 +4769,10 @@ msgid "3D Render"
 msgstr "Просторова обробка"
 
 msgid "2D Physics"
-msgstr "Двовимірна фізика"
+msgstr "2D фізика"
 
 msgid "3D Physics"
-msgstr "Просторова фізика"
+msgstr "3D фізика"
 
 msgid "Format"
 msgstr "Формат"

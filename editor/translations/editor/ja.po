@@ -11,7 +11,7 @@
 # Lexi Grafen <shfeedly@gmail.com>, 2017.
 # NoahDigital <taku_58@hotmail.com>, 2017.
 # Shinsuke Masuda <shinsuke.masuda@gmail.com>, 2018.
-# Tetsuji Ochiai <ochiaixp@gmail.com>, 2017.
+# Tetsuji Ochiai <ochiaixp@gmail.com>, 2017, 2023.
 # Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>, 2017-2018.
 # yu tang <0011solo@gmail.com>, 2018.
 # zukkun <zukkun@gmail.com>, 2018.
@@ -60,13 +60,15 @@
 # 若林 さち <sachikatsuhappy@yahoo.co.jp>, 2023.
 # mieotoha <a7b8i06c49@gmail.com>, 2023.
 # RA LA <lase11rase21@gmail.com>, 2023.
+# Kenryu Shibata <kenryushibata@gmail.com>, 2023.
+# hirunet <hk0mine@outlook.jp>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-06 10:12+0000\n"
-"Last-Translator: mieotoha <a7b8i06c49@gmail.com>\n"
+"PO-Revision-Date: 2023-09-25 08:36+0000\n"
+"Last-Translator: Kenryu Shibata <kenryushibata@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -74,7 +76,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -171,6 +173,9 @@ msgstr "Back。Sony Select、Xbox Back、Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Guide。Sony PS、Xbox Home"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "スタート、Xbox、任天堂 ＋"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "左スティック。Sony L3、Xbox L/LS"
@@ -1204,6 +1209,9 @@ msgstr "行番号:"
 
 msgid "%d replaced."
 msgstr "%d件を置換しました。"
+
+msgid "No match"
+msgstr "一致が見つかりませんでした"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -2772,6 +2780,10 @@ msgstr ""
 msgid "Open Documentation"
 msgstr "ドキュメントを開く"
 
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "(%d個の変更)"
+
 msgid "Add element to property array with prefix %s."
 msgstr "要素を接頭辞 %s を持つプロパティ配列に追加します。"
 
@@ -3029,6 +3041,9 @@ msgstr "ファイル '%s' の解析中にエラーが発生しました。"
 
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "シーン ファイル '%s' が無効または壊れているようです。"
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "'%s' またはその依存関係が見つかりません。"
 
 msgid "Error while loading file '%s'."
 msgstr "ファイル '%s' を読み込んでいるときにエラーが発生しました。"
@@ -3311,6 +3326,9 @@ msgstr "最近開いたシーンの履歴をクリア"
 
 msgid "There is no defined scene to run."
 msgstr "実行するシーンが定義されていません。"
+
+msgid "%s - Godot Engine"
+msgstr "%s - Godot エンジン"
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -7146,6 +7164,15 @@ msgstr "コンテナのデフォルト"
 msgid "Fill"
 msgstr "塗りつぶし"
 
+msgid "Shrink Begin"
+msgstr "縮小開始位置"
+
+msgid "Shrink Center"
+msgstr "縮小中心地"
+
+msgid "Shrink End"
+msgstr "縮小終了位置"
+
 msgid "Custom"
 msgstr "カスタム"
 
@@ -7291,11 +7318,26 @@ msgstr "ノードから放出点を生成"
 msgid "Load Curve Preset"
 msgstr "カーブのプリセットを読み込む"
 
+msgid "Add Curve Point"
+msgstr "カーブポイントを追加"
+
 msgid "Remove Curve Point"
 msgstr "カーブポイントを除去"
 
 msgid "Modify Curve Point"
 msgstr "カーブポイントを修正"
+
+msgid "Modify Curve Point's Tangents"
+msgstr "カーブポイントの接線を修正"
+
+msgid "Modify Curve Point's Left Tangent"
+msgstr "カーブポイントの左接線を修正"
+
+msgid "Modify Curve Point's Right Tangent"
+msgstr "カーブポイントの右接線を修正"
+
+msgid "Toggle Linear Curve Point's Tangent"
+msgstr "線形曲線の接線を切り替える"
 
 msgid "Hold Shift to edit tangents individually"
 msgstr "接線を個別に編集するにはシフトを押す"
@@ -8101,7 +8143,7 @@ msgid "GPU Time: %s ms"
 msgstr "GPU 時間: %s ms"
 
 msgid "FPS: %d"
-msgstr "FPS: %d"
+msgstr "フレーム/秒"
 
 msgid "Top View."
 msgstr "上面図。"
@@ -10631,6 +10673,16 @@ msgstr "アトラスのマージツールを開く"
 msgid "Manage Tile Proxies"
 msgstr "タイルプロキシの管理"
 
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"タイルセットのソースが選択されていません。タイルセットのソースを選択するか作成"
+"してください。\n"
+"左にある追加ボタンを押すか、タイルセットにしたいテクスチャーをソースリストにド"
+"ラッグ&ドロップすることで新しいソースを追加することができます。"
+
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "TileMap 編集モードで新しいパターンを追加します。"
 
@@ -10942,6 +10994,9 @@ msgstr "ポート プレビューを非表示"
 msgid "Show Port Preview"
 msgstr "ポート プレビューを表示"
 
+msgid "Set Comment Node Title"
+msgstr "コメントノードのタイトルをセットする"
+
 msgid "Set Input Default Port"
 msgstr "入力デフォルトポートの設定"
 
@@ -10951,8 +11006,17 @@ msgstr "ビジュアルシェーダーにノードを追加"
 msgid "Add Varying to Visual Shader: %s"
 msgstr "ビジュアルシェーダーにvaryingを追加: %s"
 
+msgid "Remove Varying from Visual Shader: %s"
+msgstr "ビジュアルシェーダーからVarying %s を削除する"
+
 msgid "Node(s) Moved"
 msgstr "ノードの移動"
+
+msgid "Convert Constant Node(s) To Parameter(s)"
+msgstr "定数ノードをパラメーター指定ノードに変換"
+
+msgid "Convert Parameter Node(s) To Constant(s)"
+msgstr "パラメーター指定ノードを定数ノードに変換"
 
 msgid "Delete VisualShader Node"
 msgstr "VisualShaderノードを削除"
@@ -11052,6 +11116,9 @@ msgstr "シェーダーノードの作成"
 
 msgid "Create Shader Varying"
 msgstr "シェーダーのVaryingを作成"
+
+msgid "Delete Shader Varying"
+msgstr "シェーダーVaryingを削除する"
 
 msgid "Color function."
 msgstr "Color関数。"
@@ -11203,6 +11270,9 @@ msgstr "ブール定数。"
 msgid "Boolean parameter."
 msgstr "ブール値パラメーター。"
 
+msgid "Translated to '%s' in Godot Shading Language."
+msgstr "'%s'をGodotシェーディング言語に翻訳しました。"
+
 msgid "'%s' input parameter for all shader modes."
 msgstr "すべてのシェーダーモードの '%s' 入力パラメーター。"
 
@@ -11256,6 +11326,10 @@ msgstr "パラメーターの双曲線逆タンジェントを返します。"
 
 msgid "Returns the result of bitwise NOT (~a) operation on the integer."
 msgstr "整数のビット単位NOT（~a）を計算して返します。"
+
+msgid ""
+"Returns the result of bitwise NOT (~a) operation on the unsigned integer."
+msgstr "符号なし整数のビットNOT演算 (~a)の結果を返します。"
 
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
@@ -11316,6 +11390,9 @@ msgstr "2つの値のうち小さい方を返します。"
 
 msgid "Linear interpolation between two scalars."
 msgstr "2つのスカラー間のリニア補間。"
+
+msgid "Performs a fused multiply-add operation (a * b + c) on scalars."
+msgstr "スカラーに複合積和演算(a * b + c)を行います。"
 
 msgid "Returns the opposite value of the parameter."
 msgstr "パラメーターの反対の値を返します。"
@@ -11390,11 +11467,104 @@ msgstr "パラメーターの双曲タンジェントを返します。"
 msgid "Finds the truncated value of the parameter."
 msgstr "パラメーターを切り捨てた値を求めます。"
 
+msgid "Sums two floating-point scalars."
+msgstr "２つの浮動小数点数スカラーの和を計算します。"
+
+msgid "Sums two unsigned integer scalars."
+msgstr "２つの符号なし整数スカラーの和を計算します。"
+
 msgid "Returns the result of bitwise AND (a & b) operation for two integers."
-msgstr "2つの整数パラメーター間のビット単位AND（a & b）を計算して返します。"
+msgstr "2つの整数のビットAND演算(a & b)の結果を返します。"
+
+msgid ""
+"Returns the result of bitwise AND (a & b) operation for two unsigned integers."
+msgstr "２つの符号なし整数のビットAND演算(a & b)の結果を返します。"
+
+msgid ""
+"Returns the result of bitwise left shift (a << b) operation on the integer."
+msgstr "整数の左シフト演算(a << b)の結果を返します。"
+
+msgid ""
+"Returns the result of bitwise left shift (a << b) operation on the unsigned "
+"integer."
+msgstr "符号なし整数の左シフト演算(a << b)の結果を返します。"
 
 msgid "Returns the result of bitwise OR (a | b) operation for two integers."
 msgstr "2つの整数パラメーター間のビット単位OR（a | b）を計算して返します。"
+
+msgid ""
+"Returns the result of bitwise OR (a | b) operation for two unsigned integers."
+msgstr "２つの符号なし整数のビットOR演算(a | b)の結果を返します。"
+
+msgid ""
+"Returns the result of bitwise right shift (a >> b) operation on the integer."
+msgstr "整数の右シフト演算(a << b)の結果を返します。"
+
+msgid ""
+"Returns the result of bitwise right shift (a >> b) operation on the unsigned "
+"integer."
+msgstr "符号なし整数の右シフト演算(a << b)の結果を返します。"
+
+msgid "Returns the result of bitwise XOR (a ^ b) operation on the integer."
+msgstr "整数のビットXOR演算(a ^ b)の結果を返します。"
+
+msgid ""
+"Returns the result of bitwise XOR (a ^ b) operation on the unsigned integer."
+msgstr "符号なし整数のビットXOR演算(a ^ b)の結果を返します。"
+
+msgid "Divides two floating-point scalars."
+msgstr "２つの浮動小数点数スカラーを除算します。"
+
+msgid "Divides two integer scalars."
+msgstr "２つの整数スカラーを除算します。"
+
+msgid "Divides two unsigned integer scalars."
+msgstr "２つの符号なし整数スカラーを除算します。"
+
+msgid "Multiplies two floating-point scalars."
+msgstr "２つの浮動小数点数スカラーを乗算します。"
+
+msgid "Multiplies two integer scalars."
+msgstr "２つの整数スカラーを乗算します。"
+
+msgid "Multiplies two unsigned integer scalars."
+msgstr "２つの符号なし整数スカラーを乗算します。"
+
+msgid "Returns the remainder of the two floating-point scalars."
+msgstr "2つの浮動小数点数スカラーの剰余を返します。"
+
+msgid "Returns the remainder of the two integer scalars."
+msgstr "2つの整数スカラーの剰余を返します。"
+
+msgid "Returns the remainder of the two unsigned integer scalars."
+msgstr "2つの符号なし整数スカラーの剰余を返します。"
+
+msgid "Subtracts two floating-point scalars."
+msgstr "２つの浮動小数点数スカラーを減算します。"
+
+msgid "Subtracts two integer scalars."
+msgstr "２つの整数スカラーを減算します。"
+
+msgid "Subtracts two unsigned integer scalars."
+msgstr "２つの符号なし整数スカラーを減算します。"
+
+msgid "Scalar floating-point constant."
+msgstr "浮動小数点数スカラー定数。"
+
+msgid "Scalar integer constant."
+msgstr "整数スカラー定数。"
+
+msgid "Scalar unsigned integer constant."
+msgstr "符号なし整数スカラー定数。"
+
+msgid "Scalar floating-point parameter."
+msgstr "浮動小数点数スカラーパラメーター。"
+
+msgid "Scalar integer parameter."
+msgstr "整数スカラーパラメーター。"
+
+msgid "Scalar unsigned integer parameter."
+msgstr "符号なし整数スカラーパラメーター。"
 
 msgid "Converts screen UV to a SDF."
 msgstr "スクリーンUVをSDFに変換します。"
@@ -12292,6 +12462,9 @@ msgstr "ルートノードを生成:"
 msgid "Other Node"
 msgstr "その他のノード"
 
+msgid "Filters"
+msgstr "フィルター"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "別のシーンからノードを操作することはできません！"
 
@@ -12337,9 +12510,6 @@ msgstr "編集可能な子"
 
 msgid "Load As Placeholder"
 msgstr "プレースホルダとしてロード"
-
-msgid "Filters"
-msgstr "フィルター"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"

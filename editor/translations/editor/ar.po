@@ -84,13 +84,14 @@
 # Android Prime <abodinagdat16@gmail.com>, 2023.
 # Ibraheem Asad <ibo.asad.97@gmail.com>, 2023.
 # Aya Ichrak <ayaichrack@gmail.com>, 2023.
+# ZAID G <zaidm1122334455@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-24 14:55+0000\n"
-"Last-Translator: Aya Ichrak <ayaichrack@gmail.com>\n"
+"PO-Revision-Date: 2023-09-23 21:21+0000\n"
+"Last-Translator: بسام العوفي <co-able@hotmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -99,7 +100,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "غير محدد"
@@ -256,6 +257,9 @@ msgstr "لُمست"
 
 msgid "released"
 msgstr "تُركت"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "النهاية"
 
 msgid "Accept"
 msgstr "قبول"
@@ -3016,7 +3020,7 @@ msgid "Pick a Main Scene"
 msgstr "اخترْ المشهد الأساسي"
 
 msgid "This operation can't be done without a scene."
-msgstr "هذه العملية لا يمكن الإكتمال من غير مشهد."
+msgstr "لا يمكن إتمام هذه العملية بدون مشهد."
 
 msgid "Export Mesh Library"
 msgstr "تصدير مكتبة الميش"
@@ -9964,6 +9968,9 @@ msgstr "عقدة أخرى"
 msgid "Paste From Clipboard"
 msgstr "اللصق من الحافظة"
 
+msgid "Filters"
+msgstr "المصافي"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "لا يمكن تنفيذ الإجراء على عُقدة من مشهد أجنبي!"
 
@@ -10019,9 +10026,6 @@ msgstr "تحميله كعنصر نائب"
 
 msgid "Auto Expand to Selected"
 msgstr "التوسيع التلقائي للمختارة"
-
-msgid "Filters"
-msgstr "المصافي"
 
 msgid "Filter by Type"
 msgstr "التصفية بالنوع"

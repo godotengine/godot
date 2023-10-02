@@ -52,13 +52,14 @@
 # Septian Ganendra Savero Kurniawan <mail@init.id>, 2023.
 # GID <ghavind12345@gmail.com>, 2023.
 # Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
+# Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-05 08:33+0000\n"
-"Last-Translator: EngageIndo <engageindo@gmail.com>\n"
+"PO-Revision-Date: 2023-09-15 12:39+0000\n"
+"Last-Translator: Bayu Satiyo <itsyuukunz@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -999,7 +1000,7 @@ msgid "FPS"
 msgstr "FPS"
 
 msgid "Edit"
-msgstr "Edit"
+msgstr "Ubah"
 
 msgid "Animation properties."
 msgstr "Properti Animasi."
@@ -3593,7 +3594,7 @@ msgid "Choose a renderer."
 msgstr "Pilih perender."
 
 msgid "Forward+"
-msgstr "Maju+"
+msgstr "Forward+"
 
 msgid "Mobile"
 msgstr "Mobile"
@@ -9136,7 +9137,7 @@ msgid "Close Docs"
 msgstr "Tutup Dokumentasi"
 
 msgid "Run"
-msgstr "Jalankan"
+msgstr "Menjalankan"
 
 msgid "Search"
 msgstr "Cari"
@@ -10253,6 +10254,9 @@ msgstr "Hapus Semua Proksi Petak"
 msgid "Tile Proxies Management"
 msgstr "Manajemen Proksi Petak"
 
+msgid "Atlas"
+msgstr "Atlas"
+
 msgid ""
 "Selected tile:\n"
 "Source: %d\n"
@@ -10267,8 +10271,20 @@ msgstr ""
 msgid "Rendering"
 msgstr "Proses membuat gambar"
 
+msgid "Texture Origin"
+msgstr "Asal Tekstur"
+
 msgid "Modulate"
 msgstr "Memodulasi"
+
+msgid "Y Sort Origin"
+msgstr "Asal Urutan Y"
+
+msgid "Probability"
+msgstr "Kemungkinan"
+
+msgid "Custom Data"
+msgstr "Data Kustom"
 
 msgid "Create tiles in non-transparent texture regions"
 msgstr "Buat petak di region tekstur non-transparan"
@@ -10314,6 +10330,9 @@ msgstr "Tambah pola baru di Mode Sunting TileMap."
 
 msgid "TileSet"
 msgstr "TileSet"
+
+msgid "TileMap"
+msgstr "TileMap"
 
 msgid "Error"
 msgstr "Error"
@@ -10459,6 +10478,9 @@ msgstr "Tambah Masukan"
 
 msgid "Add Output"
 msgstr "Tambah Keluaran"
+
+msgid "Float"
+msgstr "Float"
 
 msgid "UInt"
 msgstr "UInt"
@@ -11492,6 +11514,9 @@ msgstr "Buat Node Root:"
 msgid "Other Node"
 msgstr "Node Lainnya"
 
+msgid "Filters"
+msgstr "Filter"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Tidak dapat bekerja pada node dari skena luar!"
 
@@ -11542,9 +11567,6 @@ msgstr "Muat sebagai Placeholder"
 
 msgid "Auto Expand to Selected"
 msgstr "Perluas Otomatis ke yang Dipilih"
-
-msgid "Filters"
-msgstr "Filter"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
@@ -12419,6 +12441,12 @@ msgstr "Ulang"
 msgid "Invalid comparison function for that type."
 msgstr "Fungsi perbandingan tidak valid untuk jenis tersebut."
 
+msgid "Use All Surfaces"
+msgstr "Gunakan Semua Permukaan"
+
+msgid "Surface Index"
+msgstr "Indeks Permukaan"
+
 msgid "Varying may not be assigned in the '%s' function."
 msgstr "Memvariasikan mungkin tidak ditetapkan dalam fungsi '%s'."
 
@@ -12434,5 +12462,11 @@ msgstr "Konstanta tidak dapat dimodifikasi."
 msgid "Invalid argument name."
 msgstr "Nama argumen tidak valid."
 
+msgid "Invalid macro argument list."
+msgstr "Daftar Argumen Macro Tidak Valid."
+
 msgid "Invalid macro argument."
 msgstr "Argumen makro tidak sah."
+
+msgid "Invalid macro argument count."
+msgstr "Daftar Argumen Macro Tidak Valid"

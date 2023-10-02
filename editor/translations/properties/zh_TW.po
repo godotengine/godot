@@ -39,13 +39,18 @@
 # Hugel <qihu@nfschina.com>, 2022.
 # nitenook <admin@alterbaum.net>, 2022.
 # Edison Lee <edisonlee@edisonlee55.com>, 2023.
+# Bogay Chuang <pojay11523@gmail.com>, 2023.
+# 廖文睿 <petey7271@gmail.com>, 2023.
+# EJAMI <q0932732330000@gmail.com>, 2023.
+# hung0123 <flyking1486325@gmail.com>, 2023.
+# Youuin Wang <los2516lir@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-08 13:52+0000\n"
-"Last-Translator: 鄭惟中 <biglionlion06@gmail.com>\n"
+"PO-Revision-Date: 2023-10-01 21:59+0000\n"
+"Last-Translator: Youuin Wang <los2516lir@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -53,7 +58,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "應用"
@@ -118,6 +123,9 @@ msgstr "無邊框"
 msgid "No Focus"
 msgstr "關閉聚焦"
 
+msgid "Window Width Override"
+msgstr "窗口寬度覆蓋"
+
 msgid "Energy Saving"
 msgstr "節能"
 
@@ -126,6 +134,9 @@ msgstr "保持螢幕開啟"
 
 msgid "Audio"
 msgstr "音訊"
+
+msgid "Buses"
+msgstr "總線"
 
 msgid "Editor"
 msgstr "編輯器"
@@ -164,7 +175,7 @@ msgid "Message"
 msgstr "訊息"
 
 msgid "Rendering"
-msgstr "算繪"
+msgstr "渲染"
 
 msgid "Limits"
 msgstr "限制"
@@ -1886,7 +1897,7 @@ msgid "Ultra Quality Ray Count"
 msgstr "超高品量射線數"
 
 msgid "Loop Offset"
-msgstr "循環偏移"
+msgstr "循環偏移量"
 
 msgid "IOD"
 msgstr "IOD"
@@ -2755,8 +2766,20 @@ msgstr "圖片大小"
 msgid "From"
 msgstr "來自"
 
+msgid "Terrains"
+msgstr "地形"
+
+msgid "Custom Data"
+msgstr "自訂資料"
+
+msgid "Scene"
+msgstr "場景"
+
 msgid "Transpose"
 msgstr "切換行列（縱橫）顯示"
+
+msgid "Probability"
+msgstr "機率"
 
 msgid "Constant"
 msgstr "常數"

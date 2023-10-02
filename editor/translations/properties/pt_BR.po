@@ -159,13 +159,14 @@
 # Levi Ferreira <leviferreiramorais@gmail.com>, 2023.
 # Daniel Mucciolo <danielviannapsi@gmail.com>, 2023.
 # Romildo Franco <rtfranco@gmail.com>, 2023.
+# Felipe Bertola <eduardodelphinodepaula@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-09-08 09:58+0000\n"
-"Last-Translator: Romildo Franco <rtfranco@gmail.com>\n"
+"PO-Revision-Date: 2023-09-08 21:47+0000\n"
+"Last-Translator: Felipe Bertola <eduardodelphinodepaula@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -291,6 +292,9 @@ msgstr "Layout Padrão de Barramento"
 
 msgid "General"
 msgstr "Geral"
+
+msgid "Text to Speech"
+msgstr "Texto para Voz"
 
 msgid "2D Panning Strength"
 msgstr "Intensidade da Panorâmica 2D"
@@ -1023,6 +1027,9 @@ msgstr "Modo de janela simples"
 
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "Botões Extra do Mouse Navegam o Histórico"
+
+msgid "Save Each Scene on Quit"
+msgstr "Salvar Cada Cena ao Sair"
 
 msgid "Accept Dialog Cancel OK Buttons"
 msgstr "Caixa de Diálogo Aceitar: Botões OK/Cancelar"

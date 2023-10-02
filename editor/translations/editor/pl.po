@@ -80,12 +80,13 @@
 # stereopolex <stereopolex@gmail.com>, 2023.
 # Lena <acuteenvy@users.noreply.hosted.weblate.org>, 2023.
 # Eryk Michalak <gnu.ewm@protonmail.com>, 2023.
+# BorysBe <b.bobulski@wp.pl>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-24 14:56+0000\n"
+"PO-Revision-Date: 2023-09-23 21:21+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -95,7 +96,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Wymaż"
@@ -1160,7 +1161,7 @@ msgstr "Kołowe"
 
 msgctxt "Transition Type"
 msgid "Bounce"
-msgstr "Odbicie"
+msgstr "Odbijane"
 
 msgctxt "Transition Type"
 msgid "Back"
@@ -4428,7 +4429,7 @@ msgid "Exporting All"
 msgstr "Eksportowanie wszystkiego"
 
 msgid "Presets"
-msgstr "Profile eksportu"
+msgstr "Profile"
 
 msgid "Add..."
 msgstr "Dodaj..."
@@ -13152,6 +13153,9 @@ msgstr "Inny węzeł"
 msgid "Paste From Clipboard"
 msgstr "Wklej ze schowka"
 
+msgid "Filters"
+msgstr "Filtry"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Nie można operować węzłami z innej sceny!"
 
@@ -13218,9 +13222,6 @@ msgstr "Automatycznie rozwijaj do wybranego"
 
 msgid "All Scene Sub-Resources"
 msgstr "Wszystkie podzasoby sceny"
-
-msgid "Filters"
-msgstr "Filtry"
 
 msgid "Filter by Type"
 msgstr "Filtruj po typie"
@@ -15029,14 +15030,6 @@ msgid ""
 msgstr ""
 "Zasób SpriteFrames musi zostać utworzony lub ustawiony we właściwości "
 "\"Frames\", aby AnimatedSprite2D mógł wyświetlać klatki."
-
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instantiated "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"Dozwolony jest tylko jeden widoczny węzeł CanvasModulate na scenę (lub zestaw "
-"utworzonych scen). Pierwszy utworzony będzie działał, podczas gdy reszta "
-"zostanie zignorowana."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"

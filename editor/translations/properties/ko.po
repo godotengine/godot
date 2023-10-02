@@ -31,7 +31,7 @@
 # JumpJetAvocado <dwkng@jbnu.ac.kr>, 2021.
 # Lee Minhak <minarihak@gmail.com>, 2022, 2023.
 # 한수현 <shh1473@ajou.ac.kr>, 2022.
-# Taehun Yun <yooontehoon@naver.com>, 2022.
+# Taehun Yun <yooontehoon@naver.com>, 2022, 2023.
 # vrSono <global.sonogong@gmail.com>, 2022.
 # Seonghyeon Cho <seonghyeoncho96@gmail.com>, 2022.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2022.
@@ -47,13 +47,14 @@
 # nulta <un5450@naver.com>, 2023.
 # 이정희 <daemul72@gmail.com>, 2023.
 # Zinccccc <velocity2772@gmail.com>, 2023.
+# rethinking21 <rethinking21@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-05 08:33+0000\n"
-"Last-Translator: Zinccccc <velocity2772@gmail.com>\n"
+"PO-Revision-Date: 2023-10-01 21:59+0000\n"
+"Last-Translator: Taehun Yun <yooontehoon@naver.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -61,7 +62,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -3852,20 +3853,104 @@ msgstr "인증서 암호"
 msgid "Provisioning Profile"
 msgstr "권한 설정 프로파일"
 
+msgid "Allow JIT Code Execution"
+msgstr "JIT 코드 실행을 허용하기"
+
+msgid "Allow Dyld Environment Variables"
+msgstr "DyId 환경 변수들을 허용하기"
+
+msgid "Disable Library Validation"
+msgstr "라이브러리 검증 비활성화"
+
+msgid "Audio Input"
+msgstr "오디오 입력"
+
 msgid "Location"
 msgstr "위치"
+
+msgid "Calendars"
+msgstr "달력"
+
+msgid "Photos Library"
+msgstr "사진 라이브러리"
+
+msgid "Apple Events"
+msgstr "애플 이벤트"
+
+msgid "Debugging"
+msgstr "디버깅"
+
+msgid "App Sandbox"
+msgstr "앱 샌드박스"
+
+msgid "Network Server"
+msgstr "네트워크 서버"
+
+msgid "Network Client"
+msgstr "네트워크 클라이언트"
+
+msgid "Device USB"
+msgstr "USB 디바이스"
+
+msgid "Device Bluetooth"
+msgstr "블루투스 디바이스"
+
+msgid "Files Downloads"
+msgstr "다운로드된 파일들"
+
+msgid "Files Pictures"
+msgstr "사진 파일들"
+
+msgid "Files Music"
+msgstr "음악 파일들"
+
+msgid "Files Movies"
+msgstr "영상 파일들"
+
+msgid "Custom Options"
+msgstr "사용자 옵션"
 
 msgid "Notarization"
 msgstr "공증"
 
+msgid "Apple ID Name"
+msgstr "Apple ID 이름"
+
+msgid "Apple ID Password"
+msgstr "Apple ID 비밀번호"
+
+msgid "API UUID"
+msgstr "API UUID"
+
+msgid "API Key"
+msgstr "API 키"
+
+msgid "API Key ID"
+msgstr "API 키 ID"
+
 msgid "UWP"
 msgstr "UWP"
+
+msgid "Display Name"
+msgstr "이름 표시"
+
+msgid "Publisher"
+msgstr "발행자"
+
+msgid "Publisher Display Name"
+msgstr "발행자 이름 표시"
 
 msgid "Product GUID"
 msgstr "제품 GUID"
 
+msgid "Publisher GUID"
+msgstr "발행자 GUID"
+
 msgid "Algorithm"
 msgstr "알고리즘"
+
+msgid "Build"
+msgstr "빌드"
 
 msgid "Revision"
 msgstr "개정"
@@ -7484,6 +7569,9 @@ msgstr "꼭짓점"
 
 msgid "Fragment"
 msgstr "프래그먼트"
+
+msgid "Cull"
+msgstr "컬링"
 
 msgid "Vertex Lighting"
 msgstr "꼭짓점 조명"

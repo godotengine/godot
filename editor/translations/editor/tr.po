@@ -104,12 +104,13 @@
 # Ahmet <ahmet2006ozbay@gmail.com>, 2023.
 # Yusuf <yusufdundar92@gmail.com>, 2023.
 # Ufuk SARIALTIN <sarialtinufuk@gmail.com>, 2023.
+# Caner Özer <canerozer44@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-30 14:58+0000\n"
+"PO-Revision-Date: 2023-10-02 14:32+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -118,7 +119,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Ayarı Kaldır"
@@ -696,7 +697,7 @@ msgid "Audio Playback Track"
 msgstr "Ses Oynatıcı İzi"
 
 msgid "Animation Playback Track"
-msgstr "Animasyon Oynatıcı İzi"
+msgstr "Animasyon Oynatma İzi"
 
 msgid "Animation length (frames)"
 msgstr "Animasyon uzunluğu (kare)"
@@ -1351,7 +1352,7 @@ msgid "Compatible Methods Only"
 msgstr "Sadece Uyumlu Yöntemler"
 
 msgid "Remove"
-msgstr "Kaldır"
+msgstr "Remove"
 
 msgid "Add Extra Call Argument:"
 msgstr "Çağrıya, Ek Girdi Değişkeni Ekle:"
@@ -1556,7 +1557,7 @@ msgid "Start"
 msgstr "Başlat"
 
 msgid "Clear"
-msgstr "Temizle"
+msgstr "Clear"
 
 msgid "Measure:"
 msgstr "Ölçü:"
@@ -2707,7 +2708,7 @@ msgid "Styles"
 msgstr "Tarzlar"
 
 msgid "Enumerations"
-msgstr "Numaralandırmalar"
+msgstr "Numaralandırmalar (Enumerations)"
 
 msgid "Annotations"
 msgstr "EkTanımlayıcılar"
@@ -6579,7 +6580,7 @@ msgid "Root"
 msgstr "Kök"
 
 msgid "AnimationTree"
-msgstr "AnimasyonAğacı"
+msgstr "AnimationTree"
 
 msgid "Contents:"
 msgstr "İçerikler:"
@@ -7260,7 +7261,7 @@ msgid "Container Default"
 msgstr "Taşıyıcı Varsayılanı"
 
 msgid "Fill"
-msgstr "Doldur"
+msgstr "Fill"
 
 msgid "Shrink Begin"
 msgstr "Daraltma Başlangıcı"
@@ -7778,7 +7779,7 @@ msgid ""
 "extents."
 msgstr ""
 "GPUParticlesCollisionSDF3D pişirmesi sırasında hiçbir yüz algılanmadı.\n"
-"Kapsamları içinde pişirme maskesiyle eşleşen görünür örgüler olup olmadığını "
+"Uzanımları içinde pişirme maskesiyle eşleşen görünür örgüler olup olmadığını "
 "kontrol edin."
 
 msgid "Select path for SDF Texture"
@@ -9502,7 +9503,7 @@ msgid "Set Bone Parentage"
 msgstr "Kemiğin Üst-öğeliğini Ayarla"
 
 msgid "Skeleton3D"
-msgstr "Skeleton3D -3B iskelet-"
+msgstr "3B İskelet"
 
 msgid "Reset All Bone Poses"
 msgstr "Tüm Kemik Duruşlarını Sıfırla"
@@ -13210,6 +13211,9 @@ msgstr "Diğer Düğüm"
 msgid "Paste From Clipboard"
 msgstr "Panodan Yapıştır"
 
+msgid "Filters"
+msgstr "Filtreler"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Yabancı bir sahnedeki düğümler üzerinde çalışılamaz!"
 
@@ -13274,9 +13278,6 @@ msgstr "Seçilene Otomatik Genişlet"
 
 msgid "All Scene Sub-Resources"
 msgstr "Tüm Sahne Alt-Kaynakları"
-
-msgid "Filters"
-msgstr "Filtreler"
 
 msgid "Filter by Type"
 msgstr "Türe Göre Filtrele"
@@ -13882,7 +13883,7 @@ msgid "Config"
 msgstr "Yapılandırma"
 
 msgid "Count"
-msgstr "Sayım"
+msgstr "Count"
 
 msgid "Network Profiler"
 msgstr "Ağ Profil Çıkarıcısı"
@@ -15086,14 +15087,6 @@ msgid ""
 msgstr ""
 "AnimatedSprite2D'nin kareleri görüntüleyebilmesi için, \"Kareler\" özelliği "
 "içinde yeni bir SpriteFrames kaynağı oluşturulmalı veya var olan atanmalıdır."
-
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instantiated "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"Sahne başına (ya da örneklenmiş sahneler kümesine) yalnızca bir tane görünür "
-"CanvasModulate'e (kanvas ton değişimi) izin verilir. İlk oluşturulan "
-"çalışırken diğerleri yok sayılacaktır."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"

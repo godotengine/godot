@@ -32,13 +32,14 @@
 # Eyt Lev <ecraft452@gmail.com>, 2023.
 # אורי מיכאל <000ori000@gmail.com>, 2023.
 # Benjamin Stern <benj_stern@hotmail.com>, 2023.
+# Roi Gabay <roigby@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-20 08:03+0000\n"
-"Last-Translator: Benjamin Stern <benj_stern@hotmail.com>\n"
+"PO-Revision-Date: 2023-09-29 19:03+0000\n"
+"Last-Translator: Roi Gabay <roigby@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
 "Language: he\n"
@@ -47,7 +48,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && n "
 "% 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "ביטול הגדרה"
@@ -120,6 +121,9 @@ msgstr "כרית כיוונית שמאל"
 
 msgid "D-pad Right"
 msgstr "כרית כיוונית ימין"
+
+msgid "Joypad Button %d"
+msgstr "כפתור אמצעי %d"
 
 msgid "touched"
 msgstr "ננגע"
@@ -250,6 +254,12 @@ msgstr "הוסף נקודת בזייה"
 msgid "Move Bezier Points"
 msgstr "הזזת נקודות בזייה"
 
+msgid "Animation Change %s"
+msgstr "שינוי הנפשה %s"
+
+msgid "Animation Multi Change %s"
+msgstr "שינוי מרובה באנימציה %s"
+
 msgid "Change Animation Length"
 msgstr "שנה אורך אנימציה"
 
@@ -295,6 +305,9 @@ msgstr "החלפת נתיב רצועה"
 msgid "Toggle this track on/off."
 msgstr "הפעלת/כיבוי רצועה זו."
 
+msgid "Use Blend"
+msgstr "שימוש במיזוג"
+
 msgid "Update Mode (How this property is set)"
 msgstr "עדכן מצב (איך המאפיין הזה נקבע)"
 
@@ -312,6 +325,9 @@ msgstr "קנה מידה:"
 
 msgid "Type:"
 msgstr "סוג:"
+
+msgid "(Invalid, expected type: %s)"
+msgstr "(לא חוקי, טיפוס מצופה: %s)"
 
 msgid "Toggle Track Enabled"
 msgstr "הפעלת/ביטול רצועה"
@@ -556,6 +572,16 @@ msgstr "שורה מספר:"
 msgid "%d replaced."
 msgstr "%d הוחלף."
 
+msgid "No match"
+msgstr "אין התאמה"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d מתוך %d התאים"
+msgstr[1] "%d מתוך %d התאימו"
+msgstr[2] "%d מתוך %d התאימו"
+msgstr[3] "%d מתוך %d התאימו"
+
 msgid "Match Case"
 msgstr "התאמת רישיות"
 
@@ -670,6 +696,9 @@ msgstr "ניתוק"
 msgid "Connect a Signal to a Method"
 msgstr "חבר אות לשיטה (מתודה)"
 
+msgid "Edit Connection: '%s'"
+msgstr "עריכת חיבור: '%s'"
+
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "האם אתה בטוח שאתה רוצה להסיר את כל החיבורים מהאות \"%s\"?"
 
@@ -687,6 +716,9 @@ msgstr "עריכה..."
 
 msgid "Go to Method"
 msgstr "מעבר לשיטה (מתודה)"
+
+msgid "Change Type of \"%s\""
+msgstr "שינוי הסוג של \"%s\""
 
 msgid "Change"
 msgstr "שינוי"
@@ -714,6 +746,9 @@ msgstr "התאמות:"
 
 msgid "Description:"
 msgstr "תיאור:"
+
+msgid "Remote %s:"
+msgstr "%s מרוחק:"
 
 msgid "Debugger"
 msgstr "ניפוי שגיאות"
@@ -787,8 +822,23 @@ msgstr "אזהרה:"
 msgid "Error:"
 msgstr "שגיאה:"
 
+msgid "%s Error"
+msgstr "שגיאת %s"
+
+msgid "%s Error:"
+msgstr "שגיאת %s:"
+
+msgid "%s Source"
+msgstr "משאב %s"
+
+msgid "%s Source:"
+msgstr "מקור %s:"
+
 msgid "Stack Trace"
 msgstr "מחסנית מעקב"
+
+msgid "Line %d"
+msgstr "שורה %d"
 
 msgid "Copy Error"
 msgstr "שגיאת העתקה"
@@ -947,7 +997,7 @@ msgid "Errors loading!"
 msgstr "שגיאה בטעינה!"
 
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "למחוק לצמיתות d% פריט(ים)? (בלתי הפיך!)"
+msgstr "האם למחוק לצמיתות %d פריט(ים)? (בלתי הפיך!)"
 
 msgid "Show Dependencies"
 msgstr "הצג תלויות"
@@ -963,6 +1013,9 @@ msgstr "משאבים נטולי בעלות מפורשת:"
 
 msgid "Could not create folder."
 msgstr "לא ניתן ליצור תיקייה."
+
+msgid "Create new folder in %s:"
+msgstr "יצירת תיקייה חדשה ב-%s:"
 
 msgid "Create Folder"
 msgstr "יצירת תיקייה"
@@ -1241,11 +1294,20 @@ msgstr "שם המפרק:"
 msgid "Global Variable"
 msgstr "משתנה גלובלי"
 
+msgid "3D Engine"
+msgstr "מנוע תלת-מימד"
+
+msgid "2D Physics"
+msgstr "פיזיקה דו-מימדית"
+
+msgid "3D Physics"
+msgstr "פיזיקה תלת-מימדית"
+
 msgid "Nodes and Classes:"
 msgstr "איברים ומחלקות:"
 
 msgid "File '%s' format is invalid, import aborted."
-msgstr "פורמט קובץ 's%' אינו תקין, הייבוא בוטל."
+msgstr "פורמט קובץ '%s' אינו תקין, הייבוא בוטל."
 
 msgid "Error saving profile to path: '%s'."
 msgstr "שגיאה בשמירת פרופיל לנתיב '%s'."
@@ -1423,8 +1485,18 @@ msgstr "יש מספר מייבאים לסוגים שונים המצביעים ל
 msgid "(Re)Importing Assets"
 msgstr "ייבוא משאבים (מחדש)"
 
+msgid "Import resources of type: %s"
+msgstr "ייבוא משאבים מסוג: %s"
+
 msgid "Experimental"
 msgstr "ניסיוני"
+
+msgid ""
+"There is currently no description for this %s. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"כרגע אין תיאור ל-%s. בבקשה עזרו לנו על-ידי [color=$color][url=$url]כתיבת "
+"תיאור[/url][/color]!"
 
 msgid "Top"
 msgstr "עליון"
@@ -1446,6 +1518,9 @@ msgstr "הדרכות מקוונות"
 
 msgid "Properties"
 msgstr "מאפיינים"
+
+msgid "overrides %s:"
+msgstr "דריסה של %s:"
 
 msgid "default:"
 msgstr "ברירת מחדל:"
@@ -1553,6 +1628,13 @@ msgstr "הצמדת ערך מאלצת אותו להישמר גם אם הוא שו
 msgid "Open Documentation"
 msgstr "פתיחת התיעוד"
 
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "(שינוי %d)"
+msgstr[1] "(%d שינויים)"
+msgstr[2] "(%d שינויים)"
+msgstr[3] "(%d שינויים)"
+
 msgid "Move Up"
 msgstr "העברה למעלה"
 
@@ -1562,11 +1644,17 @@ msgstr "העברה למטה"
 msgid "Resize Array"
 msgstr "שינוי גודל המערך"
 
+msgid "Element %s"
+msgstr "תוכן %s"
+
 msgid "Set %s"
 msgstr "קביעת %s"
 
 msgid "Set Multiple:"
 msgstr "קביעה מרובה:"
+
+msgid "Remove metadata %s"
+msgstr "הסרת מטא-נתונים %s"
 
 msgid "Pinned %s"
 msgstr "הוצמד %s"
@@ -1576,6 +1664,9 @@ msgstr "בוטלה ההצמדה של %s"
 
 msgid "Name:"
 msgstr "שם:"
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "הוספת מטא-נתון עבור \"%s\""
 
 msgid "Creating Mesh Previews"
 msgstr "יצירת תצוגה מקדימה של הרשת"
@@ -1733,6 +1824,24 @@ msgstr "שמירת סצנה בשם…"
 msgid "Current scene not saved. Open anyway?"
 msgstr "הסצנה הנוכחית לא נשמרה. לפתוח בכל זאת?"
 
+msgid "Global Undo: %s"
+msgstr "ביטול גלובאלי: %s"
+
+msgid "Remote Undo: %s"
+msgstr "ביטול מרוחק: %s"
+
+msgid "Scene Undo: %s"
+msgstr "ביטול סצנה: %s"
+
+msgid "Global Redo: %s"
+msgstr "ביצוע חוזר גלובאלי: %s"
+
+msgid "Remote Redo: %s"
+msgstr "ביצוע חוזר מרוחק: %s"
+
+msgid "Scene Redo: %s"
+msgstr "ביצוע חוזר בסצנה: %s"
+
 msgid "Can't reload a scene that was never saved."
 msgstr "לא ניתן לרענן סצנה שמעולם לא נשמרה."
 
@@ -1746,8 +1855,14 @@ msgstr ""
 "הסצינה הנוכחית כוללת שינויים שלא נשמרו.\n"
 "האם לטעון מחדש את הסצינה? לא ניתן לבטל פעולה זו."
 
+msgid "Save modified resources before reloading?"
+msgstr "לשמור את השינויים לפני הטעינה מחדש?"
+
 msgid "Save & Quit"
 msgstr "לשמור ולצאת"
+
+msgid "Save modified resources before closing?"
+msgstr "לשמור את השינויים לפני הסגירה?"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "לשמור את השינויים לסצנות הבאות לפני היציאה?"
@@ -1776,6 +1891,14 @@ msgstr "לא ניתן לפתוח את תוסף ההרחבות בנתיב: '%s' �
 
 msgid "Unable to load addon script from path: '%s'."
 msgstr "לא ניתן לטעון סקריפט הרחבה מנתיב: '%s'."
+
+msgid ""
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
+msgstr ""
+"לא ניתן לטעון סקריפט הרחבה מנתיב: '%s'. זה יכול להיות עקב שגיאה בסקריפט.\n"
+"יש לבטל את ההרחבה ,%s, כדי למנוע שגיאות נוספות."
 
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
@@ -2090,6 +2213,9 @@ msgstr "מצב"
 msgid "Edit Text:"
 msgstr "ערוך טקסט:"
 
+msgid "Renaming layer %d:"
+msgstr "שינוי שכבה %d:"
+
 msgid "No name provided."
 msgstr "לא צוין שם."
 
@@ -2098,6 +2224,9 @@ msgstr "השם מכיל תווים שגויים."
 
 msgid "Rename"
 msgstr "שינוי שם"
+
+msgid "Layer %d"
+msgstr "שכבה %d"
 
 msgid "Remove Item"
 msgstr "הסר פריט"
@@ -2111,8 +2240,14 @@ msgstr "ערך חדש:"
 msgid "Add Key/Value Pair"
 msgstr "הוסף זוג מפתח/ערך"
 
+msgid "Localizable String (size %d)"
+msgstr "מחרוזת ניתנת לתרגום (גודל %d)"
+
 msgid "Make Unique"
 msgstr "הפוך לייחודי"
+
+msgid "Convert to %s"
+msgstr "המרה ל-%s"
 
 msgid "New Script"
 msgstr "סקריפט חדש"
@@ -2122,6 +2257,12 @@ msgstr "ניתן לכתוב את הלוגיקה שלך בשיטה ‎_run()‎."
 
 msgid "There is an edited scene already."
 msgstr "כבר יש סצנה בעריכה."
+
+msgid "Undo: %s"
+msgstr "ביטול: %s"
+
+msgid "Redo: %s"
+msgstr "ביצוע חוזר: %s"
 
 msgid "Editor Settings"
 msgstr "הגדרות עורך"
@@ -2141,20 +2282,41 @@ msgstr "מכשיר"
 msgid "Project export for platform:"
 msgstr "ייצוא פרויקט לפלטפורמה:"
 
+msgid "Storing File: %s"
+msgstr "קובץ אחסון: %s"
+
 msgid "Storing File:"
 msgstr "קובץ אחסון:"
 
 msgid "No export template found at the expected path:"
 msgstr "לא נמצאה תבנית ייצוא בנתיב המצופה:"
 
+msgid "Could not open file to read from path \"%s\"."
+msgstr "לא ניתן לפתוח קובץ לקריאה במסלול: \"%s\"."
+
 msgid "Packing"
 msgstr "אורז"
+
+msgid "Cannot create file \"%s\"."
+msgstr "לא ניתן ליצור קובץ \"%s\"."
+
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "לא ניתן לפתוח קובץ לכתיבה במסלול: \"%s\"."
+
+msgid "Can't open file for reading-writing at path \"%s\"."
+msgstr "לא ניתן לפתוח קובץ לקריאה-כתיבה במסלול: \"%s\"."
+
+msgid "Can't open file to read from path \"%s\"."
+msgstr "לא ניתן לפתוח קובץ לקריאה במסלול: \"%s\"."
 
 msgid "Custom debug template not found."
 msgstr "תבנית ניפוי שגיאות מותאמת אישית לא נמצאה."
 
 msgid "Custom release template not found."
 msgstr "תבנית שחרור מותאמת-אישית לא נמצאה."
+
+msgid "Template file not found: \"%s\"."
+msgstr "קובץ התבנית לא נמצא: \"%s\"."
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "בייצוא ארכיטקטורת 32 ביט, ה PCK המובנה לא יכול לחרוג מעבר ל 4 GiB."
@@ -2197,6 +2359,9 @@ msgstr "מתבצעת הורדה"
 msgid "Connection Error"
 msgstr "שגיאת חיבור"
 
+msgid "Invalid version.txt format inside the export templates file: %s."
+msgstr "תבנית ה־version.txt שגויה בתוך קובץ התבניות לייצוא: %s."
+
 msgid "Extracting Export Templates"
 msgstr "תבניות הייצוא מחולצות"
 
@@ -2211,6 +2376,9 @@ msgstr "גרסה נוכחית:"
 
 msgid "Uninstall"
 msgstr "הסרה"
+
+msgid "%s Export"
+msgstr "ייצוא %s"
 
 msgid "Release"
 msgstr "שחרר"
@@ -3506,6 +3674,9 @@ msgstr "יצירת מפרק שורש:"
 msgid "Other Node"
 msgstr "מפרק אחר"
 
+msgid "Filters"
+msgstr "מסננים"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "לא יכול לפעול על מפרקים מסצנה זרה!"
 
@@ -3543,9 +3714,6 @@ msgstr "צאצאים הניתנים לעריכה"
 
 msgid "Load As Placeholder"
 msgstr "טען כשומר מקום"
-
-msgid "Filters"
-msgstr "מסננים"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"

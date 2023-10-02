@@ -5142,6 +5142,9 @@ msgstr "Създаване на коренен обект:"
 msgid "Other Node"
 msgstr "Друг обект"
 
+msgid "Filters"
+msgstr "Филтри"
+
 msgid "Attach Script"
 msgstr "Закачане на скрипт"
 
@@ -5150,9 +5153,6 @@ msgstr "Изрязване на обекта/обектите"
 
 msgid "This operation requires a single selected node."
 msgstr "Това действие изисква да е избран само един обект."
-
-msgid "Filters"
-msgstr "Филтри"
 
 msgid "Paste Node(s)"
 msgstr "Поставяне на обекта/обектите"

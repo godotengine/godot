@@ -19,13 +19,14 @@
 # Roger VC <rogervilarasau@gmail.com>, 2022.
 # Jordi Borràs <jborras@centrekepler.com>, 2023.
 # Marc GB <marc.giralt.butjosa@gmail.com>, 2023.
+# Ander Romero <anderromeroaldana@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-22 15:34+0000\n"
-"Last-Translator: Marc GB <marc.giralt.butjosa@gmail.com>\n"
+"PO-Revision-Date: 2023-09-16 17:47+0000\n"
+"Last-Translator: Ander Romero <anderromeroaldana@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -33,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.2\n"
 
 msgid "Unset"
 msgstr "Desactiva"
@@ -1924,7 +1925,7 @@ msgid "Make Current"
 msgstr "Fer Actual"
 
 msgid "Import"
-msgstr "Importar"
+msgstr "Importa"
 
 msgid "Export"
 msgstr "Exportar"
@@ -6038,7 +6039,7 @@ msgid "New Game Project"
 msgstr "Nou Projecte de Joc"
 
 msgid "Imported Project"
-msgstr "Project importat"
+msgstr "S'ha importat el projecte"
 
 msgid "Couldn't create folder."
 msgstr "No s'ha pogut crear el directori."
@@ -6141,6 +6142,9 @@ msgstr ""
 
 msgid "New Project"
 msgstr "Nou Projecte"
+
+msgid "Import Project"
+msgstr "Importa el projecte"
 
 msgid "Scan"
 msgstr "Explora"
@@ -6310,6 +6314,9 @@ msgstr "Crear Node Arrel:"
 msgid "Other Node"
 msgstr "Altre Node"
 
+msgid "Filters"
+msgstr "Filtres"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "No es pot operar en Nodes d'una escena externa!"
 
@@ -6349,9 +6356,6 @@ msgstr "Fills Editables"
 
 msgid "Load As Placeholder"
 msgstr "Carrega com a Contenidor Temporal"
-
-msgid "Filters"
-msgstr "Filtres"
 
 msgid "Can't paste root node into the same scene."
 msgstr "No es pot enganxar el node arrel a la mateixa escena."

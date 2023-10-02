@@ -115,13 +115,14 @@
 # Varthore <moutcho57@gmail.com>, 2023.
 # Chloe Lee-Hone <chloe.leehone@gmail.com>, 2023.
 # François de la Taste <francois.delataste@wildwits.games>, 2023.
+# VBasic <vincentbarkmann@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-30 14:58+0000\n"
-"Last-Translator: François de la Taste <francois.delataste@wildwits.games>\n"
+"PO-Revision-Date: 2023-10-01 21:59+0000\n"
+"Last-Translator: VBasic <vincentbarkmann@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -129,7 +130,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Application"
 msgstr "Application"
@@ -1455,7 +1456,7 @@ msgid "Window Placement"
 msgstr "Placement de la fenêtre"
 
 msgid "Rect"
-msgstr "Rect"
+msgstr "Rectangle"
 
 msgid "Rect Custom Position"
 msgstr "Position du Rect personnalisée"
@@ -1795,6 +1796,9 @@ msgstr "Ajustement de la hauteur de base"
 
 msgid "Remove Tracks"
 msgstr "Retirer les pistes"
+
+msgid "Except Bone Transform"
+msgstr "Omettre la transformation d'os"
 
 msgid "Unimportant Positions"
 msgstr "Positions non importantes"
@@ -2301,7 +2305,7 @@ msgid "Default Signal Callback to Self Name"
 msgstr "Nom par défaut d'un rappel de signal à soi-même (self)"
 
 msgid "Scene Name Casing"
-msgstr "Notation (casse) d'un nom de scène"
+msgstr "Notation des noms de scène"
 
 msgid "Reimport Missing Imported Files"
 msgstr "Réimporter les fichiers importés manquants"
@@ -2568,7 +2572,7 @@ msgid "Sides"
 msgstr "Côtés"
 
 msgid "Cone"
-msgstr "Cone"
+msgstr "Cône"
 
 msgid "Inner Radius"
 msgstr "Rayon intérieur"
@@ -2952,7 +2956,7 @@ msgid "Ultra Quality Ray Count"
 msgstr "Nombre de rayons de qualité extrême"
 
 msgid "Loop Offset"
-msgstr "Décalage de Boucle"
+msgstr "Décalage de boucle"
 
 msgid "Eye Height"
 msgstr "Hauteur de l’œil"
@@ -3014,6 +3018,9 @@ msgstr "Dégradé de couleurs"
 msgid "Noise"
 msgstr "Bruit"
 
+msgid "Hand Skeleton"
+msgstr "Squelette de main"
+
 msgid "Subject"
 msgstr "Sujet"
 
@@ -3021,7 +3028,7 @@ msgid "Names"
 msgstr "Noms"
 
 msgid "Strings"
-msgstr "Paramètres"
+msgstr "Chaînes de caractères"
 
 msgid "Discover Multicast If"
 msgstr "Révéler la multidiffusion si"
@@ -3558,7 +3565,7 @@ msgid "Minor"
 msgstr "Mineur"
 
 msgid "Build"
-msgstr "Build"
+msgstr "Compilé"
 
 msgid "Revision"
 msgstr "Révision"
@@ -4388,6 +4395,9 @@ msgstr "Épaisseur"
 msgid "Update Mode"
 msgstr "Mode de mise à jour"
 
+msgid "Skeleton Path"
+msgstr "Squelette de chemin"
+
 msgid "Params"
 msgstr "Paramètres"
 
@@ -4404,7 +4414,7 @@ msgid "Lower"
 msgstr "Basse"
 
 msgid "Relaxation"
-msgstr "Relaxation"
+msgstr "Relâchement"
 
 msgid "Motor"
 msgstr "Moteur"
@@ -4473,7 +4483,7 @@ msgid "Pixel Size"
 msgstr "Taille de pixel"
 
 msgid "Flags"
-msgstr "Paramètres"
+msgstr "Options"
 
 msgid "Billboard"
 msgstr "Panneau(Billboard)"
@@ -4904,6 +4914,9 @@ msgstr "Retard aléatoire"
 msgid "Xfade Time"
 msgstr "Durée du fondu croisé"
 
+msgid "Request"
+msgstr "Requête"
+
 msgid "Active"
 msgstr "Actif"
 
@@ -4912,6 +4925,12 @@ msgstr "Ajouter une quantité"
 
 msgid "Blend Amount"
 msgstr "Quantité de mélange"
+
+msgid "Sub Amount"
+msgstr "Sous quantité"
+
+msgid "Seek Request"
+msgstr "Chercher une requête"
 
 msgid "Reset"
 msgstr "Réinitialiser"
@@ -5231,6 +5250,9 @@ msgstr "Temps Écoulé"
 msgid "Env"
 msgstr "Alentours"
 
+msgid "Glyph Flags"
+msgstr "Options de glyphe"
+
 msgid "Relative Index"
 msgstr "Position relative"
 
@@ -5248,6 +5270,9 @@ msgstr "Effets personnalisés"
 
 msgid "Meta Underlined"
 msgstr "Méta-données soulignées"
+
+msgid "Progress Bar Delay"
+msgstr "Retard de la barre de progression"
 
 msgid "Selection Enabled"
 msgstr "Sélection activée"
@@ -5486,6 +5511,9 @@ msgstr "Gérer les entrées localement"
 msgid "Debug Draw"
 msgstr "Déboguer appel de dessin"
 
+msgid "Canvas Items"
+msgstr "Items de canevas"
+
 msgid "Audio Listener"
 msgstr "Écouteur audio"
 
@@ -5563,6 +5591,9 @@ msgstr "Taux d'échantillonnage du mixage"
 
 msgid "Stereo"
 msgstr "Stéréo"
+
+msgid "Bonemap"
+msgstr "Carte d'os"
 
 msgid "Exposure"
 msgstr "Exposition"
@@ -5652,7 +5683,7 @@ msgid "Clear Button Color Pressed"
 msgstr "Couleur du bouton de nettoyage appuyé"
 
 msgid "Clear"
-msgstr "Effacer"
+msgstr "Vider"
 
 msgid "Background"
 msgstr "Arrière-plan"
@@ -6009,7 +6040,7 @@ msgid "Sky Contribution"
 msgstr "Contribution du ciel"
 
 msgid "Tonemap"
-msgstr "Tonemap"
+msgstr "Carte tonale"
 
 msgid "White"
 msgstr "Blanc"
@@ -6344,11 +6375,17 @@ msgstr "Nombre de points"
 msgid "Scale Curve"
 msgstr "Courbe d'échelle"
 
+msgid "Amount at End"
+msgstr "Quantité à la fin"
+
 msgid "Rough"
 msgstr "Rugueux"
 
 msgid "Absorbent"
 msgstr "Absorbant"
+
+msgid "Add UV2"
+msgstr "Ajouter UV2"
 
 msgid "Subdivide Width"
 msgstr "Largeur de subdivision"
@@ -6482,6 +6519,9 @@ msgstr "La caméra est active"
 msgid "Default Font"
 msgstr "Police par défaut"
 
+msgid "Terrains"
+msgstr "Terrains"
+
 msgid "Custom Data"
 msgstr "Données Personnalisées"
 
@@ -6490,6 +6530,9 @@ msgstr "Transposer"
 
 msgid "Texture Origin"
 msgstr "Origine de la Texture"
+
+msgid "Y Sort Origin"
+msgstr "Origine du triage par Y"
 
 msgid "Probability"
 msgstr "Probabilité"
@@ -6736,6 +6779,9 @@ msgstr "Vertex"
 
 msgid "Fragment"
 msgstr "Fragment"
+
+msgid "Base Error"
+msgstr "Erreur de base"
 
 msgid "Depth Draw"
 msgstr "Dessin en profondeur"

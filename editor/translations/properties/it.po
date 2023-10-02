@@ -79,13 +79,14 @@
 # Francesco Cammarata <francescocammarata.fr@gmail.com>, 2022.
 # Alessio Gasparini <alessiogasparini02@gmail.com>, 2023.
 # Francesco <martefrinbell@gmail.com>, 2023.
+# E D <th3-crasin3ss@hotmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-20 08:04+0000\n"
-"Last-Translator: Francesco <martefrinbell@gmail.com>\n"
+"PO-Revision-Date: 2023-09-15 12:40+0000\n"
+"Last-Translator: E D <th3-crasin3ss@hotmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -93,7 +94,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -190,6 +191,9 @@ msgstr "Mantieni lo Schermo Acceso"
 
 msgid "Audio"
 msgstr "Audio"
+
+msgid "General"
+msgstr "Generale"
 
 msgid "Editor"
 msgstr "Editor"
@@ -2623,6 +2627,9 @@ msgstr "Colori"
 
 msgid "Default Color"
 msgstr "Colore predefinito"
+
+msgid "Fill"
+msgstr "Riempi"
 
 msgid "Multimesh"
 msgstr "Multimesh"

@@ -109,12 +109,13 @@
 # Alvaro Tejada <santi_evil@yahoo.com>, 2023.
 # Braulio León Madrid Escobar <brauliomadrid.developer@gmail.com>, 2023.
 # Leandro Carralero <lcarralero87@gmail.com>, 2023.
+# Víctor Mardones <vnicolas.mb.ni@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-24 14:55+0000\n"
+"PO-Revision-Date: 2023-09-21 15:42+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -123,7 +124,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -13312,6 +13313,9 @@ msgstr "Otro Nodo"
 msgid "Paste From Clipboard"
 msgstr "Pegar desde portapapeles"
 
+msgid "Filters"
+msgstr "Filtros"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "¡No se puede operar sobre los nodos de una escena externa!"
 
@@ -13378,9 +13382,6 @@ msgstr "Auto Expandir a Seleccionado"
 
 msgid "All Scene Sub-Resources"
 msgstr "Todos los Subrecursos de Escena"
-
-msgid "Filters"
-msgstr "Filtros"
 
 msgid "Filter by Type"
 msgstr "Filtrar por Tipo"
@@ -15232,14 +15233,6 @@ msgid ""
 msgstr ""
 "Se debe crear o establecer un recurso de SpriteFrames en la propiedad "
 "\"Frames\" para que AnimatedSprite2D muestre los fotogramas."
-
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instantiated "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"Solo se permite un CanvasModulate visible por escena (o conjunto de escenas "
-"instanciadas). El primero creado funcionará, mientras que los demás serán "
-"ignorados."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"

@@ -88,13 +88,16 @@
 # Adelina G <adelinadoncheva.georgieva@mail.polimi.it>, 2023.
 # Francesco <martefrinbell@gmail.com>, 2023.
 # Edoardo Barolo <velteyn@gmail.com>, 2023.
+# E D <th3-crasin3ss@hotmail.com>, 2023.
+# Damiano Bonaccorsi <ozerodb@users.noreply.hosted.weblate.org>, 2023.
+# Luca Martinelli <lucxmangajet@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-30 14:58+0000\n"
-"Last-Translator: Edoardo Barolo <velteyn@gmail.com>\n"
+"PO-Revision-Date: 2023-09-21 15:42+0000\n"
+"Last-Translator: Luca Martinelli <lucxmangajet@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -102,7 +105,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Non impostato"
@@ -1099,6 +1102,15 @@ msgstr "Crea traccia/e di rispristino"
 msgid "Animation Optimizer"
 msgstr "Ottimizzatore d'animazioni"
 
+msgid "Max Velocity Error:"
+msgstr "Errore di velocità max:"
+
+msgid "Max Angular Error:"
+msgstr "Max Errore Angolare:"
+
+msgid "Max Precision Error:"
+msgstr "Errore di Precisione Max:"
+
 msgid "Optimize"
 msgstr "Ottimizza"
 
@@ -1120,6 +1132,13 @@ msgstr "Pulisci"
 msgid "Scale Ratio:"
 msgstr "Fattore di scala:"
 
+msgid "Select Transition and Easing"
+msgstr "Seleziona Transizione e Easing"
+
+msgctxt "Transition Type"
+msgid "Linear"
+msgstr "Lineare"
+
 msgctxt "Transition Type"
 msgid "Sine"
 msgstr "Seno"
@@ -1137,8 +1156,16 @@ msgid "Quad"
 msgstr "Quadrupla"
 
 msgctxt "Transition Type"
+msgid "Expo"
+msgstr "Esporta"
+
+msgctxt "Transition Type"
 msgid "Elastic"
 msgstr "Elastico"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "Cubica"
 
 msgctxt "Transition Type"
 msgid "Circ"
@@ -1149,8 +1176,20 @@ msgid "Bounce"
 msgstr "Rimbalzo"
 
 msgctxt "Transition Type"
+msgid "Back"
+msgstr "Torna Indietro"
+
+msgctxt "Transition Type"
 msgid "Spring"
 msgstr "Molla"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "In"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Out"
 
 msgctxt "Ease Type"
 msgid "InOut"
@@ -1160,14 +1199,26 @@ msgctxt "Ease Type"
 msgid "OutIn"
 msgstr "OutIn"
 
+msgid "Transition Type:"
+msgstr "Tipo di Transizione:"
+
 msgid "Ease Type:"
 msgstr "Tipo di easing:"
 
 msgid "FPS:"
 msgstr "FPS:"
 
+msgid "Animation Baker"
+msgstr "Animazione Baker"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "Traccia di Posizione/Rotazione/Scalatura 3D:"
+
 msgid "Blendshape Track:"
 msgstr "Traccia di Blendshape:"
+
+msgid "Value Track:"
+msgstr "Traccia di Valore:"
 
 msgid "Select Tracks to Copy"
 msgstr "Seleziona le tracce da copiare"
@@ -1192,6 +1243,9 @@ msgstr "Numero della linea:"
 
 msgid "%d replaced."
 msgstr "%d sostituito."
+
+msgid "No match"
+msgstr "Nessuna corrispondenza"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -1375,6 +1429,9 @@ msgstr "Confermare la rimozione di tutte le connessioni da questo segnale?"
 msgid "Disconnect All"
 msgstr "Disconnetti tutto"
 
+msgid "Copy Name"
+msgstr "Copia Nome"
+
 msgid "Edit..."
 msgstr "Modifica..."
 
@@ -1453,11 +1510,23 @@ msgstr "Commuta visibilità"
 msgid "Updating assets on target device:"
 msgstr "Aggiornamento degli asset sul dispositivo di destinazione:"
 
+msgid "Syncing headers"
+msgstr "Sincronizzando le intestazioni"
+
+msgid "Getting remote file system"
+msgstr "Ottenendo il File System remoto"
+
+msgid "Decompressing remote file system"
+msgstr "Decompressione del file system remoto"
+
 msgid "Scanning for local changes"
 msgstr "Ricerca di modifiche locali"
 
 msgid "Sending list of changed files:"
 msgstr "Invio della lista dei file modificati:"
+
+msgid "Sending file:"
+msgstr "Inviando file:"
 
 msgid "ms"
 msgstr "ms"
@@ -1531,6 +1600,9 @@ msgstr "Tempo"
 msgid "Calls"
 msgstr "Chiamate"
 
+msgid "Fit to Frame"
+msgstr "Adatta alla Cornice"
+
 msgid "Linked"
 msgstr "Collegato"
 
@@ -1563,6 +1635,12 @@ msgstr "Sorgente %s"
 
 msgid "%s Source:"
 msgstr "Sorgente %s:"
+
+msgid "Stack Trace"
+msgstr "Impila Traccia"
+
+msgid "Stack Trace:"
+msgstr "Impila Traccia:"
 
 msgid "Debug session started."
 msgstr "Sessione di debug iniziata."
@@ -1786,9 +1864,24 @@ msgstr "Possiede"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Risorse senza un proprietario esplicito:"
 
+msgid "Folder name cannot be empty."
+msgstr "Il nome della cartella non può essere vuoto."
+
+msgid "Folder name contains invalid characters."
+msgstr "Il nome della cartella contiene caratteri non validi."
+
+msgid "File with that name already exists."
+msgstr "Esiste già un File con questo nome."
+
+msgid "Folder with that name already exists."
+msgstr "Esiste già una cartella con questo nome."
+
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "L'uso degli slash nei nomi delle cartelle creerà sottocartelle ricorsivamente."
+
+msgid "Folder name is valid."
+msgstr "Il nome della cartella è valido."
 
 msgid "Could not create folder."
 msgstr "Impossibile creare la cartella."
@@ -2856,6 +2949,9 @@ msgstr "Seleziona una disposizione esistente:"
 msgid "Or enter new layout name"
 msgstr "O inserire un nuovo nome per il layout"
 
+msgid "Changed Locale Language Filter"
+msgstr "Filtro della lingua locale modificato"
+
 msgid "Changed Locale Country Filter"
 msgstr "Filtro del paese del locale modificato"
 
@@ -2996,6 +3092,9 @@ msgstr "Errore durante l'analisi del file \"%s\"."
 
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "Il file della scena \"%s\" sembra essere invalido/corrotto."
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "File \"%s\" o una delle sue dipendenze mancanti."
 
 msgid "Error while loading file '%s'."
 msgstr "Errore durante il caricamento del file \"%s\"."
@@ -3923,6 +4022,12 @@ msgstr ""
 "Impossibile eseguire lo script editor, hai dimenticato di sovrascrivere il "
 "metodo `_run`?"
 
+msgid "Undo: %s"
+msgstr "Annulla: %s"
+
+msgid "Redo: %s"
+msgstr "Ripeti: %s"
+
 msgid "Edit Built-in Action"
 msgstr "Modifica un'azione integrata"
 
@@ -3934,6 +4039,9 @@ msgstr "Comune"
 
 msgid "Editor Settings"
 msgstr "Impostazioni Editor"
+
+msgid "General"
+msgstr "Generale"
 
 msgid "Filter Settings"
 msgstr "Filtra le impostazioni"
@@ -4006,6 +4114,9 @@ msgstr "Joystick 4 verso su"
 
 msgid "Joystick 4 Down"
 msgstr "Joystick 4 verso giù"
+
+msgid "or"
+msgstr "o"
 
 msgid "Unicode"
 msgstr "Unicode"
@@ -4080,6 +4191,9 @@ msgstr "Esportazione dei file del progetto fallita."
 
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "Impossibile aprire il file per scrittura al percorso \"%s\"."
+
+msgid "Can't open file for reading-writing at path \"%s\"."
+msgstr "Impossibile aprire file in lettura-scrittura al percorso \"%s\"."
 
 msgid "Can't create encrypted file."
 msgstr "Impossibile creare il file crittografato."
@@ -4334,11 +4448,17 @@ msgstr ""
 "Tutti i preset devono avere un percorso di esportazione definito affinché "
 "\"Esporta tutto\" funzioni."
 
+msgid "Resources to exclude:"
+msgstr "Risorse da esclurdere:"
+
 msgid "Resources to export:"
 msgstr "Risorse da esportare:"
 
 msgid "Delete preset '%s'?"
 msgstr "Eliminare preset \"%s\"?"
+
+msgid "(Inherited)"
+msgstr "(Ereditato)"
 
 msgid "%s Export"
 msgstr "Esportazione %s"
@@ -4499,6 +4619,9 @@ msgstr "Gestisci i modelli di esportazione"
 
 msgid "Export With Debug"
 msgstr "Esporta Con Debug"
+
+msgid "Disable FBX & Restart"
+msgstr "Disabilita FBX e Ricomincia"
 
 msgid ""
 "Canceling this dialog will disable the FBX importer.\n"
@@ -4661,6 +4784,21 @@ msgstr "Script..."
 msgid "Resource..."
 msgstr "Risorsa..."
 
+msgid "TextFile..."
+msgstr "TextFile..."
+
+msgid "Expand Folder"
+msgstr "Espandi cartella"
+
+msgid "Expand Hierarchy"
+msgstr "Espandi Dipendenze"
+
+msgid "Collapse Hierarchy"
+msgstr "Collassare gerarchia"
+
+msgid "Move/Duplicate To..."
+msgstr "Sposta/Duplica in..."
+
 msgid "Add to Favorites"
 msgstr "Aggiungi ai Preferiti"
 
@@ -4745,6 +4883,9 @@ msgstr ""
 
 msgid "Overwrite"
 msgstr "Sovrascrivi"
+
+msgid "Keep Both"
+msgstr "Mantieni entrambi"
 
 msgid "Create Script"
 msgstr "Crea Script"
@@ -4842,6 +4983,9 @@ msgstr "Impossibile creare una cartella. Esiste già un file con quel nome."
 
 msgid "Choose a Directory"
 msgstr "Scegli una cartella"
+
+msgid "Copy File(s)"
+msgstr "Copia File(s)"
 
 msgid "Network"
 msgstr "Reti"
@@ -5464,6 +5608,9 @@ msgstr "Estrai i materiali in dei file risorsa"
 msgid "Extract"
 msgstr "Estrai"
 
+msgid "Already Saving"
+msgstr "Salvataggio già in corso"
+
 msgid ""
 "This mesh already saves to an external resource, no action will be taken."
 msgstr "Questa mesh viene già salvata in una risorsa, non verrà fatto nulla."
@@ -5659,6 +5806,9 @@ msgstr "Caricamento della risorsa fallito."
 
 msgid "(Current)"
 msgstr "(Attuale)"
+
+msgid "Expand Non-Default"
+msgstr "Espandi non-predefinita"
 
 msgid "Property Name Style"
 msgstr "Stile Nome Proprietà"
@@ -6631,6 +6781,9 @@ msgstr "File ZIP dei contenuti"
 msgid "Audio Preview Play/Pause"
 msgstr "Riproduci/Pausa Anteprima Audio"
 
+msgid "Bone Picker:"
+msgstr "Selettore di ossa:"
+
 msgid "Clear mappings in current group."
 msgstr "Pulisci le mappature nel gruppo corrente."
 
@@ -6816,6 +6969,9 @@ msgstr "Zoom a 800%"
 msgid "Zoom to 1600%"
 msgstr "Zoom a 1600%"
 
+msgid "Center View"
+msgstr "Vista Centrale"
+
 msgid "Select Mode"
 msgstr "Modalità di Selezione"
 
@@ -6971,6 +7127,9 @@ msgstr "Commuta Griglia"
 msgid "Grid"
 msgstr "Griglia"
 
+msgid "Show Helpers"
+msgstr "Mostra Aiuti"
+
 msgid "Show Rulers"
 msgstr "Mostra Righelli"
 
@@ -7078,6 +7237,9 @@ msgstr "Errore durante l'istanziazione della scena da %s"
 msgid "Change Default Type"
 msgstr "Cambia Tipo Predefinito"
 
+msgid "Set Target Position"
+msgstr "Imposta la posizione del'obiettivo"
+
 msgid "Set Handle"
 msgstr "Imposta Maniglia"
 
@@ -7111,6 +7273,18 @@ msgstr "Suggerimento per il posizionamento dello strumento di espansione."
 
 msgid "Container Default"
 msgstr "Container predefinito"
+
+msgid "Fill"
+msgstr "Riempi"
+
+msgid "Shrink Begin"
+msgstr "Inizia Riduzione"
+
+msgid "Shrink Center"
+msgstr "Riduci il Centro"
+
+msgid "Shrink End"
+msgstr "Fine della riduzione"
 
 msgid "Custom"
 msgstr "Personalizzato"
@@ -7185,10 +7359,26 @@ msgstr "Modificare le ancore, gli offset e la direzione di espansione"
 msgid "Change Anchors, Offsets (Keep Ratio)"
 msgstr "Cambiare le ancore, gli offset (Mantieni il Rapporto)"
 
+msgid "Change Vertical Size Flags"
+msgstr "Cambia dimensione verticale dei Flags"
+
+msgid "Change Horizontal Size Flags"
+msgstr "Cambia dimensione orizzontale dei Flags"
+
+msgid "Set to Current Ratio"
+msgstr "Imposta la proporzione attuale"
+
 msgid "Adjust anchors and offsets to match the current rect size."
 msgstr ""
 "Regola le ancore e gli offset per adattarli alla dimensione corrente del "
 "rettangolo."
+
+msgid ""
+"When active, moving Control nodes changes their anchors instead of their "
+"offsets."
+msgstr ""
+"Quando attivo, spostare i nodi Control modifica le loro ancore invece dei "
+"loro margini."
 
 msgid "Sizing settings for children of a Container node."
 msgstr "Impostazioni di dimensionamento per i figli di un nodo Contenitore."
@@ -7235,14 +7425,26 @@ msgstr "Crea Punti Emissione Da Nodo"
 msgid "Load Curve Preset"
 msgstr "Carica Preset Curve"
 
+msgid "Add Curve Point"
+msgstr "Aggiungi Punto della Curva"
+
 msgid "Remove Curve Point"
 msgstr "Rimuovi Punto"
 
 msgid "Modify Curve Point"
 msgstr "Modifica Punto Curva"
 
+msgid "Modify Curve Point's Tangents"
+msgstr "Modifica le tangenti dei punti della curva"
+
+msgid "Modify Curve Point's Left Tangent"
+msgstr "Modifica la tangente sinistra del punto della curva"
+
+msgid "Modify Curve Point's Right Tangent"
+msgstr "Modifica la tangente destra del punto della curva"
+
 msgid "Hold Shift to edit tangents individually"
-msgstr "Tenere Premuto Shift per modificare le tangenti singolarmente"
+msgstr "Premi Shift per modificare le tangenti singolarmente"
 
 msgid "Ease In"
 msgstr "Ease In"
@@ -7257,10 +7459,10 @@ msgid "Toggle Grid Snap"
 msgstr "Commuta scatto sulla griglia"
 
 msgid "Debug with External Editor"
-msgstr "Debug con un editor esterno"
+msgstr "Debuggare con un editor esterno"
 
 msgid "Deploy with Remote Debug"
-msgstr "Distribuisci con debug remoto"
+msgstr "Distribuisci con Debug Remoto"
 
 msgid ""
 "When this option is enabled, using one-click deploy will make the executable "
@@ -7908,6 +8110,9 @@ msgstr "Imposta start_position"
 msgid "Set end_position"
 msgstr "Imposta end_position"
 
+msgid "Edit Vertices"
+msgstr "Modifica Vertici"
+
 msgid "Edit Poly"
 msgstr "Modifica Poly"
 
@@ -8112,6 +8317,9 @@ msgstr "Albedo VoxelGI"
 msgid "VoxelGI Emission"
 msgstr "Emissione VoxelGI"
 
+msgid "SDFGI Probes"
+msgstr "Sonda SDFGI"
+
 msgid "Scene Luminance"
 msgstr "Brillanza della scena"
 
@@ -8126,6 +8334,9 @@ msgstr "Buffer VoxelGI/SDFGI"
 
 msgid "Disable Mesh LOD"
 msgstr "Disabilita il LOD delle mesh"
+
+msgid "Motion Vectors"
+msgstr "Vettori di Movimento"
 
 msgid "Display Advanced..."
 msgstr "Mostra avanzata..."
@@ -9380,6 +9591,9 @@ msgstr "Filtra le animazioni"
 msgid "Delete Animation"
 msgstr "Cancella l'animazione"
 
+msgid "This resource does not have any animations."
+msgstr "Questa risorsa non ha animazioni."
+
 msgid "Animation Frames:"
 msgstr "Frame Animazione:"
 
@@ -9419,8 +9633,47 @@ msgstr "Seleziona Frames"
 msgid "Frame Order"
 msgstr "Ordine fotogrammi"
 
+msgid "As Selected"
+msgstr "Come Selezionato"
+
+msgid "Left to Right, Top to Bottom"
+msgstr "Da Sinistra a Destra, dall'Alto in Basso"
+
+msgid "Left to Right, Bottom to Top"
+msgstr "Da Sinistra a Destra, dall'Alto in Basso"
+
+msgid "Right to Left, Top to Bottom"
+msgstr "Da Sinistra a Destra, dall'Alto in Basso"
+
+msgid "Right to Left, Bottom to Top"
+msgstr "Da Sinistra a Destra, dall'Alto in Basso"
+
+msgid "By Column"
+msgstr "Per Colonna"
+
+msgid "Top to Bottom, Left to Right"
+msgstr "Dall'Alto in Basso, da Sinistra a Destra"
+
+msgid "Top to Bottom, Right to Left"
+msgstr "Dall'Alto in Basso, da Destra a Sinistra"
+
+msgid "Bottom to Top, Left to Right"
+msgstr "Dal Basso in Alto, da Sinistra a Destra"
+
+msgid "Bottom to Top, Right to Left"
+msgstr "Dal Basso in Alto, da Destra a Sinistra"
+
+msgid "Horizontal"
+msgstr "Orizzontale"
+
+msgid "Vertical"
+msgstr "Verticale"
+
 msgid "Size"
 msgstr "Dimensione"
+
+msgid "Separation"
+msgstr "Separazione"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Crea Frames da uno Spritesheet"
@@ -12295,6 +12548,9 @@ msgstr "Altro nodo"
 msgid "Paste From Clipboard"
 msgstr "Incolla dagli appunti"
 
+msgid "Filters"
+msgstr "Filtri"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Impossibile operare su nodi di una scena esterna!"
 
@@ -12355,9 +12611,6 @@ msgstr "Figli Modificabili"
 
 msgid "Load As Placeholder"
 msgstr "Carica come Placeholder"
-
-msgid "Filters"
-msgstr "Filtri"
 
 msgid "Filter by Type"
 msgstr "Filtra per tipo"

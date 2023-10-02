@@ -25,13 +25,14 @@
 # LR <nancok@tuta.io>, 2023.
 # Tefa <gassmannstefano@gmail.com>, 2023.
 # Maximiliano Gamón <maximilianogamon@gmail.com>, 2023.
+# Deleted User <noreply+68785@weblate.org>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-11 13:46+0000\n"
-"Last-Translator: Tefa <gassmannstefano@gmail.com>\n"
+"PO-Revision-Date: 2023-09-19 21:46+0000\n"
+"Last-Translator: Deleted User <noreply+68785@weblate.org>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -94,6 +95,15 @@ msgstr "Eje X del joystick derecho, eje X del joystick 1"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
 msgstr "Eje Y del joystick derecho, eje Y del joystick 1"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Eje X del Joystick 2, Gatillo Izquierdo, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Eje Y del Joystick 2, Gatillo Derecho, Sony R2, Xbox RT"
+
+msgid "Unknown Joypad Axis"
+msgstr "Eje de Joypad Desconocido"
 
 msgid "Select"
 msgstr "Seleccionar"
@@ -7312,6 +7322,9 @@ msgstr "Crear Nodo Raíz:"
 msgid "Other Node"
 msgstr "Otro Nodo"
 
+msgid "Filters"
+msgstr "Filtros"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "No se puede operar sobre los nodos de una escena externa!"
 
@@ -7357,9 +7370,6 @@ msgstr "Hijos Editables"
 
 msgid "Load As Placeholder"
 msgstr "Cargar Como Placeholder"
-
-msgid "Filters"
-msgstr "Filtros"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"

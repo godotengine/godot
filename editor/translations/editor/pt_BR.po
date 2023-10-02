@@ -169,13 +169,14 @@
 # Glayson Olivieri <glayson.murollo75@gmail.com>, 2023.
 # Jose Delvani <del.cidrak@gmail.com>, 2023.
 # Romildo Franco <rtfranco@gmail.com>, 2023.
+# Vittor Paulo Vieira da Costa <vittorpaulovc@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-09-08 06:21+0000\n"
-"Last-Translator: Romildo Franco <rtfranco@gmail.com>\n"
+"PO-Revision-Date: 2023-09-16 17:47+0000\n"
+"Last-Translator: Vittor Paulo Vieira da Costa <vittorpaulovc@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -183,7 +184,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.0.2\n"
 
 msgid "Unset"
 msgstr "Restaurar"
@@ -213,10 +214,10 @@ msgid "Mouse Wheel Right"
 msgstr "Roda do Mouse para Direita"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Botão do Polegar do Mouse 1"
+msgstr "Botão de Polegar do Mouse 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Botão do Polegar do Mouse 2"
+msgstr "Botão de Polegar do Mouse 2"
 
 msgid "Button"
 msgstr "Botão"
@@ -264,25 +265,25 @@ msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
 msgstr "Movimento do joypad no eixo %d (%s) com valor %.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
-msgstr "Botão de Ação, Sony Cross, Xbox A, Nintendo B"
+msgstr "Botão de Ação, Sony X, Xbox A, Nintendo B"
 
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "Botão de Ação Direito, Sony Circle, Xbox B, Nintendo A"
+msgstr "Botão de Ação Direito, Sony Círculo, Xbox B, Nintendo A"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "Botão de Ação Esquerdo, Sony Circle, Xbox B, Nintendo A"
+msgstr "Botão de Ação Esquerdo, Sony Quadrado, Xbox X, Nintendo Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "Botão de Ação Acima, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Botão de Ação Superior, Sony Triângulo, Xbox Y, Nintendo X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
 msgstr "Voltar, Sony Select, Xbox Back, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
-msgstr "Menu, Sony PS, Xbox Home"
+msgstr "Guia, Sony PS, Xbox Home"
 
 msgid "Start, Xbox Menu, Nintendo +"
-msgstr "Iniciar, Menu Xbox, Nintendo +"
+msgstr "Iniciar, Xbox Menu, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Alavanca Esquerda, Sony L3, Xbox L/LS"
@@ -297,22 +298,22 @@ msgid "Right Shoulder, Sony R1, Xbox RB"
 msgstr "Ombro Direito, Sony R1, Xbox RB"
 
 msgid "D-pad Up"
-msgstr "D-pad Acima"
+msgstr "Botão Direcional Cima"
 
 msgid "D-pad Down"
-msgstr "D-pad Abaixo"
+msgstr "Botão Direcional Baixo"
 
 msgid "D-pad Left"
-msgstr "D-pad Esquerdo"
+msgstr "Botão Direcional Esquerda"
 
 msgid "D-pad Right"
-msgstr "D-pad Direito"
+msgstr "Botão Direcional Direita"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Share, PS5 Microfone, Nintendo Capture"
 
 msgid "Xbox Paddle 1"
-msgstr "Controle Xbox 1"
+msgstr "Xbox Pedal 1"
 
 msgid "Xbox Paddle 2"
 msgstr "Controle Xbox 2"
@@ -330,10 +331,10 @@ msgid "Joypad Button %d"
 msgstr "Botão do Joypad %d"
 
 msgid "Pressure:"
-msgstr "Toque:"
+msgstr "Pressão:"
 
 msgid "canceled"
-msgstr "Cancelado"
+msgstr "cancelado"
 
 msgid "touched"
 msgstr "tocado"
@@ -353,13 +354,13 @@ msgid "Magnify Gesture at (%s) with factor %s"
 msgstr "Gesto de Ampliar em (%s) com fator %s"
 
 msgid "Pan Gesture at (%s) with delta (%s)"
-msgstr "Gesto Panorâmico em (%s) com delta (%s)"
+msgstr "Gesto Arraste em (%s) com delta (%s)"
 
 msgid "MIDI Input on Channel=%s Message=%s"
 msgstr "Entrada MIDI no Canal=%s Mensagem=%s"
 
 msgid "Input Event with Shortcut=%s"
-msgstr "Evento de Antrada com Atalho=%s"
+msgstr "Evento de Entrada com Atalho=%s"
 
 msgid "Accept"
 msgstr "Aceitar"
@@ -383,16 +384,16 @@ msgid "Right"
 msgstr "Direita"
 
 msgid "Up"
-msgstr "Acima"
+msgstr "Cima"
 
 msgid "Down"
-msgstr "Abaixo"
+msgstr "Baixo"
 
 msgid "Page Up"
 msgstr "Subir Página"
 
 msgid "Page Down"
-msgstr "Baixar Página"
+msgstr "Descer Página"
 
 msgid "Home"
 msgstr "Início"
@@ -440,7 +441,7 @@ msgid "Backspace Word"
 msgstr "Retroceder Palavra"
 
 msgid "Backspace all to Left"
-msgstr "Retroceder tudo a Esquerda"
+msgstr "Retroceder totalmente à Esquerda"
 
 msgid "Delete"
 msgstr "Excluir"
@@ -449,19 +450,19 @@ msgid "Delete Word"
 msgstr "Excluir Palavra"
 
 msgid "Delete all to Right"
-msgstr "Excluir tudo a Direita"
+msgstr "Excluir tudo à Direita"
 
 msgid "Caret Left"
-msgstr "Cursor para Esquerda"
+msgstr "Cursor para a Esquerda"
 
 msgid "Caret Word Left"
-msgstr "Cursor uma Palavra a Esquerda"
+msgstr "Cursor uma Palavra à Esquerda"
 
 msgid "Caret Right"
-msgstr "Cursor para Direita"
+msgstr "Cursor para a Direita"
 
 msgid "Caret Word Right"
-msgstr "Cursor uma palavra a Direita"
+msgstr "Cursor uma palavra à Direita"
 
 msgid "Caret Up"
 msgstr "Cursor para Cima"
@@ -482,10 +483,10 @@ msgid "Caret Page Down"
 msgstr "Cursor uma Página Abaixo"
 
 msgid "Caret Document Start"
-msgstr "Cursor no Início da Documentação"
+msgstr "Cursor no Início do Documento"
 
 msgid "Caret Document End"
-msgstr "Cursor no Final da Documentação"
+msgstr "Cursor no Final do Documento"
 
 msgid "Caret Add Below"
 msgstr "Adicionar Cursor Abaixo"
@@ -494,13 +495,13 @@ msgid "Caret Add Above"
 msgstr "Adicionar Cursor Acima"
 
 msgid "Scroll Up"
-msgstr "Rolar Acima"
+msgstr "Rolar para Cima"
 
 msgid "Scroll Down"
-msgstr "Rolar Abaixo"
+msgstr "Rolar para Baixo"
 
 msgid "Select All"
-msgstr "Selecionar tudo"
+msgstr "Selecionar Tudo"
 
 msgid "Select Word Under Caret"
 msgstr "Selecionar Palavra sob Cursor"
@@ -539,7 +540,7 @@ msgid "Invalid input %d (not passed) in expression"
 msgstr "Entrada inválida %d (não passada) na expressão"
 
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self não pode ser usado porque sua instância é null (não passado)"
+msgstr "self não pode ser usado porque instância é nula (não passada)"
 
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Operandos inválidos para o operador %s, %s e %s."
@@ -665,7 +666,7 @@ msgid "Make Handles Free"
 msgstr "Liberar Manipuladores"
 
 msgid "Make Handles Linear"
-msgstr "Tornar Linear os manipuladores"
+msgstr "Tornar os Manipuladores Lineares"
 
 msgid "Make Handles Balanced"
 msgstr "Balancear Manipuladores"
@@ -716,13 +717,13 @@ msgid "Animation Multi Change Transition"
 msgstr "Transição de Mudança Múltipla de Animação"
 
 msgid "Animation Multi Change %s"
-msgstr "Mudanças na Animação Múltipla %s"
+msgstr "Mudança Múltipla de Animação %s"
 
 msgid "Animation Multi Change Keyframe Value"
-msgstr "Mudanças no Valor do Quadro-Chave da Animação Múltipla"
+msgstr "Valor do Quadro-Chave da Mudança Múltipla de Animação"
 
 msgid "Animation Multi Change Call"
-msgstr "Mudanças na Chamada da Animação Múltipla"
+msgstr "Chamada de Mudança Múltipla de Animação"
 
 msgid "Change Animation Length"
 msgstr "Alterar Duração da Animação"
@@ -768,7 +769,7 @@ msgid "Animation Playback Track"
 msgstr "Faixa de Reprodução de Animação"
 
 msgid "Animation length (frames)"
-msgstr "Duração da Animação (em frames)"
+msgstr "Duração da Animação (em quadros)"
 
 msgid "Animation length (seconds)"
 msgstr "Duração da Animação (em segundos)"
@@ -13258,6 +13259,9 @@ msgstr "Outro Nó"
 msgid "Paste From Clipboard"
 msgstr "Colar da Área de Transferência"
 
+msgid "Filters"
+msgstr "Filtros"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Não é possível operar em nós de uma cena externa!"
 
@@ -13324,9 +13328,6 @@ msgstr "Auto Expandir Selecionados"
 
 msgid "All Scene Sub-Resources"
 msgstr "Todos os sub-recursos de cena"
-
-msgid "Filters"
-msgstr "Filtros"
 
 msgid "Filter by Type"
 msgstr "Filtrar por Tipo"
@@ -15147,14 +15148,6 @@ msgid ""
 msgstr ""
 "Um recurso SpriteFrames deve ser criado ou definido na propriedade "
 "\"Quadros\" para que AnimatedSprite2D exiba quadros."
-
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instantiated "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"Apenas um CanvasModulate visível é permitido por cena (ou conjunto de cenas "
-"instanciadas). O primeiro criado funcionará, enquanto o restante será "
-"ignorado."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"

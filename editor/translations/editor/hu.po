@@ -28,13 +28,15 @@
 # roli_greiner <greiner.roli@gmail.com>, 2023.
 # Adam Gulacsi <adam.gulacsi@gmail.com>, 2023.
 # Zsuzsanna Tatusko <zsutatusko@gmail.com>, 2023.
+# Adam Borda <borda.adam3@gmail.com>, 2023.
+# Netesfiu <r4verino@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-02 13:36+0000\n"
-"Last-Translator: Zsuzsanna Tatusko <zsutatusko@gmail.com>\n"
+"PO-Revision-Date: 2023-09-19 21:46+0000\n"
+"Last-Translator: Netesfiu <r4verino@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -42,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Nincs beállítva"
@@ -286,9 +288,6 @@ msgstr "Behúzás Növelése"
 msgid "Dedent"
 msgstr "Behúzás Csökkentése"
 
-msgid "Backspace"
-msgstr "Törlés Balra"
-
 msgid "Backspace Word"
 msgstr "Szó Törlése Balra"
 
@@ -403,6 +402,9 @@ msgstr ""
 
 msgid "An action with the name '%s' already exists."
 msgstr "'%s'  nevű művelet már létezik."
+
+msgid "Add Event"
+msgstr "Esemény hozzáadása"
 
 msgid "Add New Action"
 msgstr "Művelet hozzáadása"
@@ -604,6 +606,9 @@ msgstr "Sáv elérési útja helytelen, kulcs hozzáadása nem lehetséges."
 
 msgid "Add Method Track Key"
 msgstr "Metódus Sáv Kulcs Hozzáadása"
+
+msgid "BlendShape"
+msgstr "BlendShape"
 
 msgid "Methods"
 msgstr "Metódusok"
@@ -903,6 +908,9 @@ msgstr "Node Útvonal Másolása"
 msgid "Instance:"
 msgstr "Példány:"
 
+msgid "Value"
+msgstr "Érték"
+
 msgid "Stop"
 msgstr "Leállítás"
 
@@ -996,7 +1004,7 @@ msgid "Dependencies"
 msgstr "Függőségek"
 
 msgid "Resource"
-msgstr "Forrás"
+msgstr "Erőforrás"
 
 msgid "Path"
 msgstr "Útvonal"
@@ -1465,7 +1473,7 @@ msgid "Make Current"
 msgstr "Tegye jelenlegivé"
 
 msgid "Import"
-msgstr "Importálás"
+msgstr "Import"
 
 msgid "Export"
 msgstr "Exportálás"
@@ -1504,7 +1512,7 @@ msgid "Class:"
 msgstr "Osztály:"
 
 msgid "Inherits:"
-msgstr "Örököl:"
+msgstr "Örökli:"
 
 msgid "Inherited by:"
 msgstr "Őt örökli:"
@@ -1522,7 +1530,10 @@ msgid "default:"
 msgstr "alapértelmezett:"
 
 msgid "Constructors"
-msgstr "Közreműködők"
+msgstr "Építők"
+
+msgid "Operators"
+msgstr "Operátorok"
 
 msgid "Theme Properties"
 msgstr "Téma Tulajdonságai"
@@ -1546,8 +1557,14 @@ msgstr ""
 "Ennek a tulajdonságnak jelenleg nincs leírása. Segítsen minket azzal, hogy "
 "[color=$color][url=$url]hozzájárul eggyel[/url][/color]!"
 
+msgid "Constructor Descriptions"
+msgstr "Konstruktor leírása"
+
 msgid "Method Descriptions"
 msgstr "Metódus leírások"
+
+msgid "Operator Descriptions"
+msgstr "Operátor tulajdonságok"
 
 msgid "%d match."
 msgstr "%d egyezés."
@@ -2057,6 +2074,9 @@ msgstr "Visszajelzé Küldése s A Dokumentumokról"
 msgid "Community"
 msgstr "Közösség"
 
+msgid "Forward+"
+msgstr "Előre+"
+
 msgid "Update Continuously"
 msgstr "Folyamatos frissítés"
 
@@ -2067,7 +2087,7 @@ msgid "FileSystem"
 msgstr "Fájlrendszer"
 
 msgid "Inspector"
-msgstr "Megfigyelő"
+msgstr "Ellenőrző"
 
 msgid "Node"
 msgstr "Node"
@@ -2230,6 +2250,9 @@ msgstr "Szerkesztő Beállítások"
 
 msgid "General"
 msgstr "Általános"
+
+msgid "Unicode"
+msgstr "Unicode"
 
 msgid "All Devices"
 msgstr "Minden eszköz"
@@ -2676,7 +2699,7 @@ msgid "Import As:"
 msgstr "Importálás Mint:"
 
 msgid "Preset"
-msgstr "Előre beállított"
+msgstr "Előbeállítás"
 
 msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Jelenetek mentése, újraimportálás és újraindítás"
@@ -3728,7 +3751,7 @@ msgid "Transform Aborted."
 msgstr "Átalakítás Megszakítva."
 
 msgid "Orthogonal"
-msgstr "Ortogonális"
+msgstr "Orthogonal"
 
 msgid "Perspective"
 msgstr "Perspektíva"
@@ -3745,6 +3768,9 @@ msgstr "Z-Tengely Transzformáció."
 msgid "View Plane Transform."
 msgstr "Megnéz a Síklap transzformációját."
 
+msgid "FPS: %d"
+msgstr "FPS: %d"
+
 msgid "Cinematic Preview"
 msgstr "Filmszerű előnézet"
 
@@ -3754,11 +3780,17 @@ msgstr "Illesztés Használata"
 msgid "Insert Animation Key"
 msgstr "Animációs Kulcs Beszúrása"
 
+msgid "Transform"
+msgstr "átalakítás"
+
 msgid "Snap Object to Floor"
 msgstr "Objektum illesztése a padlóhoz"
 
 msgid "Settings..."
 msgstr "Beállítások..."
+
+msgid "Tonemap"
+msgstr "Tonemap"
 
 msgid "Remove Point from Curve"
 msgstr "Pont Eltávolítása Görbéről"
@@ -4176,6 +4208,9 @@ msgstr "Ugrás a következő töréspontra"
 msgid "Go to Previous Breakpoint"
 msgstr "Ugrás az előző töréspontra"
 
+msgid "ShaderFile"
+msgstr "ShaderFájl"
+
 msgid "Skeleton2D"
 msgstr "Csontváz2D"
 
@@ -4205,6 +4240,9 @@ msgstr "Animációs Képkockák:"
 
 msgid "Zoom Reset"
 msgstr "Nagyítás visszaállítása"
+
+msgid "Size"
+msgstr "Méret"
 
 msgid "Set Margin"
 msgstr "Margó Beállítása"
@@ -4239,11 +4277,17 @@ msgstr "Forgatás jobbra"
 msgid "Rotate Left"
 msgstr "Forgatás balra"
 
+msgid "Tiles"
+msgstr "Csempék"
+
 msgid "Yes"
 msgstr "Igen"
 
 msgid "TileSet"
 msgstr "Csempekészlet"
+
+msgid "TileMap"
+msgstr "TileMap"
 
 msgid "SSH Passphrase"
 msgstr "SSH Passphrase"
@@ -4268,6 +4312,9 @@ msgstr "Bemenet Hozzáadása"
 
 msgid "Add Output"
 msgstr "Kimenet hozzáadása"
+
+msgid "Float"
+msgstr "valós szám"
 
 msgid "Add Input Port"
 msgstr "Bemeneti port hozzáadása"
@@ -4376,6 +4423,9 @@ msgstr "Elem törlése"
 
 msgid "Localization"
 msgstr "Lokalizáció"
+
+msgid "Autoload"
+msgstr "Automatikus betöltés"
 
 msgid "Plugins"
 msgstr "Bővítmények"
@@ -4556,11 +4606,17 @@ msgstr "Bejövő RPC"
 msgid "Outgoing RPC"
 msgstr "Kimenő RPC"
 
+msgid "Config"
+msgstr "Konfiguráció"
+
 msgid "Network Profiler"
 msgstr "Hálózati profilkészítő"
 
 msgid "Clear the navigation mesh."
 msgstr "Navigációs háló törlése."
+
+msgid "Pose"
+msgstr "Póz"
 
 msgid "Invalid package name:"
 msgstr "Érvénytelen csomagnév:"

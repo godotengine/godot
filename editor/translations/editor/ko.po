@@ -31,7 +31,7 @@
 # JumpJetAvocado <dwkng@jbnu.ac.kr>, 2021.
 # Lee Minhak <minarihak@gmail.com>, 2022, 2023.
 # 한수현 <shh1473@ajou.ac.kr>, 2022.
-# Taehun Yun <yooontehoon@naver.com>, 2022.
+# Taehun Yun <yooontehoon@naver.com>, 2022, 2023.
 # vrSono <global.sonogong@gmail.com>, 2022.
 # Seonghyeon Cho <seonghyeoncho96@gmail.com>, 2022.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2022.
@@ -53,13 +53,14 @@
 # Overdue - <kaameo12@gmail.com>, 2023.
 # 최시현 <hihyun1234@ajou.ac.kr>, 2023.
 # Zinccccc <velocity2772@gmail.com>, 2023.
+# 조현민 <chm49@naver.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-05 08:33+0000\n"
-"Last-Translator: Zinccccc <velocity2772@gmail.com>\n"
+"PO-Revision-Date: 2023-10-01 21:58+0000\n"
+"Last-Translator: Taehun Yun <yooontehoon@naver.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -67,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "설정 해제"
@@ -10703,7 +10704,7 @@ msgid "TileSet"
 msgstr "타일셋"
 
 msgid "TileMap"
-msgstr "타일맵"
+msgstr "TileMap"
 
 msgid ""
 "No VCS plugins are available in the project. Install a VCS plugin to use VCS "
@@ -11632,6 +11633,9 @@ msgstr "SDF 노멀 텍스처 룩업을 수행합니다."
 msgid "Function to be applied on texture coordinates."
 msgstr "텍스처 좌표에 적용할 함수입니다."
 
+msgid "Polar coordinates conversion applied on texture coordinates."
+msgstr "텍스처 좌표에 적용되는 극좌표 변환."
+
 msgid "Perform the cubic texture lookup."
 msgstr "세제곱 텍스처 룩업을 수행합니다."
 
@@ -11649,6 +11653,12 @@ msgstr "2D 배열 텍스처 룩업을 수행합니다."
 
 msgid "Perform the 3D texture lookup."
 msgstr "3D 텍스처 룩업을 수행합니다."
+
+msgid "Apply panning function on texture coordinates."
+msgstr "텍스처 좌표에 패닝 기능을 추가합니다."
+
+msgid "Apply scaling function on texture coordinates."
+msgstr "텍스처 좌표에 스케일링 기능을 적용합니다."
 
 msgid "Cubic texture parameter lookup."
 msgstr "세제곱 텍스처 매개변수 룩업."
@@ -11696,6 +11706,13 @@ msgstr "변형을 4개의 벡터로 분해합니다."
 msgid "Calculates the determinant of a transform."
 msgstr "변형의 행렬식을 계산합니다."
 
+msgid ""
+"Calculates how the object should face the camera to be applied on Model View "
+"Matrix output port for 3D objects."
+msgstr ""
+"3D 오브젝트의 Model View Matrix 출력 포트에서 오브젝트가 적용될 카메라를 향하"
+"게 하는 방법을 계산합니다."
+
 msgid "Calculates the inverse of a transform."
 msgstr "변형의 역함수를 계산합니다."
 
@@ -11711,6 +11728,9 @@ msgstr "두 변형을 나눕니다."
 msgid "Multiplies two transforms."
 msgstr "두 변형을 곱합니다."
 
+msgid "Performs per-component multiplication of two transforms."
+msgstr "두 트랜스폼 벡터의 성분별 곱셈을 수행합니다."
+
 msgid "Subtracts two transforms."
 msgstr "두 Transform을 뺍니다."
 
@@ -11722,6 +11742,24 @@ msgstr "변형 상수."
 
 msgid "Transform parameter."
 msgstr "변형 매개변수."
+
+msgid ""
+"The distance fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"Distance fade 효과는 다른 오브젝트와의 거리에 따라 각 픽셀이 흐려집니다."
+
+msgid ""
+"The proximity fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"Proximity fade 효과는 다른 오브젝트와의 거리에 따라 각 픽셀이 흐려집니다."
+
+msgid "Returns a random value between the minimum and maximum input values."
+msgstr "입력된 값의 최소값과 최대값 사이의 임의의 값을 반환합니다."
+
+msgid "Remaps a given input from the input range to the output range."
+msgstr "주어진 입력을 입력 범위에서 출력 범위로 리매핑합니다."
 
 msgid "Vector function."
 msgstr "벡터 함수."
@@ -11798,6 +11836,9 @@ msgstr "두 벡터 간의 선형 보간."
 
 msgid "Linear interpolation between two vectors using scalar."
 msgstr "스칼라를 사용하 두 벡터 간의 선형 보간."
+
+msgid "Performs a fused multiply-add operation (a * b + c) on vectors."
+msgstr "벡터에서 융합된 곱셈-덧셈 연산(a * b + c)을 수행합니다."
 
 msgid "Calculates the normalize product of vector."
 msgstr "벡터의 노멀 값을 계산합니다."
@@ -12157,6 +12198,9 @@ msgstr "버전 컨트롤 메타데이터:"
 
 msgid "Git"
 msgstr "Git"
+
+msgid "This project was last edited in a different Godot version: "
+msgstr "이 프로젝트는 다른 Godot 버전에서 마지막으로 편집되었습니다: "
 
 msgid "This project uses features unsupported by the current build:"
 msgstr "이 프로젝트는 현재 빌드에서는 지원하지 않는 기능을 사용합니다:"
@@ -12882,6 +12926,9 @@ msgstr "다른 노드"
 msgid "Paste From Clipboard"
 msgstr "클립보드에서 붙여넣기"
 
+msgid "Filters"
+msgstr "필터"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "다른 씬에서 수행할 수 없는 작업입니다!"
 
@@ -12947,9 +12994,6 @@ msgstr "선택으로 자동 확장"
 
 msgid "All Scene Sub-Resources"
 msgstr "모든 씬 하위 리소스"
-
-msgid "Filters"
-msgstr "필터"
 
 msgid "Filter by Type"
 msgstr "타입으로 필터"
@@ -13812,10 +13856,28 @@ msgstr ""
 "\"최소 SDK\"는 \"Gradle 빌드 사용\"가 활성화된 경우에만 오버라이드할 수 있습니"
 "다."
 
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+"\"최소 SDK\"는 올바른 정수여야 하지만, 다음 값은 올바르지 않습니다(\"%s\")."
+
+msgid ""
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the Godot "
+"library."
+msgstr ""
+"\"최소 SDK\"는 Godot 라이브러리에 필요한 버전인 %d보다 낮을 수 없습니다."
+
 msgid ""
 "\"Target SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
 msgstr ""
 "\"대상 SDK\"는 \"Use Gradle Build\"가 활성화된 경우에만 재정의할 수 있습니다."
+
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+"\"대상 SDK\"는 올바른 정수여야 하지만, 다음 값은 올바르지 않습니다(\"%s\")."
+
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
+msgstr "\"대상 SDK\" 버전은 \"최소 SDK\" 버전보다 크거나 같아야 합니다."
 
 msgid "Select device from the list"
 msgstr "목록에서 기기 선택"
@@ -13903,15 +13965,41 @@ msgstr "'build-tools' 디렉토리가 누락되어 있습니다!"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Android SDK build-tools의 apksigner 명령을 찾을 수 없습니다."
 
+msgid ""
+"\"Target SDK\" %d is higher than the default version %d. This may work, but "
+"wasn't tested and may be unstable."
+msgstr ""
+"\"대상 SDK\"(%d)는 기본 버전(%d)보다 높아야 합니다. 이것은 동작하지만, 테스트"
+"되지 않았고 불안정할 수 있습니다."
+
+msgid ""
+"The \"%s\" renderer is designed for Desktop devices, and is not suitable for "
+"Android devices."
+msgstr ""
+"\"%s\" 렌더러는 데스크톱 기기용으로 설계되었고, Android 기기에 적합하지 않습니"
+"다."
+
+msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
+msgstr "\"%s\" 렌더러에서 \"최소 SDK\"는 %d보다 크거나 같아야 합니다."
+
 msgid "Code Signing"
 msgstr "코드 서명"
+
+msgid ""
+"All 'apksigner' tools located in Android SDK 'build-tools' directory failed "
+"to execute. Please check that you have the correct version installed for your "
+"target sdk version. The resulting %s is unsigned."
+msgstr ""
+"Android SDK 'build-tools' 디렉토리에 있는 모든 'apksigner' 도구를 실행하지 못"
+"했습니다. 대상 SDK 버전에 맞는 버전이 설치되어 있는지 확인해주세요. 결과물(%s)"
+"은 서명되지 않았습니다."
 
 msgid ""
 "'apksigner' could not be found. Please check that the command is available in "
 "the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
 "'apksigner'를 찾을 수 없습니다. 명령이 Android SDK build-tools 디렉토리에서 사"
-"용 가능한지 확인해주세요. 결과물 %s는 서명되지 않았습니다."
+"용 가능한지 확인해주세요. 결과물(%s)은 서명되지 않았습니다."
 
 msgid "Signing debug %s..."
 msgstr "디버그 %s에 서명 중..."
@@ -14052,6 +14140,27 @@ msgstr "코드 서명에 실패했습니다. 자세한 사항은 에디터 로�
 msgid "Xcode Build"
 msgstr "Xcode 빌드"
 
+msgid "Xcode project build failed, see editor log for details."
+msgstr ""
+"Xcode 프로젝트 빌드에 실패했습니다. 자세한 사항은 에디터 로그를 참조하세요."
+
+msgid ".ipa export failed, see editor log for details."
+msgstr ".ipa 내보내기에 실패했습니다. 자세한 사항은 에디터 로그를 참조하세요."
+
+msgid ""
+".ipa can only be built on macOS. Leaving Xcode project without building the "
+"package."
+msgstr ""
+".ipa는 macOS에서만 빌드할 수 있습니다. 패키지를 빌드하지 않고 Xcode 프로젝트"
+"를 종료합니다."
+
+msgid ""
+"Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. "
+"Use Godot 3 to target iOS with C#/Mono instead."
+msgstr ""
+"C#/.NET을 사용해 iOS로 내보내기는 현재 Godot 4에서 지원하지 않습니다. iOS 대상"
+"에서 C#/Mono를 사용하려면 Godot 3를 사용해주세요."
+
 msgid "Identifier is missing."
 msgstr "식별자가 누락되어 있습니다."
 
@@ -14118,20 +14227,35 @@ msgstr "프로젝트 시작 중..."
 msgid "Can't get filesystem access."
 msgstr "파일시스템 접근 권한을 얻지 못했습니다."
 
+msgid "Failed to get Info.plist hash."
+msgstr "Info.plist 해시를 가져오지 못했습니다."
+
 msgid "Invalid Info.plist, no exe name."
-msgstr "잘못된 Info.plist. exe 이름이 없습니다."
+msgstr "Info.plist가 올바르지 않습니다. exe 이름이 없습니다."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Info.plist가 올바르지 않습니다. bundle id가 없습니다."
 
 msgid "Invalid Info.plist, can't load."
-msgstr "잘못된 Info.plist. 로드할 수 없습니다."
+msgstr "Info.plist가 올바르지 않습니다. 로드할 수 없습니다."
 
 msgid "Failed to create \"%s\" subfolder."
 msgstr "서브폴더 \"%s\"을(를) 만들 수 없습니다."
 
+msgid "Failed to extract thin binary."
+msgstr "thin binary 내보내기에 실패했습니다."
+
 msgid "Invalid binary format."
 msgstr "잘못된 바이너리 포맷."
 
+msgid "Already signed!"
+msgstr "이미 서명되었습니다!"
+
 msgid "Failed to process nested resources."
 msgstr "중첩된 리소스를 처리하지 못했습니다."
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "_CodeSignature 하위 폴더를 생성하지 못했습니다."
 
 msgid "Failed to get CodeResources hash."
 msgstr "CodeResources 해시를 가져오지 못했습니다."
@@ -14402,13 +14526,6 @@ msgid ""
 msgstr ""
 "AnimatedSprite2D가 프레임을 보여주기 위해서는 \"Frames\" 속성에서 "
 "SpriteFrames 리소스를 만들거나 설정해야 합니다."
-
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instantiated "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"CanvasModulate는 씬 (또는 인스턴트된 씬들) 당 단 하나만 보일 수 있습니다. 처음"
-"에 만든 것만 작동하고, 나머지는 무시됩니다."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -15331,6 +15448,20 @@ msgstr ""
 
 msgid "This parameter type does not support the '%s' qualifier."
 msgstr "이 파리미터 타입은 '%s' 한정자를 지원하지 않습니다."
+
+msgid ""
+"Global parameter '%s' does not exist.\n"
+"Create it in the Project Settings."
+msgstr ""
+"전역 매개변수(%s)가 없습니다.\n"
+"Project Settings에서 생성해주세요."
+
+msgid ""
+"Global parameter '%s' has an incompatible type for this kind of node.\n"
+"Change it in the Project Settings."
+msgstr ""
+"전역 매개변수(%s)에 이런 종류의 노드에서 지원되지 않는 타입이 있습니다.\n"
+"Project Settings에서 변경해주세요."
 
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "

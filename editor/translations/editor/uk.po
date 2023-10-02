@@ -34,13 +34,15 @@
 # Dan <jonweblin2205@protonmail.com>, 2023.
 # Nazar <Nazar.kris25@gmail.com>, 2023.
 # Олександр Тринадцятко <santri0303@gmail.com>, 2023.
+# Siked Siked <siked3@gmail.com>, 2023.
+# Kipя <yankirill@icloud.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-11 23:45+0000\n"
-"Last-Translator: Олександр Тринадцятко <santri0303@gmail.com>\n"
+"PO-Revision-Date: 2023-09-27 19:04+0000\n"
+"Last-Translator: Siked Siked <siked3@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -49,7 +51,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Зняти"
@@ -1020,6 +1022,10 @@ msgstr "Співвідношення масштабу:"
 msgid "Select Transition and Easing"
 msgstr "Вибрати Перехід та Плавність"
 
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Синусоїдний"
+
 msgid "Animation Baker"
 msgstr "Запікання анімації"
 
@@ -1439,7 +1445,7 @@ msgid "Delete All Breakpoints"
 msgstr "Видалити всі точки зупинки"
 
 msgid "Copy Error"
-msgstr "Помилка копіювання"
+msgstr "Копіювати помилку"
 
 msgid "Open C++ Source on GitHub"
 msgstr "Відкрити початковий код C++ на GitHub"
@@ -1542,7 +1548,7 @@ msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"Ресурс \"%S \" використовується.\n"
+"Ресурс \"%s \" використовується.\n"
 "Зміни набудуть чинності лише після перезавантаження."
 
 msgid "Dependencies"
@@ -1956,10 +1962,10 @@ msgid "3D Engine"
 msgstr "3D рушій"
 
 msgid "2D Physics"
-msgstr "Двовимірна фізика"
+msgstr "2D фізика"
 
 msgid "3D Physics"
-msgstr "Просторова фізика"
+msgstr "3D фізика"
 
 msgid "Navigation"
 msgstr "Навігація"
@@ -2146,7 +2152,7 @@ msgid "History Dock"
 msgstr "Панель Історія"
 
 msgid "Allows to view and edit 3D scenes."
-msgstr "Надає змогу переглядати і редагувати просторові сцени."
+msgstr "Надає змогу переглядати і редагувати 3D сцени."
 
 msgid "Allows to edit scripts using the integrated script editor."
 msgstr ""
@@ -2589,7 +2595,7 @@ msgid "New Size:"
 msgstr "Новий розмір:"
 
 msgid "Element %s"
-msgstr "Елемент %"
+msgstr "Елемент %s"
 
 msgid "Add Metadata"
 msgstr "Додати метадані"
@@ -4330,6 +4336,13 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Файл або тека з таким іменем вже існує."
 
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':"
+msgstr ""
+"Наступні файли або папки конфліктують з елементами в цільовому розташуванні "
+"'%s':"
+
 msgid "Duplicating file:"
 msgstr "Дублювання файлу:"
 
@@ -5067,9 +5080,9 @@ msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
 "texture compression to reduce memory usage (blue channel is discarded)."
 msgstr ""
-"%s: виявлено текстуру, як використано як нормальну карту у просторовій формі. "
-"Вмикаємо стискання червоно-зеленої текстури для зменшення споживання пам'яті "
-"(канал синього відкинуто)."
+"%s: виявлено текстуру, що використовується як карта нормалей в 3D. Вмикаємо "
+"стискання червоно-зеленої текстури для зменшення споживання пам'яті (канал "
+"синього відкинуто)."
 
 msgid ""
 "%s: Texture detected as used as a roughness map in 3D. Enabling roughness "
@@ -5089,10 +5102,10 @@ msgid "2D/3D (Auto-Detect)"
 msgstr "2D/3D (автовизначення)"
 
 msgid "2D"
-msgstr "Двовимірна графіка"
+msgstr "2D"
 
 msgid "3D"
-msgstr "Просторова графіка"
+msgstr "3D"
 
 msgid "<Unnamed Material>"
 msgstr "<Безіменний матеріал>"
@@ -5158,6 +5171,9 @@ msgstr "Витягнути матеріали у Файли ресурсів"
 
 msgid "Extract"
 msgstr "Витяг"
+
+msgid "Already Saving"
+msgstr "Вже зберігається"
 
 msgid ""
 "This mesh already saves to an external resource, no action will be taken."
@@ -8918,7 +8934,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "Створити вільну позу з кісток"
 
 msgid "Skeleton2D"
-msgstr "Плоский каркас"
+msgstr "Skeleton2D"
 
 msgid "Reset to Rest Pose"
 msgstr "Відновити вільну позу"
@@ -8942,7 +8958,7 @@ msgid "Set Bone Parentage"
 msgstr "Задати кістці предка"
 
 msgid "Skeleton3D"
-msgstr "Скелет 3D"
+msgstr "Skeleton3D"
 
 msgid "Reset All Bone Poses"
 msgstr "Скинути всі пози кісток"
@@ -8985,7 +9001,7 @@ msgid "Create Polygon2D"
 msgstr "Створити Polygon2D"
 
 msgid "Polygon2D Preview"
-msgstr "Попередній перегляд плоского багатокутника"
+msgstr "Попередній перегляд Polygon2D"
 
 msgid "Create CollisionPolygon2D"
 msgstr "Створити CollisionPolygon2D"
@@ -9033,6 +9049,9 @@ msgstr "Некоректна геометрія, неможливо створи
 
 msgid "Create LightOccluder2D Sibling"
 msgstr "Створити близнюка LightOccluder2D"
+
+msgid "Sprite2D"
+msgstr "Sprite2D"
 
 msgid "Simplification:"
 msgstr "Спрощення:"
@@ -9779,7 +9798,7 @@ msgid ""
 msgstr ""
 "Джерело: %d\n"
 "Координати атласу: %s\n"
-"Альтернатива: 0"
+"Альтернатива: %d"
 
 msgid "No atlas source with a valid texture selected."
 msgstr "Не вибрано жодного джерела атласу з коректною текстурою."
@@ -11729,6 +11748,9 @@ msgstr "Метадані керування версіями:"
 msgid "Git"
 msgstr "Git"
 
+msgid "This project uses features unsupported by the current build:"
+msgstr "Цей проект використовує функції, які не підтримуються поточною збіркою:"
+
 msgid "Error: Project is missing on the filesystem."
 msgstr "Помилка: у файловій системі немає проєкту."
 
@@ -12200,10 +12222,10 @@ msgid "Root Type:"
 msgstr "Тип кореня:"
 
 msgid "2D Scene"
-msgstr "Плоска сцена"
+msgstr "2D сцена"
 
 msgid "3D Scene"
-msgstr "Просторова сцена"
+msgstr "3D сцена"
 
 msgid "User Interface"
 msgstr "Інтерфейс користувача"
@@ -12309,8 +12331,8 @@ msgstr ""
 "Не вдалося зберегти гілку кореневого вузла як екземпляр сцени.\n"
 "Щоб створити редаговану копію поточної сцени, продублюйте її за допомогою "
 "контекстного меню бічної панелі файлової системи\n"
-"або створіть успадковану сцену за допомогою Сцена > Створити успадковану "
-"сцену...."
+"або створіть успадковану сцену за допомогою Сцена > Нова успадкована "
+"сцена ...."
 
 msgid ""
 "Can't save the branch of an already instantiated scene.\n"
@@ -12319,8 +12341,7 @@ msgid ""
 msgstr ""
 "Не вдалося зберегти гілку вже створеного екземпляра сцени.\n"
 "Щоб створити варіацію сцени, ви можете створити успадковану сцену на основі "
-"екземпляра сцени за допомогою пункту меню Сцена > Створити успадковану "
-"сцену... ."
+"екземпляра сцени за допомогою пункту меню Сцена > Нова успадкована сцена... ."
 
 msgid ""
 "Can't save a branch which is a child of an already instantiated scene.\n"
@@ -12383,6 +12404,9 @@ msgstr "Інший вузол"
 
 msgid "Paste From Clipboard"
 msgstr "Вставити з буфера обміну"
+
+msgid "Filters"
+msgstr "Фільтри"
 
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Не можна працювати із вузлами зі сторонньої сцени!"
@@ -12447,9 +12471,6 @@ msgstr "Завантажити як заповнювач"
 
 msgid "Auto Expand to Selected"
 msgstr "Автоматичне розширення до вибраного"
-
-msgid "Filters"
-msgstr "Фільтри"
 
 msgid "Filter by Type"
 msgstr "Фільтрувати за типом"
@@ -13770,6 +13791,9 @@ msgstr ""
 msgid "Cannot sign file %s."
 msgstr "Не вдається підписати файл %s."
 
+msgid "PKG Creation"
+msgstr "Створення PKG"
+
 msgid "DMG Creation"
 msgstr "Створення DMG"
 
@@ -14072,13 +14096,6 @@ msgid ""
 msgstr ""
 "Ресурс SpriteFrames повинен бути створений або встановлений у властивості "
 "\"Frames\", щоб AnimatedSprite2D міг відображати кадри."
-
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instantiated "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"У сцені (або наборі екземплярів сцен) може бути лише один видимий "
-"CanvasModulate. Працюватиме перший зі створених, решту буде проігноровано."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -15689,6 +15706,9 @@ msgstr "Некоректний ifdef."
 
 msgid "Invalid ifndef."
 msgstr "Некоректний ifndef."
+
+msgid "Shader include file does not exist:"
+msgstr "Файл включення шейдера не існує:"
 
 msgid ""
 "Shader include load failed. Does the shader include exist? Is there a cyclic "

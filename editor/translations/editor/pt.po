@@ -38,13 +38,16 @@
 # thegamerman88 <leoluniere@outlook.com>, 2023.
 # Hevinis <meauriocardoso@gmail.com>, 2023.
 # Ricardo Caetano <ricardofilipecaetano@gmail.com>, 2023.
+# Ruan Azevedo <ruan.azevedo@gmail.com>, 2023.
+# Fábio Sousa <fabiodaniel.2000@gmail.com>, 2023.
+# Lucas Souza <lucasteisouza@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-10 08:17+0000\n"
-"Last-Translator: Ricardo Caetano <ricardofilipecaetano@gmail.com>\n"
+"PO-Revision-Date: 2023-09-29 19:03+0000\n"
+"Last-Translator: Lucas Souza <lucasteisouza@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -52,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Desativar"
@@ -149,6 +152,9 @@ msgstr "Voltar, Sony Select, Xbox Back, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Menu, Sony PS, Xbox Home"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Iniciar, Menu Xbox, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Alavanca Esquerda, Sony L3, Xbox L/LS"
@@ -1074,16 +1080,60 @@ msgid "Select Transition and Easing"
 msgstr "Selecione a Transição e Suavização"
 
 msgctxt "Transition Type"
+msgid "Linear"
+msgstr "Linear"
+
+msgctxt "Transition Type"
 msgid "Sine"
-msgstr "Seno"
+msgstr "Sine"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Quint"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Quart"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Quad"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "Expo"
 
 msgctxt "Transition Type"
 msgid "Elastic"
 msgstr "Elástico"
 
 msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "Cúbico"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Circular"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Bounce"
+
+msgctxt "Transition Type"
+msgid "Back"
+msgstr "Back"
+
+msgctxt "Transition Type"
 msgid "Spring"
-msgstr "Mola"
+msgstr "Spring"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "Entrada"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Saída"
 
 msgctxt "Ease Type"
 msgid "InOut"
@@ -1093,11 +1143,29 @@ msgctxt "Ease Type"
 msgid "OutIn"
 msgstr "Saída-Entrada"
 
+msgid "Transition Type:"
+msgstr "Tipo de Transição:"
+
+msgid "Ease Type:"
+msgstr "Mudar tipo base:"
+
+msgid "FPS:"
+msgstr "FPS:"
+
 msgid "Animation Baker"
-msgstr "Gerar Animação"
+msgstr "Gerador de Animação"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "Pos 3D/Rot/Escl Pista:"
+
+msgid "Blendshape Track:"
+msgstr "Faixa de Transformação:"
+
+msgid "Value Track:"
+msgstr "Pista de Valor:"
 
 msgid "Select Tracks to Copy"
-msgstr "Selecionar Pistas a Copiar"
+msgstr "Selecionar Pistas para Copiar"
 
 msgid "Select All/None"
 msgstr "Selecionar Tudo/Nada"
@@ -1122,6 +1190,9 @@ msgstr "Número da Linha:"
 
 msgid "%d replaced."
 msgstr "%d substituído."
+
+msgid "No match"
+msgstr "Sem correspondência"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -1385,8 +1456,23 @@ msgstr "Alternar visibilidade"
 msgid "Updating assets on target device:"
 msgstr "Atualizando assets no dispositivo alvo:"
 
+msgid "Syncing headers"
+msgstr "Preparando headers"
+
+msgid "Getting remote file system"
+msgstr "Obtendo arquivo de sistema remoto"
+
+msgid "Decompressing remote file system"
+msgstr "Descomprimindo arquivos de sistema remotos"
+
+msgid "Scanning for local changes"
+msgstr "Verificando alterações locais"
+
 msgid "Sending list of changed files:"
 msgstr "Enviando lista de arquivos mudados:"
+
+msgid "Sending file:"
+msgstr "Enviando arquivo:"
 
 msgid "ms"
 msgstr "ms"
@@ -1648,6 +1734,11 @@ msgstr "Editor de dependência"
 msgid "Search Replacement Resource:"
 msgstr "Procurar Recurso de substituição:"
 
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "Abrir Cena"
+msgstr[1] "Abrir Cenas"
+
 msgid "Open"
 msgstr "Abrir"
 
@@ -1718,12 +1809,27 @@ msgstr "Possui"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Recursos sem posse explícita:"
 
+msgid "Folder name cannot be empty."
+msgstr "O nome da pasta não pode ser vazio."
+
+msgid "Folder name contains invalid characters."
+msgstr "O nome da pasta contém caracteres inválidos."
+
+msgid "File with that name already exists."
+msgstr "Já existe um arquivo com este nome."
+
+msgid "Folder with that name already exists."
+msgstr "Já existe uma pasta com este nome."
+
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "Usando barras em nomes de arquivos irá criar sub-arquivos recursivamente."
 
 msgid "Could not create folder."
 msgstr "Não consegui criar pasta."
+
+msgid "Create new folder in %s:"
+msgstr "Criar nova pasta em %s:"
 
 msgid "Create Folder"
 msgstr "Criar Pasta"
@@ -2662,6 +2768,11 @@ msgstr ""
 msgid "Open Documentation"
 msgstr "Abrir documentação"
 
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "(%d alteração)"
+msgstr[1] "(%d alterações)"
+
 msgid "Add element to property array with prefix %s."
 msgstr "Adicionar o elemento à matriz de propriedades com prefixo %s."
 
@@ -2920,6 +3031,9 @@ msgstr "Erro ao processar o ficheiro '%s'."
 
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "O ficheiro de cena '%s' parece ser inválido/corrompido."
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "Ficheiro '%s' ausente ou uma de suas dependências."
 
 msgid "Error while loading file '%s'."
 msgstr "Erro ao carregar o ficheiro '%s'."
@@ -3202,6 +3316,9 @@ msgstr "Limpar Cenas Recentes"
 msgid "There is no defined scene to run."
 msgstr "Não existe cena definida para execução."
 
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Engine"
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -3443,6 +3560,9 @@ msgstr "Perguntas & Respostas"
 
 msgid "Report a Bug"
 msgstr "Denunciar um Bug"
+
+msgid "Copy System Info"
+msgstr "Copiar informações do Sistema"
 
 msgid "Copies the system info as a single-line text into the clipboard."
 msgstr ""
@@ -3831,6 +3951,12 @@ msgstr ""
 "Não foi possível executar o script do editor, esqueceu-se de substituir o "
 "método '_run'?"
 
+msgid "Undo: %s"
+msgstr "Desfazer: %s"
+
+msgid "Redo: %s"
+msgstr "Refazer: %s"
+
 msgid "Edit Built-in Action"
 msgstr "Editar Ação Integrada"
 
@@ -3917,6 +4043,12 @@ msgstr "Joystick 4 Acima"
 
 msgid "Joystick 4 Down"
 msgstr "Joystick 4 Abaixo"
+
+msgid "or"
+msgstr "ou"
+
+msgid "Unicode"
+msgstr "Unicode"
 
 msgid "Joypad Axis %d %s (%s)"
 msgstr "Eixo do Joypad %d %s (%s)"
@@ -4253,6 +4385,9 @@ msgstr "Recursos a exportar:"
 msgid "Delete preset '%s'?"
 msgstr "Apagar predefinição '%s'?"
 
+msgid "(Inherited)"
+msgstr "(Herdado)"
+
 msgid "%s Export"
 msgstr "Exportar %s"
 
@@ -4503,6 +4638,15 @@ msgid "Unable to update dependencies:"
 msgstr "Incapaz de atualizar dependências:"
 
 msgid ""
+"This filename begins with a dot rendering the file invisible to the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager."
+msgstr ""
+"O nome desse arquivo se inicia com um ponto, fazendo com que se torne "
+"invisível ao editor.\n"
+"Caso queira alterar o nome mesmo assim, utilize o gerenciador de arquivos do "
+"seu sistema operacional."
+
+msgid ""
 "This file extension is not recognized by the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager.\n"
 "After renaming to an unknown extension, the file won't be shown in the editor "
@@ -4516,6 +4660,13 @@ msgstr ""
 
 msgid "A file or folder with this name already exists."
 msgstr "Um Ficheiro ou diretoria já existe com este nome."
+
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':"
+msgstr ""
+"Os seguintes arquivo ou pastas estão em conflito com os itens na localização "
+"'%s':"
 
 msgid "Do you wish to overwrite them or rename the copied files?"
 msgstr "Você deseja substituir eles ou renomear os arquivos copiados?"
@@ -4547,6 +4698,9 @@ msgstr "Editar Dependências..."
 msgid "View Owners..."
 msgstr "Ver proprietários..."
 
+msgid "Create New"
+msgstr "Criar Novo"
+
 msgid "Folder..."
 msgstr "Pasta..."
 
@@ -4561,6 +4715,18 @@ msgstr "Recurso..."
 
 msgid "TextFile..."
 msgstr "Fucheiro de Texto..."
+
+msgid "Expand Folder"
+msgstr "Expandir Pasta"
+
+msgid "Expand Hierarchy"
+msgstr "Expandir Hierarquia"
+
+msgid "Collapse Hierarchy"
+msgstr "Fechar Hierarquia"
+
+msgid "Move/Duplicate To..."
+msgstr "Mover/Duplicar para..."
 
 msgid "Add to Favorites"
 msgstr "Adicionar aos Favoritos"
@@ -4646,6 +4812,9 @@ msgstr ""
 
 msgid "Overwrite"
 msgstr "Sobrescrever"
+
+msgid "Keep Both"
+msgstr "Manter ambos"
 
 msgid "Create Script"
 msgstr "Criar Script"
@@ -4743,6 +4912,9 @@ msgstr "Não foi possível criar a pasta. Já existe uma com esse nome."
 
 msgid "Choose a Directory"
 msgstr "Escolha uma Diretoria"
+
+msgid "Copy File(s)"
+msgstr "Copiar arquivo(s)"
 
 msgid "Network"
 msgstr "Rede"
@@ -7158,11 +7330,20 @@ msgstr "Criar Pontos de emissão a partir do Nó"
 msgid "Load Curve Preset"
 msgstr "Carregar Curva Predefinida"
 
+msgid "Add Curve Point"
+msgstr "Adicionar Ponto da curva"
+
 msgid "Remove Curve Point"
 msgstr "Remover Ponto da curva"
 
 msgid "Modify Curve Point"
 msgstr "Modificar Ponto da curva"
+
+msgid "Modify Curve Point's Left Tangent"
+msgstr "Modificar tangente esquerda da curva"
+
+msgid "Modify Curve Point's Right Tangent"
+msgstr "Modificar tangente direita da curva"
 
 msgid "Hold Shift to edit tangents individually"
 msgstr "Pressione Shift para editar tangentes individualmente"
@@ -7292,6 +7473,15 @@ msgid "Run %d Instance"
 msgid_plural "Run %d Instances"
 msgstr[0] "Executando %d Instância"
 msgstr[1] "Executando %d Instâncias"
+
+msgid "Size: %s"
+msgstr "Tamanho: %s"
+
+msgid "Type: %s"
+msgstr "Tipo: %s"
+
+msgid "Dimensions: %d × %d"
+msgstr "Dimensões: %d x %d"
 
 msgid "Overrides (%d)"
 msgstr "Sobrescreveu (%d)"
@@ -7840,6 +8030,9 @@ msgstr "Definir end_position"
 
 msgid "Set NavigationObstacle3D Vertices"
 msgstr "Definir Vértices do NavigationObstacle3D"
+
+msgid "Edit Vertices"
+msgstr "Editar vértices"
 
 msgid "Edit Poly"
 msgstr "Editar Polígono"
@@ -12348,6 +12541,9 @@ msgstr ""
 "Gostaria de explorar os projetos de exemplo oficiais na Biblioteca de "
 "Recursos?"
 
+msgid "Tags are capitalized automatically when displayed."
+msgstr "Letras maiúsculas são exibidas automaticamente nas tags."
+
 msgid "Add Project Setting"
 msgstr "Adicionar Configuração ao Projeto"
 
@@ -12537,6 +12733,9 @@ msgstr "Nome de ficheiro inválido."
 msgid "File already exists."
 msgstr "O ficheiro já existe."
 
+msgid "Root node valid."
+msgstr "Nó raiz valido."
+
 msgid "Invalid root node name."
 msgstr "Nome de nó raiz inválido."
 
@@ -12632,6 +12831,9 @@ msgstr "Apagar nó \"%s\" e filhos?"
 msgid "Delete node \"%s\"?"
 msgstr "Apagar nó \"%s\"?"
 
+msgid "Some nodes are referenced by animation tracks."
+msgstr "Alguns nós são referenciados por tracks de animação."
+
 msgid "Saving the branch as a scene requires having a scene open in the editor."
 msgstr ""
 "Para guardar o ramo como cena é necessário ter uma cena aberta no editor."
@@ -12726,6 +12928,9 @@ msgstr "Outro Nó"
 msgid "Paste From Clipboard"
 msgstr "Colar da Área de Transferência"
 
+msgid "Filters"
+msgstr "Filtros"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "Incapaz de operar em nós de uma cena externa!"
 
@@ -12790,9 +12995,6 @@ msgstr "Carregar como marcador de posição"
 msgid "Auto Expand to Selected"
 msgstr "Auto Expandir Selecionados"
 
-msgid "Filters"
-msgstr "Filtros"
-
 msgid "Filter by Type"
 msgstr "Filtrar por Tipo"
 
@@ -12823,6 +13025,12 @@ msgstr "Incapaz de colar o nó raiz na mesma cena."
 
 msgid "Paste Node(s)"
 msgstr "Colar Nó(s)"
+
+msgid "<Unnamed> at %s"
+msgstr "<Material Sem Nome> em %s"
+
+msgid "(used %d times)"
+msgstr "(utilizado %d vezes)"
 
 msgid "Add Child Node"
 msgstr "Adicionar Nó Filho"
@@ -12875,6 +13083,9 @@ msgstr ""
 "Se selecionada, a doca de árvore da cena Remota vai travar o projeto cada vez "
 "que atualiza.\n"
 "Volte para a doca de árvore da cena Local para melhorar o desempenho."
+
+msgid "Delete Related Animation Tracks"
+msgstr "Apagar trilhas de animação relacionadas"
 
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Limpar herança? (Definitivo!)"
@@ -13054,6 +13265,19 @@ msgstr "O nome '%s' é uma palavra-chave reservada da linguagem de shader."
 
 msgid "Add Shader Global Parameter"
 msgstr "Adicionar Parâmetro Global Shader"
+
+msgid "Make this panel floating in the screen %d."
+msgstr "Transforma esse painel em flutuante na tela %d."
+
+msgid ""
+"Make this panel floating.\n"
+"Right click to open the screen selector."
+msgstr ""
+"Transforma esse painel em flutuante.\n"
+"Clique com o botão direito para abrir o seletor de telas."
+
+msgid "Select Screen"
+msgstr "Tela de seleção"
 
 msgid "Change Cylinder Radius"
 msgstr "Mudar Raio do Cilindro"
@@ -13423,17 +13647,29 @@ msgstr "Por favor, selecione um MultiplayerSynchronizer primeiro."
 msgid "The MultiplayerSynchronizer needs a root path."
 msgstr "O MultiplayerSynchronizer precisa de um caminho raiz."
 
+msgid ""
+"Each MultiplayerSynchronizer can have no more than 64 watched properties."
+msgstr ""
+"Cada MultiplayerSynchronizer não pode ter mais do que 64 propriedades "
+"observadas."
+
 msgid "Set spawn property"
 msgstr "Definir propriedade de geração"
 
 msgid "Set sync property"
 msgstr "Definir propriedade de sincronização"
 
+msgid "Set watch property"
+msgstr "Definir propriedade de observação"
+
 msgid "Delete Property?"
 msgstr "Apagar Propriedade?"
 
 msgid "Remove Property"
 msgstr "Remover Propriedade"
+
+msgid "Property of this type not supported."
+msgstr "Propriedades desse tipo não são suportadas."
 
 msgid ""
 "A valid NodePath must be set in the \"Spawn Path\" property in order for "
@@ -13686,6 +13922,21 @@ msgstr "A executar no dispositivo..."
 
 msgid "Could not execute on device."
 msgstr "Incapaz de executar no dispositivo."
+
+msgid ""
+"Exporting to Android is currently not supported in Godot 4 when using C#/."
+"NET. Use Godot 3 to target Android with C#/Mono instead."
+msgstr ""
+"Exportação para Android utilizando C#/.NET atualmente não é suportada pelo "
+"Godot 4. Ao invés disso, utilize o Godot 3 se seu objetivo é Android com C#/"
+"Mono."
+
+msgid ""
+"If this project does not use C#, use a non-C# editor build to export the "
+"project."
+msgstr ""
+"Se esse projeto não utiliza C#, use um editor de build não-C# para exportar o "
+"projeto."
 
 msgid ""
 "Android build template not installed in the project. Install it from the "
@@ -14460,14 +14711,6 @@ msgid ""
 msgstr ""
 "Um recurso SpriteFrames deve ser criado ou definido na propriedade "
 "\"Quadros\" para que AnimatedSprite2D exiba quadros."
-
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instantiated "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"Apenas um CanvasModulate visível é permitido por cena (ou conjunto de cenas "
-"instanciadas). O primeiro criado funcionará, enquanto o restante será "
-"ignorado."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"

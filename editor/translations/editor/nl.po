@@ -64,13 +64,15 @@
 # Kevin Nijmeijer <Kevinchrisnij@gmail.com>, 2023.
 # Mike Rombout <mike.rombout1@gmail.com>, 2023.
 # Robbe Vanslambrouck <robbevsb.dev@gmail.com>, 2023.
+# Lars-Janssen <janssen.lars@gmail.com>, 2023.
+# The Bulldozer <maurice.vanrumbeke@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-16 02:06+0000\n"
-"Last-Translator: Robbe Vanslambrouck <robbevsb.dev@gmail.com>\n"
+"PO-Revision-Date: 2023-10-01 21:58+0000\n"
+"Last-Translator: The Bulldozer <maurice.vanrumbeke@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -78,7 +80,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Niet ingesteld"
@@ -176,6 +178,9 @@ msgstr "Terug, Sony Selecteer, Xbox Terug, Nintendo -"
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Gids, Sony PS, Xbox Thuis"
 
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Start, Xbox Menu, Nintendo +"
+
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Linker Joystick, Sony L3, Xbox L/LS"
 
@@ -220,6 +225,39 @@ msgstr "PS4/5 Touchpad"
 
 msgid "Joypad Button %d"
 msgstr "Controllerknop %d"
+
+msgid "Pressure:"
+msgstr "Druk:"
+
+msgid "canceled"
+msgstr "geannuleerd"
+
+msgid "touched"
+msgstr "aangeraakt"
+
+msgid "released"
+msgstr "losgelaten"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Scherm %s op (%s) met %s aanraakpunten"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"Scherm is gesleept met %s aanraakpunten op positie (%s) met een snelheid van "
+"(%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Vergrotingsgebaar op (%s) met factor %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Pan-gebaar op (%s) met delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "MIDI Input op kanaal=%s Bericht=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Input Gebeurtenis met sneltoets=%s"
 
 msgid "Accept"
 msgstr "Accepteren"
