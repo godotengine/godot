@@ -264,3 +264,13 @@ Validate extension JSON: Error: Field 'classes/AnimationTree/methods/set_tree_ro
 These definitions have been moved to those base classes, so the APIs are actually available.
 Some properties were renamed for integration, but the old setter/getters are kept.
 Also changed some methods name/argument/signature. Compatibility methods registered.
+
+
+GH-81582
+--------
+
+Validate extension JSON: API was removed: classes/GraphEdit/methods/is_arrange_nodes_button_hidden
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_arrange_nodes_button_hidden
+Validate extension JSON: API was removed: classes/GraphEdit/properties/arrange_nodes_button_hidden
+
+Make GraphEdit toolbar more customizable

@@ -1040,7 +1040,7 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 	}
 
 	add_node->set_disabled(read_only);
-	graph->set_arrange_nodes_button_hidden(read_only);
+	graph->set_show_arrange_button(!read_only);
 }
 
 AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
