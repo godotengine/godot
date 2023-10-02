@@ -93,7 +93,7 @@
 				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callbacks get triggered first, and the parent node will receive the ready notification afterwards.
 				Corresponds to the [constant NOTIFICATION_READY] notification in [method Object._notification]. See also the [code]@onready[/code] annotation for variables.
 				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. See also [method _enter_tree].
-				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [code]_ready[/code] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
+				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [method _ready] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
 			</description>
 		</method>
 		<method name="_shortcut_input" qualifiers="virtual">
@@ -696,7 +696,7 @@
 		<method name="request_ready">
 			<return type="void" />
 			<description>
-				Requests that [code]_ready[/code] be called again. Note that the method won't be called immediately, but is scheduled for when the node is added to the scene tree again (see [method _ready]). [code]_ready[/code] is called only for the node which requested it, which means that you need to request ready for each child if you want them to call [code]_ready[/code] too (in which case, [code]_ready[/code] will be called in the same order as it would normally).
+				Requests that [method _ready] be called again. Note that the method won't be called immediately, but is scheduled for when the node is added to the scene tree again. [method _ready] is called only for the node which requested it, which means that you need to request ready for each child if you want them to call [method _ready] too (in which case, [method _ready] will be called in the same order as it would normally).
 			</description>
 		</method>
 		<method name="rpc" qualifiers="vararg">

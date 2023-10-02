@@ -157,7 +157,7 @@ class EditorHelp : public VBoxContainer {
 	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String(), bool p_is_bitfield = false);
 	void _add_type_icon(const String &p_type, int p_size = 0, const String &p_fallback = "");
-	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
+	void _add_method(const DocData::MethodDoc &p_method, bool p_overview, bool p_override = true);
 
 	void _add_bulletpoint();
 
@@ -177,7 +177,7 @@ class EditorHelp : public VBoxContainer {
 
 	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
-	void _update_method_list(const Vector<DocData::MethodDoc> p_methods);
+	void _update_method_list(const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
 	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
 	void _update_doc();
 

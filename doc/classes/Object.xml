@@ -487,7 +487,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b][code]Object.connect()[/code] or [code]Signal.connect()[/code]?[/b]
+				[b][code skip-lint]Object.connect()[/code] or [code skip-lint]Signal.connect()[/code]?[/b]
 				As seen above, the recommended method to connect signals is not [method Object.connect]. The code block below shows the four options for connecting signals, using either this legacy method or the recommended [method Signal.connect], and using either an implicit [Callable] or a manually defined one.
 				[codeblocks]
 				[gdscript]
@@ -718,7 +718,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [param signal] name. Each connection is represented as a [Dictionary] that contains three entries:
-				- [code]signal[/code] is a reference to the [Signal];
+				- [code skip-lint]signal[/code] is a reference to the [Signal];
 				- [code]callable[/code] is a reference to the connected [Callable];
 				- [code]flags[/code] is a combination of [enum ConnectFlags].
 			</description>

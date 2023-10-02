@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		3D particle node used to create a variety of particle systems and effects. [GPUParticles3D] features an emitter that generates some number of particles at a given rate.
-		Use the [code]process_material[/code] property to add a [ParticleProcessMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
+		Use [member process_material] to add a [ParticleProcessMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
 		<link title="Particle systems (3D)">$DOCS_URL/tutorials/3d/particles/index.html</link>
@@ -108,7 +108,7 @@
 			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [GPUParticles3D] node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the [GPUParticles3D] node (and its parents) when it is moved or rotated.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
-			If [code]true[/code], only [code]amount[/code] particles will be emitted.
+			If [code]true[/code], only the number of particles equal to [member amount] will be emitted.
 		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" default="0.0">
 			Amount of time to preprocess the particles before animation starts. Lets you start the animation some time after particles have started emitting.
