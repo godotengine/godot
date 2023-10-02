@@ -43,12 +43,16 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/main/window.h"
 
 bool AnimationNodeBlendSpace2DEditor::can_edit(const Ref<AnimationNode> &p_node) {

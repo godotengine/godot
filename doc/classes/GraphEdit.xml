@@ -226,9 +226,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="arrange_nodes_button_hidden" type="bool" setter="set_arrange_nodes_button_hidden" getter="is_arrange_nodes_button_hidden" default="false">
-			If [code]true[/code], the Arrange Nodes button is hidden.
-		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="connection_lines_antialiased" type="bool" setter="set_connection_lines_antialiased" getter="is_connection_lines_antialiased" default="true">
 			If [code]true[/code], the lines between nodes will use antialiasing.
@@ -258,11 +255,26 @@
 		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset" default="Vector2(0, 0)">
 			The scroll offset.
 		</member>
+		<member name="show_arrange_button" type="bool" setter="set_show_arrange_button" getter="is_showing_arrange_button" default="true">
+			If [code]true[/code], the button to automatically arrange graph nodes is visible.
+		</member>
 		<member name="show_grid" type="bool" setter="set_show_grid" getter="is_showing_grid" default="true">
 			If [code]true[/code], the grid is visible.
 		</member>
+		<member name="show_grid_buttons" type="bool" setter="set_show_grid_buttons" getter="is_showing_grid_buttons" default="true">
+			If [code]true[/code], buttons that allow to configure grid and snapping options are visible.
+		</member>
+		<member name="show_menu" type="bool" setter="set_show_menu" getter="is_showing_menu" default="true">
+			If [code]true[/code], the menu toolbar is visible.
+		</member>
+		<member name="show_minimap_button" type="bool" setter="set_show_minimap_button" getter="is_showing_minimap_button" default="true">
+			If [code]true[/code], the button to toggle the minimap is visible.
+		</member>
+		<member name="show_zoom_buttons" type="bool" setter="set_show_zoom_buttons" getter="is_showing_zoom_buttons" default="true">
+			If [code]true[/code], buttons that allow to change and reset the zoom level are visible.
+		</member>
 		<member name="show_zoom_label" type="bool" setter="set_show_zoom_label" getter="is_showing_zoom_label" default="false">
-			If [code]true[/code], makes a label with the current zoom level visible. The zoom value is displayed in percents.
+			If [code]true[/code], the label with the current zoom level is visible. The zoom level is displayed in percents.
 		</member>
 		<member name="snapping_distance" type="int" setter="set_snapping_distance" getter="get_snapping_distance" default="20">
 			The snapping distance in pixels, also determines the grid line distance.
@@ -435,6 +447,8 @@
 		</theme_item>
 		<theme_item name="zoom_reset" data_type="icon" type="Texture2D">
 			The icon for the zoom reset button.
+		</theme_item>
+		<theme_item name="menu_panel" data_type="style" type="StyleBox">
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The background drawn under the grid.

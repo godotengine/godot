@@ -1960,6 +1960,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// GraphEdit
 	theme->set_stylebox("panel", "GraphEdit", style_tree_bg);
+	Ref<StyleBoxFlat> graph_toolbar_style = make_flat_stylebox(dark_color_1 * Color(1, 1, 1, 0.6), 4, 2, 4, 2, 3);
+	theme->set_stylebox("menu_panel", "GraphEdit", graph_toolbar_style);
+
 	if (dark_theme) {
 		theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.1));
 		theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.05));
