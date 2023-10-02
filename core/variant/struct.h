@@ -35,28 +35,6 @@
 
 class Array;
 
-//// TODO: A different version I was playing around with
-//#define STRUCT_LAYOUT(m_name, m_member_count, ...)                                                                                          \
-//	struct m_name {                                                                                                                         \
-//		static const uint32_t member_count = m_member_count;                                                                                \
-//		_FORCE_INLINE_ static const StructInfo get_struct_info() {                                                                       \
-//			static const StructMember members[member_count] = { __VA_ARGS__ };                                                                     \
-//			StringName names[member_count];                                                                                                 \
-//			uint32_t types[member_count];                                                                                                   \
-//			StringName class_names[member_count];                                                                                                      \
-//			Variant default_values[member_count];                                                                                                   \
-//			for (uint32_t i = 0; i < member_count; i++) {                                                                                   \
-//				StructMember member = members[i];                                                                                            \
-//				names[i] = member.name;                                                                                                     \
-//				types[i] = member.type;                                                                                                     \
-//				class_names[i] = member.class_name;                                                                                         \
-//				default_values[i] = member.default_value;                                                                                   \
-//			}                                                                                                                               \
-//			static const StructInfo struct_info = StructInfo(StringName(#m_name), member_count, names, types, class_names, default_values); \
-//			return struct_info;                                                                                                             \
-//		}                                                                                                                                   \
-//	};
-
 //// TODO: Another different version
 //#define STRUCT_LAYOUT(m_name, m_member_count, ...)                             \
 //	struct m_name {                                                            \
@@ -123,7 +101,6 @@ public:
 	}
 };
 
-// TODO: not sure if all this stuff is necessary, but I saw it in TypedArray so YOLO
 template <class T>
 struct VariantInternalAccessor<Struct<T>> {
 	_FORCE_INLINE_ static Struct<T> get(const Variant *v) { return *VariantInternal::get_array(v); }

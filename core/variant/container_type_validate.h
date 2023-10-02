@@ -41,6 +41,10 @@ struct ContainerTypeValidate {
 	LocalVector<ContainerTypeValidate> struct_members;
 	const char *where = "container";
 
+	_FORCE_INLINE_ bool is_struct() const {
+		return type == Variant::ARRAY && class_name != StringName();
+	}
+
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type, uint32_t r_recursion_count = 0) const {
 		bool can_ref = can_reference_base(p_type);
 		if (!can_ref) {
@@ -156,14 +160,21 @@ public:
 			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(inout_variant.get_type()) + "' into a " + where + " of type '" + Variant::get_type_name(type) + "'.");
 		}
 
-		if (type != Variant::OBJECT) {
-			return true;
+		if (is_struct()) {
+			return validate_struct(inout_variant);
+		} else if (type == Variant::OBJECT) {
+			return validate_object(inout_variant, p_operation);
 		}
-
-		return validate_object(inout_variant, p_operation);
+		return true;
 	}
 
 public:
+	_FORCE_INLINE_ bool validate_struct(const Variant &p_variant) const {
+		ERR_FAIL_COND_V(p_variant.get_type() != Variant::ARRAY, false);
+		const Array array = p_variant;
+		return class_name == array.get_typed_class_name();
+	}
+
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
 		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
 

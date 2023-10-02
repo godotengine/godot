@@ -1537,16 +1537,18 @@ TypedArray<Dictionary> ClassDB::class_get_struct_list(const StringName &p_class,
 	return ret;
 }
 
-TypedArray<Dictionary> ClassDB::class_get_struct_members(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance) const {
-	List<StructMember> members;
+TypedArray<Dictionary> ClassDB::class_get_struct_members(const StringName &p_class, const StringName &p_struct) const {
 	TypedArray<Dictionary> ret;
-	::ClassDB::get_struct_members(p_class, p_struct, &members, p_no_inheritance);
-	for (const StructMember &member : members) {
+	StructInfo *struct_info = ::ClassDB::get_struct_info(p_class, p_struct);
+	if (!struct_info) {
+		return ret; // TODO: should this be an error?
+	}
+	for (uint32_t i = 0; i < struct_info->count; i++) {
 		Dictionary dict;
-		dict[SNAME("name")] = member.name;
-		dict[SNAME("type")] = member.type;
-		dict[SNAME("class_name")] = member.class_name;
-		dict[SNAME("default_value")] = member.default_value;
+		dict[SNAME("name")] = struct_info->names[i];
+		dict[SNAME("type")] = struct_info->types[i];
+		dict[SNAME("class_name")] = struct_info->class_names[i];
+		dict[SNAME("default_value")] = struct_info->default_values[i];
 		ret.push_back(dict);
 	}
 	return ret;
@@ -1589,7 +1591,7 @@ void ClassDB::_bind_methods() {
 
 	::ClassDB::bind_method(D_METHOD("class_has_struct", "class", "struct", "no_inheritance"), &ClassDB::class_has_struct, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_struct_list", "class", "no_inheritance"), &ClassDB::class_get_struct_list, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_struct_members", "class", "struct", "no_inheritance"), &ClassDB::class_get_struct_members, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_struct_members", "class", "struct"), &ClassDB::class_get_struct_members);
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }

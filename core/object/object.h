@@ -149,41 +149,48 @@ enum PropertyUsageFlags {
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
 struct StructMember {
-	StringName name;
-	Variant::Type type;
-	StringName class_name;
-	Variant default_value;
+	StringName name = StringName();
+	Variant::Type type = Variant::NIL;
+	StringName class_name = StringName();
+	Variant default_value = Variant();
+	const StructMember *sub_members = nullptr;
+	uint32_t sub_member_count = 0;
 
-	StructMember(const StringName &p_name = StringName(), const Variant::Type p_type = Variant::NIL, const StringName &p_class_name = StringName(), const Variant &p_default_value = Variant()) {
+	StructMember(const StringName &p_name = StringName(), const Variant::Type p_type = Variant::NIL, const StringName &p_class_name = StringName(), const StructMember *p_sub_members = nullptr, const Variant &p_default_value = Variant()) {
 		name = p_name;
 		type = p_type;
 		class_name = p_class_name;
 		default_value = p_default_value;
+		sub_members = p_sub_members;
+		sub_member_count = sizeof(p_sub_members) / sizeof(StructMember);
 	}
 };
 
 #define STRUCT_MEMBER(m_name, m_type) StructMember(SNAME(m_name), m_type)
 #define STRUCT_CLASS_MEMBER(m_name, m_class) StructMember(SNAME(m_name), Variant::OBJECT, m_class)
+#define STRUCT_STRUCT_MEMBER(m_name, m_struct) StructMember(SNAME(m_name), Variant::ARRAY, m_struct::get_name(), m_struct::get_members())
 
-#define STRUCT_LAYOUT(m_struct, m_name, ...)                                                 \
-	struct m_struct {                                                                        \
-		_FORCE_INLINE_ static const StringName get_class() {                                 \
-			return SNAME(#m_struct);                                                         \
-		}                                                                                    \
-		_FORCE_INLINE_ static const StringName get_name() {                                  \
-			return SNAME(m_name);                                                            \
-		}                                                                                    \
-		_FORCE_INLINE_ static const StructMember &get_member(uint32_t p_index) {             \
-			static const StructMember members[] = { __VA_ARGS__ };                           \
-			static constexpr uint32_t member_count = sizeof(members) / sizeof(StructMember); \
-			CRASH_BAD_INDEX(p_index, member_count);                                          \
-			return members[p_index];                                                         \
-		}                                                                                    \
-		_FORCE_INLINE_ static const uint32_t get_member_count() {                            \
-			static const StructMember members[] = { __VA_ARGS__ };                           \
-			static constexpr uint32_t member_count = sizeof(members) / sizeof(StructMember); \
-			return member_count;                                                             \
-		}                                                                                    \
+#define STRUCT_LAYOUT(m_struct, m_name, ...)                                             \
+	struct m_struct {                                                                    \
+		_FORCE_INLINE_ static const StringName get_class() {                             \
+			return SNAME(#m_struct);                                                     \
+		}                                                                                \
+		_FORCE_INLINE_ static const StringName get_name() {                              \
+			return SNAME(m_name);                                                        \
+		}                                                                                \
+		_FORCE_INLINE_ static const StructMember *get_members() {                        \
+			static const StructMember members[] = { __VA_ARGS__ };                       \
+			return members;                                                              \
+		}                                                                                \
+		_FORCE_INLINE_ static const uint32_t get_member_count() {                        \
+			const StructMember members[] = { __VA_ARGS__ };                              \
+			static const uint32_t member_count = sizeof(members) / sizeof(StructMember); \
+			return member_count;                                                         \
+		}                                                                                \
+		_FORCE_INLINE_ static const StructMember &get_member(uint32_t p_index) {         \
+			CRASH_BAD_INDEX(p_index, get_member_count());                                \
+			return get_members()[p_index];                                               \
+		}                                                                                \
 	};
 
 struct PropertyInfo {

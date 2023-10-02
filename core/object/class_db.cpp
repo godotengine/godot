@@ -992,30 +992,14 @@ void ClassDB::get_struct_list(const StringName &p_class, List<StructInfo> *r_str
 	}
 }
 
-void ClassDB::get_struct_members(const StringName &p_class, const StringName &p_struct, List<StructMember> *r_members, bool p_no_inheritance) {
+StructInfo *ClassDB::get_struct_info(const StringName &p_class, const StringName &p_struct) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
-
-	while (type) {
-		const StructInfo *struct_info = type->struct_map.getptr(p_struct);
-
-		if (struct_info) {
-			for (uint32_t i = 0; i < struct_info->count; i++) {
-				r_members->push_back(StructMember(
-						struct_info->names[i],
-						(Variant::Type)struct_info->types[i],
-						struct_info->class_names[i],
-						struct_info->default_values[i]));
-			}
-		}
-
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
+	if (!type) {
+		return nullptr;
 	}
+	return type->struct_map.getptr(p_struct);
 }
 
 bool ClassDB::has_struct(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {

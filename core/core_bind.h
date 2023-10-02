@@ -458,7 +458,7 @@ public:
 
 	bool class_has_struct(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance = false) const;
 	TypedArray<Dictionary> class_get_struct_list(const StringName &p_class, bool p_no_inheritance = false) const;
-	TypedArray<Dictionary> class_get_struct_members(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_struct_members(const StringName &p_class, const StringName &p_struct) const;
 
 	bool is_class_enabled(const StringName &p_class) const;
 

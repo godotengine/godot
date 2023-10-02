@@ -933,6 +933,7 @@ Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, con
 	_p->typed.where = "Struct"; // TODO: is this right?
 
 	_p->struct_name = p_name;
+	_p->typed.class_name = p_name;
 	_p->member_count = p_size;
 	_p->member_names.resize(p_size);
 	_p->typed.struct_members.resize(p_size);
@@ -942,7 +943,6 @@ Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, con
 		_p->member_names[i] = source_member.name;
 		member_type->type = source_member.type;
 		member_type->class_name = source_member.class_name;
-		// TODO: this is not yet doing a recursive type assignment.
 	}
 }
 
@@ -958,6 +958,7 @@ Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, con
 	_p->typed.where = "Struct"; // TODO: is this right?
 
 	_p->struct_name = p_name;
+	_p->typed.class_name = p_name;
 	_p->member_count = p_size;
 	_p->member_names.resize(p_size);
 	_p->typed.struct_members.resize(p_size);
@@ -967,7 +968,6 @@ Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, con
 		_p->member_names[i] = source_member.name;
 		member_type->type = source_member.type;
 		member_type->class_name = source_member.class_name;
-		// TODO: this is not yet doing a recursive type assignment.
 	}
 }
 
@@ -981,6 +981,7 @@ Array::Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_
 	_p->typed.where = "Struct"; // TODO: is this right?
 
 	_p->struct_name = p_name;
+	_p->typed.class_name = p_name;
 	_p->member_count = p_size;
 	_p->member_names.resize(p_size);
 	_p->typed.struct_members.resize(p_size);
@@ -990,7 +991,6 @@ Array::Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_
 		_p->member_names[i] = source_member.name;
 		member_type->type = source_member.type;
 		member_type->class_name = source_member.class_name;
-		// TODO: this is not yet doing a recursive type assignment.
 	}
 }
 

@@ -67,17 +67,6 @@ TEST_CASE("[Struct] PropertyInfo") {
 		CHECK_EQ(var_dup.get_type(), Variant::ARRAY);
 	}
 
-	SUBCASE("Type Validation") {
-		CHECK(prop.is_same_typed(prop));
-		CHECK(prop.is_same_typed((Variant)prop));
-		Variant var = prop;
-		Struct<PropertyInfoLayout> prop2 = var;
-		CHECK_EQ(prop2, var);
-
-		CHECK_THROWS(prop.set_named(SNAME("name"), 4));
-		CHECK_NOTHROW(prop.set_named(SNAME("name"), "Node")); // TODO: not sure if these tests are working correctly
-	}
-
 	SUBCASE("Setget Named") {
 		Variant variant_prop = prop;
 		bool valid = false;
@@ -97,12 +86,124 @@ TEST_CASE("[Struct] PropertyInfo") {
 	}
 }
 
-TEST_CASE("[Struct] ClassDB") {
-	List<StructMember> ls;
-	::ClassDB::get_struct_members(SNAME("Object"), SNAME("PropertyInfo"), &ls);
-	for (const StructMember &E : ls) {
-		print_line(vformat("name: %s, type: %s, class_name: %s, default: %s.", E.name, E.type, E.class_name, E.default_value));
+TEST_CASE("[Struct] Validation") {
+	struct NamedInt {
+		StringName name;
+		int value;
+	};
+	STRUCT_LAYOUT(NamedIntLayout, "NamedInt",
+			STRUCT_MEMBER("name", Variant::STRING_NAME),
+			STRUCT_MEMBER("value", Variant::INT));
+
+	Struct<NamedIntLayout> named_int;
+	named_int["name"] = "Godot";
+	named_int["value"] = 4;
+	CHECK_EQ(((Variant)named_int).stringify(), "[name: \"Godot\", value: 4]");
+
+	SUBCASE("Self Equal") {
+		CHECK(named_int.is_same_typed(named_int));
+		Variant variant_named_int = named_int;
+		CHECK(named_int.is_same_typed(variant_named_int));
+		Struct<NamedIntLayout> same_named_int = variant_named_int;
+		CHECK_EQ(named_int, same_named_int);
 	}
+
+	SUBCASE("Assignment") {
+		ERR_PRINT_OFF;
+		named_int.set_named("name", 4);
+		CHECK_EQ(named_int["name"], "Godot");
+
+		named_int.set_named("value", "Godot");
+		CHECK_EQ((int)named_int["value"], 4);
+		ERR_PRINT_ON;
+
+		Struct<NamedIntLayout> a_match = named_int;
+		CHECK_EQ(named_int, a_match);
+		Array not_a_match;
+
+		ERR_PRINT_OFF;
+		named_int = not_a_match;
+		CHECK_EQ(named_int, a_match);
+
+		not_a_match.resize(2);
+		named_int = not_a_match;
+		CHECK_EQ(named_int, a_match);
+
+		not_a_match[0] = 4;
+		not_a_match[1] = "Godot";
+		named_int = not_a_match;
+		CHECK_EQ(named_int, a_match);
+
+		not_a_match[0] = "Godooot";
+		not_a_match[1] = 5;
+		named_int = not_a_match;
+		CHECK_EQ(named_int, a_match);
+		ERR_PRINT_ON;
+
+		named_int.assign(not_a_match);
+		CHECK_EQ(named_int["name"], "Godooot");
+		CHECK_EQ((int)named_int["value"], 5);
+	}
+}
+
+TEST_CASE("[Struct] Nesting") {
+	struct BasicStruct {
+		int int_val;
+		float float_val;
+	};
+	struct BasicStructLookalike {
+		int int_val;
+		float float_val;
+	};
+	struct NestedStruct {
+		Node *node;
+		BasicStruct value;
+	};
+	STRUCT_LAYOUT(BasicStructLayout, "BasicStruct",
+			STRUCT_MEMBER("int_val", Variant::INT),
+			STRUCT_MEMBER("float_val", Variant::FLOAT));
+	STRUCT_LAYOUT(BasicStructLookalikeLayout, "BasicStructLookalike",
+			STRUCT_MEMBER("int_val", Variant::INT),
+			STRUCT_MEMBER("float_val", Variant::FLOAT));
+	STRUCT_LAYOUT(NestedStructLayout, "NestedStruct",
+			STRUCT_CLASS_MEMBER("node", "Node"),
+			STRUCT_STRUCT_MEMBER("value", BasicStructLayout));
+
+	SUBCASE("Assignment") {
+		Struct<BasicStructLayout> basic_struct;
+		basic_struct["int_val"] = 1;
+		basic_struct["float_val"] = 3.14;
+
+		Struct<BasicStructLookalikeLayout> basic_struct_lookalike;
+		basic_struct_lookalike["int_val"] = 2;
+		basic_struct_lookalike["float_val"] = 2.7;
+
+		Struct<NestedStructLayout> nested_struct;
+		Node *node = memnew(Node);
+		nested_struct.set_named("node", node);
+		nested_struct.set_named("value", basic_struct);
+
+		CHECK_EQ(nested_struct["node"], Variant(node));
+		CHECK_EQ(nested_struct["value"], basic_struct);
+		CHECK_EQ(((Struct<BasicStructLayout>)nested_struct["value"])["int_val"], basic_struct["int_val"]);
+		CHECK_EQ(((Struct<BasicStructLayout>)nested_struct["value"])["float_val"], basic_struct["float_val"]);
+
+		ERR_PRINT_OFF;
+		nested_struct.set_named("value", basic_struct_lookalike);
+		CHECK_EQ(nested_struct["value"], basic_struct);
+		ERR_PRINT_ON;
+	}
+}
+
+TEST_CASE("[Struct] ClassDB") {
+	StructInfo *struct_info = ::ClassDB::get_struct_info(SNAME("Object"), SNAME("PropertyInfo"));
+	REQUIRE(struct_info);
+	CHECK_EQ(struct_info->count, 6);
+	CHECK_EQ(struct_info->name, "PropertyInfo");
+	CHECK_EQ(struct_info->names[3], "hint");
+	CHECK_EQ(struct_info->types[3], Variant::INT);
+	CHECK_EQ(struct_info->class_names[3], "");
+	CHECK_EQ(struct_info->default_values[3], Variant());
 }
 
 } // namespace TestStruct
