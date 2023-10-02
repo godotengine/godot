@@ -2017,6 +2017,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	bool prev_opaque_prepass = false;
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_OPAQUE_PREPASS, false);
 
+	const AABB *instance_aabb = nullptr;
+
 	for (int i = 0; i < p_element_count; i++) {
 		RenderList::Element *e = p_elements[i];
 		RasterizerStorageGLES3::Material *material = e->material;
@@ -2028,6 +2030,16 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		bool rebind = first;
 
 		uint32_t shading = (e->sort_key >> RenderList::SORT_KEY_SHADING_SHIFT) & RenderList::SORT_KEY_SHADING_MASK;
+
+		// Setup blob shadows
+		bool use_opaque_prepass_temp = e->sort_key & RenderList::SORT_KEY_OPAQUE_PRE_PASS;
+		bool blob_shadows = VSG::scene->are_blob_shadows_active() && !material->shader->spatial.no_blob_shadows && !p_shadow && !use_opaque_prepass_temp;
+		if (blob_shadows) {
+			VisualServerScene::Instance *instance = (VisualServerScene::Instance *)(e->instance);
+			instance_aabb = &instance->transformed_aabb;
+		}
+		// TODO - make sure this causes a rebind.
+		state.scene_shader.set_conditional(SceneShaderGLES3::USE_BLOB_SHADOWS, blob_shadows);
 
 		if (!p_shadow) {
 			bool use_directional = directional_light != nullptr;
@@ -2217,6 +2229,27 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, e->sort_key & RenderList::SORT_KEY_CULL_DISABLED_FLAG, p_reverse_cull);
 
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
+
+		if (blob_shadows) {
+			if (true) {
+				const int32_t max_casters = 128;
+				const int32_t blob_data_units = max_casters * 4;
+				float blob_data_casters[blob_data_units];
+				float blob_data_lights[blob_data_units];
+				memset(blob_data_casters, 0, blob_data_units * sizeof(float));
+				memset(blob_data_lights, 0, blob_data_units * sizeof(float));
+
+				uint32_t num_casters = VSG::scene->blob_shadows_fill_background_uniforms(*instance_aabb, blob_data_casters, blob_data_lights, max_casters);
+				if (num_casters) {
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES3::BLOB_DATA_CASTERS), num_casters, (const GLfloat *)blob_data_casters);
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES3::BLOB_DATA_LIGHTS), num_casters, (const GLfloat *)blob_data_lights);
+					glUniform1i(state.scene_shader.get_uniform_location(SceneShaderGLES3::BLOB_DATA_NUM_CASTERS), num_casters);
+					glUniform1f(state.scene_shader.get_uniform_location(SceneShaderGLES3::BLOB_CUTOFF_BOOST), VSG::scene->blob_shadows_get_cutoff_boost());
+				}
+			} else {
+				glUniform1i(state.scene_shader.get_uniform_location(SceneShaderGLES3::BLOB_DATA_NUM_CASTERS), 0);
+			}
+		}
 
 		_render_geometry(e);
 

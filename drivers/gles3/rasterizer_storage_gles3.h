@@ -515,6 +515,7 @@ public:
 			bool uses_alpha_scissor;
 			bool unshaded;
 			bool no_depth_test;
+			bool no_blob_shadows;
 			bool uses_vertex;
 			bool uses_discard;
 			bool uses_sss;

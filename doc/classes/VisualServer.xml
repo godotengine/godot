@@ -45,6 +45,13 @@
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
 			</description>
 		</method>
+		<method name="camera_set_blob_focus_position">
+			<return type="void" />
+			<argument index="0" name="camera" type="RID" />
+			<argument index="1" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
 		<method name="camera_set_cull_mask">
 			<return type="void" />
 			<argument index="0" name="camera" type="RID" />
