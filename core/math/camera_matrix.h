@@ -46,6 +46,11 @@ struct CameraMatrix {
 
 	real_t matrix[4][4];
 
+private:
+	void _get_projection_planes(Plane *p_6planes) const;
+	void _transform_projection_planes(const Transform &p_transform, Plane *p_6planes) const;
+
+public:
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
@@ -69,8 +74,11 @@ struct CameraMatrix {
 	bool is_orthogonal() const;
 
 	Vector<Plane> get_projection_planes(const Transform &p_transform) const;
-
 	bool get_endpoints(const Transform &p_transform, Vector3 *p_8points) const;
+
+	// Returns efficiently all info needed for culling AABBs via AABB::intersects_convex_shape().
+	bool get_projection_planes_and_endpoints(const Transform &p_transform, Plane *p_6planes, Vector3 *p_8points) const;
+
 	Vector2 get_viewport_half_extents() const;
 
 	void invert();

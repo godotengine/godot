@@ -61,6 +61,13 @@ public:
 		PARAM_MAX = VS::LIGHT_PARAM_MAX
 	};
 
+	enum BlobShadowParam {
+		BLOB_SHADOW_PARAM_RANGE_HARDNESS,
+		BLOB_SHADOW_PARAM_RANGE_MAX,
+		BLOB_SHADOW_PARAM_INTENSITY,
+		BLOB_SHADOW_PARAM_MAX
+	};
+
 	enum BakeMode {
 		BAKE_DISABLED,
 		BAKE_INDIRECT,
@@ -71,14 +78,23 @@ private:
 	Color color;
 	float param[PARAM_MAX];
 	Color shadow_color;
-	bool shadow;
-	bool negative;
-	bool reverse_cull;
-	uint32_t cull_mask;
-	VS::LightType type;
-	bool editor_only;
+	bool shadow = false;
+	bool negative = false;
+	bool reverse_cull = false;
+	uint32_t cull_mask = 0;
+	VS::LightType type = VisualServer::LIGHT_DIRECTIONAL;
+	bool editor_only = false;
 	void _update_visibility();
-	BakeMode bake_mode;
+	BakeMode bake_mode = BAKE_INDIRECT;
+
+	// Blob shadows
+	bool blob_shadow = false;
+	real_t blob_shadow_params[BLOB_SHADOW_PARAM_MAX];
+	void _update_blob_shadow_param(BlobShadowParam p_param);
+
+	// Allowing a light to be a shadow caster only is useful particularly
+	// in conjunction with lightmaps.
+	bool blob_shadow_shadow_only = false;
 
 	// bind helpers
 
@@ -86,10 +102,12 @@ private:
 
 protected:
 	RID light;
+	RID blob_light;
 
 	static void _bind_methods();
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void fti_update_servers_xform();
 
 	Light(VisualServer::LightType p_type);
 
@@ -123,6 +141,15 @@ public:
 	void set_bake_mode(BakeMode p_mode);
 	BakeMode get_bake_mode() const;
 
+	void set_blob_shadow(bool p_enable);
+	bool has_blob_shadow() const { return blob_shadow; }
+
+	void set_blob_shadow_param(BlobShadowParam p_param, real_t p_value);
+	real_t get_blob_shadow_param(BlobShadowParam p_param) const;
+
+	void set_blob_shadow_shadow_only(bool p_enable);
+	bool is_blob_shadow_shadow_only() const;
+
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
@@ -131,6 +158,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Light::Param);
+VARIANT_ENUM_CAST(Light::BlobShadowParam);
 VARIANT_ENUM_CAST(Light::BakeMode);
 
 class DirectionalLight : public Light {

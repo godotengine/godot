@@ -462,6 +462,7 @@ public:
 	BIND4(camera_set_orthogonal, RID, float, float, float)
 	BIND5(camera_set_frustum, RID, float, Vector2, float, float)
 	BIND2(camera_set_transform, RID, const Transform &)
+	BIND2(camera_set_blob_focus_position, RID, const Vector3 &)
 	BIND2(camera_set_cull_mask, RID, uint32_t)
 	BIND2(camera_set_environment, RID, RID)
 	BIND2(camera_set_use_vertical_aspect, RID, bool)
@@ -586,6 +587,24 @@ public:
 	BIND2(instance_set_exterior, RID, bool)
 
 	BIND2(instance_set_extra_visibility_margin, RID, real_t)
+
+	/* BLOB SHADOWS */
+	BIND0R(RID, capsule_shadow_create)
+	BIND5(capsule_shadow_update, RID, const Vector3 &, real_t, const Vector3 &, real_t)
+
+	BIND0R(RID, blob_shadow_create)
+	BIND3(blob_shadow_update, RID, const Vector3 &, real_t)
+
+	BIND1(blob_shadows_set_range, real_t)
+	BIND1(blob_shadows_set_gamma, real_t)
+	BIND1(blob_shadows_set_intensity, real_t)
+
+	BIND0R(RID, blob_light_create)
+	BIND2(blob_light_update, RID, const Transform &)
+	BIND3(blob_light_set_param, RID, VisualServer::LightBlobShadowParam, real_t)
+	BIND3(blob_light_set_light_param, RID, VisualServer::LightParam, real_t)
+	BIND2(blob_light_set_type, RID, VisualServer::LightType)
+	BIND2(blob_light_set_visible, RID, bool)
 
 	/* PORTALS */
 

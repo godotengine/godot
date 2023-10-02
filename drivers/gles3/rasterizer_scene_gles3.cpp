@@ -2017,6 +2017,10 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	bool prev_opaque_prepass = false;
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_OPAQUE_PREPASS, false);
 
+	const AABB *instance_aabb = nullptr;
+
+	bool allow_blob_shadows = VSG::scene->are_blob_shadows_active() && !p_shadow;
+
 	for (int i = 0; i < p_element_count; i++) {
 		RenderList::Element *e = p_elements[i];
 		RasterizerStorageGLES3::Material *material = e->material;
@@ -2028,6 +2032,15 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		bool rebind = first;
 
 		uint32_t shading = (e->sort_key >> RenderList::SORT_KEY_SHADING_SHIFT) & RenderList::SORT_KEY_SHADING_MASK;
+
+		// Setup blob shadows
+		bool use_opaque_prepass_temp = e->sort_key & RenderList::SORT_KEY_OPAQUE_PRE_PASS;
+		bool blob_shadows = allow_blob_shadows && !material->shader->spatial.unshaded && !material->shader->spatial.no_blob_shadows && !use_opaque_prepass_temp;
+		if (blob_shadows) {
+			VisualServerScene::Instance *instance = (VisualServerScene::Instance *)(e->instance);
+			instance_aabb = &instance->transformed_aabb;
+		}
+		state.scene_shader.set_conditional(SceneShaderGLES3::USE_BLOB_SHADOWS, blob_shadows);
 
 		if (!p_shadow) {
 			bool use_directional = directional_light != nullptr;
@@ -2218,6 +2231,39 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
 
+		if (blob_shadows) {
+			const int32_t max_casters = 128;
+			const int32_t blob_data_units = max_casters * 4;
+			float blob_data_casters[blob_data_units] = {};
+			float blob_data_lights[blob_data_units] = {};
+
+			const int32_t capsule_data_units = blob_data_units * 2;
+			float capsule_data_casters[capsule_data_units] = {};
+			float capsule_data_lights[blob_data_units] = {};
+
+			uint32_t num_sphere_casters = VSG::scene->blob_shadows_fill_background_uniforms(*instance_aabb, blob_data_casters, blob_data_lights, max_casters);
+			uint32_t num_capsule_casters = VSG::scene->capsule_shadows_fill_background_uniforms(*instance_aabb, capsule_data_casters, capsule_data_lights, max_casters);
+
+			if (num_sphere_casters || num_capsule_casters) {
+				glUniform2i(state.scene_shader.get_uniform_location(SceneShaderGLES3::SPHERE_CAPSULE_NUM_CASTERS), num_sphere_casters, num_capsule_casters);
+				float gamma = VSG::scene->blob_shadows_get_gamma() * 2.2f;
+				glUniform2f(state.scene_shader.get_uniform_location(SceneShaderGLES3::BLOB_RANGE_AND_GAMMA), VSG::scene->blob_shadows_get_range(), gamma);
+
+				if (num_sphere_casters) {
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES3::SPHERE_DATA_CASTERS), num_sphere_casters, (const GLfloat *)blob_data_casters);
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES3::SPHERE_DATA_LIGHTS), num_sphere_casters, (const GLfloat *)blob_data_lights);
+				}
+
+				if (num_capsule_casters) {
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES3::CAPSULE_DATA_CASTERS), num_capsule_casters * 2, (const GLfloat *)capsule_data_casters);
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES3::CAPSULE_DATA_LIGHTS), num_capsule_casters, (const GLfloat *)capsule_data_lights);
+				}
+
+			} else {
+				glUniform2i(state.scene_shader.get_uniform_location(SceneShaderGLES3::SPHERE_CAPSULE_NUM_CASTERS), 0, 0);
+			}
+		}
+
 		_render_geometry(e);
 
 		prev_material = material;
@@ -2255,6 +2301,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_CONTACT_SHADOWS, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_VERTEX_LIGHTING, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_OPAQUE_PREPASS, false);
+	state.scene_shader.set_conditional(SceneShaderGLES3::USE_BLOB_SHADOWS, false);
 }
 
 void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, int p_material, bool p_depth_pass, bool p_shadow_pass) {

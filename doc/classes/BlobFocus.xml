@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BlobFocus" inherits="Spatial" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Prioritizes a region in which to show blob shadows.
+	</brief_description>
+	<description>
+		The number of blob shadows that can be shown at one time is limited (for performance reasons).
+		The [BlobFocus] node enables the user to set specific areas where the limited number of shadow casters should be prioritized.
+		[BlobFocus] might typically be set relative to a [Camera], or attached to a player.
+		Where multiple cameras are used, each [Camera] can have its own [BlobFocus].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>
