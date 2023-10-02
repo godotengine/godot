@@ -368,6 +368,9 @@ void FindReplaceBar::_update_results_count() {
 
 		int col_pos = 0;
 
+		bool searched_start_is_symbol = is_symbol(searched[0]);
+		bool searched_end_is_symbol = is_symbol(searched[searched.length() - 1]);
+
 		while (true) {
 			col_pos = is_case_sensitive() ? line_text.find(searched, col_pos) : line_text.findn(searched, col_pos);
 
@@ -376,11 +379,11 @@ void FindReplaceBar::_update_results_count() {
 			}
 
 			if (is_whole_words()) {
-				if (col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
+				if (!searched_start_is_symbol && col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
 					col_pos += searched.length();
 					continue;
 				}
-				if (col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
+				if (!searched_end_is_symbol && col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
 					col_pos += searched.length();
 					continue;
 				}
