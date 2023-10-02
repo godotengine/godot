@@ -325,6 +325,10 @@ varying mediump vec3 refprobe2_ambient_normal;
 
 #endif //vertex lighting for refprobes
 
+#ifdef USE_BLOB_SHADOWS
+varying highp vec3 blob_pixel_world_pos;
+#endif
+
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
 varying vec4 fog_interp;
@@ -504,6 +508,10 @@ VERTEX_SHADER_CODE
 
 		/* clang-format on */
 	}
+
+#ifdef USE_BLOB_SHADOWS
+	blob_pixel_world_pos = (world_matrix * vec4(vertex.xyz, 1.0)).xyz;
+#endif
 
 	gl_PointSize = point_size;
 	vec4 outvec = vertex;
@@ -875,6 +883,184 @@ uniform float refprobe2_intensity;
 uniform vec4 refprobe2_ambient;
 
 #endif //USE_REFLECTION_PROBE2
+
+#ifdef USE_BLOB_SHADOWS
+varying highp vec3 blob_pixel_world_pos;
+//#define MAX_BLOB_CASTERS 16
+uniform vec4 blob_data_casters[MAX_BLOB_CASTERS];
+uniform vec4 blob_data_lights[MAX_BLOB_CASTERS];
+uniform int blob_data_num_casters;
+uniform float blob_cutoff_boost;
+//const float CONE_ANGLE = 45.0; // degrees
+//const int SHOW_CAPSULE = 0;
+
+float blob_shadows_acos_fast(float x) {
+	// Lagarde 2014, \"Inverse trigonometric functions GPU optimization for AMD GCN architecture\"
+	// This is the approximation of degree 1, with a max absolute error of 9.0x10^-3
+	float y = abs(x);
+	float p = -0.1565827 * y + 1.570796;
+	p *= sqrt(1.0 - y);
+	const float pi = 3.14159265359;
+	return x >= 0.0 ? p : pi - p;
+}
+
+float blob_shadows_acos_fast_positive(float x) {
+	// Lagarde 2014, \"Inverse trigonometric functions GPU optimization for AMD GCN architecture\"
+	float p = -0.1565827 * x + 1.570796;
+	return p * sqrt(1.0 - x);
+}
+
+float blob_shadows_saturate(float x) {
+	return clamp(x, 0.0, 1.0);
+}
+
+float blob_shadows_spherical_caps_intersection(float cos_cap1, float cos_cap2, float cap2, float cos_distance) {
+	// Oat and Sander 2007, \"Ambient Aperture Lighting\"
+	// Approximation mentioned by Jimenez et al. 2016
+	float r1 = blob_shadows_acos_fast_positive(cos_cap1);
+	float r2 = cap2;
+	float d = blob_shadows_acos_fast(cos_distance);
+
+	// We work with cosine angles, replace the original paper's use of
+	// cos(min(r1, r2)_ with max(cos_cap1, cos_cap2)
+	// We also remove a multiplication by 2 * PI to simplify the computation
+	// since we divide by 2 * PI at the call site
+
+	if (min(r1, r2) <= max(r1, r2) - d) {
+		return 1.0 - max(cos_cap1, cos_cap2);
+	} else if (r1 + r2 <= d) {
+		return 0.0;
+	}
+
+	float delta = abs(r1 - r2);
+	float x = 1.0 - blob_shadows_saturate((d - delta) / max(r1 + r2 - delta, 0.0001));
+	// simplified smoothstep()
+	float area = (x * x) * (-2.0 * x + 3.0);
+	return area * (1.0 - max(cos_cap1, cos_cap2));
+}
+
+// Note that sphere.w is expected to be radius SQUARED.
+// Is cheaper to calculate this as a one off on CPU.
+float blob_shadows_directional_occlusion_sphere(in vec3 pos, in vec4 sphere, in vec4 cone) {
+	vec3 occluder = sphere.xyz - pos;
+	float occluder_length2 = dot(occluder, occluder);
+	vec3 occluder_dir = occluder * inversesqrt(occluder_length2);
+
+	float cos_phi = dot(occluder_dir, cone.xyz);
+	float cos_theta = sqrt(occluder_length2 / ((sphere.w) + occluder_length2));
+	float cos_cone = cos(cone.w);
+
+	return blob_shadows_spherical_caps_intersection(cos_theta, cos_cone, cone.w, cos_phi) / (1.0 - cos_cone);
+}
+
+float blob_shadows_directional_occlusion_sphere_CHEAP(in vec3 pos, in vec4 sphere, in vec4 cone) {
+	vec3 occluder = sphere.xyz - pos;
+
+	return length(occluder.xz);
+
+	float occluder_length2 = dot(occluder, occluder);
+	vec3 occluder_dir = occluder * inversesqrt(occluder_length2);
+
+	float cos_phi = dot(occluder_dir, cone.xyz);
+	return cos_phi;
+}
+
+// Note that sphere.w is expected to be radius SQUARED.
+// Is cheaper to calculate this as a one off on CPU.
+float blob_shadows_directional_occlusion_sphere_NEW(in vec3 pos, in vec4 sphere, in vec4 cone, in vec3 occluder_dir, in float occluder_length2) {
+	//vec3 occluder = sphere.xyz - pos;
+	//float occluder_length2 = dot(occluder, occluder);
+	//vec3 occluder_dir = occluder * inversesqrt(occluder_length2);
+
+	float cos_phi = dot(occluder_dir, cone.xyz);
+	float cos_theta = sqrt(occluder_length2 / ((sphere.w) + occluder_length2));
+	float cos_cone = cos(cone.w);
+
+	return blob_shadows_spherical_caps_intersection(cos_theta, cos_cone, cone.w, cos_phi) / (1.0 - cos_cone);
+}
+
+float blob_shadows_multi_shadow(vec3 pos) {
+	//return 1.0;
+	/*
+	// First find closest
+	int closest = 0;
+	float sl_closest = 99999999.0;
+
+	for (int i = 0; i < blob_data_num_casters; i++) {
+		vec3 offset = blob_data_casters[i].xyz - pos;
+		float sl = dot(offset, offset);
+		if (sl < sl_closest) {
+			sl_closest = sl;
+			closest = i;
+		}
+	}
+
+	int i = closest;
+	float shadow = 1.0;
+	vec3 cone_dir = normalize(blob_data_lights[i].xyz - blob_data_casters[i].xyz);
+	float modulate = blob_data_lights[i].w;
+	float sh = blob_shadows_directional_occlusion_sphere(pos, blob_data_casters[i], vec4(cone_dir, radians(45.0) * 0.5));
+	sh *= modulate;
+	sh = 1.0 - sh;
+	shadow *= sh;
+	return shadow;
+*/
+
+	//return 1.0;
+	float shadow = 1.0;
+
+	const float cone_angle = radians(45.0) * 0.5;
+
+	for (int i = 0; i < blob_data_num_casters; i++) {
+		vec4 cd = blob_data_casters[i];
+
+		//float cutoff = cd.w + 2.0;
+		float cutoff = cd.w + blob_cutoff_boost;
+		//float cutoff = cd.w;
+
+		//if (abs(cd.x - pos.x) > cutoff)
+		//{
+		//	continue;
+		//}
+
+		vec3 offset = cd.xyz - pos;
+		float sl = dot(offset, offset);
+
+		cutoff *= cutoff;
+		if (sl >= cutoff) {
+			continue;
+		}
+
+		/*
+		//if ((offset.y < -blob_data_casters[i].w) || (sl > (cutoff * cutoff))) {
+		if (sl > (cutoff * cutoff)) {
+			continue;
+		}
+		*/
+		vec4 ld = blob_data_lights[i];
+		//vec3 cone_dir = normalize(ld.xyz - cd.xyz);
+		//vec3 cone_dir = ld.xyz;
+
+		float modulate = ld.w;
+		modulate *= 1.0 - (sl / cutoff);
+
+		vec3 occluder_dir = offset * inversesqrt(sl);
+		float sh = blob_shadows_directional_occlusion_sphere_NEW(pos, blob_data_casters[i], vec4(ld.xyz, cone_angle), occluder_dir, sl);
+		//float sh = blob_shadows_directional_occlusion_sphere(pos, cd, vec4(cone_dir, radians(45.0) * 0.5));
+		//float sh = blob_shadows_directional_occlusion_sphere(pos, blob_data_casters[i], vec4(cone_dir, radians(blob_data_lights[i].w) * 0.5));
+
+		// Apply modulate before or after 1.0 -?
+		sh *= modulate;
+		sh = 1.0 - sh;
+
+		//shadow = max(shadow, sh);
+		shadow *= sh;
+	}
+
+	return shadow;
+}
+
+#endif // USE_BLOB_SHADOWS
 
 #define RADIANCE_MAX_LOD 6.0
 
@@ -1692,6 +1878,13 @@ void main() {
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
 #endif
 
+#ifdef USE_BLOB_SHADOWS
+	float blob_shadow_total = blob_shadows_multi_shadow(blob_pixel_world_pos);
+#else
+	// Prevent shader compilation failure when we try to use "BLOB_SHADOW" builtin when blob shadows are off.
+	float blob_shadow_total = 1.0;
+#endif
+
 	{
 		/* clang-format off */
 
@@ -2316,6 +2509,10 @@ FRAGMENT_SHADER_CODE
 
 #endif // LIGHT_MODE_SPOT
 
+#ifdef USE_BLOB_SHADOWS
+	//light_att *= blob_shadow_total;
+#endif
+
 #ifdef USE_VERTEX_LIGHTING
 	//vertex lighting
 	specular_light += specular_interp * albedo * specular * specular_blob_intensity * light_att;
@@ -2401,6 +2598,12 @@ FRAGMENT_SHADER_CODE
 
 	frag_color = vec4(ambient_light + diffuse_light + specular_light, alpha);
 
+#ifdef USE_BLOB_SHADOWS
+	//frag_color.rgb *= 0.5 + (blob_shadow_total * 0.5);
+	frag_color.rgb *= blob_shadow_total;
+	//frag_color.rgb = min(frag_color.rgb, vec3(blob_shadow_total));
+#endif
+
 	//add emission if in base pass
 #ifdef BASE_PASS
 	frag_color.rgb += emission;
@@ -2480,8 +2683,19 @@ FRAGMENT_SHADER_CODE
 	highp float depth = ((position_interp.z / position_interp.w) + 1.0) * 0.5 + 0.0; // bias
 	highp vec4 comp = fract(depth * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
-	gl_FragColor = comp;
+	frag_color = comp;
 
 #endif
 #endif
+
+#ifdef USE_BLOB_SHADOWS
+//vec3 diff = vec3(blob.xyz - blob_pixel_world_pos);
+//float dist = length(diff) * 0.1;
+//frag_color = vec4(vec3(dist), 1.0);
+//frag_color = vec4(blob_pixel_world_pos * 0.2, 1.0);
+//light_att *= shadertoy_shadow(blob_pixel_world_pos);
+//light_att = vec3(0.0);
+#endif
+
+	gl_FragColor = frag_color;
 }

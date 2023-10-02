@@ -42,6 +42,7 @@
 #include "core/self_list.h"
 #include "portals/portal_renderer.h"
 #include "servers/arvr/arvr_interface.h"
+#include "visual_server_blob_shadows.h"
 
 class VisualServerLightCuller;
 
@@ -87,6 +88,11 @@ public:
 
 		int32_t previous_room_id_hint;
 
+		Vector3 blob_focus_pos_curr;
+		Vector3 blob_focus_pos_prev;
+		uint32_t blob_focus_handle = 0;
+		Vector3 get_blob_focus_pos_interpolated() const;
+
 		Camera() {
 			visible_layers = 0xFFFFFFFF;
 			fov = 70;
@@ -107,6 +113,7 @@ public:
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform);
+	virtual void camera_set_blob_focus_position(RID p_camera, const Vector3 &p_pos);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
@@ -460,6 +467,8 @@ public:
 		RID instance;
 		uint64_t last_version;
 		List<Instance *>::Element *D; // directional light in scenario
+		bool shadow_dirty;
+
 		List<PairInfo> geometries;
 
 		Instance *baked_light;
@@ -720,6 +729,35 @@ private:
 	void _ghost_destroy_occlusion_rep(Ghost *p_ghost);
 
 public:
+	/* BLOB SHADOWS API */
+
+	struct BlobShadow : RID_Data {
+		uint32_t handle = 0;
+	};
+	RID_Owner<BlobShadow> blob_shadow_owner;
+
+	struct BlobLight : RID_Data {
+		uint32_t handle = 0;
+		bool visible = true;
+		float range_hardness = 0.9f;
+		float range_max = 10.0f;
+	};
+	RID_Owner<BlobLight> blob_light_owner;
+
+	virtual RID blob_shadow_create();
+	virtual void blob_shadow_update(RID p_blob, const Vector3 &p_occluder_pos, float p_occluder_radius);
+
+	virtual RID blob_light_create();
+	virtual void blob_light_update(RID p_blob_light, const Transform &p_global_transform);
+	virtual void blob_light_set_param(RID p_blob_light, VisualServer::LightBlobShadowParam p_param, float p_value);
+	virtual void blob_light_set_light_param(RID p_blob_light, VisualServer::LightParam p_param, float p_value);
+	virtual void blob_light_set_type(RID p_blob_light, VisualServer::LightType p_type);
+	virtual void blob_light_set_visible(RID p_blob_light, bool p_visible);
+
+	uint32_t blob_shadows_fill_background_uniforms(const AABB &p_aabb, float *r_casters, float *r_lights, uint32_t p_max_casters);
+	bool are_blob_shadows_active() const { return _blob_shadows.is_active(); }
+	float blob_shadows_get_cutoff_boost() const { return _blob_shadows.get_cutoff_boost(); }
+
 	/* PORTALS API */
 
 	struct Portal : RID_Data {
@@ -935,6 +973,7 @@ private:
 	bool _use_bvh;
 	VisualServerCallbacks *_visual_server_callbacks;
 	PortalResources _portal_resources;
+	VisualServerBlobShadows _blob_shadows;
 
 public:
 	VisualServerScene();
