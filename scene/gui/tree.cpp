@@ -3142,7 +3142,7 @@ void Tree::value_editor_changed(double p_value) {
 	TreeItem::Cell &c = popup_edited_item->cells.write[popup_edited_item_col];
 	c.val = p_value;
 
-	text_editor->set_text(String::num(c.val, Math::range_step_decimals(c.step)));
+	line_editor->set_text(String::num(c.val, Math::range_step_decimals(c.step)));
 
 	item_edited(popup_edited_item_col, popup_edited_item);
 	queue_redraw();
