@@ -504,6 +504,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		if (!valid) {
 			_set_item_custom_color(item, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 			item->set_selectable(0, false);
+		} else {
+			_set_item_custom_color(item, get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
 		}
 	}
 }
