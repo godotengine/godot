@@ -972,8 +972,6 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 void DisplayServerWayland::process_events() {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	frame = false;
-
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
 
