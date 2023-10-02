@@ -1709,6 +1709,32 @@
 			Uses a simplified method of generating PVS (potentially visible set) data. The results may not be accurate where more than one portal join adjacent rooms.
 			[b]Note:[/b] Generally you should only use this option if you encounter bugs when it is set to [code]false[/code], i.e. there are problems with the default method.
 		</member>
+		<member name="rendering/quality/blob_shadows/enable" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], blob shadows will be rendered where present.
+			[b]Note:[/b] Blob shadows depend on a [BlobShadow] caster being present, and a [Light] that is set to cast blob shadows.
+		</member>
+		<member name="rendering/quality/blob_shadows/gamma" type="float" setter="" getter="" default="1.0">
+			A gamma function is applied in the shader, which can be used to determine the softness of blob shadows.
+		</member>
+		<member name="rendering/quality/blob_shadows/intensity" type="float" setter="" getter="" default="0.7">
+			Global setting for blob shadow intensity (darkness).
+			Used in conjunction with [member rendering/quality/blob_shadows/gamma] to determine shadow appearance.
+		</member>
+		<member name="rendering/quality/blob_shadows/max_capsules" type="int" setter="" getter="" default="4">
+			Blob shadow performance is tightly linked to the maximum casters (sphere and capsule).
+			It is advisable to keep this limit as low as possible, and make use of the [BlobFocus] node to ensure shadows appear in the gameplay area.
+			[b]Note:[/b] If you are only using sphere casters, you should set this value to zero for maximum performance.
+		</member>
+		<member name="rendering/quality/blob_shadows/max_spheres" type="int" setter="" getter="" default="4">
+			Blob shadow performance is tightly linked to the maximum casters (sphere and capsule).
+			It is advisable to keep this limit as low as possible, and make use of the [BlobFocus] node to ensure shadows appear in the gameplay area.
+			[b]Note:[/b] If you are only using capsule casters, you should set this value to zero for maximum performance.
+		</member>
+		<member name="rendering/quality/blob_shadows/range" type="float" setter="" getter="" default="2.0">
+			This setting determines the maximum distance from a caster that the shadow will appear.
+			This is typically used to ensure that shadows from an object only cast onto a nearby floor.
+			Blob shadows are not subject to occlusion, and can thus spread into areas that may be lit by a different light (for instance in a room below). Keeping their range low helps prevent this problem.
+		</member>
 		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], allocates the root [Viewport]'s framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1. This must be set to [code]true[/code] for glow rendering to work if [member Environment.glow_hdr_threshold] is greater than or equal to [code]1.0[/code].
 			[b]Note:[/b] Only available on the GLES3 backend.

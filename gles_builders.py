@@ -221,7 +221,8 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
         fd.write("\tenum Conditionals {\n")
         for x in header_data.conditionals:
             fd.write("\t\t" + x.upper() + ",\n")
-        fd.write("\t};\n\n")
+        fd.write("\t\tCONDITIONALS_MAX,\n")
+        fd.write('\t};\n\tstatic_assert(Conditionals::CONDITIONALS_MAX < 64, "Conditionals limited to 64 bit.");\n\n')
 
     if header_data.uniforms:
         fd.write("\tenum Uniforms {\n")

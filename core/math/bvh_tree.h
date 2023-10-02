@@ -156,7 +156,7 @@ public:
 template <class T>
 class BVH_DummyPairTestFunction {
 public:
-	static bool user_collision_check(T *p_a, T *p_b) {
+	static bool user_pair_check(const T *p_a, const T *p_b) {
 		// return false if no collision, decided by masks etc
 		return true;
 	}
@@ -165,7 +165,7 @@ public:
 template <class T>
 class BVH_DummyCullTestFunction {
 public:
-	static bool user_cull_check(T *p_a, T *p_b) {
+	static bool user_cull_check(const T *p_a, const T *p_b) {
 		// return false if no collision
 		return true;
 	}

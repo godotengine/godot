@@ -139,6 +139,18 @@ Copyright: 2007, Starbreeze Studios
  2007-2014, Juan Linietsky, Ariel Manzur.
 License: Expat and Zlib
 
+Files: ./drivers/gles2/shaders/scene.glsl
+ ./drivers/gles3/shaders/scene.glsl
+Comment: Blob shadows
+Copyright: 2024, Romain Guy
+License: Apache-2.0
+
+Files: ./drivers/gles2/shaders/scene.glsl
+ ./drivers/gles3/shaders/scene.glsl
+Comment: Blob shadows
+Copyright: 2019, Inigo Quilez
+License: Expat
+
 Files: ./thirdparty/brotli/
 Comment: Brotli
 Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.

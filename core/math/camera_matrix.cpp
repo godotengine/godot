@@ -262,6 +262,33 @@ Vector2 CameraMatrix::get_viewport_half_extents() const {
 	return Vector2(res.x, res.y);
 }
 
+bool CameraMatrix::get_projection_planes_and_endpoints(const Transform &p_transform, Plane *p_6planes, Vector3 *p_8points) const {
+	DEV_ASSERT(p_6planes);
+	DEV_ASSERT(p_8points);
+
+	_get_projection_planes(p_6planes);
+	const Planes intersections[8][3] = {
+		{ PLANE_FAR, PLANE_LEFT, PLANE_TOP },
+		{ PLANE_FAR, PLANE_LEFT, PLANE_BOTTOM },
+		{ PLANE_FAR, PLANE_RIGHT, PLANE_TOP },
+		{ PLANE_FAR, PLANE_RIGHT, PLANE_BOTTOM },
+		{ PLANE_NEAR, PLANE_LEFT, PLANE_TOP },
+		{ PLANE_NEAR, PLANE_LEFT, PLANE_BOTTOM },
+		{ PLANE_NEAR, PLANE_RIGHT, PLANE_TOP },
+		{ PLANE_NEAR, PLANE_RIGHT, PLANE_BOTTOM },
+	};
+
+	Vector3 point;
+	for (int i = 0; i < 8; i++) {
+		bool res = p_6planes[intersections[i][0]].intersect_3(p_6planes[intersections[i][1]], p_6planes[intersections[i][2]], &point);
+		ERR_FAIL_COND_V(!res, false);
+		p_8points[i] = p_transform.xform(point);
+	}
+
+	_transform_projection_planes(p_transform, p_6planes);
+	return true;
+}
+
 bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8points) const {
 	Vector<Plane> planes = get_projection_planes(Transform());
 	const Planes intersections[8][3] = {
@@ -285,85 +312,91 @@ bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8point
 	return true;
 }
 
-Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) const {
+void CameraMatrix::_transform_projection_planes(const Transform &p_transform, Plane *p_6planes) const {
+	DEV_ASSERT(p_6planes);
+	for (uint32_t n = 0; n < 6; n++) {
+		p_6planes[n] = p_transform.xform(p_6planes[n]);
+	}
+}
+
+void CameraMatrix::_get_projection_planes(Plane *p_6planes) const {
+	DEV_ASSERT(p_6planes);
+
 	/** Fast Plane Extraction from combined modelview/projection matrices.
 	 * References:
 	 * https://web.archive.org/web/20011221205252/http://www.markmorley.com/opengl/frustumculling.html
 	 * https://web.archive.org/web/20061020020112/http://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
 	 */
-
-	Vector<Plane> planes;
-
 	const real_t *matrix = (const real_t *)this->matrix;
 
-	Plane new_plane;
-
 	///////--- Near Plane ---///////
-	new_plane = Plane(matrix[3] + matrix[2],
+	Plane &near_plane = p_6planes[0];
+	near_plane = Plane(matrix[3] + matrix[2],
 			matrix[7] + matrix[6],
 			matrix[11] + matrix[10],
 			matrix[15] + matrix[14]);
 
-	new_plane.normal = -new_plane.normal;
-	new_plane.normalize();
-
-	planes.push_back(p_transform.xform(new_plane));
+	near_plane.normal = -near_plane.normal;
+	near_plane.normalize();
 
 	///////--- Far Plane ---///////
-	new_plane = Plane(matrix[3] - matrix[2],
+	Plane &far_plane = p_6planes[1];
+	far_plane = Plane(matrix[3] - matrix[2],
 			matrix[7] - matrix[6],
 			matrix[11] - matrix[10],
 			matrix[15] - matrix[14]);
 
-	new_plane.normal = -new_plane.normal;
-	new_plane.normalize();
-
-	planes.push_back(p_transform.xform(new_plane));
+	far_plane.normal = -far_plane.normal;
+	far_plane.normalize();
 
 	///////--- Left Plane ---///////
-	new_plane = Plane(matrix[3] + matrix[0],
+	Plane &left_plane = p_6planes[2];
+	left_plane = Plane(matrix[3] + matrix[0],
 			matrix[7] + matrix[4],
 			matrix[11] + matrix[8],
 			matrix[15] + matrix[12]);
 
-	new_plane.normal = -new_plane.normal;
-	new_plane.normalize();
-
-	planes.push_back(p_transform.xform(new_plane));
+	left_plane.normal = -left_plane.normal;
+	left_plane.normalize();
 
 	///////--- Top Plane ---///////
-	new_plane = Plane(matrix[3] - matrix[1],
+	Plane &top_plane = p_6planes[3];
+	top_plane = Plane(matrix[3] - matrix[1],
 			matrix[7] - matrix[5],
 			matrix[11] - matrix[9],
 			matrix[15] - matrix[13]);
 
-	new_plane.normal = -new_plane.normal;
-	new_plane.normalize();
-
-	planes.push_back(p_transform.xform(new_plane));
+	top_plane.normal = -top_plane.normal;
+	top_plane.normalize();
 
 	///////--- Right Plane ---///////
-	new_plane = Plane(matrix[3] - matrix[0],
+	Plane &right_plane = p_6planes[4];
+	right_plane = Plane(matrix[3] - matrix[0],
 			matrix[7] - matrix[4],
 			matrix[11] - matrix[8],
 			matrix[15] - matrix[12]);
 
-	new_plane.normal = -new_plane.normal;
-	new_plane.normalize();
-
-	planes.push_back(p_transform.xform(new_plane));
+	right_plane.normal = -right_plane.normal;
+	right_plane.normalize();
 
 	///////--- Bottom Plane ---///////
-	new_plane = Plane(matrix[3] + matrix[1],
+	Plane &bottom_plane = p_6planes[5];
+	bottom_plane = Plane(matrix[3] + matrix[1],
 			matrix[7] + matrix[5],
 			matrix[11] + matrix[9],
 			matrix[15] + matrix[13]);
 
-	new_plane.normal = -new_plane.normal;
-	new_plane.normalize();
+	bottom_plane.normal = -bottom_plane.normal;
+	bottom_plane.normalize();
+}
 
-	planes.push_back(p_transform.xform(new_plane));
+Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) const {
+	// Note this may unnecessarily blank the planes.
+	Vector<Plane> planes;
+	planes.resize(6);
 
+	_get_projection_planes(planes.ptrw());
+	_transform_projection_planes(p_transform, planes.ptrw());
 	return planes;
 }
 
