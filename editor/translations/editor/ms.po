@@ -674,11 +674,11 @@ msgstr ""
 "Pilihan ini tidak berfungsi untuk pengeditan Bezier, kerana ia hanya satu "
 "trek."
 
-msgid "Warning: Editing imported animation"
-msgstr "Amaran: Mengedit animasi yang diimport"
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Pilih nod AnimationPlayer untuk mencipta dan mengedit animasi."
+
+msgid "Warning: Editing imported animation"
+msgstr "Amaran: Mengedit animasi yang diimport"
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Hanya tunjukkan trek dari nod yang dipilih di pokok."
@@ -876,6 +876,9 @@ msgstr "Tutup"
 msgid "Connect"
 msgstr "Sambung"
 
+msgid "Class:"
+msgstr "Kelas:"
+
 msgid "Signal:"
 msgstr "Isyarat:"
 
@@ -907,6 +910,9 @@ msgstr "Isyarat"
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
 "Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat ini?"
+
+msgid "Open Documentation"
+msgstr "Buka Dokumentasi"
 
 msgid "Disconnect All"
 msgstr "Putuskan Semua"
@@ -1209,12 +1215,6 @@ msgstr "Ralat membuka fail aset untuk \"%s\" (bukan dalam format ZIP)."
 msgid "%s (already exists)"
 msgstr "%s (sudah wujud)"
 
-msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr "Kandungan aset \"%s\" - fail-fail %d bercanggah dengan projek anda:"
-
-msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr "Kandungan aset \"%s\" - Tiada fail-fail bercanggah dengan projek anda:"
-
 msgid "Uncompressing Assets"
 msgstr "Nyahmampatkan Aset"
 
@@ -1232,9 +1232,6 @@ msgstr "Berjaya!"
 
 msgid "Install"
 msgstr "Pasang"
-
-msgid "Asset Installer"
-msgstr "Pemasang Aset"
 
 msgid "Speakers"
 msgstr "Pembesar suara"
@@ -1605,9 +1602,6 @@ msgstr "Mengimport (Semula) Aset"
 msgid "Top"
 msgstr "Atas"
 
-msgid "Class:"
-msgstr "Kelas:"
-
 msgid "Inherits:"
 msgstr "Mewarisi:"
 
@@ -1730,17 +1724,11 @@ msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "Menyemat nilai memaksanya untuk disimpan walaupun ia sama dengan nilai asal."
 
-msgid "Open Documentation"
-msgstr "Buka Dokumentasi"
-
 msgid "Resize Array"
 msgstr "Ubah saiz Array"
 
 msgid "Set %s"
 msgstr "Tetapkan %s"
-
-msgid "Set Multiple:"
-msgstr "Tetapkan Pelbagai:"
 
 msgid "Pinned %s"
 msgstr "Dipinkan %s"
@@ -1771,9 +1759,6 @@ msgstr "Kosongkan Keluaran"
 
 msgid "Copy Selection"
 msgstr "Salin Pilihan"
-
-msgid "New Window"
-msgstr "Tetingkap Baru"
 
 msgid ""
 "Spins when the editor window redraws.\n"
@@ -2072,30 +2057,6 @@ msgstr "Lalai"
 msgid "Save & Close"
 msgstr "Simpan & Tutup"
 
-msgid "Save changes to '%s' before closing?"
-msgstr "Simpan perubahan pada '%s' sebelum menutup?"
-
-msgid "Show in FileSystem"
-msgstr "Tunjukkan dalam FileSystem"
-
-msgid "Play This Scene"
-msgstr "Mainkan Adegan Ini"
-
-msgid "Close Tab"
-msgstr "Tutup Tab"
-
-msgid "Undo Close Tab"
-msgstr "Buat Asal Tutup Tab"
-
-msgid "Close Other Tabs"
-msgstr "Tutup Tab-tab Lain"
-
-msgid "Close Tabs to the Right"
-msgstr "Tutup Tab-tab ke Kanan"
-
-msgid "Close All Tabs"
-msgstr "Tutup Semua Tab"
-
 msgid "%d more files or folders"
 msgstr "%d lebih banyak fail-fail atau folder-folder"
 
@@ -2111,9 +2072,6 @@ msgstr "Pandangan Pan"
 msgid "Dock Position"
 msgstr "Kedudukan Dok"
 
-msgid "Add a new scene."
-msgstr "Tambah adegan baru."
-
 msgid "Distraction Free Mode"
 msgstr "Mod Bebas Gangguan"
 
@@ -2125,9 +2083,6 @@ msgstr "Adegan"
 
 msgid "Operations with scene files."
 msgstr "Operasi dengan fail adegan."
-
-msgid "Go to previously opened scene."
-msgstr "Pergi ke adegan yang dibuka sebelum ini."
 
 msgid "Copy Text"
 msgstr "Salin Teks"
@@ -2231,6 +2186,9 @@ msgstr "Dokumentasi Dalam Talian"
 msgid "Questions & Answers"
 msgstr "Soalan & Jawapan"
 
+msgid "Community"
+msgstr "Komuniti"
+
 msgid "Report a Bug"
 msgstr "Laporkan Pepijat"
 
@@ -2239,9 +2197,6 @@ msgstr "Cadangkan Ciri"
 
 msgid "Send Docs Feedback"
 msgstr "Hantar Maklum Balas Dokumen"
-
-msgid "Community"
-msgstr "Komuniti"
 
 msgid "About Godot"
 msgstr "Tentang Godot"
@@ -2451,6 +2406,9 @@ msgstr "Muatan Cepat"
 
 msgid "Make Unique"
 msgstr "Buat Unik"
+
+msgid "Show in FileSystem"
+msgstr "Tunjukkan dalam FileSystem"
 
 msgid "Convert to %s"
 msgstr "Tukar ke %s"
@@ -2735,9 +2693,6 @@ msgstr "Ralat semasa memindahkan:"
 msgid "Error duplicating:"
 msgstr "Ralat penduaan:"
 
-msgid "Unable to update dependencies:"
-msgstr "Tidak dapat mengemaskini kebergantungan:"
-
 msgid "A file or folder with this name already exists."
 msgstr "Fail atau folder dengan nama ini sudah wujud."
 
@@ -2767,6 +2722,9 @@ msgstr "Tambah ke Kegemaran"
 
 msgid "Remove from Favorites"
 msgstr "Alih keluar dari Kegemaran"
+
+msgid "Reimport"
+msgstr "Import semula"
 
 msgid "Open in File Manager"
 msgstr "Buka dalam Pengurus Fail"
@@ -3007,8 +2965,29 @@ msgstr "Mainkan adegan yang diedit."
 msgid "Quick Run Scene..."
 msgstr "Jalan Cepat Adegan..."
 
-msgid "Reimport"
-msgstr "Import semula"
+msgid "Play This Scene"
+msgstr "Mainkan Adegan Ini"
+
+msgid "Close Tab"
+msgstr "Tutup Tab"
+
+msgid "Undo Close Tab"
+msgstr "Buat Asal Tutup Tab"
+
+msgid "Close Other Tabs"
+msgstr "Tutup Tab-tab Lain"
+
+msgid "Close Tabs to the Right"
+msgstr "Tutup Tab-tab ke Kanan"
+
+msgid "Close All Tabs"
+msgstr "Tutup Semua Tab"
+
+msgid "New Window"
+msgstr "Tetingkap Baru"
+
+msgid "Add a new scene."
+msgstr "Tambah adegan baru."
 
 msgid "Importing Scene..."
 msgstr "Mengimport Adegan..."
@@ -3036,9 +3015,6 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
-
-msgid "Select Importer"
-msgstr "Pilih Pengimport"
 
 msgid "Importer:"
 msgstr "Pengimport:"
@@ -3071,18 +3047,6 @@ msgstr "Import Sebagai:"
 
 msgid "Preset"
 msgstr "Pratetap"
-
-msgid "Save Scenes, Re-Import, and Restart"
-msgstr "Simpan Adegan, Import semula, dan Mula Semula"
-
-msgid "Changing the type of an imported file requires editor restart."
-msgstr "Mengubah jenis fail yang diimport memerlukan editor dimulakan semula."
-
-msgid ""
-"WARNING: Assets exist that use this resource, they may stop loading properly."
-msgstr ""
-"AMARAN: Terdapat aset-aset yang menggunakan sumber ini, mereka mungkin "
-"berhenti memuat dengan betul."
 
 msgid ""
 "Select a resource file in the filesystem or in the inspector to adjust import "
@@ -3289,9 +3253,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 "Jana segi tiga-segi tiga campuran secara automatik (bukan secara manual)"
 
-msgid "Parameter Changed:"
-msgstr "Parameter Berubah:"
-
 msgid "Output node can't be added to the blend tree."
 msgstr "Nod keluaran tidak boleh ditambah ke pokok adunan."
 
@@ -3326,15 +3287,6 @@ msgstr "Togol Filter Hidup/Mati"
 
 msgid "Change Filter"
 msgstr "Tukar Filter"
-
-msgid "No animation player set, so unable to retrieve track names."
-msgstr ""
-"Tiada pemain animasi ditetapkan, jadi tidak dapat memperolehi semula nama "
-"trek."
-
-msgid "Player path set is invalid, so unable to retrieve track names."
-msgstr ""
-"Set laluan pemain tidak sah, jadi tidak dapat mendapatkan semula nama trek."
 
 msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
@@ -3697,9 +3649,6 @@ msgstr "Langkah Grid:"
 msgid "Primary Line Every:"
 msgstr "Garis Utama Setiap:"
 
-msgid "steps"
-msgstr "langkah-langkah"
-
 msgid "Rotation Offset:"
 msgstr "Offset Putaran:"
 
@@ -3765,9 +3714,6 @@ msgstr "Terkunci"
 
 msgid "Grouped"
 msgstr "Terkumpul"
-
-msgid "Add Node Here"
-msgstr "Tambah Nod Di Sini"
 
 msgid ""
 "Project Camera Override\n"
@@ -4101,12 +4047,6 @@ msgstr "Piksel Sempadan"
 msgid "Directed Border Pixels"
 msgstr "Piksel Sempadan Diarahkan"
 
-msgid "Capture from Pixel"
-msgstr "Tangkap daripada Pixel"
-
-msgid "Emission Colors"
-msgstr "Warna Emission"
-
 msgid "Create Emission Points From Node"
 msgstr "Cipta Titik Emission Daripada Nod"
 
@@ -4218,9 +4158,6 @@ msgstr ""
 
 msgid "Clear Emission Mask"
 msgstr "Keluarkan Topeng Emission"
-
-msgid "Gradient Edited"
-msgstr "Kecerunan Disunting"
 
 msgid "Create Occluder Polygon"
 msgstr "Cipta Poligon Occluder"
@@ -4393,9 +4330,6 @@ msgstr "Padam nod \"%s\"?"
 
 msgid "Filters"
 msgstr "Penapis"
-
-msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "Benarkan: a-z, A-Z, 0-9, _ dan ."
 
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Argumen jenis tidak sah untuk convert(), guna pemalar TYPE_*."
