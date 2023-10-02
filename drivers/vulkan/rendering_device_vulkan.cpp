@@ -5054,6 +5054,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	}
 
 	Shader *shader = shader_owner.get_or_null(id);
+	ERR_FAIL_NULL_V(shader, RID());
 
 	shader->vertex_input_mask = vertex_input_mask;
 	shader->fragment_output_mask = fragment_output_mask;
