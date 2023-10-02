@@ -375,6 +375,8 @@ for name, path in modules_detected.items():
     else:
         enabled = False
 
+    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
+
     # Add module-specific options.
     try:
         for opt in config.get_opts(selected_platform):
@@ -384,7 +386,6 @@ for name, path in modules_detected.items():
 
     sys.path.remove(path)
     sys.modules.pop("config")
-    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
 
 methods.write_modules(modules_detected)
 
