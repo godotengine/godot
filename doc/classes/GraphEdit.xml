@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[GraphEdit] provides tools for creation, manipulation, and display of various graphs. Its main purpose in the engine is to power the visual programming systems, such as visual shaders, but it is also available for use in user projects.
-		[GraphEdit] by itself is only an empty container, representing an infinite grid where [GraphNode]s can be placed. Each [GraphNode] represents a node in the graph, a single unit of data in the connected scheme. [GraphEdit], in turn, helps to control various interactions with nodes and between nodes. When the user attempts to connect, disconnect, or close a [GraphNode], a signal is emitted in the [GraphEdit], but no action is taken by default. It is the responsibility of the programmer utilizing this control to implement the necessary logic to determine how each request should be handled.
+		[GraphEdit] by itself is only an empty container, representing an infinite grid where [GraphNode]s can be placed. Each [GraphNode] represents a node in the graph, a single unit of data in the connected scheme. [GraphEdit], in turn, helps to control various interactions with nodes and between nodes. When the user attempts to connect, disconnect, or delete a [GraphNode], a signal is emitted in the [GraphEdit], but no action is taken by default. It is the responsibility of the programmer utilizing this control to implement the necessary logic to determine how each request should be handled.
 		[b]Performance:[/b] It is greatly advised to enable low-processor usage mode (see [member OS.low_processor_usage_mode]) when using GraphEdits.
 	</description>
 	<tutorials>
@@ -289,12 +289,6 @@
 				Emitted at the beginning of a GraphNode movement.
 			</description>
 		</signal>
-		<signal name="close_nodes_request">
-			<param index="0" name="nodes" type="StringName[]" />
-			<description>
-				Emitted when attempting to remove a GraphNode from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
-			</description>
-		</signal>
 		<signal name="connection_drag_ended">
 			<description>
 				Emitted at the end of a connection drag.
@@ -336,6 +330,12 @@
 		<signal name="copy_nodes_request">
 			<description>
 				Emitted when the user presses [kbd]Ctrl + C[/kbd].
+			</description>
+		</signal>
+		<signal name="delete_nodes_request">
+			<param index="0" name="nodes" type="StringName[]" />
+			<description>
+				Emitted when attempting to remove a GraphNode from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
 			</description>
 		</signal>
 		<signal name="disconnection_request">
