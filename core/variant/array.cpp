@@ -871,7 +871,7 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	if (validate_set_type() != OK) {
 		return;
 	}
-	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
+	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT && p_type != Variant::ARRAY, "Class names can only be set for type OBJECT or ARRAY");
 	Ref<Script> script = p_script;
 	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
 

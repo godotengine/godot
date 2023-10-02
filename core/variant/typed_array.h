@@ -57,6 +57,24 @@ public:
 };
 
 template <class T>
+class TypedArray<Struct<T>> : public Array {
+public:
+	_FORCE_INLINE_ void operator=(const Array &p_array) {
+		ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign an array with a different element type.");
+		_ref(p_array);
+	}
+	_FORCE_INLINE_ TypedArray(const Variant &p_variant) :
+			Array(Array(p_variant), Variant::ARRAY, T::get_name(), Variant()) {
+	}
+	_FORCE_INLINE_ TypedArray(const Array &p_array) :
+			Array(p_array, Variant::ARRAY, T::get_name(), Variant()) {
+	}
+	_FORCE_INLINE_ TypedArray() {
+		set_typed(Variant::ARRAY, T::get_name(), Variant());
+	}
+};
+
+template <class T>
 struct VariantInternalAccessor<TypedArray<T>> {
 	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
 	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = p_array; }

@@ -193,6 +193,31 @@ TEST_CASE("[Struct] Nesting") {
 		CHECK_EQ(nested_struct["value"], basic_struct);
 		ERR_PRINT_ON;
 	}
+
+	SUBCASE("Typed Array of Struct") {
+		TypedArray<Struct<BasicStructLayout>> array;
+		Struct<BasicStructLayout> basic_struct_0;
+		basic_struct_0["int_val"] = 1;
+		basic_struct_0["float_val"] = 3.14;
+		Struct<BasicStructLayout> basic_struct_1;
+		basic_struct_1["int_val"] = 2;
+		basic_struct_1["float_val"] = 2.7;
+		array.push_back(basic_struct_0);
+		array.push_back(basic_struct_1);
+		CHECK_EQ(array[0], basic_struct_0);
+		CHECK_EQ(array[1], basic_struct_1);
+
+		ERR_PRINT_OFF;
+		array.push_back(0);
+		CHECK_EQ(array.size(), 2);
+
+		Struct<BasicStructLookalikeLayout> basic_struct_lookalike;
+		basic_struct_lookalike["int_val"] = 3;
+		basic_struct_lookalike["float_val"] = 5.4;
+		array.push_back(basic_struct_lookalike);
+		CHECK_EQ(array.size(), 2);
+		ERR_PRINT_ON;
+	}
 }
 
 TEST_CASE("[Struct] ClassDB") {
