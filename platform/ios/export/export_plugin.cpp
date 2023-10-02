@@ -1928,11 +1928,15 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 
 bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 #ifdef MODULE_MONO_ENABLED
-	// Don't check for additional errors, as this particular error cannot be resolved.
-	r_error += TTR("Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target iOS with C#/Mono instead.") + "\n";
-	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
-	return false;
+#ifdef MACOS_ENABLED
+	// iOS export is still a work in progress, keep a message as a warning.
+	r_error += TTR("Exporting to iOS when using C#/.NET is experimental.") + "\n";
 #else
+	// TODO: Remove this restriction when we don't rely on macOS tools to package up the native libraries anymore.
+	r_error += TTR("Exporting to iOS when using C#/.NET is experimental and requires macOS.") + "\n";
+	return false;
+#endif
+#endif
 
 	String err;
 	bool valid = false;
@@ -1963,7 +1967,6 @@ bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExp
 	}
 
 	return valid;
-#endif // !MODULE_MONO_ENABLED
 }
 
 bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
