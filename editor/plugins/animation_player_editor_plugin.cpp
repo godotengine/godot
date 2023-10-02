@@ -2203,9 +2203,6 @@ AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
 	if (dummy_player) {
 		memdelete(dummy_player);
 	}
-	if (player) {
-		memdelete(player);
-	}
 }
 
 // AnimationTrackKeyEditEditorPlugin

@@ -118,7 +118,6 @@ Excluded unexposed classes from extension_api.json.
 GH-79311
 --------
 
-Validate extension JSON: API was removed: classes/GraphEdit/signals/delete_nodes_request
 Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_color
 Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_count
 Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_height

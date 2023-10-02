@@ -163,11 +163,13 @@ private:
 
 	void _update_window_callbacks();
 
-	void _clear_transient();
-	void _make_transient();
 	Window *transient_parent = nullptr;
 	Window *exclusive_child = nullptr;
 	HashSet<Window *> transient_children;
+
+	void _clear_transient();
+	void _make_transient();
+	void _set_transient_exclusive_child(bool p_clear_invalid = false);
 
 	ThemeOwner *theme_owner = nullptr;
 	Ref<Theme> theme;

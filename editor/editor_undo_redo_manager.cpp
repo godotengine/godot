@@ -156,7 +156,7 @@ void EditorUndoRedoManager::add_undo_methodp(Object *p_object, const StringName 
 void EditorUndoRedoManager::_add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 2;
 		return;
 	}
 
@@ -185,7 +185,7 @@ void EditorUndoRedoManager::_add_do_method(const Variant **p_args, int p_argcoun
 void EditorUndoRedoManager::_add_undo_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 2;
 		return;
 	}
 

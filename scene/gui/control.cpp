@@ -2533,7 +2533,7 @@ StringName Control::get_theme_type_variation() const {
 Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(Ref<Texture2D>());
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2557,7 +2557,7 @@ Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringNam
 Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(Ref<StyleBox>());
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2581,7 +2581,7 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(Ref<Font>());
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2605,7 +2605,7 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 int Control::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(0);
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2629,7 +2629,7 @@ int Control::get_theme_font_size(const StringName &p_name, const StringName &p_t
 Color Control::get_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(Color());
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2653,7 +2653,7 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_the
 int Control::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(0);
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2704,7 +2704,7 @@ Ref<Texture2D> Control::get_editor_theme_icon(const StringName &p_name) const {
 bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2721,7 +2721,7 @@ bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme
 bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2738,7 +2738,7 @@ bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_t
 bool Control::has_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2755,7 +2755,7 @@ bool Control::has_theme_font(const StringName &p_name, const StringName &p_theme
 bool Control::has_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2772,7 +2772,7 @@ bool Control::has_theme_font_size(const StringName &p_name, const StringName &p_
 bool Control::has_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
@@ -2789,7 +2789,7 @@ bool Control::has_theme_color(const StringName &p_name, const StringName &p_them
 bool Control::has_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!data.initialized) {
-		WARN_PRINT_ONCE("Attempting to access theme items too early; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED");
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", this->get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
