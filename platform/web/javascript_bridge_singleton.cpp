@@ -68,11 +68,11 @@ private:
 	int _js_id = 0;
 	Callable _callable;
 
-	static int _variant2js(const void **p_args, int p_pos, godot_js_wrapper_ex *r_val, void **p_lock);
-	static void _free_lock(void **p_lock, int p_type);
-	static Variant _js2variant(int p_type, godot_js_wrapper_ex *p_val);
-	static void *_alloc_variants(int p_size);
-	static void _callback(void *p_ref, int p_arg_id, int p_argc);
+	WASM_EXPORT static int _variant2js(const void **p_args, int p_pos, godot_js_wrapper_ex *r_val, void **p_lock);
+	WASM_EXPORT static void _free_lock(void **p_lock, int p_type);
+	WASM_EXPORT static Variant _js2variant(int p_type, godot_js_wrapper_ex *p_val);
+	WASM_EXPORT static void *_alloc_variants(int p_size);
+	WASM_EXPORT static void _callback(void *p_ref, int p_arg_id, int p_argc);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value) override;
