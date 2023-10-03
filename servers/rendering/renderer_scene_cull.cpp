@@ -1970,7 +1970,6 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 		}
 	}
 
-	// <Zylann> This is why I didn't re-use Instance::aabb to implement custom AABBs
 	if (p_instance->extra_margin) {
 		new_aabb.grow_by(p_instance->extra_margin);
 	}

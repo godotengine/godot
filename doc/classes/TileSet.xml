@@ -332,7 +332,7 @@
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="alternative_from" type="int" />
 			<description>
-				According to the configured proxies, maps the provided indentifiers to a new set of identifiers. The source ID, atlas coordinates ID and alternative tile ID are returned as a 3 elements Array.
+				According to the configured proxies, maps the provided identifiers to a new set of identifiers. The source ID, atlas coordinates ID and alternative tile ID are returned as a 3 elements Array.
 				This function first look for matching alternative-level proxies, then coordinates-level proxies, then source-level proxies.
 				If no proxy corresponding to provided identifiers are found, returns the same values the ones used as arguments.
 			</description>

@@ -306,7 +306,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			return;
 		}
 
-		// Assign first available number. Re-use numbers where possible.
+		// Assign first available number. Reuse numbers where possible.
 		final int id = assignJoystickIdNumber(deviceId);
 
 		final Joystick joystick = new Joystick();

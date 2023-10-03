@@ -6996,7 +6996,7 @@ void Node3DEditor::_init_grid() {
 	if (primary_grid_steps != 10) { // Log10 of 10 is 1.
 		// Change of base rule, divide by ln(10).
 		real_t div = Math::log((real_t)primary_grid_steps) / (real_t)2.302585092994045901094;
-		// Trucation (towards zero) is intentional.
+		// Truncation (towards zero) is intentional.
 		division_level_max = (int)(division_level_max / div);
 		division_level_min = (int)(division_level_min / div);
 	}
@@ -8103,7 +8103,7 @@ Node3DEditor::Node3DEditor() {
 
 	String sct;
 
-	// Add some margin to the left for better aesthetics.
+	// Add some margin to the left for better esthetics.
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
 	// which looks ugly.
 	Control *margin_left = memnew(Control);
