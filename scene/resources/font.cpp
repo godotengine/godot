@@ -3034,14 +3034,19 @@ void SystemFont::_update_base_font() {
 			continue;
 		}
 
-		// If it's a font collection check all faces to match requested style.
+		// If it's a font collection check all faces to match requested style and name.
 		int best_score = 0;
 		for (int i = 0; i < file->get_face_count(); i++) {
+			int score = 0;
 			file->set_face_index(0, i);
+			const String n = file->get_font_name();
+			if (n.to_upper() == E.to_upper()) {
+				score += 80;
+			}
 			BitField<TextServer::FontStyle> style = file->get_font_style();
 			int font_weight = file->get_font_weight();
 			int font_stretch = file->get_font_stretch();
-			int score = (20 - Math::abs(font_weight - weight) / 50);
+			score += (20 - Math::abs(font_weight - weight) / 50);
 			score += (20 - Math::abs(font_stretch - stretch) / 10);
 			if (bool(style & TextServer::FONT_ITALIC) == italic) {
 				score += 30;
@@ -3060,7 +3065,7 @@ void SystemFont::_update_base_font() {
 		file->set_face_index(0, face_indeces[0]);
 
 		// If it's a variable font, apply weight, stretch and italic coordinates to match requested style.
-		if (best_score != 50) {
+		if (best_score != 150) {
 			Dictionary ftr = file->get_supported_variation_list();
 			if (ftr.has(TS->name_to_tag("width"))) {
 				ftr_stretch = stretch;
