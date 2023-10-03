@@ -122,6 +122,14 @@
 				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
 		</method>
+		<method name="sample_baked_tilt" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="offset" type="float" default="0.0" />
+			<description>
+				Returns the tilt value within the curve at position [param offset], where [param offset] is measured as a distance in 3D units along the curve.
+				To do that, it finds the two cached points where the [param offset] lies between, then interpolates their tilt values.
+			</description>
+		</method>
 		<method name="sample_baked_up_vector" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="offset" type="float" />
