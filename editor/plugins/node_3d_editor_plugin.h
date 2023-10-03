@@ -379,11 +379,22 @@ private:
 			fov_scale = 1.0;
 			region_select = false;
 		}
+
+		Vector3 getPos() {
+			return pos;
+		}
+
 	};
+
 	// Viewport camera supports movement smoothing,
 	// so one cursor is the real cursor, while the other can be an interpolated version.
-	Cursor cursor; // Immediate cursor
-	Cursor camera_cursor; // That one may be interpolated (don't modify this one except for smoothing purposes)
+	Cursor immediate_cursor;
+	Cursor current_interpolated_cursor; // Don't modify this one except for smoothing purposes
+
+	void set_cursor(const Cursor &p_cursor, bool p_interpolate = true, bool update_pilot = false);
+	void reset_cursor_to_default();
+	void reset_cursor_to_camera();
+	void set_orthogonal(bool p_orthogonal);
 
 	void scale_fov(real_t p_fov_offset);
 	void reset_fov();
@@ -475,11 +486,11 @@ private:
 	void pilot_selection();
 	void pilot(Node3D *p_node);
 	void stop_piloting();
+	void check_piloting_when_change_camera_type(bool to_ortho);
 	void start_pilot_transform();
 	void update_pilot_transform(const Transform3D &p_transform);
 	void end_pilot_transform(bool p_commit_using_cursor_transform = false);
 	void _undo_redo_pilot_transform(Node3D *p_node, const Transform3D &p_transform);
-	void resetCursorToCamera();
 
 protected:
 	void _notification(int p_what);
