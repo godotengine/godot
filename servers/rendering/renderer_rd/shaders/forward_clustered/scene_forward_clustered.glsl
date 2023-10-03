@@ -177,14 +177,25 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 }
 #endif
 
-void vertex_shader(vec3 vertex_input,
+void vertex_shader(in bool prev_frame_switch, in uint instance_index, in bool is_multimesh, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {	
+#ifdef MOTION_VECTORS
+	vec3 vertex_input = prev_frame_switch ? previous_vertex_attrib : vertex_attrib;
 #ifdef NORMAL_USED
-		in vec2 normal_input,
+	vec2 normal_input = prev_frame_switch ? previous_normal_attrib : normal_attrib;
 #endif
 #ifdef TANGENT_USED
-		in vec2 tangent_input,
+	vec2 tangent_input = prev_frame_switch ? previous_tangent_attrib : tangent_attrib;
 #endif
-		in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
+#else //!MOTION_VECTORS
+	vec3 vertex_input = vertex_attrib;
+#ifdef NORMAL_USED
+	vec2 normal_input = normal_attrib;
+#endif
+#ifdef TANGENT_USED
+	vec2 tangent_input = tangent_attrib;
+#endif
+#endif //#ifdef MOTION_VECTORS
+	
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
@@ -215,6 +226,12 @@ void vertex_shader(vec3 vertex_input,
 
 	if (is_multimesh) {
 		//multimesh, instances are for it
+
+#ifdef MOTION_VECTORS
+		const uint multimesh_offset = prev_frame_switch ? draw_call.multimesh_motion_vectors_previous_offset : draw_call.multimesh_motion_vectors_current_offset;
+#else
+		const uint multimesh_offset = draw_call.multimesh_motion_vectors_current_offset;
+#endif
 
 #ifdef USE_PARTICLE_TRAILS
 		uint trail_size = (instances.data[instance_index].flags >> INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT) & INSTANCE_FLAGS_PARTICLE_TRAIL_MASK;
@@ -499,14 +516,7 @@ void main() {
 #ifdef MOTION_VECTORS
 	// Previous vertex.
 	global_time = scene_data_block.prev_data.time;
-	vertex_shader(previous_vertex_attrib,
-#ifdef NORMAL_USED
-			previous_normal_attrib,
-#endif
-#ifdef TANGENT_USED
-			previous_tangent_attrib,
-#endif
-			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+	vertex_shader(/*prev_frame=*/ true, instance_index, is_multimesh, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
 #else
 	// Unused output.
 	vec4 screen_position;
@@ -514,14 +524,7 @@ void main() {
 
 	// Current vertex.
 	global_time = scene_data_block.data.time;
-	vertex_shader(vertex_attrib,
-#ifdef NORMAL_USED
-			normal_attrib,
-#endif
-#ifdef TANGENT_USED
-			tangent_attrib,
-#endif
-			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
+	vertex_shader(/*prev_frame=*/ false, instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
 }
 
 #[fragment]

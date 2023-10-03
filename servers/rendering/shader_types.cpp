@@ -83,6 +83,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CUSTOM1"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CUSTOM2"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CUSTOM3"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["PREV_FRAME_SWITCH"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].can_discard = false;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].main_function = true;
 
