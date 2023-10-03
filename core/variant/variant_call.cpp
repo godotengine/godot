@@ -1770,6 +1770,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, cubic_interpolate_in_time, sarray("b", "pre_a", "post_b", "weight", "b_t", "pre_a_t", "post_b_t"), varray());
 	bind_method(Vector2, bezier_interpolate, sarray("control_1", "control_2", "end", "t"), varray());
 	bind_method(Vector2, bezier_derivative, sarray("control_1", "control_2", "end", "t"), varray());
+	bind_method(Vector2, rotate_toward, sarray("to", "delta"), varray());
 	bind_method(Vector2, max_axis_index, sarray(), varray());
 	bind_method(Vector2, min_axis_index, sarray(), varray());
 	bind_method(Vector2, move_toward, sarray("to", "delta"), varray());
@@ -1865,6 +1866,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, bezier_interpolate, sarray("control_1", "control_2", "end", "t"), varray());
 	bind_method(Vector3, bezier_derivative, sarray("control_1", "control_2", "end", "t"), varray());
 	bind_method(Vector3, move_toward, sarray("to", "delta"), varray());
+	bind_method(Vector3, rotate_toward, sarray("to", "delta"), varray());
 	bind_method(Vector3, dot, sarray("with"), varray());
 	bind_method(Vector3, cross, sarray("with"), varray());
 	bind_method(Vector3, outer, sarray("with"), varray());
@@ -1959,6 +1961,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, log, sarray(), varray());
 	bind_method(Quaternion, exp, sarray(), varray());
 	bind_method(Quaternion, angle_to, sarray("to"), varray());
+	bind_method(Quaternion, rotate_toward, sarray("to", "delta"), varray());
 	bind_method(Quaternion, dot, sarray("with"), varray());
 	bind_method(Quaternion, slerp, sarray("to", "weight"), varray());
 	bind_method(Quaternion, slerpni, sarray("to", "weight"), varray());
@@ -2087,6 +2090,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, orthonormalized, sarray(), varray());
 	bind_method(Basis, determinant, sarray(), varray());
 	bind_methodv(Basis, rotated, static_cast<Basis (Basis::*)(const Vector3 &, real_t) const>(&Basis::rotated), sarray("axis", "angle"), varray());
+	bind_method(Basis, rotate_toward, sarray("to", "delta"), varray());
 	bind_method(Basis, scaled, sarray("scale"), varray());
 	bind_method(Basis, get_scale, sarray(), varray());
 	bind_method(Basis, get_euler, sarray("order"), varray((int64_t)EulerOrder::YXZ));

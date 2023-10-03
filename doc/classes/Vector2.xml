@@ -325,6 +325,15 @@
 				Returns the result of reflecting the vector from a line defined by the given direction vector [param n].
 			</description>
 		</method>
+		<method name="rotate_toward" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="to" type="Vector2" />
+			<param index="1" name="delta" type="float" />
+			<description>
+				Returns the result of rotating this vector towards [param to], by increment [param delta] (in radians).
+				Passing a negative [param delta] will rotate toward the opposite of [param to].
+			</description>
+		</method>
 		<method name="rotated" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="angle" type="float" />

@@ -153,6 +153,16 @@
 				Returns a copy of the quaternion, normalized to unit length.
 			</description>
 		</method>
+		<method name="rotate_toward" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="to" type="Quaternion" />
+			<param index="1" name="delta" type="float" />
+			<description>
+				Returns the result of rotating toward [param to] by [param delta].
+				Passing a negative [param delta] will rotate toward the inverse of [param to].
+				[b]Note:[/b] Both quaternions must be normalized.
+			</description>
+		</method>
 		<method name="slerp" qualifiers="const">
 			<return type="Quaternion" />
 			<param index="0" name="to" type="Quaternion" />

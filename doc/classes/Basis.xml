@@ -142,6 +142,15 @@
 				Returns the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
 			</description>
 		</method>
+		<method name="rotate_toward" qualifiers="const">
+			<return type="Basis" />
+			<param index="0" name="to" type="Basis" />
+			<param index="1" name="delta" type="float" />
+			<description>
+				Assuming that the matrix is a proper rotation matrix, rotates toward [param to] by [param delta].
+				Passing a negative [param delta] will rotate toward the inverse of [param to].
+			</description>
+		</method>
 		<method name="rotated" qualifiers="const">
 			<return type="Basis" />
 			<param index="0" name="axis" type="Vector3" />

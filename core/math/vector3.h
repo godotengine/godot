@@ -84,6 +84,25 @@ struct _NO_DISCARD_ Vector3 {
 		return Vector3(MAX(x, p_vector3.x), MAX(y, p_vector3.y), MAX(z, p_vector3.z));
 	}
 
+	_FORCE_INLINE_ Vector3 rotate_toward(Vector3 p_to, real_t p_delta) const {
+		if (Math::is_zero_approx(p_delta)) {
+			return *this;
+		}
+
+		if (p_delta < 0.0f) {
+			p_delta = -p_delta;
+			p_to = -p_to;
+		}
+
+		real_t angle = angle_to(p_to);
+
+		if (angle < p_delta) {
+			return p_to;
+		}
+
+		return slerp(p_to, p_delta / angle);
+	}
+
 	_FORCE_INLINE_ real_t length() const;
 	_FORCE_INLINE_ real_t length_squared() const;
 
