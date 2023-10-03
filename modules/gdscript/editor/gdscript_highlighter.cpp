@@ -442,7 +442,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 				if (str[k] == '(') {
 					in_function_name = true;
-				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR)) {
+				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FOR)) {
 					in_variable_declaration = true;
 				}
 
@@ -480,7 +480,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				in_function_args = false;
 			}
 
-			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[') {
+			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[' && str[j] != '.') {
 				expect_type = false;
 			}
 
@@ -562,16 +562,11 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (in_keyword) {
 			next_type = KEYWORD;
 			color = keyword_color;
-		} else if (in_member_variable) {
-			next_type = MEMBER;
-			color = member_color;
 		} else if (in_signal_declaration) {
 			next_type = SIGNAL;
-
 			color = member_color;
 		} else if (in_function_name) {
 			next_type = FUNCTION;
-
 			if (!in_lambda && prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
 				color = function_definition_color;
 			} else {
@@ -586,6 +581,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (expect_type) {
 			next_type = TYPE;
 			color = type_color;
+		} else if (in_member_variable) {
+			next_type = MEMBER;
+			color = member_color;
 		} else {
 			next_type = IDENTIFIER;
 		}
@@ -683,6 +681,12 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	for (const String &E : core_types) {
 		class_names[StringName(E)] = basetype_color;
 	}
+	class_names[SNAME("Variant")] = basetype_color;
+	class_names[SNAME("void")] = basetype_color;
+	// `get_core_type_words()` doesn't return primitive types.
+	class_names[SNAME("bool")] = basetype_color;
+	class_names[SNAME("int")] = basetype_color;
+	class_names[SNAME("float")] = basetype_color;
 
 	/* Reserved words. */
 	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
@@ -696,6 +700,10 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			reserved_keywords[StringName(E)] = keyword_color;
 		}
 	}
+
+	// Highlight `set` and `get` as "keywords" with the function color to avoid conflicts with method calls.
+	reserved_keywords[SNAME("set")] = function_color;
+	reserved_keywords[SNAME("get")] = function_color;
 
 	/* Global functions. */
 	List<StringName> global_function_list;
