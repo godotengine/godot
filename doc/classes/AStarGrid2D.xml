@@ -113,14 +113,14 @@
 			<param index="0" name="x" type="int" />
 			<param index="1" name="y" type="int" />
 			<description>
-				Returns [code]true[/code] if the [param x] and [param y] is a valid grid coordinate (id).
+				Returns [code]true[/code] if the [param x] and [param y] is a valid grid coordinate (id), i.e. if it is inside [member region]. Equivalent to [code]region.has_point(Vector2i(x, y))[/code].
 			</description>
 		</method>
 		<method name="is_in_boundsv" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="id" type="Vector2i" />
 			<description>
-				Returns [code]true[/code] if the [param id] vector is a valid grid coordinate.
+				Returns [code]true[/code] if the [param id] vector is a valid grid coordinate, i.e. if it is inside [member region]. Equivalent to [code]region.has_point(id)[/code].
 			</description>
 		</method>
 		<method name="is_point_solid" qualifiers="const">
