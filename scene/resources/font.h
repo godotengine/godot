@@ -205,7 +205,7 @@ class FontFile : public Font {
 	mutable Vector<RID> cache;
 
 	_FORCE_INLINE_ void _clear_cache();
-	_FORCE_INLINE_ void _ensure_rid(int p_cache_index) const;
+	_FORCE_INLINE_ void _ensure_rid(int p_cache_index, int p_make_linked_from = -1) const;
 
 	void _convert_packed_8bit(Ref<Image> &p_source, int p_page, int p_sz);
 	void _convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz);

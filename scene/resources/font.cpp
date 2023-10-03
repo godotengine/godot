@@ -558,24 +558,28 @@ _FORCE_INLINE_ void FontFile::_clear_cache() {
 	}
 }
 
-_FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index) const {
+_FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_from) const {
 	if (unlikely(p_cache_index >= cache.size())) {
 		cache.resize(p_cache_index + 1);
 	}
 	if (unlikely(!cache[p_cache_index].is_valid())) {
-		cache.write[p_cache_index] = TS->create_font();
-		TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
-		TS->font_set_antialiasing(cache[p_cache_index], antialiasing);
-		TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
-		TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
-		TS->font_set_msdf_pixel_range(cache[p_cache_index], msdf_pixel_range);
-		TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
-		TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
-		TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
-		TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
-		TS->font_set_hinting(cache[p_cache_index], hinting);
-		TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
-		TS->font_set_oversampling(cache[p_cache_index], oversampling);
+		if (p_make_linked_from >= 0 && p_make_linked_from != p_cache_index && p_make_linked_from < cache.size()) {
+			cache.write[p_cache_index] = TS->create_font_linked_variation(cache[p_make_linked_from]);
+		} else {
+			cache.write[p_cache_index] = TS->create_font();
+			TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
+			TS->font_set_antialiasing(cache[p_cache_index], antialiasing);
+			TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
+			TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
+			TS->font_set_msdf_pixel_range(cache[p_cache_index], msdf_pixel_range);
+			TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
+			TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
+			TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
+			TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
+			TS->font_set_hinting(cache[p_cache_index], hinting);
+			TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
+			TS->font_set_oversampling(cache[p_cache_index], oversampling);
+		}
 	}
 }
 
@@ -2218,17 +2222,19 @@ real_t FontFile::get_oversampling() const {
 RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
+	int make_linked_from = -1;
 	for (int i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
 			const Dictionary &cache_var = TS->font_get_variation_coordinates(cache[i]);
 			bool match = true;
+			bool match_linked = true;
 			match = match && (TS->font_get_face_index(cache[i]) == p_face_index);
 			match = match && (TS->font_get_embolden(cache[i]) == p_strength);
 			match = match && (TS->font_get_transform(cache[i]) == p_transform);
-			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_TOP) == p_spacing_top);
-			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_BOTTOM) == p_spacing_bottom);
-			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing_space);
-			match = match && (TS->font_get_spacing(cache[i], TextServer::SPACING_GLYPH) == p_spacing_glyph);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_TOP) == p_spacing_top);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_BOTTOM) == p_spacing_bottom);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing_space);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_GLYPH) == p_spacing_glyph);
 			for (const Variant *V = supported_coords.next(nullptr); V && match; V = supported_coords.next(V)) {
 				const Vector3 &def = supported_coords[*V];
 
@@ -2255,22 +2261,34 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 				match = match && (c_v == s_v);
 			}
 			if (match) {
-				return cache[i];
+				if (match_linked) {
+					return cache[i];
+				} else {
+					make_linked_from = i;
+				}
 			}
 		}
 	}
 
 	// Create new variation cache.
 	int idx = cache.size();
-	_ensure_rid(idx);
-	TS->font_set_variation_coordinates(cache[idx], p_variation_coordinates);
-	TS->font_set_face_index(cache[idx], p_face_index);
-	TS->font_set_embolden(cache[idx], p_strength);
-	TS->font_set_transform(cache[idx], p_transform);
-	TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
-	TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
-	TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
-	TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+	if (make_linked_from >= 0) {
+		_ensure_rid(idx, make_linked_from);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+	} else {
+		_ensure_rid(idx);
+		TS->font_set_variation_coordinates(cache[idx], p_variation_coordinates);
+		TS->font_set_face_index(cache[idx], p_face_index);
+		TS->font_set_embolden(cache[idx], p_strength);
+		TS->font_set_transform(cache[idx], p_transform);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+	}
 	return cache[idx];
 }
 

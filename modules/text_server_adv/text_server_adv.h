@@ -293,6 +293,11 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 	};
 
+	struct FontAdvancedLinkedVariation {
+		RID base_font;
+		int extra_spacing[4] = { 0, 0, 0, 0 };
+	};
+
 	struct FontAdvanced {
 		Mutex mutex;
 
@@ -534,8 +539,18 @@ class TextServerAdvanced : public TextServerExtension {
 	// Common data.
 
 	double oversampling = 1.0;
+	mutable RID_PtrOwner<FontAdvancedLinkedVariation> font_var_owner;
 	mutable RID_PtrOwner<FontAdvanced> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
+
+	_FORCE_INLINE_ FontAdvanced *_get_font_data(const RID &p_font_rid) const {
+		RID rid = p_font_rid;
+		FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(rid);
+		if (unlikely(fdv)) {
+			rid = fdv->base_font;
+		}
+		return font_owner.get_or_null(rid);
+	}
 
 	struct SystemFontKey {
 		String font_name;
@@ -704,6 +719,7 @@ public:
 	/* Font interface */
 
 	MODBIND0R(RID, create_font);
+	MODBIND1R(RID, create_font_linked_variation, const RID &);
 
 	MODBIND2(font_set_data, const RID &, const PackedByteArray &);
 	MODBIND3(font_set_data_ptr, const RID &, const uint8_t *, int64_t);
