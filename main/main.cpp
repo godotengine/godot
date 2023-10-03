@@ -2565,6 +2565,9 @@ Error Main::setup2() {
 		id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_mouse_from_touch", true)));
 	}
 
+	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
+	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
+
 	MAIN_PRINT("Main: Load Translations and Remaps");
 
 	translation_server->setup(); //register translations, load them, etc.

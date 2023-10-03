@@ -1309,6 +1309,12 @@
 		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
 		</member>
+		<member name="input_devices/pointing/android/enable_long_press_as_right_click" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], long press events on an Android touchscreen are transformed into right click events.
+		</member>
+		<member name="input_devices/pointing/android/enable_pan_and_scale_gestures" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], multi-touch pan and scale gestures are enabled on Android devices.
+		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen.
 		</member>
