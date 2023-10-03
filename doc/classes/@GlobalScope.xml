@@ -1403,6 +1403,19 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="type_string">
+			<return type="String" />
+			<param index="0" name="type" type="int" />
+			<description>
+				Returns a human-readable name of the given [param type], using the [enum Variant.Type] values.
+				[codeblock]
+				print(TYPE_INT) # Prints 2.
+				print(type_string(TYPE_INT)) # Prints "int".
+				print(type_string(TYPE_STRING)) # Prints "String".
+				[/codeblock]
+				See also [method typeof].
+			</description>
+		</method>
 		<method name="typeof">
 			<return type="int" />
 			<param index="0" name="variable" type="Variant" />
@@ -1417,6 +1430,7 @@
 				else:
 				    print("Unexpected result")
 				[/codeblock]
+				See also [method type_string].
 			</description>
 		</method>
 		<method name="var_to_bytes">
