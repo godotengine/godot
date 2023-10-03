@@ -157,7 +157,7 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	if (wd.exclusive_fullscreen) {
-		[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+		ds->update_presentation_mode();
 	}
 
 	wd.fullscreen = false;

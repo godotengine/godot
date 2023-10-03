@@ -749,6 +749,7 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 	}
 #endif
 	windows.erase(p_window);
+	update_presentation_mode();
 }
 
 void DisplayServerMacOS::window_resize(WindowID p_window, int p_width, int p_height) {
@@ -2917,6 +2918,15 @@ Size2i DisplayServerMacOS::window_get_max_size(WindowID p_window) const {
 	return wd.max_size;
 }
 
+void DisplayServerMacOS::update_presentation_mode() {
+	for (const KeyValue<WindowID, WindowData> &wd : windows) {
+		if (wd.value.fullscreen && wd.value.exclusive_fullscreen) {
+			return;
+		}
+	}
+	[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+}
+
 void DisplayServerMacOS::window_set_min_size(const Size2i p_size, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -3027,7 +3037,7 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			[wd.window_object toggleFullScreen:nil];
 
 			if (old_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
-				[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+				update_presentation_mode();
 			}
 
 			wd.fullscreen = false;
