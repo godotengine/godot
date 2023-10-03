@@ -593,6 +593,9 @@
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
 			Specifies the initial type of position for the [Window]. See [enum WindowInitialPosition] constants.
 		</member>
+		<member name="keep_title_visible" type="bool" setter="set_keep_title_visible" getter="get_keep_title_visible" default="false">
+			If [code]true[/code], the [Window] width is expanded to keep the title bar text fully visible.
+		</member>
 		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be bigger than this size.
 			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].
