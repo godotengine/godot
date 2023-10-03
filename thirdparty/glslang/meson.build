@@ -42,6 +42,7 @@ if get_option('builtin_glslang')
         'glslang/MachineIndependent/preprocessor/PpTokens.cpp',
         'glslang/MachineIndependent/propagateNoContraction.cpp',
         'glslang/MachineIndependent/reflection.cpp',
+        'glslang/ResourceLimits/ResourceLimits.cpp',
     )
 
     _glslang_cpp_flags = ['-DENABLE_OPT=0']
