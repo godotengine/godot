@@ -35,6 +35,7 @@
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
 #include "gdscript_rpc_callable.h"
+#include "gdscript_static_callable.h"
 #include "gdscript_warning.h"
 
 #ifdef TOOLS_ENABLED
@@ -886,7 +887,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 				if (top->rpc_config.has(p_name)) {
 					r_ret = Callable(memnew(GDScriptRPCCallable(const_cast<GDScript *>(top), E->key)));
 				} else {
-					r_ret = Callable(const_cast<GDScript *>(top), E->key);
+					r_ret = Callable(memnew(GDScriptStaticCallable(const_cast<GDScript *>(top), E->key)));
 				}
 				return true;
 			}

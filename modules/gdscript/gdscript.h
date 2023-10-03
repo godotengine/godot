@@ -87,6 +87,7 @@ class GDScript : public Script {
 	friend class GDScriptCompiler;
 	friend class GDScriptDocGen;
 	friend class GDScriptLanguage;
+	friend class GDScriptStaticCallable;
 	friend struct GDScriptUtilityFunctionsDefinitions;
 
 	Ref<GDScriptNativeClass> native;
