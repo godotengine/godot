@@ -39,7 +39,7 @@
 			<param index="2" name="start_angle" type="float" />
 			<param index="3" name="end_angle" type="float" />
 			<param index="4" name="point_count" type="int" />
-			<param index="5" name="color" type="Color" />
+			<param index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="6" name="width" type="float" default="-1.0" />
 			<param index="7" name="antialiased" type="bool" default="false" />
 			<description>
@@ -75,7 +75,7 @@
 			<return type="void" />
 			<param index="0" name="position" type="Vector2" />
 			<param index="1" name="radius" type="float" />
-			<param index="2" name="color" type="Color" />
+			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws a colored, filled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
 			</description>
@@ -83,7 +83,7 @@
 		<method name="draw_colored_polygon">
 			<return type="void" />
 			<param index="0" name="points" type="PackedVector2Array" />
-			<param index="1" name="color" type="Color" />
+			<param index="1" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
@@ -94,7 +94,7 @@
 			<return type="void" />
 			<param index="0" name="from" type="Vector2" />
 			<param index="1" name="to" type="Vector2" />
-			<param index="2" name="color" type="Color" />
+			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="dash" type="float" default="2.0" />
 			<param index="5" name="aligned" type="bool" default="true" />
@@ -130,7 +130,7 @@
 			<return type="void" />
 			<param index="0" name="from" type="Vector2" />
 			<param index="1" name="to" type="Vector2" />
-			<param index="2" name="color" type="Color" />
+			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
@@ -166,7 +166,7 @@
 		<method name="draw_multiline">
 			<return type="void" />
 			<param index="0" name="points" type="PackedVector2Array" />
-			<param index="1" name="color" type="Color" />
+			<param index="1" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="2" name="width" type="float" default="-1.0" />
 			<description>
 				Draws multiple disconnected lines with a uniform [param width] and [param color]. Each line is defined by two consecutive points from [param points] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
@@ -241,7 +241,7 @@
 		<method name="draw_polyline">
 			<return type="void" />
 			<param index="0" name="points" type="PackedVector2Array" />
-			<param index="1" name="color" type="Color" />
+			<param index="1" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="2" name="width" type="float" default="-1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
@@ -273,7 +273,7 @@
 		<method name="draw_rect">
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2" />
-			<param index="1" name="color" type="Color" />
+			<param index="1" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="2" name="filled" type="bool" default="true" />
 			<param index="3" name="width" type="float" default="-1.0" />
 			<description>
