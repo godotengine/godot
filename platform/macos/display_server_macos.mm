@@ -3225,7 +3225,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			// OrderOut prevents a lose focus bug with the window.
+			bool was_visible = false;
 			if ([wd.window_object isVisible]) {
+				was_visible = true;
 				[wd.window_object orderOut:nil];
 			}
 			wd.borderless = p_enabled;
@@ -3240,7 +3242,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				[wd.window_object setFrame:frameRect display:NO];
 			}
 			_update_window_style(wd);
-			if ([wd.window_object isVisible]) {
+			if (was_visible || [wd.window_object isVisible]) {
 				if ([wd.window_object isMiniaturized]) {
 					return;
 				} else if (wd.no_focus) {
