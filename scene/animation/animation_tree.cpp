@@ -798,6 +798,7 @@ void AnimationTree::_validate_property(PropertyInfo &p_property) const {
 	if (!animation_player.is_empty()) {
 		if (p_property.name == "root_node" || p_property.name.begins_with("libraries")) {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+			p_property.usage &= ~(PROPERTY_USAGE_STORAGE);
 		}
 	}
 }
