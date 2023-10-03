@@ -1,10 +1,8 @@
-subdir('fsr2')
+fsr2_shaders = run_command(GLOB, '*.glsl', check: true).stdout().split('\n')
 
-effect_shaders = run_command(GLOB, '*.glsl', check: true).stdout().split('\n')
-
-foreach glsl_file : effect_shaders
+foreach glsl_file : fsr2_shaders
    shad_target = custom_target(
-        'effect_target_' + glsl_file,
+        'fsr2_target_' + glsl_file,
         output: '@PLAINNAME@.gen.h',
         input: files(glsl_file),
         env: SCRIPTS_ENV,

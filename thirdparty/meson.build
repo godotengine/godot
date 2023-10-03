@@ -15,6 +15,7 @@ subdir('harfbuzz')
 subdir('vulkan')
 
 # the rest
+subdir('amd-fsr2')
 subdir('astcenc')
 subdir('cvtt')
 subdir('enet')

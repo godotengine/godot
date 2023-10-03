@@ -13,6 +13,7 @@ import tempfile
 import uuid
 import zlib
 
+from pathlib import Path
 
 from glob import glob
 
@@ -74,7 +75,7 @@ def make_doc_header(compr_filename, modules):
         g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
         g.write(f"static const _DocDataClassPath _doc_data_class_paths[{len(path_entries)+1}] = {{\n")
         for i in path_entries:
-            g.write(f'        {{"{i[0]}", "{i[1]}"}},\n')
+            g.write(f'        {{"{i[0]}", "{Path(i[1]).as_posix()}"}},\n')
         g.write("        {nullptr, nullptr}\n};")
     replace_if_different(path_filename, path_tmpname)
 

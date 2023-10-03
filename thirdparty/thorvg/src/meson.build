@@ -1,2 +1,3 @@
-subdir('lib')
+subdir('common')
 subdir('loaders')
+subdir('renderer')
