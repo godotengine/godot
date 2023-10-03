@@ -3202,19 +3202,12 @@ void Node3DEditorViewport::_draw() {
 void Node3DEditorViewport::_view_menu_popped_up() {
 	PopupMenu *view_menu_popup = view_menu->get_popup();
 	Node3D* selected_node = Node3DEditor::get_singleton()->get_single_selected_node();
-	if (selected_node && selected_node != node_being_piloted) {
+	if (selected_node) {
 		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_PILOT), false);
 		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_PILOT), vformat(TTR("Pilot '%s'"), selected_node->get_name()));
 	} else {
 		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_PILOT), true);
 		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_PILOT), TTR("Pilot Selected Node"));
-	}
-	if (node_being_piloted) {
-		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_STOP_PILOTING), false);
-		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_STOP_PILOTING), vformat(TTR("Stop Piloting '%s'"), node_being_piloted->get_name()));
-	} else {
-		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_STOP_PILOTING), true);
-		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_STOP_PILOTING), TTR("Stop Piloting"));
 	}
 }
 
@@ -3449,9 +3442,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_PILOT: {
 			pilot_selection();
-		} break;
-		case VIEW_STOP_PILOTING: {
-			stop_piloting();
 		} break;
 		case VIEW_GIZMOS: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
@@ -5259,14 +5249,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_cinematic_preview", TTR("Cinematic Preview")), VIEW_CINEMATIC_PREVIEW);
 
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_shortcut(ED_SHORTCUT("spatial_editor/view_pilot", TTR("Pilot Selected Node")), VIEW_PILOT);
-	view_menu->get_popup()->add_shortcut(ED_SHORTCUT("spatial_editor/view_stop_piloting", TTR("Stop Piloting")), VIEW_STOP_PILOTING);
-
-	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
+
+	view_menu->get_popup()->add_separator();
+	view_menu->get_popup()->add_shortcut(ED_SHORTCUT("spatial_editor/view_pilot", TTR("Pilot Selected Node")), VIEW_PILOT);
+
 	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
 	display_submenu->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
 	view_menu->set_disable_shortcuts(true);
@@ -5323,7 +5313,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	stop_piloting_button = memnew(Button);
 	stop_piloting_button->set_text(TTR("Stop Piloting"));
-	stop_piloting_button->set_shortcut(ED_SHORTCUT("spatial_editor/view_stop_piloting", TTR("Stop Piloting")));
+	stop_piloting_button->set_shortcut(ED_SHORTCUT("spatial_editor/stop_piloting", TTR("Stop Piloting")));
 	vbox->add_child(stop_piloting_button);
 	stop_piloting_button->set_h_size_flags(0);
 	stop_piloting_button->hide();

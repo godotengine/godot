@@ -162,10 +162,9 @@ class Node3DEditorViewport : public Control {
 
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
-		VIEW_PILOT,
-		VIEW_STOP_PILOTING,
 		VIEW_AUTO_ORTHOGONAL,
-		VIEW_MAX
+		VIEW_MAX,
+		VIEW_PILOT
 	};
 
 	enum ViewType {
