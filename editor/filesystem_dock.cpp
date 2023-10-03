@@ -216,7 +216,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
 	subdirectory_item->set_selectable(0, true);
 	subdirectory_item->set_metadata(0, lpath);
-	if (!p_select_in_favorites && (current_path == lpath || ((display_mode == DISPLAY_MODE_SPLIT) && current_path.get_base_dir() == lpath))) {
+	if (!p_select_in_favorites && (current_path == lpath || ((display_mode != DISPLAY_MODE_TREE_ONLY) && current_path.get_base_dir() == lpath))) {
 		subdirectory_item->select(0);
 		// Keep select an item when re-created a tree
 		// To prevent crashing when nothing is selected.
@@ -302,7 +302,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			udata.push_back(file_item);
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, this, "_tree_thumbnail_done", udata);
 		}
-	} else if (display_mode == DISPLAY_MODE_SPLIT) {
+	} else {
 		if (lpath.get_base_dir() == current_path.get_base_dir()) {
 			subdirectory_item->select(0);
 			subdirectory_item->set_as_cursor(0);
@@ -455,22 +455,29 @@ void FileSystemDock::set_display_mode(DisplayMode p_display_mode) {
 void FileSystemDock::_update_display_mode(bool p_force) {
 	// Compute the new display mode.
 	if (p_force || old_display_mode != display_mode) {
-		button_toggle_display_mode->set_pressed(display_mode == DISPLAY_MODE_SPLIT);
 		switch (display_mode) {
 			case DISPLAY_MODE_TREE_ONLY:
+				button_toggle_display_mode->set_icon(get_editor_theme_icon(SNAME("Panels1")));
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
-				if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-					toolbar2_hbc->show();
-				} else {
-					toolbar2_hbc->hide();
-				}
+				toolbar2_hbc->show();
 
 				_update_tree(get_uncollapsed_paths());
 				file_list_vb->hide();
 				break;
 
-			case DISPLAY_MODE_SPLIT:
+			case DISPLAY_MODE_HSPLIT:
+			case DISPLAY_MODE_VSPLIT:
+				const bool is_vertical = display_mode == DISPLAY_MODE_VSPLIT;
+				const int split_offset = split_box->get_split_offset();
+				is_vertical ? split_box_offset_h = split_offset : split_box_offset_v = split_offset;
+				split_box->set_vertical(is_vertical);
+
+				const int actual_offset = is_vertical ? split_box_offset_v : split_box_offset_h;
+				split_box->set_split_offset(actual_offset);
+				const StringName icon = is_vertical ? SNAME("Panels2") : SNAME("Panels2Alt");
+				button_toggle_display_mode->set_icon(get_editor_theme_icon(icon));
+
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
 				tree->ensure_cursor_is_visible();
@@ -500,7 +507,6 @@ void FileSystemDock::_notification(int p_what) {
 			EditorResourcePreview::get_singleton()->connect("preview_invalidated", callable_mp(this, &FileSystemDock::_preview_invalidated));
 
 			button_reload->set_icon(get_editor_theme_icon(SNAME("Reload")));
-			button_toggle_display_mode->set_icon(get_editor_theme_icon(SNAME("Panels2")));
 			button_file_list_display_mode->connect("pressed", callable_mp(this, &FileSystemDock::_toggle_file_display));
 
 			files->connect("item_activated", callable_mp(this, &FileSystemDock::_file_list_activate_file));
@@ -587,7 +593,15 @@ void FileSystemDock::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			// Update icons.
 			button_reload->set_icon(get_editor_theme_icon(SNAME("Reload")));
-			button_toggle_display_mode->set_icon(get_editor_theme_icon(SNAME("Panels2")));
+
+			StringName mode_icon = "Panels1";
+			if (display_mode == DISPLAY_MODE_VSPLIT) {
+				mode_icon = "Panels2";
+			} else if (display_mode == DISPLAY_MODE_HSPLIT) {
+				mode_icon = "Panels2Alt";
+			}
+			button_toggle_display_mode->set_icon(get_editor_theme_icon(mode_icon));
+
 			if (is_layout_rtl()) {
 				button_hist_next->set_icon(get_editor_theme_icon(SNAME("Back")));
 				button_hist_prev->set_icon(get_editor_theme_icon(SNAME("Forward")));
@@ -665,7 +679,7 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 	_push_to_history();
 
 	// Update the file list.
-	if (!updating_tree && display_mode == DISPLAY_MODE_SPLIT) {
+	if (!updating_tree && display_mode != DISPLAY_MODE_TREE_ONLY) {
 		_update_file_list(false);
 	}
 }
@@ -717,7 +731,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	_push_to_history();
 
 	_update_tree(get_uncollapsed_paths(), false, p_select_in_favorites, true);
-	if (display_mode == DISPLAY_MODE_SPLIT) {
+	if (display_mode != DISPLAY_MODE_TREE_ONLY) {
 		_update_file_list(false);
 		files->get_v_scroll_bar()->set_value(0);
 	}
@@ -2411,7 +2425,8 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 		case DISPLAY_MODE_TREE_ONLY: {
 			_update_tree(searched_string.length() == 0 ? uncollapsed_paths_before_search : Vector<String>(), false, false, unfold_path);
 		} break;
-		case DISPLAY_MODE_SPLIT: {
+		case DISPLAY_MODE_HSPLIT:
+		case DISPLAY_MODE_VSPLIT: {
 			_update_file_list(false);
 			_update_tree(searched_string.length() == 0 ? uncollapsed_paths_before_search : Vector<String>(), false, false, unfold_path);
 		} break;
@@ -2423,8 +2438,15 @@ void FileSystemDock::_rescan() {
 	EditorFileSystem::get_singleton()->scan();
 }
 
-void FileSystemDock::_toggle_split_mode(bool p_active) {
-	set_display_mode(p_active ? DISPLAY_MODE_SPLIT : DISPLAY_MODE_TREE_ONLY);
+void FileSystemDock::_change_split_mode() {
+	DisplayMode next_mode = DISPLAY_MODE_TREE_ONLY;
+	if (display_mode == DISPLAY_MODE_VSPLIT) {
+		next_mode = DISPLAY_MODE_HSPLIT;
+	} else if (display_mode == DISPLAY_MODE_TREE_ONLY) {
+		next_mode = DISPLAY_MODE_VSPLIT;
+	}
+
+	set_display_mode(next_mode);
 	emit_signal(SNAME("display_mode_changed"));
 }
 
@@ -2436,7 +2458,7 @@ void FileSystemDock::focus_on_filter() {
 	LineEdit *current_search_box = nullptr;
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 		current_search_box = tree_search_box;
-	} else if (display_mode == DISPLAY_MODE_SPLIT) {
+	} else {
 		current_search_box = file_list_search_box;
 	}
 
@@ -2677,7 +2699,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		EditorSettings::get_singleton()->set_favorites(dirs);
 		_update_tree(get_uncollapsed_paths());
 
-		if (display_mode == DISPLAY_MODE_SPLIT && current_path == "Favorites") {
+		if (display_mode != DISPLAY_MODE_TREE_ONLY && current_path == "Favorites") {
 			_update_file_list(true);
 		}
 		return;
@@ -3152,7 +3174,7 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 		String fpath = files->get_item_metadata(current);
 		if (!fpath.ends_with("/")) {
 			current_path = fpath;
-			if (display_mode == DISPLAY_MODE_SPLIT) {
+			if (display_mode != DISPLAY_MODE_TREE_ONLY) {
 				_update_tree(get_uncollapsed_paths());
 			}
 		}
@@ -3225,7 +3247,7 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			}
 			item->select(0);
 
-			if (display_mode == DisplayMode::DISPLAY_MODE_SPLIT) {
+			if (display_mode != DisplayMode::DISPLAY_MODE_TREE_ONLY) {
 				files->deselect_all();
 				// Try to select the corresponding file list item.
 				const int files_item_idx = files->find_metadata(fpath);
@@ -3559,10 +3581,9 @@ FileSystemDock::FileSystemDock() {
 	toolbar_hbc->add_child(button_reload);
 
 	button_toggle_display_mode = memnew(Button);
-	button_toggle_display_mode->set_toggle_mode(true);
-	button_toggle_display_mode->connect("toggled", callable_mp(this, &FileSystemDock::_toggle_split_mode));
+	button_toggle_display_mode->connect("pressed", callable_mp(this, &FileSystemDock::_change_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
-	button_toggle_display_mode->set_tooltip_text(TTR("Toggle Split Mode"));
+	button_toggle_display_mode->set_tooltip_text(TTR("Change Split Mode"));
 	button_toggle_display_mode->set_flat(true);
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
@@ -3587,7 +3608,7 @@ FileSystemDock::FileSystemDock() {
 
 	add_child(tree_popup);
 
-	split_box = memnew(VSplitContainer);
+	split_box = memnew(SplitContainer);
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(split_box);
 
@@ -3597,7 +3618,7 @@ FileSystemDock::FileSystemDock() {
 	SET_DRAG_FORWARDING_GCD(tree, FileSystemDock);
 	tree->set_allow_rmb_select(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
-	tree->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
+	tree->set_custom_minimum_size(Size2(40 * EDSCALE, 15 * EDSCALE));
 	tree->set_column_clip_content(0, true);
 	split_box->add_child(tree);
 
