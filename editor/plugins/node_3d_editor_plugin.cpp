@@ -2532,15 +2532,13 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 		Cursor cursor = immediate_cursor;
 		Vector3 forward = to_camera_transform(cursor).basis.xform(Vector3(0, 0, -1));
 		cursor.eye_pos = cursor.pos - cursor.distance * forward;
-		// Also sync the camera cursor, otherwise switching to freelook will be trippy if inertia is active
-		current_interpolated_cursor.eye_pos = cursor.eye_pos;
 
 		if (EDITOR_GET("editors/3d/freelook/freelook_speed_zoom_link")) {
 			// Re-adjust freelook speed from the current zoom level
 			real_t base_speed = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
 			freelook_speed = base_speed * cursor.distance;
 		}
-		set_cursor(cursor, true, true);
+		set_cursor(cursor, false, true);
 
 		previous_mouse_position = get_local_mouse_position();
 
@@ -2722,7 +2720,7 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 	Cursor cursor = immediate_cursor;
 	cursor.pos += motion;
 	cursor.eye_pos += motion;
-	set_cursor(cursor);
+	set_cursor(cursor, true, true);
 }
 
 void Node3DEditorViewport::set_message(String p_message, float p_time) {
