@@ -391,7 +391,7 @@ private:
 	Cursor immediate_cursor;
 	Cursor current_interpolated_cursor; // Don't modify this one except for smoothing purposes
 
-	void set_cursor(const Cursor &p_cursor, bool p_interpolate = true, bool update_pilot = false);
+	void set_cursor(const Cursor &p_cursor, bool p_interpolate = true, bool allow_continue_piloting = false);
 	void reset_cursor_to_default();
 	void reset_cursor_to_camera();
 	void set_orthogonal(bool p_orthogonal);

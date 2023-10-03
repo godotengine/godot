@@ -2565,8 +2565,8 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 	freelook_active = active_now;
 }
 
-void Node3DEditorViewport::set_cursor(const Cursor &p_cursor, bool p_interpolate, bool update_pilot) {
-	if (!update_pilot) {
+void Node3DEditorViewport::set_cursor(const Cursor &p_cursor, bool p_interpolate, bool allow_continue_piloting) {
+	if (!allow_continue_piloting) {
 		stop_piloting();
 	}
 	immediate_cursor = p_cursor;
