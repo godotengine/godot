@@ -4636,7 +4636,7 @@ msgid "Default Gravity Vector"
 msgstr "Вектор гравитации по умолчанию"
 
 msgid "Physics Engine"
-msgstr "Физический движек"
+msgstr "Физический движок"
 
 msgid "Vertex"
 msgstr "Вершины"
