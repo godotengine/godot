@@ -988,9 +988,10 @@ if selected_platform in platform_list:
     # Check for the existence of headers
     conf = Configure(env)
     if "check_c_headers" in env:
-        for header in env["check_c_headers"]:
-            if conf.CheckCHeader(header[0]):
-                env.AppendUnique(CPPDEFINES=[header[1]])
+        headers = env["check_c_headers"]
+        for header in headers:
+            if conf.CheckCHeader(header):
+                env.AppendUnique(CPPDEFINES=[headers[header]])
 
 elif selected_platform != "":
     if selected_platform == "list":
