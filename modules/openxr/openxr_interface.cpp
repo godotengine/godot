@@ -36,6 +36,8 @@
 
 #include "extensions/openxr_hand_tracking_extension.h"
 
+#include "extensions/openxr_eye_gaze_interaction.h"
+
 void OpenXRInterface::_bind_methods() {
 	// lifecycle signals
 	ADD_SIGNAL(MethodInfo("session_begun"));
@@ -119,6 +121,8 @@ void OpenXRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(HAND_JOINT_LITTLE_DISTAL);
 	BIND_ENUM_CONSTANT(HAND_JOINT_LITTLE_TIP);
 	BIND_ENUM_CONSTANT(HAND_JOINT_MAX);
+
+	ClassDB::bind_method(D_METHOD("is_eye_gaze_interaction_supported"), &OpenXRInterface::is_eye_gaze_interaction_supported);
 }
 
 StringName OpenXRInterface::get_name() const {
@@ -152,7 +156,9 @@ PackedStringArray OpenXRInterface::get_suggested_tracker_names() const {
 		"/user/vive_tracker_htcx/role/waist",
 		"/user/vive_tracker_htcx/role/chest",
 		"/user/vive_tracker_htcx/role/camera",
-		"/user/vive_tracker_htcx/role/keyboard"
+		"/user/vive_tracker_htcx/role/keyboard",
+
+		"/user/eyes_ext",
 	};
 
 	return arr;
@@ -702,6 +708,21 @@ Array OpenXRInterface::get_available_display_refresh_rates() const {
 		return Array();
 	} else {
 		return openxr_api->get_available_display_refresh_rates();
+	}
+}
+
+bool OpenXRInterface::is_eye_gaze_interaction_supported() {
+	if (openxr_api == nullptr) {
+		return false;
+	} else if (!openxr_api->is_initialized()) {
+		return false;
+	} else {
+		OpenXREyeGazeInteractionExtension *eye_gaze_ext = OpenXREyeGazeInteractionExtension::get_singleton();
+		if (eye_gaze_ext == nullptr) {
+			return false;
+		} else {
+			return eye_gaze_ext->supports_eye_gaze_interaction();
+		}
 	}
 }
 

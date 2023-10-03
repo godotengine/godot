@@ -928,6 +928,19 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	/**
+	 * Return true if the given feature is supported.
+	 */
+	@Keep
+	private fun hasFeature(feature: String): Boolean {
+		for (plugin in pluginRegistry.allPlugins) {
+			if (plugin.supportsFeature(feature)) {
+				return true
+			}
+		}
+		return false
+	}
+
+	/**
 	 * Get the list of gdextension modules to register.
 	 */
 	@Keep

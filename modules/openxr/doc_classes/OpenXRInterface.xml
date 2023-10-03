@@ -77,6 +77,13 @@
 				Returns [code]true[/code] if the given action set is active.
 			</description>
 		</method>
+		<method name="is_eye_gaze_interaction_supported">
+			<return type="bool" />
+			<description>
+				Returns the capabilities of the eye gaze interaction extension.
+				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
+			</description>
+		</method>
 		<method name="is_foveation_supported" qualifiers="const">
 			<return type="bool" />
 			<description>

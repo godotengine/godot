@@ -2120,6 +2120,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
 
+	// XR project extensions settings.
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
+
 #ifdef TOOLS_ENABLED
 	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
 
