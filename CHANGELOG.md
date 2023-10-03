@@ -64,6 +64,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Porting
 
+- Web: Disable raycast module by default (no occlusion culling) ([GH-81716](https://github.com/godotengine/godot/pull/81716)).
 - X11: Do not fail DisplayServer init if non-essential extensions are missing ([GH-80240](https://github.com/godotengine/godot/pull/80240)).
 
 #### Rendering
@@ -80,7 +81,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - FreeType updated to version 2.13.2.
 - ICU4C updated to version 73.2.
 - libpng updated to version 1.6.40.
-- libwebp updated to version 1.3.1.
+- libwebp updated to version 1.3.2.
 - mbedtls updated to version version 2.28.4.
 - miniupnpc updated to version 2.2.5.
 - openxr updated to version 1.0.28.
@@ -110,7 +111,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Buildsystem
 
-- Fix GCC `-Wmaybe-uninitialized` warnings ([GH-80615](https://github.com/godotengine/godot/pull/80615)).
+- Fix Python 3.12 SyntaxError with regex escape sequences ([GH-82290](https://github.com/godotengine/godot/pull/82290)).
+- macOS/iOS: Workaround build issue with new Xcode 15 linker ([GH-81968](https://github.com/godotengine/godot/pull/81968), [GH-82458](https://github.com/godotengine/godot/pull/82458)).
 - Web: Workaround Emscripten 3.1.42+ LTO regression ([GH-81340](https://github.com/godotengine/godot/pull/81340)).
 
 #### C#/.NET
@@ -118,6 +120,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix deserialization of delegates that are 0-parameter overloads ([GH-78877](https://github.com/godotengine/godot/pull/78877)).
 - Add missing `useModelFront` parameter to GodotSharp Basis and Transform ([GH-79082](https://github.com/godotengine/godot/pull/79082)).
 - Fix double unregistration on dispose of Array ([GH-81230](https://github.com/godotengine/godot/pull/81230)).
+- Fix Visual Studio 2022 for Mac compatibility ([GH-81802](https://github.com/godotengine/godot/pull/81802)).
 
 #### Core
 
@@ -127,6 +130,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix global transform validity for `Node2D` and `Control` ([GH-80105](https://github.com/godotengine/godot/pull/80105)).
 - Fix recursion level check for `VariantWriter::write()` with objects ([GH-81123](https://github.com/godotengine/godot/pull/81123)).
 - Fix string conversion for -0.0 float values ([GH-81328](https://github.com/godotengine/godot/pull/81328)).
+- Crypto: Fix `generate_random_bytes` for large chunks ([GH-81884](https://github.com/godotengine/godot/pull/81884)).
 
 #### Editor
 
