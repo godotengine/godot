@@ -4631,9 +4631,22 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Init context and rendering device
 #if defined(GLES3_ENABLED)
 
-	if (rendering_driver == "opengl3") {
-		int gl_version = detect_wgl_version();
-		if (gl_version < 30003) {
+	bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_angle");
+	if (fallback && (rendering_driver == "opengl3")) {
+		Dictionary gl_info = detect_wgl();
+
+		bool force_angle = false;
+
+		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
+		for (int i = 0; i < device_list.size(); i++) {
+			const Dictionary &device = device_list[i];
+			if (device.has("vendor") && device.has("name") && device["vendor"].operator String().to_upper() == gl_info["vendor"].operator String().to_upper() && (device["name"] == "*" || device["name"].operator String().to_upper() == gl_info["name"].operator String().to_upper())) {
+				force_angle = true;
+				break;
+			}
+		}
+
+		if (force_angle || (gl_info["version"].operator int() < 30003)) {
 			WARN_PRINT("Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE.");
 			rendering_driver = "opengl3_angle";
 		}
