@@ -125,7 +125,7 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" default="false" />
 			<description>
-				Inserts the selected entry into the text. If [param replace] is true, any existing text is replaced rather then merged.
+				Inserts the selected entry into the text. If [param replace] is true, any existing text is replaced rather than merged.
 			</description>
 		</method>
 		<method name="convert_indent">
@@ -676,7 +676,7 @@
 			Max number of options to display in the code completion popup at any one time.
 		</theme_item>
 		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
-			Max width of options in the code completion popup. Options longer then this will be cut off.
+			Max width of options in the code completion popup. Options longer than this will be cut off.
 		</theme_item>
 		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="6">
 			Width of the scrollbar in the code completion popup.
