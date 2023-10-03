@@ -1887,6 +1887,8 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 		}
 	}
 
+	WindowID prev_focus = last_focused_window;
+
 	Callable callback = p_callback; // Make a copy for async completion handler.
 	switch (p_mode) {
 		case FILE_DIALOG_MODE_SAVE_FILE: {
@@ -1953,6 +1955,9 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 									  Callable::CallError ce;
 									  callback.callp((const Variant **)&v_args, 2, ret, ce);
 								  }
+							  }
+							  if (prev_focus != INVALID_WINDOW_ID) {
+								  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
 							  }
 						  }];
 		} break;
@@ -2032,6 +2037,9 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 									  Callable::CallError ce;
 									  callback.callp((const Variant **)&v_args, 2, ret, ce);
 								  }
+							  }
+							  if (prev_focus != INVALID_WINDOW_ID) {
+								  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
 							  }
 						  }];
 		} break;

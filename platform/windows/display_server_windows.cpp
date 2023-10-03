@@ -240,6 +240,8 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		filters.push_back({ (LPCWSTR)filter_names[i].ptr(), (LPCWSTR)filter_exts[i].ptr() });
 	}
 
+	WindowID prev_focus = last_focused_window;
+
 	HRESULT hr = S_OK;
 	IFileDialog *pfd = nullptr;
 	if (p_mode == FILE_DIALOG_MODE_SAVE_FILE) {
@@ -340,6 +342,9 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 			}
 		}
 		pfd->Release();
+		if (prev_focus != INVALID_WINDOW_ID) {
+			callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
+		}
 
 		return OK;
 	} else {

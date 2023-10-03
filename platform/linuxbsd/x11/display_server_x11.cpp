@@ -364,14 +364,14 @@ bool DisplayServerX11::is_dark_mode() const {
 }
 
 Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
-	WindowID window_id = _get_focused_window_or_popup();
+	WindowID window_id = last_focused_window;
 
 	if (!windows.has(window_id)) {
 		window_id = MAIN_WINDOW_ID;
 	}
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
-	return portal_desktop->file_dialog_show(xid, p_title, p_current_directory, p_filename, p_mode, p_filters, p_callback);
+	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, p_filename, p_mode, p_filters, p_callback);
 }
 
 #endif
