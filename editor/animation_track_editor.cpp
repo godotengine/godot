@@ -3249,6 +3249,22 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 	}
 }
 
+void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		Point2 pos = mb->get_position();
+		Rect2 node_name_rect = Rect2(0, 0, timeline->get_name_limit(), get_size().height);
+
+		if (node_name_rect.has_point(pos)) {
+			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+			editor_selection->clear();
+			editor_selection->add_node(root->get_node(node));
+		}
+	}
+}
+
 void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node) {
 	icon = p_type;
 	node_name = p_name;
