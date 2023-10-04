@@ -187,7 +187,7 @@ namespace GodotTools.Export
 
             List<string> outputPaths = new();
 
-            bool embedBuildResults = (bool)GetOption("dotnet/embed_build_outputs") || features.Contains("android");
+            bool embedBuildResults = (bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android;
 
             foreach (PublishConfig config in targets)
             {
