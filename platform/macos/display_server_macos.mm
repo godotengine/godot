@@ -75,7 +75,7 @@ const NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) cons
 	} else {
 		// Submenu.
 		if (submenu.has(p_menu_root)) {
-			menu = submenu[p_menu_root];
+			menu = submenu[p_menu_root].menu;
 		}
 	}
 	if (menu == apple_menu) {
@@ -99,9 +99,10 @@ NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) {
 			NSMenu *n_menu = [[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:p_menu_root.utf8().get_data()]];
 			[n_menu setAutoenablesItems:NO];
 			[n_menu setDelegate:menu_delegate];
-			submenu[p_menu_root] = n_menu;
+			submenu[p_menu_root].menu = n_menu;
+			submenu_inv[n_menu] = p_menu_root;
 		}
-		menu = submenu[p_menu_root];
+		menu = submenu[p_menu_root].menu;
 	}
 	if (menu == apple_menu) {
 		// Do not allow to change Apple menu.
@@ -609,6 +610,30 @@ NSMenu *DisplayServerMacOS::get_dock_menu() const {
 	return dock_menu;
 }
 
+void DisplayServerMacOS::menu_open(NSMenu *p_menu) {
+	if (submenu_inv.has(p_menu)) {
+		MenuData &md = submenu[submenu_inv[p_menu]];
+		md.is_open = true;
+		if (md.open.is_valid()) {
+			Variant ret;
+			Callable::CallError ce;
+			md.open.callp(nullptr, 0, ret, ce);
+		}
+	}
+}
+
+void DisplayServerMacOS::menu_close(NSMenu *p_menu) {
+	if (submenu_inv.has(p_menu)) {
+		MenuData &md = submenu[submenu_inv[p_menu]];
+		md.is_open = false;
+		if (md.close.is_valid()) {
+			Variant ret;
+			Callable::CallError ce;
+			md.close.callp(nullptr, 0, ret, ce);
+		}
+	}
+}
+
 void DisplayServerMacOS::menu_callback(id p_sender) {
 	if (![p_sender representedObject]) {
 		return;
@@ -816,6 +841,24 @@ bool DisplayServerMacOS::_has_help_menu() const {
 	}
 }
 
+bool DisplayServerMacOS::_is_menu_opened(NSMenu *p_menu) const {
+	if (submenu_inv.has(p_menu)) {
+		const MenuData &md = submenu[submenu_inv[p_menu]];
+		if (md.is_open) {
+			return true;
+		}
+	}
+	for (NSInteger i = (p_menu == [NSApp mainMenu]) ? 1 : 0; i < [p_menu numberOfItems]; i++) {
+		const NSMenuItem *menu_item = [p_menu itemAtIndex:i];
+		if ([menu_item submenu]) {
+			if (_is_menu_opened([menu_item submenu])) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 NSMenuItem *DisplayServerMacOS::_menu_add_item(const String &p_menu_root, const String &p_label, Key p_accel, int p_index, int *r_out) {
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
@@ -997,6 +1040,23 @@ int DisplayServerMacOS::global_menu_add_multistate_item(const String &p_menu_roo
 		[menu_item setRepresentedObject:obj];
 	}
 	return out;
+}
+
+void DisplayServerMacOS::global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callback, const Callable &p_close_callback) {
+	_THREAD_SAFE_METHOD_
+
+	if (p_menu_root != "" && p_menu_root.to_lower() != "_main" && p_menu_root.to_lower() != "_dock") {
+		// Submenu.
+		if (!submenu.has(p_menu_root)) {
+			NSMenu *n_menu = [[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:p_menu_root.utf8().get_data()]];
+			[n_menu setAutoenablesItems:NO];
+			[n_menu setDelegate:menu_delegate];
+			submenu[p_menu_root].menu = n_menu;
+			submenu_inv[n_menu] = p_menu_root;
+		}
+		submenu[p_menu_root].open = p_open_callback;
+		submenu[p_menu_root].close = p_close_callback;
+	}
 }
 
 int DisplayServerMacOS::global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index) {
@@ -1252,13 +1312,9 @@ String DisplayServerMacOS::global_menu_get_item_submenu(const String &p_menu_roo
 		ERR_FAIL_COND_V(p_idx >= [menu numberOfItems], String());
 		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
-			const NSMenu *sub_menu = [menu_item submenu];
-			if (sub_menu) {
-				for (const KeyValue<String, NSMenu *> &E : submenu) {
-					if (E.value == sub_menu) {
-						return E.key;
-					}
-				}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu && submenu_inv.has(sub_menu)) {
+				return submenu_inv[sub_menu];
 			}
 		}
 	}
@@ -1314,6 +1370,24 @@ bool DisplayServerMacOS::global_menu_is_item_disabled(const String &p_menu_root,
 		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			return ![menu_item isEnabled];
+		}
+	}
+	return false;
+}
+
+bool DisplayServerMacOS::global_menu_is_item_hidden(const String &p_menu_root, int p_idx) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		ERR_FAIL_COND_V(p_idx < 0, false);
+		if (menu == [NSApp mainMenu]) { // Skip Apple menu.
+			p_idx++;
+		}
+		ERR_FAIL_COND_V(p_idx >= [menu numberOfItems], false);
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			return [menu_item isHidden];
 		}
 	}
 	return false;
@@ -1498,6 +1572,25 @@ void DisplayServerMacOS::global_menu_set_item_callback(const String &p_menu_root
 	}
 }
 
+void DisplayServerMacOS::global_menu_set_item_hover_callbacks(const String &p_menu_root, int p_idx, const Callable &p_callback) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		ERR_FAIL_COND(p_idx < 0);
+		if (menu == [NSApp mainMenu]) { // Skip Apple menu.
+			p_idx++;
+		}
+		ERR_FAIL_COND(p_idx >= [menu numberOfItems]);
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GodotMenuItem *obj = [menu_item representedObject];
+			ERR_FAIL_COND(!obj);
+			obj->hover_callback = p_callback;
+		}
+	}
+}
+
 void DisplayServerMacOS::global_menu_set_item_key_callback(const String &p_menu_root, int p_idx, const Callable &p_key_callback) {
 	_THREAD_SAFE_METHOD_
 
@@ -1557,6 +1650,23 @@ void DisplayServerMacOS::global_menu_set_item_submenu(const String &p_menu_root,
 	_THREAD_SAFE_METHOD_
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu && p_submenu.is_empty()) {
+		ERR_FAIL_COND(p_idx < 0);
+		if (menu == [NSApp mainMenu]) { // Skip Apple menu.
+			p_idx++;
+		}
+		ERR_FAIL_COND(p_idx >= [menu numberOfItems]);
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			if ([menu_item submenu] && _is_menu_opened([menu_item submenu])) {
+				ERR_PRINT("Can't remove open menu!");
+				return;
+			}
+			[menu setSubmenu:nil forItem:menu_item];
+		}
+		return;
+	}
+
 	NSMenu *sub_menu = _get_menu_root(p_submenu);
 	if (menu && sub_menu) {
 		if (sub_menu == menu) {
@@ -1591,9 +1701,13 @@ void DisplayServerMacOS::global_menu_set_item_accelerator(const String &p_menu_r
 		ERR_FAIL_COND(p_idx >= [menu numberOfItems]);
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
-			[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_keycode)];
-			String keycode = KeyMappingMacOS::keycode_get_native_string(p_keycode & KeyModifierMask::CODE_MASK);
-			[menu_item setKeyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+			if (p_keycode == Key::NONE) {
+				[menu_item setKeyEquivalent:@""];
+			} else {
+				[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_keycode)];
+				String keycode = KeyMappingMacOS::keycode_get_native_string(p_keycode & KeyModifierMask::CODE_MASK);
+				[menu_item setKeyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+			}
 		}
 	}
 }
@@ -1611,6 +1725,23 @@ void DisplayServerMacOS::global_menu_set_item_disabled(const String &p_menu_root
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			[menu_item setEnabled:(!p_disabled)];
+		}
+	}
+}
+
+void DisplayServerMacOS::global_menu_set_item_hidden(const String &p_menu_root, int p_idx, bool p_hidden) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		ERR_FAIL_COND(p_idx < 0);
+		if (menu == [NSApp mainMenu]) { // Skip Apple menu.
+			p_idx++;
+		}
+		ERR_FAIL_COND(p_idx >= [menu numberOfItems]);
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			[menu_item setHidden:p_hidden];
 		}
 	}
 }
@@ -1742,6 +1873,11 @@ void DisplayServerMacOS::global_menu_remove_item(const String &p_menu_root, int 
 			p_idx++;
 		}
 		ERR_FAIL_COND(p_idx >= [menu numberOfItems]);
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if ([menu_item submenu] && _is_menu_opened([menu_item submenu])) {
+			ERR_PRINT("Can't remove open menu!");
+			return;
+		}
 		[menu removeItemAtIndex:p_idx];
 	}
 }
@@ -1751,6 +1887,10 @@ void DisplayServerMacOS::global_menu_clear(const String &p_menu_root) {
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
+		if (_is_menu_opened(menu)) {
+			ERR_PRINT("Can't remove open menu!");
+			return;
+		}
 		[menu removeAllItems];
 		// Restore Apple menu.
 		if (menu == [NSApp mainMenu]) {
@@ -1758,6 +1898,7 @@ void DisplayServerMacOS::global_menu_clear(const String &p_menu_root) {
 			[menu setSubmenu:apple_menu forItem:menu_item];
 		}
 		if (submenu.has(p_menu_root)) {
+			submenu_inv.erase(submenu[p_menu_root].menu);
 			submenu.erase(p_menu_root);
 		}
 	}
@@ -4188,15 +4329,19 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		nsappname = [[NSProcessInfo processInfo] processName];
 	}
 
+	menu_delegate = [[GodotMenuDelegate alloc] init];
+
 	// Setup Dock menu.
 	dock_menu = [[NSMenu alloc] initWithTitle:@"_dock"];
 	[dock_menu setAutoenablesItems:NO];
+	[dock_menu setDelegate:menu_delegate];
 
 	// Setup Apple menu.
 	apple_menu = [[NSMenu alloc] initWithTitle:@""];
 	title = [NSString stringWithFormat:NSLocalizedString(@"About %@", nil), nsappname];
 	[apple_menu addItemWithTitle:title action:@selector(showAbout:) keyEquivalent:@""];
 	[apple_menu setAutoenablesItems:NO];
+	[apple_menu setDelegate:menu_delegate];
 
 	[apple_menu addItem:[NSMenuItem separatorItem]];
 
@@ -4225,8 +4370,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 	[main_menu setSubmenu:apple_menu forItem:menu_item];
 	[main_menu setAutoenablesItems:NO];
-
-	menu_delegate = [[GodotMenuDelegate alloc] init];
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback

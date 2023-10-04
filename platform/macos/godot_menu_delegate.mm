@@ -39,6 +39,34 @@
 - (void)doNothing:(id)sender {
 }
 
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+	if (DisplayServer::get_singleton()) {
+		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+		ds->menu_open(menu);
+	}
+}
+
+- (void)menuDidClose:(NSMenu *)menu {
+	if (DisplayServer::get_singleton()) {
+		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+		ds->menu_close(menu);
+	}
+}
+
+- (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item {
+	if (item) {
+		GodotMenuItem *value = [item representedObject];
+		if (value && value->hover_callback != Callable()) {
+			// If custom callback is set, use it.
+			Variant tag = value->meta;
+			Variant *tagp = &tag;
+			Variant ret;
+			Callable::CallError ce;
+			value->hover_callback.callp((const Variant **)&tagp, 1, ret, ce);
+		}
+	}
+}
+
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action {
 	NSString *ev_key = [[event charactersIgnoringModifiers] lowercaseString];
 	NSUInteger ev_modifiers = [event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask;
