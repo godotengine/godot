@@ -131,6 +131,7 @@ public:
 
 	Error validate_set_type();
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	void set_struct(uint32_t p_size, const StringName &p_class_name, const StructMember &(*p_get_member)(uint32_t));
 	bool is_typed() const;
 	bool is_struct() const;
 	bool is_same_typed(const Array &p_other) const;
@@ -143,8 +144,7 @@ public:
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
-	Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
-	Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const Vector<StringName> &p_member_names);
+	Array(const Array &p_from, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
 	Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
 	Array();
 	~Array();

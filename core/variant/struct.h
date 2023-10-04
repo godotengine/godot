@@ -35,48 +35,6 @@
 
 class Array;
 
-//// TODO: Another different version
-//#define STRUCT_LAYOUT(m_name, m_member_count, ...)                             \
-//	struct m_name {                                                            \
-//		static const uint32_t member_count = m_member_count;                   \
-//		_FORCE_INLINE_ static const StructMember *get_members() {              \
-//			static const StructMember members[member_count] = { __VA_ARGS__ }; \
-//			return members;                                                    \
-//		}                                                                      \
-//		_FORCE_INLINE_ static const StringName *get_member_names() {           \
-//			const StructMember members[member_count] = get_members();          \
-//			StringName member_names[member_count];                             \
-//			for (uint32_t i = 0; i < member_count; i++) {                      \
-//				member_names[i] = members[i].name;                             \
-//			}                                                                  \
-//			return member_names;                                               \
-//		}                                                                      \
-//		_FORCE_INLINE_ static const uint32_t *get_member_types() {             \
-//			const StructMember members[member_count] = get_members();          \
-//			uint32_t member_types[member_count];                               \
-//			for (uint32_t i = 0; i < member_count; i++) {                      \
-//				member_types[i] = members[i].type;                             \
-//			}                                                                  \
-//			return member_types;                                               \
-//		}                                                                      \
-//		_FORCE_INLINE_ static const StringName *get_member_class_names() {     \
-//			const StructMember members[member_count] = get_members();          \
-//			StringName member_class_names[member_count];                       \
-//			for (uint32_t i = 0; i < member_count; i++) {                      \
-//				member_class_names[i] = members[i].class_name;                 \
-//			}                                                                  \
-//			return member_class_names;                                         \
-//		}                                                                      \
-//		_FORCE_INLINE_ static const Variant *get_member_default_values() {     \
-//			const StructMember members[member_count] = get_members();          \
-//			Variant member_default_values[member_count];                       \
-//			for (uint32_t i = 0; i < member_count; i++) {                      \
-//				member_default_values[i] = members[i].default_value;           \
-//			}                                                                  \
-//			return member_default_values;                                      \
-//		}                                                                      \
-//	};
-
 template <class T>
 class Struct : public Array {
 public:
@@ -91,10 +49,10 @@ public:
 		return get_named(p_member);
 	}
 	_FORCE_INLINE_ Struct(const Variant &p_variant) :
-			Array(Array(p_variant), T::get_member_count(), T::get_name(), T::get_member) {
+			Array(Array(p_variant), T::get_name(), T::get_member) {
 	}
 	_FORCE_INLINE_ Struct(const Array &p_array) :
-			Array(p_array, T::get_member_count(), T::get_name(), T::get_member) {
+			Array(p_array, T::get_name(), T::get_member) {
 	}
 	_FORCE_INLINE_ Struct() :
 			Array(T::get_member_count(), T::get_name(), T::get_member) {

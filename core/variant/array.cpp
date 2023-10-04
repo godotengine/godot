@@ -225,9 +225,6 @@ void Array::assign(const Array &p_array) {
 	const ContainerTypeValidate &typed = _p->typed;
 	const ContainerTypeValidate &source_typed = p_array._p->typed;
 
-	// TODO: I will probably need to add some logic here for structs.
-
-	// assign if we don't have a type yet, our type exactly matches the source, or our type can reference the source's
 	if (typed.type == Variant::NIL || typed == source_typed || (source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
 		// from same to same or
 		// from anything to variants or
@@ -236,17 +233,19 @@ void Array::assign(const Array &p_array) {
 		return;
 	}
 
+	if (typed.is_struct() && (typed != source_typed)) {
+		ERR_FAIL_MSG("A struct can only be assigned a struct of matching type.");
+	}
+
 	const Variant *source = p_array._p->array.ptr();
 	int size = p_array._p->array.size();
 
-	// if (we are an object and the source is untyped) or (the source is an object, and it can reference us)
 	if ((source_typed.type == Variant::NIL && typed.type == Variant::OBJECT) || (source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
 		// from variants to objects or
 		// from base classes to subclasses
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
 			const Variant::Type type = source[i].get_type();
-			// if source's ith element has a type but that type is an invalid object
 			if (type != Variant::NIL && (type != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
 				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(type), Variant::get_type_name(typed.type)));
 			}
@@ -881,6 +880,30 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	_p->typed.where = "TypedArray";
 }
 
+void Array::set_struct(uint32_t p_size, const StringName &p_struct_name, const StructMember &(*p_get_member)(uint32_t)) {
+	if (validate_set_type() != OK) {
+		return;
+	}
+	_p->array.resize(p_size);
+	_p->typed.type = Variant::ARRAY;
+	_p->typed.where = "Struct"; // TODO: is this right?
+
+	_p->struct_name = p_struct_name;
+	_p->typed.class_name = p_struct_name;
+
+	_p->array.resize(p_size);
+	_p->member_count = p_size;
+	_p->member_names.resize(p_size);
+	_p->typed.struct_members.resize(p_size);
+
+	for (uint32_t i = 0; i < p_size; i++) {
+		StructMember member = p_get_member(i);
+		_p->typed.struct_members[i].type = member.type;
+		_p->typed.struct_members[i].class_name = member.class_name;
+		_p->member_names[i] = member.name;
+	}
+}
+
 bool Array::is_typed() const {
 	return _p->typed.type != Variant::NIL;
 }
@@ -920,77 +943,38 @@ Array::Array(const Array &p_from) {
 	_ref(p_from);
 }
 
-Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
+Array::Array(const Array &p_from, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init(); // TODO: should this be _ref(p_from)?
-	if (validate_set_type() != OK) {
-		return;
-	}
+
+	set_struct(p_from.size(), p_name, p_get_member);
 	assign(p_from);
-
-	_p->array.resize(p_size);
-	_p->typed.type = Variant::ARRAY;
-	_p->typed.where = "Struct"; // TODO: is this right?
-
-	_p->struct_name = p_name;
-	_p->typed.class_name = p_name;
-	_p->member_count = p_size;
-	_p->member_names.resize(p_size);
-	_p->typed.struct_members.resize(p_size);
-	for (uint32_t i = 0; i < p_size; i++) {
-		StructMember source_member = p_get_member(i);
-		ContainerTypeValidate *member_type = &_p->typed.struct_members[i];
-		_p->member_names[i] = source_member.name;
-		member_type->type = source_member.type;
-		member_type->class_name = source_member.class_name;
-	}
 }
 
-Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const Vector<StringName> &p_member_names) {
-	_p = memnew(ArrayPrivate);
-	_p->refcount.init();
-	if (validate_set_type() != OK) {
-		return;
-	}
-	assign(p_from);
-
-	_p->array.resize(p_size);
-	_p->typed.where = "Struct"; // TODO: is this right?
-
-	_p->struct_name = p_name;
-	_p->typed.class_name = p_name;
-	_p->member_count = p_size;
-	_p->member_names.resize(p_size);
-	_p->typed.struct_members.resize(p_size);
-	for (uint32_t i = 0; i < p_size; i++) {
-		StructMember source_member = p_member_names[i];
-		ContainerTypeValidate *member_type = &_p->typed.struct_members[i];
-		_p->member_names[i] = source_member.name;
-		member_type->type = source_member.type;
-		member_type->class_name = source_member.class_name;
-	}
-}
+//Array::Array(const Array &p_from, const StringName &p_name, const Vector<StringName> &p_member_names) {
+//	_p = memnew(ArrayPrivate);
+//	_p->refcount.init();
+//	const uint32_t size = p_from.size();
+//
+//	set_struct(size, p_name);
+//	for (uint32_t i = 0; i < size; i++) {
+//		StructMember member = p_get_member(i);
+//		_p->typed.set_struct_member(i, member.type, member.class_name);
+//		_p->member_names[i] = member.name;
+//		_p->array.write[i, member.default_value];
+//	}
+//
+//	assign(p_from);
+//}
 
 Array::Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
-	if (validate_set_type() != OK) {
-		return;
-	}
-	_p->array.resize(p_size);
-	_p->typed.where = "Struct"; // TODO: is this right?
 
-	_p->struct_name = p_name;
-	_p->typed.class_name = p_name;
-	_p->member_count = p_size;
-	_p->member_names.resize(p_size);
-	_p->typed.struct_members.resize(p_size);
+	set_struct(p_size, p_name, p_get_member);
+	Variant *pw = _p->array.ptrw();
 	for (uint32_t i = 0; i < p_size; i++) {
-		StructMember source_member = p_get_member(i);
-		ContainerTypeValidate *member_type = &_p->typed.struct_members[i];
-		_p->member_names[i] = source_member.name;
-		member_type->type = source_member.type;
-		member_type->class_name = source_member.class_name;
+		pw[i] = p_get_member(i).default_value;
 	}
 }
 

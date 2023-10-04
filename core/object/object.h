@@ -166,9 +166,9 @@ struct StructMember {
 	}
 };
 
-#define STRUCT_MEMBER(m_name, m_type) StructMember(SNAME(m_name), m_type)
-#define STRUCT_CLASS_MEMBER(m_name, m_class) StructMember(SNAME(m_name), Variant::OBJECT, m_class)
-#define STRUCT_STRUCT_MEMBER(m_name, m_struct) StructMember(SNAME(m_name), Variant::ARRAY, m_struct::get_name(), m_struct::get_members())
+#define STRUCT_MEMBER(m_name, m_type, m_default) StructMember(SNAME(m_name), m_type, StringName(), nullptr, m_default)
+#define STRUCT_CLASS_MEMBER(m_name, m_class_name, m_default) StructMember(SNAME(m_name), Variant::OBJECT, m_class_name, nullptr, m_default)
+#define STRUCT_STRUCT_MEMBER(m_name, m_struct, m_default) StructMember(SNAME(m_name), Variant::ARRAY, m_struct::get_name(), m_struct::get_members(), m_default)
 
 #define STRUCT_LAYOUT(m_struct, m_name, ...)                                             \
 	struct m_struct {                                                                    \
@@ -259,12 +259,12 @@ struct PropertyInfo {
 };
 
 STRUCT_LAYOUT(PropertyInfoLayout, "PropertyInfo",
-		STRUCT_MEMBER("name", Variant::STRING),
-		STRUCT_MEMBER("class_name", Variant::STRING_NAME),
-		STRUCT_MEMBER("type", Variant::INT),
-		STRUCT_MEMBER("hint", Variant::INT),
-		STRUCT_MEMBER("hint_string", Variant::STRING),
-		STRUCT_MEMBER("usage", Variant::INT));
+		STRUCT_MEMBER("name", Variant::STRING, String()),
+		STRUCT_MEMBER("class_name", Variant::STRING_NAME, StringName()),
+		STRUCT_MEMBER("type", Variant::INT, Variant::NIL),
+		STRUCT_MEMBER("hint", Variant::INT, PROPERTY_HINT_NONE),
+		STRUCT_MEMBER("hint_string", Variant::STRING, String()),
+		STRUCT_MEMBER("usage", Variant::INT, PROPERTY_USAGE_DEFAULT));
 
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
 

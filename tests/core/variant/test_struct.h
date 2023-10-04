@@ -88,12 +88,12 @@ TEST_CASE("[Struct] PropertyInfo") {
 
 TEST_CASE("[Struct] Validation") {
 	struct NamedInt {
-		StringName name;
-		int value;
+		StringName name = StringName();
+		int value = 0;
 	};
 	STRUCT_LAYOUT(NamedIntLayout, "NamedInt",
-			STRUCT_MEMBER("name", Variant::STRING_NAME),
-			STRUCT_MEMBER("value", Variant::INT));
+			STRUCT_MEMBER("name", Variant::STRING_NAME, StringName()),
+			STRUCT_MEMBER("value", Variant::INT, 0));
 
 	Struct<NamedIntLayout> named_int;
 	named_int["name"] = "Godot";
@@ -109,40 +109,37 @@ TEST_CASE("[Struct] Validation") {
 	}
 
 	SUBCASE("Assignment") {
-		ERR_PRINT_OFF;
-		named_int.set_named("name", 4);
-		CHECK_EQ(named_int["name"], "Godot");
-
-		named_int.set_named("value", "Godot");
-		CHECK_EQ((int)named_int["value"], 4);
-		ERR_PRINT_ON;
-
 		Struct<NamedIntLayout> a_match = named_int;
 		CHECK_EQ(named_int, a_match);
 		Array not_a_match;
 
 		ERR_PRINT_OFF;
+		named_int.set_named("name", 4);
+		CHECK_MESSAGE(named_int["name"] == "Godot", "assigned an int to a string member");
+
+		named_int.set_named("value", "Godot");
+		CHECK_MESSAGE((int)named_int["value"] == 4, "assigned a string to an int member");
+
 		named_int = not_a_match;
-		CHECK_EQ(named_int, a_match);
+		CHECK_MESSAGE(named_int != not_a_match, "assigned an empty array to a struct");
 
 		not_a_match.resize(2);
 		named_int = not_a_match;
-		CHECK_EQ(named_int, a_match);
+		CHECK_MESSAGE(named_int != not_a_match, "assigned a non-struct to a struct");
 
 		not_a_match[0] = 4;
 		not_a_match[1] = "Godot";
 		named_int = not_a_match;
-		CHECK_EQ(named_int, a_match);
+		CHECK_MESSAGE(named_int != not_a_match, "assigned a non-struct to a struct");
 
 		not_a_match[0] = "Godooot";
 		not_a_match[1] = 5;
 		named_int = not_a_match;
-		CHECK_EQ(named_int, a_match);
-		ERR_PRINT_ON;
+		CHECK_MESSAGE(named_int != not_a_match, "assigned a non-struct to a struct");
 
 		named_int.assign(not_a_match);
-		CHECK_EQ(named_int["name"], "Godooot");
-		CHECK_EQ((int)named_int["value"], 5);
+		CHECK_MESSAGE(named_int != not_a_match, "assigned a non-struct to a struct");
+		ERR_PRINT_ON;
 	}
 }
 
@@ -160,25 +157,34 @@ TEST_CASE("[Struct] Nesting") {
 		BasicStruct value;
 	};
 	STRUCT_LAYOUT(BasicStructLayout, "BasicStruct",
-			STRUCT_MEMBER("int_val", Variant::INT),
-			STRUCT_MEMBER("float_val", Variant::FLOAT));
+			STRUCT_MEMBER("int_val", Variant::INT, 4),
+			STRUCT_MEMBER("float_val", Variant::FLOAT, 5.5));
 	STRUCT_LAYOUT(BasicStructLookalikeLayout, "BasicStructLookalike",
-			STRUCT_MEMBER("int_val", Variant::INT),
-			STRUCT_MEMBER("float_val", Variant::FLOAT));
+			STRUCT_MEMBER("int_val", Variant::INT, 0),
+			STRUCT_MEMBER("float_val", Variant::FLOAT, 0.0));
 	STRUCT_LAYOUT(NestedStructLayout, "NestedStruct",
-			STRUCT_CLASS_MEMBER("node", "Node"),
-			STRUCT_STRUCT_MEMBER("value", BasicStructLayout));
+			STRUCT_CLASS_MEMBER("node", "Node", Variant()),
+			STRUCT_STRUCT_MEMBER("value", BasicStructLayout, Struct<BasicStructLayout>()));
+
+	Struct<BasicStructLayout> basic_struct;
+	Struct<BasicStructLookalikeLayout> basic_struct_lookalike;
+	Struct<NestedStructLayout> nested_struct;
+
+	SUBCASE("Defaults") {
+		CHECK_EQ((int)basic_struct["int_val"], 4);
+		CHECK_EQ((float)basic_struct["float_val"], 5.5);
+
+		CHECK_EQ(nested_struct["node"], Variant());
+		CHECK_EQ(nested_struct["value"], basic_struct);
+	}
 
 	SUBCASE("Assignment") {
-		Struct<BasicStructLayout> basic_struct;
 		basic_struct["int_val"] = 1;
 		basic_struct["float_val"] = 3.14;
 
-		Struct<BasicStructLookalikeLayout> basic_struct_lookalike;
 		basic_struct_lookalike["int_val"] = 2;
 		basic_struct_lookalike["float_val"] = 2.7;
 
-		Struct<NestedStructLayout> nested_struct;
 		Node *node = memnew(Node);
 		nested_struct.set_named("node", node);
 		nested_struct.set_named("value", basic_struct);
@@ -211,7 +217,6 @@ TEST_CASE("[Struct] Nesting") {
 		array.push_back(0);
 		CHECK_EQ(array.size(), 2);
 
-		Struct<BasicStructLookalikeLayout> basic_struct_lookalike;
 		basic_struct_lookalike["int_val"] = 3;
 		basic_struct_lookalike["float_val"] = 5.4;
 		array.push_back(basic_struct_lookalike);
@@ -228,7 +233,7 @@ TEST_CASE("[Struct] ClassDB") {
 	CHECK_EQ(struct_info->names[3], "hint");
 	CHECK_EQ(struct_info->types[3], Variant::INT);
 	CHECK_EQ(struct_info->class_names[3], "");
-	CHECK_EQ(struct_info->default_values[3], Variant());
+	CHECK_EQ((int)struct_info->default_values[3], PROPERTY_HINT_NONE);
 }
 
 } // namespace TestStruct
