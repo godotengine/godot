@@ -99,6 +99,7 @@ public:
 #endif // TOOLS_ENABLED
 
 	EXBIND1RC(bool, has_method, const StringName &)
+	EXBIND1RC(bool, has_static_method, const StringName &)
 
 	GDVIRTUAL1RC(Dictionary, _get_method_info, const StringName &)
 	virtual MethodInfo get_method_info(const StringName &p_method) const override {
