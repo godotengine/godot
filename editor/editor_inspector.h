@@ -501,13 +501,7 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	struct PropertyDocInfo {
-		String description;
-		String path;
-	};
-
-	HashMap<StringName, HashMap<StringName, PropertyDocInfo>> doc_info_cache;
-	HashMap<StringName, String> class_descr_cache;
+	HashMap<StringName, HashMap<StringName, String>> doc_path_cache;
 	HashSet<StringName> restart_request_props;
 
 	HashMap<ObjectID, int> scroll_cache;

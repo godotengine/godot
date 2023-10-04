@@ -231,8 +231,6 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *slot_menu = nullptr;
 	LineEdit *search_box = nullptr;
 
-	HashMap<StringName, HashMap<StringName, String>> descr_cache;
-
 	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
