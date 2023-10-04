@@ -145,12 +145,14 @@ private:
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
 		Vector2 velocity;
+		Vector2 screen_velocity;
 		Vector2 accum;
+		Vector2 screen_accum;
 		float accum_t = 0.0f;
 		float min_ref_frame;
 		float max_ref_frame;
 
-		void update(const Vector2 &p_delta_p);
+		void update(const Vector2 &p_delta_p, const Vector2 &p_screen_delta_p);
 		void reset();
 		VelocityTrack();
 	};
@@ -302,6 +304,7 @@ public:
 
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
+	Vector2 get_last_mouse_screen_velocity();
 	BitField<MouseButtonMask> get_mouse_button_mask() const;
 
 	void warp_mouse(const Vector2 &p_position);
