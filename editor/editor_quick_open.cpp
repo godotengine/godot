@@ -93,25 +93,18 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 }
 
 void EditorQuickOpen::_update_search() {
-	FuzzySearch fuzzy_search;
-	fuzzy_search.set_query(search_box->get_text());
-
-	// Filter possible candidates.
-	for (int i = 0; i < files.size(); i++) {
-		fuzzy_search.fuzzy_search_path(files[i]);
-	}
-
 	// Display results
 	TreeItem *root = search_options->get_root();
 	root->clear_children();
 
-	const Vector<FuzzySearchResult> &results = fuzzy_search.commit();
+	Vector<Ref<FuzzySearchResult>> results = FuzzySearch::search_all(search_box->get_text(), files);
+
 	if (results.size() > 0) {
 		for (int i = 0; i < results.size(); i++) {
 			TreeItem *ti = search_options->create_item(root);
-			ti->set_text(0, FuzzySearch::decorate(results[i]));
-			ti->set_metadata(0, results[i].target); // todo use this for click events and stuff
-			ti->set_icon(0, *icons.lookup_ptr(results[i].target.get_extension()));
+			ti->set_text(0, results[i]->target);
+			ti->set_metadata(0, results[i]);
+			ti->set_icon(0, *icons.lookup_ptr(results[i]->target.get_extension()));
 		}
 
 		TreeItem *to_select = root->get_first_child();
@@ -244,6 +237,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	search_options = memnew(Tree);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &EditorQuickOpen::_confirmed));
+	search_options->connect("draw", callable_mp(this, &EditorQuickOpen::_draw_search_options));
 	search_options->create_item();
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
@@ -252,4 +246,8 @@ EditorQuickOpen::EditorQuickOpen() {
 
 	set_ok_button_text(TTR("Open"));
 	set_hide_on_ok(false);
+}
+
+void EditorQuickOpen::_draw_search_options() {
+	FuzzySearch::draw_matches(search_options);
 }

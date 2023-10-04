@@ -32,78 +32,104 @@
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"
 #include "modules/regex/regex.h"
+#include "scene/gui/tree.h"
 
-void FuzzySearch::set_query(const String &p_query) {
+const int max_results = 100;
+
+Vector<int> FuzzySearchResult::get_matches() const {
+	Vector<int> matches_array;
+
+	for (int i : matches) {
+		matches_array.push_back(i);
+	}
+
+	matches_array.sort();
+
+	return matches_array;
+}
+
+const Vector<int> &FuzzySearchResult::get_matches_as_substr_sequences() const {
+	if (matches.is_empty()) {
+		return m_matches_as_substr_sequences_cache;
+	}
+
+	// Considering this function may be called every scroll of a search list;
+	// better to cache this.
+	if (!m_matches_as_substr_sequences_cache.is_empty()) {
+		return m_matches_as_substr_sequences_cache;
+	}
+
+	Vector<int> matches_array = get_matches();
+
+	for (int i = 0; i < matches_array.size(); i++) {
+		int begin = i;
+		while ((i < matches.size() - 1) && (matches_array[i] + 1) == matches_array[i + 1]) {
+			i++;
+		}
+
+		m_matches_as_substr_sequences_cache.push_back(matches_array[begin]);
+		m_matches_as_substr_sequences_cache.push_back(matches_array[i] - matches_array[begin] + 1);
+	}
+
+	return m_matches_as_substr_sequences_cache;
+}
+
+PackedStringArray get_query(const String &p_query) {
+	PackedStringArray query_tokens;
+
 	Ref<RegEx> split_query_regex = RegEx::create_from_string("[^\\/\\s]+");
-	TypedArray<RegExMatch> query_tokens = split_query_regex->search_all(p_query);
+	TypedArray<RegExMatch> query_token_matches = split_query_regex->search_all(p_query);
 
-	for (int i = 0; i < query_tokens.size(); i++) {
-		Ref<RegExMatch> query_token = query_tokens[i];
+	for (int i = 0; i < query_token_matches.size(); i++) {
+		Ref<RegExMatch> query_token_match = query_token_matches[i];
 
-		PackedStringArray strings = query_token->get_strings();
+		PackedStringArray strings = query_token_match->get_strings();
 		if (strings.is_empty()) {
 			continue;
 		}
 
-		m_query_tokens.append(strings[0]);
+		query_tokens.append(strings[0]);
 	}
+
+	return query_tokens;
 }
 
-const Vector<FuzzySearchResult> &FuzzySearch::commit() {
-	if (m_query_tokens.is_empty()) {
-		return m_results;
+void sort_and_filter(Vector<Ref<FuzzySearchResult>> &p_results) {
+	float total_score = 0;
+	for (const Ref<FuzzySearchResult> &result : p_results) {
+		total_score += result->score;
+	}
+
+	float mean_score = total_score / p_results.size();
+	if (mean_score == 0) {
+		p_results.resize(max_results);
+		return;
 	}
 
 	struct FuzzySearchResultComparator {
-		bool operator()(const FuzzySearchResult &A, const FuzzySearchResult &B) const {
-			return A.score > B.score;
+		bool operator()(const Ref<FuzzySearchResult> &A, const Ref<FuzzySearchResult> &B) const {
+			return A->score > B->score;
 		}
 	};
 
-	SortArray<FuzzySearchResult, FuzzySearchResultComparator> sorter;
-	sorter.sort(m_results.ptrw(), m_results.size());
-
-	int mean_score = m_total_score / m_results.size();
+	SortArray<Ref<FuzzySearchResult>, FuzzySearchResultComparator> sorter;
+	sorter.sort(p_results.ptrw(), p_results.size());
 
 	int i = 0;
-	while (m_results[i].score > mean_score && i < m_results.size() && i < 300) {
+	while ((i < p_results.size()) && (p_results[i]->score >= (mean_score * 0.5)) && (i < max_results)) {
 		i++;
 	}
 
-	m_results.resize(i);
-
-	return m_results;
+	p_results.resize(i);
 }
 
-String FuzzySearch::decorate(const FuzzySearchResult &p_result) {
-	if (p_result.target.is_empty()) {
-		return p_result.target;
-	}
-
-	if (p_result.matches.is_empty()) {
-		return p_result.target;
-	}
-
-	String result;
-	for (int i = 0; i < p_result.target.size(); i++) {
-		result += p_result.target[i];
-		if (p_result.matches.has(i)) {
-			result += U'\u0332';
-		}
-	}
-
-	// + " " + itos(p_result.score)
-
-	return result;
-}
-
-FuzzySearchResult FuzzySearch::fuzzy_search(const String &p_query, const String &p_target, int position_offset) {
+Ref<FuzzySearchResult> fuzzy_search(const String &p_query, const String &p_target, int position_offset) {
 	if (p_query.is_empty()) {
-		return FuzzySearchResult{};
+		return nullptr;
 	}
 
 	if (p_target.is_empty()) {
-		return FuzzySearchResult{};
+		return nullptr;
 	}
 
 	// Convert strings to lowercase
@@ -164,12 +190,13 @@ FuzzySearchResult FuzzySearch::fuzzy_search(const String &p_query, const String 
 	// The bottom-right cell of the matrix contains the Levenshtein distance
 	int mostSouthWestIdx = lenStr2 * (lenStr1 + 1) + lenStr1;
 
-	FuzzySearchResult res;
-	res.score = dp[mostSouthWestIdx];
-
-	if (res.score == 0) {
-		return res;
+	if (dp[mostSouthWestIdx] == 0) {
+		return nullptr;
 	}
+
+	Ref<FuzzySearchResult> res;
+	res.instantiate();
+	res->score = dp[mostSouthWestIdx];
 
 	int p = mostSouthWestIdx;
 
@@ -177,7 +204,7 @@ FuzzySearchResult FuzzySearch::fuzzy_search(const String &p_query, const String 
 	// Useful for highlighting match characters in search result UX.
 	while (p > 0) {
 		if (matches[p] > 0) {
-			res.matches.insert(((p % m) - 1) + position_offset);
+			res->matches.insert(((p % m) - 1) + position_offset);
 			p -= m;
 		}
 
@@ -187,47 +214,191 @@ FuzzySearchResult FuzzySearch::fuzzy_search(const String &p_query, const String 
 	return res;
 }
 
-FuzzySearchResult FuzzySearch::fuzzy_search_path_components(const String &p_query_token, const PackedStringArray &p_path_components) {
-	FuzzySearchResult result;
+// Iterate over every component in the path and use the highest scoring match as the result.
+// Also weights the final component's score massively heaiver considering people tend to search for files, not directories.
+Ref<FuzzySearchResult> fuzzy_search_path_components(const String &p_query_token, const PackedStringArray &p_path_components) {
+	Ref<FuzzySearchResult> result;
+
 	int offset = 0;
 
 	for (int i = 0; i < p_path_components.size(); i++) {
 		bool end_of_path = i == p_path_components.size() - 1;
 
-		FuzzySearchResult res = fuzzy_search(p_query_token, p_path_components[i], offset);
-		if (end_of_path) {
-			res.score *= 100;
+		Ref<FuzzySearchResult> res = fuzzy_search(p_query_token, p_path_components[i], offset);
+		offset += p_path_components[i].length() + 1;
+
+		if (res.is_null() || res->score == 0) {
+			continue;
 		}
 
-		if (res.score > result.score) {
+		if (end_of_path) {
+			res->score *= 100;
+		}
+
+		if (result.is_null()) {
+			result = res;
+		} else if (res->score > result->score) {
 			result = res;
 		}
-
-		offset += p_path_components[i].length() + 1;
 	}
 
 	return result;
 }
 
-void FuzzySearch::fuzzy_search_path(const String &p_path) {
-	FuzzySearchResult result;
-	result.target = p_path;
+Ref<FuzzySearchResult> fuzzy_search_path(const PackedStringArray &p_query_tokens, const String &p_path) {
+	Ref<FuzzySearchResult> result;
 
-	if (!m_query_tokens.is_empty()) {
-		PackedStringArray target = p_path.to_lower().split("/");
+	PackedStringArray target = p_path.to_lower().split("/");
 
-		for (int i = 0; i < m_query_tokens.size(); i++) {
-			FuzzySearchResult res = fuzzy_search_path_components(m_query_tokens[i], target);
+	for (const String &query_token : p_query_tokens) {
+		Ref<FuzzySearchResult> res = fuzzy_search_path_components(query_token, target);
+		if (res.is_null()) {
+			return nullptr;
+		}
 
-			result.score += res.score;
+		if (result.is_null()) {
+			result = res;
+			result->target = p_path;
+		} else {
+			result->score += res->score;
+		}
 
-			for (int match : res.matches) {
-				result.matches.insert(match);
+		for (int match : res->matches) {
+			result->matches.insert(match);
+		}
+	}
+
+	return result;
+}
+
+Vector<Ref<FuzzySearchResult>> FuzzySearch::search_all(const String &p_query_tokens, const PackedStringArray &p_search_data) {
+	Vector<Ref<FuzzySearchResult>> res;
+
+	// Just spit out the results list if no query is given.
+	if (p_query_tokens.is_empty()) {
+		for (int i = 0; i < max_results && i < p_search_data.size(); i++) {
+			Ref<FuzzySearchResult> r;
+			r.instantiate();
+			r->target = p_search_data[i];
+			res.push_back(r);
+		}
+
+		return res;
+	}
+
+	PackedStringArray query_tokens = get_query(p_query_tokens);
+
+	for (const String &search_line : p_search_data) {
+		Ref<FuzzySearchResult> r = fuzzy_search_path(query_tokens, search_line);
+		if (!r.is_null()) {
+			res.append(r);
+		}
+	}
+
+	sort_and_filter(res);
+
+	return res;
+}
+
+/*
+// old search function
+// maybe should leave this as a config option
+float score_path(const String &p_search, const String &p_path) {
+	if(!p_search.is_subsequence_ofn(p_path)) {
+		return 0.0;
+	}
+
+	float score = 0.9f + .1f * (p_search.length() / (float)p_path.length());
+
+	// Exact match.
+	if (p_search == p_path) {
+		return 1.2f;
+	}
+
+	// Positive bias for matches close to the beginning of the file name.
+	String file = p_path.get_file();
+	int pos = file.findn(p_search);
+	if (pos != -1) {
+		return score * (1.0f - 0.1f * (float(pos) / file.length()));
+	}
+
+	// Similarity
+	return p_path.to_lower().similarity(p_search.to_lower());
+}
+
+
+Vector<Ref<FuzzySearchResult>> FuzzySearch::search_all(const String& p_query_tokens, const PackedStringArray &p_search_data) {
+	Vector<Ref<FuzzySearchResult>> res;
+
+	PackedStringArray query_tokens = get_query(p_query_tokens);
+
+	for(const String& search_line : p_search_data) {
+		float score = score_path(p_query_tokens, search_line) * 100.0;
+		if(score > 0) {
+			Ref<FuzzySearchResult> r;
+			r.instantiate();
+			r->target = search_line;
+			r->score = score;
+			res.append(r);
+		}
+	}
+
+	sort_and_filter(res);
+
+	return res;
+}
+*/
+
+void FuzzySearch::draw_matches(Tree *p_tree) {
+	if (p_tree == nullptr) {
+		return;
+	}
+
+	TreeItem *head = p_tree->get_root();
+	if (head == nullptr) {
+		return;
+	}
+
+	Ref<Font> font = p_tree->get_theme_font("font");
+	if (!font.is_valid()) {
+		return;
+	}
+
+	int font_size = p_tree->get_theme_font_size("font_size");
+
+	Vector2 margin_and_scroll_offset = -p_tree->get_scroll();
+	margin_and_scroll_offset.x += p_tree->get_theme_constant("item_margin");
+	margin_and_scroll_offset.y += font->get_string_size("A", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).y;
+
+	Vector2 magic_numbers = Vector2(23, -5);
+	margin_and_scroll_offset += magic_numbers;
+
+	Ref<Texture2D> icon = head->get_icon(0);
+	if (icon.is_valid()) {
+		margin_and_scroll_offset.x += icon->get_width();
+	}
+
+	while (head != nullptr && head->is_visible()) {
+		Ref<FuzzySearchResult> fuzzy_search_result = head->get_metadata(0);
+		if (fuzzy_search_result.is_valid()) {
+			const Vector<int> &substr_sequences = fuzzy_search_result->get_matches_as_substr_sequences();
+
+			for (int i = 0; i < substr_sequences.size(); i += 2) {
+				String str_left_of_match = fuzzy_search_result->target.substr(0, substr_sequences[i]);
+				String match_str = fuzzy_search_result->target.substr(substr_sequences[i], substr_sequences[i + 1]);
+
+				Vector2 position = font->get_string_size(str_left_of_match, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+				position.y = 0;
+				position += p_tree->get_item_rect(head, 0).position;
+				position += margin_and_scroll_offset;
+
+				Vector2 size = font->get_string_size(match_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+
+				p_tree->draw_rect(Rect2(position, size), Color(1, 1, 1, 0.07), true);
+				p_tree->draw_rect(Rect2(position, size), Color(0.5, 0.7, 1.0, 0.4), false, 1);
 			}
 		}
 
-		m_total_score += result.score;
+		head = head->get_next_visible();
 	}
-
-	m_results.push_back(result);
 }

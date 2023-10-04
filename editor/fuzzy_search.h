@@ -31,33 +31,37 @@
 #ifndef FUZZY_SEARCH_H
 #define FUZZY_SEARCH_H
 
+#include "core/object/ref_counted.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
 
-struct FuzzySearchResult {
+class Tree;
+
+class FuzzySearchResult : public RefCounted {
+	GDCLASS(FuzzySearchResult, RefCounted);
+
+protected:
+	static void _bind_methods() {}
+
+	mutable Vector<int> m_matches_as_substr_sequences_cache;
+
+public:
 	String target;
 	int score{};
 	RBSet<int> matches;
+
+	Vector<int> get_matches() const;
+
+	const Vector<int> &get_matches_as_substr_sequences() const;
 };
 
-class FuzzySearch {
-	int m_total_score{};
-	PackedStringArray m_query_tokens;
-	Vector<FuzzySearchResult> m_results;
-
-	static FuzzySearchResult fuzzy_search(const String &p_query, const String &p_target, int p_position_offset = 0);
-
-	static FuzzySearchResult fuzzy_search_path_components(const String &p_query_token, const PackedStringArray &p_path_components);
+class FuzzySearch : public RefCounted {
+	GDCLASS(FuzzySearch, RefCounted);
 
 public:
-	static String decorate(const FuzzySearchResult &p_result);
-
-	void set_query(const String &p_queue);
-
-	void fuzzy_search_path(const String &p_path);
-
-	const Vector<FuzzySearchResult> &commit();
+	static Vector<Ref<FuzzySearchResult>> search_all(const String &p_query_tokens, const PackedStringArray &p_search_data);
+	static void draw_matches(Tree *p_tree);
 };
 
 #endif // FUZZY_SEARCH_H
