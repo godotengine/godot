@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
+#include "editor/editor_settings.h"
 #include "servers/rendering/rendering_device_binds.h"
 
 //uncomment this if you want to see textures from all the process saved
@@ -668,6 +669,118 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 		img->save_png("res://5_dilated_" + itos(i) + ".png");
 	}
 #endif
+	return BAKE_OK;
+}
+
+bool LightmapperRD::_load_oidn(const String &p_library_path) {
+	if (oidn_lib_path == p_library_path) {
+		return oidn_lib_handle != nullptr;
+	}
+	oidn_lib_path = p_library_path;
+
+	String lib_path;
+	if (OS::get_singleton()->get_name() == "macOS") {
+		lib_path = oidn_lib_path.path_join("libOpenImageDenoise.dylib");
+	} else if (OS::get_singleton()->get_name() == "Windows") {
+		lib_path = oidn_lib_path.path_join("OpenImageDenoise.dll");
+	} else {
+		lib_path = oidn_lib_path.path_join("libOpenImageDenoise.so");
+	}
+
+	_unload_oidn();
+
+	if (OS::get_singleton()->open_dynamic_library(lib_path, oidn_lib_handle, true) != OK) {
+		oidn_lib_handle = nullptr;
+		ERR_PRINT(vformat("Failed to load %s.", lib_path));
+		return false;
+	}
+	bool symbols_ok = true;
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnNewDevice", (void *&)oidnNewDevice) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnCommitDevice", (void *&)oidnCommitDevice) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnNewFilter", (void *&)oidnNewFilter) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnSetSharedFilterImage", (void *&)oidnSetSharedFilterImage) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnSetFilterBool", (void *&)oidnSetFilterBool) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnCommitFilter", (void *&)oidnCommitFilter) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnExecuteFilter", (void *&)oidnExecuteFilter) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnGetDeviceError", (void *&)oidnGetDeviceError) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnReleaseFilter", (void *&)oidnReleaseFilter) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnReleaseDevice", (void *&)oidnReleaseDevice) == OK);
+	if (!symbols_ok) {
+		ERR_PRINT("Failed to load OIDN symbols.");
+		_unload_oidn();
+		return false;
+	}
+
+	oidn_device = oidnNewDevice(OIDN_DEVICE_TYPE_CPU);
+	oidnCommitDevice(oidn_device);
+	const char *msg = nullptr;
+	if (oidnGetDeviceError(oidn_device, &msg) != OIDN_ERROR_NONE) {
+		ERR_PRINT("Failed to load OIDN device.");
+		_unload_oidn();
+		return false;
+	}
+
+	return true;
+}
+
+void LightmapperRD::_unload_oidn() {
+	if (oidn_lib_handle) {
+		if (oidn_device) {
+			oidnReleaseDevice(oidn_device);
+			oidn_device = nullptr;
+		}
+
+		OS::get_singleton()->close_dynamic_library(oidn_lib_handle);
+		oidn_lib_handle = nullptr;
+	}
+}
+
+LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh) {
+	for (int i = 0; i < p_atlas_slices; i++) {
+		Vector<uint8_t> sn = p_rd->texture_get_data(p_source_normal_tex, i);
+		Ref<Image> imgn = Image::create_from_data(p_atlas_size.width, p_atlas_size.height, false, Image::FORMAT_RGBAH, sn);
+		imgn->convert(Image::FORMAT_RGBF);
+		Vector<uint8_t> datan = imgn->get_data();
+
+		for (int j = 0; j < (p_bake_sh ? 4 : 1); j++) {
+			int index = i * (p_bake_sh ? 4 : 1) + j;
+
+			Vector<uint8_t> sl = p_rd->texture_get_data(p_source_light_tex, index);
+
+			Ref<Image> imgl = Image::create_from_data(p_atlas_size.width, p_atlas_size.height, false, Image::FORMAT_RGBAH, sl);
+			imgl->convert(Image::FORMAT_RGBF);
+			Vector<uint8_t> datal = imgl->get_data();
+
+			void *filter = oidnNewFilter(oidn_device, "RTLightmap");
+			oidnSetSharedFilterImage(filter, "color", (void *)datal.ptrw(), OIDN_FORMAT_FLOAT3, imgl->get_width(), imgl->get_height(), 0, 0, 0);
+			oidnSetSharedFilterImage(filter, "normal", (void *)datan.ptrw(), OIDN_FORMAT_FLOAT3, imgn->get_width(), imgn->get_height(), 0, 0, 0);
+			oidnSetSharedFilterImage(filter, "output", (void *)datal.ptrw(), OIDN_FORMAT_FLOAT3, imgl->get_width(), imgl->get_height(), 0, 0, 0);
+			oidnSetFilterBool(filter, "hdr", true);
+			oidnCommitFilter(filter);
+			oidnExecuteFilter(filter);
+
+			const char *msg = nullptr;
+			if (oidnGetDeviceError(oidn_device, &msg) != OIDN_ERROR_NONE) {
+				oidnReleaseFilter(filter);
+				ERR_FAIL_V_MSG(BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, String(msg));
+			}
+			oidnReleaseFilter(filter);
+
+			imgl->set_data(imgl->get_width(), imgl->get_height(), false, imgl->get_format(), datal);
+			imgl->convert(Image::FORMAT_RGBAH);
+			Vector<uint8_t> ds = imgl->get_data();
+			imgl.unref(); // Avoid copy on write.
+			{ // Restore alpha.
+				uint32_t count = sl.size() / 2;
+				const uint16_t *src = (const uint16_t *)sl.ptr();
+				uint16_t *dst = (uint16_t *)ds.ptrw();
+				for (uint32_t k = 0; k < count; k += 4) {
+					dst[k + 3] = src[k + 3];
+				}
+			}
+			p_rd->texture_update(p_dest_light_tex, index, ds);
+		}
+	}
 	return BAKE_OK;
 }
 
@@ -1501,8 +1614,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 
 		{
-			SWAP(light_accum_tex, light_accum_tex2);
-			BakeError error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, atlas_size, atlas_slices, p_bake_sh, p_step_function);
+			String oidn_path = EDITOR_GET("filesystem/tools/oidn/oidn_library_path");
+			BakeError error;
+			if (!oidn_path.is_empty() && _load_oidn(oidn_path)) {
+				error = _denoise_oidn(rd, light_accum_tex, normal_tex, light_accum_tex, atlas_size, atlas_slices, p_bake_sh);
+			} else {
+				SWAP(light_accum_tex, light_accum_tex2);
+				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, atlas_size, atlas_slices, p_bake_sh, p_step_function);
+			}
 			if (unlikely(error != BAKE_OK)) {
 				return error;
 			}
@@ -1765,4 +1884,8 @@ Vector<Color> LightmapperRD::get_bake_probe_sh(int p_probe) const {
 }
 
 LightmapperRD::LightmapperRD() {
+}
+
+LightmapperRD::~LightmapperRD() {
+	_unload_oidn();
 }
