@@ -225,29 +225,23 @@ public:
 			// This is added here, but it's unlikely to be provided by most extensions.
 			validated_call_func(method_userdata, extension_instance, reinterpret_cast<GDExtensionConstVariantPtr *>(p_args), (GDExtensionVariantPtr)r_ret);
 		} else {
-#if 1
-			// Slow code-path, but works for the time being.
-			Callable::CallError ce;
-			call(p_object, p_args, argument_count, ce);
-#else
-			// This is broken, because it needs more information to do the calling properly
-
 			// If not provided, go via ptrcall, which is faster than resorting to regular call.
 			const void **argptrs = (const void **)alloca(argument_count * sizeof(void *));
 			for (uint32_t i = 0; i < argument_count; i++) {
 				argptrs[i] = VariantInternal::get_opaque_pointer(p_args[i]);
 			}
 
-			bool returns = true;
-			void *ret_opaque;
-			if (returns) {
+			void *ret_opaque = nullptr;
+			if (r_ret) {
+				VariantInternal::initialize(r_ret, return_value_info.type);
 				ret_opaque = VariantInternal::get_opaque_pointer(r_ret);
-			} else {
-				ret_opaque = nullptr; // May be unnecessary as this is ignored, but just in case.
 			}
 
 			ptrcall(p_object, argptrs, ret_opaque);
-#endif
+
+			if (r_ret && r_ret->get_type() == Variant::OBJECT) {
+				VariantInternal::update_object_id(r_ret);
+			}
 		}
 	}
 
