@@ -4636,6 +4636,40 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 	return ret;
 }
 
+void RenderingDeviceVulkan::_shader_specialization_constants_to_pipeline_constants(const Vector<Shader::SpecializationConstant> &p_shader_specialization_constants, LocalVector<PipelineSpecializationConstant> &p_pipeline_specialization_constants) {
+	p_pipeline_specialization_constants.resize(p_shader_specialization_constants.size());
+	for (int i = 0; i < p_shader_specialization_constants.size(); i++) {
+		p_pipeline_specialization_constants[i] = p_shader_specialization_constants[i].constant;
+	}
+}
+
+VkShaderModule RenderingDeviceVulkan::_create_patched_shader_module(const SpirvSpecializationData &p_spirv_spec_data, const Vector<Shader::SpecializationConstant> &p_shader_specialization_constants, const Vector<PipelineSpecializationConstant> &p_pipeline_specialization_constants) {
+	// Copy the data into a thread local vectors to avoid race conditions when patching the SPIR-V if multiple threads are capable of
+	// creating pipelines. Static is implied and intended so the vector allocation is reused across function calls.
+
+	// Convert the backend-specific specialization constant vector to the RD vector.
+	static thread_local LocalVector<PipelineSpecializationConstant> shader_spec_constants;
+	_shader_specialization_constants_to_pipeline_constants(p_shader_specialization_constants, shader_spec_constants);
+
+	// Specialize the SPIR-V with the constants for this pipeline.
+	static thread_local LocalVector<uint32_t> patched_spirv_words;
+	_specialize_spirv(p_spirv_spec_data, shader_spec_constants, p_pipeline_specialization_constants, patched_spirv_words);
+
+	// Create new shader module with the patched SPIR-V. The SPIR-V data can be discarded afterwards.
+	VkShaderModuleCreateInfo shader_module_create_info;
+	shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	shader_module_create_info.pNext = nullptr;
+	shader_module_create_info.flags = 0;
+	shader_module_create_info.codeSize = patched_spirv_words.size() * sizeof(uint32_t);
+	shader_module_create_info.pCode = patched_spirv_words.ptr();
+
+	VkShaderModule shader_module;
+	VkResult err = vkCreateShaderModule(device, &shader_module_create_info, nullptr, &shader_module);
+	ERR_FAIL_COND_V_MSG(err, VK_NULL_HANDLE, "vkCreateShaderModule failed with error " + itos(err) + ".");
+
+	return shader_module;
+}
+
 // Version 1: initial.
 // Version 2: Added shader name.
 // Version 3: Added writable.
@@ -5065,27 +5099,27 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	shader->compute_local_size[1] = compute_local_size[1];
 	shader->compute_local_size[2] = compute_local_size[2];
 	shader->specialization_constants = specialization_constants;
+	shader->spirv_specializations.clear();
 	shader->name = name;
 
 	String error_text;
 
+	if (patch_spirv_spec_constants) {
+		shader->spirv_specializations.resize(stage_spirv_data.size());
+	}
+
 	bool success = true;
 	for (int i = 0; i < stage_spirv_data.size(); i++) {
-		VkShaderModuleCreateInfo shader_module_create_info;
-		shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		shader_module_create_info.pNext = nullptr;
-		shader_module_create_info.flags = 0;
-		shader_module_create_info.codeSize = stage_spirv_data[i].size();
-		const uint8_t *r = stage_spirv_data[i].ptr();
-
-		shader_module_create_info.pCode = (const uint32_t *)r;
-
-		VkShaderModule module;
-		VkResult res = vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module);
-		if (res) {
-			success = false;
-			error_text = "Error (" + itos(res) + ") creating shader module for stage: " + String(shader_stage_names[stage_type[i]]);
-			break;
+		bool generate_patched_spirv = false;
+		if (patch_spirv_spec_constants) {
+			// Find if a specialization constant is compatible with this shader stage.
+			for (int j = 0; j < shader->specialization_constants.size(); j++) {
+				const Shader::SpecializationConstant &sc = shader->specialization_constants[j];
+				if (sc.stage_flags & (1 << stage_type[i])) {
+					generate_patched_spirv = true;
+					break;
+				}
+			}
 		}
 
 		VkPipelineShaderStageCreateInfo shader_stage;
@@ -5093,9 +5127,41 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		shader_stage.pNext = nullptr;
 		shader_stage.flags = 0;
 		shader_stage.stage = shader_stage_masks[stage_type[i]];
-		shader_stage.module = module;
 		shader_stage.pName = "main";
 		shader_stage.pSpecializationInfo = nullptr;
+
+		if (generate_patched_spirv) {
+			// Convert the backend-specific specialization constant vector to the RD vector.
+			LocalVector<PipelineSpecializationConstant> shader_spec_constants;
+			_shader_specialization_constants_to_pipeline_constants(shader->specialization_constants, shader_spec_constants);
+
+			// Create a patched version of the SPIR-V with the specialization constant operations patched out.
+			// Use the decorations to find out what constant operation corresponds to which binding.
+			_create_specialization_data_spirv(stage_spirv_data[i], shader_spec_constants, shader->spirv_specializations.write[i]);
+
+			// Shader module creation is deferred to the pipeline creation once the specialization constants are known.
+			shader_stage.module = VK_NULL_HANDLE;
+		} else {
+			// Specialization constant patching is not required, create shader module as normal.
+			VkShaderModuleCreateInfo shader_module_create_info;
+			shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+			shader_module_create_info.pNext = nullptr;
+			shader_module_create_info.flags = 0;
+			shader_module_create_info.codeSize = stage_spirv_data[i].size();
+			const uint8_t *r = stage_spirv_data[i].ptr();
+
+			shader_module_create_info.pCode = (const uint32_t *)r;
+
+			VkShaderModule module;
+			VkResult res = vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module);
+			if (res) {
+				success = false;
+				error_text = "Error (" + itos(res) + ") creating shader module for stage: " + String(shader_stage_names[stage_type[i]]);
+				break;
+			}
+
+			shader_stage.module = module;
+		}
 
 		shader->pipeline_stages.push_back(shader_stage);
 	}
@@ -6457,51 +6523,65 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	Vector<VkSpecializationInfo> specialization_info;
 	Vector<Vector<VkSpecializationMapEntry>> specialization_map_entries;
 	Vector<uint32_t> specialization_constant_data;
+	LocalVector<VkShaderModule> temporary_shader_modules;
 
 	if (shader->specialization_constants.size()) {
-		specialization_constant_data.resize(shader->specialization_constants.size());
-		uint32_t *data_ptr = specialization_constant_data.ptrw();
-		specialization_info.resize(pipeline_stages.size());
-		specialization_map_entries.resize(pipeline_stages.size());
-		for (int i = 0; i < shader->specialization_constants.size(); i++) {
-			// See if overridden.
-			const Shader::SpecializationConstant &sc = shader->specialization_constants[i];
-			data_ptr[i] = sc.constant.int_value; // Just copy the 32 bits.
-
-			for (int j = 0; j < p_specialization_constants.size(); j++) {
-				const PipelineSpecializationConstant &psc = p_specialization_constants[j];
-				if (psc.constant_id == sc.constant.constant_id) {
-					ERR_FAIL_COND_V_MSG(psc.type != sc.constant.type, RID(), "Specialization constant provided for id (" + itos(sc.constant.constant_id) + ") is of the wrong type.");
-					data_ptr[i] = psc.int_value;
-					break;
+		if (shader->spirv_specializations.size()) {
+			// We don't trust the driver to handle specialization constants correctly, so we patch them in ourselves into the SPIR-V and create the shader module.
+			for (int i = 0; i < pipeline_stages.size(); i++) {
+				if (pipeline_stages[i].module == VK_NULL_HANDLE) {
+					VkShaderModule patched_shader_module = _create_patched_shader_module(shader->spirv_specializations[i], shader->specialization_constants, p_specialization_constants);
+					ERR_FAIL_COND_V_MSG(patched_shader_module == VK_NULL_HANDLE, RID(), "Unable to create patched shader module for shader '" + shader->name + "'.");
+					pipeline_stages.write[i].module = patched_shader_module;
+					temporary_shader_modules.push_back(patched_shader_module);
 				}
 			}
+		} else {
+			// Use specialization constants as intended.
+			specialization_constant_data.resize(shader->specialization_constants.size());
+			uint32_t *data_ptr = specialization_constant_data.ptrw();
+			specialization_info.resize(pipeline_stages.size());
+			specialization_map_entries.resize(pipeline_stages.size());
+			for (int i = 0; i < shader->specialization_constants.size(); i++) {
+				// See if overridden.
+				const Shader::SpecializationConstant &sc = shader->specialization_constants[i];
+				data_ptr[i] = sc.constant.int_value; // Just copy the 32 bits.
 
-			VkSpecializationMapEntry entry;
+				for (int j = 0; j < p_specialization_constants.size(); j++) {
+					const PipelineSpecializationConstant &psc = p_specialization_constants[j];
+					if (psc.constant_id == sc.constant.constant_id) {
+						ERR_FAIL_COND_V_MSG(psc.type != sc.constant.type, RID(), "Specialization constant provided for id (" + itos(sc.constant.constant_id) + ") is of the wrong type.");
+						data_ptr[i] = psc.int_value;
+						break;
+					}
+				}
 
-			entry.constantID = sc.constant.constant_id;
-			entry.offset = i * sizeof(uint32_t);
-			entry.size = sizeof(uint32_t);
+				VkSpecializationMapEntry entry;
 
-			for (int j = 0; j < SHADER_STAGE_MAX; j++) {
-				if (sc.stage_flags & (1 << j)) {
-					VkShaderStageFlagBits stage = shader_stage_masks[j];
-					for (int k = 0; k < pipeline_stages.size(); k++) {
-						if (pipeline_stages[k].stage == stage) {
-							specialization_map_entries.write[k].push_back(entry);
+				entry.constantID = sc.constant.constant_id;
+				entry.offset = i * sizeof(uint32_t);
+				entry.size = sizeof(uint32_t);
+
+				for (int j = 0; j < SHADER_STAGE_MAX; j++) {
+					if (sc.stage_flags & (1 << j)) {
+						VkShaderStageFlagBits stage = shader_stage_masks[j];
+						for (int k = 0; k < pipeline_stages.size(); k++) {
+							if (pipeline_stages[k].stage == stage) {
+								specialization_map_entries.write[k].push_back(entry);
+							}
 						}
 					}
 				}
 			}
-		}
 
-		for (int i = 0; i < pipeline_stages.size(); i++) {
-			if (specialization_map_entries[i].size()) {
-				specialization_info.write[i].dataSize = specialization_constant_data.size() * sizeof(uint32_t);
-				specialization_info.write[i].pData = data_ptr;
-				specialization_info.write[i].mapEntryCount = specialization_map_entries[i].size();
-				specialization_info.write[i].pMapEntries = specialization_map_entries[i].ptr();
-				pipeline_stages.write[i].pSpecializationInfo = specialization_info.ptr() + i;
+			for (int i = 0; i < pipeline_stages.size(); i++) {
+				if (specialization_map_entries[i].size()) {
+					specialization_info.write[i].dataSize = specialization_constant_data.size() * sizeof(uint32_t);
+					specialization_info.write[i].pData = data_ptr;
+					specialization_info.write[i].mapEntryCount = specialization_map_entries[i].size();
+					specialization_info.write[i].pMapEntries = specialization_map_entries[i].ptr();
+					pipeline_stages.write[i].pSpecializationInfo = specialization_info.ptr() + i;
+				}
 			}
 		}
 	}
@@ -6531,6 +6611,10 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 	if (pipelines_cache.cache_object != VK_NULL_HANDLE) {
 		_update_pipeline_cache();
+	}
+
+	for (uint32_t i = 0; i < temporary_shader_modules.size(); i++) {
+		vkDestroyShaderModule(device, temporary_shader_modules[i], nullptr);
 	}
 
 	pipeline.set_formats = shader->set_formats;
@@ -6609,39 +6693,49 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 	VkSpecializationInfo specialization_info;
 	Vector<VkSpecializationMapEntry> specialization_map_entries;
 	Vector<uint32_t> specialization_constant_data;
+	LocalVector<VkShaderModule> temporary_shader_modules;
 
 	if (shader->specialization_constants.size()) {
-		specialization_constant_data.resize(shader->specialization_constants.size());
-		uint32_t *data_ptr = specialization_constant_data.ptrw();
-		for (int i = 0; i < shader->specialization_constants.size(); i++) {
-			// See if overridden.
-			const Shader::SpecializationConstant &sc = shader->specialization_constants[i];
-			data_ptr[i] = sc.constant.int_value; // Just copy the 32 bits.
+		if (shader->spirv_specializations.size()) {
+			// We don't trust the driver to handle specialization constants correctly, so we patch them in ourselves into the SPIR-V and create the shader module.
+			DEV_ASSERT(compute_pipeline_create_info.stage.module == VK_NULL_HANDLE);
+			VkShaderModule patched_shader_module = _create_patched_shader_module(shader->spirv_specializations[0], shader->specialization_constants, p_specialization_constants);
+			ERR_FAIL_COND_V_MSG(patched_shader_module == VK_NULL_HANDLE, RID(), "Unable to create patched shader module for shader '" + shader->name + "'.");
+			compute_pipeline_create_info.stage.module = patched_shader_module;
+			temporary_shader_modules.push_back(patched_shader_module);
+		} else {
+			specialization_constant_data.resize(shader->specialization_constants.size());
+			uint32_t *data_ptr = specialization_constant_data.ptrw();
+			for (int i = 0; i < shader->specialization_constants.size(); i++) {
+				// See if overridden.
+				const Shader::SpecializationConstant &sc = shader->specialization_constants[i];
+				data_ptr[i] = sc.constant.int_value; // Just copy the 32 bits.
 
-			for (int j = 0; j < p_specialization_constants.size(); j++) {
-				const PipelineSpecializationConstant &psc = p_specialization_constants[j];
-				if (psc.constant_id == sc.constant.constant_id) {
-					ERR_FAIL_COND_V_MSG(psc.type != sc.constant.type, RID(), "Specialization constant provided for id (" + itos(sc.constant.constant_id) + ") is of the wrong type.");
-					data_ptr[i] = psc.int_value;
-					break;
+				for (int j = 0; j < p_specialization_constants.size(); j++) {
+					const PipelineSpecializationConstant &psc = p_specialization_constants[j];
+					if (psc.constant_id == sc.constant.constant_id) {
+						ERR_FAIL_COND_V_MSG(psc.type != sc.constant.type, RID(), "Specialization constant provided for id (" + itos(sc.constant.constant_id) + ") is of the wrong type.");
+						data_ptr[i] = psc.int_value;
+						break;
+					}
 				}
+
+				VkSpecializationMapEntry entry;
+
+				entry.constantID = sc.constant.constant_id;
+				entry.offset = i * sizeof(uint32_t);
+				entry.size = sizeof(uint32_t);
+
+				specialization_map_entries.push_back(entry);
 			}
 
-			VkSpecializationMapEntry entry;
+			specialization_info.dataSize = specialization_constant_data.size() * sizeof(uint32_t);
+			specialization_info.pData = data_ptr;
+			specialization_info.mapEntryCount = specialization_map_entries.size();
+			specialization_info.pMapEntries = specialization_map_entries.ptr();
 
-			entry.constantID = sc.constant.constant_id;
-			entry.offset = i * sizeof(uint32_t);
-			entry.size = sizeof(uint32_t);
-
-			specialization_map_entries.push_back(entry);
+			compute_pipeline_create_info.stage.pSpecializationInfo = &specialization_info;
 		}
-
-		specialization_info.dataSize = specialization_constant_data.size() * sizeof(uint32_t);
-		specialization_info.pData = data_ptr;
-		specialization_info.mapEntryCount = specialization_map_entries.size();
-		specialization_info.pMapEntries = specialization_map_entries.ptr();
-
-		compute_pipeline_create_info.stage.pSpecializationInfo = &specialization_info;
 	}
 
 	ComputePipeline pipeline;
@@ -6650,6 +6744,10 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 
 	if (pipelines_cache.cache_object != VK_NULL_HANDLE) {
 		_update_pipeline_cache();
+	}
+
+	for (uint32_t i = 0; i < temporary_shader_modules.size(); i++) {
+		vkDestroyShaderModule(device, temporary_shader_modules[i], nullptr);
 	}
 
 	pipeline.set_formats = shader->set_formats;
@@ -9167,6 +9265,14 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	if (err != VK_SUCCESS) {
 		WARN_PRINT("vkCreatePipelinecache failed with error " + itos(err) + ".");
 	}
+
+	// SPIR-V specialization constant patching is a workaround for drivers that don't implement SCs correctly. Instead of relying on the native pipeline specialization, it'll patch the
+	// SPIR-V at the binary level with the values specific to the pipeline, create the shader module, create the pipeline and destroy the shader module afterwards. This should have no
+	// noticeable improvements in hardware that implements SCs as intended and should therefore be opt-in if possible as it'll increase pipeline creation times by a small margin.
+
+	// Some Adreno hardware does not seem to implement specialization constants correctly. See <https://github.com/godotengine/godot/pull/83018>.
+	bool is_qualcomm = props.vendorID == 0x5143;
+	patch_spirv_spec_constants = is_qualcomm;
 }
 
 void RenderingDeviceVulkan::_load_pipeline_cache() {

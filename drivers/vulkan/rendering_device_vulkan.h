@@ -643,13 +643,17 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<uint32_t> set_formats;
 		Vector<VkPipelineShaderStageCreateInfo> pipeline_stages;
 		Vector<SpecializationConstant> specialization_constants;
+		Vector<SpirvSpecializationData> spirv_specializations;
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 		String name; // Used for debug.
 	};
 
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
+	void _shader_specialization_constants_to_pipeline_constants(const Vector<Shader::SpecializationConstant> &p_shader_specialization_constants, LocalVector<PipelineSpecializationConstant> &p_pipeline_specialization_constants);
+	VkShaderModule _create_patched_shader_module(const SpirvSpecializationData &p_spirv_spec_data, const Vector<Shader::SpecializationConstant> &p_shader_specialization_constants, const Vector<PipelineSpecializationConstant> &p_pipeline_specialization_constants);
 
 	RID_Owner<Shader, true> shader_owner;
+	bool patch_spirv_spec_constants = false;
 
 	/******************/
 	/**** UNIFORMS ****/

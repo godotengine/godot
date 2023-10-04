@@ -712,6 +712,165 @@ Error RenderingDevice::_reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spir
 	return OK;
 }
 
+void RenderingDevice::_create_specialization_data_spirv(const Vector<uint8_t> &p_spirv_data, const Vector<PipelineSpecializationConstant> &p_shader_specialization_constants, SpirvSpecializationData &p_spirv_spec_data) {
+	const uint32_t *spirv_words = reinterpret_cast<const uint32_t *>(p_spirv_data.ptr());
+	const uint32_t spirv_words_count = p_spirv_data.size() / sizeof(uint32_t);
+	p_spirv_spec_data.spirv_words.reserve(spirv_words_count);
+
+	// Initialize locations to be empty by default.
+	p_spirv_spec_data.constant_locations.resize(p_shader_specialization_constants.size());
+	for (int j = 0; j < p_shader_specialization_constants.size(); j++) {
+		p_spirv_spec_data.constant_locations[j] = 0;
+	}
+
+	// The first segment of the SPIR-V is ignored and copied as-is.
+	uint32_t word_index = 0;
+	while (word_index < SPIRV_STARTING_WORD_INDEX) {
+		p_spirv_spec_data.spirv_words.push_back(spirv_words[word_index]);
+		word_index++;
+	}
+
+	// Parse the SPIR-V data and replace any spec constants that are found with their constant operators instead. We store the indices
+	// of any instructions we've patched so we can compare them later against the decorators and find out what binding they correspond to.
+	LocalVector<uint32_t> patched_spec_constant_indices;
+	LocalVector<uint32_t> decorator_target_ids;
+	LocalVector<uint32_t> decorator_spec_indices;
+	const uint32_t word_count_mask = 0xFFFF0000U;
+	const uint32_t spec_constants_size = p_shader_specialization_constants.size();
+	patched_spec_constant_indices.reserve(spec_constants_size);
+	decorator_target_ids.reserve(spec_constants_size);
+	decorator_spec_indices.reserve(spec_constants_size);
+	while (word_index < spirv_words_count) {
+		uint32_t word = spirv_words[word_index];
+		const uint32_t word_op = word & 0xFFFFU;
+		const uint32_t word_count = (word >> 16) & 0xFFFFU;
+		switch (word_op) {
+			case SpvOpSpecConstantTrue: {
+				word = SpvOpConstantTrue | (word & word_count_mask);
+				patched_spec_constant_indices.push_back(p_spirv_spec_data.spirv_words.size());
+			} break;
+			case SpvOpSpecConstantFalse: {
+				word = SpvOpConstantFalse | (word & word_count_mask);
+				patched_spec_constant_indices.push_back(p_spirv_spec_data.spirv_words.size());
+			} break;
+			case SpvOpSpecConstant: {
+				DEV_ASSERT(word_count == 4 && "Constants with more than 32-bits are unsupported as they're not used by Godot.");
+				word = SpvOpConstant | (word & word_count_mask);
+				patched_spec_constant_indices.push_back(p_spirv_spec_data.spirv_words.size());
+			} break;
+			case SpvOpSpecConstantComposite: {
+				DEV_ASSERT(false && "Currently unsupported as they're not used by Godot.");
+			} break;
+			case SpvOpDecorate: {
+				DEV_ASSERT((word_count >= 3) && ((word_index + 2) < spirv_words_count));
+				const uint32_t decoration = spirv_words[word_index + 2];
+				if (decoration == SpvDecorationSpecId) {
+					DEV_ASSERT((word_count >= 4) && ((word_index + 3) < spirv_words_count));
+					const uint32_t constant_id = spirv_words[word_index + 3];
+					for (uint32_t j = 0; j < spec_constants_size; j++) {
+						const PipelineSpecializationConstant &sc = p_shader_specialization_constants[j];
+						if (sc.constant_id == constant_id) {
+							// The decoration matches a spec constant from the reflection. We store the target and constant Ids.
+							const uint32_t target_id = spirv_words[word_index + 1];
+							decorator_target_ids.push_back(target_id);
+							decorator_spec_indices.push_back(j);
+							break;
+						}
+					}
+
+					word_index += word_count;
+					continue;
+				}
+			} break;
+			default: {
+				// Just copy the words in all other cases.
+			} break;
+		};
+
+		p_spirv_spec_data.spirv_words.push_back(word);
+
+		for (uint32_t j = 1; j < word_count; j++) {
+			p_spirv_spec_data.spirv_words.push_back(spirv_words[word_index + j]);
+		}
+
+		word_index += word_count;
+	}
+
+	// We use the decorator data to match the spec constants we patched out. We do this after the entire SPIR-V has been parsed
+	// in case the order was the reverse of what is usually expected.
+	for (uint32_t j = 0; j < patched_spec_constant_indices.size(); j++) {
+		const uint32_t patched_word_index = patched_spec_constant_indices[j];
+		DEV_ASSERT((patched_word_index + 2) < p_spirv_spec_data.spirv_words.size());
+
+		const uint32_t result_id = p_spirv_spec_data.spirv_words[patched_word_index + 2];
+		for (uint32_t k = 0; k < decorator_target_ids.size(); k++) {
+			if (decorator_target_ids[k] == result_id) {
+				const uint32_t spec_index = decorator_spec_indices[k];
+				p_spirv_spec_data.constant_locations[spec_index] = patched_word_index;
+
+				// Verify the specialization constant from the reflection matches the type of constant found in the SPIR-V.
+				switch (p_shader_specialization_constants[spec_index].type) {
+					case PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL: {
+						DEV_ASSERT(((p_spirv_spec_data.spirv_words[patched_word_index] & 0xFFFFU) == SpvOpConstantTrue || (p_spirv_spec_data.spirv_words[patched_word_index] & 0xFFFFU) == SpvOpConstantFalse) && "Operand must match the specialization constant boolean type.");
+					} break;
+					case PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT:
+					case PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT: {
+						DEV_ASSERT((p_spirv_spec_data.spirv_words[patched_word_index] & 0xFFFFU) == SpvOpConstant && "Operand must match the specialization constant type.");
+					} break;
+					default: {
+						DEV_ASSERT(false && "Unknown specialization constant type.");
+					} break;
+				}
+
+				break;
+			}
+		}
+	}
+}
+
+void RenderingDevice::_specialize_spirv(const SpirvSpecializationData &p_spirv_spec_data, const Vector<PipelineSpecializationConstant> &p_shader_specialization_constants, const Vector<PipelineSpecializationConstant> &p_pipeline_specialization_constants, LocalVector<uint32_t> &r_patched_spirv_words) {
+	r_patched_spirv_words.resize(p_spirv_spec_data.spirv_words.size());
+	memcpy(r_patched_spirv_words.ptr(), p_spirv_spec_data.spirv_words.ptr(), p_spirv_spec_data.spirv_words.size() * sizeof(uint32_t));
+
+	for (int i = 0; i < p_shader_specialization_constants.size(); i++) {
+		if (p_spirv_spec_data.constant_locations[i] == 0) {
+			// The constant was not found in the specialization so we ignore it.
+			continue;
+		}
+
+		const PipelineSpecializationConstant &sc = p_shader_specialization_constants[i];
+		uint32_t sc_value = sc.int_value;
+
+		// See if the pipeline overrides the SC's value.
+		for (int j = 0; j < p_pipeline_specialization_constants.size(); j++) {
+			const PipelineSpecializationConstant &psc = p_pipeline_specialization_constants[j];
+			if (psc.constant_id == sc.constant_id) {
+				DEV_ASSERT(psc.type == sc.type && "Shader and pipeline specialization constant types must match.");
+				sc_value = psc.int_value;
+				break;
+			}
+		}
+
+		const uint32_t word_index = p_spirv_spec_data.constant_locations[i];
+		DEV_ASSERT(word_index < p_spirv_spec_data.spirv_words.size());
+
+		switch (sc.type) {
+			case PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL: {
+				// Change the operation in the shader.
+				uint32_t &dst_word = r_patched_spirv_words[word_index];
+				const SpvOp new_op = sc_value ? SpvOpConstantTrue : SpvOpConstantFalse;
+				dst_word = new_op | (dst_word & 0xFFFF0000);
+			} break;
+			case PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT:
+			case PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT: {
+				// Change the 32-bit value in the shader.
+				uint32_t &dst_value = r_patched_spirv_words[word_index + 3];
+				dst_value = sc_value;
+			} break;
+		};
+	}
+}
+
 void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create", "format", "view", "data"), &RenderingDevice::_texture_create, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);

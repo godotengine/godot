@@ -1400,7 +1400,18 @@ protected:
 		Vector<SpecializationConstant> specialization_constants;
 	};
 
+	struct SpirvSpecializationData {
+		LocalVector<uint32_t> spirv_words;
+		LocalVector<uint32_t> constant_locations;
+	};
+
+	enum {
+		SPIRV_STARTING_WORD_INDEX = 5
+	};
+
 	Error _reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, SpirvReflectionData &r_reflection_data);
+	void _create_specialization_data_spirv(const Vector<uint8_t> &p_spirv_data, const Vector<PipelineSpecializationConstant> &p_shader_specialization_constants, SpirvSpecializationData &p_spirv_spec_data);
+	void _specialize_spirv(const SpirvSpecializationData &p_spirv_spec_data, const Vector<PipelineSpecializationConstant> &p_shader_specialization_constants, const Vector<PipelineSpecializationConstant> &p_pipeline_specialization_constants, LocalVector<uint32_t> &r_patched_spirv_words);
 
 #ifndef DISABLE_DEPRECATED
 	BitField<BarrierMask> _convert_barrier_mask_81356(BitField<BarrierMask> p_old_barrier);
