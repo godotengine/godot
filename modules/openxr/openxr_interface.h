@@ -33,6 +33,7 @@
 
 #include "action_map/openxr_action_map.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
+#include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
 #include "servers/xr/xr_interface.h"
@@ -55,6 +56,7 @@ private:
 	Transform3D head_transform;
 	Vector3 head_linear_velocity;
 	Vector3 head_angular_velocity;
+	XRPose::TrackingConfidence head_confidence;
 	Transform3D transform_for_view[2]; // We currently assume 2, but could be 4 for VARJO which we do not support yet
 
 	void _load_action_map();
@@ -96,6 +98,8 @@ private:
 	void free_interaction_profiles();
 
 	void _set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye);
+
+	void handle_hand_tracking(const String &p_path, OpenXRHandTrackingExtension::HandTrackedHands p_hand);
 
 protected:
 	static void _bind_methods();

@@ -34,8 +34,6 @@
 #include "core/io/resource_saver.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-#include "extensions/openxr_hand_tracking_extension.h"
-
 #include "extensions/openxr_eye_gaze_interaction.h"
 
 void OpenXRInterface::_bind_methods() {
@@ -909,6 +907,24 @@ RID OpenXRInterface::get_depth_texture() {
 	}
 }
 
+void OpenXRInterface::handle_hand_tracking(const String &p_path, OpenXRHandTrackingExtension::HandTrackedHands p_hand) {
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		OpenXRInterface::Tracker *tracker = find_tracker(p_path);
+		if (tracker && tracker->positional_tracker.is_valid()) {
+			// TODO add in confidence! Requires PR #82715
+
+			Transform3D transform;
+			transform.basis = Basis(hand_tracking_ext->get_hand_joint_rotation(p_hand, XR_HAND_JOINT_PALM_EXT));
+			transform.origin = hand_tracking_ext->get_hand_joint_position(p_hand, XR_HAND_JOINT_PALM_EXT);
+			Vector3 linear_velocity = hand_tracking_ext->get_hand_joint_linear_velocity(p_hand, XR_HAND_JOINT_PALM_EXT);
+			Vector3 angular_velocity = hand_tracking_ext->get_hand_joint_angular_velocity(p_hand, XR_HAND_JOINT_PALM_EXT);
+
+			tracker->positional_tracker->set_pose("skeleton", transform, linear_velocity, angular_velocity, XRPose::XR_TRACKING_CONFIDENCE_HIGH);
+		}
+	}
+}
+
 void OpenXRInterface::process() {
 	if (openxr_api) {
 		// do our normal process
@@ -916,8 +932,8 @@ void OpenXRInterface::process() {
 			Transform3D t;
 			Vector3 linear_velocity;
 			Vector3 angular_velocity;
-			XRPose::TrackingConfidence confidence = openxr_api->get_head_center(t, linear_velocity, angular_velocity);
-			if (confidence != XRPose::XR_TRACKING_CONFIDENCE_NONE) {
+			head_confidence = openxr_api->get_head_center(t, linear_velocity, angular_velocity);
+			if (head_confidence != XRPose::XR_TRACKING_CONFIDENCE_NONE) {
 				// Only update our transform if we have one to update it with
 				// note that poses are stored without world scale and reference frame applied!
 				head_transform = t;
@@ -939,14 +955,14 @@ void OpenXRInterface::process() {
 				handle_tracker(trackers[i]);
 			}
 		}
+
+		// Handle hand tracking
+		handle_hand_tracking("/user/hand/left", OpenXRHandTrackingExtension::OPENXR_TRACKED_LEFT_HAND);
+		handle_hand_tracking("/user/hand/right", OpenXRHandTrackingExtension::OPENXR_TRACKED_RIGHT_HAND);
 	}
 
 	if (head.is_valid()) {
-		// TODO figure out how to get our velocities
-
-		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity);
-
-		// TODO set confidence on pose once we support tracking this..
+		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity, head_confidence);
 	}
 }
 
@@ -1143,7 +1159,7 @@ void OpenXRInterface::set_motion_range(const Hand p_hand, const HandMotionRange 
 				break;
 		}
 
-		hand_tracking_ext->set_motion_range(uint32_t(p_hand), xr_motion_range);
+		hand_tracking_ext->set_motion_range(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), xr_motion_range);
 	}
 }
 
@@ -1152,7 +1168,7 @@ OpenXRInterface::HandMotionRange OpenXRInterface::get_motion_range(const Hand p_
 
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
-		XrHandJointsMotionRangeEXT xr_motion_range = hand_tracking_ext->get_motion_range(uint32_t(p_hand));
+		XrHandJointsMotionRangeEXT xr_motion_range = hand_tracking_ext->get_motion_range(OpenXRHandTrackingExtension::HandTrackedHands(p_hand));
 
 		switch (xr_motion_range) {
 			case XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT:
@@ -1170,7 +1186,7 @@ OpenXRInterface::HandMotionRange OpenXRInterface::get_motion_range(const Hand p_
 Quaternion OpenXRInterface::get_hand_joint_rotation(Hand p_hand, HandJoints p_joint) const {
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
-		return hand_tracking_ext->get_hand_joint_rotation(uint32_t(p_hand), XrHandJointEXT(p_joint));
+		return hand_tracking_ext->get_hand_joint_rotation(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
 	}
 
 	return Quaternion();
@@ -1179,7 +1195,7 @@ Quaternion OpenXRInterface::get_hand_joint_rotation(Hand p_hand, HandJoints p_jo
 Vector3 OpenXRInterface::get_hand_joint_position(Hand p_hand, HandJoints p_joint) const {
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
-		return hand_tracking_ext->get_hand_joint_position(uint32_t(p_hand), XrHandJointEXT(p_joint));
+		return hand_tracking_ext->get_hand_joint_position(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
 	}
 
 	return Vector3();
@@ -1188,7 +1204,7 @@ Vector3 OpenXRInterface::get_hand_joint_position(Hand p_hand, HandJoints p_joint
 float OpenXRInterface::get_hand_joint_radius(Hand p_hand, HandJoints p_joint) const {
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
-		return hand_tracking_ext->get_hand_joint_radius(uint32_t(p_hand), XrHandJointEXT(p_joint));
+		return hand_tracking_ext->get_hand_joint_radius(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
 	}
 
 	return 0.0;
@@ -1197,7 +1213,7 @@ float OpenXRInterface::get_hand_joint_radius(Hand p_hand, HandJoints p_joint) co
 Vector3 OpenXRInterface::get_hand_joint_linear_velocity(Hand p_hand, HandJoints p_joint) const {
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
-		return hand_tracking_ext->get_hand_joint_linear_velocity(uint32_t(p_hand), XrHandJointEXT(p_joint));
+		return hand_tracking_ext->get_hand_joint_linear_velocity(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
 	}
 
 	return Vector3();
@@ -1206,7 +1222,7 @@ Vector3 OpenXRInterface::get_hand_joint_linear_velocity(Hand p_hand, HandJoints 
 Vector3 OpenXRInterface::get_hand_joint_angular_velocity(Hand p_hand, HandJoints p_joint) const {
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
-		return hand_tracking_ext->get_hand_joint_angular_velocity(uint32_t(p_hand), XrHandJointEXT(p_joint));
+		return hand_tracking_ext->get_hand_joint_angular_velocity(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
 	}
 
 	return Vector3();
