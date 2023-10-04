@@ -7,6 +7,8 @@ using System.ComponentModel;
 
 namespace Godot;
 
+#pragma warning disable CS1734 // XML comment on 'X' has a paramref tag for 'Y', but there is no parameter by that name.
+
 partial class AnimationNode
 {
     /// <inheritdoc cref="BlendInput(int, double, bool, bool, float, FilterAction, bool, bool)"/>
@@ -24,6 +26,44 @@ partial class AnimationNode
     }
 }
 
+partial class AnimationPlayer
+{
+    /// <inheritdoc cref="CallbackModeMethod"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public AnimationMethodCallMode MethodCallMode
+    {
+        get => (AnimationMethodCallMode)CallbackModeMethod;
+        set => CallbackModeMethod = (AnimationCallbackModeMethod)value;
+    }
+
+    /// <inheritdoc cref="Active"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool PlaybackActive
+    {
+        get => Active;
+        set => Active = value;
+    }
+
+    /// <inheritdoc cref="CallbackModeProcess"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public AnimationProcessCallback PlaybackProcessMode
+    {
+        get => (AnimationProcessCallback)CallbackModeProcess;
+        set => CallbackModeProcess = (AnimationCallbackModeProcess)value;
+    }
+}
+
+partial class AnimationTree
+{
+    /// <inheritdoc cref="CallbackModeProcess"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public AnimationProcessCallback ProcessCallback
+    {
+        get => (AnimationProcessCallback)CallbackModeProcess;
+        set => CallbackModeProcess = (AnimationCallbackModeProcess)value;
+    }
+}
+
 partial class CodeEdit
 {
     /// <inheritdoc cref="AddCodeCompletionOption(CodeCompletionKind, string, string, Nullable{Color}, Resource, Nullable{Variant}, int)"/>
@@ -36,11 +76,56 @@ partial class CodeEdit
 
 partial class Geometry3D
 {
-    /// <inheritdoc cref="SegmentIntersectsConvex(Vector3, Vector3, Collections.Array{Plane})"/>
+    /// <inheritdoc cref="SegmentIntersectsConvex(Vector3, Vector3, Godot.Collections.Array{Plane})"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static Vector3[] SegmentIntersectsConvex(Vector3 from, Vector3 to, Godot.Collections.Array planes)
     {
         return SegmentIntersectsConvex(from, to, new Godot.Collections.Array<Plane>(planes));
+    }
+}
+
+partial class GraphEdit
+{
+    /// <inheritdoc cref="ShowArrangeButton"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ArrangeNodesButtonHidden
+    {
+        get => !ShowArrangeButton;
+        set => ShowArrangeButton = !value;
+    }
+
+    /// <inheritdoc cref="GetMenuHBox()"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public HBoxContainer GetZoomHBox()
+    {
+        return GetMenuHBox();
+    }
+
+    /// <inheritdoc cref="SnappingDistance"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int SnapDistance
+    {
+        get => SnappingDistance;
+        set => SnappingDistance = value;
+    }
+
+    /// <inheritdoc cref="SnappingEnabled"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool UseSnap
+    {
+        get => SnappingEnabled;
+        set => SnappingEnabled = value;
+    }
+}
+
+partial class GraphNode
+{
+    /// <inheritdoc cref="DeleteRequest"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public event Action CloseRequest
+    {
+        add => DeleteRequest += value;
+        remove => DeleteRequest -= value;
     }
 }
 
@@ -108,6 +193,19 @@ partial class SurfaceTool
     }
 }
 
+partial class TileMap
+{
+    /// <summary>
+    /// The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int CellQuadrantSize
+    {
+        get => RenderingQuadrantSize;
+        set => RenderingQuadrantSize = value;
+    }
+}
+
 partial class Tree
 {
     /// <inheritdoc cref="EditSelected(bool)"/>
@@ -127,3 +225,5 @@ partial class UndoRedo
         CreateAction(name, mergeMode, backwardUndoOps: false);
     }
 }
+
+#pragma warning restore CS1734
