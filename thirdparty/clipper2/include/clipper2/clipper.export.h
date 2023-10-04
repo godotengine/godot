@@ -57,7 +57,7 @@ typedef struct CPolyPath64 {
   CPath64       polygon;
   uint32_t      is_hole;
   uint32_t      child_count;
-  CPolyPath64*  childs;
+  CPolyPath64*  children;
 }
 CPolyTree64;
 
@@ -65,7 +65,7 @@ typedef struct CPolyPathD {
   CPathD        polygon;
   uint32_t      is_hole;
   uint32_t      child_count;
-  CPolyPathD*   childs;
+  CPolyPathD*   children;
 }
 CPolyTreeD;
 
@@ -680,10 +680,10 @@ inline void InitCPolyPath64(CPolyTree64* cpt,
   cpt->is_hole = is_hole;
   size_t child_cnt = pp->Count();
   cpt->child_count = static_cast<uint32_t>(child_cnt);
-  cpt->childs = nullptr;
+  cpt->children = nullptr;
   if (!child_cnt) return;
-  cpt->childs = new CPolyPath64[child_cnt];
-  CPolyPath64* child = cpt->childs;
+  cpt->children = new CPolyPath64[child_cnt];
+  CPolyPath64* child = cpt->children;
   for (const std::unique_ptr <PolyPath64>& pp_child : *pp)
     InitCPolyPath64(child++, !is_hole, pp_child);  
 }
@@ -694,11 +694,11 @@ inline CPolyTree64* CreateCPolyTree64(const PolyTree64& pt)
   result->polygon = nullptr;
   result->is_hole = false;
   size_t child_cnt = pt.Count();
-  result->childs = nullptr;
+  result->children = nullptr;
   result->child_count = static_cast<uint32_t>(child_cnt);
   if (!child_cnt) return result;
-  result->childs = new CPolyPath64[child_cnt];
-  CPolyPath64* child = result->childs;
+  result->children = new CPolyPath64[child_cnt];
+  CPolyPath64* child = result->children;
   for (const std::unique_ptr <PolyPath64>& pp : pt)
     InitCPolyPath64(child++, true, pp);
   return result;
@@ -707,10 +707,10 @@ inline CPolyTree64* CreateCPolyTree64(const PolyTree64& pt)
 inline void DisposeCPolyPath64(CPolyPath64* cpp) 
 {
   if (!cpp->child_count) return;
-  CPolyPath64* child = cpp->childs;
+  CPolyPath64* child = cpp->children;
   for (size_t i = 0; i < cpp->child_count; ++i)
     DisposeCPolyPath64(child);
-  delete[] cpp->childs;
+  delete[] cpp->children;
 }
 
 EXTERN_DLL_EXPORT void DisposeExportedCPolyTree64(CPolyTree64*& cpt)
@@ -728,10 +728,10 @@ inline void InitCPolyPathD(CPolyTreeD* cpt,
   cpt->is_hole = is_hole;
   size_t child_cnt = pp->Count();
   cpt->child_count = static_cast<uint32_t>(child_cnt);
-  cpt->childs = nullptr;
+  cpt->children = nullptr;
   if (!child_cnt) return;
-  cpt->childs = new CPolyPathD[child_cnt];
-  CPolyPathD* child = cpt->childs;
+  cpt->children = new CPolyPathD[child_cnt];
+  CPolyPathD* child = cpt->children;
   for (const std::unique_ptr <PolyPath64>& pp_child : *pp)
     InitCPolyPathD(child++, !is_hole, pp_child, scale);
 }
@@ -743,10 +743,10 @@ inline CPolyTreeD* CreateCPolyTreeD(const PolyTree64& pt, double scale)
   result->is_hole = false;
   size_t child_cnt = pt.Count();
   result->child_count = static_cast<uint32_t>(child_cnt);
-  result->childs = nullptr;
+  result->children = nullptr;
   if (!child_cnt) return result;
-  result->childs = new CPolyPathD[child_cnt];
-  CPolyPathD* child = result->childs;
+  result->children = new CPolyPathD[child_cnt];
+  CPolyPathD* child = result->children;
   for (const std::unique_ptr <PolyPath64>& pp : pt)
     InitCPolyPathD(child++, true, pp, scale);
   return result;
@@ -755,10 +755,10 @@ inline CPolyTreeD* CreateCPolyTreeD(const PolyTree64& pt, double scale)
 inline void DisposeCPolyPathD(CPolyPathD* cpp)
 {
   if (!cpp->child_count) return;
-  CPolyPathD* child = cpp->childs;
+  CPolyPathD* child = cpp->children;
   for (size_t i = 0; i < cpp->child_count; ++i)
     DisposeCPolyPathD(child++);
-  delete[] cpp->childs;
+  delete[] cpp->children;
 }
 
 EXTERN_DLL_EXPORT void DisposeExportedCPolyTreeD(CPolyTreeD*& cpt)

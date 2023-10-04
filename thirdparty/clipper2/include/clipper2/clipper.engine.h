@@ -321,51 +321,51 @@ namespace Clipper2Lib {
 
 	class PolyPath64 : public PolyPath {
 	private:
-		PolyPath64List childs_;
+		PolyPath64List children_;
 		Path64 polygon_;
 	public:
 		explicit PolyPath64(PolyPath64* parent = nullptr) : PolyPath(parent) {}
 
 		~PolyPath64() {
-			childs_.resize(0);
+			children_.resize(0);
 		}
 
 		const PolyPath64* operator [] (size_t index) const
 		{ 
-			return childs_[index].get(); 
+			return children_[index].get(); 
 		} 
 
 		const PolyPath64* Child(size_t index) const
 		{
-			return childs_[index].get();
+			return children_[index].get();
 		}
 
-		PolyPath64List::const_iterator begin() const { return childs_.cbegin(); }
-		PolyPath64List::const_iterator end() const { return childs_.cend(); }
+		PolyPath64List::const_iterator begin() const { return children_.cbegin(); }
+		PolyPath64List::const_iterator end() const { return children_.cend(); }
 
 		PolyPath64* AddChild(const Path64& path) override
 		{
 			auto p = std::make_unique<PolyPath64>(this);
-			auto* result = childs_.emplace_back(std::move(p)).get();
+			auto* result = children_.emplace_back(std::move(p)).get();
 			result->polygon_ = path;
 			return result;
 		}
 
 		void Clear() override
 		{
-			childs_.resize(0);
+			children_.resize(0);
 		}
 
 		size_t Count() const override
 		{
-			return childs_.size();
+			return children_.size();
 		}
 
 		const Path64& Polygon() const { return polygon_; };
 
 		double Area() const
 		{
-			return std::accumulate(childs_.cbegin(), childs_.cend(),
+			return std::accumulate(children_.cbegin(), children_.cend(),
 				Clipper2Lib::Area<int64_t>(polygon_),
 				[](double a, const auto& child) {return a + child->Area(); });
 		}
@@ -374,7 +374,7 @@ namespace Clipper2Lib {
 
 	class PolyPathD : public PolyPath {
 	private:
-		PolyPathDList childs_;
+		PolyPathDList children_;
 		double inv_scale_;
 		PathD polygon_;
 	public:
@@ -384,21 +384,21 @@ namespace Clipper2Lib {
 		}
 
 		~PolyPathD() {
-			childs_.resize(0);
+			children_.resize(0);
 		}
 
 		const PolyPathD* operator [] (size_t index) const
 		{ 
-			return childs_[index].get();
+			return children_[index].get();
 		}
 
 		const PolyPathD* Child(size_t index) const
 		{
-			return childs_[index].get();
+			return children_[index].get();
 		}
 
-		PolyPathDList::const_iterator begin() const { return childs_.cbegin(); }
-		PolyPathDList::const_iterator end() const { return childs_.cend(); }
+		PolyPathDList::const_iterator begin() const { return children_.cbegin(); }
+		PolyPathDList::const_iterator end() const { return children_.cend(); }
 
 		void SetInvScale(double value) { inv_scale_ = value; }
 		double InvScale() { return inv_scale_; }
@@ -406,26 +406,26 @@ namespace Clipper2Lib {
 		{
 			int error_code = 0;
 			auto p = std::make_unique<PolyPathD>(this);
-			PolyPathD* result = childs_.emplace_back(std::move(p)).get();
+			PolyPathD* result = children_.emplace_back(std::move(p)).get();
 			result->polygon_ = ScalePath<double, int64_t>(path, inv_scale_, error_code);
 			return result;
 		}
 
 		void Clear() override
 		{
-			childs_.resize(0);
+			children_.resize(0);
 		}
 
 		size_t Count() const override
 		{
-			return childs_.size();
+			return children_.size();
 		}
 
 		const PathD& Polygon() const { return polygon_; };
 
 		double Area() const
 		{
-			return std::accumulate(childs_.begin(), childs_.end(),
+			return std::accumulate(children_.begin(), children_.end(),
 				Clipper2Lib::Area<double>(polygon_),
 				[](double a, const auto& child) {return a + child->Area(); });
 		}

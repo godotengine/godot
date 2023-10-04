@@ -139,7 +139,7 @@ public:
     PolyNode();
     virtual ~PolyNode(){};
     Path Contour;
-    PolyNodes Childs;
+    PolyNodes Children;
     PolyNode* Parent;
     PolyNode* GetNext() const;
     bool IsHole() const;
@@ -147,7 +147,7 @@ public:
     int ChildCount() const;
 private:
     //PolyNode& operator =(PolyNode& other); 
-    unsigned Index; //node index in Parent.Childs
+    unsigned Index; //node index in Parent.Children
     bool m_IsOpen;
     JoinType m_jointype;
     EndType m_endtype;
