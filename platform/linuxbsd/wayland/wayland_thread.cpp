@@ -1525,18 +1525,22 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 		mm->set_position(pd.position);
 		mm->set_global_position(pd.position);
 
-		// FIXME: Stop doing this to calculate speed.
-		Input::get_singleton()->set_mouse_position(pd.position);
-		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+		Vector2i pos_delta = pd.position - old_pd.position;
 
 		if (old_pd.relative_motion_time != pd.relative_motion_time) {
+			uint32_t time_delta = pd.relative_motion_time - old_pd.relative_motion_time;
+
 			mm->set_relative(pd.relative_motion);
+			mm->set_velocity((Vector2)pos_delta / time_delta);
 		} else {
 			// The spec includes the possibility of having motion events without an
 			// associated relative motion event. If that's the case, fallback to a
 			// simple delta of the position. The captured mouse won't report the
 			// relative speed anymore though.
+			uint32_t time_delta = pd.motion_time - old_pd.motion_time;
+
 			mm->set_relative(pd.position - old_pd.position);
+			mm->set_velocity((Vector2)pos_delta / time_delta);
 		}
 
 		Ref<InputEventMessage> msg;
@@ -2445,6 +2449,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		mm->set_relative(td.position - old_td.position);
 
 		// FIXME: Stop doing this to calculate speed.
+		// FIXME2: It has been done, port this from the pointer logic once this works again.
 		Input::get_singleton()->set_mouse_position(td.position);
 		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
