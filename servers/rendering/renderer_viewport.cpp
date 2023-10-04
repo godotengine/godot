@@ -616,7 +616,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	}
 }
 
-void RendererViewport::draw_viewports() {
+void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	timestamp_vp_map.clear();
 
 	// get our xr interface in case we need it
@@ -799,11 +799,14 @@ void RendererViewport::draw_viewports() {
 	total_draw_calls_used = draw_calls_used;
 
 	RENDER_TIMESTAMP("< Render Viewports");
-	//this needs to be called to make screen swapping more efficient
-	RSG::rasterizer->prepare_for_blitting_render_targets();
 
-	for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {
-		RSG::rasterizer->blit_render_targets_to_screen(E.key, E.value.ptr(), E.value.size());
+	if (p_swap_buffers) {
+		//this needs to be called to make screen swapping more efficient
+		RSG::rasterizer->prepare_for_blitting_render_targets();
+
+		for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {
+			RSG::rasterizer->blit_render_targets_to_screen(E.key, E.value.ptr(), E.value.size());
+		}
 	}
 }
 
