@@ -35,7 +35,10 @@
 #include "lm_raster.glsl.gen.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/math/geometry_2d.h"
+#include "editor/editor_paths.h"
+#include "editor/editor_settings.h"
 #include "servers/rendering/rendering_device_binds.h"
 
 //uncomment this if you want to see textures from all the process saved
@@ -671,6 +674,131 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	return BAKE_OK;
 }
 
+Error LightmapperRD::_store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_index, const Size2i &p_atlas_size, const String &p_name) {
+	Vector<uint8_t> data = p_rd->texture_get_data(p_atlas_tex, p_index);
+	Ref<Image> img = Image::create_from_data(p_atlas_size.width, p_atlas_size.height, false, Image::FORMAT_RGBAH, data);
+	img->convert(Image::FORMAT_RGBF);
+	Vector<uint8_t> data_float = img->get_data();
+
+	Error err = OK;
+	Ref<FileAccess> file = FileAccess::open(p_name, FileAccess::WRITE, &err);
+	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save PFN at path: '%s'.", p_name));
+	file->store_line("PF");
+	file->store_line(vformat("%d %d", img->get_width(), img->get_height()));
+#ifdef BIG_ENDIAN_ENABLED
+	file->store_line("1.0");
+#else
+	file->store_line("-1.0");
+#endif
+	file->store_buffer(data_float);
+	file->close();
+
+	return OK;
+}
+
+Ref<Image> LightmapperRD::_read_pfm(const String &p_name) {
+	Error err = OK;
+	Ref<FileAccess> file = FileAccess::open(p_name, FileAccess::READ, &err);
+	ERR_FAIL_COND_V_MSG(err, Ref<Image>(), vformat("Can't load PFM at path: '%s'.", p_name));
+	ERR_FAIL_COND_V(file->get_line() != "PF", Ref<Image>());
+
+	Vector<String> new_size = file->get_line().split(" ");
+	ERR_FAIL_COND_V(new_size.size() != 2, Ref<Image>());
+	int new_width = new_size[0].to_int();
+	int new_height = new_size[1].to_int();
+
+	float endian = file->get_line().to_float();
+	Vector<uint8_t> new_data = file->get_buffer(file->get_length() - file->get_position());
+	file->close();
+
+#ifdef BIG_ENDIAN_ENABLED
+	if (unlikely(endian < 0.0)) {
+		uint32_t count = new_data.size() / 4;
+		uint16_t *dst = (uint16_t *)new_data.ptrw();
+		for (uint32_t j = 0; j < count; j++) {
+			dst[j * 4] = BSWAP32(dst[j * 4]);
+		}
+	}
+#else
+	if (unlikely(endian > 0.0)) {
+		uint32_t count = new_data.size() / 4;
+		uint16_t *dst = (uint16_t *)new_data.ptrw();
+		for (uint32_t j = 0; j < count; j++) {
+			dst[j * 4] = BSWAP32(dst[j * 4]);
+		}
+	}
+#endif
+	Ref<Image> img = Image::create_from_data(new_width, new_height, false, Image::FORMAT_RGBF, new_data);
+	img->convert(Image::FORMAT_RGBAH);
+	return img;
+}
+
+LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, const String &p_exe) {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	for (int i = 0; i < p_atlas_slices; i++) {
+		String fname_norm_in = EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("temp_norm_%d.pfm", i));
+		_store_pfm(p_rd, p_source_normal_tex, i, p_atlas_size, fname_norm_in);
+
+		for (int j = 0; j < (p_bake_sh ? 4 : 1); j++) {
+			int index = i * (p_bake_sh ? 4 : 1) + j;
+			String fname_light_in = EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("temp_light_%d.pfm", index));
+			String fname_out = EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("temp_denoised_%d.pfm", index));
+
+			_store_pfm(p_rd, p_source_light_tex, index, p_atlas_size, fname_light_in);
+
+			List<String> args;
+			args.push_back("--device");
+			args.push_back("default");
+
+			args.push_back("--filter");
+			args.push_back("RTLightmap");
+
+			args.push_back("--hdr");
+			args.push_back(fname_light_in);
+
+			args.push_back("--nrm");
+			args.push_back(fname_norm_in);
+
+			args.push_back("--output");
+			args.push_back(fname_out);
+
+			String str;
+			int exitcode = 0;
+
+			Error err = OS::get_singleton()->execute(p_exe, args, &str, &exitcode, true);
+
+			da->remove(fname_light_in);
+
+			if (err != OK || exitcode != 0) {
+				da->remove(fname_out);
+				print_verbose(str);
+				ERR_FAIL_V_MSG(BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, vformat(TTR("OIDN denoiser failed, return code: %d"), exitcode));
+			}
+
+			Ref<Image> img = _read_pfm(fname_out);
+			da->remove(fname_out);
+
+			ERR_FAIL_COND_V(img.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
+
+			Vector<uint8_t> old_data = p_rd->texture_get_data(p_source_light_tex, index);
+			Vector<uint8_t> new_data = img->get_data();
+			img.unref(); // Avoid copy on write.
+
+			uint32_t count = old_data.size() / 2;
+			const uint16_t *src = (const uint16_t *)old_data.ptr();
+			uint16_t *dst = (uint16_t *)new_data.ptrw();
+			for (uint32_t k = 0; k < count; k += 4) {
+				dst[k + 3] = src[k + 3];
+			}
+
+			p_rd->texture_update(p_dest_light_tex, index, new_data);
+		}
+		da->remove(fname_norm_in);
+	}
+	return BAKE_OK;
+}
+
 LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, float p_denoiser_strength, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function) {
 	RID denoise_params_buffer = p_rd->uniform_buffer_create(sizeof(DenoiseParams));
 	DenoiseParams denoise_params;
@@ -742,6 +870,23 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 }
 
 LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization) {
+	int denoiser = GLOBAL_GET("rendering/lightmapping/denoising/denoiser");
+	String oidn_path = EDITOR_GET("filesystem/tools/oidn/oidn_denoise_path");
+
+	if (p_use_denoiser && denoiser == 1) {
+		// OIDN (external).
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+		if (da->dir_exists(oidn_path)) {
+			if (OS::get_singleton()->get_name() == "Windows") {
+				oidn_path = oidn_path.path_join("oidnDenoise.exe");
+			} else {
+				oidn_path = oidn_path.path_join("oidnDenoise");
+			}
+		}
+		ERR_FAIL_COND_V_MSG(oidn_path.is_empty() || !da->file_exists(oidn_path), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, TTR("OIDN denoiser is selected in the project settings, but no or invalid OIDN executable path is configured in the editor settings."));
+	}
+
 	if (p_step_function) {
 		p_step_function(0.0, RTR("Begin Bake"), p_bake_userdata, true);
 	}
@@ -1501,8 +1646,15 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 
 		{
-			SWAP(light_accum_tex, light_accum_tex2);
-			BakeError error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, atlas_size, atlas_slices, p_bake_sh, p_step_function);
+			BakeError error;
+			if (denoiser == 1) {
+				// OIDN (external).
+				error = _denoise_oidn(rd, light_accum_tex, normal_tex, light_accum_tex, atlas_size, atlas_slices, p_bake_sh, oidn_path);
+			} else {
+				// JNLM (built-in).
+				SWAP(light_accum_tex, light_accum_tex2);
+				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, atlas_size, atlas_slices, p_bake_sh, p_step_function);
+			}
 			if (unlikely(error != BAKE_OK)) {
 				return error;
 			}

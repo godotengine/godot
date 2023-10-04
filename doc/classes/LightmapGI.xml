@@ -25,7 +25,7 @@
 			The [CameraAttributes] resource that specifies exposure levels to bake at. Auto-exposure and non exposure properties will be ignored. Exposure settings should be used to reduce the dynamic range present when baking. If exposure is too high, the [LightmapGI] will have banding artifacts or may have over-exposure artifacts.
 		</member>
 		<member name="denoiser_strength" type="float" setter="set_denoiser_strength" getter="get_denoiser_strength" default="0.1">
-			The strength of denoising step applied to the generated lightmaps. Only effective if [member use_denoiser] is [code]true[/code].
+			The strength of denoising step applied to the generated lightmaps. Only effective if [member use_denoiser] is [code]true[/code] and [member ProjectSettings.rendering/lightmapping/denoising/denoiser] is set to JNLM.
 		</member>
 		<member name="directional" type="bool" setter="set_directional" getter="is_directional" default="false">
 			If [code]true[/code], bakes lightmaps to contain directional information as spherical harmonics. This results in more realistic lighting appearance, especially with normal mapped materials and for lights that have their direct light baked ([member Light3D.light_bake_mode] set to [constant Light3D.BAKE_STATIC]). The directional information is also used to provide rough reflections for static and dynamic objects. This has a small run-time performance cost as the shader has to perform more work to interpret the direction information from the lightmap. Directional lightmaps also take longer to bake and result in larger file sizes.
