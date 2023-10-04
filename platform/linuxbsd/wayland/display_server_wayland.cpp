@@ -234,7 +234,11 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 	}
 
 	if (show_cursor) {
-		wayland_thread.cursor_set_shape(cursor_shape);
+		if (custom_cursors.has(cursor_shape)) {
+			wayland_thread.cursor_set_custom_shape(cursor_shape);
+		} else {
+			wayland_thread.cursor_set_shape(cursor_shape);
+		}
 	} else {
 		wayland_thread.cursor_hide();
 	}
@@ -832,6 +836,11 @@ void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 
 	cursor_shape = p_shape;
 
+	if (mouse_mode != MOUSE_MODE_VISIBLE && mouse_mode != MOUSE_MODE_CONFINED) {
+		// Hidden.
+		return;
+	}
+
 	if (custom_cursors.has(p_shape)) {
 		wayland_thread.cursor_set_custom_shape(p_shape);
 	} else {
@@ -848,12 +857,18 @@ DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const
 void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
+	bool visible = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
+
 	if (p_cursor.is_valid()) {
 		HashMap<CursorShape, CustomCursor>::Iterator cursor_c = custom_cursors.find(p_shape);
 
 		if (cursor_c) {
 			if (cursor_c->value.rid == p_cursor->get_rid() && cursor_c->value.hotspot == p_hotspot) {
-				wayland_thread.cursor_set_custom_shape(p_shape);
+				// We have a cached cursor. Nice.
+				if (visible) {
+					wayland_thread.cursor_set_custom_shape(p_shape);
+				}
+
 				return;
 			}
 
@@ -899,10 +914,13 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		cursor.hotspot = p_hotspot;
 
 		wayland_thread.cursor_shape_set_custom_image(p_shape, image, p_hotspot);
-		wayland_thread.cursor_set_custom_shape(p_shape);
+
+		if (visible) {
+			wayland_thread.cursor_set_custom_shape(p_shape);
+		}
 	} else {
 		// Clear cache and reset to default system cursor.
-		if (cursor_shape == p_shape) {
+		if (cursor_shape == p_shape && visible) {
 			wayland_thread.cursor_set_shape(p_shape);
 		}
 
