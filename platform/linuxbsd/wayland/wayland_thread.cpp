@@ -56,8 +56,8 @@
 #define DEBUG_LOG_WAYLAND_THREAD(...)
 #endif
 
-// Read the content pointed by fd into a LocalVector<uint8_t>.
-LocalVector<uint8_t> WaylandThread::_read_fd(int fd) {
+// Read the content pointed by fd into a Vector<uint8_t>.
+Vector<uint8_t> WaylandThread::_read_fd(int fd) {
 	// This is pretty much an arbitrary size.
 	uint32_t chunk_size = 2048;
 
@@ -135,9 +135,9 @@ int WaylandThread::_allocate_shm_file(size_t size) {
 }
 
 // Return the content of a wl_data_offer.
-LocalVector<uint8_t> WaylandThread::_wl_data_offer_read(struct wl_display *p_display, const char *p_mime, struct wl_data_offer *p_offer) {
+Vector<uint8_t> WaylandThread::_wl_data_offer_read(struct wl_display *p_display, const char *p_mime, struct wl_data_offer *p_offer) {
 	if (!p_offer) {
-		return LocalVector<uint8_t>();
+		return Vector<uint8_t>();
 	}
 
 	int fds[2];
@@ -154,13 +154,13 @@ LocalVector<uint8_t> WaylandThread::_wl_data_offer_read(struct wl_display *p_dis
 		return _read_fd(fds[0]);
 	}
 
-	return LocalVector<uint8_t>();
+	return Vector<uint8_t>();
 }
 
 // Read the content of a wp_primary_selection_offer.
-LocalVector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_display *p_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *p_offer) {
+Vector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_display *p_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *p_offer) {
 	if (!p_offer) {
-		return LocalVector<uint8_t>();
+		return Vector<uint8_t>();
 	}
 
 	int fds[2];
@@ -179,7 +179,7 @@ LocalVector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_d
 		return _read_fd(fds[0]);
 	}
 
-	return LocalVector<uint8_t>();
+	return Vector<uint8_t>();
 }
 
 // Sets up an `InputEventKey` and returns whether it has any meaningful value.
@@ -1906,7 +1906,7 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 			Ref<DropFilesEventMessage> msg;
 			msg.instantiate();
 
-			LocalVector<uint8_t> list_data = _read_fd(fds[0]);
+			Vector<uint8_t> list_data = _read_fd(fds[0]);
 
 			msg->files = String::utf8((const char *)list_data.ptr(), list_data.size()).split("\r\n", false);
 			for (int i = 0; i < msg->files.size(); i++) {
@@ -3677,6 +3677,33 @@ void WaylandThread::selection_set_text(String p_text) {
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
 	wl_display_roundtrip(wl_display);
+}
+
+bool WaylandThread::selection_has_mime(String p_mime) const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss == nullptr) {
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't get selection, current seat not set.");
+		return false;
+	}
+
+	OfferState *os = wl_data_offer_get_offer_state(ss->wl_data_offer_selection);
+	if (!os) {
+		return false;
+	}
+
+	return os->mime_types.has(p_mime);
+}
+
+Vector<uint8_t> WaylandThread::selection_get_mime(String p_mime) const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss == nullptr) {
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't get selection, current seat not set.");
+		return Vector<uint8_t>();
+	}
+
+	return _wl_data_offer_read(wl_display, p_mime.utf8().ptr(), ss->wl_data_offer_selection);
 }
 
 String WaylandThread::selection_get_text() const {

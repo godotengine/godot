@@ -175,6 +175,7 @@ public:
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
+	virtual Ref<Image> clipboard_get_image() const override;
 	virtual void clipboard_set_primary(const String &p_text) override;
 	virtual String clipboard_get_primary() const override;
 
