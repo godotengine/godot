@@ -3480,6 +3480,10 @@ void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) 
 		return;
 	}
 
+	// The point of this method is make the current cursor a "plain" shape and, as
+	// the custom cursor overrides what gets set, we have to clear it too.
+	current_custom_cursor = nullptr;
+
 	current_wl_cursor = wl_cursors[p_cursor_shape];
 
 	for (struct wl_seat *wl_seat : registry.wl_seats) {
@@ -3564,6 +3568,8 @@ void WaylandThread::cursor_shape_clear_custom_image(DisplayServer::CursorShape p
 	if (custom_cursors.has(p_cursor_shape)) {
 		CustomCursor cursor = custom_cursors[p_cursor_shape];
 		custom_cursors.erase(p_cursor_shape);
+
+		current_custom_cursor = nullptr;
 
 		if (cursor.wl_buffer) {
 			wl_buffer_destroy(cursor.wl_buffer);
