@@ -4473,7 +4473,7 @@ String EditorNode::_get_system_info() const {
 	}
 	if (driver_name == "vulkan") {
 		driver_name = "Vulkan";
-	} else if (driver_name == "opengl3") {
+	} else if (driver_name.begins_with("opengl3")) {
 		driver_name = "GLES3";
 	}
 

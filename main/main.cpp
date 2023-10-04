@@ -1746,9 +1746,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		String driver_hints = "";
 		String driver_hints_angle = "";
+		String driver_hints_egl = "";
 #ifdef GLES3_ENABLED
 		driver_hints = "opengl3";
 		driver_hints_angle = "opengl3,opengl3_angle";
+		driver_hints_egl = "opengl3,opengl3_es";
 #endif
 
 		String default_driver = driver_hints.get_slice(",", 0);
@@ -1759,11 +1761,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		GLOBAL_DEF_RST("rendering/gl_compatibility/driver", default_driver);
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints_egl), default_driver);
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver_macos);
+
 		GLOBAL_DEF_RST("rendering/gl_compatibility/nvidia_disable_threaded_optimization", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_angle", true);
 
@@ -1841,7 +1844,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		// Set a default renderer if none selected. Try to choose one that matches the driver.
 		if (rendering_method.is_empty()) {
-			if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle") {
+			if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
 				rendering_method = "gl_compatibility";
 			} else {
 				rendering_method = "forward_plus";
@@ -1860,6 +1863,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (rendering_method == "gl_compatibility") {
 			available_drivers.push_back("opengl3");
 			available_drivers.push_back("opengl3_angle");
+			available_drivers.push_back("opengl3_es");
 		}
 #endif
 		if (available_drivers.is_empty()) {
