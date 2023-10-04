@@ -222,17 +222,36 @@ void DisplayServerWindows::tts_stop() {
 Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+
 	Vector<Char16String> filter_names;
 	Vector<Char16String> filter_exts;
 	for (const String &E : p_filters) {
 		Vector<String> tokens = E.split(";");
-		if (tokens.size() == 2) {
-			filter_exts.push_back(tokens[0].strip_edges().utf16());
-			filter_names.push_back(tokens[1].strip_edges().utf16());
-		} else if (tokens.size() == 1) {
-			filter_exts.push_back(tokens[0].strip_edges().utf16());
-			filter_names.push_back(tokens[0].strip_edges().utf16());
+		if (tokens.size() >= 1) {
+			String flt = tokens[0].strip_edges();
+			int filter_slice_count = flt.get_slice_count(",");
+			Vector<String> exts;
+			for (int j = 0; j < filter_slice_count; j++) {
+				String str = (flt.get_slice(",", j).strip_edges());
+				if (!str.is_empty()) {
+					exts.push_back(str);
+				}
+			}
+			if (!exts.is_empty()) {
+				String str = String(";").join(exts);
+				filter_exts.push_back(str.utf16());
+				if (tokens.size() == 2) {
+					filter_names.push_back(tokens[1].strip_edges().utf16());
+				} else {
+					filter_names.push_back(str.utf16());
+				}
+			}
 		}
+	}
+	if (filter_names.is_empty()) {
+		filter_exts.push_back(String("*.*").utf16());
+		filter_names.push_back(RTR("All Files").utf16());
 	}
 
 	Vector<COMDLG_FILTERSPEC> filters;
@@ -287,6 +306,9 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		}
 
 		hr = pfd->Show(windows[window_id].hWnd);
+		UINT index = 0;
+		pfd->GetFileTypeIndex(&index);
+
 		if (SUCCEEDED(hr)) {
 			Vector<String> file_names;
 
@@ -326,19 +348,21 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 			if (!p_callback.is_null()) {
 				Variant v_status = true;
 				Variant v_files = file_names;
-				Variant *v_args[2] = { &v_status, &v_files };
+				Variant v_index = index;
+				Variant *v_args[3] = { &v_status, &v_files, &v_index };
 				Variant ret;
 				Callable::CallError ce;
-				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+				p_callback.callp((const Variant **)&v_args, 3, ret, ce);
 			}
 		} else {
 			if (!p_callback.is_null()) {
 				Variant v_status = false;
 				Variant v_files = Vector<String>();
-				Variant *v_args[2] = { &v_status, &v_files };
+				Variant v_index = index;
+				Variant *v_args[3] = { &v_status, &v_files, &v_index };
 				Variant ret;
 				Callable::CallError ce;
-				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+				p_callback.callp((const Variant **)&v_args, 3, ret, ce);
 			}
 		}
 		pfd->Release();

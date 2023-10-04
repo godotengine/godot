@@ -506,7 +506,8 @@ public:
 		FILE_DIALOG_MODE_OPEN_FILES,
 		FILE_DIALOG_MODE_OPEN_DIR,
 		FILE_DIALOG_MODE_OPEN_ANY,
-		FILE_DIALOG_MODE_SAVE_FILE
+		FILE_DIALOG_MODE_SAVE_FILE,
+		FILE_DIALOG_MODE_SAVE_MAX
 	};
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
 

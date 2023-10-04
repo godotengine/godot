@@ -2012,179 +2012,275 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	return OK;
 }
 
-Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
-	_THREAD_SAFE_METHOD_
+@interface FileDialogDropdown : NSObject {
+	NSSavePanel *dialog;
+	NSMutableArray *allowed_types;
+	int cur_index;
+}
 
-	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
+- (instancetype)initWithDialog:(NSSavePanel *)p_dialog fileTypes:(NSMutableArray *)p_allowed_types;
+- (void)popupAction:(id)sender;
+- (int)getIndex;
+
+@end
+
+@implementation FileDialogDropdown
+
+- (int)getIndex {
+	return cur_index;
+}
+
+- (instancetype)initWithDialog:(NSSavePanel *)p_dialog fileTypes:(NSMutableArray *)p_allowed_types {
+	if ((self = [super init])) {
+		dialog = p_dialog;
+		allowed_types = p_allowed_types;
+		cur_index = 0;
+	}
+	return self;
+}
+
+- (void)popupAction:(id)sender {
+	NSUInteger index = [sender indexOfSelectedItem];
+	if (index < [allowed_types count]) {
+		[dialog setAllowedFileTypes:[allowed_types objectAtIndex:index]];
+		cur_index = index;
+	} else {
+		[dialog setAllowedFileTypes:@[]];
+		cur_index = -1;
+	}
+}
+
+@end
+
+FileDialogDropdown *_make_accessory_view(NSSavePanel *p_panel, const Vector<String> &p_filters) {
+	NSView *group = [[NSView alloc] initWithFrame:NSZeroRect];
+	group.translatesAutoresizingMaskIntoConstraints = NO;
+
+	NSTextField *label = [NSTextField labelWithString:[NSString stringWithUTF8String:RTR("Format").utf8().get_data()]];
+	label.translatesAutoresizingMaskIntoConstraints = NO;
+	if (@available(macOS 10.14, *)) {
+		label.textColor = NSColor.secondaryLabelColor;
+	}
+	if (@available(macOS 11.10, *)) {
+		label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	}
+	[group addSubview:label];
+
+	NSPopUpButton *popup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+	popup.translatesAutoresizingMaskIntoConstraints = NO;
+
 	NSMutableArray *allowed_types = [[NSMutableArray alloc] init];
 	bool allow_other = false;
 	for (int i = 0; i < p_filters.size(); i++) {
 		Vector<String> tokens = p_filters[i].split(";");
-		if (tokens.size() > 0) {
-			if (tokens[0].strip_edges() == "*.*") {
-				allow_other = true;
-			} else {
-				[allowed_types addObject:[NSString stringWithUTF8String:tokens[0].replace("*.", "").strip_edges().utf8().get_data()]];
+		if (tokens.size() >= 1) {
+			String flt = tokens[0].strip_edges();
+			int filter_slice_count = flt.get_slice_count(",");
+
+			NSMutableArray *type_filters = [[NSMutableArray alloc] init];
+			for (int j = 0; j < filter_slice_count; j++) {
+				String str = (flt.get_slice(",", j).strip_edges());
+				if (str.strip_edges() == "*.*" || str.strip_edges() == "*") {
+					allow_other = true;
+				} else if (!str.is_empty()) {
+					[type_filters addObject:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
+				}
+			}
+
+			if ([type_filters count] > 0) {
+				NSString *name_str = [NSString stringWithUTF8String:((tokens.size() == 1) ? tokens[0] : vformat("%s (%s)", tokens[1], tokens[0])).strip_edges().utf8().get_data()];
+				[allowed_types addObject:type_filters];
+				[popup addItemWithTitle:name_str];
 			}
 		}
 	}
+	FileDialogDropdown *handler = [[FileDialogDropdown alloc] initWithDialog:p_panel fileTypes:allowed_types];
+	popup.target = handler;
+	popup.action = @selector(popupAction:);
+
+	[group addSubview:popup];
+
+	NSView *view = [[NSView alloc] initWithFrame:NSZeroRect];
+	view.translatesAutoresizingMaskIntoConstraints = NO;
+	[view addSubview:group];
+
+	NSMutableArray *constraints = [NSMutableArray array];
+	[constraints addObject:[popup.topAnchor constraintEqualToAnchor:group.topAnchor constant:10]];
+	[constraints addObject:[label.leadingAnchor constraintEqualToAnchor:group.leadingAnchor constant:10]];
+	[constraints addObject:[popup.leadingAnchor constraintEqualToAnchor:label.trailingAnchor constant:10]];
+	[constraints addObject:[popup.firstBaselineAnchor constraintEqualToAnchor:label.firstBaselineAnchor]];
+	[constraints addObject:[group.trailingAnchor constraintEqualToAnchor:popup.trailingAnchor constant:10]];
+	[constraints addObject:[group.bottomAnchor constraintEqualToAnchor:popup.bottomAnchor constant:10]];
+	[constraints addObject:[group.topAnchor constraintEqualToAnchor:view.topAnchor]];
+	[constraints addObject:[group.centerXAnchor constraintEqualToAnchor:view.centerXAnchor]];
+	[constraints addObject:[view.bottomAnchor constraintEqualToAnchor:group.bottomAnchor]];
+	[NSLayoutConstraint activateConstraints:constraints];
+
+	[p_panel setAllowsOtherFileTypes:allow_other];
+	if ([allowed_types count] > 0) {
+		[p_panel setAccessoryView:view];
+		[p_panel setAllowedFileTypes:[allowed_types objectAtIndex:0]];
+	}
+
+	return handler;
+}
+
+Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+
+	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
+	FileDialogDropdown *handler = nullptr;
 
 	WindowID prev_focus = last_focused_window;
 
 	Callable callback = p_callback; // Make a copy for async completion handler.
-	switch (p_mode) {
-		case FILE_DIALOG_MODE_SAVE_FILE: {
-			NSSavePanel *panel = [NSSavePanel savePanel];
+	if (p_mode == FILE_DIALOG_MODE_SAVE_FILE) {
+		NSSavePanel *panel = [NSSavePanel savePanel];
 
-			[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
-			if ([allowed_types count]) {
-				[panel setAllowedFileTypes:allowed_types];
-			}
-			[panel setAllowsOtherFileTypes:allow_other];
-			[panel setExtensionHidden:YES];
-			[panel setCanSelectHiddenExtension:YES];
-			[panel setCanCreateDirectories:YES];
-			[panel setShowsHiddenFiles:p_show_hidden];
-			if (p_filename != "") {
-				NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
-				[panel setNameFieldStringValue:fileurl];
-			}
+		[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
+		handler = _make_accessory_view(panel, p_filters);
+		[panel setExtensionHidden:YES];
+		[panel setCanSelectHiddenExtension:YES];
+		[panel setCanCreateDirectories:YES];
+		[panel setShowsHiddenFiles:p_show_hidden];
+		if (p_filename != "") {
+			NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
+			[panel setNameFieldStringValue:fileurl];
+		}
 
-			[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
-						  completionHandler:^(NSInteger ret) {
-							  if (ret == NSModalResponseOK) {
-								  // Save bookmark for folder.
-								  if (OS::get_singleton()->is_sandboxed()) {
-									  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
+					  completionHandler:^(NSInteger ret) {
+						  if (ret == NSModalResponseOK) {
+							  // Save bookmark for folder.
+							  if (OS::get_singleton()->is_sandboxed()) {
+								  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+								  bool skip = false;
+								  for (id bookmark in bookmarks) {
+									  NSError *error = nil;
+									  BOOL isStale = NO;
+									  NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+									  if (!error && !isStale && ([[exurl path] compare:[[panel directoryURL] path]] == NSOrderedSame)) {
+										  skip = true;
+										  break;
+									  }
+								  }
+								  if (!skip) {
+									  NSError *error = nil;
+									  NSData *bookmark = [[panel directoryURL] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+									  if (!error) {
+										  NSArray *new_bookmarks = [bookmarks arrayByAddingObject:bookmark];
+										  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+									  }
+								  }
+							  }
+							  // Callback.
+							  Vector<String> files;
+							  String url;
+							  url.parse_utf8([[[panel URL] path] UTF8String]);
+							  files.push_back(url);
+							  if (!callback.is_null()) {
+								  Variant v_status = true;
+								  Variant v_files = files;
+								  Variant v_index = [handler getIndex];
+								  Variant *v_args[3] = { &v_status, &v_files, &v_index };
+								  Variant ret;
+								  Callable::CallError ce;
+								  callback.callp((const Variant **)&v_args, 3, ret, ce);
+							  }
+						  } else {
+							  if (!callback.is_null()) {
+								  Variant v_status = false;
+								  Variant v_files = Vector<String>();
+								  Variant v_index = [handler getIndex];
+								  Variant *v_args[3] = { &v_status, &v_files, &v_index };
+								  Variant ret;
+								  Callable::CallError ce;
+								  callback.callp((const Variant **)&v_args, 3, ret, ce);
+							  }
+						  }
+						  if (prev_focus != INVALID_WINDOW_ID) {
+							  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
+						  }
+					  }];
+	} else {
+		NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+		[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
+		handler = _make_accessory_view(panel, p_filters);
+		[panel setExtensionHidden:YES];
+		[panel setCanSelectHiddenExtension:YES];
+		[panel setCanCreateDirectories:YES];
+		[panel setCanChooseFiles:(p_mode != FILE_DIALOG_MODE_OPEN_DIR)];
+		[panel setCanChooseDirectories:(p_mode == FILE_DIALOG_MODE_OPEN_DIR || p_mode == FILE_DIALOG_MODE_OPEN_ANY)];
+		[panel setShowsHiddenFiles:p_show_hidden];
+		if (p_filename != "") {
+			NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
+			[panel setNameFieldStringValue:fileurl];
+		}
+		[panel setAllowsMultipleSelection:(p_mode == FILE_DIALOG_MODE_OPEN_FILES)];
+
+		[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
+					  completionHandler:^(NSInteger ret) {
+						  if (ret == NSModalResponseOK) {
+							  // Save bookmark for folder.
+							  NSArray *urls = [(NSOpenPanel *)panel URLs];
+							  if (OS::get_singleton()->is_sandboxed()) {
+								  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+								  NSMutableArray *new_bookmarks = [bookmarks mutableCopy];
+								  for (NSUInteger i = 0; i != [urls count]; ++i) {
 									  bool skip = false;
 									  for (id bookmark in bookmarks) {
 										  NSError *error = nil;
 										  BOOL isStale = NO;
 										  NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
-										  if (!error && !isStale && ([[exurl path] compare:[[panel directoryURL] path]] == NSOrderedSame)) {
+										  if (!error && !isStale && ([[exurl path] compare:[[urls objectAtIndex:i] path]] == NSOrderedSame)) {
 											  skip = true;
 											  break;
 										  }
 									  }
 									  if (!skip) {
 										  NSError *error = nil;
-										  NSData *bookmark = [[panel directoryURL] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+										  NSData *bookmark = [[urls objectAtIndex:i] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
 										  if (!error) {
-											  NSArray *new_bookmarks = [bookmarks arrayByAddingObject:bookmark];
-											  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+											  [new_bookmarks addObject:bookmark];
 										  }
 									  }
 								  }
-								  // Callback.
-								  Vector<String> files;
+								  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+							  }
+							  // Callback.
+							  Vector<String> files;
+							  for (NSUInteger i = 0; i != [urls count]; ++i) {
 								  String url;
-								  url.parse_utf8([[[panel URL] path] UTF8String]);
+								  url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
 								  files.push_back(url);
-								  if (!callback.is_null()) {
-									  Variant v_status = true;
-									  Variant v_files = files;
-									  Variant *v_args[2] = { &v_status, &v_files };
-									  Variant ret;
-									  Callable::CallError ce;
-									  callback.callp((const Variant **)&v_args, 2, ret, ce);
-								  }
-							  } else {
-								  if (!callback.is_null()) {
-									  Variant v_status = false;
-									  Variant v_files = Vector<String>();
-									  Variant *v_args[2] = { &v_status, &v_files };
-									  Variant ret;
-									  Callable::CallError ce;
-									  callback.callp((const Variant **)&v_args, 2, ret, ce);
-								  }
 							  }
-							  if (prev_focus != INVALID_WINDOW_ID) {
-								  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
+							  if (!callback.is_null()) {
+								  Variant v_status = true;
+								  Variant v_files = files;
+								  Variant v_index = [handler getIndex];
+								  Variant *v_args[3] = { &v_status, &v_files, &v_index };
+								  Variant ret;
+								  Callable::CallError ce;
+								  callback.callp((const Variant **)&v_args, 3, ret, ce);
 							  }
-						  }];
-		} break;
-		case FILE_DIALOG_MODE_OPEN_ANY:
-		case FILE_DIALOG_MODE_OPEN_FILE:
-		case FILE_DIALOG_MODE_OPEN_FILES:
-		case FILE_DIALOG_MODE_OPEN_DIR: {
-			NSOpenPanel *panel = [NSOpenPanel openPanel];
-
-			[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
-			if ([allowed_types count]) {
-				[panel setAllowedFileTypes:allowed_types];
-			}
-			[panel setAllowsOtherFileTypes:allow_other];
-			[panel setExtensionHidden:YES];
-			[panel setCanSelectHiddenExtension:YES];
-			[panel setCanCreateDirectories:YES];
-			[panel setCanChooseFiles:(p_mode != FILE_DIALOG_MODE_OPEN_DIR)];
-			[panel setCanChooseDirectories:(p_mode == FILE_DIALOG_MODE_OPEN_DIR || p_mode == FILE_DIALOG_MODE_OPEN_ANY)];
-			[panel setShowsHiddenFiles:p_show_hidden];
-			if (p_filename != "") {
-				NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
-				[panel setNameFieldStringValue:fileurl];
-			}
-			[panel setAllowsMultipleSelection:(p_mode == FILE_DIALOG_MODE_OPEN_FILES)];
-
-			[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
-						  completionHandler:^(NSInteger ret) {
-							  if (ret == NSModalResponseOK) {
-								  // Save bookmark for folder.
-								  NSArray *urls = [(NSOpenPanel *)panel URLs];
-								  if (OS::get_singleton()->is_sandboxed()) {
-									  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
-									  NSMutableArray *new_bookmarks = [bookmarks mutableCopy];
-									  for (NSUInteger i = 0; i != [urls count]; ++i) {
-										  bool skip = false;
-										  for (id bookmark in bookmarks) {
-											  NSError *error = nil;
-											  BOOL isStale = NO;
-											  NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
-											  if (!error && !isStale && ([[exurl path] compare:[[urls objectAtIndex:i] path]] == NSOrderedSame)) {
-												  skip = true;
-												  break;
-											  }
-										  }
-										  if (!skip) {
-											  NSError *error = nil;
-											  NSData *bookmark = [[urls objectAtIndex:i] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
-											  if (!error) {
-												  [new_bookmarks addObject:bookmark];
-											  }
-										  }
-									  }
-									  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
-								  }
-								  // Callback.
-								  Vector<String> files;
-								  for (NSUInteger i = 0; i != [urls count]; ++i) {
-									  String url;
-									  url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
-									  files.push_back(url);
-								  }
-								  if (!callback.is_null()) {
-									  Variant v_status = true;
-									  Variant v_files = files;
-									  Variant *v_args[2] = { &v_status, &v_files };
-									  Variant ret;
-									  Callable::CallError ce;
-									  callback.callp((const Variant **)&v_args, 2, ret, ce);
-								  }
-							  } else {
-								  if (!callback.is_null()) {
-									  Variant v_status = false;
-									  Variant v_files = Vector<String>();
-									  Variant *v_args[2] = { &v_status, &v_files };
-									  Variant ret;
-									  Callable::CallError ce;
-									  callback.callp((const Variant **)&v_args, 2, ret, ce);
-								  }
+						  } else {
+							  if (!callback.is_null()) {
+								  Variant v_status = false;
+								  Variant v_files = Vector<String>();
+								  Variant v_index = [handler getIndex];
+								  Variant *v_args[3] = { &v_status, &v_files, &v_index };
+								  Variant ret;
+								  Callable::CallError ce;
+								  callback.callp((const Variant **)&v_args, 3, ret, ce);
 							  }
-							  if (prev_focus != INVALID_WINDOW_ID) {
-								  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
-							  }
-						  }];
-		} break;
+						  }
+						  if (prev_focus != INVALID_WINDOW_ID) {
+							  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
+						  }
+					  }];
 	}
 
 	return OK;
