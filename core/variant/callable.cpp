@@ -124,9 +124,21 @@ Callable Callable::unbind(int p_argcount) const {
 bool Callable::is_valid() const {
 	if (is_custom()) {
 		return get_custom()->is_valid();
-	} else {
-		return get_object() && get_object()->has_method(get_method());
 	}
+
+	Object *target = get_object();
+	if (target) {
+		if (target->has_method(get_method())) {
+			return true;
+		}
+		// Script.has_method() and Object::has_method() have different semantics.
+		// Checking if a script (i.e., a class) has some method has to be done explicitly.
+		Script *script = Object::cast_to<Script>(target);
+		if (script && script->has_method(get_method())) {
+			return true;
+		}
+	}
+	return false;
 }
 
 Object *Callable::get_object() const {
