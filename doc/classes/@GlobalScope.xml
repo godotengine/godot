@@ -120,7 +120,7 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Returns the arc tangent of [param x] in radians. Use it to get the angle from an angle's tangent in trigonometry.
-				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code]x[/code].
+				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code skip-lint]x[/code].
 				[codeblock]
 				var a = atan(0.5) # a is 0.463648
 				[/codeblock]
@@ -338,7 +338,7 @@
 			<param index="7" name="post_t" type="float" />
 			<description>
 				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre] and [param post] values. See also [method lerp_angle].
-				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
 			</description>
 		</method>
 		<method name="cubic_interpolate_in_time">
@@ -879,10 +879,10 @@
 				URL tags only support URLs wrapped by a URL tag, not URLs with a different title.
 				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Support for ANSI escape codes varies across terminal emulators, especially for italic and strikethrough. In standard output, [code]code[/code] is represented with faint text but without any font change. Unsupported tags are left as-is in standard output.
 				[codeblocks]
-				[gdscript]
+				[gdscript skip-lint]
 				print_rich("[color=green][b]Hello world![/b][/color]") # Prints out "Hello world!" in green with a bold font
 				[/gdscript]
-				[csharp]
+				[csharp skip-lint]
 				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints out "Hello world!" in green with a bold font
 				[/csharp]
 				[/codeblocks]
@@ -1392,7 +1392,7 @@
 			<param index="1" name="type" type="int" />
 			<description>
 				Converts the given [param variant] to the given [param type], using the [enum Variant.Type] values. This method is generous with how it handles types, it can automatically convert between array types, convert numeric [String]s to [int], and converting most things to [String].
-				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [code]Vector2.ZERO[/code]. This method will never show error messages as long as [param type] is a valid Variant type.
+				If the type conversion cannot be done, this method will return the default value for that type, for example converting [Rect2] to [Vector2] will always return [constant Vector2.ZERO]. This method will never show error messages as long as [param type] is a valid Variant type.
 				The returned value is a [Variant], but the data inside and the [enum Variant.Type] will be the same as the requested type.
 				[codeblock]
 				type_convert("Hi!", TYPE_INT) # Returns 0
@@ -1521,7 +1521,7 @@
 				angle = wrapf(angle + 0.1, -PI, PI)
 				[/codeblock]
 				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
-				[code]wrapf[/code] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
+				[method wrapf] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
 			</description>
 		</method>
 		<method name="wrapi">

@@ -152,7 +152,7 @@
 			Unit vector specifying the particles' emission direction.
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
-			The box's extents if [code]emission_shape[/code] is set to [constant EMISSION_SHAPE_BOX].
+			The box's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
 		</member>
 		<member name="emission_color_texture" type="Texture2D" setter="set_emission_color_texture" getter="get_emission_color_texture">
 			Particle color will be modulated by color determined by sampling this texture at the same point as the [member emission_point_texture].
@@ -162,7 +162,7 @@
 			Particle velocity and rotation will be set by sampling this texture at the same point as the [member emission_point_texture]. Used only in [constant EMISSION_SHAPE_DIRECTED_POINTS]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
 		</member>
 		<member name="emission_point_count" type="int" setter="set_emission_point_count" getter="get_emission_point_count">
-			The number of emission points if [code]emission_shape[/code] is set to [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
+			The number of emission points if [member emission_shape] is set to [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
 		<member name="emission_point_texture" type="Texture2D" setter="set_emission_point_texture" getter="get_emission_point_texture">
 			Particles will be emitted at positions determined by sampling this texture at a random position. Used with [constant EMISSION_SHAPE_POINTS] and [constant EMISSION_SHAPE_DIRECTED_POINTS]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
@@ -183,7 +183,7 @@
 			Particles will be emitted inside this region. Use [enum EmissionShape] constants for values.
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
-			The sphere's radius if [code]emission_shape[/code] is set to [constant EMISSION_SHAPE_SPHERE].
+			The sphere's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_SPHERE].
 		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
 			Amount of [member spread] along the Y axis.

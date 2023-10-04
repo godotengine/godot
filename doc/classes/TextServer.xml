@@ -194,7 +194,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="index" type="int" />
 			<description>
-				Returns outline contours of the glyph as a [code]Dictionary[/code] with the following contents:
+				Returns outline contours of the glyph as a [Dictionary] with the following contents:
 				[code]points[/code]         - [PackedVector3Array], containing outline points. [code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is the type of the point, using the [enum ContourPointTag] values.
 				[code]contours[/code]       - [PackedInt32Array], containing indices the end points of each contour.
 				[code]orientation[/code]    - [bool], contour orientation. If [code]true[/code], clockwise contours must be filled.
@@ -382,7 +382,7 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [Vector2i] with font size and outline size.
 			</description>
 		</method>
 		<method name="font_get_spacing" qualifiers="const">
@@ -1998,8 +1998,7 @@
 			BiDi override for email.
 		</constant>
 		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
-			BiDi override for lists.
-			Structured text options: list separator [code]String[/code].
+			BiDi override for lists. Structured text options: list separator [String].
 		</constant>
 		<constant name="STRUCTURED_TEXT_GDSCRIPT" value="5" enum="StructuredTextParser">
 			BiDi override for GDScript.

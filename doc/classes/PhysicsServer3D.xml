@@ -582,10 +582,9 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="userdata" type="Variant" default="null" />
 			<description>
-				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
-				The force integration function takes 2 arguments:
-				[code]state:[/code] [PhysicsDirectBodyState3D] used to retrieve and modify the body's state.
-				[code]userdata:[/code] Optional user data, if it was passed when calling [code]body_set_force_integration_callback[/code].
+				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]). The force integration function takes 2 arguments:
+				- [code]state[/code] — [PhysicsDirectBodyState3D] used to retrieve and modify the body's state.
+				- [code skip-lint]userdata[/code] — optional user data passed to [method body_set_force_integration_callback].
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">

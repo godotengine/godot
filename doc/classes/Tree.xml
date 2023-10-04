@@ -458,7 +458,7 @@
 			<param index="1" name="column" type="int" />
 			<param index="2" name="selected" type="bool" />
 			<description>
-				Emitted instead of [code]item_selected[/code] if [code]select_mode[/code] is [constant SELECT_MULTI].
+				Emitted instead of [signal item_selected] if [member select_mode] is set to [constant SELECT_MULTI].
 			</description>
 		</signal>
 		<signal name="nothing_selected">

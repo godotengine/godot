@@ -217,6 +217,12 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		if (tag == "method") {
 			topic = "class_method";
 			table = &this->method_line;
+		} else if (tag == "constructor") {
+			topic = "class_method";
+			table = &this->method_line;
+		} else if (tag == "operator") {
+			topic = "class_method";
+			table = &this->method_line;
 		} else if (tag == "member") {
 			topic = "class_property";
 			table = &this->property_line;
@@ -411,8 +417,10 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 	class_desc->add_text(" (" + TTR("Experimental") + ")");                                     \
 	class_desc->pop();
 
-void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
-	method_line[p_method.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description
+void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview, bool p_override) {
+	if (p_override) {
+		method_line[p_method.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
+	}
 
 	const bool is_vararg = p_method.qualifiers.contains("vararg");
 
@@ -583,7 +591,7 @@ Error EditorHelp::_goto_desc(const String &p_class) {
 	return OK;
 }
 
-void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods) {
+void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type) {
 	class_desc->add_newline();
 
 	_push_code_font();
@@ -629,7 +637,8 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods)
 				class_desc->pop(); // cell
 			}
 
-			_add_method(m[i], true);
+			// For constructors always point to the first one.
+			_add_method(m[i], true, (p_method_type != METHOD_TYPE_CONSTRUCTOR || i == 0));
 		}
 
 		any_previous = !m.is_empty();
@@ -661,7 +670,8 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 
 		for (int i = 0; i < methods_filtered.size(); i++) {
 			_push_code_font();
-			_add_method(methods_filtered[i], false);
+			// For constructors always point to the first one.
+			_add_method(methods_filtered[i], false, (p_method_type != METHOD_TYPE_CONSTRUCTOR || i == 0));
 			_pop_code_font();
 
 			class_desc->add_newline();
@@ -1152,7 +1162,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Constructors"));
 		_pop_title_font();
 
-		_update_method_list(cd.constructors);
+		_update_method_list(cd.constructors, METHOD_TYPE_CONSTRUCTOR);
 	}
 
 	if (!methods.is_empty()) {
@@ -1165,7 +1175,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Methods"));
 		_pop_title_font();
 
-		_update_method_list(methods);
+		_update_method_list(methods, METHOD_TYPE_METHOD);
 	}
 
 	if (!cd.operators.is_empty()) {
@@ -1178,7 +1188,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Operators"));
 		_pop_title_font();
 
-		_update_method_list(cd.operators);
+		_update_method_list(cd.operators, METHOD_TYPE_OPERATOR);
 	}
 
 	// Theme properties
@@ -1992,10 +2002,10 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 	// Select the correct code examples.
 	switch ((int)EDITOR_GET("text_editor/help/class_reference_examples")) {
 		case 0: // GDScript
-			bbcode = bbcode.replace("[gdscript]", "[codeblock]");
+			bbcode = bbcode.replace("[gdscript", "[codeblock"); // Tag can have extra arguments.
 			bbcode = bbcode.replace("[/gdscript]", "[/codeblock]");
 
-			for (int pos = bbcode.find("[csharp]"); pos != -1; pos = bbcode.find("[csharp]")) {
+			for (int pos = bbcode.find("[csharp"); pos != -1; pos = bbcode.find("[csharp")) {
 				int end_pos = bbcode.find("[/csharp]");
 				if (end_pos == -1) {
 					WARN_PRINT("Unclosed [csharp] block or parse fail in code (search for tag errors)");
@@ -2009,10 +2019,10 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			}
 			break;
 		case 1: // C#
-			bbcode = bbcode.replace("[csharp]", "[codeblock]");
+			bbcode = bbcode.replace("[csharp", "[codeblock"); // Tag can have extra arguments.
 			bbcode = bbcode.replace("[/csharp]", "[/codeblock]");
 
-			for (int pos = bbcode.find("[gdscript]"); pos != -1; pos = bbcode.find("[gdscript]")) {
+			for (int pos = bbcode.find("[gdscript"); pos != -1; pos = bbcode.find("[gdscript")) {
 				int end_pos = bbcode.find("[/gdscript]");
 				if (end_pos == -1) {
 					WARN_PRINT("Unclosed [gdscript] block or parse fail in code (search for tag errors)");
@@ -2026,8 +2036,8 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			}
 			break;
 		case 2: // GDScript and C#
-			bbcode = bbcode.replace("[csharp]", "[b]C#:[/b]\n[codeblock]");
-			bbcode = bbcode.replace("[gdscript]", "[b]GDScript:[/b]\n[codeblock]");
+			bbcode = bbcode.replace("[csharp", "[b]C#:[/b]\n[codeblock"); // Tag can have extra arguments.
+			bbcode = bbcode.replace("[gdscript", "[b]GDScript:[/b]\n[codeblock"); // Tag can have extra arguments.
 
 			bbcode = bbcode.replace("[/csharp]", "[/codeblock]");
 			bbcode = bbcode.replace("[/gdscript]", "[/codeblock]");
@@ -2042,6 +2052,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 	// Remove extra new lines around code blocks.
 	bbcode = bbcode.replace("[codeblock]\n", "[codeblock]");
+	bbcode = bbcode.replace("[codeblock skip-lint]\n", "[codeblock skip-lint]"); // Extra argument to silence validation warnings.
 	bbcode = bbcode.replace("\n[/codeblock]", "[/codeblock]");
 
 	List<String> tag_stack;
@@ -2115,7 +2126,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
 
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
 			const int tag_end = tag.find(" ");
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
@@ -2126,7 +2137,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->push_font_size(doc_code_font_size);
 
 			Color target_color = link_color;
-			if (link_tag == "method") {
+			if (link_tag == "method" || link_tag == "constructor" || link_tag == "operator") {
 				target_color = link_method_color;
 			} else if (link_tag == "member" || link_tag == "signal" || link_tag == "theme property") {
 				target_color = link_property_color;
@@ -2197,7 +2208,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag == "code") {
+		} else if (tag == "code" || tag.begins_with("code ")) {
 			// Use monospace font with darkened background color to make code easier to distinguish from other text.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
@@ -2206,8 +2217,8 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			code_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
-		} else if (tag == "codeblock") {
+			tag_stack.push_front("code");
+		} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
 			// Use monospace font with darkened background color to make code easier to distinguish from other text.
 			// Use a single-column table with cell row background color instead of `[bgcolor]`.
 			// This makes the background color highlight cover the entire block, rather than individual lines.
@@ -2222,7 +2233,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			codeblock_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("codeblock");
 		} else if (tag == "kbd") {
 			// Use keyboard font with custom color and background color.
 			p_rt->push_font(doc_kbd_font);
