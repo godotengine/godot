@@ -164,6 +164,18 @@ Transform2D Transform2D::orthonormalized() const {
 	return ortho;
 }
 
+bool Transform2D::is_conformal() const {
+	// Non-flipped case.
+	if (Math::is_equal_approx(columns[0][0], columns[1][1]) && Math::is_equal_approx(columns[0][1], -columns[1][0])) {
+		return true;
+	}
+	// Flipped case.
+	if (Math::is_equal_approx(columns[0][0], -columns[1][1]) && Math::is_equal_approx(columns[0][1], columns[1][0])) {
+		return true;
+	}
+	return false;
+}
+
 bool Transform2D::is_equal_approx(const Transform2D &p_transform) const {
 	return columns[0].is_equal_approx(p_transform.columns[0]) && columns[1].is_equal_approx(p_transform.columns[1]) && columns[2].is_equal_approx(p_transform.columns[2]);
 }

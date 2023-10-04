@@ -197,9 +197,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="_has_named_classes" qualifiers="virtual const">
+		<method name="_has_named_classes" qualifiers="virtual const" is_deprecated="true">
 			<return type="bool" />
 			<description>
+				[i]Deprecated.[/i] This method is not called by the engine.
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">

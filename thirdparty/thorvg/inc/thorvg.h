@@ -171,7 +171,7 @@ enum class CompositeMethod
     AlphaMask,          ///< Alpha Masking using the compositing target's pixels as an alpha value.
     InvAlphaMask,       ///< Alpha Masking using the complement to the compositing target's pixels as an alpha value.
     LumaMask,           ///< Alpha Masking using the grayscale (0.2125R + 0.7154G + 0.0721*B) of the compositing target's pixels. @since 0.9
-    InvLumaMask,        ///< Alpha Masking using the grayscale (0.2125R + 0.7154G + 0.0721*B) of the complement to the compositing target's pixels. @BETA_API
+    InvLumaMask,        ///< Alpha Masking using the grayscale (0.2125R + 0.7154G + 0.0721*B) of the complement to the compositing target's pixels.
     AddMask,            ///< Combines the target and source objects pixels using target alpha. (T * TA) + (S * (255 - TA)) @BETA_API
     SubtractMask,       ///< Subtracts the source color from the target color while considering their respective target alpha. (T * TA) - (S * (255 - TA)) @BETA_API
     IntersectMask,      ///< Computes the result by taking the minimum value between the target alpha and the source alpha and multiplies it with the target color. (T * min(TA, SA)) @BETA_API
@@ -239,6 +239,7 @@ struct Matrix
     float e21, e22, e23;
     float e31, e32, e33;
 };
+
 
 /**
  * @brief A data structure representing a texture mesh vertex
@@ -622,14 +623,16 @@ public:
     virtual Result push(std::unique_ptr<Paint> paint) noexcept;
 
     /**
-     * @brief Sets the total number of the paints pushed into the canvas to be zero.
-     * Depending on the value of the @p free argument, the paints are freed or not.
+     * @brief Clear the internal canvas resources that used for the drawing.
+     *
+     * This API sets the total number of paints pushed into the canvas to zero.
+     * Depending on the value of the @p free argument, the paints are either freed or retained.
+     * So if you need to update paint properties while maintaining the existing scene structure, you can set @p free = false.
      *
      * @param[in] free If @c true, the memory occupied by paints is deallocated, otherwise it is not.
      *
      * @return Result::Success when succeed, Result::InsufficientCondition otherwise.
      *
-     * @warning If you don't free the paints they become dangled. They are supposed to be reused, otherwise you are responsible for their lives. Thus please use the @p free argument only when you know how it works, otherwise it's not recommended.
      * @see Canvas::push()
      * @see Canvas::paints()
      */
@@ -818,7 +821,7 @@ public:
     /**
      * @brief Resets the properties of the shape path.
      *
-     * The color, the fill and the stroke properties are retained.
+     * The transformation matrix, the color, the fill and the stroke properties are retained.
      *
      * @return Result::Success when succeed.
      *
@@ -1038,7 +1041,7 @@ public:
      *
      * @return Result::Success when succeed, Result::NonSupport unsupported value, Result::FailedAllocation otherwise.
      * 
-     * @BETA_API
+     * @since 0.11
      */
     Result strokeMiterlimit(float miterlimit) noexcept;
 
@@ -1192,7 +1195,7 @@ public:
      *
      * @return The stroke miterlimit value when succeed, 4 if no stroke was set.
      *
-     * @BETA_API
+     * @since 0.11
      */
     float strokeMiterlimit() const noexcept;
 
@@ -1268,7 +1271,7 @@ public:
      *
      * @param[in] data A pointer to a memory location where the content of the picture file is stored.
      * @param[in] size The size in bytes of the memory occupied by the @p data.
-     * @param[in] mimeType Mimetype or extension of data such as "jpg", "jpeg", "svg", "svg+xml", "png", etc. In case an empty string or an unknown type is provided, the loaders will be tried one by one.
+     * @param[in] mimeType Mimetype or extension of data such as "jpg", "jpeg", "lottie", "svg", "svg+xml", "png", etc. In case an empty string or an unknown type is provided, the loaders will be tried one by one.
      * @param[in] copy If @c true the data are copied into the engine local buffer, otherwise they are not.
      *
      * @retval Result::Success When succeed.
@@ -1278,6 +1281,7 @@ public:
      *
      * @warning: It's the user responsibility to release the @p data memory if the @p copy is @c true.
      *
+     * @note If you are unsure about the MIME type, you can provide an empty value like @c "", and thorvg will attempt to figure it out.
      * @since 0.5
      */
     Result load(const char* data, uint32_t size, const std::string& mimeType, bool copy = false) noexcept;
@@ -1304,17 +1308,6 @@ public:
      * @return Result::Success when succeed.
      */
     Result size(float* w, float* h) const noexcept;
-
-    /**
-     * @brief Gets the pixels information of the picture.
-     *
-     * @note The data must be pre-multiplied by the alpha channels.
-     *
-     * @warning Please do not use it, this API is not official one. It could be modified in the next version.
-     *
-     * @BETA_API
-     */
-    const uint32_t* data(uint32_t* w, uint32_t* h) const noexcept;
 
     /**
      * @brief Loads a raw data from a memory block with a given size.
@@ -1862,8 +1855,7 @@ public:
 
 /**
  * @brief The cast() function is a utility function used to cast a 'Paint' to type 'T'.
- *
- * @BETA_API
+ * @since 0.11
  */
 template<typename T>
 std::unique_ptr<T> cast(Paint* paint)
@@ -1874,8 +1866,7 @@ std::unique_ptr<T> cast(Paint* paint)
 
 /**
  * @brief The cast() function is a utility function used to cast a 'Fill' to type 'T'.
- *
- * @BETA_API
+ * @since 0.11
  */
 template<typename T>
 std::unique_ptr<T> cast(Fill* fill)

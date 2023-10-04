@@ -296,6 +296,36 @@ TEST_CASE("[Basis] Finite number checks") {
 			"Basis with three components infinite should not be finite.");
 }
 
+TEST_CASE("[Basis] Is conformal checks") {
+	CHECK_MESSAGE(
+			Basis().is_conformal(),
+			"Identity Basis should be conformal.");
+
+	CHECK_MESSAGE(
+			Basis::from_euler(Vector3(1.2, 3.4, 5.6)).is_conformal(),
+			"Basis with only rotation should be conformal.");
+
+	CHECK_MESSAGE(
+			Basis::from_scale(Vector3(-1, -1, -1)).is_conformal(),
+			"Basis with only a flip should be conformal.");
+
+	CHECK_MESSAGE(
+			Basis::from_scale(Vector3(1.2, 1.2, 1.2)).is_conformal(),
+			"Basis with only uniform scale should be conformal.");
+
+	CHECK_MESSAGE(
+			Basis(Vector3(3, 4, 0), Vector3(4, -3, 0.0), Vector3(0, 0, 5)).is_conformal(),
+			"Basis with a flip, rotation, and uniform scale should be conformal.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis::from_scale(Vector3(1.2, 3.4, 5.6)).is_conformal(),
+			"Basis with non-uniform scale should not be conformal.");
+
+	CHECK_FALSE_MESSAGE(
+			Basis(Vector3(Math_SQRT12, Math_SQRT12, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)).is_conformal(),
+			"Basis with the X axis skewed 45 degrees should not be conformal.");
+}
+
 } // namespace TestBasis
 
 #endif // TEST_BASIS_H

@@ -134,7 +134,7 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, i
 
 String SceneRPCInterface::get_rpc_md5(const Object *p_obj) {
 	const Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V(!node, "");
+	ERR_FAIL_NULL_V(node, "");
 	const RPCConfigCache cache = _get_node_config(node);
 	String rpc_list;
 	for (const KeyValue<uint16_t, RPCConfig> &config : cache.configs) {
@@ -145,7 +145,7 @@ String SceneRPCInterface::get_rpc_md5(const Object *p_obj) {
 
 Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len) {
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
-	ERR_FAIL_COND_V(!root_node, nullptr);
+	ERR_FAIL_NULL_V(root_node, nullptr);
 	Node *node = nullptr;
 
 	if (p_node_target & 0x80000000) {
@@ -225,7 +225,7 @@ void SceneRPCInterface::process_rpc(int p_from, const uint8_t *p_packet, int p_p
 	}
 
 	Node *node = _process_get_node(p_from, p_packet, node_target, p_packet_len);
-	ERR_FAIL_COND_MSG(node == nullptr, "Invalid packet received. Requested node was not found.");
+	ERR_FAIL_NULL_MSG(node, "Invalid packet received. Requested node was not found.");
 
 	uint16_t name_id = 0;
 	switch (name_id_compression) {

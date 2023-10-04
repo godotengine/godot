@@ -12,6 +12,8 @@ thirdparty_obj = []
 if env["builtin_glslang"]:
     thirdparty_dir = "#thirdparty/glslang/"
     thirdparty_sources = [
+        "glslang/GenericCodeGen/CodeGen.cpp",
+        "glslang/GenericCodeGen/Link.cpp",
         "glslang/MachineIndependent/attribute.cpp",
         "glslang/MachineIndependent/Constant.cpp",
         "glslang/MachineIndependent/glslang_tab.cpp",
@@ -40,8 +42,7 @@ if env["builtin_glslang"]:
         "glslang/MachineIndependent/SpirvIntrinsics.cpp",
         "glslang/MachineIndependent/SymbolTable.cpp",
         "glslang/MachineIndependent/Versions.cpp",
-        "glslang/GenericCodeGen/CodeGen.cpp",
-        "glslang/GenericCodeGen/Link.cpp",
+        "glslang/ResourceLimits/ResourceLimits.cpp",
         "OGLCompilersDLL/InitializeDll.cpp",
         "SPIRV/disassemble.cpp",
         "SPIRV/doc.cpp",

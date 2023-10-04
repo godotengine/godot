@@ -140,6 +140,14 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	tohash.append("[Fragment]");
 	tohash.append(p_fragment_code ? p_fragment_code : "");
 
+	tohash.append("[gl_implementation]");
+	const char *vendor = (const char *)glGetString(GL_VENDOR);
+	tohash.append(vendor ? vendor : "unknown");
+	const char *renderer = (const char *)glGetString(GL_RENDERER);
+	tohash.append(renderer ? renderer : "unknown");
+	const char *version = (const char *)glGetString(GL_VERSION);
+	tohash.append(version ? version : "unknown");
+
 	base_sha256 = tohash.as_string().sha256_text();
 }
 

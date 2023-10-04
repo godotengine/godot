@@ -522,7 +522,7 @@ public:
 
 	_FORCE_INLINE_ RID voxel_gi_instance_get_texture(RID p_probe) {
 		VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
-		ERR_FAIL_COND_V(!voxel_gi, RID());
+		ERR_FAIL_NULL_V(voxel_gi, RID());
 		return voxel_gi->texture;
 	};
 

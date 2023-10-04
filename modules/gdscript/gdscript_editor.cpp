@@ -76,19 +76,25 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 #endif
 	if (!type_hints) {
 		processed_template = processed_template.replace(": int", "")
+									 .replace(": Shader.Mode", "")
+									 .replace(": VisualShader.Type", "")
+									 .replace(": float", "")
 									 .replace(": String", "")
 									 .replace(": Array[String]", "")
-									 .replace(": float", "")
+									 .replace(": Node", "")
 									 .replace(": CharFXTransform", "")
 									 .replace(":=", "=")
-									 .replace(" -> String", "")
-									 .replace(" -> int", "")
+									 .replace(" -> void", "")
 									 .replace(" -> bool", "")
-									 .replace(" -> void", "");
+									 .replace(" -> int", "")
+									 .replace(" -> PortType", "")
+									 .replace(" -> String", "")
+									 .replace(" -> Object", "");
 	}
 
 	processed_template = processed_template.replace("_BASE_", p_base_class_name)
-								 .replace("_CLASS_", p_class_name.to_pascal_case())
+								 .replace("_CLASS_SNAKE_CASE_", p_class_name.to_snake_case().validate_identifier())
+								 .replace("_CLASS_", p_class_name.to_pascal_case().validate_identifier())
 								 .replace("_TS_", _get_indentation());
 	scr->set_source_code(processed_template);
 	return scr;
@@ -189,10 +195,6 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 #endif
 
 	return true;
-}
-
-bool GDScriptLanguage::has_named_classes() const {
-	return false;
 }
 
 bool GDScriptLanguage::supports_builtin_mode() const {

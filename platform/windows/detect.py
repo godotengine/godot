@@ -385,7 +385,6 @@ def configure_msvc(env, vcvars_msvc_config):
             "WINMIDI_ENABLED",
             "TYPED_METHOD_BIND",
             "WIN32",
-            "MSVC",
             "WINVER=%s" % env["target_win_version"],
             "_WIN32_WINNT=%s" % env["target_win_version"],
         ]

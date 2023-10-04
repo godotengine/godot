@@ -78,7 +78,7 @@ void PostImportPluginSkeletonTrackOrganizer::internal_process(InternalImportCate
 				Vector<int> remove_indices;
 				for (int i = 0; i < track_len; i++) {
 					String track_path = String(anim->track_get_path(i).get_concatenated_names());
-					Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+					Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
 					if (!node) {
 						if (remove_except_bone) {
 							remove_indices.push_back(i);

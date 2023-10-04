@@ -202,6 +202,7 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	void _add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void _clear_bind_compat_79965();
 	static void _bind_compatibility_methods();
 #endif
 
@@ -296,7 +297,7 @@ public:
 
 	void add_separator(const String &p_text = String(), int p_id = -1);
 
-	void clear();
+	void clear(bool p_free_submenus = true);
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
 

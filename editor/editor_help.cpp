@@ -2269,20 +2269,46 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
-		} else if (tag == "img") {
+		} else if (tag.begins_with("img")) {
+			int width = 0;
+			int height = 0;
+			bool size_in_percent = false;
+			if (tag.length() > 4) {
+				Vector<String> subtags = tag.substr(4, tag.length()).split(" ");
+				HashMap<String, String> bbcode_options;
+				for (int i = 0; i < subtags.size(); i++) {
+					const String &expr = subtags[i];
+					int value_pos = expr.find("=");
+					if (value_pos > -1) {
+						bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1).unquote();
+					}
+				}
+				HashMap<String, String>::Iterator width_option = bbcode_options.find("width");
+				if (width_option) {
+					width = width_option->value.to_int();
+					if (width_option->value.ends_with("%")) {
+						size_in_percent = true;
+					}
+				}
+
+				HashMap<String, String>::Iterator height_option = bbcode_options.find("height");
+				if (height_option) {
+					height = height_option->value.to_int();
+					if (height_option->value.ends_with("%")) {
+						size_in_percent = true;
+					}
+				}
+			}
 			int end = bbcode.find("[", brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			Ref<Texture2D> texture = ResourceLoader::load(base_path.path_join(image), "Texture2D");
-			if (texture.is_valid()) {
-				p_rt->add_image(texture);
-			}
+			p_rt->add_image(ResourceLoader::load(base_path.path_join(image), "Texture2D"), width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent);
 
 			pos = end;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("img");
 		} else if (tag.begins_with("color=")) {
 			String col = tag.substr(6, tag.length());
 			Color color = Color::from_string(col, Color());

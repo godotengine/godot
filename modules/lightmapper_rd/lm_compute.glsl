@@ -5,6 +5,7 @@ secondary = "#define MODE_BOUNCE_LIGHT";
 dilate = "#define MODE_DILATE";
 unocclude = "#define MODE_UNOCCLUDE";
 light_probes = "#define MODE_LIGHT_PROBES";
+denoise = "#define MODE_DENOISE";
 
 #[compute]
 
@@ -65,9 +66,22 @@ layout(set = 1, binding = 6) uniform texture2D environment;
 layout(rgba32f, set = 1, binding = 5) uniform restrict writeonly image2DArray primary_dynamic;
 #endif
 
-#ifdef MODE_DILATE
+#if defined(MODE_DILATE) || defined(MODE_DENOISE)
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2DArray dest_light;
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
+#endif
+
+#ifdef MODE_DENOISE
+layout(set = 1, binding = 2) uniform texture2DArray source_normal;
+layout(set = 1, binding = 3) uniform DenoiseParams {
+	float spatial_bandwidth;
+	float light_bandwidth;
+	float albedo_bandwidth;
+	float normal_bandwidth;
+
+	float filter_strength;
+}
+denoise_params;
 #endif
 
 layout(push_constant, std430) uniform Params {
@@ -415,7 +429,7 @@ void main() {
 			);
 
 			for (uint j = 0; j < 4; j++) {
-				sh_accum[j].rgb += light * c[j] * (1.0 / 3.0);
+				sh_accum[j].rgb += light * c[j] * 8.0;
 			}
 #endif
 
@@ -734,5 +748,154 @@ void main() {
 
 	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice), c);
 
+#endif
+
+#ifdef MODE_DENOISE
+	// Joint Non-local means (JNLM) denoiser.
+	//
+	// Based on YoctoImageDenoiser's JNLM implementation with corrections from "Nonlinearly Weighted First-order Regression for Denoising Monte Carlo Renderings".
+	//
+	// <https://github.com/ManuelPrandini/YoctoImageDenoiser/blob/06e19489dd64e47792acffde536393802ba48607/libs/yocto_extension/yocto_extension.cpp#L207>
+	// <https://benedikt-bitterli.me/nfor/nfor.pdf>
+	//
+	// MIT License
+	//
+	// Copyright (c) 2020 ManuelPrandini
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a copy
+	// of this software and associated documentation files (the "Software"), to deal
+	// in the Software without restriction, including without limitation the rights
+	// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	// copies of the Software, and to permit persons to whom the Software is
+	// furnished to do so, subject to the following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included in all
+	// copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	// SOFTWARE.
+	//
+	// Most of the constants below have been hand-picked to fit the common scenarios lightmaps
+	// are generated with, but they can be altered freely to experiment and achieve better results.
+
+	// Half the size of the patch window around each pixel that is weighted to compute the denoised pixel.
+	// A value of 1 represents a 3x3 window, a value of 2 a 5x5 window, etc.
+	const int HALF_PATCH_WINDOW = 4;
+
+	// Half the size of the search window around each pixel that is denoised and weighted to compute the denoised pixel.
+	const int HALF_SEARCH_WINDOW = 10;
+
+	// For all of the following sigma values, smaller values will give less weight to pixels that have a bigger distance
+	// in the feature being evaluated. Therefore, smaller values are likely to cause more noise to appear, but will also
+	// cause less features to be erased in the process.
+
+	// Controls how much the spatial distance of the pixels influences the denoising weight.
+	const float SIGMA_SPATIAL = denoise_params.spatial_bandwidth;
+
+	// Controls how much the light color distance of the pixels influences the denoising weight.
+	const float SIGMA_LIGHT = denoise_params.light_bandwidth;
+
+	// Controls how much the albedo color distance of the pixels influences the denoising weight.
+	const float SIGMA_ALBEDO = denoise_params.albedo_bandwidth;
+
+	// Controls how much the normal vector distance of the pixels influences the denoising weight.
+	const float SIGMA_NORMAL = denoise_params.normal_bandwidth;
+
+	// Strength of the filter. The original paper recommends values around 10 to 15 times the Sigma parameter.
+	const float FILTER_VALUE = denoise_params.filter_strength * SIGMA_LIGHT;
+
+	// Formula constants.
+	const int PATCH_WINDOW_DIMENSION = (HALF_PATCH_WINDOW * 2 + 1);
+	const int PATCH_WINDOW_DIMENSION_SQUARE = (PATCH_WINDOW_DIMENSION * PATCH_WINDOW_DIMENSION);
+	const float TWO_SIGMA_SPATIAL_SQUARE = 2.0f * SIGMA_SPATIAL * SIGMA_SPATIAL;
+	const float TWO_SIGMA_LIGHT_SQUARE = 2.0f * SIGMA_LIGHT * SIGMA_LIGHT;
+	const float TWO_SIGMA_ALBEDO_SQUARE = 2.0f * SIGMA_ALBEDO * SIGMA_ALBEDO;
+	const float TWO_SIGMA_NORMAL_SQUARE = 2.0f * SIGMA_NORMAL * SIGMA_NORMAL;
+	const float FILTER_SQUARE_TWO_SIGMA_LIGHT_SQUARE = FILTER_VALUE * FILTER_VALUE * TWO_SIGMA_LIGHT_SQUARE;
+	const float EPSILON = 1e-6f;
+
+#ifdef USE_SH_LIGHTMAPS
+	const uint slice_count = 4;
+	const uint slice_base = params.atlas_slice * slice_count;
+#else
+	const uint slice_count = 1;
+	const uint slice_base = params.atlas_slice;
+#endif
+
+	for (uint i = 0; i < slice_count; i++) {
+		uint lightmap_slice = slice_base + i;
+		vec3 denoised_rgb = vec3(0.0f);
+		vec4 input_light = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, lightmap_slice), 0);
+		vec3 input_albedo = texelFetch(sampler2DArray(albedo_tex, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0).rgb;
+		vec3 input_normal = texelFetch(sampler2DArray(source_normal, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0).xyz;
+		if (length(input_normal) > EPSILON) {
+			// Compute the denoised pixel if the normal is valid.
+			float sum_weights = 0.0f;
+			vec3 input_rgb = input_light.rgb;
+			for (int search_y = -HALF_SEARCH_WINDOW; search_y <= HALF_SEARCH_WINDOW; search_y++) {
+				for (int search_x = -HALF_SEARCH_WINDOW; search_x <= HALF_SEARCH_WINDOW; search_x++) {
+					ivec2 search_pos = atlas_pos + ivec2(search_x, search_y);
+					vec3 search_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(search_pos, lightmap_slice), 0).rgb;
+					vec3 search_albedo = texelFetch(sampler2DArray(albedo_tex, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).rgb;
+					vec3 search_normal = texelFetch(sampler2DArray(source_normal, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).xyz;
+					float patch_square_dist = 0.0f;
+					for (int offset_y = -HALF_PATCH_WINDOW; offset_y <= HALF_PATCH_WINDOW; offset_y++) {
+						for (int offset_x = -HALF_PATCH_WINDOW; offset_x <= HALF_PATCH_WINDOW; offset_x++) {
+							ivec2 offset_input_pos = atlas_pos + ivec2(offset_x, offset_y);
+							ivec2 offset_search_pos = search_pos + ivec2(offset_x, offset_y);
+							vec3 offset_input_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_input_pos, lightmap_slice), 0).rgb;
+							vec3 offset_search_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_search_pos, lightmap_slice), 0).rgb;
+							vec3 offset_delta_rgb = offset_input_rgb - offset_search_rgb;
+							patch_square_dist += dot(offset_delta_rgb, offset_delta_rgb) - TWO_SIGMA_LIGHT_SQUARE;
+						}
+					}
+
+					patch_square_dist = max(0.0f, patch_square_dist / (3.0f * PATCH_WINDOW_DIMENSION_SQUARE));
+
+					float weight = 1.0f;
+
+					// Ignore weight if search position is out of bounds.
+					weight *= step(0, search_pos.x) * step(search_pos.x, params.atlas_size.x - 1);
+					weight *= step(0, search_pos.y) * step(search_pos.y, params.atlas_size.y - 1);
+
+					// Ignore weight if normal is zero length.
+					weight *= step(EPSILON, length(search_normal));
+
+					// Weight with pixel distance.
+					vec2 pixel_delta = vec2(search_x, search_y);
+					float pixel_square_dist = dot(pixel_delta, pixel_delta);
+					weight *= exp(-pixel_square_dist / TWO_SIGMA_SPATIAL_SQUARE);
+
+					// Weight with patch.
+					weight *= exp(-patch_square_dist / FILTER_SQUARE_TWO_SIGMA_LIGHT_SQUARE);
+
+					// Weight with albedo.
+					vec3 albedo_delta = input_albedo - search_albedo;
+					float albedo_square_dist = dot(albedo_delta, albedo_delta);
+					weight *= exp(-albedo_square_dist / TWO_SIGMA_ALBEDO_SQUARE);
+
+					// Weight with normal.
+					vec3 normal_delta = input_normal - search_normal;
+					float normal_square_dist = dot(normal_delta, normal_delta);
+					weight *= exp(-normal_square_dist / TWO_SIGMA_NORMAL_SQUARE);
+
+					denoised_rgb += weight * search_rgb;
+					sum_weights += weight;
+				}
+			}
+
+			denoised_rgb /= sum_weights;
+		} else {
+			// Ignore pixels where the normal is empty, just copy the light color.
+			denoised_rgb = input_light.rgb;
+		}
+
+		imageStore(dest_light, ivec3(atlas_pos, lightmap_slice), vec4(denoised_rgb, input_light.a));
+	}
 #endif
 }

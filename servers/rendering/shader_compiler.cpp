@@ -335,7 +335,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 			}
 		}
 
-		ERR_FAIL_COND(!fnode);
+		ERR_FAIL_NULL(fnode);
 
 		r_to_add += "\n";
 

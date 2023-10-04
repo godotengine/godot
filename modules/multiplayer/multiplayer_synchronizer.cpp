@@ -149,14 +149,14 @@ PackedStringArray MultiplayerSynchronizer::get_configuration_warnings() const {
 }
 
 Error MultiplayerSynchronizer::get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs) {
-	ERR_FAIL_COND_V(!p_obj, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(p_obj, ERR_INVALID_PARAMETER);
 	r_variant.resize(p_properties.size());
 	r_variant_ptrs.resize(r_variant.size());
 	int i = 0;
 	for (const NodePath &prop : p_properties) {
 		bool valid = false;
 		const Object *obj = _get_prop_target(p_obj, prop);
-		ERR_FAIL_COND_V(!obj, FAILED);
+		ERR_FAIL_NULL_V(obj, FAILED);
 		r_variant.write[i] = obj->get_indexed(prop.get_subnames(), &valid);
 		r_variant_ptrs.write[i] = &r_variant[i];
 		ERR_FAIL_COND_V_MSG(!valid, ERR_INVALID_DATA, vformat("Property '%s' not found.", prop));
@@ -166,11 +166,11 @@ Error MultiplayerSynchronizer::get_state(const List<NodePath> &p_properties, Obj
 }
 
 Error MultiplayerSynchronizer::set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state) {
-	ERR_FAIL_COND_V(!p_obj, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(p_obj, ERR_INVALID_PARAMETER);
 	int i = 0;
 	for (const NodePath &prop : p_properties) {
 		Object *obj = _get_prop_target(p_obj, prop);
-		ERR_FAIL_COND_V(!obj, FAILED);
+		ERR_FAIL_NULL_V(obj, FAILED);
 		obj->set_indexed(prop.get_subnames(), p_state[i]);
 		i += 1;
 	}
@@ -374,7 +374,7 @@ Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 		return OK;
 	}
 	Node *node = get_root_node();
-	ERR_FAIL_COND_V(!node, FAILED);
+	ERR_FAIL_NULL_V(node, FAILED);
 	int idx = -1;
 	Watcher *ptr = watchers.ptrw();
 	for (const NodePath &prop : props) {

@@ -47,8 +47,12 @@ class ImageTexture;
 class AnimationPlayerEditor : public VBoxContainer {
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);
 
+	friend AnimationPlayerEditorPlugin;
+
 	AnimationPlayerEditorPlugin *plugin = nullptr;
-	AnimationPlayer *player = nullptr;
+	AnimationMixer *original_node = nullptr; // For pinned mark in SceneTree.
+	AnimationPlayer *player = nullptr; // For AnimationPlayerEditor, could be dummy.
+	bool is_dummy = false;
 
 	enum {
 		TOOL_NEW_ANIM,
@@ -189,6 +193,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _blend_editor_next_changed(const int p_idx);
 
 	void _list_changed();
+	void _current_animation_changed(const String &p_name);
 	void _update_animation();
 	void _update_player();
 	void _update_animation_list_icons();
@@ -220,6 +225,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _pin_pressed();
 	String _get_current() const;
 
+	void _ensure_dummy_player();
+
 	~AnimationPlayerEditor();
 
 protected:
@@ -228,19 +235,24 @@ protected:
 	static void _bind_methods();
 
 public:
+	AnimationMixer *get_editing_node() const;
 	AnimationPlayer *get_player() const;
+	AnimationMixer *fetch_mixer_for_library() const;
 
 	static AnimationPlayerEditor *get_singleton() { return singleton; }
 
 	bool is_pinned() const { return pin->is_pressed(); }
-	void unpin() { pin->set_pressed(false); }
+	void unpin() {
+		pin->set_pressed(false);
+		_pin_pressed();
+	}
 	AnimationTrackEditor *get_track_editor() { return track_editor; }
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
 
 	void ensure_visibility();
 
-	void edit(AnimationPlayer *p_player);
+	void edit(AnimationMixer *p_node, AnimationPlayer *p_player, bool p_is_dummy);
 	void forward_force_draw_over_viewport(Control *p_overlay);
 
 	AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plugin);
@@ -249,7 +261,15 @@ public:
 class AnimationPlayerEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationPlayerEditorPlugin, EditorPlugin);
 
+	friend AnimationPlayerEditor;
+
 	AnimationPlayerEditor *anim_editor = nullptr;
+	AnimationPlayer *player = nullptr;
+	AnimationPlayer *dummy_player = nullptr;
+	ObjectID last_mixer;
+
+	void _update_dummy_player(AnimationMixer *p_mixer);
+	void _clear_dummy_player();
 
 protected:
 	void _notification(int p_what);

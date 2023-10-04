@@ -60,6 +60,8 @@ def get_flags():
         ("target", "template_debug"),
         ("builtin_pcre2_with_jit", False),
         ("vulkan", False),
+        # Embree is heavy and requires too much memory (GH-70621).
+        ("module_raycast_enabled", False),
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
@@ -201,7 +203,7 @@ def configure(env: "Environment"):
 
     # Get version info for checks below.
     cc_version = get_compiler_version(env)
-    cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
+    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
 
     if env["lto"] != "none":
         # Workaround https://github.com/emscripten-core/emscripten/issues/19781.

@@ -346,6 +346,15 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		}
 	}
 
+	if (item.kind == lsp::CompletionItemKind::Method) {
+		bool is_trigger_character = params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter;
+		bool is_quote_character = params.context.triggerCharacter == "\"" || params.context.triggerCharacter == "'";
+
+		if (is_trigger_character && is_quote_character && item.insertText.is_quoted()) {
+			item.insertText = item.insertText.unquote();
+		}
+	}
+
 	return item.to_json(true);
 }
 

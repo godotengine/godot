@@ -149,7 +149,7 @@ void NavMeshGenerator3D::finish() {
 void NavMeshGenerator3D::parse_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 	ERR_FAIL_COND(!p_navigation_mesh.is_valid());
-	ERR_FAIL_COND(p_root_node == nullptr);
+	ERR_FAIL_NULL(p_root_node);
 	ERR_FAIL_COND(!p_root_node->is_inside_tree());
 	ERR_FAIL_COND(!p_source_geometry_data.is_valid());
 
@@ -714,7 +714,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	bake_state = "Creating heightfield..."; // step #3
 	hf = rcAllocHeightfield();
 
-	ERR_FAIL_COND(!hf);
+	ERR_FAIL_NULL(hf);
 	ERR_FAIL_COND(!rcCreateHeightfield(&ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch));
 
 	bake_state = "Marking walkable triangles..."; // step #4
@@ -744,7 +744,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	chf = rcAllocCompactHeightfield();
 
-	ERR_FAIL_COND(!chf);
+	ERR_FAIL_NULL(chf);
 	ERR_FAIL_COND(!rcBuildCompactHeightfield(&ctx, cfg.walkableHeight, cfg.walkableClimb, *hf, *chf));
 
 	rcFreeHeightField(hf);
@@ -769,17 +769,17 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	cset = rcAllocContourSet();
 
-	ERR_FAIL_COND(!cset);
+	ERR_FAIL_NULL(cset);
 	ERR_FAIL_COND(!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset));
 
 	bake_state = "Creating polymesh..."; // step #9
 
 	poly_mesh = rcAllocPolyMesh();
-	ERR_FAIL_COND(!poly_mesh);
+	ERR_FAIL_NULL(poly_mesh);
 	ERR_FAIL_COND(!rcBuildPolyMesh(&ctx, *cset, cfg.maxVertsPerPoly, *poly_mesh));
 
 	detail_mesh = rcAllocPolyMeshDetail();
-	ERR_FAIL_COND(!detail_mesh);
+	ERR_FAIL_NULL(detail_mesh);
 	ERR_FAIL_COND(!rcBuildPolyMeshDetail(&ctx, *poly_mesh, *chf, cfg.detailSampleDist, cfg.detailSampleMaxError, *detail_mesh));
 
 	rcFreeCompactHeightfield(chf);

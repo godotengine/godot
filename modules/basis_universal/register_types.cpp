@@ -162,7 +162,7 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 
 	const uint8_t *ptr = p_data;
 	int size = p_size;
-	ERR_FAIL_COND_V_MSG(p_data == nullptr, image, "Cannot unpack invalid basis universal data.");
+	ERR_FAIL_NULL_V_MSG(p_data, image, "Cannot unpack invalid basis universal data.");
 
 	basist::transcoder_texture_format format = basist::transcoder_texture_format::cTFTotalTextureFormats;
 	Image::Format imgfmt = Image::FORMAT_MAX;

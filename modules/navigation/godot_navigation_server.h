@@ -243,6 +243,7 @@ public:
 	void flush_queries();
 	virtual void process(real_t p_delta_time) override;
 	virtual void init() override;
+	virtual void sync() override;
 	virtual void finish() override;
 
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override;

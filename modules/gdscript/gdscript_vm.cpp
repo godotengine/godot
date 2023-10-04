@@ -398,7 +398,13 @@ void (*type_init_function_table[])(Variant *) = {
 #define OPCODES_END
 #define OPCODES_OUT
 #define DISPATCH_OPCODE continue
+#ifdef _MSC_VER
+#define OPCODE_SWITCH(m_test)       \
+	__assume(m_test <= OPCODE_END); \
+	switch (m_test)
+#else
 #define OPCODE_SWITCH(m_test) switch (m_test)
+#endif
 #define OPCODE_BREAK break
 #define OPCODE_OUT break
 #endif
@@ -513,7 +519,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			if (p_argcount > _argument_count) {
 				r_err.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 				r_err.expected = _argument_count;
-
 				call_depth--;
 				return _get_default_variant_for_data_type(return_type);
 			} else if (p_argcount < _argument_count - _default_arg_count) {

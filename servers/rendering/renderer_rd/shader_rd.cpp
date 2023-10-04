@@ -314,7 +314,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
 	Version *version = version_owner.get_or_null(p_version);
 	RS::ShaderNativeSourceCode source_code;
-	ERR_FAIL_COND_V(!version, source_code);
+	ERR_FAIL_NULL_V(version, source_code);
 
 	source_code.versions.resize(variant_defines.size());
 
@@ -567,7 +567,7 @@ void ShaderRD::version_set_code(RID p_version, const HashMap<String, String> &p_
 	ERR_FAIL_COND(is_compute);
 
 	Version *version = version_owner.get_or_null(p_version);
-	ERR_FAIL_COND(!version);
+	ERR_FAIL_NULL(version);
 	version->vertex_globals = p_vertex_globals.utf8();
 	version->fragment_globals = p_fragment_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
@@ -599,7 +599,7 @@ void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, Str
 	ERR_FAIL_COND(!is_compute);
 
 	Version *version = version_owner.get_or_null(p_version);
-	ERR_FAIL_COND(!version);
+	ERR_FAIL_NULL(version);
 
 	version->compute_globals = p_compute_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
@@ -630,7 +630,7 @@ void ShaderRD::version_set_compute_code(RID p_version, const HashMap<String, Str
 
 bool ShaderRD::version_is_valid(RID p_version) {
 	Version *version = version_owner.get_or_null(p_version);
-	ERR_FAIL_COND_V(!version, false);
+	ERR_FAIL_NULL_V(version, false);
 
 	if (version->dirty) {
 		_initialize_version(version);

@@ -486,6 +486,9 @@ public:
 
 	void set_symbol_lookup_word_as_valid(bool p_valid);
 
+	/* Text manipulation */
+	void duplicate_lines();
+
 	CodeEdit();
 	~CodeEdit();
 };

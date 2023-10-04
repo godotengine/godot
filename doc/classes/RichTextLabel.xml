@@ -24,10 +24,17 @@
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<param index="5" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<param index="6" name="key" type="Variant" default="null" />
+			<param index="7" name="pad" type="bool" default="false" />
+			<param index="8" name="tooltip" type="String" default="&quot;&quot;" />
+			<param index="9" name="size_in_percent" type="bool" default="false" />
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [param width] and [param height] to resize the image, a [param color] to tint the image and a [param region] to only use parts of the image.
 				If [param width] or [param height] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
 				If [param width] and [param height] are not set, but [param region] is, the region's rect will be used.
+				[param key] is an optional identifier, that can be used to modify the image via [method update_image].
+				If [param pad] is set, and the image is smaller than the size specified by [param width] and [param height], the image padding is added to match the size instead of upscaling.
+				If [param size_in_percent] is set, [param width] and [param height] values are percentages of the control width instead of pixels.
 			</description>
 		</method>
 		<method name="add_text">
@@ -539,6 +546,23 @@
 				If [param expand] is [code]false[/code], the column will not contribute to the total ratio.
 			</description>
 		</method>
+		<method name="update_image">
+			<return type="void" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="mask" type="int" enum="RichTextLabel.ImageUpdateMask" is_bitfield="true" />
+			<param index="2" name="image" type="Texture2D" />
+			<param index="3" name="width" type="int" default="0" />
+			<param index="4" name="height" type="int" default="0" />
+			<param index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="6" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="7" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<param index="8" name="pad" type="bool" default="false" />
+			<param index="9" name="tooltip" type="String" default="&quot;&quot;" />
+			<param index="10" name="size_in_percent" type="bool" default="false" />
+			<description>
+				Updates the existing images with the key [param key]. Only properties specified by [param mask] bits are updated. See [method add_image].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="3">
@@ -666,6 +690,30 @@
 		</constant>
 		<constant name="MENU_MAX" value="2" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
+		</constant>
+		<constant name="UPDATE_TEXTURE" value="1" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image texture.
+		</constant>
+		<constant name="UPDATE_SIZE" value="2" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image size.
+		</constant>
+		<constant name="UPDATE_COLOR" value="4" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image color.
+		</constant>
+		<constant name="UPDATE_ALIGNMENT" value="8" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image inline alignment.
+		</constant>
+		<constant name="UPDATE_REGION" value="16" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image texture region.
+		</constant>
+		<constant name="UPDATE_PAD" value="32" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image padding.
+		</constant>
+		<constant name="UPDATE_TOOLTIP" value="64" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image tooltip.
+		</constant>
+		<constant name="UPDATE_WIDTH_IN_PERCENT" value="128" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image width from/to percents.
 		</constant>
 	</constants>
 	<theme_items>

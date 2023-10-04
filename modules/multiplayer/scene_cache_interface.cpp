@@ -53,7 +53,7 @@ void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 
 void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
-	ERR_FAIL_COND(!root_node);
+	ERR_FAIL_NULL(root_node);
 	ERR_FAIL_COND_MSG(p_packet_len < 38, "Invalid packet received. Size too small.");
 	int ofs = 1;
 
@@ -74,7 +74,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	}
 
 	Node *node = root_node->get_node(path);
-	ERR_FAIL_COND(node == nullptr);
+	ERR_FAIL_NULL(node);
 	const bool valid_rpc_checksum = multiplayer->get_rpc_md5(node) == methods_md5;
 	if (valid_rpc_checksum == false) {
 		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
@@ -119,7 +119,7 @@ void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_pack
 	}
 
 	PathSentCache *psc = path_send_cache.getptr(path);
-	ERR_FAIL_COND_MSG(!psc, "Invalid packet received. Tries to confirm a path which was not found in cache.");
+	ERR_FAIL_NULL_MSG(psc, "Invalid packet received. Tries to confirm a path which was not found in cache.");
 
 	HashMap<int, bool>::Iterator E = psc->confirmed_peers.find(p_from);
 	ERR_FAIL_COND_MSG(!E, "Invalid packet received. Source peer was not found in cache for the given path.");
@@ -165,7 +165,7 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, Pat
 
 bool SceneCacheInterface::is_cache_confirmed(NodePath p_path, int p_peer) {
 	const PathSentCache *psc = path_send_cache.getptr(p_path);
-	ERR_FAIL_COND_V(!psc, false);
+	ERR_FAIL_NULL_V(psc, false);
 	HashMap<int, bool>::ConstIterator F = psc->confirmed_peers.find(p_peer);
 	ERR_FAIL_COND_V(!F, false); // Should never happen.
 	return F->value;
@@ -173,7 +173,7 @@ bool SceneCacheInterface::is_cache_confirmed(NodePath p_path, int p_peer) {
 
 int SceneCacheInterface::make_object_cache(Object *p_obj) {
 	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V(!node, -1);
+	ERR_FAIL_NULL_V(node, -1);
 	NodePath for_path = multiplayer->get_root_path().rel_path_to(node->get_path());
 	// See if the path is cached.
 	PathSentCache *psc = path_send_cache.getptr(for_path);
@@ -188,7 +188,7 @@ int SceneCacheInterface::make_object_cache(Object *p_obj) {
 
 bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r_id) {
 	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V(!node, false);
+	ERR_FAIL_NULL_V(node, false);
 
 	r_id = make_object_cache(p_obj);
 	ERR_FAIL_COND_V(r_id < 0, false);
@@ -233,7 +233,7 @@ bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r
 
 Object *SceneCacheInterface::get_cached_object(int p_from, uint32_t p_cache_id) {
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
-	ERR_FAIL_COND_V(!root_node, nullptr);
+	ERR_FAIL_NULL_V(root_node, nullptr);
 	HashMap<int, PathGetCache>::Iterator E = path_get_cache.find(p_from);
 	ERR_FAIL_COND_V_MSG(!E, nullptr, vformat("No cache found for peer %d.", p_from));
 

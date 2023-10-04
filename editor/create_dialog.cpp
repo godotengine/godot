@@ -279,6 +279,7 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category) {
 	bool script_type = ScriptServer::is_global_class(p_type);
+	bool is_abstract = false;
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		r_item->set_text(0, p_type);
 	} else if (p_type_category == TypeCategory::PATH_TYPE) {
@@ -286,14 +287,19 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
-		r_item->set_suffix(0, "(" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+		String script_path = ScriptServer::get_global_class_path(p_type);
+		r_item->set_suffix(0, "(" + script_path.get_file() + ")");
+
+		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
+		ERR_FAIL_COND(!scr.is_valid());
+		is_abstract = scr->is_abstract();
 	} else {
 		r_item->set_metadata(0, custom_type_parents[p_type]);
 		r_item->set_text(0, p_type);
 	}
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
-			p_type_category == TypeCategory::OTHER_TYPE;
+			(p_type_category == TypeCategory::OTHER_TYPE && !is_abstract);
 	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
 
 	r_item->set_meta(SNAME("__instantiable"), instantiable);

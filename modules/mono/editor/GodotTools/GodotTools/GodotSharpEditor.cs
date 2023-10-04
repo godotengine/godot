@@ -30,6 +30,7 @@ namespace GodotTools
             public const string VerbosityLevel = "dotnet/build/verbosity_level";
             public const string NoConsoleLogging = "dotnet/build/no_console_logging";
             public const string CreateBinaryLog = "dotnet/build/create_binary_log";
+            public const string ProblemsLayout = "dotnet/build/problems_layout";
         }
 
         private EditorSettings _editorSettings;
@@ -437,7 +438,7 @@ namespace GodotTools
         private void BuildStateChanged()
         {
             if (_bottomPanelBtn != null)
-                _bottomPanelBtn.Icon = MSBuildPanel.BuildOutputView.BuildStateIcon;
+                _bottomPanelBtn.Icon = MSBuildPanel.GetBuildStateIcon();
         }
 
         public override void _EnablePlugin()
@@ -489,8 +490,7 @@ namespace GodotTools
             editorBaseControl.AddChild(_confirmCreateSlnDialog);
 
             MSBuildPanel = new MSBuildPanel();
-            MSBuildPanel.Ready += () =>
-                MSBuildPanel.BuildOutputView.BuildStateChanged += BuildStateChanged;
+            MSBuildPanel.BuildStateChanged += BuildStateChanged;
             _bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
 
             AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
@@ -535,6 +535,7 @@ namespace GodotTools
             EditorDef(Settings.VerbosityLevel, Variant.From(VerbosityLevelId.Normal));
             EditorDef(Settings.NoConsoleLogging, false);
             EditorDef(Settings.CreateBinaryLog, false);
+            EditorDef(Settings.ProblemsLayout, Variant.From(BuildProblemsView.ProblemsLayout.Tree));
 
             string settingsHintStr = "Disabled";
 
@@ -591,6 +592,14 @@ namespace GodotTools
                 ["name"] = Settings.VerbosityLevel,
                 ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = string.Join(",", verbosityLevels),
+            });
+
+            _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            {
+                ["type"] = (int)Variant.Type.Int,
+                ["name"] = Settings.ProblemsLayout,
+                ["hint"] = (int)PropertyHint.Enum,
+                ["hint_string"] = "View as List,View as Tree",
             });
 
             OnSettingsChanged();

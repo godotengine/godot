@@ -212,8 +212,26 @@ void ThemeOwner::get_theme_type_dependencies(const Node *p_for_node, const Strin
 		type_variation = for_w->get_theme_type_variation();
 	}
 
-	// If we are looking for dependencies of the current class (or a variation of it), check themes from the context.
+	// If we are looking for dependencies of the current class (or a variation of it), check relevant themes.
 	if (p_theme_type == StringName() || p_theme_type == type_name || p_theme_type == type_variation) {
+		// We need one theme that can give us a valid dependency chain. It must be complete
+		// (i.e. variations can depend on other variations, but only within the same theme,
+		// and eventually the chain must lead to native types).
+
+		// First, look through themes owned by nodes in the tree.
+		Node *owner_node = get_owner_node();
+
+		while (owner_node) {
+			Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
+			if (owner_theme.is_valid() && owner_theme->get_type_variation_base(type_variation) != StringName()) {
+				owner_theme->get_type_dependencies(type_name, type_variation, r_list);
+				return;
+			}
+
+			owner_node = _get_next_owner_node(owner_node);
+		}
+
+		// Second, check global contexts.
 		ThemeContext *global_context = _get_active_owner_context();
 		for (const Ref<Theme> &theme : global_context->get_themes()) {
 			if (theme.is_valid() && theme->get_type_variation_base(type_variation) != StringName()) {

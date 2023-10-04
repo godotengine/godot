@@ -111,6 +111,20 @@ void DisplayServerAndroid::tts_stop() {
 	TTS_Android::stop();
 }
 
+bool DisplayServerAndroid::is_dark_mode_supported() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, false);
+
+	return godot_java->is_dark_mode_supported();
+}
+
+bool DisplayServerAndroid::is_dark_mode() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, false);
+
+	return godot_java->is_dark_mode();
+}
+
 void DisplayServerAndroid::clipboard_set(const String &p_text) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL(godot_java);

@@ -1383,6 +1383,8 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 	String dir = p_folder.is_empty() ? p_root_path : p_root_path.path_join(p_folder);
 
 	Ref<DirAccess> da = DirAccess::open(dir);
+	ERR_FAIL_COND(da.is_null());
+
 	da->list_dir_begin();
 	String f = da->get_next();
 	while (!f.is_empty()) {

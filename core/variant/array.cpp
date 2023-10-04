@@ -137,7 +137,7 @@ bool Array::recursive_equal(const Array &p_array, int recursion_count) const {
 	}
 	recursion_count++;
 	for (int i = 0; i < size; i++) {
-		if (!a1[i].hash_compare(a2[i], recursion_count)) {
+		if (!a1[i].hash_compare(a2[i], recursion_count, false)) {
 			return false;
 		}
 	}

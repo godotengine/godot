@@ -146,7 +146,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 							}
 
 							String track_path = String(anim->track_get_path(i).get_concatenated_names());
-							Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+							Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
 							ERR_CONTINUE(!node);
 
 							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
@@ -213,7 +213,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 							continue;
 						}
 						track_path = String(anim->track_get_path(i).get_concatenated_names());
-						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+						Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
 						if (node) {
 							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
 							if (track_skeleton && track_skeleton == src_skeleton) {
@@ -388,7 +388,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 							}
 
 							String track_path = String(anim->track_get_path(i).get_concatenated_names());
-							Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+							Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
 							ERR_CONTINUE(!node);
 
 							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
@@ -448,7 +448,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 						}
 
 						String track_path = String(anim->track_get_path(i).get_concatenated_names());
-						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+						Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
 						ERR_CONTINUE(!node);
 
 						Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
@@ -544,7 +544,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 							}
 
 							String track_path = String(anim->track_get_path(i).get_concatenated_names());
-							Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+							Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
 							ERR_CONTINUE(!node);
 
 							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);

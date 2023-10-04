@@ -40,7 +40,7 @@ int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len)
 
 	StreamPeerMbedTLS *sp = static_cast<StreamPeerMbedTLS *>(ctx);
 
-	ERR_FAIL_COND_V(sp == nullptr, 0);
+	ERR_FAIL_NULL_V(sp, 0);
 
 	int sent;
 	Error err = sp->base->put_partial_data((const uint8_t *)buf, len, sent);
@@ -60,7 +60,7 @@ int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 
 	StreamPeerMbedTLS *sp = static_cast<StreamPeerMbedTLS *>(ctx);
 
-	ERR_FAIL_COND_V(sp == nullptr, 0);
+	ERR_FAIL_NULL_V(sp, 0);
 
 	int got;
 	Error err = sp->base->get_partial_data((uint8_t *)buf, len, got);

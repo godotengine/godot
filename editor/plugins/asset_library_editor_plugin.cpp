@@ -64,6 +64,21 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 	price->set_text(p_cost);
 }
 
+// TODO: Refactor this method to use the TextServer.
+void EditorAssetLibraryItem::clamp_width(int p_max_width) {
+	int text_pixel_width = title->get_button_font().ptr()->get_string_size(title->get_text()).x * EDSCALE;
+
+	String full_text = title->get_text();
+	title->set_tooltip_text(full_text);
+
+	if (text_pixel_width > p_max_width) {
+		// Truncate title text to within the current column width.
+		int max_length = p_max_width / (text_pixel_width / full_text.length());
+		String truncated_text = full_text.left(max_length - 3) + "...";
+		title->set_text(truncated_text);
+	}
+}
+
 void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Texture2D> &p_image) {
 	ERR_FAIL_COND(p_type != EditorAssetLibrary::IMAGE_QUEUE_ICON);
 	ERR_FAIL_COND(p_index != 0);
@@ -1008,11 +1023,11 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	}
 
 	//do the mario
-	int from = p_page - 5;
+	int from = p_page - (5 / EDSCALE);
 	if (from < 0) {
 		from = 0;
 	}
-	int to = from + 10;
+	int to = from + (10 / EDSCALE);
 	if (to > p_page_count) {
 		to = p_page_count;
 	}
@@ -1279,6 +1294,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem);
 				asset_items->add_child(item);
 				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"]);
+				item->clamp_width(asset_items_column_width);
 				item->connect("asset_selected", callable_mp(this, &EditorAssetLibrary::_select_asset));
 				item->connect("author_selected", callable_mp(this, &EditorAssetLibrary::_select_author));
 				item->connect("category_selected", callable_mp(this, &EditorAssetLibrary::_select_category));
@@ -1413,6 +1429,8 @@ void EditorAssetLibrary::_update_asset_items_columns() {
 	if (new_columns != asset_items->get_columns()) {
 		asset_items->set_columns(new_columns);
 	}
+
+	asset_items_column_width = (get_size().x / new_columns) - (100 * EDSCALE);
 }
 
 void EditorAssetLibrary::disable_community_support() {

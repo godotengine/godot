@@ -130,6 +130,19 @@
 				Returns the texture size of a given slice of a cached texture.
 			</description>
 		</method>
+		<method name="get_texture_slice_view">
+			<return type="RID" />
+			<param index="0" name="context" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="layer" type="int" />
+			<param index="3" name="mipmap" type="int" />
+			<param index="4" name="layers" type="int" />
+			<param index="5" name="mipmaps" type="int" />
+			<param index="6" name="view" type="RDTextureView" />
+			<description>
+				Returns a specific view of a slice (layer or mipmap) for a cached texture.
+			</description>
+		</method>
 		<method name="get_use_taa" qualifiers="const">
 			<return type="bool" />
 			<description>
