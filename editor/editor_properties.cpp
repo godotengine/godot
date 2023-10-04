@@ -47,6 +47,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "editor/property_selector.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
@@ -2769,7 +2770,7 @@ EditorPropertyColor::EditorPropertyColor() {
 
 void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
 	assign->set_disabled(p_read_only);
-	clear->set_disabled(p_read_only);
+	menu->set_disabled(p_read_only);
 };
 
 Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
@@ -2817,9 +2818,79 @@ void EditorPropertyNodePath::_node_assign() {
 	scene_tree->popup_scenetree_dialog();
 }
 
-void EditorPropertyNodePath::_node_clear() {
-	emit_changed(get_edited_property(), Variant());
-	update_property();
+void EditorPropertyNodePath::_update_menu() {
+	const NodePath &np = _get_node_path();
+
+	menu->get_popup()->set_item_disabled(ACTION_CLEAR, np.is_empty());
+	menu->get_popup()->set_item_disabled(ACTION_COPY, np.is_empty());
+
+	Node *edited_node = Object::cast_to<Node>(get_edited_object());
+	menu->get_popup()->set_item_disabled(ACTION_SELECT, !edited_node || !edited_node->has_node(np));
+}
+
+void EditorPropertyNodePath::_menu_option(int p_idx) {
+	switch (p_idx) {
+		case ACTION_CLEAR: {
+			emit_changed(get_edited_property(), NodePath());
+			update_property();
+		} break;
+
+		case ACTION_COPY: {
+			DisplayServer::get_singleton()->clipboard_set(_get_node_path());
+		} break;
+
+		case ACTION_EDIT: {
+			assign->hide();
+			menu->hide();
+
+			const NodePath &np = _get_node_path();
+			edit->set_text(np);
+			edit->show();
+			callable_mp((Control *)edit, &Control::grab_focus).call_deferred();
+		} break;
+
+		case ACTION_SELECT: {
+			const Node *edited_node = get_base_node();
+			ERR_FAIL_NULL(edited_node);
+
+			const NodePath &np = _get_node_path();
+			Node *target_node = edited_node->get_node_or_null(np);
+			ERR_FAIL_NULL(target_node);
+
+			SceneTreeDock::get_singleton()->set_selected(target_node);
+		} break;
+	}
+}
+
+void EditorPropertyNodePath::_accept_text() {
+	_text_submitted(edit->get_text());
+}
+
+void EditorPropertyNodePath::_text_submitted(const String &p_text) {
+	NodePath np = p_text;
+	emit_changed(get_edited_property(), np);
+	edit->hide();
+	assign->show();
+	menu->show();
+}
+
+const NodePath EditorPropertyNodePath::_get_node_path() const {
+	const Node *base_node = const_cast<EditorPropertyNodePath *>(this)->get_base_node();
+
+	Variant val = get_edited_property_value();
+	Node *n = Object::cast_to<Node>(val);
+	if (n) {
+		if (!n->is_inside_tree()) {
+			return NodePath();
+		}
+		if (base_node) {
+			return base_node->get_path_to(n);
+		} else {
+			return get_tree()->get_edited_scene_root()->get_path_to(n);
+		}
+	} else {
+		return val;
+	}
 }
 
 bool EditorPropertyNodePath::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -2865,26 +2936,11 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 }
 
 void EditorPropertyNodePath::update_property() {
-	Node *base_node = get_base_node();
-
-	NodePath p;
-	Variant val = get_edited_object()->get(get_edited_property());
-	Node *n = Object::cast_to<Node>(val);
-	if (n) {
-		if (!n->is_inside_tree()) {
-			return;
-		}
-		if (base_node) {
-			p = base_node->get_path_to(n);
-		} else {
-			p = get_tree()->get_edited_scene_root()->get_path_to(n);
-		}
-	} else {
-		p = get_edited_property_value();
-	}
-
+	const Node *base_node = get_base_node();
+	const NodePath &p = _get_node_path();
 	assign->set_tooltip_text(p);
-	if (p == NodePath()) {
+
+	if (p.is_empty()) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));
 		assign->set_flat(false);
@@ -2898,7 +2954,7 @@ void EditorPropertyNodePath::update_property() {
 		return;
 	}
 
-	Node *target_node = base_node->get_node(p);
+	const Node *target_node = base_node->get_node(p);
 	ERR_FAIL_NULL(target_node);
 
 	if (String(target_node->get_name()).contains("@")) {
@@ -2922,14 +2978,15 @@ void EditorPropertyNodePath::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			Ref<Texture2D> t = get_editor_theme_icon(SNAME("Clear"));
-			clear->set_icon(t);
+			menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			menu->get_popup()->set_item_icon(ACTION_CLEAR, get_editor_theme_icon(SNAME("Clear")));
+			menu->get_popup()->set_item_icon(ACTION_COPY, get_editor_theme_icon(SNAME("ActionCopy")));
+			menu->get_popup()->set_item_icon(ACTION_EDIT, get_editor_theme_icon(SNAME("Edit")));
+			menu->get_popup()->set_item_icon(ACTION_SELECT, get_editor_theme_icon(SNAME("ExternalLink")));
 		} break;
 	}
 }
 
-void EditorPropertyNodePath::_bind_methods() {
-}
 Node *EditorPropertyNodePath::get_base_node() {
 	if (!base_hint.is_empty() && get_tree()->get_root()->has_node(base_hint)) {
 		return get_tree()->get_root()->get_node(base_hint);
@@ -2974,12 +3031,23 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
 	hbc->add_child(assign);
 
-	clear = memnew(Button);
-	clear->set_flat(true);
-	clear->connect("pressed", callable_mp(this, &EditorPropertyNodePath::_node_clear));
-	hbc->add_child(clear);
+	menu = memnew(MenuButton);
+	menu->set_flat(true);
+	menu->connect(SNAME("about_to_popup"), callable_mp(this, &EditorPropertyNodePath::_update_menu));
+	hbc->add_child(menu);
 
-	scene_tree = nullptr; //do not allocate unnecessarily
+	menu->get_popup()->add_item(TTR("Clear"), ACTION_CLEAR);
+	menu->get_popup()->add_item(TTR("Copy as Text"), ACTION_COPY);
+	menu->get_popup()->add_item(TTR("Edit"), ACTION_EDIT);
+	menu->get_popup()->add_item(TTR("Show Node in Tree"), ACTION_SELECT);
+	menu->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &EditorPropertyNodePath::_menu_option));
+
+	edit = memnew(LineEdit);
+	edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit->hide();
+	edit->connect(SNAME("focus_exited"), callable_mp(this, &EditorPropertyNodePath::_accept_text));
+	edit->connect(SNAME("text_submitted"), callable_mp(this, &EditorPropertyNodePath::_text_submitted));
+	hbc->add_child(edit);
 }
 
 ///////////////////// RID /////////////////////////
