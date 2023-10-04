@@ -131,7 +131,7 @@ void DisplayServerWayland::_resize_window(Size2i size) {
 	}
 }
 
-// Interface mthods
+// Interface methods.
 
 bool DisplayServerWayland::has_feature(Feature p_feature) const {
 	switch (p_feature) {
