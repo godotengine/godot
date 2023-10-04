@@ -209,6 +209,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			rb_config.set_fsr_sharpness(p_viewport->fsr_sharpness);
 			rb_config.set_texture_mipmap_bias(texture_mipmap_bias);
 			rb_config.set_use_taa(use_taa);
+			rb_config.set_use_debanding(p_viewport->use_debanding);
 
 			p_viewport->render_buffers->configure(&rb_config);
 		}
