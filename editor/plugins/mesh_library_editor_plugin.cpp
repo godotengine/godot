@@ -84,9 +84,16 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 			if (child->get_child_count() > 0) {
 				child = child->get_child(0);
 				if (!Object::cast_to<MeshInstance3D>(child)) {
-					continue;
+					// Some imported gltf will generate an empty parent.
+					if (child->get_child_count() > 0) {
+						child = child->get_child(0);
+						if (!Object::cast_to<MeshInstance3D>(child)) {
+							continue;
+						}
+					} else {
+						continue;
+					}
 				}
-
 			} else {
 				continue;
 			}
