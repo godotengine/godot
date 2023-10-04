@@ -177,7 +177,7 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 }
 #endif
 
-void vertex_shader(in bool prev_frame_switch, in uint instance_index, in bool is_multimesh, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {	
+void vertex_shader(in bool prev_frame_switch, in uint instance_index, in bool is_multimesh, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
 #ifdef MOTION_VECTORS
 	vec3 vertex_input = prev_frame_switch ? previous_vertex_attrib : vertex_attrib;
 #ifdef NORMAL_USED
@@ -186,7 +186,7 @@ void vertex_shader(in bool prev_frame_switch, in uint instance_index, in bool is
 #ifdef TANGENT_USED
 	vec2 tangent_input = prev_frame_switch ? previous_tangent_attrib : tangent_attrib;
 #endif
-#else //!MOTION_VECTORS
+#else // !MOTION_VECTORS
 	vec3 vertex_input = vertex_attrib;
 #ifdef NORMAL_USED
 	vec2 normal_input = normal_attrib;
@@ -194,8 +194,8 @@ void vertex_shader(in bool prev_frame_switch, in uint instance_index, in bool is
 #ifdef TANGENT_USED
 	vec2 tangent_input = tangent_attrib;
 #endif
-#endif //#ifdef MOTION_VECTORS
-	
+#endif // #ifdef MOTION_VECTORS
+
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
@@ -516,7 +516,7 @@ void main() {
 #ifdef MOTION_VECTORS
 	// Previous vertex.
 	global_time = scene_data_block.prev_data.time;
-	vertex_shader(/*prev_frame=*/ true, instance_index, is_multimesh, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+	vertex_shader(/*prev_frame=*/true, instance_index, is_multimesh, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
 #else
 	// Unused output.
 	vec4 screen_position;
@@ -524,7 +524,7 @@ void main() {
 
 	// Current vertex.
 	global_time = scene_data_block.data.time;
-	vertex_shader(/*prev_frame=*/ false, instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
+	vertex_shader(/*prev_frame=*/false, instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
 }
 
 #[fragment]
