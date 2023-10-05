@@ -54,6 +54,10 @@ The best way to get in touch with the core engine developers is to join the
 
 To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
 
+## License
+
+This project is licensed under the [MIT License](https://github.com/godotengine/godot/blob/master/LICENSE.txt).
+
 ## Documentation and demos
 
 The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
