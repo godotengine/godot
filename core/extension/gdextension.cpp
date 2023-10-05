@@ -937,7 +937,12 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 		List<String> keys;
 		config->get_section_keys("icons", &keys);
 		for (const String &key : keys) {
-			p_extension->class_icon_paths[key] = config->get_value("icons", key);
+			String icon_path = config->get_value("icons", key);
+			if (icon_path.is_relative_path()) {
+				icon_path = p_path.get_base_dir().path_join(icon_path);
+			}
+
+			p_extension->class_icon_paths[key] = icon_path;
 		}
 	}
 
