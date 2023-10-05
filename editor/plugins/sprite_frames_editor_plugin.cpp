@@ -848,13 +848,6 @@ void SpriteFramesEditor::_animation_selected() {
 		return;
 	}
 
-	if (frames->has_animation(edited_anim)) {
-		double value = anim_speed->get_line_edit()->get_text().to_float();
-		if (!Math::is_equal_approx(value, (double)frames->get_animation_speed(edited_anim))) {
-			_animation_speed_changed(value);
-		}
-	}
-
 	TreeItem *selected = animations->get_selected();
 	ERR_FAIL_NULL(selected);
 	edited_anim = selected->get_text(0);
@@ -1242,9 +1235,9 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	if (animated_sprite) {
 		String autoplay_name = animated_sprite->call("get_autoplay");
 		if (autoplay_name.is_empty()) {
-			autoplay->set_pressed(false);
+			autoplay->set_pressed_no_signal(false);
 		} else {
-			autoplay->set_pressed(String(edited_anim) == autoplay_name);
+			autoplay->set_pressed_no_signal(String(edited_anim) == autoplay_name);
 		}
 	}
 
@@ -1300,8 +1293,8 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		}
 	}
 
-	anim_speed->set_value(frames->get_animation_speed(edited_anim));
-	anim_loop->set_pressed(frames->get_animation_loop(edited_anim));
+	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
+	anim_loop->set_pressed_no_signal(frames->get_animation_loop(edited_anim));
 
 	updating = false;
 }
@@ -1707,7 +1700,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(animations);
 	animations->set_v_size_flags(SIZE_EXPAND_FILL);
 	animations->set_hide_root(true);
-	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected));
+	// HACK: The cell_selected signal is emitted before the FPS spinbox loses focus and applies the change.
+	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected), CONNECT_DEFERRED);
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
 	animations->set_allow_reselect(true);
 
@@ -1836,6 +1830,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_duration->set_custom_arrow_step(0.1);
 	frame_duration->set_allow_lesser(false);
 	frame_duration->set_allow_greater(true);
+	frame_duration->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_frame_duration_changed));
 	hbc_frame_duration->add_child(frame_duration);
 
 	// Wide empty separation control. (like BoxContainer::add_spacer())
@@ -1866,6 +1861,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_zoom->add_child(zoom_in);
 
 	file = memnew(EditorFileDialog);
+	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request).bind(-1));
 	add_child(file);
 
 	frame_list = memnew(ItemList);
@@ -1921,8 +1917,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	zoom_in->set_shortcut(ED_SHORTCUT_ARRAY("sprite_frames/zoom_in", TTR("Zoom In"),
 			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 
-	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request).bind(-1));
-	frame_duration->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_frame_duration_changed));
 	loading_scene = false;
 	sel = -1;
 
