@@ -2962,7 +2962,15 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					glEnableVertexAttribArray(15);
 					glVertexAttribIPointer(15, 4, GL_UNSIGNED_INT, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(color_custom_offset * sizeof(float)));
 					glVertexAttribDivisor(15, 1);
+				} else {
+					// Set all default instance color and custom data values to 1.0 or 0.0 using a compressed format.
+					uint16_t zero = Math::make_half_float(0.0f);
+					uint16_t one = Math::make_half_float(1.0f);
+					GLuint default_color = (uint32_t(one) << 16) | one;
+					GLuint default_custom = (uint32_t(zero) << 16) | zero;
+					glVertexAttribI4ui(15, default_color, default_color, default_custom, default_custom);
 				}
+
 				if (use_index_buffer) {
 					glDrawElementsInstanced(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0, inst->instance_count);
 				} else {
