@@ -128,6 +128,16 @@ partial class GraphNode
         remove => DeleteRequest -= value;
     }
 }
+partial class ImporterMesh
+{
+    /// <inheritdoc cref="AddSurface(Mesh.PrimitiveType, Godot.Collections.Array, Godot.Collections.Array{Godot.Collections.Array}, Godot.Collections.Dictionary, Material, string, ulong)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void AddSurface(Mesh.PrimitiveType primitive, Godot.Collections.Array arrays, Godot.Collections.Array<Godot.Collections.Array> blendShapes, Godot.Collections.Dictionary lods, Material material, string name, uint flags)
+    {
+        AddSurface(primitive, arrays, blendShapes, lods, material, name, (ulong)flags);
+    }
+}
+
 
 partial class MeshInstance3D
 {
@@ -190,6 +200,13 @@ partial class SurfaceTool
     public void AddTriangleFan(Vector3[] vertices, Vector2[] uvs, Color[] colors, Vector2[] uv2S, Vector3[] normals, Godot.Collections.Array tangents)
     {
         AddTriangleFan(vertices, uvs, colors, uv2S, normals, new Godot.Collections.Array<Plane>(tangents));
+    }
+
+    /// <inheritdoc cref="Commit(ArrayMesh, ulong)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ArrayMesh Commit(ArrayMesh existing, uint flags)
+    {
+        return Commit(existing, (ulong)flags);
     }
 }
 

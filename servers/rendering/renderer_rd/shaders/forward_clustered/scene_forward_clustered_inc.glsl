@@ -28,6 +28,10 @@
 #endif
 #endif
 
+#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
+#define TANGENT_USED
+#endif
+
 layout(push_constant, std430) uniform DrawCall {
 	uint instance_index;
 	uint uv_offset;
@@ -211,6 +215,9 @@ struct InstanceData {
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 	uint layer_mask;
 	vec4 lightmap_uv_scale;
+	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
+	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	vec4 uv_scale;
 };
 
 layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer {

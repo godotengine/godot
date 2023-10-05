@@ -894,7 +894,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					RS::PrimitiveType primitive = mesh_storage->mesh_surface_get_primitive(surface);
 					ERR_CONTINUE(primitive < 0 || primitive >= RS::PRIMITIVE_MAX);
 
-					uint32_t input_mask = pipeline_variants->variants[light_mode][variant[primitive]].get_vertex_input_mask();
+					uint64_t input_mask = pipeline_variants->variants[light_mode][variant[primitive]].get_vertex_input_mask();
 
 					RID vertex_array;
 					RD::VertexFormatID vertex_format = RD::INVALID_FORMAT_ID;

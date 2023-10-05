@@ -52,8 +52,8 @@ ADDITIVE_SPOT = false
 
 /*
 from RenderingServer:
-ARRAY_VERTEX = 0, // RG32F or RGB32F (depending on 2D bit)
-ARRAY_NORMAL = 1, // RG16 octahedral compression
+ARRAY_VERTEX = 0, // RGB32F or RGBA16
+ARRAY_NORMAL = 1, // RG16 octahedral compression or RGBA16 normal + angle
 ARRAY_TANGENT = 2, // RG16 octahedral compression, sign stored in sign of G
 ARRAY_COLOR = 3, // RGBA8
 ARRAY_TEX_UV = 4, // RG32F
@@ -68,16 +68,16 @@ ARRAY_WEIGHTS = 11, // RGBA16UNORM (x2 if 8 weights)
 
 /* INPUT ATTRIBS */
 
-layout(location = 0) in highp vec3 vertex_attrib;
+// Always contains vertex position in XYZ, can contain tangent angle in W.
+layout(location = 0) in highp vec4 vertex_angle_attrib;
 /* clang-format on */
 
 #ifdef NORMAL_USED
-layout(location = 1) in vec2 normal_attrib;
+// Contains Normal/Axis in RG, can contain tangent in BA.
+layout(location = 1) in vec4 axis_tangent_attrib;
 #endif
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 2) in vec2 tangent_attrib;
-#endif
+// location 2 is unused.
 
 #if defined(COLOR_USED)
 layout(location = 3) in vec4 color_attrib;
@@ -120,6 +120,16 @@ vec3 oct_to_vec3(vec2 e) {
 	float t = max(-v.z, 0.0);
 	v.xy += t * -sign(v.xy);
 	return normalize(v);
+}
+
+void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binormal, out vec3 normal) {
+	float c = cos(angle);
+	float s = sin(angle);
+	vec3 omc_axis = (1.0 - c) * axis;
+	vec3 s_axis = s * axis;
+	tangent = omc_axis.xxx * axis + vec3(c, -s_axis.z, s_axis.y);
+	binormal = omc_axis.yyy * axis + vec3(s_axis.z, c, -s_axis.x);
+	normal = omc_axis.zzz * axis + vec3(-s_axis.y, s_axis.x, c);
 }
 
 #ifdef USE_INSTANCING
@@ -228,10 +238,9 @@ multiview_data;
 #endif
 
 uniform highp mat4 world_transform;
-
-#ifdef USE_LIGHTMAP
-uniform highp vec4 lightmap_uv_rect;
-#endif
+uniform highp vec3 compressed_aabb_position;
+uniform highp vec3 compressed_aabb_size;
+uniform highp vec4 uv_scale;
 
 /* Varyings */
 
@@ -248,12 +257,8 @@ out vec4 color_interp;
 out vec2 uv_interp;
 #endif
 
-#if defined(UV2_USED)
+#if defined(UV2_USED) || defined(USE_LIGHTMAP)
 out vec2 uv2_interp;
-#else
-#ifdef USE_LIGHTMAP
-out vec2 uv2_interp;
-#endif
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
@@ -294,7 +299,7 @@ layout(std140) uniform MaterialUniforms { // ubo:3
 invariant gl_Position;
 
 void main() {
-	highp vec3 vertex = vertex_attrib;
+	highp vec3 vertex = vertex_angle_attrib.xyz * compressed_aabb_size + compressed_aabb_position;
 
 	highp mat4 model_matrix = world_transform;
 #ifdef USE_INSTANCING
@@ -303,15 +308,30 @@ void main() {
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal = oct_to_vec3(normal_attrib * 2.0 - 1.0);
+	vec3 normal = oct_to_vec3(axis_tangent_attrib.xy * 2.0 - 1.0);
 #endif
 	highp mat3 model_normal_matrix = mat3(model_matrix);
 
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec2 signed_tangent_attrib = tangent_attrib * 2.0 - 1.0;
-	vec3 tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
-	float binormalf = sign(signed_tangent_attrib.y);
-	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
+#if defined(NORMAL_USED) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+
+	vec3 binormal;
+	float binormal_sign;
+	vec3 tangent;
+	if (axis_tangent_attrib.z > 0.0 || axis_tangent_attrib.w < 1.0) {
+		// Uncompressed format.
+		vec2 signed_tangent_attrib = axis_tangent_attrib.zw * 2.0 - 1.0;
+		tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
+		binormal_sign = sign(signed_tangent_attrib.y);
+		binormal = normalize(cross(normal, tangent) * binormal_sign);
+	} else {
+		// Compressed format.
+		float angle = vertex_angle_attrib.w;
+		binormal_sign = angle > 0.5 ? 1.0 : -1.0; // 0.5 does not exist in UNORM16, so values are either greater or smaller.
+		angle = abs(angle * 2.0 - 1.0) * M_PI; // 0.5 is basically zero, allowing to encode both signs reliably.
+		vec3 axis = normal;
+		axis_angle_to_tbn(axis, angle, tangent, binormal, normal);
+		binormal *= binormal_sign;
+	}
 #endif
 
 #if defined(COLOR_USED)
@@ -326,13 +346,18 @@ void main() {
 	uv_interp = uv_attrib;
 #endif
 
-#ifdef USE_LIGHTMAP
-	uv2_interp = lightmap_uv_rect.zw * uv2_attrib + lightmap_uv_rect.xy;
-#else
-#if defined(UV2_USED)
+#if defined(UV2_USED) || defined(USE_LIGHTMAP)
 	uv2_interp = uv2_attrib;
 #endif
+
+	if (uv_scale != vec4(0.0)) { // Compression enabled
+#ifdef UV_USED
+		uv_interp = (uv_interp - 0.5) * uv_scale.xy;
 #endif
+#if defined(UV2_USED) || defined(USE_LIGHTMAP)
+		uv2_interp = (uv2_interp - 0.5) * uv_scale.zw;
+#endif
+	}
 
 #if defined(OVERRIDE_POSITION)
 	highp vec4 position;

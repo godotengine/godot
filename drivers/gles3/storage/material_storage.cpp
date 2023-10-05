@@ -2944,7 +2944,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	cull_mode = Cull(cull_modei);
 	blend_mode = BlendMode(blend_modei);
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
-	vertex_input_mask = uint32_t(uses_normal);
+	vertex_input_mask = uint64_t(uses_normal);
 	vertex_input_mask |= uses_tangent << 1;
 	vertex_input_mask |= uses_color << 2;
 	vertex_input_mask |= uses_uv << 3;

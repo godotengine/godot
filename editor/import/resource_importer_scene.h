@@ -71,6 +71,7 @@ public:
 		IMPORT_GENERATE_TANGENT_ARRAYS = 8,
 		IMPORT_USE_NAMED_SKIN_BINDS = 16,
 		IMPORT_DISCARD_MESHES_AND_MATERIALS = 32, //used for optimizing animation import
+		IMPORT_FORCE_DISABLE_MESH_COMPRESSION = 64,
 	};
 
 	virtual uint32_t get_import_flags() const;
