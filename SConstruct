@@ -207,6 +207,7 @@ opts.Add(BoolVariable("progress", "Show a progress indicator during compilation"
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
+opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
@@ -893,6 +894,9 @@ if selected_platform in platform_list:
         env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
+
+    env["OBJPREFIX"] = env["object_prefix"]
+    env["SHOBJPREFIX"] = env["object_prefix"]
 
     if env["disable_3d"]:
         if env.editor_build:
