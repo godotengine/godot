@@ -13,6 +13,7 @@
 		<method name="_get_extensions" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
+				Get the list of file extensions supported by this importer.
 			</description>
 		</method>
 		<method name="_get_import_flags" qualifiers="virtual const">
@@ -21,9 +22,10 @@
 			</description>
 		</method>
 		<method name="_get_import_options" qualifiers="virtual">
-			<return type="void" />
+			<return type="Dictionary[]" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Gets the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: [code]name[/code], [code]default_value[/code], [code]property_hint[/code] (optional), [code]hint_string[/code] (optional), [code]usage[/code] (optional).
 			</description>
 		</method>
 		<method name="_get_option_visibility" qualifiers="virtual const">
@@ -35,7 +37,7 @@
 			</description>
 		</method>
 		<method name="_import_scene" qualifiers="virtual">
-			<return type="Object" />
+			<return type="Node" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="flags" type="int" />
 			<param index="2" name="options" type="Dictionary" />
@@ -44,17 +46,17 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="IMPORT_SCENE" value="1">
+		<constant name="IMPORT_SCENE" value="1" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_ANIMATION" value="2">
+		<constant name="IMPORT_ANIMATION" value="2" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_FAIL_ON_MISSING_DEPENDENCIES" value="4">
+		<constant name="IMPORT_FAIL_ON_MISSING_DEPENDENCIES" value="4" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="8">
+		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="8" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_USE_NAMED_SKIN_BINDS" value="16">
+		<constant name="IMPORT_USE_NAMED_SKIN_BINDS" value="16" enum="ImportFlags">
 		</constant>
-		<constant name="IMPORT_DISCARD_MESHES_AND_MATERIALS" value="32">
+		<constant name="IMPORT_DISCARD_MESHES_AND_MATERIALS" value="32" enum="ImportFlags">
 		</constant>
 	</constants>
 </class>

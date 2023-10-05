@@ -73,7 +73,7 @@ void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const
 		return;
 	}
 
-	ERR_FAIL();
+	ERR_FAIL_MSG("Unimplemented _get_extensions in add-on.");
 }
 
 Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
@@ -81,16 +81,45 @@ Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_f
 	for (const KeyValue<StringName, Variant> &elem : p_options) {
 		options_dict[elem.key] = elem.value;
 	}
-	Object *ret = nullptr;
+	Node *ret = nullptr;
 	if (GDVIRTUAL_CALL(_import_scene, p_path, p_flags, options_dict, ret)) {
-		return Object::cast_to<Node>(ret);
+		return ret;
 	}
 
-	ERR_FAIL_V(nullptr);
+	ERR_FAIL_V_MSG(nullptr, "Unimplemented _import_scene in add-on.");
 }
 
 void EditorSceneFormatImporter::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
-	GDVIRTUAL_CALL(_get_import_options, p_path);
+	Array needed;
+	needed.push_back("name");
+	needed.push_back("default_value");
+	TypedArray<Dictionary> options;
+	GDVIRTUAL_CALL(_get_import_options, p_path, options);
+
+	for (int i = 0; i < options.size(); i++) {
+		Dictionary d = options[i];
+		ERR_FAIL_COND(!d.has_all(needed));
+		String name = d["name"];
+		Variant default_value = d["default_value"];
+
+		PropertyHint hint = PROPERTY_HINT_NONE;
+		if (d.has("property_hint")) {
+			hint = (PropertyHint)d["property_hint"].operator int64_t();
+		}
+
+		String hint_string;
+		if (d.has("hint_string")) {
+			hint_string = d["hint_string"];
+		}
+
+		uint32_t usage = PROPERTY_USAGE_DEFAULT;
+		if (d.has("usage")) {
+			usage = d["usage"];
+		}
+
+		ResourceImporter::ImportOption option(PropertyInfo(default_value.get_type(), name, hint, hint_string, usage), default_value);
+		r_options->push_back(option);
+	}
 }
 
 Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options) {
@@ -106,12 +135,12 @@ void EditorSceneFormatImporter::_bind_methods() {
 	GDVIRTUAL_BIND(_get_import_options, "path");
 	GDVIRTUAL_BIND(_get_option_visibility, "path", "for_animation", "option");
 
-	BIND_CONSTANT(IMPORT_SCENE);
-	BIND_CONSTANT(IMPORT_ANIMATION);
-	BIND_CONSTANT(IMPORT_FAIL_ON_MISSING_DEPENDENCIES);
-	BIND_CONSTANT(IMPORT_GENERATE_TANGENT_ARRAYS);
-	BIND_CONSTANT(IMPORT_USE_NAMED_SKIN_BINDS);
-	BIND_CONSTANT(IMPORT_DISCARD_MESHES_AND_MATERIALS);
+	BIND_ENUM_CONSTANT(IMPORT_SCENE);
+	BIND_ENUM_CONSTANT(IMPORT_ANIMATION);
+	BIND_ENUM_CONSTANT(IMPORT_FAIL_ON_MISSING_DEPENDENCIES);
+	BIND_ENUM_CONSTANT(IMPORT_GENERATE_TANGENT_ARRAYS);
+	BIND_ENUM_CONSTANT(IMPORT_USE_NAMED_SKIN_BINDS);
+	BIND_ENUM_CONSTANT(IMPORT_DISCARD_MESHES_AND_MATERIALS);
 }
 
 /////////////////////////////////
