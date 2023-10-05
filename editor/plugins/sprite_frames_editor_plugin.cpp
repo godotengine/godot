@@ -1129,18 +1129,16 @@ void SpriteFramesEditor::_frame_duration_changed(double p_value) {
 		return;
 	}
 
-	int index = frame_list->get_current();
+	int index = sel;
 	if (index < 0) {
 		return;
 	}
-
-	sel = index;
 
 	Ref<Texture2D> texture = frames->get_frame_texture(edited_anim, index);
 	float old_duration = frames->get_frame_duration(edited_anim, index);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set Frame Duration"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->create_action(TTR("Set Frame Duration"), UndoRedo::MERGE_ENDS, EditorNode::get_singleton()->get_edited_scene());
 	undo_redo->add_do_method(frames.ptr(), "set_frame", edited_anim, index, texture, p_value);
 	undo_redo->add_undo_method(frames.ptr(), "set_frame", edited_anim, index, texture, old_duration);
 	undo_redo->add_do_method(this, "_update_library");
@@ -1187,7 +1185,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 	updating = true;
 
-	frame_duration->set_value(1.0); // Default.
+	frame_duration->set_value_no_signal(1.0); // Default.
 
 	if (!p_skip_selector) {
 		animations->clear();
@@ -1289,7 +1287,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		}
 		if (sel == i) {
 			frame_list->select(frame_list->get_item_count() - 1);
-			frame_duration->set_value(frames->get_frame_duration(edited_anim, i));
+			frame_duration->set_value_no_signal(frames->get_frame_duration(edited_anim, i));
 		}
 	}
 
@@ -1874,8 +1872,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_max_text_lines(2);
 	SET_DRAG_FORWARDING_GCD(frame_list, SpriteFramesEditor);
 	frame_list->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_frame_list_gui_input));
-	frame_list->connect("item_selected", callable_mp(this, &SpriteFramesEditor::_frame_list_item_selected));
-
+	// HACK: The item_selected signal is emitted before the Frame Duration spinbox loses focus and applies the change.
+	frame_list->connect("item_selected", callable_mp(this, &SpriteFramesEditor::_frame_list_item_selected), CONNECT_DEFERRED);
 	sub_vb->add_child(frame_list);
 
 	dialog = memnew(AcceptDialog);
