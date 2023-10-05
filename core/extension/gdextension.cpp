@@ -743,6 +743,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 		return OK;
 	} else {
 		ERR_PRINT("GDExtension initialization function '" + p_entry_symbol + "' returned an error.");
+		OS::get_singleton()->close_dynamic_library(library);
 		return FAILED;
 	}
 }
@@ -928,6 +929,10 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 			DirAccess::remove_absolute(p_extension->get_temp_library_path());
 		}
 #endif
+
+		// Unreference the extension so that this loading can be considered a failure.
+		p_extension.unref();
+
 		// Errors already logged in open_library()
 		return err;
 	}
