@@ -77,12 +77,17 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_motion_range", "hand", "motion_range"), &OpenXRInterface::set_motion_range);
 	ClassDB::bind_method(D_METHOD("get_motion_range", "hand"), &OpenXRInterface::get_motion_range);
 
+	ClassDB::bind_method(D_METHOD("get_hand_joint_flags", "hand", "joint"), &OpenXRInterface::get_hand_joint_flags);
+
 	ClassDB::bind_method(D_METHOD("get_hand_joint_rotation", "hand", "joint"), &OpenXRInterface::get_hand_joint_rotation);
 	ClassDB::bind_method(D_METHOD("get_hand_joint_position", "hand", "joint"), &OpenXRInterface::get_hand_joint_position);
 	ClassDB::bind_method(D_METHOD("get_hand_joint_radius", "hand", "joint"), &OpenXRInterface::get_hand_joint_radius);
 
 	ClassDB::bind_method(D_METHOD("get_hand_joint_linear_velocity", "hand", "joint"), &OpenXRInterface::get_hand_joint_linear_velocity);
 	ClassDB::bind_method(D_METHOD("get_hand_joint_angular_velocity", "hand", "joint"), &OpenXRInterface::get_hand_joint_angular_velocity);
+
+	ClassDB::bind_method(D_METHOD("is_hand_tracking_supported"), &OpenXRInterface::is_hand_tracking_supported);
+	ClassDB::bind_method(D_METHOD("is_eye_gaze_interaction_supported"), &OpenXRInterface::is_eye_gaze_interaction_supported);
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -120,7 +125,13 @@ void OpenXRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(HAND_JOINT_LITTLE_TIP);
 	BIND_ENUM_CONSTANT(HAND_JOINT_MAX);
 
-	ClassDB::bind_method(D_METHOD("is_eye_gaze_interaction_supported"), &OpenXRInterface::is_eye_gaze_interaction_supported);
+	BIND_BITFIELD_FLAG(HAND_JOINT_NONE);
+	BIND_BITFIELD_FLAG(HAND_JOINT_ORIENTATION_VALID);
+	BIND_BITFIELD_FLAG(HAND_JOINT_ORIENTATION_TRACKED);
+	BIND_BITFIELD_FLAG(HAND_JOINT_POSITION_VALID);
+	BIND_BITFIELD_FLAG(HAND_JOINT_POSITION_TRACKED);
+	BIND_BITFIELD_FLAG(HAND_JOINT_LINEAR_VELOCITY_VALID);
+	BIND_BITFIELD_FLAG(HAND_JOINT_ANGULAR_VELOCITY_VALID);
 }
 
 StringName OpenXRInterface::get_name() const {
@@ -709,6 +720,21 @@ Array OpenXRInterface::get_available_display_refresh_rates() const {
 	}
 }
 
+bool OpenXRInterface::is_hand_tracking_supported() {
+	if (openxr_api == nullptr) {
+		return false;
+	} else if (!openxr_api->is_initialized()) {
+		return false;
+	} else {
+		OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+		if (hand_tracking_ext == nullptr) {
+			return false;
+		} else {
+			return hand_tracking_ext->get_active();
+		}
+	}
+}
+
 bool OpenXRInterface::is_eye_gaze_interaction_supported() {
 	if (openxr_api == nullptr) {
 		return false;
@@ -912,15 +938,39 @@ void OpenXRInterface::handle_hand_tracking(const String &p_path, OpenXRHandTrack
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
 		OpenXRInterface::Tracker *tracker = find_tracker(p_path);
 		if (tracker && tracker->positional_tracker.is_valid()) {
-			// TODO add in confidence! Requires PR #82715
+			XrSpaceLocationFlags location_flags = hand_tracking_ext->get_hand_joint_location_flags(p_hand, XR_HAND_JOINT_PALM_EXT);
 
-			Transform3D transform;
-			transform.basis = Basis(hand_tracking_ext->get_hand_joint_rotation(p_hand, XR_HAND_JOINT_PALM_EXT));
-			transform.origin = hand_tracking_ext->get_hand_joint_position(p_hand, XR_HAND_JOINT_PALM_EXT);
-			Vector3 linear_velocity = hand_tracking_ext->get_hand_joint_linear_velocity(p_hand, XR_HAND_JOINT_PALM_EXT);
-			Vector3 angular_velocity = hand_tracking_ext->get_hand_joint_angular_velocity(p_hand, XR_HAND_JOINT_PALM_EXT);
+			if (location_flags & (XR_SPACE_LOCATION_ORIENTATION_VALID_BIT + XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
+				static const XrSpaceLocationFlags all_location_flags = XR_SPACE_LOCATION_ORIENTATION_VALID_BIT + XR_SPACE_LOCATION_POSITION_VALID_BIT + XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT + XR_SPACE_LOCATION_POSITION_TRACKED_BIT;
+				XRPose::TrackingConfidence confidence = XRPose::XR_TRACKING_CONFIDENCE_LOW;
+				Transform3D transform;
+				Vector3 linear_velocity;
+				Vector3 angular_velocity;
 
-			tracker->positional_tracker->set_pose("skeleton", transform, linear_velocity, angular_velocity, XRPose::XR_TRACKING_CONFIDENCE_HIGH);
+				if ((location_flags & all_location_flags) == all_location_flags) {
+					// All flags set? confidence is high!
+					confidence = XRPose::XR_TRACKING_CONFIDENCE_HIGH;
+				}
+
+				if (location_flags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+					transform.basis = Basis(hand_tracking_ext->get_hand_joint_rotation(p_hand, XR_HAND_JOINT_PALM_EXT));
+				}
+				if (location_flags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
+					transform.origin = hand_tracking_ext->get_hand_joint_position(p_hand, XR_HAND_JOINT_PALM_EXT);
+				}
+
+				XrSpaceVelocityFlags velocity_flags = hand_tracking_ext->get_hand_joint_location_flags(p_hand, XR_HAND_JOINT_PALM_EXT);
+				if (velocity_flags & XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
+					linear_velocity = hand_tracking_ext->get_hand_joint_linear_velocity(p_hand, XR_HAND_JOINT_PALM_EXT);
+				}
+				if (velocity_flags & XR_SPACE_VELOCITY_ANGULAR_VALID_BIT) {
+					angular_velocity = hand_tracking_ext->get_hand_joint_angular_velocity(p_hand, XR_HAND_JOINT_PALM_EXT);
+				}
+
+				tracker->positional_tracker->set_pose("skeleton", transform, linear_velocity, angular_velocity, confidence);
+			} else {
+				tracker->positional_tracker->invalidate_pose("skeleton");
+			}
 		}
 	}
 }
@@ -1181,6 +1231,37 @@ OpenXRInterface::HandMotionRange OpenXRInterface::get_motion_range(const Hand p_
 	}
 
 	return HAND_MOTION_RANGE_MAX;
+}
+
+BitField<OpenXRInterface::HandJointFlags> OpenXRInterface::get_hand_joint_flags(Hand p_hand, HandJoints p_joint) const {
+	BitField<OpenXRInterface::HandJointFlags> bits;
+
+	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
+	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
+		XrSpaceLocationFlags location_flags = hand_tracking_ext->get_hand_joint_location_flags(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
+		if (location_flags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+			bits.set_flag(HAND_JOINT_ORIENTATION_VALID);
+		}
+		if (location_flags & XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT) {
+			bits.set_flag(HAND_JOINT_ORIENTATION_TRACKED);
+		}
+		if (location_flags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
+			bits.set_flag(HAND_JOINT_POSITION_VALID);
+		}
+		if (location_flags & XR_SPACE_LOCATION_POSITION_TRACKED_BIT) {
+			bits.set_flag(HAND_JOINT_POSITION_TRACKED);
+		}
+
+		XrSpaceVelocityFlags velocity_flags = hand_tracking_ext->get_hand_joint_velocity_flags(OpenXRHandTrackingExtension::HandTrackedHands(p_hand), XrHandJointEXT(p_joint));
+		if (velocity_flags & XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
+			bits.set_flag(HAND_JOINT_LINEAR_VELOCITY_VALID);
+		}
+		if (velocity_flags & XR_SPACE_VELOCITY_ANGULAR_VALID_BIT) {
+			bits.set_flag(HAND_JOINT_ANGULAR_VELOCITY_VALID);
+		}
+	}
+
+	return bits;
 }
 
 Quaternion OpenXRInterface::get_hand_joint_rotation(Hand p_hand, HandJoints p_joint) const {

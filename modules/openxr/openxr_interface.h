@@ -111,6 +111,7 @@ public:
 	virtual PackedStringArray get_suggested_tracker_names() const override;
 	virtual TrackingStatus get_tracking_status() const override;
 
+	bool is_hand_tracking_supported();
 	bool is_eye_gaze_interaction_supported();
 
 	bool initialize_on_startup() const;
@@ -222,6 +223,17 @@ public:
 		HAND_JOINT_MAX = 26,
 	};
 
+	enum HandJointFlags {
+		HAND_JOINT_NONE = 0,
+		HAND_JOINT_ORIENTATION_VALID = 1,
+		HAND_JOINT_ORIENTATION_TRACKED = 2,
+		HAND_JOINT_POSITION_VALID = 4,
+		HAND_JOINT_POSITION_TRACKED = 8,
+		HAND_JOINT_LINEAR_VELOCITY_VALID = 16,
+		HAND_JOINT_ANGULAR_VELOCITY_VALID = 32,
+	};
+
+	BitField<HandJointFlags> get_hand_joint_flags(Hand p_hand, HandJoints p_joint) const;
 	Quaternion get_hand_joint_rotation(Hand p_hand, HandJoints p_joint) const;
 	Vector3 get_hand_joint_position(Hand p_hand, HandJoints p_joint) const;
 	float get_hand_joint_radius(Hand p_hand, HandJoints p_joint) const;
@@ -236,5 +248,6 @@ public:
 VARIANT_ENUM_CAST(OpenXRInterface::Hand)
 VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
 VARIANT_ENUM_CAST(OpenXRInterface::HandJoints)
+VARIANT_BITFIELD_CAST(OpenXRInterface::HandJointFlags)
 
 #endif // OPENXR_INTERFACE_H
