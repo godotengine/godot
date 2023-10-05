@@ -1594,15 +1594,16 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 			}
 
 		} else if (name.is_node_unique_name()) {
+			StringName key = String(name).trim_prefix(UNIQUE_NODE_PREFIX);
 			if (current->data.owned_unique_nodes.size()) {
 				// Has unique nodes in ownership
-				Node **unique = current->data.owned_unique_nodes.getptr(name);
+				Node **unique = current->data.owned_unique_nodes.getptr(key);
 				if (!unique) {
 					return nullptr;
 				}
 				next = *unique;
 			} else if (current->data.owner) {
-				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(name);
+				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(key);
 				if (!unique) {
 					return nullptr;
 				}
@@ -1645,6 +1646,32 @@ Node *Node::get_node(const NodePath &p_path) const {
 
 bool Node::has_node(const NodePath &p_path) const {
 	return get_node_or_null(p_path) != nullptr;
+}
+
+Node *Node::get_unique_node(const StringName &p_name) const {
+	if (!p_name) {
+		ERR_FAIL_V_MSG(nullptr, "'name' parameter cannot be empty");
+	}
+
+	if (data.owned_unique_nodes.size()) {
+		// Has unique nodes in ownership.
+		Node *const *unique = data.owned_unique_nodes.getptr(p_name);
+		if (!unique) {
+			// Could not find 'p_name' among the Unique Nodes this node owns.
+			return nullptr;
+		}
+		return *unique;
+	} else if (data.owner) {
+		Node **unique = data.owner->data.owned_unique_nodes.getptr(p_name);
+		if (!unique) {
+			// Could not find 'p_name' among the Unique Nodes this node's owner contains.
+			return nullptr;
+		}
+		return *unique;
+	} else {
+		// No Unique Nodes could be found across the owner.
+		return nullptr;
+	}
 }
 
 // Finds the first child node (in tree order) whose name matches the given pattern.
@@ -1856,7 +1883,7 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 
 void Node::_release_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Sanity check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = data.name;
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which == nullptr || *which != this) {
 		return; // Ignore.
@@ -1866,7 +1893,7 @@ void Node::_release_unique_name_in_owner() {
 
 void Node::_acquire_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Sanity check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = data.name;
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
 		String which_path = is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which);
@@ -3031,6 +3058,22 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	if ((pf == "has_node" || pf == "get_node") && p_idx == 0) {
 		_add_nodes_to_options(this, this, r_options);
 	}
+	if ((pf == "get_unique_node") && p_idx == 0) {
+		HashMap<StringName, Node *>::ConstIterator elem = data.owned_unique_nodes.begin();
+		while (elem) {
+			String name = elem->value->data.name;
+			r_options->push_back(name.quote());
+			++elem;
+		}
+		if (data.owner) {
+			elem = data.owner->data.owned_unique_nodes.begin();
+			while (elem) {
+				String name = elem->value->data.name;
+				r_options->push_back(name.quote());
+				++elem;
+			}
+		}
+	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
 
@@ -3265,6 +3308,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
+	ClassDB::bind_method(D_METHOD("get_unique_node", "name"), &Node::get_unique_node);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
 	ClassDB::bind_method(D_METHOD("find_child", "pattern", "recursive", "owned"), &Node::find_child, DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_children", "pattern", "type", "recursive", "owned"), &Node::find_children, DEFVAL(""), DEFVAL(true), DEFVAL(true));
