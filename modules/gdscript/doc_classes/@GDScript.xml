@@ -162,7 +162,7 @@
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a [Resource] from the filesystem located at the absolute [param path]. Unless it's already referenced elsewhere (such as in another script or in the scene), the resource is loaded from disk on function call, which might cause a slight delay, especially when loading large scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload].
+				Returns a [Resource] from the filesystem located at the absolute [param path]. Unless it's already referenced elsewhere (such as in another script or in the scene), the resource is loaded from disk on function call, which might cause a slight delay, especially when loading large scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload]. This method is equivalent of using [method ResourceLoader.load] with [constant ResourceLoader.CACHE_MODE_REUSE].
 				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.
 				[codeblock]
 				# Load a scene called "main" located in the root of the project directory and cache it in a variable.
