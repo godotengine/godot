@@ -666,8 +666,16 @@ bool Object::has_method(const StringName &p_method) const {
 	}
 
 	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
+	if (method != nullptr) {
+		return true;
+	}
 
-	return method != nullptr;
+	const Script *scr = Object::cast_to<Script>(this);
+	if (scr != nullptr) {
+		return scr->has_static_method(p_method);
+	}
+
+	return false;
 }
 
 Variant Object::getvar(const Variant &p_key, bool *r_valid) const {

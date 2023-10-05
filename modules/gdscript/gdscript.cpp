@@ -346,6 +346,10 @@ bool GDScript::has_method(const StringName &p_method) const {
 	return member_functions.has(p_method);
 }
 
+bool GDScript::has_static_method(const StringName &p_method) const {
+	return member_functions.has(p_method) && member_functions[p_method]->is_static();
+}
+
 MethodInfo GDScript::get_method_info(const StringName &p_method) const {
 	HashMap<StringName, GDScriptFunction *>::ConstIterator E = member_functions.find(p_method);
 	if (!E) {

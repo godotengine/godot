@@ -145,7 +145,10 @@ public:
 	virtual PropertyInfo get_class_category() const;
 #endif // TOOLS_ENABLED
 
+	// TODO: In the next compat breakage rename to `*_script_*` to disambiguate from `Object::has_method()`.
 	virtual bool has_method(const StringName &p_method) const = 0;
+	virtual bool has_static_method(const StringName &p_method) const { return false; }
+
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
