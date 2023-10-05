@@ -285,11 +285,36 @@
 			<description>
 				Mark the following property as exported (editable in the Inspector dock and saved to disk). To control the type of the exported property, use the type hint notation.
 				[codeblock]
+				extends Node
+
+				enum Direction {LEFT, RIGHT, UP, DOWN}
+
+				# Built-in types.
 				@export var string = ""
 				@export var int_number = 5
 				@export var float_number: float = 5
+
+				# Enums.
+				@export var type: Variant.Type
+				@export var format: Image.Format
+				@export var direction: Direction
+
+				# Resources.
 				@export var image: Image
+				@export var custom_resource: CustomResource
+
+				# Nodes.
+				@export var node: Node
+				@export var custom_node: CustomNode
+
+				# Typed arrays.
+				@export var int_array: Array[int]
+				@export var direction_array: Array[Direction]
+				@export var image_array: Array[Image]
+				@export var node_array: Array[Node]
 				[/codeblock]
+				[b]Note:[/b] Custom resources and nodes must be registered as global classes using [code]class_name[/code].
+				[b]Note:[/b] Node export is only supported in [Node]-derived classes and has a number of other limitations.
 			</description>
 		</annotation>
 		<annotation name="@export_category">
