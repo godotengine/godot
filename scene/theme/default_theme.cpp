@@ -936,8 +936,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("separator", "VSeparator", separator_vertical);
 
 	theme->set_icon("close", "Icons", icons["close"]);
-	theme->set_font("normal", "Fonts", Ref<Font>());
-	theme->set_font("large", "Fonts", Ref<Font>());
 
 	theme->set_constant("separation", "HSeparator", Math::round(4 * scale));
 	theme->set_constant("separation", "VSeparator", Math::round(4 * scale));
