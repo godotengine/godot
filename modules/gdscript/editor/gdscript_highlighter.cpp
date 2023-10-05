@@ -63,10 +63,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_lambda = false;
 
 	bool in_function_name = false;
-	bool in_function_args = false;
 	bool in_variable_declaration = false;
 	bool in_signal_declaration = false;
 	bool expect_type = false;
+
+	int in_function_args = 0;
+	int in_function_arg_dicts = 0;
 
 	Color keyword_color;
 	Color color;
@@ -472,12 +474,24 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		}
 
 		if (is_a_symbol) {
-			if (in_function_name) {
-				in_function_args = true;
-			}
-
-			if (in_function_args && str[j] == ')') {
-				in_function_args = false;
+			if (in_function_args > 0) {
+				switch (str[j]) {
+					case '(':
+						in_function_args += 1;
+						break;
+					case ')':
+						in_function_args -= 1;
+						break;
+					case '{':
+						in_function_arg_dicts += 1;
+						break;
+					case '}':
+						in_function_arg_dicts -= 1;
+						break;
+				}
+			} else if (in_function_name && str[j] == '(') {
+				in_function_args = 1;
+				in_function_arg_dicts = 0;
 			}
 
 			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[' && str[j] != '.') {
@@ -488,15 +502,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				expect_type = true;
 			}
 
-			if (in_variable_declaration || in_function_args) {
+			if (in_variable_declaration || in_function_args > 0) {
 				int k = j;
-				// Skip space
+				// Skip space.
 				while (k < line_length && is_whitespace(str[k])) {
 					k++;
 				}
 
-				if (str[k] == ':') {
-					// has type hint
+				if (str[k] == ':' && in_function_arg_dicts == 0) {
+					// Has type hint.
 					expect_type = true;
 				}
 			}
