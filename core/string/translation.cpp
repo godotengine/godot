@@ -715,14 +715,14 @@ String TranslationServer::get_tool_locale() {
 		if (TranslationServer::get_singleton()->get_tool_translation().is_valid()) {
 			return tool_translation->get_locale();
 		} else {
-			return "en";
+			return locale;
 		}
 	} else {
 #else
 	{
 #endif
 		// Look for best matching loaded translation.
-		String best_locale = "en";
+		String best_locale = locale;
 		int best_score = 0;
 
 		for (const Ref<Translation> &E : translations) {
