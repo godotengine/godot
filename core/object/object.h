@@ -970,9 +970,9 @@ public:
 	// Used on creation by binding only.
 	void set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks);
 	bool has_instance_binding(void *p_token);
+	void free_instance_binding(void *p_token);
 
 #ifdef TOOLS_ENABLED
-	void free_instance_binding(void *p_token);
 	void clear_internal_extension();
 	void reset_internal_extension(ObjectGDExtension *p_extension);
 #endif

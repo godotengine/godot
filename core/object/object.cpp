@@ -1871,7 +1871,6 @@ bool Object::has_instance_binding(void *p_token) {
 	return found;
 }
 
-#ifdef TOOLS_ENABLED
 void Object::free_instance_binding(void *p_token) {
 	bool found = false;
 	_instance_binding_mutex.lock();
@@ -1896,6 +1895,7 @@ void Object::free_instance_binding(void *p_token) {
 	_instance_binding_mutex.unlock();
 }
 
+#ifdef TOOLS_ENABLED
 void Object::clear_internal_extension() {
 	ERR_FAIL_NULL(_extension);
 
