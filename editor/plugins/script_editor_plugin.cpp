@@ -863,6 +863,10 @@ void ScriptEditor::_close_current_tab(bool p_save) {
 }
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
+	Ref<Script> scr = _get_current_script();
+	if (scr.is_valid()) {
+		scr->reload_from_file();
+	}
 	_close_tab(tab_container->get_current_tab(), false);
 	erase_tab_confirm->hide();
 }
