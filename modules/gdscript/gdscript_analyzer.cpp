@@ -2802,6 +2802,9 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	}
 
 	if (!left_type.is_set() || !right_type.is_set()) {
+		GDScriptParser::DataType dummy;
+		dummy.kind = GDScriptParser::DataType::VARIANT;
+		p_binary_op->set_datatype(dummy);
 		return;
 	}
 
