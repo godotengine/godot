@@ -42,6 +42,8 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_mesh->surface_get_primitive_type(p_surface) != Mesh::PRIMITIVE_TRIANGLES, ERR_INVALID_PARAMETER);
 
+	uint32_t custom_fmt_byte_size[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+
 	Array arrays = p_mesh->surface_get_arrays(p_surface);
 	ERR_FAIL_COND_V(arrays.is_empty(), ERR_INVALID_PARAMETER);
 
@@ -112,6 +114,20 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<float>().ptr();
 	}
 
+	const uint8_t *cu[Mesh::ARRAY_CUSTOM_COUNT] = {};
+	uint32_t custom_type_byte_sizes[Mesh::ARRAY_CUSTOM_COUNT] = {};
+	for (uint32_t i = 0; i < Mesh::ARRAY_CUSTOM_COUNT; ++i) {
+		uint32_t arrType = arrays[Mesh::ARRAY_CUSTOM0 + i].get_type();
+		if (arrType == Variant::PACKED_FLOAT32_ARRAY) {
+			cu[i] = (const uint8_t *)arrays[Mesh::ARRAY_CUSTOM0 + i].operator Vector<float>().ptr();
+		} else if (arrType == Variant::PACKED_BYTE_ARRAY) {
+			cu[i] = arrays[Mesh::ARRAY_CUSTOM0 + i].operator Vector<uint8_t>().ptr();
+		}
+
+		uint32_t type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + i * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+		custom_type_byte_sizes[i] = custom_fmt_byte_size[type];
+	}
+
 	vertices.resize(vcount);
 
 	for (int i = 0; i < vcount; i++) {
@@ -145,6 +161,12 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 			v.bones.push_back(bo[i * 4 + 1]);
 			v.bones.push_back(bo[i * 4 + 2]);
 			v.bones.push_back(bo[i * 4 + 3]);
+		}
+
+		for (uint32_t j = 0; j < Mesh::ARRAY_CUSTOM_COUNT; ++j) {
+			if (cu[j]) {
+				memcpy(&v.custom[j], &(cu[j][i * custom_type_byte_sizes[j]]), custom_type_byte_sizes[j]);
+			}
 		}
 
 		vertices.write[i] = v;
@@ -195,6 +217,9 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 	Array arr;
 	arr.resize(Mesh::ARRAY_MAX);
 
+	uint32_t custom_fmt_size[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 1, 2, 3, 4 };
+	uint32_t custom_fmt_byte_size[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+
 	int vcount = vertices.size();
 
 	Vector<Vector3> v;
@@ -206,8 +231,29 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 	Vector<int> b;
 	Vector<real_t> w;
 	Vector<int> in;
+	Vector<float> cuf[Mesh::ARRAY_CUSTOM_COUNT];
+	Vector<uint8_t> cuu[Mesh::ARRAY_CUSTOM_COUNT];
 
 	{
+		uint8_t *cu_ptr[Mesh::ARRAY_CUSTOM_COUNT] = {};
+		uint32_t custom_type_byte_sizes[Mesh::ARRAY_CUSTOM_COUNT] = {};
+		for (uint32_t i = 0; i < Mesh::ARRAY_CUSTOM_COUNT; ++i) {
+			uint32_t type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + i * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+			custom_type_byte_sizes[i] = custom_fmt_byte_size[type];
+
+			if (format & (Mesh::ARRAY_FORMAT_CUSTOM0 << i)) {
+				if (type > Mesh::ARRAY_CUSTOM_RGBA_HALF) {
+					// floating point type
+					cuf[i].resize(vcount * custom_fmt_size[type]);
+					cu_ptr[i] = (uint8_t *)cuf[i].ptrw();
+				} else {
+					// non floating point type
+					cuu[i].resize(vcount * custom_fmt_size[type]);
+					cu_ptr[i] = (uint8_t *)cuu[i].ptrw();
+				}
+			}
+		}
+
 		v.resize(vcount);
 		Vector3 *vr = v.ptrw();
 
@@ -289,6 +335,12 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 				bo[i * 4 + 2] = vtx.bones[2];
 				bo[i * 4 + 3] = vtx.bones[3];
 			}
+
+			for (uint32_t j = 0; j < Mesh::ARRAY_CUSTOM_COUNT; ++j) {
+				if (cu_ptr[j]) {
+					memcpy(cu_ptr[j] + i * custom_type_byte_sizes[j], &vtx.custom[j], custom_type_byte_sizes[j]);
+				}
+			}
 		}
 
 		int fc = faces.size();
@@ -324,10 +376,17 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 	if (w.size()) {
 		arr[Mesh::ARRAY_WEIGHTS] = w;
 	}
+	for (uint32_t i = 0; i < Mesh::ARRAY_CUSTOM_COUNT; ++i) {
+		if (cuf[i].size()) {
+			arr[Mesh::ARRAY_CUSTOM0 + i] = cuf[i];
+		} else if (cuu[i].size()) {
+			arr[Mesh::ARRAY_CUSTOM0 + i] = cuu[i];
+		}
+	}
 
 	Ref<ArrayMesh> ncmesh = p_mesh;
 	int sc = ncmesh->get_surface_count();
-	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr);
+	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), format);
 	ncmesh->surface_set_material(sc, material);
 
 	return OK;
@@ -448,6 +507,31 @@ void MeshDataTool::set_vertex_meta(int p_idx, const Variant &p_meta) {
 	vertices.write[p_idx].meta = p_meta;
 }
 
+Color MeshDataTool::get_vertex_custom(int p_idx, int p_custom_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), Color());
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, Color());
+	return vertices[p_idx].custom[p_custom_idx];
+}
+
+Error MeshDataTool::set_vertex_custom(int p_idx, int p_custom_idx, const Color &p_custom_float) {
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, ERR_INVALID_PARAMETER);
+	format |= Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx;
+	format &= ~(Mesh::ARRAY_FORMAT_CUSTOM_BITS << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS));
+	format |= Mesh::ARRAY_CUSTOM_RGBA_FLOAT << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS);
+	vertices.write[p_idx].custom[p_custom_idx] = p_custom_float;
+	return OK;
+}
+
+int MeshDataTool::has_custom(int p_custom_idx) const {
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, 0);
+	if (format & (Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx)) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 Vector<int> MeshDataTool::get_vertex_edges(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, vertices.size(), Vector<int>());
 	return vertices[p_idx].edges;
@@ -555,6 +639,11 @@ void MeshDataTool::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_vertex_meta", "idx", "meta"), &MeshDataTool::set_vertex_meta);
 	ClassDB::bind_method(D_METHOD("get_vertex_meta", "idx"), &MeshDataTool::get_vertex_meta);
+
+	ClassDB::bind_method(D_METHOD("set_vertex_custom", "idx", "custom_idx", "custom_float"), &MeshDataTool::set_vertex_custom);
+	ClassDB::bind_method(D_METHOD("get_vertex_custom", "idx", "custom_idx"), &MeshDataTool::get_vertex_custom);
+
+	ClassDB::bind_method(D_METHOD("has_custom", "custom_idx"), &MeshDataTool::has_custom);
 
 	ClassDB::bind_method(D_METHOD("get_vertex_edges", "idx"), &MeshDataTool::get_vertex_edges);
 	ClassDB::bind_method(D_METHOD("get_vertex_faces", "idx"), &MeshDataTool::get_vertex_faces);

@@ -37,6 +37,7 @@ class MeshDataTool : public RefCounted {
 	GDCLASS(MeshDataTool, RefCounted);
 
 	int format = 0;
+
 	struct Vertex {
 		Vector3 vertex;
 		Color color;
@@ -49,6 +50,7 @@ class MeshDataTool : public RefCounted {
 		Vector<int> edges;
 		Vector<int> faces;
 		Variant meta;
+		Color custom[Mesh::ARRAY_CUSTOM_COUNT];
 	};
 
 	Vector<Vertex> vertices;
@@ -112,6 +114,11 @@ public:
 	Variant get_vertex_meta(int p_idx) const;
 	void set_vertex_meta(int p_idx, const Variant &p_meta);
 
+	Color get_vertex_custom(int p_idx, int p_custom_idx) const;
+	Error set_vertex_custom(int p_idx, int p_custom_idx, const Color &p_custom_float);
+
+	int has_custom(int p_custom_idx) const;
+	
 	Vector<int> get_vertex_edges(int p_idx) const;
 	Vector<int> get_vertex_faces(int p_idx) const;
 
