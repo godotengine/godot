@@ -108,7 +108,7 @@ class ProjectConverter3To4 {
 	Vector<String> check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines);
 
 	Vector<String> check_for_files();
-	
+
 	void update_translations_path();
 
 	Vector<String> parse_arguments(const String &line);
