@@ -776,9 +776,9 @@ void TranslationServer::set_property_translation(const Ref<Translation> &p_trans
 	property_translation = p_translation;
 }
 
-StringName TranslationServer::property_translate(const StringName &p_message) const {
+StringName TranslationServer::property_translate(const StringName &p_message, const StringName &p_context) const {
 	if (property_translation.is_valid()) {
-		StringName r = property_translation->get_message(p_message);
+		StringName r = property_translation->get_message(p_message, p_context);
 		if (r) {
 			return r;
 		}
