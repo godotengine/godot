@@ -1726,11 +1726,7 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 		// Call the function.
 		Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
 		if (move_function.is_valid()) {
-			Variant args[] = { undo_redo, object, array_element_prefix, p_element_index, p_to_pos };
-			const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
-			Variant return_value;
-			Callable::CallError call_error;
-			move_function.callp(args_p, 5, return_value, call_error);
+			move_function.call(undo_redo, object, array_element_prefix, p_element_index, p_to_pos);
 		} else {
 			WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
 		}
@@ -1875,11 +1871,7 @@ void EditorInspectorArray::_clear_array() {
 			// Call the function.
 			Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
 			if (move_function.is_valid()) {
-				Variant args[] = { undo_redo, object, array_element_prefix, i, -1 };
-				const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
-				Variant return_value;
-				Callable::CallError call_error;
-				move_function.callp(args_p, 5, return_value, call_error);
+				move_function.call(undo_redo, object, array_element_prefix, i, -1);
 			} else {
 				WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
 			}
@@ -1929,11 +1921,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 				// Call the function.
 				Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
 				if (move_function.is_valid()) {
-					Variant args[] = { undo_redo, object, array_element_prefix, -1, -1 };
-					const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
-					Variant return_value;
-					Callable::CallError call_error;
-					move_function.callp(args_p, 5, return_value, call_error);
+					move_function.call(undo_redo, object, array_element_prefix, -1, -1);
 				} else {
 					WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
 				}
@@ -1948,11 +1936,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 				// Call the function.
 				Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
 				if (move_function.is_valid()) {
-					Variant args[] = { undo_redo, object, array_element_prefix, i, -1 };
-					const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
-					Variant return_value;
-					Callable::CallError call_error;
-					move_function.callp(args_p, 5, return_value, call_error);
+					move_function.call(undo_redo, object, array_element_prefix, i, -1);
 				} else {
 					WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
 				}

@@ -58,11 +58,7 @@
 		GodotMenuItem *value = [item representedObject];
 		if (value && value->hover_callback != Callable()) {
 			// If custom callback is set, use it.
-			Variant tag = value->meta;
-			Variant *tagp = &tag;
-			Variant ret;
-			Callable::CallError ce;
-			value->hover_callback.callp((const Variant **)&tagp, 1, ret, ce);
+			value->hover_callback.call(value->meta);
 		}
 	}
 }
@@ -79,11 +75,7 @@
 				GodotMenuItem *value = [menu_item representedObject];
 				if (value->key_callback != Callable()) {
 					// If custom callback is set, use it.
-					Variant tag = value->meta;
-					Variant *tagp = &tag;
-					Variant ret;
-					Callable::CallError ce;
-					value->key_callback.callp((const Variant **)&tagp, 1, ret, ce);
+					value->key_callback.call(value->meta);
 				} else {
 					// Otherwise redirect event to the engine.
 					if (DisplayServer::get_singleton()) {

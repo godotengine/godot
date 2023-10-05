@@ -402,11 +402,6 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	if (!in_dispatch_input_event) {
 		in_dispatch_input_event = true;
 
-		Variant ev = p_event;
-		Variant *evp = &ev;
-		Variant ret;
-		Callable::CallError ce;
-
 		{
 			List<WindowID>::Element *E = popup_list.back();
 			if (E && Object::cast_to<InputEventKey>(*p_event)) {
@@ -414,7 +409,7 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 				if (windows.has(E->get())) {
 					Callable callable = windows[E->get()].input_event_callback;
 					if (callable.is_valid()) {
-						callable.callp((const Variant **)&evp, 1, ret, ce);
+						callable.call(p_event);
 					}
 				}
 				in_dispatch_input_event = false;
@@ -428,7 +423,7 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 			if (windows.has(event_from_window->get_window_id())) {
 				Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 				if (callable.is_valid()) {
-					callable.callp((const Variant **)&evp, 1, ret, ce);
+					callable.call(p_event);
 				}
 			}
 		} else {
@@ -436,7 +431,7 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 			for (KeyValue<WindowID, WindowData> &E : windows) {
 				Callable callable = E.value.input_event_callback;
 				if (callable.is_valid()) {
-					callable.callp((const Variant **)&evp, 1, ret, ce);
+					callable.call(p_event);
 				}
 			}
 		}
@@ -615,9 +610,7 @@ void DisplayServerMacOS::menu_open(NSMenu *p_menu) {
 		MenuData &md = submenu[submenu_inv[p_menu]];
 		md.is_open = true;
 		if (md.open.is_valid()) {
-			Variant ret;
-			Callable::CallError ce;
-			md.open.callp(nullptr, 0, ret, ce);
+			md.open.call();
 		}
 	}
 }
@@ -627,9 +620,7 @@ void DisplayServerMacOS::menu_close(NSMenu *p_menu) {
 		MenuData &md = submenu[submenu_inv[p_menu]];
 		md.is_open = false;
 		if (md.close.is_valid()) {
-			Variant ret;
-			Callable::CallError ce;
-			md.close.callp(nullptr, 0, ret, ce);
+			md.close.call();
 		}
 	}
 }
@@ -699,12 +690,9 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 void DisplayServerMacOS::send_window_event(const WindowData &wd, WindowEvent p_event) {
 	_THREAD_SAFE_METHOD_
 
-	if (!wd.event_callback.is_null()) {
+	if (wd.event_callback.is_valid()) {
 		Variant event = int(p_event);
-		Variant *eventp = &event;
-		Variant ret;
-		Callable::CallError ce;
-		wd.event_callback.callp((const Variant **)&eventp, 1, ret, ce);
+		wd.event_callback.call(event);
 	}
 }
 
@@ -2002,11 +1990,7 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	}
 
 	if (!p_callback.is_null()) {
-		Variant button = button_pressed;
-		Variant *buttonp = &button;
-		Variant fun_ret;
-		Callable::CallError ce;
-		p_callback.callp((const Variant **)&buttonp, 1, fun_ret, ce);
+		p_callback.call(button_pressed);
 	}
 
 	return OK;
@@ -2181,23 +2165,11 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 							  url.parse_utf8([[[panel URL] path] UTF8String]);
 							  files.push_back(url);
 							  if (!callback.is_null()) {
-								  Variant v_status = true;
-								  Variant v_files = files;
-								  Variant v_index = [handler getIndex];
-								  Variant *v_args[3] = { &v_status, &v_files, &v_index };
-								  Variant ret;
-								  Callable::CallError ce;
-								  callback.callp((const Variant **)&v_args, 3, ret, ce);
+								  callback.call(true, files, [handler getIndex]);
 							  }
 						  } else {
 							  if (!callback.is_null()) {
-								  Variant v_status = false;
-								  Variant v_files = Vector<String>();
-								  Variant v_index = [handler getIndex];
-								  Variant *v_args[3] = { &v_status, &v_files, &v_index };
-								  Variant ret;
-								  Callable::CallError ce;
-								  callback.callp((const Variant **)&v_args, 3, ret, ce);
+								  callback.call(false, Vector<String>(), [handler getIndex]);
 							  }
 						  }
 						  if (prev_focus != INVALID_WINDOW_ID) {
@@ -2258,23 +2230,11 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 								  files.push_back(url);
 							  }
 							  if (!callback.is_null()) {
-								  Variant v_status = true;
-								  Variant v_files = files;
-								  Variant v_index = [handler getIndex];
-								  Variant *v_args[3] = { &v_status, &v_files, &v_index };
-								  Variant ret;
-								  Callable::CallError ce;
-								  callback.callp((const Variant **)&v_args, 3, ret, ce);
+								  callback.call(true, files, [handler getIndex]);
 							  }
 						  } else {
 							  if (!callback.is_null()) {
-								  Variant v_status = false;
-								  Variant v_files = Vector<String>();
-								  Variant v_index = [handler getIndex];
-								  Variant *v_args[3] = { &v_status, &v_files, &v_index };
-								  Variant ret;
-								  Callable::CallError ce;
-								  callback.callp((const Variant **)&v_args, 3, ret, ce);
+								  callback.call(false, Vector<String>(), [handler getIndex]);
 							  }
 						  }
 						  if (prev_focus != INVALID_WINDOW_ID) {
@@ -2308,11 +2268,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	ret.parse_utf8([[input stringValue] UTF8String]);
 
 	if (!p_callback.is_null()) {
-		Variant text = ret;
-		Variant *textp = &text;
-		Variant fun_ret;
-		Callable::CallError ce;
-		p_callback.callp((const Variant **)&textp, 1, fun_ret, ce);
+		p_callback.call(ret);
 	}
 
 	return OK;
@@ -4063,12 +4019,7 @@ void DisplayServerMacOS::process_events() {
 	while (List<MenuCall>::Element *call_p = deferred_menu_calls.front()) {
 		MenuCall call = call_p->get();
 		deferred_menu_calls.pop_front(); // Remove before call to avoid infinite loop in case callback is using `process_events` (e.g. EditorProgress).
-
-		Variant tag = call.tag;
-		Variant *tagp = &tag;
-		Variant ret;
-		Callable::CallError ce;
-		call.callback.callp((const Variant **)&tagp, 1, ret, ce);
+		call.callback.call(call.tag);
 	}
 
 	if (!drop_events) {

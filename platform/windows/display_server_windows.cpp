@@ -346,23 +346,11 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 				}
 			}
 			if (!p_callback.is_null()) {
-				Variant v_status = true;
-				Variant v_files = file_names;
-				Variant v_index = index;
-				Variant *v_args[3] = { &v_status, &v_files, &v_index };
-				Variant ret;
-				Callable::CallError ce;
-				p_callback.callp((const Variant **)&v_args, 3, ret, ce);
+				p_callback.call(true, file_names, index);
 			}
 		} else {
 			if (!p_callback.is_null()) {
-				Variant v_status = false;
-				Variant v_files = Vector<String>();
-				Variant v_index = index;
-				Variant *v_args[3] = { &v_status, &v_files, &v_index };
-				Variant ret;
-				Callable::CallError ce;
-				p_callback.callp((const Variant **)&v_args, 3, ret, ce);
+				p_callback.call(false, Vector<String>(), index);
 			}
 		}
 		pfd->Release();
@@ -2665,12 +2653,9 @@ void DisplayServerWindows::_drag_event(WindowID p_window, float p_x, float p_y, 
 }
 
 void DisplayServerWindows::_send_window_event(const WindowData &wd, WindowEvent p_event) {
-	if (!wd.event_callback.is_null()) {
+	if (wd.event_callback.is_valid()) {
 		Variant event = int(p_event);
-		Variant *eventp = &event;
-		Variant ret;
-		Callable::CallError ce;
-		wd.event_callback.callp((const Variant **)&eventp, 1, ret, ce);
+		wd.event_callback.call(event);
 	}
 }
 
@@ -2683,12 +2668,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	if (in_dispatch_input_event) {
 		return;
 	}
-
 	in_dispatch_input_event = true;
-	Variant ev = p_event;
-	Variant *evp = &ev;
-	Variant ret;
-	Callable::CallError ce;
 
 	{
 		List<WindowID>::Element *E = popup_list.back();
@@ -2697,7 +2677,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			if (windows.has(E->get())) {
 				Callable callable = windows[E->get()].input_event_callback;
 				if (callable.is_valid()) {
-					callable.callp((const Variant **)&evp, 1, ret, ce);
+					callable.call(p_event);
 				}
 			}
 			in_dispatch_input_event = false;
@@ -2711,7 +2691,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		if (windows.has(event_from_window->get_window_id())) {
 			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 			if (callable.is_valid()) {
-				callable.callp((const Variant **)&evp, 1, ret, ce);
+				callable.call(p_event);
 			}
 		}
 	} else {
@@ -2719,7 +2699,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		for (const KeyValue<WindowID, WindowData> &E : windows) {
 			const Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.callp((const Variant **)&evp, 1, ret, ce);
+				callable.call(p_event);
 			}
 		}
 	}
@@ -3782,11 +3762,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (rect_changed) {
 				if (!window.rect_changed_callback.is_null()) {
-					Variant size = Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height);
-					const Variant *args[] = { &size };
-					Variant ret;
-					Callable::CallError ce;
-					window.rect_changed_callback.callp(args, 1, ret, ce);
+					window.rect_changed_callback.call(Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height));
 				}
 
 				// Update cursor clip region after window rect has changed.
@@ -4003,11 +3979,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (files.size() && !windows[window_id].drop_files_callback.is_null()) {
-				Variant v = files;
-				Variant *vp = &v;
-				Variant ret;
-				Callable::CallError ce;
-				windows[window_id].drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
+				windows[window_id].drop_files_callback.call(files);
 			}
 		} break;
 		default: {
