@@ -471,7 +471,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 			class_desc->add_text(" = ");
 			class_desc->pop();
 			class_desc->push_color(theme_cache.value_color);
-			_add_text(_fix_constant(p_method.arguments[j].default_value));
+			class_desc->add_text(_fix_constant(p_method.arguments[j].default_value));
 			class_desc->pop();
 		}
 
@@ -1073,7 +1073,7 @@ void EditorHelp::_update_doc() {
 				class_desc->pop();
 
 				class_desc->push_color(theme_cache.value_color);
-				_add_text(_fix_constant(cd.properties[i].default_value));
+				class_desc->add_text(_fix_constant(cd.properties[i].default_value));
 				class_desc->pop();
 
 				class_desc->push_color(theme_cache.symbol_color);
@@ -1249,7 +1249,7 @@ void EditorHelp::_update_doc() {
 				class_desc->add_text(" [" + TTR("default:") + " ");
 				class_desc->pop();
 				class_desc->push_color(theme_cache.value_color);
-				_add_text(_fix_constant(cd.theme_properties[i].default_value));
+				class_desc->add_text(_fix_constant(cd.theme_properties[i].default_value));
 				class_desc->pop();
 				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text("]");
@@ -1465,7 +1465,7 @@ void EditorHelp::_update_doc() {
 					class_desc->add_text(" = ");
 					class_desc->pop();
 					class_desc->push_color(theme_cache.value_color);
-					_add_text(_fix_constant(enum_list[i].value));
+					class_desc->add_text(_fix_constant(enum_list[i].value));
 					class_desc->pop();
 
 					if (enum_list[i].is_deprecated) {
@@ -1541,7 +1541,7 @@ void EditorHelp::_update_doc() {
 				class_desc->add_text(" = ");
 				class_desc->pop();
 				class_desc->push_color(theme_cache.value_color);
-				_add_text(_fix_constant(constants[i].value));
+				class_desc->add_text(_fix_constant(constants[i].value));
 				class_desc->pop();
 
 				if (constants[i].is_deprecated) {
@@ -1722,7 +1722,7 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.value_color);
-				_add_text(_fix_constant(cd.properties[i].default_value));
+				class_desc->add_text(_fix_constant(cd.properties[i].default_value));
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.symbol_color);
