@@ -2165,30 +2165,40 @@ int Node::get_persistent_group_count() const {
 	return count;
 }
 
-void Node::_print_tree_pretty(const String &prefix, const bool last) {
-	String new_prefix = last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
-	print_line(prefix + new_prefix + String(get_name()));
-	_update_children_cache();
-	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
-		new_prefix = last ? String::utf8("   ") : String::utf8(" ┃ ");
-		data.children_cache[i]->_print_tree_pretty(prefix + new_prefix, i == data.children_cache.size() - 1);
-	}
-}
-
 void Node::print_tree_pretty() {
-	_print_tree_pretty("", true);
+	print_line(_get_tree_string_pretty("", true));
 }
 
 void Node::print_tree() {
-	_print_tree(this);
+	print_line(_get_tree_string(this));
 }
 
-void Node::_print_tree(const Node *p_node) {
-	print_line(String(p_node->get_path_to(this)));
+String Node::_get_tree_string_pretty(const String &p_prefix, bool p_last) {
+	String new_prefix = p_last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
 	_update_children_cache();
+	String return_tree = p_prefix + new_prefix + String(get_name()) + "\n";
 	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
-		data.children_cache[i]->_print_tree(p_node);
+		new_prefix = p_last ? String::utf8("   ") : String::utf8(" ┃ ");
+		return_tree += data.children_cache[i]->_get_tree_string_pretty(p_prefix + new_prefix, i == data.children_cache.size() - 1);
 	}
+	return return_tree;
+}
+
+String Node::get_tree_string_pretty() {
+	return _get_tree_string_pretty("", true);
+}
+
+String Node::_get_tree_string(const Node *p_node) {
+	_update_children_cache();
+	String return_tree = String(p_node->get_path_to(this)) + "\n";
+	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
+		return_tree += data.children_cache[i]->_get_tree_string(p_node);
+	}
+	return return_tree;
+}
+
+String Node::get_tree_string() {
+	return _get_tree_string(this);
 }
 
 void Node::_propagate_reverse_notification(int p_notification) {
@@ -3287,6 +3297,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_index", "include_internal"), &Node::get_index, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
+	ClassDB::bind_method(D_METHOD("get_tree_string"), &Node::get_tree_string);
+	ClassDB::bind_method(D_METHOD("get_tree_string_pretty"), &Node::get_tree_string_pretty);
 	ClassDB::bind_method(D_METHOD("set_scene_file_path", "scene_file_path"), &Node::set_scene_file_path);
 	ClassDB::bind_method(D_METHOD("get_scene_file_path"), &Node::get_scene_file_path);
 	ClassDB::bind_method(D_METHOD("propagate_notification", "what"), &Node::propagate_notification);

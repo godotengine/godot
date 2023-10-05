@@ -447,6 +447,36 @@
 				Returns the [SceneTree] that contains this node.
 			</description>
 		</method>
+		<method name="get_tree_string">
+			<return type="String" />
+			<description>
+				Returns the tree as a [String]. Used mainly for debugging purposes. This version displays the path relative to the current node, and is good for copy/pasting into the [method get_node] function. It also can be used in game UI/UX.
+				[b]Example output:[/b]
+				[codeblock]
+				TheGame
+				TheGame/Menu
+				TheGame/Menu/Label
+				TheGame/Menu/Camera2D
+				TheGame/SplashScreen
+				TheGame/SplashScreen/Camera2D
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_tree_string_pretty">
+			<return type="String" />
+			<description>
+				Similar to [method get_tree_string], this returns the tree as a [String]. This version displays a more graphical representation similar to what is displayed in the Scene Dock. It is useful for inspecting larger trees.
+				[b]Example output:[/b]
+				[codeblock]
+				 ┖╴TheGame
+				    ┠╴Menu
+				    ┃  ┠╴Label
+				    ┃  ┖╴Camera2D
+				    ┖╴SplashScreen
+				       ┖╴Camera2D
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_viewport" qualifiers="const">
 			<return type="Viewport" />
 			<description>
