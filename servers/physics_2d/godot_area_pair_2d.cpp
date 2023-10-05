@@ -66,6 +66,7 @@ bool GodotAreaPair2D::pre_solve(real_t p_step) {
 
 	if (colliding) {
 		if (has_space_override) {
+			body_has_attached_area = true;
 			body->add_area(area);
 		}
 
@@ -74,6 +75,7 @@ bool GodotAreaPair2D::pre_solve(real_t p_step) {
 		}
 	} else {
 		if (has_space_override) {
+			body_has_attached_area = false;
 			body->remove_area(area);
 		}
 
@@ -103,7 +105,8 @@ GodotAreaPair2D::GodotAreaPair2D(GodotBody2D *p_body, int p_body_shape, GodotAre
 
 GodotAreaPair2D::~GodotAreaPair2D() {
 	if (colliding) {
-		if (has_space_override) {
+		if (body_has_attached_area) {
+			body_has_attached_area = false;
 			body->remove_area(area);
 		}
 		if (area->has_monitor_callback()) {
