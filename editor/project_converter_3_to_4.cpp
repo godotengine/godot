@@ -734,7 +734,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 	return collected_files;
 }
 
-// Updates the path for *.localization files added in the project settings
+// Updates the path for *.localization files added in the project settings.
 void ProjectConverter3To4::update_translations_path() {
 	if (ProjectSettings::get_singleton()->has_setting("locale/translations")) {
 		PackedStringArray old_path_translations = ProjectSettings::get_singleton()->get("locale/translations");
