@@ -191,7 +191,8 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context.");
 		}
 		if (gl_manager_angle) {
-			Error err = gl_manager_angle->window_create(window_id_counter, nullptr, (__bridge void *)[wd.window_view layer], p_rect.size.width, p_rect.size.height);
+			CALayer *layer = [(NSView *)wd.window_view layer];
+			Error err = gl_manager_angle->window_create(window_id_counter, nullptr, (__bridge void *)layer, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context.");
 		}
 		window_set_vsync_mode(p_vsync_mode, window_id_counter);
