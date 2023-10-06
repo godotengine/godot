@@ -851,6 +851,10 @@ void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object) {
 	}
 }
 
+void EditorNode::_plugin_over_self_own(EditorPlugin *p_plugin) {
+	active_plugins[p_plugin->get_instance_id()].insert(p_plugin);
+}
+
 void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 	List<Ref<Resource>> changed;
 
@@ -2135,7 +2139,12 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	for (EditorPlugin *plugin : active_plugins[owner_id]) {
 		if (!available_plugins.has(plugin)) {
 			to_remove.push_back(plugin);
-			_plugin_over_edit(plugin, nullptr);
+			if (plugin->can_auto_hide()) {
+				_plugin_over_edit(plugin, nullptr);
+			} else {
+				// If plugin can't be hidden, make it own itself and become responsible for closing.
+				_plugin_over_self_own(plugin);
+			}
 		}
 	}
 
@@ -2147,6 +2156,12 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	for (EditorPlugin *plugin : available_plugins) {
 		if (active_plugins[owner_id].has(plugin)) {
 			// Plugin was already active, just change the object.
+			plugin->edit(p_object);
+			continue;
+		}
+
+		if (active_plugins.has(plugin->get_instance_id())) {
+			// Plugin is already active, but as self-owning, so it needs a separate check.
 			plugin->edit(p_object);
 			continue;
 		}
@@ -2214,7 +2229,11 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 	if (p_editing_owner) {
 		const ObjectID id = p_editing_owner->get_instance_id();
 		for (EditorPlugin *plugin : active_plugins[id]) {
-			_plugin_over_edit(plugin, nullptr);
+			if (plugin->can_auto_hide()) {
+				_plugin_over_edit(plugin, nullptr);
+			} else {
+				_plugin_over_self_own(plugin);
+			}
 		}
 		active_plugins.erase(id);
 	} else {
@@ -2222,10 +2241,23 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 		// This is to sweep properties that were removed from the inspector.
 		List<ObjectID> to_remove;
 		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
-			if (!ObjectDB::get_instance(kv.key)) {
+			const Object *context = ObjectDB::get_instance(kv.key);
+			if (context) {
+				// In case of self-owning plugins, they are disabled here if they can auto hide.
+				const EditorPlugin *self_owning = Object::cast_to<EditorPlugin>(context);
+				if (self_owning && self_owning->can_auto_hide()) {
+					context = nullptr;
+				}
+			}
+
+			if (!context) {
 				to_remove.push_back(kv.key);
 				for (EditorPlugin *plugin : kv.value) {
-					_plugin_over_edit(plugin, nullptr);
+					if (plugin->can_auto_hide()) {
+						_plugin_over_edit(plugin, nullptr);
+					} else {
+						_plugin_over_self_own(plugin);
+					}
 				}
 			}
 		}

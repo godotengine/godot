@@ -3391,11 +3391,16 @@ Object *EditorInspector::get_edited_object() {
 	return object;
 }
 
+Object *EditorInspector::get_next_edited_object() {
+	return next_object;
+}
+
 void EditorInspector::edit(Object *p_object) {
 	if (object == p_object) {
 		return;
 	}
 
+	next_object = p_object; // Some plugins need to know the next edited object when clearing the inspector.
 	if (object) {
 		_clear();
 		object->disconnect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
@@ -3412,6 +3417,10 @@ void EditorInspector::edit(Object *p_object) {
 		object->connect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
 		update_tree();
 	}
+
+	// Keep it available until the end so it works with both main and sub inspectors.
+	next_object = nullptr;
+
 	emit_signal(SNAME("edited_object_changed"));
 }
 

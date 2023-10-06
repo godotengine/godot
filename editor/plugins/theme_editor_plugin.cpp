@@ -38,6 +38,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/inspector_dock.h"
 #include "editor/progress_dialog.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
@@ -3534,6 +3535,16 @@ void ThemeEditor::_theme_edit_button_cbk() {
 	theme_edit_dialog->popup_centered(Size2(850, 700) * EDSCALE);
 }
 
+void ThemeEditor::_theme_close_button_cbk() {
+	plugin->make_visible(false); // Enables auto hide.
+	if (theme.is_valid() && InspectorDock::get_inspector_singleton()->get_edited_object() == theme.ptr()) {
+		EditorNode::get_singleton()->push_item(nullptr);
+	} else {
+		theme = Ref<Theme>();
+		EditorNode::get_singleton()->hide_unused_editors(plugin);
+	}
+}
+
 void ThemeEditor::_add_preview_button_cbk() {
 	preview_scene_dialog->popup_file_dialog();
 }
@@ -3651,6 +3662,12 @@ ThemeEditor::ThemeEditor() {
 	theme_save_as_button->connect("pressed", callable_mp(this, &ThemeEditor::_theme_save_button_cbk).bind(true));
 	top_menu->add_child(theme_save_as_button);
 
+	Button *theme_close_button = memnew(Button);
+	theme_close_button->set_text(TTR("Close"));
+	theme_close_button->set_flat(true);
+	theme_close_button->connect("pressed", callable_mp(this, &ThemeEditor::_theme_close_button_cbk));
+	top_menu->add_child(theme_close_button);
+
 	top_menu->add_child(memnew(VSeparator));
 
 	Button *theme_edit_button = memnew(Button);
@@ -3717,20 +3734,12 @@ ThemeEditor::ThemeEditor() {
 
 ///////////////////////
 
-void ThemeEditorPlugin::edit(Object *p_node) {
-	if (Object::cast_to<Theme>(p_node)) {
-		theme_editor->edit(Object::cast_to<Theme>(p_node));
-	} else {
-		// We intentionally keep a reference to the last used theme to work around
-		// the the editor being hidden while base resources are edited. Uncomment
-		// the following line again and remove this comment once that bug has been
-		// fixed (scheduled for Godot 4.1 in PR 73098):
-		// theme_editor->edit(Ref<Theme>());
-	}
+void ThemeEditorPlugin::edit(Object *p_object) {
+	theme_editor->edit(Ref<Theme>(p_object));
 }
 
-bool ThemeEditorPlugin::handles(Object *p_node) const {
-	return Object::cast_to<Theme>(p_node) != nullptr;
+bool ThemeEditorPlugin::handles(Object *p_object) const {
+	return Object::cast_to<Theme>(p_object) != nullptr;
 }
 
 void ThemeEditorPlugin::make_visible(bool p_visible) {
@@ -3746,8 +3755,77 @@ void ThemeEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
+bool ThemeEditorPlugin::can_auto_hide() const {
+	Ref<Theme> edited_theme = theme_editor->theme;
+	if (edited_theme.is_null()) {
+		return true;
+	}
+
+	Ref<Resource> edited_resource = Ref<Resource>(InspectorDock::get_inspector_singleton()->get_next_edited_object());
+	if (edited_resource.is_null()) {
+		return true;
+	}
+
+	// Don't hide if edited resource used by this theme.
+	Ref<StyleBox> sbox = edited_resource;
+	if (sbox.is_valid()) {
+		List<StringName> type_list;
+		edited_theme->get_stylebox_type_list(&type_list);
+
+		for (const StringName &E : type_list) {
+			List<StringName> list;
+			edited_theme->get_stylebox_list(E, &list);
+
+			for (const StringName &F : list) {
+				if (edited_theme->get_stylebox(F, E) == sbox) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	Ref<Texture2D> tex = edited_resource;
+	if (tex.is_valid()) {
+		List<StringName> type_list;
+		edited_theme->get_icon_type_list(&type_list);
+
+		for (const StringName &E : type_list) {
+			List<StringName> list;
+			edited_theme->get_icon_list(E, &list);
+
+			for (const StringName &F : list) {
+				if (edited_theme->get_icon(F, E) == tex) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	Ref<Font> fnt = edited_resource;
+	if (fnt.is_valid()) {
+		List<StringName> type_list;
+		edited_theme->get_font_type_list(&type_list);
+
+		for (const StringName &E : type_list) {
+			List<StringName> list;
+			edited_theme->get_font_list(E, &list);
+
+			for (const StringName &F : list) {
+				if (edited_theme->get_font(F, E) == fnt) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	return true;
+}
+
 ThemeEditorPlugin::ThemeEditorPlugin() {
 	theme_editor = memnew(ThemeEditor);
+	theme_editor->plugin = this;
 	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
 	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Theme"), theme_editor);
