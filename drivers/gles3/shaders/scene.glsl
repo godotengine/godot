@@ -417,13 +417,12 @@ void main() {
 	normal = modelview_normal * normal;
 #endif
 
-#endif
-
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 
 	binormal = modelview_normal * binormal;
 	tangent = modelview_normal * tangent;
 #endif
+#endif // !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
 	// Using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
