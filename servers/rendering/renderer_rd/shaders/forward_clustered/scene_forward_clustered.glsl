@@ -411,13 +411,12 @@ void vertex_shader(vec3 vertex_input,
 	normal = modelview_normal * normal;
 #endif
 
-#endif
-
 #ifdef TANGENT_USED
 
 	binormal = modelview_normal * binormal;
 	tangent = modelview_normal * tangent;
 #endif
+#endif // !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
