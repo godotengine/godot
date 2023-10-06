@@ -45,7 +45,7 @@
 
 class SceneImportSettingsData : public Object {
 	GDCLASS(SceneImportSettingsData, Object)
-	friend class SceneImportSettings;
+	friend class SceneImportSettingsDialog;
 	HashMap<StringName, Variant> *settings = nullptr;
 	HashMap<StringName, Variant> current;
 	HashMap<StringName, Variant> defaults;
@@ -67,27 +67,27 @@ class SceneImportSettingsData : public Object {
 
 			// SceneImportSettings must decide if a new collider should be generated or not.
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE) {
-				SceneImportSettings::get_singleton()->request_generate_collider();
+				SceneImportSettingsDialog::get_singleton()->request_generate_collider();
 			}
 
-			if (SceneImportSettings::get_singleton()->is_editing_animation()) {
+			if (SceneImportSettingsDialog::get_singleton()->is_editing_animation()) {
 				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 					if (ResourceImporterScene::get_animation_singleton()->get_option_visibility(path, p_name, current)) {
-						SceneImportSettings::get_singleton()->update_view();
+						SceneImportSettingsDialog::get_singleton()->update_view();
 					}
 				} else {
 					if (ResourceImporterScene::get_animation_singleton()->get_internal_option_update_view_required(category, p_name, current)) {
-						SceneImportSettings::get_singleton()->update_view();
+						SceneImportSettingsDialog::get_singleton()->update_view();
 					}
 				}
 			} else {
 				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 					if (ResourceImporterScene::get_scene_singleton()->get_option_visibility(path, p_name, current)) {
-						SceneImportSettings::get_singleton()->update_view();
+						SceneImportSettingsDialog::get_singleton()->update_view();
 					}
 				} else {
 					if (ResourceImporterScene::get_scene_singleton()->get_internal_option_update_view_required(category, p_name, current)) {
-						SceneImportSettings::get_singleton()->update_view();
+						SceneImportSettingsDialog::get_singleton()->update_view();
 					}
 				}
 			}
@@ -114,7 +114,7 @@ class SceneImportSettingsData : public Object {
 			return;
 		}
 		for (const ResourceImporter::ImportOption &E : options) {
-			if (SceneImportSettings::get_singleton()->is_editing_animation()) {
+			if (SceneImportSettingsDialog::get_singleton()->is_editing_animation()) {
 				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 					if (ResourceImporterScene::get_animation_singleton()->get_option_visibility(path, E.option.name, current)) {
 						p_list->push_back(E.option);
@@ -139,7 +139,7 @@ class SceneImportSettingsData : public Object {
 	}
 };
 
-void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent) {
+void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent) {
 	String import_id;
 	bool has_import_id = false;
 
@@ -199,7 +199,7 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	}
 }
 
-void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent) {
+void SceneImportSettingsDialog::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent) {
 	String import_id;
 
 	bool has_import_id = false;
@@ -263,7 +263,7 @@ void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, Tree
 	}
 }
 
-void SceneImportSettings::_fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent) {
+void SceneImportSettingsDialog::_fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent) {
 	if (!animation_map.has(p_name)) {
 		AnimationData ad;
 		ad.animation = p_anim;
@@ -289,7 +289,7 @@ void SceneImportSettings::_fill_animation(Tree *p_tree, const Ref<Animation> &p_
 	animation_data.scene_node = item;
 }
 
-void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
+void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	String import_id;
 
 	if (p_node->has_meta("import_id")) {
@@ -353,7 +353,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
 
 				animation_player = Object::cast_to<AnimationPlayer>(p_node);
-				animation_player->connect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettings::_animation_finished));
+				animation_player->connect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
 			} else if (Object::cast_to<Skeleton3D>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 				skeletons.push_back(Object::cast_to<Skeleton3D>(p_node));
@@ -413,7 +413,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	}
 }
 
-void SceneImportSettings::_update_scene() {
+void SceneImportSettingsDialog::_update_scene() {
 	scene_tree->clear();
 	material_tree->clear();
 	mesh_tree->clear();
@@ -425,7 +425,7 @@ void SceneImportSettings::_update_scene() {
 	_fill_scene(scene, nullptr);
 }
 
-void SceneImportSettings::_update_view_gizmos() {
+void SceneImportSettingsDialog::_update_view_gizmos() {
 	if (!is_visible()) {
 		return;
 	}
@@ -516,7 +516,7 @@ void SceneImportSettings::_update_view_gizmos() {
 	generate_collider = false;
 }
 
-void SceneImportSettings::_update_camera() {
+void SceneImportSettingsDialog::_update_camera() {
 	AABB camera_aabb;
 
 	float rot_x = cam_rot_x;
@@ -557,7 +557,7 @@ void SceneImportSettings::_update_camera() {
 	camera->set_transform(xf);
 }
 
-void SceneImportSettings::_load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category) {
+void SceneImportSettingsDialog::_load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category) {
 	if (base_subresource_settings.has(p_type)) {
 		Dictionary d = base_subresource_settings[p_type];
 		if (d.has(p_import_id)) {
@@ -578,15 +578,15 @@ void SceneImportSettings::_load_default_subresource_settings(HashMap<StringName,
 	}
 }
 
-void SceneImportSettings::request_generate_collider() {
+void SceneImportSettingsDialog::request_generate_collider() {
 	generate_collider = true;
 }
 
-void SceneImportSettings::update_view() {
+void SceneImportSettingsDialog::update_view() {
 	update_view_timer->start();
 }
 
-void SceneImportSettings::open_settings(const String &p_path, bool p_for_animation) {
+void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_animation) {
 	if (scene) {
 		memdelete(scene);
 		scene = nullptr;
@@ -678,20 +678,20 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	}
 }
 
-SceneImportSettings *SceneImportSettings::singleton = nullptr;
+SceneImportSettingsDialog *SceneImportSettingsDialog::singleton = nullptr;
 
-SceneImportSettings *SceneImportSettings::get_singleton() {
+SceneImportSettingsDialog *SceneImportSettingsDialog::get_singleton() {
 	return singleton;
 }
 
-Node *SceneImportSettings::get_selected_node() {
+Node *SceneImportSettingsDialog::get_selected_node() {
 	if (selected_id == "") {
 		return nullptr;
 	}
 	return node_map[selected_id].node;
 }
 
-void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
+void SceneImportSettingsDialog::_select(Tree *p_from, String p_type, String p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
 
@@ -859,7 +859,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	scene_import_settings_data->notify_property_list_changed();
 }
 
-void SceneImportSettings::_inspector_property_edited(const String &p_name) {
+void SceneImportSettingsDialog::_inspector_property_edited(const String &p_name) {
 	if (p_name == "settings/loop_mode") {
 		if (!animation_map.has(selected_id)) {
 			return;
@@ -873,13 +873,13 @@ void SceneImportSettings::_inspector_property_edited(const String &p_name) {
 	}
 }
 
-void SceneImportSettings::_reset_bone_transforms() {
+void SceneImportSettingsDialog::_reset_bone_transforms() {
 	for (Skeleton3D *skeleton : skeletons) {
 		skeleton->reset_bone_poses();
 	}
 }
 
-void SceneImportSettings::_play_animation() {
+void SceneImportSettingsDialog::_play_animation() {
 	if (animation_player == nullptr) {
 		return;
 	}
@@ -897,7 +897,7 @@ void SceneImportSettings::_play_animation() {
 	}
 }
 
-void SceneImportSettings::_stop_current_animation() {
+void SceneImportSettingsDialog::_stop_current_animation() {
 	animation_pingpong = false;
 	animation_player->stop();
 	animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
@@ -905,7 +905,7 @@ void SceneImportSettings::_stop_current_animation() {
 	set_process(false);
 }
 
-void SceneImportSettings::_reset_animation(const String &p_animation_name) {
+void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name) {
 	if (p_animation_name.is_empty()) {
 		animation_preview->hide();
 
@@ -943,7 +943,7 @@ void SceneImportSettings::_reset_animation(const String &p_animation_name) {
 	}
 }
 
-void SceneImportSettings::_animation_slider_value_changed(double p_value) {
+void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) {
 	if (animation_player == nullptr || !animation_map.has(selected_id) || animation_map[selected_id].animation.is_null()) {
 		return;
 	}
@@ -955,7 +955,7 @@ void SceneImportSettings::_animation_slider_value_changed(double p_value) {
 	animation_player->seek(p_value * animation_map[selected_id].animation->get_length(), true);
 }
 
-void SceneImportSettings::_animation_finished(const StringName &p_name) {
+void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 	Animation::LoopMode loop_mode = animation_loop_mode;
 
 	switch (loop_mode) {
@@ -980,7 +980,7 @@ void SceneImportSettings::_animation_finished(const StringName &p_name) {
 	}
 }
 
-void SceneImportSettings::_material_tree_selected() {
+void SceneImportSettingsDialog::_material_tree_selected() {
 	if (selecting) {
 		return;
 	}
@@ -991,7 +991,7 @@ void SceneImportSettings::_material_tree_selected() {
 	_select(material_tree, type, import_id);
 }
 
-void SceneImportSettings::_mesh_tree_selected() {
+void SceneImportSettingsDialog::_mesh_tree_selected() {
 	if (selecting) {
 		return;
 	}
@@ -1003,7 +1003,7 @@ void SceneImportSettings::_mesh_tree_selected() {
 	_select(mesh_tree, type, import_id);
 }
 
-void SceneImportSettings::_scene_tree_selected() {
+void SceneImportSettingsDialog::_scene_tree_selected() {
 	if (selecting) {
 		return;
 	}
@@ -1014,16 +1014,16 @@ void SceneImportSettings::_scene_tree_selected() {
 	_select(scene_tree, type, import_id);
 }
 
-void SceneImportSettings::_cleanup() {
+void SceneImportSettingsDialog::_cleanup() {
 	skeletons.clear();
 	if (animation_player != nullptr) {
-		animation_player->disconnect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettings::_animation_finished));
+		animation_player->disconnect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
 		animation_player = nullptr;
 	}
 	set_process(false);
 }
 
-void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
+void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) {
 	float *rot_x = &cam_rot_x;
 	float *rot_y = &cam_rot_y;
 	float *zoom = &cam_zoom;
@@ -1066,7 +1066,7 @@ void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
-void SceneImportSettings::_re_import() {
+void SceneImportSettingsDialog::_re_import() {
 	HashMap<StringName, Variant> main_settings;
 
 	main_settings = scene_import_settings_data->current;
@@ -1137,10 +1137,10 @@ void SceneImportSettings::_re_import() {
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
 }
 
-void SceneImportSettings::_notification(int p_what) {
+void SceneImportSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &SceneImportSettings::_re_import));
+			connect("confirmed", callable_mp(this, &SceneImportSettingsDialog::_re_import));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1172,7 +1172,7 @@ void SceneImportSettings::_notification(int p_what) {
 	}
 }
 
-void SceneImportSettings::_menu_callback(int p_id) {
+void SceneImportSettingsDialog::_menu_callback(int p_id) {
 	switch (p_id) {
 		case ACTION_EXTRACT_MATERIALS: {
 			save_path->set_title(TTR("Select folder to extract material resources"));
@@ -1193,7 +1193,7 @@ void SceneImportSettings::_menu_callback(int p_id) {
 	save_path->popup_centered_ratio();
 }
 
-void SceneImportSettings::_save_path_changed(const String &p_path) {
+void SceneImportSettingsDialog::_save_path_changed(const String &p_path) {
 	save_path_item->set_text(1, p_path);
 
 	if (FileAccess::exists(p_path)) {
@@ -1207,7 +1207,7 @@ void SceneImportSettings::_save_path_changed(const String &p_path) {
 	}
 }
 
-void SceneImportSettings::_browse_save_callback(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+void SceneImportSettingsDialog::_browse_save_callback(Object *p_item, int p_column, int p_id, MouseButton p_button) {
 	if (p_button != MouseButton::LEFT) {
 		return;
 	}
@@ -1222,7 +1222,7 @@ void SceneImportSettings::_browse_save_callback(Object *p_item, int p_column, in
 	item_save_path->popup_centered_ratio();
 }
 
-void SceneImportSettings::_save_dir_callback(const String &p_path) {
+void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 	external_path_tree->clear();
 	TreeItem *root = external_path_tree->create_item();
 	save_path_items.clear();
@@ -1386,7 +1386,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 	external_paths->popup_centered_ratio();
 }
 
-void SceneImportSettings::_save_dir_confirm() {
+void SceneImportSettingsDialog::_save_dir_confirm() {
 	for (int i = 0; i < save_path_items.size(); i++) {
 		TreeItem *item = save_path_items[i];
 		if (!item->is_checked(0)) {
@@ -1441,7 +1441,7 @@ void SceneImportSettings::_save_dir_confirm() {
 	}
 }
 
-SceneImportSettings::SceneImportSettings() {
+SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	singleton = this;
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
@@ -1461,7 +1461,7 @@ SceneImportSettings::SceneImportSettings() {
 	action_menu->get_popup()->add_item(TTR("Set Animation Save Paths"), ACTION_CHOOSE_ANIMATION_SAVE_PATHS);
 	action_menu->get_popup()->add_item(TTR("Set Mesh Save Paths"), ACTION_CHOOSE_MESH_SAVE_PATHS);
 
-	action_menu->get_popup()->connect("id_pressed", callable_mp(this, &SceneImportSettings::_menu_callback));
+	action_menu->get_popup()->connect("id_pressed", callable_mp(this, &SceneImportSettingsDialog::_menu_callback));
 
 	tree_split = memnew(HSplitContainer);
 	main_vb->add_child(tree_split);
@@ -1479,18 +1479,18 @@ SceneImportSettings::SceneImportSettings() {
 	scene_tree = memnew(Tree);
 	scene_tree->set_name(TTR("Scene"));
 	data_mode->add_child(scene_tree);
-	scene_tree->connect("cell_selected", callable_mp(this, &SceneImportSettings::_scene_tree_selected));
+	scene_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_scene_tree_selected));
 
 	mesh_tree = memnew(Tree);
 	mesh_tree->set_name(TTR("Meshes"));
 	data_mode->add_child(mesh_tree);
 	mesh_tree->set_hide_root(true);
-	mesh_tree->connect("cell_selected", callable_mp(this, &SceneImportSettings::_mesh_tree_selected));
+	mesh_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_mesh_tree_selected));
 
 	material_tree = memnew(Tree);
 	material_tree->set_name(TTR("Materials"));
 	data_mode->add_child(material_tree);
-	material_tree->connect("cell_selected", callable_mp(this, &SceneImportSettings::_material_tree_selected));
+	material_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_material_tree_selected));
 
 	material_tree->set_hide_root(true);
 
@@ -1504,7 +1504,7 @@ SceneImportSettings::SceneImportSettings() {
 	vp_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vp_container->set_custom_minimum_size(Size2(10, 10));
 	vp_container->set_stretch(true);
-	vp_container->connect("gui_input", callable_mp(this, &SceneImportSettings::_viewport_input));
+	vp_container->connect("gui_input", callable_mp(this, &SceneImportSettingsDialog::_viewport_input));
 	vp_vb->add_child(vp_container);
 
 	base_viewport = memnew(SubViewport);
@@ -1523,13 +1523,13 @@ SceneImportSettings::SceneImportSettings() {
 	animation_play_button->set_flat(true);
 	animation_play_button->set_focus_mode(Control::FOCUS_NONE);
 	animation_play_button->set_shortcut(ED_SHORTCUT("scene_import_settings/play_selected_animation", TTR("Selected Animation Play/Pause"), Key::SPACE));
-	animation_play_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettings::_play_animation));
+	animation_play_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettingsDialog::_play_animation));
 
 	animation_stop_button = memnew(Button);
 	animation_hbox->add_child(animation_stop_button);
 	animation_stop_button->set_flat(true);
 	animation_stop_button->set_focus_mode(Control::FOCUS_NONE);
-	animation_stop_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettings::_stop_current_animation));
+	animation_stop_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
 
 	animation_slider = memnew(HSlider);
 	animation_hbox->add_child(animation_slider);
@@ -1539,7 +1539,7 @@ SceneImportSettings::SceneImportSettings() {
 	animation_slider->set_step(1.0 / 100.0);
 	animation_slider->set_value_no_signal(0.0);
 	animation_slider->set_focus_mode(Control::FOCUS_NONE);
-	animation_slider->connect(SNAME("value_changed"), callable_mp(this, &SceneImportSettings::_animation_slider_value_changed));
+	animation_slider->connect(SNAME("value_changed"), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
 
 	base_viewport->set_use_own_world_3d(true);
 
@@ -1609,7 +1609,7 @@ SceneImportSettings::SceneImportSettings() {
 
 	inspector = memnew(EditorInspector);
 	inspector->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
-	inspector->connect(SNAME("property_edited"), callable_mp(this, &SceneImportSettings::_inspector_property_edited));
+	inspector->connect(SNAME("property_edited"), callable_mp(this, &SceneImportSettingsDialog::_inspector_property_edited));
 
 	property_split->add_child(inspector);
 
@@ -1622,8 +1622,8 @@ SceneImportSettings::SceneImportSettings() {
 	add_child(external_paths);
 	external_path_tree = memnew(Tree);
 	external_paths->add_child(external_path_tree);
-	external_path_tree->connect("button_clicked", callable_mp(this, &SceneImportSettings::_browse_save_callback));
-	external_paths->connect("confirmed", callable_mp(this, &SceneImportSettings::_save_dir_confirm));
+	external_path_tree->connect("button_clicked", callable_mp(this, &SceneImportSettingsDialog::_browse_save_callback));
+	external_paths->connect("confirmed", callable_mp(this, &SceneImportSettingsDialog::_save_dir_confirm));
 	external_path_tree->set_columns(3);
 	external_path_tree->set_column_titles_visible(true);
 	external_path_tree->set_column_expand(0, true);
@@ -1653,16 +1653,16 @@ SceneImportSettings::SceneImportSettings() {
 	item_save_path->add_filter("*.tres", TTR("Text Resource"));
 	item_save_path->add_filter("*.res", TTR("Binary Resource"));
 	add_child(item_save_path);
-	item_save_path->connect("file_selected", callable_mp(this, &SceneImportSettings::_save_path_changed));
+	item_save_path->connect("file_selected", callable_mp(this, &SceneImportSettingsDialog::_save_path_changed));
 
-	save_path->connect("dir_selected", callable_mp(this, &SceneImportSettings::_save_dir_callback));
+	save_path->connect("dir_selected", callable_mp(this, &SceneImportSettingsDialog::_save_dir_callback));
 
 	update_view_timer = memnew(Timer);
 	update_view_timer->set_wait_time(0.2);
-	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettings::_update_view_gizmos));
+	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettingsDialog::_update_view_gizmos));
 	add_child(update_view_timer);
 }
 
-SceneImportSettings::~SceneImportSettings() {
+SceneImportSettingsDialog::~SceneImportSettingsDialog() {
 	memdelete(scene_import_settings_data);
 }

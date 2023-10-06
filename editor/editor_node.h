@@ -68,12 +68,12 @@ class VBoxContainer;
 class VSplitContainer;
 class Window;
 
-class AudioStreamImportSettings;
+class AudioStreamImportSettingsDialog;
 class AudioStreamPreviewGenerator;
 class BackgroundProgress;
 class DependencyEditor;
 class DependencyErrorDialog;
-class DynamicFontImportSettings;
+class DynamicFontImportSettingsDialog;
 class EditorAbout;
 class EditorBuildProfileManager;
 class EditorCommandPalette;
@@ -111,7 +111,7 @@ class ProgressDialog;
 class ProjectExportDialog;
 class ProjectSettingsEditor;
 class RunSettingsDialog;
-class SceneImportSettings;
+class SceneImportSettingsDialog;
 class ScriptCreateDialog;
 class SurfaceUpgradeTool;
 class SurfaceUpgradeDialog;
@@ -485,9 +485,9 @@ private:
 	String open_navigate;
 	String saving_scene;
 
-	DynamicFontImportSettings *fontdata_import_settings = nullptr;
-	SceneImportSettings *scene_import_settings = nullptr;
-	AudioStreamImportSettings *audio_stream_import_settings = nullptr;
+	DynamicFontImportSettingsDialog *fontdata_import_settings = nullptr;
+	SceneImportSettingsDialog *scene_import_settings = nullptr;
+	AudioStreamImportSettingsDialog *audio_stream_import_settings = nullptr;
 
 	String import_reload_fn;
 

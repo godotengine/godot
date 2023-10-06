@@ -2672,7 +2672,7 @@ bool ResourceImporterScene::has_advanced_options() const {
 	return true;
 }
 void ResourceImporterScene::show_advanced_options(const String &p_path) {
-	SceneImportSettings::get_singleton()->open_settings(p_path, animation_importer);
+	SceneImportSettingsDialog::get_singleton()->open_settings(p_path, animation_importer);
 }
 
 ResourceImporterScene::ResourceImporterScene(bool p_animation_import, bool p_singleton) {
