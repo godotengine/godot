@@ -678,26 +678,26 @@ void SceneImportSettingsDialog::update_view() {
 	update_view_timer->start();
 }
 
-void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_animation) {
+void SceneImportSettingsDialog::open_settings(const String &p_path, const String &p_scene_import_type) {
 	if (scene) {
 		_cleanup();
 		memdelete(scene);
 		scene = nullptr;
 	}
 
-	editing_animation = p_for_animation;
+	editing_animation = p_scene_import_type == "AnimationLibrary";
 	scene_import_settings_data->settings = nullptr;
 	scene_import_settings_data->path = p_path;
 
 	// Visibility.
-	data_mode->set_tab_hidden(1, p_for_animation);
-	data_mode->set_tab_hidden(2, p_for_animation);
-	if (p_for_animation) {
+	data_mode->set_tab_hidden(1, editing_animation);
+	data_mode->set_tab_hidden(2, editing_animation);
+	if (editing_animation) {
 		data_mode->set_current_tab(0);
 	}
 
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), p_for_animation);
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), p_for_animation);
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), editing_animation);
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), editing_animation);
 
 	base_path = p_path;
 
@@ -771,7 +771,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_a
 	// Start with the root item (Scene) selected.
 	scene_tree->get_root()->select(0);
 
-	if (p_for_animation) {
+	if (editing_animation) {
 		set_title(vformat(TTR("Advanced Import Settings for AnimationLibrary '%s'"), base_path.get_file()));
 	} else {
 		set_title(vformat(TTR("Advanced Import Settings for Scene '%s'"), base_path.get_file()));
