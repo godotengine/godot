@@ -2510,17 +2510,13 @@ bool EditorFileSystem::_scan_extensions() {
 	bool needs_restart = false;
 	for (int i = 0; i < extensions_added.size(); i++) {
 		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->load_extension(extensions_added[i]);
-		if (st == GDExtensionManager::LOAD_STATUS_FAILED) {
-			EditorNode::get_singleton()->add_io_error("Error loading extension: " + extensions_added[i]);
-		} else if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
 	}
 	for (int i = 0; i < extensions_removed.size(); i++) {
 		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->unload_extension(extensions_removed[i]);
-		if (st == GDExtensionManager::LOAD_STATUS_FAILED) {
-			EditorNode::get_singleton()->add_io_error("Error removing extension: " + extensions_added[i]);
-		} else if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
 	}
