@@ -8,7 +8,7 @@
 		See also [ResourceImporterScene], which is used for more advanced 3D formats such as glTF.
 	</description>
 	<tutorials>
-		<link title="Importing 3D scenes">$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html</link>
+		<link title="Importing 3D scenes">$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/index.html</link>
 	</tutorials>
 	<members>
 		<member name="force_disable_mesh_compression" type="bool" setter="" getter="" default="false">
