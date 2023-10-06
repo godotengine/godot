@@ -1602,9 +1602,14 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
-	if (previewing) {
-		return; //do NONE
+
+	bool is_piloting_preview = previewing && node_being_piloted == previewing;
+
+	if (previewing && !is_piloting_preview) {
+		return;
 	}
+
+	bool navigation_only = is_piloting_preview;
 
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 	{
@@ -1658,13 +1663,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			case MouseButton::RIGHT: {
 				NavigationScheme nav_scheme = (NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 
-				if (b->is_pressed() && _edit.gizmo.is_valid()) {
+				if (b->is_pressed() && _edit.gizmo.is_valid() && !navigation_only) {
 					//restore
 					_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 					_edit.gizmo = Ref<EditorNode3DGizmo>();
 				}
 
-				if (_edit.mode == TRANSFORM_NONE && b->is_pressed()) {
+				if (_edit.mode == TRANSFORM_NONE && b->is_pressed() && !navigation_only) {
 					if (b->is_alt_pressed()) {
 						if (nav_scheme == NAVIGATION_MAYA) {
 							break;
@@ -1675,7 +1680,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 				}
 
-				if (_edit.mode != TRANSFORM_NONE && b->is_pressed()) {
+				if (_edit.mode != TRANSFORM_NONE && b->is_pressed() && !navigation_only) {
 					cancel_transform();
 					break;
 				}
@@ -1699,7 +1704,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			} break;
 			case MouseButton::MIDDLE: {
-				if (b->is_pressed() && _edit.mode != TRANSFORM_NONE) {
+				if (b->is_pressed() && _edit.mode != TRANSFORM_NONE && !navigation_only) {
 					switch (_edit.plane) {
 						case TRANSFORM_VIEW: {
 							_edit.plane = TRANSFORM_X_AXIS;
@@ -1734,7 +1739,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				if (b->is_pressed()) {
 					clicked_wants_append = b->is_shift_pressed();
 
-					if (_edit.mode != TRANSFORM_NONE && _edit.instant) {
+					if (_edit.mode != TRANSFORM_NONE && _edit.instant && !navigation_only) {
 						commit_transform();
 						break; // just commit the edit, stop processing the event so we don't deselect the object
 					}
@@ -1743,8 +1748,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_LIST_SELECT) {
+					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_LIST_SELECT && !navigation_only) {
 						_list_select(b);
+						break;
+					}
+
+					if (navigation_only) {
 						break;
 					}
 
@@ -1876,13 +1885,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					surface->queue_redraw();
 				} else {
-					if (_edit.gizmo.is_valid()) {
+					if (_edit.gizmo.is_valid() && !navigation_only) {
 						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
 						break;
 					}
 
-					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM && !navigation_only) {
 						selection_in_progress = false;
 
 						if (clicked.is_valid()) {
@@ -1898,7 +1907,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 					}
 
-					if (_edit.mode != TRANSFORM_NONE) {
+					if (_edit.mode != TRANSFORM_NONE && !navigation_only) {
 						Node3D *selected = spatial_editor->get_single_selected_node();
 						Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
 
@@ -1934,7 +1943,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	if (m.is_valid() && !_edit.instant) {
 		_edit.mouse_pos = m->get_position();
 
-		if (spatial_editor->get_single_selected_node()) {
+		if (spatial_editor->get_single_selected_node() && !navigation_only) {
 			Vector<Ref<Node3DGizmo>> gizmos = spatial_editor->get_single_selected_node()->get_gizmos();
 
 			Ref<EditorNode3DGizmo> found_gizmo;
@@ -1968,14 +1977,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (spatial_editor->get_current_hover_gizmo().is_null() && !m->get_button_mask().has_flag(MouseButtonMask::LEFT) && !_edit.gizmo.is_valid()) {
+		if (spatial_editor->get_current_hover_gizmo().is_null() && !m->get_button_mask().has_flag(MouseButtonMask::LEFT) && !_edit.gizmo.is_valid() && !navigation_only) {
 			_transform_gizmo_select(_edit.mouse_pos, true);
 		}
 
 		NavigationScheme nav_scheme = (NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 		NavigationMode nav_mode = NAVIGATION_NONE;
 
-		if (_edit.gizmo.is_valid()) {
+		if (_edit.gizmo.is_valid() && !navigation_only) {
 			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, m->get_position());
 			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
@@ -1990,7 +1999,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				nav_mode = NAVIGATION_ZOOM;
 			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ORBIT;
-			} else {
+			} else if (!navigation_only) {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
 				// enable region-select if nothing has been selected yet or multi-select (shift key) is active
@@ -2156,7 +2165,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (_edit.instant) {
+		if (_edit.instant && !navigation_only) {
 			// In a Blender-style transform, numbers set the magnitude of the transform.
 			// E.g. pressing g4.5x means "translate 4.5 units along the X axis".
 			// Use the Unicode value because we care about the text, not the actual keycode.
@@ -2200,7 +2209,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (_edit.mode == TRANSFORM_NONE) {
+		if (_edit.mode == TRANSFORM_NONE && !navigation_only) {
 			if (_edit.gizmo.is_valid() && (k->get_keycode() == Key::ESCAPE || k->get_keycode() == Key::BACKSPACE)) {
 				// Restore.
 				_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
@@ -2210,7 +2219,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				_clear_selected();
 				return;
 			}
-		} else {
+		} else if (!navigation_only) {
 			// We're actively transforming, handle keys specially
 			TransformPlane new_plane = TRANSFORM_VIEW;
 			if (ED_IS_SHORTCUT("spatial_editor/lock_transform_x", p_event)) {
@@ -2251,30 +2260,30 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				return;
 			}
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/snap", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/snap", p_event) && !navigation_only) {
 			if (_edit.mode != TRANSFORM_NONE) {
 				_edit.snap = !_edit.snap;
 			}
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/bottom_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/bottom_view", p_event) && !navigation_only) {
 			_menu_option(VIEW_BOTTOM);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/top_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/top_view", p_event) && !navigation_only) {
 			_menu_option(VIEW_TOP);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/rear_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/rear_view", p_event) && !navigation_only) {
 			_menu_option(VIEW_REAR);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/front_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/front_view", p_event) && !navigation_only) {
 			_menu_option(VIEW_FRONT);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/left_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/left_view", p_event) && !navigation_only) {
 			_menu_option(VIEW_LEFT);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/right_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/right_view", p_event) && !navigation_only) {
 			_menu_option(VIEW_RIGHT);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_down", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_down", p_event) && !navigation_only) {
 			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 			Cursor cursor = immediate_cursor;
 			cursor.x_rot = CLAMP(cursor.x_rot - Math_PI / 12.0, -1.57, 1.57);
@@ -2282,7 +2291,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_up", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_up", p_event) && !navigation_only) {
 			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 			Cursor cursor = immediate_cursor;
 			cursor.x_rot = CLAMP(cursor.x_rot + Math_PI / 12.0, -1.57, 1.57);
@@ -2290,40 +2299,40 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_right", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_right", p_event) && !navigation_only) {
 			Cursor cursor = immediate_cursor;
 			cursor.y_rot -= Math_PI / 12.0;
 			set_cursor(cursor);
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_left", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_left", p_event) && !navigation_only) {
 			Cursor cursor = immediate_cursor;
 			cursor.y_rot += Math_PI / 12.0;
 			set_cursor(cursor);
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_180", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_180", p_event) && !navigation_only) {
 			Cursor cursor = immediate_cursor;
 			cursor.y_rot += Math_PI;
 			set_cursor(cursor);
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/focus_origin", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/focus_origin", p_event) && !navigation_only) {
 			_menu_option(VIEW_CENTER_TO_ORIGIN);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", p_event) && !navigation_only) {
 			_menu_option(VIEW_CENTER_TO_SELECTION);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/align_transform_with_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/align_transform_with_view", p_event) && !navigation_only) {
 			_menu_option(VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/align_rotation_with_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/align_rotation_with_view", p_event) && !navigation_only) {
 			_menu_option(VIEW_ALIGN_ROTATION_WITH_VIEW);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/insert_anim_key", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/insert_anim_key", p_event) && !navigation_only) {
 			if (!get_selected_count() || _edit.mode != TRANSFORM_NONE) {
 				return;
 			}
@@ -2346,44 +2355,44 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			set_message(TTR("Animation Key Inserted."));
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE) {
+		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE && !navigation_only) {
 			cancel_transform();
 		}
 		if (!is_freelook_active()) {
-			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event) && !navigation_only) {
 				begin_transform(TRANSFORM_TRANSLATE, true);
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event) && !navigation_only) {
 				begin_transform(TRANSFORM_ROTATE, true);
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event) && !navigation_only) {
 				begin_transform(TRANSFORM_SCALE, true);
 			}
 		}
 
 		// Freelook doesn't work in orthogonal mode.
-		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
+		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event) && !navigation_only) {
 			set_freelook_active(!is_freelook_active());
 
 		} else if (k->get_keycode() == Key::ESCAPE) {
 			set_freelook_active(false);
 		}
 
-		if (k->get_keycode() == Key::SPACE) {
+		if (k->get_keycode() == Key::SPACE && !navigation_only) {
 			if (!k->is_pressed()) {
 				emit_signal(SNAME("toggle_maximize_view"), this);
 			}
 		}
 
-		if (ED_IS_SHORTCUT("spatial_editor/decrease_fov", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/decrease_fov", p_event) && !navigation_only) {
 			scale_fov(-0.05);
 		}
 
-		if (ED_IS_SHORTCUT("spatial_editor/increase_fov", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/increase_fov", p_event) && !navigation_only) {
 			scale_fov(0.05);
 		}
 
-		if (ED_IS_SHORTCUT("spatial_editor/reset_fov", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/reset_fov", p_event) && !navigation_only) {
 			reset_fov();
 		}
 	}
@@ -2563,8 +2572,11 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 	freelook_active = active_now;
 }
 
-void Node3DEditorViewport::set_cursor(const Cursor &p_cursor, bool p_interpolate, bool allow_continue_piloting) {
-	if (!allow_continue_piloting) {
+void Node3DEditorViewport::set_cursor(const Cursor &p_cursor, bool p_interpolate, bool allow_piloting_or_previewing) {
+	if (!allow_piloting_or_previewing) {
+		if (previewing) {
+			preview_camera->set_pressed(false);
+		}
 		stop_piloting();
 	}
 	immediate_cursor = p_cursor;
@@ -5209,6 +5221,10 @@ void Node3DEditorViewport::_undo_redo_pilot_transform(Node3D *p_node, const Tran
 		stop_piloting();
 		pilot(p_node);
 	}
+}
+
+bool Node3DEditorViewport::is_only_pilot_input_allowed() {
+	return previewing && node_being_piloted == previewing;
 }
 
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {

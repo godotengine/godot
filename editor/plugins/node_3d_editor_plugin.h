@@ -391,7 +391,7 @@ private:
 	Cursor immediate_cursor;
 	Cursor current_interpolated_cursor; // Don't modify this one except for smoothing purposes
 
-	void set_cursor(const Cursor &p_cursor, bool p_interpolate = true, bool allow_continue_piloting = false);
+	void set_cursor(const Cursor &p_cursor, bool p_interpolate = true, bool allow_piloting_or_previewing = false);
 	void reset_cursor_to_default();
 	void reset_cursor_to_camera();
 	void set_orthogonal(bool p_orthogonal);
@@ -427,6 +427,7 @@ private:
 
 	void input(const Ref<InputEvent> &p_event) override;
 	void _sinput(const Ref<InputEvent> &p_event);
+	
 	void _update_freelook(real_t delta);
 	Node3DEditor *spatial_editor = nullptr;
 
@@ -491,6 +492,7 @@ private:
 	void update_pilot_transform(const Transform3D &p_transform);
 	void end_pilot_transform(bool p_commit_using_cursor_transform = false);
 	void _undo_redo_pilot_transform(Node3D *p_node, const Transform3D &p_transform);
+	bool is_only_pilot_input_allowed();
 
 protected:
 	void _notification(int p_what);
