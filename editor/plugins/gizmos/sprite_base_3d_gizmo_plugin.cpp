@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  sprite_3d_gizmo_plugin.h                                              */
+/*  sprite_base_3d_gizmo_plugin.cpp                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,22 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRITE_3D_GIZMO_PLUGIN_H
-#define SPRITE_3D_GIZMO_PLUGIN_H
+#include "sprite_base_3d_gizmo_plugin.h"
 
-#include "editor/plugins/node_3d_editor_gizmos.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/sprite_3d.h"
 
-class Sprite3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(Sprite3DGizmoPlugin, EditorNode3DGizmoPlugin);
+SpriteBase3DGizmoPlugin::SpriteBase3DGizmoPlugin() {
+}
 
-public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_gizmo_name() const override;
-	int get_priority() const override;
-	bool can_be_hidden() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
+bool SpriteBase3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<SpriteBase3D>(p_spatial) != nullptr;
+}
 
-	Sprite3DGizmoPlugin();
-};
+String SpriteBase3DGizmoPlugin::get_gizmo_name() const {
+	return "SpriteBase3D";
+}
 
-#endif // SPRITE_3D_GIZMO_PLUGIN_H
+int SpriteBase3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+bool SpriteBase3DGizmoPlugin::can_be_hidden() const {
+	return false;
+}
+
+void SpriteBase3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	SpriteBase3D *sprite_base = Object::cast_to<SpriteBase3D>(p_gizmo->get_node_3d());
+
+	p_gizmo->clear();
+
+	Ref<TriangleMesh> tm = sprite_base->generate_triangle_mesh();
+	if (tm.is_valid()) {
+		p_gizmo->add_collision_triangles(tm);
+	}
+}

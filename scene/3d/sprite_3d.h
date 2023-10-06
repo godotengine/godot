@@ -236,8 +236,6 @@ class AnimatedSprite3D : public SpriteBase3D {
 	float speed_scale = 1.0;
 	float custom_speed_scale = 1.0;
 
-	bool centered = false;
-
 	real_t frame_speed_scale = 1.0;
 	real_t frame_progress = 0.0;
 
