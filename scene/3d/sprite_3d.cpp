@@ -398,12 +398,10 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 	real_t px_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
-
 		(final_rect.position + Vector2(0, final_rect.size.y)) * px_size,
 		(final_rect.position + final_rect.size) * px_size,
 		(final_rect.position + Vector2(final_rect.size.x, 0)) * px_size,
 		final_rect.position * px_size,
-
 	};
 
 	int x_axis = ((axis + 1) % 3);
@@ -1191,7 +1189,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 	Size2 s = t->get_size();
 
 	Point2 ofs = get_offset();
-	if (centered) {
+	if (is_centered()) {
 		ofs -= s / 2;
 	}
 

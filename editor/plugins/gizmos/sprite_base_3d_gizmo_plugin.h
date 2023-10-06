@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  sprite_3d_gizmo_plugin.cpp                                            */
+/*  sprite_base_3d_gizmo_plugin.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "sprite_3d_gizmo_plugin.h"
+#ifndef SPRITE_BASE_3D_GIZMO_PLUGIN_H
+#define SPRITE_BASE_3D_GIZMO_PLUGIN_H
 
-#include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/sprite_3d.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
 
-Sprite3DGizmoPlugin::Sprite3DGizmoPlugin() {
-}
+class SpriteBase3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(SpriteBase3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
-bool Sprite3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Sprite3D>(p_spatial) != nullptr;
-}
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+	bool can_be_hidden() const override;
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
-String Sprite3DGizmoPlugin::get_gizmo_name() const {
-	return "Sprite3D";
-}
+	SpriteBase3DGizmoPlugin();
+};
 
-int Sprite3DGizmoPlugin::get_priority() const {
-	return -1;
-}
-
-bool Sprite3DGizmoPlugin::can_be_hidden() const {
-	return false;
-}
-
-void Sprite3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Sprite3D *sprite = Object::cast_to<Sprite3D>(p_gizmo->get_node_3d());
-
-	p_gizmo->clear();
-
-	Ref<TriangleMesh> tm = sprite->generate_triangle_mesh();
-	if (tm.is_valid()) {
-		p_gizmo->add_collision_triangles(tm);
-	}
-}
+#endif // SPRITE_BASE_3D_GIZMO_PLUGIN_H

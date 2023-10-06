@@ -71,7 +71,7 @@
 #include "editor/plugins/gizmos/shape_cast_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/soft_body_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/spring_arm_3d_gizmo_plugin.h"
-#include "editor/plugins/gizmos/sprite_3d_gizmo_plugin.h"
+#include "editor/plugins/gizmos/sprite_base_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/vehicle_body_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/visible_on_screen_notifier_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/voxel_gi_gizmo_plugin.h"
@@ -7071,7 +7071,7 @@ void Node3DEditor::_init_grid() {
 	if (primary_grid_steps != 10) { // Log10 of 10 is 1.
 		// Change of base rule, divide by ln(10).
 		real_t div = Math::log((real_t)primary_grid_steps) / (real_t)2.302585092994045901094;
-		// Trucation (towards zero) is intentional.
+		// Truncation (towards zero) is intentional.
 		division_level_max = (int)(division_level_max / div);
 		division_level_min = (int)(division_level_min / div);
 	}
@@ -7972,7 +7972,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<MeshInstance3DGizmoPlugin>(memnew(MeshInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<OccluderInstance3DGizmoPlugin>(memnew(OccluderInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<Sprite3DGizmoPlugin>(memnew(Sprite3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SpriteBase3DGizmoPlugin>(memnew(SpriteBase3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Label3DGizmoPlugin>(memnew(Label3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Marker3DGizmoPlugin>(memnew(Marker3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
