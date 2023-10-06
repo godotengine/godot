@@ -7071,7 +7071,7 @@ void Node3DEditor::_init_grid() {
 	if (primary_grid_steps != 10) { // Log10 of 10 is 1.
 		// Change of base rule, divide by ln(10).
 		real_t div = Math::log((real_t)primary_grid_steps) / (real_t)2.302585092994045901094;
-		// Trucation (towards zero) is intentional.
+		// Truncation (towards zero) is intentional.
 		division_level_max = (int)(division_level_max / div);
 		division_level_min = (int)(division_level_min / div);
 	}
