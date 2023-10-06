@@ -75,25 +75,14 @@ class SceneImportSettingsData : public Object {
 				SceneImportSettingsDialog::get_singleton()->request_generate_collider();
 			}
 
-			if (SceneImportSettingsDialog::get_singleton()->is_editing_animation()) {
-				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-					if (ResourceImporterScene::get_animation_singleton()->get_option_visibility(path, p_name, current)) {
-						SceneImportSettingsDialog::get_singleton()->update_view();
-					}
-				} else {
-					if (ResourceImporterScene::get_animation_singleton()->get_internal_option_update_view_required(category, p_name, current)) {
-						SceneImportSettingsDialog::get_singleton()->update_view();
-					}
+			ResourceImporterScene *resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
+			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
+				if (resource_importer_scene->get_option_visibility(path, p_name, current)) {
+					SceneImportSettingsDialog::get_singleton()->update_view();
 				}
 			} else {
-				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-					if (ResourceImporterScene::get_scene_singleton()->get_option_visibility(path, p_name, current)) {
-						SceneImportSettingsDialog::get_singleton()->update_view();
-					}
-				} else {
-					if (ResourceImporterScene::get_scene_singleton()->get_internal_option_update_view_required(category, p_name, current)) {
-						SceneImportSettingsDialog::get_singleton()->update_view();
-					}
+				if (resource_importer_scene->get_internal_option_update_view_required(category, p_name, current)) {
+					SceneImportSettingsDialog::get_singleton()->update_view();
 				}
 			}
 
@@ -171,31 +160,18 @@ class SceneImportSettingsData : public Object {
 		if (hide_options) {
 			return;
 		}
+		ResourceImporterScene *resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
 		for (const ResourceImporter::ImportOption &E : options) {
 			PropertyInfo option = E.option;
-			if (SceneImportSettingsDialog::get_singleton()->is_editing_animation()) {
-				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-					if (ResourceImporterScene::get_animation_singleton()->get_option_visibility(path, E.option.name, current)) {
-						handle_special_properties(option);
-						r_list->push_back(option);
-					}
-				} else {
-					if (ResourceImporterScene::get_animation_singleton()->get_internal_option_visibility(category, E.option.name, current)) {
-						handle_special_properties(option);
-						r_list->push_back(option);
-					}
+			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
+				if (resource_importer_scene->get_option_visibility(path, E.option.name, current)) {
+					handle_special_properties(option);
+					r_list->push_back(option);
 				}
 			} else {
-				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-					if (ResourceImporterScene::get_scene_singleton()->get_option_visibility(path, E.option.name, current)) {
-						handle_special_properties(option);
-						r_list->push_back(option);
-					}
-				} else {
-					if (ResourceImporterScene::get_scene_singleton()->get_internal_option_visibility(category, E.option.name, current)) {
-						handle_special_properties(option);
-						r_list->push_back(option);
-					}
+				if (resource_importer_scene->get_internal_option_visibility(category, E.option.name, current)) {
+					handle_special_properties(option);
+					r_list->push_back(option);
 				}
 			}
 		}
@@ -494,7 +470,9 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 	}
 	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
-		if (!editing_animation) {
+		// This controls the display of mesh resources in the import settings dialog tree (the white mesh icon).
+		// We want to show these icons for any import type that preserves meshes.
+		if (_resource_importer_scene->get_scene_import_type() != "AnimationLibrary") {
 			_fill_mesh(scene_tree, mesh_node->get_mesh(), item);
 		}
 
@@ -721,11 +699,7 @@ void SceneImportSettingsDialog::_load_default_subresource_settings(HashMap<Strin
 		if (d.has(p_import_id)) {
 			d = d[p_import_id];
 			List<ResourceImporterScene::ImportOption> options;
-			if (editing_animation) {
-				ResourceImporterScene::get_animation_singleton()->get_internal_import_options(p_category, &options);
-			} else {
-				ResourceImporterScene::get_scene_singleton()->get_internal_import_options(p_category, &options);
-			}
+			_resource_importer_scene->get_internal_import_options(p_category, &options);
 			for (const ResourceImporterScene::ImportOption &E : options) {
 				String key = E.option.name;
 				if (d.has(key)) {
@@ -751,19 +725,23 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 		scene = nullptr;
 	}
 
-	editing_animation = p_scene_import_type == "AnimationLibrary";
 	scene_import_settings_data->settings = nullptr;
 	scene_import_settings_data->path = p_path;
 
-	// Visibility.
-	data_mode->set_tab_hidden(1, editing_animation);
-	data_mode->set_tab_hidden(2, editing_animation);
-	if (editing_animation) {
+	// AnimationLibrary cannot make use of the mesh and material tabs.
+	const bool disable_mesh_mat_tabs = p_scene_import_type == "AnimationLibrary";
+	data_mode->set_tab_hidden(1, disable_mesh_mat_tabs);
+	data_mode->set_tab_hidden(2, disable_mesh_mat_tabs);
+	if (disable_mesh_mat_tabs) {
 		data_mode->set_current_tab(0);
 	}
 
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), editing_animation);
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), editing_animation);
+	// Only show the save data options for PackedScene imports of scenes, not resource imports.
+	const bool disable_save_mesh_mat = p_scene_import_type != "PackedScene";
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), disable_save_mesh_mat);
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), disable_save_mesh_mat);
+	const bool disable_save_anim = disable_save_mesh_mat && p_scene_import_type != "AnimationLibrary";
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_ANIMATION_SAVE_PATHS), disable_save_anim);
 
 	base_path = p_path;
 
@@ -803,7 +781,10 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 		}
 	}
 
-	scene = ResourceImporterScene::get_scene_singleton()->pre_import(p_path, defaults); // Use the scene singleton here because we want to see the full thing.
+	// Regardless of p_scene_import_type, use PackedScene for pre_import because we want to see the full thing.
+	_resource_importer_scene->set_scene_import_type("PackedScene");
+	scene = _resource_importer_scene->pre_import(p_path, defaults);
+	_resource_importer_scene->set_scene_import_type(p_scene_import_type);
 	if (scene == nullptr) {
 		EditorNode::get_singleton()->show_warning(TTR("Error opening scene"));
 		return;
@@ -836,11 +817,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 	// Start with the root item (Scene) selected.
 	scene_tree->get_root()->select(0);
 
-	if (editing_animation) {
-		set_title(vformat(TTR("Advanced Import Settings for AnimationLibrary '%s'"), base_path.get_file()));
-	} else {
-		set_title(vformat(TTR("Advanced Import Settings for Scene '%s'"), base_path.get_file()));
-	}
+	set_title(vformat(TTR("Advanced Import Settings for %s '%s'"), _resource_importer_scene->get_visible_name(), base_path.get_file()));
 }
 
 SceneImportSettingsDialog *SceneImportSettingsDialog::singleton = nullptr;
@@ -859,6 +836,10 @@ Node *SceneImportSettingsDialog::get_selected_node() {
 void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, const String &p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
+	// Only AnimationLibrary and actual scenes can make use of the animation and skeleton options.
+	const bool hide_anim_and_skel_options = _resource_importer_scene->get_scene_import_type() != "PackedScene" && _resource_importer_scene->get_scene_import_type() != "AnimationLibrary";
+	// Only actual scenes can make use of the node generation options such as generating physics colliders on meshes or setting a script.
+	const bool hide_node_gen_options = _resource_importer_scene->get_scene_import_type() != "PackedScene";
 
 	bones_mesh_preview->hide();
 	if (p_type == "Node") {
@@ -895,15 +876,17 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 			scene_import_settings_data->settings = &nd.settings;
 			if (mi) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE;
-				scene_import_settings_data->hide_options = editing_animation;
+				scene_import_settings_data->hide_options = hide_node_gen_options;
 			} else if (Object::cast_to<AnimationPlayer>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
+				scene_import_settings_data->hide_options = hide_anim_and_skel_options;
 			} else if (Object::cast_to<Skeleton3D>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 				bones_mesh_preview->show();
+				scene_import_settings_data->hide_options = hide_anim_and_skel_options;
 			} else {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
-				scene_import_settings_data->hide_options = editing_animation;
+				scene_import_settings_data->hide_options = hide_node_gen_options;
 			}
 		}
 	} else if (p_type == "Animation") {
@@ -920,6 +903,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 
 		scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
+		scene_import_settings_data->hide_options = hide_anim_and_skel_options;
 
 		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
@@ -993,19 +977,10 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 
 	List<ResourceImporter::ImportOption> options;
 
-	if (editing_animation) {
-		if (scene_import_settings_data->category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-			ResourceImporterScene::get_animation_singleton()->get_import_options(base_path, &options);
-		} else {
-			ResourceImporterScene::get_animation_singleton()->get_internal_import_options(scene_import_settings_data->category, &options);
-		}
-
+	if (scene_import_settings_data->category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
+		_resource_importer_scene->get_import_options(base_path, &options);
 	} else {
-		if (scene_import_settings_data->category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-			ResourceImporterScene::get_scene_singleton()->get_import_options(base_path, &options);
-		} else {
-			ResourceImporterScene::get_scene_singleton()->get_internal_import_options(scene_import_settings_data->category, &options);
-		}
+		_resource_importer_scene->get_internal_import_options(scene_import_settings_data->category, &options);
 	}
 
 	scene_import_settings_data->defaults.clear();
@@ -1367,7 +1342,7 @@ void SceneImportSettingsDialog::_re_import() {
 	main_settings["_subresources"] = subresources;
 
 	_cleanup(); // Prevent skeletons and other pointers from pointing to dangling references.
-	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
+	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, _resource_importer_scene->get_importer_name(), main_settings);
 }
 
 void SceneImportSettingsDialog::_update_theme_item_cache() {
@@ -1700,6 +1675,7 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 
 SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	singleton = this;
+	_resource_importer_scene = memnew(ResourceImporterScene("PackedScene"));
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
@@ -2010,4 +1986,5 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 SceneImportSettingsDialog::~SceneImportSettingsDialog() {
 	memdelete(scene_import_settings_data);
+	memdelete(_resource_importer_scene);
 }

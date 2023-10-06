@@ -3367,9 +3367,6 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	return OK;
 }
 
-ResourceImporterScene *ResourceImporterScene::scene_singleton = nullptr;
-ResourceImporterScene *ResourceImporterScene::animation_singleton = nullptr;
-
 Vector<Ref<EditorSceneFormatImporter>> ResourceImporterScene::scene_importers;
 Vector<Ref<EditorScenePostImportPlugin>> ResourceImporterScene::post_importer_plugins;
 
@@ -3381,26 +3378,8 @@ void ResourceImporterScene::show_advanced_options(const String &p_path) {
 	SceneImportSettingsDialog::get_singleton()->open_settings(p_path, _scene_import_type);
 }
 
-ResourceImporterScene::ResourceImporterScene(const String &p_scene_import_type, bool p_singleton) {
-	// This should only be set through the EditorNode.
-	if (p_singleton) {
-		if (p_scene_import_type == "AnimationLibrary") {
-			animation_singleton = this;
-		} else if (p_scene_import_type == "PackedScene") {
-			scene_singleton = this;
-		}
-	}
-
+ResourceImporterScene::ResourceImporterScene(const String &p_scene_import_type) {
 	_scene_import_type = p_scene_import_type;
-}
-
-ResourceImporterScene::~ResourceImporterScene() {
-	if (animation_singleton == this) {
-		animation_singleton = nullptr;
-	}
-	if (scene_singleton == this) {
-		scene_singleton = nullptr;
-	}
 }
 
 void ResourceImporterScene::add_scene_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority) {

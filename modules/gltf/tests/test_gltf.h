@@ -57,7 +57,7 @@ namespace TestGltf {
 static Node *gltf_import(const String &p_file) {
 	// Setting up importers.
 	Ref<ResourceImporterScene> import_scene;
-	import_scene.instantiate("PackedScene", true);
+	import_scene.instantiate("PackedScene");
 	ResourceFormatImporter::get_singleton()->add_importer(import_scene);
 	Ref<EditorSceneFormatImporterGLTF> import_gltf;
 	import_gltf.instantiate();
