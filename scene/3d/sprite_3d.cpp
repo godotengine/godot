@@ -1013,7 +1013,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 	Size2 s = t->get_size();
 
 	Point2 ofs = get_offset();
-	if (centered) {
+	if (is_centered()) {
 		ofs -= s / 2;
 	}
 

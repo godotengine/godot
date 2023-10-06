@@ -1534,31 +1534,31 @@ void MeshInstanceSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 }
 
 /////
-Sprite3DSpatialGizmoPlugin::Sprite3DSpatialGizmoPlugin() {
+SpriteBase3DSpatialGizmoPlugin::SpriteBase3DSpatialGizmoPlugin() {
 }
 
-bool Sprite3DSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<Sprite3D>(p_spatial) != nullptr;
+bool SpriteBase3DSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<SpriteBase3D>(p_spatial) != nullptr;
 }
 
-String Sprite3DSpatialGizmoPlugin::get_name() const {
-	return "Sprite3D";
+String SpriteBase3DSpatialGizmoPlugin::get_name() const {
+	return "SpriteBase3D";
 }
 
-int Sprite3DSpatialGizmoPlugin::get_priority() const {
+int SpriteBase3DSpatialGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-bool Sprite3DSpatialGizmoPlugin::can_be_hidden() const {
+bool SpriteBase3DSpatialGizmoPlugin::can_be_hidden() const {
 	return false;
 }
 
-void Sprite3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
-	Sprite3D *sprite = Object::cast_to<Sprite3D>(p_gizmo->get_spatial_node());
+void SpriteBase3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	SpriteBase3D *sprite_base = Object::cast_to<SpriteBase3D>(p_gizmo->get_spatial_node());
 
 	p_gizmo->clear();
 
-	Ref<TriangleMesh> tm = sprite->generate_triangle_mesh();
+	Ref<TriangleMesh> tm = sprite_base->generate_triangle_mesh();
 	if (tm.is_valid()) {
 		p_gizmo->add_collision_triangles(tm);
 	}
