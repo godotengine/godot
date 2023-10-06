@@ -846,6 +846,9 @@
 			The number of pixels to scroll with every mouse wheel increment. Higher values make the script scroll by faster when using the mouse wheel.
 			[b]Note:[/b] You can hold down [kbd]Alt[/kbd] while using the mouse wheel to temporarily scroll 5 times faster.
 		</member>
+		<member name="text_editor/behavior/zoom/zoom_scroll_shortcut" type="bool" setter="" getter="">
+			If [code]true[/code], allows zooming in the script and text-based shader editor with [kbd]Ctrl + Scroll wheel[/kbd].
+		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
 			If [code]true[/code], adds static typing hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key.
 		</member>

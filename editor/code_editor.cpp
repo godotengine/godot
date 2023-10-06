@@ -815,7 +815,7 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid()) {
+	if (mb.is_valid() && zoom_shortcut_enabled) {
 		if (mb->is_pressed() && mb->is_command_or_control_pressed()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				_zoom_in();
@@ -826,7 +826,7 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
-	if (magnify_gesture.is_valid()) {
+	if (magnify_gesture.is_valid() && zoom_shortcut_enabled) {
 		font_size = text_editor->get_theme_font_size(SNAME("font_size"));
 		font_size *= powf(magnify_gesture->get_factor(), 0.25);
 
@@ -1055,6 +1055,9 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_smooth_scroll_enabled(EDITOR_GET("text_editor/behavior/navigation/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EDITOR_GET("text_editor/behavior/navigation/v_scroll_speed"));
 	text_editor->set_drag_and_drop_selection_enabled(EDITOR_GET("text_editor/behavior/navigation/drag_and_drop_selection"));
+
+	// Behavior: Zoom
+	zoom_shortcut_enabled = EDITOR_GET("text_editor/behavior/zoom/zoom_scroll_shortcut");
 
 	// Behavior: indent
 	text_editor->set_indent_using_spaces(EDITOR_GET("text_editor/behavior/indent/type"));
