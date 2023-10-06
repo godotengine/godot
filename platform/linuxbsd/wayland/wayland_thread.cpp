@@ -144,8 +144,12 @@ Vector<uint8_t> WaylandThread::_wl_data_offer_read(struct wl_display *p_display,
 	if (pipe(fds) == 0) {
 		wl_data_offer_receive(p_offer, p_mime, fds[1]);
 
-		// Wait for the compositor to know about the pipe.
-		wl_display_roundtrip(p_display);
+		// Let the compositor know about the pipe.
+		// NOTE: It's important to just flush and not roundtrip here as we would risk
+		// running some cleanup event, like for example `wl_data_device::leave`. We're
+		// going to wait for the message anyways as the read will probably block if
+		// the compositor doesn't read from the other end of the pipe.
+		wl_display_flush(p_display);
 
 		// Close the write end of the pipe, which we don't need and would otherwise
 		// just stall our next `read`s.
@@ -1890,31 +1894,17 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 	ERR_FAIL_NULL(os);
 
 	if (os) {
-		int fds[2];
-		if (pipe(fds) == 0) {
-			wl_data_offer_receive(ss->wl_data_offer_dnd, "text/uri-list", fds[1]);
+		Ref<DropFilesEventMessage> msg;
+		msg.instantiate();
 
-			// Let the compositor know about the pipe, but don't handle any event. For
-			// some cursed reason both leave and drop events are released at the same
-			// time, although both of them clean up the offer. I'm still not sure why.
-			wl_display_flush(wayland_thread->wl_display);
+		Vector<uint8_t> list_data = _wl_data_offer_read(wayland_thread->wl_display, "text/uri-list", ss->wl_data_offer_dnd);
 
-			// Close the write end of the pipe, which we don't need and would otherwise
-			// just stall our next `read`s.
-			close(fds[1]);
-
-			Ref<DropFilesEventMessage> msg;
-			msg.instantiate();
-
-			Vector<uint8_t> list_data = _read_fd(fds[0]);
-
-			msg->files = String::utf8((const char *)list_data.ptr(), list_data.size()).split("\r\n", false);
-			for (int i = 0; i < msg->files.size(); i++) {
-				msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
-			}
-
-			wayland_thread->push_message(msg);
+		msg->files = String::utf8((const char *)list_data.ptr(), list_data.size()).split("\r\n", false);
+		for (int i = 0; i < msg->files.size(); i++) {
+			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
 		}
+
+		wayland_thread->push_message(msg);
 
 		wl_data_offer_finish(ss->wl_data_offer_dnd);
 	}
