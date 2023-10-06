@@ -5151,9 +5151,11 @@ void RasterizerSceneGLES3::initialize() {
 
 	{
 		//spot and omni ubos
-
-		int max_ubo_size;
+		int max_ubo_size = 0;
 		glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_ubo_size);
+		// 16384 is the minimum value for this in the spec, and some bad drivers return a negative number when running through ANGLE.
+		max_ubo_size = MAX(16384, max_ubo_size);
+
 		const int ubo_light_size = 160;
 		state.ubo_light_size = ubo_light_size;
 		state.max_ubo_lights = MIN(render_list.max_lights, max_ubo_size / ubo_light_size);
