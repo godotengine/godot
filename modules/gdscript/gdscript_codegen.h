@@ -140,6 +140,7 @@ public:
 	virtual void write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) = 0;
 	virtual void write_await(const Address &p_target, const Address &p_operand) = 0;
 	virtual void write_if(const Address &p_condition) = 0;
+	virtual void write_if_not(const Address &p_condition) = 0;
 	virtual void write_else() = 0;
 	virtual void write_endif() = 0;
 	virtual void write_jump_if_shared(const Address &p_value) = 0;
@@ -156,7 +157,7 @@ public:
 	virtual void write_breakpoint() = 0;
 	virtual void write_newline(int p_line) = 0;
 	virtual void write_return(const Address &p_return_value) = 0;
-	virtual void write_assert(const Address &p_test, const Address &p_message) = 0;
+	virtual void write_assert_failed(const Address &p_message) = 0;
 
 	virtual ~GDScriptCodeGenerator() {}
 };
