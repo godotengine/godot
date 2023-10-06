@@ -42,6 +42,21 @@
 
 HashMap<String, PopupMenu *> PopupMenu::system_menus;
 
+bool PopupMenu::_set_item_accelerator(int p_index, const Ref<InputEventKey> &p_ie) {
+	DisplayServer *ds = DisplayServer::get_singleton();
+	if (p_ie->get_physical_keycode() == Key::NONE && p_ie->get_keycode() == Key::NONE && p_ie->get_key_label() != Key::NONE) {
+		ds->global_menu_set_item_accelerator(global_menu_name, p_index, p_ie->get_key_label_with_modifiers());
+		return true;
+	} else if (p_ie->get_keycode() != Key::NONE) {
+		ds->global_menu_set_item_accelerator(global_menu_name, p_index, p_ie->get_keycode_with_modifiers());
+		return true;
+	} else if (p_ie->get_physical_keycode() != Key::NONE) {
+		ds->global_menu_set_item_accelerator(global_menu_name, p_index, ds->keyboard_get_keycode_from_physical(p_ie->get_physical_keycode_with_modifiers()));
+		return true;
+	}
+	return false;
+}
+
 String PopupMenu::bind_global_menu() {
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
@@ -101,8 +116,7 @@ String PopupMenu::bind_global_menu() {
 				Array events = item.shortcut->get_events();
 				for (int j = 0; j < events.size(); j++) {
 					Ref<InputEventKey> ie = events[j];
-					if (ie.is_valid()) {
-						ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+					if (ie.is_valid() && _set_item_accelerator(index, ie)) {
 						break;
 					}
 				}
@@ -1368,8 +1382,7 @@ void PopupMenu::add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id, bool p_g
 			Array events = item.shortcut->get_events();
 			for (int j = 0; j < events.size(); j++) {
 				Ref<InputEventKey> ie = events[j];
-				if (ie.is_valid()) {
-					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+				if (ie.is_valid() && _set_item_accelerator(index, ie)) {
 					break;
 				}
 			}
@@ -1397,8 +1410,7 @@ void PopupMenu::add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortc
 			Array events = item.shortcut->get_events();
 			for (int j = 0; j < events.size(); j++) {
 				Ref<InputEventKey> ie = events[j];
-				if (ie.is_valid()) {
-					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+				if (ie.is_valid() && _set_item_accelerator(index, ie)) {
 					break;
 				}
 			}
@@ -1427,8 +1439,7 @@ void PopupMenu::add_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id, bo
 			Array events = item.shortcut->get_events();
 			for (int j = 0; j < events.size(); j++) {
 				Ref<InputEventKey> ie = events[j];
-				if (ie.is_valid()) {
-					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+				if (ie.is_valid() && _set_item_accelerator(index, ie)) {
 					break;
 				}
 			}
@@ -1458,8 +1469,7 @@ void PopupMenu::add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<
 			Array events = item.shortcut->get_events();
 			for (int j = 0; j < events.size(); j++) {
 				Ref<InputEventKey> ie = events[j];
-				if (ie.is_valid()) {
-					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+				if (ie.is_valid() && _set_item_accelerator(index, ie)) {
 					break;
 				}
 			}
@@ -1489,8 +1499,7 @@ void PopupMenu::add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_
 			Array events = item.shortcut->get_events();
 			for (int j = 0; j < events.size(); j++) {
 				Ref<InputEventKey> ie = events[j];
-				if (ie.is_valid()) {
-					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+				if (ie.is_valid() && _set_item_accelerator(index, ie)) {
 					break;
 				}
 			}
@@ -1520,8 +1529,7 @@ void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, cons
 			Array events = item.shortcut->get_events();
 			for (int j = 0; j < events.size(); j++) {
 				Ref<InputEventKey> ie = events[j];
-				if (ie.is_valid()) {
-					ds->global_menu_set_item_accelerator(global_menu_name, index, ie->get_keycode_with_modifiers());
+				if (ie.is_valid() && _set_item_accelerator(index, ie)) {
 					break;
 				}
 			}
@@ -2045,8 +2053,7 @@ void PopupMenu::set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bo
 			Array events = items[p_idx].shortcut->get_events();
 			for (int j = 0; j < events.size(); j++) {
 				Ref<InputEventKey> ie = events[j];
-				if (ie.is_valid()) {
-					ds->global_menu_set_item_accelerator(global_menu_name, p_idx, ie->get_keycode_with_modifiers());
+				if (ie.is_valid() && _set_item_accelerator(p_idx, ie)) {
 					break;
 				}
 			}
@@ -2116,8 +2123,7 @@ void PopupMenu::set_item_shortcut_disabled(int p_idx, bool p_disabled) {
 			Array events = items[p_idx].shortcut->get_events();
 			for (int j = 0; j < events.size(); j++) {
 				Ref<InputEventKey> ie = events[j];
-				if (ie.is_valid()) {
-					ds->global_menu_set_item_accelerator(global_menu_name, p_idx, ie->get_keycode_with_modifiers());
+				if (ie.is_valid() && _set_item_accelerator(p_idx, ie)) {
 					break;
 				}
 			}
