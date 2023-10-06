@@ -31,6 +31,7 @@
 #include "theme_editor_plugin.h"
 
 #include "core/os/keyboard.h"
+#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_scale.h"
@@ -2259,6 +2260,10 @@ ThemeTypeDialog::ThemeTypeDialog() {
 
 ///////////////////////
 
+Control *ThemeItemLabel::make_custom_tooltip(const String &p_text) const {
+	return memnew(EditorHelpTooltip(p_text));
+}
+
 VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 	VBoxContainer *items_tab = memnew(VBoxContainer);
 	items_tab->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
@@ -2413,11 +2418,13 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 	item_name_container->set_stretch_ratio(2.0);
 	item_control->add_child(item_name_container);
 
-	Label *item_name = memnew(Label);
+	Label *item_name = memnew(ThemeItemLabel);
 	item_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	item_name->set_clip_text(true);
 	item_name->set_text(p_item_name);
-	item_name->set_tooltip_text(p_item_name);
+	// `|` separators used in `EditorHelpTooltip` for formatting.
+	item_name->set_tooltip_text("theme_item|" + edited_type + "|" + p_item_name + "|");
+	item_name->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	item_name_container->add_child(item_name);
 
 	if (p_editable) {
@@ -2477,7 +2484,6 @@ void ThemeTypeEditor::_add_focusable(Control *p_control) {
 
 void ThemeTypeEditor::_update_type_items() {
 	bool show_default = show_default_items_button->is_pressed();
-	List<StringName> names;
 
 	focusables.clear();
 

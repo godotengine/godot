@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/templates/hash_set.h"
-#include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
