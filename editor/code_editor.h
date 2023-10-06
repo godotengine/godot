@@ -160,6 +160,7 @@ class CodeTextEditor : public VBoxContainer {
 	bool code_complete_enabled = true;
 	Timer *code_complete_timer = nullptr;
 	int code_complete_timer_line = 0;
+	bool zoom_shortcut_enabled = true;
 
 	Timer *font_resize_timer = nullptr;
 	int font_resize_val;
