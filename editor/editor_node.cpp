@@ -7834,11 +7834,13 @@ EditorNode::EditorNode() {
 		import_shader_file.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_shader_file);
 
-		Ref<ResourceImporterScene> import_scene = memnew(ResourceImporterScene("PackedScene", true));
-		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
+		Ref<ResourceImporterScene> import_model_as_scene;
+		import_model_as_scene.instantiate("PackedScene");
+		ResourceFormatImporter::get_singleton()->add_importer(import_model_as_scene);
 
-		Ref<ResourceImporterScene> import_animation = memnew(ResourceImporterScene("AnimationLibrary", true));
-		ResourceFormatImporter::get_singleton()->add_importer(import_animation);
+		Ref<ResourceImporterScene> import_model_as_animation;
+		import_model_as_animation.instantiate("AnimationLibrary");
+		ResourceFormatImporter::get_singleton()->add_importer(import_model_as_animation);
 
 		{
 			Ref<EditorSceneFormatImporterCollada> import_collada;
