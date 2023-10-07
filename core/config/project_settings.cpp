@@ -1407,6 +1407,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations_pot_files", PackedStringArray());
 
+	GLOBAL_DEF("input_devices/config/ignore_joypad_on_unfocused_window", false);
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }
 
