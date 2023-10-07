@@ -1734,7 +1734,8 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	if (tree->has_focus()) {
 		new_name = s->get_text(col_index).strip_edges();
-	} else if (files->has_focus()) {
+	} else {
+		// Rename happened from FileSystemList.
 		new_name = files->get_edit_text().strip_edges();
 	}
 	String old_name = to_rename.is_file ? to_rename.path.get_file() : to_rename.path.left(-1).get_file();
@@ -1757,10 +1758,11 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 
 	// Restore original name.
-	if (rename_error && tree->has_focus()) {
-		s->set_text(col_index, old_name);
-		return;
-	} else if (rename_error && files->has_focus()) {
+	if (rename_error) {
+		if (tree->has_focus()) {
+			s->set_text(col_index, old_name);
+		}
+		// No adjustmens necessary, when renaming from FileSystemList.
 		return;
 	}
 
