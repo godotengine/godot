@@ -679,7 +679,7 @@ namespace Godot.SourceGenerators
                     }
                 }
 
-                hint = PropertyHint.TypeString;
+                hint = PropertyHint.ArrayType;
 
                 return hintString != null;
             }
