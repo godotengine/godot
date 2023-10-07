@@ -4006,6 +4006,55 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 	return true;
 }
 
+static String _get_annotation_error_string(const StringName &p_annotation_name, const Vector<Variant::Type> &p_expected_types, const GDScriptParser::DataType &p_provided_type) {
+	Vector<String> types;
+	for (int i = 0; i < p_expected_types.size(); i++) {
+		const Variant::Type &type = p_expected_types[i];
+		types.push_back(Variant::get_type_name(type));
+		types.push_back("Array[" + Variant::get_type_name(type) + "]");
+		switch (type) {
+			case Variant::INT:
+				types.push_back("PackedByteArray");
+				types.push_back("PackedInt32Array");
+				types.push_back("PackedInt64Array");
+				break;
+			case Variant::FLOAT:
+				types.push_back("PackedFloat32Array");
+				types.push_back("PackedFloat64Array");
+				break;
+			case Variant::STRING:
+				types.push_back("PackedStringArray");
+				break;
+			case Variant::VECTOR2:
+				types.push_back("PackedVector2Array");
+				break;
+			case Variant::VECTOR3:
+				types.push_back("PackedVector3Array");
+				break;
+			case Variant::COLOR:
+				types.push_back("PackedColorArray");
+				break;
+			default:
+				break;
+		}
+	}
+
+	String string;
+	if (types.size() == 1) {
+		string = types[0].quote();
+	} else if (types.size() == 2) {
+		string = types[0].quote() + " or " + types[1].quote();
+	} else if (types.size() >= 3) {
+		string = types[0].quote();
+		for (int i = 1; i < types.size() - 1; i++) {
+			string += ", " + types[i].quote();
+		}
+		string += ", or " + types[types.size() - 1].quote();
+	}
+
+	return vformat(R"("%s" annotation requires a variable of type %s, but type "%s" was given instead.)", p_annotation_name, string, p_provided_type.to_string());
+}
+
 template <PropertyHint t_hint, Variant::Type t_type>
 bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
@@ -4090,6 +4139,26 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 	// This is called after the analyzer is done finding the type, so this should be set here.
 	DataType export_type = variable->get_datatype();
+
+	// Use initializer type if specified type is `Variant`.
+	if (export_type.is_variant() && variable->initializer != nullptr && variable->initializer->datatype.is_set()) {
+		export_type = variable->initializer->get_datatype();
+		export_type.type_source = DataType::INFERRED;
+	}
+
+	const Variant::Type original_export_type_builtin = export_type.builtin_type;
+
+	// Process array and packed array annotations on the element type.
+	bool is_array = false;
+	if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type(0)) {
+		is_array = true;
+		export_type = export_type.get_container_element_type(0);
+	} else if (export_type.is_typed_container_type()) {
+		is_array = true;
+		export_type = export_type.get_typed_container_type();
+		export_type.type_source = variable->datatype.type_source;
+	}
+
 	bool use_default_variable_type_check = true;
 
 	if (p_annotation->name == SNAME("@export_range")) {
@@ -4097,30 +4166,16 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			variable->export_info.type = Variant::INT;
 		}
 	} else if (p_annotation->name == SNAME("@export_multiline")) {
-		if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type(0)) {
-			DataType inner_type = export_type.get_container_element_type(0);
-			if (inner_type.builtin_type != Variant::STRING) {
-				push_error(vformat(R"("%s" annotation on arrays requires a string type but type "%s" was given instead.)", p_annotation->name.operator String(), inner_type.to_string()), variable);
-				return false;
-			}
+		use_default_variable_type_check = false;
 
-			String hint_prefix = itos(inner_type.builtin_type) + "/" + itos(variable->export_info.hint);
-			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
-			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
-			variable->export_info.type = Variant::ARRAY;
+		if (export_type.builtin_type != Variant::STRING && export_type.builtin_type != Variant::DICTIONARY) {
+			Vector<Variant::Type> expected_types = { Variant::STRING, Variant::DICTIONARY };
+			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+			return false;
+		}
 
-			return true;
-		} else if (export_type.builtin_type == Variant::DICTIONARY) {
+		if (export_type.builtin_type == Variant::DICTIONARY) {
 			variable->export_info.type = Variant::DICTIONARY;
-
-			return true;
-		} else if (export_type.builtin_type == Variant::PACKED_STRING_ARRAY) {
-			String hint_prefix = itos(Variant::STRING) + "/" + itos(variable->export_info.hint);
-			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
-			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
-			variable->export_info.type = Variant::PACKED_STRING_ARRAY;
-
-			return true;
 		}
 	} else if (p_annotation->name == SNAME("@export")) {
 		use_default_variable_type_check = false;
@@ -4128,13 +4183,6 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
 			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
 			return false;
-		}
-
-		bool is_array = false;
-
-		if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type(0)) {
-			export_type = export_type.get_container_element_type(0); // Use inner type for.
-			is_array = true;
 		}
 
 		if (export_type.is_variant() || export_type.has_no_type()) {
@@ -4158,7 +4206,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
 					variable->export_info.hint_string = export_type.native_type;
 				} else {
-					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", variable);
+					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
 					return false;
 				}
 				break;
@@ -4172,7 +4220,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
 					variable->export_info.hint_string = export_type.to_string();
 				} else {
-					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", variable);
+					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
 					return false;
 				}
 
@@ -4223,23 +4271,13 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				}
 			} break;
 			default:
-				push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", variable);
+				push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
 				return false;
 		}
 
 		if (variable->export_info.hint == PROPERTY_HINT_NODE_TYPE && !ClassDB::is_parent_class(p_class->base_type.native_type, SNAME("Node"))) {
-			push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), variable);
+			push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
 			return false;
-		}
-
-		if (is_array) {
-			String hint_prefix = itos(variable->export_info.type);
-			if (variable->export_info.hint) {
-				hint_prefix += "/" + itos(variable->export_info.hint);
-			}
-			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
-			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
-			variable->export_info.type = Variant::ARRAY;
 		}
 	} else if (p_annotation->name == SNAME("@export_enum")) {
 		use_default_variable_type_check = false;
@@ -4248,17 +4286,13 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 		if (export_type.kind == DataType::BUILTIN && export_type.builtin_type == Variant::STRING) {
 			enum_type = Variant::STRING;
-		} else if (export_type.is_variant() && variable->initializer != nullptr) {
-			DataType initializer_type = variable->initializer->get_datatype();
-			if (initializer_type.kind == DataType::BUILTIN && initializer_type.builtin_type == Variant::STRING) {
-				enum_type = Variant::STRING;
-			}
 		}
 
 		variable->export_info.type = enum_type;
 
 		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != enum_type)) {
-			push_error(vformat(R"("@export_enum" annotation requires a variable of type "int" or "String" but type "%s" was given instead.)", export_type.to_string()), variable);
+			Vector<Variant::Type> expected_types = { Variant::INT, Variant::STRING };
+			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
 			return false;
 		}
 	} else if (p_annotation->name == SNAME("@export_storage")) {
@@ -4274,10 +4308,21 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != t_type)) {
 			// Allow float/int conversion.
 			if ((t_type != Variant::FLOAT || export_type.builtin_type != Variant::INT) && (t_type != Variant::INT || export_type.builtin_type != Variant::FLOAT)) {
-				push_error(vformat(R"("%s" annotation requires a variable of type "%s" but type "%s" was given instead.)", p_annotation->name.operator String(), Variant::get_type_name(t_type), export_type.to_string()), variable);
+				Vector<Variant::Type> expected_types = { t_type };
+				push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
 				return false;
 			}
 		}
+	}
+
+	if (is_array) {
+		String hint_prefix = itos(variable->export_info.type);
+		if (variable->export_info.hint) {
+			hint_prefix += "/" + itos(variable->export_info.hint);
+		}
+		variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
+		variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
+		variable->export_info.type = original_export_type_builtin;
 	}
 
 	return true;
