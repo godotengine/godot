@@ -94,6 +94,8 @@ public:
 	void set_priority(int p_priority);
 	int get_priority() const;
 
+	PackedStringArray get_configuration_warnings() const;
+
 	AnimationNodeStateMachineTransition();
 };
 
@@ -142,6 +144,8 @@ private:
 	void _remove_transition(const Ref<AnimationNodeStateMachineTransition> p_transition);
 	void _rename_transitions(const StringName &p_name, const StringName &p_new_name);
 	bool _can_connect(const StringName &p_name);
+
+	PackedStringArray get_configuration_warnings() const override;
 
 protected:
 	static void _bind_methods();

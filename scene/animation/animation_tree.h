@@ -170,6 +170,8 @@ protected:
 
 public:
 	AnimationRootNode() {}
+
+	virtual PackedStringArray get_configuration_warnings() const;
 };
 
 class AnimationNodeStartState : public AnimationRootNode {
