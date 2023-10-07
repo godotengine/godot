@@ -1383,7 +1383,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				GLuint vertex_array_gl = 0;
 				GLuint index_array_gl = 0;
 
-				uint32_t input_mask = 0; // 2D meshes always use the same vertex format
+				uint64_t input_mask = 0; // 2D meshes always use the same vertex format.
 				if (mesh_instance.is_valid()) {
 					mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, vertex_array_gl);
 				} else {
@@ -1420,6 +1420,13 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 						glEnableVertexAttribArray(5);
 						glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, instance_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(instance_color_offset * sizeof(float)));
 						glVertexAttribDivisor(5, 1);
+					} else {
+						// Set all default instance color and custom data values to 1.0 or 0.0 using a compressed format.
+						uint16_t zero = Math::make_half_float(0.0f);
+						uint16_t one = Math::make_half_float(1.0f);
+						GLuint default_color = (uint32_t(one) << 16) | one;
+						GLuint default_custom = (uint32_t(zero) << 16) | zero;
+						glVertexAttribI4ui(5, default_color, default_color, default_custom, default_custom);
 					}
 				}
 

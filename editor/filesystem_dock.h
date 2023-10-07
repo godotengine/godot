@@ -88,7 +88,8 @@ public:
 
 	enum DisplayMode {
 		DISPLAY_MODE_TREE_ONLY,
-		DISPLAY_MODE_SPLIT,
+		DISPLAY_MODE_VSPLIT,
+		DISPLAY_MODE_HSPLIT,
 	};
 
 	enum FileSortOption {
@@ -144,8 +145,11 @@ private:
 
 	VBoxContainer *scanning_vb = nullptr;
 	ProgressBar *scanning_progress = nullptr;
-	VSplitContainer *split_box = nullptr;
+	SplitContainer *split_box = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
+
+	int split_box_offset_h = 0;
+	int split_box_offset_v = 0;
 
 	HashSet<String> favorites;
 
@@ -299,7 +303,7 @@ private:
 	void _set_scanning_mode();
 	void _rescan();
 
-	void _toggle_split_mode(bool p_active);
+	void _change_split_mode();
 
 	void _search_changed(const String &p_text, const Control *p_from);
 

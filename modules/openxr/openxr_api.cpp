@@ -1683,14 +1683,27 @@ bool OpenXRAPI::acquire_image(OpenXRSwapChainInfo &p_swapchain) {
 	ERR_FAIL_COND_V(p_swapchain.image_acquired, true); // This was not released when it should be, error out and reuse...
 
 	XrResult result;
-	XrSwapchainImageAcquireInfo swapchain_image_acquire_info = {
-		XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, // type
-		nullptr // next
-	};
-	result = xrAcquireSwapchainImage(p_swapchain.swapchain, &swapchain_image_acquire_info, &p_swapchain.image_index);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to acquire swapchain image [", get_error_string(result), "]");
-		return false;
+
+	if (!p_swapchain.skip_acquire_swapchain) {
+		XrSwapchainImageAcquireInfo swapchain_image_acquire_info = {
+			XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, // type
+			nullptr // next
+		};
+
+		result = xrAcquireSwapchainImage(p_swapchain.swapchain, &swapchain_image_acquire_info, &p_swapchain.image_index);
+		if (!XR_UNQUALIFIED_SUCCESS(result)) {
+			// Make sure end_frame knows we need to submit an empty frame
+			frame_state.shouldRender = false;
+
+			if (XR_FAILED(result)) {
+				// Unexpected failure, log this!
+				print_line("OpenXR: failed to acquire swapchain image [", get_error_string(result), "]");
+				return false;
+			} else {
+				// In this scenario we silently fail, the XR runtime is simply not ready yet to acquire the swapchain.
+				return false;
+			}
+		}
 	}
 
 	XrSwapchainImageWaitInfo swapchain_image_wait_info = {
@@ -1700,9 +1713,21 @@ bool OpenXRAPI::acquire_image(OpenXRSwapChainInfo &p_swapchain) {
 	};
 
 	result = xrWaitSwapchainImage(p_swapchain.swapchain, &swapchain_image_wait_info);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to wait for swapchain image [", get_error_string(result), "]");
-		return false;
+	if (!XR_UNQUALIFIED_SUCCESS(result)) {
+		// Make sure end_frame knows we need to submit an empty frame
+		frame_state.shouldRender = false;
+
+		if (XR_FAILED(result)) {
+			// Unexpected failure, log this!
+			print_line("OpenXR: failed to wait for swapchain image [", get_error_string(result), "]");
+			return false;
+		} else {
+			// Make sure to skip trying to acquire the swapchain image in the next frame
+			p_swapchain.skip_acquire_swapchain = true;
+			return false;
+		}
+	} else {
+		p_swapchain.skip_acquire_swapchain = false;
 	}
 
 	return true;

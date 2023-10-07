@@ -364,14 +364,14 @@ bool DisplayServerX11::is_dark_mode() const {
 }
 
 Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
-	WindowID window_id = _get_focused_window_or_popup();
+	WindowID window_id = last_focused_window;
 
 	if (!windows.has(window_id)) {
 		window_id = MAIN_WINDOW_ID;
 	}
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
-	return portal_desktop->file_dialog_show(xid, p_title, p_current_directory, p_filename, p_mode, p_filters, p_callback);
+	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, p_filename, p_mode, p_filters, p_callback);
 }
 
 #endif
@@ -1495,6 +1495,9 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	if (gl_manager) {
 		gl_manager->window_destroy(p_id);
 	}
+	if (gl_manager_egl) {
+		gl_manager_egl->window_destroy(p_id);
+	}
 #endif
 
 	if (wd.xic) {
@@ -1533,6 +1536,9 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 		case OPENGL_CONTEXT: {
 			if (gl_manager) {
 				return (int64_t)gl_manager->get_glx_context(p_window);
+			}
+			if (gl_manager_egl) {
+				return (int64_t)gl_manager_egl->get_context(p_window);
 			}
 			return 0;
 		}
@@ -1710,6 +1716,9 @@ void DisplayServerX11::gl_window_make_current(DisplayServer::WindowID p_window_i
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
 		gl_manager->window_make_current(p_window_id);
+	}
+	if (gl_manager_egl) {
+		gl_manager_egl->window_make_current(p_window_id);
 	}
 #endif
 }
@@ -2011,6 +2020,9 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
 		gl_manager->window_resize(p_window, xwa.width, xwa.height);
+	}
+	if (gl_manager_egl) {
+		gl_manager_egl->window_resize(p_window, xwa.width, xwa.height);
 	}
 #endif
 }
@@ -3721,17 +3733,13 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	if (gl_manager) {
 		gl_manager->window_resize(window_id, wd.size.width, wd.size.height);
 	}
+	if (gl_manager_egl) {
+		gl_manager_egl->window_resize(window_id, wd.size.width, wd.size.height);
+	}
 #endif
 
-	if (!wd.rect_changed_callback.is_null()) {
-		Rect2i r = new_rect;
-
-		Variant rect = r;
-
-		Variant *rectp = &rect;
-		Variant ret;
-		Callable::CallError ce;
-		wd.rect_changed_callback.callp((const Variant **)&rectp, 1, ret, ce);
+	if (wd.rect_changed_callback.is_valid()) {
+		wd.rect_changed_callback.call(new_rect);
 	}
 }
 
@@ -3749,11 +3757,6 @@ void DisplayServerX11::_dispatch_input_events(const Ref<InputEvent> &p_event) {
 }
 
 void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	Variant ev = p_event;
-	Variant *evp = &ev;
-	Variant ret;
-	Callable::CallError ce;
-
 	{
 		List<WindowID>::Element *E = popup_list.back();
 		if (E && Object::cast_to<InputEventKey>(*p_event)) {
@@ -3761,7 +3764,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 			if (windows.has(E->get())) {
 				Callable callable = windows[E->get()].input_event_callback;
 				if (callable.is_valid()) {
-					callable.callp((const Variant **)&evp, 1, ret, ce);
+					callable.call(p_event);
 				}
 			}
 			return;
@@ -3774,7 +3777,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		if (windows.has(event_from_window->get_window_id())) {
 			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 			if (callable.is_valid()) {
-				callable.callp((const Variant **)&evp, 1, ret, ce);
+				callable.call(p_event);
 			}
 		}
 	} else {
@@ -3782,19 +3785,16 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		for (KeyValue<WindowID, WindowData> &E : windows) {
 			Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.callp((const Variant **)&evp, 1, ret, ce);
+				callable.call(p_event);
 			}
 		}
 	}
 }
 
 void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_event) {
-	if (!wd.event_callback.is_null()) {
+	if (wd.event_callback.is_valid()) {
 		Variant event = int(p_event);
-		Variant *eventp = &event;
-		Variant ret;
-		Callable::CallError ce;
-		wd.event_callback.callp((const Variant **)&eventp, 1, ret, ce);
+		wd.event_callback.call(event);
 	}
 }
 
@@ -4739,11 +4739,7 @@ void DisplayServerX11::process_events() {
 					}
 
 					if (!windows[window_id].drop_files_callback.is_null()) {
-						Variant v = files;
-						Variant *vp = &v;
-						Variant ret;
-						Callable::CallError ce;
-						windows[window_id].drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
+						windows[window_id].drop_files_callback.call(files);
 					}
 
 					//Reply that all is well.
@@ -4855,6 +4851,9 @@ void DisplayServerX11::release_rendering_thread() {
 	if (gl_manager) {
 		gl_manager->release_current();
 	}
+	if (gl_manager_egl) {
+		gl_manager_egl->release_current();
+	}
 #endif
 }
 
@@ -4863,6 +4862,9 @@ void DisplayServerX11::make_rendering_thread() {
 	if (gl_manager) {
 		gl_manager->make_current();
 	}
+	if (gl_manager_egl) {
+		gl_manager_egl->make_current();
+	}
 #endif
 }
 
@@ -4870,6 +4872,9 @@ void DisplayServerX11::swap_buffers() {
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
 		gl_manager->swap_buffers();
+	}
+	if (gl_manager_egl) {
+		gl_manager_egl->swap_buffers();
 	}
 #endif
 }
@@ -5024,6 +5029,9 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 	if (gl_manager) {
 		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
+	if (gl_manager_egl) {
+		gl_manager_egl->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
 #endif
 }
 
@@ -5038,6 +5046,9 @@ DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_wind
 	if (gl_manager) {
 		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
+	if (gl_manager_egl) {
+		return gl_manager_egl->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
 }
@@ -5050,6 +5061,7 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 #endif
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
+	drivers.push_back("opengl3_es");
 #endif
 
 	return drivers;
@@ -5091,6 +5103,21 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		visualInfo = gl_manager->get_vi(x11_display, err);
 		ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't acquire visual info from display.");
 		vi_selected = true;
+	}
+	if (gl_manager_egl) {
+		XVisualInfo visual_info_template;
+		int visual_id = gl_manager_egl->display_get_native_visual_id(x11_display);
+		ERR_FAIL_COND_V_MSG(visual_id < 0, INVALID_WINDOW_ID, "Unable to get a visual id.");
+
+		visual_info_template.visualid = (VisualID)visual_id;
+
+		int number_of_visuals = 0;
+		XVisualInfo *vi_list = XGetVisualInfo(x11_display, VisualIDMask, &visual_info_template, &number_of_visuals);
+		ERR_FAIL_COND_V(number_of_visuals <= 0, INVALID_WINDOW_ID);
+
+		visualInfo = vi_list[0];
+
+		XFree(vi_list);
 	}
 #endif
 
@@ -5364,8 +5391,12 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
-			window_set_vsync_mode(p_vsync_mode, id);
 		}
+		if (gl_manager_egl) {
+			Error err = gl_manager_egl->window_create(id, x11_display, &wd.x11_window, win_rect.size.width, win_rect.size.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create an OpenGLES window.");
+		}
+		window_set_vsync_mode(p_vsync_mode, id);
 #endif
 
 		//set_class_hint(x11_display, wd.x11_window);
@@ -5766,7 +5797,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 #endif
 	// Initialize context and rendering device.
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
+	if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
 		if (getenv("DRI_PRIME") == nullptr) {
 			int use_prime = -1;
 
@@ -5807,7 +5838,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 				setenv("DRI_PRIME", "1", 1);
 			}
 		}
-
+	}
+	if (rendering_driver == "opengl3") {
 		GLManager_X11::ContextType opengl_api_type = GLManager_X11::GLES_3_0_COMPATIBLE;
 
 		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
@@ -5820,14 +5852,20 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 		driver_found = true;
 
-		if (true) {
-			RasterizerGLES3::make_current(true);
-		} else {
-			memdelete(gl_manager);
-			gl_manager = nullptr;
+		RasterizerGLES3::make_current(true);
+	}
+	if (rendering_driver == "opengl3_es") {
+		gl_manager_egl = memnew(GLManagerEGL_X11);
+
+		if (gl_manager_egl->initialize() != OK) {
+			memdelete(gl_manager_egl);
+			gl_manager_egl = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
+		driver_found = true;
+
+		RasterizerGLES3::make_current(false);
 	}
 #endif
 	if (!driver_found) {
@@ -6044,6 +6082,9 @@ DisplayServerX11::~DisplayServerX11() {
 		if (gl_manager) {
 			gl_manager->window_destroy(E.key);
 		}
+		if (gl_manager_egl) {
+			gl_manager_egl->window_destroy(E.key);
+		}
 #endif
 
 		WindowData &wd = E.value;
@@ -6093,6 +6134,10 @@ DisplayServerX11::~DisplayServerX11() {
 	if (gl_manager) {
 		memdelete(gl_manager);
 		gl_manager = nullptr;
+	}
+	if (gl_manager_egl) {
+		memdelete(gl_manager_egl);
+		gl_manager_egl = nullptr;
 	}
 #endif
 

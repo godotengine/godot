@@ -44,8 +44,11 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/button.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
+#include "scene/gui/scroll_container.h"
+#include "scene/gui/separator.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 

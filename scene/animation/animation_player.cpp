@@ -415,9 +415,16 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	}
 
 	c.current.from = &animation_set[name];
+	c.current.speed_scale = p_custom_scale;
+
+	if (!end_reached) {
+		playback_queue.clear();
+	}
 
 	if (c.assigned != name) { // Reset.
 		c.current.pos = p_from_end ? c.current.from->animation->get_length() : 0;
+		c.assigned = name;
+		emit_signal(SNAME("current_animation_changed"), c.assigned);
 	} else {
 		if (p_from_end && c.current.pos == 0) {
 			// Animation reset but played backwards, set position to the end.
@@ -425,18 +432,14 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 		} else if (!p_from_end && c.current.pos == c.current.from->animation->get_length()) {
 			// Animation resumed but already ended, set position to the beginning.
 			c.current.pos = 0;
+		} else if (playing) {
+			return;
 		}
 	}
 
-	c.current.speed_scale = p_custom_scale;
-	c.assigned = name;
-	emit_signal(SNAME("current_animation_changed"), c.assigned);
 	c.seeked = false;
 	c.started = true;
 
-	if (!end_reached) {
-		playback_queue.clear();
-	}
 	_set_process(true); // Always process when starting an animation.
 	playing = true;
 
@@ -768,7 +771,7 @@ void AnimationPlayer::_bind_methods() {
 	ADD_GROUP("Playback Options", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:s"), "set_default_blend_time", "get_default_blend_time");
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-4,4,0.001,or_less,or_greater"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movie_quit_on_finish"), "set_movie_quit_on_finish_enabled", "is_movie_quit_on_finish_enabled");
 
 	ADD_SIGNAL(MethodInfo(SNAME("current_animation_changed"), PropertyInfo(Variant::STRING, "name")));

@@ -1047,6 +1047,8 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 				args.push_back("--p12-password");
 				args.push_back(certificate_pass);
 			}
+			args.push_back("--code-signature-flags");
+			args.push_back("runtime");
 
 			args.push_back("-v"); /* provide some more feedback */
 
@@ -1139,7 +1141,6 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 
 Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path,
 		const String &p_ent_path, bool p_should_error_on_non_code) {
-#ifdef MACOS_ENABLED
 	static Vector<String> extensions_to_sign;
 
 	if (extensions_to_sign.is_empty()) {
@@ -1186,7 +1187,6 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 
 		current_file = dir_access->get_next();
 	}
-#endif
 
 	return OK;
 }
@@ -1225,7 +1225,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			if (extensions_to_sign.find(p_in_app_path.get_extension()) > -1) {
 				err = _code_sign(p_preset, p_in_app_path, p_ent_path, false);
 			}
-			if (is_executable(p_in_app_path)) {
+			if (dir_access->file_exists(p_in_app_path) && is_executable(p_in_app_path)) {
 				// chmod with 0755 if the file is executable.
 				FileAccess::set_unix_permissions(p_in_app_path, 0755);
 			}

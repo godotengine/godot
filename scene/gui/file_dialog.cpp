@@ -56,6 +56,12 @@ void FileDialog::_focus_file_text() {
 }
 
 void FileDialog::popup(const Rect2i &p_rect) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		ConfirmationDialog::popup(p_rect);
+	}
+#endif
+
 	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
 	} else {
@@ -64,6 +70,13 @@ void FileDialog::popup(const Rect2i &p_rect) {
 }
 
 void FileDialog::set_visible(bool p_visible) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		ConfirmationDialog::set_visible(p_visible);
+		return;
+	}
+#endif
+
 	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		if (p_visible) {
 			DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
@@ -73,7 +86,7 @@ void FileDialog::set_visible(bool p_visible) {
 	}
 }
 
-void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
+void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter) {
 	if (p_ok) {
 		if (p_files.size() > 0) {
 			String f = p_files[0];
@@ -90,6 +103,7 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
 			}
 			file->set_text(f);
 			dir->set_text(f.get_base_dir());
+			_filter_selected(p_filter);
 		}
 	} else {
 		file->set_text("");

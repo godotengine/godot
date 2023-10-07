@@ -2893,6 +2893,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
 	actions.render_mode_flags["particle_trails"] = &uses_particle_trails;
+	actions.render_mode_flags["world_vertex_coords"] = &uses_world_coordinates;
 
 	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
 	actions.usage_flag_pointers["ALPHA_SCISSOR_THRESHOLD"] = &uses_alpha_clip;
@@ -2944,7 +2945,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	cull_mode = Cull(cull_modei);
 	blend_mode = BlendMode(blend_modei);
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
-	vertex_input_mask = uint32_t(uses_normal);
+	vertex_input_mask = uint64_t(uses_normal);
 	vertex_input_mask |= uses_tangent << 1;
 	vertex_input_mask |= uses_color << 2;
 	vertex_input_mask |= uses_uv << 3;

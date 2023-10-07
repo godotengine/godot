@@ -255,7 +255,7 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
-				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [Vector2i] with font size and outline size.
 			</description>
 		</method>
 		<method name="get_texture_count" qualifiers="const">

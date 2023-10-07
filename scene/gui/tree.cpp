@@ -1476,7 +1476,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 void TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return;
 	}
 
@@ -3142,7 +3142,7 @@ void Tree::value_editor_changed(double p_value) {
 	TreeItem::Cell &c = popup_edited_item->cells.write[popup_edited_item_col];
 	c.val = p_value;
 
-	text_editor->set_text(String::num(c.val, Math::range_step_decimals(c.step)));
+	line_editor->set_text(String::num(c.val, Math::range_step_decimals(c.step)));
 
 	item_edited(popup_edited_item_col, popup_edited_item);
 	queue_redraw();

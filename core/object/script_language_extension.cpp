@@ -55,6 +55,7 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_class_icon_path);
 
 	GDVIRTUAL_BIND(_has_method, "method");
+	GDVIRTUAL_BIND(_has_static_method, "method");
 	GDVIRTUAL_BIND(_get_method_info, "method");
 
 	GDVIRTUAL_BIND(_is_tool);

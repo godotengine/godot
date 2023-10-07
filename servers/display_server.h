@@ -130,6 +130,8 @@ public:
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
 
+	virtual void global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callback = Callable(), const Callable &p_close_callback = Callable());
+
 	virtual int global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index = -1);
 	virtual int global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
 	virtual int global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
@@ -153,6 +155,7 @@ public:
 	virtual String global_menu_get_item_submenu(const String &p_menu_root, int p_idx) const;
 	virtual Key global_menu_get_item_accelerator(const String &p_menu_root, int p_idx) const;
 	virtual bool global_menu_is_item_disabled(const String &p_menu_root, int p_idx) const;
+	virtual bool global_menu_is_item_hidden(const String &p_menu_root, int p_idx) const;
 	virtual String global_menu_get_item_tooltip(const String &p_menu_root, int p_idx) const;
 	virtual int global_menu_get_item_state(const String &p_menu_root, int p_idx) const;
 	virtual int global_menu_get_item_max_states(const String &p_menu_root, int p_idx) const;
@@ -164,11 +167,13 @@ public:
 	virtual void global_menu_set_item_radio_checkable(const String &p_menu_root, int p_idx, bool p_checkable);
 	virtual void global_menu_set_item_callback(const String &p_menu_root, int p_idx, const Callable &p_callback);
 	virtual void global_menu_set_item_key_callback(const String &p_menu_root, int p_idx, const Callable &p_key_callback);
+	virtual void global_menu_set_item_hover_callbacks(const String &p_menu_root, int p_idx, const Callable &p_callback);
 	virtual void global_menu_set_item_tag(const String &p_menu_root, int p_idx, const Variant &p_tag);
 	virtual void global_menu_set_item_text(const String &p_menu_root, int p_idx, const String &p_text);
 	virtual void global_menu_set_item_submenu(const String &p_menu_root, int p_idx, const String &p_submenu);
 	virtual void global_menu_set_item_accelerator(const String &p_menu_root, int p_idx, Key p_keycode);
 	virtual void global_menu_set_item_disabled(const String &p_menu_root, int p_idx, bool p_disabled);
+	virtual void global_menu_set_item_hidden(const String &p_menu_root, int p_idx, bool p_hidden);
 	virtual void global_menu_set_item_tooltip(const String &p_menu_root, int p_idx, const String &p_tooltip);
 	virtual void global_menu_set_item_state(const String &p_menu_root, int p_idx, int p_state);
 	virtual void global_menu_set_item_max_states(const String &p_menu_root, int p_idx, int p_max_states);
@@ -390,6 +395,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual Size2i window_get_title_size(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) const { return Size2i(); }
 
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
 
@@ -500,7 +506,8 @@ public:
 		FILE_DIALOG_MODE_OPEN_FILES,
 		FILE_DIALOG_MODE_OPEN_DIR,
 		FILE_DIALOG_MODE_OPEN_ANY,
-		FILE_DIALOG_MODE_SAVE_FILE
+		FILE_DIALOG_MODE_SAVE_FILE,
+		FILE_DIALOG_MODE_SAVE_MAX
 	};
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
 

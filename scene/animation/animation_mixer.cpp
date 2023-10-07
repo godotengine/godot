@@ -1079,7 +1079,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 			ERR_CONTINUE(blend_idx < 0 || blend_idx >= track_count);
 			real_t blend = blend_idx < track_weights.size() ? track_weights[blend_idx] * weight : weight;
 			if (!deterministic) {
-				// If undeterministic, do nomalization.
+				// If undeterministic, do normalization.
 				// It would be better to make this if statement outside the for loop, but come here since too much code...
 				if (Math::is_zero_approx(track->total_weight)) {
 					continue;

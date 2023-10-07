@@ -81,6 +81,9 @@ msgstr "ローカライズされた名前"
 msgid "Description"
 msgstr "説明"
 
+msgid "Version"
+msgstr "バージョン"
+
 msgid "Run"
 msgstr "実行"
 
@@ -348,11 +351,14 @@ msgstr "デフォルトのテクスチャフィルタ"
 msgid "Default Texture Repeat"
 msgstr "デフォルトのテクスチャリピート"
 
+msgid "Collada"
+msgstr "Collada"
+
+msgid "Use Ambient"
+msgstr "アンビエントを使用"
+
 msgid "Low Processor Usage Mode"
 msgstr "プロセッサー低使用率モード"
-
-msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "プロセッサー低使用率モードのスリープ (マイクロ秒)"
 
 msgid "Print Error Messages"
 msgstr "エラーメッセージを表示"
@@ -729,12 +735,6 @@ msgstr "メインの太字フォント"
 msgid "Code Font"
 msgstr "コードのフォント"
 
-msgid "Low Processor Mode Sleep (µsec)"
-msgstr "省エネモードスリープ時間 (マイクロ秒)"
-
-msgid "Unfocused Low Processor Mode Sleep (µsec)"
-msgstr "非フォーカス時の省エネモードスリープ時間 (マイクロ秒)"
-
 msgid "Separate Distraction Mode"
 msgstr "集中モードを分離する"
 
@@ -818,6 +818,12 @@ msgstr "表示モード"
 
 msgid "Thumbnail Size"
 msgstr "サムネイルのサイズ"
+
+msgid "Import"
+msgstr "インポート"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "Docks"
 msgstr "ドック"
@@ -1161,9 +1167,6 @@ msgstr "前のアウトラインを表示する"
 msgid "Autorename Animation Tracks"
 msgstr "アニメーションのトラック名を自動変更"
 
-msgid "Confirm Insert Track"
-msgstr "トラック挿入の確認"
-
 msgid "Default Create Bezier Tracks"
 msgstr "デフォルトでベジェトラックを作成"
 
@@ -1419,12 +1422,6 @@ msgstr "言語:"
 msgid "Transform"
 msgstr "トランスフォーム"
 
-msgid "Collada"
-msgstr "Collada"
-
-msgid "Use Ambient"
-msgstr "アンビエントを使用"
-
 msgid "Make Unique"
 msgstr "ユニーク化"
 
@@ -1476,8 +1473,17 @@ msgstr "スケールメッシュ"
 msgid "Offset Mesh"
 msgstr "メッシュのオフセット"
 
-msgid "Import"
-msgstr "インポート"
+msgid "Physics Material Override"
+msgstr "物理マテリアルのオーバーライド"
+
+msgid "Layer"
+msgstr "レイヤー"
+
+msgid "Mask"
+msgstr "マスク"
+
+msgid "Layers"
+msgstr "レイヤー"
 
 msgid "Advanced"
 msgstr "高度な設定"
@@ -1743,6 +1749,9 @@ msgstr "方向"
 msgid "V-Sync"
 msgstr "垂直同期"
 
+msgid "Output Latency"
+msgstr "出力レイテンシー"
+
 msgid "stdout"
 msgstr "stdout"
 
@@ -1950,9 +1959,6 @@ msgstr "スケルトン"
 msgid "Animations"
 msgstr "アニメーション"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "Byte Offset"
 msgstr "バイトのオフセット"
 
@@ -2022,12 +2028,6 @@ msgstr "物理マテリアル"
 msgid "Cell"
 msgstr "セル"
 
-msgid "Layer"
-msgstr "レイヤー"
-
-msgid "Mask"
-msgstr "マスク"
-
 msgid "Priority"
 msgstr "優先順位"
 
@@ -2085,11 +2085,11 @@ msgstr "名前"
 msgid "Strings"
 msgstr "文字列"
 
-msgid "Write Mode"
-msgstr "書き込みモード"
-
 msgid "WebRTC"
 msgstr "WebRTC"
+
+msgid "Write Mode"
+msgstr "書き込みモード"
 
 msgid "Handshake Timeout"
 msgstr "ハンドシェイクのタイムアウト"
@@ -2118,9 +2118,6 @@ msgstr "ターゲットSDK"
 msgid "Plugins"
 msgstr "プラグイン"
 
-msgid "Version"
-msgstr "バージョン"
-
 msgid "Code"
 msgstr "コード"
 
@@ -2135,15 +2132,6 @@ msgstr "署名付き"
 
 msgid "XR Mode"
 msgstr "XRモード"
-
-msgid "Hand Tracking"
-msgstr "ハンドトラッキング"
-
-msgid "Hand Tracking Frequency"
-msgstr "ハンドトラッキングの周期"
-
-msgid "Passthrough"
-msgstr "パススルー"
 
 msgid "Command Line"
 msgstr "コマンドライン"
@@ -2252,90 +2240,6 @@ msgstr "位置"
 
 msgid "Notarization"
 msgstr "公証"
-
-msgid "UWP"
-msgstr "UWP"
-
-msgid "Debug Certificate"
-msgstr "デバッグ証明書"
-
-msgid "Debug Algorithm"
-msgstr "デバッグアルゴリズム"
-
-msgid "Display Name"
-msgstr "表示名"
-
-msgid "Short Name"
-msgstr "略称"
-
-msgid "Publisher"
-msgstr "パブリッシャー"
-
-msgid "Publisher Display Name"
-msgstr "パブリッシャー表示名"
-
-msgid "Product GUID"
-msgstr "プロダクト GUID"
-
-msgid "Publisher GUID"
-msgstr "パブリッシャー GUID"
-
-msgid "Signing"
-msgstr "署名"
-
-msgid "Certificate"
-msgstr "証明書"
-
-msgid "Algorithm"
-msgstr "アルゴリズム"
-
-msgid "Major"
-msgstr "メジャー"
-
-msgid "Minor"
-msgstr "マイナー"
-
-msgid "Build"
-msgstr "ビルド"
-
-msgid "Revision"
-msgstr "リビジョン"
-
-msgid "Landscape"
-msgstr "ランドスケープ"
-
-msgid "Portrait"
-msgstr "ポートレート"
-
-msgid "Landscape Flipped"
-msgstr "ランドスケープ反転"
-
-msgid "Portrait Flipped"
-msgstr "ポートレート反転"
-
-msgid "Store Logo"
-msgstr "ストアロゴ"
-
-msgid "Square 44 X 44 Logo"
-msgstr "正方形 44 x 44 ロゴ"
-
-msgid "Square 71 X 71 Logo"
-msgstr "正方形 71 x 71 ロゴ"
-
-msgid "Square 150 X 150 Logo"
-msgstr "正方形 150 x 150 ロゴ"
-
-msgid "Square 310 X 310 Logo"
-msgstr "正方形 310 x 310 ロゴ"
-
-msgid "Wide 310 X 150 Logo"
-msgstr "ワイド 310 x 150 ロゴ"
-
-msgid "Splash Screen"
-msgstr "スプラッシュ・スクリーン"
-
-msgid "Tiles"
-msgstr "タイル"
 
 msgid "Web"
 msgstr "Web"
@@ -2607,20 +2511,17 @@ msgstr "水平オフセット"
 msgid "V Offset"
 msgstr "垂直オフセット"
 
-msgid "Physics Material Override"
-msgstr "物理マテリアルのオーバーライド"
-
 msgid "Inertia"
 msgstr "慣性"
-
-msgid "Continuous CD"
-msgstr "連続的衝突判定"
 
 msgid "Sleeping"
 msgstr "スリープ中"
 
 msgid "Can Sleep"
 msgstr "スリープ可能"
+
+msgid "Continuous CD"
+msgstr "連続的衝突判定"
 
 msgid "Linear"
 msgstr "リニア"
@@ -2649,9 +2550,6 @@ msgstr "エディター設定"
 msgid "Tile Set"
 msgstr "タイルセット"
 
-msgid "Layers"
-msgstr "レイヤー"
-
 msgid "Bitmask"
 msgstr "ビットマスク"
 
@@ -2675,6 +2573,9 @@ msgstr "カリングマスク"
 
 msgid "Parameters"
 msgstr "パラメーター"
+
+msgid "End"
+msgstr "End"
 
 msgid "Flags"
 msgstr "フラグ"
@@ -2757,9 +2658,6 @@ msgstr "ソート"
 msgid "Use AABB Center"
 msgstr "AABBセンターを使用"
 
-msgid "End"
-msgstr "End"
-
 msgid "Pose"
 msgstr "ポーズ"
 
@@ -2768,6 +2666,9 @@ msgstr "同期"
 
 msgid "Request"
 msgstr "リクエスト"
+
+msgid "Root Node"
+msgstr "ルートノード"
 
 msgid "Reset"
 msgstr "リセット"
@@ -2780,12 +2681,6 @@ msgstr "条件"
 
 msgid "Expression"
 msgstr "式"
-
-msgid "Root Node"
-msgstr "ルートノード"
-
-msgid "Process Mode"
-msgstr "処理モード"
 
 msgid "Button Pressed"
 msgstr "ボタン押下"
@@ -2810,12 +2705,6 @@ msgstr "前"
 
 msgid "Default Cursor Shape"
 msgstr "デフォルトのカーソル形状"
-
-msgid "Use Snap"
-msgstr "スナップを使用"
-
-msgid "Overlay"
-msgstr "オーバーレイ"
 
 msgid "Select Mode"
 msgstr "選択モード"
@@ -2898,68 +2787,20 @@ msgstr "2D物理"
 msgid "3D Physics"
 msgstr "3D物理"
 
+msgid "Frames"
+msgstr "フレーム"
+
+msgid "Atlas"
+msgstr "アトラス"
+
 msgid "Format"
 msgstr "フォーマット"
 
 msgid "Light Mode"
 msgstr "ライトモード"
 
-msgid "Font Pressed Color"
-msgstr "フォントの押下色"
-
-msgid "Font Hover Pressed Color"
-msgstr "フォントのホバー押下色"
-
-msgid "Icon Pressed Color"
-msgstr "アイコンの押下色"
-
-msgid "Icon Hover Pressed Color"
-msgstr "アイコンのホバー押下色"
-
-msgid "Hover Pressed"
-msgstr "ホバー押下"
-
-msgid "Shadow Offset X"
-msgstr "シャドウのオフセットX"
-
-msgid "Shadow Offset Y"
-msgstr "シャドウのオフセットY"
-
-msgid "Clear"
-msgstr "クリア"
-
 msgid "Background"
 msgstr "背景"
-
-msgid "Close"
-msgstr "閉じる"
-
-msgid "Close Pressed"
-msgstr "閉じる押下"
-
-msgid "Reload"
-msgstr "再読み込み"
-
-msgid "File"
-msgstr "ファイル"
-
-msgid "Separator"
-msgstr "セパレーター"
-
-msgid "Submenu"
-msgstr "サブメニュー"
-
-msgid "Font Separator"
-msgstr "フォントセパレータ"
-
-msgid "Cursor"
-msgstr "カーソル"
-
-msgid "Screen Picker"
-msgstr "スクリーンピッカー"
-
-msgid "Node"
-msgstr "ノード"
 
 msgid "Sky"
 msgstr "空"
@@ -3003,6 +2844,9 @@ msgstr "生データ"
 msgid "Offsets"
 msgstr "オフセット"
 
+msgid "Use HDR"
+msgstr "HDRを使用"
+
 msgid "Shader"
 msgstr "シェーダー"
 
@@ -3036,6 +2880,9 @@ msgstr "解析されたジオメトリ型"
 msgid "B"
 msgstr "B"
 
+msgid "Process Mode"
+msgstr "処理モード"
+
 msgid "Ground"
 msgstr "地面"
 
@@ -3066,15 +2913,6 @@ msgstr "右下"
 msgid "Bottom Left"
 msgstr "左下"
 
-msgid "Atlas"
-msgstr "アトラス"
-
-msgid "Use HDR"
-msgstr "HDRを使用"
-
-msgid "Frames"
-msgstr "フレーム"
-
 msgid "Terrains"
 msgstr "地形"
 
@@ -3090,6 +2928,9 @@ msgstr "テクスチャの原点"
 msgid "Probability"
 msgstr "確率"
 
+msgid "File"
+msgstr "ファイル"
+
 msgid "Constant"
 msgstr "コンスタント"
 
@@ -3099,14 +2940,62 @@ msgstr "関数"
 msgid "Degrees Mode"
 msgstr "角度モード"
 
+msgid "Font Pressed Color"
+msgstr "フォントの押下色"
+
+msgid "Font Hover Pressed Color"
+msgstr "フォントのホバー押下色"
+
+msgid "Icon Pressed Color"
+msgstr "アイコンの押下色"
+
+msgid "Icon Hover Pressed Color"
+msgstr "アイコンのホバー押下色"
+
+msgid "Hover Pressed"
+msgstr "ホバー押下"
+
+msgid "Shadow Offset X"
+msgstr "シャドウのオフセットX"
+
+msgid "Shadow Offset Y"
+msgstr "シャドウのオフセットY"
+
+msgid "Clear"
+msgstr "クリア"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "Close Pressed"
+msgstr "閉じる押下"
+
+msgid "Reload"
+msgstr "再読み込み"
+
+msgid "Separator"
+msgstr "セパレーター"
+
+msgid "Submenu"
+msgstr "サブメニュー"
+
+msgid "Font Separator"
+msgstr "フォントセパレータ"
+
+msgid "Cursor"
+msgstr "カーソル"
+
+msgid "Screen Picker"
+msgstr "スクリーンピッカー"
+
+msgid "Node"
+msgstr "ノード"
+
 msgid "Custom"
 msgstr "カスタム"
 
 msgid "Pan"
 msgstr "パン"
-
-msgid "Attack (µs)"
-msgstr "アタック (マイクロ秒)"
 
 msgid "Release (ms)"
 msgstr "リリース (ミリ秒)"
@@ -3155,9 +3044,6 @@ msgstr "タイムプルアウト(ミリ秒)"
 
 msgid "Surround"
 msgstr "サラウンド"
-
-msgid "Output Latency"
-msgstr "出力レイテンシー"
 
 msgid "Channel Disable Threshold dB"
 msgstr "チャンネルを無効にする音量 (dB)のしきい値"

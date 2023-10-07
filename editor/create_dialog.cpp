@@ -500,10 +500,11 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	to_select->select(0);
 	search_options->scroll_to_item(to_select, p_center_on_item);
 
-	if (EditorHelp::get_doc_data()->class_list.has(p_type) && !DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description).is_empty()) {
+	String text = help_bit->get_class_description(p_type);
+	if (!text.is_empty()) {
 		// Display both class name and description, since the help bit may be displayed
 		// far away from the location (especially if the dialog was resized to be taller).
-		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description)));
+		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, text));
 		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
 	} else {
 		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.

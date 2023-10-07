@@ -112,7 +112,7 @@ XrFoveationLevelFB OpenXRFBFoveationExtension::get_foveation_level() const {
 void OpenXRFBFoveationExtension::set_foveation_level(XrFoveationLevelFB p_foveation_level) {
 	foveation_level = p_foveation_level;
 
-	// Update profile will do nothing if we're not yet initialised
+	// Update profile will do nothing if we're not yet initialized.
 	update_profile();
 }
 
@@ -123,7 +123,7 @@ XrFoveationDynamicFB OpenXRFBFoveationExtension::get_foveation_dynamic() const {
 void OpenXRFBFoveationExtension::set_foveation_dynamic(XrFoveationDynamicFB p_foveation_dynamic) {
 	foveation_dynamic = p_foveation_dynamic;
 
-	// Update profile will do nothing if we're not yet initialised
+	// Update profile will do nothing if we're not yet initialized.
 	update_profile();
 }
 

@@ -3169,26 +3169,7 @@ AnimationTrackEdit::AnimationTrackEdit() {
 
 AnimationTrackEdit *AnimationTrackEditPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
 	if (get_script_instance()) {
-		Variant args[6] = {
-			p_object,
-			p_type,
-			p_property,
-			p_hint,
-			p_hint_string,
-			p_usage
-		};
-
-		Variant *argptrs[6] = {
-			&args[0],
-			&args[1],
-			&args[2],
-			&args[3],
-			&args[4],
-			&args[5]
-		};
-
-		Callable::CallError ce;
-		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->callp("create_value_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_value_track_edit", p_object, p_type, p_property, p_hint, p_hint_string, p_usage));
 	}
 	return nullptr;
 }
@@ -3246,6 +3227,22 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 				draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
 			}
 		} break;
+	}
+}
+
+void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		Point2 pos = mb->get_position();
+		Rect2 node_name_rect = Rect2(0, 0, timeline->get_name_limit(), get_size().height);
+
+		if (node_name_rect.has_point(pos)) {
+			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+			editor_selection->clear();
+			editor_selection->add_node(root->get_node(node));
+		}
 	}
 }
 

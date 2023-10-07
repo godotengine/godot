@@ -593,6 +593,9 @@
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
 			Specifies the initial type of position for the [Window]. See [enum WindowInitialPosition] constants.
 		</member>
+		<member name="keep_title_visible" type="bool" setter="set_keep_title_visible" getter="get_keep_title_visible" default="false">
+			If [code]true[/code], the [Window] width is expanded to keep the title bar text fully visible.
+		</member>
 		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be bigger than this size.
 			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].
@@ -785,13 +788,19 @@
 			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
 		</constant>
 		<constant name="MODE_FULLSCREEN" value="3" enum="Mode">
-			Full screen window mode. Note that this is not [i]exclusive[/i] full screen. On Windows and Linux, a borderless window is used to emulate full screen. On macOS, a new desktop is used to display the running project.
-			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+			Full screen mode with full multi-window support.
+			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
+			[b]On Windows:[/b] Multi-window full-screen mode has a 1px border of the [member ProjectSettings.rendering/environment/defaults/default_clear_color] color.
+			[b]On macOS:[/b] A new desktop is used to display the running project.
+			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="Mode">
-			Exclusive full screen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant MODE_FULLSCREEN].
-			Only one window in exclusive full screen mode can be visible on a given screen at a time. If multiple windows are in exclusive full screen mode for the same screen, the last one being set to this mode takes precedence.
-			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
+			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
+			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
+			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
+			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
+			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
 			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].

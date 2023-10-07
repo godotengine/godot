@@ -24,13 +24,14 @@
 # Edvard Ekrem Sæther <edvardekrem@gmail.com>, 2022.
 # Changry <c@changry.no>, 2022.
 # Karl-Robert Rønning <karlyarly@gmail.com>, 2023.
+# Simon <ratchetfan92@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-10 08:37+0000\n"
-"Last-Translator: Karl-Robert Rønning <karlyarly@gmail.com>\n"
+"PO-Revision-Date: 2023-09-26 12:03+0000\n"
+"Last-Translator: Simon <ratchetfan92@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -38,10 +39,73 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
+
+msgid "Unset"
+msgstr "Deaktiver"
+
+msgid "Physical"
+msgstr "Fysisk"
+
+msgid "Left Mouse Button"
+msgstr "Venstre museknapp"
+
+msgid "Right Mouse Button"
+msgstr "Høyre museknapp"
+
+msgid "Middle Mouse Button"
+msgstr "Midterste museknapp"
+
+msgid "Mouse Wheel Up"
+msgstr "Musehjul opp"
+
+msgid "Mouse Wheel Down"
+msgstr "Musehjul ned"
+
+msgid "Mouse Wheel Left"
+msgstr "Musehjul venstre"
+
+msgid "Mouse Wheel Right"
+msgstr "Musehjul høyre"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Museknapp tommel 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Museknapp tommel 2"
 
 msgid "Button"
 msgstr "Knapp"
+
+msgid "Double Click"
+msgstr "Dobbeltklikk"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Musebevegelse ved posisjon (%s) med hastighet (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Venstre stikke X-akse, styrespake 0 X-akse"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Venstre stikke Y-akse, styrespake 0 Y-akse"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Høyre stikke X-akse, styrespake 1 X-akse"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Høyre stikke Y-akse, styrespake 1 Y-akse"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Styrespake 2 X-akse, venstre avtrekker, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Styrespake 2 Y-akse, høyre avtrekker, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Styrespake 3 X-akse"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Styrespake 3 Y-akse"
 
 msgid "Select"
 msgstr "Velg"
@@ -317,11 +381,11 @@ msgid ""
 msgstr ""
 "Dette valget virker ikke på Bézier-redigering, da det kun er ett enkelt spor."
 
-msgid "Warning: Editing imported animation"
-msgstr "Advarsel: Redigerer importert animasjon"
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Velg en AnimationPlayer-node for å lage og redigere animasjoner."
+
+msgid "Warning: Editing imported animation"
+msgstr "Advarsel: Redigerer importert animasjon"
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Vis kun spor fra noder valgt i treet."
@@ -490,6 +554,9 @@ msgstr "Lukk"
 
 msgid "Connect"
 msgstr "Koble til"
+
+msgid "Class:"
+msgstr "Klasse:"
 
 msgid "Signal:"
 msgstr "Signal:"
@@ -996,9 +1063,6 @@ msgstr "Eksperimentell"
 msgid "Top"
 msgstr "Topp"
 
-msgid "Class:"
-msgstr "Klasse:"
-
 msgid "Inherits:"
 msgstr "Arver:"
 
@@ -1081,9 +1145,6 @@ msgstr "Flytt ned"
 msgid "Resize Array"
 msgstr "Endre størrelsen på Array"
 
-msgid "Set Multiple:"
-msgstr "Sett mange:"
-
 msgid "Name:"
 msgstr "Navn:"
 
@@ -1101,9 +1162,6 @@ msgstr "Språk:"
 
 msgid "Clear Output"
 msgstr "Nullstill Resultat"
-
-msgid "New Window"
-msgstr "Nytt vindu"
 
 msgid "Spins when the editor window redraws."
 msgstr "Snurrer når redigeringsvinduet tegner opp på nytt."
@@ -1299,21 +1357,6 @@ msgstr "Standard"
 msgid "Save & Close"
 msgstr "Lagre og Lukk"
 
-msgid "Save changes to '%s' before closing?"
-msgstr "Lagre endringer til '%s' før lukking?"
-
-msgid "Close Tab"
-msgstr "Lukk fanen"
-
-msgid "Close Other Tabs"
-msgstr "Lukk Andre Faner"
-
-msgid "Close Tabs to the Right"
-msgstr "Lukk faner til høyre"
-
-msgid "Close All Tabs"
-msgstr "Lukk alle faner"
-
 msgid "%d more files or folders"
 msgstr "%d flere filer eller mapper"
 
@@ -1329,9 +1372,6 @@ msgstr "Panoreringsvisning"
 msgid "Dock Position"
 msgstr "Dock-posisjon"
 
-msgid "Add a new scene."
-msgstr "Legg til ny scene."
-
 msgid "Distraction Free Mode"
 msgstr "Distraksjonsfri Modus"
 
@@ -1343,9 +1383,6 @@ msgstr "Scene"
 
 msgid "Operations with scene files."
 msgstr "Operasjoner med scene-filer."
-
-msgid "Go to previously opened scene."
-msgstr "Gå til forrige åpne scene."
 
 msgid "New Scene"
 msgstr "Ny Scene"
@@ -1722,9 +1759,6 @@ msgstr "Kan ikke flytte en mappe inn i seg selv."
 msgid "Error moving:"
 msgstr "Feil ved flytting:"
 
-msgid "Unable to update dependencies:"
-msgstr "Kan ikke oppdatere avhengigheter:"
-
 msgid "A file or folder with this name already exists."
 msgstr "En fil eller mappe med dette navnet eksisterer allerede."
 
@@ -1739,6 +1773,9 @@ msgstr "Legg til i favoritter"
 
 msgid "Remove from Favorites"
 msgstr "Fjern fra favoritter"
+
+msgid "Reimport"
+msgstr "Reimporter"
 
 msgid "New Folder..."
 msgstr "Ny Mappe..."
@@ -1894,11 +1931,26 @@ msgstr "Hurtigkjør Scene..."
 msgid "Run Project"
 msgstr "Kjør prosjektet"
 
+msgid "Close Tab"
+msgstr "Lukk fanen"
+
+msgid "Close Other Tabs"
+msgstr "Lukk Andre Faner"
+
+msgid "Close Tabs to the Right"
+msgstr "Lukk faner til høyre"
+
+msgid "Close All Tabs"
+msgstr "Lukk alle faner"
+
+msgid "New Window"
+msgstr "Nytt vindu"
+
+msgid "Add a new scene."
+msgstr "Legg til ny scene."
+
 msgid "Open in Editor"
 msgstr "Åpne i Redigeringsverktøy"
-
-msgid "Reimport"
-msgstr "Reimporter"
 
 msgid "Offset:"
 msgstr "Avstand:"
@@ -1941,9 +1993,6 @@ msgstr "Importer Som:"
 
 msgid "Preset"
 msgstr "Forhåndsinnstilling"
-
-msgid "Changing the type of an imported file requires editor restart."
-msgstr "Å endre typen av en importert fil krever omstart av redigereren"
 
 msgid "Device:"
 msgstr "Enhet:"
@@ -2602,14 +2651,8 @@ msgstr "Åpne 2D-redigeringsverktøy for polygon-UV"
 msgid "Points"
 msgstr "Poeng"
 
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Roter"
-
 msgid "Shift: Move All"
 msgstr "Shift: Flytt Alle"
-
-msgid "Shift+Ctrl: Scale"
-msgstr "Shift+Ctrl: Skaler"
 
 msgid "Move Polygon"
 msgstr "Flytt Polygon"
@@ -3103,11 +3146,11 @@ msgstr "Opprett rot-node:"
 msgid "Other Node"
 msgstr "Andre noder"
 
-msgid "This operation requires a single selected node."
-msgstr "Denne operasjonen krever én valgt node."
-
 msgid "Filters"
 msgstr "Filter"
+
+msgid "This operation requires a single selected node."
+msgstr "Denne operasjonen krever én valgt node."
 
 msgid "Remote"
 msgstr "Ekstern"
@@ -3165,9 +3208,6 @@ msgstr "Velg enhet fra listen"
 
 msgid "Uninstalling..."
 msgstr "Avinstallerer …"
-
-msgid "Invalid animation: '%s'."
-msgstr "Ugyldig animasjon: '%s'."
 
 msgid "(Other)"
 msgstr "(Annet)"

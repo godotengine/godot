@@ -851,11 +851,6 @@ bool TabBar::is_tab_hidden(int p_tab) const {
 
 void TabBar::set_tab_metadata(int p_tab, const Variant &p_metadata) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-
-	if (tabs[p_tab].metadata == p_metadata) {
-		return;
-	}
-
 	tabs.write[p_tab].metadata = p_metadata;
 }
 

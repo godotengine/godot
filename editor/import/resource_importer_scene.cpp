@@ -112,6 +112,7 @@ void EditorSceneFormatImporter::_bind_methods() {
 	BIND_CONSTANT(IMPORT_GENERATE_TANGENT_ARRAYS);
 	BIND_CONSTANT(IMPORT_USE_NAMED_SKIN_BINDS);
 	BIND_CONSTANT(IMPORT_DISCARD_MESHES_AND_MATERIALS);
+	BIND_CONSTANT(IMPORT_FORCE_DISABLE_MESH_COMPRESSION);
 }
 
 /////////////////////////////////
@@ -1934,6 +1935,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI),Static Lightmaps (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI only)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/force_disable_compression"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 30));
@@ -2426,6 +2428,11 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	bool ensure_tangents = p_options["meshes/ensure_tangents"];
 	if (ensure_tangents) {
 		import_flags |= EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
+	}
+
+	bool force_disable_compression = p_options["meshes/force_disable_compression"];
+	if (force_disable_compression) {
+		import_flags |= EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
 	}
 
 	Error err = OK;

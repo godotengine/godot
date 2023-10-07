@@ -160,6 +160,7 @@ public final class PermissionsUtil {
 			try {
 				if (manifestPermission.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+						Log.d(TAG, "Requesting permission " + manifestPermission);
 						try {
 							Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
 							intent.setData(Uri.parse(String.format("package:%s", activity.getPackageName())));
@@ -173,6 +174,7 @@ public final class PermissionsUtil {
 					PermissionInfo permissionInfo = getPermissionInfo(activity, manifestPermission);
 					int protectionLevel = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? permissionInfo.getProtection() : permissionInfo.protectionLevel;
 					if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(activity, manifestPermission) != PackageManager.PERMISSION_GRANTED) {
+						Log.d(TAG, "Requesting permission " + manifestPermission);
 						requestedPermissions.add(manifestPermission);
 					}
 				}

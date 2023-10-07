@@ -1375,15 +1375,16 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	// Query fine-grained feature support for this device.
 	//  If app has specific feature requirements it should check supported
 	//  features based on this query
-	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
+	VkPhysicalDeviceFeatures features = {};
+	vkGetPhysicalDeviceFeatures(gpu, &features);
 
 	// Check required features and abort if any of them is missing.
-	if (!physical_device_features.imageCubeArray || !physical_device_features.independentBlend) {
+	if (!features.imageCubeArray || !features.independentBlend) {
 		String error_string = vformat("Your GPU (%s) does not support the following features which are required to use Vulkan-based renderers in Godot:\n\n", device_name);
-		if (!physical_device_features.imageCubeArray) {
+		if (!features.imageCubeArray) {
 			error_string += "- No support for image cube arrays.\n";
 		}
-		if (!physical_device_features.independentBlend) {
+		if (!features.independentBlend) {
 			error_string += "- No support for independentBlend.\n";
 		}
 		error_string += "\nThis is usually a hardware limitation, so updating graphics drivers won't help in most cases.";
@@ -1398,7 +1399,90 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 		return ERR_CANT_CREATE;
 	}
 
-	physical_device_features.robustBufferAccess = false; // Turn off robust buffer access, which can hamper performance on some hardware.
+	memset(&physical_device_features, 0, sizeof(physical_device_features));
+#define VK_DEVICEFEATURE_ENABLE_IF(x)            \
+	if (features.x) {                            \
+		physical_device_features.x = features.x; \
+	} else                                       \
+		((void)0)
+
+	//
+	// Opt-in to the features we actually need/use. These can be changed in the future.
+	// We do this for multiple reasons:
+	//
+	//	1. Certain features (like sparse* stuff) cause unnecessary internal driver allocations.
+	//	2. Others like shaderStorageImageMultisample are a huge red flag
+	//	   (MSAA + Storage is rarely needed).
+	//	3. Most features when turned off aren't actually off (we just promise the driver not to use them)
+	//	   and it is validation what will complain. This allows us to target a minimum baseline.
+	//
+	// TODO: Allow the user to override these settings (i.e. turn off more stuff) using profiles
+	// so they can target a broad range of HW. For example Mali HW does not have
+	// shaderClipDistance/shaderCullDistance; thus validation would complain if such feature is used;
+	// allowing them to fix the problem without even owning Mali HW to test on.
+	//
+
+	// Turn off robust buffer access, which can hamper performance on some hardware.
+	//VK_DEVICEFEATURE_ENABLE_IF(robustBufferAccess);
+	VK_DEVICEFEATURE_ENABLE_IF(fullDrawIndexUint32);
+	VK_DEVICEFEATURE_ENABLE_IF(imageCubeArray);
+	VK_DEVICEFEATURE_ENABLE_IF(independentBlend);
+	VK_DEVICEFEATURE_ENABLE_IF(geometryShader);
+	VK_DEVICEFEATURE_ENABLE_IF(tessellationShader);
+	VK_DEVICEFEATURE_ENABLE_IF(sampleRateShading);
+	VK_DEVICEFEATURE_ENABLE_IF(dualSrcBlend);
+	VK_DEVICEFEATURE_ENABLE_IF(logicOp);
+	VK_DEVICEFEATURE_ENABLE_IF(multiDrawIndirect);
+	VK_DEVICEFEATURE_ENABLE_IF(drawIndirectFirstInstance);
+	VK_DEVICEFEATURE_ENABLE_IF(depthClamp);
+	VK_DEVICEFEATURE_ENABLE_IF(depthBiasClamp);
+	VK_DEVICEFEATURE_ENABLE_IF(fillModeNonSolid);
+	VK_DEVICEFEATURE_ENABLE_IF(depthBounds);
+	VK_DEVICEFEATURE_ENABLE_IF(wideLines);
+	VK_DEVICEFEATURE_ENABLE_IF(largePoints);
+	VK_DEVICEFEATURE_ENABLE_IF(alphaToOne);
+	VK_DEVICEFEATURE_ENABLE_IF(multiViewport);
+	VK_DEVICEFEATURE_ENABLE_IF(samplerAnisotropy);
+	VK_DEVICEFEATURE_ENABLE_IF(textureCompressionETC2);
+	VK_DEVICEFEATURE_ENABLE_IF(textureCompressionASTC_LDR);
+	VK_DEVICEFEATURE_ENABLE_IF(textureCompressionBC);
+	//VK_DEVICEFEATURE_ENABLE_IF(occlusionQueryPrecise);
+	//VK_DEVICEFEATURE_ENABLE_IF(pipelineStatisticsQuery);
+	VK_DEVICEFEATURE_ENABLE_IF(vertexPipelineStoresAndAtomics);
+	VK_DEVICEFEATURE_ENABLE_IF(fragmentStoresAndAtomics);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderTessellationAndGeometryPointSize);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderImageGatherExtended);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageImageExtendedFormats);
+	// Intel Arc doesn't support shaderStorageImageMultisample (yet? could be a driver thing), so it's
+	// better for Validation to scream at us if we use it. Furthermore MSAA Storage is a huge red flag
+	// for performance.
+	//VK_DEVICEFEATURE_ENABLE_IF(shaderStorageImageMultisample);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageImageReadWithoutFormat);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageImageWriteWithoutFormat);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderUniformBufferArrayDynamicIndexing);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderSampledImageArrayDynamicIndexing);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageBufferArrayDynamicIndexing);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageImageArrayDynamicIndexing);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderClipDistance);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderCullDistance);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderFloat64);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderInt64);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderInt16);
+	//VK_DEVICEFEATURE_ENABLE_IF(shaderResourceResidency);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderResourceMinLod);
+	// We don't use sparse features and enabling them cause extra internal
+	// allocations inside the Vulkan driver we don't need.
+	//VK_DEVICEFEATURE_ENABLE_IF(sparseBinding);
+	//VK_DEVICEFEATURE_ENABLE_IF(sparseResidencyBuffer);
+	//VK_DEVICEFEATURE_ENABLE_IF(sparseResidencyImage2D);
+	//VK_DEVICEFEATURE_ENABLE_IF(sparseResidencyImage3D);
+	//VK_DEVICEFEATURE_ENABLE_IF(sparseResidency2Samples);
+	//VK_DEVICEFEATURE_ENABLE_IF(sparseResidency4Samples);
+	//VK_DEVICEFEATURE_ENABLE_IF(sparseResidency8Samples);
+	//VK_DEVICEFEATURE_ENABLE_IF(sparseResidency16Samples);
+	//VK_DEVICEFEATURE_ENABLE_IF(sparseResidencyAliased);
+	VK_DEVICEFEATURE_ENABLE_IF(variableMultisampleRate);
+	//VK_DEVICEFEATURE_ENABLE_IF(inheritedQueries);
 
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                                            \
 	{                                                                                       \

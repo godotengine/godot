@@ -228,8 +228,8 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds a dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project and embeds it into resulting binary.
-				[b]Note:[/b] For static libraries (*.a) works in same way as [code]add_ios_framework[/code].
-				This method should not be used for System libraries as they are already present on the device.
+				[b]Note:[/b] For static libraries (*.a) works in same way as [method add_ios_framework].
+				[b]Note:[/b] This method should not be used for System libraries as they are already present on the device.
 			</description>
 		</method>
 		<method name="add_ios_framework">

@@ -1683,6 +1683,32 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			}
 		} break;
 
+		case Variant::OBJECT: {
+			Resource *resource = Object::cast_to<Resource>(r_variant);
+			if (!resource) {
+				break;
+			}
+
+			List<PropertyInfo> properties;
+			resource->get_property_list(&properties);
+
+			for (const PropertyInfo &E : properties) {
+				if (!(E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR))) {
+					continue;
+				}
+				String propertyname = E.name;
+				Variant old_variant = resource->get(propertyname);
+				Variant updated_variant = old_variant;
+				if (_check_node_path_recursive(p_root_node, updated_variant, p_renames)) {
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+					undo_redo->add_do_property(resource, propertyname, updated_variant);
+					undo_redo->add_undo_property(resource, propertyname, old_variant);
+					resource->set(propertyname, updated_variant);
+				}
+			}
+			break;
+		};
+
 		default: {
 		}
 	}

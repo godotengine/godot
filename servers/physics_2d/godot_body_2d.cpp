@@ -693,10 +693,7 @@ void GodotBody2D::call_queries() {
 	}
 
 	if (body_state_callback.get_object()) {
-		const Variant *vp[1] = { &direct_state_variant };
-		Callable::CallError ce;
-		Variant rv;
-		body_state_callback.callp(vp, 1, rv, ce);
+		body_state_callback.call(direct_state_variant);
 	}
 }
 

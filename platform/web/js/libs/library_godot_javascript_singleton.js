@@ -210,7 +210,7 @@ const GodotJSWrapper = {
 			// This is safe! JavaScript is single threaded (and using it in threads is not a good idea anyway).
 			GodotJSWrapper.cb_ret = null;
 			const args = Array.from(arguments);
-			const argsProxy = GodotJSWrapper.MyProxy(args);
+			const argsProxy = new GodotJSWrapper.MyProxy(args);
 			func(p_ref, argsProxy.get_id(), args.length);
 			argsProxy.unref();
 			const ret = GodotJSWrapper.cb_ret;

@@ -365,6 +365,13 @@ def build_gles3_header(
             + ") { _FU GLfloat vec3[3]={float(p_vec3.x),float(p_vec3.y),float(p_vec3.z)}; glUniform3fv(version_get_uniform(p_uniform,p_version,p_variant,p_specialization),1,vec3); }\n\n"
         )
         fd.write(
+            "\t_FORCE_INLINE_ void version_set_uniform(Uniforms p_uniform, const Vector4& p_vec4,RID p_version,ShaderVariant p_variant"
+            + defvariant
+            + ",uint64_t p_specialization="
+            + str(defspec)
+            + ") { _FU GLfloat vec4[4]={float(p_vec4.x),float(p_vec4.y),float(p_vec4.z),float(p_vec4.w)}; glUniform4fv(version_get_uniform(p_uniform,p_version,p_variant,p_specialization),1,vec4); }\n\n"
+        )
+        fd.write(
             "\t_FORCE_INLINE_ void version_set_uniform(Uniforms p_uniform, float p_a, float p_b,RID p_version,ShaderVariant p_variant"
             + defvariant
             + ",uint64_t p_specialization="

@@ -919,6 +919,12 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				}
 			}
 
+			uint64_t mesh_flags = 0;
+
+			if (p_use_compression) {
+				mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+			}
+
 			Ref<SurfaceTool> surftool;
 			surftool.instantiate();
 			surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
@@ -969,12 +975,19 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			}
 
 			if (!normal_src) {
-				//should always be normals
+				// Should always have normals.
 				surftool->generate_normals();
 			}
 
-			if ((!binormal_src || !tangent_src) && normal_src && uv_src && force_make_tangents) {
+			bool generate_tangents = (!binormal_src || !tangent_src) && uv_src && force_make_tangents;
+
+			if (generate_tangents) {
 				surftool->generate_tangents();
+			}
+
+			if (!binormal_src || !(tangent_src || generate_tangents) || p_mesh->get_blend_shape_count() != 0 || p_skin_controller) {
+				// Can't compress if attributes missing or if using vertex weights.
+				mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			////////////////////////////
@@ -996,7 +1009,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 
 				// Enforce blend shape mask array format
 				for (int mj = 0; mj < Mesh::ARRAY_MAX; mj++) {
-					if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1 << mj))) {
+					if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1ULL << mj))) {
 						a[mj] = Variant();
 					}
 				}
@@ -1011,7 +1024,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				}
 				surface_name = material->get_name();
 			}
-			p_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, d, mr, Dictionary(), mat, surface_name);
+			p_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, d, mr, Dictionary(), mat, surface_name, mesh_flags);
 		}
 
 		/*****************/
@@ -1773,7 +1786,7 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 	state.use_mesh_builtin_materials = true;
 	state.bake_fps = (float)p_options["animation/fps"];
 
-	Error err = state.load(p_path, flags, p_flags & EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, false);
+	Error err = state.load(p_path, flags, p_flags & EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, !bool(p_flags & EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION));
 
 	if (r_err) {
 		*r_err = err;

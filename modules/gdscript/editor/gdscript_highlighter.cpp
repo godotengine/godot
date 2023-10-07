@@ -63,10 +63,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_lambda = false;
 
 	bool in_function_name = false;
-	bool in_function_args = false;
 	bool in_variable_declaration = false;
 	bool in_signal_declaration = false;
 	bool expect_type = false;
+
+	int in_function_args = 0;
+	int in_function_arg_dicts = 0;
 
 	Color keyword_color;
 	Color color;
@@ -442,7 +444,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 				if (str[k] == '(') {
 					in_function_name = true;
-				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR)) {
+				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FOR)) {
 					in_variable_declaration = true;
 				}
 
@@ -472,15 +474,27 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		}
 
 		if (is_a_symbol) {
-			if (in_function_name) {
-				in_function_args = true;
+			if (in_function_args > 0) {
+				switch (str[j]) {
+					case '(':
+						in_function_args += 1;
+						break;
+					case ')':
+						in_function_args -= 1;
+						break;
+					case '{':
+						in_function_arg_dicts += 1;
+						break;
+					case '}':
+						in_function_arg_dicts -= 1;
+						break;
+				}
+			} else if (in_function_name && str[j] == '(') {
+				in_function_args = 1;
+				in_function_arg_dicts = 0;
 			}
 
-			if (in_function_args && str[j] == ')') {
-				in_function_args = false;
-			}
-
-			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[') {
+			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[' && str[j] != '.') {
 				expect_type = false;
 			}
 
@@ -488,15 +502,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				expect_type = true;
 			}
 
-			if (in_variable_declaration || in_function_args) {
+			if (in_variable_declaration || in_function_args > 0) {
 				int k = j;
-				// Skip space
+				// Skip space.
 				while (k < line_length && is_whitespace(str[k])) {
 					k++;
 				}
 
-				if (str[k] == ':') {
-					// has type hint
+				if (str[k] == ':' && in_function_arg_dicts == 0) {
+					// Has type hint.
 					expect_type = true;
 				}
 			}
@@ -562,16 +576,11 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (in_keyword) {
 			next_type = KEYWORD;
 			color = keyword_color;
-		} else if (in_member_variable) {
-			next_type = MEMBER;
-			color = member_color;
 		} else if (in_signal_declaration) {
 			next_type = SIGNAL;
-
 			color = member_color;
 		} else if (in_function_name) {
 			next_type = FUNCTION;
-
 			if (!in_lambda && prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
 				color = function_definition_color;
 			} else {
@@ -586,6 +595,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (expect_type) {
 			next_type = TYPE;
 			color = type_color;
+		} else if (in_member_variable) {
+			next_type = MEMBER;
+			color = member_color;
 		} else {
 			next_type = IDENTIFIER;
 		}
@@ -683,6 +695,12 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	for (const String &E : core_types) {
 		class_names[StringName(E)] = basetype_color;
 	}
+	class_names[SNAME("Variant")] = basetype_color;
+	class_names[SNAME("void")] = basetype_color;
+	// `get_core_type_words()` doesn't return primitive types.
+	class_names[SNAME("bool")] = basetype_color;
+	class_names[SNAME("int")] = basetype_color;
+	class_names[SNAME("float")] = basetype_color;
 
 	/* Reserved words. */
 	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
@@ -696,6 +714,10 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			reserved_keywords[StringName(E)] = keyword_color;
 		}
 	}
+
+	// Highlight `set` and `get` as "keywords" with the function color to avoid conflicts with method calls.
+	reserved_keywords[SNAME("set")] = function_color;
+	reserved_keywords[SNAME("get")] = function_color;
 
 	/* Global functions. */
 	List<StringName> global_function_list;

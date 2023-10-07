@@ -15,7 +15,7 @@
 # Nick B <nbourrereg@hotmail.com>, 2020.
 # JustATranslator <fa5k52y@mailo.com>, 2020.
 # Omicron <omicron666.dev@gmail.com>, 2020.
-# Pierre Stempin <pierre.stempin@gmail.com>, 2020, 2021.
+# Pierre Stempin <pierre.stempin@gmail.com>, 2020, 2021, 2023.
 # Léo Vincent <l009.vincent@gmail.com>, 2020.
 # Bastien Schmitt <bastien.schmitt221@gmail.com>, 2020.
 # Ben Zepman <zepman@gmail.com>, 2020.
@@ -26,7 +26,7 @@
 # Yvanvan 37 <yvanvan.37@gmail.com>, 2020.
 # Synkied <synkx@hotmail.fr>, 2020, 2021.
 # Théo Tavernier <tavernier.2002@gmail.com>, 2020.
-# TechnoPorg <jonah.janzen@gmail.com>, 2020, 2021.
+# TechnoPorg <jonah.janzen@gmail.com>, 2020, 2021, 2023.
 # Deleted User <noreply+26914@weblate.org>, 2020.
 # Gerard Lamber <gerard13lamber@gmail.com>, 2021.
 # Youssef Harmal <the.coder.crab@gmail.com>, 2021.
@@ -74,13 +74,21 @@
 # #Guigui <guillaume.grosjean@outlook.fr>, 2023.
 # Varthore <moutcho57@gmail.com>, 2023.
 # Gwendal <gwendalbrd@proton.me>, 2023.
+# Paragoumba <paragoumba@gmail.com>, 2023.
+# Vincent Caruso <caruso.vincent@gmail.com>, 2023.
+# Paul PINA-GHERARDI <pina.paul@orange.fr>, 2023.
+# Thomas <ts.guntz@gmail.com>, 2023.
+# Chloe Lee-Hone <chloe.leehone@gmail.com>, 2023.
+# Oliv Spaï <oliv@extra.world>, 2023.
+# Roger Dupond <1gonnet.arthur1@gmail.com>, 2023.
+# VBasic <vincentbarkmann@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-08-11 01:52+0000\n"
-"Last-Translator: Freyja <aerandil@gmail.com>\n"
+"PO-Revision-Date: 2023-10-01 21:59+0000\n"
+"Last-Translator: TechnoPorg <jonah.janzen@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "class-reference/fr/>\n"
 "Language: fr\n"
@@ -88,7 +96,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Description"
 msgstr "Description"
@@ -195,6 +203,69 @@ msgid "This value is an integer composed as a bitmask of the following flags."
 msgstr ""
 "Cette valeur est un nombre entier composé d'un masque de bits des options "
 "suivantes."
+
+msgid ""
+"There is currently no description for this class. Please help us by :ref:"
+"`contributing one <doc_updating_the_class_reference>`!"
+msgstr ""
+"Il n'y a actuellement pas de description pour cette classe. Aidez-nous en en :"
+"ref:`contribuant une <doc_updating_the_class_reference>` !"
+
+msgid ""
+"There is currently no description for this signal. Please help us by :ref:"
+"`contributing one <doc_updating_the_class_reference>`!"
+msgstr ""
+"Il n'y a actuellement aucune description pour ce signal. Aidez-nous en :ref : "
+"`contribuant un <doc_updating_the_class_reference>` !"
+
+msgid ""
+"There is currently no description for this annotation. Please help us by :ref:"
+"`contributing one <doc_updating_the_class_reference>`!"
+msgstr ""
+"Il n'y a actuellement aucune description pour cette annotation. Veuillez nous "
+"aider en :ref :`contribuant un <doc_updating_the_class_reference>` !"
+
+msgid ""
+"There is currently no description for this property. Please help us by :ref:"
+"`contributing one <doc_updating_the_class_reference>`!"
+msgstr ""
+"Il n'y a actuellement aucune description pour ce projet. Veuillez nous aider "
+"en:ref:`contribuant un <doc_updating_the_class_reference>`!"
+
+msgid ""
+"There is currently no description for this constructor. Please help us by :"
+"ref:`contributing one <doc_updating_the_class_reference>`!"
+msgstr ""
+"Il n'y a actuellement pas de description pour ce constructeur. Aidez-nous en :"
+"ref:`contribuant une <doc_updating_the_class_reference>`!"
+
+msgid ""
+"There is currently no description for this method. Please help us by :ref:"
+"`contributing one <doc_updating_the_class_reference>`!"
+msgstr ""
+"Il n'y a actuellement aucune description pour cette méthode. Aidez-nous en :"
+"ref:`fournissant une <doc_updating_the_class_reference>`!"
+
+msgid ""
+"There is currently no description for this operator. Please help us by :ref:"
+"`contributing one <doc_updating_the_class_reference>`!"
+msgstr ""
+"Il n'y a actuellement aucune description pour cet opérateur. Aidez-nous en :"
+"ref:`effectuant une <doc_updating_the_class_reference>`!"
+
+msgid ""
+"There is currently no description for this theme property. Please help us by :"
+"ref:`contributing one <doc_updating_the_class_reference>`!"
+msgstr ""
+"Il n'y a actuellement pas de description pour cette propriété de thème. Aidez-"
+"nous en en :ref:`contribuant une<doc_updating_the_class_reference>` !"
+
+msgid ""
+"There are notable differences when using this API with C#. See :ref:"
+"`doc_c_sharp_differences` for more information."
+msgstr ""
+"Il y a des différences notables dans l'utilisation de cette API en C#. Voir "
+"ref:`doc_c_sharp_differences` pour plus d'informations."
 
 msgid "Built-in GDScript constants, functions, and annotations."
 msgstr "Constantes, fonctions et annotations intégrées à GDScript."
@@ -314,29 +385,6 @@ msgstr ""
 "a = char(65)      # a vaut « A »\n"
 "a = char(65 + 32) # a vaut « a »\n"
 "a = char(8364)    # a vaut « € »\n"
-"[/codeblock]"
-
-msgid ""
-"Converts [param what] to [param type] in the best way possible. The [param "
-"type] uses the [enum Variant.Type] values.\n"
-"[codeblock]\n"
-"var a = [4, 2.5, 1.2]\n"
-"print(a is Array) # Prints true\n"
-"\n"
-"var b = convert(a, TYPE_PACKED_BYTE_ARRAY)\n"
-"print(b)          # Prints [4, 2, 1]\n"
-"print(b is Array) # Prints false\n"
-"[/codeblock]"
-msgstr ""
-"Convertit [param what] en [param type] de la meilleure façon possible. Le "
-"[param type] utilise les valeurs de [enum Variant.Type].\n"
-"[codeblock]\n"
-"var a = [4, 2.5, 1.2]\n"
-"print(a is Array) # Affiche true\n"
-"\n"
-"var b = convert(a, TYPE_PACKED_BYTE_ARRAY)\n"
-"print(b)          # Affiche [4, 2, 1]\n"
-"print(b is Array) # Affiche false\n"
 "[/codeblock]"
 
 msgid ""
@@ -707,6 +755,32 @@ msgstr ""
 "INF] et entraînera toujours une erreur d'exécution."
 
 msgid ""
+"\"Not a Number\", an invalid floating-point value. [constant NAN] has special "
+"properties, including that [code]!=[/code] always returns [code]true[/code], "
+"while other comparison operators always return [code]false[/code]. This is "
+"true even when comparing with itself ([code]NAN == NAN[/code] returns "
+"[code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). It "
+"is returned by some invalid operations, such as dividing floating-point "
+"[code]0.0[/code] by [code]0.0[/code].\n"
+"[b]Warning:[/b] \"Not a Number\" is only a concept with floating-point "
+"numbers, and has no equivalent for integers. Dividing an integer [code]0[/"
+"code] by [code]0[/code] will not result in [constant NAN] and will result in "
+"a run-time error instead."
+msgstr ""
+"\"Not a Number\" (n'est pas un nombre), un nombre flottant (nombre à virgule) "
+"invalide. [constant NAN] a des propriétés particulières, notamment le fait "
+"qu'elle n'est pas égale à elle-même, c'est-à-dire qu'un test de différence "
+"[code]!=[/code] retournera [code]true[/code] ([code]NAN == NAN[/code] "
+"retourne [code]false[/code] et [code]NAN != NAN[/code] retourne[code]true[/"
+"code]). Elle est produite par certaines opérations invalides, comme la "
+"division d'un flottant [code]0.0[/code] par [code]0.0[/code].\n"
+"[b]Attention:[/b] \"Not a Number\" est seulement un concept spécifique aux "
+"flottants. (et aux problèmes de précision de ces nombres), et n'a pas "
+"d'équivalent pour les nombres entiers. La division d'un entier [code]0[/code] "
+"par [code]0[/code] ne résultera pas en [constant NAN] mais entraînera "
+"directement une erreur d'exécution."
+
+msgid ""
 "Mark the following property as exported (editable in the Inspector dock and "
 "saved to disk). To control the type of the exported property, use the type "
 "hint notation.\n"
@@ -785,6 +859,56 @@ msgstr ""
 "Voir aussi [constante PROPERTY_HINT_DIR].\n"
 "[codeblock]\n"
 "@export_dir var sprite_folder_path: String\n"
+"[/codeblock]"
+
+msgid ""
+"Export an [int] or [String] property as an enumerated list of options. If the "
+"property is an [int], then the index of the value is stored, in the same "
+"order the values are provided. You can add explicit values using a colon. If "
+"the property is a [String], then the value is stored.\n"
+"See also [constant PROPERTY_HINT_ENUM].\n"
+"[codeblock]\n"
+"@export_enum(\"Warrior\", \"Magician\", \"Thief\") var character_class: int\n"
+"@export_enum(\"Slow:30\", \"Average:60\", \"Very Fast:200\") var "
+"character_speed: int\n"
+"@export_enum(\"Rebecca\", \"Mary\", \"Leah\") var character_name: String\n"
+"[/codeblock]\n"
+"If you want to set an initial value, you must specify it explicitly:\n"
+"[codeblock]\n"
+"@export_enum(\"Rebecca\", \"Mary\", \"Leah\") var character_name: String = "
+"\"Rebecca\"\n"
+"[/codeblock]\n"
+"If you want to use named GDScript enums, then use [annotation @export] "
+"instead:\n"
+"[codeblock]\n"
+"enum CharacterName {REBECCA, MARY, LEAH}\n"
+"@export var character_name: CharacterName\n"
+"[/codeblock]"
+msgstr ""
+"Exporte une propriété [int] ou [String] sous la forme d'une liste énumérative "
+"d'options. Si la propriété est un [int], l'index de la valeur est stocké, "
+"dans l'ordre dans lequel les valeurs sont fournies. Vous pouvez ajouter des "
+"valeurs explicites à l'aide de deux points. Si la propriété est un [String], "
+"la valeur est stockée.\n"
+"Voir aussi [constante PROPERTY_HINT_ENUM].\n"
+"[codeblock]\n"
+"@export_enum(\"Guerrier\", \"Magicien\", \"Voleur\") var character_class : "
+"int\n"
+"@export_enum(\"Lent :30\", \"Moyen :60\", \"Très rapide :200\") var "
+"character_speed : int\n"
+"@export_enum(\"Rebecca\", \"Mary\", \"Leah\") var character_name : String\n"
+"[/codeblock]\n"
+"Si vous souhaitez définir une valeur initiale, vous devez la spécifier "
+"explicitement :\n"
+"[codeblock]\n"
+"@export_enum(\"Rebecca\", \"Mary\", \"Leah\") var character_name : String = "
+"\"Rebecca\"\n"
+"[/codeblock]\n"
+"Si vous souhaitez utiliser des enums GDScript nommés, utilisez plutôt "
+"[annotation @export] :\n"
+"[codeblock]\n"
+"enum CharacterName {REBECCA, MARY, LEAH}\n"
+"@export var character_name : CharacterName\n"
 "[/codeblock]"
 
 msgid ""
@@ -999,20 +1123,6 @@ msgstr ""
 "Voir également [constant PROPERTY_HINT_MULTILINE_TEXT].\n"
 "[codeblock]\n"
 "@export_multiline var character_biography\n"
-"[/codeblock]"
-
-msgid ""
-"Export a [NodePath] property with a filter for allowed node types.\n"
-"See also [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES].\n"
-"[codeblock]\n"
-"@export_node_path(\"Button\", \"TouchScreenButton\") var some_button\n"
-"[/codeblock]"
-msgstr ""
-"Exporte une propriété [NodePath] avec un filtre pour les types de nœud "
-"autorisés.\n"
-"Voir également [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES].\n"
-"[codeblock]\n"
-"@export_node_path(\"Button\", \"TouchScreenButton\") var some_button\n"
 "[/codeblock]"
 
 msgid ""
@@ -1239,6 +1349,9 @@ msgstr "Le singleton du [Time]."
 
 msgid "The [TranslationServer] singleton."
 msgstr "Le singleton [TranslationServer]."
+
+msgid "The [WorkerThreadPool] singleton."
+msgstr "Le singleton [WorkerThreadPool]."
 
 msgid "Top-left corner."
 msgstr "Coin supérieur gauche."
@@ -1939,7 +2052,7 @@ msgid "File: Missing dependencies error."
 msgstr "Fichier : Erreur de dépendances manquantes."
 
 msgid "File: End of file (EOF) error."
-msgstr "Fichier : Erreur fin de ficher(EOF)."
+msgstr "Fichier : Erreur fin de fichier(EOF)."
 
 msgid "Can't open error."
 msgstr "Erreur d'ouverture."
@@ -2109,6 +2222,33 @@ msgstr "La variable est de type [Dictionary]."
 
 msgid "Variable is of type [Array]."
 msgstr "La variable est de type [Array]."
+
+msgid "Variable is of type [PackedByteArray]."
+msgstr "La variable est de type [PackedByteArray]."
+
+msgid "Variable is of type [PackedInt32Array]."
+msgstr "La variable est de type [PackedIntArray]."
+
+msgid "Variable is of type [PackedInt64Array]."
+msgstr "La variable est de type [PackedInt64Array]."
+
+msgid "Variable is of type [PackedFloat32Array]."
+msgstr "La variable est de type [PackedFloat32Array]."
+
+msgid "Variable is of type [PackedFloat64Array]."
+msgstr "La variable est de type [PackedFloat64Array]."
+
+msgid "Variable is of type [PackedStringArray]."
+msgstr "La variable est de type [PackedStringArray]."
+
+msgid "Variable is of type [PackedVector2Array]."
+msgstr "La variable est de type [PackedVector2Array]."
+
+msgid "Variable is of type [PackedVector3Array]."
+msgstr "La variable est de type [PackedVector3Array]."
+
+msgid "Variable is of type [PackedColorArray]."
+msgstr "La variable est de type [PackedColorArray]."
 
 msgid "Represents the size of the [enum Variant.Type] enum."
 msgstr "Représente la taille de l'énumération [enum Variant.Type]."
@@ -2285,13 +2425,6 @@ msgstr ""
 msgid "Returns the scalar length of the shortest axis of the [AABB]."
 msgstr "Retourne la longueur scalaire de l’axe le plus court de l’[AABB]."
 
-msgid ""
-"Returns the support point in a given direction. This is useful for collision "
-"detection algorithms."
-msgstr ""
-"Retourne le point d'appui dans une direction donnée. Ceci est utile pour les "
-"algorithmes de détection de collision."
-
 msgid "Returns the volume of the [AABB]."
 msgstr "Retourne le volume de l'[AABB]."
 
@@ -2406,6 +2539,20 @@ msgstr ""
 "[method update]). Vous n'avez généralement pas besoin de cette fonction.\n"
 "[b]Note:[/b] Cette fonction a seulement du sens quand le contexte est "
 "initialisé avec [constant MODE_CBC_ENCRYPT] ou [constant MODE_CBC_DECRYPT]."
+
+msgid ""
+"Run the desired operation for this AES context. Will return a "
+"[PackedByteArray] containing the result of encrypting (or decrypting) the "
+"given [param src]. See [method start] for mode of operation.\n"
+"[b]Note:[/b] The size of [param src] must be a multiple of 16. Apply some "
+"padding if needed."
+msgstr ""
+"Exécute l'opération désirée pour ce contexte AES. Retournera un "
+"[PackedByteArray] contenant le résultat du chiffrement (ou déchiffrement) de "
+"[param src]. Voir [method start] pour le mode d'opération.\n"
+"\n"
+"[b]Note :[/b] La taille de [param src] doit être un multiple de 16. Applique "
+"du padding si nécessaire."
 
 msgid "AES electronic codebook encryption mode."
 msgstr "Mode de chiffrement du livre de codes électroniques AES."
@@ -2665,6 +2812,41 @@ msgstr ""
 "Identique à l'interpolation linéaire, mais interpole aussi à partir de la "
 "valeur actuelle (définie à l'exécution) si la première clé n'est pas située à "
 "0 seconde."
+
+msgid "Manually advance the animations by the specified time (in seconds)."
+msgstr "Avance manuellement les animations par le temps spécifié (en secondes)."
+
+msgid "The call mode to use for Call Method tracks."
+msgstr "Le mode d'appel à utiliser pour les pistes \"Call Method\"."
+
+msgid "The process notification in which to update animations."
+msgstr ""
+"La notification de processus dans laquelle mettre à jour les animations."
+
+msgid "The node from which node path references will travel."
+msgstr "Le nœud à partir duquel les références de chemin de nœud vont aller."
+
+msgid "Notifies when an animation starts playing."
+msgstr "Avertit quand une animation commence à jouer."
+
+msgid ""
+"Notifies when the caches have been cleared, either automatically, or manually "
+"via [method clear_caches]."
+msgstr ""
+"Notifie quand les caches ont été effacées, soit automatiquement ou soit "
+"manuellement par [méthode clear_caches]."
+
+msgid ""
+"Do not process animation. Use [method advance] to process the animation "
+"manually."
+msgstr ""
+"Ne met à jour l'animation. Utilisez [method advance] pour mettre à jour "
+"l'animation manuellement."
+
+msgid "Make method calls immediately when reached in the animation."
+msgstr ""
+"Appelle la méthode aussitôt qu'elle est précisée lors de la lecture de "
+"l'animation."
 
 msgid "Using AnimationTree"
 msgstr "Utiliser les AnimationTree"
@@ -2931,14 +3113,6 @@ msgstr ""
 msgid "AnimationTree"
 msgstr "AnimationTree"
 
-msgid ""
-"[AnimationPlayer] caches animated nodes. It may not notice if a node "
-"disappears; [method clear_caches] forces it to update the cache again."
-msgstr ""
-"[AnimationPlayer] met en cache des nœuds animés. Il peut ne pas remarquer si "
-"un nœud disparaît ; [méthode clear_caches] le force à mettre à jour le cache "
-"à nouveau."
-
 msgid "Clears all queued, unplayed animations."
 msgstr "Efface toutes les animations en file d’attente et non joués."
 
@@ -2954,16 +3128,6 @@ msgstr ""
 msgid "The position (in seconds) of the currently playing animation."
 msgstr "La position (en secondes) de l'animation actuellement jouée."
 
-msgid "The call mode to use for Call Method tracks."
-msgstr "Le mode d'appel à utiliser pour les pistes \"Call Method\"."
-
-msgid ""
-"If [code]true[/code], updates animations in response to process-related "
-"notifications."
-msgstr ""
-"Si [code]true[/code], met à jour les animations en réponse aux notifications "
-"liées au processus."
-
 msgid ""
 "The default time in which to blend animations. Ranges from 0 to 4096 with "
 "0.01 precision."
@@ -2971,51 +3135,8 @@ msgstr ""
 "Le moment par défaut où les animations sont mélangées. L'intervalle va de 0 à "
 "4096 avec une précision de 0,01."
 
-msgid "The process notification in which to update animations."
-msgstr ""
-"La notification de processus dans laquelle mettre à jour les animations."
-
-msgid "The node from which node path references will travel."
-msgstr "Le nœud à partir duquel les références de chemin de nœud vont aller."
-
-msgid "Notifies when an animation starts playing."
-msgstr "Avertit quand une animation commence à jouer."
-
-msgid ""
-"Notifies when the caches have been cleared, either automatically, or manually "
-"via [method clear_caches]."
-msgstr ""
-"Notifie quand les caches ont été effacées, soit automatiquement ou soit "
-"manuellement par [méthode clear_caches]."
-
-msgid ""
-"Do not process animation. Use [method advance] to process the animation "
-"manually."
-msgstr ""
-"Ne met à jour l'animation. Utilisez [method advance] pour mettre à jour "
-"l'animation manuellement."
-
-msgid "Make method calls immediately when reached in the animation."
-msgstr ""
-"Appelle la méthode aussitôt qu'elle est précisée lors de la lecture de "
-"l'animation."
-
-msgid "Manually advance the animations by the specified time (in seconds)."
-msgstr "Avance manuellement les animations par le temps spécifié (en secondes)."
-
-msgid "If [code]true[/code], the [AnimationTree] will be processing."
-msgstr "Si [code]true[/code], le [AnimationTree] sera actif."
-
 msgid "The path to the [AnimationPlayer] used for animating."
 msgstr "Le chemin vers le [AnimationPlayer] utilisé pour l'animation."
-
-msgid "The root animation node of this [AnimationTree]. See [AnimationNode]."
-msgstr ""
-"Le nœud d'animation racine de cet [AnimationTree]. Voir [AnimationNode]."
-
-msgid "The animations will only progress manually (see [method advance])."
-msgstr ""
-"Les animations devront être mises à jour manuellement (voir [method advance])."
 
 msgid "Using Area2D"
 msgstr "Utiliser les Area2D"
@@ -3119,6 +3240,36 @@ msgstr ""
 "Le degré de réverbération de cette zone est un effet uniforme. L'intervalle "
 "va de [code]0[/code] à [code]1[/code] avec une précision de [code]0.1[/code]."
 
+msgid "Constructs an empty [Array]."
+msgstr "Construit un [Array] vide."
+
+msgid "Constructs an array from a [PackedByteArray]."
+msgstr "Construit an tableau à partir d'un [PackedByteArray]."
+
+msgid "Constructs an array from a [PackedColorArray]."
+msgstr "Construit an tableau à partir d'un [PackedColorArray]."
+
+msgid "Constructs an array from a [PackedFloat32Array]."
+msgstr "Construit un tableau à partir d'un [PackedFloat32Array]."
+
+msgid "Constructs an array from a [PackedFloat64Array]."
+msgstr "Construit un tableau à partir d'un [PackedFloat64Array]."
+
+msgid "Constructs an array from a [PackedInt32Array]."
+msgstr "Construit un tableau à partir d'un [PackedInt32Array]."
+
+msgid "Constructs an array from a [PackedInt64Array]."
+msgstr "Construit un tableau à partir d'un [PackedInt64Array]."
+
+msgid "Constructs an array from a [PackedStringArray]."
+msgstr "Construit un tableau à partir d'un [PackedStringArray]."
+
+msgid "Constructs an array from a [PackedVector2Array]."
+msgstr "Construit un tableau à partir d'un [PackedVector2Array]."
+
+msgid "Constructs an array from a [PackedVector3Array]."
+msgstr "Construit an tableau à partir d'un [PackedVector3Array]."
+
 msgid ""
 "Appends an element at the end of the array (alias of [method push_back])."
 msgstr ""
@@ -3194,22 +3345,6 @@ msgstr ""
 "différents tableaux peuvent avoir des hachages identiques à cause des "
 "collisions des hachages."
 
-msgid ""
-"Inserts a new element at a given position in the array. The position must be "
-"valid, or at the end of the array ([code]pos == size()[/code]).\n"
-"[b]Note:[/b] This method acts in-place and doesn't return a value.\n"
-"[b]Note:[/b] On large arrays, this method will be slower if the inserted "
-"element is close to the beginning of the array (index 0). This is because all "
-"elements placed after the newly inserted element have to be reindexed."
-msgstr ""
-"Insère un nouvel élément à la position spécifiée du tableau. La position doit "
-"être valide, ou à la fin du tableau ([code]pos == size()[/code]).\n"
-"[b]Note :[/b] Cette méthode se contente d'insérer l'élément et ne retourne "
-"aucune valeur.\n"
-"[b]Note :[/b] Pour les grands tableaux, cette méthode sera lente si la "
-"position de l'insertion est proche du début (index 0). C'est parce que tous "
-"les éléments placés après devront tous être décalés."
-
 msgid "Returns [code]true[/code] if the array is empty."
 msgstr "Retourne [code]true[/code] si le tableau est vide."
 
@@ -3253,15 +3388,6 @@ msgstr ""
 "que [method push_back] car elle réindexera les éléments du tableau suivants "
 "chaque fois qu'elle est appelée. Plus le tableau est grand et plus la "
 "position de l'élément enlevé, plus [method push_front] sera lent."
-
-msgid ""
-"Resizes the array to contain a different number of elements. If the array "
-"size is smaller, elements are cleared, if bigger, new elements are "
-"[code]null[/code]."
-msgstr ""
-"Redimensionne le tableau pour contenir un nombre différent d'éléments. Si la "
-"taille du tableau est plus petite, les éléments en trop seront effacés, et si "
-"la taille est plus grande, les nouveaux éléments seront à [code]null[/code]."
 
 msgid "Reverses the order of the elements in the array."
 msgstr "Inverse l'ordre des éléments du tableau."
@@ -3380,8 +3506,36 @@ msgstr ""
 "Retourne l'identifiant du point disponible suivant avec aucun point lui étant "
 "associé."
 
+msgid ""
+"Returns the ID of the closest point to [param to_position], optionally taking "
+"disabled points into account. Returns [code]-1[/code] if there are no points "
+"in the points pool.\n"
+"[b]Note:[/b] If several points are the closest to [param to_position], the "
+"one with the smallest ID will be returned, ensuring a deterministic result."
+msgstr ""
+"Retourne l'identifiant du point le plus proche de [param to_position], en "
+"prenant en compte les points désactivés en option. Retourne [code]-1[/code] "
+"s'il n'y a pas de points dans l'ensemble de points.\n"
+"[b]Note :[/b] Si plusieurs points sont proches de [param to_position], celui "
+"avec le plus petit identifiant sera retourné, permettant d'obtenir un "
+"résultat déterministe."
+
 msgid "Returns the number of points currently in the points pool."
-msgstr "Retourne le nombre de points actuellement dans le tas de points."
+msgstr "Retourne le nombre de points actuellement dans le pool de points."
+
+msgid ""
+"Returns an array with the points that are in the path found by AStar2D "
+"between the given points. The array is ordered from the starting point to the "
+"ending point of the path.\n"
+"[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it "
+"will return an empty [PackedVector2Array] and will print an error message."
+msgstr ""
+"Retourne un tableau avec les points qui sont dans le chemin trouvé par "
+"AStar2D entre les points données. Le tableau est dans l'ordre du point de "
+"départ jusqu'au point d'arrivée.\n"
+"[b]Note :[/b] Cette méthode n'est pas thread-safe. Si appelé depuis un "
+"[Thread], elle retournera un [PackedVector2Array] vide et affichera un "
+"message d'erreur."
 
 msgid ""
 "Returns whether a point is disabled or not for pathfinding. By default, all "
@@ -3391,11 +3545,38 @@ msgstr ""
 "défaut, tous les points sont activés."
 
 msgid ""
+"Removes the point associated with the given [param id] from the points pool."
+msgstr "Retire le point associé à l'[param id] donné du pool des points."
+
+msgid ""
 "Returns the capacity of the structure backing the points, useful in "
 "conjunction with [code]reserve_space[/code]."
 msgstr ""
 "Retourne la capacité de la structure qui garde les points en cache, utile "
 "avec [code]reserve_space[/code]."
+
+msgid ""
+"Returns an array with the points that are in the path found by AStar3D "
+"between the given points. The array is ordered from the starting point to the "
+"ending point of the path.\n"
+"[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it "
+"will return an empty [PackedVector3Array] and will print an error message."
+msgstr ""
+"Retourne un tableau avec les points qui sont dans le chemin trouvé par "
+"AStar3D entre les points données. Le tableau est dans l'ordre du point de "
+"départ jusqu'au point final du chemin.\n"
+"[b]Note :[/b] Cette méthode n'est pas thread-safe. Si appelé depuis un "
+"[Thread], elle retournera un [PackedVector3Array] vide et affichera un "
+"message d'erreur."
+
+msgid ""
+"Returns an array with the IDs of the points that form the path found by "
+"AStar2D between the given points. The array is ordered from the starting "
+"point to the ending point of the path."
+msgstr ""
+"Retourne un tableau avec les identifiants des points qui forment le chemin "
+"trouvé par AStar2D entre les points donnés. Le tableau est dans l'ordre du "
+"point de départ jusqu'au point final du chemin."
 
 msgid "Stores information about the audio buses."
 msgstr "Stocke de l'information sur les bus audio."
@@ -3445,6 +3626,18 @@ msgstr "Capture l'audio depuis un bus audio en temps réel."
 
 msgid "Clears the internal ring buffer."
 msgstr "Efface la mémoire tampon interne en anneaux."
+
+msgid ""
+"Gets the next [param frames] audio samples from the internal ring buffer.\n"
+"Returns a [PackedVector2Array] containing exactly [param frames] audio "
+"samples if available, or an empty [PackedVector2Array] if insufficient data "
+"was available."
+msgstr ""
+"Retourne les prochains [param frames] d'échantillonnage audio depuis le "
+"buffer circulaire.\n"
+"Retourne un [PackedVector2Array] contenant exactement [param frames] "
+"échantillons audio si disponible, ou un [PackedVector2Array] vide s'il n'y a "
+"pas assez de données disponibles."
 
 msgid ""
 "Returns the number of audio frames discarded from the audio bus due to full "
@@ -3568,38 +3761,6 @@ msgstr "Si [code]true[/code], la rétroaction est activée."
 
 msgid "Feedback delay time in milliseconds."
 msgstr "Retard de rétroaction en millisecondes."
-
-msgid "Sound level for [code]tap1[/code]."
-msgstr "Niveau sonore pour [code]tap1[/code]."
-
-msgid "If [code]true[/code], [code]tap1[/code] will be enabled."
-msgstr "Si [code]true[/code], [code]tap1[/code] sera activé."
-
-msgid "[code]tap1[/code] delay time in milliseconds."
-msgstr "[code]tap1[/code] temps de retard en millisecondes."
-
-msgid ""
-"Pan position for [code]tap1[/code]. Value can range from -1 (fully left) to 1 "
-"(fully right)."
-msgstr ""
-"La position gauche-droite pour [code]tap1[/code]. La valeur peut aller de -1 "
-"(complètement à gauche) à 1 (complètement à droite)."
-
-msgid "If [code]true[/code], [code]tap2[/code] will be enabled."
-msgstr "Si [code]true[/code], [code]tap2[/code] sera activé."
-
-msgid "[b]Tap2[/b] delay time in milliseconds."
-msgstr "[b]Tap2[/b] temps de retard en millisecondes."
-
-msgid "Sound level for [code]tap2[/code]."
-msgstr "Niveau sonore pour [code]tap2[/code]."
-
-msgid ""
-"Pan position for [code]tap2[/code]. Value can range from -1 (fully left) to 1 "
-"(fully right)."
-msgstr ""
-"La position gauche-droite pour [code]tap2[/code]. La valeur peut aller de -1 "
-"(complètement à gauche) à 1 (complètement à droite)."
 
 msgid "Distortion power. Value can range from 0 to 1."
 msgstr "L'intensité de la distorsion. Cette valeur est comprise entre 0 et 1."
@@ -3961,9 +4122,6 @@ msgstr ""
 msgid "Returns the sample rate at the output of the [AudioServer]."
 msgstr "Retourne le débit de sortie du [AudioServer]."
 
-msgid "Returns the audio driver's output latency."
-msgstr "Retourne la latence de la sortie du pilote audio."
-
 msgid "Returns the speaker configuration."
 msgstr "Retourne la configuration du haut-parleur."
 
@@ -3992,9 +4150,6 @@ msgstr ""
 
 msgid "Number of available audio buses."
 msgstr "Nombre de bus audio disponibles."
-
-msgid "Emitted when the [AudioBusLayout] changes."
-msgstr "Émis lorsque le [AudioBusLayout] change."
 
 msgid "Two or fewer speakers were detected."
 msgstr "Deux enceintes ou moins sont détectées."
@@ -4220,6 +4375,18 @@ msgstr ""
 
 msgid "Disables doppler tracking."
 msgstr "Désactive le suivi doppler."
+
+msgid "Wraps a pool of audio streams with pitch and volume shifting."
+msgstr ""
+"Enveloppe un pool de flux audios avec un décalage de pitch et de volume."
+
+msgid ""
+"Picks a random AudioStream from the pool, depending on the playback mode, and "
+"applies random pitch shifting and volume shifting during playback."
+msgstr ""
+"Choisi un AudioStream aléatoire dans le pool, suivant le mode de playback et "
+"applique un décalage aléatoire au pitch et un décalage du volume pendant le "
+"playback."
 
 msgid "Stores audio data loaded from WAV files."
 msgstr "Enregistre les données audio depuis les fichiers WAV."
@@ -4449,9 +4616,6 @@ msgid ""
 msgstr ""
 "Requiert un appui suivi d'un relâchement avant de considérer le bouton comme "
 "cliqué."
-
-msgid "Default 3D rendering material."
-msgstr "Matériau de rendu 3D par défaut."
 
 msgid "Returns [code]true[/code], if the specified [enum Feature] is enabled."
 msgstr ""
@@ -5704,40 +5868,9 @@ msgstr ""
 "réorganisés pour prendre leur place. Si ce n'est pas ce qui est voulu, réglez "
 "leur couleur ([member color]) sur [code]Color(1, 1, 1, 0)[/code] à la place."
 
-msgid "The [CheckBox] text's font color."
-msgstr "La couleur de la police du texte [CheckBox]."
-
-msgid "The [CheckBox] text's font color when it's disabled."
-msgstr ""
-"Le couleur de la police du texte de la [CheckBox] quand elle est désactivée."
-
-msgid ""
-"The [CheckBox] text's font color when it's focused. Only replaces the normal "
-"text color of the checkbox. Disabled, hovered, and pressed states take "
-"precedence over this color."
-msgstr ""
-"La couleur de la police du texte de la [CheckBox] quand elle a le focus. Ne "
-"remplace que la couleur normale du texte de la case à cocher. Les états "
-"désactivé, survolé et pressé sont prioritaires sur cette couleur."
-
-msgid "The [CheckBox] text's font color when it's hovered."
-msgstr ""
-"Le couleur de la police du texte de la [CheckBox] quand elle est survolée."
-
-msgid "The [CheckBox] text's font color when it's hovered and pressed."
-msgstr ""
-"La couleur de la police du texte du [CheckBox] quand il est survolé ou appuyé."
-
-msgid "The [CheckBox] text's font color when it's pressed."
-msgstr ""
-"Le couleur de la police du texte de la [CheckBox] quand elle est appuyée."
-
 msgid "The vertical offset used when rendering the check icons (in pixels)."
 msgstr ""
 "Le décalage vertical utilisé pour le rendu des icônes des coches (en pixels)."
-
-msgid "The [Font] to use for the [CheckBox] text."
-msgstr "La [Font] à utiliser pour le texte du [CheckBox]."
 
 msgid "The check icon to display when the [CheckBox] is checked."
 msgstr "L'icône de la coche à afficher quand la [CheckBox] est cochée."
@@ -5745,88 +5878,10 @@ msgstr "L'icône de la coche à afficher quand la [CheckBox] est cochée."
 msgid "The check icon to display when the [CheckBox] is unchecked."
 msgstr "L'icône de la coche à afficher quand la [CheckBox] est décochée."
 
-msgid ""
-"The [StyleBox] to display as a background when the [CheckBox] is disabled."
-msgstr ""
-"La [StyleBox] à afficher en arrière-plan quand la [CheckBox] est cochée."
-
-msgid ""
-"The [StyleBox] to display as a background when the [CheckBox] is hovered."
-msgstr ""
-"La [StyleBox] à afficher en arrière-plan quand la [CheckBox] est survolée."
-
-msgid ""
-"The [StyleBox] to display as a background when the [CheckBox] is hovered and "
-"pressed."
-msgstr ""
-"La [StyleBox] à afficher en arrière-plan lorsque la [CheckBox] est survolée "
-"et appuyée."
-
-msgid "The [StyleBox] to display as a background."
-msgstr "Le [StyleBox] a affiché en arrière-plan."
-
-msgid ""
-"The [StyleBox] to display as a background when the [CheckBox] is pressed."
-msgstr ""
-"La [StyleBox] à afficher en arrière-plan quand la [CheckBox] est appuyée."
-
-msgid "The [CheckButton] text's font color."
-msgstr "La couleur de la police du texte [CheckButton]."
-
-msgid "The [CheckButton] text's font color when it's disabled."
-msgstr ""
-"La couleur de la police du texte du [CheckButton] quand il est désactivé."
-
-msgid ""
-"The [CheckButton] text's font color when it's focused. Only replaces the "
-"normal text color of the button. Disabled, hovered, and pressed states take "
-"precedence over this color."
-msgstr ""
-"La couleur du texte du [CheckButton] quand il a le focus. Ne remplace que la "
-"couleur de texte normale du bouton. Les états désactivés, survolé et pressés "
-"sont prioritaire sur cette couleur."
-
-msgid "The [CheckButton] text's font color when it's hovered."
-msgstr "La couleur de la police du texte du [CheckButton] quand il est survolé."
-
-msgid "The [CheckButton] text's font color when it's hovered and pressed."
-msgstr ""
-"La couleur de la police du texte du [CheckButton] quand il est survolé ou "
-"appuyé."
-
-msgid "The [CheckButton] text's font color when it's pressed."
-msgstr "La couleur de la police du texte du [CheckButton] quand il est appuyé."
-
 msgid "The vertical offset used when rendering the toggle icons (in pixels)."
 msgstr ""
 "Le décalage vertical utilisé lors du rendu des icônes de basculement (en "
 "pixels)."
-
-msgid "The [Font] to use for the [CheckButton] text."
-msgstr "La [Font] à utilisé pour le texte du [CheckButton]."
-
-msgid ""
-"The [StyleBox] to display as a background when the [CheckButton] is disabled."
-msgstr ""
-"La [StyleBox] à afficher en arrière-plan quand la [CheckBox] est désactivée."
-
-msgid ""
-"The [StyleBox] to display as a background when the [CheckButton] is hovered."
-msgstr ""
-"La [StyleBox] à afficher en arrière-plan quand le [CheckButton] est survolé."
-
-msgid ""
-"The [StyleBox] to display as a background when the [CheckButton] is hovered "
-"and pressed."
-msgstr ""
-"La [StyleBox] à afficher en fond lorsque le [CheckButton] est survolé et "
-"appuyé."
-
-msgid ""
-"The [StyleBox] to display as a background when the [CheckButton] is pressed."
-msgstr ""
-"Le [StyleBox] qui s'affiche en arrière-plan lorsque l'on appuie sur le "
-"[CheckButton]."
 
 msgid "The circle's radius."
 msgstr "Le rayon du cercle."
@@ -5843,18 +5898,6 @@ msgstr "Retourne si la ligne à l'index spécifié est réduite ou non."
 
 msgid "Toggle the folding of the code block at the given line."
 msgstr "Réduit le bloc de code à la ligne donnée."
-
-msgid "Sets the font [Color]."
-msgstr "Définit la police [Color]."
-
-msgid "Sets the highlight [Color] of text selections."
-msgstr "Définit la [Color] de surlignage pour la sélection de texte."
-
-msgid "Sets the spacing between the lines."
-msgstr "Définit l'espacement entre les lignes."
-
-msgid "Sets the default [Font]."
-msgstr "Définit la [Font] par défaut."
 
 msgid ""
 "Creates a new shape owner for the given object. Returns [code]owner_id[/code] "
@@ -5956,6 +5999,17 @@ msgstr ""
 "plus élevées rendront la forme plus épaisse, et fonctionneront mieux pour les "
 "objets entrant en collision quand ils vont à une vitesse élevée."
 
+msgid ""
+"The polygon's list of vertices. Each point will be connected to the next, and "
+"the final point will be connected to the first.\n"
+"[b]Warning:[/b] The returned value is a clone of the [PackedVector2Array], "
+"not a reference."
+msgstr ""
+"La liste des sommets du polygone. Chaque point sera connecté au suivant et le "
+"dernier point sera relié au premier.\n"
+"[b]Attention :[/b] La valeur retournée est une copie du [PackedVector2Array], "
+"et non une référence."
+
 msgid "If [code]true[/code], no collision will be produced."
 msgstr "Si [code]true[/code], aucune collision ne sera produite."
 
@@ -5991,13 +6045,6 @@ msgstr ""
 
 msgid "The actual shape owned by this collision shape."
 msgstr "La forme réelle appartenant à cette forme de collision."
-
-msgid ""
-"If this method exists within a script it will be called whenever the shape "
-"resource has been modified."
-msgstr ""
-"Si cette méthode existe dans un script, elle sera appelée chaque fois que la "
-"ressource de forme aura été modifiée."
 
 msgid "A disabled collision shape has no effect in the world."
 msgstr "Une forme de collision désactivée n’a aucun effet dans le monde."
@@ -6567,49 +6614,8 @@ msgstr ""
 msgid "Emitted when the [ColorPicker] is closed."
 msgstr "Émis lorsque le [ColorPicker] est fermé."
 
-msgid "Default text [Color] of the [ColorPickerButton]."
-msgstr "La [Color] par défaut du texte du [ColorPickerButton]."
-
-msgid "Text [Color] used when the [ColorPickerButton] is disabled."
-msgstr ""
-"La [Color] du texte utiliser quand ce [ColorPickerButton] est désactivé."
-
-msgid ""
-"Text [Color] used when the [ColorPickerButton] is focused. Only replaces the "
-"normal text color of the button. Disabled, hovered, and pressed states take "
-"precedence over this color."
-msgstr ""
-"La [Color] du texte utilisée lorsque le [ColorPickerButton] a le focus. Il "
-"suffit de remplacer la couleur de texte normale du bouton. Les états "
-"désactivé, survolé et pressé sont prioritaires par rapport à cette couleur."
-
-msgid "Text [Color] used when the [ColorPickerButton] is being hovered."
-msgstr "La [Color] du texte utilisée quand le [ColorPickerButton] est survolé."
-
-msgid "Text [Color] used when the [ColorPickerButton] is being pressed."
-msgstr "La [Color] du texte utilisée quand le [ColorPickerButton] est appuyé."
-
-msgid "The horizontal space between [ColorPickerButton]'s icon and text."
-msgstr ""
-"L'espacement horizontal entre l'icône et le texte de ce [ColorPickerButton]."
-
-msgid "[Font] of the [ColorPickerButton]'s text."
-msgstr "[Font] du texte du [ColorPickerButton]."
-
 msgid "The background of the color preview rect on the button."
 msgstr "L'arrière-plan du rectangle d'aperçu de couleur sur le bouton."
-
-msgid "[StyleBox] used when the [ColorPickerButton] is disabled."
-msgstr "La [StyleBox] utilisée pour les [ColorPickerButton] désactivés."
-
-msgid "[StyleBox] used when the [ColorPickerButton] is being hovered."
-msgstr "La [StyleBox] utilisée quand le [ColorPickerButton] est survolé."
-
-msgid "Default [StyleBox] for the [ColorPickerButton]."
-msgstr "[StyleBox] par défaut pour le [ColorPickerButton]."
-
-msgid "[StyleBox] used when the [ColorPickerButton] is being pressed."
-msgstr "La [StyleBox] utilisée quand le [ColorPickerButton] est appuyé."
 
 msgid "Returns the value of the specified parameter."
 msgstr "Retourne la valeur du paramètre donné."
@@ -6823,20 +6829,6 @@ msgstr "Émis quand le nœud reçoit un [InputEvent]."
 msgid "Emitted when the node's minimum size changes."
 msgstr "Émis quand la taille minimale du nœud change."
 
-msgid ""
-"Emitted when the mouse enters the control's [code]Rect[/code] area, provided "
-"its [member mouse_filter] lets the event reach it.\n"
-"[b]Note:[/b] [signal mouse_entered] will not be emitted if the mouse enters a "
-"child [Control] node before entering the parent's [code]Rect[/code] area, at "
-"least until the mouse is moved to reach the parent's [code]Rect[/code] area."
-msgstr ""
-"Émis lorsque la souris entre dans le [code]Rect[/code] du contrôle, à "
-"condition que l'événement l'atteigne.\n"
-"[b]Note :[/b] [signal mouse_entered] ne sera pas émis si la souris entre dans "
-"un nœud [Control] enfant avant d'entrer dans le [code]Rect[/code], au moins "
-"jusqu'à ce que la souris soit déplacée pour atteindre le [code]Rect[/code] du "
-"parent."
-
 msgid "Emitted when the control changes size."
 msgstr "Émis lorsque le contrôle change de taille."
 
@@ -6856,12 +6848,6 @@ msgid ""
 msgstr ""
 "Le nœud ne reçoit le focus que pour les clics de la souris. À utiliser avec "
 "[membre focus_mode]."
-
-msgid "Sent when the mouse pointer enters the node."
-msgstr "Envoyé quand le curseur de la souris entre dans le nœud."
-
-msgid "Sent when the mouse pointer exits the node."
-msgstr "Envoyé quand le curseur de la souris sort du nœud."
 
 msgid "Sent when the node grabs focus."
 msgstr "Envoyé lorsque le nœud reçoit le focus."
@@ -7152,33 +7138,6 @@ msgstr ""
 "size_flags_horizontal] et [member size_flags_vertical]."
 
 msgid ""
-"The control will receive mouse button input events through [method "
-"_gui_input] if clicked on. And the control will receive the [signal "
-"mouse_entered] and [signal mouse_exited] signals. These events are "
-"automatically marked as handled, and they will not propagate further to other "
-"controls. This also results in blocking signals in other controls."
-msgstr ""
-"Le contrôle recevra les événements d'entrée de la souris via [method "
-"gui_input] si vous cliquez dessus. Et le contrôle recevra les signaux [signal "
-"mouse_entered] et [signal mouse_exited]. Ces événements sont automatiquement "
-"marqués comme traités, et ils ne se propagent pas vers les autres contrôles. "
-"Cela permet également de bloquer la propagation de ces signaux à partir "
-"d'autres contrôles."
-
-msgid ""
-"The control will not receive mouse button input events through [method "
-"_gui_input]. The control will also not receive the [signal mouse_entered] nor "
-"[signal mouse_exited] signals. This will not block other controls from "
-"receiving these events or firing the signals. Ignored events will not be "
-"handled automatically."
-msgstr ""
-"Le contrôle ne recevra pas d'événements d'entrée de la souris via [méthode "
-"gui_input]. Le contrôle ne recevra pas non plus les signaux [signal "
-"mouse_entered] et [signal mouse_exited]. Cela ne bloquera pas d'autres "
-"contrôles de recevoir ces événements et n'émettra pas les signaux. Les "
-"événements ignorés ne seront pas traités automatiquement."
-
-msgid ""
 "The control will grow to the left or top to make up if its minimum size is "
 "changed to be greater than its current size on the respective axis."
 msgstr ""
@@ -7223,9 +7182,6 @@ msgstr ""
 
 msgid "The list of 3D points forming the convex polygon shape."
 msgstr "La liste des points 3D formant le polygone convexe."
-
-msgid "CPU-based 2D particle emitter."
-msgstr "Émetteur de particules 2D sur CPU."
 
 msgid "Returns the [Curve] of the parameter specified by [enum Parameter]."
 msgstr "Retourne la [Curve] du paramètre spécifié par [enum Parameter]."
@@ -7319,9 +7275,6 @@ msgid ""
 msgstr ""
 "Le rayon de la sphère si [member emission_shape] est [constant "
 "EMISSION_SHAPE_SPHERE]."
-
-msgid "If [code]true[/code], particles are being emitted."
-msgstr "Si [code]true[/code], des particules sont émises."
 
 msgid ""
 "How rapidly particles in an emission cycle are emitted. If greater than "
@@ -7459,8 +7412,11 @@ msgstr ""
 msgid "Represents the size of the [enum EmissionShape] enum."
 msgstr "Représente la taille de l'énumération [enum EmissionShape]."
 
-msgid "CPU-based 3D particle emitter."
-msgstr "Émetteur de particules 3D sur CPU."
+msgid "Maximum angle."
+msgstr "Angle maximum."
+
+msgid "Minimum angle."
+msgstr "Angle minimum."
 
 msgid ""
 "The rectangle's extents if [member emission_shape] is set to [constant "
@@ -7507,6 +7463,12 @@ msgid ""
 msgstr ""
 "Le [Mesh] utilisé pour chaque particule. Si [code]null[/code], les particules "
 "seront des sphères."
+
+msgid "Maximum scale."
+msgstr "Échelle maximale."
+
+msgid "Minimum scale."
+msgstr "Échelle minimale."
 
 msgid ""
 "Each particle's initial direction range from [code]+spread[/code] to [code]-"
@@ -7805,9 +7767,6 @@ msgstr ""
 msgid "Returns a new instance of the script."
 msgstr "Retourne une nouvelle instance du script."
 
-msgid "A mathematic curve."
-msgstr "Une courbe mathématique."
-
 msgid ""
 "Adds a point to the curve. For each side, if the [code]*_mode[/code] is "
 "[constant TANGENT_LINEAR], the [code]*_tangent[/code] angle (in degrees) uses "
@@ -7879,6 +7838,9 @@ msgstr ""
 "points mis en cache. Si la densité est suffisante (voir [member "
 "bake_interval]), cette longeur devrait être une approximation suffisante."
 
+msgid "Returns the cache of points as a [PackedVector2Array]."
+msgstr "Retourne le cache de points sous forme de [PackedVector2Array]."
+
 msgid ""
 "The distance in pixels between two adjacent cached points. Changing it forces "
 "the cache to be recomputed the next time the [method get_baked_points] or "
@@ -7907,9 +7869,6 @@ msgstr ""
 "get_baked_points] ou [method get_baked_length] sera appelée. Plus la distance "
 "est petite, plus il y aura de points dans le cache, et plus ça utilisera de "
 "mémoire, à utiliser donc avec soin."
-
-msgid "A texture that shows a curve."
-msgstr "Texture qui montre une courbe."
 
 msgid "The [Curve] that is rendered onto the texture."
 msgstr "La [Curve] qui est rendue dans la texture."
@@ -8026,6 +7985,9 @@ msgid "Directional light from a distance, as from the Sun."
 msgstr ""
 "Une lumière directionnelle à une certaine distance, comme pour le soleil."
 
+msgid "3D lights and shadows"
+msgstr "Les lumières et ombres 3D"
+
 msgid ""
 "If [code]true[/code], shadow detail is sacrificed in exchange for smoother "
 "transitions between splits. Enabling shadow blend splitting also has a "
@@ -8100,6 +8062,45 @@ msgstr "Masque le curseur de la souris s'il visible."
 msgid "Helper class to implement a DTLS server."
 msgstr "Une classe d'aide pour implémenter un serveur DTLS."
 
+msgid "Exporting for Android"
+msgstr "Exportation pour Android"
+
+msgid "Deprecated."
+msgstr "Déprécié."
+
+msgid "Exporter for iOS."
+msgstr "Exportateur pour iOS."
+
+msgid "Exporting for iOS"
+msgstr "Exportation pour iOS"
+
+msgid "Supported device family."
+msgstr "Famille d'appareils pris en charge."
+
+msgid "Exporter for Linux/BSD."
+msgstr "Exportateur pour Linux/BSD."
+
+msgid "Exporting for Linux"
+msgstr "Exportation pour Linux"
+
+msgid "Exporter for macOS."
+msgstr "Exportateur pour macOS."
+
+msgid "Exporting for macOS"
+msgstr "Exportation de macOS"
+
+msgid "Application distribution target."
+msgstr "Cible de distribution d'application."
+
+msgid "Exporting for the Web"
+msgstr "Exportation pour le Web"
+
+msgid "Exporter for Windows."
+msgstr "Exportateur pour Windows."
+
+msgid "Exporting for Windows"
+msgstr "Exportation pour Windows"
+
 msgid "A script that is executed when exporting the project."
 msgstr "Un script qui est exécuté à l'export du projet."
 
@@ -8170,24 +8171,6 @@ msgstr ""
 "modifications accidentelles aux fichiers qu'ils ne sont pas censés modifier.\n"
 "Pour gérer visuellement les profils d'éditeur, utilisez [b]Éditeur > Gérer "
 "les profils de fonctionnalités.[/b] en haut de la fenêtre de l'éditeur."
-
-msgid ""
-"Loads an editor feature profile from a file. The file must follow the JSON "
-"format obtained by using the feature profile manager's [b]Export[/b] button "
-"or the [method save_to_file] method."
-msgstr ""
-"Charge un profil d'éditeur depuis un fichier. Le fichier doit respecter le "
-"format JSON obtenu en utilisant le bouton [b]Export[/b] ou via la méthode "
-"[method save_to_file]."
-
-msgid ""
-"Saves the editor feature profile to a file in JSON format. It can then be "
-"imported using the feature profile manager's [b]Import[/b] button or the "
-"[method load_from_file] method."
-msgstr ""
-"Enregistre le profil de fonctionnalité de l'éditeur dans un fichier au format "
-"JSON. Il peut ensuite être importé en utilisant le bouton [b]Importer[/b] du "
-"gestionnaire de profils ou via la méthode [method load_from_file]."
 
 msgid ""
 "The 3D editor. If this feature is disabled, the 3D editor won't display but "
@@ -8718,16 +8701,6 @@ msgid "Used by the editor to extend its functionality."
 msgstr "Utiliser par l'éditeur pour augmenter ses fonctionnalités."
 
 msgid ""
-"Plugins are used by the editor to extend functionality. The most common types "
-"of plugins are those which edit a given node or resource type, import plugins "
-"and export plugins. See also [EditorScript] to add functions to the editor."
-msgstr ""
-"Les greffons sont utilisés par l'éditeur pour étendre les fonctionnalités. "
-"Les types les plus courants de greffons sont ceux qui modifient un nœud donné "
-"ou un type de ressource, les greffons d'importation et d'exportation. Voir "
-"aussi [EditorScript] pour ajouter des fonctions à l'éditeur."
-
-msgid ""
 "This method is called when the editor is about to save the project, switch to "
 "another tab, etc. It asks the plugin to apply any pending state changes to "
 "ensure consistency.\n"
@@ -9169,9 +9142,6 @@ msgstr ""
 "Cette méthode est exécutée par l'éditeur quand [b]Ficher > Exécuter[/b] est "
 "utilisé."
 
-msgid "Returns the [EditorInterface] singleton instance."
-msgstr "Retourne l'unique instance de [EditorInterface]."
-
 msgid "Returns the Editor's currently active scene."
 msgstr "Retourne la scène actuellement active de l’éditeur."
 
@@ -9512,6 +9482,9 @@ msgstr "Représente la taille de l'énumération [enum BGMode]."
 
 msgid "A class that stores an expression you can execute."
 msgstr "Une classe qui enregistre une expression que vous pouvez exécuter."
+
+msgid "Evaluating Expressions"
+msgstr "Évaluation des expressions"
 
 msgid "Returns [code]true[/code] if [method execute] has failed."
 msgstr "Retourne [code]true[/code] si [method execute] a échoué."
@@ -9915,6 +9888,83 @@ msgstr "Si actif, il y a un moteur linéaire à travers ces axes."
 msgid "Represents the size of the [enum Flag] enum."
 msgstr "Représente la taille de l'énumération [enum Flag]."
 
+msgid ""
+"Given the two 2D segments ([param p1], [param q1]) and ([param p2], [param "
+"q2]), finds those two points on the two segments that are closest to each "
+"other. Returns a [PackedVector2Array] that contains this point on ([param "
+"p1], [param q1]) as well the accompanying point on ([param p2], [param q2])."
+msgstr ""
+"À partir de deux segments 2D ([param p1], [param q1]) et ([param p2], [param "
+"q2]), trouve les deux points sur chaque segment qui sont les plus proches "
+"l'un de l'autre. Retourne un [PackedVector2Array] qui contient le point sur "
+"([param p1], [param q1]) ainsi que celui sur ([param p2], [param q2])."
+
+msgid ""
+"Inflates or deflates [param polygon] by [param delta] units (pixels). If "
+"[param delta] is positive, makes the polygon grow outward. If [param delta] "
+"is negative, shrinks the polygon inward. Returns an array of polygons because "
+"inflating/deflating may result in multiple discrete polygons. Returns an "
+"empty array if [param delta] is negative and the absolute value of it "
+"approximately exceeds the minimum bounding rectangle dimensions of the "
+"polygon.\n"
+"Each polygon's vertices will be rounded as determined by [param join_type], "
+"see [enum PolyJoinType].\n"
+"The operation may result in an outer polygon (boundary) and inner polygon "
+"(hole) produced which could be distinguished by calling [method "
+"is_polygon_clockwise].\n"
+"[b]Note:[/b] To translate the polygon's vertices specifically, multiply them "
+"to a [Transform2D]:\n"
+"[codeblocks]\n"
+"[gdscript]\n"
+"var polygon = PackedVector2Array([Vector2(0, 0), Vector2(100, 0), "
+"Vector2(100, 100), Vector2(0, 100)])\n"
+"var offset = Vector2(50, 50)\n"
+"polygon = Transform2D(0, offset) * polygon\n"
+"print(polygon) # prints [(50, 50), (150, 50), (150, 150), (50, 150)]\n"
+"[/gdscript]\n"
+"[csharp]\n"
+"var polygon = new Vector2[] { new Vector2(0, 0), new Vector2(100, 0), new "
+"Vector2(100, 100), new Vector2(0, 100) };\n"
+"var offset = new Vector2(50, 50);\n"
+"polygon = new Transform2D(0, offset) * polygon;\n"
+"GD.Print((Variant)polygon); // prints [(50, 50), (150, 50), (150, 150), (50, "
+"150)]\n"
+"[/csharp]\n"
+"[/codeblocks]"
+msgstr ""
+"Gonfle ou dégonfle [param polygon] par la quantité [param delta] unités "
+"(pixels) dans toutes les directions. Si [param delta] est positif, le "
+"polygone décale chaque sommet vers l'extérieur. Si [code]delta[/code] est "
+"négatif, décale chaque sommet vers l'intérieur. Retourne une liste des "
+"polygones parce que gonflage/dégonflage peut produire plusieurs polygones "
+"distinctes. Retourne un tableau vide si [code]delta[/code] est négatif et la "
+"valeur absolue de celui-ci dépasse approximativement les dimensions du "
+"rectangle minimal englobant du polygone.\n"
+"Les sommets de chaque polygone sont arrondis suivant [code]join_type[/code], "
+"voir [enum PolyJoinType].\n"
+"L'opération peut fournir un polygone extérieur (la limite extérieure) et "
+"plusieurs polygones à intérieur (représentant les trous) qui pourraient être "
+"distingués en appelant [method is_polygon_clockwise].\n"
+"[b]Note :[/b] Pour transformer les sommets en polygone, utilisez la méthode "
+"[method Transform2D.xform] :\n"
+"[codeblocks]\n"
+"[gdscript]\n"
+"var polygon = PackedVector2Array([Vector2(0, 0), Vector2(100, 0), "
+"Vector2(100, 100), Vector2(0, 100)])\n"
+"var offset = Vector2(50, 50)\n"
+"polygon = Transform2D(0, offset) * polygon\n"
+"print(polygon) # prints [(50, 50), (150, 50), (150, 150), (50, 150)]\n"
+"[/gdscript]\n"
+"[csharp]\n"
+"var polygon = new Vector2[] { new Vector2(0, 0), new Vector2(100, 0), new "
+"Vector2(100, 100), new Vector2(0, 100) };\n"
+"var offset = new Vector2(50, 50);\n"
+"polygon = new Transform2D(0, offset) * polygon;\n"
+"GD.Print((Variant)polygon); // prints [(50, 50), (150, 50), (150, 150), (50, "
+"150)]\n"
+"[/csharp]\n"
+"[/codeblocks]"
+
 msgid "Endpoints are squared off with no extension."
 msgstr "Les bouts sont carrés sans être allongés."
 
@@ -9923,6 +9973,17 @@ msgstr "Les bouts seront carrés et allongés de [code]delta[/code] unités."
 
 msgid "Endpoints are rounded off and extended by [code]delta[/code] units."
 msgstr "Les bouts seront arrondis et allongés de [code]delta[/code] unités."
+
+msgid ""
+"Given the two 3D segments ([param p1], [param p2]) and ([param q1], [param "
+"q2]), finds those two points on the two segments that are closest to each "
+"other. Returns a [PackedVector3Array] that contains this point on ([param "
+"p1], [param p2]) as well the accompanying point on ([param q1], [param q2])."
+msgstr ""
+"À partir des deux segments 3D ([param p1], [param q1]) et ([param p2], [param "
+"q2]), trouve les deux points sur les deux segments qui sont les plus proches "
+"l'un de l'autre. Retourne un [PackedVector3Array] qui contient un point sur "
+"([param p1], [param q1]) et le point sur ([param p2], [param q2])."
 
 msgid "Base node for geometry-based visual instances."
 msgstr "Nœud de base pour les instances visuelles basées sur la géométrie."
@@ -9935,6 +9996,12 @@ msgstr ""
 "Affichera uniquement les ombres projetées à partir de cet objet.\n"
 "En d’autres termes, le mesh réel ne sera pas visible, seules les ombres "
 "projetées à partir du mesh le seront."
+
+msgid "Represents a GLTF camera."
+msgstr "Représente une caméra GLTF."
+
+msgid "Represents a GLTF light."
+msgstr "Représente une lumière GLTF."
 
 msgid ""
 "The [Color] of the light. Defaults to white. A black color causes the light "
@@ -9973,11 +10040,6 @@ msgstr ""
 "Démo 2D « Dodge The Creeps » (utilise GPUParticles2D pour les traces derrière "
 "le joueur)"
 
-msgid "Returns a rectangle containing the positions of all existing particles."
-msgstr ""
-"Retourne un rectangle contenant la position de toutes les particules "
-"existantes."
-
 msgid "Restarts all the existing particles."
 msgstr "Redémarre toutes les particules existantes."
 
@@ -10011,13 +10073,6 @@ msgid "Maximum number of draw passes supported."
 msgstr "Le nombre maximal de passes de dessin supporté."
 
 msgid ""
-"A color interpolator resource which can be used to generate colors between "
-"user-defined color points."
-msgstr ""
-"Une ressource d'interpolation de couleur qui peut être utilisé pour générer "
-"des couleurs entre des points de couleur définis par l'utilisateur."
-
-msgid ""
 "Constant interpolation, color changes abruptly at each point and stays "
 "uniform between. This might cause visible aliasing when used for a gradient "
 "texture in some cases."
@@ -10029,11 +10084,8 @@ msgstr ""
 msgid "Cubic interpolation."
 msgstr "Interpolation cubique."
 
-msgid "Gradient-filled texture."
-msgstr "Texture remplie de gradients."
-
-msgid "The [Gradient] that will be used to fill the texture."
-msgstr "Le [Gradient] qui sera utilisé pour remplir la texture."
+msgid "The [Gradient] used to fill the texture."
+msgstr "Le [Gradient] utilisé pour remplir la texture."
 
 msgid ""
 "If [code]true[/code], the generated texture will support high dynamic range "
@@ -10053,9 +10105,6 @@ msgid "The number of color samples that will be obtained from the [Gradient]."
 msgstr ""
 "Le nombre d'échantillons de couleur qui seront obtenus à partir du [Gradient]."
 
-msgid "Gradient-filled 2D texture."
-msgstr "Texture de gradient 2D."
-
 msgid ""
 "The gradient fill type, one of the [enum Fill] values. The texture is filled "
 "by interpolating colors starting from [member fill_from] to [member fill_to] "
@@ -10074,9 +10123,6 @@ msgid "The final offset used to fill the texture specified in UV coordinates."
 msgstr ""
 "Le décalage final utilisé pour remplir la texture spécifiée dans les "
 "coordonnées UV."
-
-msgid "The [Gradient] used to fill the texture."
-msgstr "Le [Gradient] utilisé pour remplir la texture."
 
 msgid ""
 "The number of vertical color samples that will be obtained from the "
@@ -10181,9 +10227,6 @@ msgstr ""
 msgid "The scroll offset."
 msgstr "Le décalage de défilement."
 
-msgid "The snapping distance in pixels."
-msgstr "La distance de magnétisation en pixels."
-
 msgid "If [code]true[/code], enables snapping."
 msgstr "Si [code]true[/code], la magnétisation est activé."
 
@@ -10223,91 +10266,26 @@ msgstr "La couleur de remplissage du rectangle de sélection."
 msgid "The outline color of the selection rectangle."
 msgstr "La couleur de la bordure du rectangle de sélection."
 
-msgid "The icon for the zoom out button."
-msgstr "L'icône pour le bouton du zoom arrière."
-
 msgid "The icon for the zoom in button."
 msgstr "L'icône pour le bouton du zoom avant."
+
+msgid "The icon for the zoom out button."
+msgstr "L'icône pour le bouton du zoom arrière."
 
 msgid "The icon for the zoom reset button."
 msgstr "L'icône pour le bouton du rétablissement du zoom."
 
-msgid "The icon for the snap toggle button."
-msgstr "L'icône du bouton d'activation de la magnétisation."
-
 msgid "The background drawn under the grid."
 msgstr "L’arrière-plan dessiné sous la grille."
-
-msgid "Disables all input and output slots of the GraphNode."
-msgstr "Désactive toutes les entrées et sorties du GraphNode."
-
-msgid ""
-"Returns the number of enabled input slots (connections) to the GraphNode."
-msgstr ""
-"Retourne le nombre d'emplacements entrants (connexions) activés du GraphNode."
-
-msgid ""
-"Returns the number of enabled output slots (connections) of the GraphNode."
-msgstr ""
-"Retourne le nombre d'emplacements sortants (connexions) activés du GraphNode."
-
-msgid "If [code]true[/code], the GraphNode is a comment node."
-msgstr "Si [code]true[/code], le GraphNode est un nœud de commentaire."
-
-msgid ""
-"If [code]true[/code], the user can resize the GraphNode.\n"
-"[b]Note:[/b] Dragging the handle will only emit the [signal resize_request] "
-"signal, the GraphNode needs to be resized manually."
-msgstr ""
-"Si [code]true[/code], l'utilisateur peut redimensionner le GraphNode.\n"
-"[b]Note :[/b] Faire glisser la poignée n'émettra que le signal [signal "
-"resize_request], le GraphNode doit être redimensionné manuellement."
-
-msgid "If [code]true[/code], the GraphNode is selected."
-msgstr "Si [code]true[/code], le GraphNode est sélectionné."
-
-msgid ""
-"If [code]true[/code], the close button will be visible.\n"
-"[b]Note:[/b] Pressing it will only emit the [signal close_request] signal, "
-"the GraphNode needs to be removed manually."
-msgstr ""
-"Si [code]true[/code], le bouton de fermeture sera visible.\n"
-"[b]Note :[/b] Appuyer ce bouton n'émettra que le signal [signal "
-"close_request], le GraphNode doit être retiré manuellement."
 
 msgid "The text displayed in the GraphNode's title bar."
 msgstr "Le texte affiché dans la barre de titre du GraphNode."
 
-msgid "Emitted when the GraphNode is dragged."
-msgstr "Émis lorsque le GraphNode est glissé."
-
-msgid "Emitted when the GraphNode is moved."
-msgstr "Émis lorsque le GraphNode est déplacé."
-
-msgid ""
-"Emitted when the GraphNode is requested to be resized. Happens on dragging "
-"the resizer handle (see [member resizable])."
-msgstr ""
-"Émis lorsque le GraphNode doit être redimensionné. Se produit en faisant "
-"glisser la poignée de redimensionnement (voir [member resizable])."
-
 msgid "Emitted when any GraphNode's slot is updated."
 msgstr "Émis lorsqu’un emplacement du GraphNode est mis à jour."
 
-msgid "No overlay is shown."
-msgstr "Aucune superposition n'est montrée."
-
-msgid "The color modulation applied to the close button icon."
-msgstr "La couleur de modulation appliquée à l'icône du bouton fermer."
-
 msgid "The color modulation applied to the resizer icon."
 msgstr "La couleur de modulation appliquée à l'icône de redimensionnement."
-
-msgid "Color of the title text."
-msgstr "Couleur du texte du titre."
-
-msgid "The vertical offset of the close button."
-msgstr "Le décalage vertical du bouton fermer."
 
 msgid "Horizontal offset for the ports."
 msgstr "Le décalage horizontal pour les ports."
@@ -10315,49 +10293,8 @@ msgstr "Le décalage horizontal pour les ports."
 msgid "The vertical distance between ports."
 msgstr "La distance verticale entre les ports."
 
-msgid "Vertical offset of the title text."
-msgstr "Le décalage vertical du texte de titre."
-
-msgid "Font used for the title text."
-msgstr "Police utilisée pour le texte du titre."
-
-msgid ""
-"The icon for the close button, visible when [member show_close] is enabled."
-msgstr ""
-"L'icône pour le bouton fermer, visible quand [member show_close] est activé."
-
 msgid "The icon used for representing ports."
 msgstr "L’icône utilisée pour représenter les ports."
-
-msgid ""
-"The background used when [member overlay] is set to [constant "
-"OVERLAY_BREAKPOINT]."
-msgstr ""
-"L'arrière-plan utilisé quand [member overlay] est à [constant "
-"OVERLAY_BREAKPOINT]."
-
-msgid "The [StyleBox] used when [member comment] is enabled."
-msgstr "La [StyleBox] utilisée quand [member comment] est activé."
-
-msgid ""
-"The [StyleBox] used when [member comment] is enabled and the [GraphNode] is "
-"focused."
-msgstr ""
-"La [StyleBox] utilisée quand [member comment] est activé et que le "
-"[GraphNode] a le focus."
-
-msgid "The default background for [GraphNode]."
-msgstr "L'arrière-plan par défaut pour [GraphNode]."
-
-msgid ""
-"The background used when [member overlay] is set to [constant "
-"OVERLAY_POSITION]."
-msgstr ""
-"L'arrière-plan utilisé quand [member overlay] est à [constant "
-"OVERLAY_POSITION]."
-
-msgid "The background used when the [GraphNode] is selected."
-msgstr "L'arrière-plan utilisé quand le [GraphNode] est sélectionné."
 
 msgid ""
 "The number of columns in the [GridContainer]. If modified, [GridContainer] "
@@ -10423,9 +10360,6 @@ msgstr "Algorithme de hachage : SHA-1."
 msgid "Hashing algorithm: SHA-256."
 msgstr "Algorithme de hachage : SHA-256."
 
-msgid "The horizontal space between the [HBoxContainer]'s elements."
-msgstr "L'espace horizontal entre les éléments du [HBoxContainer]."
-
 msgid "Returns the value of the specified flag."
 msgstr "Retourne la valeur de l'option donnée."
 
@@ -10465,102 +10399,12 @@ msgstr ""
 "Initialise le HMACContext. Cette méthode ne peut pas être appelée sur le même "
 "HMACContext tant que [method finish] n'a pas été appelé."
 
-msgid ""
-"Icon used as a button to scroll the [ScrollBar] left. Supports custom step "
-"using the [member ScrollBar.custom_step] property."
-msgstr ""
-"L'icône utilisée comme bouton pour défiler la [ScrollBar] de gauche. Supporte "
-"une valeur de déplacement personnalisé en utilisant la propriété [member "
-"ScrollBar.custom_step]."
-
-msgid "Displayed when the mouse cursor hovers over the decrement button."
-msgstr "Affiché quand la souris survole le bouton de réduction."
-
-msgid "Displayed when the decrement button is being pressed."
-msgstr "Affiché quand le bouton de reduction est appuyé."
-
-msgid ""
-"Icon used as a button to scroll the [ScrollBar] right. Supports custom step "
-"using the [member ScrollBar.custom_step] property."
-msgstr ""
-"L'icône utilisée comme bouton pour faire défiler la [ScrollBar] vers la "
-"droite. Supporte une étape personnalisée en utilisant la propriété [member "
-"ScrollBar.custom_step]."
-
-msgid "Displayed when the mouse cursor hovers over the increment button."
-msgstr "Affiché quand la souris survole le bouton d'augmentation."
-
-msgid "Displayed when the increment button is being pressed."
-msgstr "Affiché quand le bouton d'augmentation est appuyé."
-
-msgid "Used when the mouse hovers over the grabber."
-msgstr "Utilisé lorsque la souris survole le glisseur."
-
-msgid "Used when the grabber is being dragged."
-msgstr "Utilisé quand le glisseur est en train d'être glissé."
-
-msgid "Used as background of this [ScrollBar]."
-msgstr "Utilisé comme arrière-plan de cette [ScrollBar]."
-
-msgid "Used as background when the [ScrollBar] has the GUI focus."
-msgstr "Utilisé comme arrière-plan lorsque le [ScrollBar] a le focus GUI."
-
-msgid "The style for the separator line. Works best with [StyleBoxLine]."
-msgstr ""
-"Le style pour la ligne de séparation. Fonctionne mieux avec [StyleBoxLine]."
-
-msgid "The texture for the grabber (the draggable element)."
-msgstr "La texture du glisseur (l'élément déplaçable)."
-
-msgid "The texture for the grabber when it's disabled."
-msgstr "La texture du glisseur quand il est désactivé."
-
-msgid "The texture for the grabber when it's focused."
-msgstr "La texture du glisseur quand il a le focus."
-
-msgid "The background of the area to the left of the grabber."
-msgstr "L'arrière-plan de la zone à gauche du glisseur."
-
-msgid ""
-"The background for the whole slider. Determines the height of the "
-"[code]grabber_area[/code]."
-msgstr ""
-"L'arrière-plan pour tout le curseur. Détermine la hauteur de "
-"[code]grabber_area[/code]."
-
-msgid ""
-"Boolean value. If 1 ([code]true[/code]), the grabber will hide automatically "
-"when it isn't under the cursor. If 0 ([code]false[/code]), it's always "
-"visible."
-msgstr ""
-"Une valeur booléenne. Si 1 ([code]true[/code]), le glisseur sera "
-"automatiquement masqué quand il n'est pas sous le curseur. Si 0 ([code]false[/"
-"code]), il sera toujours visible."
-
-msgid "The space between sides of the container."
-msgstr "L'espace entre les côtés des conteneurs."
-
-msgid "The icon used for the grabber drawn in the middle area."
-msgstr "L'icône utilisée pour le glisseur affiché au milieu."
-
 msgid "Low-level hyper-text transfer protocol client."
 msgstr "Client de protocole de transfert hypertexte de bas niveau."
 
 msgid "Closes the current connection, allowing reuse of this [HTTPClient]."
 msgstr ""
 "Ferme l'actuelle connexion, permettant de la réutiliser pour cet [HTTPClient]."
-
-msgid ""
-"Returns the response's body length.\n"
-"[b]Note:[/b] Some Web servers may not send a body length. In this case, the "
-"value returned will be [code]-1[/code]. If using chunked transfer encoding, "
-"the body length will also be [code]-1[/code]."
-msgstr ""
-"Retourne la longueur du corps de la requête.\n"
-"[b]Note :[/b] Certains serveurs web peuvent ne pas envoyer de longueur du "
-"corps. Dans ce cas, la valeur retournée sera [code]-1[/code]. Si vous "
-"utilisez l'encodage de transfert par morceau, la longueur du corps sera "
-"également [code]-1[/code]."
 
 msgid "Returns the response's HTTP status code."
 msgstr "Retourne le code d’état de la réponse HTTP."
@@ -11099,34 +10943,6 @@ msgid ""
 msgstr ""
 "Le format de texture OpenGL [code]GL_RGBA32F[/code] où il y a quatre "
 "composants, chacun un flottant de 32 bits."
-
-msgid ""
-"OpenGL texture format [code]GL_R32F[/code] where there's one component, a 16-"
-"bit \"half-precision\" floating-point value."
-msgstr ""
-"Le format de texture OpenGL [code]GL_R32F[/code] où il n'y a qu'un seul "
-"composant, un flottant de demi-précision de 16 bits."
-
-msgid ""
-"OpenGL texture format [code]GL_RG32F[/code] where there are two components, "
-"each a 16-bit \"half-precision\" floating-point value."
-msgstr ""
-"Le format de texture OpenGL [code]GL_RG32F[/code] où il y a deux composants, "
-"chacun un flottant de demi-précision de 16 bits."
-
-msgid ""
-"OpenGL texture format [code]GL_RGB32F[/code] where there are three "
-"components, each a 16-bit \"half-precision\" floating-point value."
-msgstr ""
-"Le format de texture OpenGL [code]GL_RGB32F[/code] où il y a trois "
-"composants, chacun un flottant de demi-précision de 16 bits."
-
-msgid ""
-"OpenGL texture format [code]GL_RGBA32F[/code] where there are four "
-"components, each a 16-bit \"half-precision\" floating-point value."
-msgstr ""
-"Le format de texture OpenGL [code]GL_RGA32F[/code] où il y a quatre "
-"composants, chacun un flottant de demi-précision de 16 bits."
 
 msgid ""
 "The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] "
@@ -11980,9 +11796,6 @@ msgstr ""
 msgid "Provides a base class for different kinds of light nodes."
 msgstr "Fourni une classe commune aux différents types de nœuds de lumière."
 
-msgid "3D lights and shadows"
-msgstr "Les lumières et ombres 3D"
-
 msgid ""
 "If [code]true[/code], the light only appears in the editor and will not be "
 "visible at runtime."
@@ -12047,115 +11860,6 @@ msgstr "La constante pour accéder à [member shadow_bias]."
 msgid "The [OccluderPolygon2D] used to compute the shadow."
 msgstr "Le [OccluderPolygon2D] utilisé pour calculer l'ombre."
 
-msgid "A 2D line."
-msgstr "Une ligne 2D."
-
-msgid "Removes all points from the line."
-msgstr "Retire tous les points de la ligne."
-
-msgid ""
-"Controls the style of the line's first point. Use [enum LineCapMode] "
-"constants."
-msgstr ""
-"Contrôle le style du premier point de la ligne. Utilisez les constantes [enum "
-"LineCapMode]."
-
-msgid "The line's color. Will not be used if a gradient is set."
-msgstr "La couleur de la ligne. Ne sera pas utilisé si un dégradé est défini."
-
-msgid ""
-"Controls the style of the line's last point. Use [enum LineCapMode] constants."
-msgstr ""
-"Contrôle le style du dernier point de la ligne. Utilisez une des constantes "
-"de [enum LineCapMode]."
-
-msgid ""
-"The gradient is drawn through the whole line from start to finish. The "
-"default color will not be used if a gradient is set."
-msgstr ""
-"Le dégradé est dessiné par toute la ligne du début à la fin. La couleur par "
-"défaut ne sera pas utilisée si un dégradé est défini."
-
-msgid "The style for the points between the start and the end."
-msgstr "Le style des points entre le début et la fin."
-
-msgid ""
-"The points that form the lines. The line is drawn between every point set in "
-"this array. Points are interpreted as local vectors."
-msgstr ""
-"Les points qui forment les lignes. La ligne est tracée entre chaque point "
-"défini dans ce tableau. Les points sont interprétés comme des vecteurs locaux."
-
-msgid ""
-"The smoothness of the rounded joints and caps. Higher values result in "
-"smoother corners, but are more demanding to render and update. This is only "
-"used if a cap or joint is set as round.\n"
-"[b]Note:[/b] The default value is tuned for lines with the default [member "
-"width]. For thin lines, this value should be reduced to a number between "
-"[code]2[/code] and [code]4[/code] to improve performance."
-msgstr ""
-"Le lissage des coins et des bouts. Les valeurs plus élevées affichent des "
-"coins plus lisses, mais demandent plus de ressources pour le rendu. Ceci "
-"n'est utilisé que si un coin ou un bout est défini comme arrondi.\n"
-"[b]Note :[/b] La valeur par défaut est réglée pour les lignes avec la largeur "
-"[member width] par défaut. Pour les lignes fines, cette valeur devrait être "
-"réduite à entre [code]2[/code] et [code]4[/code] pour améliorer les "
-"performances."
-
-msgid ""
-"The direction difference in radians between vector points. This value is only "
-"used if [member joint_mode] is set to [constant LINE_JOINT_SHARP]."
-msgstr ""
-"La différence de direction entre les points vectoriels. Cette valeur n'est "
-"utilisée que si [member joint_mode] est [constant LINE_JOINT_SHARP]."
-
-msgid ""
-"The texture used for the line's texture. Uses [code]texture_mode[/code] for "
-"drawing style."
-msgstr ""
-"La texture utilisée pour la texture de la ligne. Utilise [code]texture_mode[/"
-"code] pour le style de dessin."
-
-msgid ""
-"The style to render the [code]texture[/code] on the line. Use [enum "
-"LineTextureMode] constants."
-msgstr ""
-"Le style de rendu de la [code]texture[/code] sur la ligne. Utilisez une des "
-"constantes [enum LineTextureMode]."
-
-msgid "The line's width."
-msgstr "La largeur de la ligne."
-
-msgid ""
-"The line's width varies with the curve. The original width is simply multiply "
-"by the value of the Curve."
-msgstr ""
-"La largeur de la ligne dépend selon la courbe. La largeur originale est "
-"simplement multipliée par la valeur de la Curve."
-
-msgid ""
-"The line's joints will be pointy. If [code]sharp_limit[/code] is greater than "
-"the rotation of a joint, it becomes a bevel joint instead."
-msgstr ""
-"Les coins de la ligne sont pointus. Si [code]sharp_limit[/code] est plus "
-"grand que l'angle d'un coin, ça devient un biseau."
-
-msgid "The line's joints will be rounded."
-msgstr "Les coins de la ligne seront arrondis."
-
-msgid "Don't draw a line cap."
-msgstr "Ne pas dessiner les bords de la ligne."
-
-msgid "Draws the line cap as a box."
-msgstr "Dessine le bout de la ligne avec une boîte."
-
-msgid "Draws the line cap as a circle."
-msgstr "Dessine le bout de la ligne avec un arrondi."
-
-msgid "Takes the left pixels of the texture and renders it over the whole line."
-msgstr ""
-"Utilise les pixels de gauche de la texture pour le rendu de toute la ligne."
-
 msgid "Erases the [LineEdit]'s [member text]."
 msgstr "Efface le [member text] du [LineEdit]."
 
@@ -12189,6 +11893,9 @@ msgid ""
 msgstr ""
 "Si [code]true[/code], le texte actuellement sélectionné sera désélectionné "
 "quand le focus sera perdu."
+
+msgid "If [code]true[/code], allow drag and drop of selected text."
+msgstr "Si [code]true[/code], permet le déposé-glissé du texte sélectionné."
 
 msgid ""
 "If [code]false[/code], it's impossible to select the text using mouse nor "
@@ -12365,51 +12072,11 @@ msgstr ""
 "Fournis des fonctions utilitaires pour la transformation et le codage des "
 "données."
 
-msgid "Abstract base [Resource] for coloring and shading geometry."
-msgstr ""
-"La [Resource] abstraite de base pour la coloration et le rendu des géométries."
-
 msgid "Maximum value for the [member render_priority] parameter."
 msgstr "La valeur maximale pour le paramètre [member render_priority]."
 
 msgid "Minimum value for the [member render_priority] parameter."
 msgstr "La valeur minimale pour le paramètre [member render_priority]."
-
-msgid "Default text [Color] of the [MenuButton]."
-msgstr "La [Color] par défaut du texte du [MenuButton]."
-
-msgid "Text [Color] used when the [MenuButton] is disabled."
-msgstr "La [Color] du texte utilisée quand le [MenuButton] est désactivé."
-
-msgid ""
-"Text [Color] used when the [MenuButton] is focused. Only replaces the normal "
-"text color of the button. Disabled, hovered, and pressed states take "
-"precedence over this color."
-msgstr ""
-"Le texte [Color] utilisé quand le [MenuButton] a le focus. Il suffit de "
-"remplacer la couleur de texte normale du bouton. Les états désactivés, "
-"survolés et pressés sont prioritaires sur cette couleur."
-
-msgid "Text [Color] used when the [MenuButton] is being hovered."
-msgstr "La [Color] du texte utilisée quand le [MenuButton] est survolé."
-
-msgid "Text [Color] used when the [MenuButton] is being pressed."
-msgstr "La [Color] du texte utilisée quand le [MenuButton] est appuyé."
-
-msgid "[Font] of the [MenuButton]'s text."
-msgstr "La [Font] du texte du [MenuButton]."
-
-msgid "[StyleBox] used when the [MenuButton] is disabled."
-msgstr "Le [StyleBox] utilisé quand le [MenuButton] est désactivé."
-
-msgid "[StyleBox] used when the [MenuButton] is being hovered."
-msgstr "Le [StyleBox] utilisé quand le [MenuButton] est survolé."
-
-msgid "Default [StyleBox] for the [MenuButton]."
-msgstr "Le [StyleBox] par défaut pour [MenuButton]."
-
-msgid "[StyleBox] used when the [MenuButton] is being pressed."
-msgstr "Le [StyleBox] utilisé quand le [MenuButton] est appuyé."
 
 msgid "A [Resource] that contains vertex array-based geometry."
 msgstr ""
@@ -12455,6 +12122,21 @@ msgstr ""
 
 msgid "Render array as triangle strips."
 msgstr "Fait le rendu du tableau comme une suite de triangles."
+
+msgid ""
+"[PackedVector3Array], [PackedVector2Array], or [Array] of vertex positions."
+msgstr ""
+"Un [PackedVector3Array], [PackedVector2Array] ou [Array] avec la position des "
+"sommets."
+
+msgid "[PackedColorArray] of vertex colors."
+msgstr "Le [PackedColorArray] des couleurs des sommets."
+
+msgid "[PackedVector2Array] for UV coordinates."
+msgstr "Le [PackedVector2Array] pour les coordonnées UV."
+
+msgid "[PackedVector2Array] for second UV coordinates."
+msgstr "[PackedVector2Array] pour les secondes coordonnées UV."
 
 msgid "Represents the size of the [enum ArrayType] enum."
 msgstr "Représente la taille de l’enum [enum ArrayType]."
@@ -12549,20 +12231,8 @@ msgstr "Retourne les méta-données associées à la face donnée."
 msgid "Calculates and returns the face normal of the given face."
 msgstr "Calcule et retourne la normale de la face donnée."
 
-msgid ""
-"Returns the specified vertex of the given face.\n"
-"Vertex argument must be either 0, 1, or 2 because faces contain three "
-"vertices."
-msgstr ""
-"Retourne le vertx spécifié du face donné.\n"
-"L'argument du sommet doit être soit 0, 1 ou 2 parce que les faces ne "
-"contiennent que trois sommets."
-
 msgid "Returns the material assigned to the [Mesh]."
 msgstr "Retourne la matériau assigné au [Mesh]."
-
-msgid "Returns the vertex at given index."
-msgstr "Retourne le sommet à l’index donné."
 
 msgid "Returns the bones of the given vertex."
 msgstr "Retourne les os du sommet donné."
@@ -12635,6 +12305,9 @@ msgstr "Définit les poids des os du sommet donné."
 
 msgid "Node used for displaying a [Mesh] in 2D."
 msgstr "Un nœud utilisé pour afficher des [Mesh] en 2D."
+
+msgid "2D meshes"
+msgstr "maillages 2D"
 
 msgid "The [Mesh] that will be drawn by the [MeshInstance2D]."
 msgstr "Le [Mesh] qui sera affiché par le [MeshInstance2D]."
@@ -12904,6 +12577,13 @@ msgstr ""
 "déjà le propriétaire du mutex."
 
 msgid ""
+"Returns which index the agent is currently on in the navigation path's "
+"[PackedVector2Array]."
+msgstr ""
+"Retourne l'indice sur lequel l'agent est actuellement sur le "
+"[PackedVector2Array] du chemin de navigation."
+
+msgid ""
 "Returns the [RID] of the navigation map for this NavigationAgent node. This "
 "function returns always the map set on the NavigationAgent node and not the "
 "map of the abstract agent on the NavigationServer. If the agent map is "
@@ -12946,11 +12626,11 @@ msgstr ""
 "zones d'un environnement qui peuvent être traversés pour aider les agents "
 "dans leur cheminement dans les espaces compliqués."
 
-msgid "3D Navmesh Demo"
-msgstr "Démo de NavigationMesh (« navmesh ») en 3D"
-
 msgid "Using NavigationMeshes"
 msgstr "Utiliser les NavigationMesh"
+
+msgid "3D Navmesh Demo"
+msgstr "Démo de NavigationMesh (« navmesh ») en 3D"
 
 msgid ""
 "Adds a polygon using the indices of the vertices you get when calling [method "
@@ -13011,16 +12691,6 @@ msgid ""
 msgstr ""
 "La distance maximale de la surface de maillage de détail devrait s'écarter du "
 "champ de hauteur, dans l'unité des cellules."
-
-msgid ""
-"The maximum allowed length for contour edges along the border of the mesh.\n"
-"[b]Note:[/b] While baking, this value will be rounded up to the nearest "
-"multiple of [member cell_size]."
-msgstr ""
-"La longueur maximale autorisée pour les bords de contour le long de la "
-"bordure du maillage.\n"
-"[b]Note :[/b] Pendant le pré-calcul, cette valeur sera arrondie au multiple "
-"le plus proche de [member cell_height]."
 
 msgid "The position offset applied to the [member filter_baking_aabb] [AABB]."
 msgstr ""
@@ -13161,6 +12831,13 @@ msgstr ""
 "contours et des sommets."
 
 msgid ""
+"Returns a [PackedVector2Array] containing the vertices of an outline that was "
+"created in the editor or by script."
+msgstr ""
+"Retourne un [PackedVector2Array] contenant les sommets d'un contour qui a été "
+"créé dans l'éditeur ou par un script."
+
+msgid ""
 "Returns the number of outlines that were created in the editor or by script."
 msgstr ""
 "Retourne le nombre de contours qui ont été créés dans l'éditeur ou par un "
@@ -13169,9 +12846,12 @@ msgstr ""
 msgid "Returns the count of all polygons."
 msgstr "Retourne le nombre de tous les polygones."
 
-msgid "Creates polygons from the outlines added in the editor or by script."
+msgid ""
+"Returns a [PackedVector2Array] containing all the vertices being used to "
+"create the polygons."
 msgstr ""
-"Crée des polygones des contours ajoutés dans l'éditeur ou par un script."
+"Retourne un [PackedVector2Array] contenant tous les sommets utilisés pour "
+"créer les polygones."
 
 msgid ""
 "Removes an outline created in the editor or by script. You have to call "
@@ -14120,34 +13800,10 @@ msgstr ""
 "L'index de l'élément actuellement sélectionné, ou [code]-1[/code] si aucun "
 "élément n'est sélectionné."
 
-msgid "Default text [Color] of the [OptionButton]."
-msgstr "La [Color] par défaut du texte pour le [OptionButton]."
-
-msgid "Text [Color] used when the [OptionButton] is disabled."
-msgstr "La [Color] du texte utilisée quand le [OptionButton] est désactivé."
-
-msgid ""
-"Text [Color] used when the [OptionButton] is focused. Only replaces the "
-"normal text color of the button. Disabled, hovered, and pressed states take "
-"precedence over this color."
-msgstr ""
-"La [Color] du texte utilisée quand le [OptionButton] a le focus. Ne remplace "
-"que la couleur normale du texte du bouton. Les états désactivés, survolés et "
-"pressés sont prioritaires sur cette couleur."
-
-msgid "Text [Color] used when the [OptionButton] is being hovered."
-msgstr "La [Color] du texte utilisée quand le [OptionButton] est survolé."
-
-msgid "Text [Color] used when the [OptionButton] is being pressed."
-msgstr "La [Color] du texte utilisée quand le [OptionButton] est pressé."
-
 msgid ""
 "The horizontal space between the arrow icon and the right edge of the button."
 msgstr ""
 "L'espace horizontal entre l'icône de la flèche et le bord droit du bouton."
-
-msgid "[Font] of the [OptionButton]'s text."
-msgstr "La [Font] du texte du [OptionButton]."
 
 msgid "The arrow icon to be drawn on the right end of the button."
 msgstr "L'icône de la flèche qui est affichée au bord droit du bouton."
@@ -14308,6 +13964,16 @@ msgstr "Change l'octet à la position donnée."
 msgid "Sorts the elements of the array in ascending order."
 msgstr "Tris les éléments du tableau dans l'ordre croissant."
 
+msgid "Constructs an empty [PackedColorArray]."
+msgstr "Construit un [PackedColorArray] vide."
+
+msgid ""
+"Constructs a [PackedColorArray] as a copy of the given [PackedColorArray]."
+msgstr "Construit un [PackedColorArray] en copie du [PackedColorArray] donné."
+
+msgid "Appends a [PackedColorArray] at the end of this array."
+msgstr "Ajoute un [PackedColorArray] à la fin de ce tableau."
+
 msgid "Appends a value to the array."
 msgstr "Ajoute une valeur à la fin du tableau."
 
@@ -14346,6 +14012,17 @@ msgstr "Change la [String] à la position donnée."
 
 msgid "2D Navigation Astar Demo"
 msgstr "Démo de navigation Astar en 2D"
+
+msgid "Constructs an empty [PackedVector2Array]."
+msgstr "Construit un [PackedVector2Array] vide."
+
+msgid ""
+"Constructs a [PackedVector2Array] as a copy of the given [PackedVector2Array]."
+msgstr ""
+"Construit un [PackedVector2Array] en copie du [PackedVector2Array] donné."
+
+msgid "Appends a [PackedVector2Array] at the end of this array."
+msgstr "Ajoute un [PackedVector2Array] à la fin de ce tableau."
 
 msgid "Inserts a [Vector2] at the end."
 msgstr "Insère un [Vector2] à la fin."
@@ -14483,11 +14160,6 @@ msgstr "Démo de cinématique inverse en 3D"
 msgid "The style of [PanelContainer]'s background."
 msgstr "Le style de l'arrière-plan de [PanelContainer]."
 
-msgid "A [Material] used with [Sky] to draw a background texture."
-msgstr ""
-"Un [Material] utilisé avec [Sky] utilisé pour dessiner une texture d'arrière-"
-"plan."
-
 msgid ""
 "A boolean value to determine if the background texture should be filtered or "
 "not."
@@ -14614,6 +14286,9 @@ msgstr "Verrouillez la rotation du corps dans l’axe Y."
 
 msgid "Lock the body's rotation in the Z axis."
 msgstr "Verrouillez la rotation du corps dans l’axe Z."
+
+msgid "Ray-casting"
+msgstr "Lancer de rayons"
 
 msgid "Returns the collider's [RID]."
 msgstr "Retourne le [RID] du collisionneur."
@@ -14995,6 +14670,15 @@ msgid "The offset applied to each vertex."
 msgstr "Le décalage appliqué à chaque sommet."
 
 msgid ""
+"The polygon's list of vertices. The final point will be connected to the "
+"first.\n"
+"[b]Note:[/b] This returns a copy of the [PackedVector2Array] rather than a "
+"reference."
+msgstr ""
+"La liste des sommets du polygone. Le dernier point sera relié au premier.\n"
+"[b]Note :[/b] Retourne une copie du [PackedVector2Array] et non une référence."
+
+msgid ""
 "The polygon's fill texture. Use [code]uv[/code] to set texture coordinates."
 msgstr ""
 "La texture pour remplir le polygone. Utilisez [code]uv[/code] pour définir "
@@ -15009,9 +14693,6 @@ msgstr "Pareil que [method add_icon_check_item], mais utilise un bouton radio."
 msgid "Same as [method add_icon_check_shortcut], but uses a radio check button."
 msgstr ""
 "Pareil que [method add_icon_check_shorcut], mais utilise un bouton radio."
-
-msgid "Removes all items from the [PopupMenu]."
-msgstr "Retire tous les éléments du [PopupMenu]."
 
 msgid ""
 "Returns the index of the currently focused item. Returns [code]-1[/code] if "
@@ -15076,18 +14757,9 @@ msgstr ""
 "La [StyleBox] pour le côté droit du séparateur avec label. Voir [method "
 "add_separator]."
 
-msgid "Default [StyleBox] of the [PopupMenu] items."
-msgstr "La [StyleBox] par défaut pour les éléments du [PopupMenu]."
-
-msgid "[StyleBox] used when the [PopupMenu] item is disabled."
-msgstr "Le [StyleBox] affiché quand un élément d'un [PopupMenu] est désactivé."
-
 msgid "[StyleBox] used for the separators. See [method add_separator]."
 msgstr ""
 "Le [StyleBox] utilisé pour les séparateurs. Voir [method add_separator]."
-
-msgid "The background panel style of this [PopupPanel]."
-msgstr "Le style du panneau d'arrière-plan de ce [PopupPanel]."
 
 msgid "The current [Material] of the primitive mesh."
 msgstr "Le [Material] actuel du maillage primitif."
@@ -15123,9 +14795,6 @@ msgstr ""
 
 msgid "The color of the text."
 msgstr "La couleur du texte."
-
-msgid "The color of the text's shadow."
-msgstr "La couleur de l'ombre du texte."
 
 msgid "The style of the background."
 msgstr "Le style de l’arrière-plan."
@@ -15229,17 +14898,6 @@ msgstr ""
 "Si [code]true[/code], étire l'image au lancement du jeu suivant la taille de "
 "la fenêtre (et préserve le ratio). Si [code]false[/code], l'image sera "
 "affichée par défaut suivant sa taille en pixels."
-
-msgid ""
-"Path to an image used as the boot splash. If left empty, the default Godot "
-"Engine splash will be displayed instead.\n"
-"[b]Note:[/b] Only effective if [member application/boot_splash/show_image] is "
-"[code]true[/code]."
-msgstr ""
-"Le chemin vers une image utilisée au lancement du jeu. Si vide, l'image avec "
-"le logo de Godot sera affichée à la place.\n"
-"[b]Note :[/b] Ne fonctionne que si [member application/boot_splash/"
-"show_image] est [code]true[/code]."
 
 msgid ""
 "If [code]true[/code], displays the image specified in [member application/"
@@ -16180,15 +15838,6 @@ msgstr ""
 "Retirer une exception de collision pour que le rayon prenne en compte les "
 "collision avec ce [RID]."
 
-msgid "If [code]true[/code], collision with [Area2D]s will be reported."
-msgstr ""
-"Si [code]true[/code], les collisions avec les [Area2D] seront rapportées."
-
-msgid "If [code]true[/code], collision with [PhysicsBody2D]s will be reported."
-msgstr ""
-"Si [code]true[/code], les collisions avec les [PhysicBody2D] seront "
-"rapportées."
-
 msgid "If [code]true[/code], collisions will be reported."
 msgstr "Si [code]true[/code], les collisions seront signalées."
 
@@ -16204,32 +15853,6 @@ msgid ""
 msgstr ""
 "Le point de destination du rayon, par rapport à la [code]position[/code] du "
 "RayCast."
-
-msgid "Constructs a [Rect2] by position and size."
-msgstr "Construit un [Rect2] avec sa position et sa taille."
-
-msgid "Constructs a [Rect2] by x, y, width, and height."
-msgstr "Construit un [Rect2] avec x, y, largeur, et hauteur."
-
-msgid ""
-"Returns a [Rect2] with equivalent position and area, modified so that the top-"
-"left corner is the origin and [code]width[/code] and [code]height[/code] are "
-"positive."
-msgstr ""
-"Retourne un [Rect2] avec la même position et aire, modifié de sorte que le "
-"coin supérieur gauche est l'origine et [code]width[/code] et [code]height[/"
-"code] soient positifs."
-
-msgid ""
-"Returns [code]true[/code] if this [Rect2] completely encloses another one."
-msgstr "Retourne [code]true[/code] si ce [Rect2] entoure complètement l'autre."
-
-msgid ""
-"Returns the center of the [Rect2], which is equal to [member position] + "
-"([member size] / 2)."
-msgstr ""
-"Retourne le centre du [Rect2], qui est égal à [member position] + ([member "
-"size] / 2)."
 
 msgid "Base class for reference-counted objects."
 msgstr "Classe de base pour les objets avec références comptées."
@@ -16321,6 +15944,9 @@ msgid ""
 msgstr ""
 "Si [code]true[/code], les coordonnées globales sont utilisées. Si "
 "[code]false[/code], ce sont les locales."
+
+msgid "Vulkan instance driver resource."
+msgstr "Ressource du pilote d'instance Vulkan."
 
 msgid "Server for anything visible."
 msgstr "Serveur pour tout ce qui est visible."
@@ -16416,16 +16042,6 @@ msgstr ""
 
 msgid "Returns the parameters of a shader."
 msgstr "Retourne les paramètres d'un shader."
-
-msgid ""
-"Returns the name of the video adapter (e.g. \"GeForce GTX 1080/PCIe/SSE2\").\n"
-"[b]Note:[/b] When running a headless or server binary, this function returns "
-"an empty string."
-msgstr ""
-"Retourne le nom de l'adaptateur vidéo (par exemple \"GeForce GTX 1080/PCIe/"
-"SSE2\").\n"
-"[b]Note :[/b] Lors de l'exécution d'une version sans graphique ou de serveur, "
-"cette fonction retourne une chaîne vide."
 
 msgid ""
 "Returns the vendor of the video adapter (e.g. \"NVIDIA Corporation\").\n"
@@ -16825,6 +16441,9 @@ msgid "Returns whether the given resource object can be saved by this saver."
 msgstr ""
 "Retourne quand une ressource donnée peut être enregistrée par ce enregistreur."
 
+msgid "The default import order."
+msgstr "L'ordre d'importation par défaut."
+
 msgid "Returns the list of recognized extensions for a resource type."
 msgstr "Retourne la liste des extensions reconnues pour ce type de ressource."
 
@@ -16888,13 +16507,6 @@ msgstr ""
 
 msgid "Adds a [code][color][/code] tag to the tag stack."
 msgstr "Ajouter un marqueur [code][color][/code] dans la pile des marqueurs."
-
-msgid ""
-"Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for "
-"its duration."
-msgstr ""
-"Ajouter un marqueur [code][font][/code] dans la pile des marqueurs. Est "
-"utilisé à la place de la police par défaut tant que le marqueur est ouvert."
 
 msgid "Adds a [code][font][/code] tag with a monospace font to the tag stack."
 msgstr ""
@@ -17015,12 +16627,6 @@ msgstr "Retourne le nombre de nœuds dans ce [SceneTree]."
 msgid "Returns a list of all nodes assigned to the given group."
 msgstr "Retourne la liste de tous les nœuds associés au groupe spécifié."
 
-msgid "Returns [code]true[/code] if the given group exists."
-msgstr "Retourne [code]true[/code] si le groupe donné existe."
-
-msgid "The current scene."
-msgstr "La scène actuelle."
-
 msgid "The root of the edited scene."
 msgstr "La racine de la scène éditée."
 
@@ -17136,11 +16742,29 @@ msgstr "Va à la ligne spécifiée dans le script actuel."
 msgid "Emitted when the scrollbar is being scrolled."
 msgstr "Émis quand la barre de défilement est défilée."
 
-msgid "Emitted when scrolling stops."
-msgstr "Émis lorsque le défilement s'arrête."
+msgid "Displayed when the mouse cursor hovers over the decrement button."
+msgstr "Affiché quand la souris survole le bouton de réduction."
 
-msgid "Emitted when scrolling is started."
-msgstr "Émis lorsque le défilement est commencé."
+msgid "Displayed when the decrement button is being pressed."
+msgstr "Affiché quand le bouton de reduction est appuyé."
+
+msgid "Displayed when the mouse cursor hovers over the increment button."
+msgstr "Affiché quand la souris survole le bouton d'augmentation."
+
+msgid "Displayed when the increment button is being pressed."
+msgstr "Affiché quand le bouton d'augmentation est appuyé."
+
+msgid "Used when the mouse hovers over the grabber."
+msgstr "Utilisé lorsque la souris survole le glisseur."
+
+msgid "Used when the grabber is being dragged."
+msgstr "Utilisé quand le glisseur est en train d'être glissé."
+
+msgid "Used as background of this [ScrollBar]."
+msgstr "Utilisé comme arrière-plan de cette [ScrollBar]."
+
+msgid "Used as background when the [ScrollBar] has the GUI focus."
+msgstr "Utilisé comme arrière-plan lorsque le [ScrollBar] a le focus GUI."
 
 msgid "The segment's first point position."
 msgstr "Position du premier point du segment."
@@ -17164,14 +16788,23 @@ msgstr ""
 "Le mode utilisé pour calculer les informations pour chaque particule "
 "individuellement. N'est pas utilisé pour l'affichage."
 
-msgid "A material that uses a custom [Shader] program."
-msgstr "Un matériau que utilise un programme de [Shader] personnalisé."
-
 msgid "The [Shader] program used to render this material."
 msgstr "Le programme [Shader] utilisé pour le rendu de ce matériau."
 
+msgid "If [code]true[/code], collision with [Area2D]s will be reported."
+msgstr ""
+"Si [code]true[/code], les collisions avec les [Area2D] seront rapportées."
+
+msgid "If [code]true[/code], collision with [PhysicsBody2D]s will be reported."
+msgstr ""
+"Si [code]true[/code], les collisions avec les [PhysicBody2D] seront "
+"rapportées."
+
 msgid "A shortcut for binding input."
 msgstr "Un raccourci lié à une entrée."
+
+msgid "2D skeletons"
+msgstr "Squelettes 2D"
 
 msgid ""
 "Returns the number of [Bone2D] nodes in the node hierarchy parented by "
@@ -17231,6 +16864,15 @@ msgstr ""
 
 msgid "Emitted when dragging is started."
 msgstr "Émis lorsque le glissement de la souris a commencé."
+
+msgid "The texture for the grabber (the draggable element)."
+msgstr "La texture du glisseur (l'élément déplaçable)."
+
+msgid "The texture for the grabber when it's disabled."
+msgstr "La texture du glisseur quand il est désactivé."
+
+msgid "The texture for the grabber when it's focused."
+msgstr "La texture du glisseur quand il a le focus."
 
 msgid ""
 "The amount of restitution of the rotation when the limit is surpassed.\n"
@@ -17339,6 +16981,21 @@ msgstr "Le dragueur fractionné est visible quand le curseur le survole."
 
 msgid "The split dragger is never visible."
 msgstr "Le dragueur fractionné n’est jamais visible."
+
+msgid ""
+"Boolean value. If 1 ([code]true[/code]), the grabber will hide automatically "
+"when it isn't under the cursor. If 0 ([code]false[/code]), it's always "
+"visible."
+msgstr ""
+"Une valeur booléenne. Si 1 ([code]true[/code]), le glisseur sera "
+"automatiquement masqué quand il n'est pas sous le curseur. Si 0 ([code]false[/"
+"code]), il sera toujours visible."
+
+msgid "The space between sides of the container."
+msgstr "L'espace entre les côtés des conteneurs."
+
+msgid "The icon used for the grabber drawn in the middle area."
+msgstr "L'icône utilisée pour le glisseur affiché au milieu."
 
 msgid "A spotlight, such as a reflector spotlight or a lantern."
 msgstr "Un projecteur, comme un projecteur de spectacle ou un lanterne."
@@ -17682,15 +17339,6 @@ msgid "Test a position in a rectangle, return whether it passes the mask test."
 msgstr ""
 "Teste une position dans un rectangle, retourne si elle passe le test de "
 "masque."
-
-msgid ""
-"The left margin for the contents of this style box.Increasing this value "
-"reduces the space available to the contents from the left.\n"
-"Refer to [member content_margin_bottom] for extra considerations."
-msgstr ""
-"La marge gauche pour le contenu de cette boîte de style. L'augmentation de "
-"cette valeur réduit l'espace disponible pour le contenu sur la gauche.\n"
-"Voir [membrer content_margin_bottom] pour des considérations supplémentaires."
 
 msgid ""
 "The right margin for the contents of this style box. Increasing this value "
@@ -18436,9 +18084,6 @@ msgstr "Définit le texte pour la ligne spécifiée."
 msgid "Perform undo operation."
 msgstr "Effectuer une opération d'annulation."
 
-msgid "If [code]true[/code], allow drag and drop of selected text."
-msgstr "Si [code]true[/code], permet le déposé-glissé du texte sélectionné."
-
 msgid ""
 "If [code]true[/code], the \"space\" character will have a visible "
 "representation."
@@ -18522,12 +18167,24 @@ msgstr "Faites correspondre des mots entiers lors de la recherche."
 msgid "Search from end to beginning."
 msgstr "Recherche de la fin au début."
 
+msgid "Sets the font [Color]."
+msgstr "Définit la police [Color]."
+
+msgid "Sets the highlight [Color] of text selections."
+msgstr "Définit la [Color] de surlignage pour la sélection de texte."
+
 msgid ""
 "Sets the highlight [Color] of multiple occurrences. [member "
 "highlight_all_occurrences] has to be enabled."
 msgstr ""
 "Définir la [Color] de surlignage des multiples occurrences. [member "
 "highlight_all_occurrences] doit être actif."
+
+msgid "Sets the spacing between the lines."
+msgstr "Définit l'espacement entre les lignes."
+
+msgid "Sets the default [Font]."
+msgstr "Définit la [Font] par défaut."
 
 msgid "Sets the [StyleBox] of this [TextEdit]."
 msgstr "Définit la [StyleBox] pour ce [TextEdit]."
@@ -18537,6 +18194,9 @@ msgstr "Génère un [PrimitiveMesh] à partir du texte."
 
 msgid "The size of one pixel's width on the text to scale it in 3D."
 msgstr "La taille d'un des pixels du texte pour définir sa taille en 3D."
+
+msgid "Paragraph width."
+msgstr "Largeur du paragraphe."
 
 msgid "Use the light font hinting mode."
 msgstr "Utilise le mode d'indice de police légère."
@@ -19623,9 +19283,6 @@ msgstr "Erreur d’allocation de mémoire."
 msgid "The most important data type in Godot."
 msgstr "Le plus important type de donnée dans Godot."
 
-msgid "The vertical space between the [VBoxContainer]'s elements."
-msgstr "L'espacement vertical entre les éléments du [VBoxContainer]."
-
 msgid "3Blue1Brown Essence of Linear Algebra"
 msgstr "3Blue1Brown Essence of Linear Algebra"
 
@@ -19958,13 +19615,6 @@ msgstr ""
 "Si [code]true[/code], les contrôles de l'interface graphique dans la fenêtre "
 "d'affichage s'alignent au pixel près."
 
-msgid ""
-"If [code]true[/code], the objects rendered by viewport become subjects of "
-"mouse picking process."
-msgstr ""
-"Si [code]true[/code], les objets rendus dans la fenêtre d'affichage peuvent "
-"être sélectionnés par la souris."
-
 msgid "The subdivision amount of the first quadrant on the shadow atlas."
 msgstr "La quantité de sous-division du premier quadrant de l'atlas de l'ombre."
 
@@ -20030,6 +19680,9 @@ msgstr "Les objets sont affichés normalement."
 
 msgid "Objects are displayed in wireframe style."
 msgstr "Les objets sont affichés en fil de fer."
+
+msgid "Corresponds to [constant Node.PROCESS_MODE_WHEN_PAUSED]."
+msgstr "Correspond à [constant Node.PROCESS_MODE_WHEN_PAUSED]."
 
 msgid "Enables certain nodes only when approximately visible."
 msgstr ""
@@ -20339,6 +19992,13 @@ msgstr "Dérive selon [code]y[/code] par différenciation locale."
 msgid "Translates to [code]determinant(x)[/code] in the shader language."
 msgstr "Sera traduit en [code]deteminant(x)[/code] dans le code du shader."
 
+msgid ""
+"The distance fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"L'effet d'estomper par distance efface chaque pixel en fonction de la "
+"distance qui le sépare d'un autre objet."
+
 msgid "Calculates a dot product of two vectors within the visual shader graph."
 msgstr ""
 "Calcule un produit scalaire de deux vecteurs dans le graphique du nuanceur "
@@ -20468,6 +20128,13 @@ msgstr "Comparaison avec [code]INF[/code] (Infinité)."
 
 msgid "Translates to [code]mix(a, b, weight)[/code] in the shader language."
 msgstr "Sera traduit en [code]mix(a, b, weight)[/code] dans le code du shader."
+
+msgid ""
+"The proximity fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"L'effet d'estomper par proximité efface chaque pixel en fonction de la "
+"distance qui le sépare d'un autre objet."
 
 msgid "The size of the node in the visual shader graph."
 msgstr "La taille du nœud dans le graphe du visual shader."
@@ -20755,23 +20422,6 @@ msgstr ""
 msgid "Represents the size of the [enum Subdiv] enum."
 msgstr "Représente la taille de l'énumération [enum Subdiv]."
 
-msgid ""
-"The width of the area covered by the separator. Effectively works like a "
-"minimum width."
-msgstr ""
-"La largeur de la zone couverte par le séparateur. Fonctionne effectivement "
-"comme une largeur minimale."
-
-msgid ""
-"The style for the separator line. Works best with [StyleBoxLine] (remember to "
-"enable [member StyleBoxLine.vertical])."
-msgstr ""
-"Le style pour la ligne de séparation. Fonctionne mieux avec [StyleBoxLine] "
-"(n'oubliez pas d'activer [member StyleBoxLine.vertical])."
-
-msgid "The background of the area below the grabber."
-msgstr "L'arrière plan de l'aire sous le glisseur."
-
 msgid "Closes this data channel, notifying the other peer."
 msgstr "Ferme ce canal de données, en notifiant l’autre homologue."
 
@@ -20953,74 +20603,8 @@ msgstr ""
 "La ressource du [Environment] utilisé par ce [WorldEnvironment], définissant "
 "les propriétés par défaut."
 
-msgid ""
-"Gets the name of the current element node. This will raise an error if the "
-"current node type is neither [constant NODE_ELEMENT] nor [constant "
-"NODE_ELEMENT_END]."
-msgstr ""
-"Retourne le nom du nœud de l'élément actuel. Une erreur sera lancée si le "
-"type de nœud actuel n'est ni [constant NODE_ELEMENT] ni [constant "
-"NODE_ELEMENT_END]."
-
-msgid ""
-"Gets the byte offset of the current node since the beginning of the file or "
-"buffer."
-msgstr ""
-"Retourne le décalage en octet de l'actuel nœud depuis le début du fichier ou "
-"de la mémoire tampon."
-
-msgid ""
-"Gets the type of the current node. Compare with [enum NodeType] constants."
-msgstr ""
-"Retourne le type du nœud actuel. Comparer avec les constantes [enum NodeType]."
-
-msgid "Check whether the current element has a certain attribute."
-msgstr "Vérifie quand l'élément actuel à un certain attribut."
-
-msgid ""
-"Check whether the current element is empty (this only works for completely "
-"empty tags, e.g. [code]<element \\>[/code])."
-msgstr ""
-"Vérifie si l'élément actuel est vide (ça ne fonctionne que pour les marqueurs "
-"complètement vide, par ex. [code]<element \\>[/code])."
-
-msgid "Reads the next node of the file. This returns an error code."
-msgstr "Lit le nœud suivant du fichier. Ceci retourne un code d'erreur."
-
-msgid ""
-"Moves the buffer cursor to a certain offset (since the beginning) and read "
-"the next node there. This returns an error code."
-msgstr ""
-"Déplace le curseur de la mémoire tampon d'un certain décalage (depuis le "
-"début) et lit le nœud suivant à cet endroit. Une code d'erreur est renvoyé."
-
-msgid ""
-"Skips the current section. If the node contains other elements, they will be "
-"ignored and the cursor will go to the closing of the current element."
-msgstr ""
-"Ignore la section en cours. Si le nœud contient d'autres éléments, ils seront "
-"ignorés et le curseur ira à la fin de l'élément courant."
-
 msgid "There's no node (no file or buffer opened)."
 msgstr "Il y aucun nœud (pas de fichier ou de mémoire tampon ouverte)."
-
-msgid "Element (tag)."
-msgstr "Élément (tag)."
-
-msgid "End of element."
-msgstr "Fin de l’élément."
-
-msgid "Text node."
-msgstr "Nœud de texte."
-
-msgid "Comment node."
-msgstr "Nœud de commentaire."
-
-msgid "CDATA content."
-msgstr "Contenu CDATA."
-
-msgid "Unknown node."
-msgstr "Nœud inconnu."
 
 msgid "An anchor point in AR space."
 msgstr "Un point d'ancrage dans l'espace AR."

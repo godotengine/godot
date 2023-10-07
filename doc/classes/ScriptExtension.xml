@@ -123,6 +123,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_has_static_method" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+			</description>
+		</method>
 		<method name="_inherits_script" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="script" type="Script" />

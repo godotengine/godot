@@ -60,10 +60,7 @@ bool DisplayServerWeb::check_size_force_redraw() {
 	bool size_changed = godot_js_display_size_update() != 0;
 	if (size_changed && !rect_changed_callback.is_null()) {
 		Variant size = Rect2i(Point2i(), window_get_size()); // TODO use window_get_position if implemented.
-		Variant *vp = &size;
-		Variant ret;
-		Callable::CallError ce;
-		rect_changed_callback.callp((const Variant **)&vp, 1, ret, ce);
+		rect_changed_callback.call(size);
 	}
 	return size_changed;
 }
@@ -90,11 +87,7 @@ void DisplayServerWeb::drop_files_js_callback(char **p_filev, int p_filec) {
 	for (int i = 0; i < p_filec; i++) {
 		files.push_back(String::utf8(p_filev[i]));
 	}
-	Variant v = files;
-	Variant *vp = &v;
-	Variant ret;
-	Callable::CallError ce;
-	ds->drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
+	ds->drop_files_callback.call(files);
 }
 
 // Web quit request callback.
@@ -102,10 +95,7 @@ void DisplayServerWeb::request_quit_callback() {
 	DisplayServerWeb *ds = get_singleton();
 	if (ds && !ds->window_event_callback.is_null()) {
 		Variant event = int(DisplayServer::WINDOW_EVENT_CLOSE_REQUEST);
-		Variant *eventp = &event;
-		Variant ret;
-		Callable::CallError ce;
-		ds->window_event_callback.callp((const Variant **)&eventp, 1, ret, ce);
+		ds->window_event_callback.call(event);
 	}
 }
 
@@ -619,10 +609,7 @@ void DisplayServerWeb::vk_input_text_callback(const char *p_text, int p_cursor) 
 	}
 	// Call input_text
 	Variant event = String::utf8(p_text);
-	Variant *eventp = &event;
-	Variant ret;
-	Callable::CallError ce;
-	ds->input_text_callback.callp((const Variant **)&eventp, 1, ret, ce);
+	ds->input_text_callback.call(event);
 	// Insert key right to reach position.
 	Input *input = Input::get_singleton();
 	Ref<InputEventKey> k;
@@ -724,10 +711,7 @@ void DisplayServerWeb::send_window_event_callback(int p_notification) {
 	}
 	if (!ds->window_event_callback.is_null()) {
 		Variant event = int(p_notification);
-		Variant *eventp = &event;
-		Variant ret;
-		Callable::CallError ce;
-		ds->window_event_callback.callp((const Variant **)&eventp, 1, ret, ce);
+		ds->window_event_callback.call(event);
 	}
 }
 
@@ -770,12 +754,8 @@ void DisplayServerWeb::set_icon(const Ref<Image> &p_icon) {
 
 void DisplayServerWeb::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	Callable cb = get_singleton()->input_event_callback;
-	if (!cb.is_null()) {
-		Variant ev = p_event;
-		Variant *evp = &ev;
-		Variant ret;
-		Callable::CallError ce;
-		cb.callp((const Variant **)&evp, 1, ret, ce);
+	if (cb.is_valid()) {
+		cb.call(p_event);
 	}
 }
 

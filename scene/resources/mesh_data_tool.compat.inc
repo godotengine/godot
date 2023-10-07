@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  sprite_3d_gizmo_plugin.h                                              */
+/*  mesh_data_tool.compat.inc                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,22 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRITE_3D_GIZMO_PLUGIN_H
-#define SPRITE_3D_GIZMO_PLUGIN_H
+#ifndef DISABLE_DEPRECATED
 
-#include "editor/plugins/node_3d_editor_gizmos.h"
+Error MeshDataTool::commit_to_surface_bind_compat_81138(const Ref<ArrayMesh> &p_mesh) {
+	return commit_to_surface(p_mesh, 0);
+}
 
-class Sprite3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(Sprite3DGizmoPlugin, EditorNode3DGizmoPlugin);
+void MeshDataTool::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("commit_to_surface", "mesh"), &MeshDataTool::commit_to_surface_bind_compat_81138);
+}
 
-public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_gizmo_name() const override;
-	int get_priority() const override;
-	bool can_be_hidden() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
-
-	Sprite3DGizmoPlugin();
-};
-
-#endif // SPRITE_3D_GIZMO_PLUGIN_H
+#endif

@@ -7,11 +7,11 @@
 		A custom effect for a [RichTextLabel].
 		[b]Note:[/b] For a [RichTextEffect] to be usable, a BBCode tag must be defined as a member variable called [code]bbcode[/code] in the script.
 		[codeblocks]
-		[gdscript]
+		[gdscript skip-lint]
 		# The RichTextEffect will be usable like this: `[example]Some text[/example]`
 		var bbcode = "example"
 		[/gdscript]
-		[csharp]
+		[csharp skip-lint]
 		// The RichTextEffect will be usable like this: `[example]Some text[/example]`
 		string bbcode = "example";
 		[/csharp]
