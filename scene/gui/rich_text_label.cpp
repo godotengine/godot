@@ -1143,8 +1143,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
 				fx_offset = fx_offset.round();
 			}
-
-			Vector2i char_off = char_xform.get_origin();
+			Vector2 char_off = char_xform.get_origin();
 
 			// Draw glyph outlines.
 			const Color modulated_outline_color = font_outline_color * Color(1, 1, 1, font_color.a);
@@ -1389,8 +1388,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
 				fx_offset = fx_offset.round();
 			}
+			Vector2 char_off = char_xform.get_origin();
 
-			Vector2i char_off = char_xform.get_origin();
 			Transform2D char_reverse_xform;
 			char_reverse_xform.set_origin(-char_off);
 			char_xform = char_xform * char_reverse_xform;
