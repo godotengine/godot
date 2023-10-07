@@ -2859,7 +2859,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 
 			_update_camera(delta);
-			update_pilot();
+			update_pilot_transform();
 
 			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
@@ -3096,6 +3096,12 @@ void Node3DEditorViewport::_notification(int p_what) {
 			preview_camera->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			preview_camera->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			preview_camera->end_bulk_theme_override();
+
+			pilot_preview_camera_checkbox->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			pilot_preview_camera_checkbox->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			pilot_preview_camera_checkbox->add_theme_style_override("pressed", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			pilot_preview_camera_checkbox->add_theme_style_override("focus", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			pilot_preview_camera_checkbox->add_theme_style_override("disabled", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -3786,26 +3792,24 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	previewing_camera = p_activate;
 	_update_navigation_controls_visibility();
 
-	stop_piloting();
-
 	if (!p_activate) {
 		previewing->disconnect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		previewing = nullptr;
+		stop_piloting();
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
-		if (!preview) {
-			preview_camera->hide();
-		}
 		surface->queue_redraw();
 
 	} else {
 		previewing = preview;
 		previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-		if (pilot_preview_camera) {
+		if (pilot_preview_camera_checkbox->is_pressed()) {
 			pilot(previewing);
 		}
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
 		surface->queue_redraw();
 	}
+
+	refresh_pilot_and_preview_ui();
 }
 
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
@@ -3820,14 +3824,10 @@ void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 		previewing = nullptr;
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		preview_camera->set_pressed(false);
-		if (!preview) {
-			preview_camera->hide();
-		} else {
-			preview_camera->show();
-		}
 		view_menu->show();
 		surface->queue_redraw();
 	}
+	refresh_pilot_and_preview_ui();
 }
 
 void Node3DEditorViewport::_selection_result_pressed(int p_result) {
@@ -3852,10 +3852,7 @@ void Node3DEditorViewport::_selection_menu_hide() {
 
 void Node3DEditorViewport::set_can_preview(Camera3D *p_preview) {
 	preview = p_preview;
-
-	if (!preview_camera->is_pressed() && !previewing_cinema) {
-		preview_camera->set_visible(p_preview);
-	}
+	refresh_pilot_and_preview_ui();
 }
 
 void Node3DEditorViewport::update_transform_gizmo_view() {
@@ -5149,6 +5146,9 @@ void Node3DEditorViewport::pilot(Node3D *p_node) {
 	if (p_node == nullptr) {
 		return;
 	}
+	if (p_node != previewing) {
+		preview_camera->set_pressed(false);
+	}
 	stop_piloting();
 	Camera3D* node_as_camera = Object::cast_to<Camera3D>(p_node);
 	if (node_as_camera) {
@@ -5167,6 +5167,7 @@ void Node3DEditorViewport::pilot(Node3D *p_node) {
 	stop_piloting_button->show();
 	stop_piloting_button->set_text(vformat(TTR("Stop Piloting '%s'"), node_being_piloted->get_name()));
 	_update_camera(0.0);
+	refresh_pilot_and_preview_ui();
 }
 
 void Node3DEditorViewport::stop_piloting() {
@@ -5176,6 +5177,7 @@ void Node3DEditorViewport::stop_piloting() {
 	node_being_piloted = nullptr;
 	stop_piloting_button->hide();
 	_update_camera(0.0);
+	refresh_pilot_and_preview_ui();
 }
 
 void Node3DEditorViewport::check_piloting_when_change_camera_type(bool to_ortho) {
@@ -5194,7 +5196,7 @@ void Node3DEditorViewport::check_piloting_when_change_camera_type(bool to_ortho)
 	}
 }
 
-void Node3DEditorViewport::update_pilot() {
+void Node3DEditorViewport::update_pilot_transform() {
 	if (!node_being_piloted) {
 		return;
 	}
@@ -5234,6 +5236,32 @@ void Node3DEditorViewport::_undo_redo_pilot_transform(Node3D *p_node, const Tran
 
 bool Node3DEditorViewport::is_only_pilot_input_allowed() {
 	return previewing && node_being_piloted == previewing;
+}
+
+void Node3DEditorViewport::toggle_allow_pilot_camera(bool p_activate) {
+	if (!previewing) {
+		return;
+	}
+	if (p_activate) {
+		pilot(previewing);
+	} else {
+		stop_piloting();
+	}
+}
+
+void Node3DEditorViewport::refresh_pilot_and_preview_ui() {
+	if (previewing) {
+		preview_camera->set_visible(true);
+		preview_camera->set_pressed_no_signal(true);
+		pilot_preview_camera_checkbox->set_visible(true);
+		pilot_preview_camera_checkbox->set_pressed_no_signal(previewing == node_being_piloted);
+		stop_piloting_button->set_visible(false);
+	} else {
+		preview_camera->set_visible(preview != nullptr);
+		preview_camera->set_pressed_no_signal(false);
+		pilot_preview_camera_checkbox->set_visible(false);
+		stop_piloting_button->set_visible(node_being_piloted != nullptr);
+	}
 }
 
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {
@@ -5436,6 +5464,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	previewing = nullptr;
 	gizmo_scale = 1.0;
 
+	pilot_preview_camera_checkbox = memnew(CheckBox);
+	pilot_preview_camera_checkbox->set_text(TTR("Allow Pilot Camera"));
+	pilot_preview_camera_checkbox->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_allow_pilot_camera", TTR("Allow Pilot Camera")));
+	vbox->add_child(pilot_preview_camera_checkbox);
+	pilot_preview_camera_checkbox->set_h_size_flags(0);
+	pilot_preview_camera_checkbox->hide();
+	pilot_preview_camera_checkbox->connect("toggled", callable_mp(this, &Node3DEditorViewport::toggle_allow_pilot_camera));
+
 	stop_piloting_button = memnew(Button);
 	stop_piloting_button->set_text(TTR("Stop Piloting"));
 	stop_piloting_button->set_shortcut(ED_SHORTCUT("spatial_editor/stop_piloting", TTR("Stop Piloting")));
@@ -5584,6 +5620,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view));
 
 	node_being_piloted = nullptr;
+
+	refresh_pilot_and_preview_ui();
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {

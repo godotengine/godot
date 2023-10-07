@@ -483,17 +483,19 @@ private:
 	void _set_lock_view_rotation(bool p_lock_rotation);
 
 	Button* stop_piloting_button = nullptr;
-	bool pilot_preview_camera = true;
+	CheckBox* pilot_preview_camera_checkbox = nullptr;
 	Node3D* node_being_piloted = nullptr;
 	Transform3D pilot_previous_transform;
 	void pilot_selection();
 	void pilot(Node3D *p_node);
 	void stop_piloting();
 	void check_piloting_when_change_camera_type(bool to_ortho);
-	void update_pilot();
+	void update_pilot_transform();
 	void commit_pilot_transform();
 	void _undo_redo_pilot_transform(Node3D* p_node, const Transform3D& p_transform);
 	bool is_only_pilot_input_allowed();
+	void toggle_allow_pilot_camera(bool p_activate);
+	void refresh_pilot_and_preview_ui();
 
 protected:
 	void _notification(int p_what);
