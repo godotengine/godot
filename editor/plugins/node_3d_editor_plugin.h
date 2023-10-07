@@ -288,6 +288,8 @@ private:
 	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
 	void _transform_gizmo_apply(Node3D *p_node, const Transform3D &p_transform, bool p_local);
 
+	bool is_navigating = false;
+	bool was_navigating = false;
 	void _nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
@@ -483,15 +485,14 @@ private:
 	Button* stop_piloting_button = nullptr;
 	bool pilot_preview_camera = true;
 	Node3D* node_being_piloted = nullptr;
-	Transform3D node_being_piloted_initial_transform;
+	Transform3D pilot_previous_transform;
 	void pilot_selection();
 	void pilot(Node3D *p_node);
 	void stop_piloting();
 	void check_piloting_when_change_camera_type(bool to_ortho);
-	void start_pilot_transform();
-	void update_pilot_transform(const Transform3D &p_transform);
-	void end_pilot_transform(bool p_commit_using_cursor_transform = false);
-	void _undo_redo_pilot_transform(Node3D *p_node, const Transform3D &p_transform);
+	void update_pilot();
+	void commit_pilot_transform();
+	void _undo_redo_pilot_transform(Node3D* p_node, const Transform3D& p_transform);
 	bool is_only_pilot_input_allowed();
 
 protected:
