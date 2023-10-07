@@ -1362,7 +1362,7 @@
 			<param index="0" name="swap_buffers" type="bool" default="true" />
 			<param index="1" name="frame_step" type="float" default="0.0" />
 			<description>
-				Forces redrawing of all viewports at once.
+				Forces redrawing of all viewports at once. Must be called from the main thread.
 			</description>
 		</method>
 		<method name="force_sync">
