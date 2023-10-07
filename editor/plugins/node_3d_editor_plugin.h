@@ -390,8 +390,8 @@ private:
 
 	// Viewport camera supports movement smoothing,
 	// so one cursor is the real cursor, while the other can be an interpolated version.
-	Cursor immediate_cursor;
-	Cursor current_interpolated_cursor; // Don't modify this one except for smoothing purposes
+	Cursor cursor; // Immediate cursor
+	Cursor camera_cursor; // That one may be interpolated (don't modify this one except for smoothing purposes)
 
 	void set_cursor(const Cursor &p_cursor, bool p_interpolate = true, bool allow_piloting_or_previewing = false);
 	void reset_cursor_to_default();
