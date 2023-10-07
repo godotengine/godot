@@ -64,13 +64,13 @@ public:
 		_ref(p_array);
 	}
 	_FORCE_INLINE_ TypedArray(const Variant &p_variant) :
-			Array(Array(p_variant), Variant::ARRAY, T::get_name(), Variant()) {
+			Array(Array(p_variant), Variant::ARRAY, T::get_struct_name(), Variant()) {
 	}
 	_FORCE_INLINE_ TypedArray(const Array &p_array) :
-			Array(p_array, Variant::ARRAY, T::get_name(), Variant()) {
+			Array(p_array, Variant::ARRAY, T::get_struct_name(), Variant()) {
 	}
 	_FORCE_INLINE_ TypedArray() {
-		set_typed(Variant::ARRAY, T::get_name(), Variant());
+		set_typed(Variant::ARRAY, T::get_struct_name(), Variant());
 	}
 };
 

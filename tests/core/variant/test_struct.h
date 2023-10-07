@@ -46,9 +46,9 @@ TEST_CASE("[Struct] PropertyInfo") {
 	my_node->get_property_list(&list);
 	PropertyInfo info = list[0];
 	CHECK_EQ((((Variant)(Dictionary)info)).stringify(), "{ \"name\": \"Node\", \"class_name\": &\"\", \"type\": 0, \"hint\": 0, \"hint_string\": \"Node\", \"usage\": 128 }");
-	CHECK_EQ((((Variant)(Array)info)).stringify(), "[name: \"Node\", class_name: &\"\", type: 0, hint: 0, hint_string: \"Node\", usage: 128]");
+	CHECK_EQ((((Variant)(Struct<PropertyInfo>)info)).stringify(), "[name: \"Node\", class_name: &\"\", type: 0, hint: 0, hint_string: \"Node\", usage: 128]");
 
-	Struct<PropertyInfoLayout> prop = my_node->_get_property_struct(0);
+	Struct<PropertyInfo> prop = my_node->_get_property_struct(0);
 	CHECK_EQ(((Variant)prop).stringify(), "[name: \"Node\", class_name: &\"\", type: 0, hint: 0, hint_string: \"Node\", usage: 128]");
 
 	SUBCASE("Equality") {
@@ -90,12 +90,13 @@ TEST_CASE("[Struct] Validation") {
 	struct NamedInt {
 		StringName name = StringName();
 		int value = 0;
-	};
-	STRUCT_LAYOUT(NamedIntLayout, "NamedInt",
-			STRUCT_MEMBER("name", Variant::STRING_NAME, StringName()),
-			STRUCT_MEMBER("value", Variant::INT, 0));
 
-	Struct<NamedIntLayout> named_int;
+		STRUCT_LAYOUT(NamedInt,
+				STRUCT_MEMBER(name, Variant::STRING_NAME, StringName()),
+				STRUCT_MEMBER(value, Variant::INT, 0));
+	};
+
+	Struct<NamedInt> named_int;
 	named_int["name"] = "Godot";
 	named_int["value"] = 4;
 	CHECK_EQ(((Variant)named_int).stringify(), "[name: \"Godot\", value: 4]");
@@ -104,12 +105,12 @@ TEST_CASE("[Struct] Validation") {
 		CHECK(named_int.is_same_typed(named_int));
 		Variant variant_named_int = named_int;
 		CHECK(named_int.is_same_typed(variant_named_int));
-		Struct<NamedIntLayout> same_named_int = variant_named_int;
+		Struct<NamedInt> same_named_int = variant_named_int;
 		CHECK_EQ(named_int, same_named_int);
 	}
 
 	SUBCASE("Assignment") {
-		Struct<NamedIntLayout> a_match = named_int;
+		Struct<NamedInt> a_match = named_int;
 		CHECK_EQ(named_int, a_match);
 		Array not_a_match;
 
@@ -147,28 +148,32 @@ TEST_CASE("[Struct] Nesting") {
 	struct BasicStruct {
 		int int_val;
 		float float_val;
+
+		STRUCT_LAYOUT(BasicStruct,
+				STRUCT_MEMBER(int_val, Variant::INT, 4),
+				STRUCT_MEMBER(float_val, Variant::FLOAT, 5.5));
 	};
 	struct BasicStructLookalike {
 		int int_val;
 		float float_val;
+
+		STRUCT_LAYOUT(BasicStructLookalike,
+				STRUCT_MEMBER(int_val, Variant::INT, 0),
+				STRUCT_MEMBER(float_val, Variant::FLOAT, 0.0));
 	};
 	struct NestedStruct {
 		Node *node;
 		BasicStruct value;
-	};
-	STRUCT_LAYOUT(BasicStructLayout, "BasicStruct",
-			STRUCT_MEMBER("int_val", Variant::INT, 4),
-			STRUCT_MEMBER("float_val", Variant::FLOAT, 5.5));
-	STRUCT_LAYOUT(BasicStructLookalikeLayout, "BasicStructLookalike",
-			STRUCT_MEMBER("int_val", Variant::INT, 0),
-			STRUCT_MEMBER("float_val", Variant::FLOAT, 0.0));
-	STRUCT_LAYOUT(NestedStructLayout, "NestedStruct",
-			STRUCT_CLASS_MEMBER("node", "Node", Variant()),
-			STRUCT_STRUCT_MEMBER("value", BasicStructLayout, Struct<BasicStructLayout>()));
 
-	Struct<BasicStructLayout> basic_struct;
-	Struct<BasicStructLookalikeLayout> basic_struct_lookalike;
-	Struct<NestedStructLayout> nested_struct;
+		STRUCT_LAYOUT(NestedStruct,
+				STRUCT_CLASS_MEMBER(node, Node, Variant()),
+				STRUCT_STRUCT_MEMBER(value, BasicStruct, Struct<BasicStruct>()));
+	};
+
+
+	Struct<BasicStruct> basic_struct;
+	Struct<BasicStructLookalike> basic_struct_lookalike;
+	Struct<NestedStruct> nested_struct;
 
 	SUBCASE("Defaults") {
 		CHECK_EQ((int)basic_struct["int_val"], 4);
@@ -191,8 +196,8 @@ TEST_CASE("[Struct] Nesting") {
 
 		CHECK_EQ(nested_struct["node"], Variant(node));
 		CHECK_EQ(nested_struct["value"], basic_struct);
-		CHECK_EQ(((Struct<BasicStructLayout>)nested_struct["value"])["int_val"], basic_struct["int_val"]);
-		CHECK_EQ(((Struct<BasicStructLayout>)nested_struct["value"])["float_val"], basic_struct["float_val"]);
+		CHECK_EQ(((Struct<BasicStruct>)nested_struct["value"])["int_val"], basic_struct["int_val"]);
+		CHECK_EQ(((Struct<BasicStruct>)nested_struct["value"])["float_val"], basic_struct["float_val"]);
 
 		ERR_PRINT_OFF;
 		nested_struct.set_named("value", basic_struct_lookalike);
@@ -201,11 +206,11 @@ TEST_CASE("[Struct] Nesting") {
 	}
 
 	SUBCASE("Typed Array of Struct") {
-		TypedArray<Struct<BasicStructLayout>> array;
-		Struct<BasicStructLayout> basic_struct_0;
+		TypedArray<Struct<BasicStruct>> array;
+		Struct<BasicStruct> basic_struct_0;
 		basic_struct_0["int_val"] = 1;
 		basic_struct_0["float_val"] = 3.14;
-		Struct<BasicStructLayout> basic_struct_1;
+		Struct<BasicStruct> basic_struct_1;
 		basic_struct_1["int_val"] = 2;
 		basic_struct_1["float_val"] = 2.7;
 		array.push_back(basic_struct_0);

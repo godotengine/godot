@@ -166,32 +166,28 @@ struct StructMember {
 	}
 };
 
-#define STRUCT_MEMBER(m_name, m_type, m_default) StructMember(SNAME(m_name), m_type, StringName(), nullptr, m_default)
-#define STRUCT_CLASS_MEMBER(m_name, m_class_name, m_default) StructMember(SNAME(m_name), Variant::OBJECT, m_class_name, nullptr, m_default)
-#define STRUCT_STRUCT_MEMBER(m_name, m_struct, m_default) StructMember(SNAME(m_name), Variant::ARRAY, m_struct::get_name(), m_struct::get_members(), m_default)
+#define STRUCT_MEMBER(m_name, m_type, m_default) StructMember(SNAME(#m_name), m_type, StringName(), nullptr, m_default)
+#define STRUCT_CLASS_MEMBER(m_name, m_class_name, m_default) StructMember(SNAME(#m_name), Variant::OBJECT, #m_class_name, nullptr, m_default)
+#define STRUCT_STRUCT_MEMBER(m_name, m_struct, m_default) StructMember(SNAME(#m_name), Variant::ARRAY, m_struct::get_struct_name(), m_struct::get_struct_members(), m_default)
 
-#define STRUCT_LAYOUT(m_struct, m_name, ...)                                             \
-	struct m_struct {                                                                    \
-		_FORCE_INLINE_ static const StringName get_class() {                             \
-			return SNAME(#m_struct);                                                     \
-		}                                                                                \
-		_FORCE_INLINE_ static const StringName get_name() {                              \
-			return SNAME(m_name);                                                        \
-		}                                                                                \
-		_FORCE_INLINE_ static const StructMember *get_members() {                        \
-			static const StructMember members[] = { __VA_ARGS__ };                       \
-			return members;                                                              \
-		}                                                                                \
-		_FORCE_INLINE_ static const uint32_t get_member_count() {                        \
-			const StructMember members[] = { __VA_ARGS__ };                              \
-			static const uint32_t member_count = sizeof(members) / sizeof(StructMember); \
-			return member_count;                                                         \
-		}                                                                                \
-		_FORCE_INLINE_ static const StructMember &get_member(uint32_t p_index) {         \
-			CRASH_BAD_INDEX(p_index, get_member_count());                                \
-			return get_members()[p_index];                                               \
-		}                                                                                \
-	};
+#define STRUCT_LAYOUT(m_name, ...)                                                   \
+	_FORCE_INLINE_ static const StringName get_struct_name() {                       \
+		static const StringName struct_name = SNAME(#m_name);                        \
+		return struct_name;                                                          \
+	}                                                                                \
+	_FORCE_INLINE_ static const StructMember *get_struct_members() {                 \
+		static const StructMember members[] = { __VA_ARGS__ };                       \
+		return members;                                                              \
+	}                                                                                \
+	_FORCE_INLINE_ static const uint32_t get_struct_member_count() {                 \
+		const StructMember members[] = { __VA_ARGS__ };                              \
+		static const uint32_t member_count = sizeof(members) / sizeof(StructMember); \
+		return member_count;                                                         \
+	}                                                                                \
+	_FORCE_INLINE_ static const StructMember &get_struct_member(uint32_t p_index) {  \
+		CRASH_BAD_INDEX(p_index, get_struct_member_count());                         \
+		return get_struct_members()[p_index];                                        \
+	}
 
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
@@ -203,6 +199,14 @@ struct PropertyInfo {
 
 	// If you are thinking about adding another member to this class, ask the maintainer (Juan) first.
 
+	STRUCT_LAYOUT(PropertyInfo,
+			STRUCT_MEMBER(name, Variant::STRING, String()),
+			STRUCT_MEMBER(class_name, Variant::STRING_NAME, StringName()),
+			STRUCT_MEMBER(type, Variant::INT, Variant::NIL),
+			STRUCT_MEMBER(hint, Variant::INT, PROPERTY_HINT_NONE),
+			STRUCT_MEMBER(hint_string, Variant::STRING, String()),
+			STRUCT_MEMBER(usage, Variant::INT, PROPERTY_USAGE_DEFAULT));
+
 	_FORCE_INLINE_ PropertyInfo added_usage(uint32_t p_fl) const {
 		PropertyInfo pi = *this;
 		pi.usage |= p_fl;
@@ -213,9 +217,9 @@ struct PropertyInfo {
 
 	static PropertyInfo from_dict(const Dictionary &p_dict);
 
-	operator Array() const;
+	operator Struct<PropertyInfo>() const;
 
-	static PropertyInfo from_struct(const Array &p_struct);
+	static PropertyInfo from_struct(const Struct<PropertyInfo> &p_struct);
 
 	PropertyInfo() {}
 
@@ -257,14 +261,6 @@ struct PropertyInfo {
 		return name < p_info.name;
 	}
 };
-
-STRUCT_LAYOUT(PropertyInfoLayout, "PropertyInfo",
-		STRUCT_MEMBER("name", Variant::STRING, String()),
-		STRUCT_MEMBER("class_name", Variant::STRING_NAME, StringName()),
-		STRUCT_MEMBER("type", Variant::INT, Variant::NIL),
-		STRUCT_MEMBER("hint", Variant::INT, PROPERTY_HINT_NONE),
-		STRUCT_MEMBER("hint_string", Variant::STRING, String()),
-		STRUCT_MEMBER("usage", Variant::INT, PROPERTY_USAGE_DEFAULT));
 
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
 
@@ -660,7 +656,7 @@ public:
 
 	// TODO: These methods are for testing purposes only and will be removed before release.
 	//	TypedArray<Struct<PropertyInfoLayout>> _get_property_list_struct() const;
-	Struct<PropertyInfoLayout> _get_property_struct(uint32_t p_index) const;
+	Struct<PropertyInfo> _get_property_struct(uint32_t p_index) const;
 
 private:
 #ifdef DEBUG_ENABLED

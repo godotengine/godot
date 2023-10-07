@@ -483,7 +483,7 @@ public:
 	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_STRUCT(m_struct) \
-	::ClassDB::bind_struct(get_class_static(), m_struct::get_name(), m_struct::get_member_count(), m_struct::get_member);
+	::ClassDB::bind_struct(get_class_static(), m_struct::get_struct_name(), m_struct::get_struct_member_count(), m_struct::get_struct_member);
 
 #ifdef DEBUG_METHODS_ENABLED
 

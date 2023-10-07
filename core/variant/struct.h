@@ -42,20 +42,20 @@ public:
 		ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign a Struct from array with a different format.");
 		_ref(p_array);
 	}
-	_FORCE_INLINE_ Variant &operator[](const StringName &p_member) {
-		return get_named(p_member);
+	_FORCE_INLINE_ Variant &operator[](const StringName &p_struct_member) {
+		return get_named(p_struct_member);
 	}
-	_FORCE_INLINE_ const Variant &operator[](const StringName &p_member) const {
-		return get_named(p_member);
+	_FORCE_INLINE_ const Variant &operator[](const StringName &p_struct_member) const {
+		return get_named(p_struct_member);
 	}
 	_FORCE_INLINE_ Struct(const Variant &p_variant) :
-			Array(Array(p_variant), T::get_name(), T::get_member) {
+			Array(Array(p_variant), T::get_struct_name(), T::get_struct_member) {
 	}
 	_FORCE_INLINE_ Struct(const Array &p_array) :
-			Array(p_array, T::get_name(), T::get_member) {
+			Array(p_array, T::get_struct_name(), T::get_struct_member) {
 	}
 	_FORCE_INLINE_ Struct() :
-			Array(T::get_member_count(), T::get_name(), T::get_member) {
+			Array(T::get_struct_member_count(), T::get_struct_name(), T::get_struct_member) {
 	}
 };
 
