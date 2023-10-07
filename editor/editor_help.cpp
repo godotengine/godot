@@ -2875,7 +2875,11 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 
 		if (type == "property") {
 			description = get_property_description(class_name, property_name);
-			formatted_text = TTR("Property:");
+			if (property_name.begins_with("metadata/")) {
+				formatted_text = TTR("Metadata:");
+			} else {
+				formatted_text = TTR("Property:");
+			}
 		} else if (type == "method") {
 			description = get_method_description(class_name, property_name);
 			formatted_text = TTR("Method:");
@@ -2890,7 +2894,8 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 		}
 	}
 
-	formatted_text += " [u][b]" + title + "[/b][/u]" + property_args + "\n";
+	// Metadata special handling replaces "Property:" with "Metadata": above.
+	formatted_text += " [u][b]" + title.trim_prefix("metadata/") + "[/b][/u]" + property_args + "\n";
 	formatted_text += description.is_empty() ? "[i]" + TTR("No description available.") + "[/i]" : description;
 	set_text(formatted_text);
 }
