@@ -3298,7 +3298,7 @@ void Node3DEditorViewport::_view_menu_popped_up() {
 	PopupMenu *view_menu_popup = view_menu->get_popup();
 	Node3D* selected_node = Node3DEditor::get_singleton()->get_single_selected_node();
 	if (selected_node) {
-		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_PILOT), false);
+		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_PILOT), previewing_cinema);
 		view_menu_popup->set_item_text(view_menu_popup->get_item_index(VIEW_PILOT), vformat(TTR("Pilot '%s'"), selected_node->get_name()));
 	} else {
 		view_menu_popup->set_item_disabled(view_menu_popup->get_item_index(VIEW_PILOT), true);
@@ -3536,7 +3536,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			bool current = view_menu->get_popup()->is_item_checked(idx);
 			current = !current;
 			view_menu->get_popup()->set_item_checked(idx, current);
-			previewing_cinema = true;
 			_toggle_cinema_preview(current);
 
 			if (current) {
@@ -3820,8 +3819,8 @@ void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 		if (previewing != nullptr) {
 			previewing->disconnect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		}
-
 		previewing = nullptr;
+		stop_piloting();
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		preview_camera->set_pressed(false);
 		view_menu->show();
@@ -5147,7 +5146,7 @@ void Node3DEditorViewport::pilot_selection() {
 }
 
 void Node3DEditorViewport::pilot(Node3D *p_node) {
-	if (p_node == nullptr) {
+	if (p_node == nullptr || previewing_cinema) {
 		return;
 	}
 	if (p_node != previewing) {
@@ -5254,7 +5253,11 @@ void Node3DEditorViewport::toggle_allow_pilot_camera(bool p_activate) {
 }
 
 void Node3DEditorViewport::refresh_pilot_and_preview_ui() {
-	if (previewing) {
+	if (previewing_cinema) {
+		preview_camera->set_visible(false);
+		pilot_preview_camera_checkbox->set_visible(false);
+		stop_piloting_button->set_visible(false);
+	} else if (previewing) {
 		preview_camera->set_visible(true);
 		preview_camera->set_pressed_no_signal(true);
 		pilot_preview_camera_checkbox->set_visible(true);
