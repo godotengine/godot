@@ -144,7 +144,12 @@ PackedStringArray AnimationNodeStateMachineTransition::get_configuration_warning
 		// been executed, clearing its error.
 		Expression test_expression;
 		if (test_expression.parse(advance_expression_stripped) != OK) {
-			warnings.push_back("Invalid advance expression: " + advance_expression_stripped);
+			String error_text = test_expression.get_error_text();
+			if (error_text == "Expected '='") {
+				warnings.push_back("Invalid advance expression '" + advance_expression_stripped + "': " + test_expression.get_error_text() + " (maybe '=' should be '=='?)");
+			} else {
+				warnings.push_back("Invalid advance expression '" + advance_expression_stripped + "': " + test_expression.get_error_text());
+			}
 		}
 	}
 
