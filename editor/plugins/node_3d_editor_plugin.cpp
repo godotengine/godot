@@ -4066,6 +4066,9 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 		}
 	}
 	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+	if (p_state.has("pilot_preview_camera")) {
+		pilot_preview_camera_checkbox->set_pressed(p_state["pilot_preview_camera"]);
+	}
 }
 
 Dictionary Node3DEditorViewport::get_state() const {
@@ -4106,6 +4109,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 	if (previewing) {
 		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
 	}
+	d["pilot_preview_camera"] = pilot_preview_camera_checkbox->is_pressed();
 	d["lock_rotation"] = lock_rotation;
 
 	return d;
