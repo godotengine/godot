@@ -84,7 +84,15 @@ void AnimationNodeStateMachineTransition::set_advance_expression(const String &p
 		expression.instantiate();
 	}
 
-	ERR_FAIL_COND_MSG(expression->parse(advance_expression_stripped) != OK, "Failed to parse advance expression '" + advance_expression_stripped + "': " + expression->get_error_text());
+#ifdef TOOLS_ENABLED
+	Error err = expression->parse(advance_expression_stripped);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		// This error is already shown in the scene tree editor.
+		ERR_FAIL_COND_MSG(err != OK, "Failed to parse advance expression '" + advance_expression_stripped + "': " + expression->get_error_text());
+	}
+#else
+	expression->parse(advance_expression_stripped);
+#endif
 }
 
 String AnimationNodeStateMachineTransition::get_advance_expression() const {
