@@ -443,12 +443,12 @@ void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_p
 
 void EditorPlugin::add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(!p_importer.is_valid());
-	ResourceImporterScene::add_importer(p_importer, p_first_priority);
+	ResourceImporterScene::add_scene_importer(p_importer, p_first_priority);
 }
 
 void EditorPlugin::remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer) {
 	ERR_FAIL_COND(!p_importer.is_valid());
-	ResourceImporterScene::remove_importer(p_importer);
+	ResourceImporterScene::remove_scene_importer(p_importer);
 }
 
 void EditorPlugin::add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority) {

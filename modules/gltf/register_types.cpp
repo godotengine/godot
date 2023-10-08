@@ -51,7 +51,7 @@
 static void _editor_init() {
 	Ref<EditorSceneFormatImporterGLTF> import_gltf;
 	import_gltf.instantiate();
-	ResourceImporterScene::add_importer(import_gltf);
+	ResourceImporterScene::add_scene_importer(import_gltf);
 
 	// Blend to glTF importer.
 
@@ -66,7 +66,7 @@ static void _editor_init() {
 		} else {
 			Ref<EditorSceneFormatImporterBlend> importer;
 			importer.instantiate();
-			ResourceImporterScene::add_importer(importer);
+			ResourceImporterScene::add_scene_importer(importer);
 
 			Ref<EditorFileSystemImportFormatSupportQueryBlend> blend_import_query;
 			blend_import_query.instantiate();
@@ -82,7 +82,7 @@ static void _editor_init() {
 	if (fbx_enabled) {
 		Ref<EditorSceneFormatImporterFBX> importer;
 		importer.instantiate();
-		ResourceImporterScene::get_scene_singleton()->add_importer(importer);
+		ResourceImporterScene::add_scene_importer(importer);
 
 		Ref<EditorFileSystemImportFormatSupportQueryFBX> fbx_import_query;
 		fbx_import_query.instantiate();
