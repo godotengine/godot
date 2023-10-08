@@ -152,6 +152,7 @@ void Node2D::reparent(Node *p_parent, bool p_keep_global_transform) {
 
 void Node2D::set_position(const Point2 &p_pos) {
 	ERR_THREAD_GUARD;
+	_set_global_invalid(false);
 	if (_is_xform_dirty()) {
 		_update_xform_values();
 	}
