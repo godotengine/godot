@@ -1543,6 +1543,8 @@ Color BaseMaterial3D::get_albedo() const {
 }
 
 void BaseMaterial3D::set_texture_uv(BaseMaterial3D::TextureParam p_param, BaseMaterial3D::TextureUV p_texture_uv) {
+	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
+
 	if (texture_uvs[p_param] == p_texture_uv) {
 		return;
 	}
@@ -1552,6 +1554,8 @@ void BaseMaterial3D::set_texture_uv(BaseMaterial3D::TextureParam p_param, BaseMa
 }
 
 BaseMaterial3D::TextureUV BaseMaterial3D::get_texture_uv(BaseMaterial3D::TextureParam p_param) const {
+	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
+
 	return texture_uvs[p_param];
 }
 
