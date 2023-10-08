@@ -840,6 +840,7 @@ public:
 		TypeNode *return_type = nullptr;
 		SuiteNode *body = nullptr;
 		bool is_static = false;
+		bool is_abstract = false;
 		bool is_coroutine = false;
 		Variant rpc_config;
 		MethodInfo info;

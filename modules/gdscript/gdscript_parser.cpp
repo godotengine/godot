@@ -93,7 +93,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 	register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 	register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
-	register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS, &GDScriptParser::abstract_annotation);
+	register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
 
 	register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 	// Export annotations.
@@ -3886,15 +3886,31 @@ bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p
 }
 
 bool GDScriptParser::abstract_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, R"("@abstract" annotation can only be applied to classes.)");
+	// ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS && p_target->type != Node::FUNCTION, false, R"("@abstract" annotation can only be applied to classes and functions.)");
 	// Note: Use `p_target`, **not** `p_class`, because when `p_target` is a class then `p_class` refers to the parent class.
-	ClassNode *class_node = static_cast<ClassNode *>(p_target);
-	if (class_node->is_abstract) {
-		push_error(R"("@abstract" annotation can only be used once per class.)", p_annotation);
-		return false;
+	if (p_target->type == Node::CLASS) {
+		ClassNode *class_node = static_cast<ClassNode *>(p_target);
+		if (class_node->is_abstract) {
+			push_error(R"("@abstract" annotation can only be used once per class.)", p_annotation);
+			return false;
+		}
+		class_node->is_abstract = true;
+		return true;
 	}
-	class_node->is_abstract = true;
-	return true;
+	if (p_target->type == Node::FUNCTION) {
+		FunctionNode *function_node = static_cast<FunctionNode *>(p_target);
+		if (function_node->is_abstract) {
+			push_error(R"("@abstract" annotation can only be used once per method.)", p_annotation);
+			return false;
+		}
+		if (function_node->is_static) {
+			push_error(R"("@abstract" annotation cannot be used on static methods.)");
+			return false;
+		}
+		function_node->is_abstract = true;
+		return true;
+	}
+	ERR_FAIL_V_MSG(false, R"("@abstract" annotation can only be applied to classes and methods.)");
 }
 
 bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
@@ -5419,7 +5435,8 @@ void GDScriptParser::TreePrinter::print_while(WhileNode *p_while) {
 }
 
 void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
-	ERR_FAIL_NULL_MSG(p_parser.get_tree(), "Parse the code before printing the parse tree.");
+	GDScriptParser::ClassNode *class_tree = p_parser.get_tree();
+	ERR_FAIL_NULL_MSG(class_tree, "Parse the code before printing the parse tree.");
 
 	if (p_parser.is_tool()) {
 		push_line("@tool");

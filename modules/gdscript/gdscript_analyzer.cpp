@@ -1405,6 +1405,41 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		resolve_pending_lambda_bodies();
 	}
 
+	// Resolve base abstract class/method implementation requirements.
+	if (!p_class->is_abstract) {
+		HashSet<StringName> implemented_funcs;
+		const GDScriptParser::ClassNode *base_class = p_class;
+		while (base_class != nullptr) {
+			if (!base_class->is_abstract && base_class != p_class) {
+				break;
+			}
+			for (GDScriptParser::ClassNode::Member member : base_class->members) {
+				if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
+					if (member.function->is_abstract) {
+						if (base_class == p_class) {
+							push_error(vformat(R"*(Class %s is not abstract but contains abstract methods. Mark the class as @abstract, or remove @abstract from all methods in this class.)*", p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name)), p_class);
+							break;
+						} else if (!implemented_funcs.has(member.function->identifier->name)) {
+							push_error(vformat(R"*(Class %s must implement "%s" and other methods from inherited abstract classes, or be marked as @abstract.)*", p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name), vformat(R"(%s::%s)", base_class->identifier == nullptr ? base_class->fqcn.get_file() : String(base_class->identifier->name), member.function->identifier->name)), p_class);
+							break;
+						}
+					} else {
+						implemented_funcs.insert(member.function->identifier->name);
+					}
+				}
+			}
+			if (base_class->base_type.kind == GDScriptParser::DataType::CLASS) {
+				base_class = base_class->base_type.class_type;
+			} else if (base_class->base_type.kind == GDScriptParser::DataType::SCRIPT) {
+				Ref<GDScriptParserRef> parser_ref = get_parser_for(base_class->base_type.script_path);
+				ERR_BREAK(parser_ref.is_null());
+				base_class = parser_ref->get_parser()->head;
+			} else {
+				break;
+			}
+		}
+	}
+
 	parser->current_class = previous_class;
 }
 
@@ -1614,7 +1649,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
 #ifdef DEBUG_ENABLED
-		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
+		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_") && !p_function->is_abstract) {
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
@@ -1795,11 +1830,17 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 
 	resolve_suite(p_function->body);
 
+	if (p_function->is_abstract) {
+		if (p_function->body->statements.size() != 1 || p_function->body->statements[0]->type != GDScriptParser::Node::PASS) {
+			push_error(vformat(R"*(Abstract method %s cannot have an implementation. The method body must contain only a single "pass" statement.)*", p_function->identifier->name), p_function);
+		}
+	}
+
 	if (!p_function->get_datatype().is_hard_type() && p_function->body->get_datatype().is_set()) {
 		// Use the suite inferred type if return isn't explicitly set.
 		p_function->set_datatype(p_function->body->get_datatype());
 	} else if (p_function->get_datatype().is_hard_type() && (p_function->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_function->get_datatype().builtin_type != Variant::NIL)) {
-		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
+		if (!p_function->is_abstract && !p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
 			push_error(R"(Not all code paths return a value.)", p_function);
 		}
 	}
