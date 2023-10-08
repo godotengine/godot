@@ -6924,15 +6924,15 @@ EditorNode::EditorNode() {
 		{
 			Ref<EditorSceneFormatImporterCollada> import_collada;
 			import_collada.instantiate();
-			ResourceImporterScene::add_importer(import_collada);
+			ResourceImporterScene::add_scene_importer(import_collada);
 
 			Ref<EditorOBJImporter> import_obj2;
 			import_obj2.instantiate();
-			ResourceImporterScene::add_importer(import_obj2);
+			ResourceImporterScene::add_scene_importer(import_obj2);
 
 			Ref<EditorSceneFormatImporterESCN> import_escn;
 			import_escn.instantiate();
-			ResourceImporterScene::add_importer(import_escn);
+			ResourceImporterScene::add_scene_importer(import_escn);
 		}
 
 		Ref<ResourceImporterBitMap> import_bitmap;

@@ -250,9 +250,7 @@ String ResourceImporterScene::get_visible_name() const {
 }
 
 void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions) const {
-	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
-		importer_elem->get_extensions(p_extensions);
-	}
+	get_scene_importer_extensions(p_extensions);
 }
 
 String ResourceImporterScene::get_save_extension() const {
@@ -294,7 +292,7 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		}
 	}
 
-	for (Ref<EditorSceneFormatImporter> importer : importers) {
+	for (Ref<EditorSceneFormatImporter> importer : scene_importers) {
 		Variant ret = importer->get_option_visibility(p_path, animation_importer, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
 			return ret;
@@ -1951,13 +1949,13 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 		post_importer_plugins.write[i]->get_import_options(p_path, r_options);
 	}
 
-	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
 		importer_elem->get_import_options(p_path, r_options);
 	}
 }
 
 void ResourceImporterScene::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
-	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
 		importer_elem->handle_compatibility_options(p_import_params);
 	}
 }
@@ -2360,7 +2358,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	EditorProgress progress("pre-import", TTR("Pre-Import Scene"), 0);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
 		List<String> extensions;
 		importer_elem->get_extensions(&extensions);
 
@@ -2402,7 +2400,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	EditorProgress progress("import", TTR("Import Scene"), 104);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
 		List<String> extensions;
 		importer_elem->get_extensions(&extensions);
 
@@ -2665,12 +2663,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 ResourceImporterScene *ResourceImporterScene::scene_singleton = nullptr;
 ResourceImporterScene *ResourceImporterScene::animation_singleton = nullptr;
 
-Vector<Ref<EditorSceneFormatImporter>> ResourceImporterScene::importers;
+Vector<Ref<EditorSceneFormatImporter>> ResourceImporterScene::scene_importers;
 Vector<Ref<EditorScenePostImportPlugin>> ResourceImporterScene::post_importer_plugins;
 
 bool ResourceImporterScene::has_advanced_options() const {
 	return true;
 }
+
 void ResourceImporterScene::show_advanced_options(const String &p_path) {
 	SceneImportSettingsDialog::get_singleton()->open_settings(p_path, animation_importer);
 }
@@ -2697,12 +2696,12 @@ ResourceImporterScene::~ResourceImporterScene() {
 	}
 }
 
-void ResourceImporterScene::add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority) {
+void ResourceImporterScene::add_scene_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(p_importer.is_null());
 	if (p_first_priority) {
-		importers.insert(0, p_importer);
+		scene_importers.insert(0, p_importer);
 	} else {
-		importers.push_back(p_importer);
+		scene_importers.push_back(p_importer);
 	}
 }
 
@@ -2719,13 +2718,19 @@ void ResourceImporterScene::add_post_importer_plugin(const Ref<EditorScenePostIm
 	}
 }
 
-void ResourceImporterScene::remove_importer(Ref<EditorSceneFormatImporter> p_importer) {
-	importers.erase(p_importer);
+void ResourceImporterScene::remove_scene_importer(Ref<EditorSceneFormatImporter> p_importer) {
+	scene_importers.erase(p_importer);
 }
 
 void ResourceImporterScene::clean_up_importer_plugins() {
-	importers.clear();
+	scene_importers.clear();
 	post_importer_plugins.clear();
+}
+
+void ResourceImporterScene::get_scene_importer_extensions(List<String> *p_extensions) {
+	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
+		importer_elem->get_extensions(p_extensions);
+	}
 }
 
 ///////////////////////////////////////

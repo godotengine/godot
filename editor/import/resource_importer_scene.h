@@ -159,7 +159,7 @@ VARIANT_ENUM_CAST(EditorScenePostImportPlugin::InternalImportCategory)
 class ResourceImporterScene : public ResourceImporter {
 	GDCLASS(ResourceImporterScene, ResourceImporter);
 
-	static Vector<Ref<EditorSceneFormatImporter>> importers;
+	static Vector<Ref<EditorSceneFormatImporter>> scene_importers;
 	static Vector<Ref<EditorScenePostImportPlugin>> post_importer_plugins;
 
 	static ResourceImporterScene *scene_singleton;
@@ -243,10 +243,10 @@ public:
 	static void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority = false);
 	static void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
 
-	const Vector<Ref<EditorSceneFormatImporter>> &get_importers() const { return importers; }
-
-	static void add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority = false);
-	static void remove_importer(Ref<EditorSceneFormatImporter> p_importer);
+	const Vector<Ref<EditorSceneFormatImporter>> &get_scene_importers() const { return scene_importers; }
+	static void add_scene_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority = false);
+	static void remove_scene_importer(Ref<EditorSceneFormatImporter> p_importer);
+	static void get_scene_importer_extensions(List<String> *p_extensions);
 
 	static void clean_up_importer_plugins();
 
