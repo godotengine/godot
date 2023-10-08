@@ -83,6 +83,9 @@ private:
 		SPEC_CONSTANT_DISABLE_DECALS = 13,
 		SPEC_CONSTANT_DISABLE_FOG = 14,
 
+		// 15 is used by sc_luminance_multiplier
+		SPEC_CONSTANT_SINGLE_DIRECTIONAL_LIGHT = 16,
+
 	};
 
 	enum {
