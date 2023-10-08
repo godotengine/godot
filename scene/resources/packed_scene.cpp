@@ -1233,8 +1233,9 @@ int SceneState::_find_base_scene_node_remap_key(int p_idx) const {
 	return -1;
 }
 
-Variant SceneState::get_property_value(int p_node, const StringName &p_property, bool &found) const {
+Variant SceneState::get_property_value(int p_node, const StringName &p_property, bool &found, bool &is_path_node) const {
 	found = false;
+	is_path_node = false;
 
 	ERR_FAIL_COND_V(p_node < 0, Variant());
 
@@ -1246,6 +1247,9 @@ Variant SceneState::get_property_value(int p_node, const StringName &p_property,
 		const NodeData::Property *p = nodes[p_node].properties.ptr();
 		for (int i = 0; i < pc; i++) {
 			if (p_property == namep[p[i].name & FLAG_PROP_NAME_MASK]) {
+				if (p[i].name & FLAG_PATH_PROPERTY_IS_NODE) {
+					is_path_node = true;
+				}
 				found = true;
 				return variants[p[i].value];
 			}
@@ -1255,7 +1259,7 @@ Variant SceneState::get_property_value(int p_node, const StringName &p_property,
 	//property not found, try on instance
 
 	if (base_scene_node_remap.has(p_node)) {
-		return get_base_scene_state()->get_property_value(base_scene_node_remap[p_node], p_property, found);
+		return get_base_scene_state()->get_property_value(base_scene_node_remap[p_node], p_property, found, is_path_node);
 	}
 
 	return Variant();

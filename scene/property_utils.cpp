@@ -73,16 +73,31 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		for (int i = 0; i < states_stack.size(); ++i) {
 			const SceneState::PackState &ia = states_stack[i];
 			bool found = false;
-			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found);
+			bool is_path_node = false;
+			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found, is_path_node);
 			if (found) {
 				if (r_is_valid) {
 					*r_is_valid = true;
+				}
+
+				if (is_path_node) {
+					if (value_in_ancestor.get_type() == Variant::ARRAY) {
+						Array arr = value_in_ancestor;
+						for (int j = 0; j < arr.size(); j++) {
+							if (arr[j].get_type() == Variant::NODE_PATH) {
+								arr[j] = node->get_node(arr[j]);
+							}
+						}
+						value_in_ancestor = arr;
+					} else {
+						value_in_ancestor = node->get_node(value_in_ancestor);
+					}
 				}
 				return value_in_ancestor;
 			}
 			// Save script for later
 			bool has_script = false;
-			Variant script = ia.state->get_property_value(ia.node, SNAME("script"), has_script);
+			Variant script = ia.state->get_property_value(ia.node, SNAME("script"), has_script, is_path_node);
 			if (has_script) {
 				Ref<Script> scr = script;
 				if (scr.is_valid()) {
