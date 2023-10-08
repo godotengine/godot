@@ -148,9 +148,15 @@
 				Informs our OpenXR session has been started.
 			</description>
 		</signal>
-		<signal name="session_focussed">
+		<signal name="session_focused">
 			<description>
 				Informs our OpenXR session now has focus.
+			</description>
+		</signal>
+		<signal name="session_focussed" is_deprecated="true">
+			<description>
+				Informs our OpenXR session now has focus.
+				[i]Deprecated.[/i] Use [signal session_focused] instead.
 			</description>
 		</signal>
 		<signal name="session_stopping">

@@ -40,7 +40,10 @@ void OpenXRInterface::_bind_methods() {
 	// lifecycle signals
 	ADD_SIGNAL(MethodInfo("session_begun"));
 	ADD_SIGNAL(MethodInfo("session_stopping"));
+	ADD_SIGNAL(MethodInfo("session_focused"));
+#ifndef DISABLE_DEPRECATED
 	ADD_SIGNAL(MethodInfo("session_focussed"));
+#endif // DISABLE_DEPRECATED
 	ADD_SIGNAL(MethodInfo("session_visible"));
 	ADD_SIGNAL(MethodInfo("pose_recentered"));
 
@@ -1177,7 +1180,10 @@ void OpenXRInterface::on_state_visible() {
 }
 
 void OpenXRInterface::on_state_focused() {
+	emit_signal(SNAME("session_focused"));
+#ifndef DISABLE_DEPRECATED
 	emit_signal(SNAME("session_focussed"));
+#endif // DISABLE_DEPRECATED
 }
 
 void OpenXRInterface::on_state_stopping() {
