@@ -5152,8 +5152,22 @@ void RasterizerSceneGLES3::initialize() {
 	{
 		//spot and omni ubos
 
-		int max_ubo_size;
-		glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_ubo_size);
+		// SPECIAL CASE for GL_MAX_UNIFORM_BLOCK_SIZE.
+		// Under ANGLE, in some situations this will return INT32_MAX + 1
+		// (or very high values).
+		// This seems to be because ANGLE supports system memory backing,
+		// but the true hardware GPU max may be lower.
+		// Afaik we have no way of querying this hardware supported value.
+		// We also ideally want to take advantage of GPUs that *do* support large uniform
+		// blocks in hardware (although this is probably not taken advantage of in Godot 3.x currently).
+
+		// This logic is thus a compromise.
+		int max_ubo_size = RasterizerStorageGLES3::safe_gl_get_integer(GL_MAX_UNIFORM_BLOCK_SIZE);
+
+		// Some maximum we are likely to currently need, currently 1 meg.
+		// Not really necessary but provides a small guard against excessive sizes.
+		max_ubo_size = MIN(max_ubo_size, 1024 * 1024);
+
 		const int ubo_light_size = 160;
 		state.ubo_light_size = ubo_light_size;
 		state.max_ubo_lights = MIN(render_list.max_lights, max_ubo_size / ubo_light_size);

@@ -97,6 +97,7 @@ public:
 		float anisotropic_level;
 
 		int max_texture_image_units;
+		static const int32_t max_desired_texture_image_units = 64;
 		int max_texture_size;
 		int max_cubemap_texture_size;
 
@@ -1529,6 +1530,8 @@ public:
 
 	void initialize();
 	void finalize();
+
+	static int32_t safe_gl_get_integer(unsigned int p_gl_param_name, int32_t p_max_accepted = INT32_MAX);
 
 	virtual bool has_os_feature(const String &p_feature) const;
 

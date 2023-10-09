@@ -65,6 +65,7 @@ public:
 
 		int max_vertex_texture_image_units;
 		int max_texture_image_units;
+		static const int32_t max_desired_texture_image_units = 64;
 		int max_texture_size;
 		int max_cubemap_texture_size;
 		int max_viewport_dimensions[2];
@@ -1389,6 +1390,8 @@ public:
 	virtual uint64_t get_render_info(VS::RenderInfo p_info);
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
+
+	static int32_t safe_gl_get_integer(unsigned int p_gl_param_name, int32_t p_max_accepted = INT32_MAX);
 
 	// NOTE : THESE SIZES ARE IN BYTES. BUFFER SIZES MAY NOT BE SPECIFIED IN BYTES SO REMEMBER TO CONVERT THEM WHEN CALLING.
 	void buffer_orphan_and_upload(unsigned int p_buffer_size_bytes, unsigned int p_offset_bytes, unsigned int p_data_size_bytes, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER, GLenum p_usage = GL_DYNAMIC_DRAW, bool p_optional_orphan = false) const;

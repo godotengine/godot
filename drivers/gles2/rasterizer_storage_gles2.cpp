@@ -134,6 +134,15 @@ void RasterizerStorageGLES2::GLWrapper::reset() {
 	texture_unit_table.blank();
 }
 
+int32_t RasterizerStorageGLES2::safe_gl_get_integer(unsigned int p_gl_param_name, int32_t p_max_accepted) {
+	// There is no glGetInteger64v in the base GLES2 spec as far as I can see.
+	// So we will just have a capped 32 bit version for GLES2.
+	int32_t temp;
+	glGetIntegerv(p_gl_param_name, &temp);
+	temp = MIN(temp, p_max_accepted);
+	return temp;
+}
+
 void RasterizerStorageGLES2::bind_quad_array() const {
 	glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, nullptr);
@@ -6316,7 +6325,7 @@ void RasterizerStorageGLES2::initialize() {
 	config.depth_type = GL_UNSIGNED_INT;
 
 	// Initialize GLWrapper early on, as required for any calls to glActiveTexture.
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
+	config.max_texture_image_units = safe_gl_get_integer(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, Config::max_desired_texture_image_units);
 	gl_wrapper.initialize(config.max_texture_image_units);
 
 #ifdef GLES_OVER_GL
