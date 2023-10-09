@@ -56,6 +56,21 @@ T *GDScriptParser::alloc_node() {
 	return t;
 }
 
+static String _lookup_autoload_path_for_identifier(const String &p_identifier) {
+	String autoload_path;
+	String autoload_setting_path = "autoload/" + p_identifier;
+	if (ProjectSettings::get_singleton()->has_setting(autoload_setting_path)) {
+		autoload_path = ProjectSettings::get_singleton()->get(autoload_setting_path);
+		if (autoload_path.begins_with("*")) {
+			autoload_path = autoload_path.right(1);
+		}
+		if (!autoload_path.begins_with("res://")) {
+			autoload_path = "res://" + autoload_path;
+		}
+	}
+	return autoload_path;
+}
+
 #ifdef DEBUG_ENABLED
 static String _find_function_name(const GDScriptParser::OperatorNode *p_call);
 #endif // DEBUG_ENABLED
@@ -5497,29 +5512,14 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 				}
 				p = nullptr;
 			} else {
-				List<PropertyInfo> props;
-				ProjectSettings::get_singleton()->get_property_list(&props);
-				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-					String s = E->get().name;
-					if (!s.begins_with("autoload/")) {
-						continue;
+				String autoload_path = _lookup_autoload_path_for_identifier(base);
+				if (!autoload_path.empty()) {
+					base_script = ResourceLoader::load(autoload_path);
+					if (!base_script.is_valid()) {
+						_set_error("Class '" + base + "' could not be fully loaded (script error or cyclic inheritance).", p_class->line);
+						return;
 					}
-					String name = s.get_slice("/", 1);
-					if (name == base) {
-						String singleton_path = ProjectSettings::get_singleton()->get(s);
-						if (singleton_path.begins_with("*")) {
-							singleton_path = singleton_path.right(1);
-						}
-						if (!singleton_path.begins_with("res://")) {
-							singleton_path = "res://" + singleton_path;
-						}
-						base_script = ResourceLoader::load(singleton_path);
-						if (!base_script.is_valid()) {
-							_set_error("Class '" + base + "' could not be fully loaded (script error or cyclic inheritance).", p_class->line);
-							return;
-						}
-						p = nullptr;
-					}
+					p = nullptr;
 				}
 			}
 
@@ -5869,28 +5869,10 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 				name_part++;
 				continue;
 			}
-			List<PropertyInfo> props;
-			ProjectSettings::get_singleton()->get_property_list(&props);
-			String singleton_path;
-			for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-				String s = E->get().name;
-				if (!s.begins_with("autoload/")) {
-					continue;
-				}
-				String name = s.get_slice("/", 1);
-				if (name == id) {
-					singleton_path = ProjectSettings::get_singleton()->get(s);
-					if (singleton_path.begins_with("*")) {
-						singleton_path = singleton_path.right(1);
-					}
-					if (!singleton_path.begins_with("res://")) {
-						singleton_path = "res://" + singleton_path;
-					}
-					break;
-				}
-			}
-			if (!singleton_path.empty()) {
-				Ref<Script> script = ResourceLoader::load(singleton_path);
+
+			String autoload_path = _lookup_autoload_path_for_identifier(id);
+			if (!autoload_path.empty()) {
+				Ref<Script> script = ResourceLoader::load(autoload_path);
 				Ref<GDScript> gds = script;
 				if (gds.is_valid()) {
 					if (!gds->is_valid()) {
@@ -7786,40 +7768,24 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 		}
 
 		// Non-tool singletons aren't loaded, check project settings
-		List<PropertyInfo> props;
-		ProjectSettings::get_singleton()->get_property_list(&props);
+		String autoload_path = _lookup_autoload_path_for_identifier(p_identifier);
+		if (!autoload_path.empty()) {
+			Ref<Script> singleton = ResourceLoader::load(autoload_path);
+			if (singleton.is_valid()) {
+				DataType result;
+				result.has_type = true;
+				result.is_constant = true;
+				result.script_type = singleton;
 
-		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-			String s = E->get().name;
-			if (!s.begins_with("autoload/")) {
-				continue;
-			}
-			String name = s.get_slice("/", 1);
-			if (name == p_identifier) {
-				String script = ProjectSettings::get_singleton()->get(s);
-				if (script.begins_with("*")) {
-					script = script.right(1);
-				}
-				if (!script.begins_with("res://")) {
-					script = "res://" + script;
-				}
-				Ref<Script> singleton = ResourceLoader::load(script);
-				if (singleton.is_valid()) {
-					DataType result;
-					result.has_type = true;
-					result.is_constant = true;
-					result.script_type = singleton;
-
-					Ref<GDScript> gds = singleton;
-					if (gds.is_valid()) {
-						if (!gds->is_valid()) {
-							_set_error("Couldn't fully load the singleton script \"" + p_identifier + "\" (possible cyclic reference or parse error).", p_line);
-							return DataType();
-						}
-						result.kind = DataType::GDSCRIPT;
-					} else {
-						result.kind = DataType::SCRIPT;
+				Ref<GDScript> gds = singleton;
+				if (gds.is_valid()) {
+					if (!gds->is_valid()) {
+						_set_error("Couldn't fully load the singleton script \"" + p_identifier + "\" (possible cyclic reference or parse error).", p_line);
+						return DataType();
 					}
+					result.kind = DataType::GDSCRIPT;
+				} else {
+					result.kind = DataType::SCRIPT;
 				}
 			}
 		}
