@@ -479,19 +479,8 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			accept_event();
 			return;
 		}
-		if (k->is_action("ui_home", true)) {
-			code_completion_current_selected = 0;
-			code_completion_force_item_center = -1;
-			queue_redraw();
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_end", true)) {
-			code_completion_current_selected = code_completion_options.size() - 1;
-			code_completion_force_item_center = -1;
-			queue_redraw();
-			accept_event();
-			return;
+		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true)) {
+			cancel_code_completion();
 		}
 		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
 			confirm_code_completion(k->is_action("ui_text_completion_replace", true));
