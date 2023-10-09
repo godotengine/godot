@@ -3732,16 +3732,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	Error err;
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
-	if (!sdata.is_valid()) {
-		_dialog_display_load_error(lpath, err);
-		opening_prev = false;
-
-		if (prev != -1) {
-			_set_current_scene(prev);
-			editor_data.remove_scene(idx);
-		}
-		return ERR_FILE_NOT_FOUND;
-	}
 
 	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
 		current_menu_option = -1;
@@ -3757,6 +3747,17 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			editor_data.remove_scene(idx);
 		}
 		return ERR_FILE_MISSING_DEPENDENCIES;
+	}
+
+	if (!sdata.is_valid()) {
+		_dialog_display_load_error(lpath, err);
+		opening_prev = false;
+
+		if (prev != -1) {
+			_set_current_scene(prev);
+			editor_data.remove_scene(idx);
+		}
+		return ERR_FILE_NOT_FOUND;
 	}
 
 	dependency_errors.erase(lpath); // At least not self path.
