@@ -813,9 +813,13 @@ static Vector2 compute_polyline_edge_offset_clamped(const Vector2 &p_segment_dir
 }
 
 void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
-	ERR_FAIL_COND(p_points.size() < 2);
+	if (p_points.is_empty()) {
+		return;
+	}
+	ERR_FAIL_COND(p_points.size() == 1);
+
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	ERR_FAIL_COND(!canvas_item);
+	ERR_FAIL_NULL(canvas_item);
 
 	Color color = Color(1, 1, 1, 1);
 
@@ -1080,7 +1084,10 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 }
 
 void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
-	ERR_FAIL_COND(p_points.is_empty() || p_points.size() % 2 != 0);
+	if (p_points.is_empty()) {
+		return;
+	}
+	ERR_FAIL_COND(p_points.size() % 2 != 0);
 	ERR_FAIL_COND(p_colors.size() != 1 && p_colors.size() * 2 != p_points.size());
 
 	// TODO: `canvas_item_add_line`(`multiline`, `polyline`) share logic, should factor out.
