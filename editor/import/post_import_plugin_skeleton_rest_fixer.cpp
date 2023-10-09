@@ -242,6 +242,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 						if (rot_track == -1) {
 							int track = anim->add_track(Animation::TYPE_ROTATION_3D);
 							anim->track_set_path(track, insert_path);
+							anim->track_set_imported(track, true);
 							anim->rotation_track_insert_key(track, 0, src_skeleton->get_bone_rest(src_idx).basis.get_rotation_quaternion());
 						}
 					}
