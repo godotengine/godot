@@ -60,11 +60,6 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_texture.h"
 
-// Min and Max are power of two in order to play nicely with successive increment.
-// That way, we can naturally reach a 100% zoom from boundaries.
-constexpr real_t MIN_ZOOM = 1. / 128;
-constexpr real_t MAX_ZOOM = 128;
-
 #define RULER_WIDTH (15 * EDSCALE)
 constexpr real_t SCALE_HANDLE_DISTANCE = 25;
 constexpr real_t MOVE_HANDLE_DISTANCE = 25;
@@ -4115,10 +4110,9 @@ void CanvasItemEditor::_update_scroll(real_t) {
 }
 
 void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
-	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
+	p_zoom = CLAMP(p_zoom, zoom_widget->get_min_zoom(), zoom_widget->get_max_zoom());
 
 	if (p_zoom == zoom) {
-		zoom_widget->set_zoom(p_zoom);
 		return;
 	}
 
@@ -4128,12 +4122,12 @@ void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
 	view_offset += p_position / prev_zoom - p_position / zoom;
 
 	// We want to align in-scene pixels to screen pixels, this prevents blurry rendering
-	// in small details (texts, lines).
+	// of small details (texts, lines).
 	// This correction adds a jitter movement when zooming, so we correct only when the
 	// zoom factor is an integer. (in the other cases, all pixels won't be aligned anyway)
 	const real_t closest_zoom_factor = Math::round(zoom);
 	if (Math::is_zero_approx(zoom - closest_zoom_factor)) {
-		// make sure scene pixel at view_offset is aligned on a screen pixel
+		// Make sure scene pixel at view_offset is aligned on a screen pixel.
 		Vector2 view_offset_int = view_offset.floor();
 		Vector2 view_offset_frac = view_offset - view_offset_int;
 		view_offset = view_offset_int + (view_offset_frac * closest_zoom_factor).round() / closest_zoom_factor;
@@ -5147,9 +5141,9 @@ CanvasItemEditor::CanvasItemEditor() {
 	button_center_view->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(VIEW_CENTER_TO_SELECTION));
 
 	zoom_widget = memnew(EditorZoomWidget);
-	controls_hb->add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
 	zoom_widget->set_shortcut_context(this);
+	controls_hb->add_child(zoom_widget);
 	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
 	panner.instantiate();
