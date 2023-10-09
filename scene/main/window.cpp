@@ -779,7 +779,7 @@ void Window::set_visible(bool p_visible) {
 		return;
 	}
 
-	ERR_FAIL_COND_MSG(get_parent() == nullptr, "Can't change visibility of main window.");
+	ERR_FAIL_NULL_MSG(get_parent(), "Can't change visibility of main window.");
 
 	visible = p_visible;
 

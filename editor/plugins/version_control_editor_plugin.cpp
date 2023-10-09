@@ -44,7 +44,7 @@
 #include "scene/gui/separator.h"
 
 #define CHECK_PLUGIN_INITIALIZED() \
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Plugin from Project menu.");
+	ERR_FAIL_NULL_MSG(EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Plugin from Project menu.");
 
 VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 

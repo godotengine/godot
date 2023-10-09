@@ -163,7 +163,7 @@ void JavaScriptObjectImpl::_get_property_list(List<PropertyInfo> *p_list) const 
 }
 
 void JavaScriptObjectImpl::_free_lock(void **p_lock, int p_type) {
-	ERR_FAIL_COND_MSG(*p_lock == nullptr, "No lock to free!");
+	ERR_FAIL_NULL_MSG(*p_lock, "No lock to free!");
 	const Variant::Type type = (Variant::Type)p_type;
 	switch (type) {
 		case Variant::STRING: {

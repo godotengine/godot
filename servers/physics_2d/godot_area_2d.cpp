@@ -180,7 +180,7 @@ Variant GodotArea2D::get_param(PhysicsServer2D::AreaParameter p_param) const {
 }
 
 void GodotArea2D::_queue_monitor_update() {
-	ERR_FAIL_COND(!get_space());
+	ERR_FAIL_NULL(get_space());
 
 	if (!monitor_query_list.in_list()) {
 		get_space()->area_add_to_monitor_query_list(&monitor_query_list);

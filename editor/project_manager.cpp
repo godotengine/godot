@@ -397,7 +397,7 @@ void ProjectDialog::_nonempty_confirmation_ok_pressed() {
 }
 
 void ProjectDialog::_renderer_selected() {
-	ERR_FAIL_COND(!renderer_button_group->get_pressed_button());
+	ERR_FAIL_NULL(renderer_button_group->get_pressed_button());
 
 	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
 

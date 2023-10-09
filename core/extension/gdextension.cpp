@@ -776,7 +776,7 @@ void GDExtension::initialize_library(InitializationLevel p_level) {
 
 	level_initialized = int32_t(p_level);
 
-	ERR_FAIL_COND(initialization.initialize == nullptr);
+	ERR_FAIL_NULL(initialization.initialize);
 
 	initialization.initialize(initialization.userdata, GDExtensionInitializationLevel(p_level));
 }
