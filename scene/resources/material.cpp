@@ -975,6 +975,11 @@ void BaseMaterial3D::_update_shader() {
 		code += "		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));\n";
 		code += "	}\n";
 	}
+	else {
+		code += "\tif (OUTPUT_IS_SRGB) {\n";
+		code += "\t\tCOLOR.rgb = mix((vec3(1.0f) + vec3(0.055f)) * pow(COLOR.rgb, vec3(1.0f / 2.4f)) - vec3(0.055f), 12.92f * COLOR.rgb, lessThan(COLOR.rgb, vec3(0.0031308f)));\n";
+		code += "\t}\n";
+	}
 	if (flags[FLAG_USE_POINT_SIZE]) {
 		code += "	POINT_SIZE=point_size;\n";
 	}
