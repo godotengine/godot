@@ -35,6 +35,7 @@
 #include "scene/gui/tree.h"
 
 const int max_results = 100;
+const float cull_factor = 0.5f;
 
 Vector<int> FuzzySearchResult::get_matches() const {
 	Vector<int> matches_array;
@@ -97,6 +98,10 @@ PackedStringArray get_query(const String &p_query) {
 Vector<Ref<FuzzySearchResult>> sort_and_filter(const Vector<Ref<FuzzySearchResult>> &p_results) {
 	Vector<Ref<FuzzySearchResult>> res;
 
+	if (p_results.is_empty()) {
+		return res;
+	}
+
 	float total_score = 0;
 	for (const Ref<FuzzySearchResult> &result : p_results) {
 		total_score += result->score;
@@ -112,7 +117,7 @@ Vector<Ref<FuzzySearchResult>> sort_and_filter(const Vector<Ref<FuzzySearchResul
 
 	// Prune low score entries before even sorting
 	for (Ref<FuzzySearchResult> i : p_results) {
-		if (i->score >= mean_score * 0.5) {
+		if (i->score >= mean_score * cull_factor) {
 			res.push_back(i);
 		}
 
