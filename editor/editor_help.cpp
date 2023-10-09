@@ -2938,7 +2938,12 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 
 	// Metadata special handling replaces "Property:" with "Metadata": above.
 	formatted_text += " [u][b]" + title.trim_prefix("metadata/") + "[/b][/u]" + property_args.replace("[", "[lb]") + "\n";
-	formatted_text += description.is_empty() ? "[i]" + TTR("No description available.") + "[/i]" : description;
+	if (title.begins_with("metadata/")) {
+		// Metadata can't have descriptions, so display usage instructions instead.
+		formatted_text += "[i]" + vformat(TTR("To access this metadata, use [code]get_meta(\"%s\")[/code] and [code]set_meta(\"%s\", ...)[/code]."), title.trim_prefix("metadata/"), title.trim_prefix("metadata/")) + "[/i]";
+	} else {
+		formatted_text += description.is_empty() ? "[i]" + TTR("No description available.") + "[/i]" : description;
+	}
 	set_text(formatted_text);
 }
 
