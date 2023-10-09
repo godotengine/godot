@@ -126,6 +126,12 @@ TEST_CASE("[Array] resize(), insert(), and erase()") {
 	CHECK(int(arr[0]) == 2);
 	arr.erase(2);
 	CHECK(int(arr[0]) == 1);
+
+	// Negative index on insert.
+	CHECK(arr.size() == 3);
+	arr.insert(-1, 3);
+	CHECK(int(arr[2]) == 3);
+	CHECK(arr.size() == 4);
 }
 
 TEST_CASE("[Array] front() and back()") {
@@ -152,6 +158,15 @@ TEST_CASE("[Array] remove_at()") {
 	CHECK(arr.size() == 1);
 	CHECK(int(arr[0]) == 2);
 	arr.remove_at(0);
+	CHECK(arr.size() == 0);
+
+	// Negative index.
+	arr.push_back(3);
+	arr.push_back(4);
+	arr.remove_at(-1);
+	CHECK(arr.size() == 1);
+	CHECK(int(arr[0]) == 3);
+	arr.remove_at(-1);
 	CHECK(arr.size() == 0);
 
 	// The array is now empty; try to use `remove_at()` again.

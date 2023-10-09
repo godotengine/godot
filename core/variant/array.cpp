@@ -312,6 +312,14 @@ Error Array::insert(int p_pos, const Variant &p_value) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "insert"), ERR_INVALID_PARAMETER);
+
+	if (p_pos < 0) {
+		// Relative offset from the end.
+		p_pos = _p->array.size() + p_pos;
+	}
+
+	ERR_FAIL_INDEX_V_MSG(p_pos, _p->array.size(), ERR_INVALID_PARAMETER, vformat("The calculated index %d is out of bounds (the array has %d elements). Leaving the array untouched.", p_pos, _p->array.size()));
+
 	return _p->array.insert(p_pos, std::move(value));
 }
 
@@ -481,6 +489,14 @@ bool Array::has(const Variant &p_value) const {
 
 void Array::remove_at(int p_pos) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+
+	if (p_pos < 0) {
+		// Relative offset from the end.
+		p_pos = _p->array.size() + p_pos;
+	}
+
+	ERR_FAIL_INDEX_MSG(p_pos, _p->array.size(), vformat("The calculated index %d is out of bounds (the array has %d elements). Leaving the array untouched.", p_pos, _p->array.size()));
+
 	_p->array.remove_at(p_pos);
 }
 
