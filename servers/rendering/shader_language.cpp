@@ -5418,7 +5418,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 										}
 
 										if (error) {
-											_set_error(vformat(RTR("A constant value cannot be passed for '%s' parameter."), _get_qualifier_str(arg_qual)));
+											_set_error(vformat(RTR("A constant value cannot be passed for the '%s' parameter."), _get_qualifier_str(arg_qual)));
 											return nullptr;
 										}
 									}
