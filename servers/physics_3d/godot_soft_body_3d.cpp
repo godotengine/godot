@@ -969,52 +969,19 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 
 	ERR_FAIL_NULL(get_space());
 
-	bool gravity_done = false;
-	Vector3 gravity;
+	Vector3 gravity = compute_gravity();
 
+	// Gather wind areas from the list of areas.
 	LocalVector<GodotArea3D *> wind_areas;
-
 	int ac = areas.size();
 	if (ac) {
 		areas.sort();
 		const Area3DCMP *aa = &areas[0];
 		for (int i = ac - 1; i >= 0; i--) {
-			if (!gravity_done) {
-				PhysicsServer3D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
-				if (area_gravity_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
-					Vector3 area_gravity;
-					aa[i].area->compute_gravity(get_transform().get_origin(), area_gravity);
-					switch (area_gravity_mode) {
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-							gravity += area_gravity;
-							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
-						} break;
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-							gravity = area_gravity;
-							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
-						} break;
-						default: {
-						}
-					}
-				}
-			}
-
 			if (aa[i].area->get_wind_force_magnitude() > CMP_EPSILON) {
 				wind_areas.push_back(aa[i].area);
 			}
 		}
-	}
-
-	// Add default gravity and damping from space area.
-	if (!gravity_done) {
-		GodotArea3D *default_area = get_space()->get_default_area();
-		ERR_FAIL_NULL(default_area);
-
-		Vector3 default_gravity;
-		default_area->compute_gravity(get_transform().get_origin(), default_gravity);
-		gravity += default_gravity;
 	}
 
 	// Apply forces.

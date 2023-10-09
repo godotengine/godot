@@ -39,6 +39,9 @@ protected:
 	Vector<Area3DCMP> areas;
 	GodotSolidObject3D(GodotCollisionObject3D::Type p_type) :
 			GodotCollisionObject3D(p_type) {}
+
+public:
+	Vector3 compute_gravity();
 };
 
 #endif // GODOT_SOLID_OBJECT_3D_H

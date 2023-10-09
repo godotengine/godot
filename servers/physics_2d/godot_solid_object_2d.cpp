@@ -29,3 +29,47 @@
 /**************************************************************************/
 
 #include "godot_solid_object_2d.h"
+
+#include "godot_space_2d.h"
+
+Vector2 GodotSolidObject2D::compute_gravity() {
+	Vector2 gravity;
+	// Add gravity from areas in order of priority.
+	int area_count = areas.size();
+	if (area_count) {
+		areas.sort();
+		const Area2DCMP *aa = &areas[0];
+		for (int i = area_count - 1; i >= 0; i--) {
+			PhysicsServer2D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer2D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
+			if (area_gravity_mode != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+				Vector2 area_gravity;
+				aa[i].area->compute_gravity(get_transform().get_origin(), area_gravity);
+				switch (area_gravity_mode) {
+					case PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE:
+					case PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+						gravity += area_gravity;
+						if (area_gravity_mode == PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE) {
+							return gravity;
+						}
+					} break;
+					case PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE:
+					case PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+						gravity = area_gravity;
+						if (area_gravity_mode == PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE) {
+							return gravity;
+						}
+					} break;
+					case PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED: {
+					}
+				}
+			}
+		}
+	}
+	// Add global world gravity from the space's default area.
+	GodotArea2D *default_area = get_space()->get_default_area();
+	ERR_FAIL_NULL_V(default_area, gravity);
+	Vector2 global_default_gravity;
+	default_area->compute_gravity(get_transform().get_origin(), global_default_gravity);
+	gravity += global_default_gravity;
+	return gravity;
+}

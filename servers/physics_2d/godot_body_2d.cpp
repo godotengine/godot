@@ -426,43 +426,21 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 
 	int ac = areas.size();
 
-	bool gravity_done = false;
 	bool linear_damp_done = false;
 	bool angular_damp_done = false;
 
 	bool stopped = false;
 
-	gravity = Vector2(0, 0);
+	gravity = compute_gravity();
 
 	total_linear_damp = 0.0;
 	total_angular_damp = 0.0;
 
-	// Combine gravity and damping from overlapping areas in priority order.
+	// Combine damping from overlapping areas in priority order.
 	if (ac) {
 		areas.sort();
 		const Area2DCMP *aa = &areas[0];
 		for (int i = ac - 1; i >= 0 && !stopped; i--) {
-			if (!gravity_done) {
-				PhysicsServer2D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer2D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
-				if (area_gravity_mode != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
-					Vector2 area_gravity;
-					aa[i].area->compute_gravity(get_transform().get_origin(), area_gravity);
-					switch (area_gravity_mode) {
-						case PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE:
-						case PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-							gravity += area_gravity;
-							gravity_done = area_gravity_mode == PhysicsServer2D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
-						} break;
-						case PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE:
-						case PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-							gravity = area_gravity;
-							gravity_done = area_gravity_mode == PhysicsServer2D::AREA_SPACE_OVERRIDE_REPLACE;
-						} break;
-						default: {
-						}
-					}
-				}
-			}
 			if (!linear_damp_done) {
 				PhysicsServer2D::AreaSpaceOverrideMode area_linear_damp_mode = (PhysicsServer2D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE);
 				if (area_linear_damp_mode != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
@@ -503,20 +481,14 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 					}
 				}
 			}
-			stopped = gravity_done && linear_damp_done && angular_damp_done;
+			stopped = linear_damp_done && angular_damp_done;
 		}
 	}
 
-	// Add default gravity and damping from space area.
+	// Add default damping from space area.
 	if (!stopped) {
 		GodotArea2D *default_area = get_space()->get_default_area();
 		ERR_FAIL_NULL(default_area);
-
-		if (!gravity_done) {
-			Vector2 default_gravity;
-			default_area->compute_gravity(get_transform().get_origin(), default_gravity);
-			gravity += default_gravity;
-		}
 
 		if (!linear_damp_done) {
 			total_linear_damp += default_area->get_linear_damp();

@@ -39,6 +39,9 @@ protected:
 	Vector<Area2DCMP> areas;
 	GodotSolidObject2D(GodotCollisionObject2D::Type p_type) :
 			GodotCollisionObject2D(p_type) {}
+
+public:
+	Vector2 compute_gravity();
 };
 
 #endif // GODOT_SOLID_OBJECT_2D_H
