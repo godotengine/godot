@@ -920,6 +920,13 @@ bool GodotPhysicsServer3D::body_test_motion(RID p_body, const MotionParameters &
 	return body->get_space()->test_body_motion(body, p_parameters, r_result);
 }
 
+Vector3 GodotPhysicsServer3D::body_compute_gravity(RID p_body) const {
+	GodotSolidObject3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, Vector3());
+
+	return body->compute_gravity();
+}
+
 PhysicsDirectBodyState3D *GodotPhysicsServer3D::body_get_direct_state(RID p_body) {
 	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 

@@ -522,6 +522,7 @@ public:
 	};
 
 	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) = 0;
+	virtual Vector2 body_compute_gravity(RID p_body) const = 0;
 
 	/* JOINT API */
 

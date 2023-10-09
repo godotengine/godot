@@ -388,6 +388,8 @@ public:
 
 	GDVIRTUAL7RC(bool, _body_test_motion, RID, const Transform2D &, const Vector2 &, real_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionMotionResult>)
 
+	EXBIND1RC(Vector2, body_compute_gravity, RID)
+
 	thread_local static const HashSet<RID> *exclude_bodies;
 	thread_local static const HashSet<ObjectID> *exclude_objects;
 

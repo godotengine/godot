@@ -830,6 +830,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_ray_pickable", "body", "enable"), &PhysicsServer3D::body_set_ray_pickable);
 
 	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "parameters", "result"), &PhysicsServer3D::_body_test_motion, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("body_compute_gravity", "body"), &PhysicsServer3D::body_compute_gravity);
 
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &PhysicsServer3D::body_get_direct_state);
 

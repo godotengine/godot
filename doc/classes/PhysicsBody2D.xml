@@ -17,6 +17,12 @@
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
+		<method name="compute_gravity" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the gravity vector computed from all sources that can affect the body, including all gravity overrides from [Area2D] nodes and the global world gravity.
+			</description>
+		</method>
 		<method name="get_collision_exceptions">
 			<return type="PhysicsBody2D[]" />
 			<description>

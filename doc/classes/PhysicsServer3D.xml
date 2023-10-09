@@ -348,6 +348,13 @@
 				Removes all shapes from a body.
 			</description>
 		</method>
+		<method name="body_compute_gravity" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the gravity vector computed from all sources that can affect the body, including all gravity overrides from [Area3D] nodes and the global world gravity.
+			</description>
+		</method>
 		<method name="body_create">
 			<return type="RID" />
 			<description>

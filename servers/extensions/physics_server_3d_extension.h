@@ -385,6 +385,8 @@ public:
 
 	GDVIRTUAL8RC(bool, _body_test_motion, RID, const Transform3D &, const Vector3 &, real_t, int, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionMotionResult>)
 
+	EXBIND1RC(Vector3, body_compute_gravity, RID)
+
 	thread_local static const HashSet<RID> *exclude_bodies;
 	thread_local static const HashSet<ObjectID> *exclude_objects;
 

@@ -265,6 +265,8 @@ public:
 		return physics_server_3d->body_test_motion(p_body, p_parameters, r_result);
 	}
 
+	FUNC1RC(Vector3, body_compute_gravity, RID);
+
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), nullptr);

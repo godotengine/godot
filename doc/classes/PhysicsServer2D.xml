@@ -366,6 +366,13 @@
 				Removes all shapes from the body. This does not delete the shapes themselves, so they can continue to be used elsewhere or added back later.
 			</description>
 		</method>
+		<method name="body_compute_gravity" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the gravity vector computed from all sources that can affect the body, including all gravity overrides from [Area2D] nodes and the global world gravity.
+			</description>
+		</method>
 		<method name="body_create">
 			<return type="RID" />
 			<description>
