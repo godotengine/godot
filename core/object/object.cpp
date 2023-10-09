@@ -1109,8 +1109,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	Error err = OK;
 
 	for (const Connection &c : slot_conns) {
-		Object *target = c.callable.get_object();
-		if (!target) {
+		if (!c.callable.is_valid()) {
 			// Target might have been deleted during signal callback, this is expected and OK.
 			continue;
 		}
@@ -1133,7 +1132,8 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 					continue;
 				}
 #endif
-				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
+				Object *target = c.callable.get_object();
+				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINT("Error calling from signal '" + String(p_name) + "' to callable: " + Variant::get_callable_error_text(c.callable, args, argc, ce) + ".");
@@ -1313,8 +1313,14 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 Error Object::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is null.");
 
-	Object *target_object = p_callable.get_object();
-	ERR_FAIL_NULL_V_MSG(target_object, ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+	if (p_callable.is_standard()) {
+		// FIXME: This branch should probably removed in favor of the `is_valid()` branch, but there exist some classes
+		// that call `connect()` before they are fully registered with ClassDB. Until all such classes can be found
+		// and registered soon enough this branch is needed to allow `connect()` to succeed.
+		ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+	} else {
+		ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is not valid: " + p_callable);
+	}
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1352,6 +1358,8 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		}
 	}
 
+	Object *target_object = p_callable.get_object();
+
 	SignalData::Slot slot;
 
 	Connection conn;
@@ -1359,7 +1367,9 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	conn.signal = ::Signal(this, p_signal);
 	conn.flags = p_flags;
 	slot.conn = conn;
-	slot.cE = target_object->connections.push_back(conn);
+	if (target_object) {
+		slot.cE = target_object->connections.push_back(conn);
+	}
 	if (p_flags & CONNECT_REFERENCE_COUNTED) {
 		slot.reference_count = 1;
 	}
@@ -1398,9 +1408,6 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot disconnect from '" + p_signal + "': the provided callable is null.");
 
-	Object *target_object = p_callable.get_object();
-	ERR_FAIL_NULL_V_MSG(target_object, false, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
-
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
@@ -1420,7 +1427,13 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		}
 	}
 
-	target_object->connections.erase(slot->cE);
+	if (slot->cE) {
+		Object *target_object = p_callable.get_object();
+		if (target_object) {
+			target_object->connections.erase(slot->cE);
+		}
+	}
+
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
 	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {

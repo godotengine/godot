@@ -675,7 +675,7 @@ bool CallbackTweener::step(double &r_delta) {
 		return false;
 	}
 
-	if (!callback.get_object()) {
+	if (!callback.is_valid()) {
 		return false;
 	}
 
@@ -740,7 +740,7 @@ bool MethodTweener::step(double &r_delta) {
 		return false;
 	}
 
-	if (!callback.get_object()) {
+	if (!callback.is_valid()) {
 		return false;
 	}
 

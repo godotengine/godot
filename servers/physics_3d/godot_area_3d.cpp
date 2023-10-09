@@ -87,12 +87,6 @@ void GodotArea3D::set_space(GodotSpace3D *p_space) {
 }
 
 void GodotArea3D::set_monitor_callback(const Callable &p_callback) {
-	ObjectID id = p_callback.get_object_id();
-	if (id == monitor_callback.get_object_id()) {
-		monitor_callback = p_callback;
-		return;
-	}
-
 	_unregister_shapes();
 
 	monitor_callback = p_callback;
@@ -108,12 +102,6 @@ void GodotArea3D::set_monitor_callback(const Callable &p_callback) {
 }
 
 void GodotArea3D::set_area_monitor_callback(const Callable &p_callback) {
-	ObjectID id = p_callback.get_object_id();
-	if (id == area_monitor_callback.get_object_id()) {
-		area_monitor_callback = p_callback;
-		return;
-	}
-
 	_unregister_shapes();
 
 	area_monitor_callback = p_callback;
