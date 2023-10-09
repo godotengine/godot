@@ -117,6 +117,12 @@
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
+		<method name="pop_back">
+			<return type="Vector3" />
+			<description>
+				Removes and returns the last element of the array. Prints an error and returns [constant Vector3.ZERO] if the array is empty.
+			</description>
+		</method>
 		<method name="push_back">
 			<return type="bool" />
 			<param index="0" name="value" type="Vector3" />

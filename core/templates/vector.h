@@ -70,6 +70,13 @@ public:
 	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
 	void fill(T p_elem);
 
+	T pop_back() {
+		ERR_FAIL_COND_V_MSG(_cowdata.is_empty(), T(), "Cannot pop_back of empty vector");
+		T tmp = _cowdata.get(_cowdata.size() - 1);
+		_cowdata.resize(_cowdata.size() - 1);
+		return tmp;
+	}
+
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 	_FORCE_INLINE_ bool erase(const T &p_val) {
 		int idx = find(p_val);

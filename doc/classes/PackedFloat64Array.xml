@@ -114,6 +114,12 @@
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
+		<method name="pop_back">
+			<return type="float" />
+			<description>
+				Removes and returns the last element of the array. Prints an error and returns [code]0.0[/code] if the array is empty.
+			</description>
+		</method>
 		<method name="push_back">
 			<return type="bool" />
 			<param index="0" name="value" type="float" />

@@ -118,6 +118,12 @@
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
+		<method name="pop_back">
+			<return type="Vector2" />
+			<description>
+				Removes and returns the last element of the array. Prints an error and returns [constant Vector2.ZERO] if the array is empty.
+			</description>
+		</method>
 		<method name="push_back">
 			<return type="bool" />
 			<param index="0" name="value" type="Vector2" />

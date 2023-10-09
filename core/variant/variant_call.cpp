@@ -2252,6 +2252,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedByteArray, is_empty, sarray(), varray());
 	bind_method(PackedByteArray, set, sarray("index", "value"), varray());
 	bind_method(PackedByteArray, push_back, sarray("value"), varray());
+	bind_method(PackedByteArray, pop_back, sarray(), varray());
 	bind_method(PackedByteArray, append, sarray("value"), varray());
 	bind_method(PackedByteArray, append_array, sarray("array"), varray());
 	bind_method(PackedByteArray, remove_at, sarray("index"), varray());
@@ -2318,6 +2319,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt32Array, is_empty, sarray(), varray());
 	bind_method(PackedInt32Array, set, sarray("index", "value"), varray());
 	bind_method(PackedInt32Array, push_back, sarray("value"), varray());
+	bind_method(PackedInt32Array, pop_back, sarray(), varray());
 	bind_method(PackedInt32Array, append, sarray("value"), varray());
 	bind_method(PackedInt32Array, append_array, sarray("array"), varray());
 	bind_method(PackedInt32Array, remove_at, sarray("index"), varray());
@@ -2342,6 +2344,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt64Array, is_empty, sarray(), varray());
 	bind_method(PackedInt64Array, set, sarray("index", "value"), varray());
 	bind_method(PackedInt64Array, push_back, sarray("value"), varray());
+	bind_method(PackedInt64Array, pop_back, sarray(), varray());
 	bind_method(PackedInt64Array, append, sarray("value"), varray());
 	bind_method(PackedInt64Array, append_array, sarray("array"), varray());
 	bind_method(PackedInt64Array, remove_at, sarray("index"), varray());
@@ -2366,6 +2369,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat32Array, is_empty, sarray(), varray());
 	bind_method(PackedFloat32Array, set, sarray("index", "value"), varray());
 	bind_method(PackedFloat32Array, push_back, sarray("value"), varray());
+	bind_method(PackedFloat32Array, pop_back, sarray(), varray());
 	bind_method(PackedFloat32Array, append, sarray("value"), varray());
 	bind_method(PackedFloat32Array, append_array, sarray("array"), varray());
 	bind_method(PackedFloat32Array, remove_at, sarray("index"), varray());
@@ -2390,6 +2394,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat64Array, is_empty, sarray(), varray());
 	bind_method(PackedFloat64Array, set, sarray("index", "value"), varray());
 	bind_method(PackedFloat64Array, push_back, sarray("value"), varray());
+	bind_method(PackedFloat64Array, pop_back, sarray(), varray());
 	bind_method(PackedFloat64Array, append, sarray("value"), varray());
 	bind_method(PackedFloat64Array, append_array, sarray("array"), varray());
 	bind_method(PackedFloat64Array, remove_at, sarray("index"), varray());
@@ -2414,6 +2419,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedStringArray, is_empty, sarray(), varray());
 	bind_method(PackedStringArray, set, sarray("index", "value"), varray());
 	bind_method(PackedStringArray, push_back, sarray("value"), varray());
+	bind_method(PackedStringArray, pop_back, sarray(), varray());
 	bind_method(PackedStringArray, append, sarray("value"), varray());
 	bind_method(PackedStringArray, append_array, sarray("array"), varray());
 	bind_method(PackedStringArray, remove_at, sarray("index"), varray());
@@ -2438,6 +2444,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector2Array, is_empty, sarray(), varray());
 	bind_method(PackedVector2Array, set, sarray("index", "value"), varray());
 	bind_method(PackedVector2Array, push_back, sarray("value"), varray());
+	bind_method(PackedVector2Array, pop_back, sarray(), varray());
 	bind_method(PackedVector2Array, append, sarray("value"), varray());
 	bind_method(PackedVector2Array, append_array, sarray("array"), varray());
 	bind_method(PackedVector2Array, remove_at, sarray("index"), varray());
@@ -2462,6 +2469,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector3Array, is_empty, sarray(), varray());
 	bind_method(PackedVector3Array, set, sarray("index", "value"), varray());
 	bind_method(PackedVector3Array, push_back, sarray("value"), varray());
+	bind_method(PackedVector3Array, pop_back, sarray(), varray());
 	bind_method(PackedVector3Array, append, sarray("value"), varray());
 	bind_method(PackedVector3Array, append_array, sarray("array"), varray());
 	bind_method(PackedVector3Array, remove_at, sarray("index"), varray());
@@ -2486,6 +2494,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedColorArray, is_empty, sarray(), varray());
 	bind_method(PackedColorArray, set, sarray("index", "value"), varray());
 	bind_method(PackedColorArray, push_back, sarray("value"), varray());
+	bind_method(PackedColorArray, pop_back, sarray(), varray());
 	bind_method(PackedColorArray, append, sarray("value"), varray());
 	bind_method(PackedColorArray, append_array, sarray("array"), varray());
 	bind_method(PackedColorArray, remove_at, sarray("index"), varray());
