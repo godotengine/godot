@@ -225,13 +225,13 @@ void GodotArea3D::remove_area_from_query(GodotArea3D *p_area, uint32_t p_area_sh
 	}
 }
 
-struct AreaCMP {
+struct Area3DCMP {
 	GodotArea3D *area = nullptr;
 	int refCount = 0;
-	_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
-	_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
-	_FORCE_INLINE_ AreaCMP() {}
-	_FORCE_INLINE_ AreaCMP(GodotArea3D *p_area) {
+	_FORCE_INLINE_ bool operator==(const Area3DCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
+	_FORCE_INLINE_ bool operator<(const Area3DCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
+	_FORCE_INLINE_ Area3DCMP() {}
+	_FORCE_INLINE_ Area3DCMP(GodotArea3D *p_area) {
 		area = p_area;
 		refCount = 1;
 	}

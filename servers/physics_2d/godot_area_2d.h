@@ -188,4 +188,16 @@ void GodotArea2D::remove_area_from_query(GodotArea2D *p_area, uint32_t p_area_sh
 	}
 }
 
+struct Area2DCMP {
+	GodotArea2D *area = nullptr;
+	int refCount = 0;
+	_FORCE_INLINE_ bool operator==(const Area2DCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
+	_FORCE_INLINE_ bool operator<(const Area2DCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
+	_FORCE_INLINE_ Area2DCMP() {}
+	_FORCE_INLINE_ Area2DCMP(GodotArea2D *p_area) {
+		area = p_area;
+		refCount = 1;
+	}
+};
+
 #endif // GODOT_AREA_2D_H

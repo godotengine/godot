@@ -55,7 +55,7 @@ subject to the following restrictions:
 ///btSoftBody implementation by Nathanael Presson
 
 GodotSoftBody3D::GodotSoftBody3D() :
-		GodotCollisionObject3D(TYPE_SOFT_BODY),
+		GodotSolidObject3D(TYPE_SOFT_BODY),
 		active_list(this) {
 	_set_static(false);
 }
@@ -977,7 +977,7 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	int ac = areas.size();
 	if (ac) {
 		areas.sort();
-		const AreaCMP *aa = &areas[0];
+		const Area3DCMP *aa = &areas[0];
 		for (int i = ac - 1; i >= 0; i--) {
 			if (!gravity_done) {
 				PhysicsServer3D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);

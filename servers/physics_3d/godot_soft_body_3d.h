@@ -32,7 +32,7 @@
 #define GODOT_SOFT_BODY_3D_H
 
 #include "godot_area_3d.h"
-#include "godot_collision_object_3d.h"
+#include "godot_solid_object_3d.h"
 
 #include "core/math/aabb.h"
 #include "core/math/dynamic_bvh.h"
@@ -43,7 +43,7 @@
 
 class GodotConstraint3D;
 
-class GodotSoftBody3D : public GodotCollisionObject3D {
+class GodotSoftBody3D : public GodotSolidObject3D {
 	RID soft_mesh;
 
 	struct Node {
@@ -105,8 +105,6 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 
 	HashSet<GodotConstraint3D *> constraints;
 
-	Vector<AreaCMP> areas;
-
 	VSet<RID> exceptions;
 
 	uint64_t island_step = 0;
@@ -135,16 +133,16 @@ public:
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
 
 	_FORCE_INLINE_ void add_area(GodotArea3D *p_area) {
-		int index = areas.find(AreaCMP(p_area));
+		int index = areas.find(Area3DCMP(p_area));
 		if (index > -1) {
 			areas.write[index].refCount += 1;
 		} else {
-			areas.ordered_insert(AreaCMP(p_area));
+			areas.ordered_insert(Area3DCMP(p_area));
 		}
 	}
 
 	_FORCE_INLINE_ void remove_area(GodotArea3D *p_area) {
-		int index = areas.find(AreaCMP(p_area));
+		int index = areas.find(Area3DCMP(p_area));
 		if (index > -1) {
 			areas.write[index].refCount -= 1;
 			if (areas[index].refCount < 1) {

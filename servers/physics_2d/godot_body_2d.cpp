@@ -440,7 +440,7 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 	// Combine gravity and damping from overlapping areas in priority order.
 	if (ac) {
 		areas.sort();
-		const AreaCMP *aa = &areas[0];
+		const Area2DCMP *aa = &areas[0];
 		for (int i = ac - 1; i >= 0 && !stopped; i--) {
 			if (!gravity_done) {
 				PhysicsServer2D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer2D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
@@ -740,7 +740,7 @@ GodotPhysicsDirectBodyState2D *GodotBody2D::get_direct_state() {
 }
 
 GodotBody2D::GodotBody2D() :
-		GodotCollisionObject2D(TYPE_BODY),
+		GodotSolidObject2D(TYPE_BODY),
 		active_list(this),
 		mass_properties_update_list(this),
 		direct_state_query_list(this) {

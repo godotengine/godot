@@ -32,7 +32,7 @@
 #define GODOT_BODY_2D_H
 
 #include "godot_area_2d.h"
-#include "godot_collision_object_2d.h"
+#include "godot_solid_object_2d.h"
 
 #include "core/templates/list.h"
 #include "core/templates/pair.h"
@@ -41,7 +41,7 @@
 class GodotConstraint2D;
 class GodotPhysicsDirectBodyState2D;
 
-class GodotBody2D : public GodotCollisionObject2D {
+class GodotBody2D : public GodotSolidObject2D {
 	PhysicsServer2D::BodyMode mode = PhysicsServer2D::BODY_MODE_RIGID;
 
 	Vector2 biased_linear_velocity;
@@ -108,20 +108,6 @@ class GodotBody2D : public GodotCollisionObject2D {
 
 	List<Pair<GodotConstraint2D *, int>> constraint_list;
 
-	struct AreaCMP {
-		GodotArea2D *area = nullptr;
-		int refCount = 0;
-		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
-		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
-		_FORCE_INLINE_ AreaCMP() {}
-		_FORCE_INLINE_ AreaCMP(GodotArea2D *p_area) {
-			area = p_area;
-			refCount = 1;
-		}
-	};
-
-	Vector<AreaCMP> areas;
-
 	struct Contact {
 		Vector2 local_pos;
 		Vector2 local_normal;
@@ -163,16 +149,16 @@ public:
 	GodotPhysicsDirectBodyState2D *get_direct_state();
 
 	_FORCE_INLINE_ void add_area(GodotArea2D *p_area) {
-		int index = areas.find(AreaCMP(p_area));
+		int index = areas.find(Area2DCMP(p_area));
 		if (index > -1) {
 			areas.write[index].refCount += 1;
 		} else {
-			areas.ordered_insert(AreaCMP(p_area));
+			areas.ordered_insert(Area2DCMP(p_area));
 		}
 	}
 
 	_FORCE_INLINE_ void remove_area(GodotArea2D *p_area) {
-		int index = areas.find(AreaCMP(p_area));
+		int index = areas.find(Area2DCMP(p_area));
 		if (index > -1) {
 			areas.write[index].refCount -= 1;
 			if (areas[index].refCount < 1) {
