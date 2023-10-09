@@ -234,12 +234,25 @@ void ScriptTextEditor::_set_theme_for_script() {
 		}
 	}
 
+	text_edit->clear_comment_delimiters();
+
 	List<String> comments;
 	script->get_language()->get_comment_delimiters(&comments);
-	text_edit->clear_comment_delimiters();
 	for (const String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
+		text_edit->add_comment_delimiter(beg, end, end.is_empty());
+
+		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
+			text_edit->add_auto_brace_completion_pair(beg, end);
+		}
+	}
+
+	List<String> doc_comments;
+	script->get_language()->get_doc_comment_delimiters(&doc_comments);
+	for (const String &doc_comment : doc_comments) {
+		String beg = doc_comment.get_slice(" ", 0);
+		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
 
 		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
