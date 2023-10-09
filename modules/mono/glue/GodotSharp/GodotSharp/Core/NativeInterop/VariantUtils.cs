@@ -4,8 +4,6 @@ using Godot.Collections;
 
 // ReSharper disable InconsistentNaming
 
-#nullable enable
-
 namespace Godot.NativeInterop
 {
     public static partial class VariantUtils
@@ -241,7 +239,7 @@ namespace Godot.NativeInterop
             => CreateFromArray(new Collections.Array(from));
 
         // ReSharper disable once RedundantNameQualifier
-        public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
+        public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject?[]? from)
         {
             if (from == null)
                 return default; // Nil
@@ -460,7 +458,7 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // ReSharper disable once RedundantNameQualifier
-        public static GodotObject ConvertToGodotObject(in godot_variant p_var)
+        public static GodotObject? ConvertToGodotObject(in godot_variant p_var)
             => InteropUtils.UnmanagedGetManaged(ConvertToGodotObjectPtr(p_var));
 
         public static string ConvertToString(in godot_variant p_var)
@@ -614,7 +612,7 @@ namespace Godot.NativeInterop
             return Marshaling.ConvertNativeGodotArrayToSystemArrayOfRid(godotArray);
         }
 
-        public static T[] ConvertToSystemArrayOfGodotObject<T>(in godot_variant p_var)
+        public static T?[] ConvertToSystemArrayOfGodotObject<T>(in godot_variant p_var)
             // ReSharper disable once RedundantNameQualifier
             where T : GodotObject
         {

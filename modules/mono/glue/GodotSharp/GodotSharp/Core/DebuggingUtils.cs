@@ -6,8 +6,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Godot.NativeInterop;
 
-#nullable enable
-
 namespace Godot
 {
     internal static class DebuggingUtils
