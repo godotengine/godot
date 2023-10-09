@@ -212,9 +212,6 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 		for (int i = 0; i < spans; i++) {
 			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, font->get_opentype_features());
 		}
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(r, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-		}
 	}
 
 	// Apply tab align.
