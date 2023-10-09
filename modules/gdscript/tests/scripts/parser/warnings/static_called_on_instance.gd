@@ -17,4 +17,4 @@ func test():
 	print(some_string.num_uint64(8589934592)) # 2 ^ 33
 
 	# These should not emit a warning.
-	Globals.boxv(Vector3i(0, 0, 0), 10, 10)
+	var _some_vector = boxv(Vector3i(0, 0, 0), 10, 10)
