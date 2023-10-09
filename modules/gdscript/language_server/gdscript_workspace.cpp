@@ -55,55 +55,25 @@ void GDScriptWorkspace::_bind_methods() {
 }
 
 void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
+	bool use_external_editor = EDITOR_GET("text_editor/external/use_external_editor");
+	if (!use_external_editor) {
+		return;
+	}
+
 	Ref<Script> scr = obj->get_script();
 
 	if (scr->get_language()->get_name() != "GDScript") {
 		return;
 	}
 
-	String function_signature = "func " + function;
-	String source = scr->get_source_code();
-
-	if (source.contains(function_signature)) {
-		return;
-	}
-
-	int first_class = source.find("\nclass ");
-	int start_line = 0;
-	if (first_class != -1) {
-		start_line = source.substr(0, first_class).split("\n").size();
-	} else {
-		start_line = source.split("\n").size();
-	}
-
-	String function_body = "\n\n" + function_signature + "(";
-	for (int i = 0; i < args.size(); ++i) {
-		function_body += args[i];
-		if (i < args.size() - 1) {
-			function_body += ", ";
-		}
-	}
-	function_body += ")";
-	if (EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints")) {
-		function_body += " -> void";
-	}
-	function_body += ":\n\tpass # Replace with function body.\n";
-
-	lsp::TextEdit text_edit;
-
-	if (first_class != -1) {
-		function_body += "\n\n";
-	}
-	text_edit.range.end.line = text_edit.range.start.line = start_line;
-
-	text_edit.newText = function_body;
-
 	String uri = get_file_uri(scr->get_path());
 
-	lsp::ApplyWorkspaceEditParams params;
-	params.edit.add_edit(uri, text_edit);
+	lsp::AddFuncParams params;
+	params.uri = uri;
+	params.func = function;
+	params.args = args;
 
-	GDScriptLanguageProtocol::get_singleton()->request_client("workspace/applyEdit", params.to_json());
+	GDScriptLanguageProtocol::get_singleton()->request_client("gdscript/add_func", params.to_json());
 }
 
 void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {

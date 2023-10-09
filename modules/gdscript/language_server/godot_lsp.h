@@ -1305,6 +1305,21 @@ struct ApplyWorkspaceEditParams {
 	}
 };
 
+struct AddFuncParams {
+	String uri;
+	String func;
+	PackedStringArray args;
+
+	Dictionary to_json() {
+		Dictionary dict;
+		dict["uri"] = uri;
+		dict["func"] = func;
+		dict["args"] = args;
+
+		return dict;
+	}
+};
+
 struct NativeSymbolInspectParams {
 	String native_class;
 	String symbol_name;
