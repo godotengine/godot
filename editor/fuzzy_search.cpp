@@ -94,17 +94,15 @@ PackedStringArray get_query(const String &p_query) {
 	return query_tokens;
 }
 
-void sort_and_filter(Vector<Ref<FuzzySearchResult>> &p_results) {
+Vector<Ref<FuzzySearchResult>> sort_and_filter(const Vector<Ref<FuzzySearchResult>> &p_results) {
+	Vector<Ref<FuzzySearchResult>> res;
+
 	float total_score = 0;
 	for (const Ref<FuzzySearchResult> &result : p_results) {
 		total_score += result->score;
 	}
 
 	float mean_score = total_score / p_results.size();
-	if (mean_score == 0) {
-		p_results.resize(max_results);
-		return;
-	}
 
 	struct FuzzySearchResultComparator {
 		bool operator()(const Ref<FuzzySearchResult> &A, const Ref<FuzzySearchResult> &B) const {
@@ -112,15 +110,21 @@ void sort_and_filter(Vector<Ref<FuzzySearchResult>> &p_results) {
 		}
 	};
 
-	SortArray<Ref<FuzzySearchResult>, FuzzySearchResultComparator> sorter;
-	sorter.sort(p_results.ptrw(), p_results.size());
+	// Prune low score entries before even sorting
+	for (Ref<FuzzySearchResult> i : p_results) {
+		if (i->score >= mean_score * 0.5) {
+			res.push_back(i);
+		}
 
-	int i = 0;
-	while ((i < p_results.size()) && (p_results[i]->score >= (mean_score * 0.5)) && (i < max_results)) {
-		i++;
+		if (res.size() > max_results) {
+			break;
+		}
 	}
 
-	p_results.resize(i);
+	SortArray<Ref<FuzzySearchResult>, FuzzySearchResultComparator> sorter;
+	sorter.sort(res.ptrw(), res.size());
+
+	return res;
 }
 
 Ref<FuzzySearchResult> fuzzy_search(const String &p_query, const String &p_target, int position_offset) {
@@ -276,7 +280,7 @@ Vector<Ref<FuzzySearchResult>> FuzzySearch::search_all(const String &p_query_tok
 
 	// Just spit out the results list if no query is given.
 	if (p_query_tokens.is_empty()) {
-		for (int i = 0; i < max_results && i < p_search_data.size(); i++) {
+		for (int i = 0; (i < max_results) && (i < p_search_data.size()); i++) {
 			Ref<FuzzySearchResult> r;
 			r.instantiate();
 			r->target = p_search_data[i];
@@ -295,9 +299,7 @@ Vector<Ref<FuzzySearchResult>> FuzzySearch::search_all(const String &p_query_tok
 		}
 	}
 
-	sort_and_filter(res);
-
-	return res;
+	return sort_and_filter(res);
 }
 
 /*
