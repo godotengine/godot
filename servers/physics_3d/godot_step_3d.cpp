@@ -196,39 +196,9 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 
 	const SelfList<GodotSoftBody3D>::List *soft_body_list = &p_space->get_active_soft_body_list();
 
-	/* INTEGRATE FORCES */
-
+	// Setup profile
 	uint64_t profile_begtime = OS::get_singleton()->get_ticks_usec();
 	uint64_t profile_endtime = 0;
-
-	int active_count = 0;
-
-	const SelfList<GodotBody3D> *b = body_list->first();
-	while (b) {
-		b->self()->integrate_forces(p_delta);
-		b = b->next();
-		active_count++;
-	}
-
-	/* UPDATE SOFT BODY MOTION */
-
-	const SelfList<GodotSoftBody3D> *sb = soft_body_list->first();
-	while (sb) {
-		sb->self()->predict_motion(p_delta);
-		sb = sb->next();
-		active_count++;
-	}
-
-	p_space->set_active_objects(active_count);
-
-	// Update the broadphase to register collision pairs.
-	p_space->update();
-
-	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
-		p_space->set_elapsed_time(GodotSpace3D::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
-		profile_begtime = profile_endtime;
-	}
 
 	/* GENERATE CONSTRAINT ISLANDS FOR MOVING AREAS */
 
@@ -260,9 +230,9 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 
 	/* GENERATE CONSTRAINT ISLANDS FOR ACTIVE RIGID BODIES */
 
-	b = body_list->first();
-
 	uint32_t body_island_count = 0;
+
+	const SelfList<GodotBody3D> *b = body_list->first();
 
 	while (b) {
 		GodotBody3D *body = b->self();
@@ -299,7 +269,8 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 
 	/* GENERATE CONSTRAINT ISLANDS FOR ACTIVE SOFT BODIES */
 
-	sb = soft_body_list->first();
+	const SelfList<GodotSoftBody3D> *sb = soft_body_list->first();
+
 	while (sb) {
 		GodotSoftBody3D *soft_body = sb->self();
 
@@ -358,6 +329,37 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	// Warning: This doesn't run on threads, because it involves thread-unsafe processing.
 	for (uint32_t island_index = 0; island_index < island_count; ++island_index) {
 		_pre_solve_island(constraint_islands[island_index]);
+	}
+
+	/* INTEGRATE FORCES */
+
+	int active_count = 0;
+
+	b = body_list->first();
+	while (b) {
+		b->self()->integrate_forces(p_delta);
+		b = b->next();
+		active_count++;
+	}
+
+	/* UPDATE SOFT BODY MOTION */
+
+	sb = soft_body_list->first();
+	while (sb) {
+		sb->self()->predict_motion(p_delta);
+		sb = sb->next();
+		active_count++;
+	}
+
+	p_space->set_active_objects(active_count);
+
+	// Update the broadphase to register collision pairs.
+	p_space->update();
+
+	{ //profile
+		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		p_space->set_elapsed_time(GodotSpace3D::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
+		profile_begtime = profile_endtime;
 	}
 
 	/* SOLVE CONSTRAINT ISLANDS */
