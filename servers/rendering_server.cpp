@@ -1833,9 +1833,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 	RS::SurfaceData sd;
 
 	sd.primitive = RS::PrimitiveType(int(p_dictionary["primitive"]));
-	if (p_dictionary.has("uv_scale")) {
-		sd.format = p_dictionary["format"];
-	}
+	sd.format = p_dictionary["format"];
 	sd.vertex_data = p_dictionary["vertex_data"];
 	if (p_dictionary.has("attribute_data")) {
 		sd.attribute_data = p_dictionary["attribute_data"];
@@ -1853,7 +1851,9 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 	}
 
 	sd.aabb = p_dictionary["aabb"];
-	sd.uv_scale = p_dictionary["uv_scale"];
+	if (p_dictionary.has("uv_scale")) {
+		sd.uv_scale = p_dictionary["uv_scale"];
+	}
 
 	if (p_dictionary.has("lods")) {
 		Array lods = p_dictionary["lods"];
