@@ -2,8 +2,6 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-#nullable enable
-
 namespace Godot.NativeInterop
 {
     public class GodotDllImportResolver

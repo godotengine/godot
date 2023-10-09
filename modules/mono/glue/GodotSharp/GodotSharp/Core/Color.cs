@@ -4,8 +4,6 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using Godot.NativeInterop;
 
-#nullable enable
-
 namespace Godot
 {
     /// <summary>

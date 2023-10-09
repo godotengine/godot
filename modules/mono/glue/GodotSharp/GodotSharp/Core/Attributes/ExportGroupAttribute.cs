@@ -1,7 +1,5 @@
 using System;
 
-#nullable enable
-
 namespace Godot
 {
     /// <summary>
@@ -25,7 +23,7 @@ namespace Godot
         /// </summary>
         /// <param name="name">The name of the group.</param>
         /// <param name="prefix">If provided, the group would make group to only consider properties that have this prefix.</param>
-        public ExportGroupAttribute(string name, string prefix = "")
+        public ExportGroupAttribute(string name, string? prefix = null)
         {
             Name = name;
             Prefix = prefix;

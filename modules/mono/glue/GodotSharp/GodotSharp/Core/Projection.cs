@@ -3,8 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 
-#nullable enable
-
 namespace Godot
 {
     /// <summary>

@@ -4,8 +4,6 @@ using System.Runtime.InteropServices;
 using Godot.Bridge;
 using Godot.NativeInterop;
 
-#nullable enable
-
 namespace Godot
 {
     public partial class GodotObject : IDisposable

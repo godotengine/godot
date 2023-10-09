@@ -4,8 +4,6 @@ using Godot.NativeInterop;
 
 namespace Godot;
 
-#nullable enable
-
 public readonly partial struct Callable
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,7 +51,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 1);
 
-            ((Action<T0>)delegateObj)(
+            ((Action<T0?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0])
             );
 
@@ -72,7 +70,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 2);
 
-            ((Action<T0, T1>)delegateObj)(
+            ((Action<T0?, T1?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1])
             );
@@ -92,7 +90,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 3);
 
-            ((Action<T0, T1, T2>)delegateObj)(
+            ((Action<T0?, T1?, T2?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2])
@@ -113,7 +111,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 4);
 
-            ((Action<T0, T1, T2, T3>)delegateObj)(
+            ((Action<T0?, T1?, T2?, T3?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -135,7 +133,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 5);
 
-            ((Action<T0, T1, T2, T3, T4>)delegateObj)(
+            ((Action<T0?, T1?, T2?, T3?, T4?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -158,7 +156,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 6);
 
-            ((Action<T0, T1, T2, T3, T4, T5>)delegateObj)(
+            ((Action<T0?, T1?, T2?, T3?, T4?, T5?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -182,7 +180,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 7);
 
-            ((Action<T0, T1, T2, T3, T4, T5, T6>)delegateObj)(
+            ((Action<T0?, T1?, T2?, T3?, T4?, T5?, T6?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -207,7 +205,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 8);
 
-            ((Action<T0, T1, T2, T3, T4, T5, T6, T7>)delegateObj)(
+            ((Action<T0?, T1?, T2?, T3?, T4?, T5?, T6?, T7?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -233,7 +231,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 9);
 
-            ((Action<T0, T1, T2, T3, T4, T5, T6, T7, T8>)delegateObj)(
+            ((Action<T0?, T1?, T2?, T3?, T4?, T5?, T6?, T7?, T8?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -263,7 +261,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 0);
 
-            TResult res = ((Func<TResult>)delegateObj)();
+            TResult? res = ((Func<TResult?>)delegateObj)();
 
             ret = VariantUtils.CreateFrom(res);
         }
@@ -280,7 +278,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 1);
 
-            TResult res = ((Func<T0, TResult>)delegateObj)(
+            TResult? res = ((Func<T0?, TResult?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0])
             );
 
@@ -299,7 +297,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 2);
 
-            TResult res = ((Func<T0, T1, TResult>)delegateObj)(
+            TResult? res = ((Func<T0?, T1?, TResult?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1])
             );
@@ -319,7 +317,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 3);
 
-            TResult res = ((Func<T0, T1, T2, TResult>)delegateObj)(
+            TResult? res = ((Func<T0?, T1?, T2?, TResult?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2])
@@ -340,7 +338,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 4);
 
-            TResult res = ((Func<T0, T1, T2, T3, TResult>)delegateObj)(
+            TResult? res = ((Func<T0?, T1?, T2?, T3?, TResult?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -362,7 +360,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 5);
 
-            TResult res = ((Func<T0, T1, T2, T3, T4, TResult>)delegateObj)(
+            TResult? res = ((Func<T0?, T1?, T2?, T3?, T4?, TResult?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -385,7 +383,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 6);
 
-            TResult res = ((Func<T0, T1, T2, T3, T4, T5, TResult>)delegateObj)(
+            TResult? res = ((Func<T0?, T1?, T2?, T3?, T4?, T5?, TResult?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -409,7 +407,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 7);
 
-            TResult res = ((Func<T0, T1, T2, T3, T4, T5, T6, TResult>)delegateObj)(
+            TResult? res = ((Func<T0?, T1?, T2?, T3?, T4?, T5?, T6?, TResult?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -434,7 +432,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 8);
 
-            TResult res = ((Func<T0, T1, T2, T3, T4, T5, T6, T7, TResult>)delegateObj)(
+            TResult? res = ((Func<T0?, T1?, T2?, T3?, T4?, T5?, T6?, T7?, TResult?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),
@@ -460,7 +458,7 @@ public readonly partial struct Callable
         {
             ThrowIfArgCountMismatch(args, 9);
 
-            TResult res = ((Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, TResult>)delegateObj)(
+            TResult? res = ((Func<T0?, T1?, T2?, T3?, T4?, T5?, T6?, T7?, T8?, TResult?>)delegateObj)(
                 VariantUtils.ConvertTo<T0>(args[0]),
                 VariantUtils.ConvertTo<T1>(args[1]),
                 VariantUtils.ConvertTo<T2>(args[2]),

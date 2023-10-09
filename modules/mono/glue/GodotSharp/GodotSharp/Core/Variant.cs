@@ -4,8 +4,6 @@ using Godot.NativeInterop;
 
 namespace Godot;
 
-#nullable enable
-
 // TODO: Disabled because it is a false positive, see https://github.com/dotnet/roslyn-analyzers/issues/6151
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable
 public partial struct Variant : IDisposable
@@ -156,11 +154,11 @@ public partial struct Variant : IDisposable
         };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant From<[MustBeVariant] T>(in T from) =>
+    public static Variant From<[MustBeVariant] T>(in T? from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFrom(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T As<[MustBeVariant] T>() =>
+    public T? As<[MustBeVariant] T>() =>
         VariantUtils.ConvertTo<T>(NativeVar.DangerousSelfRef);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -324,7 +322,7 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertAsPackedColorArrayToSystemArray((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T[] AsGodotObjectArray<T>()
+    public T?[] AsGodotObjectArray<T>()
         where T : GodotObject =>
         VariantUtils.ConvertToSystemArrayOfGodotObject<T>((godot_variant)NativeVar);
 
@@ -349,7 +347,7 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertToSystemArrayOfRid((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public GodotObject AsGodotObject() =>
+    public GodotObject? AsGodotObject() =>
         VariantUtils.ConvertToGodotObject((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -504,7 +502,7 @@ public partial struct Variant : IDisposable
     public static explicit operator Rid[](Variant from) => from.AsSystemArrayOfRid();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator GodotObject(Variant from) => from.AsGodotObject();
+    public static explicit operator GodotObject?(Variant from) => from.AsGodotObject();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator StringName(Variant from) => from.AsStringName();
@@ -645,7 +643,7 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Span<Color> from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(GodotObject[] from) => from;
+    public static Variant CreateFrom(GodotObject?[] from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom<[MustBeVariant] TKey, [MustBeVariant] TValue>(Collections.Dictionary<TKey, TValue> from) =>
@@ -665,7 +663,7 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Span<Rid> from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(GodotObject from) => from;
+    public static Variant CreateFrom(GodotObject? from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(StringName from) => from;
@@ -845,7 +843,7 @@ public partial struct Variant : IDisposable
         (Variant)from.AsSpan();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(GodotObject[] from) =>
+    public static implicit operator Variant(GodotObject?[] from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfGodotObject(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -909,7 +907,7 @@ public partial struct Variant : IDisposable
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfRid(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(GodotObject from) =>
+    public static implicit operator Variant(GodotObject? from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromGodotObject(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

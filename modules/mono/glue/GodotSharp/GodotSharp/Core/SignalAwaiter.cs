@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Godot.NativeInterop;
 
@@ -7,10 +8,10 @@ namespace Godot
     public class SignalAwaiter : IAwaiter<Variant[]>, IAwaitable<Variant[]>
     {
         private bool _completed;
-        private Variant[] _result;
-        private Action _continuation;
+        private Variant[]? _result;
+        private Action? _continuation;
 
-        public SignalAwaiter(GodotObject source, StringName signal, GodotObject target)
+        public SignalAwaiter(GodotObject? source, StringName signal, GodotObject? target)
         {
             var awaiterGcHandle = CustomGCHandle.AllocStrong(this);
             using godot_string_name signalSrc = NativeFuncs.godotsharp_string_name_new_copy(
@@ -26,7 +27,7 @@ namespace Godot
             _continuation = continuation;
         }
 
-        public Variant[] GetResult() => _result;
+        public Variant[]? GetResult() => _result;
 
         public IAwaiter<Variant[]> GetAwaiter() => this;
 
@@ -36,7 +37,7 @@ namespace Godot
         {
             try
             {
-                var awaiter = (SignalAwaiter)GCHandle.FromIntPtr(awaiterGCHandlePtr).Target;
+                var awaiter = (SignalAwaiter?)GCHandle.FromIntPtr(awaiterGCHandlePtr).Target;
 
                 if (awaiter == null)
                 {

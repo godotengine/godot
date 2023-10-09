@@ -12,7 +12,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject?)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                 {
@@ -49,7 +49,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject?)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     throw new InvalidOperationException();
@@ -79,7 +79,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject?)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     throw new InvalidOperationException();
@@ -134,7 +134,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject?)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (okIfNull.ToBool())
                     godotObject?.Dispose();
@@ -152,7 +152,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var self = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var self = (GodotObject?)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (self == null)
                 {
@@ -186,7 +186,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject?)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     return godot_bool.False;
@@ -209,7 +209,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject?)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     return;
@@ -242,7 +242,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject?)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     return;
