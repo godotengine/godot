@@ -4398,7 +4398,7 @@ struct AnimationCompressionDataState {
 		PacketData packet;
 		packet.frame = p_frame;
 		for (int i = 0; i < 3; i++) {
-			ERR_FAIL_COND_V(p_key[i] > 65535, false); // Sanity check
+			ERR_FAIL_COND_V(p_key[i] > 65535, false); // Safety checks.
 			packet.data[i] = p_key[i];
 		}
 
@@ -4544,7 +4544,7 @@ struct AnimationCompressionDataState {
 				}
 				int32_t delta = _compute_delta16_signed(temp_packets[i - 1].data[j], temp_packets[i].data[j]);
 
-				ERR_FAIL_COND(delta < -32768 || delta > 32767); //sanity check
+				ERR_FAIL_COND(delta < -32768 || delta > 32767); // Safety check.
 
 				uint16_t deltau;
 				if (delta < 0) {
@@ -4556,7 +4556,7 @@ struct AnimationCompressionDataState {
 			}
 		}
 		if (bits_used != 0) {
-			ERR_FAIL_COND(bit_buffer > 0xFF); // Sanity check
+			ERR_FAIL_COND(bit_buffer > 0xFF); // Safety check.
 			data.push_back(bit_buffer);
 		}
 
@@ -4645,7 +4645,7 @@ Vector3i Animation::_compress_key(uint32_t p_track, const AABB &p_bounds, int32_
 			values[0] = CLAMP(int32_t(blend * 65535.0), 0, 65535);
 		} break;
 		default: {
-			ERR_FAIL_V(Vector3i()); //sanity check
+			ERR_FAIL_V(Vector3i()); // Safety check.
 		} break;
 	}
 
@@ -4819,7 +4819,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 				break;
 			}
 
-			ERR_FAIL_COND(key_frame < base_page_frame); // Sanity check, should never happen
+			ERR_FAIL_COND(key_frame < base_page_frame); // Safety check, should never happen.
 
 			if (key_frame - base_page_frame >= max_frames_per_page) {
 				// Invalid because beyond the max frames allowed per page
@@ -5260,7 +5260,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 			// So, the last frame found still has a time that is less than the required frame,
 			// will have to interpolate with the first frame of the next timekey.
 
-			if ((uint32_t)packet_idx < time_key_count - 1) { // Sanity check but should not matter much, otherwise current next packet is last packet
+			if ((uint32_t)packet_idx < time_key_count - 1) { // Safety check but should not matter much, otherwise current next packet is last packet.
 
 				uint16_t time_key_data_next = time_keys[(packet_idx + 1) * 2 + 1];
 				uint32_t data_offset_next = (time_key_data_next & 0xFFF) * 4; // Lower 12 bits

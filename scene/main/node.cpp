@@ -1855,7 +1855,7 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 }
 
 void Node::_release_unique_name_in_owner() {
-	ERR_FAIL_NULL(data.owner); // Sanity check.
+	ERR_FAIL_NULL(data.owner); // Safety check.
 	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which == nullptr || *which != this) {
@@ -1865,7 +1865,7 @@ void Node::_release_unique_name_in_owner() {
 }
 
 void Node::_acquire_unique_name_in_owner() {
-	ERR_FAIL_NULL(data.owner); // Sanity check.
+	ERR_FAIL_NULL(data.owner); // Safety check.
 	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
@@ -1938,7 +1938,7 @@ Node *Node::get_owner() const {
 }
 
 void Node::_clean_up_owner() {
-	ERR_FAIL_NULL(data.owner); // Sanity check.
+	ERR_FAIL_NULL(data.owner); // Safety check.
 
 	if (data.unique_name_in_owner) {
 		_release_unique_name_in_owner();
