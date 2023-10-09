@@ -25,6 +25,9 @@ namespace GodotTools.ProjectEditor
             mainGroup.AddProperty("TargetFramework", "net6.0");
             mainGroup.AddProperty("EnableDynamicLoading", "true");
 
+            var net8 = mainGroup.AddProperty("TargetFramework", "net8.0");
+            net8.Condition = " '$(GodotTargetPlatform)' == 'ios' ";
+
             string sanitizedName = IdentifierUtils.SanitizeQualifiedIdentifier(name, allowEmptyIdentifiers: true);
 
             // If the name is not a valid namespace, manually set RootNamespace to a sanitized one.
