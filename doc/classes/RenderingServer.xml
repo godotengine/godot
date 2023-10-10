@@ -2627,6 +2627,14 @@
 				Sets the number of particles to be drawn and allocates the memory for them. Equivalent to [member GPUParticles3D.amount].
 			</description>
 		</method>
+		<method name="particles_set_amount_ratio">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="ratio" type="float" />
+			<description>
+				Sets the amount ratio for particles to be emitted. Equivalent to [member GPUParticles3D.amount_ratio].
+			</description>
+		</method>
 		<method name="particles_set_collision_base_size">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
@@ -2675,6 +2683,14 @@
 				Sets the [Transform3D] that will be used by the particles when they first emit.
 			</description>
 		</method>
+		<method name="particles_set_emitter_velocity">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="velocity" type="Vector3" />
+			<description>
+				Sets the velocity of a particle node, that will be used by [member ParticleProcessMaterial.inherit_velocity_ratio].
+			</description>
+		</method>
 		<method name="particles_set_emitting">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
@@ -2705,6 +2721,14 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], uses fractional delta which smooths the movement of the particles. Equivalent to [member GPUParticles3D.fract_delta].
+			</description>
+		</method>
+		<method name="particles_set_interp_to_end">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="factor" type="float" />
+			<description>
+				Sets the value that informs a [ParticleProcessMaterial] to rush all particles towards the end of their lifetime.
 			</description>
 		</method>
 		<method name="particles_set_interpolate">

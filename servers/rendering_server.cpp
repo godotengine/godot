@@ -2497,11 +2497,14 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_emitting", "particles", "emitting"), &RenderingServer::particles_set_emitting);
 	ClassDB::bind_method(D_METHOD("particles_get_emitting", "particles"), &RenderingServer::particles_get_emitting);
 	ClassDB::bind_method(D_METHOD("particles_set_amount", "particles", "amount"), &RenderingServer::particles_set_amount);
+	ClassDB::bind_method(D_METHOD("particles_set_amount_ratio", "particles", "ratio"), &RenderingServer::particles_set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_lifetime", "particles", "lifetime"), &RenderingServer::particles_set_lifetime);
 	ClassDB::bind_method(D_METHOD("particles_set_one_shot", "particles", "one_shot"), &RenderingServer::particles_set_one_shot);
 	ClassDB::bind_method(D_METHOD("particles_set_pre_process_time", "particles", "time"), &RenderingServer::particles_set_pre_process_time);
 	ClassDB::bind_method(D_METHOD("particles_set_explosiveness_ratio", "particles", "ratio"), &RenderingServer::particles_set_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_randomness_ratio", "particles", "ratio"), &RenderingServer::particles_set_randomness_ratio);
+	ClassDB::bind_method(D_METHOD("particles_set_interp_to_end", "particles", "factor"), &RenderingServer::particles_set_interp_to_end);
+	ClassDB::bind_method(D_METHOD("particles_set_emitter_velocity", "particles", "velocity"), &RenderingServer::particles_set_emitter_velocity);
 	ClassDB::bind_method(D_METHOD("particles_set_custom_aabb", "particles", "aabb"), &RenderingServer::particles_set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("particles_set_speed_scale", "particles", "scale"), &RenderingServer::particles_set_speed_scale);
 	ClassDB::bind_method(D_METHOD("particles_set_use_local_coordinates", "particles", "enable"), &RenderingServer::particles_set_use_local_coordinates);
