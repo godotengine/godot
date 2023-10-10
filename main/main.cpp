@@ -900,6 +900,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->next()->get());
 			}
 		}
+		// --generate-mono-glue has to be run with 'project_manager = true' or bad things happen:
+		// 1. Crash due to the EditorPaths singleton being null.
+		// 2. Hangs and doesn't shut down after generating the glue.
+		if (I->get() == "--generate-mono-glue") {
+			project_manager = true;
+		}
 #endif
 
 		if (adding_user_args) {
