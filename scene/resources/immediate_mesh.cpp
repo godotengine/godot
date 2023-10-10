@@ -175,7 +175,7 @@ void ImmediateMesh::surface_end() {
 	AABB aabb;
 
 	{
-		surface_vertex_create_cache.resize(vertex_stride * vertices.size());
+		surface_vertex_create_cache.resize((vertex_stride + normal_tangent_stride) * vertices.size());
 		uint8_t *surface_vertex_ptr = surface_vertex_create_cache.ptrw();
 		for (uint32_t i = 0; i < vertices.size(); i++) {
 			{
