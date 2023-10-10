@@ -31,6 +31,13 @@
 				Returns the [Texture2D] associated with the specified [enum TextureParam].
 			</description>
 		</method>
+		<method name="get_texture_uv" qualifiers="const">
+			<return type="int" enum="BaseMaterial3D.TextureUV" />
+			<param index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam" />
+			<description>
+				Returns the UV layer index for the specified [enum TextureParam].
+			</description>
+		</method>
 		<method name="set_feature">
 			<return type="void" />
 			<param index="0" name="feature" type="int" enum="BaseMaterial3D.Feature" />
@@ -55,6 +62,14 @@
 				Sets the texture for the slot specified by [param param]. See [enum TextureParam] for available slots.
 			</description>
 		</method>
+		<method name="set_texture_uv">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam" />
+			<param index="1" name="texture_uv" type="int" enum="BaseMaterial3D.TextureUV" />
+			<description>
+				Sets the UV layer index for the slot specified by [param param]. See [enum TextureParam] for available slots.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)">
@@ -71,6 +86,9 @@
 		</member>
 		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false">
 			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF parameters.
+		</member>
+		<member name="albedo_uv_index" type="int" setter="set_texture_uv" getter="get_texture_uv" enum="BaseMaterial3D.TextureUV" default="0">
+			The index of the UV layer to use for [member albedo_texture]. See [enum TextureUV] for valid values.
 		</member>
 		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge">
 			Threshold at which antialiasing will be applied on the alpha channel.
@@ -102,14 +120,14 @@
 		<member name="ao_light_affect" type="float" setter="set_ao_light_affect" getter="get_ao_light_affect" default="0.0">
 			Amount that ambient occlusion affects lighting from lights. If [code]0[/code], ambient occlusion only affects ambient light. If [code]1[/code], ambient occlusion affects lights just as much as it affects ambient light. This can be used to impact the strength of the ambient occlusion effect, but typically looks unrealistic.
 		</member>
-		<member name="ao_on_uv2" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], use [code]UV2[/code] coordinates to look up from the [member ao_texture].
-		</member>
 		<member name="ao_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that defines the amount of ambient occlusion for a given point on the object.
 		</member>
 		<member name="ao_texture_channel" type="int" setter="set_ao_texture_channel" getter="get_ao_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+		</member>
+		<member name="ao_uv_index" type="int" setter="set_texture_uv" getter="get_texture_uv" enum="BaseMaterial3D.TextureUV" default="0">
+			The index of the UV layer to use for [member ao_texture]. See [enum TextureUV] for valid values.
 		</member>
 		<member name="backlight" type="Color" setter="set_backlight" getter="get_backlight" default="Color(0, 0, 0, 1)">
 			The color used by the backlight effect. Represents the light passing through an object.
@@ -167,8 +185,8 @@
 			Texture that specifies the per-pixel normal of the detail overlay. The [member detail_normal] texture only uses the red and green channels; the blue and alpha channels are ignored. The normal read from [member detail_normal] is oriented around the surface normal provided by the [Mesh].
 			[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
-		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="BaseMaterial3D.DetailUV" default="0">
-			Specifies whether to use [code]UV[/code] or [code]UV2[/code] for the detail layer. See [enum DetailUV] for options.
+		<member name="detail_uv_index" type="int" setter="set_texture_uv" getter="get_texture_uv" enum="BaseMaterial3D.TextureUV" default="0">
+			The index of the UV layer to use for [member detail_normal]. See [enum TextureUV] for valid values.
 		</member>
 		<member name="diffuse_mode" type="int" setter="set_diffuse_mode" getter="get_diffuse_mode" enum="BaseMaterial3D.DiffuseMode" default="0">
 			The algorithm used for diffuse light scattering. See [enum DiffuseMode].
@@ -205,14 +223,14 @@
 		<member name="emission_intensity" type="float" setter="set_emission_intensity" getter="get_emission_intensity">
 			Luminance of emitted light, measured in nits (candela per square meter). Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled. The default is roughly equivalent to an indoor lightbulb.
 		</member>
-		<member name="emission_on_uv2" type="bool" setter="set_flag" getter="get_flag" default="false">
-			Use [code]UV2[/code] to read from the [member emission_texture].
-		</member>
 		<member name="emission_operator" type="int" setter="set_emission_operator" getter="get_emission_operator" enum="BaseMaterial3D.EmissionOperator" default="0">
 			Sets how [member emission] interacts with [member emission_texture]. Can either add or multiply. See [enum EmissionOperator] for options.
 		</member>
 		<member name="emission_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that specifies how much surface emits light at a given point.
+		</member>
+		<member name="emission_uv_index" type="int" setter="set_texture_uv" getter="get_texture_uv" enum="BaseMaterial3D.TextureUV" default="0">
+			The index of the UV layer to use for [member emission_texture]. See [enum TextureUV] for valid values.
 		</member>
 		<member name="fixed_size" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object is rendered at the same size regardless of distance.
@@ -271,6 +289,9 @@
 		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member metallic_texture] in which the metallic information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
+		<member name="metallic_uv_index" type="int" setter="set_texture_uv" getter="get_texture_uv" enum="BaseMaterial3D.TextureUV" default="0">
+			The index of the UV layer to use for [member metallic_texture]. See [enum TextureUV] for valid values.
+		</member>
 		<member name="msdf_outline_size" type="float" setter="set_msdf_outline_size" getter="get_msdf_outline_size" default="0.0">
 			The width of the shape outline.
 		</member>
@@ -291,6 +312,9 @@
 			[b]Note:[/b] The mesh must have both normals and tangents defined in its vertex data. Otherwise, the normal map won't render correctly and will only appear to darken the whole surface. If creating geometry with [SurfaceTool], you can use [method SurfaceTool.generate_normals] and [method SurfaceTool.generate_tangents] to automatically generate normals and tangents respectively.
 			[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 			[b]Note:[/b] If [member detail_enabled] is [code]true[/code], the [member detail_albedo] texture is drawn [i]below[/i] the [member normal_texture]. To display a normal map [i]above[/i] the [member detail_albedo] texture, use [member detail_normal] instead.
+		</member>
+		<member name="normal_uv_index" type="int" setter="set_texture_uv" getter="get_texture_uv" enum="BaseMaterial3D.TextureUV" default="0">
+			The index of the UV layer to use for [member normal_texture]. See [enum TextureUV] for valid values.
 		</member>
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The Occlusion/Roughness/Metallic texture to use. This is a more efficient replacement of [member ao_texture], [member roughness_texture] and [member metallic_texture] in [ORMMaterial3D]. Ambient occlusion is stored in the red channel. Roughness map is stored in the green channel. Metallic map is stored in the blue channel. The alpha channel is ignored.
@@ -346,6 +370,9 @@
 		</member>
 		<member name="roughness_texture_channel" type="int" setter="set_roughness_texture_channel" getter="get_roughness_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member roughness_texture] in which the roughness information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+		</member>
+		<member name="roughness_uv_index" type="int" setter="set_texture_uv" getter="get_texture_uv" enum="BaseMaterial3D.TextureUV" default="0">
+			The index of the UV layer to use for [member roughness_texture]. See [enum TextureUV] for valid values.
 		</member>
 		<member name="shading_mode" type="int" setter="set_shading_mode" getter="get_shading_mode" enum="BaseMaterial3D.ShadingMode" default="1">
 			Sets whether the shading takes place, per-pixel, per-vertex or unshaded. Per-vertex lighting is faster, making it the best choice for mobile applications, however it looks considerably worse than per-pixel. Unshaded rendering is the fastest, but disables all interactions with lights.
@@ -521,11 +548,11 @@
 		<constant name="TEXTURE_FILTER_MAX" value="6" enum="TextureFilter">
 			Represents the size of the [enum TextureFilter] enum.
 		</constant>
-		<constant name="DETAIL_UV_1" value="0" enum="DetailUV">
-			Use [code]UV[/code] with the detail texture.
+		<constant name="TEXTURE_UV_1" value="0" enum="TextureUV">
+			Use [code]UV[/code] with the texture.
 		</constant>
-		<constant name="DETAIL_UV_2" value="1" enum="DetailUV">
-			Use [code]UV2[/code] with the detail texture.
+		<constant name="TEXTURE_UV_2" value="1" enum="TextureUV">
+			Use [code]UV2[/code] with the texture.
 		</constant>
 		<constant name="TRANSPARENCY_DISABLED" value="0" enum="Transparency">
 			The material will not use transparency. This is the fastest to render.
@@ -666,12 +693,6 @@
 		</constant>
 		<constant name="FLAG_UV2_USE_WORLD_TRIPLANAR" value="9" enum="Flags">
 			Use triplanar texture lookup for all texture lookups that would normally use [code]UV2[/code].
-		</constant>
-		<constant name="FLAG_AO_ON_UV2" value="10" enum="Flags">
-			Use [code]UV2[/code] coordinates to look up from the [member ao_texture].
-		</constant>
-		<constant name="FLAG_EMISSION_ON_UV2" value="11" enum="Flags">
-			Use [code]UV2[/code] coordinates to look up from the [member emission_texture].
 		</constant>
 		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="12" enum="Flags">
 			Forces the shader to convert albedo from sRGB space to linear space. See also [member albedo_texture_force_srgb].
