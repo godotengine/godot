@@ -3562,14 +3562,14 @@ bool DisplayServerMacOS::window_is_focused(WindowID p_window) const {
 }
 
 bool DisplayServerMacOS::window_can_draw(WindowID p_window) const {
-	return (window_get_mode(p_window) != WINDOW_MODE_MINIMIZED) && [windows[p_window].window_object isOnActiveSpace];
+	return windows[p_window].is_visible;
 }
 
 bool DisplayServerMacOS::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
 	for (const KeyValue<WindowID, WindowData> &E : windows) {
-		if ((window_get_mode(E.key) != WINDOW_MODE_MINIMIZED) && [E.value.window_object isOnActiveSpace]) {
+		if (E.value.is_visible) {
 			return true;
 		}
 	}

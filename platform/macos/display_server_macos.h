@@ -119,6 +119,7 @@ public:
 		bool is_popup = false;
 		bool mpass = false;
 		bool focused = false;
+		bool is_visible = true;
 
 		Rect2i parent_safe_rect;
 	};
