@@ -38,6 +38,148 @@
 #include "tests/test_macros.h"
 #include "tests/test_tools.h"
 
+// TODO: methods to structify:
+/*
+ * ClassDB::class_get_signal_list()
+ * ClassDB::class_get_property_list()
+ * ClassDB::class_get_method_list()
+ * CodeEdit::_filter_code_completion_candidates()
+ * CodeEdit::get_code_completion_options()
+ * DisplayServer::tts_get_voices()
+ * EditorExportPlugin::_get_export_options()
+ * EditorImportPlugin::_get_import_options()
+ * ScriptLanguage::CodeCompletionOption
+ * ResourceImporter::ImportOption
+ * EditorVCSInterface::DiffLine
+ * EditorVCSInterface::DiffHunk
+ * EditorVCSInterface::DiffFile
+ * EditorVCSInterface::Commit
+ * EditorVCSInterface::StatusFile
+ * EditorVCSInterface::_get_modified_files_data()
+ * EditorVCSInterface::_get_diff()
+ * EditorVCSInterface::_get_previous_commits()
+ * EditorVCSInterface::_get_line_diff()
+ * EditorVCSInterface::add_diff_hunks_into_diff_file()
+ * EditorVCSInterface::add_line_diffs_into_diff_hunk()
+ * Engine::get_author_info()
+ * Engine::get_copyright_info()
+ * Engine::get_donor_info()
+ * Engine::get_version_info()
+ * Font::get_opentype_features()
+ * Font::get_ot_name_strings()
+ * Font::get_supported_variation_list()
+ * Font::find_variation()
+ * Font::get_opentype_feature_overrides()
+ * GLTFCamera::to_dictionary()
+ * GLTFCamera::from_dictionary()
+ * GLTFLight::to_dictionary()
+ * GLTFLight::from_dictionary()
+ * GLTFPhysicsBody::to_dictionary()
+ * GLTFPhysicsBody::from_dictionary()
+ * GLTFPhysicsShape::to_dictionary()
+ * GLTFPhysicsShape::from_dictionary()
+ * Geometry2D::make_atlas()
+ * GraphEdit::get_connection_list()
+ * Image::compute_image_metrics()
+ * Image::data
+ * IP::get_local_interfaces()
+ * LightmapGIData::probe_data
+ * NavigationAgent2D::waypoint_reached()
+ * NavigationAgent2D::link_reached()
+ * NavigationAgent3D::waypoint_reached()
+ * NavigationAgent3D::link_reached()
+ * Object::get_property_list()
+ * Object::get_method_list()
+ * Object::get_signal_list()
+ * Object::get_signal_connection_list()
+ * Object::get_incoming_connections()
+ * OS::get_memory_info()
+ * PhysicsDirectSpaceState2D::get_rest_info()
+ * PhysicsDirectSpaceState2D::intersect_point()
+ * PhysicsDirectSpaceState2D::intersect_ray()
+ * PhysicsDirectSpaceState2D::intersect_shape()
+ * PhysicsDirectSpaceState3D::get_rest_info()
+ * PhysicsDirectSpaceState3D::intersect_point()
+ * PhysicsDirectSpaceState3D::intersect_ray()
+ * PhysicsDirectSpaceState3D::intersect_shape()
+ * PolygonPathFinder::data
+ * ProjectSettings::add_property_info()
+ * ProjectSettings::get_global_class_list()
+ * RenderingServer::mesh_add_surface()
+ * RenderingServer::mesh_get_surface()
+ * RenderingServer::get_shader_parameter_list()
+ * RenderingServer::mesh_create_from_surfaces()
+ * RenderingServer::instance_geometry_get_shader_parameter_list()
+ * Script::get_script_property_list()
+ * Script::get_script_method_list()
+ * Script::get_script_signal_list()
+ * ScriptLanguage::_get_method_info()
+ * ScriptLanguageExtension::_validate()
+ * ScriptLanguageExtension::_complete_code()
+ * ScriptLanguageExtension::_lookup_code()
+ * ScriptLanguageExtension::_debug_get_current_stack_info()
+ * ScriptLanguageExtension::_get_public_functions()
+ * ScriptLanguageExtension::_get_public_annotations()
+ * ScriptLanguageExtension::_debug_get_stack_level_locals()
+ * ScriptLanguageExtension::_debug_get_stack_level_members()
+ * ScriptLanguageExtension::_debug_get_globals()
+ * ScriptLanguageExtension::_get_built_in_templates()
+ * ScriptLanguageExtension::_get_public_constants()
+ * ScriptLanguageExtension::_get_public_annotations()
+ * ScriptLanguageExtension::_get_global_class_name()
+ * ScriptExtension::_get_documentation()
+ * ScriptExtension::_get_script_signal_list()
+ * ScriptExtension::_get_script_method_list()
+ * ScriptExtension::_get_script_property_list()
+ * TextServer::font_set_variation_coordinates()
+ * TextServer::font_get_variation_coordinates()
+ * TextServer::font_get_glyph_contours()
+ * TextServer::font_set_opentype_feature_overrides()
+ * TextServer::font_get_opentype_feature_overrides()
+ * TextServer::font_supported_feature_list()
+ * TextServer::font_supported_variation_list()
+ * TextServer::shaped_text_add_string()
+ * TextServer::shaped_set_span_update_font()
+ * TextServer::shaped_text_get_carets()
+ * TextServer::shaped_text_get_glyphs()
+ * TextServer::shaped_text_sort_logical()
+ * TextServer::shaped_text_get_ellipsis_glyphs()
+ * TextServerExtension::_font_set_variation_coordinates()
+ * TextServerExtension::_font_get_variation_coordinates()
+ * TextServerExtension::_font_get_glyph_contours()
+ * TextServerExtension::_font_set_opentype_feature_overrides()
+ * TextServerExtension::_font_get_opentype_feature_overrides()
+ * TextServerExtension::_font_supported_feature_list()
+ * TextServerExtension::_font_supported_variation_list()
+ * TextServerExtension::_shaped_text_add_string()
+ * TextServerExtension::_shaped_set_span_update_font()
+ * TextServerManager::get_interfaces()
+ * Time::get_datetime_dict_from_unix_time()
+ * Time::get_date_dict_from_unix_time()
+ * Time::get_time_dict_from_unix_time()
+ * Time::get_datetime_dict_from_datetime_string()
+ * Time::get_datetime_string_from_datetime_dict()
+ * Time::get_unix_time_from_datetime_dict()
+ * Time::get_datetime_dict_from_system()
+ * Time::get_date_dict_from_system()
+ * Time::get_time_dict_from_system()
+ * Time::get_time_zone_from_system()
+ * Tree::get_range_config()
+ * VisualShader::get_node_connections()
+ * WebRTCMultiplayerPeer::get_peer()
+ * WebRTCMultiplayerPeer::get_peers()
+ * WebRTCPeerConnection::initialize()
+ * WebRTCPeerConnection::create_data_channel()
+ * WebRTCPeerConnectionExtension::_initialize()
+ * WebRTCPeerConnectionExtension::_create_data_channel()
+ * XRInterface::get_system_info()
+ * XRInterfaceExtension::_get_system_info()
+ * XRServer::get_interfaces()
+ * XRServer::get_trackers()
+ *
+ *
+ * */
+
 namespace TestStruct {
 
 TEST_CASE("[Struct] PropertyInfo") {
@@ -45,10 +187,10 @@ TEST_CASE("[Struct] PropertyInfo") {
 	List<PropertyInfo> list;
 	my_node->get_property_list(&list);
 	PropertyInfo info = list[0];
-	CHECK_EQ((((Variant)(Dictionary)info)).stringify(), "{ \"name\": \"Node\", \"class_name\": &\"\", \"type\": 0, \"hint\": 0, \"hint_string\": \"Node\", \"usage\": 128 }");
 	CHECK_EQ((((Variant)(Struct<PropertyInfo>)info)).stringify(), "[name: \"Node\", class_name: &\"\", type: 0, hint: 0, hint_string: \"Node\", usage: 128]");
 
-	Struct<PropertyInfo> prop = my_node->_get_property_struct(0);
+	TypedArray<Struct<PropertyInfo>> property_list = my_node->call(SNAME("get_property_list"));
+	Struct<PropertyInfo> prop = property_list[0];
 	CHECK_EQ(((Variant)prop).stringify(), "[name: \"Node\", class_name: &\"\", type: 0, hint: 0, hint_string: \"Node\", usage: 128]");
 
 	SUBCASE("Equality") {

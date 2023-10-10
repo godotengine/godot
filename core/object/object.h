@@ -205,7 +205,7 @@ struct PropertyInfo {
 			STRUCT_MEMBER(type, Variant::INT, Variant::NIL),
 			STRUCT_MEMBER(hint, Variant::INT, PROPERTY_HINT_NONE),
 			STRUCT_MEMBER(hint_string, Variant::STRING, String()),
-			STRUCT_MEMBER(usage, Variant::INT, PROPERTY_USAGE_DEFAULT));
+			STRUCT_MEMBER(usage, Variant::INT, PROPERTY_USAGE_DEFAULT))
 
 	_FORCE_INLINE_ PropertyInfo added_usage(uint32_t p_fl) const {
 		PropertyInfo pi = *this;
@@ -213,13 +213,15 @@ struct PropertyInfo {
 		return pi;
 	}
 
-	operator Dictionary() const;
-
-	static PropertyInfo from_dict(const Dictionary &p_dict);
-
 	operator Struct<PropertyInfo>() const;
 
 	static PropertyInfo from_struct(const Struct<PropertyInfo> &p_struct);
+
+#ifndef DISABLE_DEPRECATED
+	operator Dictionary() const;
+
+	static PropertyInfo from_dict(const Dictionary &p_dict);
+#endif
 
 	PropertyInfo() {}
 
@@ -262,7 +264,9 @@ struct PropertyInfo {
 	}
 };
 
+#ifndef DISABLE_DEPRECATED
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
+#endif
 
 enum MethodFlags {
 	METHOD_FLAG_NORMAL = 1,
@@ -285,6 +289,16 @@ struct MethodInfo {
 	int return_val_metadata = 0;
 	Vector<int> arguments_metadata;
 
+	STRUCT_LAYOUT(MethodInfo,
+			STRUCT_MEMBER(name, Variant::STRING, String()),
+			STRUCT_MEMBER(return_val, Variant::INT, PROPERTY_USAGE_DEFAULT),
+			STRUCT_MEMBER(flags, Variant::INT, METHOD_FLAGS_DEFAULT),
+			STRUCT_MEMBER(id, Variant::INT, 0),
+			STRUCT_MEMBER(arguments, Variant::ARRAY, Array()),
+			STRUCT_MEMBER(default_arguments, Variant::ARRAY, Array()),
+			STRUCT_MEMBER(return_val_metadata, Variant::INT, 0),
+			STRUCT_MEMBER(arguments_metadata, Variant::ARRAY, PackedInt32Array()))
+
 	int get_argument_meta(int p_arg) const {
 		ERR_FAIL_COND_V(p_arg < -1 || p_arg > arguments.size(), 0);
 		if (p_arg == -1) {
@@ -296,9 +310,15 @@ struct MethodInfo {
 	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id && name == p_method.name; }
 	inline bool operator<(const MethodInfo &p_method) const { return id == p_method.id ? (name < p_method.name) : (id < p_method.id); }
 
+	operator Struct<MethodInfo>() const;
+
+	static MethodInfo from_struct(const Struct<MethodInfo> &p_struct);
+
+#ifndef DISABLE_DEPRECATED
 	operator Dictionary() const;
 
 	static MethodInfo from_dict(const Dictionary &p_dict);
+#endif
 
 	MethodInfo() {}
 
@@ -644,8 +664,13 @@ public:
 	struct Connection {
 		::Signal signal;
 		Callable callable;
-
 		uint32_t flags = 0;
+
+		STRUCT_LAYOUT(Connection,
+				STRUCT_MEMBER(signal, Variant::SIGNAL, Signal()),
+				STRUCT_MEMBER(callable, Variant::CALLABLE, Callable()),
+				STRUCT_MEMBER(flags, Variant::INT, 0))
+
 		bool operator<(const Connection &p_conn) const;
 
 		operator Variant() const;
@@ -653,10 +678,6 @@ public:
 		Connection() {}
 		Connection(const Variant &p_variant);
 	};
-
-	// TODO: These methods are for testing purposes only and will be removed before release.
-	//	TypedArray<Struct<PropertyInfoLayout>> _get_property_list_struct() const;
-	Struct<PropertyInfo> _get_property_struct(uint32_t p_index) const;
 
 private:
 #ifdef DEBUG_ENABLED
@@ -702,12 +723,19 @@ private:
 	HashMap<StringName, Variant *> metadata_properties;
 	mutable const StringName *_class_name_ptr = nullptr;
 
-	void _add_user_signal(const String &p_name, const Array &p_args = Array());
+	void _add_user_signal(const Struct<MethodInfo> &p_signal);
+	TypedArray<Struct<MethodInfo>> _get_signal_list() const;
+	TypedArray<Struct<Connection>> _get_signal_connection_list(const StringName &p_signal) const;
+	TypedArray<Struct<Connection>> _get_incoming_connections() const;
+#ifndef DISABLE_DEPRECATED
+	void _add_user_signal_compat_99999(const String &p_name, const Array &p_args = Array());
+	TypedArray<Dictionary> _get_signal_list_compat_99999() const;
+	TypedArray<Dictionary> _get_signal_connection_list_compat_99999(const StringName &p_signal) const;
+	TypedArray<Dictionary> _get_incoming_connections_compat_99999() const;
+#endif
 	bool _has_user_signal(const StringName &p_name) const;
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	TypedArray<Dictionary> _get_signal_list() const;
-	TypedArray<Dictionary> _get_signal_connection_list(const StringName &p_signal) const;
-	TypedArray<Dictionary> _get_incoming_connections() const;
+
 	void _set_bind(const StringName &p_set, const Variant &p_value);
 	Variant _get_bind(const StringName &p_name) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
@@ -760,7 +788,8 @@ protected:
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
 
 	static void _bind_methods();
-	static void _bind_compatibility_methods() {}
+	static void _bind_compatibility_methods();
+
 	bool _set(const StringName &p_name, const Variant &p_property) { return false; };
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; };
 	void _get_property_list(List<PropertyInfo> *p_list) const {};
@@ -811,8 +840,12 @@ protected:
 	}
 
 	TypedArray<StringName> _get_meta_list_bind() const;
-	TypedArray<Dictionary> _get_property_list_bind() const;
-	TypedArray<Dictionary> _get_method_list_bind() const;
+	TypedArray<Struct<PropertyInfo>> _get_property_list_bind() const;
+	TypedArray<Struct<MethodInfo>> _get_method_list_bind() const;
+#ifndef DISABLE_DEPRECATED
+	TypedArray<Dictionary> _get_property_list_bind_compat_99999() const;
+	TypedArray<Dictionary> _get_method_list_bind_compat_99999() const;
+#endif
 
 	void _clear_internal_resource_paths(const Variant &p_var);
 

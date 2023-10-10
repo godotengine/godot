@@ -978,6 +978,12 @@ Array::Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_
 	}
 }
 
+Array::Array(const Vector<Variant> &p_vec) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	_p->array = p_vec; // TODO: is this right? Do I need to copy?
+}
+
 Array::Array() {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();

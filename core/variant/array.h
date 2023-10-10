@@ -146,6 +146,7 @@ public:
 	Array(const Array &p_from);
 	Array(const Array &p_from, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
 	Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t));
+	Array(const Vector<Variant> &p_vec);
 	Array();
 	~Array();
 };

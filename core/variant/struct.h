@@ -95,7 +95,7 @@ struct GetTypeInfo<Struct<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	_FORCE_INLINE_ static PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_struct_name());
 	}
 };
 
@@ -104,7 +104,7 @@ struct GetTypeInfo<const Struct<T> &> {
 	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	_FORCE_INLINE_ static PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_struct_name());
 	}
 };
 

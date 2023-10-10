@@ -57,6 +57,55 @@ public:
 };
 
 template <class T>
+struct VariantInternalAccessor<TypedArray<T>> {
+	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = p_array; }
+};
+
+template <class T>
+struct VariantInternalAccessor<const TypedArray<T> &> {
+	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = p_array; }
+};
+
+template <class T>
+struct PtrToArg<TypedArray<T>> {
+	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
+		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
+	}
+	typedef Array EncodeT;
+	_FORCE_INLINE_ static void encode(TypedArray<T> p_val, void *p_ptr) {
+		*(Array *)p_ptr = p_val;
+	}
+};
+
+template <class T>
+struct PtrToArg<const TypedArray<T> &> {
+	typedef Array EncodeT;
+	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
+		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
+	}
+};
+
+template <class T>
+struct GetTypeInfo<TypedArray<T>> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
+	}
+};
+
+template <class T>
+struct GetTypeInfo<const TypedArray<T> &> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
+	}
+};
+
+template <class T>
 class TypedArray<Struct<T>> : public Array {
 public:
 	_FORCE_INLINE_ void operator=(const Array &p_array) {
@@ -72,17 +121,35 @@ public:
 	_FORCE_INLINE_ TypedArray() {
 		set_typed(Variant::ARRAY, T::get_struct_name(), Variant());
 	}
+	_FORCE_INLINE_ TypedArray(const List<T> *p_list) {
+		set_typed(Variant::ARRAY, T::get_struct_name(), Variant());
+		for (const List<T>::Element *E = p_list->front(); E; E = E->next()) {
+			push_back(Struct<T>(E->get()));
+		}
+	}
+	_FORCE_INLINE_ operator List<T>() const {
+		List<T> list;
+		for (int i = 0; i < size(); i++) {
+			list.push_back(T::from_struct(get(i)));
+		}
+		return list;
+	}
 };
-
 template <class T>
-struct VariantInternalAccessor<TypedArray<T>> {
-	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
-	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = p_array; }
+struct GetTypeInfo<TypedArray<Struct<T>>> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_struct_name());
+	}
 };
 template <class T>
-struct VariantInternalAccessor<const TypedArray<T> &> {
-	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
-	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = p_array; }
+struct GetTypeInfo<const TypedArray<Struct<T>> &> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_struct_name());
+	}
 };
 
 //specialization for the rest of variant types
@@ -153,43 +220,6 @@ MAKE_TYPED_ARRAY(PackedVector2Array, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPED_ARRAY(PackedVector3Array, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPED_ARRAY(PackedColorArray, Variant::PACKED_COLOR_ARRAY)
 MAKE_TYPED_ARRAY(IPAddress, Variant::STRING)
-
-template <class T>
-struct PtrToArg<TypedArray<T>> {
-	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
-		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
-	}
-	typedef Array EncodeT;
-	_FORCE_INLINE_ static void encode(TypedArray<T> p_val, void *p_ptr) {
-		*(Array *)p_ptr = p_val;
-	}
-};
-
-template <class T>
-struct PtrToArg<const TypedArray<T> &> {
-	typedef Array EncodeT;
-	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
-		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
-	}
-};
-
-template <class T>
-struct GetTypeInfo<TypedArray<T>> {
-	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
-	}
-};
-
-template <class T>
-struct GetTypeInfo<const TypedArray<T> &> {
-	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
-	}
-};
 
 #define MAKE_TYPED_ARRAY_INFO(m_type, m_variant_type)                                                                        \
 	template <>                                                                                                              \
