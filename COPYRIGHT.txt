@@ -383,7 +383,7 @@ License: Expat
 Files: ./thirdparty/noise/FastNoiseLite.h
 Comment: FastNoise Lite
 Copyright: 2020, Jordan Peck and contributors
-License: MIT
+License: Expat
 
 Files: ./thirdparty/misc/pcg.cpp
  ./thirdparty/misc/pcg.h
@@ -428,7 +428,7 @@ License: BSD-2-clause
 Files: ./thirdparty/msdfgen/
 Comment: Multi-channel signed distance field generator
 Copyright: 2016-2022, Viktor Chlumsky
-License: MIT
+License: Expat
 
 Files: ./thirdparty/nvapi/nvapi_minimal.h
 Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK
