@@ -163,13 +163,14 @@ class GDScript : public Script {
 	HashSet<PlaceHolderScriptInstance *> placeholders;
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
+	void _update_exports_down(bool p_base_exports_changed);
 #endif
 
 #ifdef DEBUG_ENABLED
 	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
 #endif
 
-	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr, bool p_base_exports_changed = false);
 
 	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
 
