@@ -41,6 +41,31 @@ if env["builtin_libtheora"]:
         # "tokenize.c",
     ]
 
+    thirdparty_sources_arm = [
+        "arm/armcpu.c",
+        # "arm/armenc.c",
+        "arm/armstate.c",
+    ]
+
+    thirdparty_sources_arm_asm = [
+        "arm/armbits.s",
+        # "arm/armencfrag.s",
+        # "arm/armenquant.s",
+        "arm/armfrag.s",
+        "arm/armidct.s",
+        "arm/armloop.s",
+        "arm/armopts.s",
+    ]
+
+    thirdparty_sources_arm_gnu = [
+        "arm/armbits-gnu.S",
+        # "arm/armencfrag-gnu.S",
+        # "arm/armenquant-gnu.S",
+        "arm/armfrag-gnu.S",
+        "arm/armidct-gnu.S",
+        "arm/armloop-gnu.S",
+    ]
+
     thirdparty_sources_x86 = [
         # "x86/mmxencfrag.c",
         # "x86/mmxfdct.c",
@@ -76,6 +101,21 @@ if env["builtin_libtheora"]:
     if env["x86_libtheora_opt_gcc"] or env["x86_libtheora_opt_vc"]:
         env_theora.Append(CPPDEFINES=["OC_X86_ASM"])
 
+    import os
+    from shutil import which
+
+    use_neon = env["platform"] == "android" and env["arch"] == "arm32" and os.name != "nt" and which("perl") != None
+
+    if use_neon:
+        env_theora.Append(CPPDEFINES=["OC_ARM_ASM", "OC_ARM_ASM_EDSP", "OC_ARM_ASM_MEDIA", "OC_ARM_ASM_NEON"])
+        env_theora.Append(
+            ASFLAGS=[
+                "-no-integrated-as",
+                # Add the arm folder, or else .S files won't be able to find armopts-gnu.S
+                "-I" + thirdparty_dir[1:] + "arm",
+            ]
+        )
+
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_theora.Prepend(CPPPATH=[thirdparty_dir])
@@ -89,6 +129,26 @@ if env["builtin_libtheora"]:
     env_thirdparty = env_theora.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+
+    if use_neon:
+        env_neon = env_thirdparty.Clone()
+        if "S_compiler" in env:
+            env_neon["CC"] = env["S_compiler"]
+        neon_sources = []
+        for source in thirdparty_sources_arm_asm:
+            asm_source = thirdparty_dir + source
+            env_neon.CommandNoCache(
+                asm_source.rsplit(".", 1)[0] + "-gnu.S",
+                asm_source,
+                "perl " + thirdparty_dir[1:] + "arm/arm2gnu.pl < $SOURCES > $TARGETS",
+            )
+
+        for source in thirdparty_sources_arm + thirdparty_sources_arm_gnu:
+            env_neon.Depends(thirdparty_dir + source, thirdparty_dir + "arm/armopts-gnu.S")
+            neon_sources.append(env_neon.Object(thirdparty_dir + source)),
+
+        thirdparty_obj += neon_sources
+
     env.modules_sources += thirdparty_obj
 
 
