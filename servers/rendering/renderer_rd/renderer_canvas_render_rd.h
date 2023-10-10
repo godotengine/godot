@@ -402,6 +402,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			};
 		};
 		float color_texture_pixel_size[2];
+		float base_color[4];
 		uint32_t lights[4];
 	};
 

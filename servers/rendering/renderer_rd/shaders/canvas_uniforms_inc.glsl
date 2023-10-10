@@ -59,6 +59,7 @@ struct DrawData {
 
 #endif
 	vec2 color_texture_pixel_size;
+	vec4 base_color;
 	uint lights[4];
 };
 

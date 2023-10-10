@@ -454,6 +454,13 @@ void RendererCanvasRenderRD::_prepare_item_data(RID p_render_target, const Item 
 
 	Color base_color = p_item->final_modulate;
 	bool use_linear_colors = texture_storage->render_target_is_using_hdr(p_render_target);
+	if (use_linear_colors) {
+		base_color = base_color.srgb_to_linear();
+	}
+	per_instance_buffer.base_color[0] = base_color.r;
+	per_instance_buffer.base_color[1] = base_color.g;
+	per_instance_buffer.base_color[2] = base_color.b;
+	per_instance_buffer.base_color[3] = base_color.a;
 
 	for (int i = 0; i < 4; i++) {
 		per_instance_buffer.modulation[i] = 0;
@@ -583,7 +590,7 @@ void RendererCanvasRenderRD::_prepare_item_data(RID p_render_target, const Item 
 					per_instance_buffer.flags |= FLAGS_USE_LCD;
 				}
 
-				Color modulated = rect->modulate * base_color;
+				Color modulated = rect->modulate;
 				if (use_linear_colors) {
 					modulated = modulated.srgb_to_linear();
 				}
@@ -632,7 +639,7 @@ void RendererCanvasRenderRD::_prepare_item_data(RID p_render_target, const Item 
 					}
 				}
 
-				Color modulated = np->color * base_color;
+				Color modulated = np->color;
 				if (use_linear_colors) {
 					modulated = modulated.srgb_to_linear();
 				}
@@ -682,15 +689,10 @@ void RendererCanvasRenderRD::_prepare_item_data(RID p_render_target, const Item 
 
 				_prepare_canvas_texture_data(polygon->texture, current_filter, current_repeat, last_texture, per_instance_buffer, texpixel_size);
 
-				Color color = base_color;
-				if (use_linear_colors) {
-					color = color.srgb_to_linear();
-				}
-
-				per_instance_buffer.modulation[0] = color.r;
-				per_instance_buffer.modulation[1] = color.g;
-				per_instance_buffer.modulation[2] = color.b;
-				per_instance_buffer.modulation[3] = color.a;
+				per_instance_buffer.modulation[0] = 1.0;
+				per_instance_buffer.modulation[1] = 1.0;
+				per_instance_buffer.modulation[2] = 1.0;
+				per_instance_buffer.modulation[3] = 1.0;
 
 				for (int j = 0; j < 4; j++) {
 					per_instance_buffer.src_rect[j] = 0;
@@ -715,7 +717,7 @@ void RendererCanvasRenderRD::_prepare_item_data(RID p_render_target, const Item 
 					per_instance_buffer.points[j * 2 + 1] = primitive->points[j].y;
 					per_instance_buffer.uvs[j * 2 + 0] = primitive->uvs[j].x;
 					per_instance_buffer.uvs[j * 2 + 1] = primitive->uvs[j].y;
-					Color col = primitive->colors[j] * base_color;
+					Color col = primitive->colors[j];
 					if (use_linear_colors) {
 						col = col.srgb_to_linear();
 					}
@@ -731,7 +733,7 @@ void RendererCanvasRenderRD::_prepare_item_data(RID p_render_target, const Item 
 						per_instance_buffer.points[j * 2 + 1] = primitive->points[j + 1].y;
 						per_instance_buffer.uvs[j * 2 + 0] = primitive->uvs[j + 1].x;
 						per_instance_buffer.uvs[j * 2 + 1] = primitive->uvs[j + 1].y;
-						Color col = primitive->colors[j + 1] * base_color;
+						Color col = primitive->colors[j + 1];
 						if (use_linear_colors) {
 							col = col.srgb_to_linear();
 						}
@@ -840,7 +842,7 @@ void RendererCanvasRenderRD::_prepare_item_data(RID p_render_target, const Item 
 
 				uint32_t surf_count = mesh_storage->mesh_get_surface_count(mesh);
 
-				Color modulated = modulate * base_color;
+				Color modulated = modulate;
 				if (use_linear_colors) {
 					modulated = modulated.srgb_to_linear();
 				}
@@ -2860,6 +2862,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 
 		actions.renames["COLOR"] = "color";
+		actions.renames["MODULATE"] = "modulate";
 		actions.renames["NORMAL"] = "normal";
 		actions.renames["NORMAL_MAP"] = "normal_map";
 		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
@@ -2892,6 +2895,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["screen_uv_to_sdf"] = "screen_uv_to_sdf";
 
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
+		actions.usage_defines["MODULATE"] = "#define MODULATE_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 		actions.usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";

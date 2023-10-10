@@ -53,6 +53,9 @@ vec3 srgb_to_linear(vec3 color) {
 void main() {
 	const DrawData draw_data = draw_data_buffer.data[draw_data_index.index];
 	vec4 instance_custom = vec4(0.0);
+#ifdef MODULATE_USED
+	vec4 modulate = draw_data.base_color;
+#endif
 #if defined(CUSTOM0_USED)
 	vec4 custom0 = vec4(0.0);
 #endif
@@ -471,6 +474,9 @@ void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 	vec2 vertex = vertex_interp;
+#ifdef MODULATE_USED
+	vec4 modulate = draw_data.base_color;
+#endif
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
@@ -746,6 +752,10 @@ void main() {
 
 #ifdef MODE_LIGHT_ONLY
 	color.a *= light_only_alpha;
+#endif
+
+#ifndef MODULATE_USED
+	color *= draw_data.base_color;
 #endif
 
 	frag_color = color;
