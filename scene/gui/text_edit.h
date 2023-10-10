@@ -624,6 +624,12 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Point2i _get_pos_at_line_column_83312(int p_line, int p_column) const;
+	Rect2i _get_rect_at_line_column_83312(int p_line, int p_column) const;
+	static void _bind_compatibility_methods();
+#endif
+
 	virtual void _update_theme_item_cache() override;
 
 	/* Internal API for CodeEdit, pending public API. */
@@ -808,8 +814,8 @@ public:
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
 	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
-	Point2i get_pos_at_line_column(int p_line, int p_column) const;
-	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
+	Point2 get_pos_at_line_column(int p_line, int p_column) const;
+	Rect2 get_rect_at_line_column(int p_line, int p_column) const;
 
 	int get_minimap_line_at_pos(const Point2i &p_pos) const;
 

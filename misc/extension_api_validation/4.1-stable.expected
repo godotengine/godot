@@ -288,8 +288,17 @@ Validate extension JSON: Error: Field 'classes/SurfaceTool/methods/commit/argume
 
 Surface format was increased to 64 bits from 32 bits. Compatibility methods registered. 
 
+
 GH-79527
 --------
 Validate extension JSON: Error: Field 'classes/ParticleProcessMaterial/properties/orbit_velocity_curve': type changed value in new API, from "CurveTexture" to "CurveTexture,CurveXYZTexture".
 
 Added accepted curve type from only CurveTexture to CurveXYZTexture.
+
+
+GH-83312
+--------
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/get_pos_at_line_column/return_value': type changed value in new API, from "Vector2i" to "Vector2".
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/get_rect_at_line_column/return_value': type changed value in new API, from "Rect2i" to "Rect2".
+
+Keep floating point char widths. Compatibility methods registered.

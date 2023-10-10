@@ -464,7 +464,7 @@
 			</description>
 		</method>
 		<method name="get_pos_at_line_column" qualifiers="const">
-			<return type="Vector2i" />
+			<return type="Vector2" />
 			<param index="0" name="line" type="int" />
 			<param index="1" name="column" type="int" />
 			<description>
@@ -473,7 +473,7 @@
 			</description>
 		</method>
 		<method name="get_rect_at_line_column" qualifiers="const">
-			<return type="Rect2i" />
+			<return type="Rect2" />
 			<param index="0" name="line" type="int" />
 			<param index="1" name="column" type="int" />
 			<description>
