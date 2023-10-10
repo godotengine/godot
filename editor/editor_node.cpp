@@ -146,6 +146,7 @@
 #include "editor/plugins/mesh_library_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
+#include "editor/plugins/particle_process_material_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_text_editor.h"
 #include "editor/plugins/text_editor.h"
@@ -6974,6 +6975,10 @@ EditorNode::EditorNode() {
 		Ref<EditorInspectorVisualShaderModePlugin> smp;
 		smp.instantiate();
 		EditorInspector::add_inspector_plugin(smp);
+
+		Ref<EditorInspectorParticleProcessMaterialPlugin> ppm;
+		ppm.instantiate();
+		EditorInspector::add_inspector_plugin(ppm);
 	}
 
 	editor_selection = memnew(EditorSelection);
