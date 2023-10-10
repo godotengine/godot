@@ -153,8 +153,7 @@ feature, *please* edit the commit title to something meaningful. Commits named
 
 You can contribute to Godot's translation from the [Hosted
 Weblate](https://hosted.weblate.org/projects/godot-engine/godot), an open
-source and web-based translation platform. Please refer to the [translation
-readme](https://github.com/godotengine/godot-editor-l10n) for more information.
+source and web-based translation platform. Please refer to the [documentation](https://docs.godotengine.org/en/stable/contributing/documentation/editor_and_docs_localization.html) for more information.
 
 You can also help translate [Godot's
 documentation](https://hosted.weblate.org/projects/godot-engine/godot-docs/)
