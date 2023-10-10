@@ -74,6 +74,7 @@ private:
 	StringName property;
 	String property_path;
 	String doc_path;
+	bool has_doc_tooltip = false;
 
 	int property_usage;
 

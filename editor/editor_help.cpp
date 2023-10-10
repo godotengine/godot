@@ -2264,7 +2264,12 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-
+		} else if (tag == "lb") {
+			p_rt->add_text("[");
+			pos = brk_end + 1;
+		} else if (tag == "rb") {
+			p_rt->add_text("]");
+			pos = brk_end + 1;
 		} else if (tag == "url") {
 			int end = bbcode.find("[", brk_end);
 			if (end == -1) {
@@ -2850,7 +2855,7 @@ void EditorHelpTooltip::_notification(int p_what) {
 // `p_text` is expected to be something like these:
 // - `class|Control||`;
 // - `property|Control|size|`;
-// - `signal|Control|gui_input|(event: InputEvent)`
+// - `signal|Control|gui_input|(event: InputEvent)`.
 void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 	tooltip_text = p_text;
 
@@ -2895,7 +2900,7 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 	}
 
 	// Metadata special handling replaces "Property:" with "Metadata": above.
-	formatted_text += " [u][b]" + title.trim_prefix("metadata/") + "[/b][/u]" + property_args + "\n";
+	formatted_text += " [u][b]" + title.trim_prefix("metadata/") + "[/b][/u]" + property_args.replace("[", "[lb]") + "\n";
 	formatted_text += description.is_empty() ? "[i]" + TTR("No description available.") + "[/i]" : description;
 	set_text(formatted_text);
 }
