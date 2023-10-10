@@ -1934,6 +1934,8 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 	p_nodes.sort_custom<Node::Comparator>(); //Makes result reliable.
 
+	const int first_idx = p_position_in_parent == -1 ? p_new_parent->get_child_count(false) : p_position_in_parent;
+	int nodes_before = first_idx;
 	bool no_change = true;
 	for (int ni = 0; ni < p_nodes.size(); ni++) {
 		if (p_nodes[ni] == p_new_parent) {
@@ -1942,7 +1944,17 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		// `move_child` + `get_index` doesn't really work for internal nodes.
 		ERR_FAIL_COND_MSG(p_nodes[ni]->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to move internal node, this is not supported.");
 
-		if (p_nodes[ni]->get_parent() != p_new_parent || p_position_in_parent + ni != p_nodes[ni]->get_index(false)) {
+		if (p_nodes[ni]->get_index(false) < first_idx) {
+			nodes_before--;
+		}
+
+		if (p_nodes[ni]->get_parent() != p_new_parent) {
+			no_change = false;
+		}
+	}
+
+	for (int ni = 0; ni < p_nodes.size() && no_change; ni++) {
+		if (p_nodes[ni]->get_index(false) != nodes_before + ni) {
 			no_change = false;
 		}
 	}
