@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "core_bind.h"
+#include "core_bind.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -1380,36 +1381,24 @@ bool ClassDB::class_has_signal(const StringName &p_class, const StringName &p_si
 	return ::ClassDB::has_signal(p_class, p_signal);
 }
 
-Dictionary ClassDB::class_get_signal(const StringName &p_class, const StringName &p_signal) const {
+Struct<MethodInfo> ClassDB::class_get_signal(const StringName &p_class, const StringName &p_signal) const {
 	MethodInfo signal;
 	if (::ClassDB::get_signal(p_class, p_signal, &signal)) {
-		return signal.operator Dictionary();
+		return signal.operator Struct<MethodInfo>();
 	} else {
-		return Dictionary();
+		return Struct<MethodInfo>();
 	}
 }
 
-TypedArray<Dictionary> ClassDB::class_get_signal_list(const StringName &p_class, bool p_no_inheritance) const {
+TypedArray<Struct<MethodInfo>> ClassDB::class_get_signal_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<MethodInfo> signals;
 	::ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
-	TypedArray<Dictionary> ret;
-
-	for (const MethodInfo &E : signals) {
-		ret.push_back(E.operator Dictionary());
-	}
-
-	return ret;
+	return TypedArray<Struct<MethodInfo>>(&signals);
 }
-
-TypedArray<Dictionary> ClassDB::class_get_property_list(const StringName &p_class, bool p_no_inheritance) const {
+TypedArray<Struct<PropertyInfo>> ClassDB::class_get_property_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<PropertyInfo> plist;
 	::ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
-	TypedArray<Dictionary> ret;
-	for (const PropertyInfo &E : plist) {
-		ret.push_back(E.operator Dictionary());
-	}
-
-	return ret;
+	return TypedArray<Struct<PropertyInfo>>(&plist);
 }
 
 Variant ClassDB::class_get_property(Object *p_object, const StringName &p_property) const {
@@ -1433,22 +1422,10 @@ bool ClassDB::class_has_method(const StringName &p_class, const StringName &p_me
 	return ::ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
 
-TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class, bool p_no_inheritance) const {
+TypedArray<Struct<MethodInfo>> ClassDB::class_get_method_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
-	TypedArray<Dictionary> ret;
-
-	for (const MethodInfo &E : methods) {
-#ifdef DEBUG_METHODS_ENABLED
-		ret.push_back(E.operator Dictionary());
-#else
-		Dictionary dict;
-		dict["name"] = E.name;
-		ret.push_back(dict);
-#endif
-	}
-
-	return ret;
+	return TypedArray<Struct<MethodInfo>>(&methods);
 }
 
 PackedStringArray ClassDB::class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {

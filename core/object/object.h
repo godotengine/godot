@@ -217,11 +217,9 @@ struct PropertyInfo {
 
 	static PropertyInfo from_struct(const Struct<PropertyInfo> &p_struct);
 
-#ifndef DISABLE_DEPRECATED
 	operator Dictionary() const;
 
 	static PropertyInfo from_dict(const Dictionary &p_dict);
-#endif
 
 	PropertyInfo() {}
 
@@ -264,9 +262,7 @@ struct PropertyInfo {
 	}
 };
 
-#ifndef DISABLE_DEPRECATED
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
-#endif
 
 enum MethodFlags {
 	METHOD_FLAG_NORMAL = 1,
@@ -314,11 +310,9 @@ struct MethodInfo {
 
 	static MethodInfo from_struct(const Struct<MethodInfo> &p_struct);
 
-#ifndef DISABLE_DEPRECATED
 	operator Dictionary() const;
 
 	static MethodInfo from_dict(const Dictionary &p_dict);
-#endif
 
 	MethodInfo() {}
 
@@ -674,9 +668,11 @@ public:
 		bool operator<(const Connection &p_conn) const;
 
 		operator Variant() const;
+		operator Struct<Connection>() const;
 
 		Connection() {}
 		Connection(const Variant &p_variant);
+		Connection(const Struct<Connection> &p_struct);
 	};
 
 private:
@@ -728,10 +724,10 @@ private:
 	TypedArray<Struct<Connection>> _get_signal_connection_list(const StringName &p_signal) const;
 	TypedArray<Struct<Connection>> _get_incoming_connections() const;
 #ifndef DISABLE_DEPRECATED
-	void _add_user_signal_compat_99999(const String &p_name, const Array &p_args = Array());
-	TypedArray<Dictionary> _get_signal_list_compat_99999() const;
-	TypedArray<Dictionary> _get_signal_connection_list_compat_99999(const StringName &p_signal) const;
-	TypedArray<Dictionary> _get_incoming_connections_compat_99999() const;
+	void _add_user_signal_compat_82198(const String &p_name, const Array &p_args = Array());
+	TypedArray<Dictionary> _get_signal_list_compat_82198() const;
+	TypedArray<Dictionary> _get_signal_connection_list_compat_82198(const StringName &p_signal) const;
+	TypedArray<Dictionary> _get_incoming_connections_compat_82198() const;
 #endif
 	bool _has_user_signal(const StringName &p_name) const;
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -843,8 +839,8 @@ protected:
 	TypedArray<Struct<PropertyInfo>> _get_property_list_bind() const;
 	TypedArray<Struct<MethodInfo>> _get_method_list_bind() const;
 #ifndef DISABLE_DEPRECATED
-	TypedArray<Dictionary> _get_property_list_bind_compat_99999() const;
-	TypedArray<Dictionary> _get_method_list_bind_compat_99999() const;
+	TypedArray<Dictionary> _get_property_list_bind_compat_82198() const;
+	TypedArray<Dictionary> _get_method_list_bind_compat_82198() const;
 #endif
 
 	void _clear_internal_resource_paths(const Variant &p_var);

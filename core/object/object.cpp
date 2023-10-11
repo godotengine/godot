@@ -66,6 +66,47 @@ struct _ObjectDebugLock {
 
 #endif
 
+PropertyInfo::operator Dictionary() const {
+	Dictionary d;
+	d["name"] = name;
+	d["class_name"] = class_name;
+	d["type"] = type;
+	d["hint"] = hint;
+	d["hint_string"] = hint_string;
+	d["usage"] = usage;
+	return d;
+}
+
+PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
+	PropertyInfo pi;
+
+	if (p_dict.has("type")) {
+		pi.type = Variant::Type(int(p_dict["type"]));
+	}
+
+	if (p_dict.has("name")) {
+		pi.name = p_dict["name"];
+	}
+
+	if (p_dict.has("class_name")) {
+		pi.class_name = p_dict["class_name"];
+	}
+
+	if (p_dict.has("hint")) {
+		pi.hint = PropertyHint(int(p_dict["hint"]));
+	}
+
+	if (p_dict.has("hint_string")) {
+		pi.hint_string = p_dict["hint_string"];
+	}
+
+	if (p_dict.has("usage")) {
+		pi.usage = p_dict["usage"];
+	}
+
+	return pi;
+}
+
 PropertyInfo::operator Struct<PropertyInfo>() const {
 	Struct<PropertyInfo> a;
 
@@ -90,6 +131,65 @@ PropertyInfo PropertyInfo::from_struct(const Struct<PropertyInfo> &p_struct) {
 	return pi;
 }
 
+TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
+	TypedArray<Dictionary> va;
+	for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
+		va.push_back(Dictionary(E->get()));
+	}
+
+	return va;
+}
+
+MethodInfo::operator Dictionary() const {
+	Dictionary d;
+	d["name"] = name;
+	d["args"] = convert_property_list(&arguments);
+	Array da;
+	for (int i = 0; i < default_arguments.size(); i++) {
+		da.push_back(default_arguments[i]);
+	}
+	d["default_args"] = da;
+	d["flags"] = flags;
+	d["id"] = id;
+	Dictionary r = return_val;
+	d["return"] = r;
+	return d;
+}
+
+MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
+	MethodInfo mi;
+
+	if (p_dict.has("name")) {
+		mi.name = p_dict["name"];
+	}
+	Array args;
+	if (p_dict.has("args")) {
+		args = p_dict["args"];
+	}
+
+	for (int i = 0; i < args.size(); i++) {
+		Dictionary d = args[i];
+		mi.arguments.push_back(PropertyInfo::from_dict(d));
+	}
+	Array defargs;
+	if (p_dict.has("default_args")) {
+		defargs = p_dict["default_args"];
+	}
+	for (int i = 0; i < defargs.size(); i++) {
+		mi.default_arguments.push_back(defargs[i]);
+	}
+
+	if (p_dict.has("return")) {
+		mi.return_val = PropertyInfo::from_dict(p_dict["return"]);
+	}
+
+	if (p_dict.has("flags")) {
+		mi.flags = p_dict["flags"];
+	}
+
+	return mi;
+}
+
 MethodInfo::operator Struct<MethodInfo>() const {
 	Struct<MethodInfo> a;
 	a.set_named(SNAME("name"), name);
@@ -112,28 +212,22 @@ MethodInfo MethodInfo::from_struct(const Struct<MethodInfo> &p_struct) {
 }
 
 Object::Connection::operator Variant() const {
-#ifdef DISABLE_DEPRECATED
-	Struct<Connection> s;
-	s.set_named(SNAME("signal"), signal);
-	s.set_named(SNAME("callable"), callable);
-	s.set_named(SNAME("flags"), flags);
-	return s;
-#else
 	Dictionary d;
 	d["signal"] = signal;
 	d["callable"] = callable;
 	d["flags"] = flags;
 	return d;
-#endif
 }
 
+Object::Connection::operator Struct<Object::Connection>() const {
+	Struct<Object::Connection> s;
+	s.set_named(SNAME("signal"), signal);
+	s.set_named(SNAME("callable"), callable);
+	s.set_named(SNAME("flags"), flags);
+	return s;
+};
+
 Object::Connection::Connection(const Variant &p_conn) {
-#ifdef DISABLE_DEPRECATED
-	Struct<Connection> conn = p_conn;
-	signal = conn.get_named(SNAME("signal"));
-	callable = conn.get_named(SNAME("callable"));
-	flags = conn.get_named(SNAME("flags"));
-#else
 	Dictionary d = p_conn;
 	if (d.has("signal")) {
 		signal = d["signal"];
@@ -144,7 +238,12 @@ Object::Connection::Connection(const Variant &p_conn) {
 	if (d.has("flags")) {
 		flags = d["flags"];
 	}
-#endif
+}
+
+Object::Connection::Connection(const Struct<Object::Connection> &p_struct) {
+	signal = p_struct.get_named(SNAME("signal"));
+	callable = p_struct.get_named(SNAME("callable"));
+	flags = p_struct.get_named(SNAME("flags"));
 }
 
 bool Object::Connection::operator<(const Connection &p_conn) const {
@@ -961,24 +1060,6 @@ TypedArray<Struct<MethodInfo>> Object::_get_method_list_bind() const {
 	get_method_list(&ml);
 	return TypedArray<Struct<MethodInfo>>(&ml);
 }
-
-#ifndef DISABLE_DEPRECATED
-
-TypedArray<Dictionary> Object::_get_method_list_bind_compat_99999() const {
-	List<MethodInfo> ml;
-	get_method_list(&ml);
-	TypedArray<Dictionary> ret;
-
-	for (List<MethodInfo>::Element *E = ml.front(); E; E = E->next()) {
-		Dictionary d = E->get();
-		//va.push_back(d);
-		ret.push_back(d);
-	}
-
-	return ret;
-}
-
-#endif
 
 TypedArray<StringName> Object::_get_meta_list_bind() const {
 	TypedArray<StringName> _metaret;
