@@ -3068,6 +3068,10 @@
 			[b]Note:[/b] Enabling occlusion culling has a cost on the CPU. Only enable occlusion culling if you actually plan to use it. Large open scenes with few or no objects blocking the view will generally not benefit much from occlusion culling. Large open scenes generally benefit more from mesh LOD and visibility ranges ([member GeometryInstance3D.visibility_range_begin] and [member GeometryInstance3D.visibility_range_end]) compared to occlusion culling.
 			[b]Note:[/b] Due to memory constraints, occlusion culling is not supported by default in Web export templates. It can be enabled by compiling custom Web export templates with [code]module_raycast_enabled=yes[/code].
 		</member>
+		<member name="rendering/reflections/filter" type="int" setter="" getter="" default="1">
+			The filtering mode to use for [Environment] sky reflections and [ReflectionProbe] nodes. This setting generally does not affect performance, but nearest-neighbor filtering can be used for a retro look. Reflections from [VoxelGI] and SDFGI are not affected by this setting. When using [b]Nearest[/b], you may also want to reduce [member Sky.radiance_size] in [Environment] and [member rendering/reflections/reflection_atlas/reflection_size] to make the pixelation more noticeable. When using [PanoramaSkyMaterial], you may also want to set its [member PanoramaSkyMaterial.filter] property to [code]false[/code] as well.
+			[b]Note:[/b] This property is only read when the project starts. To change the reflection filter mode at run-time, use [method RenderingServer.reflections_set_filter] instead.
+		</member>
 		<member name="rendering/reflections/reflection_atlas/reflection_count" type="int" setter="" getter="" default="64">
 			Number of cubemaps to store in the reflection atlas. The number of [ReflectionProbe]s in a scene will be limited by this amount. A higher number requires more VRAM.
 		</member>
@@ -3280,6 +3284,7 @@
 		</member>
 		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
 			The filtering quality to use for [Decal] nodes. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
+			[b]Note:[/b] This property is only read when the project starts. To change the decal filter mode at run-time, use [method RenderingServer.decals_set_filter] instead.
 		</member>
 		<member name="rendering/textures/default_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
 			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
@@ -3299,6 +3304,7 @@
 		</member>
 		<member name="rendering/textures/light_projectors/filter" type="int" setter="" getter="" default="3">
 			The filtering quality to use for [OmniLight3D] and [SpotLight3D] projectors. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
+			[b]Note:[/b] This property is only read when the project starts. To change the light projector filter mode at run-time, use [method RenderingServer.light_projectors_set_filter] instead.
 		</member>
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.

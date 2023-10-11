@@ -931,7 +931,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 		vec4 reflection;
 		float reflection_blend = max(0.0, blend - reflection_accum.a);
 
-		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb * sc_luminance_multiplier();
+		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, reflection_sampler), vec4(local_ref_vec, reflections.data[ref_index].index), sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb * sc_luminance_multiplier();
 		reflection.rgb *= reflections.data[ref_index].exposure_normalization;
 		reflection.a = reflection_blend;
 
