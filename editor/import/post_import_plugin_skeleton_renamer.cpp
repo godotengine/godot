@@ -128,7 +128,7 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 		}
 		vargs.push_back(rename_map_dict);
 
-		TypedArray<Node> nodes = p_base_scene->find_children("*");
+		TypedArray<Node> nodes = p_base_scene->find_children("*", "BoneAttachment3D");
 		while (nodes.size()) {
 			Node *nd = Object::cast_to<Node>(nodes.pop_back());
 			nd->callv("_notify_skeleton_bones_renamed", vargs);
