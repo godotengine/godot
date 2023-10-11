@@ -12,7 +12,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Rect2 : IEquatable<Rect2>
+    public struct Rect2 : IEquatable<Rect2>, IFormattable
     {
         private Vector2 _position;
         private Vector2 _size;
@@ -469,18 +469,22 @@ namespace Godot
         /// Converts this <see cref="Rect2"/> to a string.
         /// </summary>
         /// <returns>A string representation of this rect.</returns>
-        public override readonly string ToString()
-        {
-            return $"{_position}, {_size}";
-        }
+        public override readonly string ToString() => ToString(null, null);
 
         /// <summary>
         /// Converts this <see cref="Rect2"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this rect.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string? format) => ToString(format, null);
+
+        /// <summary>
+        /// Converts this <see cref="Rect2"/> to a string with the given <paramref name="format"/> and <paramref name="formatProvider"/>.
+        /// </summary>
+        /// <returns>A string representation of this rect.</returns>
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
         {
-            return $"{_position.ToString(format)}, {_size.ToString(format)}";
+            string separator = formatProvider.GetListSeparator();
+            return $"{_position.ToString(format, formatProvider)}{separator} {_size.ToString(format, formatProvider)}";
         }
     }
 }

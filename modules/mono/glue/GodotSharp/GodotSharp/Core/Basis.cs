@@ -1,7 +1,7 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.ComponentModel;
 
 #nullable enable
 
@@ -23,7 +23,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Basis : IEquatable<Basis>
+    public struct Basis : IEquatable<Basis>, IFormattable
     {
         // NOTE: x, y and z are public-only. Use Column0, Column1 and Column2 internally.
 
@@ -1134,18 +1134,22 @@ namespace Godot
         /// Converts this <see cref="Basis"/> to a string.
         /// </summary>
         /// <returns>A string representation of this basis.</returns>
-        public override readonly string ToString()
-        {
-            return $"[X: {X}, Y: {Y}, Z: {Z}]";
-        }
+        public override readonly string ToString() => ToString(null, null);
 
         /// <summary>
         /// Converts this <see cref="Basis"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this basis.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string? format) => ToString(format, null);
+
+        /// <summary>
+        /// Converts this <see cref="Basis"/> to a string with the given <paramref name="format"/> and <paramref name="formatProvider"/>.
+        /// </summary>
+        /// <returns>A string representation of this basis.</returns>
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
         {
-            return $"[X: {X.ToString(format)}, Y: {Y.ToString(format)}, Z: {Z.ToString(format)}]";
+            string separator = formatProvider.GetListSeparator();
+            return $"[X: {X.ToString(format, formatProvider)}{separator} Y: {Y.ToString(format, formatProvider)}{separator} Z: {Z.ToString(format, formatProvider)}]";
         }
     }
 }

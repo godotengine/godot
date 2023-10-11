@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using Godot.NativeInterop;
 
@@ -20,7 +19,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Color : IEquatable<Color>
+    public struct Color : IEquatable<Color>, IFormattable
     {
         /// <summary>
         /// The color's red component, typically on the range of 0 to 1.
@@ -1329,20 +1328,22 @@ namespace Godot
         /// Converts this <see cref="Color"/> to a string.
         /// </summary>
         /// <returns>A string representation of this color.</returns>
-        public override readonly string ToString()
-        {
-            return $"({R}, {G}, {B}, {A})";
-        }
+        public override readonly string ToString() => ToString(null, null);
 
         /// <summary>
         /// Converts this <see cref="Color"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this color.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string? format) => ToString(format, null);
+
+        /// <summary>
+        /// Converts this <see cref="Color"/> to a string with the given <paramref name="format"/> and <paramref name="formatProvider"/>.
+        /// </summary>
+        /// <returns>A string representation of this color.</returns>
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
         {
-#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
-            return $"({R.ToString(format)}, {G.ToString(format)}, {B.ToString(format)}, {A.ToString(format)})";
-#pragma warning restore CA1305
+            string separator = formatProvider.GetListSeparator();
+            return $"({R.ToString(format, formatProvider)}{separator} {G.ToString(format, formatProvider)}{separator} {B.ToString(format, formatProvider)}{separator} {A.ToString(format, formatProvider)})";
         }
     }
 }

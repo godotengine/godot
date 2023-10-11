@@ -13,7 +13,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Plane : IEquatable<Plane>
+    public struct Plane : IEquatable<Plane>, IFormattable
     {
         private Vector3 _normal;
         private real_t _d;
@@ -424,20 +424,22 @@ namespace Godot
         /// Converts this <see cref="Plane"/> to a string.
         /// </summary>
         /// <returns>A string representation of this plane.</returns>
-        public override readonly string ToString()
-        {
-            return $"{_normal}, {_d}";
-        }
+        public override readonly string ToString() => ToString(null, null);
 
         /// <summary>
         /// Converts this <see cref="Plane"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this plane.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string? format) => ToString(format, null);
+
+        /// <summary>
+        /// Converts this <see cref="Plane"/> to a string with the given <paramref name="format"/> and <paramref name="formatProvider"/>.
+        /// </summary>
+        /// <returns>A string representation of this plane.</returns>
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
         {
-#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
-            return $"{_normal.ToString(format)}, {_d.ToString(format)}";
-#pragma warning restore CA1305
+            string separator = formatProvider.GetListSeparator();
+            return $"{_normal.ToString(format, formatProvider)}{separator} {_d.ToString(format, formatProvider)}";
         }
     }
 }

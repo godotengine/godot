@@ -12,7 +12,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Aabb : IEquatable<Aabb>
+    public struct Aabb : IEquatable<Aabb>, IFormattable
     {
         private Vector3 _position;
         private Vector3 _size;
@@ -733,18 +733,22 @@ namespace Godot
         /// Converts this <see cref="Aabb"/> to a string.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public override readonly string ToString()
-        {
-            return $"{_position}, {_size}";
-        }
+        public override readonly string ToString() => ToString(null, null);
 
         /// <summary>
         /// Converts this <see cref="Aabb"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string? format) => ToString(format, null);
+
+        /// <summary>
+        /// Converts this <see cref="Aabb"/> to a string with the given <paramref name="format"/> and <paramref name="formatProvider"/>.
+        /// </summary>
+        /// <returns>A string representation of this AABB.</returns>
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
         {
-            return $"{_position.ToString(format)}, {_size.ToString(format)}";
+            string separator = formatProvider.GetListSeparator();
+            return $"{_position.ToString(format, formatProvider)}{separator} {_size.ToString(format, formatProvider)}";
         }
     }
 }

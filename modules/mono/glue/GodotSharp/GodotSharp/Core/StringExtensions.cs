@@ -1877,5 +1877,31 @@ namespace Godot
         {
             return SecurityElement.FromString(instance)?.Text;
         }
+
+        /// <summary>
+        /// Returns the list separator of this <see cref="IFormatProvider"/> as a string.
+        /// </summary>
+        /// <param name="provider">The format provider to pull from.</param>
+        /// <returns>The list separator of this IFormatProvider, or the current culture's if
+        /// <paramref name="provider"/> is <see langword="null"/> or cannot be converted.</returns>
+        public static string GetListSeparator(this IFormatProvider? provider)
+        {
+            if (provider is CultureInfo cultureInfo)
+            {
+                return cultureInfo.TextInfo.ListSeparator;
+            }
+
+            if (provider is NumberFormatInfo numberFormatInfo)
+            {
+                if (numberFormatInfo == NumberFormatInfo.InvariantInfo)
+                {
+                    return CultureInfo.InvariantCulture.TextInfo.ListSeparator;
+                }
+                // TODO: Figure out if there's a way of backtracing CultureInfo from NumberFormatInfo
+                return CultureInfo.CurrentCulture.TextInfo.ListSeparator;
+            }
+
+            return CultureInfo.CurrentCulture.TextInfo.ListSeparator;
+        }
     }
 }

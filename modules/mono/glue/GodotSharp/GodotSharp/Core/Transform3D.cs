@@ -1,7 +1,7 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.ComponentModel;
 
 #nullable enable
 
@@ -18,7 +18,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Transform3D : IEquatable<Transform3D>
+    public struct Transform3D : IEquatable<Transform3D>, IFormattable
     {
         /// <summary>
         /// The <see cref="Godot.Basis"/> of this transform. Contains the X, Y, and Z basis
@@ -674,18 +674,22 @@ namespace Godot
         /// Converts this <see cref="Transform3D"/> to a string.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public override readonly string ToString()
-        {
-            return $"[X: {Basis.X}, Y: {Basis.Y}, Z: {Basis.Z}, O: {Origin}]";
-        }
+        public override readonly string ToString() => ToString(null, null);
 
         /// <summary>
         /// Converts this <see cref="Transform3D"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string? format) => ToString(format, null);
+
+        /// <summary>
+        /// Converts this <see cref="Transform3D"/> to a string with the given <paramref name="format"/> and <paramref name="formatProvider"/>.
+        /// </summary>
+        /// <returns>A string representation of this transform.</returns>
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
         {
-            return $"[X: {Basis.X.ToString(format)}, Y: {Basis.Y.ToString(format)}, Z: {Basis.Z.ToString(format)}, O: {Origin.ToString(format)}]";
+            string separator = formatProvider.GetListSeparator();
+            return $"[X: {Basis.X.ToString(format, formatProvider)}{separator} Y: {Basis.Y.ToString(format, formatProvider)}{separator} Z: {Basis.Z.ToString(format, formatProvider)}{separator} O: {Origin.ToString(format, formatProvider)}]";
         }
     }
 }

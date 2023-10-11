@@ -17,7 +17,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Transform2D : IEquatable<Transform2D>
+    public struct Transform2D : IEquatable<Transform2D>, IFormattable
     {
         /// <summary>
         /// The basis matrix's X vector (column 0). Equivalent to array index <c>[0]</c>.
@@ -650,18 +650,22 @@ namespace Godot
         /// Converts this <see cref="Transform2D"/> to a string.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public override readonly string ToString()
-        {
-            return $"[X: {X}, Y: {Y}, O: {Origin}]";
-        }
+        public override readonly string ToString() => ToString(null, null);
 
         /// <summary>
         /// Converts this <see cref="Transform2D"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string? format) => ToString(format, null);
+
+        /// <summary>
+        /// Converts this <see cref="Transform2D"/> to a string with the given <paramref name="format"/> and <paramref name="formatProvider"/>.
+        /// </summary>
+        /// <returns>A string representation of this transform.</returns>
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
         {
-            return $"[X: {X.ToString(format)}, Y: {Y.ToString(format)}, O: {Origin.ToString(format)}]";
+            string separator = formatProvider.GetListSeparator();
+            return $"[X: {X.ToString(format, formatProvider)}{separator} Y: {Y.ToString(format, formatProvider)}{separator} O: {Origin.ToString(format, formatProvider)}]";
         }
     }
 }

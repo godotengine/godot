@@ -21,7 +21,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Quaternion : IEquatable<Quaternion>
+    public struct Quaternion : IEquatable<Quaternion>, IFormattable
     {
         /// <summary>
         /// X component of the quaternion (imaginary <c>i</c> axis part).
@@ -811,20 +811,22 @@ namespace Godot
         /// Converts this <see cref="Quaternion"/> to a string.
         /// </summary>
         /// <returns>A string representation of this quaternion.</returns>
-        public override readonly string ToString()
-        {
-            return $"({X}, {Y}, {Z}, {W})";
-        }
+        public override readonly string ToString() => ToString(null, null);
 
         /// <summary>
         /// Converts this <see cref="Quaternion"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this quaternion.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string? format) => ToString(format, null);
+
+        /// <summary>
+        /// Converts this <see cref="Quaternion"/> to a string with the given <paramref name="format"/> and <paramref name="formatProvider"/>.
+        /// </summary>
+        /// <returns>A string representation of this quaternion.</returns>
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
         {
-#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
-            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}, {W.ToString(format)})";
-#pragma warning restore CA1305
+            string separator = formatProvider.GetListSeparator();
+            return $"({X.ToString(format, formatProvider)}{separator} {Y.ToString(format, formatProvider)}{separator} {Z.ToString(format, formatProvider)}{separator} {W.ToString(format, formatProvider)})";
         }
     }
 }

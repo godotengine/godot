@@ -16,7 +16,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Projection : IEquatable<Projection>
+    public struct Projection : IEquatable<Projection>, IFormattable
     {
         /// <summary>
         /// Enumerated index values for the planes.
@@ -1012,23 +1012,25 @@ namespace Godot
         /// Converts this <see cref="Projection"/> to a string.
         /// </summary>
         /// <returns>A string representation of this projection.</returns>
-        public override readonly string ToString()
-        {
-            return $"{X.X}, {X.Y}, {X.Z}, {X.W}\n{Y.X}, {Y.Y}, {Y.Z}, {Y.W}\n{Z.X}, {Z.Y}, {Z.Z}, {Z.W}\n{W.X}, {W.Y}, {W.Z}, {W.W}\n";
-        }
+        public override readonly string ToString() => ToString(null, null);
 
         /// <summary>
         /// Converts this <see cref="Projection"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this projection.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string? format) => ToString(format, null);
+
+        /// <summary>
+        /// Converts this <see cref="Projection"/> to a string with the given <paramref name="format"/> and <paramref name="formatProvider"/>.
+        /// </summary>
+        /// <returns>A string representation of this projection.</returns>
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
         {
-#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
-            return $"{X.X.ToString(format)}, {X.Y.ToString(format)}, {X.Z.ToString(format)}, {X.W.ToString(format)}\n" +
-                $"{Y.X.ToString(format)}, {Y.Y.ToString(format)}, {Y.Z.ToString(format)}, {Y.W.ToString(format)}\n" +
-                $"{Z.X.ToString(format)}, {Z.Y.ToString(format)}, {Z.Z.ToString(format)}, {Z.W.ToString(format)}\n" +
-                $"{W.X.ToString(format)}, {W.Y.ToString(format)}, {W.Z.ToString(format)}, {W.W.ToString(format)}\n";
-#pragma warning restore CA1305
+            string separator = formatProvider.GetListSeparator();
+            return $"{X.X.ToString(format, formatProvider)}{separator} {X.Y.ToString(format, formatProvider)}{separator} {X.Z.ToString(format, formatProvider)}{separator} {X.W.ToString(format, formatProvider)}\n" +
+                $"{Y.X.ToString(format, formatProvider)}{separator} {Y.Y.ToString(format, formatProvider)}{separator} {Y.Z.ToString(format, formatProvider)}{separator} {Y.W.ToString(format, formatProvider)}\n" +
+                $"{Z.X.ToString(format, formatProvider)}{separator} {Z.Y.ToString(format, formatProvider)}{separator} {Z.Z.ToString(format, formatProvider)}{separator} {Z.W.ToString(format, formatProvider)}\n" +
+                $"{W.X.ToString(format, formatProvider)}{separator} {W.Y.ToString(format, formatProvider)}{separator} {W.Z.ToString(format, formatProvider)}{separator} {W.W.ToString(format, formatProvider)}\n";
         }
     }
 }
