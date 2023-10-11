@@ -212,7 +212,7 @@ private:
 		uint32_t userdata_count = 0;
 
 		bool dirty = false;
-		Particles *update_list = nullptr;
+		SelfList<Particles> update_list;
 
 		double phase = 0.0;
 		double prev_phase = 0.0;
@@ -242,7 +242,8 @@ private:
 		double trail_length = 1.0;
 		bool trails_enabled = false;
 
-		Particles() {
+		Particles() :
+				update_list(this) {
 		}
 	};
 
@@ -264,7 +265,7 @@ private:
 		RID copy_shader_version;
 	} particles_shader;
 
-	Particles *particle_update_list = nullptr;
+	SelfList<Particles>::List particle_update_list;
 
 	mutable RID_Owner<Particles, true> particles_owner;
 

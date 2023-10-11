@@ -94,13 +94,15 @@ RID ParticlesStorage::particles_allocate() {
 }
 
 void ParticlesStorage::particles_initialize(RID p_rid) {
-	particles_owner.initialize_rid(p_rid, Particles());
+	particles_owner.initialize_rid(p_rid);
 }
 
 void ParticlesStorage::particles_free(RID p_rid) {
-	update_particles();
 	Particles *particles = particles_owner.get_or_null(p_rid);
+
 	particles->dependency.deleted_notify(p_rid);
+	particles->update_list.remove_from_list();
+
 	_particles_free_data(particles);
 	particles_owner.free(p_rid);
 }
@@ -362,8 +364,10 @@ void ParticlesStorage::particles_request_process(RID p_particles) {
 
 	if (!particles->dirty) {
 		particles->dirty = true;
-		particles->update_list = particle_update_list;
-		particle_update_list = particles;
+
+		if (!particles->update_list.in_list()) {
+			particle_update_list.add(&particles->update_list);
+		}
 	}
 }
 
@@ -1003,13 +1007,12 @@ void ParticlesStorage::update_particles() {
 	glBindBufferBase(GL_UNIFORM_BUFFER, PARTICLES_GLOBALS_UNIFORM_LOCATION, global_buffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	while (particle_update_list) {
+	while (particle_update_list.first()) {
 		// Use transform feedback to process particles.
 
-		Particles *particles = particle_update_list;
+		Particles *particles = particle_update_list.first()->self();
 
-		particle_update_list = particles->update_list;
-		particles->update_list = nullptr;
+		particles->update_list.remove_from_list();
 		particles->dirty = false;
 
 		_particles_update_buffers(particles);
