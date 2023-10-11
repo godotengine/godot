@@ -112,6 +112,7 @@ protected:
 	PackedByteArray vertex_buffer;
 	PackedByteArray attribute_buffer;
 	uint32_t vertex_stride = 0;
+	uint32_t normal_tangent_stride = 0;
 	uint32_t attrib_stride = 0;
 	uint32_t skin_stride = 0;
 	uint32_t mesh_surface_format = 0;
@@ -234,8 +235,6 @@ class AnimatedSprite3D : public SpriteBase3D {
 	int frame = 0;
 	float speed_scale = 1.0;
 	float custom_speed_scale = 1.0;
-
-	bool centered = false;
 
 	real_t frame_speed_scale = 1.0;
 	real_t frame_progress = 0.0;

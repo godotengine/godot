@@ -347,12 +347,6 @@ Error GLManager_X11::initialize(Display *p_display) {
 }
 
 void GLManager_X11::set_use_vsync(bool p_use) {
-	// force vsync in the editor for now, as a safety measure
-	bool is_editor = Engine::get_singleton()->is_editor_hint();
-	if (is_editor) {
-		p_use = true;
-	}
-
 	// we need an active window to get a display to set the vsync
 	if (!_current_window) {
 		return;

@@ -27,9 +27,9 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="close_request">
+		<signal name="delete_request">
 			<description>
-				Emitted when closing the GraphElement is requested.
+				Emitted when removing the GraphElement is requested.
 			</description>
 		</signal>
 		<signal name="dragged">
@@ -66,4 +66,9 @@
 			</description>
 		</signal>
 	</signals>
+	<theme_items>
+		<theme_item name="resizer" data_type="icon" type="Texture2D">
+			The icon used for the resizer, visible when [member resizable] is enabled.
+		</theme_item>
+	</theme_items>
 </class>

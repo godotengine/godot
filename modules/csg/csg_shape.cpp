@@ -300,7 +300,7 @@ void CSGShape3D::_update_shape() {
 	root_mesh.unref(); //byebye root mesh
 
 	CSGBrush *n = _get_brush();
-	ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
 	OAHashMap<Vector3, Vector3> vec_map;
 
@@ -458,7 +458,7 @@ void CSGShape3D::_update_shape() {
 void CSGShape3D::_update_collision_faces() {
 	if (use_collision && is_root_shape() && root_collision_shape.is_valid()) {
 		CSGBrush *n = _get_brush();
-		ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+		ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 		Vector<Vector3> physics_faces;
 		physics_faces.resize(n->faces.size() * 3);
 		Vector3 *physicsw = physics_faces.ptrw();

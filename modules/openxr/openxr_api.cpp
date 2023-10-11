@@ -43,30 +43,7 @@
 #include "editor/editor_settings.h"
 #endif
 
-// We need to have all the graphics API defines before the Vulkan or OpenGL
-// extensions are included, otherwise we'll only get one graphics API.
-#ifdef VULKAN_ENABLED
-#define XR_USE_GRAPHICS_API_VULKAN
-#endif
-#if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
-#ifdef ANDROID_ENABLED
-#define XR_USE_GRAPHICS_API_OPENGL_ES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <GLES3/gl3.h>
-#include <GLES3/gl3ext.h>
-#else
-#define XR_USE_GRAPHICS_API_OPENGL
-#endif // ANDROID_ENABLED
-#ifdef X11_ENABLED
-#define GL_GLEXT_PROTOTYPES 1
-#define GL3_PROTOTYPES 1
-#include "thirdparty/glad/glad/gl.h"
-#include "thirdparty/glad/glad/glx.h"
-
-#include <X11/Xlib.h>
-#endif // X11_ENABLED
-#endif // GLES_ENABLED
+#include "openxr_platform_inc.h"
 
 #ifdef VULKAN_ENABLED
 #include "extensions/openxr_vulkan_extension.h"
@@ -78,7 +55,9 @@
 
 #include "extensions/openxr_composition_layer_depth_extension.h"
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
+#include "extensions/openxr_fb_foveation_extension.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
+#include "extensions/openxr_fb_update_swapchain_extension.h"
 
 #ifdef ANDROID_ENABLED
 #define OPENXR_LOADER_NAME "libopenxr_loader.so"
@@ -1340,6 +1319,10 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		ERR_FAIL_V_MSG(false, "OpenXR: Unsupported rendering device.");
 	}
 
+	// Also register our rendering extensions
+	register_extension_wrapper(memnew(OpenXRFBUpdateSwapchainExtension(p_rendering_driver)));
+	register_extension_wrapper(memnew(OpenXRFBFoveationExtension(p_rendering_driver)));
+
 	// initialize
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_before_instance_created();
@@ -1700,14 +1683,27 @@ bool OpenXRAPI::acquire_image(OpenXRSwapChainInfo &p_swapchain) {
 	ERR_FAIL_COND_V(p_swapchain.image_acquired, true); // This was not released when it should be, error out and reuse...
 
 	XrResult result;
-	XrSwapchainImageAcquireInfo swapchain_image_acquire_info = {
-		XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, // type
-		nullptr // next
-	};
-	result = xrAcquireSwapchainImage(p_swapchain.swapchain, &swapchain_image_acquire_info, &p_swapchain.image_index);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to acquire swapchain image [", get_error_string(result), "]");
-		return false;
+
+	if (!p_swapchain.skip_acquire_swapchain) {
+		XrSwapchainImageAcquireInfo swapchain_image_acquire_info = {
+			XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, // type
+			nullptr // next
+		};
+
+		result = xrAcquireSwapchainImage(p_swapchain.swapchain, &swapchain_image_acquire_info, &p_swapchain.image_index);
+		if (!XR_UNQUALIFIED_SUCCESS(result)) {
+			// Make sure end_frame knows we need to submit an empty frame
+			frame_state.shouldRender = false;
+
+			if (XR_FAILED(result)) {
+				// Unexpected failure, log this!
+				print_line("OpenXR: failed to acquire swapchain image [", get_error_string(result), "]");
+				return false;
+			} else {
+				// In this scenario we silently fail, the XR runtime is simply not ready yet to acquire the swapchain.
+				return false;
+			}
+		}
 	}
 
 	XrSwapchainImageWaitInfo swapchain_image_wait_info = {
@@ -1717,9 +1713,21 @@ bool OpenXRAPI::acquire_image(OpenXRSwapChainInfo &p_swapchain) {
 	};
 
 	result = xrWaitSwapchainImage(p_swapchain.swapchain, &swapchain_image_wait_info);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to wait for swapchain image [", get_error_string(result), "]");
-		return false;
+	if (!XR_UNQUALIFIED_SUCCESS(result)) {
+		// Make sure end_frame knows we need to submit an empty frame
+		frame_state.shouldRender = false;
+
+		if (XR_FAILED(result)) {
+			// Unexpected failure, log this!
+			print_line("OpenXR: failed to wait for swapchain image [", get_error_string(result), "]");
+			return false;
+		} else {
+			// Make sure to skip trying to acquire the swapchain image in the next frame
+			p_swapchain.skip_acquire_swapchain = true;
+			return false;
+		}
+	} else {
+		p_swapchain.skip_acquire_swapchain = false;
 	}
 
 	return true;
@@ -1857,6 +1865,10 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 	}
 
 	return true;
+}
+
+XrSwapchain OpenXRAPI::get_color_swapchain() {
+	return swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain;
 }
 
 RID OpenXRAPI::get_color_texture() {
@@ -2008,6 +2020,55 @@ double OpenXRAPI::get_render_target_size_multiplier() const {
 
 void OpenXRAPI::set_render_target_size_multiplier(double multiplier) {
 	render_target_size_multiplier = multiplier;
+}
+
+bool OpenXRAPI::is_foveation_supported() const {
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	return fov_ext != nullptr && fov_ext->is_enabled();
+}
+
+int OpenXRAPI::get_foveation_level() const {
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	if (fov_ext != nullptr && fov_ext->is_enabled()) {
+		switch (fov_ext->get_foveation_level()) {
+			case XR_FOVEATION_LEVEL_NONE_FB:
+				return 0;
+			case XR_FOVEATION_LEVEL_LOW_FB:
+				return 1;
+			case XR_FOVEATION_LEVEL_MEDIUM_FB:
+				return 2;
+			case XR_FOVEATION_LEVEL_HIGH_FB:
+				return 3;
+			default:
+				return 0;
+		}
+	}
+
+	return 0;
+}
+
+void OpenXRAPI::set_foveation_level(int p_foveation_level) {
+	ERR_FAIL_UNSIGNED_INDEX(p_foveation_level, 4);
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	if (fov_ext != nullptr && fov_ext->is_enabled()) {
+		XrFoveationLevelFB levels[] = { XR_FOVEATION_LEVEL_NONE_FB, XR_FOVEATION_LEVEL_LOW_FB, XR_FOVEATION_LEVEL_MEDIUM_FB, XR_FOVEATION_LEVEL_HIGH_FB };
+		fov_ext->set_foveation_level(levels[p_foveation_level]);
+	}
+}
+
+bool OpenXRAPI::get_foveation_dynamic() const {
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	if (fov_ext != nullptr && fov_ext->is_enabled()) {
+		return fov_ext->get_foveation_dynamic() == XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_FB;
+	}
+	return false;
+}
+
+void OpenXRAPI::set_foveation_dynamic(bool p_foveation_dynamic) {
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	if (fov_ext != nullptr && fov_ext->is_enabled()) {
+		fov_ext->set_foveation_dynamic(p_foveation_dynamic ? XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_FB : XR_FOVEATION_DYNAMIC_DISABLED_FB);
+	}
 }
 
 OpenXRAPI::OpenXRAPI() {

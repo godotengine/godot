@@ -61,6 +61,7 @@
 		<method name="commit_to_surface">
 			<return type="int" enum="Error" />
 			<param index="0" name="mesh" type="ArrayMesh" />
+			<param index="1" name="compression_flags" type="int" default="0" />
 			<description>
 				Adds a new surface to specified [Mesh] with edited data.
 			</description>

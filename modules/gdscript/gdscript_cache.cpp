@@ -59,7 +59,7 @@ GDScriptAnalyzer *GDScriptParserRef::get_analyzer() {
 }
 
 Error GDScriptParserRef::raise_status(Status p_new_status) {
-	ERR_FAIL_COND_V(parser == nullptr, ERR_INVALID_DATA);
+	ERR_FAIL_NULL_V(parser, ERR_INVALID_DATA);
 
 	if (result != OK) {
 		return result;

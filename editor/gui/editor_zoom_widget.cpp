@@ -70,9 +70,33 @@ float EditorZoomWidget::get_zoom() {
 }
 
 void EditorZoomWidget::set_zoom(float p_zoom) {
-	if (p_zoom > 0 && p_zoom != zoom) {
-		zoom = p_zoom;
+	float new_zoom = CLAMP(p_zoom, min_zoom, max_zoom);
+	if (zoom != new_zoom) {
+		zoom = new_zoom;
 		_update_zoom_label();
+	}
+}
+
+float EditorZoomWidget::get_min_zoom() {
+	return min_zoom;
+}
+
+float EditorZoomWidget::get_max_zoom() {
+	return max_zoom;
+}
+
+void EditorZoomWidget::setup_zoom_limits(float p_min, float p_max) {
+	ERR_FAIL_COND(p_min < 0 || p_min > p_max);
+
+	min_zoom = p_min;
+	max_zoom = p_max;
+
+	if (zoom > max_zoom) {
+		set_zoom(max_zoom);
+		emit_signal(SNAME("zoom_changed"), zoom);
+	} else if (zoom < min_zoom) {
+		set_zoom(min_zoom);
+		emit_signal(SNAME("zoom_changed"), zoom);
 	}
 }
 
@@ -97,7 +121,7 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 			}
 		} else {
 			if (p_increment_count >= 1) {
-				// Zooming. Convert the current zoom into a denominator.
+				// Zooming in. Convert the current zoom into a denominator.
 				float new_zoom = 1.0 / Math::ceil(1.0 / zoom_noscale - p_increment_count);
 				if (Math::is_equal_approx(zoom_noscale, new_zoom)) {
 					// New zoom is identical to the old zoom, so try again.
@@ -106,7 +130,7 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 				}
 				set_zoom(new_zoom * MAX(1, EDSCALE));
 			} else {
-				// Dezooming. Convert the current zoom into a denominator.
+				// Zooming out. Convert the current zoom into a denominator.
 				float new_zoom = 1.0 / Math::floor(1.0 / zoom_noscale - p_increment_count);
 				if (Math::is_equal_approx(zoom_noscale, new_zoom)) {
 					// New zoom is identical to the old zoom, so try again.
@@ -118,9 +142,9 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 		}
 	} else {
 		// Base increment factor defined as the twelveth root of two.
-		// This allow a smooth geometric evolution of the zoom, with the advantage of
+		// This allows for a smooth geometric evolution of the zoom, with the advantage of
 		// visiting all integer power of two scale factors.
-		// note: this is analogous to the 'semitones' interval in the music world
+		// Note: this is analogous to the 'semitone' interval in the music world
 		// In order to avoid numerical imprecisions, we compute and edit a zoom index
 		// with the following relation: zoom = 2 ^ (index / 12)
 
@@ -179,10 +203,11 @@ EditorZoomWidget::EditorZoomWidget() {
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
-	zoom_reset->add_theme_style_override("normal", memnew(StyleBoxEmpty));
-	zoom_reset->add_theme_style_override("hover", memnew(StyleBoxEmpty));
-	zoom_reset->add_theme_style_override("focus", memnew(StyleBoxEmpty));
-	zoom_reset->add_theme_style_override("pressed", memnew(StyleBoxEmpty));
+	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
+	zoom_reset->add_theme_style_override("normal", empty_stylebox);
+	zoom_reset->add_theme_style_override("hover", empty_stylebox);
+	zoom_reset->add_theme_style_override("focus", empty_stylebox);
+	zoom_reset->add_theme_style_override("pressed", empty_stylebox);
 	add_child(zoom_reset);
 	zoom_reset->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));

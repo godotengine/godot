@@ -212,31 +212,37 @@ namespace Godot.SourceGenerators
                 }
 
                 // Generate GetGodotClassPropertyValue
+                bool allPropertiesAreWriteOnly = godotClassFields.Length == 0 && godotClassProperties.All(pi => pi.PropertySymbol.IsWriteOnly);
 
-                source.Append("    /// <inheritdoc/>\n");
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
-                source.Append("out godot_variant value)\n    {\n");
-
-                isFirstEntry = true;
-                foreach (var property in godotClassProperties)
+                if (!allPropertiesAreWriteOnly)
                 {
-                    GeneratePropertyGetter(property.PropertySymbol.Name,
-                        property.PropertySymbol.Type, property.Type, source, isFirstEntry);
-                    isFirstEntry = false;
+                    source.Append("    /// <inheritdoc/>\n");
+                    source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                    source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
+                    source.Append("out godot_variant value)\n    {\n");
+
+                    isFirstEntry = true;
+                    foreach (var property in godotClassProperties)
+                    {
+                        if (property.PropertySymbol.IsWriteOnly)
+                            continue;
+
+                        GeneratePropertyGetter(property.PropertySymbol.Name,
+                            property.PropertySymbol.Type, property.Type, source, isFirstEntry);
+                        isFirstEntry = false;
+                    }
+
+                    foreach (var field in godotClassFields)
+                    {
+                        GeneratePropertyGetter(field.FieldSymbol.Name,
+                            field.FieldSymbol.Type, field.Type, source, isFirstEntry);
+                        isFirstEntry = false;
+                    }
+
+                    source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
+
+                    source.Append("    }\n");
                 }
-
-                foreach (var field in godotClassFields)
-                {
-                    GeneratePropertyGetter(field.FieldSymbol.Name,
-                        field.FieldSymbol.Type, field.Type, source, isFirstEntry);
-                    isFirstEntry = false;
-                }
-
-                source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
-
-                source.Append("    }\n");
-
                 // Generate GetGodotPropertyList
 
                 const string dictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";

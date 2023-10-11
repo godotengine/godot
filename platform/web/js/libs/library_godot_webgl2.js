@@ -32,6 +32,19 @@ const GodotWebGL2 = {
 	$GodotWebGL2__deps: ['$GL', '$GodotRuntime'],
 	$GodotWebGL2: {},
 
+	// This is implemented as "glGetBufferSubData" in new emscripten versions.
+	// Since we have to support older (pre 2.0.17) emscripten versions, we add this wrapper function instead.
+	godot_webgl2_glGetBufferSubData__proxy: 'sync',
+	godot_webgl2_glGetBufferSubData__sig: 'vippp',
+	godot_webgl2_glGetBufferSubData__deps: ['$GL', 'emscripten_webgl_get_current_context'],
+	godot_webgl2_glGetBufferSubData: function (target, offset, size, data) {
+		const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+		const gl = GL.getContext(gl_context_handle);
+		if (gl) {
+			gl.GLctx['getBufferSubData'](target, offset, HEAPU8, data, size);
+		}
+	},
+
 	godot_webgl2_glFramebufferTextureMultiviewOVR__deps: ['emscripten_webgl_get_current_context'],
 	godot_webgl2_glFramebufferTextureMultiviewOVR__proxy: 'sync',
 	godot_webgl2_glFramebufferTextureMultiviewOVR__sig: 'viiiiii',

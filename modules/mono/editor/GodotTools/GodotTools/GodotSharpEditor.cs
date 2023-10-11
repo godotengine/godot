@@ -30,6 +30,7 @@ namespace GodotTools
             public const string VerbosityLevel = "dotnet/build/verbosity_level";
             public const string NoConsoleLogging = "dotnet/build/no_console_logging";
             public const string CreateBinaryLog = "dotnet/build/create_binary_log";
+            public const string ProblemsLayout = "dotnet/build/problems_layout";
         }
 
         private EditorSettings _editorSettings;
@@ -64,6 +65,7 @@ namespace GodotTools
 
         private bool CreateProjectSolution()
         {
+            string errorMessage = null;
             using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
             {
                 pr.Step("Generating C# project...".TTR());
@@ -95,22 +97,23 @@ namespace GodotTools
                     }
                     catch (IOException e)
                     {
-                        ShowErrorDialog("Failed to save solution. Exception message: ".TTR() + e.Message);
-                        return false;
+                        errorMessage = "Failed to save solution. Exception message: ".TTR() + e.Message;
                     }
-
-                    pr.Step("Done".TTR());
-
-                    // Here, after all calls to progress_task_step
-                    CallDeferred(nameof(_ShowDotnetFeatures));
                 }
                 else
                 {
-                    ShowErrorDialog("Failed to create C# project.".TTR());
+                    errorMessage = "Failed to create C# project.".TTR();
                 }
-
-                return true;
             }
+
+            if (!string.IsNullOrEmpty(errorMessage))
+            {
+                ShowErrorDialog(errorMessage);
+                return false;
+            }
+
+            _ShowDotnetFeatures();
+            return true;
         }
 
         private void _ShowDotnetFeatures()
@@ -160,14 +163,14 @@ namespace GodotTools
         {
             _errorDialog.Title = title;
             _errorDialog.DialogText = message;
-            _errorDialog.PopupCentered();
+            EditorInterface.Singleton.PopupDialogCentered(_errorDialog);
         }
 
         public void ShowConfirmCreateSlnDialog()
         {
             _confirmCreateSlnDialog.Title = "C# solution already exists. This will override the existing C# project file, any manual changes will be lost.".TTR();
             _confirmCreateSlnDialog.DialogText = "Create C# solution".TTR();
-            _confirmCreateSlnDialog.PopupCentered();
+            EditorInterface.Singleton.PopupDialogCentered(_confirmCreateSlnDialog);
         }
 
         private static string _vsCodePath = string.Empty;
@@ -437,7 +440,7 @@ namespace GodotTools
         private void BuildStateChanged()
         {
             if (_bottomPanelBtn != null)
-                _bottomPanelBtn.Icon = MSBuildPanel.BuildOutputView.BuildStateIcon;
+                _bottomPanelBtn.Icon = MSBuildPanel.GetBuildStateIcon();
         }
 
         public override void _EnablePlugin()
@@ -482,15 +485,14 @@ namespace GodotTools
             _editorSettings = EditorInterface.Singleton.GetEditorSettings();
 
             _errorDialog = new AcceptDialog();
-            editorBaseControl.AddChild(_errorDialog);
+            _errorDialog.SetUnparentWhenInvisible(true);
 
             _confirmCreateSlnDialog = new ConfirmationDialog();
+            _confirmCreateSlnDialog.SetUnparentWhenInvisible(true);
             _confirmCreateSlnDialog.Confirmed += () => CreateProjectSolution();
-            editorBaseControl.AddChild(_confirmCreateSlnDialog);
 
             MSBuildPanel = new MSBuildPanel();
-            MSBuildPanel.Ready += () =>
-                MSBuildPanel.BuildOutputView.BuildStateChanged += BuildStateChanged;
+            MSBuildPanel.BuildStateChanged += BuildStateChanged;
             _bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
 
             AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
@@ -535,6 +537,7 @@ namespace GodotTools
             EditorDef(Settings.VerbosityLevel, Variant.From(VerbosityLevelId.Normal));
             EditorDef(Settings.NoConsoleLogging, false);
             EditorDef(Settings.CreateBinaryLog, false);
+            EditorDef(Settings.ProblemsLayout, Variant.From(BuildProblemsView.ProblemsLayout.Tree));
 
             string settingsHintStr = "Disabled";
 
@@ -591,6 +594,14 @@ namespace GodotTools
                 ["name"] = Settings.VerbosityLevel,
                 ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = string.Join(",", verbosityLevels),
+            });
+
+            _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            {
+                ["type"] = (int)Variant.Type.Int,
+                ["name"] = Settings.ProblemsLayout,
+                ["hint"] = (int)PropertyHint.Enum,
+                ["hint_string"] = "View as List,View as Tree",
             });
 
             OnSettingsChanged();

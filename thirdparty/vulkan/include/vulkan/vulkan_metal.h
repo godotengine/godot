@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_EXT_metal_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_metal_surface 1
 #ifdef __OBJC__
 @class CAMetalLayer;
@@ -47,6 +48,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateMetalSurfaceEXT(
 #endif
 
 
+// VK_EXT_metal_objects is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_metal_objects 1
 #ifdef __OBJC__
 @protocol MTLDevice;

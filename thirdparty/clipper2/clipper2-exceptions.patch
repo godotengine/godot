@@ -1,0 +1,35 @@
+diff --git a/thirdparty/clipper2/include/clipper2/clipper.core.h b/thirdparty/clipper2/include/clipper2/clipper.core.h
+index c7522cb900..086d1b659c 100644
+--- a/thirdparty/clipper2/include/clipper2/clipper.core.h
++++ b/thirdparty/clipper2/include/clipper2/clipper.core.h
+@@ -20,6 +20,8 @@
+ #include <climits>
+ #include <numeric>
+ 
++#define CLIPPER2_THROW(exception) std::abort()
++
+ namespace Clipper2Lib
+ {
+ 
+@@ -65,16 +67,16 @@ namespace Clipper2Lib
+     switch (error_code)
+     {
+     case precision_error_i:
+-      throw Clipper2Exception(precision_error);
++      CLIPPER2_THROW(Clipper2Exception(precision_error));
+     case scale_error_i:
+-      throw Clipper2Exception(scale_error);
++      CLIPPER2_THROW(Clipper2Exception(scale_error));
+     case non_pair_error_i:
+-      throw Clipper2Exception(non_pair_error);
++      CLIPPER2_THROW(Clipper2Exception(non_pair_error));
+     case range_error_i:
+-      throw Clipper2Exception(range_error);
++      CLIPPER2_THROW(Clipper2Exception(range_error));
+     }
+ #else
+-    ++error_code; // only to stop compiler warning
++    if(error_code) {}; // only to stop compiler 'parameter not used' warning
+ #endif
+   }
+ 

@@ -91,11 +91,13 @@ const GodotConfig = {
 		},
 	},
 
+	godot_js_config_canvas_id_get__proxy: 'sync',
 	godot_js_config_canvas_id_get__sig: 'vii',
 	godot_js_config_canvas_id_get: function (p_ptr, p_ptr_max) {
 		GodotRuntime.stringToHeap(`#${GodotConfig.canvas.id}`, p_ptr, p_ptr_max);
 	},
 
+	godot_js_config_locale_get__proxy: 'sync',
 	godot_js_config_locale_get__sig: 'vii',
 	godot_js_config_locale_get: function (p_ptr, p_ptr_max) {
 		GodotRuntime.stringToHeap(GodotConfig.locale, p_ptr, p_ptr_max);
@@ -266,22 +268,26 @@ const GodotOS = {
 		},
 	},
 
+	godot_js_os_finish_async__proxy: 'sync',
 	godot_js_os_finish_async__sig: 'vi',
 	godot_js_os_finish_async: function (p_callback) {
 		const func = GodotRuntime.get_func(p_callback);
 		GodotOS.finish_async(func);
 	},
 
+	godot_js_os_request_quit_cb__proxy: 'sync',
 	godot_js_os_request_quit_cb__sig: 'vi',
 	godot_js_os_request_quit_cb: function (p_callback) {
 		GodotOS.request_quit = GodotRuntime.get_func(p_callback);
 	},
 
+	godot_js_os_fs_is_persistent__proxy: 'sync',
 	godot_js_os_fs_is_persistent__sig: 'i',
 	godot_js_os_fs_is_persistent: function () {
 		return GodotFS.is_persistent();
 	},
 
+	godot_js_os_fs_sync__proxy: 'sync',
 	godot_js_os_fs_sync__sig: 'vi',
 	godot_js_os_fs_sync: function (callback) {
 		const func = GodotRuntime.get_func(callback);
@@ -291,6 +297,7 @@ const GodotOS = {
 		});
 	},
 
+	godot_js_os_has_feature__proxy: 'sync',
 	godot_js_os_has_feature__sig: 'ii',
 	godot_js_os_has_feature: function (p_ftr) {
 		const ftr = GodotRuntime.parseString(p_ftr);
@@ -313,6 +320,7 @@ const GodotOS = {
 		return 0;
 	},
 
+	godot_js_os_execute__proxy: 'sync',
 	godot_js_os_execute__sig: 'ii',
 	godot_js_os_execute: function (p_json) {
 		const json_args = GodotRuntime.parseString(p_json);
@@ -324,11 +332,13 @@ const GodotOS = {
 		return 1;
 	},
 
+	godot_js_os_shell_open__proxy: 'sync',
 	godot_js_os_shell_open__sig: 'vi',
 	godot_js_os_shell_open: function (p_uri) {
 		window.open(GodotRuntime.parseString(p_uri), '_blank');
 	},
 
+	godot_js_os_hw_concurrency_get__proxy: 'sync',
 	godot_js_os_hw_concurrency_get__sig: 'i',
 	godot_js_os_hw_concurrency_get: function () {
 		// TODO Godot core needs fixing to avoid spawning too many threads (> 24).
@@ -336,6 +346,7 @@ const GodotOS = {
 		return concurrency < 2 ? concurrency : 2;
 	},
 
+	godot_js_os_download_buffer__proxy: 'sync',
 	godot_js_os_download_buffer__sig: 'viiii',
 	godot_js_os_download_buffer: function (p_ptr, p_size, p_name, p_mime) {
 		const buf = GodotRuntime.heapSlice(HEAP8, p_ptr, p_size);
@@ -426,6 +437,7 @@ const GodotPWA = {
 		},
 	},
 
+	godot_js_pwa_cb__proxy: 'sync',
 	godot_js_pwa_cb__sig: 'vi',
 	godot_js_pwa_cb: function (p_update_cb) {
 		if ('serviceWorker' in navigator) {
@@ -434,6 +446,7 @@ const GodotPWA = {
 		}
 	},
 
+	godot_js_pwa_update__proxy: 'sync',
 	godot_js_pwa_update__sig: 'i',
 	godot_js_pwa_update: function () {
 		if ('serviceWorker' in navigator && GodotPWA.hasUpdate) {

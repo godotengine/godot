@@ -32,7 +32,7 @@
 
 void Decal::set_size(const Vector3 &p_size) {
 	size = Vector3(MAX(0.001, p_size.x), MAX(0.001, p_size.y), MAX(0.001, p_size.z));
-	RS::get_singleton()->decal_set_size(decal, p_size);
+	RS::get_singleton()->decal_set_size(decal, size);
 	update_gizmos();
 }
 

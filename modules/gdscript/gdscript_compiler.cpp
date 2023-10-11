@@ -60,7 +60,7 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 		scr = scr->_base;
 	}
 
-	ERR_FAIL_COND_V(!nc, false);
+	ERR_FAIL_NULL_V(nc, false);
 
 	return ClassDB::has_property(nc->get_name(), p_name);
 }
@@ -104,13 +104,24 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::NATIVE;
 				result.builtin_type = Variant::OBJECT;
-				result.native_type = GDScriptNativeClass::get_class_static();
+				// Fixes GH-82255. `GDScriptNativeClass` is obtainable in GDScript,
+				// but is not a registered and exposed class, so `GDScriptNativeClass`
+				// is missing from `GDScriptLanguage::get_singleton()->get_global_map()`.
+				//result.native_type = GDScriptNativeClass::get_class_static();
+				result.native_type = Object::get_class_static();
 				break;
 			}
 
 			result.kind = GDScriptDataType::NATIVE;
-			result.native_type = p_datatype.native_type;
 			result.builtin_type = p_datatype.builtin_type;
+			result.native_type = p_datatype.native_type;
+
+#ifdef DEBUG_ENABLED
+			if (unlikely(!GDScriptLanguage::get_singleton()->get_global_map().has(result.native_type))) {
+				ERR_PRINT(vformat(R"(GDScript bug: Native class "%s" not found.)", result.native_type));
+				result.native_type = Object::get_class_static();
+			}
+#endif
 		} break;
 		case GDScriptParser::DataType::SCRIPT: {
 			if (p_handle_metatype && p_datatype.is_meta_type) {
@@ -218,13 +229,13 @@ static bool _is_exact_type(const PropertyInfo &p_par_type, const GDScriptDataTyp
 	}
 }
 
-static bool _can_use_ptrcall(const MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
+static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
 	if (p_method->is_vararg()) {
-		// ptrcall won't work with vararg methods.
+		// Validated call won't work with vararg methods.
 		return false;
 	}
 	if (p_method->get_argument_count() != p_arguments.size()) {
-		// ptrcall won't work with default arguments.
+		// Validated call won't work with default arguments.
 		return false;
 	}
 	MethodInfo info;
@@ -601,11 +612,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				arguments.push_back(arg);
 			}
 
-			if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(call->function_name) != Variant::VARIANT_MAX) {
-				// Construct a built-in type.
-				Variant::Type vtype = GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(call->callee)->name);
-
-				gen->write_construct(result, vtype, arguments);
+			if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
+				gen->write_construct(result, GDScriptParser::get_builtin_type(call->function_name), arguments);
 			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && Variant::has_utility_function(call->function_name)) {
 				// Variant utility function.
 				gen->write_call_utility(result, call->function_name, arguments);
@@ -628,9 +636,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							self.mode = GDScriptCodeGenerator::Address::SELF;
 							MethodBind *method = ClassDB::get_method(codegen.script->native->get_name(), call->function_name);
 
-							if (_can_use_ptrcall(method, arguments)) {
-								// Exact arguments, use ptrcall.
-								gen->write_call_ptrcall(result, self, method, arguments);
+							if (_can_use_validate_call(method, arguments)) {
+								// Exact arguments, use validated call.
+								gen->write_call_method_bind_validated(result, self, method, arguments);
 							} else {
 								// Not exact arguments, but still can use method bind call.
 								gen->write_call_method_bind(result, self, method, arguments);
@@ -678,9 +686,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									}
 									if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
 										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
-										if (_can_use_ptrcall(method, arguments)) {
-											// Exact arguments, use ptrcall.
-											gen->write_call_ptrcall(result, base, method, arguments);
+										if (_can_use_validate_call(method, arguments)) {
+											// Exact arguments, use validated call.
+											gen->write_call_method_bind_validated(result, base, method, arguments);
 										} else {
 											// Not exact arguments, but still can use method bind call.
 											gen->write_call_method_bind(result, base, method, arguments);
@@ -725,7 +733,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(get_node->get_datatype(), codegen.script));
 
 			MethodBind *get_node_method = ClassDB::get_method("Node", "get_node");
-			gen->write_call_ptrcall(result, GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), get_node_method, args);
+			gen->write_call_method_bind_validated(result, GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), get_node_method, args);
 
 			return result;
 		} break;
@@ -1917,6 +1925,26 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 						}
 					}
 
+					// If there's a guard, check its condition too.
+					if (branch->guard_body != nullptr) {
+						// Do this first so the guard does not run unless the pattern matched.
+						gen->write_and_left_operand(pattern_result);
+
+						// Don't actually use the block for the guard.
+						// The binds are already in the locals and we don't want to clear the result of the guard condition before we check the actual match.
+						GDScriptCodeGenerator::Address guard_result = _parse_expression(codegen, err, static_cast<GDScriptParser::ExpressionNode *>(branch->guard_body->statements[0]));
+						if (err) {
+							return err;
+						}
+
+						gen->write_and_right_operand(guard_result);
+						gen->write_end_and(pattern_result);
+
+						if (guard_result.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+							codegen.generator->pop_temporary();
+						}
+					}
+
 					// Check if pattern did match.
 					gen->write_if(pattern_result);
 
@@ -2783,7 +2811,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				minfo.property_info = prop_info;
 
 				p_script->member_indices[name] = minfo;
-				p_script->members.insert(Variant());
+				p_script->members.insert(name);
 			} break;
 
 			case GDScriptParser::ClassNode::Member::FUNCTION: {

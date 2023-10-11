@@ -341,7 +341,7 @@
 			<param index="0" name="file" type="String" />
 			<param index="1" name="hidden" type="bool" />
 			<description>
-				Sets file [code]hidden[/code] attribute.
+				Sets file [b]hidden[/b] attribute.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -350,7 +350,7 @@
 			<param index="0" name="file" type="String" />
 			<param index="1" name="ro" type="bool" />
 			<description>
-				Sets file [code]read only[/code] attribute.
+				Sets file [b]read only[/b] attribute.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>

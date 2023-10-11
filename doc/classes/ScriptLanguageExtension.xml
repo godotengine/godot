@@ -140,6 +140,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_doc_comment_delimiters" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_extension" qualifiers="virtual const">
 			<return type="String" />
 			<description>
@@ -197,9 +202,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="_has_named_classes" qualifiers="virtual const">
+		<method name="_has_named_classes" qualifiers="virtual const" is_deprecated="true">
 			<return type="bool" />
 			<description>
+				[i]Deprecated.[/i] This method is not called by the engine.
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">

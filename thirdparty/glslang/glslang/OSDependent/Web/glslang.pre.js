@@ -25,7 +25,7 @@ Module['compileGLSLZeroCopy'] = function(glsl, shader_stage, gen_debug, spirv_ve
 
     var p_output = Module['_malloc'](4);
     var p_output_len = Module['_malloc'](4);
-    var id = ccall('convert_glsl_to_spirv',
+    var id = Module['ccall']('convert_glsl_to_spirv',
         'number',
         ['string', 'number', 'boolean', 'number', 'number', 'number'],
         [glsl, shader_stage_int, gen_debug, spirv_version_int, p_output, p_output_len]);

@@ -33,6 +33,8 @@
 
 #include "audio_driver_web.h"
 
+#include "godot_js.h"
+
 #include "core/input/input.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
@@ -48,11 +50,11 @@ class OS_Web : public OS_Unix {
 	bool idb_needs_sync = false;
 	bool pwa_is_waiting = false;
 
-	static void main_loop_callback();
+	WASM_EXPORT static void main_loop_callback();
 
-	static void file_access_close_callback(const String &p_file, int p_flags);
-	static void fs_sync_callback();
-	static void update_pwa_state_callback();
+	WASM_EXPORT static void file_access_close_callback(const String &p_file, int p_flags);
+	WASM_EXPORT static void fs_sync_callback();
+	WASM_EXPORT static void update_pwa_state_callback();
 
 protected:
 	void initialize() override;
@@ -83,14 +85,16 @@ public:
 	int get_process_id() const override;
 	bool is_process_running(const ProcessID &p_pid) const override;
 	int get_processor_count() const override;
+	String get_unique_id() const override;
 	int get_default_thread_pool_size() const override { return 1; }
 
 	String get_executable_path() const override;
 	Error shell_open(String p_uri) override;
 	String get_name() const override;
+
 	// Override default OS implementation which would block the main thread with delay_usec.
 	// Implemented in web_main.cpp loop callback instead.
-	void add_frame_delay(bool p_can_draw) override {}
+	void add_frame_delay(bool p_can_draw) override;
 
 	void vibrate_handheld(int p_duration_ms) override;
 

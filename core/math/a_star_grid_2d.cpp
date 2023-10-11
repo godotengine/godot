@@ -32,7 +32,7 @@
 
 #include "core/variant/typed_array.h"
 
-static real_t heuristic_euclidian(const Vector2i &p_from, const Vector2i &p_to) {
+static real_t heuristic_euclidean(const Vector2i &p_from, const Vector2i &p_to) {
 	real_t dx = (real_t)ABS(p_to.x - p_from.x);
 	real_t dy = (real_t)ABS(p_to.y - p_from.y);
 	return (real_t)Math::sqrt(dx * dx + dy * dy);
@@ -57,7 +57,7 @@ static real_t heuristic_chebyshev(const Vector2i &p_from, const Vector2i &p_to) 
 	return MAX(dx, dy);
 }
 
-static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(const Vector2i &, const Vector2i &) = { heuristic_euclidian, heuristic_manhattan, heuristic_octile, heuristic_chebyshev };
+static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(const Vector2i &, const Vector2i &) = { heuristic_euclidean, heuristic_manhattan, heuristic_octile, heuristic_chebyshev };
 
 void AStarGrid2D::set_region(const Rect2i &p_region) {
 	ERR_FAIL_COND(p_region.size.x < 0 || p_region.size.y < 0);

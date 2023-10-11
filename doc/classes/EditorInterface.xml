@@ -116,6 +116,19 @@
 				[b]Note:[/b] When creating custom editor UI, prefer accessing theme items directly from your GUI nodes using the [code]get_theme_*[/code] methods.
 			</description>
 		</method>
+		<method name="get_editor_viewport_2d" qualifiers="const">
+			<return type="SubViewport" />
+			<description>
+				Returns the 2D editor [SubViewport]. It does not have a camera. Instead, the view transforms are done directly and can be accessed with [member Viewport.global_canvas_transform].
+			</description>
+		</method>
+		<method name="get_editor_viewport_3d" qualifiers="const">
+			<return type="SubViewport" />
+			<param index="0" name="idx" type="int" default="0" />
+			<description>
+				Returns the specified 3D editor [SubViewport], from [code]0[/code] to [code]3[/code]. The viewport can be used to access the active editor cameras with [method Viewport.get_camera_3d].
+			</description>
+		</method>
 		<method name="get_file_system_dock" qualifiers="const">
 			<return type="FileSystemDock" />
 			<description>
@@ -326,7 +339,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the text of the tab in question exactly ([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/code]).
+				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], or [code]AssetLib[/code] for default tabs).
 			</description>
 		</method>
 		<method name="set_plugin_enabled">

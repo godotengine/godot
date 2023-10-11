@@ -98,6 +98,7 @@ public:
 	enum Scaling3DMode {
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
+		SCALING_3D_MODE_FSR2,
 		SCALING_3D_MODE_MAX
 	};
 
@@ -167,6 +168,7 @@ public:
 		DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 		DEBUG_DRAW_OCCLUDERS,
 		DEBUG_DRAW_MOTION_VECTORS,
+		DEBUG_DRAW_INTERNAL_BUFFER,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -281,6 +283,7 @@ private:
 
 	void _update_audio_listener_2d();
 
+	bool disable_2d = false;
 	bool disable_3d = false;
 
 	void _propagate_viewport_notification(Node *p_node, int p_what);
@@ -366,6 +369,7 @@ private:
 		Control *tooltip_control = nullptr;
 		Window *tooltip_popup = nullptr;
 		Label *tooltip_label = nullptr;
+		String tooltip_text;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;
 		Point2 drag_accum;
@@ -734,6 +738,9 @@ public:
 
 	void set_camera_3d_override_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
 	void set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
+
+	void set_disable_2d(bool p_disable);
+	bool is_2d_disabled() const;
 
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;

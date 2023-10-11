@@ -191,6 +191,16 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 			highlighter->add_color_region(beg, end, comment_color, end.is_empty());
 		}
 
+		/* Doc comments */
+		const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+		List<String> doc_comments;
+		scr->get_language()->get_doc_comment_delimiters(&doc_comments);
+		for (const String &doc_comment : doc_comments) {
+			String beg = doc_comment.get_slice(" ", 0);
+			String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
+			highlighter->add_color_region(beg, end, doc_comment_color, end.is_empty());
+		}
+
 		/* Strings */
 		const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 		List<String> strings;
@@ -863,6 +873,10 @@ void ScriptEditor::_close_current_tab(bool p_save) {
 }
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
+	Ref<Script> scr = _get_current_script();
+	if (scr.is_valid()) {
+		scr->reload_from_file();
+	}
 	_close_tab(tab_container->get_current_tab(), false);
 	erase_tab_confirm->hide();
 }

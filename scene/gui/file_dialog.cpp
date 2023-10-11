@@ -56,6 +56,12 @@ void FileDialog::_focus_file_text() {
 }
 
 void FileDialog::popup(const Rect2i &p_rect) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		ConfirmationDialog::popup(p_rect);
+	}
+#endif
+
 	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
 	} else {
@@ -63,7 +69,24 @@ void FileDialog::popup(const Rect2i &p_rect) {
 	}
 }
 
-void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
+void FileDialog::set_visible(bool p_visible) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		ConfirmationDialog::set_visible(p_visible);
+		return;
+	}
+#endif
+
+	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+		if (p_visible) {
+			DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+		}
+	} else {
+		ConfirmationDialog::set_visible(p_visible);
+	}
+}
+
+void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter) {
 	if (p_ok) {
 		if (p_files.size() > 0) {
 			String f = p_files[0];
@@ -80,6 +103,7 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
 			}
 			file->set_text(f);
 			dir->set_text(f.get_base_dir());
+			_filter_selected(p_filter);
 		}
 	} else {
 		file->set_text("");
@@ -652,7 +676,7 @@ void FileDialog::update_file_list() {
 		files.pop_front();
 	}
 
-	if (mode != FILE_MODE_SAVE_FILE) {
+	if (mode != FILE_MODE_SAVE_FILE && mode != FILE_MODE_OPEN_DIR) {
 		// Select the first file from list if nothing is selected.
 		if (tree->get_root() && tree->get_root()->get_first_child() && tree->get_selected() == nullptr) {
 			tree->get_root()->get_first_child()->select(0);
@@ -1084,13 +1108,13 @@ FileDialog::FileDialog() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	dir_prev = memnew(Button);
-	dir_prev->set_flat(true);
+	dir_prev->set_theme_type_variation("FlatButton");
 	dir_prev->set_tooltip_text(RTR("Go to previous folder."));
 	dir_next = memnew(Button);
-	dir_next->set_flat(true);
+	dir_next->set_theme_type_variation("FlatButton");
 	dir_next->set_tooltip_text(RTR("Go to next folder."));
 	dir_up = memnew(Button);
-	dir_up->set_flat(true);
+	dir_up->set_theme_type_variation("FlatButton");
 	dir_up->set_tooltip_text(RTR("Go to parent folder."));
 	hbc->add_child(dir_prev);
 	hbc->add_child(dir_next);
@@ -1114,13 +1138,13 @@ FileDialog::FileDialog() {
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	refresh = memnew(Button);
-	refresh->set_flat(true);
+	refresh->set_theme_type_variation("FlatButton");
 	refresh->set_tooltip_text(RTR("Refresh files."));
 	refresh->connect("pressed", callable_mp(this, &FileDialog::update_file_list));
 	hbc->add_child(refresh);
 
 	show_hidden = memnew(Button);
-	show_hidden->set_flat(true);
+	show_hidden->set_theme_type_variation("FlatButton");
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(RTR("Toggle the visibility of hidden files."));

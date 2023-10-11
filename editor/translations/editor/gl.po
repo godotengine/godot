@@ -8,19 +8,21 @@
 # Kkai <kaieltroll@gmail.com>, 2021.
 # davidrogel <david.rogel.pernas@icloud.com>, 2021.
 # David Salcas <davisalcas@gmail.com>, 2023.
+# David Fernández Pérez <davidfernandezperez.thezombrex@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-04-02 22:43+0000\n"
-"Last-Translator: David Salcas <davisalcas@gmail.com>\n"
+"PO-Revision-Date: 2023-10-02 14:32+0000\n"
+"Last-Translator: David Fernández Pérez <davidfernandezperez.thezombrex@gmail."
+"com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -426,11 +428,11 @@ msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr "Esta opción non funciona con edición Bezier, xa que é unha única pista."
 
-msgid "Warning: Editing imported animation"
-msgstr "Advertencia: Estase editando unha animación importada"
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Selecciona un nodo AnimationPlayer para crear e editar animacións."
+
+msgid "Warning: Editing imported animation"
+msgstr "Advertencia: Estase editando unha animación importada"
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Só mostrar pistas de nodos seleccionados na árbore."
@@ -624,6 +626,9 @@ msgstr "Pechar"
 
 msgid "Connect"
 msgstr "Conectar"
+
+msgid "Class:"
+msgstr "Clase:"
 
 msgid "Signal:"
 msgstr "Sinal:"
@@ -1234,9 +1239,6 @@ msgstr "(Re)Importando Assets"
 msgid "Top"
 msgstr "Superior"
 
-msgid "Class:"
-msgstr "Clase:"
-
 msgid "Inherits:"
 msgstr "Herda de:"
 
@@ -1340,9 +1342,6 @@ msgstr "Propiedade:"
 msgid "Resize Array"
 msgstr "Redimensionar Array"
 
-msgid "Set Multiple:"
-msgstr "Establecer Varios:"
-
 msgid "Name:"
 msgstr "Nome:"
 
@@ -1369,9 +1368,6 @@ msgstr "Limpar Saída"
 
 msgid "Copy Selection"
 msgstr "Copiar Selección"
-
-msgid "New Window"
-msgstr "Nova Xanela"
 
 msgid "Unnamed Project"
 msgstr "Proxecto Sen Nome"
@@ -1631,30 +1627,6 @@ msgstr "Por Defecto"
 msgid "Save & Close"
 msgstr "Gardar e Pechar"
 
-msgid "Save changes to '%s' before closing?"
-msgstr "Gardar os cambios de '%s' antes de pechar?"
-
-msgid "Show in FileSystem"
-msgstr "Amosar no Sistema de Arquivos"
-
-msgid "Play This Scene"
-msgstr "Reproducir Esta Escena"
-
-msgid "Close Tab"
-msgstr "Pechar Pestana"
-
-msgid "Undo Close Tab"
-msgstr "Desfacer Pechar Pestana"
-
-msgid "Close Other Tabs"
-msgstr "Pechar Outras Pestanas"
-
-msgid "Close Tabs to the Right"
-msgstr "Pechar Pestanas á Dereita"
-
-msgid "Close All Tabs"
-msgstr "Pechar Todas as Pestanas"
-
 msgid "%d more files or folders"
 msgstr "%d arquivos ou cartafois máis"
 
@@ -1667,9 +1639,6 @@ msgstr "%d arquivos máis"
 msgid "Dock Position"
 msgstr "Posición do Panel"
 
-msgid "Add a new scene."
-msgstr "Engadir unha nova escena."
-
 msgid "Distraction Free Mode"
 msgstr "Modo Sen Distraccións"
 
@@ -1681,9 +1650,6 @@ msgstr "Escena"
 
 msgid "Operations with scene files."
 msgstr "Operacións con arquivos de escenas."
-
-msgid "Go to previously opened scene."
-msgstr "Ir á escena aberta previamente."
 
 msgid "Copy Text"
 msgstr "Copiar Texto"
@@ -1770,14 +1736,14 @@ msgstr "Administrar Características do Editor..."
 msgid "Help"
 msgstr "Axuda"
 
+msgid "Community"
+msgstr "Comunidade"
+
 msgid "Report a Bug"
 msgstr "Reportar un Erro"
 
 msgid "Send Docs Feedback"
 msgstr "Reportar Problema ca Documentación"
-
-msgid "Community"
-msgstr "Comunidade"
 
 msgid "Update Continuously"
 msgstr "Actualizar de Maneira Continua"
@@ -1790,6 +1756,9 @@ msgstr "Inspector"
 
 msgid "Node"
 msgstr "Nodo"
+
+msgid "History"
+msgstr "Historial"
 
 msgid "Expand Bottom Panel"
 msgstr "Estender Panel Inferior"
@@ -1915,6 +1884,9 @@ msgstr ""
 
 msgid "Make Unique"
 msgstr "Facer Único"
+
+msgid "Show in FileSystem"
+msgstr "Amosar no Sistema de Arquivos"
 
 msgid "New %s"
 msgstr "Novo %s"
@@ -2092,9 +2064,6 @@ msgstr "Erro ao mover:"
 msgid "Error duplicating:"
 msgstr "Erro ao duplicar:"
 
-msgid "Unable to update dependencies:"
-msgstr "Incapaz de actualizar dependencias:"
-
 msgid "A file or folder with this name already exists."
 msgstr "Xa existe un arquivo ou cartafol con este nome."
 
@@ -2124,6 +2093,9 @@ msgstr "Engadir a Favoritos"
 
 msgid "Remove from Favorites"
 msgstr "Eliminar de Favoritos"
+
+msgid "Reimport"
+msgstr "Reimportar"
 
 msgid "Open in File Manager"
 msgstr "Abrir no Explorador de Arquivos"
@@ -2334,6 +2306,30 @@ msgstr "Reproduce a escena actual."
 msgid "Quick Run Scene..."
 msgstr "Execución Rápida de Escena..."
 
+msgid "Play This Scene"
+msgstr "Reproducir Esta Escena"
+
+msgid "Close Tab"
+msgstr "Pechar Pestana"
+
+msgid "Undo Close Tab"
+msgstr "Desfacer Pechar Pestana"
+
+msgid "Close Other Tabs"
+msgstr "Pechar Outras Pestanas"
+
+msgid "Close Tabs to the Right"
+msgstr "Pechar Pestanas á Dereita"
+
+msgid "Close All Tabs"
+msgstr "Pechar Todas as Pestanas"
+
+msgid "New Window"
+msgstr "Nova Xanela"
+
+msgid "Add a new scene."
+msgstr "Engadir unha nova escena."
+
 msgid "Unlock Node"
 msgstr "Desbloquear Nodo"
 
@@ -2342,9 +2338,6 @@ msgstr "Aviso sobre a configuración do nodo:"
 
 msgid "Select a Node"
 msgstr "Seleccione un Nodo"
-
-msgid "Reimport"
-msgstr "Reimportar"
 
 msgid "Offset:"
 msgstr "Offset:"
@@ -2384,6 +2377,15 @@ msgstr "Gardar Como..."
 
 msgid "Copy Resource"
 msgstr "Copiar Recurso"
+
+msgid "Go to previous edited object in history."
+msgstr "Ir ao anterior obxeto editado no historial."
+
+msgid "Go to next edited object in history."
+msgstr "Ir ao seguinte obxeto editado no historial."
+
+msgid "History of recently edited objects."
+msgstr "Historial de obxectos editados recentemente."
 
 msgid "Remove Translation"
 msgstr "Eliminar Tradución"
@@ -3334,12 +3336,6 @@ msgstr "Ósos"
 msgid "Move Points"
 msgstr "Mover Puntos"
 
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Rotar"
-
-msgid "Shift+Ctrl: Scale"
-msgstr "Shift+Ctrl: Escalar"
-
 msgid "Move Polygon"
 msgstr "Mover Polígono"
 
@@ -3424,6 +3420,12 @@ msgstr "Abrir..."
 
 msgid "Save All"
 msgstr "Gardar Todo"
+
+msgid "History Previous"
+msgstr "Historial Anterior"
+
+msgid "History Next"
+msgstr "Historial Seguinte"
 
 msgid "Theme"
 msgstr "Tema"
@@ -3797,9 +3799,6 @@ msgstr ""
 "O arquivo de proxecto '.zip' non é válido; non conteñe ningún arquivo de "
 "configuración 'project.godot'."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Por favor, elixa un arquivo de tipo 'project.godot' ou '.zip'."
-
 msgid "This directory already contains a Godot project."
 msgstr "O directorio xa contén un proxecto Godot."
 
@@ -3808,6 +3807,9 @@ msgstr "Novo Proxecto de Xogo"
 
 msgid "Imported Project"
 msgstr "Proxecto Importado"
+
+msgid "Please choose a \"project.godot\" or \".zip\" file."
+msgstr "Por favor, elixa un arquivo de tipo 'project.godot' ou '.zip'."
 
 msgid "It would be a good idea to name your project."
 msgstr "Sería unha boa idea nomear o teu proxecto."
@@ -3906,14 +3908,14 @@ msgstr ""
 "Seguro que quere escanear proxectos de Godot en %s cartafois?\n"
 "Esto podería demorarse un tempo."
 
-msgid "Loading, please wait..."
-msgstr "Cargando, por favor agarde..."
-
 msgid "New Project"
 msgstr "Novo Proxecto"
 
 msgid "Scan"
 msgstr "Escanear"
+
+msgid "Loading, please wait..."
+msgstr "Cargando, por favor agarde..."
 
 msgid "Remove Missing"
 msgstr "Eliminar Faltantes"
@@ -4009,9 +4011,6 @@ msgstr "Esta operación precisa un único nodo seleccionado."
 msgid "Sub-Resources"
 msgstr "Sub-Recursos"
 
-msgid "Add Child Node"
-msgstr "Engadir Nodo Fillo"
-
 msgid "Remote"
 msgstr "Remoto"
 
@@ -4048,38 +4047,14 @@ msgstr "Abrir Script / Elixir Ubicación"
 msgid "Open Script"
 msgstr "Abrir Script"
 
-msgid "File exists, it will be reused."
-msgstr "O arquivo xa existe; será reutilizado."
-
 msgid "Invalid path."
 msgstr "Ruta inválida."
-
-msgid "Invalid class name."
-msgstr "Nome de clase inválido."
 
 msgid "Invalid inherited parent name or path."
 msgstr "A ruta ou o nome do pai herdado é inválido."
 
-msgid "Script path/name is valid."
-msgstr "A ruta e nome do script son válidos."
-
-msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "Permitido: a-z, A-Z, 0-9,_ e ."
-
-msgid "N/A"
-msgstr "N/A"
-
-msgid "Built-in script (into scene file)."
-msgstr "Script integrada na escena."
-
-msgid "Will create a new script file."
-msgstr "Crearase un novo arquivo de script."
-
-msgid "Will load an existing script file."
-msgstr "Cargarase un arquivo de script xa existente."
-
-msgid "Script file already exists."
-msgstr "Xa existe un arquivo script na mesma ruta."
+msgid "File exists, it will be reused."
+msgstr "O arquivo xa existe; será reutilizado."
 
 msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
@@ -4088,14 +4063,29 @@ msgstr ""
 "Nota: Os scripts integrados teñen algunhas limitacións, e non poden editarse "
 "usando editores externos."
 
-msgid "Class Name:"
-msgstr "Nome da Clase:"
+msgid "Built-in script (into scene file)."
+msgstr "Script integrada na escena."
+
+msgid "Will load an existing script file."
+msgstr "Cargarase un arquivo de script xa existente."
+
+msgid "Script file already exists."
+msgstr "Xa existe un arquivo script na mesma ruta."
+
+msgid "Script path/name is valid."
+msgstr "A ruta e nome do script son válidos."
+
+msgid "Will create a new script file."
+msgstr "Crearase un novo arquivo de script."
 
 msgid "Built-in Script:"
 msgstr "Script Integrado:"
 
 msgid "Attach Node Script"
 msgstr "Adxuntar Script de Nodo"
+
+msgid "N/A"
+msgstr "N/A"
 
 msgid "Invalid base path."
 msgstr "Ruta base inválida."

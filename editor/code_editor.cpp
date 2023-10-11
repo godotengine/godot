@@ -368,6 +368,9 @@ void FindReplaceBar::_update_results_count() {
 
 		int col_pos = 0;
 
+		bool searched_start_is_symbol = is_symbol(searched[0]);
+		bool searched_end_is_symbol = is_symbol(searched[searched.length() - 1]);
+
 		while (true) {
 			col_pos = is_case_sensitive() ? line_text.find(searched, col_pos) : line_text.findn(searched, col_pos);
 
@@ -376,11 +379,11 @@ void FindReplaceBar::_update_results_count() {
 			}
 
 			if (is_whole_words()) {
-				if (col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
+				if (!searched_start_is_symbol && col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
 					col_pos += searched.length();
 					continue;
 				}
-				if (col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
+				if (!searched_end_is_symbol && col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
 					col_pos += searched.length();
 					continue;
 				}
@@ -805,6 +808,11 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 		accept_event();
 		return;
 	}
+	if (ED_IS_SHORTCUT("script_text_editor/duplicate_lines", key_event)) {
+		text_editor->duplicate_lines();
+		accept_event();
+		return;
+	}
 }
 
 void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
@@ -943,6 +951,8 @@ void CodeTextEditor::_complete_request() {
 			font_color = get_theme_color(e.theme_color_name, SNAME("Editor"));
 		} else if (e.insert_text.begins_with("\"") || e.insert_text.begins_with("\'")) {
 			font_color = completion_string_color;
+		} else if (e.insert_text.begins_with("##") || e.insert_text.begins_with("///")) {
+			font_color = completion_doc_comment_color;
 		} else if (e.insert_text.begins_with("#") || e.insert_text.begins_with("//")) {
 			font_color = completion_comment_color;
 		}
@@ -1018,6 +1028,7 @@ void CodeTextEditor::update_editor_settings() {
 	completion_font_color = EDITOR_GET("text_editor/theme/highlighting/completion_font_color");
 	completion_string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 	completion_comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+	completion_doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
 
 	// Appearance: Caret
 	text_editor->set_caret_type((TextEdit::CaretType)EDITOR_GET("text_editor/appearance/caret/type").operator int());
@@ -1487,14 +1498,22 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		}
 		// Check first if there's any uncommented lines in selection.
 		bool is_commented = true;
+		bool is_all_empty = true;
 		for (int line = from; line <= to; line++) {
 			// `+ delimiter.length()` here because comment delimiter is not actually `in comment` so we check first character after it
 			int delimiter_idx = text_editor->is_in_comment(line, text_editor->get_first_non_whitespace_column(line) + delimiter.length());
-			if (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx) != delimiter) {
+			// Empty lines should not be counted.
+			bool is_empty = text_editor->get_line(line).strip_edges().is_empty();
+			is_all_empty = is_all_empty && is_empty;
+			if (!is_empty && (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx) != delimiter)) {
 				is_commented = false;
 				break;
 			}
 		}
+
+		// Special case for commenting empty lines, treat it/them as uncommented lines.
+		is_commented = is_commented && !is_all_empty;
+
 		// Caret positions need to be saved since they could be moved at the eol.
 		Vector<int> caret_cols;
 		Vector<int> selection_to_cols;
@@ -1510,10 +1529,11 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		// Comment/uncomment.
 		for (int line = from; line <= to; line++) {
 			String line_text = text_editor->get_line(line);
-			if (line_text.strip_edges().is_empty()) {
+			if (is_all_empty) {
 				text_editor->set_line(line, delimiter);
 				continue;
 			}
+
 			if (is_commented) {
 				text_editor->set_line(line, line_text.replace_first(delimiter, ""));
 			} else {

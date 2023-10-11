@@ -65,6 +65,7 @@
 			<description>
 				Part of the import process. This method is run after [method _import_post_parse] and before [method _import_node].
 				Runs when generating a Godot scene node from a GLTFNode. The returned node will be added to the scene tree. Multiple nodes can be generated in this step if they are added as a child of the returned node.
+				[b]Note:[/b] The [param scene_parent] parameter may be null if this is the single root node.
 			</description>
 		</method>
 		<method name="_get_image_file_extension" qualifiers="virtual">

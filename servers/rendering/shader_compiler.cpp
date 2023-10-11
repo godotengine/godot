@@ -303,8 +303,8 @@ String ShaderCompiler::_get_sampler_name(ShaderLanguage::TextureFilter p_filter,
 void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const HashMap<StringName, String> &p_func_code, String &r_to_add, HashSet<StringName> &added) {
 	int fidx = -1;
 
-	for (int i = 0; i < p_node->functions.size(); i++) {
-		if (p_node->functions[i].name == p_for_func) {
+	for (int i = 0; i < p_node->vfunctions.size(); i++) {
+		if (p_node->vfunctions[i].name == p_for_func) {
 			fidx = i;
 			break;
 		}
@@ -314,7 +314,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 
 	Vector<StringName> uses_functions;
 
-	for (const StringName &E : p_node->functions[fidx].uses_function) {
+	for (const StringName &E : p_node->vfunctions[fidx].uses_function) {
 		uses_functions.push_back(E);
 	}
 	uses_functions.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
@@ -328,14 +328,14 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 
 		SL::FunctionNode *fnode = nullptr;
 
-		for (int i = 0; i < p_node->functions.size(); i++) {
-			if (p_node->functions[i].name == uses_functions[k]) {
-				fnode = p_node->functions[i].function;
+		for (int i = 0; i < p_node->vfunctions.size(); i++) {
+			if (p_node->vfunctions[i].name == uses_functions[k]) {
+				fnode = p_node->vfunctions[i].function;
 				break;
 			}
 		}
 
-		ERR_FAIL_COND(!fnode);
+		ERR_FAIL_NULL(fnode);
 
 		r_to_add += "\n";
 
@@ -765,8 +765,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			HashMap<StringName, String> function_code;
 
 			//code for functions
-			for (int i = 0; i < pnode->functions.size(); i++) {
-				SL::FunctionNode *fnode = pnode->functions[i].function;
+			for (int i = 0; i < pnode->vfunctions.size(); i++) {
+				SL::FunctionNode *fnode = pnode->vfunctions[i].function;
 				function = fnode;
 				current_func_name = fnode->name;
 				function_code[fnode->name] = _dump_node_code(fnode->body, p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
@@ -777,8 +777,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			HashSet<StringName> added_funcs_per_stage[STAGE_MAX];
 
-			for (int i = 0; i < pnode->functions.size(); i++) {
-				SL::FunctionNode *fnode = pnode->functions[i].function;
+			for (int i = 0; i < pnode->vfunctions.size(); i++) {
+				SL::FunctionNode *fnode = pnode->vfunctions[i].function;
 
 				function = fnode;
 
@@ -1150,9 +1150,9 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					const bool is_internal_func = internal_functions.has(vnode->name);
 
 					if (!is_internal_func) {
-						for (int i = 0; i < shader->functions.size(); i++) {
-							if (shader->functions[i].name == vnode->name) {
-								func = shader->functions[i].function;
+						for (int i = 0; i < shader->vfunctions.size(); i++) {
+							if (shader->vfunctions[i].name == vnode->name) {
+								func = shader->vfunctions[i].function;
 								break;
 							}
 						}

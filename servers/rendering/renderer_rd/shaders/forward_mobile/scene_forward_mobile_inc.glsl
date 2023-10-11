@@ -15,20 +15,11 @@
 #endif
 
 #define USING_MOBILE_RENDERER
-/* don't exceed 128 bytes!! */
-/* put instance data into our push content, not a array */
-layout(push_constant, std430) uniform DrawCall {
-	highp mat4 transform; // 64 - 64
-	uint flags; // 04 - 68
-	uint instance_uniforms_ofs; //base offset in global buffer for instance variables	// 04 - 72
-	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)    // 04 - 76
-	uint layer_mask; // 04 - 80
-	highp vec4 lightmap_uv_scale; // 16 - 96 doubles as uv_offset when needed
 
-	uvec2 reflection_probes; // 08 - 104
-	uvec2 omni_lights; // 08 - 112
-	uvec2 spot_lights; // 08 - 120
-	uvec2 decals; // 08 - 128
+layout(push_constant, std430) uniform DrawCall {
+	vec2 uv_offset;
+	uint instance_index;
+	uint pad;
 }
 draw_call;
 
@@ -122,6 +113,29 @@ layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
 	SceneData prev_data;
 }
 scene_data_block;
+
+struct InstanceData {
+	highp mat4 transform; // 64 - 64
+	uint flags; // 04 - 68
+	uint instance_uniforms_ofs; // Base offset in global buffer for instance variables.	// 04 - 72
+	uint gi_offset; // GI information when using lightmapping (VCT or lightmap index).    // 04 - 76
+	uint layer_mask; // 04 - 80
+	highp vec4 lightmap_uv_scale; // 16 - 96 Doubles as uv_offset when needed.
+
+	uvec2 reflection_probes; // 08 - 104
+	uvec2 omni_lights; // 08 - 112
+	uvec2 spot_lights; // 08 - 120
+	uvec2 decals; // 08 - 128
+
+	vec4 compressed_aabb_position_pad; // 16 - 144 // Only .xyz is used. .w is padding.
+	vec4 compressed_aabb_size_pad; // 16 - 160 // Only .xyz is used. .w is padding.
+	vec4 uv_scale; // 16 - 176
+};
+
+layout(set = 1, binding = 1, std430) buffer restrict readonly InstanceDataBuffer {
+	InstanceData data[];
+}
+instances;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
