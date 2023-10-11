@@ -197,10 +197,10 @@ void TileMapLayer::_rendering_update() {
 		if (!canvas_item.is_valid()) {
 			RID ci = rs->canvas_item_create();
 			rs->canvas_item_set_parent(ci, tile_map_node->get_canvas_item());
-			rs->canvas_item_set_draw_index(ci, layer_index_in_tile_map_node - (int64_t)0x80000000);
 			canvas_item = ci;
 		}
 		RID &ci = canvas_item;
+		rs->canvas_item_set_draw_index(ci, layer_index_in_tile_map_node - (int64_t)0x80000000);
 		rs->canvas_item_set_sort_children_by_y(ci, y_sort_enabled);
 		rs->canvas_item_set_use_parent_material(ci, tile_map_node->get_use_parent_material() || tile_map_node->get_material().is_valid());
 		rs->canvas_item_set_z_index(ci, z_index);
