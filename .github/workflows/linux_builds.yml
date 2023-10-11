@@ -92,7 +92,7 @@ jobs:
         if: ${{ matrix.proj-test }}
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo add-apt-repository ppa:kisak/kisak-mesa
+          sudo add-apt-repository ppa:kisak/turtle
           sudo apt-get install -qq mesa-vulkan-drivers
 
       - name: Free disk space on runner
