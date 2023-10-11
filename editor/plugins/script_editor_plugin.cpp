@@ -997,7 +997,7 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 	}
 
 	_update_script_names();
-	_trigger_live_script_reload();
+	trigger_live_script_reload();
 }
 
 void ScriptEditor::_scene_saved_callback(const String &p_path) {
@@ -1025,7 +1025,7 @@ void ScriptEditor::_scene_saved_callback(const String &p_path) {
 	}
 }
 
-void ScriptEditor::_trigger_live_script_reload() {
+void ScriptEditor::trigger_live_script_reload() {
 	if (!pending_auto_reload && auto_reload_running_scripts) {
 		call_deferred(SNAME("_live_auto_reload_running_scripts"));
 		pending_auto_reload = true;
