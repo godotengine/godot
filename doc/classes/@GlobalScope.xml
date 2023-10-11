@@ -2449,7 +2449,7 @@
 			Game controller SDL guide button. Corresponds to the Sony PS, Xbox Home button.
 		</constant>
 		<constant name="JOY_BUTTON_START" value="6" enum="JoyButton">
-			Game controller SDL start button. Corresponds to the Nintendo + button.
+			Game controller SDL start button. Corresponds to the Sony Options, Xbox Menu, Nintendo + button.
 		</constant>
 		<constant name="JOY_BUTTON_LEFT_STICK" value="7" enum="JoyButton">
 			Game controller SDL left stick button. Corresponds to the Sony L3, Xbox L/LS button.
