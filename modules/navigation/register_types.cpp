@@ -30,8 +30,8 @@
 
 #include "register_types.h"
 
+#include "2d/godot_navigation_server_2d.h"
 #include "godot_navigation_server.h"
-#include "godot_navigation_server_2d.h"
 
 #ifndef DISABLE_DEPRECATED
 #ifndef _3D_DISABLED
