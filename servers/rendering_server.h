@@ -1413,6 +1413,7 @@ public:
 	virtual void canvas_item_set_canvas_group_mode(RID p_item, CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false) = 0;
 
 	virtual void canvas_item_set_debug_redraw(bool p_enabled) = 0;
+	virtual bool canvas_item_get_debug_redraw() const = 0;
 
 	/* CANVAS LIGHT */
 	virtual RID canvas_light_create() = 0;

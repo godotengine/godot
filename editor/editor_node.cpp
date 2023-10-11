@@ -790,7 +790,7 @@ void EditorNode::_notification(int p_what) {
 }
 
 void EditorNode::_update_update_spinner() {
-	update_spinner->set_visible(EDITOR_GET("interface/editor/show_update_spinner"));
+	update_spinner->set_visible(!RenderingServer::get_singleton()->canvas_item_get_debug_redraw() && EDITOR_GET("interface/editor/show_update_spinner"));
 
 	const bool update_continuously = EDITOR_GET("interface/editor/update_continuously");
 	PopupMenu *update_popup = update_spinner->get_popup();
