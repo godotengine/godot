@@ -3079,6 +3079,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	flags[FLAG_ALBEDO_TEXTURE_MSDF] = false;
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
 
+	current_key.invalid_key = 1;
+
 	_mark_initialized(callable_mp(this, &BaseMaterial3D::_queue_shader_change));
 }
 
