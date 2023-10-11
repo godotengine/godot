@@ -1023,6 +1023,12 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 		}
 	}
 
+	// Editor may crash when related animation is playing while re-importing GLTF scene, stop it in advance.
+	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
+	if (ap && scenes.size() > 0) {
+		ap->stop(true);
+	}
+
 	for (const String &E : scenes) {
 		reload_scene(E);
 		reload_instances_with_path_in_edited_scenes(E);
