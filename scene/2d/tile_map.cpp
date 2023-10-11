@@ -4518,13 +4518,25 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 		}
 	}
 
-	// Check if Y-sort is enabled on a layer but not on the node.
 	if (!is_y_sort_enabled()) {
+		// Check if Y-sort is enabled on a layer but not on the node.
 		for (const Ref<TileMapLayer> &layer : layers) {
 			if (layer->is_y_sort_enabled()) {
 				warnings.push_back(RTR("A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap node itself."));
 				break;
 			}
+		}
+	} else {
+		// Check if Y-sort is enabled on the node, but not on any of the layers.
+		bool need_warning = true;
+		for (const Ref<TileMapLayer> &layer : layers) {
+			if (layer->is_y_sort_enabled()) {
+				need_warning = false;
+				break;
+			}
+		}
+		if (need_warning) {
+			warnings.push_back(RTR("The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the TileMap's layers.\nThis may lead to unwanted behaviors, as a layer that is not Y-sorted will be Y-sorted as a whole."));
 		}
 	}
 
