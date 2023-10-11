@@ -71,9 +71,7 @@ bool UndoRedo::_redo(bool p_execute) {
 	}
 
 	current_action++;
-	if (p_execute) {
-		_process_operation_list(actions.write[current_action].do_ops.front());
-	}
+	_process_operation_list(actions.write[current_action].do_ops.front(), p_execute);
 	version++;
 	emit_signal(SNAME("version_changed"));
 
@@ -321,7 +319,7 @@ void UndoRedo::commit_action(bool p_execute) {
 	}
 }
 
-void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
+void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execute) {
 	const int PREALLOCATE_ARGS_COUNT = 16;
 
 	LocalVector<const Variant *> args;
@@ -337,18 +335,20 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 
 		switch (op.type) {
 			case Operation::TYPE_METHOD: {
-				Callable::CallError ce;
-				Variant ret;
-				op.callable.callp(nullptr, 0, ret, ce);
-				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT("Error calling UndoRedo method operation '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, nullptr, 0, ce));
-				}
+				if (p_execute) {
+					Callable::CallError ce;
+					Variant ret;
+					op.callable.callp(nullptr, 0, ret, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT("Error calling UndoRedo method operation '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, nullptr, 0, ce));
+					}
 #ifdef TOOLS_ENABLED
-				Resource *res = Object::cast_to<Resource>(obj);
-				if (res) {
-					res->set_edited(true);
-				}
+					Resource *res = Object::cast_to<Resource>(obj);
+					if (res) {
+						res->set_edited(true);
+					}
 #endif
+				}
 
 				if (method_callback) {
 					Vector<Variant> binds;
@@ -373,13 +373,16 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				}
 			} break;
 			case Operation::TYPE_PROPERTY: {
-				obj->set(op.name, op.value);
+				if (p_execute) {
+					obj->set(op.name, op.value);
 #ifdef TOOLS_ENABLED
-				Resource *res = Object::cast_to<Resource>(obj);
-				if (res) {
-					res->set_edited(true);
-				}
+					Resource *res = Object::cast_to<Resource>(obj);
+					if (res) {
+						res->set_edited(true);
+					}
 #endif
+				}
+
 				if (property_callback) {
 					property_callback(prop_callback_ud, obj, op.name, op.value);
 				}
@@ -400,7 +403,7 @@ bool UndoRedo::undo() {
 	if (current_action < 0) {
 		return false; //nothing to redo
 	}
-	_process_operation_list(actions.write[current_action].undo_ops.front());
+	_process_operation_list(actions.write[current_action].undo_ops.front(), true);
 	current_action--;
 	version--;
 	emit_signal(SNAME("version_changed"));
