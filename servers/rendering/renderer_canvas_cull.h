@@ -265,6 +265,7 @@ public:
 	void canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false);
 
 	void canvas_item_set_debug_redraw(bool p_enabled);
+	bool canvas_item_get_debug_redraw() const;
 
 	RID canvas_light_allocate();
 	void canvas_light_initialize(RID p_rid);
