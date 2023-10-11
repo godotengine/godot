@@ -135,6 +135,7 @@ public:
 	bool resizable;
 	bool window_focused;
 	bool on_top;
+	bool is_visible;
 
 	Size2 window_size;
 	Rect2 restore_rect;
