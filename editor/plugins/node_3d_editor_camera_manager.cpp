@@ -119,7 +119,7 @@ void Node3DEditorCameraManager::pilot(Node3D* p_node) {
 	cursor.set_camera_transform(transform);
 	cursor.stop_interpolation(true);
 	emit_signal(SNAME("camera_mode_changed"));
-	update_camera(0.0);
+	update_camera();
 }
 
 void Node3DEditorCameraManager::stop_piloting() {
@@ -129,7 +129,7 @@ void Node3DEditorCameraManager::stop_piloting() {
 	node_being_piloted->disconnect("tree_exited", callable_mp(this, &Node3DEditorCameraManager::stop_piloting));
 	node_being_piloted = nullptr;
 	emit_signal(SNAME("camera_mode_changed"));
-	update_camera(0.0);
+	update_camera();
 }
 
 Node3D* Node3DEditorCameraManager::get_node_being_piloted() const {
@@ -156,11 +156,13 @@ void Node3DEditorCameraManager::preview_camera(Camera3D* p_camera) {
 	stop_piloting();
 	previewing_camera = p_camera;
 	previewing_camera->connect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previewing_camera));
+	RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing_camera->get_camera()); //replace
 	emit_signal(SNAME("camera_mode_changed"));
 	if (is_piloting_camera_now || allow_pilot_previewing_camera) {
 		allow_pilot_previewing_camera = true;
 		pilot(previewing_camera);
 	}
+	update_camera();
 }
 
 Camera3D* Node3DEditorCameraManager::get_previewing_camera() const {
@@ -176,6 +178,7 @@ void Node3DEditorCameraManager::stop_previewing_camera() {
 	stop_piloting();
 	RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), editor_camera->get_camera()); //restore
 	emit_signal(SNAME("camera_mode_changed"));
+	update_camera();
 }
 
 void Node3DEditorCameraManager::set_cinematic_preview_mode(bool p_cinematic_mode) {
@@ -196,6 +199,7 @@ void Node3DEditorCameraManager::set_cinematic_preview_mode(bool p_cinematic_mode
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), editor_camera->get_camera()); //restore
 	}
 	emit_signal(SNAME("camera_mode_changed"));
+	update_camera();
 }
 
 bool Node3DEditorCameraManager::is_in_cinematic_preview_mode() const {
