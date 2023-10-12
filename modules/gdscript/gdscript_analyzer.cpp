@@ -4221,6 +4221,11 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				result_type = attr_type;
 				p_subscript->is_constant = p_subscript->attribute->is_constant;
 				p_subscript->reduced_value = p_subscript->attribute->reduced_value;
+#ifdef DEBUG_ENABLED
+				if(((String) p_subscript->attribute->name).begins_with("_")) {
+					parser->push_warning(p_subscript, GDScriptWarning::PRIVATE_PROPERTY_ACCESS, p_subscript->attribute->name);
+				}
+#endif
 			} else if (!base_type.is_meta_type || !base_type.is_constant) {
 				valid = base_type.kind != GDScriptParser::DataType::BUILTIN;
 #ifdef DEBUG_ENABLED
