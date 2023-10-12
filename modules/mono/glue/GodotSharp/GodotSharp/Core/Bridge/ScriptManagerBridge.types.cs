@@ -20,7 +20,10 @@ public static partial class ScriptManagerBridge
             // TODO: What if this is called while unloading a load context, but after we already did cleanup in preparation for unloading?
 
             _scriptTypeMap.Add(scriptPtr, scriptType);
-            _typeScriptMap.Add(scriptType, scriptPtr);
+            
+            // Due to generic classes, more than one class can point to the same type, so
+            // there could be duplicate keys in this case. We only add a type as key once.
+            _typeScriptMap.TryAdd(scriptType, scriptPtr);
 
             if (AlcReloadCfg.IsAlcReloadingEnabled)
             {
