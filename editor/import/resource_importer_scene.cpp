@@ -1930,6 +1930,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/use_node_type_customization"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
@@ -2386,7 +2387,9 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 
 	HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
 	List<Pair<NodePath, Node *>> node_renames;
-	_pre_fix_node(scene, scene, collision_map, nullptr, node_renames);
+	if (p_options["nodes/use_node_type_customization"]) {
+		_pre_fix_node(scene, scene, collision_map, nullptr, node_renames);
+	}
 
 	return scene;
 }
@@ -2489,7 +2492,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	Pair<PackedVector3Array, PackedInt32Array> occluder_arrays;
 	List<Pair<NodePath, Node *>> node_renames;
 
-	_pre_fix_node(scene, scene, collision_map, &occluder_arrays, node_renames);
+	if (p_options["nodes/use_node_type_customization"]) {
+		_pre_fix_node(scene, scene, collision_map, &occluder_arrays, node_renames);
+	}
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->pre_process(scene, p_options);
