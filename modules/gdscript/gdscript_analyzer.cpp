@@ -3346,6 +3346,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, p_call->function_name, caller_type);
 		}
+
+		if (((String) p_call->function_name).begins_with("_")) {
+			parser->push_warning(p_call, GDScriptWarning::PRIVATE_METHOD_ACCESS, p_call->function_name);
+		}
 #endif // DEBUG_ENABLED
 
 		call_type = return_type;
@@ -4222,7 +4226,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				p_subscript->is_constant = p_subscript->attribute->is_constant;
 				p_subscript->reduced_value = p_subscript->attribute->reduced_value;
 #ifdef DEBUG_ENABLED
-				if(((String) p_subscript->attribute->name).begins_with("_")) {
+				if (((String) p_subscript->attribute->name).begins_with("_")) {
 					parser->push_warning(p_subscript, GDScriptWarning::PRIVATE_PROPERTY_ACCESS, p_subscript->attribute->name);
 				}
 #endif
