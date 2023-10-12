@@ -54,8 +54,9 @@ class ScriptServer {
 	static int _language_count;
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
-	static bool languages_finished; // Used until GH-76581 is fixed properly.
-	static SafeFlag languages_initialized;
+	static bool languages_finished;
+	static bool languages_initialized;
+	static Mutex languages_lock;
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -72,7 +73,10 @@ public:
 
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
-	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
+	_FORCE_INLINE_ static int get_language_count() {
+		MutexLock lock(languages_lock);
+		return _language_count;
+	}
 	static ScriptLanguage *get_language(int p_idx);
 	static Error register_language(ScriptLanguage *p_language);
 	static Error unregister_language(const ScriptLanguage *p_language);
@@ -100,7 +104,10 @@ public:
 	static void init_languages();
 	static void finish_languages();
 
-	static bool are_languages_finished() { return languages_finished; }
+	static bool are_languages_finished() {
+		MutexLock lock(languages_lock);
+		return languages_finished;
+	}
 };
 
 class PlaceHolderScriptInstance;

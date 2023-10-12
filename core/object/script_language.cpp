@@ -43,7 +43,8 @@ int ScriptServer::_language_count = 0;
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
 bool ScriptServer::languages_finished = false;
-SafeFlag ScriptServer::languages_initialized; // Used until GH-76581 is fixed properly.
+bool ScriptServer::languages_initialized = false; // Used until GH-76581 is fixed properly.
+Mutex ScriptServer::languages_lock;
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 void Script::_notification(int p_what) {
@@ -161,6 +162,7 @@ bool ScriptServer::is_scripting_enabled() {
 }
 
 ScriptLanguage *ScriptServer::get_language(int p_idx) {
+	MutexLock lock(languages_lock);
 	ERR_FAIL_INDEX_V(p_idx, _language_count, nullptr);
 
 	return _languages[p_idx];
@@ -168,6 +170,9 @@ ScriptLanguage *ScriptServer::get_language(int p_idx) {
 
 Error ScriptServer::register_language(ScriptLanguage *p_language) {
 	ERR_FAIL_NULL_V(p_language, ERR_INVALID_PARAMETER);
+
+	MutexLock lock(languages_lock);
+
 	ERR_FAIL_COND_V_MSG(_language_count >= MAX_LANGUAGES, ERR_UNAVAILABLE, "Script languages limit has been reach, cannot register more.");
 	for (int i = 0; i < _language_count; i++) {
 		const ScriptLanguage *other_language = _languages[i];
@@ -180,6 +185,8 @@ Error ScriptServer::register_language(ScriptLanguage *p_language) {
 }
 
 Error ScriptServer::unregister_language(const ScriptLanguage *p_language) {
+	MutexLock lock(languages_lock);
+
 	for (int i = 0; i < _language_count; i++) {
 		if (_languages[i] == p_language) {
 			_language_count--;
@@ -220,20 +227,24 @@ void ScriptServer::init_languages() {
 		}
 	}
 
+	MutexLock lock(languages_lock);
+
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->init();
 	}
 
-	languages_initialized.set();
+	languages_initialized = true;
 }
 
 void ScriptServer::finish_languages() {
-	languages_initialized.set_to(false);
+	MutexLock lock(languages_lock);
+
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->finish();
 	}
 	global_classes_clear();
 	languages_finished = true;
+	languages_initialized = false;
 }
 
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
@@ -245,18 +256,24 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 }
 
 void ScriptServer::thread_enter() {
-	if (unlikely(!languages_initialized.is_set())) {
+	MutexLock lock(languages_lock);
+
+	if (unlikely(!languages_initialized)) {
 		return;
 	}
+
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_enter();
 	}
 }
 
 void ScriptServer::thread_exit() {
-	if (unlikely(!languages_initialized.is_set())) {
+	MutexLock lock(languages_lock);
+
+	if (unlikely(!languages_initialized)) {
 		return;
 	}
+
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_exit();
 	}
