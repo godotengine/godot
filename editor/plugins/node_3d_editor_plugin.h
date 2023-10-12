@@ -406,14 +406,11 @@ private:
 
 	void input(const Ref<InputEvent> &p_event) override;
 	void _sinput(const Ref<InputEvent> &p_event);
-	
 	void _update_freelook(real_t delta);
 	Node3DEditor *spatial_editor = nullptr;
 
 	Camera3D *preview = nullptr;
 
-	bool previewing_camera = false;
-	bool previewing_cinema = false;
 	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
