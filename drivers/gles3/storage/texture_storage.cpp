@@ -2314,7 +2314,9 @@ Rect2i TextureStorage::_render_target_get_sdf_rect(const RenderTarget *rt) const
 			scale = 200;
 		} break;
 		default: {
-		}
+			ERR_PRINT("Invalid viewport SDF oversize, defaulting to 100%.");
+			scale = 100;
+		} break;
 	}
 
 	margin = (rt->size * scale / 100) - rt->size;
@@ -2391,6 +2393,7 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 			scale = 25;
 		} break;
 		default: {
+			ERR_PRINT("Invalid viewport SDF scale, defaulting to 100%.");
 			scale = 100;
 		} break;
 	}
