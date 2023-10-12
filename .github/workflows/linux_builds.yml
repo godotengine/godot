@@ -87,14 +87,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Need newer mesa for lavapipe to work properly.
-      - name: Linux dependencies for tests
-        if: ${{ matrix.proj-test }}
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo add-apt-repository ppa:kisak/turtle
-          sudo apt-get install -qq mesa-vulkan-drivers
-
       - name: Free disk space on runner
         run: |
           echo "Disk usage before:" && df -h
