@@ -3249,7 +3249,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			if (current) {
 				preview_camera->hide();
 			} else {
-				if (camera_manager->get_previewing_camera() != nullptr) {
+				if (camera_manager->get_previewing_or_cinematic_camera() != nullptr) {
 					preview_camera->show();
 				}
 			}
@@ -3797,7 +3797,6 @@ void Node3DEditorViewport::_bind_methods() {
 
 void Node3DEditorViewport::reset() {
 	camera_manager->reset();
-	set_orthogonal(false);
 	auto_orthogonal = false;
 	lock_rotation = false;
 	message_time = 0;
@@ -4848,12 +4847,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	camera_manager = memnew(Node3DEditorCameraManager);
 	add_child(camera_manager);
 	camera_manager->connect("camera_updated", callable_mp(this, &Node3DEditorViewport::on_camera_updated));
-	camera_manager->connect("pilot_started", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
-	camera_manager->connect("pilot_stopped", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
-	camera_manager->connect("preview_started", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
-	camera_manager->connect("preview_stopped", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
-	camera_manager->connect("cinematic_preview_started", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
-	camera_manager->connect("cinematic_preview_stopped", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
+	camera_manager->connect("camera_mode_changed", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
 
 	cpu_time_history_index = 0;
 	gpu_time_history_index = 0;

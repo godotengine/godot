@@ -85,7 +85,7 @@ void Node3DEditorCameraManager::pilot_selection() {
 }
 
 void Node3DEditorCameraManager::pilot(Node3D* p_node) {
-	if (p_node == nullptr || cinematic_mode) {
+	if (p_node == nullptr || cinematic_mode || p_node == node_being_piloted) {
 		return;
 	}
 	if (p_node != previewing_camera) {
@@ -107,7 +107,7 @@ void Node3DEditorCameraManager::pilot(Node3D* p_node) {
 	editor_camera->set_global_transform(transform);
 	cursor.set_camera_transform(transform);
 	cursor.stop_interpolation(true);
-	emit_signal(SNAME("pilot_started"));
+	emit_signal(SNAME("camera_mode_changed"));
 	update_camera(0.0);
 }
 
@@ -117,7 +117,7 @@ void Node3DEditorCameraManager::stop_piloting() {
 	}
 	node_being_piloted->disconnect("tree_exited", callable_mp(this, &Node3DEditorCameraManager::stop_piloting));
 	node_being_piloted = nullptr;
-	emit_signal(SNAME("pilot_stopped"));
+	emit_signal(SNAME("camera_mode_changed"));
 	update_camera(0.0);
 }
 
@@ -138,14 +138,14 @@ void Node3DEditorCameraManager::set_allow_pilot_previewing_camera(bool p_allow_p
 }
 
 void Node3DEditorCameraManager::preview_camera(Camera3D* p_camera) {
-	if (p_camera == nullptr || cinematic_mode) {
+	if (p_camera == nullptr || cinematic_mode || p_camera == previewing_camera) {
 		return;
 	}
 	bool is_piloting_camera_now = node_being_piloted == p_camera;
 	stop_piloting();
 	previewing_camera = p_camera;
 	previewing_camera->connect("tree_exiting", callable_mp(this, &Node3DEditorCameraManager::stop_previewing_camera));
-	emit_signal(SNAME("preview_started"));
+	emit_signal(SNAME("camera_mode_changed"));
 	if (is_piloting_camera_now || allow_pilot_previewing_camera) {
 		allow_pilot_previewing_camera = true;
 		pilot(previewing_camera);
@@ -164,16 +164,18 @@ void Node3DEditorCameraManager::stop_previewing_camera() {
 	previewing_camera = nullptr;
 	stop_piloting();
 	RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), editor_camera->get_camera()); //restore
-	emit_signal(SNAME("preview_stopped"));
+	emit_signal(SNAME("camera_mode_changed"));
 }
 
 void Node3DEditorCameraManager::set_cinematic_mode(bool p_cinematic_mode) {
+	if (cinematic_mode == p_cinematic_mode) {
+		return;
+	}
 	cinematic_mode = p_cinematic_mode;
 	if (p_cinematic_mode) {
 		stop_previewing_camera();
 		stop_piloting();
 		update_cinematic_preview();
-		emit_signal(SNAME("cinematic_preview_started"));
 	}
 	else {
 		if (cinematic_camera) {
@@ -181,8 +183,8 @@ void Node3DEditorCameraManager::set_cinematic_mode(bool p_cinematic_mode) {
 			cinematic_camera = nullptr;
 		}
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), editor_camera->get_camera()); //restore
-		emit_signal(SNAME("cinematic_preview_stopped"));
 	}
+	emit_signal(SNAME("camera_mode_changed"));
 }
 
 bool Node3DEditorCameraManager::is_in_cinematic_mode() const {
@@ -459,12 +461,7 @@ void Node3DEditorCameraManager::_undo_redo_pilot_transform(Node3D* p_node, const
 void Node3DEditorCameraManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_undo_redo_pilot_transform"), &Node3DEditorCameraManager::_undo_redo_pilot_transform);
 	ADD_SIGNAL(MethodInfo("camera_updated"));
-	ADD_SIGNAL(MethodInfo("pilot_started"));
-	ADD_SIGNAL(MethodInfo("pilot_stopped"));
-	ADD_SIGNAL(MethodInfo("preview_started"));
-	ADD_SIGNAL(MethodInfo("preview_stopped"));
-	ADD_SIGNAL(MethodInfo("cinematic_preview_started"));
-	ADD_SIGNAL(MethodInfo("cinematic_preview_stopped"));
+	ADD_SIGNAL(MethodInfo("camera_mode_changed"));
 }
 
 Node3DEditorCameraManager::Node3DEditorCameraManager() {
