@@ -206,6 +206,11 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		uint32_t value = 0;
 		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
+		if (value == 4294901760) {
+			// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+			// So we sanitize here.
+			value = 4294967295;
+		}
 
 		v_tangent = value;
 	}

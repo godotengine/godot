@@ -612,6 +612,12 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 							};
 
+							if (vector[0] == 0 && vector[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								vector[0] = 65535;
+							}
+
 							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
 					} else { // PACKED_FLOAT64_ARRAY
@@ -626,6 +632,12 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								(uint16_t)CLAMP(res.x * 65535, 0, 65535),
 								(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 							};
+
+							if (vector[0] == 0 && vector[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								vector[0] = 65535;
+							}
 
 							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
