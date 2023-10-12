@@ -43,78 +43,49 @@ class Node3D;
 class Node3DEditorCameraManager : public Node {
 	GDCLASS(Node3DEditorCameraManager, Node);
 
-public:
-	struct CameraSettings {
-		float z_near;
-		float z_far;
-		float fov;
-		CameraSettings();
-	};
-
 private:
 	Viewport* viewport = nullptr;
 	Camera3D* editor_camera = nullptr;
 	Camera3D* previewing_camera = nullptr;
 	Camera3D* cinematic_camera = nullptr;
 	Node3D* node_being_piloted = nullptr;
-	bool cinematic_mode = false;
+	bool cinematic_preview_mode = false;
 	Transform3D pilot_previous_transform;
 	bool allow_pilot_previewing_camera = false;
 	bool orthogonal = false;
-	CameraSettings camera_settings;
+	float fov;
+	float z_near;
+	float z_far;
 	Node3DEditorCameraCursor cursor;
 
 public:
+	void setup(Camera3D* p_editor_camera, Viewport* p_viewport);
+	void set_camera_settings(float p_fov, float p_z_near, float p_z_far);
 	void reset();
 
-	/** Sets the camera node being used by the editor's viewport in order to be managed by this. */
-	void setup(Camera3D* p_editor_camera, Viewport* p_viewport);
+	Node3DEditorCameraCursor get_cursor() const;
+	void set_cursor_state(const Vector3& position, real_t x_rot, real_t y_rot, real_t distance);
 
-	/** Returns the current camera in use (editor's camera, previewing camera or cinematic camera). */
 	Camera3D* get_current_camera() const;
-
-	/** Returns the current previewing or cinematic previewing camera, or nullptr if none. */
 	Camera3D* get_previewing_or_cinematic_camera() const;
 
-	/** Starts the pilot mode for the current single selected node, if any. */
 	void pilot_selection();
-
-	/** Starts the pilot mode with the given node. */
 	void pilot(Node3D* p_node);
-
-	/** Ends the pilot mode for whatever node is being piloted now. */
 	void stop_piloting();
-
-	/** Returns the node being piloted, or nullptr if none. */
 	Node3D* get_node_being_piloted() const;
 
-	/** Sets a flag indicating the previewing camera should enter pilot mode automatically. */
 	void set_allow_pilot_previewing_camera(bool p_allow_pilot_camera);
-
-	/** Starts the previewing mode with the given camera. */
 	void preview_camera(Camera3D* p_camera);
-
-	/** Returns the camera being previewed, or nullptr if none. */
 	Camera3D* get_previewing_camera() const;
-
-	/** Ends the previewing mode with whatever camera is being previewed now. */
 	void stop_previewing_camera();
 
-	/** Starts or ends the cinematic mode, which will automatically preview the current cinematic camera. */
-	void set_cinematic_mode(bool p_cinematic_mode);
+	void set_cinematic_preview_mode(bool p_cinematic_mode);
+	bool is_in_cinematic_preview_mode() const;
 
-	/** Returns true if it is in cinematic preview mode. */
-	bool is_in_cinematic_mode() const;
-
-	/** Changes the camera to orthogonal or, if false, to perspective. */
 	void set_orthogonal(bool p_orthogonal);
-
 	bool is_orthogonal() const;
+	void set_fov_scale(real_t p_scale);
 
-	/** Changes the camera to orthogonal or, if false, to perspective. */
-	void set_camera_settings(const CameraSettings& p_camera_settings);
-
-	/** Starts or ends the freelook navigation mode. */
 	void set_freelook_active(bool p_active_now);
 
 	void navigation_move(float p_right, float p_forward, float p_speed);
@@ -140,17 +111,10 @@ public:
 	void center_to_origin();
 	void focus_selection(const Vector3& p_center_point);
 
-	void set_fov_scale(real_t p_scale);
-
-	/** Returns the current 3D invisible camera cursor. */
-	Node3DEditorCameraCursor get_cursor() const;
-
-	void set_cursor_state(const Vector3& position, real_t x_rot, real_t y_rot, real_t distance);
-
 	/** Updates the camera, cursor and cinematic preview. To be called every frame. */
 	void update(float p_delta_time);
 
-	/** Updates the camera properties. */
+	/** Updates the camera properties with current cursor's state. */
 	void update_camera();
 
 private:

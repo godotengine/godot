@@ -460,6 +460,7 @@ private:
 	void toggle_allow_pilot_camera(bool p_activate);
 
 	Node3DEditorCameraManager* camera_manager;
+	void apply_camera_settings();
 	void on_camera_updated();
 	void refresh_pilot_and_preview_ui();
 

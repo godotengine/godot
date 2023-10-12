@@ -472,11 +472,7 @@ void ViewportRotationControl::set_viewport(Node3DEditorViewport *p_viewport) {
 }
 
 void Node3DEditorViewport::_view_settings_confirmed(real_t p_interp_delta) {
-	Node3DEditorCameraManager::CameraSettings camera_settings;
-	camera_settings.fov = get_fov();
-	camera_settings.z_near = get_znear();
-	camera_settings.z_far = get_zfar();
-	camera_manager->set_camera_settings(camera_settings);
+	apply_camera_settings();
 	// Set FOV override multiplier back to the default, so that the FOV
 	// setting specified in the View menu is correctly applied.
 	camera_manager->set_fov_scale(1.0);
@@ -1485,7 +1481,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	bool is_piloting_preview = camera_manager->get_previewing_camera() && camera_manager->get_previewing_camera() == camera_manager->get_node_being_piloted();
 
-	if ((camera_manager->get_previewing_camera() && !is_piloting_preview) || camera_manager->is_in_cinematic_mode()) {
+	if ((camera_manager->get_previewing_camera() && !is_piloting_preview) || camera_manager->is_in_cinematic_preview_mode()) {
 		return;
 	}
 
@@ -3503,7 +3499,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 }
 
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
-	camera_manager->set_cinematic_mode(p_activate);
+	camera_manager->set_cinematic_preview_mode(p_activate);
 }
 
 void Node3DEditorViewport::_selection_result_pressed(int p_result) {
@@ -4812,6 +4808,11 @@ void Node3DEditorViewport::toggle_allow_pilot_camera(bool p_activate) {
 	camera_manager->set_allow_pilot_previewing_camera(p_activate);
 }
 
+void Node3DEditorViewport::apply_camera_settings() {
+	camera_manager->set_camera_settings(get_fov(), get_znear(), get_zfar());
+	camera_manager->update_camera();
+}
+
 void Node3DEditorViewport::on_camera_updated() {
 	update_transform_gizmo_view();
 	rotation_control->queue_redraw();
@@ -4821,7 +4822,7 @@ void Node3DEditorViewport::on_camera_updated() {
 }
 
 void Node3DEditorViewport::refresh_pilot_and_preview_ui() {
-	if (camera_manager->is_in_cinematic_mode()) {
+	if (camera_manager->is_in_cinematic_preview_mode()) {
 		preview_camera->set_visible(false);
 		pilot_preview_camera_checkbox->set_visible(false);
 		stop_piloting_button->set_visible(false);
@@ -8408,7 +8409,7 @@ Node3DEditor::Node3DEditor() {
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; ++i) {
 		settings_dialog->connect("confirmed", callable_mp(viewports[i], &Node3DEditorViewport::_view_settings_confirmed).bind(0.0));
-		viewports[i]->_view_settings_confirmed(0.0);
+		viewports[i]->apply_camera_settings();
 	}
 
 	/* XFORM DIALOG */

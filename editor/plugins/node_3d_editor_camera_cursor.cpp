@@ -79,13 +79,13 @@ void Node3DEditorCameraCursor::set_fov_scale(real_t p_fov_scale) {
 	target_values.fov_scale = p_fov_scale;
 }
 
-void Node3DEditorCameraCursor::set_free_look_mode(bool p_enabled) {
-	free_look_mode = p_enabled;
+void Node3DEditorCameraCursor::set_freelook_mode(bool p_enabled) {
+	freelook_mode = p_enabled;
 	stop_interpolation(false);
 }
 
-void Node3DEditorCameraCursor::move_free_look(const Vector3& p_direction, real_t p_speed, real_t p_delta) {
-	if (!free_look_mode) {
+void Node3DEditorCameraCursor::move_freelook(const Vector3& p_direction, real_t p_speed, real_t p_delta) {
+	if (!freelook_mode) {
 		return;
 	}
 	Transform3D camera_transform = values_to_camera_transform(current_values);
@@ -141,7 +141,7 @@ bool Node3DEditorCameraCursor::update_interpolation(float p_interp_delta) {
 	Values old_values = current_values;
 	current_values = target_values;
 
-	if (free_look_mode) {
+	if (freelook_mode) {
 		// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
 		// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
 		const real_t inertia = EDITOR_GET("editors/3d/freelook/freelook_inertia");
@@ -266,7 +266,7 @@ void Node3DEditorCameraCursor::recalculate_position(Values& p_values) {
 }
 
 Node3DEditorCameraCursor::Node3DEditorCameraCursor() {
-	free_look_mode = false;
+	freelook_mode = false;
 	orthogonal = false;
 	z_near = 0.0;
 	z_far = 0.0;

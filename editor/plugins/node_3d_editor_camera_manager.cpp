@@ -36,16 +36,17 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 
-Node3DEditorCameraManager::CameraSettings::CameraSettings() {
-	z_near = 0.0;
-	z_far = 0.0;
-	fov = 0.0;
+void Node3DEditorCameraManager::set_camera_settings(float p_fov, float p_z_near, float p_z_far) {
+	fov = p_fov;
+	z_near = p_z_near;
+	z_far = p_z_far;
+	update_camera(0.0);
 }
 
 void Node3DEditorCameraManager::reset() {
 	stop_piloting();
 	stop_previewing_camera();
-	set_cinematic_mode(false);
+	set_cinematic_preview_mode(false);
 	set_orthogonal(false);
 	cursor = Node3DEditorCameraCursor();
 }
@@ -53,6 +54,16 @@ void Node3DEditorCameraManager::reset() {
 void Node3DEditorCameraManager::setup(Camera3D* p_editor_camera, Viewport* p_viewport) {
 	editor_camera = p_editor_camera;
 	viewport = p_viewport;
+}
+
+Node3DEditorCameraCursor Node3DEditorCameraManager::get_cursor() const {
+	return cursor;
+}
+
+void Node3DEditorCameraManager::set_cursor_state(const Vector3& position, real_t x_rot, real_t y_rot, real_t distance) {
+	cursor.move_to(position);
+	cursor.rotate_to(x_rot, y_rot);
+	cursor.move_distance_to(distance);
 }
 
 Camera3D* Node3DEditorCameraManager::get_current_camera() const {
@@ -66,7 +77,7 @@ Camera3D* Node3DEditorCameraManager::get_current_camera() const {
 }
 
 Camera3D* Node3DEditorCameraManager::get_previewing_or_cinematic_camera() const {
-	if (cinematic_mode && cinematic_camera) {
+	if (cinematic_preview_mode && cinematic_camera) {
 		return cinematic_camera;
 	}
 	else if (previewing_camera) {
@@ -85,7 +96,7 @@ void Node3DEditorCameraManager::pilot_selection() {
 }
 
 void Node3DEditorCameraManager::pilot(Node3D* p_node) {
-	if (p_node == nullptr || cinematic_mode || p_node == node_being_piloted) {
+	if (p_node == nullptr || cinematic_preview_mode || p_node == node_being_piloted) {
 		return;
 	}
 	if (p_node != previewing_camera) {
@@ -138,7 +149,7 @@ void Node3DEditorCameraManager::set_allow_pilot_previewing_camera(bool p_allow_p
 }
 
 void Node3DEditorCameraManager::preview_camera(Camera3D* p_camera) {
-	if (p_camera == nullptr || cinematic_mode || p_camera == previewing_camera) {
+	if (p_camera == nullptr || cinematic_preview_mode || p_camera == previewing_camera) {
 		return;
 	}
 	bool is_piloting_camera_now = node_being_piloted == p_camera;
@@ -167,11 +178,11 @@ void Node3DEditorCameraManager::stop_previewing_camera() {
 	emit_signal(SNAME("camera_mode_changed"));
 }
 
-void Node3DEditorCameraManager::set_cinematic_mode(bool p_cinematic_mode) {
-	if (cinematic_mode == p_cinematic_mode) {
+void Node3DEditorCameraManager::set_cinematic_preview_mode(bool p_cinematic_mode) {
+	if (cinematic_preview_mode == p_cinematic_mode) {
 		return;
 	}
-	cinematic_mode = p_cinematic_mode;
+	cinematic_preview_mode = p_cinematic_mode;
 	if (p_cinematic_mode) {
 		stop_previewing_camera();
 		stop_piloting();
@@ -187,8 +198,8 @@ void Node3DEditorCameraManager::set_cinematic_mode(bool p_cinematic_mode) {
 	emit_signal(SNAME("camera_mode_changed"));
 }
 
-bool Node3DEditorCameraManager::is_in_cinematic_mode() const {
-	return cinematic_mode;
+bool Node3DEditorCameraManager::is_in_cinematic_preview_mode() const {
+	return cinematic_preview_mode;
 }
 
 void Node3DEditorCameraManager::set_orthogonal(bool p_orthogonal) {
@@ -214,13 +225,12 @@ bool Node3DEditorCameraManager::is_orthogonal() const {
 	return orthogonal;
 }
 
-void Node3DEditorCameraManager::set_camera_settings(const CameraSettings& p_camera_settings) {
-	camera_settings = p_camera_settings;
-	update_camera(0.0);
+void Node3DEditorCameraManager::set_fov_scale(real_t p_scale) {
+	cursor.set_fov_scale(p_scale);
 }
 
 void Node3DEditorCameraManager::set_freelook_active(bool p_active_now) {
-	cursor.set_free_look_mode(p_active_now);
+	cursor.set_freelook_mode(p_active_now);
 	if (!p_active_now) {
 		commit_pilot_transform();
 	}
@@ -244,7 +254,7 @@ void Node3DEditorCameraManager::navigation_move(float p_right, float p_forward, 
 }
 
 void Node3DEditorCameraManager::navigation_freelook_move(const Vector3& p_direction, real_t p_speed, real_t p_delta) {
-	cursor.move_free_look(p_direction, p_speed, p_delta);
+	cursor.move_freelook(p_direction, p_speed, p_delta);
 }
 
 void Node3DEditorCameraManager::navigation_look(const Vector2& p_axis_movement, float p_speed) {
@@ -355,20 +365,6 @@ void Node3DEditorCameraManager::focus_selection(const Vector3& p_center_point) {
 	stop_previews_and_pilots();
 }
 
-void Node3DEditorCameraManager::set_fov_scale(real_t p_scale) {
-	cursor.set_fov_scale(p_scale);
-}
-
-Node3DEditorCameraCursor Node3DEditorCameraManager::get_cursor() const {
-	return cursor;
-}
-
-void Node3DEditorCameraManager::set_cursor_state(const Vector3& position, real_t x_rot, real_t y_rot, real_t distance) {
-	cursor.move_to(position);
-	cursor.rotate_to(x_rot, y_rot);
-	cursor.move_distance_to(distance);
-}
-
 void Node3DEditorCameraManager::update(float p_delta_time) {
 	update_cinematic_preview();
 	update_camera(p_delta_time);
@@ -390,12 +386,12 @@ void Node3DEditorCameraManager::update_camera(float p_interp_delta) {
 		editor_camera->set_global_transform(cursor.get_current_camera_transform());
 
 		if (orthogonal) {
-			float half_fov = Math::deg_to_rad(camera_settings.fov * cursor_values.fov_scale) / 2.0;
+			float half_fov = Math::deg_to_rad(fov * cursor_values.fov_scale) / 2.0;
 			float height = 2.0 * cursor_values.distance * Math::tan(half_fov);
-			editor_camera->set_orthogonal(height, camera_settings.z_near, camera_settings.z_far);
+			editor_camera->set_orthogonal(height, z_near, z_far);
 		}
 		else {
-			editor_camera->set_perspective(camera_settings.fov * cursor_values.fov_scale, camera_settings.z_near, camera_settings.z_far);
+			editor_camera->set_perspective(fov * cursor_values.fov_scale, z_near, z_far);
 		}
 		update_pilot_transform();
 		emit_signal(SNAME("camera_updated"));
@@ -404,7 +400,7 @@ void Node3DEditorCameraManager::update_camera(float p_interp_delta) {
 
 void Node3DEditorCameraManager::update_cinematic_preview() {
 	Node* scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
-	if (cinematic_mode && scene_root != nullptr) {
+	if (cinematic_preview_mode && scene_root != nullptr) {
 		Camera3D* cam = scene_root->get_viewport()->get_camera_3d();
 		if (cam != nullptr && cam != cinematic_camera) {
 			//then switch the viewport's camera to the scene's viewport camera
@@ -421,7 +417,7 @@ void Node3DEditorCameraManager::update_cinematic_preview() {
 void Node3DEditorCameraManager::stop_previews_and_pilots() {
 	stop_previewing_camera();
 	stop_piloting();
-	set_cinematic_mode(false);
+	set_cinematic_preview_mode(false);
 }
 
 void Node3DEditorCameraManager::update_pilot_transform() {
@@ -469,9 +465,12 @@ Node3DEditorCameraManager::Node3DEditorCameraManager() {
 	previewing_camera = nullptr;
 	cinematic_camera = nullptr;
 	node_being_piloted = nullptr;
-	cinematic_mode = false;
+	cinematic_preview_mode = false;
 	allow_pilot_previewing_camera = false;
 	orthogonal = false;
+	z_near = 0.0;
+	z_far = 0.0;
+	fov = 0.0;
 }
 
 Node3DEditorCameraManager::~Node3DEditorCameraManager() {

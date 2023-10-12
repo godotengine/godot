@@ -67,7 +67,7 @@ public:
 private:
 	Values current_values;
 	Values target_values;
-	bool free_look_mode = false;
+	bool freelook_mode = false;
 	bool orthogonal = false;
 	float z_near = 0.0;
 	float z_far = 0.0;
@@ -101,10 +101,10 @@ public:
 	void set_fov_scale(real_t p_fov_scale);
 
 	/** Enables the free look mode, which may affect the way the interpolation is calculated. */
-	void set_free_look_mode(bool p_enabled);
+	void set_freelook_mode(bool p_enabled);
 
 	/** Moves in free look mode. Free look mode must be enabled. */
-	void move_free_look(const Vector3& p_direction, real_t p_speed, real_t p_delta);
+	void move_freelook(const Vector3& p_direction, real_t p_speed, real_t p_delta);
 
 	/** Increases or decreases the distance of the eye's position to the cursor's position. */
 	void move_distance(real_t p_delta);
