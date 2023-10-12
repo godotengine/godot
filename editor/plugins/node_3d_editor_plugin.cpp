@@ -2756,7 +2756,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 
 			bool show_cinema = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
-			cinema_label->set_visible(show_cinema);
 			if (show_cinema) {
 				float cinema_half_width = cinema_label->get_size().width / 2.0f;
 				cinema_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -cinema_half_width);
@@ -4823,22 +4822,28 @@ void Node3DEditorViewport::on_camera_updated() {
 
 void Node3DEditorViewport::refresh_pilot_and_preview_ui() {
 	if (camera_manager->is_in_cinematic_preview_mode()) {
+		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW), true);
+		cinema_label->set_visible(true);
 		preview_camera->set_visible(false);
 		pilot_preview_camera_checkbox->set_visible(false);
 		stop_piloting_button->set_visible(false);
 	}
-	else if (camera_manager->get_previewing_camera()) {
-		preview_camera->set_visible(true);
-		preview_camera->set_pressed_no_signal(true);
-		pilot_preview_camera_checkbox->set_visible(true);
-		pilot_preview_camera_checkbox->set_pressed_no_signal(camera_manager->get_previewing_camera() == camera_manager->get_node_being_piloted());
-		stop_piloting_button->set_visible(false);
-	}
 	else {
-		preview_camera->set_visible(preview != nullptr);
-		preview_camera->set_pressed_no_signal(false);
-		pilot_preview_camera_checkbox->set_visible(false);
-		stop_piloting_button->set_visible(camera_manager->get_node_being_piloted() != nullptr);
+		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW), false);
+		cinema_label->set_visible(false);
+		if (camera_manager->get_previewing_camera()) {
+			preview_camera->set_visible(true);
+			preview_camera->set_pressed_no_signal(true);
+			pilot_preview_camera_checkbox->set_visible(true);
+			pilot_preview_camera_checkbox->set_pressed_no_signal(camera_manager->get_previewing_camera() == camera_manager->get_node_being_piloted());
+			stop_piloting_button->set_visible(false);
+		}
+		else {
+			preview_camera->set_visible(preview != nullptr);
+			preview_camera->set_pressed_no_signal(false);
+			pilot_preview_camera_checkbox->set_visible(false);
+			stop_piloting_button->set_visible(camera_manager->get_node_being_piloted() != nullptr);
+		}
 	}
 	_update_navigation_controls_visibility();
 	surface->queue_redraw();
