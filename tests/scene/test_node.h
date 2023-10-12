@@ -146,12 +146,12 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a very simple scene tr
 	}
 
 	SUBCASE("Node should be possible to find") {
-		Node *child = SceneTree::get_singleton()->get_root()->find_child("Node", true, false);
+		Node *child = SceneTree::get_singleton()->get_root()->find_child("Node", "", true, false);
 		CHECK_EQ(child, nullptr);
 
 		node->set_name("Node");
 
-		child = SceneTree::get_singleton()->get_root()->find_child("Node", true, false);
+		child = SceneTree::get_singleton()->get_root()->find_child("Node", "", true, false);
 		CHECK_EQ(child, node);
 	}
 
@@ -305,7 +305,7 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 	}
 
 	SUBCASE("Nodes should be possible to find") {
-		Node *child = SceneTree::get_singleton()->get_root()->find_child("NestedNode", true, false);
+		Node *child = SceneTree::get_singleton()->get_root()->find_child("NestedNode", "", true, false);
 		CHECK_EQ(child, nullptr);
 
 		TypedArray<Node> children = SceneTree::get_singleton()->get_root()->find_children("NestedNode", "", true, false);
@@ -315,7 +315,7 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		node2->set_name("Node2");
 		node1_1->set_name("NestedNode");
 
-		child = SceneTree::get_singleton()->get_root()->find_child("NestedNode", true, false);
+		child = SceneTree::get_singleton()->get_root()->find_child("NestedNode", "", true, false);
 		CHECK_EQ(child, node1_1);
 
 		children = SceneTree::get_singleton()->get_root()->find_children("NestedNode", "", true, false);
@@ -323,7 +323,7 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		CHECK_EQ(Object::cast_to<Node>(children[0]), node1_1);
 
 		// First node that matches with the name is node1.
-		child = SceneTree::get_singleton()->get_root()->find_child("Node?", true, false);
+		child = SceneTree::get_singleton()->get_root()->find_child("Node?", "", true, false);
 		CHECK_EQ(child, node1);
 
 		children = SceneTree::get_singleton()->get_root()->find_children("Node?", "", true, false);
@@ -334,7 +334,7 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		SceneTree::get_singleton()->get_root()->move_child(node2, 0);
 
 		// It should be node2, as it is now the first one in the tree.
-		child = SceneTree::get_singleton()->get_root()->find_child("Node?", true, false);
+		child = SceneTree::get_singleton()->get_root()->find_child("Node?", "", true, false);
 		CHECK_EQ(child, node2);
 
 		children = SceneTree::get_singleton()->get_root()->find_children("Node?", "", true, false);
