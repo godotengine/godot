@@ -60,19 +60,24 @@ void Node3DEditorCameraCursor::move_to(const Vector3& p_position) {
 	recalculate_eye_position(target_values);
 }
 
-void Node3DEditorCameraCursor::rotate(real_t p_x, real_t p_y, bool p_around_eye) {
-	rotate_to(target_values.x_rot + p_x, target_values.y_rot + p_y, p_around_eye);
+void Node3DEditorCameraCursor::orbit(real_t p_x, real_t p_y) {
+	orbit_to(target_values.x_rot + p_x, target_values.y_rot + p_y);
 }
 
-void Node3DEditorCameraCursor::rotate_to(real_t p_x, real_t p_y, bool p_around_eye) {
+void Node3DEditorCameraCursor::orbit_to(real_t p_x, real_t p_y) {
 	target_values.x_rot = p_x;
 	target_values.y_rot = p_y;
-	if (p_around_eye) {
-		recalculate_position(target_values);
-	}
-	else {
-		recalculate_eye_position(target_values);
-	}
+	recalculate_eye_position(target_values);
+}
+
+void Node3DEditorCameraCursor::look(real_t p_x, real_t p_y) {
+	look_to(target_values.x_rot + p_x, target_values.y_rot + p_y);
+}
+
+void Node3DEditorCameraCursor::look_to(real_t p_x, real_t p_y) {
+	target_values.x_rot = p_x;
+	target_values.y_rot = p_y;
+	recalculate_position(target_values);
 }
 
 void Node3DEditorCameraCursor::set_fov_scale(real_t p_fov_scale) {

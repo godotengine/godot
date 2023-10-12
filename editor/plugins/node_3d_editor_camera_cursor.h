@@ -92,11 +92,17 @@ public:
 	/** Moves the position to the given the point. */
 	void move_to(const Vector3& p_position);
 
-	/** Rotates the given delta angles in radians. */
-	void rotate(real_t p_x, real_t p_y, bool p_around_eye = false);
+	/** Rotates the given delta angles in radians around the cursor's position. */
+	void orbit(real_t p_x, real_t p_y);
 
-	/** Rotates to the given angles in radians. */
-	void rotate_to(real_t p_x, real_t p_y, bool p_around_eye = false);
+	/** Rotates to the given angles in radians around the cursor's position. */
+	void orbit_to(real_t p_x, real_t p_y);
+
+	/** Rotates the given delta angles in radians around the cursor's eye position. */
+	void look(real_t p_x, real_t p_y);
+
+	/** Rotates to the given angles in radians around the cursor's eye position. */
+	void look_to(real_t p_x, real_t p_y);
 
 	void set_fov_scale(real_t p_fov_scale);
 
