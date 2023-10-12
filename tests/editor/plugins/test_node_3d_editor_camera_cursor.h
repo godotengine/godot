@@ -180,19 +180,29 @@ TEST_CASE("[Node3DEditorCameraCursor] Move distance") {
 		"Eye position ", cursor.get_target_values().eye_position, " sould be zero because it should clamp the distance to never be smaller than 0.");
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] To camera transform") {
+TEST_CASE("[Node3DEditorCameraCursor] Get camera transform") {
 	Node3DEditorCameraCursor cursor;
 	cursor.move_to(Vector3(100.0, 0.0, 200.0));
 	cursor.rotate_to(0.0, Math::deg_to_rad(90.0));
-	cursor.stop_interpolation(true);
-	Transform3D camera_transform = cursor.to_camera_transform();
+	Transform3D target_camera_transform = cursor.get_target_camera_transform();
+	Transform3D current_camera_transform = cursor.get_current_camera_transform();
 
 	CHECK_MESSAGE(
-		camera_transform.origin.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
-		"Unexpected transform origin ", camera_transform.origin);
+		target_camera_transform.origin.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
+		"Unexpected transform origin ", target_camera_transform.origin);
 	CHECK_MESSAGE(
-		camera_transform.basis.get_euler().is_equal_approx(Vector3(0.0, -Math::deg_to_rad(90.0), 0.0)),
-		"Unexpected transform rotation ", camera_transform.basis.get_euler());
+		target_camera_transform.basis.get_euler().is_equal_approx(Vector3(0.0, -Math::deg_to_rad(90.0), 0.0)),
+		"Unexpected transform rotation ", target_camera_transform.basis.get_euler());
+	CHECK_MESSAGE(
+		current_camera_transform.origin.is_equal_approx(Vector3(1.682942, 1.917702, 3.080605)),
+		"Current transform ", current_camera_transform.origin, " not expected be equal to the target transform.");
+
+	cursor.stop_interpolation(true);
+	current_camera_transform = cursor.get_current_camera_transform();
+
+	CHECK_MESSAGE(
+		current_camera_transform.origin.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
+		"Unexpected current transform origin ", current_camera_transform.origin);
 }
 
 TEST_CASE("[Node3DEditorCameraCursor] Set camera transform") {

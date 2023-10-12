@@ -60,6 +60,7 @@ class VSeparator;
 class VSplitContainer;
 class ViewportNavigationControl;
 class WorldEnvironment;
+class Node3DEditorCameraManager;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
@@ -233,7 +234,6 @@ private:
 	SubViewport *viewport = nullptr;
 	Camera3D *camera = nullptr;
 	bool transforming = false;
-	bool orthogonal;
 	bool auto_orthogonal;
 	bool lock_rotation;
 	real_t gizmo_scale;
@@ -288,8 +288,6 @@ private:
 	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
 	void _transform_gizmo_apply(Node3D *p_node, const Transform3D &p_transform, bool p_local);
 
-	bool is_navigating = false;
-	bool was_navigating = false;
 	void _nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
@@ -367,35 +365,16 @@ private:
 	} _edit;
 
 	struct Cursor {
-		Vector3 pos;
-		real_t x_rot, y_rot, distance, fov_scale;
-		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
 
 		Cursor() {
-			// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
-			x_rot = 0.5;
-			y_rot = -0.5;
-			distance = 4;
-			fov_scale = 1.0;
 			region_select = false;
 		}
-
-		Vector3 getPos() {
-			return pos;
-		}
-
 	};
 
-	// Viewport camera supports movement smoothing,
-	// so one cursor is the real cursor, while the other can be an interpolated version.
-	Cursor cursor; // Immediate cursor
-	Cursor camera_cursor; // That one may be interpolated (don't modify this one except for smoothing purposes)
+	Cursor cursor;
 
-	void set_cursor(const Cursor &p_cursor, bool p_interpolate = true, bool allow_piloting_or_previewing = false);
-	void reset_cursor_to_default();
-	void reset_cursor_to_camera();
 	void set_orthogonal(bool p_orthogonal);
 
 	void scale_fov(real_t p_fov_offset);
@@ -417,9 +396,7 @@ private:
 	void set_message(String p_message, float p_time = 5);
 
 	void _view_settings_confirmed(real_t p_interp_delta);
-	void _update_camera(real_t p_interp_delta);
 	void _update_navigation_controls_visibility();
-	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
 	void _surface_mouse_enter();
@@ -433,7 +410,6 @@ private:
 	void _update_freelook(real_t delta);
 	Node3DEditor *spatial_editor = nullptr;
 
-	Camera3D *previewing = nullptr;
 	Camera3D *preview = nullptr;
 
 	bool previewing_camera = false;
@@ -484,17 +460,10 @@ private:
 
 	Button* stop_piloting_button = nullptr;
 	CheckBox* pilot_preview_camera_checkbox = nullptr;
-	Node3D* node_being_piloted = nullptr;
-	Transform3D pilot_previous_transform;
-	void pilot_selection();
-	void pilot(Node3D *p_node);
-	void stop_piloting();
-	void check_piloting_when_change_camera_type(bool to_ortho);
-	void update_pilot_transform();
-	void commit_pilot_transform();
-	void _undo_redo_pilot_transform(Node3D* p_node, const Transform3D& p_transform);
-	bool is_only_pilot_input_allowed();
 	void toggle_allow_pilot_camera(bool p_activate);
+
+	Node3DEditorCameraManager* camera_manager;
+	void on_camera_updated();
 	void refresh_pilot_and_preview_ui();
 
 protected:

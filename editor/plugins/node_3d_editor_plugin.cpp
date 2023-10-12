@@ -75,6 +75,7 @@
 #include "editor/plugins/gizmos/vehicle_body_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/visible_on_screen_notifier_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/voxel_gi_gizmo_plugin.h"
+#include "editor/plugins/node_3d_editor_camera_manager.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/camera_3d.h"
@@ -93,8 +94,6 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/sky_material.h"
 #include "scene/resources/surface_tool.h"
-
-constexpr real_t DISTANCE_DEFAULT = 4;
 
 constexpr real_t GIZMO_ARROW_SIZE = 0.35;
 constexpr real_t GIZMO_RING_HALF_WIDTH = 0.1;
@@ -227,26 +226,7 @@ void ViewportNavigationControl::_update_navigation() {
 		case Node3DEditorViewport::NavigationMode::NAVIGATION_MOVE: {
 			real_t speed_multiplier = MIN(delta.length() / (get_size().x * 100.0), 3.0);
 			real_t speed = viewport->freelook_speed * speed_multiplier;
-
-			const Node3DEditorViewport::FreelookNavigationScheme navigation_scheme = (Node3DEditorViewport::FreelookNavigationScheme)EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_navigation_scheme").operator int();
-
-			Vector3 forward;
-			if (navigation_scheme == Node3DEditorViewport::FreelookNavigationScheme::FREELOOK_FULLY_AXIS_LOCKED) {
-				// Forward/backward keys will always go straight forward/backward, never moving on the Y axis.
-				forward = Vector3(0, 0, delta_normalized.y).rotated(Vector3(0, 1, 0), viewport->camera->get_rotation().y);
-			} else {
-				// Forward/backward keys will be relative to the camera pitch.
-				forward = viewport->camera->get_transform().basis.xform(Vector3(0, 0, delta_normalized.y));
-			}
-
-			const Vector3 right = viewport->camera->get_transform().basis.xform(Vector3(delta_normalized.x, 0, 0));
-
-			const Vector3 direction = forward + right;
-			const Vector3 motion = direction * speed;
-			Node3DEditorViewport::Cursor c = viewport->cursor;
-			c.pos += motion;
-			c.eye_pos += motion;
-			viewport->set_cursor(c, true, true);
+			viewport->camera_manager->navigation_move(delta_normalized.x, delta_normalized.y, speed);
 		} break;
 
 		case Node3DEditorViewport::NavigationMode::NAVIGATION_LOOK: {
@@ -367,7 +347,7 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 	const Vector2i center = get_size() / 2.0;
 	const real_t radius = get_size().x / 2.0 - AXIS_CIRCLE_RADIUS - 2.0 * EDSCALE;
-	const Basis camera_basis = viewport->to_camera_transform(viewport->cursor).get_basis().inverse();
+	const Basis camera_basis = viewport->camera_manager->get_cursor().get_target_camera_transform().get_basis().inverse();
 
 	for (int i = 0; i < 3; ++i) {
 		Vector3 axis_3d = camera_basis.get_column(i);
@@ -492,11 +472,15 @@ void ViewportRotationControl::set_viewport(Node3DEditorViewport *p_viewport) {
 }
 
 void Node3DEditorViewport::_view_settings_confirmed(real_t p_interp_delta) {
+	Node3DEditorCameraManager::CameraSettings camera_settings;
+	camera_settings.fov = get_fov();
+	camera_settings.z_near = get_znear();
+	camera_settings.z_far = get_zfar();
+	camera_manager->set_camera_settings(camera_settings);
 	// Set FOV override multiplier back to the default, so that the FOV
 	// setting specified in the View menu is correctly applied.
-	cursor.fov_scale = 1.0;
-
-	_update_camera(p_interp_delta);
+	camera_manager->set_fov_scale(1.0);
+	camera_manager->update_camera();
 }
 
 void Node3DEditorViewport::_update_navigation_controls_visibility() {
@@ -506,110 +490,6 @@ void Node3DEditorViewport::_update_navigation_controls_visibility() {
 	bool show_viewport_navigation_gizmo = EDITOR_GET("editors/3d/navigation/show_viewport_navigation_gizmo") && (!previewing_cinema && !previewing_camera);
 	position_control->set_visible(show_viewport_navigation_gizmo);
 	look_control->set_visible(show_viewport_navigation_gizmo);
-}
-
-void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
-	bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
-
-	Cursor old_camera_cursor = camera_cursor;
-	camera_cursor = cursor;
-
-	if (p_interp_delta > 0) {
-		//-------
-		// Perform smoothing
-
-		if (is_freelook_active()) {
-			// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
-			// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
-			const real_t inertia = EDITOR_GET("editors/3d/freelook/freelook_inertia");
-			real_t factor = (1.0 / inertia) * p_interp_delta;
-
-			// We interpolate a different point here, because in freelook mode the focus point (cursor.pos) orbits around eye_pos
-			camera_cursor.eye_pos = old_camera_cursor.eye_pos.lerp(cursor.eye_pos, CLAMP(factor, 0, 1));
-
-			const real_t orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
-			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
-			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
-
-			if (Math::abs(camera_cursor.x_rot - cursor.x_rot) < 0.1) {
-				camera_cursor.x_rot = cursor.x_rot;
-			}
-
-			if (Math::abs(camera_cursor.y_rot - cursor.y_rot) < 0.1) {
-				camera_cursor.y_rot = cursor.y_rot;
-			}
-
-			Vector3 forward = to_camera_transform(camera_cursor).basis.xform(Vector3(0, 0, -1));
-			camera_cursor.pos = camera_cursor.eye_pos + forward * camera_cursor.distance;
-
-		} else {
-			const real_t orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
-			const real_t translation_inertia = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
-			const real_t zoom_inertia = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
-
-			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
-			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
-
-			if (Math::abs(camera_cursor.x_rot - cursor.x_rot) < 0.1) {
-				camera_cursor.x_rot = cursor.x_rot;
-			}
-
-			if (Math::abs(camera_cursor.y_rot - cursor.y_rot) < 0.1) {
-				camera_cursor.y_rot = cursor.y_rot;
-			}
-
-			camera_cursor.pos = old_camera_cursor.pos.lerp(cursor.pos, MIN(1.f, p_interp_delta * (1 / translation_inertia)));
-			camera_cursor.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN((real_t)1.0, p_interp_delta * (1 / zoom_inertia)));
-		}
-	}
-
-	//-------
-	// Apply camera transform
-
-	real_t tolerance = 0.001;
-	bool equal = true;
-	if (!Math::is_equal_approx(old_camera_cursor.x_rot, camera_cursor.x_rot, tolerance) || !Math::is_equal_approx(old_camera_cursor.y_rot, camera_cursor.y_rot, tolerance)) {
-		equal = false;
-	} else if (!old_camera_cursor.pos.is_equal_approx(camera_cursor.pos)) {
-		equal = false;
-	} else if (!Math::is_equal_approx(old_camera_cursor.distance, camera_cursor.distance, tolerance)) {
-		equal = false;
-	} else if (!Math::is_equal_approx(old_camera_cursor.fov_scale, camera_cursor.fov_scale, tolerance)) {
-		equal = false;
-	}
-
-	if (!equal || p_interp_delta == 0 || is_orthogonal != orthogonal) {
-		camera->set_global_transform(to_camera_transform(camera_cursor));
-
-		if (orthogonal) {
-			float half_fov = Math::deg_to_rad(get_fov()) / 2.0;
-			float height = 2.0 * cursor.distance * Math::tan(half_fov);
-			camera->set_orthogonal(height, get_znear(), get_zfar());
-		} else {
-			camera->set_perspective(get_fov(), get_znear(), get_zfar());
-		}
-
-		update_transform_gizmo_view();
-		rotation_control->queue_redraw();
-		position_control->queue_redraw();
-		look_control->queue_redraw();
-		spatial_editor->update_grid();
-	}
-}
-
-Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) const {
-	Transform3D camera_transform;
-	camera_transform.translate_local(p_cursor.pos);
-	camera_transform.basis.rotate(Vector3(1, 0, 0), -p_cursor.x_rot);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), -p_cursor.y_rot);
-
-	if (orthogonal) {
-		camera_transform.translate_local(0, 0, (get_zfar() - get_znear()) / 2.0);
-	} else {
-		camera_transform.translate_local(0, 0, p_cursor.distance);
-	}
-
-	return camera_transform;
 }
 
 int Node3DEditorViewport::get_selected_count() const {
@@ -670,7 +550,7 @@ float Node3DEditorViewport::get_zfar() const {
 }
 
 float Node3DEditorViewport::get_fov() const {
-	return CLAMP(spatial_editor->get_fov() * cursor.fov_scale, MIN_FOV, MAX_FOV);
+	return CLAMP(spatial_editor->get_fov() * camera_manager->get_cursor().get_target_values().fov_scale, MIN_FOV, MAX_FOV);
 }
 
 Transform3D Node3DEditorViewport::_get_camera_transform() const {
@@ -886,18 +766,20 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 
 Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 	Projection cm;
-	if (orthogonal) {
+	if (camera_manager->is_orthogonal()) {
 		cm.set_orthogonal(camera->get_size(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
 	} else {
 		cm.set_perspective(get_fov(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
 	}
 	Vector2 screen_he = cm.get_viewport_half_extents();
 
+	Node3DEditorCameraCursor::Values cursor_values = camera_manager->get_cursor().get_target_values();
+
 	Transform3D camera_transform;
-	camera_transform.translate_local(cursor.pos);
-	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
-	camera_transform.translate_local(0, 0, cursor.distance);
+	camera_transform.translate_local(cursor_values.position);
+	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor_values.x_rot);
+	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor_values.y_rot);
+	camera_transform.translate_local(0, 0, cursor_values.distance);
 
 	return camera_transform.xform(Vector3(((p_vector3.x / get_size().width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (p_vector3.y / get_size().height)) * 2.0 - 1.0) * screen_he.y, -(get_znear() + p_vector3.z)));
 }
@@ -938,7 +820,7 @@ void Node3DEditorViewport::_select_region() {
 	for (int i = 0; i < 4; i++) {
 		Vector3 a = _get_screen_to_space(box[i]);
 		Vector3 b = _get_screen_to_space(box[(i + 1) % 4]);
-		if (orthogonal) {
+		if (camera_manager->is_orthogonal()) {
 			frustum.push_back(Plane((a - b).normalized(), a));
 		} else {
 			frustum.push_back(Plane(a, b, cam_pos));
@@ -1082,49 +964,49 @@ void Node3DEditorViewport::_update_name() {
 
 	switch (view_type) {
 		case VIEW_TYPE_USER: {
-			if (orthogonal) {
+			if (camera_manager->is_orthogonal()) {
 				name = TTR("Orthogonal");
 			} else {
 				name = TTR("Perspective");
 			}
 		} break;
 		case VIEW_TYPE_TOP: {
-			if (orthogonal) {
+			if (camera_manager->is_orthogonal()) {
 				name = TTR("Top Orthogonal");
 			} else {
 				name = TTR("Top Perspective");
 			}
 		} break;
 		case VIEW_TYPE_BOTTOM: {
-			if (orthogonal) {
+			if (camera_manager->is_orthogonal()) {
 				name = TTR("Bottom Orthogonal");
 			} else {
 				name = TTR("Bottom Perspective");
 			}
 		} break;
 		case VIEW_TYPE_LEFT: {
-			if (orthogonal) {
+			if (camera_manager->is_orthogonal()) {
 				name = TTR("Left Orthogonal");
 			} else {
 				name = TTR("Left Perspective");
 			}
 		} break;
 		case VIEW_TYPE_RIGHT: {
-			if (orthogonal) {
+			if (camera_manager->is_orthogonal()) {
 				name = TTR("Right Orthogonal");
 			} else {
 				name = TTR("Right Perspective");
 			}
 		} break;
 		case VIEW_TYPE_FRONT: {
-			if (orthogonal) {
+			if (camera_manager->is_orthogonal()) {
 				name = TTR("Front Orthogonal");
 			} else {
 				name = TTR("Front Perspective");
 			}
 		} break;
 		case VIEW_TYPE_REAR: {
-			if (orthogonal) {
+			if (camera_manager->is_orthogonal()) {
 				name = TTR("Rear Orthogonal");
 			} else {
 				name = TTR("Rear Perspective");
@@ -1600,9 +1482,9 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
-	bool is_piloting_preview = previewing && node_being_piloted == previewing;
+	bool is_piloting_preview = camera_manager->get_previewing_camera() && camera_manager->get_previewing_camera() == camera_manager->get_node_being_piloted();
 
-	if (previewing && !is_piloting_preview) {
+	if ((camera_manager->get_previewing_camera() && !is_piloting_preview) || camera_manager->is_in_cinematic_mode()) {
 		return;
 	}
 
@@ -1684,7 +1566,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (b->is_pressed()) {
 					const Key mod = _get_key_modifier(b);
-					if (!orthogonal) {
+					if (!camera_manager->is_orthogonal()) {
 						if (mod == _get_key_modifier_setting("editors/3d/freelook/freelook_activation_modifier")) {
 							set_freelook_active(true);
 						}
@@ -2027,7 +1909,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				nav_mode = NAVIGATION_ZOOM;
 			} else if (freelook_active) {
 				nav_mode = NAVIGATION_LOOK;
-			} else if (orthogonal) {
+			} else if (camera_manager->is_orthogonal()) {
 				nav_mode = NAVIGATION_PAN;
 			}
 
@@ -2273,39 +2155,27 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			_menu_option(VIEW_RIGHT);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_down", p_event) && !navigation_only) {
-			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-			Cursor c = cursor;
-			c.x_rot = CLAMP(c.x_rot - Math_PI / 12.0, -1.57, 1.57);
-			set_cursor(c);
+			camera_manager->orbit_view_down();
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_up", p_event) && !navigation_only) {
-			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-			Cursor c = cursor;
-			c.x_rot = CLAMP(c.x_rot + Math_PI / 12.0, -1.57, 1.57);
-			set_cursor(c);
+			camera_manager->orbit_view_up();
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_right", p_event) && !navigation_only) {
-			Cursor c = cursor;
-			c.y_rot -= Math_PI / 12.0;
-			set_cursor(c);
+			camera_manager->orbit_view_right();
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_left", p_event) && !navigation_only) {
-			Cursor c = cursor;
-			c.y_rot += Math_PI / 12.0;
-			set_cursor(c);
+			camera_manager->orbit_view_left();
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_180", p_event) && !navigation_only) {
-			Cursor c = cursor;
-			c.y_rot += Math_PI;
-			set_cursor(c);
+			camera_manager->orbit_view_180();
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
@@ -2360,7 +2230,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		// Freelook doesn't work in orthogonal mode.
-		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event) && !navigation_only) {
+		if (!camera_manager->is_orthogonal() && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event) && !navigation_only) {
 			set_freelook_active(!is_freelook_active());
 
 		} else if (k->get_keycode() == Key::ESCAPE) {
@@ -2394,7 +2264,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
-	is_navigating = true;
 	const NavigationScheme nav_scheme = (NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 
 	real_t pan_speed = 1 / 150.0;
@@ -2402,26 +2271,10 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 		pan_speed *= 10;
 	}
 
-	Transform3D camera_transform;
-	Cursor c = cursor;
-
-	camera_transform.translate_local(c.pos);
-	camera_transform.basis.rotate(Vector3(1, 0, 0), -c.x_rot);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), -c.y_rot);
-	const bool invert_x_axis = EDITOR_GET("editors/3d/navigation/invert_x_axis");
-	const bool invert_y_axis = EDITOR_GET("editors/3d/navigation/invert_y_axis");
-	Vector3 translation(
-			(invert_x_axis ? -1 : 1) * -p_relative.x * pan_speed,
-			(invert_y_axis ? -1 : 1) * p_relative.y * pan_speed,
-			0);
-	translation *= c.distance / DISTANCE_DEFAULT;
-	camera_transform.translate_local(translation);
-	c.pos = camera_transform.origin;
-	set_cursor(c, true, true);
+	camera_manager->navigation_pan(p_relative, pan_speed);
 }
 
 void Node3DEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
-	is_navigating = true;
 	const NavigationScheme nav_scheme = (NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 
 	real_t zoom_speed = 1 / 80.0;
@@ -2446,99 +2299,76 @@ void Node3DEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, const
 }
 
 void Node3DEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
-	is_navigating = true;
 	if (lock_rotation) {
 		_nav_pan(p_event, p_relative);
 		return;
 	}
 
-	if (orthogonal && auto_orthogonal) {
+	if (camera_manager->is_orthogonal() && auto_orthogonal) {
 		_menu_option(VIEW_PERSPECTIVE);
 	}
+
+	real_t x_rot = 0.0;
+	real_t y_rot = 0.0;
 
 	const real_t degrees_per_pixel = EDITOR_GET("editors/3d/navigation_feel/orbit_sensitivity");
 	const real_t radians_per_pixel = Math::deg_to_rad(degrees_per_pixel);
 	const bool invert_y_axis = EDITOR_GET("editors/3d/navigation/invert_y_axis");
 	const bool invert_x_axis = EDITOR_GET("editors/3d/navigation/invert_x_axis");
 
-	Cursor c = cursor;
 	if (invert_y_axis) {
-		c.x_rot -= p_relative.y * radians_per_pixel;
+		x_rot -= p_relative.y * radians_per_pixel;
 	} else {
-		c.x_rot += p_relative.y * radians_per_pixel;
+		x_rot += p_relative.y * radians_per_pixel;
 	}
 	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-	c.x_rot = CLAMP(c.x_rot, -1.57, 1.57);
+	x_rot = CLAMP(x_rot, -1.57, 1.57);
 
 	if (invert_x_axis) {
-		c.y_rot -= p_relative.x * radians_per_pixel;
+		y_rot -= p_relative.x * radians_per_pixel;
 	} else {
-		c.y_rot += p_relative.x * radians_per_pixel;
+		y_rot += p_relative.x * radians_per_pixel;
 	}
-	set_cursor(c, true, true);
+
+	camera_manager->navigation_orbit(Vector2(x_rot, y_rot));
 	view_type = VIEW_TYPE_USER;
 	_update_name();
 }
 
 void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
-	is_navigating = true;
-	if (orthogonal) {
+	if (camera_manager->is_orthogonal()) {
 		_nav_pan(p_event, p_relative);
 		return;
 	}
 
-	if (orthogonal && auto_orthogonal) {
+	if (camera_manager->is_orthogonal() && auto_orthogonal) {
 		_menu_option(VIEW_PERSPECTIVE);
 	}
 
-	Cursor c = cursor;
-
 	// Scale mouse sensitivity with camera FOV scale when zoomed in to make it easier to point at things.
-	const real_t degrees_per_pixel = real_t(EDITOR_GET("editors/3d/freelook/freelook_sensitivity")) * MIN(1.0, c.fov_scale);
+	const real_t degrees_per_pixel = real_t(EDITOR_GET("editors/3d/freelook/freelook_sensitivity")) * MIN(1.0, camera_manager->get_cursor().get_target_values().fov_scale);
 	const real_t radians_per_pixel = Math::deg_to_rad(degrees_per_pixel);
 	const bool invert_y_axis = EDITOR_GET("editors/3d/navigation/invert_y_axis");
 
-	// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
-	const Transform3D prev_camera_transform = to_camera_transform(c);
-
+	Vector2 movement = p_relative;
 	if (invert_y_axis) {
-		c.x_rot -= p_relative.y * radians_per_pixel;
-	} else {
-		c.x_rot += p_relative.y * radians_per_pixel;
+		movement.x *= -1.0;
 	}
-	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-	c.x_rot = CLAMP(c.x_rot, -1.57, 1.57);
+	camera_manager->navigation_look(movement, radians_per_pixel);
 
-	c.y_rot += p_relative.x * radians_per_pixel;
-
-	// Look is like the opposite of Orbit: the focus point rotates around the camera
-	Transform3D camera_transform = to_camera_transform(c);
-	Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
-	Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
-	Vector3 diff = prev_pos - pos;
-	c.pos += diff;
-
-	set_cursor(c, true, true);
 	view_type = VIEW_TYPE_USER;
 	_update_name();
 }
 
 void Node3DEditorViewport::set_freelook_active(bool active_now) {
 	if (!freelook_active && active_now) {
-		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
-		set_cursor(camera_cursor, false, true);
-
-		// Make sure eye_pos is synced, because freelook referential is eye pos rather than orbit pos
-		Cursor c = cursor;
-		Vector3 forward = to_camera_transform(c).basis.xform(Vector3(0, 0, -1));
-		c.eye_pos = c.pos - c.distance * forward;
+		camera_manager->set_freelook_active(true);
 
 		if (EDITOR_GET("editors/3d/freelook/freelook_speed_zoom_link")) {
 			// Re-adjust freelook speed from the current zoom level
 			real_t base_speed = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
-			freelook_speed = base_speed * c.distance;
+			freelook_speed = base_speed * camera_manager->get_cursor().get_current_values().distance;
 		}
-		set_cursor(c, false, true);
 
 		previous_mouse_position = get_local_mouse_position();
 
@@ -2547,7 +2377,7 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
-		set_cursor(camera_cursor, false, true);
+		camera_manager->set_freelook_active(false);
 
 		// Restore mouse
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
@@ -2556,79 +2386,43 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 		// This is done because leaving `Input.MOUSE_MODE_CAPTURED` will center the cursor
 		// due to OS limitations.
 		warp_mouse(previous_mouse_position);
-
-		commit_pilot_transform();
 	}
 
 	freelook_active = active_now;
 }
 
-void Node3DEditorViewport::set_cursor(const Cursor &p_cursor, bool p_interpolate, bool allow_piloting_or_previewing) {
-	if (!allow_piloting_or_previewing) {
-		if (previewing) {
-			preview_camera->set_pressed(false);
-		}
-		stop_piloting();
-	}
-	cursor = p_cursor;
-	if (!p_interpolate) {
-		camera_cursor = cursor;
-	}
-}
-
-void Node3DEditorViewport::reset_cursor_to_default() {
-	set_cursor(Cursor(), false, false);
-}
-
-void Node3DEditorViewport::reset_cursor_to_camera() {
-	Cursor c = Cursor();
-	Transform3D transform = camera->get_global_transform();
-	Transform3D eye_transform = transform;
-	transform.translate_local(0, 0, -c.distance);
-	c.pos = transform.origin;
-	c.eye_pos = eye_transform.origin;
-	Vector3 euler = transform.basis.get_euler();
-	c.x_rot = -euler.x;
-	c.y_rot = -euler.y;
-	set_cursor(c, false, true);
-}
-
 void Node3DEditorViewport::set_orthogonal(bool p_orthogonal) {
-	orthogonal = p_orthogonal;
-	check_piloting_when_change_camera_type(p_orthogonal);
-	_update_camera(0);
+	camera_manager->set_orthogonal(p_orthogonal);
 }
 
 void Node3DEditorViewport::scale_fov(real_t p_fov_offset) {
-	cursor.fov_scale = CLAMP(cursor.fov_scale + p_fov_offset, 0.1, 2.5);
+	camera_manager->set_fov_scale(CLAMP(camera_manager->get_cursor().get_target_values().fov_scale + p_fov_offset, 0.1, 2.5));
 	surface->queue_redraw();
 }
 
 void Node3DEditorViewport::reset_fov() {
-	cursor.fov_scale = 1.0;
+	camera_manager->set_fov_scale(1.0);
 	surface->queue_redraw();
 }
 
 void Node3DEditorViewport::scale_cursor_distance(real_t scale) {
 	real_t min_distance = MAX(camera->get_near() * 4, ZOOM_FREELOOK_MIN);
 	real_t max_distance = MIN(camera->get_far() / 4, ZOOM_FREELOOK_MAX);
-	Cursor c = cursor;
+	real_t current_distance = camera_manager->get_cursor().get_target_values().distance;
+	real_t new_distance;
 	if (unlikely(min_distance > max_distance)) {
-		c.distance = (min_distance + max_distance) / 2;
+		new_distance = (min_distance + max_distance) / 2;
 	} else {
-		c.distance = CLAMP(c.distance * scale, min_distance, max_distance);
+		new_distance = CLAMP(current_distance * scale, min_distance, max_distance);
 	}
-	set_cursor(c, true, true);
-
-	if (c.distance == max_distance || c.distance == min_distance) {
+	camera_manager->navigation_zoom_to_distance(new_distance);
+	if (new_distance == max_distance || new_distance == min_distance) {
 		zoom_failed_attempts_count++;
 	} else {
 		zoom_failed_attempts_count = 0;
 	}
-
 	zoom_indicator_delay = ZOOM_FREELOOK_INDICATOR_DELAY_S;
 	surface->queue_redraw();
-	commit_pilot_transform();
 }
 
 void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
@@ -2659,50 +2453,28 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 		return;
 	}
 
-	const FreelookNavigationScheme navigation_scheme = (FreelookNavigationScheme)EDITOR_GET("editors/3d/freelook/freelook_navigation_scheme").operator int();
-
-	Vector3 forward;
-	if (navigation_scheme == FREELOOK_FULLY_AXIS_LOCKED) {
-		// Forward/backward keys will always go straight forward/backward, never moving on the Y axis.
-		forward = Vector3(0, 0, -1).rotated(Vector3(0, 1, 0), camera->get_rotation().y);
-	} else {
-		// Forward/backward keys will be relative to the camera pitch.
-		forward = camera->get_transform().basis.xform(Vector3(0, 0, -1));
-	}
-
-	const Vector3 right = camera->get_transform().basis.xform(Vector3(1, 0, 0));
-
-	Vector3 up;
-	if (navigation_scheme == FREELOOK_PARTIALLY_AXIS_LOCKED || navigation_scheme == FREELOOK_FULLY_AXIS_LOCKED) {
-		// Up/down keys will always go up/down regardless of camera pitch.
-		up = Vector3(0, 1, 0);
-	} else {
-		// Up/down keys will be relative to the camera pitch.
-		up = camera->get_transform().basis.xform(Vector3(0, 1, 0));
-	}
-
 	Vector3 direction;
 
 	// Use actions from the inputmap, as this is the only way to reliably detect input in this method.
 	// See #54469 for more discussion and explanation.
 	Input *inp = Input::get_singleton();
 	if (inp->is_action_pressed("spatial_editor/freelook_left")) {
-		direction -= right;
+		direction -= Vector3(1.0, 0.0, 0.0);
 	}
 	if (inp->is_action_pressed("spatial_editor/freelook_right")) {
-		direction += right;
+		direction += Vector3(1.0, 0.0, 0.0);
 	}
 	if (inp->is_action_pressed("spatial_editor/freelook_forward")) {
-		direction += forward;
+		direction += Vector3(0.0, 0.0, 1.0);
 	}
 	if (inp->is_action_pressed("spatial_editor/freelook_backwards")) {
-		direction -= forward;
+		direction -= Vector3(0.0, 0.0, 1.0);
 	}
 	if (inp->is_action_pressed("spatial_editor/freelook_up")) {
-		direction += up;
+		direction += Vector3(0.0, 1.0, 0.0);
 	}
 	if (inp->is_action_pressed("spatial_editor/freelook_down")) {
-		direction -= up;
+		direction -= Vector3(0.0, 1.0, 0.0);
 	}
 
 	real_t speed = freelook_speed;
@@ -2714,11 +2486,7 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 		speed *= 0.333333;
 	}
 
-	const Vector3 motion = direction * speed * delta;
-	Cursor c = cursor;
-	c.pos += motion;
-	c.eye_pos += motion;
-	set_cursor(c, true, true);
+	camera_manager->navigation_freelook_move(direction, speed, delta);
 }
 
 void Node3DEditorViewport::set_message(String p_message, float p_time) {
@@ -2829,23 +2597,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			_update_navigation_controls_visibility();
 			_update_freelook(delta);
 
-			Node *scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
-			if (previewing_cinema && scene_root != nullptr) {
-				Camera3D *cam = scene_root->get_viewport()->get_camera_3d();
-				if (cam != nullptr && cam != previewing) {
-					//then switch the viewport's camera to the scene's viewport camera
-					if (previewing != nullptr) {
-						previewing->disconnect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-					}
-					previewing = cam;
-					previewing->connect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-					RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
-					surface->queue_redraw();
-				}
-			}
-
-			_update_camera(delta);
-			update_pilot_transform();
+			camera_manager->update(delta);
 
 			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
@@ -2922,13 +2674,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				info_label->set_visible(show_info);
 			}
 
-			Camera3D *current_camera;
-
-			if (previewing) {
-				current_camera = previewing;
-			} else {
-				current_camera = camera;
-			}
+			Camera3D *current_camera = camera_manager->get_current_camera();
 
 			if (show_info) {
 				const String viewport_size = vformat(U"%d × %d", viewport->get_size().x, viewport->get_size().y);
@@ -3023,12 +2769,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 				float locked_half_width = locked_label->get_size().width / 2.0f;
 				locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
 			}
-
-			if (was_navigating && !is_navigating) {
-				commit_pilot_transform();
-			}
-			was_navigating = is_navigating;
-			is_navigating = false;
 
 		} break;
 
@@ -3203,14 +2943,14 @@ void Node3DEditorViewport::_draw() {
 				handle_color,
 				Math::round(2 * EDSCALE));
 	}
-	if (previewing) {
+	if (camera_manager->get_previewing_or_cinematic_camera()) {
 		Size2 ss = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
 		float aspect = ss.aspect();
 		Size2 s = get_size();
 
 		Rect2 draw_rect;
 
-		switch (previewing->get_keep_aspect_mode()) {
+		switch (camera_manager->get_previewing_or_cinematic_camera()->get_keep_aspect_mode()) {
 			case Camera3D::KEEP_WIDTH: {
 				draw_rect.size = Size2(s.width, s.width / aspect);
 				draw_rect.position.x = 0;
@@ -3262,17 +3002,18 @@ void Node3DEditorViewport::_draw() {
 				real_t scale_length = (max_distance - min_distance);
 
 				if (!Math::is_zero_approx(scale_length)) {
-					real_t logscale_t = 1.0 - Math::log1p(cursor.distance - min_distance) / Math::log1p(scale_length);
+					real_t cursor_distance = camera_manager->get_cursor().get_target_values().distance;
+					real_t logscale_t = 1.0 - Math::log1p(cursor_distance - min_distance) / Math::log1p(scale_length);
 
 					// Display the zoom center distance to help the user get a better sense of scale.
-					const int precision = cursor.distance < 1.0 ? 2 : 1;
+					const int precision = cursor_distance < 1.0 ? 2 : 1;
 					draw_indicator_bar(
 							*surface,
 							logscale_t,
 							get_editor_theme_icon(SNAME("ViewportZoom")),
 							get_theme_font(SNAME("font"), SNAME("Label")),
 							get_theme_font_size(SNAME("font_size"), SNAME("Label")),
-							vformat("%s m", String::num(cursor.distance).pad_decimals(precision)),
+							vformat("%s m", String::num(cursor_distance).pad_decimals(precision)),
 							Color(0.7, 0.95, 1.0));
 				}
 			}
@@ -3296,10 +3037,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (p_option) {
 		case VIEW_TOP: {
-			Cursor c = cursor;
-			c.y_rot = 0;
-			c.x_rot = Math_PI / 2.0;
-			set_cursor(c);
+			camera_manager->view_top();
 			set_message(TTR("Top View."), 2);
 			view_type = VIEW_TYPE_TOP;
 			_set_auto_orthogonal();
@@ -3307,10 +3045,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 		} break;
 		case VIEW_BOTTOM: {
-			Cursor c = cursor;
-			c.y_rot = 0;
-			c.x_rot = -Math_PI / 2.0;
-			set_cursor(c);
+			camera_manager->view_bottom();
 			set_message(TTR("Bottom View."), 2);
 			view_type = VIEW_TYPE_BOTTOM;
 			_set_auto_orthogonal();
@@ -3318,10 +3053,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 		} break;
 		case VIEW_LEFT: {
-			Cursor c = cursor;
-			c.x_rot = 0;
-			c.y_rot = Math_PI / 2.0;
-			set_cursor(c);
+			camera_manager->view_left();
 			set_message(TTR("Left View."), 2);
 			view_type = VIEW_TYPE_LEFT;
 			_set_auto_orthogonal();
@@ -3329,10 +3061,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 		} break;
 		case VIEW_RIGHT: {
-			Cursor c = cursor;
-			c.x_rot = 0;
-			c.y_rot = -Math_PI / 2.0;
-			set_cursor(c);
+			camera_manager->view_right();
 			set_message(TTR("Right View."), 2);
 			view_type = VIEW_TYPE_RIGHT;
 			_set_auto_orthogonal();
@@ -3340,10 +3069,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 		} break;
 		case VIEW_FRONT: {
-			Cursor c = cursor;
-			c.x_rot = 0;
-			c.y_rot = 0;
-			set_cursor(c);
+			camera_manager->view_front();
 			set_message(TTR("Front View."), 2);
 			view_type = VIEW_TYPE_FRONT;
 			_set_auto_orthogonal();
@@ -3351,10 +3077,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 		} break;
 		case VIEW_REAR: {
-			Cursor c = cursor;
-			c.x_rot = 0;
-			c.y_rot = Math_PI;
-			set_cursor(c);
+			camera_manager->view_rear();
 			set_message(TTR("Rear View."), 2);
 			view_type = VIEW_TYPE_REAR;
 			_set_auto_orthogonal();
@@ -3362,9 +3085,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 		} break;
 		case VIEW_CENTER_TO_ORIGIN: {
-			Cursor c = cursor;
-			c.pos = Vector3(0, 0, 0);
-			set_cursor(c);
+			camera_manager->center_to_origin();
 
 		} break;
 		case VIEW_CENTER_TO_SELECTION: {
@@ -3394,7 +3115,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				}
 
 				Transform3D xform;
-				if (orthogonal) {
+				if (camera_manager->is_orthogonal()) {
 					xform = sp->get_global_transform();
 					xform.basis = Basis::from_euler(camera_transform.basis.get_euler());
 				} else {
@@ -3482,7 +3203,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			_update_name();
 		} break;
 		case VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL: {
-			_menu_option(orthogonal ? VIEW_PERSPECTIVE : VIEW_ORTHOGONAL);
+			_menu_option(camera_manager->is_orthogonal() ? VIEW_PERSPECTIVE : VIEW_ORTHOGONAL);
 
 		} break;
 		case VIEW_AUTO_ORTHOGONAL: {
@@ -3527,13 +3248,13 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			if (current) {
 				preview_camera->hide();
 			} else {
-				if (previewing != nullptr) {
+				if (camera_manager->get_previewing_camera() != nullptr) {
 					preview_camera->show();
 				}
 			}
 		} break;
 		case VIEW_PILOT: {
-			pilot_selection();
+			camera_manager->pilot_selection();
 		} break;
 		case VIEW_GIZMOS: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
@@ -3672,7 +3393,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 }
 
 void Node3DEditorViewport::_set_auto_orthogonal() {
-	if (!orthogonal && view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL))) {
+	if (!camera_manager->is_orthogonal() && view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL))) {
 		_menu_option(VIEW_ORTHOGONAL);
 		auto_orthogonal = true;
 	}
@@ -3683,7 +3404,6 @@ void Node3DEditorViewport::_preview_exited_scene() {
 	preview_camera->set_pressed(false);
 	_toggle_camera_preview(false);
 	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
-	view_menu->show();
 }
 
 void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
@@ -3772,47 +3492,19 @@ void Node3DEditorViewport::_finish_gizmo_instances() {
 
 void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	ERR_FAIL_COND(p_activate && !preview);
-	ERR_FAIL_COND(!p_activate && !previewing);
-
+	ERR_FAIL_COND(!p_activate && !camera_manager->get_previewing_camera());
 	previewing_camera = p_activate;
-	_update_navigation_controls_visibility();
-
-	if (!p_activate) {
-		previewing->disconnect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-		previewing = nullptr;
-		stop_piloting();
-		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
-		surface->queue_redraw();
-
-	} else {
-		previewing = preview;
-		previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-		if (pilot_preview_camera_checkbox->is_pressed()) {
-			pilot(previewing);
-		}
-		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
-		surface->queue_redraw();
+	if (p_activate) {
+		camera_manager->preview_camera(preview);
 	}
-
-	refresh_pilot_and_preview_ui();
+	else {
+		camera_manager->stop_previewing_camera();
+	}
 }
 
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 	previewing_cinema = p_activate;
-	_update_navigation_controls_visibility();
-
-	if (!previewing_cinema) {
-		if (previewing != nullptr) {
-			previewing->disconnect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-		}
-		previewing = nullptr;
-		stop_piloting();
-		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
-		preview_camera->set_pressed(false);
-		view_menu->show();
-		surface->queue_redraw();
-	}
-	refresh_pilot_and_preview_ui();
+	camera_manager->set_cinematic_mode(p_activate);
 }
 
 void Node3DEditorViewport::_selection_result_pressed(int p_result) {
@@ -3931,20 +3623,20 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 }
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
-	Cursor c = cursor;
+	Node3DEditorCameraCursor::Values cursor = camera_manager->get_cursor().get_target_values();
 	if (p_state.has("position")) {
-		c.pos = p_state["position"];
+		cursor.position = p_state["position"];
 	}
 	if (p_state.has("x_rotation")) {
-		c.x_rot = p_state["x_rotation"];
+		cursor.x_rot = p_state["x_rotation"];
 	}
 	if (p_state.has("y_rotation")) {
-		c.y_rot = p_state["y_rotation"];
+		cursor.y_rot = p_state["y_rotation"];
 	}
 	if (p_state.has("distance")) {
-		c.distance = p_state["distance"];
+		cursor.distance = p_state["distance"];
 	}
-	set_cursor(c, true, true);
+	camera_manager->set_cursor_state(cursor.position, cursor.x_rot, cursor.y_rot, cursor.distance);
 	if (p_state.has("orthogonal")) {
 		bool orth = p_state["orthogonal"];
 		_menu_option(orth ? VIEW_ORTHOGONAL : VIEW_PERSPECTIVE);
@@ -4042,12 +3734,8 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 	if (p_state.has("previewing")) {
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
 		if (Object::cast_to<Camera3D>(pv)) {
-			previewing = Object::cast_to<Camera3D>(pv);
-			previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-			RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
-			surface->queue_redraw();
+			preview = Object::cast_to<Camera3D>(pv);
 			preview_camera->set_pressed(true);
-			preview_camera->show();
 		}
 	}
 	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
@@ -4058,7 +3746,8 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 
 Dictionary Node3DEditorViewport::get_state() const {
 	Dictionary d;
-	d["position"] = cursor.pos;
+	Node3DEditorCameraCursor::Values cursor = camera_manager->get_cursor().get_target_values();
+	d["position"] = cursor.position;
 	d["x_rotation"] = cursor.x_rot;
 	d["y_rotation"] = cursor.y_rot;
 	d["distance"] = cursor.distance;
@@ -4091,8 +3780,8 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["frame_time"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
 	d["half_res"] = subviewport_container->get_stretch_shrink() > 1;
 	d["cinematic_preview"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
-	if (previewing) {
-		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
+	if (camera_manager->get_previewing_camera()) {
+		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(camera_manager->get_previewing_camera());
 	}
 	d["pilot_preview_camera"] = pilot_preview_camera_checkbox->is_pressed();
 	d["lock_rotation"] = lock_rotation;
@@ -4102,14 +3791,13 @@ Dictionary Node3DEditorViewport::get_state() const {
 
 void Node3DEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &Node3DEditorViewport::update_transform_gizmo_view); // Used by call_deferred.
-	ClassDB::bind_method(D_METHOD("_undo_redo_pilot_transform"), &Node3DEditorViewport::_undo_redo_pilot_transform);
 
 	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
 	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
 }
 
 void Node3DEditorViewport::reset() {
-	stop_piloting();
+	camera_manager->reset();
 	set_orthogonal(false);
 	auto_orthogonal = false;
 	lock_rotation = false;
@@ -4117,7 +3805,6 @@ void Node3DEditorViewport::reset() {
 	message = "";
 	last_message = "";
 	view_type = VIEW_TYPE_USER;
-	reset_cursor_to_default();
 	_update_name();
 }
 
@@ -4153,9 +3840,7 @@ void Node3DEditorViewport::focus_selection() {
 		center /= count;
 	}
 
-	Cursor c = cursor;
-	c.pos = center;
-	set_cursor(c);
+	camera_manager->focus_selection(center);
 }
 
 void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, AABB *p_preview_bounds, AcceptDialog *p_accept) {
@@ -4194,8 +3879,9 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	}
 
 	// Plane facing the camera using fallback distance.
+	Node3DEditorCameraCursor::Values cursor = camera_manager->get_cursor().get_target_values();
 	if (is_orthogonal) {
-		plane = Plane(world_ray, cursor.pos - world_ray * (cursor.distance - FALLBACK_DISTANCE));
+		plane = Plane(world_ray, cursor.position - world_ray * (cursor.distance - FALLBACK_DISTANCE));
 	} else {
 		plane = Plane(world_ray, world_pos + world_ray * FALLBACK_DISTANCE);
 	}
@@ -5124,145 +4810,54 @@ void Node3DEditorViewport::_set_lock_view_rotation(bool p_lock_rotation) {
 	}
 }
 
-void Node3DEditorViewport::pilot_selection() {
-	Node3D* selected_node = Node3DEditor::get_singleton()->get_single_selected_node();
-	if (selected_node) {
-		pilot(selected_node);
-	}
-}
-
-void Node3DEditorViewport::pilot(Node3D *p_node) {
-	if (p_node == nullptr || previewing_cinema) {
-		return;
-	}
-	if (p_node != previewing) {
-		preview_camera->set_pressed(false);
-	}
-	stop_piloting();
-	Camera3D* node_as_camera = Object::cast_to<Camera3D>(p_node);
-	if (node_as_camera) {
-		set_orthogonal(node_as_camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL);
-	}
-	else {
-		set_orthogonal(false);
-	}
-	node_being_piloted = p_node;
-	node_being_piloted->connect("tree_exited", callable_mp(this, &Node3DEditorViewport::stop_piloting));
-	Transform3D transform = Transform3D(Basis(), node_being_piloted->get_global_position());
-	transform.basis.set_euler(node_being_piloted->get_global_rotation());
-	pilot_previous_transform = transform;
-	camera->set_global_transform(transform);
-	reset_cursor_to_camera();
-	stop_piloting_button->show();
-	stop_piloting_button->set_text(vformat(TTR("Stop Piloting '%s'"), node_being_piloted->get_name()));
-	_update_camera(0.0);
-	refresh_pilot_and_preview_ui();
-}
-
-void Node3DEditorViewport::stop_piloting() {
-	if (node_being_piloted) {
-		node_being_piloted->disconnect("tree_exited", callable_mp(this, &Node3DEditorViewport::stop_piloting));
-	}
-	node_being_piloted = nullptr;
-	stop_piloting_button->hide();
-	_update_camera(0.0);
-	refresh_pilot_and_preview_ui();
-}
-
-void Node3DEditorViewport::check_piloting_when_change_camera_type(bool to_ortho) {
-	if (!node_being_piloted) {
-		return;
-	}
-	Camera3D* camera_being_piloted = Object::cast_to<Camera3D>(node_being_piloted);
-	if (camera_being_piloted) {
-		if (to_ortho && camera_being_piloted->get_projection() != Camera3D::PROJECTION_ORTHOGONAL) {
-			stop_piloting();
-		} else if (!to_ortho && camera_being_piloted->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
-			stop_piloting();
-		}
-	} else if (to_ortho) {
-		stop_piloting();
-	}
-}
-
-void Node3DEditorViewport::update_pilot_transform() {
-	if (!node_being_piloted) {
-		return;
-	}
-	Transform3D transform = camera->get_global_transform();
-	Vector3 new_position = transform.origin;
-	Vector3 new_rotation = transform.basis.get_euler();
-	if (new_position != node_being_piloted->get_global_position() || new_rotation != node_being_piloted->get_global_rotation()) {
-		node_being_piloted->set_global_position(new_position);
-		node_being_piloted->set_global_rotation(new_rotation);
-	}
-}
-
-void Node3DEditorViewport::commit_pilot_transform() {
-	if (!node_being_piloted) {
-		return;
-	}
-	// Always commit using the cursor's transform to avoid commiting a transform that is being interpolated to smooth the movement:
-	Transform3D transform_to_commit = to_camera_transform(cursor);
-	if (transform_to_commit != pilot_previous_transform) {
-		EditorUndoRedoManager* undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Piloting Transform"));
-		undo_redo->add_do_method(this, "_undo_redo_pilot_transform", node_being_piloted, transform_to_commit);
-		undo_redo->add_undo_method(this, "_undo_redo_pilot_transform", node_being_piloted, pilot_previous_transform);
-		undo_redo->commit_action(false);
-		pilot_previous_transform = transform_to_commit;
-	}
-}
-
-void Node3DEditorViewport::_undo_redo_pilot_transform(Node3D *p_node, const Transform3D &p_transform) {
-	p_node->set_global_transform(p_transform);
-	// If the node is still in pilot mode, we need to restart it to avoid it being out of sync with the editor's camera:
-	if (p_node == node_being_piloted) {
-		stop_piloting();
-		pilot(p_node);
-	}
-}
-
-bool Node3DEditorViewport::is_only_pilot_input_allowed() {
-	return previewing && node_being_piloted == previewing;
-}
-
 void Node3DEditorViewport::toggle_allow_pilot_camera(bool p_activate) {
-	if (!previewing) {
-		return;
-	}
-	if (p_activate) {
-		pilot(previewing);
-	} else {
-		stop_piloting();
-	}
+	camera_manager->set_allow_pilot_previewing_camera(p_activate);
+}
+
+void Node3DEditorViewport::on_camera_updated() {
+	update_transform_gizmo_view();
+	rotation_control->queue_redraw();
+	position_control->queue_redraw();
+	look_control->queue_redraw();
+	spatial_editor->update_grid();
 }
 
 void Node3DEditorViewport::refresh_pilot_and_preview_ui() {
-	if (previewing_cinema) {
+	if (camera_manager->is_in_cinematic_mode()) {
 		preview_camera->set_visible(false);
 		pilot_preview_camera_checkbox->set_visible(false);
 		stop_piloting_button->set_visible(false);
-	} else if (previewing) {
+	}
+	else if (camera_manager->get_previewing_camera()) {
 		preview_camera->set_visible(true);
 		preview_camera->set_pressed_no_signal(true);
 		pilot_preview_camera_checkbox->set_visible(true);
-		pilot_preview_camera_checkbox->set_pressed_no_signal(previewing == node_being_piloted);
+		pilot_preview_camera_checkbox->set_pressed_no_signal(camera_manager->get_previewing_camera() == camera_manager->get_node_being_piloted());
 		stop_piloting_button->set_visible(false);
-	} else {
+	}
+	else {
 		preview_camera->set_visible(preview != nullptr);
 		preview_camera->set_pressed_no_signal(false);
 		pilot_preview_camera_checkbox->set_visible(false);
-		stop_piloting_button->set_visible(node_being_piloted != nullptr);
+		stop_piloting_button->set_visible(camera_manager->get_node_being_piloted() != nullptr);
 	}
+	_update_navigation_controls_visibility();
+	surface->queue_redraw();
 }
 
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {
+	camera_manager = memnew(Node3DEditorCameraManager);
+	add_child(camera_manager);
+	camera_manager->connect("camera_updated", callable_mp(this, &Node3DEditorViewport::on_camera_updated));
+	camera_manager->connect("pilot_started", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
+	camera_manager->connect("pilot_stopped", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
+	camera_manager->connect("preview_started", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
+	camera_manager->connect("preview_stopped", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
+	camera_manager->connect("cinematic_preview_started", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
+	camera_manager->connect("cinematic_preview_stopped", callable_mp(this, &Node3DEditorViewport::refresh_pilot_and_preview_ui));
+
 	cpu_time_history_index = 0;
 	gpu_time_history_index = 0;
-
-	is_navigating = false;
-	was_navigating = false;
 
 	_edit.mode = TRANSFORM_NONE;
 	_edit.plane = TRANSFORM_VIEW;
@@ -5275,7 +4870,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	index = p_index;
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();
 
-	orthogonal = false;
 	auto_orthogonal = false;
 	lock_rotation = false;
 	message_time = 0;
@@ -5302,6 +4896,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
+	camera_manager->setup(camera, viewport);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);
@@ -5454,7 +5049,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
 	preview_camera->connect("toggled", callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
-	previewing = nullptr;
 	gizmo_scale = 1.0;
 
 	pilot_preview_camera_checkbox = memnew(CheckBox);
@@ -5471,7 +5065,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	vbox->add_child(stop_piloting_button);
 	stop_piloting_button->set_h_size_flags(0);
 	stop_piloting_button->hide();
-	stop_piloting_button->connect("pressed", callable_mp(this, &Node3DEditorViewport::stop_piloting));
+	stop_piloting_button->connect("pressed", callable_mp(camera_manager, &Node3DEditorCameraManager::stop_piloting));
 
 	preview_node = nullptr;
 
@@ -5611,8 +5205,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_update_name();
 
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view));
-
-	node_being_piloted = nullptr;
 
 	refresh_pilot_and_preview_ui();
 }
@@ -8824,6 +8416,7 @@ Node3DEditor::Node3DEditor() {
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; ++i) {
 		settings_dialog->connect("confirmed", callable_mp(viewports[i], &Node3DEditorViewport::_view_settings_confirmed).bind(0.0));
+		viewports[i]->_view_settings_confirmed(0.0);
 	}
 
 	/* XFORM DIALOG */
