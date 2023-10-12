@@ -35,6 +35,8 @@
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 #include "core/version.h"
+#include "gdextension_manager.h"
+
 
 extern void gdextension_setup_interface();
 extern GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name);
@@ -949,13 +951,24 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 }
 
 Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	Ref<GDExtension> lib;
-	Error err = load_gdextension_resource(p_path, lib);
-	if (err != OK && r_error) {
-		// Errors already logged in load_gdextension_resource().
-		*r_error = err;
+
+	GDExtensionManager *manager = GDExtensionManager::get_singleton();
+	Ref<GDExtension> maybe_lib = manager->get_extension(p_path);
+
+	const bool must_load = maybe_lib.is_null() || (maybe_lib->is_reloadable() && maybe_lib->has_library_changed());
+
+	if (must_load)
+	{
+		Ref<GDExtension> lib;
+		Error err = load_gdextension_resource(p_path, lib);
+		if (err != OK && r_error) {
+			// Errors already logged in load_gdextension_resource().
+			*r_error = err;
+		}
+		return lib;
 	}
-	return lib;
+
+	return maybe_lib;
 }
 
 void GDExtensionResourceLoader::get_recognized_extensions(List<String> *p_extensions) const {
