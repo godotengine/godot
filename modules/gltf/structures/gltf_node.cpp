@@ -89,11 +89,11 @@ void GLTFNode::set_height(int p_height) {
 }
 
 Transform3D GLTFNode::get_xform() {
-	return xform;
+	return transform;
 }
 
 void GLTFNode::set_xform(Transform3D p_xform) {
-	xform = p_xform;
+	transform = p_xform;
 }
 
 GLTFMeshIndex GLTFNode::get_mesh() {
@@ -129,27 +129,27 @@ void GLTFNode::set_skeleton(GLTFSkeletonIndex p_skeleton) {
 }
 
 Vector3 GLTFNode::get_position() {
-	return position;
+	return transform.origin;
 }
 
 void GLTFNode::set_position(Vector3 p_position) {
-	position = p_position;
+	transform.origin = p_position;
 }
 
 Quaternion GLTFNode::get_rotation() {
-	return rotation;
+	return transform.basis.get_rotation_quaternion();
 }
 
 void GLTFNode::set_rotation(Quaternion p_rotation) {
-	rotation = p_rotation;
+	transform.basis.set_quaternion_scale(p_rotation, transform.basis.get_scale());
 }
 
 Vector3 GLTFNode::get_scale() {
-	return scale;
+	return transform.basis.get_scale();
 }
 
 void GLTFNode::set_scale(Vector3 p_scale) {
-	scale = p_scale;
+	transform.basis = transform.basis.orthonormalized() * Basis::from_scale(p_scale);
 }
 
 Vector<int> GLTFNode::get_children() {
