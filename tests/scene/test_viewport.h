@@ -43,6 +43,8 @@
 
 namespace TestViewport {
 
+int notification_counter = 0;
+
 class NotificationControlViewport : public Control {
 	GDCLASS(NotificationControlViewport, Control);
 
@@ -51,16 +53,28 @@ protected:
 		switch (p_what) {
 			case NOTIFICATION_MOUSE_ENTER: {
 				mouse_over = true;
+				enter_counter = notification_counter++;
+				print_line("Enter ", get_name(), enter_counter);
 			} break;
 
 			case NOTIFICATION_MOUSE_EXIT: {
 				mouse_over = false;
+				exit_counter = notification_counter++;
+				print_line("Exit ", get_name(), exit_counter);
 			} break;
 		}
 	}
 
 public:
+	int enter_counter = -1;
+	int exit_counter = -1;
 	bool mouse_over = false;
+
+	void reset_counter() {
+		enter_counter = -1;
+		exit_counter = -1;
+		notification_counter = 0;
+	}
 };
 
 // `NotificationControlViewport`-derived class that additionally
@@ -155,10 +169,10 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 	// Scene tree:
 	// - root
-	//   - a (Control)
-	//   - b (Control)
-	//     - c (Node2D)
-	//       - d (Control)
+	//   - a (Control) (0, 0) global
+	//   - b (Control) (10, 10) global
+	//     - c (Node2D) (10, 10) global
+	//       - d (Control) (20, 20) global
 	//   - e (Control)
 	//     - f (Node)
 	//       - g (Control)
@@ -423,22 +437,114 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
 			CHECK_FALSE(node_a->mouse_over);
 
+			node_a->reset_counter();
 			// Move over Control.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_a, MouseButtonMask::NONE, Key::NONE);
 			CHECK(node_a->mouse_over);
+			CHECK_EQ(node_a->enter_counter, 0);
+			CHECK_EQ(node_a->exit_counter, -1);
 
 			// No change.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_a + Point2i(1, 1), MouseButtonMask::NONE, Key::NONE);
 			CHECK(node_a->mouse_over);
+			CHECK_EQ(node_a->enter_counter, 0);
+			CHECK_EQ(node_a->exit_counter, -1);
 
 			// Move over other Control.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::NONE, Key::NONE);
 			CHECK_FALSE(node_a->mouse_over);
 			CHECK(node_d->mouse_over);
+			CHECK_EQ(node_a->enter_counter, 0);
+			CHECK_EQ(node_a->exit_counter, 1);
+			CHECK_EQ(node_d->enter_counter, 2);
+			CHECK_EQ(node_d->exit_counter, -1);
 
 			// Move to background
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
 			CHECK_FALSE(node_d->mouse_over);
+			CHECK_EQ(node_d->enter_counter, 2);
+			CHECK_EQ(node_d->exit_counter, 3);
+		}
+
+		SUBCASE("[Viewport][GuiInputEvent] Enter/Exit notifications on parent Controls.") {
+			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
+			node_b->hide();
+			node_d->hide();
+			node_a->reset_counter();
+			node_d->reset_counter();
+			print_line("BEGIN <<<<");
+
+			NotificationControlViewport *node_h = memnew(NotificationControlViewport);
+			NotificationControlViewport *node_i = memnew(NotificationControlViewport);
+			NotificationControlViewport *node_j = memnew(NotificationControlViewport);
+			node_h->set_name(SNAME("NodeH"));
+			node_i->set_name(SNAME("NodeI"));
+			node_j->set_name(SNAME("NodeJ"));
+			node_h->set_position(Point2(0, 0));
+			node_h->set_size(Size2(30, 30));
+			node_i->set_position(Point2(10, 10));
+			node_i->set_size(Size2(30, 30));
+			node_j->set_position(Point2(10, 10));
+			node_j->set_size(Size2(30, 30));
+			Point2i on_h = Point2i(5, 5);
+			Point2i on_i = Point2i(15, 15);
+			Point2i on_j = Point2i(35, 35);
+			root->add_child(node_h);
+			node_h->add_child(node_i);
+			node_i->add_child(node_j);
+
+			// Move over innermost Control.
+			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
+			CHECK_EQ(node_h->enter_counter, 0);
+			CHECK_EQ(node_h->exit_counter, -1);
+			CHECK_EQ(node_i->enter_counter, 1);
+			CHECK_EQ(node_i->exit_counter, -1);
+			CHECK_EQ(node_j->enter_counter, 2);
+			CHECK_EQ(node_j->exit_counter, -1);
+
+			// Move over topmost Control.
+			SEND_GUI_MOUSE_MOTION_EVENT(on_a, MouseButtonMask::NONE, Key::NONE);
+			CHECK_EQ(node_h->enter_counter, 0);
+			CHECK_EQ(node_h->exit_counter, -1);
+			CHECK_EQ(node_i->enter_counter, 1);
+			CHECK_EQ(node_i->exit_counter, 4);
+			CHECK_EQ(node_j->enter_counter, 2);
+			CHECK_EQ(node_j->exit_counter, 3);
+
+			// Move over middle Control.
+			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
+			CHECK_EQ(node_h->enter_counter, 0);
+			CHECK_EQ(node_h->exit_counter, -1);
+			CHECK_EQ(node_i->enter_counter, 5);
+			CHECK_EQ(node_i->exit_counter, 4);
+			CHECK_EQ(node_j->enter_counter, 2);
+			CHECK_EQ(node_j->exit_counter, 3);
+
+			// Move over innermost Control.
+			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
+			CHECK_EQ(node_h->enter_counter, 0);
+			CHECK_EQ(node_h->exit_counter, -1);
+			CHECK_EQ(node_i->enter_counter, 5);
+			CHECK_EQ(node_i->exit_counter, 4);
+			CHECK_EQ(node_j->enter_counter, 6);
+			CHECK_EQ(node_j->exit_counter, 3);
+
+			// Hide middle Control
+			node_i->hide();
+			CHECK_EQ(node_h->enter_counter, 0);
+			CHECK_EQ(node_h->exit_counter, -1);
+			CHECK_EQ(node_i->enter_counter, 5);
+			CHECK_EQ(node_i->exit_counter, 8);
+			CHECK_EQ(node_j->enter_counter, 6);
+			CHECK_EQ(node_j->exit_counter, 7);
+
+			// TODO: Test after the callback
+			// CHECK_EQ(node_h->exit_counter, 9);
+
+			memdelete(node_j);
+			memdelete(node_i);
+			memdelete(node_h);
+			print_line("END >>>>");
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Window Mouse Enter/Exit signals.") {

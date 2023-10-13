@@ -360,7 +360,9 @@ private:
 		Control *mouse_click_grabber = nullptr;
 		BitField<MouseButtonMask> mouse_focus_mask;
 		Control *key_focus = nullptr;
-		Control *mouse_over = nullptr;
+		Control *mouse_over = nullptr; // Contains the Control node, that the mouse is currently over.
+		Control *mouse_over_interval_bottom = nullptr; // Contains the deepest node, that has received a NOTIFICATION_MOUSE_ENTER without a NOTIFICATION_MOUSE_ENTER_SELF.
+		Control *mouse_over_interval_top = nullptr; // Contains the topmost node, that has received a NOTIFICATION_MOUSE_ENTER without a NOTIFICATION_MOUSE_ENTER_SELF.
 		Window *subwindow_over = nullptr; // mouse_over and subwindow_over are mutually exclusive. At all times at least one of them is nullptr.
 		Window *windowmanager_window_over = nullptr; // Only used in root Viewport.
 		Control *drag_mouse_over = nullptr;
@@ -429,6 +431,7 @@ private:
 
 	void _gui_remove_control(Control *p_control);
 	void _gui_hide_control(Control *p_control);
+	bool _send_mouse_exit_notifications(Control *p_control = nullptr);
 
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
@@ -475,6 +478,7 @@ private:
 	void _update_mouse_over();
 	virtual void _update_mouse_over(Vector2 p_pos);
 	virtual void _mouse_leave_viewport();
+	void _reevaluate_mouse_over();
 
 	virtual bool _can_consume_input_events() const { return true; }
 	uint64_t event_count = 0;

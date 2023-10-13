@@ -2408,8 +2408,9 @@ void Viewport::_gui_hide_control(Control *p_control) {
 	if (gui.key_focus == p_control) {
 		gui_release_focus();
 	}
-	if (gui.mouse_over == p_control) {
-		_drop_mouse_over();
+	bool reevaluate = _send_mouse_exit_notifications(p_control);
+	if (reevaluate) {
+		_reevaluate_mouse_over();
 	}
 	if (gui.drag_mouse_over == p_control) {
 		gui.drag_mouse_over = nullptr;
@@ -2431,8 +2432,9 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.key_focus == p_control) {
 		gui.key_focus = nullptr;
 	}
-	if (gui.mouse_over == p_control) {
-		_drop_mouse_over();
+	bool reevaluate = _send_mouse_exit_notifications(p_control);
+	if (reevaluate) {
+		callable_mp(this, &Viewport::_reevaluate_mouse_over).call_deferred();
 	}
 	if (gui.drag_mouse_over == p_control) {
 		gui.drag_mouse_over = nullptr;
@@ -2440,6 +2442,60 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.tooltip_control == p_control) {
 		gui.tooltip_control = nullptr;
 	}
+}
+
+bool Viewport::_send_mouse_exit_notifications(Control *p_control) {
+	// Send exit notifications for p_control and child controls.
+	Control *target = p_control;
+	if (!target) {
+		// Send notification to all hovered Control nodes.
+		if (gui.mouse_over_interval_top) {
+			// Notifdication for all hovered nodes.
+			target = gui.mouse_over_interval_top;
+		} else if (gui.mouse_over) {
+			// Only single Control is hovered.
+			target = gui.mouse_over;
+		} else {
+			// Nothing to do.
+			return false;
+		}
+	}
+
+	if (target == gui.mouse_over_interval_top ||
+			target == gui.mouse_over ||
+			target == gui.mouse_over_interval_bottom ||
+			(gui.mouse_over_interval_top && gui.mouse_over_interval_top->is_ancestor_of(target) &&
+					((gui.mouse_over && target->is_ancestor_of(gui.mouse_over)) || (gui.mouse_over_interval_bottom && target->is_ancestor_of(gui.mouse_over_interval_bottom))))) {
+		bool reevaluate = false;
+		// Target Control is hovered.
+		Control *control = gui.mouse_over;
+		if (gui.mouse_over) {
+			_drop_mouse_over();
+			reevaluate = true;
+		} else {
+			control = gui.mouse_over_interval_bottom;
+		}
+
+		while (control && control != target) {
+			if (control->is_inside_tree()) {
+				control->notification(Control::NOTIFICATION_MOUSE_EXIT);
+			}
+			control = control->get_parent_control();
+			reevaluate = true;
+		}
+		if (control) {
+			if (control->is_inside_tree()) {
+				control->notification(Control::NOTIFICATION_MOUSE_EXIT);
+			}
+			reevaluate = true;
+		}
+		gui.mouse_over_interval_bottom = target->get_parent_control();
+		if (target == gui.mouse_over_interval_top) {
+			gui.mouse_over_interval_top = nullptr;
+		}
+		return reevaluate;
+	}
+	return false;
 }
 
 Window *Viewport::get_base_window() const {
@@ -2987,6 +3043,14 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	return true;
 }
 
+void Viewport::_reevaluate_mouse_over() {
+	if (!gui.mouse_in_viewport) {
+		return;
+	}
+	// Send mouse entered exited notifications for current viewport.
+	_update_mouse_over(gui.last_mouse_pos);
+}
+
 void Viewport::_update_mouse_over() {
 	// Update gui.mouse_over and gui.subwindow_over in all Viewports.
 	// Send necessary mouse_enter/mouse_exit signals and the MOUSE_ENTER/MOUSE_EXIT notifications for every Viewport in the SceneTree.
@@ -3032,7 +3096,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 
 			if (swrect_border.has_point(p_pos)) {
 				if (gui.mouse_over) {
-					_drop_mouse_over();
+					_send_mouse_exit_notifications();
 				} else if (!gui.subwindow_over) {
 					_drop_physics_mouseover();
 				}
@@ -3070,15 +3134,142 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 	Control *over = gui_find_control(p_pos);
 	bool notify_embedded_viewports = false;
 	if (over != gui.mouse_over) {
+		Control *common_ancestor = nullptr;
 		if (gui.mouse_over) {
+			// Find the common ancestor of `gui.mouse_over` and `over`.
+			if (over) {
+				Control *ancestor = gui.mouse_over;
+				while (ancestor && ancestor != over && !ancestor->is_ancestor_of(over)) {
+					if (ancestor->is_set_as_top_level()) {
+						// Top level Control nodes break the propagation chain.
+						ancestor = nullptr;
+						break;
+					}
+					ancestor = ancestor->get_parent_control();
+				}
+				if (ancestor) {
+					common_ancestor = ancestor;
+				}
+				// Now `common_ancestor` contains an ancestor of gui.mouse_over and over.
+
+				// It remains to check, that `common_ancestor` is connected in a chain of Control nodes to `over`.
+				ancestor = over;
+				while (ancestor) {
+					if (ancestor == common_ancestor) {
+						break;
+					}
+					if (ancestor->is_set_as_top_level()) {
+						// Top level Control nodes break the propagation chain.
+						ancestor = nullptr;
+						break;
+					}
+					ancestor = ancestor->get_parent_control();
+				}
+				if (!ancestor) {
+					// There is no common ancestor.
+					common_ancestor = nullptr;
+				}
+			}
+
+			// Beginning from the previously hovered Control, send mouse exit notifications to Control nodes and their parents,
+			// until the common ancestor.
+			Control *control = gui.mouse_over;
 			_drop_mouse_over();
+			while (control) {
+				if (over && control == common_ancestor) {
+					// Common ancestor of over and gui.mouse_over reached. There is no need to go up the scene tree.
+					gui.mouse_over_interval_bottom = control;
+					break;
+				}
+
+				if (control->is_inside_tree()) {
+					control->notification(Control::NOTIFICATION_MOUSE_EXIT);
+				}
+
+				if (control->is_set_as_top_level()) {
+					// Top level Control nodes break the propagation chain.
+					gui.mouse_over_interval_bottom = nullptr;
+					gui.mouse_over_interval_top = nullptr;
+					break;
+				}
+
+				// Consider only direct Control parents, but not parents, that are separated by non-Control CanvasItems. (Could be changed to include them.)
+				control = control->get_parent_control();
+
+				if (!control) {
+					break;
+				}
+
+				if (control->get_mouse_filter() == Control::MOUSE_FILTER_IGNORE) {
+					// Control nodes with MOUSE_FILTER_IGNORE break the propagation chain.
+					break;
+				}
+
+				gui.mouse_over_interval_bottom = control;
+			}
+			if (!control && gui.mouse_over_interval_top) {
+				gui.mouse_over_interval_top = nullptr;
+			}
+			// Now gui.mouse_over_interval_top and gui.mouse_over_interval_bottom are up to date.
 		} else {
 			_drop_physics_mouseover();
 		}
 
-		gui.mouse_over = over;
 		if (over) {
-			over->notification(Control::NOTIFICATION_MOUSE_ENTER);
+			LocalVector<Control *> control_list; // List of Control nodes that should receive mouse enter notifications
+			control_list.push_back(over);
+
+			Control *control = over;
+			if (control != common_ancestor) {
+				while (control) {
+					if (control->is_set_as_top_level()) {
+						// Top level Control nodes break the propagation chain.
+						break;
+					}
+
+					// Consider only direct Control parents, but not parents, that are separated by non-Control CanvasItems. (Could be changed to include them.)
+					control = control->get_parent_control();
+
+					if (!control) {
+						break;
+					}
+
+					if (control->get_mouse_filter() == Control::MOUSE_FILTER_IGNORE) {
+						// Controls that ignore mouse filter break the propagation chain.
+						break;
+					}
+
+					if (control == common_ancestor) {
+						// Common ancestor found. No need to go further.
+						break;
+					}
+
+					control_list.push_back(control);
+				}
+			}
+
+			gui.mouse_over = over;
+
+			// Send Mouse Enter signals to parents first.
+			for (int i = control_list.size() - 1; i >= 0; i--) {
+				if (!control_list[i]->is_inside_tree()) {
+					break;
+				}
+				if (control_list[i] != common_ancestor) {
+					control_list[i]->notification(Control::NOTIFICATION_MOUSE_ENTER);
+				}
+			}
+			if (control_list[0]->is_inside_tree()) {
+				control_list[0]->notification(Control::NOTIFICATION_MOUSE_ENTER_SELF);
+			}
+			if (control_list.size() > 1) {
+				// Update ancestors necessary.
+				gui.mouse_over_interval_bottom = control_list[1];
+				if (!gui.mouse_over_interval_top) {
+					// Far ancestor is currently not set.
+					gui.mouse_over_interval_top = control_list[control_list.size() - 1];
+				}
+			}
 			notify_embedded_viewports = true;
 		}
 	}
@@ -3114,7 +3305,7 @@ void Viewport::_mouse_leave_viewport() {
 		gui.subwindow_over->_mouse_leave_viewport();
 		gui.subwindow_over = nullptr;
 	} else if (gui.mouse_over) {
-		_drop_mouse_over();
+		_send_mouse_exit_notifications();
 	}
 	notification(NOTIFICATION_VP_MOUSE_EXIT);
 }
@@ -3132,7 +3323,11 @@ void Viewport::_drop_mouse_over() {
 		}
 	}
 	if (gui.mouse_over->is_inside_tree()) {
-		gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT);
+		gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT_SELF);
+	}
+	gui.mouse_over_interval_bottom = gui.mouse_over;
+	if (!gui.mouse_over_interval_top) {
+		gui.mouse_over_interval_top = gui.mouse_over;
 	}
 	gui.mouse_over = nullptr;
 }
