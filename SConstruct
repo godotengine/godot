@@ -58,6 +58,7 @@ import gles3_builders
 import scu_builders
 from platform_methods import architectures, architecture_aliases, generate_export_icons
 
+
 # Scan possible build platforms
 
 platform_list = []  # list of platforms
@@ -66,8 +67,6 @@ platform_flags = {}  # flags for each platform
 platform_doc_class_path = {}
 platform_exporters = []
 platform_apis = []
-
-default_tools = ["default"]
 
 time_at_start = time.time()
 
@@ -113,21 +112,32 @@ if profile:
     elif os.path.isfile(profile + ".py"):
         customs.append(profile + ".py")
 
+# Defaults.
+defaults = {
+    "target": { "default": "editor", "converter": lambda v: v },
+    "use_mingw": { "default": False, "converter": BoolVariable("", "", False)[4] },
+    "custom_tools": { "default": ["default"], "converter": lambda v: v.split(",") },
+}
 
-opts = Variables(customs, ARGUMENTS)
-opts.Add("platform", "Target platform (%s)" % ("|".join(platform_list),), "")
-opts.Add("p", "Platform (alias for 'platform')", "")
-opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
-opts.Add("custom_tools", "Scons Environment toolset override", "")
+# We'll parse these as strings first, so we can tell if they've been set explicitely.
+base_opts = Variables(customs, ARGUMENTS)
+base_opts.Add(("platform", "p"), "Target platform (%s)" % ("|".join(platform_list),), "")
+base_opts.Add(EnumVariable("target", "Compilation target", "", ("", "editor", "template_release", "template_debug")))
+base_opts.Add("custom_tools", "Scons Environment toolset override", "")
 
 if os.name == "nt":
-    opts.Add(BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False)),
+    base_opts.Add("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", ""),
 
 # We let SCons build a default environment so we can read environment-specific options
 # from user and platform locations.
 # We will then reinitialize the environment with the correct information.
-env_base = Environment(tools=default_tools)
-opts.Update(env_base)
+env_base = Environment(tools="")
+base_opts.Update(env_base)
+
+# Convert the string values set by the user into our expected types.
+for option in defaults:
+    if env_base[option]:
+        env_base[option] = defaults[option]["converter"](env_base[option])
 
 # Platform selection.
 
@@ -135,8 +145,6 @@ selected_platform = ""
 
 if env_base["platform"] != "":
     selected_platform = env_base["platform"]
-elif env_base["p"] != "":
-    selected_platform = env_base["p"]
 else:
     # Missing `platform` argument, try to detect platform automatically
     if (
@@ -181,26 +189,46 @@ if selected_platform in ["linux", "bsd", "x11"]:
     # Alias for convenience.
     selected_platform = "linuxbsd"
 
+if selected_platform not in platform_list:
+    if selected_platform == "list":
+        print("The following platforms are available:\n")
+    else:
+        print('Invalid target platform "' + selected_platform + '".')
+        print("The following platforms were detected:\n")
+
+    for x in platform_list:
+        print("\t" + x)
+
+    print("\nPlease run SCons again and select a valid platform: platform=<string>")
+
+    if selected_platform == "list":
+        # Exit early to suppress the rest of the built-in SCons messages
+        Exit()
+    else:
+        Exit(255)
+
+
 # Platform specific flags.
 if selected_platform in platform_flags:
     platform_dict = dict(platform_flags[selected_platform])
-    for option in opts.options:
+    for option in base_opts.options:
         # Use the platform flag value if it's not set in the environment already (i.e. the user hasn't overridden it).
-        if env_base[option.key] == option.default and option.key in platform_dict:
+        if not env_base[option.key] and option.key in platform_dict:
             env_base[option.key] = platform_dict[option.key]
+
+# Check for the use_mingw flag, but only replace custom_tools if they haven't been overridden yet.
+if os.name == "nt" and env_base["use_mingw"] and not env_base["custom_tools"]:
+    env_base["custom_tools"] = ["mingw"]
+
+# Set the default values if there's no overrides.
+for option in defaults:
+    if not env_base[option]:
+        env_base[option] = defaults[option]["default"]
 
 selected_target = env_base["target"]
 
 # Determine the Scons toolset.
-custom_tools = default_tools
-
-# Platform or user is overriding the default toolset.
-if env_base["custom_tools"] != "":
-    custom_tools = env_base["custom_tools"].split(",")
-
-# Check for the use_mingw flag, but only replace custom_tools if they haven't been overridden yet.
-if os.name == "nt" and env_base["use_mingw"] and set(default_tools) == set(custom_tools):
-    custom_tools = ["mingw"]
+custom_tools = env_base["custom_tools"]
 
 if selected_target == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -1029,24 +1057,6 @@ if selected_platform in platform_list:
         for header in env["check_c_headers"]:
             if conf.CheckCHeader(header[0]):
                 env.AppendUnique(CPPDEFINES=[header[1]])
-
-elif selected_platform != "":
-    if selected_platform == "list":
-        print("The following platforms are available:\n")
-    else:
-        print('Invalid target platform "' + selected_platform + '".')
-        print("The following platforms were detected:\n")
-
-    for x in platform_list:
-        print("\t" + x)
-
-    print("\nPlease run SCons again and select a valid platform: platform=<string>")
-
-    if selected_platform == "list":
-        # Exit early to suppress the rest of the built-in SCons messages
-        Exit()
-    else:
-        Exit(255)
 
 # The following only makes sense when the 'env' is defined, and assumes it is.
 if "env" in locals():

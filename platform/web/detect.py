@@ -68,7 +68,7 @@ def get_flags():
         # run-time performance.
         ("optimize", "size"),
         # Use generic POSIX build toolchain for Emscripten.
-        ("custom_tools", "cc,c++,ar,link,textfile,zip"),
+        ("custom_tools", ["cc", "c++", "ar", "link", "textfile", "zip"]),
     ]
 
 
