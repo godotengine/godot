@@ -1679,7 +1679,7 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned, 
 		}
 
 		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
-			if(_is_node_of_type(cptr[i], p_type)) {
+			if (_is_node_of_type(cptr[i], p_type)) {
 				return cptr[i];
 			}
 		}
