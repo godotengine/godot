@@ -266,8 +266,13 @@ bool WaylandThread::_load_cursor_theme(int p_cursor_size) {
 		current_wl_cursor = nullptr;
 	}
 
+	if (cursor_theme_name.is_empty()) {
+		cursor_theme_name = "default";
+	}
+
 	print_verbose(vformat("Loading cursor theme \"%s\" size %d.", cursor_theme_name, p_cursor_size));
-	wl_cursor_theme = wl_cursor_theme_load(cursor_theme_name, p_cursor_size, registry.wl_shm);
+
+	wl_cursor_theme = wl_cursor_theme_load(cursor_theme_name.utf8().get_data(), p_cursor_size, registry.wl_shm);
 
 	ERR_FAIL_NULL_V_MSG(wl_cursor_theme, false, "Can't load any cursor theme.");
 
@@ -3439,7 +3444,7 @@ Error WaylandThread::init() {
 	}
 #endif // LIBDECOR_ENABLED
 
-	cursor_theme_name = OS::get_singleton()->get_environment("XCURSOR_THEME").utf8().ptr();
+	cursor_theme_name = OS::get_singleton()->get_environment("XCURSOR_THEME");
 
 	unscaled_cursor_size = OS::get_singleton()->get_environment("XCURSOR_SIZE").to_int();
 	if (unscaled_cursor_size <= 0) {

@@ -434,7 +434,7 @@ private:
 
 	List<Ref<Message>> messages;
 
-	const char *cursor_theme_name = "default";
+	String cursor_theme_name;
 	int unscaled_cursor_size = 24;
 
 	// NOTE: Regarding screen scale handling, the cursor cache is currently
