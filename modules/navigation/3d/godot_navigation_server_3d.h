@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_navigation_server.h                                             */
+/*  godot_navigation_server_3d.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_NAVIGATION_SERVER_H
-#define GODOT_NAVIGATION_SERVER_H
+#ifndef GODOT_NAVIGATION_SERVER_3D_H
+#define GODOT_NAVIGATION_SERVER_3D_H
 
-#include "nav_agent.h"
-#include "nav_link.h"
-#include "nav_map.h"
-#include "nav_obstacle.h"
-#include "nav_region.h"
+#include "../nav_agent.h"
+#include "../nav_link.h"
+#include "../nav_map.h"
+#include "../nav_obstacle.h"
+#include "../nav_region.h"
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
@@ -55,17 +55,17 @@
 	virtual void F_NAME(T_0 D_0, T_1 D_1) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
-class GodotNavigationServer;
+class GodotNavigationServer3D;
 #ifndef _3D_DISABLED
 class NavMeshGenerator3D;
 #endif // _3D_DISABLED
 
 struct SetCommand {
 	virtual ~SetCommand() {}
-	virtual void exec(GodotNavigationServer *server) = 0;
+	virtual void exec(GodotNavigationServer3D *server) = 0;
 };
 
-class GodotNavigationServer : public NavigationServer3D {
+class GodotNavigationServer3D : public NavigationServer3D {
 	Mutex commands_mutex;
 	/// Mutex used to make any operation threadsafe.
 	Mutex operations_mutex;
@@ -97,8 +97,8 @@ class GodotNavigationServer : public NavigationServer3D {
 	int pm_edge_free_count = 0;
 
 public:
-	GodotNavigationServer();
-	virtual ~GodotNavigationServer();
+	GodotNavigationServer3D();
+	virtual ~GodotNavigationServer3D();
 
 	void add_command(SetCommand *command);
 
@@ -286,4 +286,4 @@ private:
 #undef COMMAND_1
 #undef COMMAND_2
 
-#endif // GODOT_NAVIGATION_SERVER_H
+#endif // GODOT_NAVIGATION_SERVER_3D_H
