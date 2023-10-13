@@ -78,13 +78,8 @@ void DisplayServerWayland::_send_window_event(WindowEvent p_event) {
 	WindowData &wd = main_window;
 
 	if (wd.window_event_callback.is_valid()) {
-		Variant var_event = Variant(p_event);
-		Variant *arg = &var_event;
-
-		Variant ret;
-		Callable::CallError ce;
-
-		wd.window_event_callback.callp((const Variant **)&arg, 1, ret, ce);
+		Variant event = int(p_event);
+		wd.window_event_callback.call(event);
 	}
 }
 
@@ -93,14 +88,9 @@ void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event)
 }
 
 void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	Variant ev = p_event;
-	Variant *evp = &ev;
-	Variant ret;
-	Callable::CallError ce;
-
 	Callable callable = main_window.input_event_callback;
 	if (callable.is_valid()) {
-		callable.callp((const Variant **)&evp, 1, ret, ce);
+		callable.call(p_event);
 	}
 }
 
@@ -122,13 +112,7 @@ void DisplayServerWayland::_resize_window(Size2i size) {
 #endif
 
 	if (wd.rect_changed_callback.is_valid()) {
-		Variant var_rect = Variant(wd.rect);
-		Variant *arg = &var_rect;
-
-		Variant ret;
-		Callable::CallError ce;
-
-		wd.rect_changed_callback.callp((const Variant **)&arg, 1, ret, ce);
+		wd.rect_changed_callback.call(wd.rect);
 	}
 }
 
@@ -1056,13 +1040,7 @@ void DisplayServerWayland::process_events() {
 			WindowData wd = main_window;
 
 			if (wd.drop_files_callback.is_valid()) {
-				Variant var_files = dropfiles_msg->files;
-				Variant *arg = &var_files;
-
-				Variant ret;
-				Callable::CallError ce;
-
-				wd.drop_files_callback.callp((const Variant **)&arg, 1, ret, ce);
+				wd.drop_files_callback.call(dropfiles_msg->files);
 			}
 		}
 	}
