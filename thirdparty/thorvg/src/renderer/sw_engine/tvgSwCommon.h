@@ -205,6 +205,7 @@ struct SwDashStroke
     float* pattern = nullptr;
     uint32_t cnt = 0;
     bool curOpGap = false;
+    bool move = true;
 };
 
 struct SwShape
