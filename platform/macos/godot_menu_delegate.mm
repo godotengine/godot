@@ -56,7 +56,7 @@
 - (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item {
 	if (item) {
 		GodotMenuItem *value = [item representedObject];
-		if (value && value->hover_callback != Callable()) {
+		if (value && value->hover_callback.is_valid()) {
 			// If custom callback is set, use it.
 			value->hover_callback.call(value->meta);
 		}
@@ -73,19 +73,21 @@
 
 			if (ev_modifiers == item_modifiers) {
 				GodotMenuItem *value = [menu_item representedObject];
-				if (value->key_callback != Callable()) {
-					// If custom callback is set, use it.
-					value->key_callback.call(value->meta);
-				} else {
-					// Otherwise redirect event to the engine.
-					if (DisplayServer::get_singleton()) {
-						[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
+				if (value) {
+					if (value->key_callback.is_valid()) {
+						// If custom callback is set, use it.
+						value->key_callback.call(value->meta);
+					} else {
+						// Otherwise redirect event to the engine.
+						if (DisplayServer::get_singleton()) {
+							[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
+						}
 					}
-				}
 
-				// Suppress default menu action.
-				*target = self;
-				*action = @selector(doNothing:);
+					// Suppress default menu action.
+					*target = self;
+					*action = @selector(doNothing:);
+				}
 				return YES;
 			}
 		}
