@@ -123,9 +123,8 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 
 			if (scaling_3d_is_fsr && (scaling_3d_scale > 1.0)) {
 				// FSR is not designed for downsampling.
-				// Fall back to bilinear scaling.
-				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
-				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				// Warn and recommend bilinear scaling instead.
+				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Consider using bilinear 3D resolution scaling instead.");
 			}
 
 			bool upscaler_available = p_viewport->fsr_enabled;
