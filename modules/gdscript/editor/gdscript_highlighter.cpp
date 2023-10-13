@@ -907,6 +907,8 @@ void GDScriptSyntaxHighlighter::add_color_region(const String &p_start_key, cons
 		ERR_FAIL_COND_MSG(color_regions[i].start_key == p_start_key, "color region with start key '" + p_start_key + "' already exists.");
 		if (p_start_key.length() < color_regions[i].start_key.length()) {
 			at++;
+		} else {
+			break;
 		}
 	}
 
