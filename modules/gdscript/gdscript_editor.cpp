@@ -54,6 +54,10 @@ void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const 
 	p_delimiters->push_back("#");
 }
 
+void GDScriptLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) const {
+	p_delimiters->push_back("##");
+}
+
 void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("\" \"");
 	p_delimiters->push_back("' '");
@@ -980,7 +984,7 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 				ScriptLanguage::CodeCompletionOption option;
 				switch (member.type) {
 					case GDScriptParser::ClassNode::Member::VARIABLE:
-						if (p_only_functions || outer || (p_static)) {
+						if (p_only_functions || outer || (p_static && !member.variable->is_static)) {
 							continue;
 						}
 						option = ScriptLanguage::CodeCompletionOption(member.variable->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
@@ -1289,7 +1293,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	static const char *_keywords_with_space[] = {
 		"and", "not", "or", "in", "as", "class", "class_name", "extends", "is", "func", "signal", "await",
-		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "while",
+		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "when", "while",
 		nullptr
 	};
 
@@ -2194,7 +2198,7 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 							}
 							return true;
 						case GDScriptParser::ClassNode::Member::VARIABLE:
-							if (!is_static) {
+							if (!is_static || member.variable->is_static) {
 								if (member.variable->get_datatype().is_set() && !member.variable->get_datatype().is_variant()) {
 									r_type.type = member.variable->get_datatype();
 									return true;
@@ -2269,16 +2273,19 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 						return true;
 					}
 
-					if (!is_static) {
-						List<PropertyInfo> members;
+					List<PropertyInfo> members;
+					if (is_static) {
+						scr->get_property_list(&members);
+					} else {
 						scr->get_script_property_list(&members);
-						for (const PropertyInfo &prop : members) {
-							if (prop.name == p_identifier) {
-								r_type = _type_from_property(prop);
-								return true;
-							}
+					}
+					for (const PropertyInfo &prop : members) {
+						if (prop.name == p_identifier) {
+							r_type = _type_from_property(prop);
+							return true;
 						}
 					}
+
 					Ref<Script> parent = scr->get_base_script();
 					if (parent.is_valid()) {
 						base_type.script_type = parent;

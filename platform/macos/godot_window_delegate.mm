@@ -356,4 +356,13 @@
 	}
 }
 
+- (void)windowDidChangeOcclusionState:(NSNotification *)notification {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return;
+	}
+	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	wd.is_visible = ([wd.window_object occlusionState] & NSWindowOcclusionStateVisible) && [wd.window_object isVisible];
+}
+
 @end

@@ -729,11 +729,11 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint64_t p_
 
 	Array a = commit_to_arrays();
 
-	uint32_t compress_flags = (p_compress_flags >> RS::ARRAY_COMPRESS_FLAGS_BASE) << RS::ARRAY_COMPRESS_FLAGS_BASE;
-	static const uint32_t shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
+	uint64_t compress_flags = (p_compress_flags >> RS::ARRAY_COMPRESS_FLAGS_BASE) << RS::ARRAY_COMPRESS_FLAGS_BASE;
+	static const uint64_t shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
 		if (last_custom_format[i] != CUSTOM_MAX) {
-			compress_flags |= last_custom_format[i] << shift[i];
+			compress_flags |= uint64_t(last_custom_format[i]) << shift[i];
 		}
 	}
 
@@ -819,7 +819,7 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 		return;
 	}
 
-	int lformat = 0;
+	uint64_t lformat = 0;
 	if (varr.size()) {
 		lformat |= RS::ARRAY_FORMAT_VERTEX;
 	}

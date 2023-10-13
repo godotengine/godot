@@ -173,6 +173,10 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		return this
 	}
 
+	override fun getGodot(): Godot? {
+		return godotFragment?.godot
+	}
+
 	/**
 	 * Used to initialize the Godot fragment instance in [onCreate].
 	 */

@@ -95,7 +95,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 
 	/**
 	 * Enable multi-fingers pan & scale gestures. This is false by default.
-	 *
+	 * <p>
 	 * Note: This may interfere with multi-touch handling / support.
 	 */
 	public void enablePanningAndScalingGestures(boolean enable) {

@@ -149,7 +149,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						// Check if it's the whole line.
 						if (end_key_length == 0 || color_regions[c].line_only || from + end_key_length > line_length) {
 							// Don't skip comments, for highlighting markers.
-							if (color_regions[in_region].start_key == "#") {
+							if (color_regions[in_region].start_key.begins_with("#")) {
 								break;
 							}
 							if (from + end_key_length > line_length) {
@@ -171,7 +171,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					}
 
 					// Don't skip comments, for highlighting markers.
-					if (j == line_length && color_regions[in_region].start_key != "#") {
+					if (j == line_length && !color_regions[in_region].start_key.begins_with("#")) {
 						continue;
 					}
 				}
@@ -193,7 +193,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					highlighter_info["color"] = region_color;
 					color_map[j] = highlighter_info;
 
-					if (color_regions[in_region].start_key == "#") {
+					if (color_regions[in_region].start_key.begins_with("#")) {
 						int marker_start_pos = from;
 						int marker_len = 0;
 						while (from <= line_length) {
@@ -740,6 +740,16 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		add_color_region(beg, end, comment_color, end.is_empty());
 	}
 
+	/* Doc comments */
+	const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+	List<String> doc_comments;
+	gdscript->get_doc_comment_delimiters(&doc_comments);
+	for (const String &doc_comment : doc_comments) {
+		String beg = doc_comment.get_slice(" ", 0);
+		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
+		add_color_region(beg, end, doc_comment_color, end.is_empty());
+	}
+
 	/* Strings */
 	string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 	List<String> strings;
@@ -897,6 +907,8 @@ void GDScriptSyntaxHighlighter::add_color_region(const String &p_start_key, cons
 		ERR_FAIL_COND_MSG(color_regions[i].start_key == p_start_key, "color region with start key '" + p_start_key + "' already exists.");
 		if (p_start_key.length() < color_regions[i].start_key.length()) {
 			at++;
+		} else {
+			break;
 		}
 	}
 

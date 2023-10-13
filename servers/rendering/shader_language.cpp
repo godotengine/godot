@@ -1377,7 +1377,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 			if (p_allow_reassign) {
 				break;
 			}
-			ERR_FAIL_COND_V(!p_block->parent_block, false);
+			ERR_FAIL_NULL_V(p_block->parent_block, false);
 			p_block = p_block->parent_block;
 		}
 	}
@@ -5418,7 +5418,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 										}
 
 										if (error) {
-											_set_error(vformat(RTR("A constant value cannot be passed for '%s' parameter."), _get_qualifier_str(arg_qual)));
+											_set_error(vformat(RTR("A constant value cannot be passed for the '%s' parameter."), _get_qualifier_str(arg_qual)));
 											return nullptr;
 										}
 									}

@@ -884,6 +884,8 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		}
 	}
 
+	memdelete_arr(work_memory);
+
 	return image3d;
 }
 

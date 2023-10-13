@@ -301,7 +301,7 @@ class ArrayMesh : public Mesh {
 
 private:
 	struct Surface {
-		uint32_t format = 0;
+		uint64_t format = 0;
 		int array_length = 0;
 		int index_array_length = 0;
 		PrimitiveType primitive = PrimitiveType::PRIMITIVE_MAX;

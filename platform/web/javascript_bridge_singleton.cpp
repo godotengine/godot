@@ -72,7 +72,8 @@ private:
 	WASM_EXPORT static void _free_lock(void **p_lock, int p_type);
 	WASM_EXPORT static Variant _js2variant(int p_type, godot_js_wrapper_ex *p_val);
 	WASM_EXPORT static void *_alloc_variants(int p_size);
-	WASM_EXPORT static void _callback(void *p_ref, int p_arg_id, int p_argc);
+	WASM_EXPORT static void callback(void *p_ref, int p_arg_id, int p_argc);
+	static void _callback(const JavaScriptObjectImpl *obj, Variant arg);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value) override;
@@ -163,7 +164,7 @@ void JavaScriptObjectImpl::_get_property_list(List<PropertyInfo> *p_list) const 
 }
 
 void JavaScriptObjectImpl::_free_lock(void **p_lock, int p_type) {
-	ERR_FAIL_COND_MSG(*p_lock == nullptr, "No lock to free!");
+	ERR_FAIL_NULL_MSG(*p_lock, "No lock to free!");
 	const Variant::Type type = (Variant::Type)p_type;
 	switch (type) {
 		case Variant::STRING: {
@@ -245,9 +246,10 @@ Variant JavaScriptObjectImpl::callp(const StringName &p_method, const Variant **
 	return _js2variant(type, &exchange);
 }
 
-void JavaScriptObjectImpl::_callback(void *p_ref, int p_args_id, int p_argc) {
+void JavaScriptObjectImpl::callback(void *p_ref, int p_args_id, int p_argc) {
 	const JavaScriptObjectImpl *obj = (JavaScriptObjectImpl *)p_ref;
 	ERR_FAIL_COND_MSG(obj->_callable.is_null(), "JavaScript callback failed.");
+
 	Vector<const Variant *> argp;
 	Array arg_arr;
 	for (int i = 0; i < p_argc; i++) {
@@ -256,7 +258,20 @@ void JavaScriptObjectImpl::_callback(void *p_ref, int p_args_id, int p_argc) {
 		int type = godot_js_wrapper_object_getvar(p_args_id, Variant::INT, &exchange);
 		arg_arr.push_back(_js2variant(type, &exchange));
 	}
-	obj->_callable.call(arg_arr);
+	Variant arg = arg_arr;
+
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	if (!Thread::is_main_thread()) {
+		callable_mp_static(JavaScriptObjectImpl::_callback).bind(obj, arg).call_deferred();
+		return;
+	}
+#endif
+
+	_callback(obj, arg);
+}
+
+void JavaScriptObjectImpl::_callback(const JavaScriptObjectImpl *obj, Variant arg) {
+	obj->_callable.call(arg);
 
 	// Set return value
 	godot_js_wrapper_ex exchange;
@@ -273,7 +288,7 @@ void JavaScriptObjectImpl::_callback(void *p_ref, int p_args_id, int p_argc) {
 Ref<JavaScriptObject> JavaScriptBridge::create_callback(const Callable &p_callable) {
 	Ref<JavaScriptObjectImpl> out = memnew(JavaScriptObjectImpl);
 	out->_callable = p_callable;
-	out->_js_id = godot_js_wrapper_create_cb(out.ptr(), JavaScriptObjectImpl::_callback);
+	out->_js_id = godot_js_wrapper_create_cb(out.ptr(), JavaScriptObjectImpl::callback);
 	return out;
 }
 

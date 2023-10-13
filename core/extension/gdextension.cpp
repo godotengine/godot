@@ -218,7 +218,7 @@ public:
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_MSG(!valid, vformat("Cannot call invalid GDExtension method bind '%s'. It's probably cached - you may need to restart Godot.", name));
 #endif
-		ERR_FAIL_COND_MSG(vararg, "Validated methods don't have ptrcall support. This is most likely an engine bug.");
+		ERR_FAIL_COND_MSG(vararg, "Vararg methods don't have validated call support. This is most likely an engine bug.");
 		GDExtensionClassInstancePtr extension_instance = is_static() ? nullptr : p_object->_get_extension_instance();
 
 		if (validated_call_func) {
@@ -234,7 +234,7 @@ public:
 			void *ret_opaque = nullptr;
 			if (r_ret) {
 				VariantInternal::initialize(r_ret, return_value_info.type);
-				ret_opaque = VariantInternal::get_opaque_pointer(r_ret);
+				ret_opaque = r_ret->get_type() == Variant::NIL ? r_ret : VariantInternal::get_opaque_pointer(r_ret);
 			}
 
 			ptrcall(p_object, argptrs, ret_opaque);
@@ -776,7 +776,7 @@ void GDExtension::initialize_library(InitializationLevel p_level) {
 
 	level_initialized = int32_t(p_level);
 
-	ERR_FAIL_COND(initialization.initialize == nullptr);
+	ERR_FAIL_NULL(initialization.initialize);
 
 	initialization.initialize(initialization.userdata, GDExtensionInitializationLevel(p_level));
 }

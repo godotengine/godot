@@ -441,6 +441,10 @@ List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes)
 	return out;
 }
 
+SceneReplicationConfig *MultiplayerSynchronizer::get_replication_config_ptr() const {
+	return replication_config.ptr();
+}
+
 MultiplayerSynchronizer::MultiplayerSynchronizer() {
 	// Publicly visible by default.
 	peer_visibility.insert(0);

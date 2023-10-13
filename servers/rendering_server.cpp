@@ -907,7 +907,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 uint32_t RenderingServer::mesh_surface_get_format_offset(BitField<ArrayFormat> p_format, int p_vertex_len, int p_array_index) const {
 	ERR_FAIL_INDEX_V(p_array_index, ARRAY_MAX, 0);
-	p_format = int64_t(p_format) & ~ARRAY_FORMAT_INDEX;
+	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
@@ -918,7 +918,7 @@ uint32_t RenderingServer::mesh_surface_get_format_offset(BitField<ArrayFormat> p
 }
 
 uint32_t RenderingServer::mesh_surface_get_format_vertex_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
-	p_format = int64_t(p_format) & ~ARRAY_FORMAT_INDEX;
+	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
@@ -929,18 +929,18 @@ uint32_t RenderingServer::mesh_surface_get_format_vertex_stride(BitField<ArrayFo
 }
 
 uint32_t RenderingServer::mesh_surface_get_format_normal_tangent_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
-	p_format = int64_t(p_format) & ~ARRAY_FORMAT_INDEX;
+	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
 	uint32_t astr;
 	uint32_t sstr;
 	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, 0, offsets, vstr, ntstr, astr, sstr);
-	return vstr;
+	return ntstr;
 }
 
 uint32_t RenderingServer::mesh_surface_get_format_attribute_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
-	p_format = int64_t(p_format) & ~ARRAY_FORMAT_INDEX;
+	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
@@ -950,7 +950,7 @@ uint32_t RenderingServer::mesh_surface_get_format_attribute_stride(BitField<Arra
 	return astr;
 }
 uint32_t RenderingServer::mesh_surface_get_format_skin_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const {
-	p_format = int64_t(p_format) & ~ARRAY_FORMAT_INDEX;
+	p_format = uint64_t(p_format) & ~ARRAY_FORMAT_INDEX;
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t vstr;
 	uint32_t ntstr;
@@ -1662,7 +1662,7 @@ TypedArray<Array> RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mes
 		uint32_t normal_elem_size;
 		uint32_t attrib_elem_size;
 		uint32_t skin_elem_size;
-		//CLAY
+
 		mesh_surface_make_offsets_from_format(bs_format, sd.vertex_count, 0, bs_offsets, vertex_elem_size, normal_elem_size, attrib_elem_size, skin_elem_size);
 
 		int divisor = (vertex_elem_size + normal_elem_size) * sd.vertex_count;
@@ -1833,9 +1833,7 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 	RS::SurfaceData sd;
 
 	sd.primitive = RS::PrimitiveType(int(p_dictionary["primitive"]));
-	if (p_dictionary.has("uv_scale")) {
-		sd.format = p_dictionary["format"];
-	}
+	sd.format = p_dictionary["format"];
 	sd.vertex_data = p_dictionary["vertex_data"];
 	if (p_dictionary.has("attribute_data")) {
 		sd.attribute_data = p_dictionary["attribute_data"];
@@ -1853,7 +1851,9 @@ static RS::SurfaceData _dict_to_surf(const Dictionary &p_dictionary) {
 	}
 
 	sd.aabb = p_dictionary["aabb"];
-	sd.uv_scale = p_dictionary["uv_scale"];
+	if (p_dictionary.has("uv_scale")) {
+		sd.uv_scale = p_dictionary["uv_scale"];
+	}
 
 	if (p_dictionary.has("lods")) {
 		Array lods = p_dictionary["lods"];
@@ -2497,11 +2497,14 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_emitting", "particles", "emitting"), &RenderingServer::particles_set_emitting);
 	ClassDB::bind_method(D_METHOD("particles_get_emitting", "particles"), &RenderingServer::particles_get_emitting);
 	ClassDB::bind_method(D_METHOD("particles_set_amount", "particles", "amount"), &RenderingServer::particles_set_amount);
+	ClassDB::bind_method(D_METHOD("particles_set_amount_ratio", "particles", "ratio"), &RenderingServer::particles_set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_lifetime", "particles", "lifetime"), &RenderingServer::particles_set_lifetime);
 	ClassDB::bind_method(D_METHOD("particles_set_one_shot", "particles", "one_shot"), &RenderingServer::particles_set_one_shot);
 	ClassDB::bind_method(D_METHOD("particles_set_pre_process_time", "particles", "time"), &RenderingServer::particles_set_pre_process_time);
 	ClassDB::bind_method(D_METHOD("particles_set_explosiveness_ratio", "particles", "ratio"), &RenderingServer::particles_set_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_randomness_ratio", "particles", "ratio"), &RenderingServer::particles_set_randomness_ratio);
+	ClassDB::bind_method(D_METHOD("particles_set_interp_to_end", "particles", "factor"), &RenderingServer::particles_set_interp_to_end);
+	ClassDB::bind_method(D_METHOD("particles_set_emitter_velocity", "particles", "velocity"), &RenderingServer::particles_set_emitter_velocity);
 	ClassDB::bind_method(D_METHOD("particles_set_custom_aabb", "particles", "aabb"), &RenderingServer::particles_set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("particles_set_speed_scale", "particles", "scale"), &RenderingServer::particles_set_speed_scale);
 	ClassDB::bind_method(D_METHOD("particles_set_use_local_coordinates", "particles", "enable"), &RenderingServer::particles_set_use_local_coordinates);

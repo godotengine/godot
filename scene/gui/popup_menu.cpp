@@ -2170,14 +2170,16 @@ int PopupMenu::get_item_count() const {
 void PopupMenu::scroll_to_item(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	// Scroll item into view (upwards).
-	if (items[p_idx]._ofs_cache - scroll_container->get_v_scroll() < -control->get_position().y) {
-		scroll_container->set_v_scroll(items[p_idx]._ofs_cache + control->get_position().y);
-	}
+	// Calculate the position of the item relative to the visible area.
+	int item_y = items[p_idx]._ofs_cache;
+	int visible_height = scroll_container->get_size().height;
+	int relative_y = item_y - scroll_container->get_v_scroll();
 
-	// Scroll item into view (downwards).
-	if (items[p_idx]._ofs_cache + items[p_idx]._height_cache - scroll_container->get_v_scroll() > -control->get_position().y + scroll_container->get_size().height) {
-		scroll_container->set_v_scroll(items[p_idx]._ofs_cache + items[p_idx]._height_cache + control->get_position().y);
+	// If item is not fully visible, adjust scroll.
+	if (relative_y < 0) {
+		scroll_container->set_v_scroll(item_y);
+	} else if (relative_y + items[p_idx]._height_cache > visible_height) {
+		scroll_container->set_v_scroll(item_y + items[p_idx]._height_cache - visible_height);
 	}
 }
 

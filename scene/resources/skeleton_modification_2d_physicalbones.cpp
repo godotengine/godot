@@ -186,7 +186,7 @@ void SkeletonModification2DPhysicalBones::set_physical_bone_chain_length(int p_l
 
 void SkeletonModification2DPhysicalBones::fetch_physical_bones() {
 	ERR_FAIL_NULL_MSG(stack, "No modification stack found! Cannot fetch physical bones!");
-	ERR_FAIL_COND_MSG(!stack->skeleton, "No skeleton found! Cannot fetch physical bones!");
+	ERR_FAIL_NULL_MSG(stack->skeleton, "No skeleton found! Cannot fetch physical bones!");
 
 	physical_bone_chain.clear();
 

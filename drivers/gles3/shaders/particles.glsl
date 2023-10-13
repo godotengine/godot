@@ -78,7 +78,7 @@ layout(std140) uniform FrameData { //ubo:0
 	float delta;
 
 	float particle_size;
-	float pad0;
+	float amount_ratio;
 	float pad1;
 	float pad2;
 
@@ -88,6 +88,9 @@ layout(std140) uniform FrameData { //ubo:0
 	uint frame;
 
 	mat4 emission_transform;
+
+	vec3 emitter_velocity;
+	float interp_to_end;
 
 	Attractor attractors[MAX_ATTRACTORS];
 	Collider colliders[MAX_COLLIDERS];

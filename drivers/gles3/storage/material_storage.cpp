@@ -1395,6 +1395,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["DELTA"] = "local_delta";
 		actions.renames["NUMBER"] = "particle_number";
 		actions.renames["INDEX"] = "index";
+		actions.renames["AMOUNT_RATIO"] = "amount_ratio";
 		//actions.renames["GRAVITY"] = "current_gravity";
 		actions.renames["EMISSION_TRANSFORM"] = "emission_transform";
 		actions.renames["RANDOM_SEED"] = "random_seed";
@@ -1407,6 +1408,8 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["COLLISION_NORMAL"] = "collision_normal";
 		actions.renames["COLLISION_DEPTH"] = "collision_depth";
 		actions.renames["ATTRACTOR_FORCE"] = "attractor_force";
+		actions.renames["EMITTER_VELOCITY"] = "emitter_velocity";
+		actions.renames["INTERPOLATE_TO_END"] = "interp_to_end";
 
 		// These are unsupported, but may be used by users. To avoid compile time overhead, we add the stub only when used.
 		actions.renames["FLAG_EMIT_POSITION"] = "uint(1)";
@@ -2396,7 +2399,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 		return;
 	}
 
-	ERR_FAIL_COND(shader->data == nullptr);
+	ERR_FAIL_NULL(shader->data);
 
 	material->data = material_data_request_func[shader->mode](shader->data);
 	material->data->self = p_material;

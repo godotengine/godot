@@ -28,7 +28,7 @@ partial class AnimationNode
 
 partial class AnimationPlayer
 {
-    /// <inheritdoc cref="CallbackModeMethod"/>
+    /// <inheritdoc cref="AnimationMixer.CallbackModeMethod"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public AnimationMethodCallMode MethodCallMode
     {
@@ -36,7 +36,7 @@ partial class AnimationPlayer
         set => CallbackModeMethod = (AnimationCallbackModeMethod)value;
     }
 
-    /// <inheritdoc cref="Active"/>
+    /// <inheritdoc cref="AnimationMixer.Active"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool PlaybackActive
     {
@@ -44,7 +44,7 @@ partial class AnimationPlayer
         set => Active = value;
     }
 
-    /// <inheritdoc cref="CallbackModeProcess"/>
+    /// <inheritdoc cref="AnimationMixer.CallbackModeProcess"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public AnimationProcessCallback PlaybackProcessMode
     {
@@ -55,7 +55,7 @@ partial class AnimationPlayer
 
 partial class AnimationTree
 {
-    /// <inheritdoc cref="CallbackModeProcess"/>
+    /// <inheritdoc cref="AnimationMixer.CallbackModeProcess"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public AnimationProcessCallback ProcessCallback
     {
@@ -120,7 +120,7 @@ partial class GraphEdit
 
 partial class GraphNode
 {
-    /// <inheritdoc cref="DeleteRequest"/>
+    /// <inheritdoc cref="GraphElement.DeleteRequest"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public event Action CloseRequest
     {

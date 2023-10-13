@@ -34,6 +34,7 @@
 #include "../rasterizer_gles3.h"
 #include "../rasterizer_scene_gles3.h"
 #include "config.h"
+#include "core/config/project_settings.h"
 #include "texture_storage.h"
 
 using namespace GLES3;
@@ -46,6 +47,11 @@ LightStorage *LightStorage::get_singleton() {
 
 LightStorage::LightStorage() {
 	singleton = this;
+
+	directional_shadow.size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
+	directional_shadow.use_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
+
+	// lightmap_probe_capture_update_speed = GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed");
 }
 
 LightStorage::~LightStorage() {

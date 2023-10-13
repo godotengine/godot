@@ -1487,7 +1487,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                                            \
 	{                                                                                       \
 		fp##entrypoint = (PFN_vk##entrypoint)vkGetInstanceProcAddr(inst, "vk" #entrypoint); \
-		ERR_FAIL_COND_V_MSG(fp##entrypoint == nullptr, ERR_CANT_CREATE,                     \
+		ERR_FAIL_NULL_V_MSG(fp##entrypoint, ERR_CANT_CREATE,                                \
 				"vkGetInstanceProcAddr failed to find vk" #entrypoint);                     \
 	}
 
@@ -1689,7 +1689,7 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 		if (!g_gdpa)                                                                              \
 			g_gdpa = (PFN_vkGetDeviceProcAddr)vkGetInstanceProcAddr(inst, "vkGetDeviceProcAddr"); \
 		fp##entrypoint = (PFN_vk##entrypoint)g_gdpa(dev, "vk" #entrypoint);                       \
-		ERR_FAIL_COND_V_MSG(fp##entrypoint == nullptr, ERR_CANT_CREATE,                           \
+		ERR_FAIL_NULL_V_MSG(fp##entrypoint, ERR_CANT_CREATE,                                      \
 				"vkGetDeviceProcAddr failed to find vk" #entrypoint);                             \
 	}
 

@@ -118,6 +118,7 @@ public:
 
 	List<Variant> get_delta_state(uint64_t p_cur_usec, uint64_t p_last_usec, uint64_t &r_indexes);
 	List<NodePath> get_delta_properties(uint64_t p_indexes);
+	SceneReplicationConfig *get_replication_config_ptr() const;
 
 	MultiplayerSynchronizer();
 };
