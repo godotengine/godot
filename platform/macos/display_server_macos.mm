@@ -649,7 +649,7 @@ void DisplayServerMacOS::menu_callback(id p_sender) {
 			}
 		}
 
-		if (value->callback != Callable()) {
+		if (value->callback.is_valid()) {
 			MenuCall mc;
 			mc.tag = value->meta;
 			mc.callback = value->callback;
