@@ -89,6 +89,10 @@ void Node3DEditorCameraCursor::set_freelook_mode(bool p_enabled) {
 	stop_interpolation(false);
 }
 
+bool Node3DEditorCameraCursor::get_freelook_mode() const {
+	return freelook_mode;
+}
+
 void Node3DEditorCameraCursor::move_freelook(const Vector3& p_direction, real_t p_speed, real_t p_delta) {
 	if (!freelook_mode) {
 		return;

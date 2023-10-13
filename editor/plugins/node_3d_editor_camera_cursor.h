@@ -109,6 +109,8 @@ public:
 	/** Enables the free look mode, which may affect the way the interpolation is calculated. */
 	void set_freelook_mode(bool p_enabled);
 
+	bool get_freelook_mode() const;
+
 	/** Moves in free look mode. Free look mode must be enabled. */
 	void move_freelook(const Vector3& p_direction, real_t p_speed, real_t p_delta);
 

@@ -129,6 +129,8 @@ void Node3DEditorCameraManager::stop_piloting() {
 	if (!node_being_piloted) {
 		return;
 	}
+	cursor.stop_interpolation(true);
+	commit_pilot_transform();
 	node_being_piloted->disconnect("tree_exited", callable_mp(this, &Node3DEditorCameraManager::stop_piloting));
 	node_being_piloted = nullptr;
 	emit_signal(SNAME("camera_mode_changed"));
@@ -298,7 +300,6 @@ void Node3DEditorCameraManager::navigation_pan(const Vector2& p_direction, float
 
 void Node3DEditorCameraManager::navigation_zoom_to_distance(float p_zoom) {
 	cursor.move_distance_to(p_zoom);
-	commit_pilot_transform();
 }
 
 void Node3DEditorCameraManager::navigation_orbit(const Vector2& p_rotation) {
@@ -402,6 +403,11 @@ void Node3DEditorCameraManager::update_camera(float p_interp_delta) {
 		}
 		update_pilot_transform();
 		emit_signal(SNAME("camera_updated"));
+	}
+	// If not in free look mode, will commit the pilot transform each time the movement interpolation stops;
+	// also, it will do nothing if the pilot didn't move at all:
+	if (!cursor.get_freelook_mode() && !cursor_changed) {
+		commit_pilot_transform();
 	}
 }
 
