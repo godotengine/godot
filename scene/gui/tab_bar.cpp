@@ -567,6 +567,8 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 		rb->draw(ci, Point2i(rb_rect.position.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
 
 		p_x = rtl ? rb_rect.position.x : rb_rect.position.x + rb_rect.size.width;
+	} else {
+		tabs.write[p_index].rb_rect = Rect2();
 	}
 
 	// Draw and calculate rect of the close button.
