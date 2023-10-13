@@ -1,13 +1,13 @@
 func test():
-    var instance := TestClass.new()
-    instance.public()
-    instance._private()
+	var instance := TestClass.new()
+	instance.public()
+	instance._private()
 
 
 class TestClass:
 
-    func public():
-        pass
-    
-    func _private():
-        pass
+	func public():
+		pass
+
+	func _private():
+		pass
