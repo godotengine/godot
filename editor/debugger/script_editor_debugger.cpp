@@ -1871,11 +1871,15 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		vbc->add_child(parent_sc);
 		parent_sc->set_v_size_flags(SIZE_EXPAND_FILL);
 		parent_sc->set_split_offset(500 * EDSCALE);
+		parent_sc->set_push_nested(true);
+		parent_sc->set_resize_separately(true);
 
 		HSplitContainer *sc = memnew(HSplitContainer);
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
 		sc->set_h_size_flags(SIZE_EXPAND_FILL);
 		parent_sc->add_child(sc);
+		sc->set_push_nested(true);
+		sc->set_resize_separately(true);
 
 		VBoxContainer *stack_vb = memnew(VBoxContainer);
 		stack_vb->set_h_size_flags(SIZE_EXPAND_FILL);

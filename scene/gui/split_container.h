@@ -45,8 +45,11 @@ private:
 	int drag_from = 0;
 	int drag_ofs = 0;
 	bool mouse_inside = false;
+	float expand_multiplier = 0;
 
 public:
+	bool is_dragging() const;
+
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 };
 
@@ -66,6 +69,8 @@ private:
 	int middle_sep = 0;
 	bool vertical = false;
 	bool collapsed = false;
+	bool push_nested = false;
+	bool resize_separately = false;
 	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
 
 	SplitContainerDragger *dragging_area_control = nullptr;
@@ -80,7 +85,11 @@ private:
 	} theme_cache;
 
 	Ref<Texture2D> _get_grabber_icon() const;
-	void _compute_middle_sep(bool p_clamp);
+	void _on_drag_start();
+	int _get_separate_combined_minimum_size(bool p_minimize_first_side, int p_axis) const;
+	void _push_parent(int p_delta);
+	void _adjust_child_split(bool p_first, bool p_vertical, int p_delta);
+	void _compute_middle_sep(bool p_clamp, bool p_affect_nested = false, int p_override_size = -1);
 	void _resort();
 
 protected:
@@ -99,6 +108,10 @@ public:
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed() const;
+	void set_push_nested(bool p_push_nested);
+	bool is_pushing_nested() const;
+	void set_resize_separately(bool p_resize_separately);
+	bool is_resizing_separately() const;
 
 	void set_dragger_visibility(DraggerVisibility p_visibility);
 	DraggerVisibility get_dragger_visibility() const;

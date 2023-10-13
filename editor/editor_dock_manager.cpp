@@ -657,11 +657,15 @@ bool EditorDockManager::are_docks_visible() const {
 void EditorDockManager::add_vsplit(DockSplitContainer *p_split) {
 	vsplits.push_back(p_split);
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+	p_split->set_push_nested(true);
+	p_split->set_resize_separately(true);
 }
 
 void EditorDockManager::add_hsplit(DockSplitContainer *p_split) {
 	hsplits.push_back(p_split);
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+	p_split->set_push_nested(true);
+	p_split->set_resize_separately(true);
 }
 
 void EditorDockManager::register_dock_slot(DockSlot p_dock_slot, TabContainer *p_tab_container) {

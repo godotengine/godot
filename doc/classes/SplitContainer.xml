@@ -24,6 +24,13 @@
 		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" enum="SplitContainer.DraggerVisibility" default="0">
 			Determines the dragger's visibility. See [enum DraggerVisibility] for details.
 		</member>
+		<member name="push_nested" type="bool" setter="set_push_nested" getter="is_pushing_nested" default="false">
+			If [code]true[/code], the [SplitContainer] will adjust its parent's [member split_offset] when dragging has reached the child's minimum size so dragging can continue. This can be chained in multiple [SplitContainer]s.
+			[b]Note:[/b] If the parent [SplitContainer] is not aligned with [member vertical], its parent will be used instead. If the parent is not a [SplitContainer], nothing happens.
+		</member>
+		<member name="resize_separately" type="bool" setter="set_resize_separately" getter="is_resizing_separately" default="false">
+			If [code]true[/code], the [SplitContainer] will adjust its child's [member split_offset] when dragging so only the closest split gets resized, until prevented by the child's minimum size. If [member push_nested] is [code]false[/code], dragging cannot continue past its descendent [SplitContainer]s [member split_offset] if it is in the same [member vertical] direction.
+		</member>
 		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset" default="0">
 			The initial offset of the splitting between the two [Control]s, with [code]0[/code] being at the end of the first [Control].
 		</member>
