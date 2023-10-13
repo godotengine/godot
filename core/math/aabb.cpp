@@ -117,16 +117,15 @@ AABB AABB::intersection(const AABB &p_aabb) const {
 	return AABB(min, max - min);
 }
 
-bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip, Vector3 *r_normal) const {
+bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_intersection_point, Vector3 *r_normal) const {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
 	}
 #endif
-	Vector3 c1, c2;
 	Vector3 end = position + size;
-	real_t near = -1e20;
-	real_t far = 1e20;
+	real_t tmin = 0.0;
+	real_t tmax = 1e20;
 	int axis = 0;
 
 	for (int i = 0; i < 3; i++) {
@@ -135,27 +134,30 @@ bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *
 				return false;
 			}
 		} else { // ray not parallel to planes in this direction
-			c1[i] = (position[i] - p_from[i]) / p_dir[i];
-			c2[i] = (end[i] - p_from[i]) / p_dir[i];
+			real_t t1 = (position[i] - p_from[i]) / p_dir[i];
+			real_t t2 = (end[i] - p_from[i]) / p_dir[i];
 
-			if (c1[i] > c2[i]) {
-				SWAP(c1, c2);
+			if (t1 > t2) {
+				SWAP(t1, t2);
 			}
-			if (c1[i] > near) {
-				near = c1[i];
+
+			if (t1 > tmin) {
+				tmin = t1;
 				axis = i;
 			}
-			if (c2[i] < far) {
-				far = c2[i];
+
+			if (t2 < tmax) {
+				tmax = t2;
 			}
-			if ((near > far) || (far < 0)) {
+
+			if (tmin > tmax) {
 				return false;
 			}
 		}
 	}
 
-	if (r_clip) {
-		*r_clip = c1;
+	if (r_intersection_point) {
+		*r_intersection_point = p_from + p_dir * tmin;
 	}
 	if (r_normal) {
 		*r_normal = Vector3();
@@ -165,7 +167,7 @@ bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *
 	return true;
 }
 
-bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip, Vector3 *r_normal) const {
+bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_intersection_point, Vector3 *r_normal) const {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
@@ -223,8 +225,8 @@ bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector
 		*r_normal = normal;
 	}
 
-	if (r_clip) {
-		*r_clip = p_from + rel * min;
+	if (r_intersection_point) {
+		*r_intersection_point = p_from + rel * min;
 	}
 
 	return true;
