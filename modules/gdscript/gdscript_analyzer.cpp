@@ -3347,7 +3347,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, p_call->function_name, caller_type);
 		}
 
-		if (((String) p_call->function_name).begins_with("_")) {
+		if (String(p_call->function_name).begins_with("_")) {
 			parser->push_warning(p_call, GDScriptWarning::PRIVATE_METHOD_ACCESS, p_call->function_name);
 		}
 #endif // DEBUG_ENABLED
