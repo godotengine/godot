@@ -114,9 +114,9 @@ if profile:
 
 # Defaults.
 defaults = {
-    "target": { "default": "editor", "converter": lambda v: v },
-    "use_mingw": { "default": False, "converter": BoolVariable("", "", False)[4] },
-    "custom_tools": { "default": ["default"], "converter": lambda v: v.split(",") },
+    "target": {"default": "editor", "converter": lambda v: v},
+    "use_mingw": {"default": False, "converter": BoolVariable("", "", False)[4]},
+    "custom_tools": {"default": ["default"], "converter": lambda v: v.split(",")},
 }
 
 # We'll parse these as strings first, so we can tell if they've been set explicitely.
