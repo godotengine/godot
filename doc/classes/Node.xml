@@ -228,9 +228,9 @@
 		<method name="find_child" qualifiers="const">
 			<return type="Node" />
 			<param index="0" name="pattern" type="String" />
-			<param index="1" name="type" type="String" default="&quot;&quot;" />
-			<param index="2" name="recursive" type="bool" default="true" />
-			<param index="3" name="owned" type="bool" default="true" />
+			<param index="1" name="recursive" type="bool" default="true" />
+			<param index="2" name="owned" type="bool" default="true" />
+			<param index="3" name="type" type="String" default="&quot;&quot;" />
 			<description>
 				Finds the first descendant of this node whose name matches [param pattern] as in [method String.match], and/or type matches [param type] as in [method Object.is_class]. Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
 				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code].

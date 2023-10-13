@@ -241,6 +241,7 @@ private:
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;
 
 	TypedArray<StringName> _get_groups() const;
+	bool _is_node_of_type(const Node *p_node, const String &p_type) const;
 
 	Error _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Error _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -398,7 +399,7 @@ public:
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
-	Node *find_child(const String &p_pattern, const String &p_type, bool p_recursive = true, bool p_owned = true) const;
+	Node *find_child(const String &p_pattern, bool p_recursive = true, bool p_owned = true, const String &p_type = "") const;
 	TypedArray<Node> find_children(const String &p_pattern, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
