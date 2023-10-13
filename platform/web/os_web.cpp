@@ -160,6 +160,12 @@ String OS_Web::get_name() const {
 	return "Web";
 }
 
+void OS_Web::add_frame_delay(bool p_can_draw) {
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	OS::add_frame_delay(p_can_draw);
+#endif
+}
+
 void OS_Web::vibrate_handheld(int p_duration_ms) {
 	godot_js_input_vibrate_handheld(p_duration_ms);
 }

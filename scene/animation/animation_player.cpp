@@ -415,9 +415,16 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	}
 
 	c.current.from = &animation_set[name];
+	c.current.speed_scale = p_custom_scale;
+
+	if (!end_reached) {
+		playback_queue.clear();
+	}
 
 	if (c.assigned != name) { // Reset.
 		c.current.pos = p_from_end ? c.current.from->animation->get_length() : 0;
+		c.assigned = name;
+		emit_signal(SNAME("current_animation_changed"), c.assigned);
 	} else {
 		if (p_from_end && c.current.pos == 0) {
 			// Animation reset but played backwards, set position to the end.
@@ -425,18 +432,14 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 		} else if (!p_from_end && c.current.pos == c.current.from->animation->get_length()) {
 			// Animation resumed but already ended, set position to the beginning.
 			c.current.pos = 0;
+		} else if (playing) {
+			return;
 		}
 	}
 
-	c.current.speed_scale = p_custom_scale;
-	c.assigned = name;
-	emit_signal(SNAME("current_animation_changed"), c.assigned);
 	c.seeked = false;
 	c.started = true;
 
-	if (!end_reached) {
-		playback_queue.clear();
-	}
 	_set_process(true); // Always process when starting an animation.
 	playing = true;
 
@@ -541,12 +544,12 @@ bool AnimationPlayer::is_valid() const {
 }
 
 double AnimationPlayer::get_current_animation_position() const {
-	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
+	ERR_FAIL_NULL_V_MSG(playback.current.from, 0, "AnimationPlayer has no current animation.");
 	return playback.current.pos;
 }
 
 double AnimationPlayer::get_current_animation_length() const {
-	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
+	ERR_FAIL_NULL_V_MSG(playback.current.from, 0, "AnimationPlayer has no current animation.");
 	return playback.current.from->animation->get_length();
 }
 

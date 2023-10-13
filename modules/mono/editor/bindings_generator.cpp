@@ -264,7 +264,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		} else if (code_tag) {
 			xml_output.append("[");
 			pos = brk_pos + 1;
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
 			const int tag_end = tag.find(" ");
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
@@ -298,6 +298,12 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			if (link_tag == "method") {
 				_append_xml_method(xml_output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "constructor") {
+				// TODO: Support constructors?
+				_append_xml_undeclared(xml_output, link_target);
+			} else if (link_tag == "operator") {
+				// TODO: Support operators?
+				_append_xml_undeclared(xml_output, link_target);
 			} else if (link_tag == "member") {
 				_append_xml_member(xml_output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "signal") {
@@ -401,29 +407,29 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag == "code") {
+		} else if (tag == "code" || tag.begins_with("code ")) {
 			xml_output.append("<c>");
 
 			code_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
-		} else if (tag == "codeblock") {
+			tag_stack.push_front("code");
+		} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
 			xml_output.append("<code>");
 
 			code_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("codeblock");
 		} else if (tag == "codeblocks") {
 			line_del = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag == "csharp") {
+		} else if (tag == "csharp" || tag.begins_with("csharp ")) {
 			xml_output.append("<code>");
 
 			line_del = false;
 			code_tag = true;
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("csharp");
 		} else if (tag == "kbd") {
 			// keyboard combinations are not supported in xml comments
 			pos = brk_end + 1;

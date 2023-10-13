@@ -206,6 +206,7 @@ void TextServer::_bind_methods() {
 	/* Font Interface */
 
 	ClassDB::bind_method(D_METHOD("create_font"), &TextServer::create_font);
+	ClassDB::bind_method(D_METHOD("create_font_linked_variation", "font_rid"), &TextServer::create_font_linked_variation);
 
 	ClassDB::bind_method(D_METHOD("font_set_data", "font_rid", "data"), &TextServer::font_set_data);
 

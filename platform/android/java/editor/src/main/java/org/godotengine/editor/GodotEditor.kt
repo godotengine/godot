@@ -91,10 +91,6 @@ open class GodotEditor : GodotActivity() {
 	private val commandLineParams = ArrayList<String>()
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		// We exclude certain permissions from the set we request at startup, as they'll be
-		// requested on demand based on use-cases.
-		PermissionsUtil.requestManifestPermissions(this, setOf(Manifest.permission.RECORD_AUDIO))
-
 		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 		Log.d(TAG, "Received parameters ${params.contentToString()}")
 		updateCommandLineParams(params)

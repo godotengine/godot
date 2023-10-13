@@ -65,6 +65,7 @@ private:
 	bool signal_canceled = false;
 	bool one_shot = false;
 	int amount = 0;
+	float amount_ratio = 1.0;
 	double lifetime = 0.0;
 	double pre_process_time = 0.0;
 	real_t explosiveness_ratio = 0.0;
@@ -93,6 +94,8 @@ private:
 	double time = 0.0;
 	double emission_time = 0.0;
 	double active_time = 0.0;
+	float interp_to_end_factor = 0;
+	Vector3 previous_position;
 
 	void _attach_sub_emitter();
 
@@ -120,9 +123,11 @@ public:
 	void set_collision_base_size(real_t p_ratio);
 	void set_trail_enabled(bool p_enabled);
 	void set_trail_lifetime(double p_seconds);
+	void set_interp_to_end(float p_interp);
 
 	bool is_emitting() const;
 	int get_amount() const;
+
 	double get_lifetime() const;
 	bool get_one_shot() const;
 	double get_pre_process_time() const;
@@ -135,6 +140,10 @@ public:
 	real_t get_collision_base_size() const;
 	bool is_trail_enabled() const;
 	double get_trail_lifetime() const;
+	float get_interp_to_end() const;
+
+	void set_amount_ratio(float p_ratio);
+	float get_amount_ratio() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;

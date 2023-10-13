@@ -339,7 +339,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	// prev_dir is the directory we are changing out of
 	String prev_dir;
 	char real_current_dir_name[2048];
-	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
+	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ERR_BUG);
 	if (prev_dir.parse_utf8(real_current_dir_name) != OK) {
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 	}
@@ -361,7 +361,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 
 	String base = _get_root_path();
 	if (!base.is_empty() && !try_dir.begins_with(base)) {
-		ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
+		ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ERR_BUG);
 		String new_dir;
 		new_dir.parse_utf8(real_current_dir_name);
 
@@ -496,7 +496,7 @@ DirAccessUnix::DirAccessUnix() {
 
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
-	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == nullptr);
+	ERR_FAIL_NULL(getcwd(real_current_dir_name, 2048));
 	if (current_dir.parse_utf8(real_current_dir_name) != OK) {
 		current_dir = real_current_dir_name;
 	}

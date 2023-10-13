@@ -139,6 +139,7 @@ private:
 		void *swapchain_graphics_data = nullptr;
 		uint32_t image_index = 0;
 		bool image_acquired = false;
+		bool skip_acquire_swapchain = false;
 	};
 
 	OpenXRSwapChainInfo swapchains[OPENXR_SWAPCHAIN_MAX];

@@ -848,13 +848,6 @@ void SpriteFramesEditor::_animation_selected() {
 		return;
 	}
 
-	if (frames->has_animation(edited_anim)) {
-		double value = anim_speed->get_line_edit()->get_text().to_float();
-		if (!Math::is_equal_approx(value, (double)frames->get_animation_speed(edited_anim))) {
-			_animation_speed_changed(value);
-		}
-	}
-
 	TreeItem *selected = animations->get_selected();
 	ERR_FAIL_NULL(selected);
 	edited_anim = selected->get_text(0);
@@ -1136,18 +1129,16 @@ void SpriteFramesEditor::_frame_duration_changed(double p_value) {
 		return;
 	}
 
-	int index = frame_list->get_current();
+	int index = sel;
 	if (index < 0) {
 		return;
 	}
-
-	sel = index;
 
 	Ref<Texture2D> texture = frames->get_frame_texture(edited_anim, index);
 	float old_duration = frames->get_frame_duration(edited_anim, index);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set Frame Duration"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->create_action(TTR("Set Frame Duration"), UndoRedo::MERGE_ENDS, EditorNode::get_singleton()->get_edited_scene());
 	undo_redo->add_do_method(frames.ptr(), "set_frame", edited_anim, index, texture, p_value);
 	undo_redo->add_undo_method(frames.ptr(), "set_frame", edited_anim, index, texture, old_duration);
 	undo_redo->add_do_method(this, "_update_library");
@@ -1194,7 +1185,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 	updating = true;
 
-	frame_duration->set_value(1.0); // Default.
+	frame_duration->set_value_no_signal(1.0); // Default.
 
 	if (!p_skip_selector) {
 		animations->clear();
@@ -1242,9 +1233,9 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	if (animated_sprite) {
 		String autoplay_name = animated_sprite->call("get_autoplay");
 		if (autoplay_name.is_empty()) {
-			autoplay->set_pressed(false);
+			autoplay->set_pressed_no_signal(false);
 		} else {
-			autoplay->set_pressed(String(edited_anim) == autoplay_name);
+			autoplay->set_pressed_no_signal(String(edited_anim) == autoplay_name);
 		}
 	}
 
@@ -1296,12 +1287,12 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		}
 		if (sel == i) {
 			frame_list->select(frame_list->get_item_count() - 1);
-			frame_duration->set_value(frames->get_frame_duration(edited_anim, i));
+			frame_duration->set_value_no_signal(frames->get_frame_duration(edited_anim, i));
 		}
 	}
 
-	anim_speed->set_value(frames->get_animation_speed(edited_anim));
-	anim_loop->set_pressed(frames->get_animation_loop(edited_anim));
+	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
+	anim_loop->set_pressed_no_signal(frames->get_animation_loop(edited_anim));
 
 	updating = false;
 }
@@ -1707,7 +1698,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(animations);
 	animations->set_v_size_flags(SIZE_EXPAND_FILL);
 	animations->set_hide_root(true);
-	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected));
+	// HACK: The cell_selected signal is emitted before the FPS spinbox loses focus and applies the change.
+	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected), CONNECT_DEFERRED);
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
 	animations->set_allow_reselect(true);
 
@@ -1836,6 +1828,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_duration->set_custom_arrow_step(0.1);
 	frame_duration->set_allow_lesser(false);
 	frame_duration->set_allow_greater(true);
+	frame_duration->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_frame_duration_changed));
 	hbc_frame_duration->add_child(frame_duration);
 
 	// Wide empty separation control. (like BoxContainer::add_spacer())
@@ -1866,6 +1859,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_zoom->add_child(zoom_in);
 
 	file = memnew(EditorFileDialog);
+	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request).bind(-1));
 	add_child(file);
 
 	frame_list = memnew(ItemList);
@@ -1878,8 +1872,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_max_text_lines(2);
 	SET_DRAG_FORWARDING_GCD(frame_list, SpriteFramesEditor);
 	frame_list->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_frame_list_gui_input));
-	frame_list->connect("item_selected", callable_mp(this, &SpriteFramesEditor::_frame_list_item_selected));
-
+	// HACK: The item_selected signal is emitted before the Frame Duration spinbox loses focus and applies the change.
+	frame_list->connect("item_selected", callable_mp(this, &SpriteFramesEditor::_frame_list_item_selected), CONNECT_DEFERRED);
 	sub_vb->add_child(frame_list);
 
 	dialog = memnew(AcceptDialog);
@@ -1921,8 +1915,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	zoom_in->set_shortcut(ED_SHORTCUT_ARRAY("sprite_frames/zoom_in", TTR("Zoom In"),
 			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 
-	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request).bind(-1));
-	frame_duration->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_frame_duration_changed));
 	loading_scene = false;
 	sel = -1;
 

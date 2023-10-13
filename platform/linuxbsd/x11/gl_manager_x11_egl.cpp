@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  sprite_3d_gizmo_plugin.cpp                                            */
+/*  gl_manager_x11_egl.cpp                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "sprite_3d_gizmo_plugin.h"
+#include "gl_manager_x11_egl.h"
 
-#include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/sprite_3d.h"
+#if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
-Sprite3DGizmoPlugin::Sprite3DGizmoPlugin() {
+#include <stdio.h>
+#include <stdlib.h>
+
+const char *GLManagerEGL_X11::_get_platform_extension_name() const {
+	return "EGL_KHR_platform_x11";
 }
 
-bool Sprite3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Sprite3D>(p_spatial) != nullptr;
+EGLenum GLManagerEGL_X11::_get_platform_extension_enum() const {
+	return EGL_PLATFORM_X11_KHR;
 }
 
-String Sprite3DGizmoPlugin::get_gizmo_name() const {
-	return "Sprite3D";
+Vector<EGLAttrib> GLManagerEGL_X11::_get_platform_display_attributes() const {
+	return Vector<EGLAttrib>();
 }
 
-int Sprite3DGizmoPlugin::get_priority() const {
-	return -1;
+EGLenum GLManagerEGL_X11::_get_platform_api_enum() const {
+	return EGL_OPENGL_ES_API;
 }
 
-bool Sprite3DGizmoPlugin::can_be_hidden() const {
-	return false;
+Vector<EGLint> GLManagerEGL_X11::_get_platform_context_attribs() const {
+	Vector<EGLint> ret;
+	ret.push_back(EGL_CONTEXT_CLIENT_VERSION);
+	ret.push_back(3);
+	ret.push_back(EGL_NONE);
+
+	return ret;
 }
 
-void Sprite3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Sprite3D *sprite = Object::cast_to<Sprite3D>(p_gizmo->get_node_3d());
-
-	p_gizmo->clear();
-
-	Ref<TriangleMesh> tm = sprite->generate_triangle_mesh();
-	if (tm.is_valid()) {
-		p_gizmo->add_collision_triangles(tm);
-	}
-}
+#endif // WINDOWS_ENABLED && GLES3_ENABLED

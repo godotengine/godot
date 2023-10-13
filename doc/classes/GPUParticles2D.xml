@@ -50,6 +50,10 @@
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
 			Number of particles emitted in one emission cycle.
 		</member>
+		<member name="amount_ratio" type="float" setter="set_amount_ratio" getter="get_amount_ratio" default="1.0">
+			The ratio of particles that should actually be emitted. If set to a value lower than [code]1.0[/code], this will set the amount of emitted particles throughout the lifetime to [code]amount * amount_ratio[/code]. Unlike changing [member amount], changing [member amount_ratio] while emitting does not affect already-emitted particles and doesn't cause the particle system to restart. [member amount_ratio] can be used to create effects that make the number of emitted particles vary over time.
+			[b]Note:[/b] Reducing the [member amount_ratio] has no performance benefit, since resources need to be allocated and processed for the total [member amount] of particles regardless of the [member amount_ratio].
+		</member>
 		<member name="collision_base_size" type="float" setter="set_collision_base_size" getter="get_collision_base_size" default="1.0">
 			Multiplier for particle's collision radius. [code]1.0[/code] corresponds to the size of the sprite.
 		</member>
@@ -67,6 +71,10 @@
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
+		</member>
+		<member name="interp_to_end" type="float" setter="set_interp_to_end" getter="get_interp_to_end" default="0.0">
+			Causes all the particles in this node to interpolate towards the end of their lifetime.
+			[b]Note[/b]: This only works when used with a [ParticleProcessMaterial]. It needs to be manually implemented for custom process shaders.
 		</member>
 		<member name="interpolate" type="bool" setter="set_interpolate" getter="get_interpolate" default="true">
 			Enables particle interpolation, which makes the particle movement smoother when their [member fixed_fps] is lower than the screen refresh rate.

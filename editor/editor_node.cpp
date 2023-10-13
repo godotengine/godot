@@ -790,7 +790,7 @@ void EditorNode::_notification(int p_what) {
 }
 
 void EditorNode::_update_update_spinner() {
-	update_spinner->set_visible(EDITOR_GET("interface/editor/show_update_spinner"));
+	update_spinner->set_visible(!RenderingServer::get_singleton()->canvas_item_get_debug_redraw() && EDITOR_GET("interface/editor/show_update_spinner"));
 
 	const bool update_continuously = EDITOR_GET("interface/editor/update_continuously");
 	PopupMenu *update_popup = update_spinner->get_popup();
@@ -849,6 +849,10 @@ void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object) {
 		p_plugin->make_visible(false);
 		p_plugin->edit(nullptr);
 	}
+}
+
+void EditorNode::_plugin_over_self_own(EditorPlugin *p_plugin) {
+	active_plugins[p_plugin->get_instance_id()].insert(p_plugin);
 }
 
 void EditorNode::_resources_changed(const Vector<String> &p_resources) {
@@ -2135,7 +2139,12 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	for (EditorPlugin *plugin : active_plugins[owner_id]) {
 		if (!available_plugins.has(plugin)) {
 			to_remove.push_back(plugin);
-			_plugin_over_edit(plugin, nullptr);
+			if (plugin->can_auto_hide()) {
+				_plugin_over_edit(plugin, nullptr);
+			} else {
+				// If plugin can't be hidden, make it own itself and become responsible for closing.
+				_plugin_over_self_own(plugin);
+			}
 		}
 	}
 
@@ -2147,6 +2156,12 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	for (EditorPlugin *plugin : available_plugins) {
 		if (active_plugins[owner_id].has(plugin)) {
 			// Plugin was already active, just change the object.
+			plugin->edit(p_object);
+			continue;
+		}
+
+		if (active_plugins.has(plugin->get_instance_id())) {
+			// Plugin is already active, but as self-owning, so it needs a separate check.
 			plugin->edit(p_object);
 			continue;
 		}
@@ -2214,7 +2229,11 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 	if (p_editing_owner) {
 		const ObjectID id = p_editing_owner->get_instance_id();
 		for (EditorPlugin *plugin : active_plugins[id]) {
-			_plugin_over_edit(plugin, nullptr);
+			if (plugin->can_auto_hide()) {
+				_plugin_over_edit(plugin, nullptr);
+			} else {
+				_plugin_over_self_own(plugin);
+			}
 		}
 		active_plugins.erase(id);
 	} else {
@@ -2222,10 +2241,23 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 		// This is to sweep properties that were removed from the inspector.
 		List<ObjectID> to_remove;
 		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
-			if (!ObjectDB::get_instance(kv.key)) {
+			const Object *context = ObjectDB::get_instance(kv.key);
+			if (context) {
+				// In case of self-owning plugins, they are disabled here if they can auto hide.
+				const EditorPlugin *self_owning = Object::cast_to<EditorPlugin>(context);
+				if (self_owning && self_owning->can_auto_hide()) {
+					context = nullptr;
+				}
+			}
+
+			if (!context) {
 				to_remove.push_back(kv.key);
 				for (EditorPlugin *plugin : kv.value) {
-					_plugin_over_edit(plugin, nullptr);
+					if (plugin->can_auto_hide()) {
+						_plugin_over_edit(plugin, nullptr);
+					} else {
+						_plugin_over_self_own(plugin);
+					}
 				}
 			}
 		}
@@ -3700,16 +3732,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	Error err;
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
-	if (!sdata.is_valid()) {
-		_dialog_display_load_error(lpath, err);
-		opening_prev = false;
-
-		if (prev != -1) {
-			_set_current_scene(prev);
-			editor_data.remove_scene(idx);
-		}
-		return ERR_FILE_NOT_FOUND;
-	}
 
 	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
 		current_menu_option = -1;
@@ -3725,6 +3747,17 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			editor_data.remove_scene(idx);
 		}
 		return ERR_FILE_MISSING_DEPENDENCIES;
+	}
+
+	if (!sdata.is_valid()) {
+		_dialog_display_load_error(lpath, err);
+		opening_prev = false;
+
+		if (prev != -1) {
+			_set_current_scene(prev);
+			editor_data.remove_scene(idx);
+		}
+		return ERR_FILE_NOT_FOUND;
 	}
 
 	dependency_errors.erase(lpath); // At least not self path.
@@ -4473,7 +4506,7 @@ String EditorNode::_get_system_info() const {
 	}
 	if (driver_name == "vulkan") {
 		driver_name = "Vulkan";
-	} else if (driver_name == "opengl3") {
+	} else if (driver_name.begins_with("opengl3")) {
 		driver_name = "GLES3";
 	}
 

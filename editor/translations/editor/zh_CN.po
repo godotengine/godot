@@ -92,13 +92,14 @@
 # matrixant <yuan545@hotmail.com>, 2023.
 # GarliCat <phoenixkaze@live.com>, 2023.
 # GT-610 <myddz1005@163.com>, 2023.
+# 墨尘 <180598130@qq.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-09-05 13:09+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2023-10-01 21:58+0000\n"
+"Last-Translator: 墨尘 <180598130@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -106,7 +107,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0.1-dev\n"
+"X-Generator: Weblate 5.1-dev\n"
 
 msgid "Unset"
 msgstr "未设置"
@@ -622,9 +623,6 @@ msgstr "取消选择关键帧"
 msgid "Animation Change Transition"
 msgstr "修改动画过渡"
 
-msgid "Animation Change %s"
-msgstr "修改动画 %s"
-
 msgid "Animation Change Keyframe Value"
 msgstr "修改动画关键帧的值"
 
@@ -633,9 +631,6 @@ msgstr "修改动画调用"
 
 msgid "Animation Multi Change Transition"
 msgstr "批量修改动画过渡"
-
-msgid "Animation Multi Change %s"
-msgstr "批量修改动画 %s"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "批量修改动画关键帧的值"
@@ -975,9 +970,6 @@ msgstr "由于只有单一轨道，因此该选项不适用于贝塞尔编辑。
 msgid "Animation Add RESET Keys"
 msgstr "添加动画 RESET 关键帧"
 
-msgid "Bake Animation as Linear keys."
-msgstr "将动画烘焙为线性关键帧。"
-
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
 "will not be saved.\n"
@@ -994,14 +986,14 @@ msgstr ""
 "有包含循环在内的各种选项。添加自定义轨道请启用“保存为文件”\n"
 "并“保留自定义轨道”。"
 
-msgid "Warning: Editing imported animation"
-msgstr "警告：正在编辑导入的动画"
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "选择一个 AnimationPlayer 节点以创建和编辑动画。"
 
 msgid "Imported Scene"
 msgstr "导入的场景"
+
+msgid "Warning: Editing imported animation"
+msgstr "警告：正在编辑导入的动画"
 
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "在贝塞尔曲线编辑器和轨道编辑器之间进行切换。"
@@ -1363,6 +1355,9 @@ msgstr "关闭"
 msgid "Connect"
 msgstr "连接"
 
+msgid "Class:"
+msgstr "类："
+
 msgid "Signal:"
 msgstr "信号："
 
@@ -1401,6 +1396,9 @@ msgstr "筛选信号"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "确定要从该信号中移除所有连接吗？"
+
+msgid "Open Documentation"
+msgstr "打开文档"
 
 msgid "Disconnect All"
 msgstr "断开全部"
@@ -1849,9 +1847,6 @@ msgstr "已经存在同名文件夹。"
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr "在文件夹名称中使用斜杠会递归创建子文件夹。"
 
-msgid "Folder name is valid."
-msgstr "文件夹名称有效。"
-
 msgid "Could not create folder."
 msgstr "无法创建文件夹。"
 
@@ -1860,6 +1855,9 @@ msgstr "在 %s 中新建文件夹："
 
 msgid "Create Folder"
 msgstr "创建文件夹"
+
+msgid "Folder name is valid."
+msgstr "文件夹名称有效。"
 
 msgid "Thanks from the Godot community!"
 msgstr "Godot 社区感谢大家！"
@@ -1943,12 +1941,6 @@ msgstr "打开“%s”的资产文件时出错（非 ZIP 格式）。"
 msgid "%s (already exists)"
 msgstr "%s（已存在）"
 
-msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr "资产“%s”的内容 - %d 个文件与你的项目冲突："
-
-msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr "资产“%s”的内容 - 没有文件与你的项目冲突："
-
 msgid "Uncompressing Assets"
 msgstr "正在解压资产"
 
@@ -1966,9 +1958,6 @@ msgstr "成功！"
 
 msgid "Install"
 msgstr "安装"
-
-msgid "Asset Installer"
-msgstr "资产安装器"
 
 msgid "Speakers"
 msgstr "扬声器"
@@ -2548,20 +2537,8 @@ msgstr ""
 msgid "Error codes returned:"
 msgstr "返回错误码："
 
-msgid "There is currently no description for this %s."
-msgstr "这个 %s 目前没有描述。"
-
-msgid ""
-"There is currently no description for this %s. Please help us by "
-"[color=$color][url=$url]contributing one[/url][/color]!"
-msgstr ""
-"这个 %s 目前没有描述。请帮我们[color=$color][url=$url]贡献一个[/url][/color]！"
-
 msgid "Top"
 msgstr "顶部"
-
-msgid "Class:"
-msgstr "类："
 
 msgid "Inherits:"
 msgstr "继承："
@@ -2765,9 +2742,6 @@ msgstr "固定值 [已禁用，因为“%s”仅适用于编辑器]"
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr "将值固定会强制保存这个值，即便它与默认值相等。"
 
-msgid "Open Documentation"
-msgstr "打开文档"
-
 msgid "(%d change)"
 msgid_plural "(%d changes)"
 msgstr[0] "(%d 处改动)"
@@ -2780,12 +2754,6 @@ msgstr "移除元素 %d，属性数组前缀为 %s。"
 
 msgid "Move element %d to position %d in property array with prefix %s."
 msgstr "将元素 %d 移动至 %d 位置，属性数组前缀为 %s。"
-
-msgid "Clear property array with prefix %s."
-msgstr "清空前缀为 %s 的属性数组。"
-
-msgid "Resize property array with prefix %s."
-msgstr "调整前缀为 %s 的属性数组的大小。"
 
 msgid "Element %d: %s%d*"
 msgstr "元素 %d：%s%d*"
@@ -2826,9 +2794,6 @@ msgstr "添加元数据"
 msgid "Set %s"
 msgstr "设置 %s"
 
-msgid "Set Multiple:"
-msgstr "批量设置："
-
 msgid "Remove metadata %s"
 msgstr "移除元数据 %s"
 
@@ -2853,11 +2818,11 @@ msgstr "名为“%s”的元数据已存在。"
 msgid "Names starting with _ are reserved for editor-only metadata."
 msgstr "以 _ 开头的名称已为编辑器元数据保留。"
 
-msgid "Metadata name is valid."
-msgstr "元数据名称有效。"
-
 msgid "Name:"
 msgstr "名称："
+
+msgid "Metadata name is valid."
+msgstr "元数据名称有效。"
 
 msgid "Add Metadata Property for \"%s\""
 msgstr "为“%s”添加元数据属性"
@@ -2963,9 +2928,6 @@ msgstr "切换编辑器消息的可见性。"
 
 msgid "Native Shader Source Inspector"
 msgstr "本地着色器源检查器"
-
-msgid "New Window"
-msgstr "新窗口"
 
 msgid "Unnamed Project"
 msgstr "未命名项目"
@@ -3321,35 +3283,8 @@ msgstr "删除布局"
 msgid "Default"
 msgstr "默认"
 
-msgid "Save changes to '%s' before reloading?"
-msgstr "是否在重新加载前保存对“%s”的更改？"
-
 msgid "Save & Close"
 msgstr "保存并关闭"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "是否在关闭前保存对“%s”的更改？"
-
-msgid "Show in FileSystem"
-msgstr "在文件系统中显示"
-
-msgid "Play This Scene"
-msgstr "运行此场景"
-
-msgid "Close Tab"
-msgstr "关闭选项卡"
-
-msgid "Undo Close Tab"
-msgstr "撤销关闭选项卡"
-
-msgid "Close Other Tabs"
-msgstr "关闭其他选项卡"
-
-msgid "Close Tabs to the Right"
-msgstr "关闭右侧选项卡"
-
-msgid "Close All Tabs"
-msgstr "关闭全部选项卡"
 
 msgid "%d more files or folders"
 msgstr "其他 %d 个文件和文件夹"
@@ -3373,9 +3308,6 @@ msgstr "面板位置"
 msgid "Make Floating"
 msgstr "浮动"
 
-msgid "Add a new scene."
-msgstr "添加新场景。"
-
 msgid "Distraction Free Mode"
 msgstr "专注模式"
 
@@ -3387,9 +3319,6 @@ msgstr "场景"
 
 msgid "Operations with scene files."
 msgstr "操作场景文件。"
-
-msgid "Go to previously opened scene."
-msgstr "转到上一个打开的场景。"
 
 msgid "Copy Text"
 msgstr "复制文本"
@@ -3520,8 +3449,8 @@ msgstr "在线文档"
 msgid "Questions & Answers"
 msgstr "问与答"
 
-msgid "Report a Bug"
-msgstr "报告问题"
+msgid "Community"
+msgstr "社区"
 
 msgid "Copy System Info"
 msgstr "复制系统信息"
@@ -3529,14 +3458,14 @@ msgstr "复制系统信息"
 msgid "Copies the system info as a single-line text into the clipboard."
 msgstr "将系统信息作为一行文本复制到剪贴板。"
 
+msgid "Report a Bug"
+msgstr "报告问题"
+
 msgid "Suggest a Feature"
 msgstr "提交新特性建议"
 
 msgid "Send Docs Feedback"
 msgstr "发送文档反馈"
-
-msgid "Community"
-msgstr "社区"
 
 msgid "About Godot"
 msgstr "关于 Godot"
@@ -3658,12 +3587,6 @@ msgstr "重新加载"
 
 msgid "Resave"
 msgstr "重新保存"
-
-msgid "Create Version Control Metadata"
-msgstr "创建版本控制元数据"
-
-msgid "Version Control Settings"
-msgstr "版本控制设置"
 
 msgid "New Inherited"
 msgstr "新建继承"
@@ -3855,6 +3778,9 @@ msgstr "唯一化"
 msgid "Make Unique (Recursive)"
 msgstr "唯一化（递归）"
 
+msgid "Show in FileSystem"
+msgstr "在文件系统中显示"
+
 msgid "Convert to %s"
 msgstr "转换为 %s"
 
@@ -3902,12 +3828,6 @@ msgstr "撤销：%s"
 
 msgid "Redo: %s"
 msgstr "重做：%s"
-
-msgid "Edit Built-in Action"
-msgstr "编辑内置动作"
-
-msgid "Edit Shortcut"
-msgstr "编辑快捷键"
 
 msgid "Common"
 msgstr "通用"
@@ -4010,16 +3930,6 @@ msgstr "正在监听输入..."
 
 msgid "Filter by event..."
 msgstr "按事件筛选..."
-
-msgid ""
-"Target platform requires 'ETC2/ASTC' texture compression. Enable 'Import ETC2 "
-"ASTC' in Project Settings."
-msgstr "目标平台需要“ETC2/ASTC”纹理压缩。请在项目设置中启用“导入 ETC2 ASTC”。"
-
-msgid ""
-"Target platform requires 'S3TC/BPTC' texture compression. Enable 'Import S3TC "
-"BPTC' in Project Settings."
-msgstr "目标平台需要“S3TC/BPTC”纹理压缩。请在项目设置中启用“导入 S3TC BPTC”。"
 
 msgid "Project export for platform:"
 msgstr "针对平台导出项目："
@@ -4552,9 +4462,6 @@ msgstr "保存位于 %s 的资源失败：%s"
 msgid "Failed to load resource at %s: %s"
 msgstr "加载位于 %s 的资源失败：%s"
 
-msgid "Unable to update dependencies:"
-msgstr "无法更新依赖："
-
 msgid ""
 "This filename begins with a dot rendering the file invisible to the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager."
@@ -4645,6 +4552,9 @@ msgstr "添加到收藏"
 
 msgid "Remove from Favorites"
 msgstr "从收藏中移除"
+
+msgid "Reimport"
+msgstr "重新导入"
 
 msgid "Open in File Manager"
 msgstr "在文件管理器中打开"
@@ -5012,6 +4922,30 @@ msgstr ""
 "启用 Movie Maker 模式。\n"
 "该项目将以稳定的 FPS 运行，影像和音频输出将被记录到一个视频文件中。"
 
+msgid "Play This Scene"
+msgstr "运行此场景"
+
+msgid "Close Tab"
+msgstr "关闭选项卡"
+
+msgid "Undo Close Tab"
+msgstr "撤销关闭选项卡"
+
+msgid "Close Other Tabs"
+msgstr "关闭其他选项卡"
+
+msgid "Close Tabs to the Right"
+msgstr "关闭右侧选项卡"
+
+msgid "Close All Tabs"
+msgstr "关闭全部选项卡"
+
+msgid "New Window"
+msgstr "新窗口"
+
+msgid "Add a new scene."
+msgstr "添加新场景。"
+
 msgid ""
 "Hold %s to round to integers.\n"
 "Hold Shift for more precise changes."
@@ -5124,9 +5058,6 @@ msgstr "全局"
 
 msgid "Audio Stream Importer: %s"
 msgstr "音频流导入器：%s"
-
-msgid "Reimport"
-msgstr "重新导入"
 
 msgid "Enable looping."
 msgstr "启用循环。"
@@ -5278,9 +5209,6 @@ msgstr "无法加载字体纹理："
 
 msgid "Image margin too big."
 msgstr "图像边距太大。"
-
-msgid "Character margin too bit."
-msgstr "字符边距太小。"
 
 msgid "Pre-Import Scene"
 msgstr "预导入场景"
@@ -5479,9 +5407,6 @@ msgstr "文本资源"
 msgid "Binary Resource"
 msgstr "二进制资源"
 
-msgid "Select Importer"
-msgstr "选择导入器"
-
 msgid "Importer:"
 msgstr "导入器："
 
@@ -5515,16 +5440,6 @@ msgstr "预设"
 
 msgid "Advanced..."
 msgstr "高级..."
-
-msgid "Save Scenes, Re-Import, and Restart"
-msgstr "保存场景、重新导入，然后重启"
-
-msgid "Changing the type of an imported file requires editor restart."
-msgstr "改变这个导入的文件类型后需要重启编辑器。"
-
-msgid ""
-"WARNING: Assets exist that use this resource, they may stop loading properly."
-msgstr "警告：存在使用本资源的资产，将会停止加载。"
 
 msgid ""
 "Select a resource file in the filesystem or in the inspector to adjust import "
@@ -5902,9 +5817,6 @@ msgstr "擦除点和三角形。"
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "自动生成混合三角形（而非手动）"
 
-msgid "Parameter Changed:"
-msgstr "修改参数："
-
 msgid "Inspect Filters"
 msgstr "查看筛选器"
 
@@ -5940,12 +5852,6 @@ msgstr "开关过滤器"
 
 msgid "Change Filter"
 msgstr "修改过滤器"
-
-msgid "No animation player set, so unable to retrieve track names."
-msgstr "没有设置动画播放器，因此无法获取轨道名称。"
-
-msgid "Player path set is invalid, so unable to retrieve track names."
-msgstr "播放器路径设置无效，无法获取轨道名称。"
 
 msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
@@ -6049,9 +5955,6 @@ msgstr "使动画唯一：%s"
 
 msgid "Invalid AnimationLibrary file."
 msgstr "无效的 AnimationLibrary 文件。"
-
-msgid "This library is already added to the player."
-msgstr "这个库已经被添加到播放器中。"
 
 msgid "Invalid Animation file."
 msgstr "无效的动画文件。"
@@ -6556,9 +6459,6 @@ msgstr "栅格步长："
 msgid "Primary Line Every:"
 msgstr "主线间隔："
 
-msgid "steps"
-msgstr "步"
-
 msgid "Rotation Offset:"
 msgstr "旋转偏移："
 
@@ -6627,12 +6527,6 @@ msgstr "已锁定"
 
 msgid "Grouped"
 msgstr "已分组"
-
-msgid "Add Node Here"
-msgstr "在此处添加节点"
-
-msgid "Instantiate Scene Here"
-msgstr "在此处实例化场景"
 
 msgid "Paste Node(s) Here"
 msgstr "在此处粘贴节点"
@@ -6954,9 +6848,6 @@ msgstr "正在添加 %s..."
 msgid "Drag and drop to add as child of current scene's root node."
 msgstr "拖放以添加为当前场景根节点的子节点。"
 
-msgid "Hold Ctrl when dropping to add as child of selected node."
-msgstr "放下时按住 Ctrl 以添加为所选节点的子节点。"
-
 msgid "Hold Shift when dropping to add as sibling of selected node."
 msgstr "放下时按住 Shift 以添加为所选节点的同级节点。"
 
@@ -7147,12 +7038,6 @@ msgstr "边界像素"
 
 msgid "Directed Border Pixels"
 msgstr "有向边界像素"
-
-msgid "Capture from Pixel"
-msgstr "从像素捕获"
-
-msgid "Emission Colors"
-msgstr "发射色彩"
 
 msgid "CPUParticles3D"
 msgstr "CPUParticles3D"
@@ -7509,12 +7394,6 @@ msgstr ""
 
 msgid "Select path for SDF Texture"
 msgstr "为 SDF 纹理选择路径"
-
-msgid "Gradient Edited"
-msgstr "编辑渐变"
-
-msgid "Reverse/mirror gradient."
-msgstr "反转/镜像渐变。"
 
 msgid "Move GradientTexture2D Fill Point"
 msgstr "移动 GradientTexture2D 填充点"
@@ -7926,15 +7805,6 @@ msgstr "Z 轴变换。"
 msgid "View Plane Transform."
 msgstr "视图平面变换。"
 
-msgid "YZ-Plane Transform."
-msgstr "YZ 平面变换。"
-
-msgid "XZ-Plane Transform."
-msgstr "XZ 平面变换。"
-
-msgid "XY-Plane Transform."
-msgstr "XY 平面变换。"
-
 msgid "Keying is disabled (no key inserted)."
 msgstr "已禁用关键帧插入（未插入关键帧）。"
 
@@ -8199,13 +8069,6 @@ msgstr "修改相机的裁剪平面后才能进一步缩放（视图 -> 设置..
 
 msgid "Overriding material..."
 msgstr "覆盖材质..."
-
-msgid ""
-"Drag and drop to override the material of any geometry node.\n"
-"Hold Ctrl when dropping to override a specific surface."
-msgstr ""
-"拖放以覆盖任意几何体节点的材质。\n"
-"放下时按住 Ctrl 键，可以覆盖一个特定的面。"
 
 msgid "XForm Dialog"
 msgstr "变换对话框"
@@ -8581,23 +8444,17 @@ msgstr "曲线顶点 #"
 msgid "Set Curve Point Position"
 msgstr "设置曲线的顶点位置"
 
-msgid "Set Curve In Position"
-msgstr "设置曲线内控点位置"
-
 msgid "Set Curve Out Position"
 msgstr "设置曲线外控点位置"
+
+msgid "Set Curve In Position"
+msgstr "设置曲线内控点位置"
 
 msgid "Split Path"
 msgstr "拆分路径"
 
 msgid "Remove Path Point"
 msgstr "移除路径顶点"
-
-msgid "Remove Out-Control Point"
-msgstr "移除外控点"
-
-msgid "Remove In-Control Point"
-msgstr "移除内控点"
 
 msgid "Split Segment (in curve)"
 msgstr "拆分线段（在曲线中）"
@@ -8675,14 +8532,8 @@ msgstr "骨骼"
 msgid "Move Points"
 msgstr "移动点"
 
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: 旋转"
-
 msgid "Shift: Move All"
 msgstr "Shift: 移动所有"
-
-msgid "Shift+Ctrl: Scale"
-msgstr "Shift+Ctrl: 缩放"
 
 msgid "Move Polygon"
 msgstr "移动多边形"
@@ -8772,12 +8623,6 @@ msgstr "粘贴资源"
 msgid "Load Resource"
 msgstr "加载资源"
 
-msgid "AnimationTree has no path set to an AnimationPlayer"
-msgstr "AnimationTree 没有设置到 AnimationPlayer 的路径"
-
-msgid "Path to AnimationPlayer is invalid"
-msgstr "AnimationPlayer 路径无效"
-
 msgid "Clear Recent Files"
 msgstr "清除最近打开文件列表"
 
@@ -8822,19 +8667,6 @@ msgstr "无法获取用于重新加载的脚本。"
 
 msgid "Reload only takes effect on tool scripts."
 msgstr "重新加载只对工具脚本生效。"
-
-msgid "Can't obtain the script for running."
-msgstr "无法获取要执行的脚本。"
-
-msgid "Script is not in tool mode, will not be able to run."
-msgstr "脚本并非处于工具模式，无法执行。"
-
-msgid "Script failed reloading, check console for errors."
-msgstr "脚本重新加载失败，请在控制台检查错误。"
-
-msgid ""
-"To run this script, it must inherit EditorScript and be set to tool mode."
-msgstr "如需执行此脚本，必须继承 EditorScript 并将其设为工具模式。"
 
 msgid "Import Theme"
 msgstr "导入主题"
@@ -8991,14 +8823,8 @@ msgstr "行"
 msgid "Go to Function"
 msgstr "转到函数"
 
-msgid "Only resources from filesystem can be dropped."
-msgstr "只可拖放来自文件系统中的资源。"
-
 msgid "Can't drop nodes without an open scene."
 msgstr "没有打开的场景无法放置节点。"
-
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr "无法放置该节点，因为脚本 “%s” 未在该场景中使用。"
 
 msgid "Lookup Symbol"
 msgstr "查找符号"
@@ -9486,6 +9312,9 @@ msgstr "设置纹理区域"
 msgid "Set Margin"
 msgstr "设置边距"
 
+msgid "Region Editor"
+msgstr "区域编辑器"
+
 msgid "Snap Mode:"
 msgstr "吸附模式："
 
@@ -9503,9 +9332,6 @@ msgstr "步长："
 
 msgid "Separation:"
 msgstr "间距："
-
-msgid "Region Editor"
-msgstr "区域编辑器"
 
 msgid "Edit Region"
 msgstr "编辑区域"
@@ -10078,9 +9904,6 @@ msgstr ""
 "图集坐标：%s\n"
 "备选：%d"
 
-msgid "No atlas source with a valid texture selected."
-msgstr "未选择有效纹理的图集源。"
-
 msgid "Base Tiles"
 msgstr "基础图块"
 
@@ -10207,9 +10030,6 @@ msgstr "绘制"
 msgid "Shift: Draw line."
 msgstr "Shift：画直线。"
 
-msgid "Shift+Ctrl: Draw rectangle."
-msgstr "Shift+Ctrl：画矩形。"
-
 msgctxt "Tool"
 msgid "Line"
 msgstr "直线"
@@ -10219,9 +10039,6 @@ msgstr "矩形"
 
 msgid "Bucket"
 msgstr "油漆桶"
-
-msgid "Alternatively hold Ctrl with other tools to pick tile."
-msgstr "也可以在使用其他工具时按住 Ctrl 键来挑选图块。"
 
 msgid "Eraser"
 msgstr "橡皮"
@@ -10488,9 +10305,6 @@ msgstr "选择图块。"
 msgid "Paint properties."
 msgstr "绘制属性。"
 
-msgid "No tiles selected."
-msgstr "未选择图块。"
-
 msgid "Paint Properties:"
 msgstr "绘制属性："
 
@@ -10567,11 +10381,11 @@ msgstr "场景合集属性："
 msgid "Tile properties:"
 msgstr "图块属性："
 
-msgid "TileSet"
-msgstr "TileSet"
-
 msgid "TileMap"
 msgstr "TileMap"
+
+msgid "TileSet"
+msgstr "TileSet"
 
 msgid ""
 "No VCS plugins are available in the project. Install a VCS plugin to use VCS "
@@ -10614,6 +10428,9 @@ msgstr "是否要移除 %s 分支？"
 
 msgid "Do you want to remove the %s remote?"
 msgstr "是否要移除 %s 远程仓库？"
+
+msgid "Create Version Control Metadata"
+msgstr "创建版本控制元数据"
 
 msgid "Create VCS metadata files for:"
 msgstr "创建 VCS 元数据文件："
@@ -10857,11 +10674,11 @@ msgstr "隐藏端口预览"
 msgid "Show Port Preview"
 msgstr "显示端口预览"
 
-msgid "Set Comment Node Title"
-msgstr "设置注释节点标题"
+msgid "Set Comment Title"
+msgstr "设置注释标题"
 
-msgid "Set Comment Node Description"
-msgstr "设置注释节点描述"
+msgid "Set Comment Description"
+msgstr "设置注释描述"
 
 msgid "Set Parameter Name"
 msgstr "设置参数名称"
@@ -10901,12 +10718,6 @@ msgstr "将常量转为参数"
 
 msgid "Convert Parameter(s) to Constant(s)"
 msgstr "将参数转换为常量"
-
-msgid "Set Comment Title"
-msgstr "设置注释标题"
-
-msgid "Set Comment Description"
-msgstr "设置注释描述"
 
 msgid "Duplicate VisualShader Node(s)"
 msgstr "复制 VisualScript 节点"
@@ -11807,10 +11618,6 @@ msgid "4D vector parameter."
 msgstr "4D 向量参数。"
 
 msgid ""
-"A rectangular area with a description string for better graph organization."
-msgstr "一个带有描述字符串的矩形区域，以便更好地组织图形。"
-
-msgid ""
 "Custom Godot Shader Language expression, with custom amount of input and "
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
@@ -11835,9 +11642,6 @@ msgstr "获取 varying 参数。"
 
 msgid "Set varying parameter."
 msgstr "设置 varying 参数。"
-
-msgid "Edit Visual Property:"
-msgstr "编辑可视属性："
 
 msgid "Visual Shader Mode Changed"
 msgstr "可视着色器模式已更改"
@@ -11870,9 +11674,6 @@ msgstr "无效的 “.zip” 项目文件。没有包含 “project.godot” 文
 msgid "Please choose an empty folder."
 msgstr "请选择空文件夹。"
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "请选择 “project.godot” 或 “.zip” 文件。"
-
 msgid "This directory already contains a Godot project."
 msgstr "该目录已经包含 Godot 项目。"
 
@@ -11891,6 +11692,9 @@ msgstr "新建游戏项目"
 
 msgid "Imported Project"
 msgstr "已导入的项目"
+
+msgid "Please choose a \"project.godot\" or \".zip\" file."
+msgstr "请选择 “project.godot” 或 “.zip” 文件。"
 
 msgid "Invalid project name."
 msgstr "项目名称无效。"
@@ -12248,26 +12052,6 @@ msgctxt "Application"
 msgid "Project Manager"
 msgstr "项目管理器"
 
-msgid "Filter Projects"
-msgstr "筛选项目"
-
-msgid ""
-"This field filters projects by name and last path component.\n"
-"To filter projects by name and full path, the query must contain at least one "
-"`/` character."
-msgstr ""
-"该搜索框根据名称和路径的末尾部分来筛选项目。\n"
-"如果要根据名称和完整路径筛选，搜索内容应至少包含一个“/”字符。"
-
-msgid "Loading, please wait..."
-msgstr "正在加载，请稍候……"
-
-msgid "Last Edited"
-msgstr "最近编辑"
-
-msgid "Tags"
-msgstr "标签"
-
 msgid "New Project"
 msgstr "新建项目"
 
@@ -12279,6 +12063,26 @@ msgstr "扫描"
 
 msgid "Scan Projects"
 msgstr "扫描项目"
+
+msgid "Loading, please wait..."
+msgstr "正在加载，请稍候……"
+
+msgid "Filter Projects"
+msgstr "筛选项目"
+
+msgid ""
+"This field filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least one "
+"`/` character."
+msgstr ""
+"该搜索框根据名称和路径的末尾部分来筛选项目。\n"
+"如果要根据名称和完整路径筛选，搜索内容应至少包含一个“/”字符。"
+
+msgid "Last Edited"
+msgstr "最近编辑"
+
+msgid "Tags"
+msgstr "标签"
 
 msgid "Edit Project"
 msgstr "编辑项目"
@@ -12537,9 +12341,6 @@ msgstr "选取根节点类型"
 msgid "Pick"
 msgstr "选取"
 
-msgid "Scene name is valid."
-msgstr "场景名称有效。"
-
 msgid "Scene name is empty."
 msgstr "场景名称为空。"
 
@@ -12548,9 +12349,6 @@ msgstr "文件名无效。"
 
 msgid "File already exists."
 msgstr "文件已经存在。"
-
-msgid "Root node valid."
-msgstr "根节点有效。"
 
 msgid "Invalid root node name."
 msgstr "根节点名称无效。"
@@ -12573,8 +12371,11 @@ msgstr "场景名称："
 msgid "Root Name:"
 msgstr "根名称："
 
-msgid "Leave empty to use scene name"
-msgstr "留空以使用场景名称"
+msgid "Scene name is valid."
+msgstr "场景名称有效。"
+
+msgid "Root node valid."
+msgstr "根节点有效。"
 
 msgid "Create New Scene"
 msgstr "新建场景"
@@ -12734,6 +12535,9 @@ msgstr "其他节点"
 msgid "Paste From Clipboard"
 msgstr "从剪贴板粘贴"
 
+msgid "Filters"
+msgstr "过滤"
+
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr "无法操作外部场景的节点！"
 
@@ -12799,9 +12603,6 @@ msgstr "自动展开至选定项"
 msgid "All Scene Sub-Resources"
 msgstr "所有场景子资源"
 
-msgid "Filters"
-msgstr "过滤"
-
 msgid "Filter by Type"
 msgstr "按类型过滤"
 
@@ -12829,23 +12630,14 @@ msgstr ""
 msgid "Can't paste root node into the same scene."
 msgstr "不能将根节点粘贴进相同场景。"
 
-msgid "Paste Node(s)"
-msgstr "粘贴节点"
-
 msgid "<Unnamed> at %s"
 msgstr "%s 中的 <未命名>"
 
 msgid "(used %d times)"
 msgstr "（使用 %d 次）"
 
-msgid "Add Child Node"
-msgstr "添加子节点"
-
 msgid "Expand/Collapse Branch"
 msgstr "展开/折叠分支"
-
-msgid "Change Type"
-msgstr "更改类型"
 
 msgid "Reparent to New Node"
 msgstr "重设父节点为新节点"
@@ -12941,32 +12733,27 @@ msgstr "继承 %s"
 msgid "Inherit"
 msgstr "继承"
 
-msgid "File exists, it will be reused."
-msgstr "文件存在，将被重用。"
-
 msgid "Invalid path."
 msgstr "路径无效。"
-
-msgid "Invalid class name."
-msgstr "无效的类别名称。"
 
 msgid "Invalid inherited parent name or path."
 msgstr "所继承父类的名称或路径无效。"
 
-msgid "Script path/name is valid."
-msgstr "脚本路径/名称有效。"
+msgid "File exists, it will be reused."
+msgstr "文件存在，将被重用。"
 
-msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "允许：a-z, A-Z, 0-9, _ 和 ."
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr "注意：内置脚本有其局限性，并且不能使用外部编辑器编辑。"
 
-msgid "N/A"
-msgstr "N/A"
+msgid ""
+"Warning: Having the script name be the same as a built-in type is usually not "
+"desired."
+msgstr "警告：脚本名称通常不能与内置类型一致。"
 
 msgid "Built-in script (into scene file)."
 msgstr "内置脚本（到场景文件中）。"
-
-msgid "Will create a new script file."
-msgstr "将创建新脚本文件。"
 
 msgid "Using existing script file."
 msgstr "使用现有脚本文件。"
@@ -12983,18 +12770,11 @@ msgstr "没有合适的模板。"
 msgid "Empty"
 msgstr "空"
 
-msgid ""
-"Note: Built-in scripts have some limitations and can't be edited using an "
-"external editor."
-msgstr "注意：内置脚本有其局限性，并且不能使用外部编辑器编辑。"
+msgid "Script path/name is valid."
+msgstr "脚本路径/名称有效。"
 
-msgid ""
-"Warning: Having the script name be the same as a built-in type is usually not "
-"desired."
-msgstr "警告：脚本名称通常不能与内置类型一致。"
-
-msgid "Class Name:"
-msgstr "类名："
+msgid "Will create a new script file."
+msgstr "将创建新脚本文件。"
 
 msgid "Built-in Script:"
 msgstr "内置脚本："
@@ -13011,6 +12791,9 @@ msgstr "错误 - 无法在文件系统中创建着色器。"
 msgid "Error loading shader from %s"
 msgstr "从 %s 加载着色器时出错"
 
+msgid "N/A"
+msgstr "N/A"
+
 msgid "Open Shader / Choose Location"
 msgstr "打开着色器 / 选择位置"
 
@@ -13020,14 +12803,11 @@ msgstr "无效的基本路径。"
 msgid "Wrong extension chosen."
 msgstr "选择了错误的扩展名。"
 
-msgid "Shader path/name is valid."
-msgstr "着色器路径/名称有效。"
+msgid "Note: Built-in shaders can't be edited using an external editor."
+msgstr "注意：内置着色器不能使用外部编辑器编辑。"
 
 msgid "Built-in shader (into scene file)."
 msgstr "内置着色器（到场景文件中）。"
-
-msgid "Will create a new shader file."
-msgstr "将新建着色器文件。"
 
 msgid "Will load an existing shader file."
 msgstr "将加载现有的着色器文件。"
@@ -13035,8 +12815,11 @@ msgstr "将加载现有的着色器文件。"
 msgid "Shader file already exists."
 msgstr "着色器文件已存在。"
 
-msgid "Note: Built-in shaders can't be edited using an external editor."
-msgstr "注意：内置着色器不能使用外部编辑器编辑。"
+msgid "Shader path/name is valid."
+msgstr "着色器路径/名称有效。"
+
+msgid "Will create a new shader file."
+msgstr "将新建着色器文件。"
 
 msgid "Mode:"
 msgstr "模式："
@@ -13145,17 +12928,11 @@ msgstr "路径未包含 Blender 安装。"
 msgid "Can't execute Blender binary."
 msgstr "无法执行 Blender 可执行文件。"
 
-msgid "Unexpected --version output from Blender binary at: %s"
-msgstr "从 Blender 可执行文件获得了意外的 --version 输出：%s"
-
 msgid "Path supplied lacks a Blender binary."
 msgstr "提供的路径缺少 Blender 可执行文件。"
 
 msgid "This Blender installation is too old for this importer (not 3.0+)."
 msgstr "安装的 Blender 对这个导入器来说太旧了（不是 3.0+）。"
-
-msgid "This Blender installation is too new for this importer (not 3.x)."
-msgstr "安装的 Blender 对这个导入器来说太新了（不是 3.x）。"
 
 msgid "Path to Blender installation is valid (Autodetected)."
 msgstr "Blender 安装路径有效（自动检测）。"
@@ -13217,9 +12994,6 @@ msgstr "GridMap 绘制"
 msgid "GridMap Selection"
 msgstr "GridMap 选择"
 
-msgid "Grid Map"
-msgstr "栅格地图"
-
 msgid "Edit X Axis"
 msgstr "编辑 X 轴"
 
@@ -13261,6 +13035,9 @@ msgstr "清空选中项"
 
 msgid "Fill Selection"
 msgstr "填充选中项"
+
+msgid "Grid Map"
+msgstr "栅格地图"
 
 msgid "GridMap Settings"
 msgstr "GridMap 设置"
@@ -13321,9 +13098,6 @@ msgstr "类名不能是保留关键字"
 
 msgid "Class name must be a valid identifier"
 msgstr "类名必须是有效的标识符"
-
-msgid "Build Solution"
-msgstr "构建解决方案"
 
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "解码字节数不够，或格式无效。"
@@ -13416,25 +13190,11 @@ msgstr "从路径添加"
 msgid "Spawn"
 msgstr "出生"
 
-msgid "Watch"
-msgstr "监视"
-
-msgid ""
-"Add properties using the buttons above or\n"
-"drag them them from the inspector and drop them here."
-msgstr ""
-"请使用上面的按钮添加属性或\n"
-"将属性从检查器中拖放到这里。"
-
 msgid "Please select a MultiplayerSynchronizer first."
 msgstr "请先选择一个 MultiplayerSynchronizer。"
 
 msgid "The MultiplayerSynchronizer needs a root path."
 msgstr "该 MultiplayerSynchronizer 需要根路径。"
-
-msgid ""
-"Each MultiplayerSynchronizer can have no more than 64 watched properties."
-msgstr "单个 MultiplayerSynchronizer 最多只能监视 64 个属性。"
 
 msgid "Set spawn property"
 msgstr "设置出生属性"
@@ -13442,8 +13202,9 @@ msgstr "设置出生属性"
 msgid "Set sync property"
 msgstr "设置同步属性"
 
-msgid "Set watch property"
-msgstr "设置监视属性"
+msgid ""
+"Each MultiplayerSynchronizer can have no more than 64 watched properties."
+msgstr "单个 MultiplayerSynchronizer 最多只能监视 64 个属性。"
 
 msgid "Delete Property?"
 msgstr "删除属性？"
@@ -13485,12 +13246,6 @@ msgid ""
 "Cannot generate navigation mesh because the resource was imported from "
 "another type."
 msgstr "无法生成导航网格，因为该资源是从其他类型导入的。"
-
-msgid "Bake NavMesh"
-msgstr "烘焙导航网格"
-
-msgid "Clear the navigation mesh."
-msgstr "清除导航网格。"
 
 msgid "Toggles whether the noise preview is computed in 3D space."
 msgstr "切换是否在 3D 空间中计算噪声预览。"
@@ -13626,12 +13381,6 @@ msgstr "必须启用“使用 Gradle 构建”才能使用插件。"
 msgid "OpenXR requires \"Use Gradle Build\" to be enabled"
 msgstr "OpenXR 需要启用“使用 Gradle 构建”"
 
-msgid "\"Hand Tracking\" is only valid when \"XR Mode\" is \"OpenXR\"."
-msgstr "“手部跟踪”只有在当“XR Mode”是“OpenXR”时才有效。"
-
-msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
-msgstr "“穿透”只有在当“XR Mode”是“OpenXR”时才有效。"
-
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr "“导出 AAB”只有在启用“使用 Gradle 构建”时才有效。"
 
@@ -13680,18 +13429,6 @@ msgstr "正在设备上运行……"
 
 msgid "Could not execute on device."
 msgstr "无法在设备上运行。"
-
-msgid ""
-"Exporting to Android is currently not supported in Godot 4 when using C#/."
-"NET. Use Godot 3 to target Android with C#/Mono instead."
-msgstr ""
-"Godot 4 中目前尚不支持使用 C#/.NET 导出到 Android。要在 Android 目标上使用 C#/"
-"Mono，请改用 Godot 3。"
-
-msgid ""
-"If this project does not use C#, use a non-C# editor build to export the "
-"project."
-msgstr "如果这个项目不使用 C#，请使用非 C# 版本的编辑器来导出项目。"
 
 msgid ""
 "Android build template not installed in the project. Install it from the "
@@ -13920,6 +13657,11 @@ msgid ""
 msgstr ""
 "Godot 4 中目前尚不支持使用 C#/.NET 导出到 iOS。要在 iOS 目标上使用 C#/Mono，请"
 "改用 Godot 3。"
+
+msgid ""
+"If this project does not use C#, use a non-C# editor build to export the "
+"project."
+msgstr "如果这个项目不使用 C#，请使用非 C# 版本的编辑器来导出项目。"
 
 msgid "Identifier is missing."
 msgstr "缺少标识符。"
@@ -14317,45 +14059,6 @@ msgstr "在远程 MacOS 系统上运行"
 msgid "Run exported project on remote macOS system"
 msgstr "在远程 MacOS 系统上运行导出的项目"
 
-msgid "Invalid package short name."
-msgstr "无效的包短名称。"
-
-msgid "Invalid package unique name."
-msgstr "包名唯一性无效。"
-
-msgid "Invalid package publisher display name."
-msgstr "发行商显示名称无效。"
-
-msgid "Invalid product GUID."
-msgstr "产品 GUID 无效。"
-
-msgid "Invalid publisher GUID."
-msgstr "发行商 GUID 无效。"
-
-msgid "Invalid background color."
-msgstr "无效的背景颜色。"
-
-msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr "商店 Logo 图片尺寸无效（图像尺寸必须是 50x50）。"
-
-msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr "正方形的 44x44 Logo 图片尺寸无效（应为 44x44）。"
-
-msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr "正方形的 71x71 Logo 标志图片尺寸无效（应为 71x71）。"
-
-msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr "正方形的 150x150 Logo 图片尺寸无效（应为 150x150）。"
-
-msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr "正方形的 310x310 Logo 图片尺寸无效（应为 310x310）。"
-
-msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr "宽幅 310x150 Logo 图片尺寸无效（应为 310x150）。"
-
-msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr "启动画面图片尺寸无效（应为 620x300）。"
-
 msgid "Could not open template for export: \"%s\"."
 msgstr "无法打开导出模板：“%s”。"
 
@@ -14492,13 +14195,6 @@ msgid ""
 "order for AnimatedSprite2D to display frames."
 msgstr ""
 "必须在“Frames”属性中创建或设置 SpriteFrames 资源，让 AnimatedSprite2D 显示帧。"
-
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instantiated "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"每个场景（或一组实例化的场景）只允许一个可见的CanvasModulate。第一个创建的将会"
-"起作用，而其他的将会被忽略。"
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -14887,11 +14583,6 @@ msgstr "Joint 未连接到任何 PhysicsBody3D"
 msgid "Node A and Node B must be different PhysicsBody3Ds"
 msgstr "Node A 与 Node B 必须为不同的 PhysicsBody3D"
 
-msgid ""
-"Shadows are not supported when using the GL Compatibility backend yet. "
-"Support will be added in a future release."
-msgstr "使用 GL Compatibility 后端时尚不支持阴影。将在后续版本中加入。"
-
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "灯光的缩放不会影响灯光的视觉尺寸。"
 
@@ -15146,26 +14837,11 @@ msgstr "没有动画： “%s”"
 msgid "Animation Apply Reset"
 msgstr "动画应用重置"
 
-msgid "In node '%s', invalid animation: '%s'."
-msgstr "在节点 “%s” 上的动画无效： “%s” 。"
-
-msgid "Invalid animation: '%s'."
-msgstr "无效动画： “%s” 。"
-
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "没有任何物体连接到节点 “%s” 的输入 “%s” 。"
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "没有为图设置根 AnimationNode。"
-
-msgid "Path to an AnimationPlayer node containing animations is not set."
-msgstr "没有设置指向包含动画的 AnimationPlayer 节点的路径。"
-
-msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
-msgstr "AnimationPlayer 的路径指向的不是 AnimationPlayer 节点。"
-
-msgid "The AnimationPlayer root node is not a valid node."
-msgstr "AnimationPlayer 根节点不是有效节点。"
 
 msgid ""
 "ButtonGroup is intended to be used only with buttons that have toggle_mode "
@@ -15257,12 +14933,6 @@ msgid ""
 msgstr ""
 "请注意，GraphEdit 和 GraphNode 将在未来的 4.x 版本中进行重构，会涉及大量破坏兼"
 "容性的 API 更改。"
-
-msgid "Enable grid minimap."
-msgstr "启用栅格小地图。"
-
-msgid "Arrange nodes."
-msgstr "排列节点。"
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

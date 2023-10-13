@@ -58,6 +58,7 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
+	mutable float disk_size = 0.8;
 
 	// Cache information of secondary handles.
 	Vector<HandleInfo> _secondary_handles_info;
@@ -69,11 +70,13 @@ public:
 	virtual void commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
 
 	virtual void redraw() override;
-	Path3DGizmo(Path3D *p_path = nullptr);
+	Path3DGizmo(Path3D *p_path = nullptr, float p_disk_size = 0.8);
 };
 
 class Path3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Path3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+	float disk_size = 0.8;
 
 protected:
 	Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial) override;
@@ -81,7 +84,7 @@ protected:
 public:
 	String get_gizmo_name() const override;
 	int get_priority() const override;
-	Path3DGizmoPlugin();
+	Path3DGizmoPlugin(float p_disk_size);
 };
 
 class Path3DEditorPlugin : public EditorPlugin {
@@ -94,6 +97,8 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_del = nullptr;
 	Button *curve_close = nullptr;
 	MenuButton *handle_menu = nullptr;
+
+	float disk_size = 0.8;
 
 	enum Mode {
 		MODE_CREATE,

@@ -1605,7 +1605,7 @@ void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos, 
 	breakpoints_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete All Breakpoints in:") + " " + file, ACTION_DELETE_BREAKPOINTS_IN_FILE);
 	breakpoints_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete All Breakpoints"), ACTION_DELETE_ALL_BREAKPOINTS);
 
-	breakpoints_menu->set_position(breakpoints_tree->get_global_position() + p_pos);
+	breakpoints_menu->set_position(get_screen_position() + get_local_mouse_position());
 	breakpoints_menu->popup();
 }
 

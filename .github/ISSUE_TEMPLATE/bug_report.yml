@@ -59,7 +59,7 @@ body:
       - A small Godot project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.godot` folder in the archive (but keep `project.godot`).
       - Required, unless the reproduction steps are trivial and don't require any project files to be followed. In this case, write "N/A" in the field.
       - Drag and drop a ZIP archive to upload it. **Do not select another field until the project is done uploading.**
-      - **Note for C# users:** If your issue is *not* Mono-specific, please upload a minimal reproduction project written in GDScript or VisualScript. This will make it easier for contributors to reproduce the issue locally as not everyone has a Mono setup available.
+      - **Note for C# users:** If your issue is *not* C#-specific, please upload a minimal reproduction project written in GDScript. This will make it easier for contributors to reproduce the issue locally as not everyone has a .NET setup available.
       - **If you've been asked by a maintainer to upload a minimal reproduction project, you *must* do so within 7 days.** Otherwise, your bug report will be closed as it'll be considered too difficult to diagnose.
   validations:
     required: true

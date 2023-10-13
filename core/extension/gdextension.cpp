@@ -218,36 +218,30 @@ public:
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_MSG(!valid, vformat("Cannot call invalid GDExtension method bind '%s'. It's probably cached - you may need to restart Godot.", name));
 #endif
-		ERR_FAIL_COND_MSG(vararg, "Validated methods don't have ptrcall support. This is most likely an engine bug.");
+		ERR_FAIL_COND_MSG(vararg, "Vararg methods don't have validated call support. This is most likely an engine bug.");
 		GDExtensionClassInstancePtr extension_instance = is_static() ? nullptr : p_object->_get_extension_instance();
 
 		if (validated_call_func) {
 			// This is added here, but it's unlikely to be provided by most extensions.
 			validated_call_func(method_userdata, extension_instance, reinterpret_cast<GDExtensionConstVariantPtr *>(p_args), (GDExtensionVariantPtr)r_ret);
 		} else {
-#if 1
-			// Slow code-path, but works for the time being.
-			Callable::CallError ce;
-			call(p_object, p_args, argument_count, ce);
-#else
-			// This is broken, because it needs more information to do the calling properly
-
 			// If not provided, go via ptrcall, which is faster than resorting to regular call.
 			const void **argptrs = (const void **)alloca(argument_count * sizeof(void *));
 			for (uint32_t i = 0; i < argument_count; i++) {
 				argptrs[i] = VariantInternal::get_opaque_pointer(p_args[i]);
 			}
 
-			bool returns = true;
-			void *ret_opaque;
-			if (returns) {
-				ret_opaque = VariantInternal::get_opaque_pointer(r_ret);
-			} else {
-				ret_opaque = nullptr; // May be unnecessary as this is ignored, but just in case.
+			void *ret_opaque = nullptr;
+			if (r_ret) {
+				VariantInternal::initialize(r_ret, return_value_info.type);
+				ret_opaque = r_ret->get_type() == Variant::NIL ? r_ret : VariantInternal::get_opaque_pointer(r_ret);
 			}
 
 			ptrcall(p_object, argptrs, ret_opaque);
-#endif
+
+			if (r_ret && r_ret->get_type() == Variant::OBJECT) {
+				VariantInternal::update_object_id(r_ret);
+			}
 		}
 	}
 
@@ -743,6 +737,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 		return OK;
 	} else {
 		ERR_PRINT("GDExtension initialization function '" + p_entry_symbol + "' returned an error.");
+		OS::get_singleton()->close_dynamic_library(library);
 		return FAILED;
 	}
 }
@@ -781,7 +776,7 @@ void GDExtension::initialize_library(InitializationLevel p_level) {
 
 	level_initialized = int32_t(p_level);
 
-	ERR_FAIL_COND(initialization.initialize == nullptr);
+	ERR_FAIL_NULL(initialization.initialize);
 
 	initialization.initialize(initialization.userdata, GDExtensionInitializationLevel(p_level));
 }
@@ -928,6 +923,10 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 			DirAccess::remove_absolute(p_extension->get_temp_library_path());
 		}
 #endif
+
+		// Unreference the extension so that this loading can be considered a failure.
+		p_extension.unref();
+
 		// Errors already logged in open_library()
 		return err;
 	}
@@ -937,7 +936,12 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 		List<String> keys;
 		config->get_section_keys("icons", &keys);
 		for (const String &key : keys) {
-			p_extension->class_icon_paths[key] = config->get_value("icons", key);
+			String icon_path = config->get_value("icons", key);
+			if (icon_path.is_relative_path()) {
+				icon_path = p_path.get_base_dir().path_join(icon_path);
+			}
+
+			p_extension->class_icon_paths[key] = icon_path;
 		}
 	}
 

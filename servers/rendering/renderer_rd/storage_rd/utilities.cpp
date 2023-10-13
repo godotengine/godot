@@ -202,9 +202,7 @@ void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_de
 			if (p_deferred) {
 				vn->enter_callback.call_deferred();
 			} else {
-				Variant r;
-				Callable::CallError ce;
-				vn->enter_callback.callp(nullptr, 0, r, ce);
+				vn->enter_callback.call();
 			}
 		}
 	} else {
@@ -212,9 +210,7 @@ void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_de
 			if (p_deferred) {
 				vn->exit_callback.call_deferred();
 			} else {
-				Variant r;
-				Callable::CallError ce;
-				vn->exit_callback.callp(nullptr, 0, r, ce);
+				vn->exit_callback.call();
 			}
 		}
 	}

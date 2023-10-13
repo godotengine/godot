@@ -65,6 +65,7 @@ namespace GodotTools
 
         private bool CreateProjectSolution()
         {
+            string errorMessage = null;
             using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
             {
                 pr.Step("Generating C# project...".TTR());
@@ -96,22 +97,23 @@ namespace GodotTools
                     }
                     catch (IOException e)
                     {
-                        ShowErrorDialog("Failed to save solution. Exception message: ".TTR() + e.Message);
-                        return false;
+                        errorMessage = "Failed to save solution. Exception message: ".TTR() + e.Message;
                     }
-
-                    pr.Step("Done".TTR());
-
-                    // Here, after all calls to progress_task_step
-                    CallDeferred(nameof(_ShowDotnetFeatures));
                 }
                 else
                 {
-                    ShowErrorDialog("Failed to create C# project.".TTR());
+                    errorMessage = "Failed to create C# project.".TTR();
                 }
-
-                return true;
             }
+
+            if (!string.IsNullOrEmpty(errorMessage))
+            {
+                ShowErrorDialog(errorMessage);
+                return false;
+            }
+
+            _ShowDotnetFeatures();
+            return true;
         }
 
         private void _ShowDotnetFeatures()
@@ -161,14 +163,14 @@ namespace GodotTools
         {
             _errorDialog.Title = title;
             _errorDialog.DialogText = message;
-            _errorDialog.PopupCentered();
+            EditorInterface.Singleton.PopupDialogCentered(_errorDialog);
         }
 
         public void ShowConfirmCreateSlnDialog()
         {
             _confirmCreateSlnDialog.Title = "C# solution already exists. This will override the existing C# project file, any manual changes will be lost.".TTR();
             _confirmCreateSlnDialog.DialogText = "Create C# solution".TTR();
-            _confirmCreateSlnDialog.PopupCentered();
+            EditorInterface.Singleton.PopupDialogCentered(_confirmCreateSlnDialog);
         }
 
         private static string _vsCodePath = string.Empty;
@@ -483,11 +485,11 @@ namespace GodotTools
             _editorSettings = EditorInterface.Singleton.GetEditorSettings();
 
             _errorDialog = new AcceptDialog();
-            editorBaseControl.AddChild(_errorDialog);
+            _errorDialog.SetUnparentWhenInvisible(true);
 
             _confirmCreateSlnDialog = new ConfirmationDialog();
+            _confirmCreateSlnDialog.SetUnparentWhenInvisible(true);
             _confirmCreateSlnDialog.Confirmed += () => CreateProjectSolution();
-            editorBaseControl.AddChild(_confirmCreateSlnDialog);
 
             MSBuildPanel = new MSBuildPanel();
             MSBuildPanel.BuildStateChanged += BuildStateChanged;

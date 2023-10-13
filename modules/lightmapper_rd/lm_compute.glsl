@@ -205,6 +205,14 @@ uint trace_ray(vec3 p_from, vec3 p_to
 					return RAY_ANY; //any hit good
 #endif
 
+					vec3 position = p_from + dir * distance;
+					vec3 hit_cell = (position - params.to_cell_offset) * params.to_cell_size;
+					if (icell != ivec3(hit_cell)) {
+						// It's possible for the ray to hit a triangle in a position outside the bounds of the cell
+						// if it's large enough to cover multiple ones. The hit must be ignored if this is the case.
+						continue;
+					}
+
 #if defined(MODE_UNOCCLUDE) || defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
 					if (!backface) {
 						// the case of meshes having both a front and back face in the same plane is more common than

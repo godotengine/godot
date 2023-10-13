@@ -11,7 +11,7 @@
 	</tutorials>
 	<members>
 		<member name="map" type="RID" setter="set_map" getter="get_map" default="RID()">
-			The navigation [code]map[/code] [RID] used in the path query.
+			The navigation map [RID] used in the path query.
 		</member>
 		<member name="metadata_flags" type="int" setter="set_metadata_flags" getter="get_metadata_flags" enum="NavigationPathQueryParameters2D.PathMetadataFlags" is_bitfield="true" default="7">
 			Additional information to include with the navigation path.

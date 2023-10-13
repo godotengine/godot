@@ -111,6 +111,7 @@ private:
 	bool initialized = false;
 
 	String title;
+	String tr_title;
 	mutable int current_screen = 0;
 	mutable Vector2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -131,6 +132,7 @@ private:
 	bool updating_embedded_window = false;
 	bool clamp_to_embedder = false;
 	bool unparent_when_invisible = false;
+	bool keep_title_visible = false;
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
@@ -335,6 +337,9 @@ public:
 
 	void set_content_scale_stretch(ContentScaleStretch p_stretch);
 	ContentScaleStretch get_content_scale_stretch() const;
+
+	void set_keep_title_visible(bool p_title_visible);
+	bool get_keep_title_visible() const;
 
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;

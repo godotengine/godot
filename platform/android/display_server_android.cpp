@@ -309,13 +309,10 @@ void DisplayServerAndroid::window_set_drop_files_callback(const Callable &p_call
 
 void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred) const {
 	if (!p_callable.is_null()) {
-		const Variant *argp = &p_arg;
-		Variant ret;
-		Callable::CallError ce;
 		if (p_deferred) {
-			p_callable.callp((const Variant **)&argp, 1, ret, ce);
+			p_callable.call(p_arg);
 		} else {
-			p_callable.call_deferredp((const Variant **)&argp, 1);
+			p_callable.call_deferred(p_arg);
 		}
 	}
 }
@@ -538,16 +535,9 @@ void DisplayServerAndroid::reset_window() {
 }
 
 void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
-	if (rect_changed_callback.is_null()) {
-		return;
+	if (rect_changed_callback.is_valid()) {
+		rect_changed_callback.call(Rect2i(0, 0, p_width, p_height));
 	}
-
-	const Variant size = Rect2i(0, 0, p_width, p_height);
-	const Variant *sizep = &size;
-	Variant ret;
-	Callable::CallError ce;
-
-	rect_changed_callback.callp(reinterpret_cast<const Variant **>(&sizep), 1, ret, ce);
 }
 
 DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {

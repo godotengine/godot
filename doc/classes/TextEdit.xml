@@ -1169,7 +1169,7 @@
 			Allow scrolling past the last line into "virtual" space.
 		</member>
 		<member name="scroll_smooth" type="bool" setter="set_smooth_scroll_enabled" getter="is_smooth_scroll_enabled" default="false">
-			Scroll smoothly over the text rather then jumping to the next location.
+			Scroll smoothly over the text rather than jumping to the next location.
 		</member>
 		<member name="scroll_v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed" default="80.0">
 			Sets the scroll speed with the minimap or when [member scroll_smooth] is enabled.
@@ -1463,7 +1463,7 @@
 			Sets a custom [Texture2D] for tab text characters.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			Sets the [StyleBox] when in focus. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+			Sets the [StyleBox] when in focus. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
