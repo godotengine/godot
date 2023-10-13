@@ -38,9 +38,11 @@
 #include "core/templates/list.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/statvfs.h>
 
 #ifdef HAVE_MNTENT
@@ -486,6 +488,27 @@ String DirAccessUnix::get_filesystem_type() const {
 
 bool DirAccessUnix::is_hidden(const String &p_name) {
 	return p_name != "." && p_name != ".." && p_name.begins_with(".");
+}
+
+bool DirAccessUnix::is_case_sensitive(const String &p_path) const {
+#if defined(LINUXBSD_ENABLED)
+	String f = p_path;
+	if (!f.is_absolute_path()) {
+		f = get_current_dir().path_join(f);
+	}
+	f = fix_path(f);
+
+	int fd = ::open(f.utf8().get_data(), O_RDONLY | O_NONBLOCK);
+	if (fd) {
+		long flags = 0;
+		if (ioctl(fd, _IOR('f', 1, long), &flags) >= 0) {
+			::close(fd);
+			return !(flags & 0x40000000 /* FS_CASEFOLD_FL */);
+		}
+		::close(fd);
+	}
+#endif
+	return true;
 }
 
 DirAccessUnix::DirAccessUnix() {
