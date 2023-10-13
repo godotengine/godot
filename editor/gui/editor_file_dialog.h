@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "scene/gui/dialogs.h"
 
+class GridContainer;
 class DependencyRemoveDialog;
 class HSplitContainer;
 class ItemList;
@@ -88,6 +89,7 @@ private:
 	Access access = ACCESS_RESOURCES;
 
 	VBoxContainer *vbox = nullptr;
+	GridContainer *grid_options = nullptr;
 	FileMode mode = FILE_MODE_SAVE_FILE;
 	bool can_create_dir = false;
 	LineEdit *dir = nullptr;
@@ -173,6 +175,15 @@ private:
 		Ref<Texture2D> progress[8]{};
 	} theme_cache;
 
+	struct Option {
+		String name;
+		Vector<String> values;
+		int default_idx = 0;
+	};
+	Vector<Option> options;
+	Dictionary selected_options;
+	bool options_dirty = false;
+
 	void update_dir();
 	void update_file_name();
 	void update_file_list();
@@ -232,14 +243,27 @@ private:
 
 	bool _is_open_should_be_disabled();
 
+	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
+
+	TypedArray<Dictionary> _get_options() const;
+	void _update_option_controls();
+	void _option_changed_checkbox_toggled(bool p_pressed, const String &p_name);
+	void _option_changed_item_selected(int p_idx, const String &p_name);
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
 	Color get_dir_icon_color(const String &p_dir_path);
+
+	virtual void set_visible(bool p_visible) override;
+	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 
 	// Public for use with callable_mp.
 	void _file_submitted(const String &p_file);
@@ -259,6 +283,20 @@ public:
 	void set_current_dir(const String &p_dir);
 	void set_current_file(const String &p_file);
 	void set_current_path(const String &p_path);
+
+	String get_option_name(int p_option) const;
+	Vector<String> get_option_values(int p_option) const;
+	int get_option_default(int p_option) const;
+	void set_option_name(int p_option, const String &p_name);
+	void set_option_values(int p_option, const Vector<String> &p_values);
+	void set_option_default(int p_option, int p_index);
+
+	void add_option(const String &p_name, const Vector<String> &p_values, int p_index);
+
+	void set_option_count(int p_count);
+	int get_option_count() const;
+
+	Dictionary get_selected_options() const;
 
 	void set_display_mode(DisplayMode p_mode);
 	DisplayMode get_display_mode() const;

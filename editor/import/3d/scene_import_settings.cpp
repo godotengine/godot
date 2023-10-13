@@ -1176,15 +1176,15 @@ void SceneImportSettingsDialog::_menu_callback(int p_id) {
 	switch (p_id) {
 		case ACTION_EXTRACT_MATERIALS: {
 			save_path->set_title(TTR("Select folder to extract material resources"));
-			external_extension_type->select(0);
+			save_path->set_option_default(0, 0);
 		} break;
 		case ACTION_CHOOSE_MESH_SAVE_PATHS: {
 			save_path->set_title(TTR("Select folder where mesh resources will save on import"));
-			external_extension_type->select(1);
+			save_path->set_option_default(0, 1);
 		} break;
 		case ACTION_CHOOSE_ANIMATION_SAVE_PATHS: {
 			save_path->set_title(TTR("Select folder where animations will save on import"));
-			external_extension_type->select(1);
+			save_path->set_option_default(0, 1);
 		} break;
 	}
 
@@ -1249,7 +1249,11 @@ void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 						item->set_editable(0, true);
 						item->set_checked(0, true);
 						String path = p_path.path_join(name);
-						if (external_extension_type->get_selected() == 0) {
+
+						const Dictionary &fd_option = save_path->get_selected_options();
+						int external_extension_type = (int)fd_option.get(TTR("Save Extension"), 1);
+
+						if (external_extension_type == 0) {
 							path += ".tres";
 						} else {
 							path += ".res";
@@ -1302,7 +1306,11 @@ void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 						item->set_editable(0, true);
 						item->set_checked(0, true);
 						String path = p_path.path_join(name);
-						if (external_extension_type->get_selected() == 0) {
+
+						const Dictionary &fd_option = save_path->get_selected_options();
+						int external_extension_type = (int)fd_option.get(TTR("Save Extension"), 1);
+
+						if (external_extension_type == 0) {
 							path += ".tres";
 						} else {
 							path += ".res";
@@ -1354,7 +1362,11 @@ void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 					item->set_editable(0, true);
 					item->set_checked(0, true);
 					String path = p_path.path_join(name);
-					if (external_extension_type->get_selected() == 0) {
+
+					const Dictionary &fd_option = save_path->get_selected_options();
+					int external_extension_type = (int)fd_option.get(TTR("Save Extension"), 1);
+
+					if (external_extension_type == 0) {
 						path += ".tres";
 					} else {
 						path += ".res";
@@ -1637,14 +1649,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	external_path_tree->set_column_title(2, TTR("Status"));
 	save_path = memnew(EditorFileDialog);
 	save_path->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
-	HBoxContainer *extension_hb = memnew(HBoxContainer);
-	save_path->get_vbox()->add_child(extension_hb);
-	extension_hb->add_spacer();
-	extension_hb->add_child(memnew(Label(TTR("Save Extension:"))));
-	external_extension_type = memnew(OptionButton);
-	extension_hb->add_child(external_extension_type);
-	external_extension_type->add_item(TTR("Text: *.tres"));
-	external_extension_type->add_item(TTR("Binary: *.res"));
+	save_path->add_option(TTR("Save Extension"), Vector<String>({ TTR("Text: *.tres"), TTR("Binary: *.res") }), 1);
 	external_path_tree->set_hide_root(true);
 	add_child(save_path);
 

@@ -68,8 +68,6 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 	HBoxContainer *toolbar = nullptr;
 	MenuButton *menu = nullptr;
 
-	SpinBox *epoints = nullptr;
-
 	ConfirmationDialog *generate_visibility_rect = nullptr;
 	SpinBox *generate_seconds = nullptr;
 

@@ -190,7 +190,6 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	ConfirmationDialog *external_paths = nullptr;
 	Tree *external_path_tree = nullptr;
 	EditorFileDialog *save_path = nullptr;
-	OptionButton *external_extension_type = nullptr;
 
 	EditorFileDialog *item_save_path = nullptr;
 
