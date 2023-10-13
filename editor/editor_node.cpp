@@ -4696,6 +4696,7 @@ void EditorNode::_dock_make_float(Control *p_dock, int p_slot_index, bool p_show
 	wrapper->set_meta("dock_slot", p_slot_index);
 	wrapper->set_meta("dock_index", dock_index);
 	wrapper->set_meta("dock_name", p_dock->get_name().operator String());
+	p_dock->show();
 
 	wrapper->connect("window_close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request).bind(wrapper));
 
@@ -5199,14 +5200,16 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 					if (wrapper->get_meta("dock_name") == name) {
 						if (restore_window_on_load && floating_docks_dump.has(name)) {
 							_restore_floating_dock(floating_docks_dump[name], wrapper, i);
-							return;
 						} else {
-							_dock_floating_close_request(wrapper);
-							atidx = wrapper->get_meta("dock_index");
+							atidx = wrapper->get_meta("dock_slot");
+							node = wrapper->get_wrapped_control();
+							wrapper->set_window_enabled(false);
 						}
+						break;
 					}
 				}
-
+			}
+			if (!node) {
 				// Well, it's not anywhere.
 				continue;
 			}
@@ -5229,7 +5232,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			if (restore_window_on_load && floating_docks_dump.has(name)) {
 				_restore_floating_dock(floating_docks_dump[name], node, i);
 			} else if (wrapper) {
-				_dock_floating_close_request(wrapper);
+				wrapper->set_window_enabled(false);
 			}
 		}
 
