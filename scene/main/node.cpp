@@ -1682,6 +1682,9 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned, 
 			if (_is_node_of_type(cptr[i], p_type)) {
 				return cptr[i];
 			}
+			if (!p_pattern.is_empty() && !p_type.is_empty()) {
+				continue;
+			}
 		}
 
 		if (cptr[i]->data.name.operator String().match(p_pattern)) {
@@ -1756,6 +1759,10 @@ Node *Node::find_parent(const String &p_pattern, const String &p_type) const {
 		if (p_pattern.is_empty() || p->data.name.operator String().match(p_pattern)) {
 			if (_is_node_of_type(p, p_type)) {
 				return p;
+			}
+			if (!p_pattern.is_empty() && !p_type.is_empty()) {
+				p = p->data.parent;
+				continue;
 			}
 		}
 

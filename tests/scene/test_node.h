@@ -318,6 +318,15 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		child = SceneTree::get_singleton()->get_root()->find_child("NestedNode", true, false);
 		CHECK_EQ(child, node1_1);
 
+		// Find the child of the node by name and type.
+		child = SceneTree::get_singleton()->get_root()->find_child("NestedNode", true, false, "Node");
+		CHECK_EQ(child, node1_1);
+
+		// Find the parent of the node by name.
+		CHECK_EQ(child->find_parent("Node1"), node1);
+		// Find the parent of the node by name and type.
+		CHECK_EQ(child->find_parent("Node1", "Node"), node1);
+
 		children = SceneTree::get_singleton()->get_root()->find_children("NestedNode", "", true, false);
 		CHECK_EQ(children.size(), 1);
 		CHECK_EQ(Object::cast_to<Node>(children[0]), node1_1);
@@ -341,6 +350,24 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		CHECK_EQ(children.size(), 2);
 		CHECK_EQ(Object::cast_to<Node>(children[0]), node2);
 		CHECK_EQ(Object::cast_to<Node>(children[1]), node1);
+	}
+
+	SUBCASE("Nodes should not be possible to find") {
+		node1->set_name("Node1");
+		node1_1->set_name("NestedNode");
+
+		Window *window = SceneTree::get_singleton()->get_root();
+		Node *child = window->find_child("NestedNode", true, false);
+
+		CHECK_EQ(child->find_parent("", "Invalid"), nullptr);
+		CHECK_EQ(child->find_parent("Invalid"), nullptr);
+		CHECK_EQ(child->find_parent("Node1", "Invalid"), nullptr);
+		CHECK_EQ(child->find_parent("Invalid", "Invalid"), nullptr);
+
+		CHECK_EQ(window->find_child("", true, false, "Invalid"), nullptr);
+		CHECK_EQ(window->find_child("Invalid"), nullptr);
+		CHECK_EQ(window->find_child("Node1", true, false, "Invalid"), nullptr);
+		CHECK_EQ(window->find_child("Invalid", true, false, "Invalid"), nullptr);
 	}
 
 	SUBCASE("Nodes should be accessible via their node path") {
