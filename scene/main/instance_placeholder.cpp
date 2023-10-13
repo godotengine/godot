@@ -93,7 +93,6 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 		return nullptr;
 	}
 	scene->set_name(get_name());
-	int pos = get_index();
 
 	for (const PropSet &E : stored_values) {
 		scene->set(E.name, E.value);
@@ -103,9 +102,6 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 		queue_free();
 		base->remove_child(this);
 	}
-
-	base->add_child(scene);
-	base->move_child(scene, pos);
 
 	return scene;
 }
