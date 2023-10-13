@@ -413,7 +413,9 @@ bool TileMapEditorPlugin::is_editor_visible() const {
 }
 
 TileMapEditorPlugin::TileMapEditorPlugin() {
-	memnew(TilesEditorUtils);
+	if (!TilesEditorUtils::get_singleton()) {
+		memnew(TilesEditorUtils);
+	}
 	tile_map_plugin_singleton = this;
 
 	editor = memnew(TileMapEditor);
@@ -462,7 +464,9 @@ ObjectID TileSetEditorPlugin::get_edited_tileset() const {
 }
 
 TileSetEditorPlugin::TileSetEditorPlugin() {
-	DEV_ASSERT(tile_map_plugin_singleton);
+	if (!TilesEditorUtils::get_singleton()) {
+		memnew(TilesEditorUtils);
+	}
 	tile_set_plugin_singleton = this;
 
 	editor = memnew(TileSetEditor);
