@@ -4085,8 +4085,6 @@ void DisplayServerX11::process_events() {
 		if (XGetEventData(x11_display, &event.xcookie)) {
 			if (event.xcookie.type == GenericEvent && event.xcookie.extension == xi.opcode) {
 				XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
-				int index = event_data->detail;
-				Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
 
 				switch (event_data->evtype) {
 					case XI_HierarchyChanged:
@@ -4199,6 +4197,8 @@ void DisplayServerX11::process_events() {
 #ifdef TOUCH_ENABLED
 					case XI_TouchBegin:
 					case XI_TouchEnd: {
+						int index = event_data->detail;
+						Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
 						if (ime_window_event || ignore_events) {
 							break;
 						}
