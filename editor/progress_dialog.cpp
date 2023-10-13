@@ -147,6 +147,13 @@ void ProgressDialog::_popup() {
 	main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
 
 	if (!is_inside_tree()) {
+		for (Window *window : host_windows) {
+			if (window->has_focus()) {
+				popup_exclusive_centered(window, ms);
+				return;
+			}
+		}
+		// No host window found, use main window.
 		EditorInterface::get_singleton()->popup_dialog_centered(this, ms);
 	}
 }
@@ -224,6 +231,11 @@ void ProgressDialog::end_task(const String &p_task) {
 	} else {
 		_popup();
 	}
+}
+
+void ProgressDialog::add_host_window(Window *p_window) {
+	ERR_FAIL_NULL(p_window);
+	host_windows.push_back(p_window);
 }
 
 void ProgressDialog::_cancel_pressed() {
