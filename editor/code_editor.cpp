@@ -134,6 +134,13 @@ void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void FindReplaceBar::_focus_lost() {
+	if (Input::get_singleton()->is_action_pressed(SNAME("ui_cancel"))) {
+		// Unfocused after pressing Escape, so hide the bar.
+		_hide_bar(true);
+	}
+}
+
 bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) {
 	if (!preserve_cursor) {
 		text_editor->remove_secondary_carets();
@@ -499,8 +506,8 @@ bool FindReplaceBar::search_next() {
 	return _search(flags, line, col);
 }
 
-void FindReplaceBar::_hide_bar() {
-	if (replace_text->has_focus() || search_text->has_focus()) {
+void FindReplaceBar::_hide_bar(bool p_force_focus) {
+	if (replace_text->has_focus() || search_text->has_focus() || p_force_focus) {
 		text_editor->grab_focus();
 	}
 
@@ -698,6 +705,7 @@ FindReplaceBar::FindReplaceBar() {
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect("text_changed", callable_mp(this, &FindReplaceBar::_search_text_changed));
 	search_text->connect("text_submitted", callable_mp(this, &FindReplaceBar::_search_text_submitted));
+	search_text->connect("focus_exited", callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	matches_label = memnew(Label);
 	hbc_button_search->add_child(matches_label);
@@ -732,6 +740,7 @@ FindReplaceBar::FindReplaceBar() {
 	vbc_lineedit->add_child(replace_text);
 	replace_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	replace_text->connect("text_submitted", callable_mp(this, &FindReplaceBar::_replace_text_submitted));
+	replace_text->connect("focus_exited", callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	replace = memnew(Button);
 	hbc_button_replace->add_child(replace);
@@ -773,7 +782,7 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 	}
 
 	if (!text_editor->has_focus()) {
-		if ((find_replace_bar != nullptr && find_replace_bar->is_visible()) && (find_replace_bar->has_focus() || find_replace_bar->is_ancestor_of(get_viewport()->gui_get_focus_owner()))) {
+		if ((find_replace_bar != nullptr && find_replace_bar->is_visible()) && (find_replace_bar->has_focus() || (get_viewport()->gui_get_focus_owner() && find_replace_bar->is_ancestor_of(get_viewport()->gui_get_focus_owner())))) {
 			if (ED_IS_SHORTCUT("script_text_editor/find_next", key_event)) {
 				find_replace_bar->search_next();
 				accept_event();
