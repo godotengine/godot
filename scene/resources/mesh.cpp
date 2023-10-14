@@ -1639,6 +1639,11 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 		uint64_t surface_version = surface.format & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 		if (surface_version != ARRAY_FLAG_FORMAT_CURRENT_VERSION) {
 			RS::get_singleton()->fix_surface_compatibility(surface, get_path());
+			surface_version = surface.format & (RS::ARRAY_FLAG_FORMAT_VERSION_MASK << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+			ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+					vformat("Surface version provided (%d) does not match current version (%d).",
+							(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
+							(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK));
 		}
 #endif
 
@@ -2008,17 +2013,19 @@ void ArrayMesh::regen_normal_maps() {
 		return;
 	}
 	Vector<Ref<SurfaceTool>> surfs;
+	Vector<uint64_t> formats;
 	for (int i = 0; i < get_surface_count(); i++) {
 		Ref<SurfaceTool> st = memnew(SurfaceTool);
 		st->create_from(Ref<ArrayMesh>(this), i);
 		surfs.push_back(st);
+		formats.push_back(surface_get_format(i));
 	}
 
 	clear_surfaces();
 
 	for (int i = 0; i < surfs.size(); i++) {
 		surfs.write[i]->generate_tangents();
-		surfs.write[i]->commit(Ref<ArrayMesh>(this));
+		surfs.write[i]->commit(Ref<ArrayMesh>(this), formats[i]);
 	}
 }
 

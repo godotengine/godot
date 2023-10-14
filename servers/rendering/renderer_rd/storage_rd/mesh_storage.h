@@ -469,7 +469,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint32_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint64_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		s->version_lock.lock();
@@ -501,7 +501,7 @@ public:
 		s->version_lock.unlock();
 	}
 
-	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint64_t p_surface_index, uint32_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint64_t p_surface_index, uint64_t p_input_mask, bool p_input_motion_vectors, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
 		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 		ERR_FAIL_NULL(mi);
 		Mesh *mesh = mi->mesh;

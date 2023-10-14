@@ -202,12 +202,10 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	if (surface_version != uint64_t(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION)) {
 		RS::get_singleton()->fix_surface_compatibility(new_surface);
 		surface_version = new_surface.format & (uint64_t(RS::ARRAY_FLAG_FORMAT_VERSION_MASK) << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
-		ERR_FAIL_COND_MSG(surface_version != uint64_t(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION),
-				"Surface version provided (" +
-						itos((surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) +
-						") does not match current version (" +
-						itos((uint64_t(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION) >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) +
-						")");
+		ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+				vformat("Surface version provided (%d) does not match current version (%d).",
+						(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
+						(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK));
 	}
 #endif
 
