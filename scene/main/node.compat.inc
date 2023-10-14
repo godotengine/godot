@@ -31,7 +31,7 @@
 #ifndef DISABLE_DEPRECATED
 
 Node *Node::_find_child_bind_compat_83219(const String &p_pattern, bool p_recursive, bool p_owned) {
-	return find_node(p_pattern, p_recursive, p_owned);
+	return find_child(p_pattern, p_recursive, p_owned);
 }
 
 Node *Node::_find_parent_bind_compat_83219(const String &p_pattern) const {
