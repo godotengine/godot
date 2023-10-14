@@ -502,7 +502,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				if (p_include_docs) {
 					for (const DocData::ConstantDoc &constant_doc : global_scope_doc->constants) {
 						if (constant_doc.name == name) {
-							d["documentation"] = fix_doc_description(constant_doc.description);
+							d["description"] = fix_doc_description(constant_doc.description);
 							break;
 						}
 					}
@@ -521,7 +521,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			if (p_include_docs) {
 				const DocData::EnumDoc *enum_doc = global_scope_doc->enums.getptr(E.key);
 				if (enum_doc) {
-					d1["documentation"] = fix_doc_description(enum_doc->description);
+					d1["description"] = fix_doc_description(enum_doc->description);
 				}
 			}
 			Array values;
@@ -532,7 +532,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				if (p_include_docs) {
 					for (const DocData::ConstantDoc &constant_doc : global_scope_doc->constants) {
 						if (constant_doc.name == F.first) {
-							d2["documentation"] = fix_doc_description(constant_doc.description);
+							d2["description"] = fix_doc_description(constant_doc.description);
 							break;
 						}
 					}
@@ -596,7 +596,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			if (p_include_docs) {
 				for (const DocData::MethodDoc &method_doc : global_scope_doc->methods) {
 					if (method_doc.name == name) {
-						func["documentation"] = fix_doc_description(method_doc.description);
+						func["description"] = fix_doc_description(method_doc.description);
 						break;
 					}
 				}
@@ -647,7 +647,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (p_include_docs) {
 						for (const DocData::PropertyDoc &property_doc : builtin_doc->properties) {
 							if (property_doc.name == member_name) {
-								d2["documentation"] = fix_doc_description(property_doc.description);
+								d2["description"] = fix_doc_description(property_doc.description);
 								break;
 							}
 						}
@@ -673,7 +673,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (p_include_docs) {
 						for (const DocData::ConstantDoc &constant_doc : builtin_doc->constants) {
 							if (constant_doc.name == constant_name) {
-								d2["documentation"] = fix_doc_description(constant_doc.description);
+								d2["description"] = fix_doc_description(constant_doc.description);
 								break;
 							}
 						}
@@ -706,7 +706,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						if (p_include_docs) {
 							for (const DocData::ConstantDoc &constant_doc : builtin_doc->constants) {
 								if (constant_doc.name == enumeration) {
-									values_dict["documentation"] = fix_doc_description(constant_doc.description);
+									values_dict["description"] = fix_doc_description(constant_doc.description);
 									break;
 								}
 							}
@@ -717,7 +717,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (p_include_docs) {
 						const DocData::EnumDoc *enum_doc = builtin_doc->enums.getptr(enum_name);
 						if (enum_doc) {
-							enum_dict["documentation"] = fix_doc_description(enum_doc->description);
+							enum_dict["description"] = fix_doc_description(enum_doc->description);
 						}
 					}
 
@@ -750,7 +750,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 							if (p_include_docs && builtin_doc != nullptr) {
 								for (const DocData::MethodDoc &operator_doc : builtin_doc->operators) {
 									if (operator_doc.name == "operator " + operator_name) {
-										d2["documentation"] = fix_doc_description(operator_doc.description);
+										d2["description"] = fix_doc_description(operator_doc.description);
 										break;
 									}
 								}
@@ -805,7 +805,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (p_include_docs) {
 						for (const DocData::MethodDoc &method_doc : builtin_doc->methods) {
 							if (method_doc.name == method_name) {
-								d2["documentation"] = fix_doc_description(method_doc.description);
+								d2["description"] = fix_doc_description(method_doc.description);
 								break;
 							}
 						}
@@ -853,7 +853,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 								}
 							}
 							if (constructor_found) {
-								d2["documentation"] = fix_doc_description(constructor_doc.description);
+								d2["description"] = fix_doc_description(constructor_doc.description);
 							}
 						}
 					}
@@ -871,7 +871,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			}
 
 			if (p_include_docs && builtin_doc != nullptr) {
-				d["documentation"] = fix_doc_description(builtin_doc->description);
+				d["brief_description"] = fix_doc_description(builtin_doc->brief_description);
+				d["description"] = fix_doc_description(builtin_doc->description);
 			}
 
 			builtins.push_back(d);
@@ -933,7 +934,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (p_include_docs) {
 						for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
 							if (constant_doc.name == F) {
-								d2["documentation"] = fix_doc_description(constant_doc.description);
+								d2["description"] = fix_doc_description(constant_doc.description);
 								break;
 							}
 						}
@@ -967,7 +968,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						if (p_include_docs) {
 							for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
 								if (constant_doc.name == G->get()) {
-									d3["documentation"] = fix_doc_description(constant_doc.description);
+									d3["description"] = fix_doc_description(constant_doc.description);
 									break;
 								}
 							}
@@ -981,7 +982,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (p_include_docs) {
 						const DocData::EnumDoc *enum_doc = class_doc->enums.getptr(F);
 						if (enum_doc) {
-							d2["documentation"] = fix_doc_description(enum_doc->description);
+							d2["description"] = fix_doc_description(enum_doc->description);
 						}
 					}
 
@@ -1039,7 +1040,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						if (p_include_docs) {
 							for (const DocData::MethodDoc &method_doc : class_doc->methods) {
 								if (method_doc.name == method_name) {
-									d2["documentation"] = fix_doc_description(method_doc.description);
+									d2["description"] = fix_doc_description(method_doc.description);
 									break;
 								}
 							}
@@ -1116,7 +1117,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						if (p_include_docs) {
 							for (const DocData::MethodDoc &method_doc : class_doc->methods) {
 								if (method_doc.name == method_name) {
-									d2["documentation"] = fix_doc_description(method_doc.description);
+									d2["description"] = fix_doc_description(method_doc.description);
 									break;
 								}
 							}
@@ -1159,7 +1160,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (p_include_docs) {
 						for (const DocData::MethodDoc &signal_doc : class_doc->signals) {
 							if (signal_doc.name == signal_name) {
-								d2["documentation"] = fix_doc_description(signal_doc.description);
+								d2["description"] = fix_doc_description(signal_doc.description);
 								break;
 							}
 						}
@@ -1208,7 +1209,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (p_include_docs) {
 						for (const DocData::PropertyDoc &property_doc : class_doc->properties) {
 							if (property_doc.name == property_name) {
-								d2["documentation"] = fix_doc_description(property_doc.description);
+								d2["description"] = fix_doc_description(property_doc.description);
 								break;
 							}
 						}
@@ -1223,7 +1224,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			}
 
 			if (p_include_docs && class_doc != nullptr) {
-				d["documentation"] = fix_doc_description(class_doc->description);
+				d["brief_description"] = fix_doc_description(class_doc->brief_description);
+				d["description"] = fix_doc_description(class_doc->description);
 			}
 
 			classes.push_back(d);
