@@ -49,7 +49,7 @@ class Node : public Object {
 	GDCLASS(Node, Object);
 
 #ifndef DISABLE_DEPRECATED
-	_find_child_bind_compat_83219(const String &p_pattern, bool p_recursive = true, bool p_owned = true);
+	Node *_find_child_bind_compat_83219(const String &p_pattern, bool p_recursive = true, bool p_owned = true);
 	_find_parent_bind_compat_83219(const String &p_pattern) const;
 
 	static void _bind_compatibility_methods();
