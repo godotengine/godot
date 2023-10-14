@@ -48,12 +48,6 @@ SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
 class Node : public Object {
 	GDCLASS(Node, Object);
 
-#ifndef DISABLE_DEPRECATED
-	Node *_find_child_bind_compat_83219(const String &p_pattern, bool p_recursive = true, bool p_owned = true);
-	Node *_find_parent_bind_compat_83219(const String &p_pattern) const;
-	static void _bind_compatibility_methods();
-#endif // DISABLE_DEPRECATED
-
 protected:
 	// During group processing, these are thread-safe.
 	// Outside group processing, these avoid the cost of sync by working as plain primitive types.
@@ -335,6 +329,11 @@ protected:
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
 
 public:
+#ifndef DISABLE_DEPRECATED
+	Node *_find_child_bind_compat_83219(const String &p_pattern, bool p_recursive = true, bool p_owned = true);
+	Node *_find_parent_bind_compat_83219(const String &p_pattern) const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 	enum {
 		// you can make your own, but don't use the same numbers as other notifications in other nodes
 		NOTIFICATION_ENTER_TREE = 10,
