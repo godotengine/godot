@@ -293,3 +293,11 @@ GH-79527
 Validate extension JSON: Error: Field 'classes/ParticleProcessMaterial/properties/orbit_velocity_curve': type changed value in new API, from "CurveTexture" to "CurveTexture,CurveXYZTexture".
 
 Added accepted curve type from only CurveTexture to CurveXYZTexture.
+
+
+GH-83219
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/find_child/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/Node/methods/find_parent/arguments': size changed value in new API, from 1 to 2.
+
+Added additional type argument to find node by type. Compatibility methods registered.
