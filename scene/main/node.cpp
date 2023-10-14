@@ -1753,7 +1753,6 @@ Node *Node::get_parent() const {
 // Finds the first parent node (in tree order) whose name matches the given
 // pattern, class name, or both (either pattern or type can be left empty).
 Node *Node::find_parent(const String &p_pattern, const String &p_type) const {
-
 	ERR_THREAD_GUARD_V(nullptr);
 	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), nullptr);
 	Node *p = data.parent;
