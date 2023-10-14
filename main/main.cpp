@@ -2960,6 +2960,7 @@ bool Main::start() {
 	}
 
 	if (dump_extension_api) {
+		Engine::get_singleton()->set_editor_hint(true); // "extension_api.json" should always contains editor singletons.
 		GDExtensionAPIDump::generate_extension_json_file("extension_api.json", include_docs_in_extension_api_dump);
 	}
 

@@ -248,6 +248,7 @@ public:
 		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
+		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
 		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE,
 		DIRTY_FLAGS_TILE_MAP_IN_TREE,
 		DIRTY_FLAGS_TILE_MAP_IN_CANVAS,
@@ -278,6 +279,7 @@ private:
 	bool y_sort_enabled = false;
 	int y_sort_origin = 0;
 	int z_index = 0;
+	bool navigation_enabled = true;
 	RID navigation_map;
 	bool uses_world_navigation_map = false;
 
@@ -417,6 +419,8 @@ public:
 	int get_y_sort_origin() const;
 	void set_z_index(int p_z_index);
 	int get_z_index() const;
+	void set_navigation_enabled(bool p_enabled);
+	bool is_navigation_enabled() const;
 	void set_navigation_map(RID p_map);
 	RID get_navigation_map() const;
 
@@ -528,7 +532,8 @@ public:
 	int get_layer_y_sort_origin(int p_layer) const;
 	void set_layer_z_index(int p_layer, int p_z_index);
 	int get_layer_z_index(int p_layer) const;
-
+	void set_layer_navigation_enabled(int p_layer, bool p_enabled);
+	bool is_layer_navigation_enabled(int p_layer) const;
 	void set_layer_navigation_map(int p_layer, RID p_map);
 	RID get_layer_navigation_map(int p_layer) const;
 

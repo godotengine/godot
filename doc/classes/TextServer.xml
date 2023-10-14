@@ -165,6 +165,13 @@
 				Returns bitmap font fixed size.
 			</description>
 		</method>
+		<method name="font_get_fixed_size_scale_mode" qualifiers="const">
+			<return type="int" enum="TextServer.FixedSizeScaleMode" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returned bitmap font scaling mode.
+			</description>
+		</method>
 		<method name="font_get_generate_mipmaps" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
@@ -672,6 +679,14 @@
 			<param index="1" name="fixed_size" type="int" />
 			<description>
 				Sets bitmap font fixed size. If set to value greater than zero, same cache entry will be used for all font sizes.
+			</description>
+		</method>
+		<method name="font_set_fixed_size_scale_mode">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="fixed_size_scale_mode" type="int" enum="TextServer.FixedSizeScaleMode" />
+			<description>
+				Sets bitmap font scaling mode. This property is used only if [code]fixed_size[/code] is greater than zero.
 			</description>
 		</method>
 		<method name="font_set_force_autohinter">
@@ -2005,6 +2020,15 @@
 		</constant>
 		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
 			User defined structured text BiDi override function.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_DISABLE" value="0" enum="FixedSizeScaleMode">
+			Bitmap font is not scaled.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_INTEGER_ONLY" value="1" enum="FixedSizeScaleMode">
+			Bitmap font is scaled to the closest integer multiple of the font's fixed size. This is the recommended option for pixel art fonts.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_ENABLED" value="2" enum="FixedSizeScaleMode">
+			Bitmap font is scaled to an arbitrary (fractional) size. This is the recommended option for non-pixel art fonts.
 		</constant>
 	</constants>
 </class>

@@ -69,6 +69,7 @@ void ResourceImporterImageFont::get_import_options(const String &p_path, List<Im
 	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "scaling_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled (Integer),Enabled (Fractional)"), TextServer::FIXED_SIZE_SCALE_ENABLED));
 }
 
 bool ResourceImporterImageFont::_decode_range(const String &p_token, int32_t &r_pos) {
@@ -98,6 +99,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	Array fallbacks = p_options["fallbacks"];
 	Rect2i img_margin = p_options["image_margin"];
 	Rect2i char_margin = p_options["character_margin"];
+	TextServer::FixedSizeScaleMode smode = (TextServer::FixedSizeScaleMode)p_options["scaling_mode"].operator int();
 
 	Ref<Image> img;
 	img.instantiate();
@@ -126,6 +128,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	font->set_oversampling(1.0f);
 	font->set_fallbacks(fallbacks);
 	font->set_texture_image(0, Vector2i(chr_height, 0), 0, img);
+	font->set_fixed_size_scale_mode(smode);
 
 	int pos = 0;
 	for (int i = 0; i < ranges.size(); i++) {

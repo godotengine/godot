@@ -4085,9 +4085,6 @@ void DisplayServerX11::process_events() {
 		if (XGetEventData(x11_display, &event.xcookie)) {
 			if (event.xcookie.type == GenericEvent && event.xcookie.extension == xi.opcode) {
 				XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
-				int index = event_data->detail;
-				Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
-
 				switch (event_data->evtype) {
 					case XI_HierarchyChanged:
 					case XI_DeviceChanged: {
@@ -4204,6 +4201,9 @@ void DisplayServerX11::process_events() {
 						}
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
+						int index = event_data->detail;
+						Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
+
 						Ref<InputEventScreenTouch> st;
 						st.instantiate();
 						st->set_window_id(window_id);
@@ -4235,6 +4235,10 @@ void DisplayServerX11::process_events() {
 						if (ime_window_event || ignore_events) {
 							break;
 						}
+
+						int index = event_data->detail;
+						Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
+
 						HashMap<int, Vector2>::Iterator curr_pos_elem = xi.state.find(index);
 						if (!curr_pos_elem) { // Defensive
 							break;

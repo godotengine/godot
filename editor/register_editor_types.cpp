@@ -257,8 +257,8 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton2DEditorPlugin>();
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
-	EditorPlugins::add_by_type<TileMapEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
+	EditorPlugins::add_by_type<TileMapEditorPlugin>();
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");

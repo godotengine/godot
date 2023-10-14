@@ -186,7 +186,7 @@
 			A peer has disconnected. This event is generated on a successful completion of a disconnect initiated by [method ENetPacketPeer.peer_disconnect], if a peer has timed out, or if a connection request initialized by [method connect_to_host] has timed out. The array will contain the peer which disconnected. The data field contains user supplied data describing the disconnection, or 0, if none is available.
 		</constant>
 		<constant name="EVENT_RECEIVE" value="3" enum="EventType">
-			A packet has been received from a peer. The array will contain the peer which sent the packet, the channel number upon which the packet was received, and the received packet.
+			A packet has been received from a peer. The array will contain the peer which sent the packet and the channel number upon which the packet was received. The received packet will be queued to the associated [ENetPacketPeer].
 		</constant>
 		<constant name="HOST_TOTAL_SENT_DATA" value="0" enum="HostStatistic">
 			Total data sent.

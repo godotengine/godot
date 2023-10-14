@@ -1776,12 +1776,12 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	// Present a more user friendly warning for name conflict.
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-#if defined(WINDOWS_ENABLED)
-	// Workaround case insensitivity on Windows.
-	if ((da->file_exists(new_path) || da->dir_exists(new_path)) && new_path.to_lower() != old_path.to_lower()) {
-#else
-	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
-#endif
+
+	bool new_exist = (da->file_exists(new_path) || da->dir_exists(new_path));
+	if (!da->is_case_sensitive(new_path.get_base_dir())) {
+		new_exist = new_exist && (new_path.to_lower() != old_path.to_lower());
+	}
+	if (new_exist) {
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
 		ti->set_text(col_index, old_name);
 		return;

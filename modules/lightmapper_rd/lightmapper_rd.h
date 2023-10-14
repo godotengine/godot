@@ -40,6 +40,26 @@ class RDShaderFile;
 class LightmapperRD : public Lightmapper {
 	GDCLASS(LightmapperRD, Lightmapper)
 
+	struct BakeParameters {
+		float world_size[3] = {};
+		float bias = 0.0;
+
+		float to_cell_offset[3] = {};
+		int32_t grid_size = 0;
+
+		float to_cell_size[3] = {};
+		uint32_t light_count = 0;
+
+		float env_transform[12] = {};
+
+		int32_t atlas_size[2] = {};
+		float exposure_normalization = 0.0f;
+		uint32_t bounces = 0;
+
+		float bounce_indirect_energy = 0.0f;
+		uint32_t pad[3] = {};
+	};
+
 	struct MeshInstance {
 		MeshData data;
 		int slice = 0;
@@ -57,9 +77,10 @@ class LightmapperRD : public Lightmapper {
 		float attenuation = 0.0;
 		float cos_spot_angle = 0.0;
 		float inv_spot_attenuation = 0.0;
+		float indirect_energy = 0.0;
 		float shadow_blur = 0.0;
 		uint32_t static_bake = 0;
-		uint32_t pad[2] = {};
+		uint32_t pad = 0;
 
 		bool operator<(const Light &p_light) const {
 			return type < p_light.type;
@@ -206,24 +227,13 @@ class LightmapperRD : public Lightmapper {
 	};
 
 	struct PushConstant {
-		int32_t atlas_size[2] = {};
+		uint32_t atlas_slice = 0;
 		uint32_t ray_count = 0;
-		uint32_t ray_to = 0;
-
-		float world_size[3] = {};
-		float bias = 0.0;
-
-		float to_cell_offset[3] = {};
 		uint32_t ray_from = 0;
-
-		float to_cell_size[3] = {};
-		uint32_t light_count = 0;
-
-		int32_t grid_size = 0;
-		int32_t atlas_slice = 0;
-		int32_t region_ofs[2] = {};
-
-		float environment_xform[12] = {};
+		uint32_t ray_to = 0;
+		uint32_t region_ofs[2] = {};
+		uint32_t probe_count = 0;
+		uint32_t pad = 0;
 	};
 
 	Vector<Ref<Image>> bake_textures;
@@ -252,11 +262,11 @@ class LightmapperRD : public Lightmapper {
 
 public:
 	virtual void add_mesh(const MeshData &p_mesh) override;
-	virtual void add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_angular_distance, float p_shadow_blur) override;
-	virtual void add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) override;
-	virtual void add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) override;
+	virtual void add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_angular_distance, float p_shadow_blur) override;
+	virtual void add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) override;
+	virtual void add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) override;
 	virtual void add_probe(const Vector3 &p_position) override;
-	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr, float p_exposure_normalization = 1.0) override;
+	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr, float p_exposure_normalization = 1.0) override;
 
 	int get_bake_texture_count() const override;
 	Ref<Image> get_bake_texture(int p_index) const override;

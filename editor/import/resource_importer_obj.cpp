@@ -486,7 +486,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, co
 		mesh.instantiate();
 		mesh->set_name(m->get_name());
 		for (int i = 0; i < m->get_surface_count(); i++) {
-			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
+			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i), String(), m->surface_get_format(i));
 		}
 
 		ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);

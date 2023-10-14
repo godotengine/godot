@@ -391,7 +391,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 		Dictionary lods;
 		String name;
 		Ref<Material> mat;
-		int fmt_compress_flags = 0;
+		uint64_t fmt_compress_flags = 0;
 	};
 
 	Vector<LocalSurfData> surf_data_by_mesh;
@@ -403,7 +403,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 
 	for (int surf_idx = 0; surf_idx < surf_count; surf_idx++) {
 		Mesh::PrimitiveType prim = p_mesh->get_surface_primitive_type(surf_idx);
-		const int fmt_compress_flags = p_mesh->get_surface_format(surf_idx);
+		const uint64_t fmt_compress_flags = p_mesh->get_surface_format(surf_idx);
 		Array arr = p_mesh->get_surface_arrays(surf_idx);
 		String name = p_mesh->get_surface_name(surf_idx);
 		Dictionary lods;
@@ -450,7 +450,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 		const Array arr = surf_data_by_mesh[surf_idx].arr;
 		const Array bsarr = surf_data_by_mesh[surf_idx].bsarr;
 		const Dictionary lods = surf_data_by_mesh[surf_idx].lods;
-		const int fmt_compress_flags = surf_data_by_mesh[surf_idx].fmt_compress_flags;
+		const uint64_t fmt_compress_flags = surf_data_by_mesh[surf_idx].fmt_compress_flags;
 		const String name = surf_data_by_mesh[surf_idx].name;
 		const Ref<Material> mat = surf_data_by_mesh[surf_idx].mat;
 
