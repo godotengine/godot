@@ -126,6 +126,7 @@ enum DefaultGLTexture {
 	DEFAULT_GL_TEXTURE_3D_BLACK,
 	DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE,
 	DEFAULT_GL_TEXTURE_2D_UINT,
+	DEFAULT_GL_TEXTURE_EXT,
 	DEFAULT_GL_TEXTURE_MAX
 };
 
@@ -512,6 +513,7 @@ public:
 	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override;
 	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override;
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
+	virtual void texture_external_initialize(RID p_texture, const Ref<Image> &p_image) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
 
 	RID texture_create_external(Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY);
