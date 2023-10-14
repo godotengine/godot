@@ -223,6 +223,16 @@ void test(TestType p_type) {
 	// Initialize the language for the test routine.
 	init_language(fa->get_path_absolute().get_base_dir());
 
+	// Load global classes.
+	TypedArray<Dictionary> script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary c = script_classes[i];
+		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+			continue;
+		}
+		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"]);
+	}
+
 	Vector<uint8_t> buf;
 	uint64_t flen = fa->get_length();
 	buf.resize(flen + 1);

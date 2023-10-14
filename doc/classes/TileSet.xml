@@ -168,7 +168,7 @@
 		<method name="get_next_source_id" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns a new unused source ID. This generated ID is the same that a call to [code]add_source[/code] would return.
+				Returns a new unused source ID. This generated ID is the same that a call to [method add_source] would return.
 			</description>
 		</method>
 		<method name="get_occlusion_layer_light_mask" qualifiers="const">

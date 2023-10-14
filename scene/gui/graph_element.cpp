@@ -150,7 +150,7 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
-		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphElement must be the child of a GraphEdit node.");
+		ERR_FAIL_NULL_MSG(get_parent_control(), "GraphElement must be the child of a GraphEdit node.");
 
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			Vector2 mpos = mb->get_position();

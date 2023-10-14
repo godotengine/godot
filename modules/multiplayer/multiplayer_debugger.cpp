@@ -239,8 +239,8 @@ void MultiplayerDebugger::RPCProfiler::tick(double p_frame_time, double p_proces
 MultiplayerDebugger::SyncInfo::SyncInfo(MultiplayerSynchronizer *p_sync) {
 	ERR_FAIL_NULL(p_sync);
 	synchronizer = p_sync->get_instance_id();
-	if (p_sync->get_replication_config().is_valid()) {
-		config = p_sync->get_replication_config()->get_instance_id();
+	if (p_sync->get_replication_config_ptr()) {
+		config = p_sync->get_replication_config_ptr()->get_instance_id();
 	}
 	if (p_sync->get_root_node()) {
 		root_node = p_sync->get_root_node()->get_instance_id();

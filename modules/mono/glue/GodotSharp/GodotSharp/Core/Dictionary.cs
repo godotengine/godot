@@ -385,6 +385,15 @@ namespace Godot.Collections
         /// Copies the elements of this <see cref="Dictionary"/> to the given untyped
         /// <see cref="KeyValuePair{TKey, TValue}"/> array, starting at the given index.
         /// </summary>
+        /// <exception cref="ArgumentNullException">
+        /// The <paramref name="array"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="arrayIndex"/> is less than 0 or greater than the array's size.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// The destination array was not long enough.
+        /// </exception>
         /// <param name="array">The array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
         void ICollection<KeyValuePair<Variant, Variant>>.CopyTo(KeyValuePair<Variant, Variant>[] array, int arrayIndex)
@@ -499,6 +508,7 @@ namespace Godot.Collections
         /// <summary>
         /// Constructs a new empty <see cref="Dictionary{TKey, TValue}"/>.
         /// </summary>
+        /// <returns>A new Godot Dictionary.</returns>
         public Dictionary()
         {
             _underlyingDict = new Dictionary();
@@ -507,6 +517,9 @@ namespace Godot.Collections
         /// <summary>
         /// Constructs a new <see cref="Dictionary{TKey, TValue}"/> from the given dictionary's elements.
         /// </summary>
+        /// <exception cref="ArgumentNullException">
+        /// The <paramref name="dictionary"/> is <see langword="null"/>.
+        /// </exception>
         /// <param name="dictionary">The dictionary to construct from.</param>
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary(IDictionary<TKey, TValue> dictionary)
@@ -523,10 +536,16 @@ namespace Godot.Collections
         /// <summary>
         /// Constructs a new <see cref="Dictionary{TKey, TValue}"/> from the given dictionary's elements.
         /// </summary>
+        /// <exception cref="ArgumentNullException">
+        /// The <paramref name="dictionary"/> is <see langword="null"/>.
+        /// </exception>
         /// <param name="dictionary">The dictionary to construct from.</param>
         /// <returns>A new Godot Dictionary.</returns>
         public Dictionary(Dictionary dictionary)
         {
+            if (dictionary == null)
+                throw new ArgumentNullException(nameof(dictionary));
+
             _underlyingDict = dictionary;
         }
 
@@ -539,6 +558,7 @@ namespace Godot.Collections
         /// Converts this typed <see cref="Dictionary{TKey, TValue}"/> to an untyped <see cref="Dictionary"/>.
         /// </summary>
         /// <param name="from">The typed dictionary to convert.</param>
+        /// <returns>A new Godot Dictionary, or <see langword="null"/> if <see paramref="from"/> was null.</returns>
         public static explicit operator Dictionary(Dictionary<TKey, TValue> from)
         {
             return from?._underlyingDict;
@@ -555,6 +575,8 @@ namespace Godot.Collections
         /// elements will be shallow copied regardless of the <paramref name="deep"/>
         /// setting.
         /// </summary>
+        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
+        /// <returns>A new Godot Dictionary.</returns>
         public Dictionary<TKey, TValue> Duplicate(bool deep = false)
         {
             return new Dictionary<TKey, TValue>(_underlyingDict.Duplicate(deep));
@@ -688,6 +710,9 @@ namespace Godot.Collections
         /// <exception cref="InvalidOperationException">
         /// The dictionary is read-only.
         /// </exception>
+        /// <exception cref="ArgumentException">
+        /// An element with the same <paramref name="key"/> already exists.
+        /// </exception>
         /// <param name="key">The key at which to add the object.</param>
         /// <param name="value">The object to add.</param>
         public void Add(TKey key, TValue value)
@@ -810,6 +835,15 @@ namespace Godot.Collections
         /// Copies the elements of this <see cref="Dictionary{TKey, TValue}"/> to the given
         /// untyped C# array, starting at the given index.
         /// </summary>
+        /// <exception cref="ArgumentNullException">
+        /// The <paramref name="array"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="arrayIndex"/> is less than 0 or greater than the array's size.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// The destination array was not long enough.
+        /// </exception>
         /// <param name="array">The array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
         void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)

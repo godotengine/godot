@@ -190,6 +190,7 @@ class FontFile : public Font {
 	int msdf_pixel_range = 16;
 	int msdf_size = 48;
 	int fixed_size = 0;
+	TextServer::FixedSizeScaleMode fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
 	bool force_autohinter = false;
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
@@ -205,7 +206,7 @@ class FontFile : public Font {
 	mutable Vector<RID> cache;
 
 	_FORCE_INLINE_ void _clear_cache();
-	_FORCE_INLINE_ void _ensure_rid(int p_cache_index) const;
+	_FORCE_INLINE_ void _ensure_rid(int p_cache_index, int p_make_linked_from = -1) const;
 
 	void _convert_packed_8bit(Ref<Image> &p_source, int p_page, int p_sz);
 	void _convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz);
@@ -256,6 +257,9 @@ public:
 
 	virtual void set_fixed_size(int p_fixed_size);
 	virtual int get_fixed_size() const;
+
+	virtual void set_fixed_size_scale_mode(TextServer::FixedSizeScaleMode p_fixed_size_scale_mode);
+	virtual TextServer::FixedSizeScaleMode get_fixed_size_scale_mode() const;
 
 	virtual void set_allow_system_fallback(bool p_allow_system_fallback);
 	virtual bool is_allow_system_fallback() const;

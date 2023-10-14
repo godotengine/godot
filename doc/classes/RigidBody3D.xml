@@ -182,7 +182,7 @@
 		</member>
 		<member name="inertia" type="Vector3" setter="set_inertia" getter="get_inertia" default="Vector3(0, 0, 0)">
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
-			If set to [code]Vector3.ZERO[/code], inertia is automatically computed (default value).
+			If set to [constant Vector3.ZERO], inertia is automatically computed (default value).
 			[b]Note:[/b] This value does not change when inertia is automatically computed. Use [PhysicsServer3D] to get the computed inertia.
 			[codeblocks]
 			[gdscript]

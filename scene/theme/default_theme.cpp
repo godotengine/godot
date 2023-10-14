@@ -498,8 +498,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("executing_line", "CodeEdit", icons["arrow_right"]);
 	theme->set_icon("can_fold", "CodeEdit", icons["arrow_down"]);
 	theme->set_icon("folded", "CodeEdit", icons["arrow_right"]);
-	theme->set_icon("can_fold_code_region", "CodeEdit", icons["folder_down_arrow"]);
-	theme->set_icon("folded_code_region", "CodeEdit", icons["folder_right_arrow"]);
+	theme->set_icon("can_fold_code_region", "CodeEdit", icons["region_unfolded"]);
+	theme->set_icon("folded_code_region", "CodeEdit", icons["region_folded"]);
 	theme->set_icon("folded_eol_icon", "CodeEdit", icons["text_edit_ellipsis"]);
 
 	theme->set_font("font", "CodeEdit", Ref<Font>());

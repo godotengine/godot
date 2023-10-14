@@ -368,6 +368,9 @@ void FindReplaceBar::_update_results_count() {
 
 		int col_pos = 0;
 
+		bool searched_start_is_symbol = is_symbol(searched[0]);
+		bool searched_end_is_symbol = is_symbol(searched[searched.length() - 1]);
+
 		while (true) {
 			col_pos = is_case_sensitive() ? line_text.find(searched, col_pos) : line_text.findn(searched, col_pos);
 
@@ -376,11 +379,11 @@ void FindReplaceBar::_update_results_count() {
 			}
 
 			if (is_whole_words()) {
-				if (col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
+				if (!searched_start_is_symbol && col_pos > 0 && !is_symbol(line_text[col_pos - 1])) {
 					col_pos += searched.length();
 					continue;
 				}
-				if (col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
+				if (!searched_end_is_symbol && col_pos + searched.length() < line_text.length() && !is_symbol(line_text[col_pos + searched.length()])) {
 					col_pos += searched.length();
 					continue;
 				}
@@ -948,6 +951,8 @@ void CodeTextEditor::_complete_request() {
 			font_color = get_theme_color(e.theme_color_name, SNAME("Editor"));
 		} else if (e.insert_text.begins_with("\"") || e.insert_text.begins_with("\'")) {
 			font_color = completion_string_color;
+		} else if (e.insert_text.begins_with("##") || e.insert_text.begins_with("///")) {
+			font_color = completion_doc_comment_color;
 		} else if (e.insert_text.begins_with("#") || e.insert_text.begins_with("//")) {
 			font_color = completion_comment_color;
 		}
@@ -1023,6 +1028,7 @@ void CodeTextEditor::update_editor_settings() {
 	completion_font_color = EDITOR_GET("text_editor/theme/highlighting/completion_font_color");
 	completion_string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 	completion_comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+	completion_doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
 
 	// Appearance: Caret
 	text_editor->set_caret_type((TextEdit::CaretType)EDITOR_GET("text_editor/appearance/caret/type").operator int());

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ios_support.h                                                         */
+/*  openxr_eye_gaze_interaction.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IOS_SUPPORT_H
-#define IOS_SUPPORT_H
+#ifndef OPENXR_EYE_GAZE_INTERACTION_H
+#define OPENXR_EYE_GAZE_INTERACTION_H
 
-#if defined(IOS_ENABLED)
+#include "openxr_extension_wrapper.h"
 
-#include "core/string/ustring.h"
+class OpenXREyeGazeInteractionExtension : public OpenXRExtensionWrapper {
+public:
+	static OpenXREyeGazeInteractionExtension *get_singleton();
 
-namespace gdmono {
-namespace ios {
-namespace support {
+	OpenXREyeGazeInteractionExtension();
+	~OpenXREyeGazeInteractionExtension();
 
-void initialize();
-void cleanup();
-} // namespace support
-} // namespace ios
-} // namespace gdmono
+	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) override;
 
-#endif // IOS_ENABLED
+	bool is_available();
+	bool supports_eye_gaze_interaction();
 
-#endif // IOS_SUPPORT_H
+	virtual void on_register_metadata() override;
+
+private:
+	static OpenXREyeGazeInteractionExtension *singleton;
+
+	bool available = false;
+	XrSystemEyeGazeInteractionPropertiesEXT properties;
+};
+
+#endif // OPENXR_EYE_GAZE_INTERACTION_H

@@ -119,7 +119,7 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 
 	// Rename bones in all Nodes by calling method.
 	{
-		Vector<Variant> vargs;
+		Array vargs;
 		vargs.push_back(p_base_scene);
 		vargs.push_back(skeleton);
 		Dictionary rename_map_dict;
@@ -127,18 +127,11 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 			rename_map_dict[E->key] = E->value;
 		}
 		vargs.push_back(rename_map_dict);
-		const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * vargs.size());
-		const Variant *args = vargs.ptr();
-		uint32_t argcount = vargs.size();
-		for (uint32_t i = 0; i < argcount; i++) {
-			argptrs[i] = &args[i];
-		}
 
 		TypedArray<Node> nodes = p_base_scene->find_children("*");
 		while (nodes.size()) {
 			Node *nd = Object::cast_to<Node>(nodes.pop_back());
-			Callable::CallError ce;
-			nd->callp("_notify_skeleton_bones_renamed", argptrs, argcount, ce);
+			nd->callv("_notify_skeleton_bones_renamed", vargs);
 		}
 	}
 }

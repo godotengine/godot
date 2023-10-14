@@ -349,6 +349,8 @@ class AnimationTrackEditGroup : public Control {
 protected:
 	void _notification(int p_what);
 
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 public:
 	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
 	virtual Size2 get_minimum_size() const override;

@@ -39,6 +39,30 @@
 - (void)doNothing:(id)sender {
 }
 
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+	if (DisplayServer::get_singleton()) {
+		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+		ds->menu_open(menu);
+	}
+}
+
+- (void)menuDidClose:(NSMenu *)menu {
+	if (DisplayServer::get_singleton()) {
+		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+		ds->menu_close(menu);
+	}
+}
+
+- (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item {
+	if (item) {
+		GodotMenuItem *value = [item representedObject];
+		if (value && value->hover_callback.is_valid()) {
+			// If custom callback is set, use it.
+			value->hover_callback.call(value->meta);
+		}
+	}
+}
+
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action {
 	NSString *ev_key = [[event charactersIgnoringModifiers] lowercaseString];
 	NSUInteger ev_modifiers = [event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask;
@@ -49,23 +73,21 @@
 
 			if (ev_modifiers == item_modifiers) {
 				GodotMenuItem *value = [menu_item representedObject];
-				if (value->key_callback != Callable()) {
-					// If custom callback is set, use it.
-					Variant tag = value->meta;
-					Variant *tagp = &tag;
-					Variant ret;
-					Callable::CallError ce;
-					value->key_callback.callp((const Variant **)&tagp, 1, ret, ce);
-				} else {
-					// Otherwise redirect event to the engine.
-					if (DisplayServer::get_singleton()) {
-						[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
+				if (value) {
+					if (value->key_callback.is_valid()) {
+						// If custom callback is set, use it.
+						value->key_callback.call(value->meta);
+					} else {
+						// Otherwise redirect event to the engine.
+						if (DisplayServer::get_singleton()) {
+							[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
+						}
 					}
-				}
 
-				// Suppress default menu action.
-				*target = self;
-				*action = @selector(doNothing:);
+					// Suppress default menu action.
+					*target = self;
+					*action = @selector(doNothing:);
+				}
 				return YES;
 			}
 		}

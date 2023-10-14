@@ -136,17 +136,22 @@ void UndoRedo::add_do_method(const Callable &p_callable) {
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
-	Object *object = p_callable.get_object();
-	ERR_FAIL_NULL(object);
+	ObjectID object_id = p_callable.get_object_id();
+	Object *object = ObjectDB::get_instance(object_id);
+	ERR_FAIL_COND(object_id.is_valid() && object == nullptr);
 
 	Operation do_op;
 	do_op.callable = p_callable;
-	do_op.object = p_callable.get_object_id();
+	do_op.object = object_id;
 	if (Object::cast_to<RefCounted>(object)) {
 		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(object));
 	}
 	do_op.type = Operation::TYPE_METHOD;
 	do_op.name = p_callable.get_method();
+	if (do_op.name == StringName()) {
+		// There's no `get_method()` for custom callables, so use `operator String()` instead.
+		do_op.name = static_cast<String>(p_callable);
+	}
 
 	actions.write[current_action + 1].do_ops.push_back(do_op);
 }
@@ -161,18 +166,23 @@ void UndoRedo::add_undo_method(const Callable &p_callable) {
 		return;
 	}
 
-	Object *object = p_callable.get_object();
-	ERR_FAIL_NULL(object);
+	ObjectID object_id = p_callable.get_object_id();
+	Object *object = ObjectDB::get_instance(object_id);
+	ERR_FAIL_COND(object_id.is_valid() && object == nullptr);
 
 	Operation undo_op;
 	undo_op.callable = p_callable;
-	undo_op.object = p_callable.get_object_id();
+	undo_op.object = object_id;
 	if (Object::cast_to<RefCounted>(object)) {
 		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(object));
 	}
 	undo_op.type = Operation::TYPE_METHOD;
 	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	undo_op.name = p_callable.get_method();
+	if (undo_op.name == StringName()) {
+		// There's no `get_method()` for custom callables, so use `operator String()` instead.
+		undo_op.name = static_cast<String>(p_callable);
+	}
 
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
 }

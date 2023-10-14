@@ -555,21 +555,22 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 
 	Variant md = item->get_metadata(0);
 	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
-		String class_name = md;
-		String class_description;
-
-		DocTools *dd = EditorHelp::get_doc_data();
-		HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_name);
-		if (E) {
-			class_description = DTR(E->value.brief_description);
+		String text = description_bit->get_class_description(md);
+		if (!text.is_empty()) {
+			// Display both class name and description, since the help bit may be displayed
+			// far away from the location (especially if the dialog was resized to be taller).
+			description_bit->set_text(vformat("[b]%s[/b]: %s", md, text));
+			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+		} else {
+			// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
+			description_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", md)));
+			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 		}
-
-		description_bit->set_text(class_description);
 	} else if (md.get_type() == Variant::INT) {
-		int feature_id = md;
-		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature(feature_id));
+		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature((int)md));
+		description_bit->set_text(vformat("[b]%s[/b]: %s", TTR(item->get_text(0)), TTRGET(feature_description)));
+		description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
 
-		description_bit->set_text(TTRGET(feature_description));
 		return;
 	} else {
 		return;

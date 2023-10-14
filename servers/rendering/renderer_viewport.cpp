@@ -209,6 +209,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			rb_config.set_fsr_sharpness(p_viewport->fsr_sharpness);
 			rb_config.set_texture_mipmap_bias(texture_mipmap_bias);
 			rb_config.set_use_taa(use_taa);
+			rb_config.set_use_debanding(p_viewport->use_debanding);
 
 			p_viewport->render_buffers->configure(&rb_config);
 		}
@@ -616,7 +617,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	}
 }
 
-void RendererViewport::draw_viewports() {
+void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	timestamp_vp_map.clear();
 
 	// get our xr interface in case we need it
@@ -732,7 +733,7 @@ void RendererViewport::draw_viewports() {
 				// commit our eyes
 				Vector<BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
 				if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
-					if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3" || OS::get_singleton()->get_current_rendering_driver_name() == "opengl3_angle") {
+					if (OS::get_singleton()->get_current_rendering_driver_name().begins_with("opengl3")) {
 						if (blits.size() > 0) {
 							RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
 						}
@@ -771,7 +772,7 @@ void RendererViewport::draw_viewports() {
 					blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
 				}
 
-				if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3" || OS::get_singleton()->get_current_rendering_driver_name() == "opengl3_angle") {
+				if (OS::get_singleton()->get_current_rendering_driver_name().begins_with("opengl3")) {
 					Vector<BlitToScreen> blit_to_screen_vec;
 					blit_to_screen_vec.push_back(blit);
 					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blit_to_screen_vec.ptr(), 1);
@@ -799,11 +800,14 @@ void RendererViewport::draw_viewports() {
 	total_draw_calls_used = draw_calls_used;
 
 	RENDER_TIMESTAMP("< Render Viewports");
-	//this needs to be called to make screen swapping more efficient
-	RSG::rasterizer->prepare_for_blitting_render_targets();
 
-	for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {
-		RSG::rasterizer->blit_render_targets_to_screen(E.key, E.value.ptr(), E.value.size());
+	if (p_swap_buffers) {
+		//this needs to be called to make screen swapping more efficient
+		RSG::rasterizer->prepare_for_blitting_render_targets();
+
+		for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {
+			RSG::rasterizer->blit_render_targets_to_screen(E.key, E.value.ptr(), E.value.size());
+		}
 	}
 }
 

@@ -209,7 +209,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 
 	GLES3::SceneMaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
-	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip) {
+	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_world_coordinates) {
 		flags |= GeometryInstanceSurface::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = static_cast<GLES3::SceneMaterialData *>(GLES3::MaterialStorage::get_singleton()->material_get_data(scene_globals.default_material, RS::SHADER_SPATIAL));
 
@@ -2908,6 +2908,18 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			}
 
 			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, instance_variant, spec_constants);
+			{
+				GLES3::Mesh::Surface *s = reinterpret_cast<GLES3::Mesh::Surface *>(surf->surface);
+				if (s->format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::COMPRESSED_AABB_POSITION, s->aabb.position, shader->version, instance_variant, spec_constants);
+					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::COMPRESSED_AABB_SIZE, s->aabb.size, shader->version, instance_variant, spec_constants);
+					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::UV_SCALE, s->uv_scale, shader->version, instance_variant, spec_constants);
+				} else {
+					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::COMPRESSED_AABB_POSITION, Vector3(0.0, 0.0, 0.0), shader->version, instance_variant, spec_constants);
+					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::COMPRESSED_AABB_SIZE, Vector3(1.0, 1.0, 1.0), shader->version, instance_variant, spec_constants);
+					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::UV_SCALE, Vector4(0.0, 0.0, 0.0, 0.0), shader->version, instance_variant, spec_constants);
+				}
+			}
 
 			// Can be index count or vertex count
 			uint32_t count = 0;
@@ -2962,7 +2974,15 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					glEnableVertexAttribArray(15);
 					glVertexAttribIPointer(15, 4, GL_UNSIGNED_INT, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(color_custom_offset * sizeof(float)));
 					glVertexAttribDivisor(15, 1);
+				} else {
+					// Set all default instance color and custom data values to 1.0 or 0.0 using a compressed format.
+					uint16_t zero = Math::make_half_float(0.0f);
+					uint16_t one = Math::make_half_float(1.0f);
+					GLuint default_color = (uint32_t(one) << 16) | one;
+					GLuint default_custom = (uint32_t(zero) << 16) | zero;
+					glVertexAttribI4ui(15, default_color, default_color, default_custom, default_custom);
 				}
+
 				if (use_index_buffer) {
 					glDrawElementsInstanced(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0, inst->instance_count);
 				} else {

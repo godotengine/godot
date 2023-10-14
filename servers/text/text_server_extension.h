@@ -80,6 +80,9 @@ public:
 	virtual RID create_font() override;
 	GDVIRTUAL0R(RID, _create_font);
 
+	virtual RID create_font_linked_variation(const RID &p_font_rid) override;
+	GDVIRTUAL1R(RID, _create_font_linked_variation, RID);
+
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) override;
 	GDVIRTUAL2(_font_set_data, RID, const PackedByteArray &);
@@ -149,6 +152,11 @@ public:
 	virtual int64_t font_get_fixed_size(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_fixed_size, RID, int64_t);
 	GDVIRTUAL1RC(int64_t, _font_get_fixed_size, RID);
+
+	virtual void font_set_fixed_size_scale_mode(const RID &p_font_rid, FixedSizeScaleMode p_fixed_size_scale) override;
+	virtual FixedSizeScaleMode font_get_fixed_size_scale_mode(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_fixed_size_scale_mode, RID, FixedSizeScaleMode);
+	GDVIRTUAL1RC(FixedSizeScaleMode, _font_get_fixed_size_scale_mode, RID);
 
 	virtual void font_set_subpixel_positioning(const RID &p_font_rid, SubpixelPositioning p_subpixel) override;
 	virtual SubpixelPositioning font_get_subpixel_positioning(const RID &p_font_rid) const override;

@@ -418,6 +418,10 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	RID _create_base_uniform_set(RID p_to_render_target, bool p_backbuffer);
 
+	bool debug_redraw = false;
+	Color debug_redraw_color;
+	double debug_redraw_time = 1.0;
+
 	inline void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size, bool p_texture_is_data = false); //recursive, so regular inline used instead.
 	void _render_item(RenderingDevice::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used);
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false);
@@ -449,6 +453,8 @@ public:
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used);
 
 	virtual void set_shadow_texture_size(int p_size);
+
+	void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color);
 
 	void set_time(double p_time);
 	void update();

@@ -73,6 +73,7 @@ private:
 	jmethodID _begin_benchmark_measure = nullptr;
 	jmethodID _end_benchmark_measure = nullptr;
 	jmethodID _dump_benchmark = nullptr;
+	jmethodID _has_feature = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -110,6 +111,9 @@ public:
 
 	// Return the list of gdextensions config file.
 	Vector<String> get_gdextension_list_config_file() const;
+
+	// Return true if the given feature is supported.
+	bool has_feature(const String &p_feature) const;
 };
 
 #endif // JAVA_GODOT_WRAPPER_H

@@ -2695,18 +2695,25 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					AnimationPlayer *ap = ape->get_player();
 					if (ap) {
 						NodePath npath = animation->track_get_path(track);
-						Node *nd = ap->get_node(ap->get_root_node())->get_node(NodePath(npath.get_concatenated_names()));
-						StringName prop = npath.get_concatenated_subnames();
-						PropertyInfo prop_info;
-						ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
+						Node *a_ap_root_node = ap->get_node(ap->get_root_node());
+						Node *nd = nullptr;
+						// We must test that we have a valid a_ap_root_node before trying to access its content to init the nd Node.
+						if (a_ap_root_node) {
+							nd = a_ap_root_node->get_node(NodePath(npath.get_concatenated_names()));
+						}
+						if (nd) {
+							StringName prop = npath.get_concatenated_subnames();
+							PropertyInfo prop_info;
+							ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
 #ifdef DISABLE_DEPRECATED
-						bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians_as_degrees") != -1;
+							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians_as_degrees") != -1;
 #else
-						bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians") != -1;
+							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians") != -1;
 #endif // DISABLE_DEPRECATED
-						if (is_angle) {
-							menu->add_icon_item(get_editor_theme_icon(SNAME("InterpLinearAngle")), TTR("Linear Angle"), MENU_INTERPOLATION_LINEAR_ANGLE);
-							menu->add_icon_item(get_editor_theme_icon(SNAME("InterpCubicAngle")), TTR("Cubic Angle"), MENU_INTERPOLATION_CUBIC_ANGLE);
+							if (is_angle) {
+								menu->add_icon_item(get_editor_theme_icon(SNAME("InterpLinearAngle")), TTR("Linear Angle"), MENU_INTERPOLATION_LINEAR_ANGLE);
+								menu->add_icon_item(get_editor_theme_icon(SNAME("InterpCubicAngle")), TTR("Cubic Angle"), MENU_INTERPOLATION_CUBIC_ANGLE);
+							}
 						}
 					}
 				}
@@ -3169,26 +3176,7 @@ AnimationTrackEdit::AnimationTrackEdit() {
 
 AnimationTrackEdit *AnimationTrackEditPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
 	if (get_script_instance()) {
-		Variant args[6] = {
-			p_object,
-			p_type,
-			p_property,
-			p_hint,
-			p_hint_string,
-			p_usage
-		};
-
-		Variant *argptrs[6] = {
-			&args[0],
-			&args[1],
-			&args[2],
-			&args[3],
-			&args[4],
-			&args[5]
-		};
-
-		Callable::CallError ce;
-		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->callp("create_value_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_value_track_edit", p_object, p_type, p_property, p_hint, p_hint_string, p_usage));
 	}
 	return nullptr;
 }
@@ -3246,6 +3234,22 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 				draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
 			}
 		} break;
+	}
+}
+
+void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		Point2 pos = mb->get_position();
+		Rect2 node_name_rect = Rect2(0, 0, timeline->get_name_limit(), get_size().height);
+
+		if (node_name_rect.has_point(pos)) {
+			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+			editor_selection->clear();
+			editor_selection->add_node(root->get_node(node));
+		}
 	}
 }
 
@@ -3906,7 +3910,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND(history->get_path_size() == 0);
 	Object *obj = ObjectDB::get_instance(history->get_path_object(0));
-	ERR_FAIL_COND(!Object::cast_to<Node>(obj));
+	ERR_FAIL_NULL(Object::cast_to<Node>(obj));
 
 	// Let's build a node path.
 	Node *node = Object::cast_to<Node>(obj);

@@ -7,8 +7,12 @@ func int_func(x: int) -> void:
 func float_func(x: float) -> void:
 	print(x)
 
+func node_func(x: Node) -> void:
+	print(x)
+
 # We don't want to execute it because of errors, just analyze.
 func no_exec_test():
+	var variant: Variant = null
 	var untyped_int = 42
 	var untyped_string = "abc"
 	var variant_int: Variant = 42
@@ -32,6 +36,19 @@ func no_exec_test():
 	float_func(variant_int)
 	float_func(variant_string)
 	float_func(typed_int) # No warning.
+
+	node_func(variant)
+	node_func(Object.new())
+	node_func(Node.new()) # No warning.
+	node_func(Node2D.new()) # No warning.
+
+	# GH-82529
+	print(Callable(self, "test")) # No warning.
+	print(Callable(variant, "test"))
+
+	print(Dictionary(variant))
+	print(Vector2(variant))
+	print(int(variant))
 
 func test():
 	pass

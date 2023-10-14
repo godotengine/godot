@@ -266,6 +266,7 @@ public:
 
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
+	virtual bool has_static_method(const StringName &p_method) const override;
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
@@ -500,6 +501,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const override;
 	virtual bool is_control_flow_keyword(String p_keywords) const override;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const override;
+	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;

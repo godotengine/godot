@@ -188,6 +188,7 @@ class CodeTextEditor : public VBoxContainer {
 	Color completion_font_color;
 	Color completion_string_color;
 	Color completion_comment_color;
+	Color completion_doc_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud = nullptr;
 

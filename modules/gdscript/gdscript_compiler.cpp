@@ -229,13 +229,13 @@ static bool _is_exact_type(const PropertyInfo &p_par_type, const GDScriptDataTyp
 	}
 }
 
-static bool _can_use_ptrcall(const MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
+static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
 	if (p_method->is_vararg()) {
-		// ptrcall won't work with vararg methods.
+		// Validated call won't work with vararg methods.
 		return false;
 	}
 	if (p_method->get_argument_count() != p_arguments.size()) {
-		// ptrcall won't work with default arguments.
+		// Validated call won't work with default arguments.
 		return false;
 	}
 	MethodInfo info;
@@ -636,9 +636,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							self.mode = GDScriptCodeGenerator::Address::SELF;
 							MethodBind *method = ClassDB::get_method(codegen.script->native->get_name(), call->function_name);
 
-							if (_can_use_ptrcall(method, arguments)) {
-								// Exact arguments, use ptrcall.
-								gen->write_call_ptrcall(result, self, method, arguments);
+							if (_can_use_validate_call(method, arguments)) {
+								// Exact arguments, use validated call.
+								gen->write_call_method_bind_validated(result, self, method, arguments);
 							} else {
 								// Not exact arguments, but still can use method bind call.
 								gen->write_call_method_bind(result, self, method, arguments);
@@ -686,9 +686,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									}
 									if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
 										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
-										if (_can_use_ptrcall(method, arguments)) {
-											// Exact arguments, use ptrcall.
-											gen->write_call_ptrcall(result, base, method, arguments);
+										if (_can_use_validate_call(method, arguments)) {
+											// Exact arguments, use validated call.
+											gen->write_call_method_bind_validated(result, base, method, arguments);
 										} else {
 											// Not exact arguments, but still can use method bind call.
 											gen->write_call_method_bind(result, base, method, arguments);
@@ -733,7 +733,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(get_node->get_datatype(), codegen.script));
 
 			MethodBind *get_node_method = ClassDB::get_method("Node", "get_node");
-			gen->write_call_ptrcall(result, GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), get_node_method, args);
+			gen->write_call_method_bind_validated(result, GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), get_node_method, args);
 
 			return result;
 		} break;

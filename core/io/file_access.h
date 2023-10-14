@@ -223,8 +223,8 @@ public:
 	static Vector<uint8_t> get_file_as_bytes(const String &p_path, Error *r_error = nullptr);
 	static String get_file_as_string(const String &p_path, Error *r_error = nullptr);
 
-	static PackedByteArray _get_file_as_bytes(const String &p_path) { return get_file_as_bytes(p_path); }
-	static String _get_file_as_string(const String &p_path) { return get_file_as_string(p_path); };
+	static PackedByteArray _get_file_as_bytes(const String &p_path) { return get_file_as_bytes(p_path, &last_file_open_error); }
+	static String _get_file_as_string(const String &p_path) { return get_file_as_string(p_path, &last_file_open_error); }
 
 	template <class T>
 	static void make_default(AccessType p_access) {
