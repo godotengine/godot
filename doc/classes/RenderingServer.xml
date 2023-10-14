@@ -2422,7 +2422,8 @@
 				The per-instance data size and expected data order is:
 				[codeblock]
 				struct InstanceTransform2D {
-				    float[8] undocumented; // differs from Transform2D
+				    Basis basis_x; float origin_x;
+				    Basis basis_y; float origin_y;
 				};
 				struct InstanceTransform3D {
 				    Basis basis_x; float origin_x;
