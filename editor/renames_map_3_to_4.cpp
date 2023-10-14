@@ -1518,7 +1518,6 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "EditorSceneImporterGLTF", "EditorSceneFormatImporterGLTF" },
 	{ "EditorSpatialGizmo", "EditorNode3DGizmo" },
 	{ "EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin" },
-	{ "ExternalTexture", "ImageTexture" },
 	{ "GIProbe", "VoxelGI" },
 	{ "GIProbeData", "VoxelGIData" },
 	{ "Generic6DOFJoint", "Generic6DOFJoint3D" },
