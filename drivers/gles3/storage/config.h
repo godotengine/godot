@@ -45,6 +45,7 @@ typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, 
 typedef void (*PFNGLTEXSTORAGE3DMULTISAMPLEPROC)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean);
 typedef void (*PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei);
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei);
+typedef void (*PFNEGLIMAGETARGETTEXTURE2DOESPROC)(GLenum, void *);
 #endif
 
 namespace GLES3 {
@@ -91,6 +92,7 @@ public:
 	bool rt_msaa_supported = false;
 	bool rt_msaa_multiview_supported = false;
 	bool multiview_supported = false;
+	bool external_texture_supported = false;
 
 	// Adreno 3XX compatibility
 	bool disable_particles_workaround = false; // set to 'true' to disable 'GPUParticles'
@@ -104,6 +106,7 @@ public:
 	PFNGLTEXSTORAGE3DMULTISAMPLEPROC eglTexStorage3DMultisample = nullptr;
 	PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC eglFramebufferTexture2DMultisampleEXT = nullptr;
 	PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC eglFramebufferTextureMultisampleMultiviewOVR = nullptr;
+	PFNEGLIMAGETARGETTEXTURE2DOESPROC eglEGLImageTargetTexture2DOES = nullptr;
 #endif
 
 	static Config *get_singleton() { return singleton; };
