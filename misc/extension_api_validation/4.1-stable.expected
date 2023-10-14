@@ -299,5 +299,7 @@ GH-83219
 --------
 Validate extension JSON: Error: Field 'classes/Node/methods/find_child/arguments': size changed value in new API, from 3 to 4.
 Validate extension JSON: Error: Field 'classes/Node/methods/find_parent/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Hash changed for 'classes/Node/methods/find_parent', from 43F4625F to 241D75A5. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Node/methods/find_parent', from 43F4625F to 241D75A5. This means that the function has changed and no compatibility function was provided.
 
 Added additional type argument to find node by type. Compatibility methods registered.
