@@ -74,9 +74,30 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 			const SceneState::PackState &ia = states_stack[i];
 			bool found = false;
 			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found);
+			const Vector<String> &deferred_properties = ia.state->get_node_deferred_nodepath_properties(ia.node);
 			if (found) {
 				if (r_is_valid) {
 					*r_is_valid = true;
+				}
+				// Replace properties stored as NodePaths with actual Nodes.
+				// Otherwise, the property value would be considered as overridden.
+				if (deferred_properties.has(p_property)) {
+					if (value_in_ancestor.get_type() == Variant::ARRAY) {
+						Array paths = value_in_ancestor;
+
+						bool valid = false;
+						Array array = node->get(p_property, &valid);
+						ERR_CONTINUE(!valid);
+						array = array.duplicate();
+
+						array.resize(paths.size());
+						for (int j = 0; j < array.size(); j++) {
+							array.set(j, node->get_node_or_null(paths[j]));
+						}
+						value_in_ancestor = array;
+					} else {
+						value_in_ancestor = node->get_node_or_null(value_in_ancestor);
+					}
 				}
 				return value_in_ancestor;
 			}
