@@ -87,8 +87,15 @@ void AudioStreamPlaybackWAV::seek(double p_time) {
 }
 
 template <class Depth, bool is_stereo, bool is_ima_adpcm>
-void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm) {
+void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset,
+		int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm, int64_t p_limit,
+		int64_t p_border) const {
 	// this function will be compiled branchless by any decent compiler
+
+	if (is_stereo) {
+		p_limit <<= 1;
+		p_border <<= 1;
+	}
 
 	int32_t final, final_r, next, next_r;
 	while (p_amount) {
@@ -188,10 +195,19 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 			}
 
 			if (is_stereo) {
-				next = p_src[pos + 2];
-				next_r = p_src[pos + 3];
+				if (pos + 2 < p_limit) {
+					next = p_src[pos + 2];
+					next_r = p_src[pos + 3];
+				} else {
+					next = p_src[p_border];
+					next_r = p_src[p_border + 1];
+				}
 			} else {
-				next = p_src[pos + 1];
+				if (pos + 1 < p_limit) {
+					next = p_src[pos + 1];
+				} else {
+					next = p_src[p_border];
+				}
 			}
 
 			if constexpr (sizeof(Depth) == 1) {
@@ -354,7 +370,12 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		limit = (increment < 0) ? begin_limit : end_limit;
 
 		/* compute what is shorter, the todo or the limit? */
-		aux = (limit - offset) / increment + 1;
+		if (increment > 0) {
+			/* stop short of the limit */
+			aux = (limit - offset + increment - 1) / increment;
+		} else {
+			aux = (limit - offset) / increment + 1;
+		}
 		target = (aux < todo) ? aux : todo; /* mix target is the shorter buffer */
 
 		/* check just in case */
@@ -365,30 +386,55 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 
 		todo -= target;
 
+		// To avoid clicks when interpolating across the loop end, we need to think about which
+		// sample should act as the successor of the last sample with regard to interpolation.
+		const int64_t sample_limit = end_limit >> MIX_FRAC_BITS;
+		int64_t sample_border;
+
+		switch (loop_format) {
+			case AudioStreamWAV::LOOP_FORWARD:
+			case AudioStreamWAV::LOOP_BACKWARD:
+				// Interpolate the last sample with the loop start (wrap).
+				sample_border = begin_limit >> MIX_FRAC_BITS;
+				break;
+			case AudioStreamWAV::LOOP_PINGPONG:
+				// Interpolate the last sample with the second-to-last sample (mirror).
+				sample_border = MAX(0, sample_limit - 2);
+				break;
+			default:
+				// Interpolate the last sample with itself (clamp).
+				sample_border = MAX(0, sample_limit - 1);
+				break;
+		}
+
 		switch (base->format) {
-			case AudioStreamWAV::FORMAT_8_BITS: {
+			case AudioStreamWAV::FORMAT_8_BITS:
 				if (is_stereo) {
-					do_resample<int8_t, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_resample<int8_t, true, false>((int8_t *)data, dst_buff, offset, increment, target,
+							ima_adpcm, sample_limit, sample_border);
 				} else {
-					do_resample<int8_t, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_resample<int8_t, false, false>((int8_t *)data, dst_buff, offset, increment, target,
+							ima_adpcm, sample_limit, sample_border);
 				}
-			} break;
-			case AudioStreamWAV::FORMAT_16_BITS: {
+				break;
+			case AudioStreamWAV::FORMAT_16_BITS:
 				if (is_stereo) {
-					do_resample<int16_t, true, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_resample<int16_t, true, false>((int16_t *)data, dst_buff, offset, increment, target,
+							ima_adpcm, sample_limit, sample_border);
 				} else {
-					do_resample<int16_t, false, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_resample<int16_t, false, false>((int16_t *)data, dst_buff, offset, increment, target,
+							ima_adpcm, sample_limit, sample_border);
 				}
-
-			} break;
-			case AudioStreamWAV::FORMAT_IMA_ADPCM: {
+				break;
+			case AudioStreamWAV::FORMAT_IMA_ADPCM:
 				if (is_stereo) {
-					do_resample<int8_t, true, true>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_resample<int8_t, true, true>((int8_t *)data, dst_buff, offset, increment, target,
+							ima_adpcm, sample_limit, sample_border);
 				} else {
-					do_resample<int8_t, false, true>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_resample<int8_t, false, true>((int8_t *)data, dst_buff, offset, increment, target,
+							ima_adpcm, sample_limit, sample_border);
 				}
-
-			} break;
+				break;
 		}
 
 		dst_buff += target;
