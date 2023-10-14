@@ -75,7 +75,7 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_t
 
 bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
 	if (is_only_update_transform_changes_enabled()) {
-		ERR_PRINT("Move functions do not work together with 'sync to physics' option. Please read the documentation.");
+		ERR_PRINT("Move functions do not work together with 'sync to physics' option. See the documentation for details.");
 	}
 
 	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_parameters, &r_result);
