@@ -78,7 +78,7 @@ const NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) cons
 			menu = submenu[p_menu_root].menu;
 		}
 	}
-	if (menu == apple_menu) {
+	if (menu == apple_menu || menu == window_menu) {
 		// Do not allow to change Apple menu.
 		return nullptr;
 	}
@@ -104,7 +104,7 @@ NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) {
 		}
 		menu = submenu[p_menu_root].menu;
 	}
-	if (menu == apple_menu) {
+	if (menu == apple_menu || menu == window_menu) {
 		// Do not allow to change Apple menu.
 		return nullptr;
 	}
@@ -1897,6 +1897,9 @@ void DisplayServerMacOS::global_menu_clear(const String &p_menu_root) {
 		if (menu == [NSApp mainMenu]) {
 			NSMenuItem *menu_item = [menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 			[menu setSubmenu:apple_menu forItem:menu_item];
+
+			menu_item = [menu addItemWithTitle:@"Window" action:nil keyEquivalent:@""];
+			[menu setSubmenu:window_menu forItem:menu_item];
 		}
 		if (submenu.has(p_menu_root)) {
 			submenu_inv.erase(submenu[p_menu_root].menu);
@@ -3544,6 +3547,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
+
+			NSWindow *w = wd.window_object;
+			w.excludedFromWindowsMenu = wd.is_popup || wd.no_focus;
 		} break;
 		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			wd.mpass = p_enabled;
@@ -3552,6 +3558,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
 			ERR_FAIL_COND_MSG([wd.window_object isVisible] && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
 			wd.is_popup = p_enabled;
+
+			NSWindow *w = wd.window_object;
+			w.excludedFromWindowsMenu = wd.is_popup || wd.no_focus;
 		} break;
 		default: {
 		}
@@ -4488,10 +4497,23 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	title = [NSString stringWithFormat:NSLocalizedString(@"Quit %@", nil), nsappname];
 	[apple_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
 
+	window_menu = [[NSMenu alloc] initWithTitle:@"Window"];
+	[window_menu addItemWithTitle:@"Minimize" action:@selector(performMiniaturize:) keyEquivalent:@"m"];
+	[window_menu addItemWithTitle:@"Zoom" action:@selector(performZoom:) keyEquivalent:@""];
+	[window_menu addItem:[NSMenuItem separatorItem]];
+	[window_menu addItemWithTitle:@"Bring All to Front" action:@selector(bringAllToFront:) keyEquivalent:@""];
+	[window_menu addItem:[NSMenuItem separatorItem]];
+
+	[NSApp setWindowsMenu:window_menu];
+
 	// Add items to the menu bar.
 	NSMenu *main_menu = [NSApp mainMenu];
 	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 	[main_menu setSubmenu:apple_menu forItem:menu_item];
+
+	menu_item = [main_menu addItemWithTitle:@"Window" action:nil keyEquivalent:@""];
+	[main_menu setSubmenu:window_menu forItem:menu_item];
+
 	[main_menu setAutoenablesItems:NO];
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
