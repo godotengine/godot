@@ -3486,6 +3486,7 @@ bool Main::start() {
 uint64_t Main::last_ticks = 0;
 uint32_t Main::frames = 0;
 uint32_t Main::hide_print_fps_attempts = 3;
+bool Main::delay_frame = true;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
@@ -3684,6 +3685,7 @@ bool Main::iteration() {
 	}
 
 	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+	if (last_ticks == 1) OS::get_singleton()->delay_usec(10000);
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
