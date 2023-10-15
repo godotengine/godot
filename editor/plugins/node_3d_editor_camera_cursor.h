@@ -59,6 +59,9 @@ public:
 		/** FOV scale of the camera. */
 		real_t fov_scale;
 
+		bool operator==(const Values& other) const;
+		bool operator!=(const Values& other) const;
+
 		Values();
 
 		friend class EditorNode3DCameraCursor;

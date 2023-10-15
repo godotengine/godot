@@ -33,9 +33,30 @@
 
 #include "editor/plugins/node_3d_editor_camera_cursor.h"
 
+#include "editor/editor_settings.h"
 #include "tests/test_macros.h"
 
 namespace TestNode3DEditorCameraCursor {
+
+TEST_CASE("[Node3DEditorCameraCursor] Values operator ==") {
+	Node3DEditorCameraCursor::Values values1, values2;
+
+	CHECK(values1 == values2);
+	values2.position.x += 10.0;
+	CHECK(values1 != values2);
+	values2 = Node3DEditorCameraCursor::Values();
+	values2.eye_position.x += 10.0;
+	CHECK(values1 != values2);
+	values2 = Node3DEditorCameraCursor::Values();
+	values2.x_rot += 10.0;
+	CHECK(values1 != values2);
+	values2 = Node3DEditorCameraCursor::Values();
+	values2.y_rot += 10.0;
+	CHECK(values1 != values2);
+	values2 = Node3DEditorCameraCursor::Values();
+	values2.distance += 10.0;
+	CHECK(values1 != values2);
+}
 
 TEST_CASE("[Node3DEditorCameraCursor] Default cursor") {
 	Node3DEditorCameraCursor cursor;
@@ -80,27 +101,31 @@ TEST_CASE("[Node3DEditorCameraCursor] Default cursor") {
 
 TEST_CASE("[Node3DEditorCameraCursor] Move") {
 	Node3DEditorCameraCursor cursor;
-	cursor.move(Vector3(10.0, 20.0, 30.0));
 
-	CHECK_MESSAGE(
-		cursor.get_target_values().position == Vector3(10.0, 20.0, 30.0),
-		"Unexpected position after move.");
-	CHECK_MESSAGE(
-		cursor.get_target_values().eye_position.is_equal_approx(Vector3(11.682942, 21.917702, 33.080605)),
-		"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move.");
+	SUBCASE("Move from original position") {
+		cursor.move(Vector3(10.0, 20.0, 30.0));
+		CHECK_MESSAGE(
+			cursor.get_target_values().position == Vector3(10.0, 20.0, 30.0),
+			"Unexpected position after move.");
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position.is_equal_approx(Vector3(11.682942, 21.917702, 33.080605)),
+			"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move.");
+	}
 
-	cursor.move(Vector3(100.0, 100.0, 100.0));
+	SUBCASE("Move again from previous position") {
+		cursor.move(Vector3(10.0, 20.0, 30.0));
+		cursor.move(Vector3(100.0, 100.0, 100.0));
 
-	CHECK_MESSAGE(
-		cursor.get_target_values().position == Vector3(110.0, 120.0, 130.0),
-		"Unexpected position after move for the second time.");
-	CHECK_MESSAGE(
-		cursor.get_target_values().eye_position.is_equal_approx(Vector3(111.682942, 121.917702, 133.080605)),
-		"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move for the second time.");
-
-	CHECK_MESSAGE(
-		cursor.get_current_values().position == Vector3(0.0, 0.0, 0.0),
-		"Should move only the target values.");
+		CHECK_MESSAGE(
+			cursor.get_target_values().position == Vector3(110.0, 120.0, 130.0),
+			"Unexpected position after move for the second time.");
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position.is_equal_approx(Vector3(111.682942, 121.917702, 133.080605)),
+			"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move for the second time.");
+		CHECK_MESSAGE(
+			cursor.get_current_values().position == Vector3(0.0, 0.0, 0.0),
+			"Should move only the target values.");
+	}
 }
 
 TEST_CASE("[Node3DEditorCameraCursor] Move to") {
@@ -195,48 +220,75 @@ TEST_CASE("[Node3DEditorCameraCursor] Look") {
 		"Unexpected position ", cursor.get_target_values().position, " after rotate.");
 }
 
+TEST_CASE("[Node3DEditorCameraCursor] Get and set freelook mode") {
+	Node3DEditorCameraCursor cursor;
+
+	SUBCASE("Initial state") {
+		CHECK(!cursor.get_freelook_mode());
+	}
+
+	SUBCASE("Set to true") {
+		cursor.set_freelook_mode(true);
+		CHECK(cursor.get_freelook_mode());
+	}
+
+	SUBCASE("Set to false") {
+		cursor.set_freelook_mode(true);
+		cursor.set_freelook_mode(false);
+		CHECK(!cursor.get_freelook_mode());
+	}
+}
+
 TEST_CASE("[Node3DEditorCameraCursor] Move distance") {
 	Node3DEditorCameraCursor cursor;
 	cursor.orbit_to(0.0, 0.0);
-	cursor.move_distance(2.0);
 
-	CHECK_MESSAGE(
-		cursor.get_target_values().position == Vector3(0.0, 0.0, 0.0),
-		"Unexpected position ", cursor.get_target_values().position, " after move the distance.");
-	CHECK_MESSAGE(
-		cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 6.0)),
-		"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move the distance.");
+	SUBCASE("Move the distance from the initial value") {
+		cursor.move_distance(2.0);
+		CHECK_MESSAGE(
+			cursor.get_target_values().position == Vector3(0.0, 0.0, 0.0),
+			"Unexpected position ", cursor.get_target_values().position, " after move the distance.");
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 6.0)),
+			"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move the distance.");
+	}
 
-	cursor.move_distance(-4.0);
+	SUBCASE("Move the distance again in oposition direction") {
+		cursor.move_distance(2.0);
+		cursor.move_distance(-4.0);
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 2.0)),
+			"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move the distance again.");
+	}
 
-	CHECK_MESSAGE(
-		cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 2.0)),
-		"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move the distance again.");
-
-	cursor.move_distance(-3.0);
-
-	CHECK_MESSAGE(
-		cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 0.0)),
-		"Eye position ", cursor.get_target_values().eye_position, " sould be zero because it should clamp the distance to never be smaller than 0.");
+	SUBCASE("Move the distance below zero") {
+		cursor.move_distance(-5.0);
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 0.0)),
+			"Eye position ", cursor.get_target_values().eye_position, " sould be zero because it should clamp the distance to never be smaller than 0.");
+	}
 }
 
 TEST_CASE("[Node3DEditorCameraCursor] Move distance to") {
 	Node3DEditorCameraCursor cursor;
 	cursor.orbit_to(0.0, 0.0);
-	cursor.move_distance_to(2.0);
 
-	CHECK_MESSAGE(
-		cursor.get_target_values().position == Vector3(0.0, 0.0, 0.0),
-		"Unexpected position ", cursor.get_target_values().position, " after move the distance.");
-	CHECK_MESSAGE(
-		cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 2.0)),
-		"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move the distance.");
+	SUBCASE("Move the distance to a value") {
+		cursor.move_distance_to(2.0);
+		CHECK_MESSAGE(
+			cursor.get_target_values().position == Vector3(0.0, 0.0, 0.0),
+			"Unexpected position ", cursor.get_target_values().position, " after move the distance.");
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 2.0)),
+			"Unexpected eye_position ", cursor.get_target_values().eye_position, " after move the distance.");
+	}
 
-	cursor.move_distance_to(-1.0);
-
-	CHECK_MESSAGE(
-		cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 0.0)),
-		"Eye position ", cursor.get_target_values().eye_position, " sould be zero because it should clamp the distance to never be smaller than 0.");
+	SUBCASE("Move the distance to a value below zero") {
+		cursor.move_distance_to(-1.0);
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 0.0)),
+			"Eye position ", cursor.get_target_values().eye_position, " sould be zero because it should clamp the distance to never be smaller than 0.");
+	}
 }
 
 TEST_CASE("[Node3DEditorCameraCursor] Move freelook to") {
@@ -247,46 +299,52 @@ TEST_CASE("[Node3DEditorCameraCursor] Move freelook to") {
 	cursor.move_distance_to(2.0);
 	cursor.stop_interpolation(true);
 
-	cursor.move_freelook(Vector3(10.0, 5.0, -1.0), 2.0, 3.0);
+	SUBCASE("Move in freelook mode") {
+		cursor.move_freelook(Vector3(10.0, 5.0, -1.0), 2.0, 3.0);
+		CHECK_MESSAGE(
+			cursor.get_target_values().position == Vector3(94.0, 230.0, 360.0),
+			"Unexpected position ", cursor.get_target_values().position, " after freelooking move.");
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position == Vector3(92.0, 230.0, 360.0),
+			"Unexpected eye_position ", cursor.get_target_values().eye_position, " after freelooking move.");
+	}
 
-	CHECK_MESSAGE(
-		cursor.get_target_values().position == Vector3(94.0, 230.0, 360.0),
-		"Unexpected position ", cursor.get_target_values().position, " after freelooking move.");
-	CHECK_MESSAGE(
-		cursor.get_target_values().eye_position == Vector3(92.0, 230.0, 360.0),
-		"Unexpected eye_position ", cursor.get_target_values().eye_position, " after freelooking move.");
-
-	cursor.stop_interpolation(true);
-	cursor.set_freelook_mode(false);
-	cursor.move_freelook(Vector3(10.0, 5.0, -1.0), 2.0, 3.0);
-	CHECK_MESSAGE(
-		cursor.get_target_values().position == Vector3(94.0, 230.0, 360.0),
-		"Should not move position ", cursor.get_target_values().position, " after disable freelook mode.");
+	SUBCASE("Move in freelook mode with freelook mode disabled") {
+		Node3DEditorCameraCursor::Values previous_target_values = cursor.get_target_values();
+		cursor.set_freelook_mode(false);
+		cursor.move_freelook(Vector3(10.0, 5.0, -1.0), 2.0, 3.0);
+		CHECK_MESSAGE(
+			cursor.get_target_values().position == previous_target_values.position,
+			"Should not move position ", cursor.get_target_values().position, " after disable freelook mode.");
+	}
 }
 
 TEST_CASE("[Node3DEditorCameraCursor] Get camera transform") {
 	Node3DEditorCameraCursor cursor;
 	cursor.move_to(Vector3(100.0, 0.0, 200.0));
 	cursor.orbit_to(0.0, Math::deg_to_rad(90.0));
-	Transform3D target_camera_transform = cursor.get_target_camera_transform();
-	Transform3D current_camera_transform = cursor.get_current_camera_transform();
 
-	CHECK_MESSAGE(
-		target_camera_transform.origin.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
-		"Unexpected transform origin ", target_camera_transform.origin);
-	CHECK_MESSAGE(
-		target_camera_transform.basis.get_euler().is_equal_approx(Vector3(0.0, -Math::deg_to_rad(90.0), 0.0)),
-		"Unexpected transform rotation ", target_camera_transform.basis.get_euler());
-	CHECK_MESSAGE(
-		current_camera_transform.origin.is_equal_approx(Vector3(1.682942, 1.917702, 3.080605)),
-		"Current transform ", current_camera_transform.origin, " not expected be equal to the target transform.");
+	SUBCASE("Target and current transform") {
+		Transform3D target_camera_transform = cursor.get_target_camera_transform();
+		Transform3D current_camera_transform = cursor.get_current_camera_transform();
+		CHECK_MESSAGE(
+			target_camera_transform.origin.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
+			"Unexpected transform origin ", target_camera_transform.origin);
+		CHECK_MESSAGE(
+			target_camera_transform.basis.get_euler().is_equal_approx(Vector3(0.0, -Math::deg_to_rad(90.0), 0.0)),
+			"Unexpected transform rotation ", target_camera_transform.basis.get_euler());
+		CHECK_MESSAGE(
+			current_camera_transform.origin.is_equal_approx(Vector3(1.682942, 1.917702, 3.080605)),
+			"Current transform ", current_camera_transform.origin, " not expected be equal to the target transform.");
+	}
 
-	cursor.stop_interpolation(true);
-	current_camera_transform = cursor.get_current_camera_transform();
-
-	CHECK_MESSAGE(
-		current_camera_transform.origin.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
-		"Unexpected current transform origin ", current_camera_transform.origin);
+	SUBCASE("Current transform after finish interpolation") {
+		cursor.stop_interpolation(true);
+		Transform3D current_camera_transform = cursor.get_current_camera_transform();
+		CHECK_MESSAGE(
+			current_camera_transform.origin.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
+			"Unexpected current transform origin ", current_camera_transform.origin);
+	}
 }
 
 TEST_CASE("[Node3DEditorCameraCursor] Set camera transform") {
@@ -319,38 +377,116 @@ TEST_CASE("[Node3DEditorCameraCursor] Stop interpolation") {
 	cursor.orbit_to(0.1, 0.2);
 	cursor.move_to(Vector3(100.0, 200.0, 300.0));
 	cursor.set_fov_scale(2.0);
+	Node3DEditorCameraCursor::Values previous_current_values = cursor.get_current_values();
+	Node3DEditorCameraCursor::Values previous_target_values = cursor.get_target_values();
 
-	CHECK(cursor.get_current_values().position != Vector3(100.0, 200.0, 300.0));
-	CHECK(cursor.get_current_values().x_rot != (real_t)0.1);
-	CHECK(cursor.get_current_values().y_rot != (real_t)0.2);
-	CHECK(cursor.get_current_values().fov_scale != (real_t)2.0);
-	CHECK(cursor.get_target_values().position == Vector3(100.0, 200.0, 300.0));
-	CHECK(cursor.get_target_values().x_rot == (real_t)0.1);
-	CHECK(cursor.get_target_values().y_rot == (real_t)0.2);
-	CHECK(cursor.get_target_values().fov_scale == (real_t)2.0);
+	SUBCASE("Before stop the interpolation") {
+		CHECK(previous_current_values.position != Vector3(100.0, 200.0, 300.0));
+		CHECK(previous_current_values.x_rot != (real_t)0.1);
+		CHECK(previous_current_values.y_rot != (real_t)0.2);
+		CHECK(previous_current_values.fov_scale != (real_t)2.0);
+		CHECK(cursor.get_target_values() != cursor.get_current_values());
+	}
 
-	cursor.stop_interpolation(true);
-	CHECK(cursor.get_current_values().position == Vector3(100.0, 200.0, 300.0));
-	CHECK(cursor.get_current_values().x_rot == (real_t)0.1);
-	CHECK(cursor.get_current_values().y_rot == (real_t)0.2);
-	CHECK(cursor.get_current_values().fov_scale == (real_t)2.0);
-	CHECK(cursor.get_target_values().position == Vector3(100.0, 200.0, 300.0));
-	CHECK(cursor.get_target_values().x_rot == (real_t)0.1);
-	CHECK(cursor.get_target_values().y_rot == (real_t)0.2);
-	CHECK(cursor.get_target_values().fov_scale == (real_t)2.0);
+	SUBCASE("Stop the interpolation going to the end") {
+		cursor.stop_interpolation(true);
+		CHECK(cursor.get_current_values() == previous_target_values);
+		CHECK(cursor.get_target_values() == cursor.get_current_values());
+	}
 
-	cursor.orbit_to(0.15, 0.25);
-	cursor.move_to(Vector3(1000.0, 2000.0, 3000.0));
-	cursor.set_fov_scale(3.0);
-	cursor.stop_interpolation(false);
-	CHECK(cursor.get_current_values().position == Vector3(100.0, 200.0, 300.0));
-	CHECK(cursor.get_current_values().x_rot == (real_t)0.1);
-	CHECK(cursor.get_current_values().y_rot == (real_t)0.2);
-	CHECK(cursor.get_current_values().fov_scale == (real_t)2.0);
-	CHECK(cursor.get_target_values().position == Vector3(100.0, 200.0, 300.0));
-	CHECK(cursor.get_target_values().x_rot == (real_t)0.1);
-	CHECK(cursor.get_target_values().y_rot == (real_t)0.2);
-	CHECK(cursor.get_target_values().fov_scale == (real_t)2.0);
+	SUBCASE("Stop the interpolation keeping current values") {
+		cursor.stop_interpolation(false);
+		CHECK(cursor.get_current_values() == previous_current_values);
+		CHECK(cursor.get_target_values() == cursor.get_current_values());
+	}
+}
+
+TEST_CASE("[Node3DEditorCameraCursor] Update interpolation") {
+	Node3DEditorCameraCursor cursor;
+	Node3DEditorCameraCursor::Values previous_current_values = cursor.get_current_values();
+	EditorSettings::get_singleton()->set_setting("editors/3d/freelook/freelook_inertia", 0.1);
+	EditorSettings::get_singleton()->set_setting("editors/3d/navigation_feel/orbit_inertia", 0.1);
+	EditorSettings::get_singleton()->set_setting("editors/3d/navigation_feel/translation_inertia", 0.1);
+	EditorSettings::get_singleton()->set_setting("editors/3d/navigation_feel/zoom_inertia", 0.1);
+
+	SUBCASE("Should change nothing if there aren't updates in target values") {
+		CHECK(!cursor.update_interpolation(0.01));
+		CHECK(previous_current_values == cursor.get_current_values());
+	}
+
+	SUBCASE("Should change nothing in freelook mode") {
+		cursor.set_freelook_mode(true);
+		CHECK(!cursor.update_interpolation(0.01));
+		CHECK(previous_current_values == cursor.get_current_values());
+	}
+
+	SUBCASE("Should update rotation") {
+		cursor.orbit(0.25, 0.25);
+		CHECK(cursor.update_interpolation(0.01));
+		CHECK(cursor.get_current_values().x_rot > previous_current_values.x_rot);
+		CHECK(cursor.get_current_values().x_rot < cursor.get_target_values().x_rot);
+		CHECK(cursor.get_current_values().y_rot > previous_current_values.y_rot);
+		CHECK(cursor.get_current_values().y_rot < cursor.get_target_values().y_rot);
+	}
+
+	SUBCASE("Should update rotation in freelook mode") {
+		previous_current_values = cursor.get_current_values();
+		cursor.set_freelook_mode(true);
+		cursor.look(0.25, 0.25);
+
+		CHECK(cursor.update_interpolation(0.01));
+		CHECK(cursor.get_current_values().x_rot > previous_current_values.x_rot);
+		CHECK(cursor.get_current_values().x_rot < cursor.get_target_values().x_rot);
+		CHECK(cursor.get_current_values().y_rot > previous_current_values.y_rot);
+		CHECK(cursor.get_current_values().y_rot < cursor.get_target_values().y_rot);
+	}
+
+	SUBCASE("Should return false after reaching target") {
+		cursor.stop_interpolation(true);
+		CHECK(!cursor.update_interpolation(0.01));
+		CHECK(cursor.get_current_values() == cursor.get_target_values());
+	}
+
+	SUBCASE("Should update positions") {
+		previous_current_values = cursor.get_current_values();
+		cursor.move(Vector3(10.0, 10.0, 10.0));
+		CHECK(cursor.update_interpolation(0.01));
+
+		CHECK(cursor.get_current_values().position.x > previous_current_values.position.x);
+		CHECK(cursor.get_current_values().position.x < cursor.get_target_values().position.x);
+		CHECK(cursor.get_current_values().position.y > previous_current_values.position.y);
+		CHECK(cursor.get_current_values().position.y < cursor.get_target_values().position.y);
+		CHECK(cursor.get_current_values().position.z > previous_current_values.position.z);
+		CHECK(cursor.get_current_values().position.z < cursor.get_target_values().position.z);
+
+		CHECK(cursor.get_current_values().eye_position.x > previous_current_values.eye_position.x);
+		CHECK(cursor.get_current_values().eye_position.x < cursor.get_target_values().eye_position.x);
+		CHECK(cursor.get_current_values().eye_position.y > previous_current_values.eye_position.y);
+		CHECK(cursor.get_current_values().eye_position.y < cursor.get_target_values().eye_position.y);
+		CHECK(cursor.get_current_values().eye_position.z > previous_current_values.eye_position.z);
+		CHECK(cursor.get_current_values().eye_position.z < cursor.get_target_values().eye_position.z);
+	}
+
+	SUBCASE("Should update positions in freelook mode") {
+		previous_current_values = cursor.get_current_values();
+		cursor.set_freelook_mode(true);
+		cursor.move(Vector3(10.0, 10.0, 10.0));
+		CHECK(cursor.update_interpolation(0.01));
+
+		CHECK(cursor.get_current_values().position.x > previous_current_values.position.x);
+		CHECK(cursor.get_current_values().position.x < cursor.get_target_values().position.x);
+		CHECK(cursor.get_current_values().position.y > previous_current_values.position.y);
+		CHECK(cursor.get_current_values().position.y < cursor.get_target_values().position.y);
+		CHECK(cursor.get_current_values().position.z > previous_current_values.position.z);
+		CHECK(cursor.get_current_values().position.z < cursor.get_target_values().position.z);
+
+		CHECK(cursor.get_current_values().eye_position.x > previous_current_values.eye_position.x);
+		CHECK(cursor.get_current_values().eye_position.x < cursor.get_target_values().eye_position.x);
+		CHECK(cursor.get_current_values().eye_position.y > previous_current_values.eye_position.y);
+		CHECK(cursor.get_current_values().eye_position.y < cursor.get_target_values().eye_position.y);
+		CHECK(cursor.get_current_values().eye_position.z > previous_current_values.eye_position.z);
+		CHECK(cursor.get_current_values().eye_position.z < cursor.get_target_values().eye_position.z);
+	}
 }
 
 } // namespace TestNode3DEditorCameraCursor

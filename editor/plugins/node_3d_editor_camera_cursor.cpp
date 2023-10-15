@@ -32,6 +32,19 @@
 
 #include "editor/editor_settings.h"
 
+bool Node3DEditorCameraCursor::Values::operator==(const Values& other) const {
+	return position == other.position
+		&& eye_position == other.eye_position
+		&& x_rot == other.x_rot
+		&& y_rot == other.y_rot
+		&& distance == other.distance
+		&& fov_scale == other.fov_scale;
+}
+
+bool Node3DEditorCameraCursor::Values::operator!=(const Values& other) const {
+	return !(*this == other);
+}
+
 Node3DEditorCameraCursor::Values::Values() {
 	// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
 	position.zero();
