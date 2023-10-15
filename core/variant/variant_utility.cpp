@@ -128,7 +128,8 @@ Variant VariantUtilityFunctions::floor(Variant x, Callable::CallError &r_error) 
 			return VariantInternalAccessor<Vector4>::get(&x).floor();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = Variant::FLOAT;
 			return Variant();
 		}
 	}
@@ -161,7 +162,8 @@ Variant VariantUtilityFunctions::ceil(Variant x, Callable::CallError &r_error) {
 			return VariantInternalAccessor<Vector4>::get(&x).ceil();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = Variant::INT;
 			return Variant();
 		}
 	}
@@ -194,7 +196,8 @@ Variant VariantUtilityFunctions::round(Variant x, Callable::CallError &r_error) 
 			return VariantInternalAccessor<Vector4>::get(&x).round();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = Variant::INT;
 			return Variant();
 		}
 	}
@@ -236,7 +239,8 @@ Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_er
 			return VariantInternalAccessor<Vector4i>::get(&x).abs();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = Variant::INT;
 			return Variant();
 		}
 	}
@@ -278,7 +282,8 @@ Variant VariantUtilityFunctions::sign(const Variant &x, Callable::CallError &r_e
 			return VariantInternalAccessor<Vector4i>::get(&x).sign();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = Variant::INT;
 			return Variant();
 		}
 	}
@@ -367,7 +372,8 @@ Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, 
 			return VariantInternalAccessor<Vector4i>::get(&x).snapped(VariantInternalAccessor<Vector4i>::get(&step));
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = Variant::INT;
 			return Variant();
 		}
 	}
@@ -416,7 +422,8 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 			return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = Variant::INT;
 			return Variant();
 		}
 	}
