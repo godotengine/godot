@@ -35,7 +35,7 @@ Node *Node::_find_child_bind_compat_83219(const String &p_pattern, bool p_recurs
 }
 
 Node *Node::_find_parent_bind_compat_83219(const String &p_pattern) const {
-	return find_parent(p_pattern);
+	return find_parent(p_pattern, "");
 }
 
 void Node::_bind_compatibility_methods() {
