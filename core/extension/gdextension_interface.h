@@ -590,7 +590,10 @@ typedef GDExtensionInterfaceFunctionPtr (*GDExtensionInterfaceGetProcAddress)(co
  *
  * For example:
  *
- *   GDExtensionInterfaceGetGodotVersion *get_godot_version = (GDExtensionInterfaceGetGodotVersion)p_get_proc_address("get_godot_version");
+ *   GDExtensionInterfaceGetGodotVersion get_godot_version = (GDExtensionInterfaceGetGodotVersion)p_get_proc_address("get_godot_version");
+ *
+ * (Note that snippet may cause "cast between incompatible function types" on some compilers, you can
+ * silence this by adding an intermediary `void*` cast.)
  *
  * You can then call it like a normal function:
  *
