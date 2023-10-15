@@ -140,6 +140,8 @@ private:
 	String rendering_driver;
 
 	NSMenu *apple_menu = nullptr;
+	NSMenu *window_menu = nullptr;
+	NSMenu *help_menu = nullptr;
 	NSMenu *dock_menu = nullptr;
 	struct MenuData {
 		Callable open;
@@ -226,7 +228,8 @@ private:
 
 	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
-	bool _has_help_menu() const;
+	int _get_system_menu_start(const NSMenu *p_menu) const;
+	int _get_system_menu_count(const NSMenu *p_menu) const;
 	NSMenuItem *_menu_add_item(const String &p_menu_root, const String &p_label, Key p_accel, int p_index, int *r_out);
 
 public:
@@ -320,6 +323,8 @@ public:
 
 	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx) override;
 	virtual void global_menu_clear(const String &p_menu_root) override;
+
+	virtual Dictionary global_menu_get_system_menu_roots() const override;
 
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;

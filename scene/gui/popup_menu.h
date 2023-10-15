@@ -40,6 +40,8 @@
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
 
+	static HashMap<String, PopupMenu *> system_menus;
+
 	struct Item {
 		Ref<Texture2D> icon;
 		int icon_max_width = 0;
@@ -90,6 +92,7 @@ class PopupMenu : public Popup {
 	};
 
 	String global_menu_name;
+	String system_menu_name;
 
 	bool close_allowed = false;
 	bool activated_by_keyboard = false;
@@ -218,6 +221,9 @@ public:
 
 	String bind_global_menu();
 	void unbind_global_menu();
+	bool is_system_menu() const;
+	void set_system_menu_root(const String &p_special);
+	String get_system_menu_root() const;
 
 	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
