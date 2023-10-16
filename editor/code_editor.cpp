@@ -1514,7 +1514,8 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 			// Empty lines should not be counted.
 			bool is_empty = text_editor->get_line(line).strip_edges().is_empty();
 			is_all_empty = is_all_empty && is_empty;
-			if (!is_empty && (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx) != delimiter)) {
+			// `.left(1)` here because get_delimiter_start_key will return `##` instead of `#` when there is multiple comment delimiter in a line.
+			if (!is_empty && (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx).left(1) != delimiter)) {
 				is_commented = false;
 				break;
 			}
