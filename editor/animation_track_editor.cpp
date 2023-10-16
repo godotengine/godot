@@ -330,6 +330,7 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				undo_redo->commit_action();
 
 				setting = false;
+				notify_change(); // To update limits for `start_offset`/`end_offset` sliders (they depend on the stream length).
 				return true;
 			}
 
@@ -586,8 +587,10 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 		} break;
 		case Animation::TYPE_AUDIO: {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("stream"), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("start_offset"), PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("end_offset"), PROPERTY_HINT_RANGE, "0,3600,0.0001,or_greater"));
+			Ref<AudioStream> audio_stream = animation->audio_track_get_key_stream(track, key);
+			String hint_string = vformat("0,%.4f,0.0001,or_greater", audio_stream.is_valid() ? audio_stream->get_length() : 3600.0);
+			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("start_offset"), PROPERTY_HINT_RANGE, hint_string));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("end_offset"), PROPERTY_HINT_RANGE, hint_string));
 
 		} break;
 		case Animation::TYPE_ANIMATION: {
