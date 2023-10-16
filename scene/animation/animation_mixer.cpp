@@ -871,21 +871,23 @@ bool AnimationMixer::_update_caches() {
 				// TODO: Currently, misc type cannot be blended. In the future,
 				// it should have a separate blend weight, just as bool is converted to 0 and 1.
 				// Then, it should provide the correct precedence value.
-				switch (track_value->init_value.get_type()) {
-					case Variant::NIL:
-					case Variant::STRING_NAME:
-					case Variant::NODE_PATH:
-					case Variant::RID:
-					case Variant::OBJECT:
-					case Variant::CALLABLE:
-					case Variant::SIGNAL:
-					case Variant::DICTIONARY:
-					case Variant::ARRAY: {
-						WARN_PRINT_ONCE_ED("AnimationMixer: '" + String(E) + "', Value Track: '" + String(path) + "' uses a non-numeric type as key value with UpdateMode.UPDATE_CONTINUOUS. This will not be blended correctly, so it is forced to UpdateMode.UPDATE_DISCRETE.");
-						track_value->is_continuous = false;
-						break;
-					}
-					default: {
+				if (track_value->is_continuous) {
+					switch (track_value->init_value.get_type()) {
+						case Variant::NIL:
+						case Variant::STRING_NAME:
+						case Variant::NODE_PATH:
+						case Variant::RID:
+						case Variant::OBJECT:
+						case Variant::CALLABLE:
+						case Variant::SIGNAL:
+						case Variant::DICTIONARY:
+						case Variant::ARRAY: {
+							WARN_PRINT_ONCE_ED("AnimationMixer: '" + String(E) + "', Value Track: '" + String(path) + "' uses a non-numeric type as key value with UpdateMode.UPDATE_CONTINUOUS. This will not be blended correctly, so it is forced to UpdateMode.UPDATE_DISCRETE.");
+							track_value->is_continuous = false;
+							break;
+						}
+						default: {
+						}
 					}
 				}
 
