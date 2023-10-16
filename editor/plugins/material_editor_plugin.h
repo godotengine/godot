@@ -34,22 +34,25 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/color_rect.h"
 #include "scene/resources/material.h"
 #include "scene/resources/primitive_meshes.h"
 
+class Camera3D;
+class ColorRect;
+class DirectionalLight3D;
+class HBoxContainer;
+class MeshInstance3D;
 class SubViewport;
 class SubViewportContainer;
-class TextureButton;
+class Button;
 
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
 	Vector2 rot;
 
+	SubViewportContainer *vc_2d = nullptr;
+	SubViewport *viewport_2d = nullptr;
 	HBoxContainer *layout_2d = nullptr;
 	ColorRect *rect_instance = nullptr;
 
@@ -68,27 +71,25 @@ class MaterialEditor : public Control {
 
 	HBoxContainer *layout_3d = nullptr;
 
-	TextureButton *sphere_switch = nullptr;
-	TextureButton *box_switch = nullptr;
-
-	TextureButton *light_1_switch = nullptr;
-	TextureButton *light_2_switch = nullptr;
-
 	Ref<Material> material;
 
+	Button *sphere_switch = nullptr;
+	Button *box_switch = nullptr;
+	Button *light_1_switch = nullptr;
+	Button *light_2_switch = nullptr;
+
 	struct ThemeCache {
-		Ref<Texture2D> light_1_on;
-		Ref<Texture2D> light_1_off;
-		Ref<Texture2D> light_2_on;
-		Ref<Texture2D> light_2_off;
-		Ref<Texture2D> sphere_on;
-		Ref<Texture2D> sphere_off;
-		Ref<Texture2D> box_on;
-		Ref<Texture2D> box_off;
+		Ref<Texture2D> light_1_icon;
+		Ref<Texture2D> light_2_icon;
+		Ref<Texture2D> sphere_icon;
+		Ref<Texture2D> box_icon;
 		Ref<Texture2D> checkerboard;
 	} theme_cache;
 
-	void _button_pressed(Node *p_button);
+	void _on_light_1_switch_pressed();
+	void _on_light_2_switch_pressed();
+	void _on_sphere_switch_pressed();
+	void _on_box_switch_pressed();
 
 protected:
 	virtual void _update_theme_item_cache() override;

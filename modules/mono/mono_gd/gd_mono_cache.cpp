@@ -42,7 +42,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 
 #define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method)                             \
 	{                                                                                      \
-		ERR_FAIL_COND_MSG(m_var == nullptr,                                                \
+		ERR_FAIL_NULL_MSG(m_var,                                                           \
 				"Mono Cache: Managed callback for '" #m_class "_" #m_method "' is null."); \
 		checked_count += 1;                                                                \
 	}
@@ -52,6 +52,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(SignalAwaiter, SignalCallback);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, InvokeWithVariantArgs);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateEquals);
+	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateHash);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TrySerializeDelegateWithGCHandle);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TryDeserializeDelegateWithGCHandle);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, FrameCallback);
@@ -69,6 +70,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SwapGCHandleForType);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyInfoList);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyDefaultValues);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CallStatic);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Call);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Set);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Get);
@@ -78,6 +80,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, SerializeState);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, DeserializeState);
 	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, FreeGCHandle);
+	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, GCHandleIsTargetCollectible);
 	CHECK_CALLBACK_NOT_NULL(DebuggingUtils, GetCurrentStackInfo);
 	CHECK_CALLBACK_NOT_NULL(DisposablesTracker, OnGodotShuttingDown);
 	CHECK_CALLBACK_NOT_NULL(GD, OnCoreApiAssemblyLoaded);

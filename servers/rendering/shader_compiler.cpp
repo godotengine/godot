@@ -38,12 +38,7 @@
 #define SL ShaderLanguage
 
 static String _mktab(int p_level) {
-	String tb;
-	for (int i = 0; i < p_level; i++) {
-		tb += "\t";
-	}
-
-	return tb;
+	return String("\t").repeat(p_level);
 }
 
 static String _typestr(SL::DataType p_type) {
@@ -183,7 +178,7 @@ static String _mkid(const String &p_id) {
 }
 
 static String f2sp0(float p_float) {
-	String num = rtoss(p_float);
+	String num = rtos(p_float);
 	if (!num.contains(".") && !num.contains("e")) {
 		num += ".0";
 	}
@@ -288,14 +283,28 @@ String ShaderCompiler::_get_sampler_name(ShaderLanguage::TextureFilter p_filter,
 		ERR_FAIL_COND_V(actions.default_repeat == ShaderLanguage::REPEAT_DEFAULT, String());
 		p_repeat = actions.default_repeat;
 	}
-	return actions.sampler_array_name + "[" + itos(p_filter + (p_repeat == ShaderLanguage::REPEAT_ENABLE ? ShaderLanguage::FILTER_DEFAULT : 0)) + "]";
+	constexpr const char *name_mapping[] = {
+		"SAMPLER_NEAREST_CLAMP",
+		"SAMPLER_LINEAR_CLAMP",
+		"SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP",
+		"SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP",
+		"SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP",
+		"SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP",
+		"SAMPLER_NEAREST_REPEAT",
+		"SAMPLER_LINEAR_REPEAT",
+		"SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT",
+		"SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT",
+		"SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT",
+		"SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT"
+	};
+	return String(name_mapping[p_filter + (p_repeat == ShaderLanguage::REPEAT_ENABLE ? ShaderLanguage::FILTER_DEFAULT : 0)]);
 }
 
 void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const HashMap<StringName, String> &p_func_code, String &r_to_add, HashSet<StringName> &added) {
 	int fidx = -1;
 
-	for (int i = 0; i < p_node->functions.size(); i++) {
-		if (p_node->functions[i].name == p_for_func) {
+	for (int i = 0; i < p_node->vfunctions.size(); i++) {
+		if (p_node->vfunctions[i].name == p_for_func) {
 			fidx = i;
 			break;
 		}
@@ -305,7 +314,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 
 	Vector<StringName> uses_functions;
 
-	for (const StringName &E : p_node->functions[fidx].uses_function) {
+	for (const StringName &E : p_node->vfunctions[fidx].uses_function) {
 		uses_functions.push_back(E);
 	}
 	uses_functions.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
@@ -319,14 +328,14 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 
 		SL::FunctionNode *fnode = nullptr;
 
-		for (int i = 0; i < p_node->functions.size(); i++) {
-			if (p_node->functions[i].name == uses_functions[k]) {
-				fnode = p_node->functions[i].function;
+		for (int i = 0; i < p_node->vfunctions.size(); i++) {
+			if (p_node->vfunctions[i].name == uses_functions[k]) {
+				fnode = p_node->vfunctions[i].function;
 				break;
 			}
 		}
 
-		ERR_FAIL_COND(!fnode);
+		ERR_FAIL_NULL(fnode);
 
 		r_to_add += "\n";
 
@@ -441,7 +450,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 	String code;
 
 	switch (p_node->type) {
-		case SL::Node::TYPE_SHADER: {
+		case SL::Node::NODE_TYPE_SHADER: {
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
 
 			for (int i = 0; i < pnode->render_modes.size(); i++) {
@@ -756,8 +765,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			HashMap<StringName, String> function_code;
 
 			//code for functions
-			for (int i = 0; i < pnode->functions.size(); i++) {
-				SL::FunctionNode *fnode = pnode->functions[i].function;
+			for (int i = 0; i < pnode->vfunctions.size(); i++) {
+				SL::FunctionNode *fnode = pnode->vfunctions[i].function;
 				function = fnode;
 				current_func_name = fnode->name;
 				function_code[fnode->name] = _dump_node_code(fnode->body, p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
@@ -768,8 +777,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			HashSet<StringName> added_funcs_per_stage[STAGE_MAX];
 
-			for (int i = 0; i < pnode->functions.size(); i++) {
-				SL::FunctionNode *fnode = pnode->functions[i].function;
+			for (int i = 0; i < pnode->vfunctions.size(); i++) {
+				SL::FunctionNode *fnode = pnode->vfunctions[i].function;
 
 				function = fnode;
 
@@ -786,11 +795,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			//code+=dump_node_code(pnode->body,p_level);
 		} break;
-		case SL::Node::TYPE_STRUCT: {
+		case SL::Node::NODE_TYPE_STRUCT: {
 		} break;
-		case SL::Node::TYPE_FUNCTION: {
+		case SL::Node::NODE_TYPE_FUNCTION: {
 		} break;
-		case SL::Node::TYPE_BLOCK: {
+		case SL::Node::NODE_TYPE_BLOCK: {
 			SL::BlockNode *bnode = (SL::BlockNode *)p_node;
 
 			//variables
@@ -801,7 +810,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			for (int i = 0; i < bnode->statements.size(); i++) {
 				String scode = _dump_node_code(bnode->statements[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 
-				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->single_statement) {
+				if (bnode->statements[i]->type == SL::Node::NODE_TYPE_CONTROL_FLOW || bnode->single_statement) {
 					code += scode; //use directly
 					if (bnode->use_comma_between_statements && i + 1 < bnode->statements.size()) {
 						code += ",";
@@ -815,7 +824,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_VARIABLE_DECLARATION: {
+		case SL::Node::NODE_TYPE_VARIABLE_DECLARATION: {
 			SL::VariableDeclarationNode *vdnode = (SL::VariableDeclarationNode *)p_node;
 
 			String declaration;
@@ -873,7 +882,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			code += declaration;
 		} break;
-		case SL::Node::TYPE_VARIABLE: {
+		case SL::Node::NODE_TYPE_VARIABLE: {
 			SL::VariableNode *vnode = (SL::VariableNode *)p_node;
 			bool use_fragment_varying = false;
 
@@ -914,7 +923,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
 					if (u.texture_order >= 0) {
-						StringName name = vnode->name;
+						StringName name;
 						if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
 							name = "color_buffer";
 							if (u.filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP) {
@@ -966,7 +975,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_ARRAY_CONSTRUCT: {
+		case SL::Node::NODE_TYPE_ARRAY_CONSTRUCT: {
 			SL::ArrayConstructNode *acnode = (SL::ArrayConstructNode *)p_node;
 			int sz = acnode->initializer.size();
 			if (acnode->datatype == SL::TYPE_STRUCT) {
@@ -986,7 +995,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 			code += ")";
 		} break;
-		case SL::Node::TYPE_ARRAY: {
+		case SL::Node::NODE_TYPE_ARRAY: {
 			SL::ArrayNode *anode = (SL::ArrayNode *)p_node;
 			bool use_fragment_varying = false;
 
@@ -1077,7 +1086,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_CONSTANT: {
+		case SL::Node::NODE_TYPE_CONSTANT: {
 			SL::ConstantNode *cnode = (SL::ConstantNode *)p_node;
 
 			if (cnode->array_size == 0) {
@@ -1104,7 +1113,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_OPERATOR: {
+		case SL::Node::NODE_TYPE_OPERATOR: {
 			SL::OperatorNode *onode = (SL::OperatorNode *)p_node;
 
 			switch (onode->op) {
@@ -1135,15 +1144,15 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				case SL::OP_CALL:
 				case SL::OP_STRUCT:
 				case SL::OP_CONSTRUCT: {
-					ERR_FAIL_COND_V(onode->arguments[0]->type != SL::Node::TYPE_VARIABLE, String());
+					ERR_FAIL_COND_V(onode->arguments[0]->type != SL::Node::NODE_TYPE_VARIABLE, String());
 					const SL::VariableNode *vnode = static_cast<const SL::VariableNode *>(onode->arguments[0]);
 					const SL::FunctionNode *func = nullptr;
 					const bool is_internal_func = internal_functions.has(vnode->name);
 
 					if (!is_internal_func) {
-						for (int i = 0; i < shader->functions.size(); i++) {
-							if (shader->functions[i].name == vnode->name) {
-								func = shader->functions[i].function;
+						for (int i = 0; i < shader->vfunctions.size(); i++) {
+							if (shader->vfunctions[i].name == vnode->name) {
+								func = shader->vfunctions[i].function;
 								break;
 							}
 						}
@@ -1205,12 +1214,12 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								bool done = false;
 								do {
 									switch (node->type) {
-										case SL::Node::TYPE_VARIABLE: {
+										case SL::Node::NODE_TYPE_VARIABLE: {
 											name = static_cast<const SL::VariableNode *>(node)->name;
 											done = true;
 											found = true;
 										} break;
-										case SL::Node::TYPE_MEMBER: {
+										case SL::Node::NODE_TYPE_MEMBER: {
 											node = static_cast<const SL::MemberNode *>(node)->owner;
 										} break;
 										default: {
@@ -1232,12 +1241,12 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							bool correct_texture_uniform = false;
 
 							switch (onode->arguments[i]->type) {
-								case SL::Node::TYPE_VARIABLE: {
+								case SL::Node::NODE_TYPE_VARIABLE: {
 									const SL::VariableNode *varnode = static_cast<const SL::VariableNode *>(onode->arguments[i]);
 									texture_uniform = varnode->name;
 									correct_texture_uniform = true;
 								} break;
-								case SL::Node::TYPE_ARRAY: {
+								case SL::Node::NODE_TYPE_ARRAY: {
 									const SL::ArrayNode *anode = static_cast<const SL::ArrayNode *>(onode->arguments[i]);
 									texture_uniform = anode->name;
 									correct_texture_uniform = true;
@@ -1366,7 +1375,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_CONTROL_FLOW: {
+		case SL::Node::NODE_TYPE_CONTROL_FLOW: {
 			SL::ControlFlowNode *cfnode = (SL::ControlFlowNode *)p_node;
 			if (cfnode->flow_op == SL::FLOW_OP_IF) {
 				code += _mktab(p_level) + "if (" + _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + ")\n";
@@ -1418,7 +1427,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 
 		} break;
-		case SL::Node::TYPE_MEMBER: {
+		case SL::Node::NODE_TYPE_MEMBER: {
 			SL::MemberNode *mnode = (SL::MemberNode *)p_node;
 			code = _dump_node_code(mnode->owner, p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + "." + mnode->name;
 			if (mnode->index_expression != nullptr) {

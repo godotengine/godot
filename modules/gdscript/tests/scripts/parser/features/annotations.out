@@ -1,0 +1,13 @@
+GDTEST_OK
+{ "name": "a0", "class_name": &"", "type": 2, "hint": 2, "hint_string": "A,B,C", "usage": 4102 }
+{ "name": "a1", "class_name": &"", "type": 2, "hint": 2, "hint_string": "A,B,C", "usage": 4102 }
+{ "name": "a2", "class_name": &"", "type": 2, "hint": 2, "hint_string": "A,B,C", "usage": 4102 }
+{ "name": "a3", "class_name": &"", "type": 2, "hint": 2, "hint_string": "A,B,C", "usage": 4102 }
+{ "name": "a4", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }
+{ "name": "a5", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }
+{ "name": "a6", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }
+{ "name": "a7", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }
+{ "name": "a8", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }
+{ "name": "a9", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }
+{ "name": "a10", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }
+{ "name": "a11", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }

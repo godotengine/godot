@@ -31,9 +31,9 @@
 #ifndef UPNP_H
 #define UPNP_H
 
-#include "core/object/ref_counted.h"
-
 #include "upnp_device.h"
+
+#include "core/object/ref_counted.h"
 
 #include <miniupnpc.h>
 

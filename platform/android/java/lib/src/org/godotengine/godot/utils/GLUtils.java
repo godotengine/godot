@@ -44,8 +44,6 @@ public class GLUtils {
 
 	public static final boolean DEBUG = false;
 
-	public static boolean use_debug_opengl = false;
-
 	private static final String[] ATTRIBUTES_NAMES = new String[] {
 		"EGL_BUFFER_SIZE",
 		"EGL_ALPHA_SIZE",

@@ -105,8 +105,8 @@ class Delaunay3D {
 	};
 
 	_FORCE_INLINE_ static void circum_sphere_compute(const Vector3 *p_points, Simplex *p_simplex) {
-		// the only part in the algorithm where there may be precision errors is this one, so ensure that
-		// we do it as maximum precision as possible
+		// The only part in the algorithm where there may be precision errors is this one,
+		// so ensure that we do it with the maximum precision possible.
 
 		R128 v0_x = p_points[p_simplex->points[0]].x;
 		R128 v0_y = p_points[p_simplex->points[0]].y;
@@ -121,7 +121,7 @@ class Delaunay3D {
 		R128 v3_y = p_points[p_simplex->points[3]].y;
 		R128 v3_z = p_points[p_simplex->points[3]].z;
 
-		//Create the rows of our "unrolled" 3x3 matrix
+		// Create the rows of our "unrolled" 3x3 matrix.
 		R128 row1_x = v1_x - v0_x;
 		R128 row1_y = v1_y - v0_y;
 		R128 row1_z = v1_z - v0_z;
@@ -138,10 +138,10 @@ class Delaunay3D {
 		R128 sq_lenght2 = row2_x * row2_x + row2_y * row2_y + row2_z * row2_z;
 		R128 sq_lenght3 = row3_x * row3_x + row3_y * row3_y + row3_z * row3_z;
 
-		//Compute the determinant of said matrix
+		// Compute the determinant of said matrix.
 		R128 determinant = row1_x * (row2_y * row3_z - row3_y * row2_z) - row2_x * (row1_y * row3_z - row3_y * row1_z) + row3_x * (row1_y * row2_z - row2_y * row1_z);
 
-		// Compute the volume of the tetrahedron, and precompute a scalar quantity for re-use in the formula
+		// Compute the volume of the tetrahedron, and precompute a scalar quantity for reuse in the formula.
 		R128 volume = determinant / R128(6.f);
 		R128 i12volume = R128(1.f) / (volume * R128(12.f));
 
@@ -149,8 +149,7 @@ class Delaunay3D {
 		R128 center_y = v0_y + i12volume * (-(row2_x * row3_z - row3_x * row2_z) * sq_lenght1 + (row1_x * row3_z - row3_x * row1_z) * sq_lenght2 - (row1_x * row2_z - row2_x * row1_z) * sq_lenght3);
 		R128 center_z = v0_z + i12volume * ((row2_x * row3_y - row3_x * row2_y) * sq_lenght1 - (row1_x * row3_y - row3_x * row1_y) * sq_lenght2 + (row1_x * row2_y - row2_x * row1_y) * sq_lenght3);
 
-		//Once we know the center, the radius is clearly the distance to any vertex
-
+		// Once we know the center, the radius is clearly the distance to any vertex.
 		R128 rel1_x = center_x - v0_x;
 		R128 rel1_y = center_y - v0_y;
 		R128 rel1_z = center_z - v0_z;

@@ -4,7 +4,7 @@
  *
  *   TrueType GX Font Variation loader (specification)
  *
- * Copyright (C) 2004-2022 by
+ * Copyright (C) 2004-2023 by
  * David Turner, Robert Wilhelm, Werner Lemberg and George Williams.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,6 +20,7 @@
 #define TTGXVAR_H_
 
 
+#include <freetype/internal/ftmmtypes.h>
 #include "ttobjs.h"
 
 
@@ -62,55 +63,21 @@ FT_BEGIN_HEADER
   } GX_AVarSegmentRec, *GX_AVarSegment;
 
 
-  typedef struct  GX_ItemVarDataRec_
+  /**************************************************************************
+   *
+   * @Struct:
+   *   GX_AVarTableRec
+   *
+   * @Description:
+   *   Data from the `avar' table.
+   */
+  typedef struct  GX_AVarTableRec_
   {
-    FT_UInt    itemCount;      /* number of delta sets per item         */
-    FT_UInt    regionIdxCount; /* number of region indices in this data */
-    FT_UInt*   regionIndices;  /* array of `regionCount' indices;       */
-                               /* these index `varRegionList'           */
-    FT_Short*  deltaSet;       /* array of `itemCount' deltas           */
-                               /* use `innerIndex' for this array       */
+    GX_AVarSegment        avar_segment;   /* avar_segment[num_axis] */
+    GX_ItemVarStoreRec    itemStore;      /* Item Variation Store   */
+    GX_DeltaSetIdxMapRec  axisMap;        /* Axis Mapping           */
 
-  } GX_ItemVarDataRec, *GX_ItemVarData;
-
-
-  /* contribution of one axis to a region */
-  typedef struct  GX_AxisCoordsRec_
-  {
-    FT_Fixed  startCoord;
-    FT_Fixed  peakCoord;      /* zero means no effect (factor = 1) */
-    FT_Fixed  endCoord;
-
-  } GX_AxisCoordsRec, *GX_AxisCoords;
-
-
-  typedef struct  GX_VarRegionRec_
-  {
-    GX_AxisCoords  axisList;               /* array of axisCount records */
-
-  } GX_VarRegionRec, *GX_VarRegion;
-
-
-  /* item variation store */
-  typedef struct  GX_ItemVarStoreRec_
-  {
-    FT_UInt         dataCount;
-    GX_ItemVarData  varData;            /* array of dataCount records;     */
-                                        /* use `outerIndex' for this array */
-    FT_UShort     axisCount;
-    FT_UInt       regionCount;          /* total number of regions defined */
-    GX_VarRegion  varRegionList;
-
-  } GX_ItemVarStoreRec, *GX_ItemVarStore;
-
-
-  typedef struct  GX_DeltaSetIdxMapRec_
-  {
-    FT_ULong  mapCount;
-    FT_UInt*  outerIndex;               /* indices to item var data */
-    FT_UInt*  innerIndex;               /* indices to delta set     */
-
-  } GX_DeltaSetIdxMapRec, *GX_DeltaSetIdxMap;
+  } GX_AVarTableRec, *GX_AVarTable;
 
 
   /**************************************************************************
@@ -245,7 +212,7 @@ FT_BEGIN_HEADER
    *     A Boolean; if set, FreeType tried to load (and parse) the `avar'
    *     table.
    *
-   *   avar_segment ::
+   *   avar_table ::
    *     Data from the `avar' table.
    *
    *   hvar_loaded ::
@@ -310,7 +277,7 @@ FT_BEGIN_HEADER
                       /* normalized_stylecoords[num_namedstyles][num_axis] */
 
     FT_Bool         avar_loaded;
-    GX_AVarSegment  avar_segment;                /* avar_segment[num_axis] */
+    GX_AVarTable    avar_table;
 
     FT_Bool         hvar_loaded;
     FT_Bool         hvar_checked;
@@ -376,35 +343,43 @@ FT_BEGIN_HEADER
 #define TTAG_wdth  FT_MAKE_TAG( 'w', 'd', 't', 'h' )
 #define TTAG_opsz  FT_MAKE_TAG( 'o', 'p', 's', 'z' )
 #define TTAG_slnt  FT_MAKE_TAG( 's', 'l', 'n', 't' )
+#define TTAG_ital  FT_MAKE_TAG( 'i', 't', 'a', 'l' )
 
 
   FT_LOCAL( FT_Error )
-  TT_Set_MM_Blend( TT_Face    face,
+  TT_Set_MM_Blend( FT_Face    face,
                    FT_UInt    num_coords,
                    FT_Fixed*  coords );
 
   FT_LOCAL( FT_Error )
-  TT_Get_MM_Blend( TT_Face    face,
+  TT_Get_MM_Blend( FT_Face    face,
                    FT_UInt    num_coords,
                    FT_Fixed*  coords );
 
   FT_LOCAL( FT_Error )
-  TT_Set_Var_Design( TT_Face    face,
+  TT_Set_Var_Design( FT_Face    face,
                      FT_UInt    num_coords,
                      FT_Fixed*  coords );
 
   FT_LOCAL( FT_Error )
-  TT_Get_MM_Var( TT_Face      face,
+  TT_Get_MM_Var( FT_Face      face,
                  FT_MM_Var*  *master );
 
   FT_LOCAL( FT_Error )
-  TT_Get_Var_Design( TT_Face    face,
+  TT_Get_Var_Design( FT_Face    face,
                      FT_UInt    num_coords,
                      FT_Fixed*  coords );
 
   FT_LOCAL( FT_Error )
-  TT_Set_Named_Instance( TT_Face  face,
+  TT_Set_Named_Instance( FT_Face  face,
                          FT_UInt  instance_index );
+
+  FT_LOCAL( FT_Error )
+  TT_Get_Default_Named_Instance( FT_Face   face,
+                                 FT_UInt  *instance_index );
+
+  FT_LOCAL( void )
+  tt_construct_ps_name( FT_Face  face );
 
   FT_LOCAL( FT_Error )
   tt_face_vary_cvt( TT_Face    face,
@@ -412,34 +387,59 @@ FT_BEGIN_HEADER
 
 
   FT_LOCAL( FT_Error )
-  TT_Vary_Apply_Glyph_Deltas( TT_Face      face,
-                              FT_UInt      glyph_index,
+  TT_Vary_Apply_Glyph_Deltas( TT_Loader    loader,
                               FT_Outline*  outline,
-                              FT_Vector*   unrounded,
-                              FT_UInt      n_points );
+                              FT_Vector*   unrounded );
 
   FT_LOCAL( FT_Error )
-  tt_hadvance_adjust( TT_Face  face,
+  tt_hadvance_adjust( FT_Face  face,
                       FT_UInt  gindex,
                       FT_Int  *adelta );
 
   FT_LOCAL( FT_Error )
-  tt_vadvance_adjust( TT_Face  face,
+  tt_vadvance_adjust( FT_Face  face,
                       FT_UInt  gindex,
                       FT_Int  *adelta );
 
   FT_LOCAL( void )
-  tt_apply_mvar( TT_Face  face );
+  tt_apply_mvar( FT_Face  face );
 
   FT_LOCAL( FT_Error )
-  tt_get_var_blend( TT_Face      face,
+  tt_var_load_item_variation_store( FT_Face          face,
+                                    FT_ULong         offset,
+                                    GX_ItemVarStore  itemStore );
+
+  FT_LOCAL( FT_Error )
+  tt_var_load_delta_set_index_mapping( FT_Face            face,
+                                       FT_ULong           offset,
+                                       GX_DeltaSetIdxMap  map,
+                                       GX_ItemVarStore    itemStore,
+                                       FT_ULong           table_len );
+
+  FT_LOCAL( FT_ItemVarDelta )
+  tt_var_get_item_delta( FT_Face          face,
+                         GX_ItemVarStore  itemStore,
+                         FT_UInt          outerIndex,
+                         FT_UInt          innerIndex );
+
+  FT_LOCAL( void )
+  tt_var_done_item_variation_store( FT_Face          face,
+                                    GX_ItemVarStore  itemStore );
+
+  FT_LOCAL( void )
+  tt_var_done_delta_set_index_map( FT_Face            face,
+                                   GX_DeltaSetIdxMap  deltaSetIdxMap );
+
+
+  FT_LOCAL( FT_Error )
+  tt_get_var_blend( FT_Face      face,
                     FT_UInt     *num_coords,
                     FT_Fixed*   *coords,
                     FT_Fixed*   *normalizedcoords,
                     FT_MM_Var*  *mm_var );
 
   FT_LOCAL( void )
-  tt_done_blend( TT_Face  face );
+  tt_done_blend( FT_Face  face );
 
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
 

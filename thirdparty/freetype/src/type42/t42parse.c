@@ -4,7 +4,7 @@
  *
  *   Type 42 font parser (body).
  *
- * Copyright (C) 2002-2022 by
+ * Copyright (C) 2002-2023 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -34,19 +34,19 @@
 
 
   static void
-  t42_parse_font_matrix( T42_Face    face,
-                         T42_Loader  loader );
+  t42_parse_font_matrix( FT_Face  face,
+                         void*    loader_ );
   static void
-  t42_parse_encoding( T42_Face    face,
-                      T42_Loader  loader );
+  t42_parse_encoding( FT_Face  face,
+                      void*    loader_ );
 
   static void
-  t42_parse_charstrings( T42_Face    face,
-                         T42_Loader  loader );
+  t42_parse_charstrings( FT_Face  face,
+                         void*    loader_ );
 
   static void
-  t42_parse_sfnts( T42_Face    face,
-                   T42_Loader  loader );
+  t42_parse_sfnts( FT_Face  face,
+                   void*    loader_ );
 
 
   /* as Type42 fonts have no Private dict,         */
@@ -241,12 +241,14 @@
 
 
   static void
-  t42_parse_font_matrix( T42_Face    face,
-                         T42_Loader  loader )
+  t42_parse_font_matrix( FT_Face  face,     /* T42_Face */
+                         void*    loader_ )
   {
-    T42_Parser  parser = &loader->parser;
-    FT_Matrix*  matrix = &face->type1.font_matrix;
-    FT_Vector*  offset = &face->type1.font_offset;
+    T42_Face    t42face = (T42_Face)face;
+    T42_Loader  loader  = (T42_Loader)loader_;
+    T42_Parser  parser  = &loader->parser;
+    FT_Matrix*  matrix  = &t42face->type1.font_matrix;
+    FT_Vector*  offset  = &t42face->type1.font_offset;
     FT_Fixed    temp[6];
     FT_Fixed    temp_scale;
     FT_Int      result;
@@ -299,14 +301,16 @@
 
 
   static void
-  t42_parse_encoding( T42_Face    face,
-                      T42_Loader  loader )
+  t42_parse_encoding( FT_Face  face,
+                      void*    loader_ )
   {
-    T42_Parser  parser = &loader->parser;
+    T42_Face    t42face = (T42_Face)face;
+    T42_Loader  loader  = (T42_Loader)loader_;
+    T42_Parser  parser  = &loader->parser;
     FT_Byte*    cur;
-    FT_Byte*    limit  = parser->root.limit;
+    FT_Byte*    limit   = parser->root.limit;
 
-    PSAux_Service  psaux  = (PSAux_Service)face->psaux;
+    PSAux_Service  psaux  = (PSAux_Service)t42face->psaux;
 
 
     T1_Skip_Spaces( parser );
@@ -322,7 +326,7 @@
     /* and we must load it now                               */
     if ( ft_isdigit( *cur ) || *cur == '[' )
     {
-      T1_Encoding  encode          = &face->type1.encoding;
+      T1_Encoding  encode          = &t42face->type1.encoding;
       FT_Int       count, n;
       PS_Table     char_table      = &loader->encoding_table;
       FT_Memory    memory          = parser->root.memory;
@@ -493,8 +497,8 @@
         T1_Skip_Spaces( parser );
       }
 
-      face->type1.encoding_type = T1_ENCODING_TYPE_ARRAY;
-      parser->root.cursor       = cur;
+      t42face->type1.encoding_type = T1_ENCODING_TYPE_ARRAY;
+      parser->root.cursor          = cur;
     }
 
     /* Otherwise, we should have either `StandardEncoding', */
@@ -503,15 +507,15 @@
     {
       if ( cur + 17 < limit                                            &&
            ft_strncmp( (const char*)cur, "StandardEncoding", 16 ) == 0 )
-        face->type1.encoding_type = T1_ENCODING_TYPE_STANDARD;
+        t42face->type1.encoding_type = T1_ENCODING_TYPE_STANDARD;
 
       else if ( cur + 15 < limit                                          &&
                 ft_strncmp( (const char*)cur, "ExpertEncoding", 14 ) == 0 )
-        face->type1.encoding_type = T1_ENCODING_TYPE_EXPERT;
+        t42face->type1.encoding_type = T1_ENCODING_TYPE_EXPERT;
 
       else if ( cur + 18 < limit                                             &&
                 ft_strncmp( (const char*)cur, "ISOLatin1Encoding", 17 ) == 0 )
-        face->type1.encoding_type = T1_ENCODING_TYPE_ISOLATIN1;
+        t42face->type1.encoding_type = T1_ENCODING_TYPE_ISOLATIN1;
 
       else
         parser->root.error = FT_ERR( Ignore );
@@ -529,9 +533,11 @@
 
 
   static void
-  t42_parse_sfnts( T42_Face    face,
-                   T42_Loader  loader )
+  t42_parse_sfnts( FT_Face  face,
+                   void*    loader_ )
   {
+    T42_Face    t42face = (T42_Face)face;
+    T42_Loader  loader  = (T42_Loader)loader_;
     T42_Parser  parser = &loader->parser;
     FT_Memory   memory = parser->root.memory;
     FT_Byte*    cur;
@@ -548,8 +554,8 @@
     T42_Load_Status  status;
 
     /** There should only be one sfnts array, but free any previous. */
-    FT_FREE( face->ttf_data );
-    face->ttf_size = 0;
+    FT_FREE( t42face->ttf_data );
+    t42face->ttf_size = 0;
 
     /* The format is                                */
     /*                                              */
@@ -580,7 +586,7 @@
     old_string_size = 0;
     ttf_count       = 0;
     ttf_reserved    = 12;
-    if ( FT_QALLOC( face->ttf_data, ttf_reserved ) )
+    if ( FT_QALLOC( t42face->ttf_data, ttf_reserved ) )
       goto Fail;
 
     FT_TRACE2(( "\n" ));
@@ -596,7 +602,7 @@
       if ( *cur == ']' )
       {
         parser->root.cursor++;
-        face->ttf_size = ttf_count;
+        t42face->ttf_size = ttf_count;
         goto Exit;
       }
 
@@ -707,7 +713,7 @@
           /* load offset table, 12 bytes */
           if ( ttf_count < 12 )
           {
-            face->ttf_data[ttf_count++] = string_buf[n];
+            t42face->ttf_data[ttf_count++] = string_buf[n];
             continue;
           }
           else
@@ -715,7 +721,7 @@
             FT_Long ttf_reserved_prev = ttf_reserved;
 
 
-            num_tables   = 16 * face->ttf_data[4] + face->ttf_data[5];
+            num_tables   = 16 * t42face->ttf_data[4] + t42face->ttf_data[5];
             status       = BEFORE_TABLE_DIR;
             ttf_reserved = 12 + 16 * num_tables;
 
@@ -729,17 +735,17 @@
               goto Fail;
             }
 
-            if ( FT_QREALLOC( face->ttf_data, ttf_reserved_prev,
+            if ( FT_QREALLOC( t42face->ttf_data, ttf_reserved_prev,
                               ttf_reserved ) )
               goto Fail;
           }
-          /* fall through */
+          FALL_THROUGH;
 
         case BEFORE_TABLE_DIR:
           /* the offset table is read; read the table directory */
           if ( ttf_count < ttf_reserved )
           {
-            face->ttf_data[ttf_count++] = string_buf[n];
+            t42face->ttf_data[ttf_count++] = string_buf[n];
             continue;
           }
           else
@@ -755,7 +761,7 @@
 
             for ( i = 0; i < num_tables; i++ )
             {
-              FT_Byte*  p = face->ttf_data + 12 + 16 * i + 12;
+              FT_Byte*  p = t42face->ttf_data + 12 + 16 * i + 12;
 
 
               len = FT_PEEK_ULONG( p );
@@ -781,11 +787,11 @@
             FT_TRACE2(( "  allocating %ld bytes\n", ttf_reserved ));
             FT_TRACE2(( "\n" ));
 
-            if ( FT_QREALLOC( face->ttf_data, ttf_reserved_prev,
+            if ( FT_QREALLOC( t42face->ttf_data, ttf_reserved_prev,
                               ttf_reserved ) )
               goto Fail;
           }
-          /* fall through */
+          FALL_THROUGH;
 
         case OTHER_TABLES:
           /* all other tables are just copied */
@@ -795,7 +801,7 @@
             error = FT_THROW( Invalid_File_Format );
             goto Fail;
           }
-          face->ttf_data[ttf_count++] = string_buf[n];
+          t42face->ttf_data[ttf_count++] = string_buf[n];
         }
       }
 
@@ -811,8 +817,8 @@
   Exit:
     if ( parser->root.error )
     {
-      FT_FREE( face->ttf_data );
-      face->ttf_size = 0;
+      FT_FREE( t42face->ttf_data );
+      t42face->ttf_size = 0;
     }
     if ( allocated )
       FT_FREE( string_buf );
@@ -820,9 +826,11 @@
 
 
   static void
-  t42_parse_charstrings( T42_Face    face,
-                         T42_Loader  loader )
+  t42_parse_charstrings( FT_Face  face,     /* T42_Face */
+                         void*    loader_ )
   {
+    T42_Face       t42face      = (T42_Face)face;
+    T42_Loader     loader       = (T42_Loader)loader_;
     T42_Parser     parser       = &loader->parser;
     PS_Table       code_table   = &loader->charstrings;
     PS_Table       name_table   = &loader->glyph_names;
@@ -830,7 +838,7 @@
     FT_Memory      memory       = parser->root.memory;
     FT_Error       error;
 
-    PSAux_Service  psaux        = (PSAux_Service)face->psaux;
+    PSAux_Service  psaux        = (PSAux_Service)t42face->psaux;
 
     FT_Byte*       cur;
     FT_Byte*       limit        = parser->root.limit;
@@ -864,7 +872,7 @@
       if ( loader->num_glyphs > ( limit - parser->root.cursor ) >> 2 )
       {
         FT_TRACE0(( "t42_parse_charstrings: adjusting number of glyphs"
-                    " (from %d to %ld)\n",
+                    " (from %d to %zu)\n",
                     loader->num_glyphs,
                     ( limit - parser->root.cursor ) >> 2 ));
         loader->num_glyphs = ( limit - parser->root.cursor ) >> 2;

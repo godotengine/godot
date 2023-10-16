@@ -31,8 +31,6 @@
 #ifndef LANG_TABLE_H
 #define LANG_TABLE_H
 
-//#include <windows.h>
-
 struct _WinLocale {
 	const char *locale;
 	int main_lang;

@@ -146,6 +146,92 @@ TEST_CASE("[JSON] Parsing objects (dictionaries)") {
 			dictionary["empty_object"].hash() == Dictionary().hash(),
 			"The parsed JSON should contain the expected values.");
 }
+
+TEST_CASE("[JSON] Parsing escape sequences") {
+	// Only certain escape sequences are valid according to the JSON specification.
+	// Others must result in a parsing error instead.
+
+	JSON json;
+
+	TypedArray<String> valid_escapes;
+	valid_escapes.push_back("\";\"");
+	valid_escapes.push_back("\\;\\");
+	valid_escapes.push_back("/;/");
+	valid_escapes.push_back("b;\b");
+	valid_escapes.push_back("f;\f");
+	valid_escapes.push_back("n;\n");
+	valid_escapes.push_back("r;\r");
+	valid_escapes.push_back("t;\t");
+
+	SUBCASE("Basic valid escape sequences") {
+		for (int i = 0; i < valid_escapes.size(); i++) {
+			String valid_escape = valid_escapes[i];
+			String valid_escape_string = valid_escape.get_slice(";", 0);
+			String valid_escape_value = valid_escape.get_slice(";", 1);
+
+			String json_string = "\"\\";
+			json_string += valid_escape_string;
+			json_string += "\"";
+			json.parse(json_string);
+
+			CHECK_MESSAGE(
+					json.get_error_line() == 0,
+					vformat("Parsing valid escape sequence `%s` as JSON should parse successfully.", valid_escape_string));
+
+			String json_value = json.get_data();
+			CHECK_MESSAGE(
+					json_value == valid_escape_value,
+					vformat("Parsing valid escape sequence `%s` as JSON should return the expected value.", valid_escape_string));
+		}
+	}
+
+	SUBCASE("Valid unicode escape sequences") {
+		String json_string = "\"\\u0020\"";
+		json.parse(json_string);
+
+		CHECK_MESSAGE(
+				json.get_error_line() == 0,
+				vformat("Parsing valid unicode escape sequence with value `0020` as JSON should parse successfully."));
+
+		String json_value = json.get_data();
+		CHECK_MESSAGE(
+				json_value == " ",
+				vformat("Parsing valid unicode escape sequence with value `0020` as JSON should return the expected value."));
+	}
+
+	SUBCASE("Invalid escape sequences") {
+		ERR_PRINT_OFF
+		for (char32_t i = 0; i < 128; i++) {
+			bool skip = false;
+			for (int j = 0; j < valid_escapes.size(); j++) {
+				String valid_escape = valid_escapes[j];
+				String valid_escape_string = valid_escape.get_slice(";", 0);
+				if (valid_escape_string[0] == i) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			String json_string = "\"\\";
+			json_string += i;
+			json_string += "\"";
+			Error err = json.parse(json_string);
+
+			// TODO: Line number is currently kept on 0, despite an error occurring. This should be fixed in the JSON parser.
+			// CHECK_MESSAGE(
+			// 		json.get_error_line() != 0,
+			// 		vformat("Parsing invalid escape sequence with ASCII value `%d` as JSON should fail to parse.", i));
+			CHECK_MESSAGE(
+					err == ERR_PARSE_ERROR,
+					vformat("Parsing invalid escape sequence with ASCII value `%d` as JSON should fail to parse with ERR_PARSE_ERROR.", i));
+		}
+		ERR_PRINT_ON
+	}
+}
 } // namespace TestJSON
 
 #endif // TEST_JSON_H

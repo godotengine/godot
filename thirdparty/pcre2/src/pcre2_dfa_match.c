@@ -350,7 +350,7 @@ Returns:            the return from the callout
 */
 
 static int
-do_callout(PCRE2_SPTR code, PCRE2_SIZE *offsets, PCRE2_SPTR current_subject,
+do_callout_dfa(PCRE2_SPTR code, PCRE2_SIZE *offsets, PCRE2_SPTR current_subject,
   PCRE2_SPTR ptr, dfa_match_block *mb, PCRE2_SIZE extracode,
   PCRE2_SIZE *lengthptr)
 {
@@ -2799,7 +2799,7 @@ for (;;)
             || code[LINK_SIZE + 1] == OP_CALLOUT_STR)
           {
           PCRE2_SIZE callout_length;
-          rrc = do_callout(code, offsets, current_subject, ptr, mb,
+          rrc = do_callout_dfa(code, offsets, current_subject, ptr, mb,
             1 + LINK_SIZE, &callout_length);
           if (rrc < 0) return rrc;                 /* Abandon */
           if (rrc > 0) break;                      /* Fail this thread */
@@ -3196,7 +3196,7 @@ for (;;)
       case OP_CALLOUT_STR:
         {
         PCRE2_SIZE callout_length;
-        rrc = do_callout(code, offsets, current_subject, ptr, mb, 0,
+        rrc = do_callout_dfa(code, offsets, current_subject, ptr, mb, 0,
           &callout_length);
         if (rrc < 0) return rrc;   /* Abandon */
         if (rrc == 0)
@@ -4056,5 +4056,11 @@ while (rws->next != NULL)
 
 return rc;
 }
+
+/* These #undefs are here to enable unity builds with CMake. */
+
+#undef NLBLOCK /* Block containing newline information */
+#undef PSSTART /* Field containing processed string start */
+#undef PSEND   /* Field containing processed string end */
 
 /* End of pcre2_dfa_match.c */

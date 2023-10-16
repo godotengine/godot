@@ -54,6 +54,8 @@ private:
 
 	double time_total = 0.0;
 
+	static bool gles_over_gl;
+
 protected:
 	GLES3::Config *config = nullptr;
 	GLES3::Utilities *utilities = nullptr;
@@ -99,7 +101,11 @@ public:
 		return memnew(RasterizerGLES3);
 	}
 
-	static void make_current() {
+	static bool is_gles_over_gl() { return gles_over_gl; }
+	static void clear_depth(float p_depth);
+
+	static void make_current(bool p_gles_over_gl) {
+		gles_over_gl = p_gles_over_gl;
 		_create_func = _create_current;
 		low_end = true;
 	}

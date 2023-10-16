@@ -4,7 +4,7 @@
  *
  *   FreeType sbits manager (body).
  *
- * Copyright (C) 2000-2022 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -342,7 +342,7 @@
     FT_Bool     result;
 
 
-    if (list_changed)
+    if ( list_changed )
       *list_changed = FALSE;
     result = FT_BOOL( gnode->family == gquery->family       &&
                       gindex - gnode->gindex < snode->count );
@@ -410,20 +410,5 @@
 
     return result;
   }
-
-
-#ifdef FTC_INLINE
-
-  FT_LOCAL_DEF( FT_Bool )
-  FTC_SNode_Compare( FTC_SNode   snode,
-                     FTC_GQuery  gquery,
-                     FTC_Cache   cache,
-                     FT_Bool*    list_changed )
-  {
-    return ftc_snode_compare( FTC_NODE( snode ), gquery,
-                              cache, list_changed );
-  }
-
-#endif
 
 /* END */

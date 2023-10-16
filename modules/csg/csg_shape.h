@@ -31,12 +31,12 @@
 #ifndef CSG_SHAPE_H
 #define CSG_SHAPE_H
 
-#define CSGJS_HEADER_ONLY
-
 #include "csg.h"
+
 #include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
+
 #include "thirdparty/misc/mikktspace.h"
 
 class CSGShape3D : public GeometryInstance3D {
@@ -68,6 +68,8 @@ private:
 	real_t collision_priority = 1.0;
 	Ref<ConcavePolygonShape3D> root_collision_shape;
 	RID root_collision_instance;
+	RID root_collision_debug_instance;
+	Transform3D debug_shape_old_transform;
 
 	bool calculate_tangents = true;
 
@@ -107,6 +109,10 @@ private:
 
 	void _update_shape();
 	void _update_collision_faces();
+	bool _is_debug_collision_shape_visible();
+	void _update_debug_collision_shape();
+	void _clear_debug_collision_shape();
+	void _on_transform_changed();
 
 protected:
 	void _notification(int p_what);

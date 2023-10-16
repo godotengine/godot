@@ -44,8 +44,12 @@ uniform highp mat4 inv_emission_transform;
 
 #define PARTICLE_FLAG_ACTIVE uint(1)
 
+#define FLT_MAX float(3.402823466e+38)
+
 void main() {
-	mat4 txform = mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0)); // zero scale, becomes invisible.
+	// Set scale to zero and translate to -INF so particle will be invisible
+	// even for materials that ignore rotation/scale (i.e. billboards).
+	mat4 txform = mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, 0.0));
 	if (bool(floatBitsToUint(velocity_flags.w) & PARTICLE_FLAG_ACTIVE)) {
 #ifdef MODE_3D
 		txform = transpose(mat4(xform_1, xform_2, xform_3, vec4(0.0, 0.0, 0.0, 1.0)));
@@ -80,7 +84,6 @@ void main() {
 			} break;
 			case TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY: {
 				vec3 sv = velocity_flags.xyz - sort_direction * dot(sort_direction, velocity_flags.xyz); //screen velocity
-				float s = (length(txform[0]) + length(txform[1]) + length(txform[2])) / 3.0;
 
 				if (length(sv) == 0.0) {
 					sv = align_up;
@@ -88,9 +91,9 @@ void main() {
 
 				sv = normalize(sv);
 
-				txform[0].xyz = normalize(cross(sv, sort_direction)) * s;
-				txform[1].xyz = sv * s;
-				txform[2].xyz = sort_direction * s;
+				txform[0].xyz = normalize(cross(sv, sort_direction)) * length(txform[0]);
+				txform[1].xyz = sv * length(txform[1]);
+				txform[2].xyz = sort_direction * length(txform[2]);
 
 			} break;
 		}
@@ -102,9 +105,8 @@ void main() {
 		// as they will be drawn with the node position as origin.
 		txform = inv_emission_transform * txform;
 #endif
-
-		txform = transpose(txform);
 	}
+	txform = transpose(txform);
 
 	instance_color_custom_data = uvec4(packHalf2x16(color.xy), packHalf2x16(color.zw), packHalf2x16(custom.xy), packHalf2x16(custom.zw));
 	out_xform_1 = txform[0];

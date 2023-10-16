@@ -193,6 +193,11 @@ Vector3 GodotPhysicsDirectBodyState3D::get_contact_impulse(int p_contact_idx) co
 	return body->contacts[p_contact_idx].impulse;
 }
 
+Vector3 GodotPhysicsDirectBodyState3D::get_contact_local_velocity_at_position(int p_contact_idx) const {
+	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
+	return body->contacts[p_contact_idx].local_velocity_at_pos;
+}
+
 int GodotPhysicsDirectBodyState3D::get_contact_local_shape(int p_contact_idx) const {
 	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, -1);
 	return body->contacts[p_contact_idx].local_shape;

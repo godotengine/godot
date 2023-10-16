@@ -42,6 +42,7 @@ const GodotWebXR = {
 		view_count: 1,
 		input_sources: new Array(16),
 		touches: new Array(5),
+		onsimpleevent: null,
 
 		// Monkey-patch the requestAnimationFrame() used by Emscripten for the main
 		// loop, so that we can swap it out for XRSession.requestAnimationFrame()
@@ -283,6 +284,9 @@ const GodotWebXR = {
 				GodotRuntime.free(c_str);
 			});
 
+			// Store onsimpleevent so we can use it later.
+			GodotWebXR.onsimpleevent = onsimpleevent;
+
 			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
 			const gl = GL.getContext(gl_context_handle).GLctx;
 			GodotWebXR.gl = gl;
@@ -368,6 +372,7 @@ const GodotWebXR = {
 		GodotWebXR.view_count = 1;
 		GodotWebXR.input_sources = new Array(16);
 		GodotWebXR.touches = new Array(5);
+		GodotWebXR.onsimpleevent = null;
 
 		// Disable the monkey-patched window.requestAnimationFrame() and
 		// pause/restart the main loop to activate it on all platforms.
@@ -594,6 +599,51 @@ const GodotWebXR = {
 
 		return point_count;
 	},
+
+	godot_webxr_get_frame_rate__proxy: 'sync',
+	godot_webxr_get_frame_rate__sig: 'i',
+	godot_webxr_get_frame_rate: function () {
+		if (!GodotWebXR.session || GodotWebXR.session.frameRate === undefined) {
+			return 0;
+		}
+		return GodotWebXR.session.frameRate;
+	},
+
+	godot_webxr_update_target_frame_rate__proxy: 'sync',
+	godot_webxr_update_target_frame_rate__sig: 'vi',
+	godot_webxr_update_target_frame_rate: function (p_frame_rate) {
+		if (!GodotWebXR.session || GodotWebXR.session.updateTargetFrameRate === undefined) {
+			return;
+		}
+
+		GodotWebXR.session.updateTargetFrameRate(p_frame_rate).then(() => {
+			const c_str = GodotRuntime.allocString('display_refresh_rate_changed');
+			GodotWebXR.onsimpleevent(c_str);
+			GodotRuntime.free(c_str);
+		});
+	},
+
+	godot_webxr_get_supported_frame_rates__proxy: 'sync',
+	godot_webxr_get_supported_frame_rates__sig: 'ii',
+	godot_webxr_get_supported_frame_rates: function (r_frame_rates) {
+		if (!GodotWebXR.session || GodotWebXR.session.supportedFrameRates === undefined) {
+			return 0;
+		}
+
+		const frame_rate_count = GodotWebXR.session.supportedFrameRates.length;
+		if (frame_rate_count === 0) {
+			return 0;
+		}
+
+		const buf = GodotRuntime.malloc(frame_rate_count * 4);
+		for (let i = 0; i < frame_rate_count; i++) {
+			GodotRuntime.setHeapValue(buf + (i * 4), GodotWebXR.session.supportedFrameRates[i], 'float');
+		}
+		GodotRuntime.setHeapValue(r_frame_rates, buf, 'i32');
+
+		return frame_rate_count;
+	},
+
 };
 
 autoAddDeps(GodotWebXR, '$GodotWebXR');

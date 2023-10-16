@@ -50,7 +50,7 @@ class VehicleWheel3D : public Node3D {
 	Vector3 m_wheelAxleCS; // const or modified by steering
 
 	real_t m_suspensionRestLength = 0.15;
-	real_t m_maxSuspensionTravelCm = 20.0;
+	real_t m_maxSuspensionTravel = 0.2;
 	real_t m_wheelRadius = 0.5;
 
 	real_t m_suspensionStiffness = 5.88;

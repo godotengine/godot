@@ -147,7 +147,7 @@ int register_test_command(String p_command, TestFunc p_function);
 	{                                                                                                 \
 		const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(m_action); \
 		const List<Ref<InputEvent>>::Element *first_event = events->front();                          \
-		Ref<InputEventKey> event = first_event->get();                                                \
+		Ref<InputEventKey> event = first_event->get()->duplicate();                                   \
 		event->set_pressed(true);                                                                     \
 		_SEND_DISPLAYSERVER_EVENT(event);                                                             \
 		MessageQueue::get_singleton()->flush();                                                       \
@@ -176,6 +176,13 @@ int register_test_command(String p_command, TestFunc p_function);
 	event->set_factor(1);                                                  \
 	_UPDATE_EVENT_MODIFERS(event, m_modifers);                             \
 	event->set_pressed(true);
+
+#define _CREATE_GUI_TOUCH_EVENT(m_screen_pos, m_pressed, m_double) \
+	Ref<InputEventScreenTouch> event;                              \
+	event.instantiate();                                           \
+	event->set_position(m_screen_pos);                             \
+	event->set_pressed(m_pressed);                                 \
+	event->set_double_tap(m_double);
 
 #define SEND_GUI_MOUSE_BUTTON_EVENT(m_screen_pos, m_input, m_mask, m_modifers) \
 	{                                                                          \
@@ -213,6 +220,13 @@ int register_test_command(String p_command, TestFunc p_function);
 		_SEND_DISPLAYSERVER_EVENT(event);                             \
 		MessageQueue::get_singleton()->flush();                       \
 		CoreGlobals::print_error_enabled = errors_enabled;            \
+	}
+
+#define SEND_GUI_TOUCH_EVENT(m_screen_pos, m_pressed, m_double)    \
+	{                                                              \
+		_CREATE_GUI_TOUCH_EVENT(m_screen_pos, m_pressed, m_double) \
+		_SEND_DISPLAYSERVER_EVENT(event);                          \
+		MessageQueue::get_singleton()->flush();                    \
 	}
 
 // Utility class / macros for testing signals

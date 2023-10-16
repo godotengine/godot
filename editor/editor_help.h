@@ -86,14 +86,11 @@ public:
 class EditorHelp : public VBoxContainer {
 	GDCLASS(EditorHelp, VBoxContainer);
 
-	enum Page {
-		PAGE_CLASS_LIST,
-		PAGE_CLASS_DESC,
-		PAGE_CLASS_PREV,
-		PAGE_CLASS_NEXT,
-		PAGE_SEARCH,
-		CLASS_SEARCH,
-
+	enum MethodType {
+		METHOD_TYPE_METHOD,
+		METHOD_TYPE_CONSTRUCTOR,
+		METHOD_TYPE_OPERATOR,
+		METHOD_TYPE_MAX
 	};
 
 	bool select_locked = false;
@@ -158,9 +155,9 @@ class EditorHelp : public VBoxContainer {
 	bool scroll_locked = false;
 
 	//void _button_pressed(int p_idx);
-	void _add_type(const String &p_type, const String &p_enum = String());
+	void _add_type(const String &p_type, const String &p_enum = String(), bool p_is_bitfield = false);
 	void _add_type_icon(const String &p_type, int p_size = 0, const String &p_fallback = "");
-	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
+	void _add_method(const DocData::MethodDoc &p_method, bool p_overview, bool p_override = true);
 
 	void _add_bulletpoint();
 
@@ -178,10 +175,10 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
 
-	Error _goto_desc(const String &p_class, int p_vscr = -1);
+	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
-	void _update_method_list(const Vector<DocData::MethodDoc> p_methods);
-	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, const String &p_method_type);
+	void _update_method_list(const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
+	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
 	void _update_doc();
 
 	void _request_help(const String &p_string);
@@ -193,7 +190,9 @@ class EditorHelp : public VBoxContainer {
 	static Thread thread;
 
 	static void _wait_for_thread();
+	static void _load_doc_thread(void *p_udata);
 	static void _gen_doc_thread(void *p_udata);
+	static void _generate_doc_first_step();
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -202,12 +201,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	static void generate_doc();
+	static void generate_doc(bool p_use_cache = true);
 	static DocTools *get_doc_data();
 	static void cleanup_doc();
+	static String get_cache_full_path();
 
 	void go_to_help(const String &p_help);
-	void go_to_class(const String &p_class, int p_scroll = 0);
+	void go_to_class(const String &p_class);
 	void update_doc();
 
 	Vector<Pair<String, int>> get_sections();
@@ -232,6 +232,12 @@ public:
 class EditorHelpBit : public MarginContainer {
 	GDCLASS(EditorHelpBit, MarginContainer);
 
+	inline static HashMap<StringName, String> doc_class_cache;
+	inline static HashMap<StringName, HashMap<StringName, String>> doc_property_cache;
+	inline static HashMap<StringName, HashMap<StringName, String>> doc_method_cache;
+	inline static HashMap<StringName, HashMap<StringName, String>> doc_signal_cache;
+	inline static HashMap<StringName, HashMap<StringName, String>> doc_theme_item_cache;
+
 	RichTextLabel *rich_text = nullptr;
 	void _go_to_help(String p_what);
 	void _meta_clicked(String p_select);
@@ -243,9 +249,30 @@ protected:
 	void _notification(int p_what);
 
 public:
+	String get_class_description(const StringName &p_class_name) const;
+	String get_property_description(const StringName &p_class_name, const StringName &p_property_name) const;
+	String get_method_description(const StringName &p_class_name, const StringName &p_method_name) const;
+	String get_signal_description(const StringName &p_class_name, const StringName &p_signal_name) const;
+	String get_theme_item_description(const StringName &p_class_name, const StringName &p_theme_item_name) const;
+
 	RichTextLabel *get_rich_text() { return rich_text; }
 	void set_text(const String &p_text);
+
 	EditorHelpBit();
+};
+
+class EditorHelpTooltip : public EditorHelpBit {
+	GDCLASS(EditorHelpTooltip, EditorHelpBit);
+
+	String tooltip_text;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void parse_tooltip(const String &p_text);
+
+	EditorHelpTooltip(const String &p_text = String());
 };
 
 #endif // EDITOR_HELP_H

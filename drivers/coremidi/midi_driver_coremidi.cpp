@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef COREMIDI_ENABLED
-
 #include "midi_driver_coremidi.h"
+
+#ifdef COREMIDI_ENABLED
 
 #include "core/string/print_string.h"
 

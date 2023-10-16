@@ -91,12 +91,11 @@ String EditorPaths::get_feature_profiles_dir() const {
 }
 
 void EditorPaths::create() {
-	ERR_FAIL_COND(singleton != nullptr);
-	memnew(EditorPaths());
+	memnew(EditorPaths);
 }
 
 void EditorPaths::free() {
-	ERR_FAIL_COND(singleton == nullptr);
+	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
 }
 
@@ -111,6 +110,7 @@ void EditorPaths::_bind_methods() {
 }
 
 EditorPaths::EditorPaths() {
+	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
 	project_data_dir = ProjectSettings::get_singleton()->get_project_data_path();

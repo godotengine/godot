@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -6,7 +6,7 @@
 //     See utility_source_generator.py for modifications
 // ************************************************************
 
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -27,6 +27,7 @@
 // Author: Mark Young <marky@lunarg.com>
 //
 
+#include <time.h>
 #include "xr_generated_dispatch_table.h"
 #include "xr_dependencies.h"
 #include <openxr/openxr.h>
@@ -236,6 +237,12 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     (get_inst_proc_addr(instance, "xrUpdateSwapchainFB", (PFN_xrVoidFunction*)&table->UpdateSwapchainFB));
     (get_inst_proc_addr(instance, "xrGetSwapchainStateFB", (PFN_xrVoidFunction*)&table->GetSwapchainStateFB));
 
+    // ---- XR_FB_body_tracking extension commands
+    (get_inst_proc_addr(instance, "xrCreateBodyTrackerFB", (PFN_xrVoidFunction*)&table->CreateBodyTrackerFB));
+    (get_inst_proc_addr(instance, "xrDestroyBodyTrackerFB", (PFN_xrVoidFunction*)&table->DestroyBodyTrackerFB));
+    (get_inst_proc_addr(instance, "xrLocateBodyJointsFB", (PFN_xrVoidFunction*)&table->LocateBodyJointsFB));
+    (get_inst_proc_addr(instance, "xrGetBodySkeletonFB", (PFN_xrVoidFunction*)&table->GetBodySkeletonFB));
+
     // ---- XR_MSFT_scene_understanding extension commands
     (get_inst_proc_addr(instance, "xrEnumerateSceneComputeFeaturesMSFT", (PFN_xrVoidFunction*)&table->EnumerateSceneComputeFeaturesMSFT));
     (get_inst_proc_addr(instance, "xrCreateSceneObserverMSFT", (PFN_xrVoidFunction*)&table->CreateSceneObserverMSFT));
@@ -329,6 +336,11 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     // ---- XR_VARJO_view_offset extension commands
     (get_inst_proc_addr(instance, "xrSetViewOffsetVARJO", (PFN_xrVoidFunction*)&table->SetViewOffsetVARJO));
 
+    // ---- XR_ML_compat extension commands
+#if defined(XR_USE_PLATFORM_ML)
+    (get_inst_proc_addr(instance, "xrCreateSpaceFromCoordinateFrameUIDML", (PFN_xrVoidFunction*)&table->CreateSpaceFromCoordinateFrameUIDML));
+#endif // defined(XR_USE_PLATFORM_ML)
+
     // ---- XR_MSFT_spatial_anchor_persistence extension commands
     (get_inst_proc_addr(instance, "xrCreateSpatialAnchorStoreConnectionMSFT", (PFN_xrVoidFunction*)&table->CreateSpatialAnchorStoreConnectionMSFT));
     (get_inst_proc_addr(instance, "xrDestroySpatialAnchorStoreConnectionMSFT", (PFN_xrVoidFunction*)&table->DestroySpatialAnchorStoreConnectionMSFT));
@@ -354,6 +366,9 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     (get_inst_proc_addr(instance, "xrGetAudioInputDeviceGuidOculus", (PFN_xrVoidFunction*)&table->GetAudioInputDeviceGuidOculus));
 #endif // defined(XR_USE_PLATFORM_WIN32)
 
+    // ---- XR_FB_spatial_entity_sharing extension commands
+    (get_inst_proc_addr(instance, "xrShareSpacesFB", (PFN_xrVoidFunction*)&table->ShareSpacesFB));
+
     // ---- XR_FB_scene extension commands
     (get_inst_proc_addr(instance, "xrGetSpaceBoundingBox2DFB", (PFN_xrVoidFunction*)&table->GetSpaceBoundingBox2DFB));
     (get_inst_proc_addr(instance, "xrGetSpaceBoundingBox3DFB", (PFN_xrVoidFunction*)&table->GetSpaceBoundingBox3DFB));
@@ -364,11 +379,46 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     // ---- XR_ALMALENCE_digital_lens_control extension commands
     (get_inst_proc_addr(instance, "xrSetDigitalLensControlALMALENCE", (PFN_xrVoidFunction*)&table->SetDigitalLensControlALMALENCE));
 
+    // ---- XR_FB_scene_capture extension commands
+    (get_inst_proc_addr(instance, "xrRequestSceneCaptureFB", (PFN_xrVoidFunction*)&table->RequestSceneCaptureFB));
+
     // ---- XR_FB_spatial_entity_container extension commands
     (get_inst_proc_addr(instance, "xrGetSpaceContainerFB", (PFN_xrVoidFunction*)&table->GetSpaceContainerFB));
 
+    // ---- XR_META_foveation_eye_tracked extension commands
+    (get_inst_proc_addr(instance, "xrGetFoveationEyeTrackedStateMETA", (PFN_xrVoidFunction*)&table->GetFoveationEyeTrackedStateMETA));
+
+    // ---- XR_FB_face_tracking extension commands
+    (get_inst_proc_addr(instance, "xrCreateFaceTrackerFB", (PFN_xrVoidFunction*)&table->CreateFaceTrackerFB));
+    (get_inst_proc_addr(instance, "xrDestroyFaceTrackerFB", (PFN_xrVoidFunction*)&table->DestroyFaceTrackerFB));
+    (get_inst_proc_addr(instance, "xrGetFaceExpressionWeightsFB", (PFN_xrVoidFunction*)&table->GetFaceExpressionWeightsFB));
+
+    // ---- XR_FB_eye_tracking_social extension commands
+    (get_inst_proc_addr(instance, "xrCreateEyeTrackerFB", (PFN_xrVoidFunction*)&table->CreateEyeTrackerFB));
+    (get_inst_proc_addr(instance, "xrDestroyEyeTrackerFB", (PFN_xrVoidFunction*)&table->DestroyEyeTrackerFB));
+    (get_inst_proc_addr(instance, "xrGetEyeGazesFB", (PFN_xrVoidFunction*)&table->GetEyeGazesFB));
+
     // ---- XR_FB_passthrough_keyboard_hands extension commands
     (get_inst_proc_addr(instance, "xrPassthroughLayerSetKeyboardHandsIntensityFB", (PFN_xrVoidFunction*)&table->PassthroughLayerSetKeyboardHandsIntensityFB));
+
+    // ---- XR_FB_haptic_pcm extension commands
+    (get_inst_proc_addr(instance, "xrGetDeviceSampleRateFB", (PFN_xrVoidFunction*)&table->GetDeviceSampleRateFB));
+
+    // ---- XR_META_virtual_keyboard extension commands
+    (get_inst_proc_addr(instance, "xrCreateVirtualKeyboardMETA", (PFN_xrVoidFunction*)&table->CreateVirtualKeyboardMETA));
+    (get_inst_proc_addr(instance, "xrDestroyVirtualKeyboardMETA", (PFN_xrVoidFunction*)&table->DestroyVirtualKeyboardMETA));
+    (get_inst_proc_addr(instance, "xrCreateVirtualKeyboardSpaceMETA", (PFN_xrVoidFunction*)&table->CreateVirtualKeyboardSpaceMETA));
+    (get_inst_proc_addr(instance, "xrSuggestVirtualKeyboardLocationMETA", (PFN_xrVoidFunction*)&table->SuggestVirtualKeyboardLocationMETA));
+    (get_inst_proc_addr(instance, "xrGetVirtualKeyboardScaleMETA", (PFN_xrVoidFunction*)&table->GetVirtualKeyboardScaleMETA));
+    (get_inst_proc_addr(instance, "xrSetVirtualKeyboardModelVisibilityMETA", (PFN_xrVoidFunction*)&table->SetVirtualKeyboardModelVisibilityMETA));
+    (get_inst_proc_addr(instance, "xrGetVirtualKeyboardModelAnimationStatesMETA", (PFN_xrVoidFunction*)&table->GetVirtualKeyboardModelAnimationStatesMETA));
+    (get_inst_proc_addr(instance, "xrGetVirtualKeyboardDirtyTexturesMETA", (PFN_xrVoidFunction*)&table->GetVirtualKeyboardDirtyTexturesMETA));
+    (get_inst_proc_addr(instance, "xrGetVirtualKeyboardTextureDataMETA", (PFN_xrVoidFunction*)&table->GetVirtualKeyboardTextureDataMETA));
+    (get_inst_proc_addr(instance, "xrSendVirtualKeyboardInputMETA", (PFN_xrVoidFunction*)&table->SendVirtualKeyboardInputMETA));
+    (get_inst_proc_addr(instance, "xrChangeVirtualKeyboardTextContextMETA", (PFN_xrVoidFunction*)&table->ChangeVirtualKeyboardTextContextMETA));
+
+    // ---- XR_OCULUS_external_camera extension commands
+    (get_inst_proc_addr(instance, "xrEnumerateExternalCamerasOCULUS", (PFN_xrVoidFunction*)&table->EnumerateExternalCamerasOCULUS));
 
     // ---- XR_META_performance_metrics extension commands
     (get_inst_proc_addr(instance, "xrEnumeratePerformanceMetricsCounterPathsMETA", (PFN_xrVoidFunction*)&table->EnumeratePerformanceMetricsCounterPathsMETA));
@@ -376,12 +426,39 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     (get_inst_proc_addr(instance, "xrGetPerformanceMetricsStateMETA", (PFN_xrVoidFunction*)&table->GetPerformanceMetricsStateMETA));
     (get_inst_proc_addr(instance, "xrQueryPerformanceMetricsCounterMETA", (PFN_xrVoidFunction*)&table->QueryPerformanceMetricsCounterMETA));
 
+    // ---- XR_FB_spatial_entity_storage_batch extension commands
+    (get_inst_proc_addr(instance, "xrSaveSpaceListFB", (PFN_xrVoidFunction*)&table->SaveSpaceListFB));
+
+    // ---- XR_FB_spatial_entity_user extension commands
+    (get_inst_proc_addr(instance, "xrCreateSpaceUserFB", (PFN_xrVoidFunction*)&table->CreateSpaceUserFB));
+    (get_inst_proc_addr(instance, "xrGetSpaceUserIdFB", (PFN_xrVoidFunction*)&table->GetSpaceUserIdFB));
+    (get_inst_proc_addr(instance, "xrDestroySpaceUserFB", (PFN_xrVoidFunction*)&table->DestroySpaceUserFB));
+
+    // ---- XR_META_passthrough_color_lut extension commands
+    (get_inst_proc_addr(instance, "xrCreatePassthroughColorLutMETA", (PFN_xrVoidFunction*)&table->CreatePassthroughColorLutMETA));
+    (get_inst_proc_addr(instance, "xrDestroyPassthroughColorLutMETA", (PFN_xrVoidFunction*)&table->DestroyPassthroughColorLutMETA));
+    (get_inst_proc_addr(instance, "xrUpdatePassthroughColorLutMETA", (PFN_xrVoidFunction*)&table->UpdatePassthroughColorLutMETA));
+
+    // ---- XR_QCOM_tracking_optimization_settings extension commands
+    (get_inst_proc_addr(instance, "xrSetTrackingOptimizationSettingsHintQCOM", (PFN_xrVoidFunction*)&table->SetTrackingOptimizationSettingsHintQCOM));
+
     // ---- XR_HTC_passthrough extension commands
     (get_inst_proc_addr(instance, "xrCreatePassthroughHTC", (PFN_xrVoidFunction*)&table->CreatePassthroughHTC));
     (get_inst_proc_addr(instance, "xrDestroyPassthroughHTC", (PFN_xrVoidFunction*)&table->DestroyPassthroughHTC));
 
     // ---- XR_HTC_foveation extension commands
     (get_inst_proc_addr(instance, "xrApplyFoveationHTC", (PFN_xrVoidFunction*)&table->ApplyFoveationHTC));
+
+    // ---- XR_MNDX_force_feedback_curl extension commands
+    (get_inst_proc_addr(instance, "xrApplyForceFeedbackCurlMNDX", (PFN_xrVoidFunction*)&table->ApplyForceFeedbackCurlMNDX));
+
+    // ---- XR_EXT_plane_detection extension commands
+    (get_inst_proc_addr(instance, "xrCreatePlaneDetectorEXT", (PFN_xrVoidFunction*)&table->CreatePlaneDetectorEXT));
+    (get_inst_proc_addr(instance, "xrDestroyPlaneDetectorEXT", (PFN_xrVoidFunction*)&table->DestroyPlaneDetectorEXT));
+    (get_inst_proc_addr(instance, "xrBeginPlaneDetectionEXT", (PFN_xrVoidFunction*)&table->BeginPlaneDetectionEXT));
+    (get_inst_proc_addr(instance, "xrGetPlaneDetectionStateEXT", (PFN_xrVoidFunction*)&table->GetPlaneDetectionStateEXT));
+    (get_inst_proc_addr(instance, "xrGetPlaneDetectionsEXT", (PFN_xrVoidFunction*)&table->GetPlaneDetectionsEXT));
+    (get_inst_proc_addr(instance, "xrGetPlanePolygonBufferEXT", (PFN_xrVoidFunction*)&table->GetPlanePolygonBufferEXT));
 }
 
 

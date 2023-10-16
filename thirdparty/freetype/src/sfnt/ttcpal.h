@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType color palette support (specification).
  *
- * Copyright (C) 2018-2022 by
+ * Copyright (C) 2018-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Originally written by Shao Yu Zhang <shaozhang@fb.com>.

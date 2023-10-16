@@ -102,7 +102,7 @@ Error StreamPeerGZIP::_start(bool p_compress, bool p_is_deflate, int buffer_size
 }
 
 Error StreamPeerGZIP::_process(uint8_t *p_dst, int p_dst_size, const uint8_t *p_src, int p_src_size, int &r_consumed, int &r_out, bool p_close) {
-	ERR_FAIL_COND_V(!ctx, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(ctx, ERR_UNCONFIGURED);
 	z_stream &strm = *(z_stream *)ctx;
 	strm.avail_in = p_src_size;
 	strm.avail_out = p_dst_size;
@@ -132,7 +132,7 @@ Error StreamPeerGZIP::put_data(const uint8_t *p_data, int p_bytes) {
 }
 
 Error StreamPeerGZIP::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
-	ERR_FAIL_COND_V(!ctx, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(ctx, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(p_bytes < 0, ERR_INVALID_PARAMETER);
 
 	// Ensure we have enough space in temporary buffer.

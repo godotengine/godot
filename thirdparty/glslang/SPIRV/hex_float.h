@@ -23,19 +23,6 @@
 #include <limits>
 #include <sstream>
 
-#if defined(_MSC_VER) && _MSC_VER < 1800
-namespace std {
-bool isnan(double f)
-{
-  return ::_isnan(f) != 0;
-}
-bool isinf(double f)
-{
-  return ::_finite(f) == 0;
-}
-}
-#endif
-
 #include "bitutils.h"
 
 namespace spvutils {

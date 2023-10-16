@@ -30,7 +30,7 @@
 
 #include "texture_rect.h"
 
-#include "core/core_string_names.h"
+#include "scene/resources/atlas_texture.h"
 #include "servers/rendering_server.h"
 
 void TextureRect::_notification(int p_what) {
@@ -189,10 +189,8 @@ bool TextureRect::_set(const StringName &p_name, const Variant &p_value) {
 #endif
 
 void TextureRect::_texture_changed() {
-	if (texture.is_valid()) {
-		queue_redraw();
-		update_minimum_size();
-	}
+	queue_redraw();
+	update_minimum_size();
 }
 
 void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
@@ -201,13 +199,13 @@ void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
 	}
 
 	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TextureRect::_texture_changed));
+		texture->disconnect_changed(callable_mp(this, &TextureRect::_texture_changed));
 	}
 
 	texture = p_tex;
 
 	if (texture.is_valid()) {
-		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TextureRect::_texture_changed));
+		texture->connect_changed(callable_mp(this, &TextureRect::_texture_changed));
 	}
 
 	queue_redraw();

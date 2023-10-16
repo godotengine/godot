@@ -52,15 +52,7 @@ void MainLoop::_bind_methods() {
 	GDVIRTUAL_BIND(_finalize);
 }
 
-void MainLoop::set_initialize_script(const Ref<Script> &p_initialize_script) {
-	initialize_script = p_initialize_script;
-}
-
 void MainLoop::initialize() {
-	if (initialize_script.is_valid()) {
-		set_script(initialize_script);
-	}
-
 	GDVIRTUAL_CALL(_initialize);
 }
 

@@ -45,25 +45,27 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 
 	uint64_t max_size = 0;
 	for (int i = 0; i < p_files.size(); i++) {
-		MachO mh;
-		if (!mh.open_file(p_files[i])) {
-			ERR_FAIL_V_MSG(false, vformat("LipO: Invalid MachO file: \"%s.\"", p_files[i]));
+		{
+			MachO mh;
+			if (!mh.open_file(p_files[i])) {
+				ERR_FAIL_V_MSG(false, vformat("LipO: Invalid MachO file: \"%s\".", p_files[i]));
+			}
+
+			FatArch arch;
+			arch.cputype = mh.get_cputype();
+			arch.cpusubtype = mh.get_cpusubtype();
+			arch.offset = 0;
+			arch.size = mh.get_size();
+			arch.align = mh.get_align();
+			max_size += arch.size;
+
+			archs.push_back(arch);
 		}
-
-		FatArch arch;
-		arch.cputype = mh.get_cputype();
-		arch.cpusubtype = mh.get_cpusubtype();
-		arch.offset = 0;
-		arch.size = mh.get_size();
-		arch.align = mh.get_align();
-		max_size += arch.size;
-
-		archs.push_back(arch);
 
 		Ref<FileAccess> fb = FileAccess::open(p_files[i], FileAccess::READ);
 		if (fb.is_null()) {
 			close();
-			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s.\"", p_files[i]));
+			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s\".", p_files[i]));
 		}
 	}
 
@@ -100,7 +102,7 @@ bool LipO::create_file(const String &p_output_path, const PackedStringArray &p_f
 		Ref<FileAccess> fb = FileAccess::open(p_files[i], FileAccess::READ);
 		if (fb.is_null()) {
 			close();
-			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s.\"", p_files[i]));
+			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s\".", p_files[i]));
 		}
 		uint64_t cur = fa->get_position();
 		for (uint64_t j = cur; j < archs[i].offset; j++) {

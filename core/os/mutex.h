@@ -119,8 +119,25 @@ class MutexLock {
 
 public:
 	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex) :
+			lock(p_mutex.mutex){};
+};
+
+// This specialization is needed so manual locking and MutexLock can be used
+// at the same time on a SafeBinaryMutex.
+template <int Tag>
+class MutexLock<SafeBinaryMutex<Tag>> {
+	friend class ConditionVariable;
+
+	std::unique_lock<std::mutex> lock;
+
+public:
+	_ALWAYS_INLINE_ explicit MutexLock(const SafeBinaryMutex<Tag> &p_mutex) :
 			lock(p_mutex.mutex) {
-	}
+		SafeBinaryMutex<Tag>::count++;
+	};
+	_ALWAYS_INLINE_ ~MutexLock() {
+		SafeBinaryMutex<Tag>::count--;
+	};
 };
 
 using Mutex = MutexImpl<std::recursive_mutex>; // Recursive, for general use

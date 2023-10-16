@@ -640,7 +640,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				} else {
 					Object *obj = ClassDB::instantiate(str);
 
-					ERR_FAIL_COND_V(!obj, ERR_UNAVAILABLE);
+					ERR_FAIL_NULL_V(obj, ERR_UNAVAILABLE);
 					ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 
 					int32_t count = decode_uint32(buf);
@@ -1155,10 +1155,12 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 #ifdef REAL_T_IS_DOUBLE
 		case Variant::VECTOR2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::TRANSFORM2D:
 		case Variant::TRANSFORM3D:
+		case Variant::PROJECTION:
 		case Variant::QUATERNION:
 		case Variant::PLANE:
 		case Variant::BASIS:
@@ -1576,7 +1578,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					buf += len;
 				}
 				Variant *v = d.getptr(E);
-				ERR_FAIL_COND_V(!v, ERR_BUG);
+				ERR_FAIL_NULL_V(v, ERR_BUG);
 				err = encode_variant(*v, buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);

@@ -28,20 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "webxr_interface_js.h"
+
 #ifdef WEB_ENABLED
 
-#include "webxr_interface_js.h"
+#include "godot_webxr.h"
 
 #include "core/input/input.h"
 #include "core/os/os.h"
 #include "drivers/gles3/storage/texture_storage.h"
-#include "emscripten.h"
-#include "godot_webxr.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server_globals.h"
 
+#include <emscripten.h>
 #include <stdlib.h>
 
 void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
@@ -197,6 +198,30 @@ PackedVector3Array WebXRInterfaceJS::get_play_area() const {
 			ret.set(i, Vector3(js_vector3[0], js_vector3[1], js_vector3[2]));
 		}
 		free(points);
+	}
+
+	return ret;
+}
+
+float WebXRInterfaceJS::get_display_refresh_rate() const {
+	return godot_webxr_get_frame_rate();
+}
+
+void WebXRInterfaceJS::set_display_refresh_rate(float p_refresh_rate) {
+	godot_webxr_update_target_frame_rate(p_refresh_rate);
+}
+
+Array WebXRInterfaceJS::get_available_display_refresh_rates() const {
+	Array ret;
+
+	float *rates;
+	int rate_count = godot_webxr_get_supported_frame_rates(&rates);
+	if (rate_count > 0) {
+		ret.resize(rate_count);
+		for (int i = 0; i < rate_count; i++) {
+			ret[i] = rates[i];
+		}
+		free(rates);
 	}
 
 	return ret;

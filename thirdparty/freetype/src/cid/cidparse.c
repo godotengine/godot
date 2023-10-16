@@ -4,7 +4,7 @@
  *
  *   CID-keyed Type1 parser (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -214,18 +214,24 @@
            cur <= limit - STARTDATA_LEN                            &&
            ft_strncmp( (char*)cur, STARTDATA, STARTDATA_LEN ) == 0 )
       {
-        if ( ft_strncmp( (char*)arg1, "(Hex)", 5 ) == 0 )
+        T1_TokenRec  type_token;
+        FT_Long      binary_length;
+
+
+        parser->root.cursor = arg1;
+        cid_parser_to_token( parser, &type_token );
+        if ( type_token.limit - type_token.start == 5              &&
+             ft_memcmp( (char*)type_token.start, "(Hex)", 5 ) == 0 )
         {
-          FT_Long  tmp = ft_strtol( (const char *)arg2, NULL, 10 );
-
-
-          if ( tmp < 0 )
+          parser->root.cursor = arg2;
+          binary_length = cid_parser_to_int( parser );
+          if ( binary_length < 0 )
           {
             FT_ERROR(( "cid_parser_new: invalid length of hex data\n" ));
             error = FT_THROW( Invalid_File_Format );
           }
           else
-            parser->binary_length = (FT_ULong)tmp;
+            parser->binary_length = (FT_ULong)binary_length;
         }
 
         goto Exit;

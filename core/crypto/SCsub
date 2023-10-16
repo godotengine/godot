@@ -20,12 +20,13 @@ if is_builtin or not has_module:
 # Only if the module is not enabled, we must compile here the required sources
 # to make a "light" build with only the necessary mbedtls files.
 if not has_module:
-    env_thirdparty = env_crypto.Clone()
-    env_thirdparty.disable_warnings()
-    # Custom config file
-    env_thirdparty.Append(
+    # Minimal mbedTLS config file
+    env_crypto.Append(
         CPPDEFINES=[("MBEDTLS_CONFIG_FILE", '\\"thirdparty/mbedtls/include/godot_core_mbedtls_config.h\\"')]
     )
+    # Build minimal mbedTLS library (MD5/SHA/Base64/AES).
+    env_thirdparty = env_crypto.Clone()
+    env_thirdparty.disable_warnings()
     thirdparty_mbedtls_dir = "#thirdparty/mbedtls/library/"
     thirdparty_mbedtls_sources = [
         "aes.c",
@@ -40,8 +41,16 @@ if not has_module:
     ]
     thirdparty_mbedtls_sources = [thirdparty_mbedtls_dir + file for file in thirdparty_mbedtls_sources]
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_mbedtls_sources)
+    # Needed to force rebuilding the library when the configuration file is updated.
+    env_thirdparty.Depends(thirdparty_obj, "#thirdparty/mbedtls/include/godot_core_mbedtls_config.h")
     env.core_sources += thirdparty_obj
-
+elif is_builtin:
+    # Module mbedTLS config file
+    env_crypto.Append(
+        CPPDEFINES=[("MBEDTLS_CONFIG_FILE", '\\"thirdparty/mbedtls/include/godot_module_mbedtls_config.h\\"')]
+    )
+    # Needed to force rebuilding the core files when the configuration file is updated.
+    thirdparty_obj = ["#thirdparty/mbedtls/include/godot_module_mbedtls_config.h"]
 
 # Godot source files
 

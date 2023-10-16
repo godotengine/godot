@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Static constructor cannot have an explicit return type.

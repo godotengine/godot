@@ -51,39 +51,40 @@
  */
 #if defined(MBEDTLS_HAVE_INT32)
 
-#define MBEDTLS_BYTES_TO_T_UINT_4( a, b, c, d )               \
-    ( (mbedtls_mpi_uint) (a) <<  0 ) |                        \
-    ( (mbedtls_mpi_uint) (b) <<  8 ) |                        \
-    ( (mbedtls_mpi_uint) (c) << 16 ) |                        \
-    ( (mbedtls_mpi_uint) (d) << 24 )
+#define MBEDTLS_BYTES_TO_T_UINT_4(a, b, c, d)               \
+    ((mbedtls_mpi_uint) (a) <<  0) |                        \
+    ((mbedtls_mpi_uint) (b) <<  8) |                        \
+    ((mbedtls_mpi_uint) (c) << 16) |                        \
+    ((mbedtls_mpi_uint) (d) << 24)
 
-#define MBEDTLS_BYTES_TO_T_UINT_2( a, b )                   \
-    MBEDTLS_BYTES_TO_T_UINT_4( a, b, 0, 0 )
+#define MBEDTLS_BYTES_TO_T_UINT_2(a, b)                   \
+    MBEDTLS_BYTES_TO_T_UINT_4(a, b, 0, 0)
 
-#define MBEDTLS_BYTES_TO_T_UINT_8( a, b, c, d, e, f, g, h ) \
-    MBEDTLS_BYTES_TO_T_UINT_4( a, b, c, d ),                \
-    MBEDTLS_BYTES_TO_T_UINT_4( e, f, g, h )
+#define MBEDTLS_BYTES_TO_T_UINT_8(a, b, c, d, e, f, g, h) \
+    MBEDTLS_BYTES_TO_T_UINT_4(a, b, c, d),                \
+    MBEDTLS_BYTES_TO_T_UINT_4(e, f, g, h)
 
 #else /* 64-bits */
 
-#define MBEDTLS_BYTES_TO_T_UINT_8( a, b, c, d, e, f, g, h )   \
-    ( (mbedtls_mpi_uint) (a) <<  0 ) |                        \
-    ( (mbedtls_mpi_uint) (b) <<  8 ) |                        \
-    ( (mbedtls_mpi_uint) (c) << 16 ) |                        \
-    ( (mbedtls_mpi_uint) (d) << 24 ) |                        \
-    ( (mbedtls_mpi_uint) (e) << 32 ) |                        \
-    ( (mbedtls_mpi_uint) (f) << 40 ) |                        \
-    ( (mbedtls_mpi_uint) (g) << 48 ) |                        \
-    ( (mbedtls_mpi_uint) (h) << 56 )
+#define MBEDTLS_BYTES_TO_T_UINT_8(a, b, c, d, e, f, g, h)   \
+    ((mbedtls_mpi_uint) (a) <<  0) |                        \
+    ((mbedtls_mpi_uint) (b) <<  8) |                        \
+    ((mbedtls_mpi_uint) (c) << 16) |                        \
+    ((mbedtls_mpi_uint) (d) << 24) |                        \
+    ((mbedtls_mpi_uint) (e) << 32) |                        \
+    ((mbedtls_mpi_uint) (f) << 40) |                        \
+    ((mbedtls_mpi_uint) (g) << 48) |                        \
+    ((mbedtls_mpi_uint) (h) << 56)
 
-#define MBEDTLS_BYTES_TO_T_UINT_4( a, b, c, d )             \
-    MBEDTLS_BYTES_TO_T_UINT_8( a, b, c, d, 0, 0, 0, 0 )
+#define MBEDTLS_BYTES_TO_T_UINT_4(a, b, c, d)             \
+    MBEDTLS_BYTES_TO_T_UINT_8(a, b, c, d, 0, 0, 0, 0)
 
-#define MBEDTLS_BYTES_TO_T_UINT_2( a, b )                   \
-    MBEDTLS_BYTES_TO_T_UINT_8( a, b, 0, 0, 0, 0, 0, 0 )
+#define MBEDTLS_BYTES_TO_T_UINT_2(a, b)                   \
+    MBEDTLS_BYTES_TO_T_UINT_8(a, b, 0, 0, 0, 0, 0, 0)
 
 #endif /* bits in mbedtls_mpi_uint */
 
+/* *INDENT-OFF* */
 #if defined(MBEDTLS_HAVE_ASM)
 
 #ifndef asm
@@ -676,6 +677,15 @@
 #if defined(__arm__) && !defined(MULADDC_CANNOT_USE_R7)
 
 #if defined(__thumb__) && !defined(__thumb2__)
+#if !defined(__ARMCC_VERSION) && !defined(__clang__) \
+    && !defined(__llvm__) && !defined(__INTEL_COMPILER)
+/*
+ * Thumb 1 ISA. This code path has only been tested successfully on gcc;
+ * it does not compile on clang or armclang.
+ *
+ * Other compilers which define __GNUC__ may not work. The above macro
+ * attempts to exclude these untested compilers.
+ */
 
 #define MULADDC_INIT                                    \
     asm(                                                \
@@ -729,6 +739,8 @@
          : "r0", "r1", "r2", "r3", "r4", "r5",  \
            "r6", "r7", "r8", "r9", "cc"         \
          );
+
+#endif /* Compiler is gcc */
 
 #elif (__ARM_ARCH >= 6) && \
     defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1)
@@ -1001,4 +1013,5 @@
 #endif /* C (generic)  */
 #endif /* C (longlong) */
 
+/* *INDENT-ON* */
 #endif /* bn_mul.h */

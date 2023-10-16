@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OS" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Operating System functions.
+		Provides access to common operating system functionalities.
 	</brief_description>
 	<description>
-		Operating System functions. [OS] wraps the most common functionality to communicate with the host operating system, such as the video driver, delays, environment variables, execution of binaries, command line, etc.
+		This class wraps the most common functionalities for communicating with the host operating system, such as the video driver, delays, environment variables, execution of binaries, command line, etc.
 		[b]Note:[/b] In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.
 	</description>
 	<tutorials>
@@ -91,7 +91,7 @@
 			<param index="3" name="read_stderr" type="bool" default="false" />
 			<param index="4" name="open_console" type="bool" default="false" />
 			<description>
-				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
+				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order, separated by spaces, and wrapped in quotes. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
 				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
@@ -240,8 +240,8 @@
 		<method name="get_granted_permissions" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				With this function, you can get the list of dangerous permissions that have been granted to the Android application.
-				[b]Note:[/b] This method is implemented on Android.
+				On Android devices: With this function, you can get the list of dangerous permissions that have been granted.
+				On macOS (sandboxed applications only): This function returns the list of user selected folders accessible to the application. Use native file dialog to request folder access permission.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -257,7 +257,7 @@
 			<description>
 				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code]. If you want only the language code and not the fully specified locale from the OS, you can use [method get_locale_language].
 				[code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
-				[code]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
+				[code skip-lint]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
 				[code]COUNTRY[/code] - optional, 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
 				[code]VARIANT[/code] - optional, language variant, region and sort order. Variant can have any number of underscored keywords.
 				[code]extra[/code] - optional, semicolon separated list of additional key words. Currency, calendar, sort order and numbering system information.
@@ -277,6 +277,16 @@
 				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
 			</description>
 		</method>
+		<method name="get_memory_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the [Dictionary] with the following keys:
+				[code]"physical"[/code] - total amount of usable physical memory, in bytes or [code]-1[/code] if unknown. This value can be slightly less than the actual physical memory amount, since it does not include memory reserved by kernel and devices.
+				[code]"free"[/code] - amount of physical memory, that can be immediately allocated without disk access or other costly operation, in bytes or [code]-1[/code] if unknown. The process might be able to allocate more physical memory, but such allocation will require moving inactive pages to disk and can take some time.
+				[code]"available"[/code] - amount of memory, that can be allocated without extending the swap file(s), in bytes or [code]-1[/code] if unknown. This value include both physical memory and swap.
+				[code]"stack"[/code] - size of the current thread stack, in bytes or [code]-1[/code] if unknown.
+			</description>
+		</method>
 		<method name="get_model_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -288,7 +298,7 @@
 			<return type="String" />
 			<description>
 				Returns the name of the host OS.
-				On Windows, this is [code]"Windows"[/code] or [code]"UWP"[/code] if exported on Universal Windows Platform.
+				On Windows, this is [code]"Windows"[/code].
 				On macOS, this is [code]"macOS"[/code].
 				On Linux-based operating systems, this is [code]"Linux"[/code].
 				On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
@@ -299,7 +309,7 @@
 				[codeblocks]
 				[gdscript]
 				match OS.get_name():
-				    "Windows", "UWP":
+				    "Windows":
 				        print("Windows")
 				    "macOS":
 				        print("macOS")
@@ -316,7 +326,6 @@
 				switch (OS.GetName())
 				{
 				    case "Windows":
-				    case "UWP":
 				        GD.Print("Windows");
 				        break;
 				    case "macOS":
@@ -325,7 +334,7 @@
 				    case "Linux":
 				    case "FreeBSD":
 				    case "NetBSD":
-				    case "OpenBSD"
+				    case "OpenBSD":
 				    case "BSD":
 				        GD.Print("Linux/BSD");
 				        break;
@@ -360,7 +369,7 @@
 			<return type="String" />
 			<description>
 				Returns the name of the CPU model on the host machine (e.g. "Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz").
-				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android, Web and UWP, [method get_processor_name] returns an empty string.
+				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android and Web, [method get_processor_name] returns an empty string.
 			</description>
 		</method>
 		<method name="get_restart_on_exit_arguments" qualifiers="const">
@@ -416,7 +425,7 @@
 			<description>
 				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
-				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts is suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
+				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts will be suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
 				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
@@ -440,7 +449,7 @@
 			<description>
 				Returns a string that is unique to the device.
 				[b]Note:[/b] This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.
-				[b]Note:[/b] Returns an empty string on Web and UWP, as this method isn't implemented on those platforms yet.
+				[b]Note:[/b] Returns an empty string and prints an error on Web, as this method cannot be implemented on this platform.
 			</description>
 		</method>
 		<method name="get_user_data_dir" qualifiers="const">
@@ -463,7 +472,6 @@
 				For Windows, the major and minor version are returned, as well as the build number. For example, the returned string can look like [code]10.0.9926[/code] for a build of Windows 10, and it can look like [code]6.1.7601[/code] for a build of Windows 7 SP1.
 				For rolling distributions, such as Arch Linux, an empty string is returned.
 				For macOS and iOS, the major and minor version are returned, as well as the patch number.
-				For UWP, the device family version is returned.
 				For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
 				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
 			</description>
@@ -471,7 +479,7 @@
 		<method name="get_video_adapter_driver_info" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the video adapter driver name and version for the user's currently active graphics card.
+				Returns the video adapter driver name and version for the user's currently active graphics card. See also [method RenderingServer.get_video_adapter_api_version].
 				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
 				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
 				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows when not running in headless mode. It returns an empty array on other platforms.
@@ -491,6 +499,7 @@
 			<description>
 				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
+				[b]Note:[/b] On the web platform, one of the following additional tags is defined to indicate host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
 			</description>
 		</method>
 		<method name="is_debug_build" qualifiers="const">
@@ -521,6 +530,13 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the project will automatically restart when it exits for any reason, [code]false[/code] otherwise. See also [method set_restart_on_exit] and [method get_restart_on_exit_arguments].
+			</description>
+		</method>
+		<method name="is_sandboxed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if application is running in the sandbox.
+				[b]Note:[/b] This method is implemented on macOS and Linux.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
@@ -588,7 +604,13 @@
 			<return type="bool" />
 			<description>
 				With this function, you can request dangerous permissions since normal permissions are automatically granted at install time in Android applications.
-				[b]Note:[/b] This method is implemented on Android.
+				[b]Note:[/b] This method is implemented only on Android.
+			</description>
+		</method>
+		<method name="revoke_granted_permissions">
+			<return type="void" />
+			<description>
+				On macOS (sandboxed applications only), this function clears list of user selected folders accessible to the application.
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">
@@ -638,6 +660,17 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="shell_show_in_file_manager">
+			<return type="int" enum="Error" />
+			<param index="0" name="file_or_dir_path" type="String" />
+			<param index="1" name="open_folder" type="bool" default="true" />
+			<description>
+				Requests the OS to open the file manager, then navigate to the given [param file_or_dir_path] and select the target file or folder.
+				If [param file_or_dir_path] is a valid directory path, and [param open_folder] is [code]true[/code], the method will open the file manager and enter the target folder without selecting anything.
+				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
+				[b]Note:[/b] Currently this method is only implemented on Windows and macOS. On other platforms, it will fallback to [method shell_open] with a directory path of [param file_or_dir_path] with prefix [code]file://[/code].
+			</description>
+		</method>
 		<method name="unset_environment" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="variable" type="String" />
@@ -648,6 +681,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="delta_smoothing" type="bool" setter="set_delta_smoothing" getter="is_delta_smoothing_enabled" default="true">
+			If [code]true[/code], the engine filters the time delta measured between each frame, and attempts to compensate for random variation. This will only operate on systems where V-Sync is active.
+		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>

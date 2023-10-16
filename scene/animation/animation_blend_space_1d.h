@@ -114,10 +114,10 @@ public:
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
-	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 	String get_caption() const override;
 
-	Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
+	Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
 
 	AnimationNodeBlendSpace1D();
 	~AnimationNodeBlendSpace1D();

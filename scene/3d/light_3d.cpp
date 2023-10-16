@@ -172,10 +172,6 @@ AABB Light3D::get_aabb() const {
 PackedStringArray Light3D::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
-	if (has_shadow() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("Shadows are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
-	}
-
 	if (!get_scale().is_equal_approx(Vector3(1, 1, 1))) {
 		warnings.push_back(RTR("A light's scale does not affect the visual size of the light."));
 	}
@@ -284,6 +280,9 @@ void Light3D::_update_visibility() {
 
 void Light3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			update_configuration_warnings();
+		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			_update_visibility();

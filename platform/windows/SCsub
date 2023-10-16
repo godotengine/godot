@@ -16,7 +16,9 @@ common_win = [
     "tts_windows.cpp",
     "windows_terminal_logger.cpp",
     "vulkan_context_win.cpp",
-    "gl_manager_windows.cpp",
+    "gl_manager_windows_native.cpp",
+    "gl_manager_windows_angle.cpp",
+    "wgl_detect_version.cpp",
 ]
 
 common_win_wrap = [
@@ -44,6 +46,7 @@ if env["windows_subsystem"] == "gui":
         env_wrap.Append(LIBS=["version"])
 
     prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
+    env_wrap.Depends(prog_wrap, prog)
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:

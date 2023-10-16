@@ -7,8 +7,6 @@ namespace msdfgen {
 class SignedDistance {
 
 public:
-    static const SignedDistance INFINITE;
-
     double distance;
     double dot;
 

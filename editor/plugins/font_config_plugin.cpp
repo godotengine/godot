@@ -156,7 +156,7 @@ void EditorPropertyFontMetaOverride::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (button_add) {
-				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+				button_add->set_icon(get_editor_theme_icon(SNAME("Add")));
 			}
 		} break;
 	}
@@ -227,7 +227,7 @@ void EditorPropertyFontMetaOverride::_object_id_selected(const StringName &p_pro
 }
 
 void EditorPropertyFontMetaOverride::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	Dictionary dict = updated_val;
 
@@ -302,7 +302,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 			Button *remove = memnew(Button);
-			remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			remove->set_icon(get_editor_theme_icon(SNAME("Remove")));
 			hbox->add_child(remove);
 			remove->connect("pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_remove).bind(remove, name));
 
@@ -330,7 +330,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 }
 
 void EditorPropertyFontMetaOverride::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL) {
 		Callable::CallError ce;
 		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
@@ -415,7 +415,7 @@ void EditorPropertyOTVariation::_object_id_selected(const StringName &p_property
 }
 
 void EditorPropertyOTVariation::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	Dictionary dict = updated_val;
 
@@ -511,7 +511,7 @@ void EditorPropertyOTVariation::update_property() {
 }
 
 void EditorPropertyOTVariation::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL) {
 		Callable::CallError ce;
 		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
@@ -552,7 +552,7 @@ void EditorPropertyOTFeatures::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (button_add) {
-				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+				button_add->set_icon(get_editor_theme_icon(SNAME("Add")));
 			}
 		} break;
 	}
@@ -607,7 +607,7 @@ void EditorPropertyOTFeatures::_object_id_selected(const StringName &p_property,
 }
 
 void EditorPropertyOTFeatures::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	Dictionary dict = updated_val;
 
@@ -670,7 +670,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 
 		// Update add menu items.
-		menu->clear();
+		menu->clear(false);
 		bool have_sub[FGRP_MAX];
 		for (int i = 0; i < FGRP_MAX; i++) {
 			menu_sub[i]->clear();
@@ -789,7 +789,7 @@ void EditorPropertyOTFeatures::update_property() {
 				hbox->add_child(prop);
 				prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				Button *remove = memnew(Button);
-				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+				remove->set_icon(get_editor_theme_icon(SNAME("Remove")));
 				hbox->add_child(remove);
 				remove->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_remove).bind(remove, name_tag));
 
@@ -798,7 +798,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 
 		button_add = EditorInspector::create_inspector_action_button(TTR("Add Feature"));
-		button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		button_add->set_icon(get_editor_theme_icon(SNAME("Add")));
 		button_add->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_menu));
 		property_vbox->add_child(button_add);
 
@@ -814,7 +814,7 @@ void EditorPropertyOTFeatures::update_property() {
 }
 
 void EditorPropertyOTFeatures::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL) {
 		Callable::CallError ce;
 		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
@@ -970,7 +970,7 @@ bool EditorInspectorPluginFontPreview::can_handle(Object *p_object) {
 
 void EditorInspectorPluginFontPreview::parse_begin(Object *p_object) {
 	Font *fd = Object::cast_to<Font>(p_object);
-	ERR_FAIL_COND(!fd);
+	ERR_FAIL_NULL(fd);
 
 	FontPreview *editor = memnew(FontPreview);
 	editor->set_data(fd);
@@ -1020,6 +1020,7 @@ EditorPropertyFontNamesArray::EditorPropertyFontNamesArray() {
 
 	if (OS::get_singleton()) {
 		Vector<String> fonts = OS::get_singleton()->get_system_fonts();
+		fonts.sort();
 		for (int i = 0; i < fonts.size(); i++) {
 			menu->add_item(fonts[i], i + 6);
 		}

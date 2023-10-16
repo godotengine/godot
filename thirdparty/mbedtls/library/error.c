@@ -207,20 +207,20 @@
 #endif
 
 
-const char * mbedtls_high_level_strerr( int error_code )
+const char *mbedtls_high_level_strerr(int error_code)
 {
     int high_level_error_code;
 
-    if( error_code < 0 )
+    if (error_code < 0) {
         error_code = -error_code;
+    }
 
     /* Extract the high-level part from the error code. */
     high_level_error_code = error_code & 0xFF80;
 
-    switch( high_level_error_code )
-    {
-        /* Begin Auto-Generated Code. */
-#if defined(MBEDTLS_CIPHER_C)
+    switch (high_level_error_code) {
+    /* Begin Auto-Generated Code. */
+    #if defined(MBEDTLS_CIPHER_C)
         case -(MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE):
             return( "CIPHER - The selected feature is not available" );
         case -(MBEDTLS_ERR_CIPHER_BAD_INPUT_DATA):
@@ -568,23 +568,23 @@ const char * mbedtls_high_level_strerr( int error_code )
             break;
     }
 
-    return( NULL );
+    return NULL;
 }
 
-const char * mbedtls_low_level_strerr( int error_code )
+const char *mbedtls_low_level_strerr(int error_code)
 {
     int low_level_error_code;
 
-    if( error_code < 0 )
+    if (error_code < 0) {
         error_code = -error_code;
+    }
 
     /* Extract the low-level part from the error code. */
     low_level_error_code = error_code & ~0xFF80;
 
-    switch( low_level_error_code )
-    {
-        /* Begin Auto-Generated Code. */
-#if defined(MBEDTLS_AES_C)
+    switch (low_level_error_code) {
+    /* Begin Auto-Generated Code. */
+    #if defined(MBEDTLS_AES_C)
         case -(MBEDTLS_ERR_AES_INVALID_KEY_LENGTH):
             return( "AES - Invalid key length" );
         case -(MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH):
@@ -886,72 +886,77 @@ const char * mbedtls_low_level_strerr( int error_code )
             break;
     }
 
-    return( NULL );
+    return NULL;
 }
 
-void mbedtls_strerror( int ret, char *buf, size_t buflen )
+void mbedtls_strerror(int ret, char *buf, size_t buflen)
 {
     size_t len;
     int use_ret;
-    const char * high_level_error_description = NULL;
-    const char * low_level_error_description = NULL;
+    const char *high_level_error_description = NULL;
+    const char *low_level_error_description = NULL;
 
-    if( buflen == 0 )
+    if (buflen == 0) {
         return;
+    }
 
-    memset( buf, 0x00, buflen );
+    memset(buf, 0x00, buflen);
 
-    if( ret < 0 )
+    if (ret < 0) {
         ret = -ret;
+    }
 
-    if( ret & 0xFF80 )
-    {
+    if (ret & 0xFF80) {
         use_ret = ret & 0xFF80;
 
         // Translate high level error code.
-        high_level_error_description = mbedtls_high_level_strerr( ret );
+        high_level_error_description = mbedtls_high_level_strerr(ret);
 
-        if( high_level_error_description == NULL )
-            mbedtls_snprintf( buf, buflen, "UNKNOWN ERROR CODE (%04X)", (unsigned int) use_ret );
-        else
-            mbedtls_snprintf( buf, buflen, "%s", high_level_error_description );
+        if (high_level_error_description == NULL) {
+            mbedtls_snprintf(buf, buflen, "UNKNOWN ERROR CODE (%04X)", (unsigned int) use_ret);
+        } else {
+            mbedtls_snprintf(buf, buflen, "%s", high_level_error_description);
+        }
 
 #if defined(MBEDTLS_SSL_TLS_C)
         // Early return in case of a fatal error - do not try to translate low
         // level code.
-        if(use_ret == -(MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE))
+        if (use_ret == -(MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE)) {
             return;
+        }
 #endif /* MBEDTLS_SSL_TLS_C */
     }
 
     use_ret = ret & ~0xFF80;
 
-    if( use_ret == 0 )
+    if (use_ret == 0) {
         return;
+    }
 
     // If high level code is present, make a concatenation between both
     // error strings.
     //
-    len = strlen( buf );
+    len = strlen(buf);
 
-    if( len > 0 )
-    {
-        if( buflen - len < 5 )
+    if (len > 0) {
+        if (buflen - len < 5) {
             return;
+        }
 
-        mbedtls_snprintf( buf + len, buflen - len, " : " );
+        mbedtls_snprintf(buf + len, buflen - len, " : ");
 
         buf += len + 3;
         buflen -= len + 3;
     }
 
     // Translate low level error code.
-    low_level_error_description = mbedtls_low_level_strerr( ret );
+    low_level_error_description = mbedtls_low_level_strerr(ret);
 
-    if( low_level_error_description == NULL )
-        mbedtls_snprintf( buf, buflen, "UNKNOWN ERROR CODE (%04X)", (unsigned int) use_ret );
-    else
-        mbedtls_snprintf( buf, buflen, "%s", low_level_error_description );
+    if (low_level_error_description == NULL) {
+        mbedtls_snprintf(buf, buflen, "UNKNOWN ERROR CODE (%04X)", (unsigned int) use_ret);
+    } else {
+        mbedtls_snprintf(buf, buflen, "%s", low_level_error_description);
+    }
 }
 
 #else /* MBEDTLS_ERROR_C */
@@ -959,18 +964,19 @@ void mbedtls_strerror( int ret, char *buf, size_t buflen )
 /*
  * Provide a dummy implementation when MBEDTLS_ERROR_C is not defined
  */
-void mbedtls_strerror( int ret, char *buf, size_t buflen )
+void mbedtls_strerror(int ret, char *buf, size_t buflen)
 {
     ((void) ret);
 
-    if( buflen > 0 )
+    if (buflen > 0) {
         buf[0] = '\0';
+    }
 }
 
 #endif /* MBEDTLS_ERROR_C */
 
 #if defined(MBEDTLS_TEST_HOOKS)
-void (*mbedtls_test_hook_error_add)( int, int, const char *, int );
+void (*mbedtls_test_hook_error_add)(int, int, const char *, int);
 #endif
 
 #endif /* MBEDTLS_ERROR_C || MBEDTLS_ERROR_STRERROR_DUMMY */

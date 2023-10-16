@@ -233,6 +233,7 @@ static void GradientUnfilter_C(const uint8_t* prev, const uint8_t* in,
 WebPFilterFunc WebPFilters[WEBP_FILTER_LAST];
 WebPUnfilterFunc WebPUnfilters[WEBP_FILTER_LAST];
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8FiltersInitMIPSdspR2(void);
 extern void VP8FiltersInitMSA(void);
 extern void VP8FiltersInitNEON(void);

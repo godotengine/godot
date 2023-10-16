@@ -105,6 +105,7 @@ private:
 
 	static bool default_show_hidden_files;
 	bool show_hidden_files = false;
+	bool use_native_dialog = false;
 
 	bool is_invalidating = false;
 
@@ -158,17 +159,21 @@ private:
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
+	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter);
+
 	bool _is_open_should_be_disabled();
 
 	virtual void _post_popup() override;
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
-	//bind helpers
+
 public:
+	virtual void set_visible(bool p_visible) override;
+	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
+
 	void popup_file_dialog();
 	void clear_filters();
 	void add_filter(const String &p_filter, const String &p_description = "");
@@ -190,6 +195,9 @@ public:
 
 	void set_mode_overrides_title(bool p_override);
 	bool is_mode_overriding_title() const;
+
+	void set_use_native_dialog(bool p_native);
+	bool get_use_native_dialog() const;
 
 	void set_file_mode(FileMode p_mode);
 	FileMode get_file_mode() const;

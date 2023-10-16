@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "tts_ios.h"
+#import "tts_ios.h"
 
 @implementation TTS_IOS
 

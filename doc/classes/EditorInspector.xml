@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInspector" inherits="ScrollContainer" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorInspector" inherits="ScrollContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A control used to edit properties of an object.
 	</brief_description>
@@ -14,6 +14,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_edited_object">
+			<return type="Object" />
+			<description>
+				Returns the object currently selected in this inspector.
+			</description>
+		</method>
 		<method name="get_selected_path" qualifiers="const">
 			<return type="String" />
 			<description>

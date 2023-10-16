@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSceneFormatImporter" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorSceneFormatImporter" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Imports scenes from third-parties' 3D files.
 	</brief_description>
@@ -55,6 +55,8 @@
 		<constant name="IMPORT_USE_NAMED_SKIN_BINDS" value="16">
 		</constant>
 		<constant name="IMPORT_DISCARD_MESHES_AND_MATERIALS" value="32">
+		</constant>
+		<constant name="IMPORT_FORCE_DISABLE_MESH_COMPRESSION" value="64">
 		</constant>
 	</constants>
 </class>

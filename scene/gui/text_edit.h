@@ -172,6 +172,7 @@ private:
 
 		String language;
 		TextServer::Direction direction = TextServer::DIRECTION_AUTO;
+		BitField<TextServer::LineBreakFlag> brk_flags = TextServer::BREAK_MANDATORY;
 		bool draw_control_chars = false;
 
 		int line_height = -1;
@@ -198,6 +199,8 @@ private:
 
 		void set_width(float p_width);
 		float get_width() const;
+		void set_brk_flags(BitField<TextServer::LineBreakFlag> p_flags);
+		BitField<TextServer::LineBreakFlag> get_brk_flags() const;
 		int get_line_wrap_amount(int p_line) const;
 
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
@@ -356,9 +359,6 @@ private:
 	void _clear_redo();
 
 	/* Search */
-	Color search_result_color = Color(1, 1, 1);
-	Color search_result_border_color = Color(1, 1, 1);
-
 	String search_text = "";
 	uint32_t search_flags = 0;
 
@@ -413,19 +413,17 @@ private:
 	bool caret_pos_dirty = false;
 	bool caret_index_edit_dirty = true;
 
-	Color caret_color = Color(1, 1, 1);
-	Color caret_background_color = Color(0, 0, 0);
-
 	CaretType caret_type = CaretType::CARET_TYPE_LINE;
 
 	bool draw_caret = true;
+	bool draw_caret_when_editable_disabled = false;
 
 	bool caret_blink_enabled = false;
 	Timer *caret_blink_timer = nullptr;
 
 	bool move_caret_on_right_click = true;
 
-	bool caret_mid_grapheme_enabled = true;
+	bool caret_mid_grapheme_enabled = false;
 
 	bool multi_carets_enabled = true;
 
@@ -446,8 +444,6 @@ private:
 	bool deselect_on_focus_loss_enabled = true;
 	bool drag_and_drop_selection_enabled = true;
 
-	Color font_selected_color = Color(0, 0, 0, 0);
-	Color selection_color = Color(1, 1, 1);
 	bool use_selected_font_color = false;
 
 	bool selection_drag_attempt = false;
@@ -467,6 +463,7 @@ private:
 
 	/* Line wrapping. */
 	LineWrappingMode line_wrapping_mode = LineWrappingMode::LINE_WRAPPING_NONE;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
 	int wrap_at_column = 0;
 	int wrap_right_offset = 10;
@@ -543,27 +540,45 @@ private:
 	Dictionary _get_line_syntax_highlighting(int p_line);
 
 	/* Visual. */
-	Ref<StyleBox> style_normal;
-	Ref<StyleBox> style_focus;
-	Ref<StyleBox> style_readonly;
+	struct ThemeCache {
+		float base_scale = 1.0;
 
-	Ref<Texture2D> tab_icon;
-	Ref<Texture2D> space_icon;
+		/* Search */
+		Color search_result_color = Color(1, 1, 1);
+		Color search_result_border_color = Color(1, 1, 1);
 
-	Ref<Font> font;
-	int font_size = 16;
-	Color font_color = Color(1, 1, 1);
-	Color font_readonly_color = Color(1, 1, 1);
-	Color font_placeholder_color = Color(1, 1, 1, 0.6);
+		/* Caret */
+		int caret_width = 1;
+		Color caret_color = Color(1, 1, 1);
+		Color caret_background_color = Color(0, 0, 0);
 
-	int outline_size = 0;
-	Color outline_color = Color(1, 1, 1);
+		/* Selection */
+		Color font_selected_color = Color(0, 0, 0, 0);
+		Color selection_color = Color(1, 1, 1);
 
-	int line_spacing = 1;
+		/* Other visuals */
+		Ref<StyleBox> style_normal;
+		Ref<StyleBox> style_focus;
+		Ref<StyleBox> style_readonly;
 
-	Color background_color = Color(1, 1, 1);
-	Color current_line_color = Color(1, 1, 1);
-	Color word_highlighted_color = Color(1, 1, 1);
+		Ref<Texture2D> tab_icon;
+		Ref<Texture2D> space_icon;
+
+		Ref<Font> font;
+		int font_size = 16;
+		Color font_color = Color(1, 1, 1);
+		Color font_readonly_color = Color(1, 1, 1);
+		Color font_placeholder_color = Color(1, 1, 1, 0.6);
+
+		int outline_size = 0;
+		Color outline_color = Color(1, 1, 1);
+
+		int line_spacing = 1;
+
+		Color background_color = Color(1, 1, 1);
+		Color current_line_color = Color(1, 1, 1);
+		Color word_highlighted_color = Color(1, 1, 1);
+	} theme_cache;
 
 	bool window_has_focus = true;
 	bool first_draw = true;
@@ -607,11 +622,12 @@ private:
 
 protected:
 	void _notification(int p_what);
-
 	static void _bind_methods();
 
+	virtual void _update_theme_item_cache() override;
+
 	/* Internal API for CodeEdit, pending public API. */
-	// brace matching
+	// Brace matching.
 	struct BraceMatchingData {
 		int open_match_line = -1;
 		int open_match_column = -1;
@@ -624,12 +640,8 @@ protected:
 	};
 
 	bool highlight_matching_braces_enabled = false;
-	Color brace_mismatch_color;
 
 	// Line hiding.
-	Color code_folding_color = Color(1, 1, 1);
-	Ref<Texture2D> folded_eol_icon;
-
 	bool hiding_enabled = false;
 
 	void _set_hiding_enabled(bool p_enabled);
@@ -643,6 +655,11 @@ protected:
 	// Symbol lookup.
 	String lookup_symbol_word;
 	void _set_symbol_lookup_word(const String &p_symbol);
+
+	// Theme items.
+	virtual Color _get_brace_mismatch_color() const { return Color(); };
+	virtual Color _get_code_folding_color() const { return Color(); };
+	virtual Ref<Texture2D> _get_folded_eol_icon() const { return Ref<Texture2D>(); };
 
 	/* Text manipulation */
 
@@ -809,6 +826,9 @@ public:
 	void set_caret_blink_interval(const float p_interval);
 	float get_caret_blink_interval() const;
 
+	void set_draw_caret_when_editable_disabled(bool p_enable);
+	bool is_drawing_caret_when_editable_disabled() const;
+
 	void set_move_caret_on_right_click_enabled(const bool p_enabled);
 	bool is_move_caret_on_right_click_enabled() const;
 
@@ -877,6 +897,9 @@ public:
 	/* Line wrapping. */
 	void set_line_wrapping_mode(LineWrappingMode p_wrapping_mode);
 	LineWrappingMode get_line_wrapping_mode() const;
+
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	bool is_line_wrapped(int p_line) const;
 	int get_line_wrap_count(int p_line) const;
@@ -1003,6 +1026,8 @@ public:
 
 	void set_draw_spaces(bool p_enabled);
 	bool is_drawing_spaces() const;
+
+	Color get_font_color() const;
 
 	TextEdit(const String &p_placeholder = String());
 };

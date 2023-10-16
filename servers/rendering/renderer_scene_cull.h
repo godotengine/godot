@@ -42,6 +42,7 @@
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/utilities.h"
 #include "servers/xr/xr_interface.h"
 
@@ -505,6 +506,9 @@ public:
 					}
 
 				} break;
+				default: {
+					// Ignored notifications.
+				} break;
 			}
 		}
 
@@ -516,6 +520,29 @@ public:
 			} else if (p_dependency == instance->skeleton) {
 				singleton->instance_attach_skeleton(instance->self, RID());
 			} else {
+				// It's possible the same material is used in multiple slots,
+				// so we check whether we need to clear them all.
+				if (p_dependency == instance->material_override) {
+					singleton->instance_geometry_set_material_override(instance->self, RID());
+				}
+				if (p_dependency == instance->material_overlay) {
+					singleton->instance_geometry_set_material_overlay(instance->self, RID());
+				}
+				for (int i = 0; i < instance->materials.size(); i++) {
+					if (p_dependency == instance->materials[i]) {
+						singleton->instance_set_surface_override_material(instance->self, i, RID());
+					}
+				}
+				if (instance->base_type == RS::INSTANCE_PARTICLES) {
+					RID particle_material = RSG::particles_storage->particles_get_process_material(instance->base);
+					if (p_dependency == particle_material) {
+						RSG::particles_storage->particles_set_process_material(instance->base, RID());
+					}
+				}
+
+				// Even if no change is made we still need to call `_instance_queue_update`.
+				// This dependency could also be a result of the freed material being used
+				// by the mesh this mesh instance uses.
 				singleton->_instance_queue_update(instance, false, true);
 			}
 		}
@@ -927,8 +954,7 @@ public:
 
 	uint32_t geometry_instance_pair_mask = 0; // used in traditional forward, unnecessary on clustered
 
-	const int TAA_JITTER_COUNT = 16;
-	LocalVector<Vector2> taa_jitter_array;
+	LocalVector<Vector2> camera_jitter_array;
 
 	virtual RID instance_allocate();
 	virtual void instance_initialize(RID p_rid);
@@ -1062,7 +1088,7 @@ public:
 	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
-	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	void update_dirty_instances();
 
 	void render_particle_colliders();

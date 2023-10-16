@@ -202,7 +202,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 	return OK;
 }
 
-static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, List<String> *r_missing_deps) {
+static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, bool p_disable_compression, List<String> *r_missing_deps) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
 
@@ -226,7 +226,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
 	Vector3 offset_mesh = p_offset_mesh;
-	int mesh_flags = 0;
+	uint64_t mesh_flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+
+	if (p_disable_compression) {
+		mesh_flags = 0;
+	}
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
@@ -245,6 +249,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	String current_group;
 	uint32_t smooth_group = 0;
 	bool smoothing = true;
+	const uint32_t no_smoothing_smooth_group = (uint32_t)-1;
 
 	while (true) {
 		String l = f->get_line().strip_edges();
@@ -266,7 +271,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			vtx.z = v[3].to_float() * scale_mesh.z + offset_mesh.z;
 			vertices.push_back(vtx);
 			//vertex color
-			if (v.size() == 7) {
+			if (v.size() >= 7) {
 				while (colors.size() < vertices.size() - 1) {
 					colors.push_back(Color(1.0, 1.0, 1.0));
 				}
@@ -286,7 +291,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			uv.x = v[1].to_float();
 			uv.y = 1.0 - v[2].to_float();
 			uvs.push_back(uv);
-
 		} else if (l.begins_with("vn ")) {
 			//normal
 			Vector<String> v = l.split(" ", false);
@@ -349,10 +353,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 					if (!colors.is_empty()) {
 						surf_tool->set_color(colors[vtx]);
 					}
-					if (!smoothing) {
-						smooth_group++;
-					}
-					surf_tool->set_smooth_group(smooth_group);
+					surf_tool->set_smooth_group(smoothing ? smooth_group : no_smoothing_smooth_group);
 					surf_tool->add_vertex(vertex);
 				}
 
@@ -367,8 +368,10 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				do_smooth = true;
 			}
 			if (do_smooth != smoothing) {
-				smooth_group++;
 				smoothing = do_smooth;
+				if (smoothing) {
+					smooth_group++;
+				}
 			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
 			//groups are too annoying
@@ -380,6 +383,9 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 				if (generate_tangents && uvs.size()) {
 					surf_tool->generate_tangents();
+				} else {
+					// We need tangents in order to compress vertex data. So disable if tangents aren't generated.
+					mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 				}
 
 				surf_tool->index();
@@ -464,7 +470,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
 	List<Ref<Mesh>> meshes;
 
-	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, false, Vector3(1, 1, 1), Vector3(0, 0, 0), r_missing_deps);
+	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, false, Vector3(1, 1, 1), Vector3(0, 0, 0), p_flags & IMPORT_FORCE_DISABLE_MESH_COMPRESSION, r_missing_deps);
 
 	if (err != OK) {
 		if (r_err) {
@@ -480,7 +486,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, co
 		mesh.instantiate();
 		mesh->set_name(m->get_name());
 		for (int i = 0; i < m->get_surface_count(); i++) {
-			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
+			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i), String(), m->surface_get_format(i));
 		}
 
 		ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
@@ -543,6 +549,7 @@ void ResourceImporterOBJ::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimize_mesh"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_disable_mesh_compression"), false));
 }
 
 bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
@@ -552,7 +559,7 @@ bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const Stri
 Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	List<Ref<Mesh>> meshes;
 
-	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], nullptr);
+	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], p_options["force_disable_mesh_compression"], nullptr);
 
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(meshes.size() != 1, ERR_BUG);

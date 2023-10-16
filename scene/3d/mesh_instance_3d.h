@@ -88,8 +88,8 @@ public:
 	Node *create_convex_collision_node(bool p_clean = true, bool p_simplify = false);
 	void create_convex_collision(bool p_clean = true, bool p_simplify = false);
 
-	Node *create_multiple_convex_collisions_node();
-	void create_multiple_convex_collisions();
+	Node *create_multiple_convex_collisions_node(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
+	void create_multiple_convex_collisions(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
 
 	MeshInstance3D *create_debug_tangents_node();
 	void create_debug_tangents();

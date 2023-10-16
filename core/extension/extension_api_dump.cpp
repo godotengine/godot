@@ -32,12 +32,14 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
+#include "core/extension/gdextension_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/templates/pair.h"
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {
@@ -87,7 +89,16 @@ static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
 	return argmeta[metadata];
 }
 
-Dictionary GDExtensionAPIDump::generate_extension_api() {
+static String fix_doc_description(const String &p_bbcode) {
+	// Based on what EditorHelp does.
+
+	return p_bbcode.dedent()
+			.replace("\t", "")
+			.replace("\r", "")
+			.strip_edges();
+}
+
+Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	Dictionary api_dump;
 
 	{
@@ -459,11 +470,21 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 		api_dump["builtin_class_member_offsets"] = core_type_member_offsets;
 	}
 
+	if (p_include_docs) {
+		EditorHelp::generate_doc(false);
+	}
+
 	{
 		// Global enums and constants.
 		Array constants;
 		HashMap<String, List<Pair<String, int64_t>>> enum_list;
 		HashMap<String, bool> enum_is_bitfield;
+
+		const DocData::ClassDoc *global_scope_doc = nullptr;
+		if (p_include_docs) {
+			global_scope_doc = EditorHelp::get_doc_data()->class_list.getptr("@GlobalScope");
+			CRASH_COND_MSG(!global_scope_doc, "Could not find '@GlobalScope' in DocData.");
+		}
 
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			int64_t value = CoreConstants::get_global_constant_value(i);
@@ -478,6 +499,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 				d["name"] = name;
 				d["value"] = value;
 				d["is_bitfield"] = bitfield;
+				if (p_include_docs) {
+					for (const DocData::ConstantDoc &constant_doc : global_scope_doc->constants) {
+						if (constant_doc.name == name) {
+							d["documentation"] = fix_doc_description(constant_doc.description);
+							break;
+						}
+					}
+				}
 				constants.push_back(d);
 			}
 		}
@@ -489,11 +518,25 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 			Dictionary d1;
 			d1["name"] = E.key;
 			d1["is_bitfield"] = enum_is_bitfield[E.key];
+			if (p_include_docs) {
+				const DocData::EnumDoc *enum_doc = global_scope_doc->enums.getptr(E.key);
+				if (enum_doc) {
+					d1["documentation"] = fix_doc_description(enum_doc->description);
+				}
+			}
 			Array values;
 			for (const Pair<String, int64_t> &F : E.value) {
 				Dictionary d2;
 				d2["name"] = F.first;
 				d2["value"] = F.second;
+				if (p_include_docs) {
+					for (const DocData::ConstantDoc &constant_doc : global_scope_doc->constants) {
+						if (constant_doc.name == F.first) {
+							d2["documentation"] = fix_doc_description(constant_doc.description);
+							break;
+						}
+					}
+				}
 				values.push_back(d2);
 			}
 			d1["values"] = values;
@@ -507,6 +550,12 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 
 		List<StringName> utility_func_names;
 		Variant::get_utility_function_list(&utility_func_names);
+
+		const DocData::ClassDoc *global_scope_doc = nullptr;
+		if (p_include_docs) {
+			global_scope_doc = EditorHelp::get_doc_data()->class_list.getptr("@GlobalScope");
+			CRASH_COND_MSG(!global_scope_doc, "Could not find '@GlobalScope' in DocData.");
+		}
 
 		for (const StringName &name : utility_func_names) {
 			Dictionary func;
@@ -544,6 +593,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 				func["arguments"] = arguments;
 			}
 
+			if (p_include_docs) {
+				for (const DocData::MethodDoc &method_doc : global_scope_doc->methods) {
+					if (method_doc.name == name) {
+						func["documentation"] = fix_doc_description(method_doc.description);
+						break;
+					}
+				}
+			}
+
 			utility_funcs.push_back(func);
 		}
 
@@ -570,6 +628,12 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 
 			d["is_keyed"] = Variant::is_keyed(type);
 
+			DocData::ClassDoc *builtin_doc = nullptr;
+			if (p_include_docs && d["name"] != "Nil") {
+				builtin_doc = EditorHelp::get_doc_data()->class_list.getptr(d["name"]);
+				CRASH_COND_MSG(!builtin_doc, vformat("Could not find '%s' in DocData.", d["name"]));
+			}
+
 			{
 				//members
 				Array members;
@@ -580,6 +644,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					Dictionary d2;
 					d2["name"] = String(member_name);
 					d2["type"] = get_builtin_or_variant_type_name(Variant::get_member_type(type, member_name));
+					if (p_include_docs) {
+						for (const DocData::PropertyDoc &property_doc : builtin_doc->properties) {
+							if (property_doc.name == member_name) {
+								d2["documentation"] = fix_doc_description(property_doc.description);
+								break;
+							}
+						}
+					}
 					members.push_back(d2);
 				}
 				if (members.size()) {
@@ -598,6 +670,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					Variant constant = Variant::get_constant_value(type, constant_name);
 					d2["type"] = get_builtin_or_variant_type_name(constant.get_type());
 					d2["value"] = constant.get_construct_string();
+					if (p_include_docs) {
+						for (const DocData::ConstantDoc &constant_doc : builtin_doc->constants) {
+							if (constant_doc.name == constant_name) {
+								d2["documentation"] = fix_doc_description(constant_doc.description);
+								break;
+							}
+						}
+					}
 					constants.push_back(d2);
 				}
 				if (constants.size()) {
@@ -623,7 +703,22 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						Dictionary values_dict;
 						values_dict["name"] = String(enumeration);
 						values_dict["value"] = Variant::get_enum_value(type, enum_name, enumeration);
+						if (p_include_docs) {
+							for (const DocData::ConstantDoc &constant_doc : builtin_doc->constants) {
+								if (constant_doc.name == enumeration) {
+									values_dict["documentation"] = fix_doc_description(constant_doc.description);
+									break;
+								}
+							}
+						}
 						values.push_back(values_dict);
+					}
+
+					if (p_include_docs) {
+						const DocData::EnumDoc *enum_doc = builtin_doc->enums.getptr(enum_name);
+						if (enum_doc) {
+							enum_dict["documentation"] = fix_doc_description(enum_doc->description);
+						}
 					}
 
 					if (values.size()) {
@@ -645,11 +740,22 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						Variant::Type rt = Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j));
 						if (rt != Variant::NIL) {
 							Dictionary d2;
-							d2["name"] = Variant::get_operator_name(Variant::Operator(k));
+							String operator_name = Variant::get_operator_name(Variant::Operator(k));
+							d2["name"] = operator_name;
 							if (k != Variant::OP_NEGATE && k != Variant::OP_POSITIVE && k != Variant::OP_NOT && k != Variant::OP_BIT_NEGATE) {
 								d2["right_type"] = get_builtin_or_variant_type_name(Variant::Type(j));
 							}
 							d2["return_type"] = get_builtin_or_variant_type_name(Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j)));
+
+							if (p_include_docs && builtin_doc != nullptr) {
+								for (const DocData::MethodDoc &operator_doc : builtin_doc->operators) {
+									if (operator_doc.name == "operator " + operator_name) {
+										d2["documentation"] = fix_doc_description(operator_doc.description);
+										break;
+									}
+								}
+							}
+
 							operators.push_back(d2);
 						}
 					}
@@ -696,6 +802,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						d2["arguments"] = arguments;
 					}
 
+					if (p_include_docs) {
+						for (const DocData::MethodDoc &method_doc : builtin_doc->methods) {
+							if (method_doc.name == method_name) {
+								d2["documentation"] = fix_doc_description(method_doc.description);
+								break;
+							}
+						}
+					}
+
 					methods.push_back(d2);
 				}
 				if (methods.size()) {
@@ -721,6 +836,28 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					if (arguments.size()) {
 						d2["arguments"] = arguments;
 					}
+
+					if (p_include_docs && builtin_doc) {
+						for (const DocData::MethodDoc &constructor_doc : builtin_doc->constructors) {
+							if (constructor_doc.arguments.size() != argcount) {
+								continue;
+							}
+							bool constructor_found = true;
+							for (int k = 0; k < argcount; k++) {
+								const DocData::ArgumentDoc &argument_doc = constructor_doc.arguments[k];
+								const Dictionary &argument_dict = arguments[k];
+								const String &argument_string = argument_dict["type"];
+								if (argument_doc.type != argument_string) {
+									constructor_found = false;
+									break;
+								}
+							}
+							if (constructor_found) {
+								d2["documentation"] = fix_doc_description(constructor_doc.description);
+							}
+						}
+					}
+
 					constructors.push_back(d2);
 				}
 
@@ -731,6 +868,10 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 			{
 				//destructor
 				d["has_destructor"] = Variant::has_destructor(type);
+			}
+
+			if (p_include_docs && builtin_doc != nullptr) {
+				d["documentation"] = fix_doc_description(builtin_doc->description);
 			}
 
 			builtins.push_back(d);
@@ -750,6 +891,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 		class_list.sort_custom<StringName::AlphCompare>();
 
 		for (const StringName &class_name : class_list) {
+			if (!ClassDB::is_class_exposed(class_name)) {
+				continue;
+			}
 			Dictionary d;
 			d["name"] = String(class_name);
 			d["is_refcounted"] = ClassDB::is_parent_class(class_name, "RefCounted");
@@ -757,6 +901,12 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 			StringName parent_class = ClassDB::get_parent_class(class_name);
 			if (parent_class != StringName()) {
 				d["inherits"] = String(parent_class);
+			}
+
+			DocData::ClassDoc *class_doc = nullptr;
+			if (p_include_docs) {
+				class_doc = EditorHelp::get_doc_data()->class_list.getptr(class_name);
+				CRASH_COND_MSG(!class_doc, vformat("Could not find '%s' in DocData.", class_name));
 			}
 
 			{
@@ -779,6 +929,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					Dictionary d2;
 					d2["name"] = String(F);
 					d2["value"] = ClassDB::get_integer_constant(class_name, F);
+
+					if (p_include_docs) {
+						for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
+							if (constant_doc.name == F) {
+								d2["documentation"] = fix_doc_description(constant_doc.description);
+								break;
+							}
+						}
+					}
 
 					constants.push_back(d2);
 				}
@@ -804,10 +963,27 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						Dictionary d3;
 						d3["name"] = String(G->get());
 						d3["value"] = ClassDB::get_integer_constant(class_name, G->get());
+
+						if (p_include_docs) {
+							for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
+								if (constant_doc.name == G->get()) {
+									d3["documentation"] = fix_doc_description(constant_doc.description);
+									break;
+								}
+							}
+						}
+
 						values.push_back(d3);
 					}
 
 					d2["values"] = values;
+
+					if (p_include_docs) {
+						const DocData::EnumDoc *enum_doc = class_doc->enums.getptr(F);
+						if (enum_doc) {
+							d2["documentation"] = fix_doc_description(enum_doc->description);
+						}
+					}
 
 					enums.push_back(d2);
 				}
@@ -860,6 +1036,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 							d2["arguments"] = arguments;
 						}
 
+						if (p_include_docs) {
+							for (const DocData::MethodDoc &method_doc : class_doc->methods) {
+								if (method_doc.name == method_name) {
+									d2["documentation"] = fix_doc_description(method_doc.description);
+									break;
+								}
+							}
+						}
+
 						methods.push_back(d2);
 
 					} else if (F.name.begins_with("_")) {
@@ -879,6 +1064,22 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						d2["is_static"] = method->is_static();
 						d2["is_virtual"] = false;
 						d2["hash"] = method->get_hash();
+
+						Vector<uint32_t> compat_hashes = ClassDB::get_method_compatibility_hashes(class_name, method_name);
+						Array compatibility;
+						if (compat_hashes.size()) {
+							for (int i = 0; i < compat_hashes.size(); i++) {
+								compatibility.push_back(compat_hashes[i]);
+							}
+						}
+
+#ifndef DISABLE_DEPRECATED
+						GDExtensionCompatHashes::get_legacy_hashes(class_name, method_name, compatibility);
+#endif
+
+						if (compatibility.size() > 0) {
+							d2["hash_compatibility"] = compatibility;
+						}
 
 						Vector<Variant> default_args = method->get_default_arguments();
 
@@ -910,6 +1111,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 
 						if (arguments.size()) {
 							d2["arguments"] = arguments;
+						}
+
+						if (p_include_docs) {
+							for (const DocData::MethodDoc &method_doc : class_doc->methods) {
+								if (method_doc.name == method_name) {
+									d2["documentation"] = fix_doc_description(method_doc.description);
+									break;
+								}
+							}
 						}
 
 						methods.push_back(d2);
@@ -944,6 +1154,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					}
 					if (arguments.size()) {
 						d2["arguments"] = arguments;
+					}
+
+					if (p_include_docs) {
+						for (const DocData::MethodDoc &signal_doc : class_doc->signals) {
+							if (signal_doc.name == signal_name) {
+								d2["documentation"] = fix_doc_description(signal_doc.description);
+								break;
+							}
+						}
 					}
 
 					signals.push_back(d2);
@@ -985,12 +1204,26 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					if (index != -1) {
 						d2["index"] = index;
 					}
+
+					if (p_include_docs) {
+						for (const DocData::PropertyDoc &property_doc : class_doc->properties) {
+							if (property_doc.name == property_name) {
+								d2["documentation"] = fix_doc_description(property_doc.description);
+								break;
+							}
+						}
+					}
+
 					properties.push_back(d2);
 				}
 
 				if (properties.size()) {
 					d["properties"] = properties;
 				}
+			}
+
+			if (p_include_docs && class_doc != nullptr) {
+				d["documentation"] = fix_doc_description(class_doc->description);
 			}
 
 			classes.push_back(d);
@@ -1045,8 +1278,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 	return api_dump;
 }
 
-void GDExtensionAPIDump::generate_extension_json_file(const String &p_path) {
-	Dictionary api = generate_extension_api();
+void GDExtensionAPIDump::generate_extension_json_file(const String &p_path, bool p_include_docs) {
+	Dictionary api = generate_extension_api(p_include_docs);
 	Ref<JSON> json;
 	json.instantiate();
 
@@ -1054,6 +1287,354 @@ void GDExtensionAPIDump::generate_extension_json_file(const String &p_path) {
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(fa.is_null(), vformat("Cannot open file '%s' for writing.", p_path));
 	fa->store_string(text);
+}
+
+static bool compare_value(const String &p_path, const String &p_field, const Variant &p_old_value, const Variant &p_new_value, bool p_allow_name_change) {
+	bool failed = false;
+	String path = p_path + "/" + p_field;
+	if (p_old_value.get_type() == Variant::ARRAY && p_new_value.get_type() == Variant::ARRAY) {
+		Array old_array = p_old_value;
+		Array new_array = p_new_value;
+		if (!compare_value(path, "size", old_array.size(), new_array.size(), p_allow_name_change)) {
+			failed = true;
+		}
+		for (int i = 0; i < old_array.size() && i < new_array.size(); i++) {
+			if (!compare_value(path, itos(i), old_array[i], new_array[i], p_allow_name_change)) {
+				failed = true;
+			}
+		}
+	} else if (p_old_value.get_type() == Variant::DICTIONARY && p_new_value.get_type() == Variant::DICTIONARY) {
+		Dictionary old_dict = p_old_value;
+		Dictionary new_dict = p_new_value;
+		Array old_keys = old_dict.keys();
+		for (int i = 0; i < old_keys.size(); i++) {
+			Variant key = old_keys[i];
+			if (!new_dict.has(key)) {
+				failed = true;
+				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, key));
+				continue;
+			}
+			if (p_allow_name_change && key == "name") {
+				continue;
+			}
+			if (!compare_value(path, key, old_dict[key], new_dict[key], p_allow_name_change)) {
+				failed = true;
+			}
+		}
+		Array new_keys = old_dict.keys();
+		for (int i = 0; i < new_keys.size(); i++) {
+			Variant key = new_keys[i];
+			if (!old_dict.has(key)) {
+				failed = true;
+				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was added with value %s.", p_path, key, new_dict[key]));
+			}
+		}
+	} else {
+		bool equal = Variant::evaluate(Variant::OP_EQUAL, p_old_value, p_new_value);
+		if (!equal) {
+			print_error(vformat("Validate extension JSON: Error: Field '%s': %s changed value in new API, from %s to %s.", p_path, p_field, p_old_value.get_construct_string(), p_new_value.get_construct_string()));
+			return false;
+		}
+	}
+	return !failed;
+}
+
+static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_new_api, const String &p_base_array, const String &p_name_field, const Vector<String> &p_fields_to_compare, bool p_compare_hashes, const String &p_outer_class = String(), bool p_compare_operators = false, bool p_compare_enum_value = false) {
+	String base_array = p_outer_class + p_base_array;
+	if (!p_old_api.has(p_base_array)) {
+		return true; // May just not have this array and its still good. Probably added recently.
+	}
+	bool failed = false;
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, "New API lacks base array: " + p_base_array);
+	Array new_api = p_new_api[p_base_array];
+	HashMap<String, Dictionary> new_api_assoc;
+
+	for (int i = 0; i < new_api.size(); i++) {
+		Dictionary elem = new_api[i];
+		ERR_FAIL_COND_V_MSG(!elem.has(p_name_field), false, vformat("Validate extension JSON: Element of base_array '%s' is missing field '%s'. This is a bug.", base_array, p_name_field));
+		String name = elem[p_name_field];
+		if (p_compare_operators && elem.has("right_type")) {
+			name += " " + String(elem["right_type"]);
+		}
+		new_api_assoc.insert(name, elem);
+	}
+
+	Array old_api = p_old_api[p_base_array];
+	for (int i = 0; i < old_api.size(); i++) {
+		Dictionary old_elem = old_api[i];
+		if (!old_elem.has(p_name_field)) {
+			failed = true;
+			print_error(vformat("Validate extension JSON: JSON file: element of base array '%s' is missing the field: '%s'.", base_array, p_name_field));
+			continue;
+		}
+		String name = old_elem[p_name_field];
+		if (p_compare_operators && old_elem.has("right_type")) {
+			name += " " + String(old_elem["right_type"]);
+		}
+		if (!new_api_assoc.has(name)) {
+			failed = true;
+			print_error(vformat("Validate extension JSON: API was removed: %s/%s", base_array, name));
+			continue;
+		}
+
+		Dictionary new_elem = new_api_assoc[name];
+
+		for (int j = 0; j < p_fields_to_compare.size(); j++) {
+			String field = p_fields_to_compare[j];
+			bool optional = field.begins_with("*");
+			if (optional) {
+				// This is an optional field, but if exists it has to exist in both.
+				field = field.substr(1, field.length());
+			}
+
+			bool added = field.begins_with("+");
+			if (added) {
+				// Meaning this field must either exist or contents may not exist.
+				field = field.substr(1, field.length());
+			}
+
+			bool enum_values = field.begins_with("$");
+			if (enum_values) {
+				// Meaning this field is a list of enum values.
+				field = field.substr(1, field.length());
+			}
+
+			bool allow_name_change = field.begins_with("@");
+			if (allow_name_change) {
+				// Meaning that when structurally comparing the old and new value, the dictionary entry 'name' may change.
+				field = field.substr(1, field.length());
+			}
+
+			Variant old_value;
+
+			if (!old_elem.has(field)) {
+				if (optional) {
+					if (new_elem.has(field)) {
+						failed = true;
+						print_error(vformat("Validate extension JSON: JSON file: Field was added in a way that breaks compatibility '%s/%s': %s", base_array, name, field));
+					}
+				} else if (added && new_elem.has(field)) {
+					// Should be ok, field now exists, should not be verified in prior versions where it does not.
+				} else {
+					failed = true;
+					print_error(vformat("Validate extension JSON: JSON file: Missing field in '%s/%s': %s", base_array, name, field));
+				}
+				continue;
+			} else {
+				old_value = old_elem[field];
+			}
+
+			if (!new_elem.has(field)) {
+				failed = true;
+				ERR_PRINT(vformat("Validate extension JSON: Missing field in current API '%s/%s': %s. This is a bug.", base_array, name, field));
+				continue;
+			}
+
+			Variant new_value = new_elem[field];
+
+			if (p_compare_enum_value && name.ends_with("_MAX")) {
+				if (static_cast<int64_t>(new_value) > static_cast<int64_t>(old_value)) {
+					// Ignore the _MAX value of an enum increasing.
+					continue;
+				}
+			}
+			if (enum_values) {
+				if (!compare_dict_array(old_elem, new_elem, field, "name", { "value" }, false, base_array + "/" + name + "/", false, true)) {
+					failed = true;
+				}
+			} else if (!compare_value(base_array + "/" + name, field, old_value, new_value, allow_name_change)) {
+				failed = true;
+			}
+		}
+
+		if (p_compare_hashes) {
+			if (!old_elem.has("hash")) {
+				if (old_elem.has("is_virtual") && bool(old_elem["is_virtual"]) && !new_elem.has("hash")) {
+					continue; // No hash for virtual methods, go on.
+				}
+
+				failed = true;
+				print_error(vformat("Validate extension JSON: JSON file: element of base array '%s' is missing the field: 'hash'.", base_array));
+				continue;
+			}
+
+			uint64_t old_hash = old_elem["hash"];
+
+			if (!new_elem.has("hash")) {
+				failed = true;
+				print_error(vformat("Validate extension JSON: Error: Field '%s' is missing the field: 'hash'.", base_array));
+				continue;
+			}
+
+			uint64_t new_hash = new_elem["hash"];
+			bool hash_found = false;
+			if (old_hash == new_hash) {
+				hash_found = true;
+			} else if (new_elem.has("hash_compatibility")) {
+				Array compatibility = new_elem["hash_compatibility"];
+				for (int j = 0; j < compatibility.size(); j++) {
+					new_hash = compatibility[j];
+					if (new_hash == old_hash) {
+						hash_found = true;
+						break;
+					}
+				}
+			}
+
+			if (!hash_found) {
+				failed = true;
+				print_error(vformat("Validate extension JSON: Error: Hash changed for '%s/%s', from %08X to %08X. This means that the function has changed and no compatibility function was provided.", base_array, name, old_hash, new_hash));
+				continue;
+			}
+		}
+	}
+
+	return !failed;
+}
+
+static bool compare_sub_dict_array(HashSet<String> &r_removed_classes_registered, const String &p_outer, const String &p_outer_name, const Dictionary &p_old_api, const Dictionary &p_new_api, const String &p_base_array, const String &p_name_field, const Vector<String> &p_fields_to_compare, bool p_compare_hashes, bool p_compare_operators = false) {
+	if (!p_old_api.has(p_outer)) {
+		return true; // May just not have this array and its still good. Probably added recently or optional.
+	}
+	bool failed = false;
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, "New API lacks base array: " + p_outer);
+	Array new_api = p_new_api[p_outer];
+	HashMap<String, Dictionary> new_api_assoc;
+
+	for (int i = 0; i < new_api.size(); i++) {
+		Dictionary elem = new_api[i];
+		ERR_FAIL_COND_V_MSG(!elem.has(p_outer_name), false, vformat("Validate extension JSON: Element of base_array '%s' is missing field '%s'. This is a bug.", p_outer, p_outer_name));
+		new_api_assoc.insert(elem[p_outer_name], elem);
+	}
+
+	Array old_api = p_old_api[p_outer];
+
+	for (int i = 0; i < old_api.size(); i++) {
+		Dictionary old_elem = old_api[i];
+		if (!old_elem.has(p_outer_name)) {
+			failed = true;
+			print_error(vformat("Validate extension JSON: JSON file: element of base array '%s' is missing the field: '%s'.", p_outer, p_outer_name));
+			continue;
+		}
+		String name = old_elem[p_outer_name];
+		if (!new_api_assoc.has(name)) {
+			failed = true;
+			if (!r_removed_classes_registered.has(name)) {
+				print_error(vformat("Validate extension JSON: API was removed: %s/%s", p_outer, name));
+				r_removed_classes_registered.insert(name);
+			}
+			continue;
+		}
+
+		Dictionary new_elem = new_api_assoc[name];
+
+		if (!compare_dict_array(old_elem, new_elem, p_base_array, p_name_field, p_fields_to_compare, p_compare_hashes, p_outer + "/" + name + "/", p_compare_operators)) {
+			failed = true;
+		}
+	}
+
+	return !failed;
+}
+
+Error GDExtensionAPIDump::validate_extension_json_file(const String &p_path) {
+	Error error;
+	String text = FileAccess::get_file_as_string(p_path, &error);
+	if (error != OK) {
+		ERR_PRINT(vformat("Validate extension JSON: Could not open file '%s'.", p_path));
+		return error;
+	}
+
+	Ref<JSON> json;
+	json.instantiate();
+	error = json->parse(text);
+	if (error != OK) {
+		ERR_PRINT(vformat("Validate extension JSON: Error parsing '%s' at line %d: %s", p_path, json->get_error_line(), json->get_error_message()));
+		return error;
+	}
+
+	Dictionary old_api = json->get_data();
+	Dictionary new_api = generate_extension_api();
+
+	{ // Validate header:
+		Dictionary header = old_api["header"];
+		ERR_FAIL_COND_V(!header.has("version_major"), ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(!header.has("version_minor"), ERR_INVALID_DATA);
+		int major = header["version_major"];
+		int minor = header["version_minor"];
+
+		ERR_FAIL_COND_V_MSG(major != VERSION_MAJOR, ERR_INVALID_DATA, vformat("JSON API dump is for a different engine version (%d) than this one (%d)", major, VERSION_MAJOR));
+		ERR_FAIL_COND_V_MSG(minor > VERSION_MINOR, ERR_INVALID_DATA, vformat("JSON API dump is for a newer version of the engine: %d.%d", major, minor));
+	}
+
+	bool failed = false;
+
+	HashSet<String> removed_classes_registered;
+
+	if (!compare_dict_array(old_api, new_api, "global_constants", "name", Vector<String>({ "value", "is_bitfield" }), false)) {
+		failed = true;
+	}
+
+	if (!compare_dict_array(old_api, new_api, "global_enums", "name", Vector<String>({ "$values", "is_bitfield" }), false)) {
+		failed = true;
+	}
+
+	if (!compare_dict_array(old_api, new_api, "utility_functions", "name", Vector<String>({ "category", "is_vararg", "*return_type", "*@arguments" }), true)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "members", "name", { "type" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "constants", "name", { "type", "value" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "operators", "name", { "return_type" }, false, true)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "methods", "name", { "is_vararg", "is_static", "is_const", "*return_type", "*@arguments" }, true)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "constructors", "index", { "*@arguments" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "classes", "name", old_api, new_api, "constants", "name", { "value" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "classes", "name", old_api, new_api, "enums", "name", { "is_bitfield", "$values" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "classes", "name", old_api, new_api, "methods", "name", { "is_virtual", "is_vararg", "is_static", "is_const", "*return_value", "*@arguments" }, true)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "classes", "name", old_api, new_api, "signals", "name", { "*@arguments" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "classes", "name", old_api, new_api, "properties", "name", { "type", "*setter", "*getter", "*index" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_dict_array(old_api, new_api, "singletons", "name", Vector<String>({ "type" }), false)) {
+		failed = true;
+	}
+
+	if (!compare_dict_array(old_api, new_api, "native_structures", "name", Vector<String>({ "format" }), false)) {
+		failed = true;
+	}
+
+	if (failed) {
+		return ERR_INVALID_DATA;
+	} else {
+		return OK;
+	}
 }
 
 #endif // TOOLS_ENABLED

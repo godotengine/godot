@@ -30,20 +30,22 @@
 
 #include "image_loader_webp.h"
 
+#include "webp_common.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
-#include "webp_common.h"
 
-#include <stdlib.h>
 #include <webp/decode.h>
 #include <webp/encode.h>
 
-static Ref<Image> _webp_mem_loader_func(const uint8_t *p_png, int p_size) {
+#include <stdlib.h>
+
+static Ref<Image> _webp_mem_loader_func(const uint8_t *p_webp_data, int p_size) {
 	Ref<Image> img;
 	img.instantiate();
-	Error err = WebPCommon::webp_load_image_from_buffer(img.ptr(), p_png, p_size);
+	Error err = WebPCommon::webp_load_image_from_buffer(img.ptr(), p_webp_data, p_size);
 	ERR_FAIL_COND_V(err, Ref<Image>());
 	return img;
 }

@@ -68,6 +68,7 @@ doc_classes/*                       @godotengine/documentation
 # Misc
 
 /misc/                              @godotengine/buildsystem
+/misc/extension_api_validation/     @godotengine/gdextension @godotengine/dotnet
 
 # Modules
 
@@ -154,11 +155,11 @@ doc_classes/*                       @godotengine/documentation
 /scene/debugger/                    @godotengine/debugger
 /scene/gui/                         @godotengine/gui-nodes
 /scene/main/                        @godotengine/core
-/scene/resources/default_theme/     @godotengine/gui-nodes
 /scene/resources/font.*             @godotengine/gui-nodes
 /scene/resources/text_line.*        @godotengine/gui-nodes
 /scene/resources/text_paragraph.*   @godotengine/gui-nodes
 /scene/resources/visual_shader*.*   @godotengine/shaders
+/scene/theme/                       @godotengine/gui-nodes
 
 # Servers
 

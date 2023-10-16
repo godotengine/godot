@@ -68,7 +68,7 @@ protected:
 	virtual String _get_root_string() const;
 
 	AccessType get_access_type() const;
-	String fix_path(String p_path) const;
+	virtual String fix_path(String p_path) const;
 
 	template <class T>
 	static Ref<DirAccess> _create_builtin() {
@@ -158,6 +158,8 @@ public:
 	bool get_include_navigational() const;
 	void set_include_hidden(bool p_enable);
 	bool get_include_hidden() const;
+
+	virtual bool is_case_sensitive(const String &p_path) const;
 
 	DirAccess() {}
 	virtual ~DirAccess() {}

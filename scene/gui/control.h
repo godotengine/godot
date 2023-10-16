@@ -42,6 +42,7 @@ class Viewport;
 class Label;
 class Panel;
 class ThemeOwner;
+class ThemeContext;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
@@ -161,6 +162,8 @@ private:
 
 	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
+		bool initialized = false;
+
 		// Global relations.
 
 		List<Control *>::Element *RI = nullptr;
@@ -347,7 +350,7 @@ protected:
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 	GDVIRTUAL1RC(String, _get_tooltip, Vector2)
 
-	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)
+	GDVIRTUAL1R(Variant, _get_drag_data, Vector2)
 	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
 	GDVIRTUAL2(_drop_data, Vector2, Variant)
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
@@ -524,6 +527,7 @@ public:
 
 	Control *find_next_valid_focus() const;
 	Control *find_prev_valid_focus() const;
+	Control *find_valid_focus_neighbor(Side p_size) const;
 
 	void set_focus_neighbor(Side p_side, const NodePath &p_neighbor);
 	NodePath get_focus_neighbor(Side p_side) const;
@@ -550,6 +554,8 @@ public:
 	void set_theme_owner_node(Node *p_node);
 	Node *get_theme_owner_node() const;
 	bool has_theme_owner_node() const;
+
+	void set_theme_context(ThemeContext *p_context, bool p_propagate = true);
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
@@ -580,6 +586,10 @@ public:
 	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+#ifdef TOOLS_ENABLED
+	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
+#endif
 
 	bool has_theme_icon_override(const StringName &p_name) const;
 	bool has_theme_stylebox_override(const StringName &p_name) const;

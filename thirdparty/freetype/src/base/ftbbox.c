@@ -4,7 +4,7 @@
  *
  *   FreeType bbox computation (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used
@@ -82,10 +82,13 @@
    * @Return:
    *   Always 0.  Needed for the interface only.
    */
-  static int
-  BBox_Move_To( FT_Vector*  to,
-                TBBox_Rec*  user )
+  FT_CALLBACK_DEF( int )
+  BBox_Move_To( const FT_Vector*  to,
+                void*             user_ )
   {
+    TBBox_Rec*  user = (TBBox_Rec*)user_;
+
+
     FT_UPDATE_BBOX( to, user->bbox );
 
     user->last = *to;
@@ -116,10 +119,13 @@
    * @Return:
    *   Always 0.  Needed for the interface only.
    */
-  static int
-  BBox_Line_To( FT_Vector*  to,
-                TBBox_Rec*  user )
+  FT_CALLBACK_DEF( int )
+  BBox_Line_To( const FT_Vector*  to,
+                void*             user_ )
   {
+    TBBox_Rec*  user = (TBBox_Rec*)user_;
+
+
     user->last = *to;
 
     return 0;
@@ -205,11 +211,14 @@
    *   In the case of a non-monotonous arc, we compute directly the
    *   extremum coordinates, as it is sufficiently fast.
    */
-  static int
-  BBox_Conic_To( FT_Vector*  control,
-                 FT_Vector*  to,
-                 TBBox_Rec*  user )
+  FT_CALLBACK_DEF( int )
+  BBox_Conic_To( const FT_Vector*  control,
+                 const FT_Vector*  to,
+                 void*             user_ )
   {
+    TBBox_Rec*  user = (TBBox_Rec*)user_;
+
+
     /* in case `to' is implicit and not included in bbox yet */
     FT_UPDATE_BBOX( to, user->bbox );
 
@@ -410,12 +419,15 @@
    *   In the case of a non-monotonous arc, we don't compute directly
    *   extremum coordinates, we subdivide instead.
    */
-  static int
-  BBox_Cubic_To( FT_Vector*  control1,
-                 FT_Vector*  control2,
-                 FT_Vector*  to,
-                 TBBox_Rec*  user )
+  FT_CALLBACK_DEF( int )
+  BBox_Cubic_To( const FT_Vector*  control1,
+                 const FT_Vector*  control2,
+                 const FT_Vector*  to,
+                 void*             user_ )
   {
+    TBBox_Rec*  user = (TBBox_Rec*)user_;
+
+
     /* We don't need to check `to' since it is always an on-point,    */
     /* thus within the bbox.  Only segments with an off-point outside */
     /* the bbox can possibly reach new extreme values.                */

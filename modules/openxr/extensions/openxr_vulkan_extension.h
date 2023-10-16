@@ -31,30 +31,14 @@
 #ifndef OPENXR_VULKAN_EXTENSION_H
 #define OPENXR_VULKAN_EXTENSION_H
 
-#include "core/templates/vector.h"
-#include "openxr_extension_wrapper.h"
-
-#include "drivers/vulkan/vulkan_context.h"
-
 #include "../openxr_api.h"
 #include "../util.h"
+#include "openxr_extension_wrapper.h"
 
-// need to include Vulkan so we know of type definitions
-#define XR_USE_GRAPHICS_API_VULKAN
+#include "core/templates/vector.h"
 
-#ifdef WINDOWS_ENABLED
-// Including windows.h here is absolutely evil, we shouldn't be doing this outside of platform
-// however due to the way the openxr headers are put together, we have no choice.
-#include <windows.h>
-#endif
-
-#ifdef ANDROID_ENABLED
-// The jobject type from jni.h is used by openxr_platform.h on Android.
-#include <jni.h>
-#endif
-
-// include platform dependent structs
-#include <openxr/openxr_platform.h>
+// always include this as late as possible
+#include "../openxr_platform_inc.h"
 
 class OpenXRVulkanExtension : public OpenXRGraphicsExtensionWrapper, VulkanHooks {
 public:

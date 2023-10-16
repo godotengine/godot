@@ -4,7 +4,7 @@
  *
  *   HarfBuzz interface for accessing OpenType features (body).
  *
- * Copyright (C) 2013-2022 by
+ * Copyright (C) 2013-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -258,7 +258,7 @@
     /*
      * We now check whether we can construct blue zones, using glyphs
      * covered by the feature only.  In case there is not a single zone
-     * (this is, not a single character is covered), we skip this coverage.
+     * (that is, not a single character is covered), we skip this coverage.
      *
      */
     if ( style_class->coverage != AF_COVERAGE_DEFAULT )
@@ -313,9 +313,9 @@
      * hinted and usually rendered glyph.
      *
      * Consider the superscript feature of font `pala.ttf': Some of the
-     * glyphs are `real', this is, they have a zero vertical offset, but
+     * glyphs are `real', that is, they have a zero vertical offset, but
      * most of them are small caps glyphs shifted up to the superscript
-     * position (this is, the `sups' feature is present in both the GSUB and
+     * position (that is, the `sups' feature is present in both the GSUB and
      * GPOS tables).  The code for blue zones computation actually uses a
      * feature's y offset so that the `real' glyphs get correct hints.  But
      * later on it is impossible to decide whether a glyph index belongs to,

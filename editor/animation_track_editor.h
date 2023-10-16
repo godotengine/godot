@@ -33,25 +33,24 @@
 
 #include "editor/editor_data.h"
 #include "editor/editor_properties.h"
-#include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
-
 #include "scene/3d/node_3d.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/control.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_bar.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/texture_rect.h"
+#include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
-#include "scene_tree_editor.h"
 
 class AnimationTrackEditor;
 class AnimationTrackEdit;
+class CheckBox;
+class EditorSpinSlider;
+class HSlider;
+class OptionButton;
+class PanelContainer;
+class SceneTreeDialog;
+class SpinBox;
+class TextureRect;
 class ViewPanner;
 
 class AnimationTrackKeyEdit : public Object {
@@ -350,6 +349,8 @@ class AnimationTrackEditGroup : public Control {
 protected:
 	void _notification(int p_what);
 
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 public:
 	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
 	virtual Size2 get_minimum_size() const override;
@@ -387,6 +388,12 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
+
+	Button *dummy_player_warning = nullptr;
+	void _show_dummy_player_warning();
+
+	Button *inactive_player_warning = nullptr;
+	void _show_inactive_player_warning();
 
 	void _snap_mode_changed(int p_mode);
 	Vector<AnimationTrackEdit *> track_edits;
@@ -646,6 +653,8 @@ public:
 	void commit_insert_queue();
 
 	void show_select_node_warning(bool p_show);
+	void show_dummy_player_warning(bool p_show);
+	void show_inactive_player_warning(bool p_show);
 
 	bool is_key_selected(int p_track, int p_key) const;
 	bool is_selection_active() const;

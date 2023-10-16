@@ -111,7 +111,13 @@ public:
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
+#ifdef TOOLS_ENABLED
+	virtual bool is_valid() const { return true; }
+#endif
+
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const = 0;
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const = 0;
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const = 0;
 
 	StringName get_name() const;
@@ -162,8 +168,12 @@ public:
 	}
 #endif
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+		ERR_FAIL_MSG("Validated call can't be used with vararg methods. This is a bug.");
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
-		ERR_FAIL(); // Can't call.
+		ERR_FAIL_MSG("ptrcall can't be used with vararg methods. This is a bug.");
 	}
 
 	virtual bool is_const() const { return false; }
@@ -253,6 +263,7 @@ public:
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		return (static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>::method)(p_args, p_arg_count, r_error);
 	}
+
 #if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
@@ -326,6 +337,14 @@ public:
 		return Variant();
 	}
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+#ifdef TYPED_METHOD_BIND
+		call_with_validated_object_instance_args(static_cast<T *>(p_object), method, p_args);
+#else
+		call_with_validated_object_instance_args(reinterpret_cast<MB_T *>(p_object), method, p_args);
+#endif
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args<T, P...>(static_cast<T *>(p_object), method, p_args);
@@ -391,6 +410,14 @@ public:
 		call_with_variant_argsc_dv(reinterpret_cast<MB_T *>(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
 #endif
 		return Variant();
+	}
+
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+#ifdef TYPED_METHOD_BIND
+		call_with_validated_object_instance_argsc(static_cast<T *>(p_object), method, p_args);
+#else
+		call_with_validated_object_instance_argsc(reinterpret_cast<MB_T *>(p_object), method, p_args);
+#endif
 	}
 
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
@@ -469,6 +496,14 @@ public:
 		call_with_variant_args_ret_dv(reinterpret_cast<MB_T *>(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
 #endif
 		return ret;
+	}
+
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+#ifdef TYPED_METHOD_BIND
+		call_with_validated_object_instance_args_ret(static_cast<T *>(p_object), method, p_args, r_ret);
+#else
+		call_with_validated_object_instance_args_ret(reinterpret_cast<MB_T *>(p_object), method, p_args, r_ret);
+#endif
 	}
 
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
@@ -550,6 +585,14 @@ public:
 		return ret;
 	}
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+#ifdef TYPED_METHOD_BIND
+		call_with_validated_object_instance_args_retc(static_cast<T *>(p_object), method, p_args, r_ret);
+#else
+		call_with_validated_object_instance_args_retc(reinterpret_cast<MB_T *>(p_object), method, p_args, r_ret);
+#endif
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args_retc<T, R, P...>(static_cast<T *>(p_object), method, p_args, r_ret);
@@ -614,6 +657,10 @@ public:
 		return Variant();
 	}
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+		call_with_validated_variant_args_static_method(function, p_args);
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 		(void)p_object;
 		(void)r_ret;
@@ -675,6 +722,10 @@ public:
 		Variant ret;
 		call_with_variant_args_static_ret_dv(function, p_args, p_arg_count, ret, r_error, get_default_arguments());
 		return ret;
+	}
+
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+		call_with_validated_variant_args_static_method_ret(function, p_args, r_ret);
 	}
 
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {

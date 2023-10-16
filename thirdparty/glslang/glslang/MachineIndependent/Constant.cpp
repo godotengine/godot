@@ -177,7 +177,6 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
                     newConstArray[i].setUConst(leftUnionArray[i].getUConst() / rightUnionArray[i].getUConst());
                 break;
 
-#ifndef GLSLANG_WEB
             case EbtInt8:
                 if (rightUnionArray[i] == (signed char)0)
                     newConstArray[i].setI8Const((signed char)0x7F);
@@ -212,9 +211,9 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
 
             case EbtInt64:
                 if (rightUnionArray[i] == 0ll)
-                    newConstArray[i].setI64Const(0x7FFFFFFFFFFFFFFFll);
-                else if (rightUnionArray[i].getI64Const() == -1 && leftUnionArray[i].getI64Const() == (long long)-0x8000000000000000ll)
-                    newConstArray[i].setI64Const((long long)-0x8000000000000000ll);
+                    newConstArray[i].setI64Const(LLONG_MAX);
+                else if (rightUnionArray[i].getI64Const() == -1 && leftUnionArray[i].getI64Const() == LLONG_MIN)
+                    newConstArray[i].setI64Const(LLONG_MIN);
                 else
                     newConstArray[i].setI64Const(leftUnionArray[i].getI64Const() / rightUnionArray[i].getI64Const());
                 break;
@@ -226,8 +225,7 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
                     newConstArray[i].setU64Const(leftUnionArray[i].getU64Const() / rightUnionArray[i].getU64Const());
                 break;
             default:
-                return 0;
-#endif
+                return nullptr;
             }
         }
         break;
@@ -266,7 +264,6 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
                         newConstArray[i].setIConst(0);
                         break;
                     } else goto modulo_default;
-#ifndef GLSLANG_WEB
                 case EbtInt64:
                     if (rightUnionArray[i].getI64Const() == -1 && leftUnionArray[i].getI64Const() == LLONG_MIN) {
                         newConstArray[i].setI64Const(0);
@@ -277,7 +274,6 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
                         newConstArray[i].setIConst(0);
                         break;
                     } else goto modulo_default;
-#endif
                 default:
                 modulo_default:
                     newConstArray[i] = leftUnionArray[i] % rightUnionArray[i];
@@ -354,7 +350,7 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
         break;
 
     default:
-        return 0;
+        return nullptr;
     }
 
     TIntermConstantUnion *newNode = new TIntermConstantUnion(newConstArray, returnType);
@@ -507,14 +503,12 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TType& returnType) 
                                     : -unionArray[i].getIConst());
                            break;
             case EbtUint:  newConstArray[i].setUConst(static_cast<unsigned int>(-static_cast<int>(unionArray[i].getUConst())));  break;
-#ifndef GLSLANG_WEB
             case EbtInt8:  newConstArray[i].setI8Const(-unionArray[i].getI8Const()); break;
             case EbtUint8: newConstArray[i].setU8Const(static_cast<unsigned int>(-static_cast<signed int>(unionArray[i].getU8Const())));  break;
             case EbtInt16: newConstArray[i].setI16Const(-unionArray[i].getI16Const()); break;
             case EbtUint16:newConstArray[i].setU16Const(static_cast<unsigned int>(-static_cast<signed int>(unionArray[i].getU16Const())));  break;
             case EbtInt64: newConstArray[i].setI64Const(-unionArray[i].getI64Const()); break;
             case EbtUint64: newConstArray[i].setU64Const(static_cast<unsigned long long>(-static_cast<long long>(unionArray[i].getU64Const())));  break;
-#endif
             default:
                 return nullptr;
             }
@@ -684,7 +678,6 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TType& returnType) 
         case EOpConvDoubleToInt:
             newConstArray[i].setIConst(static_cast<int>(unionArray[i].getDConst())); break;
 
-#ifndef GLSLANG_WEB
         case EOpConvInt8ToBool:
             newConstArray[i].setBConst(unionArray[i].getI8Const() != 0); break;
         case EOpConvUint8ToBool:
@@ -919,7 +912,6 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TType& returnType) 
         case EOpConvUint64ToPtr:
         case EOpConstructReference:
             newConstArray[i].setU64Const(unionArray[i].getU64Const()); break;
-#endif
 
         // TODO: 3.0 Functionality: unary constant folding: the rest of the ops have to be fleshed out
 
@@ -1066,7 +1058,6 @@ TIntermTyped* TIntermediate::fold(TIntermAggregate* aggrNode)
                 case EbtUint:
                     newConstArray[comp].setUConst(std::min(childConstUnions[0][arg0comp].getUConst(), childConstUnions[1][arg1comp].getUConst()));
                     break;
-#ifndef GLSLANG_WEB
                 case EbtInt8:
                     newConstArray[comp].setI8Const(std::min(childConstUnions[0][arg0comp].getI8Const(), childConstUnions[1][arg1comp].getI8Const()));
                     break;
@@ -1085,7 +1076,6 @@ TIntermTyped* TIntermediate::fold(TIntermAggregate* aggrNode)
                 case EbtUint64:
                     newConstArray[comp].setU64Const(std::min(childConstUnions[0][arg0comp].getU64Const(), childConstUnions[1][arg1comp].getU64Const()));
                     break;
-#endif
                 default: assert(false && "Default missing");
                 }
                 break;
@@ -1102,7 +1092,6 @@ TIntermTyped* TIntermediate::fold(TIntermAggregate* aggrNode)
                 case EbtUint:
                     newConstArray[comp].setUConst(std::max(childConstUnions[0][arg0comp].getUConst(), childConstUnions[1][arg1comp].getUConst()));
                     break;
-#ifndef GLSLANG_WEB
                 case EbtInt8:
                     newConstArray[comp].setI8Const(std::max(childConstUnions[0][arg0comp].getI8Const(), childConstUnions[1][arg1comp].getI8Const()));
                     break;
@@ -1121,7 +1110,6 @@ TIntermTyped* TIntermediate::fold(TIntermAggregate* aggrNode)
                 case EbtUint64:
                     newConstArray[comp].setU64Const(std::max(childConstUnions[0][arg0comp].getU64Const(), childConstUnions[1][arg1comp].getU64Const()));
                     break;
-#endif
                 default: assert(false && "Default missing");
                 }
                 break;
@@ -1137,7 +1125,6 @@ TIntermTyped* TIntermediate::fold(TIntermAggregate* aggrNode)
                     newConstArray[comp].setUConst(std::min(std::max(childConstUnions[0][arg0comp].getUConst(), childConstUnions[1][arg1comp].getUConst()),
                                                                                                                    childConstUnions[2][arg2comp].getUConst()));
                     break;
-#ifndef GLSLANG_WEB
                 case EbtInt8:
                     newConstArray[comp].setI8Const(std::min(std::max(childConstUnions[0][arg0comp].getI8Const(), childConstUnions[1][arg1comp].getI8Const()),
                                                                                                                    childConstUnions[2][arg2comp].getI8Const()));
@@ -1166,7 +1153,6 @@ TIntermTyped* TIntermediate::fold(TIntermAggregate* aggrNode)
                     newConstArray[comp].setU64Const(std::min(std::max(childConstUnions[0][arg0comp].getU64Const(), childConstUnions[1][arg1comp].getU64Const()),
                                                                                                                        childConstUnions[2][arg2comp].getU64Const()));
                     break;
-#endif
                 default: assert(false && "Default missing");
                 }
                 break;
@@ -1345,7 +1331,7 @@ TIntermTyped* TIntermediate::foldDereference(TIntermTyped* node, int index, cons
 {
     TType dereferencedType(node->getType(), index);
     dereferencedType.getQualifier().storage = EvqConst;
-    TIntermTyped* result = 0;
+    TIntermTyped* result = nullptr;
     int size = dereferencedType.computeNumComponents();
 
     // arrays, vectors, matrices, all use simple multiplicative math
@@ -1365,7 +1351,7 @@ TIntermTyped* TIntermediate::foldDereference(TIntermTyped* node, int index, cons
 
     result = addConstantUnion(TConstUnionArray(node->getAsConstantUnion()->getConstArray(), start, size), node->getType(), loc);
 
-    if (result == 0)
+    if (result == nullptr)
         result = node;
     else
         result->setType(dereferencedType);
@@ -1387,7 +1373,7 @@ TIntermTyped* TIntermediate::foldSwizzle(TIntermTyped* node, TSwizzleSelectors<T
 
     TIntermTyped* result = addConstantUnion(constArray, node->getType(), loc);
 
-    if (result == 0)
+    if (result == nullptr)
         result = node;
     else
         result->setType(TType(node->getBasicType(), EvqConst, selectors.size()));

@@ -176,6 +176,10 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
+            source.Append("    /// <summary>\n")
+                .Append("    /// Cached StringNames for the signals contained in this class, for fast lookup.\n")
+                .Append("    /// </summary>\n");
+
             source.Append(
                 $"    public new class SignalName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.SignalName {{\n");
 
@@ -184,6 +188,13 @@ namespace Godot.SourceGenerators
             foreach (var signalDelegate in godotSignalDelegates)
             {
                 string signalName = signalDelegate.Name;
+
+                source.Append("        /// <summary>\n")
+                    .Append("        /// Cached name for the '")
+                    .Append(signalName)
+                    .Append("' signal.\n")
+                    .Append("        /// </summary>\n");
+
                 source.Append("        public new static readonly global::Godot.StringName ");
                 source.Append(signalName);
                 source.Append(" = \"");
@@ -198,6 +209,14 @@ namespace Godot.SourceGenerators
             if (godotSignalDelegates.Count > 0)
             {
                 const string listType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
+
+                source.Append("    /// <summary>\n")
+                    .Append("    /// Get the signal information for all the signals declared in this class.\n")
+                    .Append("    /// This method is used by Godot to register the available signals in the editor.\n")
+                    .Append("    /// Do not call this method.\n")
+                    .Append("    /// </summary>\n");
+
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
                     .Append(listType)
@@ -258,6 +277,8 @@ namespace Godot.SourceGenerators
 
             if (godotSignalDelegates.Count > 0)
             {
+                source.Append("    /// <inheritdoc/>\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append(
                     "    protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, ");
                 source.Append("NativeVariantPtrArgs args)\n    {\n");
@@ -276,6 +297,8 @@ namespace Godot.SourceGenerators
 
             if (godotSignalDelegates.Count > 0)
             {
+                source.Append("    /// <inheritdoc/>\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append(
                     "    protected override bool HasGodotClassSignal(in godot_string_name signal)\n    {\n");
 
@@ -360,8 +383,14 @@ namespace Godot.SourceGenerators
                 .Append("\", usage: (global::Godot.PropertyUsageFlags)")
                 .Append((int)propertyInfo.Usage)
                 .Append(", exported: ")
-                .Append(propertyInfo.Exported ? "true" : "false")
-                .Append(")");
+                .Append(propertyInfo.Exported ? "true" : "false");
+            if (propertyInfo.ClassName != null)
+            {
+                source.Append(", className: new global::Godot.StringName(\"")
+                    .Append(propertyInfo.ClassName)
+                    .Append("\")");
+            }
+            source.Append(")");
         }
 
         private static MethodInfo DetermineMethodInfo(GodotSignalDelegateData signalDelegateData)
@@ -372,7 +401,9 @@ namespace Godot.SourceGenerators
 
             if (invokeMethodData.RetType != null)
             {
-                returnVal = DeterminePropertyInfo(invokeMethodData.RetType.Value.MarshalType, name: string.Empty);
+                returnVal = DeterminePropertyInfo(invokeMethodData.RetType.Value.MarshalType,
+                    invokeMethodData.RetType.Value.TypeSymbol,
+                    name: string.Empty);
             }
             else
             {
@@ -391,6 +422,7 @@ namespace Godot.SourceGenerators
                 for (int i = 0; i < paramCount; i++)
                 {
                     arguments.Add(DeterminePropertyInfo(invokeMethodData.ParamTypes[i],
+                        invokeMethodData.Method.Parameters[i].Type,
                         name: invokeMethodData.Method.Parameters[i].Name));
                 }
             }
@@ -403,7 +435,7 @@ namespace Godot.SourceGenerators
                 defaultArguments: null);
         }
 
-        private static PropertyInfo DeterminePropertyInfo(MarshalType marshalType, string name)
+        private static PropertyInfo DeterminePropertyInfo(MarshalType marshalType, ITypeSymbol typeSymbol, string name)
         {
             var memberVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(marshalType)!.Value;
 
@@ -412,8 +444,14 @@ namespace Godot.SourceGenerators
             if (memberVariantType == VariantType.Nil)
                 propUsage |= PropertyUsageFlags.NilIsVariant;
 
+            string? className = null;
+            if (memberVariantType == VariantType.Object && typeSymbol is INamedTypeSymbol namedTypeSymbol)
+            {
+                className = namedTypeSymbol.GetGodotScriptNativeClassName();
+            }
+
             return new PropertyInfo(memberVariantType, name,
-                PropertyHint.None, string.Empty, propUsage, exported: false);
+                PropertyHint.None, string.Empty, propUsage, className, exported: false);
         }
 
         private static void GenerateHasSignalEntry(

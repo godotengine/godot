@@ -31,6 +31,7 @@
 #ifndef EDITOR_DEBUGGER_NODE_H
 #define EDITOR_DEBUGGER_NODE_H
 
+#include "core/object/script_language.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "scene/gui/margin_container.h"
 

@@ -115,7 +115,9 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	}
 
 	File pf;
-	pf.path = p_file;
+	// Simplify path here and on every 'files' access so that paths that have extra '/'
+	// symbols in them still match to the MD5 hash for the saved path.
+	pf.path = p_file.simplify_path();
 	pf.src_path = p_src;
 	pf.ofs = ofs;
 	pf.size = f->get_length();
@@ -203,7 +205,7 @@ Error PCKPacker::flush(bool p_verbose) {
 
 	int header_padding = _get_pad(alignment, file->get_position());
 	for (int i = 0; i < header_padding; i++) {
-		file->store_8(Math::rand() % 256);
+		file->store_8(0);
 	}
 
 	int64_t file_base = file->get_position();
@@ -242,7 +244,7 @@ Error PCKPacker::flush(bool p_verbose) {
 
 		int pad = _get_pad(alignment, file->get_position());
 		for (int j = 0; j < pad; j++) {
-			file->store_8(Math::rand() % 256);
+			file->store_8(0);
 		}
 
 		count += 1;

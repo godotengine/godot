@@ -51,6 +51,8 @@
 class EditorAbout : public AcceptDialog {
 	GDCLASS(EditorAbout, AcceptDialog);
 
+	static const String META_TEXT_TO_COPY;
+
 private:
 	void _license_tree_selected();
 	void _version_button_pressed();

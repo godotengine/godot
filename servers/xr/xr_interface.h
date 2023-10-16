@@ -52,7 +52,7 @@ class XRInterface : public RefCounted {
 	GDCLASS(XRInterface, RefCounted);
 
 public:
-	enum Capabilities { /* purely meta data, provides some info about what this interface supports */
+	enum Capabilities { /* purely metadata, provides some info about what this interface supports */
 		XR_NONE = 0, /* no capabilities */
 		XR_MONO = 1, /* can be used with mono output */
 		XR_STEREO = 2, /* can be used with stereo output */
@@ -147,6 +147,7 @@ public:
 
 	/** environment blend mode. */
 	virtual Array get_supported_environment_blend_modes();
+	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const { return XR_ENV_BLEND_MODE_OPAQUE; }
 	virtual bool set_environment_blend_mode(EnvironmentBlendMode mode) { return false; }
 
 	XRInterface();

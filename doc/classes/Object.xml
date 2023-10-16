@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all other classes in the engine.
 	</brief_description>
@@ -38,7 +38,7 @@
 				[codeblocks]
 				[gdscript]
 				func _get(property):
-				    if (property == "fake_property"):
+				    if property == "fake_property":
 				        print("Getting my property!")
 				        return 4
 
@@ -175,7 +175,7 @@
 				        print("Goodbye!")
 				[/gdscript]
 				[csharp]
-				public override void _Notification(long what)
+				public override void _Notification(int what)
 				{
 				    if (what == NotificationPredelete)
 				    {
@@ -212,9 +212,13 @@
 				Combined with [method _get] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins. Note that a property [i]must[/i] be present in [method get_property_list], otherwise this method will not be called.
 				[codeblocks]
 				[gdscript]
+				var internal_data = {}
+
 				func _set(property, value):
-				    if (property == "fake_property"):
-				        print("Setting my property to ", value)
+				    if property == "fake_property":
+				        # Storing the value in the fake property.
+				        internal_data["fake_property"] = value
+				        return true
 
 				func _get_property_list():
 				    return [
@@ -222,11 +226,14 @@
 				    ]
 				[/gdscript]
 				[csharp]
+				private Godot.Collections.Dictionary _internalData = new Godot.Collections.Dictionary();
+
 				public override void _Set(StringName property, Variant value)
 				{
 				    if (property == "FakeProperty")
 				    {
-				        GD.Print($"Setting my property to {value}");
+				        // Storing the value in the fake property.
+				        _internalData["FakeProperty"] = value;
 				        return true;
 				    }
 
@@ -260,6 +267,59 @@
 				    print(self)       # Prints Welcome to Godot 4!"
 				    var a = str(self) # a is "Welcome to Godot 4!"
 				[/codeblock]
+			</description>
+		</method>
+		<method name="_validate_property" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="property" type="Dictionary" />
+			<description>
+				Override this method to customize existing properties. Every property info goes through this method. The dictionary contents is the same as in [method _get_property_list].
+				[codeblocks]
+				[gdscript]
+				@tool
+				extends Node
+
+				@export var is_number_editable: bool:
+				    set(value):
+				        is_number_editable = value
+				        notify_property_list_changed()
+				@export var number: int
+
+				func _validate_property(property: Dictionary):
+				    if property.name == "number" and not is_number_editable:
+				        property.usage |= PROPERTY_USAGE_READ_ONLY
+				[/gdscript]
+				[csharp]
+				[Tool]
+				public partial class MyNode : Node
+				{
+				    private bool _isNumberEditable;
+
+				    [Export]
+				    public bool IsNumberEditable
+				    {
+				        get =&gt; _isNumberEditable;
+				        set
+				        {
+				            _isNumberEditable = value;
+				            NotifyPropertyListChanged();
+				        }
+				    }
+
+				    [Export]
+				    public int Number { get; set; }
+
+				    public override void _ValidateProperty(Godot.Collections.Dictionary property)
+				    {
+				        if (property["name"].AsStringName() == PropertyName.Number &amp;&amp; IsNumberEditable)
+				        {
+				            var usage = property["usage"].As&gt;PropertyUsageFlags&lt;() | PropertyUsageFlags.ReadOnly;
+				            property["usage"] = (int)usage;
+				        }
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="add_user_signal">
@@ -315,7 +375,9 @@
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [param method] on the object during idle time. This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
+				Calls the [param method] on the object during idle time. Always returns null, [b]not[/b] the method's result.
+				Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. If not done carefully, this can result in infinite recursion without causing a stack overflow, which will hang the game similarly to an infinite loop.
+				This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -326,7 +388,17 @@
 				node.CallDeferred(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
+				See also [method Callable.call_deferred].
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
+				[b]Note:[/b] If you're looking to delay the function call by a frame, refer to the [signal SceneTree.process_frame] and [signal SceneTree.physics_frame] signals.
+				[codeblock]
+				var node = Node3D.new()
+				# Make a Callable and bind the arguments to the node's rotate() call.
+				var callable = node.rotate.bind(Vector3(1.0, 0.0, 0.0), 1.571)
+				# Connect the callable to the process_frame signal, so it gets called in the next process frame.
+				# CONNECT_ONE_SHOT makes sure it only gets called once instead of every frame.
+				get_tree().process_frame.connect(callable, CONNECT_ONE_SHOT)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="callv">
@@ -352,6 +424,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the object is allowed to translate messages with [method tr] and [method tr_n]. See also [method set_message_translation].
+			</description>
+		</method>
+		<method name="cancel_free">
+			<return type="void" />
+			<description>
+				If this method is called during [constant NOTIFICATION_PREDELETE], this object will reject being freed and will remain allocated. This is mostly an internal function used for error handling to avoid the user from freeing objects when they are not intended to.
 			</description>
 		</method>
 		<method name="connect">
@@ -409,7 +487,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b][code]Object.connect()[/code] or [code]Signal.connect()[/code]?[/b]
+				[b][code skip-lint]Object.connect()[/code] or [code skip-lint]Signal.connect()[/code]?[/b]
 				As seen above, the recommended method to connect signals is not [method Object.connect]. The code block below shows the four options for connecting signals, using either this legacy method or the recommended [method Signal.connect], and using either an implicit [Callable] or a manually defined one.
 				[codeblocks]
 				[gdscript]
@@ -593,11 +671,12 @@
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the object's metadata value for the given entry [param name]. If the entry does not exist, returns [param default]. If [param default] is [code]null[/code], an error is also generated.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector dock and should not be edited.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 				Returns the object's metadata entry names as a [PackedStringArray].
 			</description>
@@ -625,6 +704,7 @@
 				- [code]hint[/code] is [i]how[/i] the property is meant to be edited (see [enum PropertyHint]);
 				- [code]hint_string[/code] depends on the hint (see [enum PropertyHint]);
 				- [code]usage[/code] is a combination of [enum PropertyUsageFlags].
+				[b]Note:[/b] In GDScript, all class members are treated as properties. In C# and GDExtension, it may be necessary to explicitly mark class members as Godot properties using decorators or attributes.
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
@@ -638,7 +718,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [param signal] name. Each connection is represented as a [Dictionary] that contains three entries:
-				- [code]signal[/code] is a reference to the [Signal];
+				- [code skip-lint]signal[/code] is a reference to the [Signal];
 				- [code]callable[/code] is a reference to the connected [Callable];
 				- [code]flags[/code] is a combination of [enum ConnectFlags].
 			</description>
@@ -655,14 +735,15 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a metadata entry is found with the given [param name]. See also [method get_meta], [method set_meta] and [method remove_meta].
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the the given [param method] name exists in the object.
+				Returns [code]true[/code] if the given [param method] name exists in the object.
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
@@ -782,7 +863,8 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Removes the given entry [param name] from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="set">
@@ -818,7 +900,7 @@
 			<param index="0" name="property" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Assigns [param value] to the given [param property], after the current frame's physics step. This is equivalent to calling [method set] through [method call_deferred].
+				Assigns [param value] to the given [param property], at the end of the current frame. This is equivalent to calling [method set] through [method call_deferred].
 				[codeblocks]
 				[gdscript]
 				var node = Node2D.new()
@@ -881,7 +963,8 @@
 			<description>
 				Adds or changes the entry [param name] inside the object's metadata. The metadata [param value] can be any [Variant], although some types cannot be serialized correctly.
 				If [param value] is [code]null[/code], the entry is removed. This is the equivalent of using [method remove_meta]. See also [method has_meta] and [method get_meta].
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector dock and should not be edited.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="set_script">
@@ -944,7 +1027,7 @@
 			Notification received when the object is about to be deleted. Can act as the deconstructor of some programming languages.
 		</constant>
 		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
-			Deferred connections trigger their [Callable]s on idle time, rather than instantly.
+			Deferred connections trigger their [Callable]s on idle time (at the end of the frame), rather than instantly.
 		</constant>
 		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
 			Persisting connections are stored when the object is serialized (such as when using [method PackedScene.pack]). In the editor, connections created through the Node dock are always persisting.

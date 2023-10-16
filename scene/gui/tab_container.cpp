@@ -33,6 +33,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/theme/theme_db.h"
 
 int TabContainer::_get_top_margin() const {
 	int height = 0;
@@ -133,42 +134,6 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void TabContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.side_margin = get_theme_constant(SNAME("side_margin"));
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
-	theme_cache.tabbar_style = get_theme_stylebox(SNAME("tabbar_background"));
-
-	theme_cache.menu_icon = get_theme_icon(SNAME("menu"));
-	theme_cache.menu_hl_icon = get_theme_icon(SNAME("menu_highlight"));
-
-	// TabBar overrides.
-	theme_cache.icon_separation = get_theme_constant(SNAME("icon_separation"));
-	theme_cache.icon_max_width = get_theme_constant(SNAME("icon_max_width"));
-	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-
-	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
-	theme_cache.tab_selected_style = get_theme_stylebox(SNAME("tab_selected"));
-	theme_cache.tab_disabled_style = get_theme_stylebox(SNAME("tab_disabled"));
-
-	theme_cache.increment_icon = get_theme_icon(SNAME("increment"));
-	theme_cache.increment_hl_icon = get_theme_icon(SNAME("increment_highlight"));
-	theme_cache.decrement_icon = get_theme_icon(SNAME("decrement"));
-	theme_cache.decrement_hl_icon = get_theme_icon(SNAME("decrement_highlight"));
-	theme_cache.drop_mark_icon = get_theme_icon(SNAME("drop_mark"));
-	theme_cache.drop_mark_color = get_theme_color(SNAME("drop_mark_color"));
-
-	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
-	theme_cache.font_unselected_color = get_theme_color(SNAME("font_unselected_color"));
-	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.tab_font = get_theme_font(SNAME("font"));
-	theme_cache.tab_font_size = get_theme_font_size(SNAME("font_size"));
-}
-
 void TabContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -216,7 +181,7 @@ void TabContainer::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			theme_changing = true;
-			call_deferred(SNAME("_on_theme_changed")); // Wait until all changed theme.
+			callable_mp(this, &TabContainer::_on_theme_changed).call_deferred(); // Wait until all changed theme.
 		} break;
 	}
 }
@@ -227,8 +192,10 @@ void TabContainer::_on_theme_changed() {
 	}
 
 	tab_bar->add_theme_style_override(SNAME("tab_unselected"), theme_cache.tab_unselected_style);
+	tab_bar->add_theme_style_override(SNAME("tab_hovered"), theme_cache.tab_hovered_style);
 	tab_bar->add_theme_style_override(SNAME("tab_selected"), theme_cache.tab_selected_style);
 	tab_bar->add_theme_style_override(SNAME("tab_disabled"), theme_cache.tab_disabled_style);
+	tab_bar->add_theme_style_override(SNAME("tab_focus"), theme_cache.tab_focus_style);
 
 	tab_bar->add_theme_icon_override(SNAME("increment"), theme_cache.increment_icon);
 	tab_bar->add_theme_icon_override(SNAME("increment_highlight"), theme_cache.increment_hl_icon);
@@ -238,6 +205,7 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("drop_mark_color"), theme_cache.drop_mark_color);
 
 	tab_bar->add_theme_color_override(SNAME("font_selected_color"), theme_cache.font_selected_color);
+	tab_bar->add_theme_color_override(SNAME("font_hovered_color"), theme_cache.font_hovered_color);
 	tab_bar->add_theme_color_override(SNAME("font_unselected_color"), theme_cache.font_unselected_color);
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), theme_cache.font_disabled_color);
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
@@ -453,6 +421,7 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 			move_child(get_tab_control(tab_from_id), get_tab_control(hover_now)->get_index(false));
 			if (!is_tab_disabled(hover_now)) {
+				emit_signal(SNAME("active_tab_rearranged"), hover_now);
 				set_current_tab(hover_now);
 			}
 
@@ -465,7 +434,9 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
 				// Get the tab properties before they get erased by the child removal.
 				String tab_title = from_tabc->get_tab_title(tab_from_id);
+				Ref<Texture2D> tab_icon = from_tabc->get_tab_icon(tab_from_id);
 				bool tab_disabled = from_tabc->is_tab_disabled(tab_from_id);
+				Variant tab_metadata = from_tabc->get_tab_metadata(tab_from_id);
 
 				// Drop the new tab to the left or right depending on where the target tab is being hovered.
 				if (hover_now != -1) {
@@ -482,7 +453,9 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 				add_child(moving_tabc, true);
 
 				set_tab_title(get_tab_count() - 1, tab_title);
+				set_tab_icon(get_tab_count() - 1, tab_icon);
 				set_tab_disabled(get_tab_count() - 1, tab_disabled);
+				set_tab_metadata(get_tab_count() - 1, tab_metadata);
 
 				move_child(moving_tabc, get_tab_control(hover_now)->get_index(false));
 				if (!is_tab_disabled(hover_now)) {
@@ -493,15 +466,23 @@ void TabContainer::_drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 	}
 }
 
+void TabContainer::_on_tab_clicked(int p_tab) {
+	emit_signal(SNAME("tab_clicked"), p_tab);
+}
+
+void TabContainer::_on_tab_hovered(int p_tab) {
+	emit_signal(SNAME("tab_hovered"), p_tab);
+}
+
 void TabContainer::_on_tab_changed(int p_tab) {
-	call_deferred(SNAME("_repaint"));
+	callable_mp(this, &TabContainer::_repaint).call_deferred();
 
 	emit_signal(SNAME("tab_changed"), p_tab);
 }
 
 void TabContainer::_on_tab_selected(int p_tab) {
 	if (p_tab != get_previous_tab()) {
-		call_deferred(SNAME("_repaint"));
+		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
 
 	emit_signal(SNAME("tab_selected"), p_tab);
@@ -544,16 +525,16 @@ void TabContainer::add_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		call_deferred("_repaint");
+		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
 }
 
 void TabContainer::move_child_notify(Node *p_child) {
+	Container::move_child_notify(p_child);
+
 	if (p_child == tab_bar) {
 		return;
 	}
-
-	Container::move_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (c && !c->is_set_as_top_level()) {
@@ -573,11 +554,11 @@ void TabContainer::move_child_notify(Node *p_child) {
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
+	Container::remove_child_notify(p_child);
+
 	if (p_child == tab_bar) {
 		return;
 	}
-
-	Container::remove_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (!c || c->is_set_as_top_level()) {
@@ -601,8 +582,12 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		call_deferred("_repaint");
+		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
+}
+
+TabBar *TabContainer::get_tab_bar() const {
+	return tab_bar;
 }
 
 int TabContainer::get_tab_count() const {
@@ -619,6 +604,14 @@ int TabContainer::get_current_tab() const {
 
 int TabContainer::get_previous_tab() const {
 	return tab_bar->get_previous_tab();
+}
+
+bool TabContainer::select_previous_available() {
+	return tab_bar->select_previous_available();
+}
+
+bool TabContainer::select_next_available() {
+	return tab_bar->select_next_available();
 }
 
 Control *TabContainer::get_tab_control(int p_idx) const {
@@ -663,6 +656,14 @@ void TabContainer::set_tab_alignment(TabBar::AlignmentMode p_alignment) {
 
 TabBar::AlignmentMode TabContainer::get_tab_alignment() const {
 	return tab_bar->get_tab_alignment();
+}
+
+void TabContainer::set_tab_focus_mode(Control::FocusMode p_focus_mode) {
+	tab_bar->set_focus_mode(p_focus_mode);
+}
+
+Control::FocusMode TabContainer::get_tab_focus_mode() const {
+	return tab_bar->get_focus_mode();
 }
 
 void TabContainer::set_clip_tabs(bool p_clip_tabs) {
@@ -716,7 +717,7 @@ bool TabContainer::is_all_tabs_in_front() const {
 
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = get_tab_control(p_tab);
-	ERR_FAIL_COND(!child);
+	ERR_FAIL_NULL(child);
 
 	if (tab_bar->get_tab_title(p_tab) == p_title) {
 		return;
@@ -774,7 +775,7 @@ bool TabContainer::is_tab_disabled(int p_tab) const {
 
 void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	Control *child = get_tab_control(p_tab);
-	ERR_FAIL_COND(!child);
+	ERR_FAIL_NULL(child);
 
 	if (tab_bar->is_tab_hidden(p_tab) == p_hidden) {
 		return;
@@ -787,11 +788,19 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	if (!get_clip_tabs()) {
 		update_minimum_size();
 	}
-	call_deferred(SNAME("_repaint"));
+	callable_mp(this, &TabContainer::_repaint).call_deferred();
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {
 	return tab_bar->is_tab_hidden(p_tab);
+}
+
+void TabContainer::set_tab_metadata(int p_tab, const Variant &p_metadata) {
+	tab_bar->set_tab_metadata(p_tab, p_metadata);
+}
+
+Variant TabContainer::get_tab_metadata(int p_tab) const {
+	return tab_bar->get_tab_metadata(p_tab);
 }
 
 void TabContainer::set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon) {
@@ -923,7 +932,10 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabContainer::get_current_tab);
 	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
+	ClassDB::bind_method(D_METHOD("select_previous_available"), &TabContainer::select_previous_available);
+	ClassDB::bind_method(D_METHOD("select_next_available"), &TabContainer::select_next_available);
 	ClassDB::bind_method(D_METHOD("get_current_tab_control"), &TabContainer::get_current_tab_control);
+	ClassDB::bind_method(D_METHOD("get_tab_bar"), &TabContainer::get_tab_bar);
 	ClassDB::bind_method(D_METHOD("get_tab_control", "tab_idx"), &TabContainer::get_tab_control);
 	ClassDB::bind_method(D_METHOD("set_tab_alignment", "alignment"), &TabContainer::set_tab_alignment);
 	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabContainer::get_tab_alignment);
@@ -941,6 +953,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_tab_disabled", "tab_idx"), &TabContainer::is_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_tab_hidden", "tab_idx", "hidden"), &TabContainer::set_tab_hidden);
 	ClassDB::bind_method(D_METHOD("is_tab_hidden", "tab_idx"), &TabContainer::is_tab_hidden);
+	ClassDB::bind_method(D_METHOD("set_tab_metadata", "tab_idx", "metadata"), &TabContainer::set_tab_metadata);
+	ClassDB::bind_method(D_METHOD("get_tab_metadata", "tab_idx"), &TabContainer::get_tab_metadata);
 	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &TabContainer::set_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &TabContainer::get_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabContainer::get_tab_idx_at_point);
@@ -953,11 +967,13 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabContainer::get_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("set_use_hidden_tabs_for_min_size", "enabled"), &TabContainer::set_use_hidden_tabs_for_min_size);
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
+	ClassDB::bind_method(D_METHOD("set_tab_focus_mode", "focus_mode"), &TabContainer::set_tab_focus_mode);
+	ClassDB::bind_method(D_METHOD("get_tab_focus_mode"), &TabContainer::get_tab_focus_mode);
 
-	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
-	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
-
+	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
@@ -970,6 +986,42 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_tab_focus_mode", "get_tab_focus_mode");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, side_margin);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, panel_style, "panel");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tabbar_style, "tabbar_background");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, menu_icon, "menu");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, menu_hl_icon, "menu_highlight");
+
+	// TabBar overrides.
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, icon_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, icon_max_width);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_unselected_style, "tab_unselected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_hovered_style, "tab_hovered");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_selected_style, "tab_selected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_disabled_style, "tab_disabled");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_focus_style, "tab_focus");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, increment_icon, "increment");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, increment_hl_icon, "increment_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, decrement_icon, "decrement");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, decrement_hl_icon, "decrement_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, drop_mark_icon, "drop_mark");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, drop_mark_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_hovered_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_unselected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_outline_color);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT, TabContainer, tab_font, "font");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT_SIZE, TabContainer, tab_font_size, "font_size");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, outline_size);
 }
 
 TabContainer::TabContainer() {
@@ -978,6 +1030,8 @@ TabContainer::TabContainer() {
 	add_child(tab_bar, false, INTERNAL_MODE_FRONT);
 	tab_bar->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	tab_bar->connect("tab_changed", callable_mp(this, &TabContainer::_on_tab_changed));
+	tab_bar->connect("tab_clicked", callable_mp(this, &TabContainer::_on_tab_clicked));
+	tab_bar->connect("tab_hovered", callable_mp(this, &TabContainer::_on_tab_hovered));
 	tab_bar->connect("tab_selected", callable_mp(this, &TabContainer::_on_tab_selected));
 	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
 

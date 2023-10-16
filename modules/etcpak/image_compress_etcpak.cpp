@@ -66,7 +66,7 @@ EtcpakType _determine_dxt_type(Image::UsedChannels p_channels) {
 		case Image::USED_CHANNELS_RG:
 			return EtcpakType::ETCPAK_TYPE_DXT5_RA_AS_RG;
 		case Image::USED_CHANNELS_RGB:
-			return EtcpakType::ETCPAK_TYPE_DXT5;
+			return EtcpakType::ETCPAK_TYPE_DXT1;
 		case Image::USED_CHANNELS_RGBA:
 			return EtcpakType::ETCPAK_TYPE_DXT5;
 		default:

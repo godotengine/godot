@@ -48,16 +48,16 @@ extern "C" {
  * \brief           Entropy poll callback that provides 0 entropy.
  */
 #if defined(MBEDTLS_TEST_NULL_ENTROPY)
-    int mbedtls_null_entropy_poll( void *data,
-                                unsigned char *output, size_t len, size_t *olen );
+int mbedtls_null_entropy_poll(void *data,
+                              unsigned char *output, size_t len, size_t *olen);
 #endif
 
 #if !defined(MBEDTLS_NO_PLATFORM_ENTROPY)
 /**
  * \brief           Platform-specific entropy poll callback
  */
-int mbedtls_platform_entropy_poll( void *data,
-                           unsigned char *output, size_t len, size_t *olen );
+int mbedtls_platform_entropy_poll(void *data,
+                                  unsigned char *output, size_t len, size_t *olen);
 #endif
 
 #if defined(MBEDTLS_HAVEGE_C)
@@ -66,16 +66,16 @@ int mbedtls_platform_entropy_poll( void *data,
  *
  * Requires an HAVEGE state as its data pointer.
  */
-int mbedtls_havege_poll( void *data,
-                 unsigned char *output, size_t len, size_t *olen );
+int mbedtls_havege_poll(void *data,
+                        unsigned char *output, size_t len, size_t *olen);
 #endif
 
 #if defined(MBEDTLS_TIMING_C)
 /**
  * \brief           mbedtls_timing_hardclock-based entropy poll callback
  */
-int mbedtls_hardclock_poll( void *data,
-                    unsigned char *output, size_t len, size_t *olen );
+int mbedtls_hardclock_poll(void *data,
+                           unsigned char *output, size_t len, size_t *olen);
 #endif
 
 #if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
@@ -87,8 +87,8 @@ int mbedtls_hardclock_poll( void *data,
  *
  * \note            This must accept NULL as its first argument.
  */
-int mbedtls_hardware_poll( void *data,
-                           unsigned char *output, size_t len, size_t *olen );
+int mbedtls_hardware_poll(void *data,
+                          unsigned char *output, size_t len, size_t *olen);
 #endif
 
 #if defined(MBEDTLS_ENTROPY_NV_SEED)
@@ -97,8 +97,8 @@ int mbedtls_hardware_poll( void *data,
  *
  * \note            This must accept NULL as its first argument.
  */
-int mbedtls_nv_seed_poll( void *data,
-                          unsigned char *output, size_t len, size_t *olen );
+int mbedtls_nv_seed_poll(void *data,
+                         unsigned char *output, size_t len, size_t *olen);
 #endif
 
 #ifdef __cplusplus

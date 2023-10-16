@@ -35,24 +35,25 @@
 
 #if !defined(MBEDTLS_ARC4_ALT)
 
-void mbedtls_arc4_init( mbedtls_arc4_context *ctx )
+void mbedtls_arc4_init(mbedtls_arc4_context *ctx)
 {
-    memset( ctx, 0, sizeof( mbedtls_arc4_context ) );
+    memset(ctx, 0, sizeof(mbedtls_arc4_context));
 }
 
-void mbedtls_arc4_free( mbedtls_arc4_context *ctx )
+void mbedtls_arc4_free(mbedtls_arc4_context *ctx)
 {
-    if( ctx == NULL )
+    if (ctx == NULL) {
         return;
+    }
 
-    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_arc4_context ) );
+    mbedtls_platform_zeroize(ctx, sizeof(mbedtls_arc4_context));
 }
 
 /*
  * ARC4 key schedule
  */
-void mbedtls_arc4_setup( mbedtls_arc4_context *ctx, const unsigned char *key,
-                 unsigned int keylen )
+void mbedtls_arc4_setup(mbedtls_arc4_context *ctx, const unsigned char *key,
+                        unsigned int keylen)
 {
     int i, j, a;
     unsigned int k;
@@ -62,17 +63,19 @@ void mbedtls_arc4_setup( mbedtls_arc4_context *ctx, const unsigned char *key,
     ctx->y = 0;
     m = ctx->m;
 
-    for( i = 0; i < 256; i++ )
+    for (i = 0; i < 256; i++) {
         m[i] = (unsigned char) i;
+    }
 
     j = k = 0;
 
-    for( i = 0; i < 256; i++, k++ )
-    {
-        if( k >= keylen ) k = 0;
+    for (i = 0; i < 256; i++, k++) {
+        if (k >= keylen) {
+            k = 0;
+        }
 
         a = m[i];
-        j = ( j + a + key[k] ) & 0xFF;
+        j = (j + a + key[k]) & 0xFF;
         m[i] = m[j];
         m[j] = (unsigned char) a;
     }
@@ -81,8 +84,8 @@ void mbedtls_arc4_setup( mbedtls_arc4_context *ctx, const unsigned char *key,
 /*
  * ARC4 cipher function
  */
-int mbedtls_arc4_crypt( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
-                unsigned char *output )
+int mbedtls_arc4_crypt(mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
+                       unsigned char *output)
 {
     int x, y, a, b;
     size_t i;
@@ -92,22 +95,21 @@ int mbedtls_arc4_crypt( mbedtls_arc4_context *ctx, size_t length, const unsigned
     y = ctx->y;
     m = ctx->m;
 
-    for( i = 0; i < length; i++ )
-    {
-        x = ( x + 1 ) & 0xFF; a = m[x];
-        y = ( y + a ) & 0xFF; b = m[y];
+    for (i = 0; i < length; i++) {
+        x = (x + 1) & 0xFF; a = m[x];
+        y = (y + a) & 0xFF; b = m[y];
 
         m[x] = (unsigned char) b;
         m[y] = (unsigned char) a;
 
         output[i] = (unsigned char)
-            ( input[i] ^ m[(unsigned char)( a + b )] );
+                    (input[i] ^ m[(unsigned char) (a + b)]);
     }
 
     ctx->x = x;
     ctx->y = y;
 
-    return( 0 );
+    return 0;
 }
 
 #endif /* !MBEDTLS_ARC4_ALT */
@@ -142,45 +144,47 @@ static const unsigned char arc4_test_ct[3][8] =
 /*
  * Checkup routine
  */
-int mbedtls_arc4_self_test( int verbose )
+int mbedtls_arc4_self_test(int verbose)
 {
     int i, ret = 0;
     unsigned char ibuf[8];
     unsigned char obuf[8];
     mbedtls_arc4_context ctx;
 
-    mbedtls_arc4_init( &ctx );
+    mbedtls_arc4_init(&ctx);
 
-    for( i = 0; i < 3; i++ )
-    {
-        if( verbose != 0 )
-            mbedtls_printf( "  ARC4 test #%d: ", i + 1 );
+    for (i = 0; i < 3; i++) {
+        if (verbose != 0) {
+            mbedtls_printf("  ARC4 test #%d: ", i + 1);
+        }
 
-        memcpy( ibuf, arc4_test_pt[i], 8 );
+        memcpy(ibuf, arc4_test_pt[i], 8);
 
-        mbedtls_arc4_setup( &ctx, arc4_test_key[i], 8 );
-        mbedtls_arc4_crypt( &ctx, 8, ibuf, obuf );
+        mbedtls_arc4_setup(&ctx, arc4_test_key[i], 8);
+        mbedtls_arc4_crypt(&ctx, 8, ibuf, obuf);
 
-        if( memcmp( obuf, arc4_test_ct[i], 8 ) != 0 )
-        {
-            if( verbose != 0 )
-                mbedtls_printf( "failed\n" );
+        if (memcmp(obuf, arc4_test_ct[i], 8) != 0) {
+            if (verbose != 0) {
+                mbedtls_printf("failed\n");
+            }
 
             ret = 1;
             goto exit;
         }
 
-        if( verbose != 0 )
-            mbedtls_printf( "passed\n" );
+        if (verbose != 0) {
+            mbedtls_printf("passed\n");
+        }
     }
 
-    if( verbose != 0 )
-        mbedtls_printf( "\n" );
+    if (verbose != 0) {
+        mbedtls_printf("\n");
+    }
 
 exit:
-    mbedtls_arc4_free( &ctx );
+    mbedtls_arc4_free(&ctx);
 
-    return( ret );
+    return ret;
 }
 
 #endif /* MBEDTLS_SELF_TEST */

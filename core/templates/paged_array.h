@@ -112,7 +112,7 @@ public:
 	}
 
 	void configure(uint32_t p_page_size) {
-		ERR_FAIL_COND(page_pool != nullptr); //sanity check
+		ERR_FAIL_COND(page_pool != nullptr); // Safety check.
 		ERR_FAIL_COND(p_page_size == 0);
 		page_size = nearest_power_of_2_templated(p_page_size);
 	}
@@ -185,7 +185,7 @@ public:
 			uint32_t new_page_count = page_count + 1;
 
 			if (unlikely(new_page_count > max_pages_used)) {
-				ERR_FAIL_COND(page_pool == nullptr); //sanity check
+				ERR_FAIL_NULL(page_pool); // Safety check.
 
 				_grow_page_array(); //keep out of inline
 			}
@@ -352,7 +352,7 @@ public:
 	}
 
 	void set_page_pool(PagedArrayPool<T> *p_page_pool) {
-		ERR_FAIL_COND(max_pages_used > 0); //sanity check
+		ERR_FAIL_COND(max_pages_used > 0); // Safety check.
 
 		page_pool = p_page_pool;
 		page_size_mask = page_pool->get_page_size_mask();

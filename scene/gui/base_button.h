@@ -152,6 +152,7 @@ class ButtonGroup : public Resource {
 	GDCLASS(ButtonGroup, Resource);
 	friend class BaseButton;
 	HashSet<BaseButton *> buttons;
+	bool allow_unpress = false;
 
 protected:
 	static void _bind_methods();
@@ -160,6 +161,8 @@ public:
 	BaseButton *get_pressed_button();
 	void get_buttons(List<BaseButton *> *r_buttons);
 	TypedArray<BaseButton> _get_buttons();
+	void set_allow_unpress(bool p_enabled);
+	bool is_allow_unpress();
 	ButtonGroup();
 };
 

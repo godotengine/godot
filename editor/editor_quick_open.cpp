@@ -34,8 +34,8 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
-static Rect2i prev_rect = Rect2i();
-static bool was_showed = false;
+Rect2i EditorQuickOpen::prev_rect = Rect2i();
+bool EditorQuickOpen::was_showed = false;
 
 void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dont_clear) {
 	base_type = p_base;
@@ -257,7 +257,7 @@ void EditorQuickOpen::_notification(int p_what) {
 }
 
 void EditorQuickOpen::_theme_changed() {
-	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
 }
 
 void EditorQuickOpen::_bind_methods() {

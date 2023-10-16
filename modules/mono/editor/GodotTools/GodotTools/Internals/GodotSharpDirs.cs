@@ -48,21 +48,23 @@ namespace GodotTools.Internals
             }
         }
 
+
+        public static string CSharpProjectName
+        {
+            get
+            {
+                Internal.godot_icall_GodotSharpDirs_CSharpProjectName(out godot_string dest);
+                using (dest)
+                    return Marshaling.ConvertStringToManaged(dest);
+            }
+        }
+
         public static void DetermineProjectLocation()
         {
-            static string DetermineProjectName()
-            {
-                string projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
-                projectAssemblyName = projectAssemblyName.ToSafeDirName();
-                if (string.IsNullOrEmpty(projectAssemblyName))
-                    projectAssemblyName = "UnnamedProject";
-                return projectAssemblyName;
-            }
-
             _projectAssemblyName = (string)ProjectSettings.GetSetting("dotnet/project/assembly_name");
             if (string.IsNullOrEmpty(_projectAssemblyName))
             {
-                _projectAssemblyName = DetermineProjectName();
+                _projectAssemblyName = CSharpProjectName;
                 ProjectSettings.SetSetting("dotnet/project/assembly_name", _projectAssemblyName);
             }
 
@@ -113,6 +115,16 @@ namespace GodotTools.Internals
                 if (_projectCsProjPath == null)
                     DetermineProjectLocation();
                 return _projectCsProjPath;
+            }
+        }
+
+        public static string ProjectBaseOutputPath
+        {
+            get
+            {
+                if (_projectCsProjPath == null)
+                    DetermineProjectLocation();
+                return Path.Combine(Path.GetDirectoryName(_projectCsProjPath)!, ".godot", "mono", "temp", "bin");
             }
         }
 

@@ -34,20 +34,24 @@
 #include "core/string/print_string.h"
 #include "core/variant/typed_array.h"
 
-void PhysicsServer3DRenderingServerHandler::set_vertex(int p_vertex_id, const void *p_vector3) {
-	GDVIRTUAL_REQUIRED_CALL(_set_vertex, p_vertex_id, p_vector3);
+void PhysicsServer3DRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
+	GDVIRTUAL_REQUIRED_CALL(_set_vertex, p_vertex_id, p_vertex);
 }
-void PhysicsServer3DRenderingServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
-	GDVIRTUAL_REQUIRED_CALL(_set_normal, p_vertex_id, p_vector3);
+void PhysicsServer3DRenderingServerHandler::set_normal(int p_vertex_id, const Vector3 &p_normal) {
+	GDVIRTUAL_REQUIRED_CALL(_set_normal, p_vertex_id, p_normal);
 }
 void PhysicsServer3DRenderingServerHandler::set_aabb(const AABB &p_aabb) {
 	GDVIRTUAL_REQUIRED_CALL(_set_aabb, p_aabb);
 }
 
 void PhysicsServer3DRenderingServerHandler::_bind_methods() {
-	GDVIRTUAL_BIND(_set_vertex, "vertex_id", "vertices");
-	GDVIRTUAL_BIND(_set_normal, "vertex_id", "normals");
+	GDVIRTUAL_BIND(_set_vertex, "vertex_id", "vertex");
+	GDVIRTUAL_BIND(_set_normal, "vertex_id", "normal");
 	GDVIRTUAL_BIND(_set_aabb, "aabb");
+
+	ClassDB::bind_method(D_METHOD("set_vertex", "vertex_id", "vertex"), &PhysicsServer3DRenderingServerHandler::set_vertex);
+	ClassDB::bind_method(D_METHOD("set_normal", "vertex_id", "normal"), &PhysicsServer3DRenderingServerHandler::set_normal);
+	ClassDB::bind_method(D_METHOD("set_aabb", "aabb"), &PhysicsServer3DRenderingServerHandler::set_aabb);
 }
 
 PhysicsServer3D *PhysicsServer3D::singleton = nullptr;
@@ -139,6 +143,7 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_contact_local_normal", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_local_normal);
 	ClassDB::bind_method(D_METHOD("get_contact_impulse", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_impulse);
 	ClassDB::bind_method(D_METHOD("get_contact_local_shape", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_local_shape);
+	ClassDB::bind_method(D_METHOD("get_contact_local_velocity_at_position", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_local_velocity_at_position);
 	ClassDB::bind_method(D_METHOD("get_contact_collider", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_collider);
 	ClassDB::bind_method(D_METHOD("get_contact_collider_position", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_collider_position);
 	ClassDB::bind_method(D_METHOD("get_contact_collider_id", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_collider_id);
@@ -361,6 +366,7 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 	Dictionary d;
 	d["position"] = result.position;
 	d["normal"] = result.normal;
+	d["face_index"] = result.face_index;
 	d["collider_id"] = result.collider_id;
 	d["collider"] = result.collider;
 	d["shape"] = result.shape;
@@ -495,6 +501,7 @@ TypedArray<RID> PhysicsTestMotionParameters3D::get_exclude_bodies() const {
 }
 
 void PhysicsTestMotionParameters3D::set_exclude_bodies(const TypedArray<RID> &p_exclude) {
+	parameters.exclude_bodies.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
 		parameters.exclude_bodies.insert(p_exclude[i]);
 	}
@@ -513,6 +520,7 @@ TypedArray<uint64_t> PhysicsTestMotionParameters3D::get_exclude_objects() const 
 }
 
 void PhysicsTestMotionParameters3D::set_exclude_objects(const TypedArray<uint64_t> &p_exclude) {
+	parameters.exclude_objects.clear();
 	for (int i = 0; i < p_exclude.size(); ++i) {
 		ObjectID object_id = p_exclude[i];
 		ERR_CONTINUE(object_id.is_null());
@@ -1059,9 +1067,9 @@ PhysicsServer3D::PhysicsServer3D() {
 	GLOBAL_DEF("physics/3d/sleep_threshold_angular", Math::deg_to_rad(8.0));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/3d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), 16);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"), 0.01);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"), 0.05);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"), 0.01);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater"), 0.01);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater"), 0.05);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0.001,0.1,0.001,or_greater"), 0.01);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.8);
 }
 
@@ -1078,6 +1086,7 @@ void PhysicsServer3DManager::on_servers_changed() {
 		physics_servers2 += "," + get_server_name(i);
 	}
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers2));
+	ProjectSettings::get_singleton()->set_restart_if_changed(setting_property_name, true);
 }
 
 void PhysicsServer3DManager::_bind_methods() {

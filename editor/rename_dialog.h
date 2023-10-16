@@ -34,13 +34,17 @@
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 
-#include "editor/scene_tree_editor.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
+#include "editor/gui/scene_tree_editor.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/tab_container.h"
+#include "scene/gui/line_edit.h"
+
+class Button;
+class CheckBox;
+class CheckButton;
+class Label;
+class OptionButton;
+class SpinBox;
+class TabContainer;
 
 class RenameDialog : public ConfirmationDialog {
 	GDCLASS(RenameDialog, ConfirmationDialog);

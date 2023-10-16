@@ -30,11 +30,15 @@
 
 #include "nav_map.h"
 
-#include "core/object/worker_thread_pool.h"
 #include "nav_agent.h"
 #include "nav_link.h"
+#include "nav_obstacle.h"
 #include "nav_region.h"
-#include <algorithm>
+
+#include "core/config/project_settings.h"
+#include "core/object/worker_thread_pool.h"
+
+#include <Obstacle2d.h>
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 
@@ -51,29 +55,57 @@
 	}
 
 void NavMap::set_up(Vector3 p_up) {
+	if (up == p_up) {
+		return;
+	}
 	up = p_up;
 	regenerate_polygons = true;
 }
 
 void NavMap::set_cell_size(real_t p_cell_size) {
+	if (cell_size == p_cell_size) {
+		return;
+	}
 	cell_size = p_cell_size;
 	regenerate_polygons = true;
 }
 
+void NavMap::set_cell_height(real_t p_cell_height) {
+	if (cell_height == p_cell_height) {
+		return;
+	}
+	cell_height = p_cell_height;
+	regenerate_polygons = true;
+}
+
+void NavMap::set_use_edge_connections(bool p_enabled) {
+	if (use_edge_connections == p_enabled) {
+		return;
+	}
+	use_edge_connections = p_enabled;
+	regenerate_links = true;
+}
+
 void NavMap::set_edge_connection_margin(real_t p_edge_connection_margin) {
+	if (edge_connection_margin == p_edge_connection_margin) {
+		return;
+	}
 	edge_connection_margin = p_edge_connection_margin;
 	regenerate_links = true;
 }
 
 void NavMap::set_link_connection_radius(real_t p_link_connection_radius) {
+	if (link_connection_radius == p_link_connection_radius) {
+		return;
+	}
 	link_connection_radius = p_link_connection_radius;
 	regenerate_links = true;
 }
 
 gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
-	const int x = int(Math::floor(p_pos.x / cell_size));
-	const int y = int(Math::floor(p_pos.y / cell_size));
-	const int z = int(Math::floor(p_pos.z / cell_size));
+	const int x = static_cast<int>(Math::floor(p_pos.x / cell_size));
+	const int y = static_cast<int>(Math::floor(p_pos.y / cell_height));
+	const int z = static_cast<int>(Math::floor(p_pos.z / cell_size));
 
 	gd::PointKey p;
 	p.key = 0;
@@ -84,6 +116,7 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 }
 
 Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector<Vector3>(), "NavigationServer map query failed because it was made before first map synchronization.");
 	// Clear metadata outputs.
 	if (r_path_types) {
 		r_path_types->clear();
@@ -268,6 +301,46 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				}
 			}
 
+			// Search all faces of start polygon as well.
+			bool closest_point_on_start_poly = false;
+			for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
+				Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
+				Vector3 spoint = f.get_closest_point_to(p_destination);
+				real_t dpoint = spoint.distance_to(p_destination);
+				if (dpoint < end_d) {
+					end_point = spoint;
+					end_d = dpoint;
+					closest_point_on_start_poly = true;
+				}
+			}
+
+			if (closest_point_on_start_poly) {
+				// No point to run PostProcessing when start and end convex polygon is the same.
+				if (r_path_types) {
+					r_path_types->resize(2);
+					r_path_types->write[0] = begin_poly->owner->get_type();
+					r_path_types->write[1] = begin_poly->owner->get_type();
+				}
+
+				if (r_path_rids) {
+					r_path_rids->resize(2);
+					(*r_path_rids)[0] = begin_poly->owner->get_self();
+					(*r_path_rids)[1] = begin_poly->owner->get_self();
+				}
+
+				if (r_path_owners) {
+					r_path_owners->resize(2);
+					r_path_owners->write[0] = begin_poly->owner->get_owner_id();
+					r_path_owners->write[1] = begin_poly->owner->get_owner_id();
+				}
+
+				Vector<Vector3> path;
+				path.resize(2);
+				path.write[0] = begin_point;
+				path.write[1] = end_point;
+				return path;
+			}
+
 			// Reset open and navigation_polys
 			gd::NavigationPoly np = navigation_polys[0];
 			navigation_polys.clear();
@@ -313,9 +386,44 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		}
 	}
 
-	// If we did not find a route, return an empty path.
+	// We did not find a route but we have both a start polygon and an end polygon at this point.
+	// Usually this happens because there was not a single external or internal connected edge, e.g. our start polygon is an isolated, single convex polygon.
 	if (!found_route) {
-		return Vector<Vector3>();
+		end_d = FLT_MAX;
+		// Search all faces of the start polygon for the closest point to our target position.
+		for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
+			Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
+			Vector3 spoint = f.get_closest_point_to(p_destination);
+			real_t dpoint = spoint.distance_to(p_destination);
+			if (dpoint < end_d) {
+				end_point = spoint;
+				end_d = dpoint;
+			}
+		}
+
+		if (r_path_types) {
+			r_path_types->resize(2);
+			r_path_types->write[0] = begin_poly->owner->get_type();
+			r_path_types->write[1] = begin_poly->owner->get_type();
+		}
+
+		if (r_path_rids) {
+			r_path_rids->resize(2);
+			(*r_path_rids)[0] = begin_poly->owner->get_self();
+			(*r_path_rids)[1] = begin_poly->owner->get_self();
+		}
+
+		if (r_path_owners) {
+			r_path_owners->resize(2);
+			r_path_owners->write[0] = begin_poly->owner->get_owner_id();
+			r_path_owners->write[1] = begin_poly->owner->get_owner_id();
+		}
+
+		Vector<Vector3> path;
+		path.resize(2);
+		path.write[0] = begin_point;
+		path.write[1] = end_point;
+		return path;
 	}
 
 	Vector<Vector3> path;
@@ -323,6 +431,17 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	if (p_optimize) {
 		// Set the apex poly/point to the end point
 		gd::NavigationPoly *apex_poly = &navigation_polys[least_cost_id];
+
+		Vector3 back_pathway[2] = { apex_poly->back_navigation_edge_pathway_start, apex_poly->back_navigation_edge_pathway_end };
+		const Vector3 back_edge_closest_point = Geometry3D::get_closest_point_to_segment(end_point, back_pathway);
+		if (end_point.is_equal_approx(back_edge_closest_point)) {
+			// The end point is basically on top of the last crossed edge, funneling around the corners would at best do nothing.
+			// At worst it would add an unwanted path point before the last point due to precision issues so skip to the next polygon.
+			if (apex_poly->back_navigation_poly_id != -1) {
+				apex_poly = &navigation_polys[apex_poly->back_navigation_poly_id];
+			}
+		}
+
 		Vector3 apex_point = end_point;
 
 		gd::NavigationPoly *left_poly = apex_poly;
@@ -457,6 +576,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 }
 
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
 	real_t closest_point_d = FLT_MAX;
@@ -504,16 +624,19 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 }
 
 Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.point;
 }
 
 Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.normal;
 }
 
 RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, RID(), "NavigationServer map query failed because it was made before first map synchronization.");
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.owner;
 }
@@ -522,9 +645,7 @@ gd::ClosestPointQueryResult NavMap::get_closest_point_info(const Vector3 &p_poin
 	gd::ClosestPointQueryResult result;
 	real_t closest_point_ds = FLT_MAX;
 
-	for (size_t i(0); i < polygons.size(); i++) {
-		const gd::Polygon &p = polygons[i];
-
+	for (const gd::Polygon &p : polygons) {
 		// For each face check the distance to the point
 		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
 			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
@@ -549,7 +670,7 @@ void NavMap::add_region(NavRegion *p_region) {
 
 void NavMap::remove_region(NavRegion *p_region) {
 	int64_t region_index = regions.find(p_region);
-	if (region_index != -1) {
+	if (region_index >= 0) {
 		regions.remove_at_unordered(region_index);
 		regenerate_links = true;
 	}
@@ -562,14 +683,14 @@ void NavMap::add_link(NavLink *p_link) {
 
 void NavMap::remove_link(NavLink *p_link) {
 	int64_t link_index = links.find(p_link);
-	if (link_index != -1) {
+	if (link_index >= 0) {
 		links.remove_at_unordered(link_index);
 		regenerate_links = true;
 	}
 }
 
 bool NavMap::has_agent(NavAgent *agent) const {
-	return (agents.find(agent) != -1);
+	return (agents.find(agent) >= 0);
 }
 
 void NavMap::add_agent(NavAgent *agent) {
@@ -582,25 +703,68 @@ void NavMap::add_agent(NavAgent *agent) {
 void NavMap::remove_agent(NavAgent *agent) {
 	remove_agent_as_controlled(agent);
 	int64_t agent_index = agents.find(agent);
-	if (agent_index != -1) {
+	if (agent_index >= 0) {
 		agents.remove_at_unordered(agent_index);
 		agents_dirty = true;
 	}
 }
 
+bool NavMap::has_obstacle(NavObstacle *obstacle) const {
+	return (obstacles.find(obstacle) >= 0);
+}
+
+void NavMap::add_obstacle(NavObstacle *obstacle) {
+	if (obstacle->get_paused()) {
+		// No point in adding a paused obstacle, it will add itself when unpaused again.
+		return;
+	}
+
+	if (!has_obstacle(obstacle)) {
+		obstacles.push_back(obstacle);
+		obstacles_dirty = true;
+	}
+}
+
+void NavMap::remove_obstacle(NavObstacle *obstacle) {
+	int64_t obstacle_index = obstacles.find(obstacle);
+	if (obstacle_index >= 0) {
+		obstacles.remove_at_unordered(obstacle_index);
+		obstacles_dirty = true;
+	}
+}
+
 void NavMap::set_agent_as_controlled(NavAgent *agent) {
-	const bool exist = (controlled_agents.find(agent) != -1);
-	if (!exist) {
-		ERR_FAIL_COND(!has_agent(agent));
-		controlled_agents.push_back(agent);
-		agents_dirty = true;
+	remove_agent_as_controlled(agent);
+
+	if (agent->get_paused()) {
+		// No point in adding a paused agent, it will add itself when unpaused again.
+		return;
+	}
+
+	if (agent->get_use_3d_avoidance()) {
+		int64_t agent_3d_index = active_3d_avoidance_agents.find(agent);
+		if (agent_3d_index < 0) {
+			active_3d_avoidance_agents.push_back(agent);
+			agents_dirty = true;
+		}
+	} else {
+		int64_t agent_2d_index = active_2d_avoidance_agents.find(agent);
+		if (agent_2d_index < 0) {
+			active_2d_avoidance_agents.push_back(agent);
+			agents_dirty = true;
+		}
 	}
 }
 
 void NavMap::remove_agent_as_controlled(NavAgent *agent) {
-	int64_t active_avoidance_agent_index = controlled_agents.find(agent);
-	if (active_avoidance_agent_index != -1) {
-		controlled_agents.remove_at_unordered(active_avoidance_agent_index);
+	int64_t agent_3d_index = active_3d_avoidance_agents.find(agent);
+	if (agent_3d_index >= 0) {
+		active_3d_avoidance_agents.remove_at_unordered(agent_3d_index);
+		agents_dirty = true;
+	}
+	int64_t agent_2d_index = active_2d_avoidance_agents.find(agent);
+	if (agent_2d_index >= 0) {
+		active_2d_avoidance_agents.remove_at_unordered(agent_2d_index);
 		agents_dirty = true;
 	}
 }
@@ -651,6 +815,9 @@ void NavMap::sync() {
 		// Resize the polygon count.
 		int count = 0;
 		for (const NavRegion *region : regions) {
+			if (!region->get_enabled()) {
+				continue;
+			}
 			count += region->get_polygons().size();
 		}
 		polygons.resize(count);
@@ -658,6 +825,9 @@ void NavMap::sync() {
 		// Copy all region polygons in the map.
 		count = 0;
 		for (const NavRegion *region : regions) {
+			if (!region->get_enabled()) {
+				continue;
+			}
 			const LocalVector<gd::Polygon> &polygons_source = region->get_polygons();
 			for (uint32_t n = 0; n < polygons_source.size(); n++) {
 				polygons[count + n] = polygons_source[n];
@@ -689,7 +859,7 @@ void NavMap::sync() {
 					connections[ek].push_back(new_connection);
 				} else {
 					// The edge is already connected with another edge, skip.
-					ERR_PRINT_ONCE("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the current `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problems.");
+					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'.");
 				}
 			}
 		}
@@ -706,7 +876,9 @@ void NavMap::sync() {
 				_new_pm_edge_merge_count += 1;
 			} else {
 				CRASH_COND_MSG(E.value.size() != 1, vformat("Number of connection != 1. Found: %d", E.value.size()));
-				free_edges.push_back(E.value[0]);
+				if (use_edge_connections && E.value[0].polygon->owner->get_use_edge_connections()) {
+					free_edges.push_back(E.value[0]);
+				}
 			}
 		}
 
@@ -888,25 +1060,34 @@ void NavMap::sync() {
 		}
 
 		// Update the update ID.
-		map_update_id = (map_update_id + 1) % 9999999;
+		// Some code treats 0 as a failure case, so we avoid returning 0.
+		map_update_id = map_update_id % 9999999 + 1;
 	}
 
-	// Update agents tree.
-	if (agents_dirty) {
-		// cannot use LocalVector here as RVO library expects std::vector to build KdTree
-		std::vector<RVO::Agent *> raw_agents;
-		raw_agents.reserve(controlled_agents.size());
-		for (NavAgent *controlled_agent : controlled_agents) {
-			raw_agents.push_back(controlled_agent->get_agent());
+	// Do we have modified obstacle positions?
+	for (NavObstacle *obstacle : obstacles) {
+		if (obstacle->check_dirty()) {
+			obstacles_dirty = true;
 		}
-		rvo.buildAgentTree(raw_agents);
+	}
+	// Do we have modified agent arrays?
+	for (NavAgent *agent : agents) {
+		if (agent->check_dirty()) {
+			agents_dirty = true;
+		}
+	}
+
+	// Update avoidance worlds.
+	if (obstacles_dirty || agents_dirty) {
+		_update_rvo_simulation();
 	}
 
 	regenerate_polygons = false;
 	regenerate_links = false;
+	obstacles_dirty = false;
 	agents_dirty = false;
 
-	// Performance Monitor
+	// Performance Monitor.
 	pm_region_count = _new_pm_region_count;
 	pm_agent_count = _new_pm_agent_count;
 	pm_link_count = _new_pm_link_count;
@@ -917,22 +1098,155 @@ void NavMap::sync() {
 	pm_edge_free_count = _new_pm_edge_free_count;
 }
 
-void NavMap::compute_single_step(uint32_t index, NavAgent **agent) {
-	(*(agent + index))->get_agent()->computeNeighbors(&rvo);
-	(*(agent + index))->get_agent()->computeNewVelocity(deltatime);
+void NavMap::_update_rvo_obstacles_tree_2d() {
+	int obstacle_vertex_count = 0;
+	for (NavObstacle *obstacle : obstacles) {
+		obstacle_vertex_count += obstacle->get_vertices().size();
+	}
+
+	// Cannot use LocalVector here as RVO library expects std::vector to build KdTree
+	std::vector<RVO2D::Obstacle2D *> raw_obstacles;
+	raw_obstacles.reserve(obstacle_vertex_count);
+
+	// The following block is modified copy from RVO2D::AddObstacle()
+	// Obstacles are linked and depend on all other obstacles.
+	for (NavObstacle *obstacle : obstacles) {
+		const Vector3 &_obstacle_position = obstacle->get_position();
+		const Vector<Vector3> &_obstacle_vertices = obstacle->get_vertices();
+
+		if (_obstacle_vertices.size() < 2) {
+			continue;
+		}
+
+		std::vector<RVO2D::Vector2> rvo_2d_vertices;
+		rvo_2d_vertices.reserve(_obstacle_vertices.size());
+
+		uint32_t _obstacle_avoidance_layers = obstacle->get_avoidance_layers();
+
+		for (const Vector3 &_obstacle_vertex : _obstacle_vertices) {
+			rvo_2d_vertices.push_back(RVO2D::Vector2(_obstacle_vertex.x + _obstacle_position.x, _obstacle_vertex.z + _obstacle_position.z));
+		}
+
+		const size_t obstacleNo = raw_obstacles.size();
+
+		for (size_t i = 0; i < rvo_2d_vertices.size(); i++) {
+			RVO2D::Obstacle2D *rvo_2d_obstacle = new RVO2D::Obstacle2D();
+			rvo_2d_obstacle->point_ = rvo_2d_vertices[i];
+			rvo_2d_obstacle->avoidance_layers_ = _obstacle_avoidance_layers;
+
+			if (i != 0) {
+				rvo_2d_obstacle->prevObstacle_ = raw_obstacles.back();
+				rvo_2d_obstacle->prevObstacle_->nextObstacle_ = rvo_2d_obstacle;
+			}
+
+			if (i == rvo_2d_vertices.size() - 1) {
+				rvo_2d_obstacle->nextObstacle_ = raw_obstacles[obstacleNo];
+				rvo_2d_obstacle->nextObstacle_->prevObstacle_ = rvo_2d_obstacle;
+			}
+
+			rvo_2d_obstacle->unitDir_ = normalize(rvo_2d_vertices[(i == rvo_2d_vertices.size() - 1 ? 0 : i + 1)] - rvo_2d_vertices[i]);
+
+			if (rvo_2d_vertices.size() == 2) {
+				rvo_2d_obstacle->isConvex_ = true;
+			} else {
+				rvo_2d_obstacle->isConvex_ = (leftOf(rvo_2d_vertices[(i == 0 ? rvo_2d_vertices.size() - 1 : i - 1)], rvo_2d_vertices[i], rvo_2d_vertices[(i == rvo_2d_vertices.size() - 1 ? 0 : i + 1)]) >= 0.0f);
+			}
+
+			rvo_2d_obstacle->id_ = raw_obstacles.size();
+
+			raw_obstacles.push_back(rvo_2d_obstacle);
+		}
+	}
+
+	rvo_simulation_2d.kdTree_->buildObstacleTree(raw_obstacles);
+}
+
+void NavMap::_update_rvo_agents_tree_2d() {
+	// Cannot use LocalVector here as RVO library expects std::vector to build KdTree.
+	std::vector<RVO2D::Agent2D *> raw_agents;
+	raw_agents.reserve(active_2d_avoidance_agents.size());
+	for (NavAgent *agent : active_2d_avoidance_agents) {
+		raw_agents.push_back(agent->get_rvo_agent_2d());
+	}
+	rvo_simulation_2d.kdTree_->buildAgentTree(raw_agents);
+}
+
+void NavMap::_update_rvo_agents_tree_3d() {
+	// Cannot use LocalVector here as RVO library expects std::vector to build KdTree.
+	std::vector<RVO3D::Agent3D *> raw_agents;
+	raw_agents.reserve(active_3d_avoidance_agents.size());
+	for (NavAgent *agent : active_3d_avoidance_agents) {
+		raw_agents.push_back(agent->get_rvo_agent_3d());
+	}
+	rvo_simulation_3d.kdTree_->buildAgentTree(raw_agents);
+}
+
+void NavMap::_update_rvo_simulation() {
+	if (obstacles_dirty) {
+		_update_rvo_obstacles_tree_2d();
+	}
+	if (agents_dirty) {
+		_update_rvo_agents_tree_2d();
+		_update_rvo_agents_tree_3d();
+	}
+}
+
+void NavMap::compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent) {
+	(*(agent + index))->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
+	(*(agent + index))->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
+	(*(agent + index))->get_rvo_agent_2d()->update(&rvo_simulation_2d);
+	(*(agent + index))->update();
+}
+
+void NavMap::compute_single_avoidance_step_3d(uint32_t index, NavAgent **agent) {
+	(*(agent + index))->get_rvo_agent_3d()->computeNeighbors(&rvo_simulation_3d);
+	(*(agent + index))->get_rvo_agent_3d()->computeNewVelocity(&rvo_simulation_3d);
+	(*(agent + index))->get_rvo_agent_3d()->update(&rvo_simulation_3d);
+	(*(agent + index))->update();
 }
 
 void NavMap::step(real_t p_deltatime) {
 	deltatime = p_deltatime;
-	if (controlled_agents.size() > 0) {
-		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_step, controlled_agents.ptr(), controlled_agents.size(), -1, true, SNAME("NavigationMapAgents"));
-		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
+	rvo_simulation_2d.setTimeStep(float(deltatime));
+	rvo_simulation_3d.setTimeStep(float(deltatime));
+
+	if (active_2d_avoidance_agents.size() > 0) {
+		if (use_threads && avoidance_use_multiple_threads) {
+			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_avoidance_step_2d, active_2d_avoidance_agents.ptr(), active_2d_avoidance_agents.size(), -1, true, SNAME("RVOAvoidanceAgents2D"));
+			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+		} else {
+			for (NavAgent *agent : active_2d_avoidance_agents) {
+				agent->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
+				agent->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
+				agent->get_rvo_agent_2d()->update(&rvo_simulation_2d);
+				agent->update();
+			}
+		}
+	}
+
+	if (active_3d_avoidance_agents.size() > 0) {
+		if (use_threads && avoidance_use_multiple_threads) {
+			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_avoidance_step_3d, active_3d_avoidance_agents.ptr(), active_3d_avoidance_agents.size(), -1, true, SNAME("RVOAvoidanceAgents3D"));
+			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+		} else {
+			for (NavAgent *agent : active_3d_avoidance_agents) {
+				agent->get_rvo_agent_3d()->computeNeighbors(&rvo_simulation_3d);
+				agent->get_rvo_agent_3d()->computeNewVelocity(&rvo_simulation_3d);
+				agent->get_rvo_agent_3d()->update(&rvo_simulation_3d);
+				agent->update();
+			}
+		}
 	}
 }
 
 void NavMap::dispatch_callbacks() {
-	for (NavAgent *agent : controlled_agents) {
-		agent->dispatch_callback();
+	for (NavAgent *agent : active_2d_avoidance_agents) {
+		agent->dispatch_avoidance_callback();
+	}
+
+	for (NavAgent *agent : active_3d_avoidance_agents) {
+		agent->dispatch_avoidance_callback();
 	}
 }
 
@@ -970,6 +1284,8 @@ void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys
 }
 
 NavMap::NavMap() {
+	avoidance_use_multiple_threads = GLOBAL_GET("navigation/avoidance/thread_model/avoidance_use_multiple_threads");
+	avoidance_use_high_priority_threads = GLOBAL_GET("navigation/avoidance/thread_model/avoidance_use_high_priority_threads");
 }
 
 NavMap::~NavMap() {

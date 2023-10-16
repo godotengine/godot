@@ -588,6 +588,7 @@ VP8LConvertFunc VP8LConvertBGRAToBGR;
 VP8LMapARGBFunc VP8LMapColor32b;
 VP8LMapAlphaFunc VP8LMapColor8b;
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8LDspInitSSE2(void);
 extern void VP8LDspInitSSE41(void);
 extern void VP8LDspInitNEON(void);

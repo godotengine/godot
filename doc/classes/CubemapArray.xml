@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CubemapArray" inherits="ImageTextureLayered" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CubemapArray" inherits="ImageTextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A single composite texture resource which consists of multiple [Cubemap]s.
+		An array of [Cubemap]s, stored together and with a single reference.
 	</brief_description>
 	<description>
-		[CubemapArray]s are made of an array of [Cubemap]s. Accordingly, like [Cubemap]s they are made of multiple textures the amount of which must be divisible by 6 (one image for each face of the cube). The primary benefit of [CubemapArray]s is that they can be accessed in shader code using a single texture reference. In other words, you can pass multiple [Cubemap]s into a shader using a single [CubemapArray].
-		Generally, [CubemapArray]s provide a more efficient way for storing multiple [Cubemap]s compared to storing multiple [Cubemap]s themselves in an array.
-		Internally, Godot uses [CubemapArray]s for many effects including the [Sky], if you set [member ProjectSettings.rendering/reflections/sky_reflections/texture_array_reflections] to [code]true[/code].
-		To create such a texture file yourself, reimport your image files using the Godot Editor import presets.
+		[CubemapArray]s are made of an array of [Cubemap]s. Like [Cubemap]s, they are made of multiple textures, the amount of which must be divisible by 6 (one for each face of the cube). The primary benefit of [CubemapArray]s is that they can be accessed in shader code using a single texture reference. In other words, you can pass multiple [Cubemap]s into a shader using a single [CubemapArray].
+		Moreover, [Cubemap]s are allocated in adjacent cache regions on the GPU. This makes [CubemapArray]s the most efficient way to store multiple [Cubemap]s.
+		Internally, Godot uses [CubemapArray]s for many effects, including the [Sky] if you set [member ProjectSettings.rendering/reflections/sky_reflections/texture_array_reflections] to [code]true[/code].
+		To create such a texture file yourself, reimport your image files using the import presets of the File System dock.
 		[b]Note:[/b] [CubemapArray] is not supported in the OpenGL 3 rendering backend.
 	</description>
 	<tutorials>

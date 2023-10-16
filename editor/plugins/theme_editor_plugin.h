@@ -33,20 +33,22 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/plugins/theme_editor_preview.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/gui/tab_bar.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/theme.h"
 
+class Button;
+class CheckButton;
 class EditorFileDialog;
+class ItemList;
+class Label;
+class OptionButton;
 class PanelContainer;
+class TabBar;
 class TabContainer;
+class ThemeEditorPlugin;
+class TextureRect;
 
 class ThemeItemImportTree : public VBoxContainer {
 	GDCLASS(ThemeItemImportTree, VBoxContainer);
@@ -319,6 +321,11 @@ public:
 	ThemeTypeDialog();
 };
 
+// Custom `Label` needed to use `EditorHelpTooltip` to display theme item documentation.
+class ThemeItemLabel : public Label {
+	virtual Control *make_custom_tooltip(const String &p_text) const;
+};
+
 class ThemeTypeEditor : public MarginContainer {
 	GDCLASS(ThemeTypeEditor, MarginContainer);
 
@@ -418,6 +425,9 @@ public:
 class ThemeEditor : public VBoxContainer {
 	GDCLASS(ThemeEditor, VBoxContainer);
 
+	friend class ThemeEditorPlugin;
+	ThemeEditorPlugin *plugin = nullptr;
+
 	Ref<Theme> theme;
 
 	TabBar *preview_tabs = nullptr;
@@ -432,6 +442,7 @@ class ThemeEditor : public VBoxContainer {
 
 	void _theme_save_button_cbk(bool p_save_as);
 	void _theme_edit_button_cbk();
+	void _theme_close_button_cbk();
 
 	void _add_preview_button_cbk();
 	void _preview_scene_dialog_cbk(const String &p_path);
@@ -461,9 +472,10 @@ class ThemeEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Theme"; }
 	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_node) override;
-	virtual bool handles(Object *p_node) const override;
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
+	virtual bool can_auto_hide() const override;
 
 	ThemeEditorPlugin();
 };

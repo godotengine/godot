@@ -33,13 +33,16 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
+#include "scene/resources/image_texture.h"
 
 void EditorRunNative::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			remote_debug->set_icon(get_theme_icon(SNAME("PlayRemote"), SNAME("EditorIcons")));
+			remote_debug->set_icon(get_editor_theme_icon(SNAME("PlayRemote")));
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
 
@@ -76,7 +79,7 @@ void EditorRunNative::_notification(int p_what) {
 	}
 }
 
-Error EditorRunNative::run_native(int p_id) {
+Error EditorRunNative::start_run_native(int p_id) {
 	if (p_id < 0) {
 		return OK;
 	}
@@ -141,7 +144,7 @@ Error EditorRunNative::run_native(int p_id) {
 }
 
 void EditorRunNative::resume_run_native() {
-	run_native(resume_id);
+	start_run_native(resume_id);
 }
 
 void EditorRunNative::_bind_methods() {
@@ -154,8 +157,7 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 
 EditorRunNative::EditorRunNative() {
 	remote_debug = memnew(MenuButton);
-	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native));
-	remote_debug->set_icon(get_theme_icon(SNAME("PlayRemote"), SNAME("EditorIcons")));
+	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::start_run_native));
 	remote_debug->set_tooltip_text(TTR("Remote Debug"));
 	remote_debug->set_disabled(true);
 

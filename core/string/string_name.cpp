@@ -201,6 +201,14 @@ StringName::StringName(const StringName &p_name) {
 	}
 }
 
+void StringName::assign_static_unique_class_name(StringName *ptr, const char *p_name) {
+	mutex.lock();
+	if (*ptr == StringName()) {
+		*ptr = StringName(p_name, true);
+	}
+	mutex.unlock();
+}
+
 StringName::StringName(const char *p_name, bool p_static) {
 	_data = nullptr;
 
@@ -382,7 +390,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 StringName StringName::search(const char *p_name) {
 	ERR_FAIL_COND_V(!configured, StringName());
 
-	ERR_FAIL_COND_V(!p_name, StringName());
+	ERR_FAIL_NULL_V(p_name, StringName());
 	if (!p_name[0]) {
 		return StringName();
 	}
@@ -418,7 +426,7 @@ StringName StringName::search(const char *p_name) {
 StringName StringName::search(const char32_t *p_name) {
 	ERR_FAIL_COND_V(!configured, StringName());
 
-	ERR_FAIL_COND_V(!p_name, StringName());
+	ERR_FAIL_NULL_V(p_name, StringName());
 	if (!p_name[0]) {
 		return StringName();
 	}

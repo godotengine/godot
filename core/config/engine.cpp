@@ -33,9 +33,7 @@
 #include "core/authors.gen.h"
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
-#include "core/io/json.h"
 #include "core/license.gen.h"
-#include "core/os/os.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
 
@@ -74,6 +72,14 @@ void Engine::set_max_fps(int p_fps) {
 
 int Engine::get_max_fps() const {
 	return _max_fps;
+}
+
+void Engine::set_audio_output_latency(int p_msec) {
+	_audio_output_latency = p_msec > 1 ? p_msec : 1;
+}
+
+int Engine::get_audio_output_latency() const {
+	return _audio_output_latency;
 }
 
 uint64_t Engine::get_frames_drawn() {
@@ -241,6 +247,10 @@ bool Engine::is_validation_layers_enabled() const {
 	return use_validation_layers;
 }
 
+bool Engine::is_generate_spirv_debug_info_enabled() const {
+	return generate_spirv_debug_info;
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	CoreGlobals::print_error_enabled = p_enabled;
 }
@@ -250,14 +260,21 @@ bool Engine::is_printing_error_messages() const {
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {
-	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), "Can't register singleton that already exists: " + String(p_singleton.name));
+	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), vformat("Can't register singleton '%s' because it already exists.", p_singleton.name));
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
 
 Object *Engine::get_singleton_object(const StringName &p_name) const {
 	HashMap<StringName, Object *>::ConstIterator E = singleton_ptrs.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + String(p_name) + "'.");
+	ERR_FAIL_COND_V_MSG(!E, nullptr, vformat("Failed to retrieve non-existent singleton '%s'.", p_name));
+
+#ifdef TOOLS_ENABLED
+	if (!is_editor_hint() && is_singleton_editor_only(p_name)) {
+		ERR_FAIL_V_MSG(nullptr, vformat("Can't retrieve singleton '%s' outside of editor.", p_name));
+	}
+#endif
+
 	return E->value;
 }
 
@@ -272,6 +289,19 @@ bool Engine::is_singleton_user_created(const StringName &p_name) const {
 
 	return false;
 }
+
+bool Engine::is_singleton_editor_only(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!singleton_ptrs.has(p_name), false);
+
+	for (const Singleton &E : singletons) {
+		if (E.name == p_name && E.editor_only) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Engine::remove_singleton(const StringName &p_name) {
 	ERR_FAIL_COND(!singleton_ptrs.has(p_name));
 
@@ -290,6 +320,12 @@ bool Engine::has_singleton(const StringName &p_name) const {
 
 void Engine::get_singletons(List<Singleton> *p_singletons) {
 	for (const Singleton &E : singletons) {
+#ifdef TOOLS_ENABLED
+		if (!is_editor_hint() && E.editor_only) {
+			continue;
+		}
+#endif
+
 		p_singletons->push_back(E);
 	}
 }
@@ -317,43 +353,6 @@ Engine *Engine::get_singleton() {
 
 Engine::Engine() {
 	singleton = this;
-}
-
-void Engine::startup_begin() {
-	startup_benchmark_total_from = OS::get_singleton()->get_ticks_usec();
-}
-
-void Engine::startup_benchmark_begin_measure(const String &p_what) {
-	startup_benchmark_section = p_what;
-	startup_benchmark_from = OS::get_singleton()->get_ticks_usec();
-}
-void Engine::startup_benchmark_end_measure() {
-	uint64_t total = OS::get_singleton()->get_ticks_usec() - startup_benchmark_from;
-	double total_f = double(total) / double(1000000);
-
-	startup_benchmark_json[startup_benchmark_section] = total_f;
-}
-
-void Engine::startup_dump(const String &p_to_file) {
-	uint64_t total = OS::get_singleton()->get_ticks_usec() - startup_benchmark_total_from;
-	double total_f = double(total) / double(1000000);
-	startup_benchmark_json["total_time"] = total_f;
-
-	if (!p_to_file.is_empty()) {
-		Ref<FileAccess> f = FileAccess::open(p_to_file, FileAccess::WRITE);
-		if (f.is_valid()) {
-			Ref<JSON> json;
-			json.instantiate();
-			f->store_string(json->stringify(startup_benchmark_json, "\t", false, true));
-		}
-	} else {
-		List<Variant> keys;
-		startup_benchmark_json.get_key_list(&keys);
-		print_line("STARTUP BENCHMARK:");
-		for (const Variant &K : keys) {
-			print_line("\t-", K, ": ", startup_benchmark_json[K], +" sec.");
-		}
-	}
 }
 
 Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const StringName &p_class_name) :

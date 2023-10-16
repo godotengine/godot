@@ -32,6 +32,7 @@
 #define AUDIO_STREAM_PLAYER_2D_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
 
@@ -61,11 +62,12 @@ private:
 	Vector<AudioFrame> volume_vector;
 
 	uint64_t last_mix_count = -1;
+	bool force_update_panning = false;
 
 	float volume_db = 0.0;
 	float pitch_scale = 1.0;
 	bool autoplay = false;
-	StringName default_bus = SNAME("Master");
+	StringName default_bus = SceneStringNames::get_singleton()->Master;
 	int max_polyphony = 1;
 
 	void _set_playing(bool p_enable);
@@ -73,9 +75,11 @@ private:
 
 	StringName _get_actual_bus();
 	void _update_panning();
-	void _bus_layout_changed();
 
-	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->_update_panning(); }
+	void _on_bus_layout_changed();
+	void _on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name);
+
+	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
 
 	uint32_t area_mask = 1;
 

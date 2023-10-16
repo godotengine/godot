@@ -50,6 +50,7 @@ Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
 	{ &circ::in, &circ::out, &circ::in_out, &circ::out_in },
 	{ &bounce::in, &bounce::out, &bounce::in_out, &bounce::out_in },
 	{ &back::in, &back::out, &back::in_out, &back::out_in },
+	{ &spring::in, &spring::out, &spring::in_out, &spring::out_in },
 };
 
 void Tweener::set_tween(const Ref<Tween> &p_tween) {
@@ -283,10 +284,6 @@ bool Tween::step(double p_delta) {
 		return false;
 	}
 
-	if (!running) {
-		return true;
-	}
-
 	if (is_bound) {
 		Node *node = get_bound_node();
 		if (node) {
@@ -296,6 +293,10 @@ bool Tween::step(double p_delta) {
 		} else {
 			return false;
 		}
+	}
+
+	if (!running) {
+		return true;
 	}
 
 	if (!started) {
@@ -483,6 +484,7 @@ void Tween::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRANS_CIRC);
 	BIND_ENUM_CONSTANT(TRANS_BOUNCE);
 	BIND_ENUM_CONSTANT(TRANS_BACK);
+	BIND_ENUM_CONSTANT(TRANS_SPRING);
 
 	BIND_ENUM_CONSTANT(EASE_IN);
 	BIND_ENUM_CONSTANT(EASE_OUT);
@@ -544,8 +546,9 @@ void PropertyTweener::start() {
 		return;
 	}
 
-	if (do_continue) {
+	if (do_continue && Math::is_zero_approx(delay)) {
 		initial_val = target_instance->get_indexed(property);
+		do_continue = false;
 	}
 
 	if (relative) {
@@ -570,6 +573,10 @@ bool PropertyTweener::step(double &r_delta) {
 	if (elapsed_time < delay) {
 		r_delta = 0;
 		return true;
+	} else if (do_continue && !Math::is_zero_approx(delay)) {
+		initial_val = target_instance->get_indexed(property);
+		delta_val = Animation::subtract_variant(final_val, initial_val);
+		do_continue = false;
 	}
 
 	double time = MIN(elapsed_time - delay, duration);
@@ -668,6 +675,10 @@ bool CallbackTweener::step(double &r_delta) {
 		return false;
 	}
 
+	if (!callback.is_valid()) {
+		return false;
+	}
+
 	elapsed_time += r_delta;
 	if (elapsed_time >= delay) {
 		Variant result;
@@ -726,6 +737,10 @@ void MethodTweener::start() {
 
 bool MethodTweener::step(double &r_delta) {
 	if (finished) {
+		return false;
+	}
+
+	if (!callback.is_valid()) {
 		return false;
 	}
 

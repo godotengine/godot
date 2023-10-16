@@ -34,6 +34,7 @@
 #include "editor_network_profiler.h"
 #include "replication_editor.h"
 
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 
 void MultiplayerEditorDebugger::_bind_methods() {
@@ -119,7 +120,7 @@ MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 }
 
 void MultiplayerEditorPlugin::_open_request(const String &p_path) {
-	get_editor_interface()->open_scene_from_path(p_path);
+	EditorInterface::get_singleton()->open_scene_from_path(p_path);
 }
 
 void MultiplayerEditorPlugin::_notification(int p_what) {

@@ -12,9 +12,9 @@
     * BROTLI_BUILD_BIG_ENDIAN forces to use big-endian optimizations
     * BROTLI_BUILD_ENDIAN_NEUTRAL disables endian-aware optimizations
     * BROTLI_BUILD_LITTLE_ENDIAN forces to use little-endian optimizations
-    * BROTLI_BUILD_PORTABLE disables dangerous optimizations, like unaligned
-      read and overlapping memcpy; this reduces decompression speed by 5%
     * BROTLI_BUILD_NO_RBIT disables "rbit" optimization for ARM CPUs
+    * BROTLI_BUILD_NO_UNALIGNED_READ_FAST forces off the fast-unaligned-read
+      optimizations (mainly for testing purposes).
     * BROTLI_DEBUG dumps file name and line number when decoder detects stream
       or memory error
     * BROTLI_ENABLE_LOG enables asserts and dumps various state information
@@ -208,15 +208,19 @@ OR:
 #define BROTLI_TARGET_RISCV64
 #endif
 
+#if defined(BROTLI_TARGET_X64) || defined(BROTLI_TARGET_ARMV8_64) || \
+    defined(BROTLI_TARGET_POWERPC64) || defined(BROTLI_TARGET_RISCV64)
+#define BROTLI_TARGET_64_BITS 1
+#else
+#define BROTLI_TARGET_64_BITS 0
+#endif
+
 #if defined(BROTLI_BUILD_64_BIT)
 #define BROTLI_64_BITS 1
 #elif defined(BROTLI_BUILD_32_BIT)
 #define BROTLI_64_BITS 0
-#elif defined(BROTLI_TARGET_X64) || defined(BROTLI_TARGET_ARMV8_64) || \
-    defined(BROTLI_TARGET_POWERPC64) || defined(BROTLI_TARGET_RISCV64)
-#define BROTLI_64_BITS 1
 #else
-#define BROTLI_64_BITS 0
+#define BROTLI_64_BITS BROTLI_TARGET_64_BITS
 #endif
 
 #if (BROTLI_64_BITS)
@@ -260,18 +264,19 @@ OR:
 #undef BROTLI_X_BIG_ENDIAN
 #endif
 
-#if defined(BROTLI_BUILD_PORTABLE)
-#define BROTLI_ALIGNED_READ (!!1)
-#elif defined(BROTLI_TARGET_X86) || defined(BROTLI_TARGET_X64) || \
+#if defined(BROTLI_BUILD_NO_UNALIGNED_READ_FAST)
+#define BROTLI_UNALIGNED_READ_FAST (!!0)
+#elif defined(BROTLI_TARGET_X86) || defined(BROTLI_TARGET_X64) ||       \
     defined(BROTLI_TARGET_ARMV7) || defined(BROTLI_TARGET_ARMV8_ANY) || \
     defined(BROTLI_TARGET_RISCV64)
-/* Allow unaligned read only for white-listed CPUs. */
-#define BROTLI_ALIGNED_READ (!!0)
+/* These targets are known to generate efficient code for unaligned reads
+ * (e.g. a single instruction, not multiple 1-byte loads, shifted and or'd
+ * together). */
+#define BROTLI_UNALIGNED_READ_FAST (!!1)
 #else
-#define BROTLI_ALIGNED_READ (!!1)
+#define BROTLI_UNALIGNED_READ_FAST (!!0)
 #endif
 
-#if BROTLI_ALIGNED_READ
 /* Portable unaligned memory access: read / write values via memcpy. */
 static BROTLI_INLINE uint16_t BrotliUnalignedRead16(const void* p) {
   uint16_t t;
@@ -291,75 +296,6 @@ static BROTLI_INLINE uint64_t BrotliUnalignedRead64(const void* p) {
 static BROTLI_INLINE void BrotliUnalignedWrite64(void* p, uint64_t v) {
   memcpy(p, &v, sizeof v);
 }
-#else  /* BROTLI_ALIGNED_READ */
-/* Unaligned memory access is allowed: just cast pointer to requested type. */
-#if BROTLI_SANITIZED
-/* Consider we have an unaligned load/store of 4 bytes from address 0x...05.
-   AddressSanitizer will treat it as a 3-byte access to the range 05:07 and
-   will miss a bug if 08 is the first unaddressable byte.
-   ThreadSanitizer will also treat this as a 3-byte access to 05:07 and will
-   miss a race between this access and some other accesses to 08.
-   MemorySanitizer will correctly propagate the shadow on unaligned stores
-   and correctly report bugs on unaligned loads, but it may not properly
-   update and report the origin of the uninitialized memory.
-   For all three tools, replacing an unaligned access with a tool-specific
-   callback solves the problem. */
-#if defined(__cplusplus)
-extern "C" {
-#endif  /* __cplusplus */
-  uint16_t __sanitizer_unaligned_load16(const void* p);
-  uint32_t __sanitizer_unaligned_load32(const void* p);
-  uint64_t __sanitizer_unaligned_load64(const void* p);
-  void __sanitizer_unaligned_store64(void* p, uint64_t v);
-#if defined(__cplusplus)
-}  /* extern "C" */
-#endif  /* __cplusplus */
-#define BrotliUnalignedRead16 __sanitizer_unaligned_load16
-#define BrotliUnalignedRead32 __sanitizer_unaligned_load32
-#define BrotliUnalignedRead64 __sanitizer_unaligned_load64
-#define BrotliUnalignedWrite64 __sanitizer_unaligned_store64
-#else  /* BROTLI_SANITIZED */
-static BROTLI_INLINE uint16_t BrotliUnalignedRead16(const void* p) {
-  return *(const uint16_t*)p;
-}
-static BROTLI_INLINE uint32_t BrotliUnalignedRead32(const void* p) {
-  return *(const uint32_t*)p;
-}
-#if (BROTLI_64_BITS)
-static BROTLI_INLINE uint64_t BrotliUnalignedRead64(const void* p) {
-  return *(const uint64_t*)p;
-}
-static BROTLI_INLINE void BrotliUnalignedWrite64(void* p, uint64_t v) {
-  *(uint64_t*)p = v;
-}
-#else  /* BROTLI_64_BITS */
-/* Avoid emitting LDRD / STRD, which require properly aligned address. */
-/* If __attribute__(aligned) is available, use that. Otherwise, memcpy. */
-
-#if BROTLI_GNUC_HAS_ATTRIBUTE(aligned, 2, 7, 0)
-typedef BROTLI_ALIGNED(1) uint64_t brotli_unaligned_uint64_t;
-
-static BROTLI_INLINE uint64_t BrotliUnalignedRead64(const void* p) {
-  return (uint64_t) ((const brotli_unaligned_uint64_t*) p)[0];
-}
-static BROTLI_INLINE void BrotliUnalignedWrite64(void* p, uint64_t v) {
-  brotli_unaligned_uint64_t* dwords = (brotli_unaligned_uint64_t*) p;
-  dwords[0] = (brotli_unaligned_uint64_t) v;
-}
-#else /* BROTLI_GNUC_HAS_ATTRIBUTE(aligned, 2, 7, 0) */
-static BROTLI_INLINE uint64_t BrotliUnalignedRead64(const void* p) {
-  uint64_t v;
-  memcpy(&v, p, sizeof(uint64_t));
-  return v;
-}
-
-static BROTLI_INLINE void BrotliUnalignedWrite64(void* p, uint64_t v) {
-  memcpy(p, &v, sizeof(uint64_t));
-}
-#endif  /* BROTLI_GNUC_HAS_ATTRIBUTE(aligned, 2, 7, 0) */
-#endif  /* BROTLI_64_BITS */
-#endif  /* BROTLI_SANITIZED */
-#endif  /* BROTLI_ALIGNED_READ */
 
 #if BROTLI_LITTLE_ENDIAN
 /* Straight endianness. Just read / write values. */
@@ -435,6 +371,16 @@ static BROTLI_INLINE void BROTLI_UNALIGNED_STORE64LE(void* p, uint64_t v) {
 }
 #endif  /* BROTLI_LITTLE_ENDIAN */
 
+static BROTLI_INLINE void* BROTLI_UNALIGNED_LOAD_PTR(const void* p) {
+  void* v;
+  memcpy(&v, p, sizeof(void*));
+  return v;
+}
+
+static BROTLI_INLINE void BROTLI_UNALIGNED_STORE_PTR(void* p, const void* v) {
+  memcpy(p, &v, sizeof(void*));
+}
+
 /* BROTLI_IS_CONSTANT macros returns true for compile-time constants. */
 #if BROTLI_GNUC_HAS_BUILTIN(__builtin_constant_p, 3, 0, 1) || \
     BROTLI_INTEL_VERSION_CHECK(16, 0, 0)
@@ -467,6 +413,8 @@ static BROTLI_INLINE void BrotliDump(const char* f, int l, const char* fn) {
 #define BROTLI_DUMP() (void)(0)
 #endif
 
+/* BrotliRBit assumes brotli_reg_t fits native CPU register type. */
+#if (BROTLI_64_BITS == BROTLI_TARGET_64_BITS)
 /* TODO(eustas): add appropriate icc/sunpro/arm/ibm/ti checks. */
 #if (BROTLI_GNUC_VERSION_CHECK(3, 0, 0) || defined(__llvm__)) && \
     !defined(BROTLI_BUILD_NO_RBIT)
@@ -480,15 +428,14 @@ static BROTLI_INLINE brotli_reg_t BrotliRBit(brotli_reg_t input) {
 #define BROTLI_RBIT(x) BrotliRBit(x)
 #endif  /* armv7 / armv8 */
 #endif  /* gcc || clang */
+#endif  /* brotli_reg_t is native */
 #if !defined(BROTLI_RBIT)
 static BROTLI_INLINE void BrotliRBit(void) { /* Should break build if used. */ }
 #endif  /* BROTLI_RBIT */
 
-#define BROTLI_REPEAT(N, X) {     \
-  if ((N & 1) != 0) {X;}          \
-  if ((N & 2) != 0) {X; X;}       \
-  if ((N & 4) != 0) {X; X; X; X;} \
-}
+#define BROTLI_REPEAT_4(X) {X; X; X; X;}
+#define BROTLI_REPEAT_5(X) {X; X; X; X; X;}
+#define BROTLI_REPEAT_6(X) {X; X; X; X; X; X;}
 
 #define BROTLI_UNUSED(X) (void)(X)
 
@@ -553,6 +500,8 @@ BROTLI_UNUSED_FUNCTION void BrotliSuppressUnusedFunctions(void) {
   BROTLI_UNUSED(&BROTLI_UNALIGNED_LOAD32LE);
   BROTLI_UNUSED(&BROTLI_UNALIGNED_LOAD64LE);
   BROTLI_UNUSED(&BROTLI_UNALIGNED_STORE64LE);
+  BROTLI_UNUSED(&BROTLI_UNALIGNED_LOAD_PTR);
+  BROTLI_UNUSED(&BROTLI_UNALIGNED_STORE_PTR);
   BROTLI_UNUSED(&BrotliRBit);
   BROTLI_UNUSED(&brotli_min_double);
   BROTLI_UNUSED(&brotli_max_double);

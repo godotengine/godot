@@ -4,7 +4,7 @@
  *
  *   PostScript CFF (Type 2) decoding routines (body).
  *
- * Copyright (C) 2017-2022 by
+ * Copyright (C) 2017-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -2153,7 +2153,7 @@
                                       decoder->locals_bias );
 
 
-            FT_TRACE4(( " callsubr (idx %d, entering level %ld)\n",
+            FT_TRACE4(( " callsubr (idx %d, entering level %td)\n",
                         idx,
                         zone - decoder->zones + 1 ));
 
@@ -2197,7 +2197,7 @@
                                       decoder->globals_bias );
 
 
-            FT_TRACE4(( " callgsubr (idx %d, entering level %ld)\n",
+            FT_TRACE4(( " callgsubr (idx %d, entering level %td)\n",
                         idx,
                         zone - decoder->zones + 1 ));
 
@@ -2236,7 +2236,7 @@
           break;
 
         case cff_op_return:
-          FT_TRACE4(( " return (leaving level %ld)\n",
+          FT_TRACE4(( " return (leaving level %td)\n",
                       decoder->zone - decoder->zones ));
 
           if ( decoder->zone <= decoder->zones )

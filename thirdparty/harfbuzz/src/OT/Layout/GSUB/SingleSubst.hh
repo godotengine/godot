@@ -57,7 +57,7 @@ struct SingleSubst
 
 #ifndef HB_NO_BEYOND_64K
        if (+ glyphs
-	   | hb_map_retains_sorting (hb_first)
+	   | hb_map_retains_sorting (hb_second)
 	   | hb_filter ([] (hb_codepoint_t gid) { return gid > 0xFFFFu; }))
        {
 	 format += 2;

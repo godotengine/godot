@@ -116,8 +116,8 @@ func test():
 	assert(duplicated_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
-	var b_objects: Array[B] = [B.new(), null]
-	assert(b_objects.size() == 2)
+	var b_objects: Array[B] = [B.new(), B.new() as A, null]
+	assert(b_objects.size() == 3)
 	assert(b_objects.get_typed_builtin() == TYPE_OBJECT)
 	assert(b_objects.get_typed_script() == B)
 
@@ -126,7 +126,7 @@ func test():
 	assert(a_objects.get_typed_builtin() == TYPE_OBJECT)
 	assert(a_objects.get_typed_script() == A)
 
-	var a_passed = (func check_a_passing(a_objects: Array[A]): return a_objects.size()).call(a_objects)
+	var a_passed = (func check_a_passing(p_objects: Array[A]): return p_objects.size()).call(a_objects)
 	assert(a_passed == 4)
 
 	var b_passed = (func check_b_passing(basic: Array): return basic[0] != null).call(b_objects)

@@ -32,7 +32,6 @@
 #define GODOT_SHAPE_2D_H
 
 #include "servers/physics_server_2d.h"
-#define _SEGMENT_IS_VALID_SUPPORT_THRESHOLD 0.99998
 
 class GodotShape2D;
 
@@ -53,6 +52,10 @@ class GodotShape2D {
 	HashMap<GodotShapeOwner2D *, int> owners;
 
 protected:
+	const double segment_is_valid_support_threshold = 0.99998;
+	const double segment_is_valid_support_threshold_lower =
+			Math::sqrt(1.0 - segment_is_valid_support_threshold * segment_is_valid_support_threshold);
+
 	void configure(const Rect2 &p_aabb);
 
 public:
@@ -95,7 +98,7 @@ public:
 		}
 
 		if (r_amount == 1) {
-			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
+			if (Math::abs(p_normal.dot(p_cast.normalized())) < segment_is_valid_support_threshold_lower) {
 				//make line because they are parallel
 				r_amount = 2;
 				r_supports[1] = r_supports[0] + p_cast;
@@ -105,7 +108,7 @@ public:
 			}
 
 		} else {
-			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
+			if (Math::abs(p_normal.dot(p_cast.normalized())) < segment_is_valid_support_threshold_lower) {
 				//optimize line and make it larger because they are parallel
 				if ((r_supports[1] - r_supports[0]).dot(p_cast) > 0) {
 					//larger towards 1

@@ -32,6 +32,7 @@
 #include "../../../hb-ot-layout-common.hh"
 
 #include "../../../hb-font.hh"
+#include "../../../hb-cache.hh"
 
 
 namespace OT {
@@ -48,8 +49,6 @@ struct AttachPoint : Array16Of<HBUINT16>
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out)) return_trace (false);
-
     return_trace (out->serialize (c->serializer, + iter ()));
   }
 };
@@ -201,7 +200,6 @@ struct CaretValueFormat3
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out)) return_trace (false);
     if (!c->serializer->embed (caretValueFormat)) return_trace (false);
     if (!c->serializer->embed (coordinate)) return_trace (false);
 
@@ -441,6 +439,16 @@ struct MarkGlyphSetsFormat1
   bool covers (unsigned int set_index, hb_codepoint_t glyph_id) const
   { return (this+coverage[set_index]).get_coverage (glyph_id) != NOT_COVERED; }
 
+  template <typename set_t>
+  void collect_coverage (hb_vector_t<set_t> &sets) const
+  {
+     for (const auto &offset : coverage)
+     {
+       const auto &cov = this+offset;
+       cov.collect_coverage (sets.push ());
+     }
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -491,6 +499,15 @@ struct MarkGlyphSets
     switch (u.format) {
     case 1: return u.format1.covers (set_index, glyph_id);
     default:return false;
+    }
+  }
+
+  template <typename set_t>
+  void collect_coverage (hb_vector_t<set_t> &sets) const
+  {
+    switch (u.format) {
+    case 1: u.format1.collect_coverage (sets); return;
+    default:return;
     }
   }
 
@@ -858,10 +875,47 @@ struct GDEF
 	hb_blob_destroy (table.get_blob ());
 	table = hb_blob_get_empty ();
       }
+
+#ifndef HB_NO_GDEF_CACHE
+      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_set_digests);
+#endif
     }
     ~accelerator_t () { table.destroy (); }
 
+    unsigned int get_glyph_props (hb_codepoint_t glyph) const
+    {
+      unsigned v;
+
+#ifndef HB_NO_GDEF_CACHE
+      if (glyph_props_cache.get (glyph, &v))
+        return v;
+#endif
+
+      v = table->get_glyph_props (glyph);
+
+#ifndef HB_NO_GDEF_CACHE
+      if (likely (table.get_blob ())) // Don't try setting if we are the null instance!
+	glyph_props_cache.set (glyph, v);
+#endif
+
+      return v;
+
+    }
+
+    bool mark_set_covers (unsigned int set_index, hb_codepoint_t glyph_id) const
+    {
+      return
+#ifndef HB_NO_GDEF_CACHE
+	     mark_glyph_set_digests[set_index].may_have (glyph_id) &&
+#endif
+	     table->mark_set_covers (set_index, glyph_id);
+    }
+
     hb_blob_ptr_t<GDEF> table;
+#ifndef HB_NO_GDEF_CACHE
+    hb_vector_t<hb_set_digest_t> mark_glyph_set_digests;
+    mutable hb_cache_t<21, 3, 8> glyph_props_cache;
+#endif
   };
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const

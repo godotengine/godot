@@ -5,13 +5,21 @@ if [ ! -f "version.py" ]; then
   echo "Some of the paths checks may not work as intended from a different folder."
 fi
 
+if [ $# -eq 0 ]; then
+    # Loop through all code files tracked by Git.
+    files=$(find -name "thirdparty" -prune -o -name "*.h" -print | sed "s@^\./@@g")
+else
+    # $1 should be a file listing file paths to process. Used in CI.
+    files=$(cat "$1" | grep -v "thirdparty/" | grep -E "\.h$" | sed "s@^\./@@g")
+fi
+
 files_invalid_guard=""
 
-for file in $(find -name "thirdparty" -prune -o -name "*.h" -print); do
+for file in $files; do
   # Skip *.gen.h and *-so_wrap.h, they're generated.
   if [[ "$file" == *".gen.h" || "$file" == *"-so_wrap.h" ]]; then continue; fi
   # Has important define before normal header guards.
-  if [[ "$file" == *"thread.h" || "$file" == *"platform_config.h" ]]; then continue; fi
+  if [[ "$file" == *"thread.h" || "$file" == *"platform_config.h" || "$file" == *"platform_gl.h" ]]; then continue; fi
   # Obj-C files don't use header guards.
   if grep -q "#import " "$file"; then continue; fi
 
@@ -20,16 +28,16 @@ for file in $(find -name "thirdparty" -prune -o -name "*.h" -print); do
   # Add custom prefix or suffix for generic filenames with a well-defined namespace.
 
   prefix=
-  if [[ "$file" == "./modules/"*"/register_types.h" ]]; then
+  if [[ "$file" == "modules/"*"/register_types.h" ]]; then
     module=$(echo $file | sed "s@.*modules/\([^/]*\).*@\1@")
     prefix="${module^^}_"
   fi
-  if [[ "$file" == "./platform/"*"/api/api.h" || "$file" == "./platform/"*"/export/"* ]]; then
+  if [[ "$file" == "platform/"*"/api/api.h" || "$file" == "platform/"*"/export/"* ]]; then
     platform=$(echo $file | sed "s@.*platform/\([^/]*\).*@\1@")
     prefix="${platform^^}_"
   fi
-  if [[ "$file" == "./modules/mono/utils/"* && "$bname" != *"mono"* ]]; then prefix="MONO_"; fi
-  if [[ "$file" == "./servers/rendering/storage/utilities.h" ]]; then prefix="RENDERER_"; fi
+  if [[ "$file" == "modules/mono/utils/"* && "$bname" != *"mono"* ]]; then prefix="MONO_"; fi
+  if [[ "$file" == "servers/rendering/storage/utilities.h" ]]; then prefix="RENDERER_"; fi
 
   suffix=
   if [[ "$file" == *"dummy"* && "$bname" != *"dummy"* ]]; then suffix="_DUMMY"; fi
@@ -66,13 +74,14 @@ diff=$(git diff --color)
 
 # If no diff has been generated all is OK, clean up, and exit.
 if [ -z "$diff" ] ; then
-    printf "Files in this commit comply with the header guards formatting rules.\n"
+    printf "\e[1;32m*** Files in this commit comply with the header guards formatting rules.\e[0m\n"
     exit 0
 fi
 
 # A diff has been created, notify the user, clean up, and exit.
-printf "\n*** The following differences were found between the code "
-printf "and the header guards formatting rules:\n\n"
-echo "$diff"
-printf "\n*** Aborting, please fix your commit(s) with 'git commit --amend' or 'git rebase -i <hash>'\n"
+printf "\n\e[1;33m*** The following changes must be made to comply with the formatting rules:\e[0m\n\n"
+# Perl commands replace trailing spaces with `·` and tabs with `<TAB>`.
+printf "$diff\n" | perl -pe 's/(.*[^ ])( +)(\e\[m)$/my $spaces="·" x length($2); sprintf("$1$spaces$3")/ge' | perl -pe 's/(.*[^\t])(\t+)(\e\[m)$/my $tabs="<TAB>" x length($2); sprintf("$1$tabs$3")/ge'
+
+printf "\n\e[1;91m*** Please fix your commit(s) with 'git commit --amend' or 'git rebase -i <hash>'\e[0m\n"
 exit 1

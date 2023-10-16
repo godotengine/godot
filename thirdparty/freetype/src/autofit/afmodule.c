@@ -4,7 +4,7 @@
  *
  *   Auto-fitter module implementation (body).
  *
- * Copyright (C) 2003-2022 by
+ * Copyright (C) 2003-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -43,14 +43,14 @@
 
 #endif
 
-  int  _af_debug_disable_horz_hints;
-  int  _af_debug_disable_vert_hints;
-  int  _af_debug_disable_blue_hints;
+  int  af_debug_disable_horz_hints_;
+  int  af_debug_disable_vert_hints_;
+  int  af_debug_disable_blue_hints_;
 
   /* we use a global object instead of a local one for debugging */
-  static AF_GlyphHintsRec  _af_debug_hints_rec[1];
+  static AF_GlyphHintsRec  af_debug_hints_rec_[1];
 
-  void*  _af_debug_hints = _af_debug_hints_rec;
+  void*  af_debug_hints_ = af_debug_hints_rec_;
 #endif
 
 #include <freetype/internal/ftobjs.h>
@@ -89,10 +89,8 @@
       error = af_face_globals_new( face, &globals, module );
       if ( !error )
       {
-        face->autohint.data =
-          (FT_Pointer)globals;
-        face->autohint.finalizer =
-          (FT_Generic_Finalizer)af_face_globals_free;
+        face->autohint.data      = (FT_Pointer)globals;
+        face->autohint.finalizer = af_face_globals_free;
       }
     }
 
@@ -119,8 +117,8 @@
 
     if ( !ft_strcmp( property_name, "fallback-script" ) )
     {
-      FT_UInt*  fallback_script;
-      FT_UInt   ss;
+      AF_Script*  fallback_script;
+      FT_UInt     ss;
 
 
 #ifdef FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
@@ -128,7 +126,7 @@
         return FT_THROW( Invalid_Argument );
 #endif
 
-      fallback_script = (FT_UInt*)value;
+      fallback_script = (AF_Script*)value;
 
       /* We translate the fallback script to a fallback style that uses */
       /* `fallback-script' as its script and `AF_COVERAGE_NONE' as its  */
@@ -138,8 +136,8 @@
         AF_StyleClass  style_class = af_style_classes[ss];
 
 
-        if ( (FT_UInt)style_class->script == *fallback_script &&
-             style_class->coverage == AF_COVERAGE_DEFAULT     )
+        if ( style_class->script   == *fallback_script    &&
+             style_class->coverage == AF_COVERAGE_DEFAULT )
         {
           module->fallback_style = ss;
           break;
@@ -157,7 +155,7 @@
     }
     else if ( !ft_strcmp( property_name, "default-script" ) )
     {
-      FT_UInt*  default_script;
+      AF_Script*  default_script;
 
 
 #ifdef FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
@@ -165,7 +163,7 @@
         return FT_THROW( Invalid_Argument );
 #endif
 
-      default_script = (FT_UInt*)value;
+      default_script = (AF_Script*)value;
 
       module->default_script = *default_script;
 
@@ -291,8 +289,6 @@
   {
     FT_Error   error          = FT_Err_Ok;
     AF_Module  module         = (AF_Module)ft_module;
-    FT_UInt    fallback_style = module->fallback_style;
-    FT_UInt    default_script = module->default_script;
 
 
     if ( !ft_strcmp( property_name, "glyph-to-script-map" ) )
@@ -309,9 +305,9 @@
     }
     else if ( !ft_strcmp( property_name, "fallback-script" ) )
     {
-      FT_UInt*  val = (FT_UInt*)value;
+      AF_Script*  val = (AF_Script*)value;
 
-      AF_StyleClass  style_class = af_style_classes[fallback_style];
+      AF_StyleClass  style_class = af_style_classes[module->fallback_style];
 
 
       *val = style_class->script;
@@ -320,10 +316,10 @@
     }
     else if ( !ft_strcmp( property_name, "default-script" ) )
     {
-      FT_UInt*  val = (FT_UInt*)value;
+      AF_Script*  val = (AF_Script*)value;
 
 
-      *val = default_script;
+      *val = module->default_script;
 
       return error;
     }
@@ -376,8 +372,9 @@
   FT_DEFINE_SERVICE_PROPERTIESREC(
     af_service_properties,
 
-    (FT_Properties_SetFunc)af_property_set,        /* set_property */
-    (FT_Properties_GetFunc)af_property_get )       /* get_property */
+    af_property_set,  /* FT_Properties_SetFunc set_property */
+    af_property_get   /* FT_Properties_GetFunc get_property */
+  )
 
 
   FT_DEFINE_SERVICEDESCREC1(
@@ -425,19 +422,21 @@
     FT_UNUSED( ft_module );
 
 #ifdef FT_DEBUG_AUTOFIT
-    if ( _af_debug_hints_rec->memory )
-      af_glyph_hints_done( _af_debug_hints_rec );
+    if ( af_debug_hints_rec_->memory )
+      af_glyph_hints_done( af_debug_hints_rec_ );
 #endif
   }
 
 
   FT_CALLBACK_DEF( FT_Error )
-  af_autofitter_load_glyph( AF_Module     module,
-                            FT_GlyphSlot  slot,
-                            FT_Size       size,
-                            FT_UInt       glyph_index,
-                            FT_Int32      load_flags )
+  af_autofitter_load_glyph( FT_AutoHinter  module_,
+                            FT_GlyphSlot   slot,
+                            FT_Size        size,
+                            FT_UInt        glyph_index,
+                            FT_Int32       load_flags )
   {
+    AF_Module  module = (AF_Module)module_;
+
     FT_Error   error  = FT_Err_Ok;
     FT_Memory  memory = module->root.library->memory;
 
@@ -445,7 +444,7 @@
 
     /* in debug mode, we use a global object that survives this routine */
 
-    AF_GlyphHints  hints = _af_debug_hints_rec;
+    AF_GlyphHints  hints = af_debug_hints_rec_;
     AF_LoaderRec   loader[1];
 
     FT_UNUSED( size );
@@ -501,10 +500,10 @@
   FT_DEFINE_AUTOHINTER_INTERFACE(
     af_autofitter_interface,
 
-    NULL,                                                    /* reset_face */
-    NULL,                                              /* get_global_hints */
-    NULL,                                             /* done_global_hints */
-    (FT_AutoHinter_GlyphLoadFunc)af_autofitter_load_glyph    /* load_glyph */
+    NULL,                     /* FT_AutoHinter_GlobalResetFunc reset_face        */
+    NULL,                     /* FT_AutoHinter_GlobalGetFunc   get_global_hints  */
+    NULL,                     /* FT_AutoHinter_GlobalDoneFunc  done_global_hints */
+    af_autofitter_load_glyph  /* FT_AutoHinter_GlyphLoadFunc   load_glyph        */
   )
 
   FT_DEFINE_MODULE(
@@ -519,9 +518,9 @@
 
     (const void*)&af_autofitter_interface,
 
-    (FT_Module_Constructor)af_autofitter_init,  /* module_init   */
-    (FT_Module_Destructor) af_autofitter_done,  /* module_done   */
-    (FT_Module_Requester)  af_get_interface     /* get_interface */
+    af_autofitter_init,  /* FT_Module_Constructor module_init   */
+    af_autofitter_done,  /* FT_Module_Destructor  module_done   */
+    af_get_interface     /* FT_Module_Requester   get_interface */
   )
 
 

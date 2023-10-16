@@ -56,12 +56,12 @@ extern "C" {
 #define MBEDTLS_PARAM_FAILED_ALT
 
 #elif defined(MBEDTLS_CHECK_PARAMS_ASSERT)
-#define MBEDTLS_PARAM_FAILED( cond ) assert( cond )
+#define MBEDTLS_PARAM_FAILED(cond) assert(cond)
 #define MBEDTLS_PARAM_FAILED_ALT
 
 #else /* MBEDTLS_PARAM_FAILED */
-#define MBEDTLS_PARAM_FAILED( cond ) \
-    mbedtls_param_failed( #cond, __FILE__, __LINE__ )
+#define MBEDTLS_PARAM_FAILED(cond) \
+    mbedtls_param_failed( #cond, __FILE__, __LINE__)
 
 /**
  * \brief       User supplied callback function for parameter validation failure.
@@ -78,36 +78,36 @@ extern "C" {
  * \param file  The file where the assertion failed.
  * \param line  The line in the file where the assertion failed.
  */
-void mbedtls_param_failed( const char *failure_condition,
-                           const char *file,
-                           int line );
+void mbedtls_param_failed(const char *failure_condition,
+                          const char *file,
+                          int line);
 #endif /* MBEDTLS_PARAM_FAILED */
 
 /* Internal macro meant to be called only from within the library. */
-#define MBEDTLS_INTERNAL_VALIDATE_RET( cond, ret )  \
+#define MBEDTLS_INTERNAL_VALIDATE_RET(cond, ret)  \
     do {                                            \
-        if( !(cond) )                               \
+        if (!(cond))                               \
         {                                           \
-            MBEDTLS_PARAM_FAILED( cond );           \
-            return( ret );                          \
+            MBEDTLS_PARAM_FAILED(cond);           \
+            return ret;                          \
         }                                           \
-    } while( 0 )
+    } while (0)
 
 /* Internal macro meant to be called only from within the library. */
-#define MBEDTLS_INTERNAL_VALIDATE( cond )           \
+#define MBEDTLS_INTERNAL_VALIDATE(cond)           \
     do {                                            \
-        if( !(cond) )                               \
+        if (!(cond))                               \
         {                                           \
-            MBEDTLS_PARAM_FAILED( cond );           \
+            MBEDTLS_PARAM_FAILED(cond);           \
             return;                                 \
         }                                           \
-    } while( 0 )
+    } while (0)
 
 #else /* MBEDTLS_CHECK_PARAMS */
 
 /* Internal macros meant to be called only from within the library. */
-#define MBEDTLS_INTERNAL_VALIDATE_RET( cond, ret )  do { } while( 0 )
-#define MBEDTLS_INTERNAL_VALIDATE( cond )           do { } while( 0 )
+#define MBEDTLS_INTERNAL_VALIDATE_RET(cond, ret)  do { } while (0)
+#define MBEDTLS_INTERNAL_VALIDATE(cond)           do { } while (0)
 
 #endif /* MBEDTLS_CHECK_PARAMS */
 
@@ -119,16 +119,16 @@ void mbedtls_param_failed( const char *failure_condition,
  * it, too. We might want to move all these definitions here at
  * some point for uniformity. */
 #define MBEDTLS_DEPRECATED __attribute__((deprecated))
-MBEDTLS_DEPRECATED typedef char const * mbedtls_deprecated_string_constant_t;
-#define MBEDTLS_DEPRECATED_STRING_CONSTANT( VAL )       \
-    ( (mbedtls_deprecated_string_constant_t) ( VAL ) )
+MBEDTLS_DEPRECATED typedef char const *mbedtls_deprecated_string_constant_t;
+#define MBEDTLS_DEPRECATED_STRING_CONSTANT(VAL)       \
+    ((mbedtls_deprecated_string_constant_t) (VAL))
 MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
-#define MBEDTLS_DEPRECATED_NUMERIC_CONSTANT( VAL )       \
-    ( (mbedtls_deprecated_numeric_constant_t) ( VAL ) )
+#define MBEDTLS_DEPRECATED_NUMERIC_CONSTANT(VAL)       \
+    ((mbedtls_deprecated_numeric_constant_t) (VAL))
 #undef MBEDTLS_DEPRECATED
 #else /* MBEDTLS_DEPRECATED_WARNING */
-#define MBEDTLS_DEPRECATED_STRING_CONSTANT( VAL ) VAL
-#define MBEDTLS_DEPRECATED_NUMERIC_CONSTANT( VAL ) VAL
+#define MBEDTLS_DEPRECATED_STRING_CONSTANT(VAL) VAL
+#define MBEDTLS_DEPRECATED_NUMERIC_CONSTANT(VAL) VAL
 #endif /* MBEDTLS_DEPRECATED_WARNING */
 #endif /* MBEDTLS_DEPRECATED_REMOVED */
 
@@ -218,7 +218,7 @@ MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
  * https://stackoverflow.com/questions/40576003/ignoring-warning-wunused-result
  * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425#c34
  */
-#define MBEDTLS_IGNORE_RETURN(result) ( (void) !( result ) )
+#define MBEDTLS_IGNORE_RETURN(result) ((void) !(result))
 #endif
 
 /**
@@ -243,7 +243,7 @@ MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
  * \param len   Length of the buffer in bytes
  *
  */
-void mbedtls_platform_zeroize( void *buf, size_t len );
+void mbedtls_platform_zeroize(void *buf, size_t len);
 
 #if defined(MBEDTLS_HAVE_TIME_DATE)
 /**
@@ -272,8 +272,8 @@ void mbedtls_platform_zeroize( void *buf, size_t len );
  * \return      Pointer to an object of type struct tm on success, otherwise
  *              NULL
  */
-struct tm *mbedtls_platform_gmtime_r( const mbedtls_time_t *tt,
-                                      struct tm *tm_buf );
+struct tm *mbedtls_platform_gmtime_r(const mbedtls_time_t *tt,
+                                     struct tm *tm_buf);
 #endif /* MBEDTLS_HAVE_TIME_DATE */
 
 #ifdef __cplusplus

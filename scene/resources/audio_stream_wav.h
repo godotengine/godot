@@ -61,7 +61,7 @@ class AudioStreamPlaybackWAV : public AudioStreamPlayback {
 	Ref<AudioStreamWAV> base;
 
 	template <class Depth, bool is_stereo, bool is_ima_adpcm>
-	void do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &offset, int32_t &increment, uint32_t amount, IMA_ADPCM_State *ima_adpcm);
+	void do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm);
 
 public:
 	virtual void start(double p_from_pos = 0.0) override;

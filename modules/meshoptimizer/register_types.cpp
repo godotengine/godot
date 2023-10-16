@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "register_types.h"
+
 #include "scene/resources/surface_tool.h"
+
 #include "thirdparty/meshoptimizer/meshoptimizer.h"
 
 void initialize_meshoptimizer_module(ModuleInitializationLevel p_level) {

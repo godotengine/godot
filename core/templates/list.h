@@ -219,7 +219,7 @@ private:
 		int size_cache = 0;
 
 		bool erase(const Element *p_I) {
-			ERR_FAIL_COND_V(!p_I, false);
+			ERR_FAIL_NULL_V(p_I, false);
 			ERR_FAIL_COND_V(p_I->data != this, false);
 
 			if (first == p_I) {

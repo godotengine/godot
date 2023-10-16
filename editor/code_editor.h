@@ -157,6 +157,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	Label *info = nullptr;
 	Timer *idle = nullptr;
+	bool code_complete_enabled = true;
 	Timer *code_complete_timer = nullptr;
 	int code_complete_timer_line = 0;
 
@@ -187,6 +188,7 @@ class CodeTextEditor : public VBoxContainer {
 	Color completion_font_color;
 	Color completion_string_color;
 	Color completion_comment_color;
+	Color completion_doc_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud = nullptr;
 
@@ -221,9 +223,6 @@ protected:
 public:
 	void trim_trailing_whitespace();
 	void insert_final_newline();
-
-	void convert_indent_to_spaces();
-	void convert_indent_to_tabs();
 
 	enum CaseStyle {
 		UPPER,

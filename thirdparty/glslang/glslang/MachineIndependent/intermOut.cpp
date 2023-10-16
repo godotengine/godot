@@ -36,8 +36,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
-
 #include "localintermediate.h"
 #include "../Include/InfoSink.h"
 
@@ -663,13 +661,13 @@ bool TOutputTraverser::visitUnary(TVisit /* visit */, TIntermUnary* node)
     case EOpSubpassLoad:   out.debug << "subpassLoad";   break;
     case EOpSubpassLoadMS: out.debug << "subpassLoadMS"; break;
 
+    case EOpColorAttachmentReadEXT:   out.debug << "colorAttachmentReadEXT";   break;
+
     case EOpConstructReference: out.debug << "Construct reference type"; break;
 
     case EOpDeclare: out.debug << "Declare"; break;
 
-#ifndef GLSLANG_WEB
     case EOpSpirvInst: out.debug << "spirv_instruction"; break;
-#endif
 
     default: out.debug.message(EPrefixError, "Bad unary op");
     }
@@ -807,7 +805,8 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpConstructStruct:  out.debug << "Construct structure";  break;
     case EOpConstructTextureSampler: out.debug << "Construct combined texture-sampler"; break;
     case EOpConstructReference:  out.debug << "Construct reference";  break;
-    case EOpConstructCooperativeMatrix:  out.debug << "Construct cooperative matrix";  break;
+    case EOpConstructCooperativeMatrixNV:  out.debug << "Construct cooperative matrix NV";  break;
+    case EOpConstructCooperativeMatrixKHR:  out.debug << "Construct cooperative matrix KHR";  break;
     case EOpConstructAccStruct: out.debug << "Construct acceleration structure"; break;
 
     case EOpLessThan:         out.debug << "Compare Less Than";             break;
@@ -1060,6 +1059,8 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpSubpassLoad:   out.debug << "subpassLoad";   break;
     case EOpSubpassLoadMS: out.debug << "subpassLoadMS"; break;
 
+    case EOpColorAttachmentReadEXT:   out.debug << "colorAttachmentReadEXT";   break;
+
     case EOpTraceNV:                          out.debug << "traceNV"; break;
     case EOpTraceRayMotionNV:                 out.debug << "traceRayMotionNV"; break;
     case EOpTraceKHR:                         out.debug << "traceRayKHR"; break;
@@ -1097,17 +1098,53 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpRayQueryGetWorldRayOrigin:                                     out.debug << "rayQueryGetWorldRayOriginEXT"; break;
     case EOpRayQueryGetIntersectionObjectToWorld:                          out.debug << "rayQueryGetIntersectionObjectToWorldEXT"; break;
     case EOpRayQueryGetIntersectionWorldToObject:                          out.debug << "rayQueryGetIntersectionWorldToObjectEXT"; break;
+    case EOpRayQueryGetIntersectionTriangleVertexPositionsEXT:             out.debug << "rayQueryGetIntersectionTriangleVertexPositionsEXT"; break;
 
-    case EOpCooperativeMatrixLoad:  out.debug << "Load cooperative matrix";  break;
-    case EOpCooperativeMatrixStore:  out.debug << "Store cooperative matrix";  break;
-    case EOpCooperativeMatrixMulAdd: out.debug << "MulAdd cooperative matrices"; break;
+    case EOpCooperativeMatrixLoad:  out.debug << "Load cooperative matrix KHR"; break;
+    case EOpCooperativeMatrixStore:  out.debug << "Store cooperative matrix KHR"; break;
+    case EOpCooperativeMatrixMulAdd: out.debug << "MulAdd cooperative matrices KHR"; break;
+    case EOpCooperativeMatrixLoadNV:  out.debug << "Load cooperative matrix NV"; break;
+    case EOpCooperativeMatrixStoreNV:  out.debug << "Store cooperative matrix NV"; break;
+    case EOpCooperativeMatrixMulAddNV: out.debug << "MulAdd cooperative matrices NV"; break;
 
     case EOpIsHelperInvocation: out.debug << "IsHelperInvocation"; break;
     case EOpDebugPrintf:  out.debug << "Debug printf";  break;
 
-#ifndef GLSLANG_WEB
+    case EOpHitObjectTraceRayNV: out.debug << "HitObjectTraceRayNV"; break;
+    case EOpHitObjectTraceRayMotionNV: out.debug << "HitObjectTraceRayMotionNV"; break;
+    case EOpHitObjectRecordHitNV: out.debug << "HitObjectRecordHitNV"; break;
+    case EOpHitObjectRecordHitMotionNV: out.debug << "HitObjectRecordHitMotionNV"; break;
+    case EOpHitObjectRecordHitWithIndexNV: out.debug << "HitObjectRecordHitWithIndexNV"; break;
+    case EOpHitObjectRecordHitWithIndexMotionNV: out.debug << "HitObjectRecordHitWithIndexMotionNV"; break;
+    case EOpHitObjectRecordMissNV: out.debug << "HitObjectRecordMissNV"; break;
+    case EOpHitObjectRecordMissMotionNV: out.debug << "HitObjectRecordMissMotionNV"; break;
+    case EOpHitObjectRecordEmptyNV: out.debug << "HitObjectRecordEmptyNV"; break;
+    case EOpHitObjectExecuteShaderNV: out.debug << "HitObjectExecuteShaderNV"; break;
+    case EOpHitObjectIsEmptyNV: out.debug << "HitObjectIsEmptyNV"; break;
+    case EOpHitObjectIsMissNV: out.debug << "HitObjectIsMissNV"; break;
+    case EOpHitObjectIsHitNV:  out.debug << "HitObjectIsHitNV"; break;
+    case EOpHitObjectGetRayTMinNV: out.debug << "HitObjectGetRayTMinNV"; break;
+    case EOpHitObjectGetRayTMaxNV: out.debug << "HitObjectGetRayTMaxNV"; break;
+    case EOpHitObjectGetObjectRayOriginNV: out.debug << "HitObjectGetObjectRayOriginNV"; break;
+    case EOpHitObjectGetObjectRayDirectionNV: out.debug << "HitObjectGetObjectRayDirectionNV"; break;
+    case EOpHitObjectGetWorldRayOriginNV: out.debug << "HitObjectGetWorldRayOriginNV"; break;
+    case EOpHitObjectGetWorldRayDirectionNV: out.debug << "HitObjectGetWorldRayDirectionNV"; break;
+    case EOpHitObjectGetObjectToWorldNV: out.debug << "HitObjectGetObjectToWorldNV"; break;
+    case EOpHitObjectGetWorldToObjectNV: out.debug << "HitObjectGetWorldToObjectNV"; break;
+    case EOpHitObjectGetInstanceCustomIndexNV: out.debug<< "HitObjectGetInstanceCustomIndexNV"; break;
+    case EOpHitObjectGetInstanceIdNV: out.debug << "HitObjectGetInstaneIdNV"; break;
+    case EOpHitObjectGetGeometryIndexNV: out.debug << "HitObjectGetGeometryIndexNV"; break;
+    case EOpHitObjectGetPrimitiveIndexNV: out.debug << "HitObjectGetPrimitiveIndexNV"; break;
+    case EOpHitObjectGetHitKindNV: out.debug << "HitObjectGetHitKindNV"; break;
+    case EOpHitObjectGetAttributesNV: out.debug << "HitObjectGetAttributesNV"; break;
+    case EOpHitObjectGetCurrentTimeNV: out.debug << "HitObjectGetCurrentTimeNV"; break;
+    case EOpHitObjectGetShaderBindingTableRecordIndexNV: out.debug << "HitObjectGetShaderBindingTableRecordIndexNV"; break;
+    case EOpHitObjectGetShaderRecordBufferHandleNV: out.debug << "HitObjectReadShaderRecordBufferHandleNV"; break;
+    case EOpReorderThreadNV: out.debug << "ReorderThreadNV"; break;
+
     case EOpSpirvInst: out.debug << "spirv_instruction"; break;
-#endif
+    case EOpStencilAttachmentReadEXT: out.debug << "stencilAttachmentReadEXT"; break;
+    case EOpDepthAttachmentReadEXT: out.debug << "depthAttachmentReadEXT"; break;
 
     default: out.debug.message(EPrefixError, "Bad aggregation op");
     }
@@ -1512,6 +1549,12 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
             infoSink.debug << "using early_fragment_tests\n";
         if (postDepthCoverage)
             infoSink.debug << "using post_depth_coverage\n";
+        if (nonCoherentColorAttachmentReadEXT)
+            infoSink.debug << "using non_coherent_color_attachment_readEXT\n";
+        if (nonCoherentDepthAttachmentReadEXT)
+            infoSink.debug << "using non_coherent_depth_attachment_readEXT\n";
+        if (nonCoherentStencilAttachmentReadEXT)
+            infoSink.debug << "using non_coherent_stencil_attachment_readEXT\n";
         if (depthLayout != EldNone)
             infoSink.debug << "using " << TQualifier::getLayoutDepthString(depthLayout) << "\n";
         if (blendEquations != 0) {
@@ -1552,7 +1595,7 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
         break;
     }
 
-    if (treeRoot == 0 || ! tree)
+    if (treeRoot == nullptr || ! tree)
         return;
 
     TOutputTraverser it(infoSink);
@@ -1562,5 +1605,3 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
 }
 
 } // end namespace glslang
-
-#endif // !GLSLANG_WEB && !GLSLANG_ANGLE

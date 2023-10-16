@@ -39,11 +39,13 @@ class AcceptDialog;
 class Button;
 class ConfirmationDialog;
 class EditorInspector;
+class EditorValidationPanel;
 class LineEdit;
 class OptionButton;
 class PanelContainer;
 class PopupMenu;
 class SpinBox;
+class StyleBoxFlat;
 class TextureRect;
 
 class EditorPropertyRevert {
@@ -72,6 +74,7 @@ private:
 	StringName property;
 	String property_path;
 	String doc_path;
+	bool has_doc_tooltip = false;
 
 	int property_usage;
 
@@ -79,6 +82,7 @@ private:
 	bool checkable = false;
 	bool checked = false;
 	bool draw_warning = false;
+	bool draw_prop_warning = false;
 	bool keying = false;
 	bool deletable = false;
 
@@ -148,6 +152,7 @@ public:
 
 	Object *get_edited_object();
 	StringName get_edited_property() const;
+	inline Variant get_edited_property_value() const { return object->get(property); }
 	EditorInspector *get_parent_inspector() const;
 
 	void set_doc_path(const String &p_doc_path);
@@ -249,11 +254,22 @@ class EditorInspectorCategory : public Control {
 	GDCLASS(EditorInspectorCategory, Control);
 
 	friend class EditorInspector;
+
+	// Right-click context menu options.
+	enum ClassMenuOption {
+		MENU_OPEN_DOCS,
+	};
+
 	Ref<Texture2D> icon;
 	String label;
+	String doc_class_name;
+	PopupMenu *menu = nullptr;
+
+	void _handle_menu_option(int p_option);
 
 protected:
 	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual Size2 get_minimum_size() const override;
@@ -297,6 +313,7 @@ public:
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
+	void set_bg_color(const Color &p_bg_color);
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
@@ -356,7 +373,9 @@ class EditorInspectorArray : public EditorInspectorSection {
 		PanelContainer *panel = nullptr;
 		MarginContainer *margin = nullptr;
 		HBoxContainer *hbox = nullptr;
+		Button *move_up = nullptr;
 		TextureRect *move_texture_rect = nullptr;
+		Button *move_down = nullptr;
 		Label *number = nullptr;
 		VBoxContainer *vbox = nullptr;
 		Button *erase = nullptr;
@@ -455,6 +474,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _clear(bool p_hide_plugins = true);
 	Object *object = nullptr;
+	Object *next_object = nullptr;
 
 	//
 
@@ -464,6 +484,7 @@ class EditorInspector : public ScrollContainer {
 	bool hide_metadata = true;
 	bool use_doc_hints = false;
 	EditorPropertyNameProcessor::Style property_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+	bool use_settings_name_style = true;
 	bool use_filter = false;
 	bool autoclear = false;
 	bool use_folding = false;
@@ -482,13 +503,7 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	struct PropertyDocInfo {
-		String description;
-		String path;
-	};
-
-	HashMap<StringName, HashMap<StringName, PropertyDocInfo>> doc_info_cache;
-	HashMap<StringName, String> class_descr_cache;
+	HashMap<StringName, HashMap<StringName, String>> doc_path_cache;
 	HashSet<StringName> restart_request_props;
 
 	HashMap<ObjectID, int> scroll_cache;
@@ -508,6 +523,7 @@ class EditorInspector : public ScrollContainer {
 	void _property_deleted(const String &p_path);
 	void _property_checked(const String &p_path, bool p_checked);
 	void _property_pinned(const String &p_path, bool p_pinned);
+	bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style);
 
 	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
@@ -537,11 +553,11 @@ class EditorInspector : public ScrollContainer {
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
-	Label *add_meta_error = nullptr;
+	EditorValidationPanel *validation_panel = nullptr;
 
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
-	void _check_meta_name(const String &p_name);
+	void _check_meta_name();
 
 protected:
 	static void _bind_methods();
@@ -562,12 +578,16 @@ public:
 	void update_property(const String &p_prop);
 	void edit(Object *p_object);
 	Object *get_edited_object();
+	Object *get_next_edited_object();
 
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);
 
 	EditorPropertyNameProcessor::Style get_property_name_style() const;
 	void set_property_name_style(EditorPropertyNameProcessor::Style p_style);
+
+	// If true, the inspector will update its property name style according to the current editor settings.
+	void set_use_settings_name_style(bool p_enable);
 
 	void set_autoclear(bool p_enable);
 
@@ -579,7 +599,7 @@ public:
 	void set_use_filter(bool p_use);
 	void register_text_enter(Node *p_line_edit);
 
-	void set_use_folding(bool p_enable);
+	void set_use_folding(bool p_use_folding, bool p_update_tree = true);
 	bool is_using_folding();
 
 	void collapse_all_folding();

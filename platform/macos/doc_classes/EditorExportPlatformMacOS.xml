@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformMacOS" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exporter for macOS.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+		<link title="Exporting for macOS">$DOCS_URL/tutorials/export/exporting_for_macos.html</link>
+		<link title="Running Godot apps on macOS">$DOCS_URL/tutorials//export/running_on_macos.html</link>
+	</tutorials>
+	<members>
+		<member name="application/app_category" type="String" setter="" getter="">
+			Application category for the App Store.
+		</member>
+		<member name="application/bundle_identifier" type="String" setter="" getter="">
+			Unique application identifier in a reverse-DNS format, can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+		</member>
+		<member name="application/copyright" type="String" setter="" getter="">
+			Copyright notice for the bundle visible to the user (in English).
+		</member>
+		<member name="application/copyright_localized" type="Dictionary" setter="" getter="">
+			Copyright notice for the bundle visible to the user (localized).
+		</member>
+		<member name="application/export_angle" type="int" setter="" getter="">
+			If set to [code]1[/code], ANGLE libraries are exported with the exported application. If set to [code]0[/code], ANGLE libraries are exported only if [member ProjectSettings.rendering/gl_compatibility/driver] is set to [code]"opengl3_angle"[/code].
+		</member>
+		<member name="application/icon" type="String" setter="" getter="">
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/macos_native_icon], and then to [member ProjectSettings.application/config/icon].
+		</member>
+		<member name="application/icon_interpolation" type="int" setter="" getter="">
+			Interpolation method used to resize application icon.
+		</member>
+		<member name="application/min_macos_version" type="String" setter="" getter="">
+			Minimum version of macOS required for this application to run in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+		</member>
+		<member name="application/short_version" type="String" setter="" getter="">
+			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.
+		</member>
+		<member name="application/signature" type="String" setter="" getter="">
+			A four-character creator code that is specific to the bundle. Optional.
+		</member>
+		<member name="application/version" type="String" setter="" getter="">
+			Machine-readable application version, in the [code]major.minor.patch[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). This must be incremented on every new release pushed to the App Store.
+		</member>
+		<member name="binary_format/architecture" type="String" setter="" getter="">
+			Application executable architecture.
+			Supported architectures: [code]x86_64[/code], [code]arm64[/code], and [code]universal[/code] ([code]x86_64 + arm64[/code]).
+			Official export templates include [code]universal[/code] binaries only.
+		</member>
+		<member name="codesign/apple_team_id" type="String" setter="" getter="">
+			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
+		</member>
+		<member name="codesign/certificate_file" type="String" setter="" getter="">
+			PKCS #12 certificate file used to sign [code].app[/code] bundle.
+			Can be overridden with the environment variable [code]GODOT_MACOS_CODESIGN_CERTIFICATE_FILE[/code].
+		</member>
+		<member name="codesign/certificate_password" type="String" setter="" getter="">
+			Password for the certificate file used to sign [code].app[/code] bundle.
+			Can be overridden with the environment variable [code]GODOT_MACOS_CODESIGN_CERTIFICATE_PASSWORD[/code].
+		</member>
+		<member name="codesign/codesign" type="int" setter="" getter="">
+			Tool to use for code signing.
+		</member>
+		<member name="codesign/custom_options" type="PackedStringArray" setter="" getter="">
+			Array of the additional command line arguments passed to the code signing tool.
+		</member>
+		<member name="codesign/entitlements/address_book" type="bool" setter="" getter="">
+			Enable to allow access to contacts in the user's address book, if it's enabled you should also provide usage message in the [member privacy/address_book_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_addressbook]com.apple.security.personal-information.addressbook[/url].
+		</member>
+		<member name="codesign/entitlements/allow_dyld_environment_variables" type="bool" setter="" getter="">
+			Allows app to use dynamic linker environment variables to inject code. If you are using add-ons with dynamic or self-modifying native code, enable them according to the add-on documentation. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-dyld-environment-variables]com.apple.security.cs.allow-dyld-environment-variables[/url].
+		</member>
+		<member name="codesign/entitlements/allow_jit_code_execution" type="bool" setter="" getter="">
+			Allows creating writable and executable memory for JIT code. If you are using add-ons with dynamic or self-modifying native code, enable them according to the add-on documentation. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-jit]com.apple.security.cs.allow-jit[/url].
+		</member>
+		<member name="codesign/entitlements/allow_unsigned_executable_memory" type="bool" setter="" getter="">
+			Allows creating writable and executable memory without JIT restrictions. If you are using add-ons with dynamic or self-modifying native code, enable them according to the add-on documentation. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-unsigned-executable-memory]com.apple.security.cs.allow-unsigned-executable-memory[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/device_bluetooth" type="bool" setter="" getter="">
+			Enable to allow app to interact with Bluetooth devices. This entitlement is required to use wireless controllers. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_bluetooth]com.apple.security.device.bluetooth[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/device_usb" type="bool" setter="" getter="">
+			Enable to allow app to interact with USB devices. This entitlement is required to use wired controllers. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_usb]com.apple.security.device.usb[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/enabled" type="bool" setter="" getter="">
+			Enables App Sandbox. The App Sandbox restricts access to user data, networking, and devices. Sandboxed apps can't access most of the file system, can't use custom file dialogs and execute binaries outside the .app bundle. See [url=https://developer.apple.com/documentation/security/app_sandbox]App Sandbox[/url].
+			[b]Note:[/b] To distribute an app through the App Store, you must enable the App Sandbox.
+		</member>
+		<member name="codesign/entitlements/app_sandbox/files_downloads" type="int" setter="" getter="">
+			Allows read or write access to the user's "Downloads" folder. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_files_downloads_read-write]com.apple.security.files.downloads.read-write[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/files_movies" type="int" setter="" getter="">
+			Allows read or write access to the user's "Movies" folder. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_assets_movies_read-write]com.apple.security.files.movies.read-write[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/files_music" type="int" setter="" getter="">
+			Allows read or write access to the user's "Music" folder. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_assets_music_read-write]com.apple.security.files.music.read-write[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/files_pictures" type="int" setter="" getter="">
+			Allows read or write access to the user's "Pictures" folder. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_assets_pictures_read-write]com.apple.security.files.pictures.read-write[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/files_user_selected" type="int" setter="" getter="">
+			Allows read or write access to the locations the user has selected using a native file dialog. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_files_user-selected_read-write]com.apple.security.files.user-selected.read-write[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/helper_executables" type="Array" setter="" getter="">
+			List of helper executables to embedded to the app bundle. Sandboxed app are limited to execute only these executable. See [url=https://developer.apple.com/documentation/xcode/embedding-a-helper-tool-in-a-sandboxed-app]Embedding a command-line tool in a sandboxed app[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/network_client" type="bool" setter="" getter="">
+			Enable to allow app to establish outgoing network connections. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_network_client]com.apple.security.network.client[/url].
+		</member>
+		<member name="codesign/entitlements/app_sandbox/network_server" type="bool" setter="" getter="">
+			Enable to allow app to listen for incoming network connections. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_network_server]com.apple.security.network.server[/url].
+		</member>
+		<member name="codesign/entitlements/apple_events" type="bool" setter="" getter="">
+			Enable to allow app to send Apple events to other apps. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_automation_apple-events]com.apple.security.automation.apple-events[/url].
+		</member>
+		<member name="codesign/entitlements/audio_input" type="bool" setter="" getter="">
+			Enable if you need to use the microphone or other audio input sources, if it's enabled you should also provide usage message in the [member privacy/microphone_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_audio-input]com.apple.security.device.audio-input[/url].
+		</member>
+		<member name="codesign/entitlements/calendars" type="bool" setter="" getter="">
+			Enable to allow access to the user's calendar, if it's enabled you should also provide usage message in the [member privacy/calendar_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_calendars]com.apple.security.personal-information.calendars[/url].
+		</member>
+		<member name="codesign/entitlements/camera" type="bool" setter="" getter="">
+			Enable if you need to use the camera, if it's enabled you should also provide usage message in the [member privacy/camera_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_camera]com.apple.security.device.camera[/url].
+		</member>
+		<member name="codesign/entitlements/custom_file" type="String" setter="" getter="">
+			Custom entitlements [code].plist[/code] file, if specified the rest of entitlements in the export config are ignored.
+		</member>
+		<member name="codesign/entitlements/debugging" type="bool" setter="" getter="">
+			You can temporarily enable this entitlement to use native debugger (GDB, LLDB) with the exported app. This entitlement should be disabled for production export. See [url=https://developer.apple.com/documentation/xcode/embedding-a-helper-tool-in-a-sandboxed-app]Embedding a command-line tool in a sandboxed app[/url].
+		</member>
+		<member name="codesign/entitlements/disable_library_validation" type="bool" setter="" getter="">
+			Allows app to load arbitrary libraries and frameworks (not signed with the same Team ID as the main executable or by Apple). Enable it if you are using GDExtension add-ons or ad-hoc signing, or want to support user-provided external add-ons. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_disable-library-validation]com.apple.security.cs.disable-library-validation[/url].
+		</member>
+		<member name="codesign/entitlements/location" type="bool" setter="" getter="">
+			Enable if you need to use location information from Location Services, if it's enabled you should also provide usage message in the [member privacy/location_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_location]com.apple.security.personal-information.location[/url].
+		</member>
+		<member name="codesign/entitlements/photos_library" type="bool" setter="" getter="">
+			Enable to allow access to the user's Photos library, if it's enabled you should also provide usage message in the [member privacy/photos_library_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_photos-library]com.apple.security.personal-information.photos-library[/url].
+		</member>
+		<member name="codesign/identity" type="String" setter="" getter="">
+			The "Full Name", "Common Name" or SHA-1 hash of the signing identity used to sign [code].app[/code] bundle.
+		</member>
+		<member name="codesign/installer_identity" type="String" setter="" getter="">
+			The "Full Name", "Common Name" or SHA-1 hash of the signing identity used to sign [code].pkg[/code] installer package for App Store distribution, use [code]3rd Party Mac Developer Installer: Name.[/code] identity.
+		</member>
+		<member name="codesign/provisioning_profile" type="String" setter="" getter="">
+			Provisioning profile file downloaded from Apple developer account dashboard. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
+			Can be overridden with the environment variable [code]GODOT_MACOS_CODESIGN_PROVISIONING_PROFILE[/code].
+		</member>
+		<member name="custom_template/debug" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="custom_template/release" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="debug/export_console_wrapper" type="int" setter="" getter="">
+			If enabled, a wrapper that can be used to run the application with console output is created alongside the exported application.
+		</member>
+		<member name="display/high_res" type="bool" setter="" getter="">
+			If [code]true[/code], the application is rendered at native display resolution, otherwise it is always rendered at loDPI resolution and upscaled by OS when required.
+		</member>
+		<member name="export/distribution_type" type="int" setter="" getter="">
+			Application distribution target.
+		</member>
+		<member name="notarization/api_key" type="String" setter="" getter="">
+			Apple App Store Connect API issuer key file.
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_API_KEY[/code].
+		</member>
+		<member name="notarization/api_key_id" type="String" setter="" getter="">
+			Apple App Store Connect API issuer key ID.
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_API_KEY_ID[/code].
+		</member>
+		<member name="notarization/api_uuid" type="String" setter="" getter="">
+			Apple App Store Connect API issuer UUID.
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_API_UUID[/code].
+		</member>
+		<member name="notarization/apple_id_name" type="String" setter="" getter="">
+			Apple ID account name (email address).
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_APPLE_ID_NAME[/code].
+		</member>
+		<member name="notarization/apple_id_password" type="String" setter="" getter="">
+			Apple ID app-specific password.
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_APPLE_ID_PASSWORD[/code].
+		</member>
+		<member name="notarization/notarization" type="int" setter="" getter="">
+			Tool to use for notarization.
+		</member>
+		<member name="privacy/address_book_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's contacts (in English).
+		</member>
+		<member name="privacy/address_book_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's contacts (localized).
+		</member>
+		<member name="privacy/calendar_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's calendar data (in English).
+		</member>
+		<member name="privacy/calendar_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's calendar data (localized).
+		</member>
+		<member name="privacy/camera_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the device's camera (in English).
+		</member>
+		<member name="privacy/camera_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the device's camera (localized).
+		</member>
+		<member name="privacy/desktop_folder_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's "Desktop" folder (in English).
+		</member>
+		<member name="privacy/desktop_folder_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's "Desktop" folder (localized).
+		</member>
+		<member name="privacy/documents_folder_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's "Documents" folder (in English).
+		</member>
+		<member name="privacy/documents_folder_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's "Documents" folder (localized).
+		</member>
+		<member name="privacy/downloads_folder_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's "Downloads" folder (in English).
+		</member>
+		<member name="privacy/downloads_folder_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's "Downloads" folder (localized).
+		</member>
+		<member name="privacy/location_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's location information (in English).
+		</member>
+		<member name="privacy/location_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's location information (localized).
+		</member>
+		<member name="privacy/microphone_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the device's microphone (in English).
+		</member>
+		<member name="privacy/microphone_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the device's microphone (localized).
+		</member>
+		<member name="privacy/network_volumes_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's network drives (in English).
+		</member>
+		<member name="privacy/network_volumes_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's network drives (localized).
+		</member>
+		<member name="privacy/photos_library_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's photo library (in English).
+		</member>
+		<member name="privacy/photos_library_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's photo library (localized).
+		</member>
+		<member name="privacy/removable_volumes_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's removable drives (in English).
+		</member>
+		<member name="privacy/removable_volumes_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's removable drives (localized).
+		</member>
+		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
+			Script code to execute on the remote host when app is finished.
+			The following variables can be used in the script:
+			- [code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
+			- [code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
+			- [code]{exe_name}[/code] - Name of application executable.
+			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
+		</member>
+		<member name="ssh_remote_deploy/enabled" type="bool" setter="" getter="">
+			Enables remote deploy using SSH/SCP.
+		</member>
+		<member name="ssh_remote_deploy/extra_args_scp" type="String" setter="" getter="">
+			Array of the additional command line arguments passed to the SCP.
+		</member>
+		<member name="ssh_remote_deploy/extra_args_ssh" type="String" setter="" getter="">
+			Array of the additional command line arguments passed to the SSH.
+		</member>
+		<member name="ssh_remote_deploy/host" type="String" setter="" getter="">
+			Remote host SSH user name and address, in [code]user@address[/code] format.
+		</member>
+		<member name="ssh_remote_deploy/port" type="String" setter="" getter="">
+			Remote host SSH port number.
+		</member>
+		<member name="ssh_remote_deploy/run_script" type="String" setter="" getter="">
+			Script code to execute on the remote host when running the app.
+			The following variables can be used in the script:
+			- [code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
+			- [code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
+			- [code]{exe_name}[/code] - Name of application executable.
+			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
+		</member>
+		<member name="xcode/platform_build" type="String" setter="" getter="">
+			macOS build number used to build application executable.
+		</member>
+		<member name="xcode/sdk_build" type="String" setter="" getter="">
+			macOS SDK build number used to build application executable.
+		</member>
+		<member name="xcode/sdk_name" type="String" setter="" getter="">
+			macOS SDK name used to build application executable.
+		</member>
+		<member name="xcode/sdk_version" type="String" setter="" getter="">
+			macOS SDK version used to build application executable in the [code]major.minor[/code] format.
+		</member>
+		<member name="xcode/xcode_build" type="String" setter="" getter="">
+			Xcode build number used to build application executable.
+		</member>
+		<member name="xcode/xcode_version" type="String" setter="" getter="">
+			Xcode version used to build application executable.
+		</member>
+	</members>
+</class>

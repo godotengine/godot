@@ -45,6 +45,7 @@ class EditorExport : public Node {
 
 	Timer *save_timer = nullptr;
 	bool block_save = false;
+	bool should_update_presets = false;
 
 	static EditorExport *singleton;
 

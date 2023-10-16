@@ -30,10 +30,10 @@
 
 #include "audio_stream_editor_plugin.h"
 
-#include "core/core_string_names.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "scene/resources/audio_stream_wav.h"
 
 // AudioStreamEditor
@@ -45,16 +45,16 @@ void AudioStreamEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			Ref<Font> font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
+			Ref<Font> font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
 
 			_current_label->add_theme_font_override(SNAME("font"), font);
 			_duration_label->add_theme_font_override(SNAME("font"), font);
 
-			_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-			_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
-			_preview->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
+			_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+			_preview->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 
-			set_color(get_theme_color(SNAME("dark_color_1"), SNAME("Editor")));
+			set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
 
 			_indicator->queue_redraw();
 			_preview->queue_redraw();
@@ -74,27 +74,34 @@ void AudioStreamEditor::_notification(int p_what) {
 }
 
 void AudioStreamEditor::_draw_preview() {
-	Rect2 rect = _preview->get_rect();
 	Size2 size = get_size();
+	int width = size.width;
+	if (width <= 0) {
+		return; // No points to draw.
+	}
+
+	Rect2 rect = _preview->get_rect();
 
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 	float preview_len = preview->get_length();
 
-	Vector<Vector2> lines;
-	lines.resize(size.width * 2);
+	Vector<Vector2> points;
+	points.resize(width * 2);
 
-	for (int i = 0; i < size.width; i++) {
+	for (int i = 0; i < width; i++) {
 		float ofs = i * preview_len / size.width;
 		float ofs_n = (i + 1) * preview_len / size.width;
 		float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 		int idx = i;
-		lines.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
-		lines.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
+		points.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
+		points.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
 	}
 
-	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), lines, { get_theme_color(SNAME("contrast_color_2"), SNAME("Editor")) });
+	Vector<Color> colors = { get_theme_color(SNAME("contrast_color_2"), EditorStringName(Editor)) };
+
+	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), points, colors);
 }
 
 void AudioStreamEditor::_preview_changed(ObjectID p_which) {
@@ -114,26 +121,26 @@ void AudioStreamEditor::_play() {
 	if (_player->is_playing()) {
 		_pausing = true;
 		_player->stop();
-		_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+		_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	} else {
 		_pausing = false;
 		_player->play(_current);
-		_play_button->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
+		_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
 		set_process(true);
 	}
 }
 
 void AudioStreamEditor::_stop() {
 	_player->stop();
-	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	_current = 0;
 	_indicator->queue_redraw();
 	set_process(false);
 }
 
 void AudioStreamEditor::_on_finished() {
-	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	if (!_pausing) {
 		_current = 0;
 		_indicator->queue_redraw();
@@ -151,8 +158,8 @@ void AudioStreamEditor::_draw_indicator() {
 	Rect2 rect = _preview->get_rect();
 	float len = stream->get_length();
 	float ofs_x = _current / len * rect.size.width;
-	const Color col = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	Ref<Texture2D> icon = get_theme_icon(SNAME("TimelineIndicator"), SNAME("EditorIcons"));
+	const Color col = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("TimelineIndicator"));
 	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), col, Math::round(2 * EDSCALE));
 	_indicator->draw_texture(
 			icon,
@@ -188,7 +195,7 @@ void AudioStreamEditor::_seek_to(real_t p_x) {
 
 void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 	if (stream.is_valid()) {
-		stream->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &AudioStreamEditor::_stream_changed));
+		stream->disconnect_changed(callable_mp(this, &AudioStreamEditor::_stream_changed));
 	}
 
 	stream = p_stream;
@@ -196,7 +203,7 @@ void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 		hide();
 		return;
 	}
-	stream->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &AudioStreamEditor::_stream_changed));
+	stream->connect_changed(callable_mp(this, &AudioStreamEditor::_stream_changed));
 
 	_player->set_stream(stream);
 	_current = 0;

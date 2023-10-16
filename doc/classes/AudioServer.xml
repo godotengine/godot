@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioServer" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server interface for low-level audio access.
 	</brief_description>
@@ -70,7 +70,7 @@
 			<return type="int" />
 			<param index="0" name="bus_name" type="StringName" />
 			<description>
-				Returns the index of the bus with the name [param bus_name].
+				Returns the index of the bus with the name [param bus_name]. Returns [code]-1[/code] if no bus with the specified name exist.
 			</description>
 		</method>
 		<method name="get_bus_name" qualifiers="const">
@@ -132,7 +132,8 @@
 		<method name="get_output_latency" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the audio driver's output latency.
+				Returns the audio driver's effective output latency. This is based on [member ProjectSettings.audio/driver/output_latency], but the exact returned value will differ depending on the operating system and audio driver.
+				[b]Note:[/b] This can be expensive; it is not recommended to call [method get_output_latency] every frame.
 			</description>
 		</method>
 		<method name="get_speaker_mode" qualifiers="const">
@@ -316,7 +317,15 @@
 	<signals>
 		<signal name="bus_layout_changed">
 			<description>
-				Emitted when the [AudioBusLayout] changes.
+				Emitted when an audio bus is added, deleted, or moved.
+			</description>
+		</signal>
+		<signal name="bus_renamed">
+			<param index="0" name="bus_index" type="int" />
+			<param index="1" name="old_name" type="StringName" />
+			<param index="2" name="new_name" type="StringName" />
+			<description>
+				Emitted when the audio bus at [param bus_index] is renamed from [param old_name] to [param new_name].
 			</description>
 		</signal>
 	</signals>

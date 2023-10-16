@@ -33,6 +33,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 
 static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.findn(p_filter) != -1) {
@@ -239,7 +240,8 @@ void SectionedInspector::update_category_list() {
 	for (PropertyInfo &pi : pinfo) {
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
-		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) || (restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) ||
+				(filter_text.is_empty() && restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 			continue;
 		}
 
@@ -263,8 +265,8 @@ void SectionedInspector::update_category_list() {
 
 		for (int i = 0; i < sc; i++) {
 			TreeItem *parent = section_map[metasection];
-			//parent->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			parent->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+			//parent->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+			parent->set_custom_font(0, get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];
@@ -309,16 +311,6 @@ void SectionedInspector::_search_changed(const String &p_what) {
 	update_category_list();
 }
 
-void SectionedInspector::_notification(int p_what) {
-	switch (p_what) {
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
-				inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
-			}
-		} break;
-	}
-}
-
 EditorInspector *SectionedInspector::get_inspector() {
 	return inspector;
 }
@@ -352,7 +344,6 @@ SectionedInspector::SectionedInspector() :
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
-	inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 
 	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }

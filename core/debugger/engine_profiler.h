@@ -31,10 +31,8 @@
 #ifndef ENGINE_PROFILER_H
 #define ENGINE_PROFILER_H
 
-#include "core/object/ref_counted.h"
-
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
+#include "core/object/ref_counted.h"
 
 class EngineProfiler : public RefCounted {
 	GDCLASS(EngineProfiler, RefCounted);

@@ -68,7 +68,8 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Update anything related to position first, if possible of course.
-			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
+			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
+				force_update_panning = false;
 				_update_panning();
 			}
 
@@ -109,14 +110,16 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 	}
 }
 
+// Interacts with PhysicsServer2D, so can only be called during _physics_process
 StringName AudioStreamPlayer2D::_get_actual_bus() {
 	Vector2 global_pos = get_global_position();
 
 	//check if any area is diverting sound into a bus
 	Ref<World2D> world_2d = get_world_2d();
-	ERR_FAIL_COND_V(world_2d.is_null(), SNAME("Master"));
+	ERR_FAIL_COND_V(world_2d.is_null(), SceneStringNames::get_singleton()->Master);
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
+	ERR_FAIL_NULL_V(space_state, SceneStringNames::get_singleton()->Master);
 	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 	PhysicsDirectSpaceState2D::PointParameters point_params;
@@ -142,6 +145,7 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 	return default_bus;
 }
 
+// Interacts with PhysicsServer2D, so can only be called during _physics_process
 void AudioStreamPlayer2D::_update_panning() {
 	if (!active.is_set() || stream.is_null()) {
 		return;
@@ -153,7 +157,6 @@ void AudioStreamPlayer2D::_update_panning() {
 	Vector2 global_pos = get_global_position();
 
 	HashSet<Viewport *> viewports = world_2d->get_viewports();
-	viewports.insert(get_viewport()); // TODO: This is a mediocre workaround for #50958. Remove when that bug is fixed!
 
 	volume_vector.resize(4);
 	volume_vector.write[0] = AudioFrame(0, 0);
@@ -172,23 +175,24 @@ void AudioStreamPlayer2D::_update_panning() {
 
 		//screen in global is used for attenuation
 		AudioListener2D *listener = vp->get_audio_listener_2d();
+		Transform2D full_canvas_transform = vp->get_global_canvas_transform() * vp->get_canvas_transform();
 		if (listener) {
 			listener_in_global = listener->get_global_position();
-			relative_to_listener = global_pos - listener_in_global;
+			relative_to_listener = (global_pos - listener_in_global).rotated(-listener->get_global_rotation());
+			relative_to_listener *= full_canvas_transform.get_scale(); // Default listener scales with canvas size, do the same here.
 		} else {
-			Transform2D to_listener = vp->get_global_canvas_transform() * vp->get_canvas_transform();
-			listener_in_global = to_listener.affine_inverse().xform(screen_size * 0.5);
-			relative_to_listener = to_listener.xform(global_pos) - screen_size * 0.5;
+			listener_in_global = full_canvas_transform.affine_inverse().xform(screen_size * 0.5);
+			relative_to_listener = full_canvas_transform.xform(global_pos) - screen_size * 0.5;
 		}
 
 		float dist = global_pos.distance_to(listener_in_global); // Distance to listener, or screen if none.
 
 		if (dist > max_distance) {
-			continue; //can't hear this sound in this viewport
+			continue; // Can't hear this sound in this viewport.
 		}
 
 		float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
-		multiplier *= Math::db_to_linear(volume_db); //also apply player volume!
+		multiplier *= Math::db_to_linear(volume_db); // Also apply player volume!
 
 		float pan = relative_to_listener.x / screen_size.x;
 		// Don't let the panning effect extend (too far) beyond the screen.
@@ -202,7 +206,9 @@ void AudioStreamPlayer2D::_update_panning() {
 		float l = 1.0 - pan;
 		float r = pan;
 
-		volume_vector.write[0] = AudioFrame(l, r) * multiplier;
+		const AudioFrame &prev_sample = volume_vector[0];
+		AudioFrame new_sample = AudioFrame(l, r) * multiplier;
+		volume_vector.write[0] = AudioFrame(MAX(prev_sample[0], new_sample[0]), MAX(prev_sample[1], new_sample[1]));
 	}
 
 	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
@@ -310,7 +316,7 @@ StringName AudioStreamPlayer2D::get_bus() const {
 			return default_bus;
 		}
 	}
-	return SNAME("Master");
+	return SceneStringNames::get_singleton()->Master;
 }
 
 void AudioStreamPlayer2D::set_autoplay(bool p_enable) {
@@ -346,10 +352,6 @@ void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = options;
 	}
-}
-
-void AudioStreamPlayer2D::_bus_layout_changed() {
-	notify_property_list_changed();
 }
 
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
@@ -420,6 +422,14 @@ float AudioStreamPlayer2D::get_panning_strength() const {
 	return panning_strength;
 }
 
+void AudioStreamPlayer2D::_on_bus_layout_changed() {
+	notify_property_list_changed();
+}
+
+void AudioStreamPlayer2D::_on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name) {
+	notify_property_list_changed();
+}
+
 void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer2D::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer2D::get_stream);
@@ -484,7 +494,8 @@ void AudioStreamPlayer2D::_bind_methods() {
 }
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {
-	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer2D::_bus_layout_changed));
+	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer2D::_on_bus_layout_changed));
+	AudioServer::get_singleton()->connect("bus_renamed", callable_mp(this, &AudioStreamPlayer2D::_on_bus_renamed));
 	cached_global_panning_strength = GLOBAL_GET("audio/general/2d_panning_strength");
 	set_hide_clip_children(true);
 }

@@ -1,4 +1,10 @@
+class_name ShadowedClass
+
 var member: int = 0
+
+var print_debug := 'print_debug'
+@warning_ignore("shadowed_global_identifier")
+var print := 'print'
 
 @warning_ignore("unused_variable")
 func test():
@@ -8,5 +14,6 @@ func test():
 	var sqrt := 'sqrt'
 	var member := 'member'
 	var reference := 'reference'
+	var ShadowedClass := 'ShadowedClass'
 
 	print('warn')

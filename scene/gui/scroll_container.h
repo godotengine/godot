@@ -76,18 +76,17 @@ private:
 	void _cancel_drag();
 
 protected:
-	virtual void _update_theme_item_cache() override;
 	Size2 get_minimum_size() const override;
 
 	void _gui_focus_changed(Control *p_control);
 	void _reposition_children();
-	void _notification(int p_what);
 
-	void _scroll_moved(float);
+	void _notification(int p_what);
 	static void _bind_methods();
 
 	bool _updating_scrollbars = false;
 	void _update_scrollbar_position();
+	void _scroll_moved(float);
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
@@ -97,6 +96,12 @@ public:
 
 	void set_v_scroll(int p_pos);
 	int get_v_scroll() const;
+
+	void set_horizontal_custom_step(float p_custom_step);
+	float get_horizontal_custom_step() const;
+
+	void set_vertical_custom_step(float p_custom_step);
+	float get_vertical_custom_step() const;
 
 	void set_horizontal_scroll_mode(ScrollMode p_mode);
 	ScrollMode get_horizontal_scroll_mode() const;

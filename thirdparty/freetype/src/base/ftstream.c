@@ -4,7 +4,7 @@
  *
  *   I/O stream support (body).
  *
- * Copyright (C) 2000-2022 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -141,7 +141,9 @@
       if ( read_bytes > count )
         read_bytes = count;
 
-      FT_MEM_COPY( buffer, stream->base + pos, read_bytes );
+      /* Allow "reading" zero bytes without UB even if buffer is NULL */
+      if ( count )
+        FT_MEM_COPY( buffer, stream->base + pos, read_bytes );
     }
 
     stream->pos = pos + read_bytes;
@@ -178,7 +180,9 @@
       if ( read_bytes > count )
         read_bytes = count;
 
-      FT_MEM_COPY( buffer, stream->base + stream->pos, read_bytes );
+      /* Allow "reading" zero bytes without UB even if buffer is NULL */
+      if ( count )
+        FT_MEM_COPY( buffer, stream->base + stream->pos, read_bytes );
     }
 
     stream->pos += read_bytes;
@@ -261,7 +265,7 @@
       }
 
 #ifdef FT_DEBUG_MEMORY
-      /* assume _ft_debug_file and _ft_debug_lineno are already set */
+      /* assume `ft_debug_file_` and `ft_debug_lineno_` are already set */
       stream->base = (unsigned char*)ft_mem_qalloc( memory,
                                                     (FT_Long)count,
                                                     &error );
@@ -363,11 +367,11 @@
   }
 
 
-  FT_BASE_DEF( FT_UShort )
+  FT_BASE_DEF( FT_UInt16 )
   FT_Stream_GetUShort( FT_Stream  stream )
   {
     FT_Byte*   p;
-    FT_UShort  result;
+    FT_UInt16  result;
 
 
     FT_ASSERT( stream && stream->cursor );
@@ -382,11 +386,11 @@
   }
 
 
-  FT_BASE_DEF( FT_UShort )
+  FT_BASE_DEF( FT_UInt16 )
   FT_Stream_GetUShortLE( FT_Stream  stream )
   {
     FT_Byte*   p;
-    FT_UShort  result;
+    FT_UInt16  result;
 
 
     FT_ASSERT( stream && stream->cursor );
@@ -401,11 +405,11 @@
   }
 
 
-  FT_BASE_DEF( FT_ULong )
+  FT_BASE_DEF( FT_UInt32 )
   FT_Stream_GetUOffset( FT_Stream  stream )
   {
     FT_Byte*  p;
-    FT_ULong  result;
+    FT_UInt32 result;
 
 
     FT_ASSERT( stream && stream->cursor );
@@ -419,11 +423,11 @@
   }
 
 
-  FT_BASE_DEF( FT_ULong )
+  FT_BASE_DEF( FT_UInt32 )
   FT_Stream_GetULong( FT_Stream  stream )
   {
     FT_Byte*  p;
-    FT_ULong  result;
+    FT_UInt32 result;
 
 
     FT_ASSERT( stream && stream->cursor );
@@ -437,11 +441,11 @@
   }
 
 
-  FT_BASE_DEF( FT_ULong )
+  FT_BASE_DEF( FT_UInt32 )
   FT_Stream_GetULongLE( FT_Stream  stream )
   {
     FT_Byte*  p;
-    FT_ULong  result;
+    FT_UInt32 result;
 
 
     FT_ASSERT( stream && stream->cursor );
@@ -493,13 +497,13 @@
   }
 
 
-  FT_BASE_DEF( FT_UShort )
+  FT_BASE_DEF( FT_UInt16 )
   FT_Stream_ReadUShort( FT_Stream  stream,
                         FT_Error*  error )
   {
     FT_Byte    reads[2];
     FT_Byte*   p;
-    FT_UShort  result = 0;
+    FT_UInt16  result = 0;
 
 
     FT_ASSERT( stream );
@@ -538,13 +542,13 @@
   }
 
 
-  FT_BASE_DEF( FT_UShort )
+  FT_BASE_DEF( FT_UInt16 )
   FT_Stream_ReadUShortLE( FT_Stream  stream,
                           FT_Error*  error )
   {
     FT_Byte    reads[2];
     FT_Byte*   p;
-    FT_UShort  result = 0;
+    FT_UInt16  result = 0;
 
 
     FT_ASSERT( stream );
@@ -628,13 +632,13 @@
   }
 
 
-  FT_BASE_DEF( FT_ULong )
+  FT_BASE_DEF( FT_UInt32 )
   FT_Stream_ReadULong( FT_Stream  stream,
                        FT_Error*  error )
   {
     FT_Byte   reads[4];
     FT_Byte*  p;
-    FT_ULong  result = 0;
+    FT_UInt32 result = 0;
 
 
     FT_ASSERT( stream );
@@ -673,13 +677,13 @@
   }
 
 
-  FT_BASE_DEF( FT_ULong )
+  FT_BASE_DEF( FT_UInt32 )
   FT_Stream_ReadULongLE( FT_Stream  stream,
                          FT_Error*  error )
   {
     FT_Byte   reads[4];
     FT_Byte*  p;
-    FT_ULong  result = 0;
+    FT_UInt32 result = 0;
 
 
     FT_ASSERT( stream );

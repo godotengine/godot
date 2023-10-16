@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AABB" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AABB" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Axis-Aligned Bounding Box.
+		A 3D axis-aligned bounding box.
 	</brief_description>
 	<description>
 		[AABB] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
@@ -126,7 +126,7 @@
 			<return type="Vector3" />
 			<param index="0" name="dir" type="Vector3" />
 			<description>
-				Returns the support point in a given direction. This is useful for collision detection algorithms.
+				Returns the vertex of the AABB that's the farthest in a given direction. This point is commonly known as the support point in collision detection algorithms.
 			</description>
 		</method>
 		<method name="get_volume" qualifiers="const">

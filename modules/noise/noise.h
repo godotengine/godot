@@ -32,6 +32,7 @@
 #define NOISE_H
 
 #include "core/io/image.h"
+#include "core/variant/typed_array.h"
 
 class Noise : public Resource {
 	GDCLASS(Noise, Resource);
@@ -81,7 +82,7 @@ class Noise : public Resource {
 	};
 
 	template <typename T>
-	Ref<Image> _generate_seamless_image(Ref<Image> p_src, int p_width, int p_height, bool p_invert, real_t p_blend_skirt) const {
+	Vector<Ref<Image>> _generate_seamless_image(Vector<Ref<Image>> p_src, int p_width, int p_height, int p_depth, bool p_invert, real_t p_blend_skirt) const {
 		/*
 		To make a seamless image, we swap the quadrants so the edges are perfect matches.
 		We initially get a 10% larger image so we have an overlap we can use to blend over the seams.
@@ -101,7 +102,7 @@ class Noise : public Resource {
 		on Source it's translated to
 		corner of Q1/s3 unless the ALT_XY modulo moves it to Q4
 		*/
-		ERR_FAIL_COND_V(p_blend_skirt < 0, Ref<Image>());
+		ERR_FAIL_COND_V(p_blend_skirt < 0, Vector<Ref<Image>>());
 
 		int skirt_width = MAX(1, p_width * p_blend_skirt);
 		int skirt_height = MAX(1, p_height * p_blend_skirt);
@@ -112,83 +113,139 @@ class Noise : public Resource {
 		int skirt_edge_x = half_width + skirt_width;
 		int skirt_edge_y = half_height + skirt_height;
 
-		Vector<uint8_t> dest;
-		dest.resize(p_width * p_height * Image::get_format_pixel_size(p_src->get_format()));
+		Image::Format format = p_src[0]->get_format();
+		int pixel_size = Image::get_format_pixel_size(format);
 
-		img_buff<T> rd_src = {
-			(T *)p_src->get_data().ptr(),
-			src_width, src_height,
-			half_width, half_height,
-			p_width, p_height
-		};
+		Vector<Ref<Image>> images;
+		images.resize(p_src.size());
 
-		// `wr` is setup for straight x/y coordinate array access.
-		img_buff<T> wr = {
-			(T *)dest.ptrw(),
-			p_width, p_height,
-			0, 0, 0, 0
-		};
-		// `rd_dest` is a readable pointer to `wr`, i.e. what has already been written to the output buffer.
-		img_buff<T> rd_dest = {
-			(T *)dest.ptr(),
-			p_width, p_height,
-			0, 0, 0, 0
-		};
+		// First blend across x and y for all slices.
+		for (int d = 0; d < images.size(); d++) {
+			Vector<uint8_t> dest;
+			dest.resize(p_width * p_height * pixel_size);
 
-		// Swap the quadrants to make edges seamless.
-		for (int y = 0; y < p_height; y++) {
-			for (int x = 0; x < p_width; x++) {
-				// rd_src has a half offset and the shorter modulo ignores the skirt.
-				// It reads and writes in Q1-4 order (see map above), skipping the skirt.
-				wr(x, y) = rd_src(x, y, img_buff<T>::ALT_XY);
-			}
-		}
+			img_buff<T> rd_src = {
+				(T *)p_src[d]->get_data().ptr(),
+				src_width, src_height,
+				half_width, half_height,
+				p_width, p_height
+			};
 
-		// Blend the vertical skirt over the middle seam.
-		for (int x = half_width; x < skirt_edge_x; x++) {
-			int alpha = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(x - half_width) / float(skirt_width)));
+			// `wr` is setup for straight x/y coordinate array access.
+			img_buff<T> wr = {
+				(T *)dest.ptrw(),
+				p_width, p_height,
+				0, 0, 0, 0
+			};
+			// `rd_dest` is a readable pointer to `wr`, i.e. what has already been written to the output buffer.
+			img_buff<T> rd_dest = {
+				(T *)dest.ptr(),
+				p_width, p_height,
+				0, 0, 0, 0
+			};
+
+			// Swap the quadrants to make edges seamless.
 			for (int y = 0; y < p_height; y++) {
-				// Skip the center square
-				if (y == half_height) {
-					y = skirt_edge_y - 1;
-				} else {
-					// Starts reading at s2, ALT_Y skips s3, and continues with s1.
-					wr(x, y) = _alpha_blend<T>(rd_dest(x, y), rd_src(x, y, img_buff<T>::ALT_Y), alpha);
+				for (int x = 0; x < p_width; x++) {
+					// rd_src has a half offset and the shorter modulo ignores the skirt.
+					// It reads and writes in Q1-4 order (see map above), skipping the skirt.
+					wr(x, y) = rd_src(x, y, img_buff<T>::ALT_XY);
 				}
 			}
-		}
 
-		// Blend the horizontal skirt over the middle seam.
-		for (int y = half_height; y < skirt_edge_y; y++) {
-			int alpha = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(y - half_height) / float(skirt_height)));
-			for (int x = 0; x < p_width; x++) {
-				// Skip the center square
-				if (x == half_width) {
-					x = skirt_edge_x - 1;
-				} else {
-					// Starts reading at s4, skips s3, continues with s5.
-					wr(x, y) = _alpha_blend<T>(rd_dest(x, y), rd_src(x, y, img_buff<T>::ALT_X), alpha);
-				}
-			}
-		}
-
-		// Fill in the center square. Wr starts at the top left of Q4, which is the equivalent of the top left of s3, unless a modulo is used.
-		for (int y = half_height; y < skirt_edge_y; y++) {
+			// Blend the vertical skirt over the middle seam.
 			for (int x = half_width; x < skirt_edge_x; x++) {
-				int xpos = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(x - half_width) / float(skirt_width)));
-				int ypos = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(y - half_height) / float(skirt_height)));
-
-				// Blend s3(Q1) onto s5(Q2) for the top half.
-				T top_blend = _alpha_blend<T>(rd_src(x, y, img_buff<T>::ALT_X), rd_src(x, y, img_buff<T>::DEFAULT), xpos);
-				// Blend s1(Q3) onto Q4 for the bottom half.
-				T bottom_blend = _alpha_blend<T>(rd_src(x, y, img_buff<T>::ALT_XY), rd_src(x, y, img_buff<T>::ALT_Y), xpos);
-				// Blend the top half onto the bottom half.
-				wr(x, y) = _alpha_blend<T>(bottom_blend, top_blend, ypos);
+				int alpha = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(x - half_width) / float(skirt_width)));
+				for (int y = 0; y < p_height; y++) {
+					// Skip the center square
+					if (y == half_height) {
+						y = skirt_edge_y - 1;
+					} else {
+						// Starts reading at s2, ALT_Y skips s3, and continues with s1.
+						wr(x, y) = _alpha_blend<T>(rd_dest(x, y), rd_src(x, y, img_buff<T>::ALT_Y), alpha);
+					}
+				}
 			}
+
+			// Blend the horizontal skirt over the middle seam.
+			for (int y = half_height; y < skirt_edge_y; y++) {
+				int alpha = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(y - half_height) / float(skirt_height)));
+				for (int x = 0; x < p_width; x++) {
+					// Skip the center square
+					if (x == half_width) {
+						x = skirt_edge_x - 1;
+					} else {
+						// Starts reading at s4, skips s3, continues with s5.
+						wr(x, y) = _alpha_blend<T>(rd_dest(x, y), rd_src(x, y, img_buff<T>::ALT_X), alpha);
+					}
+				}
+			}
+
+			// Fill in the center square. Wr starts at the top left of Q4, which is the equivalent of the top left of s3, unless a modulo is used.
+			for (int y = half_height; y < skirt_edge_y; y++) {
+				for (int x = half_width; x < skirt_edge_x; x++) {
+					int xpos = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(x - half_width) / float(skirt_width)));
+					int ypos = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(y - half_height) / float(skirt_height)));
+
+					// Blend s3(Q1) onto s5(Q2) for the top half.
+					T top_blend = _alpha_blend<T>(rd_src(x, y, img_buff<T>::ALT_X), rd_src(x, y, img_buff<T>::DEFAULT), xpos);
+					// Blend s1(Q3) onto Q4 for the bottom half.
+					T bottom_blend = _alpha_blend<T>(rd_src(x, y, img_buff<T>::ALT_XY), rd_src(x, y, img_buff<T>::ALT_Y), xpos);
+					// Blend the top half onto the bottom half.
+					wr(x, y) = _alpha_blend<T>(bottom_blend, top_blend, ypos);
+				}
+			}
+			Ref<Image> image = memnew(Image(p_width, p_height, false, format, dest));
+			p_src.write[d].unref();
+			images.write[d] = image;
 		}
-		Ref<Image> image = memnew(Image(p_width, p_height, false, p_src->get_format(), dest));
-		p_src.unref();
-		return image;
+
+		// Now blend across z.
+		if (p_depth > 1) {
+			int skirt_depth = MAX(1, p_depth * p_blend_skirt);
+			int half_depth = p_depth * 0.5;
+			int skirt_edge_z = half_depth + skirt_depth;
+
+			// Swap halves on depth.
+			for (int i = 0; i < half_depth; i++) {
+				Ref<Image> img = images[i];
+				images.write[i] = images[i + half_depth];
+				images.write[i + half_depth] = img;
+			}
+
+			Vector<Ref<Image>> new_images = images;
+			new_images.resize(p_depth);
+
+			// Scale seamless generation to third dimension.
+			for (int z = half_depth; z < skirt_edge_z; z++) {
+				int alpha = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(z - half_depth) / float(skirt_depth)));
+
+				Vector<uint8_t> img = images[z % p_depth]->get_data();
+				Vector<uint8_t> skirt = images[(z - half_depth) + p_depth]->get_data();
+
+				Vector<uint8_t> dest;
+				dest.resize(images[0]->get_width() * images[0]->get_height() * Image::get_format_pixel_size(images[0]->get_format()));
+
+				for (int i = 0; i < img.size(); i++) {
+					uint8_t fg, bg, out;
+
+					fg = skirt[i];
+					bg = img[i];
+
+					uint16_t a = alpha + 1;
+					uint16_t inv_a = 256 - alpha;
+
+					out = (uint8_t)((a * fg + inv_a * bg) >> 8);
+
+					dest.write[i] = out;
+				}
+
+				Ref<Image> new_image = memnew(Image(images[0]->get_width(), images[0]->get_height(), false, images[0]->get_format(), dest));
+				new_images.write[z % p_depth] = new_image;
+			}
+			return new_images;
+		}
+		return images;
 	}
 
 	template <typename T>
@@ -233,8 +290,13 @@ public:
 	virtual real_t get_noise_3dv(Vector3 p_v) const = 0;
 	virtual real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const = 0;
 
+	Vector<Ref<Image>> _get_image(int p_width, int p_height, int p_depth, bool p_invert = false, bool p_in_3d_space = false, bool p_normalize = true) const;
 	virtual Ref<Image> get_image(int p_width, int p_height, bool p_invert = false, bool p_in_3d_space = false, bool p_normalize = true) const;
+	virtual TypedArray<Image> get_image_3d(int p_width, int p_height, int p_depth, bool p_invert = false, bool p_normalize = true) const;
+
+	Vector<Ref<Image>> _get_seamless_image(int p_width, int p_height, int p_depth, bool p_invert = false, bool p_in_3d_space = false, real_t p_blend_skirt = 0.1, bool p_normalize = true) const;
 	virtual Ref<Image> get_seamless_image(int p_width, int p_height, bool p_invert = false, bool p_in_3d_space = false, real_t p_blend_skirt = 0.1, bool p_normalize = true) const;
+	virtual TypedArray<Image> get_seamless_image_3d(int p_width, int p_height, int p_depth, bool p_invert = false, real_t p_blend_skirt = 0.1, bool p_normalize = true) const;
 };
 
 #endif // NOISE_H

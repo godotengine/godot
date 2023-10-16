@@ -31,15 +31,16 @@
 #ifndef KEY_MAPPING_X11_H
 #define KEY_MAPPING_X11_H
 
+#include "core/os/keyboard.h"
+#include "core/templates/hash_map.h"
+
 #include <X11/XF86keysym.h>
 #include <X11/Xlib.h>
+
 #define XK_MISCELLANY
 #define XK_LATIN1
 #define XK_XKB_KEYS
 #include <X11/keysymdef.h>
-
-#include "core/os/keyboard.h"
-#include "core/templates/hash_map.h"
 
 class KeyMappingX11 {
 	struct HashMapHasherKeys {

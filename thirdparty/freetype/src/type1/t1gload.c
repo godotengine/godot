@@ -4,7 +4,7 @@
  *
  *   Type 1 Glyph Loader (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -264,7 +264,7 @@
     }
 
     FT_TRACE6(( "T1_Compute_Max_Advance: max advance: %f\n",
-                *max_advance / 65536.0 ));
+                (double)*max_advance / 65536 ));
 
     psaux->t1_decoder_funcs->done( &decoder );
 

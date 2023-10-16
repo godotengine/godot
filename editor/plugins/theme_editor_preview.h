@@ -32,18 +32,19 @@
 #define THEME_EDITOR_PREVIEW_H
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/color_rect.h"
-#include "scene/gui/margin_container.h"
-#include "scene/gui/scroll_container.h"
 #include "scene/resources/theme.h"
 
+class Button;
 class ColorPickerButton;
+class ColorRect;
+class MarginContainer;
+class ScrollContainer;
 
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
 
 	ScrollContainer *preview_container = nullptr;
+	MarginContainer *preview_root = nullptr;
 	ColorRect *preview_bg = nullptr;
 	MarginContainer *preview_overlay = nullptr;
 	Control *picker_overlay = nullptr;

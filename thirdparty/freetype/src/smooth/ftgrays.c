@@ -4,7 +4,7 @@
  *
  *   A new `perfect' anti-aliasing renderer (body).
  *
- * Copyright (C) 2000-2022 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -418,21 +418,21 @@ typedef ptrdiff_t  FT_PtrDist;
 
   /* It is faster to write small spans byte-by-byte than calling     */
   /* `memset'.  This is mainly due to the cost of the function call. */
-#define FT_GRAY_SET( d, s, count )                          \
-  FT_BEGIN_STMNT                                            \
-    unsigned char* q = d;                                   \
-    switch ( count )                                        \
-    {                                                       \
-      case 7: *q++ = (unsigned char)s; /* fall through */   \
-      case 6: *q++ = (unsigned char)s; /* fall through */   \
-      case 5: *q++ = (unsigned char)s; /* fall through */   \
-      case 4: *q++ = (unsigned char)s; /* fall through */   \
-      case 3: *q++ = (unsigned char)s; /* fall through */   \
-      case 2: *q++ = (unsigned char)s; /* fall through */   \
-      case 1: *q   = (unsigned char)s; /* fall through */   \
-      case 0: break;                                        \
-      default: FT_MEM_SET( d, s, count );                   \
-    }                                                       \
+#define FT_GRAY_SET( d, s, count )                   \
+  FT_BEGIN_STMNT                                     \
+    unsigned char* q = d;                            \
+    switch ( count )                                 \
+    {                                                \
+      case 7: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 6: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 5: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 4: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 3: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 2: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 1: *q   = (unsigned char)s; FALL_THROUGH; \
+      case 0: break;                                 \
+      default: FT_MEM_SET( d, s, count );            \
+    }                                                \
   FT_END_STMNT
 
 
@@ -1006,10 +1006,11 @@ typedef ptrdiff_t  FT_PtrDist;
    *
    * For other cases, using binary splits is actually slightly faster.
    */
-#if defined( __SSE2__ )                          || \
-    defined( __x86_64__ )                        || \
-    defined( _M_AMD64 )                          || \
-    ( defined( _M_IX86_FP ) && _M_IX86_FP >= 2 )
+#if ( defined( __SSE2__ )                          ||   \
+      defined( __x86_64__ )                        ||   \
+      defined( _M_AMD64 )                          ||   \
+      ( defined( _M_IX86_FP ) && _M_IX86_FP >= 2 ) ) && \
+    !defined( __VMS )
 #  define FT_SSE2 1
 #else
 #  define FT_SSE2 0
@@ -1427,8 +1428,10 @@ typedef ptrdiff_t  FT_PtrDist;
 
   static int
   gray_move_to( const FT_Vector*  to,
-                gray_PWorker      worker )
+                void*             worker_ )  /* gray_PWorker */
   {
+    gray_PWorker  worker = (gray_PWorker)worker_;
+
     TPos  x, y;
 
 
@@ -1446,8 +1449,11 @@ typedef ptrdiff_t  FT_PtrDist;
 
   static int
   gray_line_to( const FT_Vector*  to,
-                gray_PWorker      worker )
+                void*             worker_ )   /* gray_PWorker */
   {
+    gray_PWorker  worker = (gray_PWorker)worker_;
+
+
     gray_render_line( RAS_VAR_ UPSCALE( to->x ), UPSCALE( to->y ) );
     return 0;
   }
@@ -1456,8 +1462,11 @@ typedef ptrdiff_t  FT_PtrDist;
   static int
   gray_conic_to( const FT_Vector*  control,
                  const FT_Vector*  to,
-                 gray_PWorker      worker )
+                 void*             worker_ )   /* gray_PWorker */
   {
+    gray_PWorker  worker = (gray_PWorker)worker_;
+
+
     gray_render_conic( RAS_VAR_ control, to );
     return 0;
   }
@@ -1467,8 +1476,11 @@ typedef ptrdiff_t  FT_PtrDist;
   gray_cubic_to( const FT_Vector*  control1,
                  const FT_Vector*  control2,
                  const FT_Vector*  to,
-                 gray_PWorker      worker )
+                 void*             worker_ )   /* gray_PWorker */
   {
+    gray_PWorker  worker = (gray_PWorker)worker_;
+
+
     gray_render_cubic( RAS_VAR_ control1, control2, to );
     return 0;
   }
@@ -1666,6 +1678,8 @@ typedef ptrdiff_t  FT_PtrDist;
 
     int   n;         /* index of contour in outline     */
     int   first;     /* index of first point in contour */
+    int   last;      /* index of last point in contour  */
+
     char  tag;       /* current point's state           */
 
     int   shift;
@@ -1680,18 +1694,17 @@ typedef ptrdiff_t  FT_PtrDist;
 
     shift = func_interface->shift;
     delta = func_interface->delta;
-    first = 0;
 
+    last = -1;
     for ( n = 0; n < outline->n_contours; n++ )
     {
-      int  last;  /* index of last point in contour */
+      FT_TRACE5(( "FT_Outline_Decompose: Contour %d\n", n ));
 
-
-      FT_TRACE5(( "FT_Outline_Decompose: Outline %d\n", n ));
-
+      first = last + 1;
       last  = outline->contours[n];
-      if ( last < 0 )
+      if ( last < first )
         goto Invalid_Outline;
+
       limit = outline->points + last;
 
       v_start   = outline->points[first];
@@ -1874,11 +1887,9 @@ typedef ptrdiff_t  FT_PtrDist;
                   v_start.x / 64.0, v_start.y / 64.0 ));
       error = func_interface->line_to( &v_start, user );
 
-   Close:
+    Close:
       if ( error )
         goto Exit;
-
-      first = last + 1;
     }
 
     FT_TRACE5(( "FT_Outline_Decompose: Done\n", n ));
@@ -1907,15 +1918,12 @@ typedef ptrdiff_t  FT_PtrDist;
     0                                        /* delta    */
   )
 
-// -- GODOT start --
-  static volatile int _lto_dummy = 0;
-// -- GODOT end --
 
   static int
-  gray_convert_glyph_inner( RAS_ARG,
+  gray_convert_glyph_inner( RAS_ARG_
                             int  continued )
   {
-    int  error;
+    volatile int  error;
 
 
     if ( ft_setjmp( ras.jump_buffer ) == 0 )
@@ -1926,14 +1934,11 @@ typedef ptrdiff_t  FT_PtrDist;
       if ( continued )
         FT_Trace_Enable();
 
-      FT_TRACE7(( "band [%d..%d]: %ld cell%s remaining/\n",
+      FT_TRACE7(( "band [%d..%d]: %td cell%s remaining/\n",
                   ras.min_ey,
                   ras.max_ey,
                   ras.cell_null - ras.cell_free,
                   ras.cell_null - ras.cell_free == 1 ? "" : "s" ));
-// -- GODOT start --
-      _lto_dummy = error; // Prevents LTO from removing this branch.
-// -- GODOT end --
     }
     else
     {
@@ -1941,9 +1946,6 @@ typedef ptrdiff_t  FT_PtrDist;
 
       FT_TRACE7(( "band [%d..%d]: to be bisected\n",
                   ras.min_ey, ras.max_ey ));
-// -- GODOT start --
-      _lto_dummy = error; // Prevents LTO from removing this branch.
-// -- GODOT end --
     }
 
     return error;
@@ -2013,7 +2015,7 @@ typedef ptrdiff_t  FT_PtrDist;
         ras.max_ey    = band[0];
         ras.count_ey  = width;
 
-        error     = gray_convert_glyph_inner( RAS_VAR, continued );
+        error     = gray_convert_glyph_inner( RAS_VAR_ continued );
         continued = 1;
 
         if ( !error )
@@ -2165,9 +2167,12 @@ typedef ptrdiff_t  FT_PtrDist;
 #else /* !STANDALONE_ */
 
   static int
-  gray_raster_new( FT_Memory      memory,
-                   gray_PRaster*  araster )
+  gray_raster_new( void*       memory_,
+                   FT_Raster*  araster_ )
   {
+    FT_Memory      memory  = (FT_Memory)memory_;
+    gray_PRaster*  araster = (gray_PRaster*)araster_;
+
     FT_Error      error;
     gray_PRaster  raster = NULL;
 

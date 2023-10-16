@@ -729,6 +729,26 @@ namespace Godot
         }
 
         /// <summary>
+        /// Decodes a hexadecimal string.
+        /// </summary>
+        /// <param name="instance">The hexadecimal string.</param>
+        /// <returns>The byte array representation of this string.</returns>
+        public static byte[] HexDecode(this string instance)
+        {
+            if (instance.Length % 2 != 0)
+            {
+                throw new ArgumentException("Hexadecimal string of uneven length.", nameof(instance));
+            }
+            int len = instance.Length / 2;
+            byte[] ret = new byte[len];
+            for (int i = 0; i < len; i++)
+            {
+                ret[i] = (byte)int.Parse(instance.AsSpan(i * 2, 2), NumberStyles.AllowHexSpecifier);
+            }
+            return ret;
+        }
+
+        /// <summary>
         /// Returns a hexadecimal representation of this byte as a string.
         /// </summary>
         /// <param name="b">The byte to encode.</param>

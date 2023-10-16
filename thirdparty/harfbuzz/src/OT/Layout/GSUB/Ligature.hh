@@ -10,10 +10,10 @@ namespace GSUB_impl {
 template <typename Types>
 struct Ligature
 {
-  protected:
+  public:
   typename Types::HBGlyphID
 		ligGlyph;               /* GlyphID of ligature to substitute */
-  HeadlessArrayOf<typename Types::HBGlyphID>
+  HeadlessArray16Of<typename Types::HBGlyphID>
 		component;              /* Array of component GlyphIDs--start
                                          * with the second  component--ordered
                                          * in writing direction */
@@ -28,6 +28,9 @@ struct Ligature
 
   bool intersects (const hb_set_t *glyphs) const
   { return hb_all (component, glyphs); }
+
+  bool intersects_lig_glyph (const hb_set_t *glyphs) const
+  { return glyphs->has(ligGlyph); }
 
   void closure (hb_closure_context_t *c) const
   {

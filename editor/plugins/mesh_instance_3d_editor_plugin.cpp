@@ -32,13 +32,16 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/scene_string_names.h"
@@ -214,7 +217,11 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Mesh::ConvexDecompositionSettings settings;
+			Ref<MeshConvexDecompositionSettings> settings = Ref<MeshConvexDecompositionSettings>();
+			settings.instantiate();
+			settings->set_max_convex_hulls(32);
+			settings->set_max_concavity(0.001);
+
 			Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
 
 			if (!shapes.size()) {
@@ -457,10 +464,10 @@ void MeshInstance3DEditor::_debug_uv_draw() {
 	}
 
 	debug_uv->set_clip_contents(true);
-	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
+	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
 	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
 	// Use a translucent color to allow overlapping triangles to be visible.
-	debug_uv->draw_multiline(uv_lines, get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+	debug_uv->draw_multiline(uv_lines, get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.5));
 }
 
 void MeshInstance3DEditor::_create_outline_mesh() {
@@ -506,16 +513,19 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 	ur->commit_action();
 }
 
-void MeshInstance3DEditor::_bind_methods() {
+void MeshInstance3DEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			options->set_icon(get_editor_theme_icon(SNAME("MeshInstance3D")));
+		} break;
+	}
 }
 
 MeshInstance3DEditor::MeshInstance3DEditor() {
 	options = memnew(MenuButton);
+	options->set_text(TTR("Mesh"));
 	options->set_switch_on_hover(true);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
-
-	options->set_text(TTR("Mesh"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MeshInstance3D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a StaticBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));

@@ -85,6 +85,8 @@ public:
 	virtual Error load(String p_path);
 	virtual Error load_from_memory(const uint8_t *p_buffer, int p_len);
 	virtual Error save(String p_path);
+	virtual String save_to_string();
+	virtual Error load_from_string(const String &p_string_key);
 
 	X509CertificateMbedTLS() {
 		mbedtls_x509_crt_init(&cert);

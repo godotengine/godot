@@ -70,7 +70,7 @@ private:
 	friend class EditorExport;
 	friend class EditorExportPlatform;
 
-	List<PropertyInfo> properties;
+	HashMap<StringName, PropertyInfo> properties;
 	HashMap<StringName, Variant> values;
 	HashMap<StringName, bool> update_visibility;
 
@@ -89,6 +89,10 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	String _get_property_warning(const StringName &p_name) const;
+
+	static void _bind_methods();
 
 public:
 	Ref<EditorExportPlatform> get_platform() const;
@@ -148,7 +152,17 @@ public:
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;
 
-	const List<PropertyInfo> &get_properties() const { return properties; }
+	Variant get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid = nullptr) const;
+
+	// Return the preset's version number, or fall back to the
+	// `application/config/version` project setting if set to an empty string.
+	// If `p_windows_version` is `true`, formats the returned version number to
+	// be compatible with Windows executable metadata (which requires a
+	// 4-component format).
+	String get_version(const StringName &p_name, bool p_windows_version = false) const;
+
+	const HashMap<StringName, PropertyInfo> &get_properties() const { return properties; }
+	const HashMap<StringName, Variant> &get_values() const { return values; }
 
 	EditorExportPreset();
 };

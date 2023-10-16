@@ -5,7 +5,7 @@
  *   Load the basic TrueType tables, i.e., tables that can be either in
  *   TTF or OTF fonts (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -206,7 +206,7 @@
       if ( FT_STREAM_READ_FIELDS( table_dir_entry_fields, &table ) )
       {
         FT_TRACE2(( "check_table_dir:"
-                    " can read only %d table%s in font (instead of %d)\n",
+                    " can read only %hu table%s in font (instead of %hu)\n",
                     nn, nn == 1 ? "" : "s", sfnt->num_tables ));
         sfnt->num_tables = nn;
         break;
@@ -216,7 +216,7 @@
 
       if ( table.Offset > stream->size )
       {
-        FT_TRACE2(( "check_table_dir: table entry %d invalid\n", nn ));
+        FT_TRACE2(( "check_table_dir: table entry %hu invalid\n", nn ));
         continue;
       }
       else if ( table.Length > stream->size - table.Offset )
@@ -231,7 +231,7 @@
           valid_entries++;
         else
         {
-          FT_TRACE2(( "check_table_dir: table entry %d invalid\n", nn ));
+          FT_TRACE2(( "check_table_dir: table entry %hu invalid\n", nn ));
           continue;
         }
       }
@@ -380,7 +380,7 @@
 
     /* load the table directory */
 
-    FT_TRACE2(( "-- Number of tables: %10u\n",    sfnt.num_tables ));
+    FT_TRACE2(( "-- Number of tables: %10hu\n",   sfnt.num_tables ));
     FT_TRACE2(( "-- Format version:   0x%08lx\n", sfnt.format_tag ));
 
     if ( sfnt.format_tag != TTAG_OTTO )
@@ -503,6 +503,13 @@
     face->num_tables = valid_entries;
 
     FT_FRAME_EXIT();
+
+    if ( !valid_entries )
+    {
+      FT_TRACE2(( "tt_face_load_font_dir: no valid tables found\n" ));
+      error = FT_THROW( Unknown_File_Format );
+      goto Exit;
+    }
 
     FT_TRACE2(( "table directory loaded\n" ));
     FT_TRACE2(( "\n" ));
@@ -671,8 +678,8 @@
     if ( FT_STREAM_READ_FIELDS( header_fields, header ) )
       goto Exit;
 
-    FT_TRACE3(( "Units per EM: %4u\n", header->Units_Per_EM ));
-    FT_TRACE3(( "IndexToLoc:   %4d\n", header->Index_To_Loc_Format ));
+    FT_TRACE3(( "Units per EM: %4hu\n", header->Units_Per_EM ));
+    FT_TRACE3(( "IndexToLoc:   %4hd\n", header->Index_To_Loc_Format ));
 
   Exit:
     return error;
@@ -802,7 +809,7 @@
       }
     }
 
-    FT_TRACE3(( "numGlyphs: %u\n", maxProfile->numGlyphs ));
+    FT_TRACE3(( "numGlyphs: %hu\n", maxProfile->numGlyphs ));
 
   Exit:
     return error;
@@ -1265,11 +1272,11 @@
       }
     }
 
-    FT_TRACE3(( "sTypoAscender:  %4d\n",   os2->sTypoAscender ));
-    FT_TRACE3(( "sTypoDescender: %4d\n",   os2->sTypoDescender ));
-    FT_TRACE3(( "usWinAscent:    %4u\n",   os2->usWinAscent ));
-    FT_TRACE3(( "usWinDescent:   %4u\n",   os2->usWinDescent ));
-    FT_TRACE3(( "fsSelection:    0x%2x\n", os2->fsSelection ));
+    FT_TRACE3(( "sTypoAscender:  %4hd\n",   os2->sTypoAscender ));
+    FT_TRACE3(( "sTypoDescender: %4hd\n",   os2->sTypoDescender ));
+    FT_TRACE3(( "usWinAscent:    %4hu\n",   os2->usWinAscent ));
+    FT_TRACE3(( "usWinDescent:   %4hu\n",   os2->usWinDescent ));
+    FT_TRACE3(( "fsSelection:    0x%2hx\n", os2->fsSelection ));
 
   Exit:
     return error;
@@ -1468,7 +1475,7 @@
       gasp_ranges[j].maxPPEM  = FT_GET_USHORT();
       gasp_ranges[j].gaspFlag = FT_GET_USHORT();
 
-      FT_TRACE3(( "gaspRange %d: rangeMaxPPEM %5d, rangeGaspBehavior 0x%x\n",
+      FT_TRACE3(( "gaspRange %hu: rangeMaxPPEM %5hu, rangeGaspBehavior 0x%hx\n",
                   j,
                   gasp_ranges[j].maxPPEM,
                   gasp_ranges[j].gaspFlag ));

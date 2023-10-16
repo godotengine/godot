@@ -30,12 +30,13 @@
 
 #import "app_delegate.h"
 
-#include "core/config/project_settings.h"
-#include "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "godot_view.h"
-#include "main/main.h"
-#include "os_ios.h"
+#import "os_ios.h"
 #import "view_controller.h"
+
+#include "core/config/project_settings.h"
+#import "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "main/main.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioServices.h>

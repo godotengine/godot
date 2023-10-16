@@ -8,7 +8,7 @@
  * This file is for Mac OS X only; see builds/mac/ftoldmac.c for
  * classic platforms built by MPW.
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * Just van Rossum, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -67,6 +67,7 @@
 
 #include <freetype/freetype.h>
 #include <freetype/tttags.h>
+#include <freetype/internal/ftdebug.h>
 #include <freetype/internal/ftstream.h>
 #include "ftbase.h"
 
@@ -1081,7 +1082,7 @@
 #else /* !FT_MACINTOSH */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _ft_mac_dummy;
+  typedef int  ft_mac_dummy_;
 
 #endif /* !FT_MACINTOSH */
 

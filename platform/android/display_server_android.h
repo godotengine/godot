@@ -39,6 +39,8 @@ class RenderingDeviceVulkan;
 #endif
 
 class DisplayServerAndroid : public DisplayServer {
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+
 	String rendering_driver;
 
 	// https://developer.android.com/reference/android/view/PointerIcon
@@ -100,6 +102,9 @@ public:
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
+
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
@@ -176,6 +181,7 @@ public:
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 

@@ -40,7 +40,7 @@ private:
 	EditorExportPreset::FileExportMode _get_export_mode_for_path(const String &p_path);
 
 protected:
-	String _get_name() const override { return "DedicatedServer"; }
+	String get_name() const override { return "DedicatedServer"; }
 
 	PackedStringArray _get_export_features(const Ref<EditorExportPlatform> &p_platform, bool p_debug) const override;
 	uint64_t _get_customization_configuration_hash() const override;

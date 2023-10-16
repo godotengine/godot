@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -430,12 +430,10 @@ void RuntimeInterface::GetInstanceExtensionProperties(std::vector<XrExtensionPro
     // Get the count from the runtime
     rt_xrEnumerateInstanceExtensionProperties(nullptr, count, &count_output, nullptr);
     if (count_output > 0) {
-        runtime_extension_properties.resize(count_output);
+        XrExtensionProperties example_properties{};
+        example_properties.type = XR_TYPE_EXTENSION_PROPERTIES;
+        runtime_extension_properties.resize(count_output, example_properties);
         count = count_output;
-        for (XrExtensionProperties& ext_prop : runtime_extension_properties) {
-            ext_prop.type = XR_TYPE_EXTENSION_PROPERTIES;
-            ext_prop.next = nullptr;
-        }
         rt_xrEnumerateInstanceExtensionProperties(nullptr, count, &count_output, runtime_extension_properties.data());
     }
     size_t ext_count = runtime_extension_properties.size();

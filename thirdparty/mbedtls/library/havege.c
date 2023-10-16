@@ -49,10 +49,10 @@
  * ------------------------------------------------------------------------
  */
 
-#define SWAP(X,Y) { uint32_t *T = (X); (X) = (Y); (Y) = T; }
+#define SWAP(X, Y) { uint32_t *T = (X); (X) = (Y); (Y) = T; }
 
-#define TST1_ENTER if( PTEST & 1 ) { PTEST ^= 3; PTEST >>= 1;
-#define TST2_ENTER if( PTEST & 1 ) { PTEST ^= 3; PTEST >>= 1;
+#define TST1_ENTER if (PTEST & 1) { PTEST ^= 3; PTEST >>= 1;
+#define TST2_ENTER if (PTEST & 1) { PTEST ^= 3; PTEST >>= 1;
 
 #define TST1_LEAVE U1++; }
 #define TST2_LEAVE U2++; }
@@ -69,14 +69,14 @@
     TST1_LEAVE  TST1_LEAVE  TST1_LEAVE  TST1_LEAVE      \
     TST1_LEAVE  TST1_LEAVE  TST1_LEAVE  TST1_LEAVE      \
                                                         \
-    PTX = (PT1 >> 18) & 7;                              \
+        PTX = (PT1 >> 18) & 7;                              \
     PT1 &= 0x1FFF;                                      \
     PT2 &= 0x1FFF;                                      \
     CLK = (uint32_t) mbedtls_timing_hardclock();        \
                                                         \
     i = 0;                                              \
-    A = &WALK[PT1    ]; RES[i++] ^= *A;                 \
-    B = &WALK[PT2    ]; RES[i++] ^= *B;                 \
+    A = &WALK[PT1]; RES[i++] ^= *A;                 \
+    B = &WALK[PT2]; RES[i++] ^= *B;                 \
     C = &WALK[PT1 ^ 1]; RES[i++] ^= *C;                 \
     D = &WALK[PT2 ^ 4]; RES[i++] ^= *D;                 \
                                                         \
@@ -91,7 +91,7 @@
     C = &WALK[PT1 ^ 3]; RES[i++] ^= *C;                 \
     D = &WALK[PT2 ^ 6]; RES[i++] ^= *D;                 \
                                                         \
-    if( PTEST & 1 ) SWAP( A, C );                       \
+    if (PTEST & 1) SWAP(A, C);                       \
                                                         \
     IN = (*A >> (5)) ^ (*A << (27)) ^ CLK;              \
     *A = (*B >> (6)) ^ (*B << (26)) ^ CLK;              \
@@ -116,7 +116,7 @@
     TST2_LEAVE  TST2_LEAVE  TST2_LEAVE  TST2_LEAVE      \
     TST2_LEAVE  TST2_LEAVE  TST2_LEAVE  TST2_LEAVE      \
                                                         \
-    C = &WALK[PT1 ^ 5];                                 \
+        C = &WALK[PT1 ^ 5];                                 \
     D = &WALK[PT2 ^ 5];                                 \
                                                         \
     RES[i++] ^= *A;                                     \
@@ -124,7 +124,7 @@
     RES[i++] ^= *C;                                     \
     RES[i++] ^= *D;                                     \
                                                         \
-    IN = (*A >> ( 9)) ^ (*A << (23)) ^ CLK;             \
+    IN = (*A >> (9)) ^ (*A << (23)) ^ CLK;             \
     *A = (*B >> (10)) ^ (*B << (22)) ^ CLK;             \
     *B = IN ^ U2;                                       \
     *C = (*C >> (11)) ^ (*C << (21)) ^ CLK;             \
@@ -141,17 +141,17 @@
     *C = (*C >> (15)) ^ (*C << (17)) ^ CLK;             \
     *D = (*D >> (16)) ^ (*D << (16)) ^ CLK;             \
                                                         \
-    PT1 = ( RES[( i - 8 ) ^ PTX] ^                      \
-            WALK[PT1 ^ PTX ^ 7] ) & (~1);               \
+    PT1 = (RES[(i - 8) ^ PTX] ^                      \
+           WALK[PT1 ^ PTX ^ 7]) & (~1);               \
     PT1 ^= (PT2 ^ 0x10) & 0x10;                         \
                                                         \
-    for( n++, i = 0; i < 16; i++ )                      \
-        hs->pool[n % MBEDTLS_HAVEGE_COLLECT_SIZE] ^= RES[i];
+    for (n++, i = 0; i < 16; i++)                      \
+    hs->pool[n % MBEDTLS_HAVEGE_COLLECT_SIZE] ^= RES[i];
 
 /*
  * Entropy gathering function
  */
-static void havege_fill( mbedtls_havege_state *hs )
+static void havege_fill(mbedtls_havege_state *hs)
 {
     size_t n = 0;
     size_t i;
@@ -166,16 +166,15 @@ static void havege_fill( mbedtls_havege_state *hs )
     PTX  = U1 = 0;
     PTY  = U2 = 0;
 
-    (void)PTX;
+    (void) PTX;
 
-    memset( RES, 0, sizeof( RES ) );
+    memset(RES, 0, sizeof(RES));
 
-    while( n < MBEDTLS_HAVEGE_COLLECT_SIZE * 4 )
-    {
+    while (n < MBEDTLS_HAVEGE_COLLECT_SIZE * 4) {
         ONE_ITERATION
         ONE_ITERATION
         ONE_ITERATION
-        ONE_ITERATION
+            ONE_ITERATION
     }
 
     hs->PT1 = PT1;
@@ -188,50 +187,52 @@ static void havege_fill( mbedtls_havege_state *hs )
 /*
  * HAVEGE initialization
  */
-void mbedtls_havege_init( mbedtls_havege_state *hs )
+void mbedtls_havege_init(mbedtls_havege_state *hs)
 {
-    memset( hs, 0, sizeof( mbedtls_havege_state ) );
+    memset(hs, 0, sizeof(mbedtls_havege_state));
 
-    havege_fill( hs );
+    havege_fill(hs);
 }
 
-void mbedtls_havege_free( mbedtls_havege_state *hs )
+void mbedtls_havege_free(mbedtls_havege_state *hs)
 {
-    if( hs == NULL )
+    if (hs == NULL) {
         return;
+    }
 
-    mbedtls_platform_zeroize( hs, sizeof( mbedtls_havege_state ) );
+    mbedtls_platform_zeroize(hs, sizeof(mbedtls_havege_state));
 }
 
 /*
  * HAVEGE rand function
  */
-int mbedtls_havege_random( void *p_rng, unsigned char *buf, size_t len )
+int mbedtls_havege_random(void *p_rng, unsigned char *buf, size_t len)
 {
     uint32_t val;
     size_t use_len;
     mbedtls_havege_state *hs = (mbedtls_havege_state *) p_rng;
     unsigned char *p = buf;
 
-    while( len > 0 )
-    {
+    while (len > 0) {
         use_len = len;
-        if( use_len > sizeof( val ) )
-            use_len = sizeof( val );
+        if (use_len > sizeof(val)) {
+            use_len = sizeof(val);
+        }
 
-        if( hs->offset[1] >= MBEDTLS_HAVEGE_COLLECT_SIZE )
-            havege_fill( hs );
+        if (hs->offset[1] >= MBEDTLS_HAVEGE_COLLECT_SIZE) {
+            havege_fill(hs);
+        }
 
         val  = hs->pool[hs->offset[0]++];
         val ^= hs->pool[hs->offset[1]++];
 
-        memcpy( p, &val, use_len );
+        memcpy(p, &val, use_len);
 
         len -= use_len;
         p += use_len;
     }
 
-    return( 0 );
+    return 0;
 }
 
 #endif /* MBEDTLS_HAVEGE_C */

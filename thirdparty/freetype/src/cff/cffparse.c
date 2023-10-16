@@ -4,7 +4,7 @@
  *
  *   CFF token stream parser (body)
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -63,10 +63,7 @@
 
     /* allocate the stack buffer */
     if ( FT_QNEW_ARRAY( parser->stack, stackSize ) )
-    {
-      FT_FREE( parser->stack );
       goto Exit;
-    }
 
     parser->stackSize = stackSize;
     parser->top       = parser->stack;    /* empty stack */
@@ -74,23 +71,6 @@
   Exit:
     return error;
   }
-
-
-#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
-  static void
-  finalize_t2_strings( FT_Memory  memory,
-                       void*      data,
-                       void*      user )
-  {
-    CFF_T2_String  t2 = (CFF_T2_String)data;
-
-
-    FT_UNUSED( user );
-
-    memory->free( memory, t2->start );
-    memory->free( memory, data );
-  }
-#endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
 
 
   FT_LOCAL_DEF( void )
@@ -102,63 +82,19 @@
     FT_FREE( parser->stack );
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
-    FT_List_Finalize( &parser->t2_strings,
-                      finalize_t2_strings,
-                      memory,
-                      NULL );
+    FT_List_Finalize( &parser->t2_strings, NULL, memory, NULL );
 #endif
   }
 
 
-  /* Assuming `first >= last'. */
-
-  static FT_Error
-  cff_parser_within_limits( CFF_Parser  parser,
-                            FT_Byte*    first,
-                            FT_Byte*    last )
-  {
-#ifndef CFF_CONFIG_OPTION_OLD_ENGINE
-
-    /* Fast path for regular FreeType builds with the "new" engine; */
-    /*   `first >= parser->start' can be assumed.                   */
-
-    FT_UNUSED( first );
-
-    return last < parser->limit ? FT_Err_Ok : FT_THROW( Invalid_Argument );
-
-#else /* CFF_CONFIG_OPTION_OLD_ENGINE */
-
-    FT_ListNode  node;
-
-
-    if ( first >= parser->start &&
-         last  <  parser->limit )
-      return FT_Err_Ok;
-
-    node = parser->t2_strings.head;
-
-    while ( node )
-    {
-      CFF_T2_String  t2 = (CFF_T2_String)node->data;
-
-
-      if ( first >= t2->start &&
-           last  <  t2->limit )
-        return FT_Err_Ok;
-
-      node = node->next;
-    }
-
-    return FT_THROW( Invalid_Argument );
-
-#endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
-  }
-
+  /* The parser limit checks in the next two functions are supposed */
+  /* to detect the immediate crossing of the stream boundary.  They */
+  /* shall not be triggered from the distant t2_strings buffers.    */
 
   /* read an integer */
   static FT_Long
-  cff_parse_integer( CFF_Parser  parser,
-                     FT_Byte*    start )
+  cff_parse_integer( FT_Byte*  start,
+                     FT_Byte*  limit )
   {
     FT_Byte*  p   = start;
     FT_Int    v   = *p++;
@@ -167,14 +103,14 @@
 
     if ( v == 28 )
     {
-      if ( cff_parser_within_limits( parser, p, p + 1 ) )
+      if ( p + 2 > limit && limit >= p )
         goto Bad;
 
       val = (FT_Short)( ( (FT_UShort)p[0] << 8 ) | p[1] );
     }
     else if ( v == 29 )
     {
-      if ( cff_parser_within_limits( parser, p, p + 3 ) )
+      if ( p + 4 > limit && limit >= p )
         goto Bad;
 
       val = (FT_Long)( ( (FT_ULong)p[0] << 24 ) |
@@ -188,14 +124,14 @@
     }
     else if ( v < 251 )
     {
-      if ( cff_parser_within_limits( parser, p, p ) )
+      if ( p + 1 > limit && limit >= p )
         goto Bad;
 
       val = ( v - 247 ) * 256 + p[0] + 108;
     }
     else
     {
-      if ( cff_parser_within_limits( parser, p, p ) )
+      if ( p + 1 > limit && limit >= p )
         goto Bad;
 
       val = -( v - 251 ) * 256 - p[0] - 108;
@@ -244,10 +180,10 @@
 
   /* read a real */
   static FT_Fixed
-  cff_parse_real( CFF_Parser  parser,
-                  FT_Byte*    start,
-                  FT_Long     power_ten,
-                  FT_Long*    scaling )
+  cff_parse_real( FT_Byte*  start,
+                  FT_Byte*  limit,
+                  FT_Long   power_ten,
+                  FT_Long*  scaling )
   {
     FT_Byte*  p = start;
     FT_Int    nib;
@@ -282,7 +218,7 @@
         p++;
 
         /* Make sure we don't read past the end. */
-        if ( cff_parser_within_limits( parser, p, p ) )
+        if ( p + 1 > limit && limit >= p )
           goto Bad;
       }
 
@@ -319,7 +255,7 @@
           p++;
 
           /* Make sure we don't read past the end. */
-          if ( cff_parser_within_limits( parser, p, p ) )
+          if ( p + 1 > limit && limit >= p )
             goto Bad;
         }
 
@@ -358,7 +294,7 @@
           p++;
 
           /* Make sure we don't read past the end. */
-          if ( cff_parser_within_limits( parser, p, p ) )
+          if ( p + 1 > limit && limit >= p )
             goto Bad;
         }
 
@@ -525,12 +461,12 @@
     if ( **d == 30 )
     {
       /* binary-coded decimal is truncated to integer */
-      return cff_parse_real( parser, *d, 0, NULL ) >> 16;
+      return cff_parse_real( *d, parser->limit, 0, NULL ) >> 16;
     }
 
     else if ( **d == 255 )
     {
-      /* 16.16 fixed point is used internally for CFF2 blend results. */
+      /* 16.16 fixed-point is used internally for CFF2 blend results. */
       /* Since these are trusted values, a limit check is not needed. */
 
       /* After the 255, 4 bytes give the number.                 */
@@ -551,7 +487,7 @@
     }
 
     else
-      return cff_parse_integer( parser, *d );
+      return cff_parse_integer( *d, parser->limit );
   }
 
 
@@ -562,15 +498,33 @@
             FT_Long     scaling )
   {
     if ( **d == 30 )
-      return cff_parse_real( parser, *d, scaling, NULL );
-    else
+      return cff_parse_real( *d, parser->limit, scaling, NULL );
+    else if ( **d == 255 )
     {
-      FT_Long  val = cff_parse_integer( parser, *d );
-
+      FT_Fixed val = ( ( ( (FT_UInt32)*( d[0] + 1 ) << 24 ) |
+                         ( (FT_UInt32)*( d[0] + 2 ) << 16 ) |
+                         ( (FT_UInt32)*( d[0] + 3 ) <<  8 ) |
+                           (FT_UInt32)*( d[0] + 4 )         ) );
 
       if ( scaling )
       {
         if ( FT_ABS( val ) > power_ten_limits[scaling] )
+        {
+           FT_TRACE4(( "!!!OVERFLOW:!!!" ));
+           return val > 0 ? 0x7FFFFFFFL : -0x7FFFFFFFL;
+        }
+        val *= power_tens[scaling];
+      }
+      return val;
+    }
+    else
+    {
+      FT_Long  val = cff_parse_integer( *d, parser->limit );
+
+
+      if ( scaling )
+      {
+        if ( ( FT_ABS( val ) << 16 ) > power_ten_limits[scaling] )
         {
           val = val > 0 ? 0x7FFFFFFFL : -0x7FFFFFFFL;
           goto Overflow;
@@ -600,7 +554,7 @@
 
 
   /* read a floating point number, either integer or real */
-  static FT_Fixed
+  FT_LOCAL_DEF( FT_Fixed )
   cff_parse_fixed( CFF_Parser  parser,
                    FT_Byte**   d )
   {
@@ -630,14 +584,14 @@
     FT_ASSERT( scaling );
 
     if ( **d == 30 )
-      return cff_parse_real( parser, *d, 0, scaling );
+      return cff_parse_real( *d, parser->limit, 0, scaling );
     else
     {
       FT_Long  number;
       FT_Int   integer_length;
 
 
-      number = cff_parse_integer( parser, d[0] );
+      number = cff_parse_integer( *d, parser->limit );
 
       if ( number > 0x7FFFL )
       {
@@ -686,7 +640,7 @@
 
       dict->has_font_matrix = TRUE;
 
-      /* We expect a well-formed font matrix, this is, the matrix elements */
+      /* We expect a well-formed font matrix, that is, the matrix elements */
       /* `xx' and `yy' are of approximately the same magnitude.  To avoid  */
       /* loss of precision, we use the magnitude of the largest matrix     */
       /* element to scale all other elements.  The scaling factor is then  */
@@ -758,12 +712,12 @@
       *upm = (FT_ULong)power_tens[-max_scaling];
 
       FT_TRACE4(( " [%f %f %f %f %f %f]\n",
-                  (double)matrix->xx / *upm / 65536,
-                  (double)matrix->xy / *upm / 65536,
-                  (double)matrix->yx / *upm / 65536,
-                  (double)matrix->yy / *upm / 65536,
-                  (double)offset->x  / *upm / 65536,
-                  (double)offset->y  / *upm / 65536 ));
+                  (double)matrix->xx / (double)*upm / 65536,
+                  (double)matrix->xy / (double)*upm / 65536,
+                  (double)matrix->yx / (double)*upm / 65536,
+                  (double)matrix->yy / (double)*upm / 65536,
+                  (double)offset->x  / (double)*upm / 65536,
+                  (double)offset->y  / (double)*upm / 65536 ));
 
       if ( !FT_Matrix_Check( matrix ) )
       {
@@ -1264,11 +1218,8 @@
         FT_Byte*     charstring_base;
         FT_ULong     charstring_len;
 
-        FT_Fixed*      stack;
-        FT_ListNode    node;
-        CFF_T2_String  t2;
-        FT_Fixed       t2_size;
-        FT_Byte*       q;
+        FT_Fixed*  stack;
+        FT_Byte*   q = NULL;
 
 
         charstring_base = ++p;
@@ -1309,39 +1260,18 @@
         /* Now copy the stack data in the temporary decoder object,    */
         /* converting it back to charstring number representations     */
         /* (this is ugly, I know).                                     */
+        /* The maximum required size is 5 bytes per stack element.     */
+        if ( FT_QALLOC( q, (FT_Long)( 2 * sizeof ( FT_ListNode ) ) +
+                           5 * ( decoder.top - decoder.stack ) ) )
+          goto Exit;
 
-        node = (FT_ListNode)memory->alloc( memory,
-                                           sizeof ( FT_ListNodeRec ) );
-        if ( !node )
-          goto Out_Of_Memory_Error;
+        FT_List_Add( &parser->t2_strings, (FT_ListNode)q );
 
-        FT_List_Add( &parser->t2_strings, node );
+        q += 2 * sizeof ( FT_ListNode );
 
-        t2 = (CFF_T2_String)memory->alloc( memory,
-                                           sizeof ( CFF_T2_StringRec ) );
-        if ( !t2 )
-          goto Out_Of_Memory_Error;
-
-        node->data = t2;
-
-        /* `5' is the conservative upper bound of required bytes per stack */
-        /* element.                                                        */
-
-        t2_size = 5 * ( decoder.top - decoder.stack );
-
-        q = (FT_Byte*)memory->alloc( memory, t2_size );
-        if ( !q )
-          goto Out_Of_Memory_Error;
-
-        t2->start = q;
-        t2->limit = q + t2_size;
-
-        stack = decoder.stack;
-
-        while ( stack < decoder.top )
+        for ( stack = decoder.stack; stack < decoder.top; stack++ )
         {
-          FT_ULong  num;
-          FT_Bool   neg;
+          FT_Long  num = *stack;
 
 
           if ( (FT_UInt)( parser->top - parser->stack ) >= parser->stackSize )
@@ -1349,69 +1279,37 @@
 
           *parser->top++ = q;
 
-          if ( *stack < 0 )
-          {
-            num = (FT_ULong)NEG_LONG( *stack );
-            neg = 1;
-          }
-          else
-          {
-            num = (FT_ULong)*stack;
-            neg = 0;
-          }
-
           if ( num & 0xFFFFU )
           {
-            if ( neg )
-              num = (FT_ULong)-num;
-
             *q++ = 255;
-            *q++ = ( num & 0xFF000000U ) >> 24;
-            *q++ = ( num & 0x00FF0000U ) >> 16;
-            *q++ = ( num & 0x0000FF00U ) >>  8;
-            *q++ =   num & 0x000000FFU;
+            *q++ = (FT_Byte)( ( num >> 24 ) & 0xFF );
+            *q++ = (FT_Byte)( ( num >> 16 ) & 0xFF );
+            *q++ = (FT_Byte)( ( num >>  8 ) & 0xFF );
+            *q++ = (FT_Byte)( ( num       ) & 0xFF );
           }
           else
           {
             num >>= 16;
 
-            if ( neg )
+            if ( -107 <= num && num <= 107 )
+              *q++ = (FT_Byte)( num + 139 );
+            else if ( 108 <= num && num <= 1131 )
             {
-              if ( num <= 107 )
-                *q++ = (FT_Byte)( 139 - num );
-              else if ( num <= 1131 )
-              {
-                *q++ = (FT_Byte)( ( ( num - 108 ) >> 8 ) + 251 );
-                *q++ = (FT_Byte)( ( num - 108 ) & 0xFF );
-              }
-              else
-              {
-                num = (FT_ULong)-num;
-
-                *q++ = 28;
-                *q++ = (FT_Byte)( num >> 8 );
-                *q++ = (FT_Byte)( num & 0xFF );
-              }
+              *q++ = (FT_Byte)( ( ( num - 108 ) >> 8 ) + 247 );
+              *q++ = (FT_Byte)( ( num - 108 ) & 0xFF );
+            }
+            else if ( -1131 <= num && num <= -108 )
+            {
+              *q++ = (FT_Byte)( ( ( -num - 108 ) >> 8 ) + 251 );
+              *q++ = (FT_Byte)( ( -num - 108) & 0xFF );
             }
             else
             {
-              if ( num <= 107 )
-                *q++ = (FT_Byte)( num + 139 );
-              else if ( num <= 1131 )
-              {
-                *q++ = (FT_Byte)( ( ( num - 108 ) >> 8 ) + 247 );
-                *q++ = (FT_Byte)( ( num - 108 ) & 0xFF );
-              }
-              else
-              {
-                *q++ = 28;
-                *q++ = (FT_Byte)( num >> 8 );
-                *q++ = (FT_Byte)( num & 0xFF );
-              }
+              *q++ = 28;
+              *q++ = (FT_Byte)( num >> 8 );
+              *q++ = (FT_Byte)( num & 0xFF );
             }
           }
-
-          stack++;
         }
       }
 #endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
@@ -1597,12 +1495,6 @@
 
   Exit:
     return error;
-
-#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
-  Out_Of_Memory_Error:
-    error = FT_THROW( Out_Of_Memory );
-    goto Exit;
-#endif
 
   Stack_Overflow:
     error = FT_THROW( Invalid_Argument );

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JavaScriptBridge" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="JavaScriptBridge" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Singleton that connects the engine with the browser's JavaScript context in Web export.
 	</brief_description>
@@ -42,7 +42,7 @@
 			<param index="0" name="code" type="String" />
 			<param index="1" name="use_global_execution_context" type="bool" default="false" />
 			<description>
-				Execute the string [param code] as JavaScript code within the browser window. This is a call to the actual global JavaScript function [code]eval()[/code].
+				Execute the string [param code] as JavaScript code within the browser window. This is a call to the actual global JavaScript function [code skip-lint]eval()[/code].
 				If [param use_global_execution_context] is [code]true[/code], the code will be evaluated in the global execution context. Otherwise, it is evaluated in the execution context of a function within the engine's runtime environment.
 			</description>
 		</method>

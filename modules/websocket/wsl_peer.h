@@ -33,16 +33,16 @@
 
 #ifndef WEB_ENABLED
 
-#include "websocket_peer.h"
-
 #include "packet_buffer.h"
+#include "websocket_peer.h"
 
 #include "core/crypto/crypto_core.h"
 #include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/templates/ring_buffer.h"
-#include "wslay/wslay.h"
+
+#include <wslay/wslay.h>
 
 #define WSL_MAX_HEADER_SIZE 4096
 

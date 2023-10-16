@@ -312,6 +312,8 @@ struct _hb_has_null<Type, true>
 template <typename Type, typename OffsetType, bool has_null=true>
 struct OffsetTo : Offset<OffsetType, has_null>
 {
+  using target_t = Type;
+
   // Make sure Type is not unbounded; works only for types that are fully defined at OffsetTo time.
   static_assert (has_null == false ||
 		 (hb_has_null_size (Type) || !hb_has_min_size (Type)), "");
@@ -416,12 +418,15 @@ struct OffsetTo : Offset<OffsetType, has_null>
   {
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this))) return_trace (false);
-    if (unlikely (this->is_null ())) return_trace (true);
+    //if (unlikely (this->is_null ())) return_trace (true);
     if (unlikely ((const char *) base + (unsigned) *this < (const char *) base)) return_trace (false);
     return_trace (true);
   }
 
   template <typename ...Ts>
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   bool sanitize (hb_sanitize_context_t *c, const void *base, Ts&&... ds) const
   {
     TRACE_SANITIZE (this);
@@ -462,24 +467,16 @@ struct UnsizedArrayOf
 
   HB_DELETE_CREATE_COPY_ASSIGN (UnsizedArrayOf);
 
-  const Type& operator [] (int i_) const
+  const Type& operator [] (unsigned int i) const
   {
-    unsigned int i = (unsigned int) i_;
-    const Type *p = &arrayZ[i];
-    if (unlikely ((const void *) p < (const void *) arrayZ)) return Null (Type); /* Overflowed. */
-    _hb_compiler_memory_r_barrier ();
-    return *p;
+    return arrayZ[i];
   }
-  Type& operator [] (int i_)
+  Type& operator [] (unsigned int i)
   {
-    unsigned int i = (unsigned int) i_;
-    Type *p = &arrayZ[i];
-    if (unlikely ((const void *) p < (const void *) arrayZ)) return Crap (Type); /* Overflowed. */
-    _hb_compiler_memory_r_barrier ();
-    return *p;
+    return arrayZ[i];
   }
 
-  unsigned int get_size (unsigned int len) const
+  static unsigned int get_size (unsigned int len)
   { return len * Type::static_size; }
 
   template <typename T> operator T * () { return arrayZ; }
@@ -533,6 +530,7 @@ struct UnsizedArrayOf
   }
 
   template <typename ...Ts>
+  HB_ALWAYS_INLINE
   bool sanitize (hb_sanitize_context_t *c, unsigned int count, Ts&&... ds) const
   {
     TRACE_SANITIZE (this);
@@ -721,6 +719,7 @@ struct ArrayOf
   }
 
   template <typename ...Ts>
+  HB_ALWAYS_INLINE
   bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
   {
     TRACE_SANITIZE (this);
@@ -736,7 +735,7 @@ struct ArrayOf
   bool sanitize_shallow (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (len.sanitize (c) && c->check_array (arrayZ, len));
+    return_trace (len.sanitize (c) && c->check_array_sized (arrayZ, len, sizeof (LenType)));
   }
 
   public:
@@ -797,7 +796,7 @@ template <typename Type>
 using List16OfOffset16To = List16OfOffsetTo<Type, HBUINT16>;
 
 /* An array starting at second element. */
-template <typename Type, typename LenType=HBUINT16>
+template <typename Type, typename LenType>
 struct HeadlessArrayOf
 {
   static constexpr unsigned item_size = Type::static_size;
@@ -861,6 +860,7 @@ struct HeadlessArrayOf
   }
 
   template <typename ...Ts>
+  HB_ALWAYS_INLINE
   bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
   {
     TRACE_SANITIZE (this);
@@ -878,7 +878,7 @@ struct HeadlessArrayOf
   {
     TRACE_SANITIZE (this);
     return_trace (lenP1.sanitize (c) &&
-		  (!lenP1 || c->check_array (arrayZ, lenP1 - 1)));
+		  (!lenP1 || c->check_array_sized (arrayZ, lenP1 - 1, sizeof (LenType))));
   }
 
   public:
@@ -887,6 +887,7 @@ struct HeadlessArrayOf
   public:
   DEFINE_SIZE_ARRAY (sizeof (LenType), arrayZ);
 };
+template <typename Type> using HeadlessArray16Of = HeadlessArrayOf<Type, HBUINT16>;
 
 /* An array storing length-1. */
 template <typename Type, typename LenType=HBUINT16>
@@ -912,6 +913,7 @@ struct ArrayOfM1
   { return lenM1.static_size + (lenM1 + 1) * Type::static_size; }
 
   template <typename ...Ts>
+  HB_ALWAYS_INLINE
   bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
   {
     TRACE_SANITIZE (this);
@@ -929,7 +931,7 @@ struct ArrayOfM1
   {
     TRACE_SANITIZE (this);
     return_trace (lenM1.sanitize (c) &&
-		  (c->check_array (arrayZ, lenM1 + 1)));
+		  (c->check_array_sized (arrayZ, lenM1 + 1, sizeof (LenType))));
   }
 
   public:
@@ -1096,6 +1098,7 @@ struct VarSizedBinSearchArrayOf
   { return header.static_size + header.nUnits * header.unitSize; }
 
   template <typename ...Ts>
+  HB_ALWAYS_INLINE
   bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
   {
     TRACE_SANITIZE (this);

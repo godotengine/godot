@@ -13,10 +13,6 @@ if TYPE_CHECKING:
 STACK_SIZE = 8388608
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "Windows"
 
@@ -189,7 +185,19 @@ def get_opts():
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
+        BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
+        ("angle_libs", "Path to the ANGLE static libraries", ""),
     ]
+
+
+def get_doc_classes():
+    return [
+        "EditorExportPlatformWindows",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
 
 
 def get_flags():
@@ -349,6 +357,10 @@ def configure_msvc(env, vcvars_msvc_config):
         else:
             env.AppendUnique(CCFLAGS=["/MD"])
 
+    # MSVC incremental linking is broken and may _increase_ link time (GH-77968).
+    if not env["incremental_link"]:
+        env.Append(LINKFLAGS=["/INCREMENTAL:NO"])
+
     if env["arch"] == "x86_32":
         env["x86_libtheora_opt_vc"] = True
 
@@ -373,7 +385,6 @@ def configure_msvc(env, vcvars_msvc_config):
             "WINMIDI_ENABLED",
             "TYPED_METHOD_BIND",
             "WIN32",
-            "MSVC",
             "WINVER=%s" % env["target_win_version"],
             "_WIN32_WINNT=%s" % env["target_win_version"],
         ]
@@ -403,11 +414,16 @@ def configure_msvc(env, vcvars_msvc_config):
         "dxguid",
         "imm32",
         "bcrypt",
+        "Crypt32",
         "Avrt",
         "dwmapi",
         "dwrite",
         "wbemuuid",
+        "ntdll",
     ]
+
+    if env.debug_features:
+        LIBS += ["psapi", "dbghelp"]
 
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
@@ -416,7 +432,16 @@ def configure_msvc(env, vcvars_msvc_config):
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
-        LIBS += ["opengl32"]
+        if env["angle_libs"] != "":
+            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+            env.Append(LIBPATH=[env["angle_libs"]])
+            LIBS += [
+                "libANGLE.windows." + env["arch"],
+                "libEGL.windows." + env["arch"],
+                "libGLES.windows." + env["arch"],
+            ]
+            LIBS += ["dxgi", "d3d9", "d3d11"]
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
@@ -456,6 +481,7 @@ def configure_msvc(env, vcvars_msvc_config):
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
     env["BUILDERS"]["Program"] = methods.precious_program
 
+    env.Append(LINKFLAGS=["/NATVIS:platform\windows\godot.natvis"])
     env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
 
 
@@ -579,13 +605,18 @@ def configure_mingw(env):
             "ksuser",
             "imm32",
             "bcrypt",
+            "crypt32",
             "avrt",
             "uuid",
             "dwmapi",
             "dwrite",
             "wbemuuid",
+            "ntdll",
         ]
     )
+
+    if env.debug_features:
+        env.Append(LIBS=["psapi", "dbghelp"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
@@ -594,7 +625,18 @@ def configure_mingw(env):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        env.Append(LIBS=["opengl32"])
+        if env["angle_libs"] != "":
+            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+            env.Append(LIBPATH=[env["angle_libs"]])
+            env.Append(
+                LIBS=[
+                    "EGL.windows." + env["arch"],
+                    "GLES.windows." + env["arch"],
+                    "ANGLE.windows." + env["arch"],
+                ]
+            )
+            env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 

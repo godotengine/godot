@@ -15,7 +15,7 @@
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>GodotSharpEditor</PackageId>
-    <Version>4.1.0</Version>
+    <Version>4.2.0</Version>
     <PackageVersion>$(PackageVersion_GodotSharp)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/glue/GodotSharp/GodotSharpEditor</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
@@ -33,6 +33,10 @@
     <ProjectReference Include="..\GodotSharp\GodotSharp.csproj">
       <Private>false</Private>
     </ProjectReference>
+  </ItemGroup>
+  <!-- Compat Sources -->
+  <ItemGroup>
+    <Compile Include="Compat.cs" />
   </ItemGroup>
   <!--
   We import a props file with auto-generated includes. This works well with Rider.

@@ -300,7 +300,7 @@ void CSGShape3D::_update_shape() {
 	root_mesh.unref(); //byebye root mesh
 
 	CSGBrush *n = _get_brush();
-	ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
 	OAHashMap<Vector3, Vector3> vec_map;
 
@@ -458,7 +458,7 @@ void CSGShape3D::_update_shape() {
 void CSGShape3D::_update_collision_faces() {
 	if (use_collision && is_root_shape() && root_collision_shape.is_valid()) {
 		CSGBrush *n = _get_brush();
-		ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+		ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 		Vector<Vector3> physics_faces;
 		physics_faces.resize(n->faces.size() * 3);
 		Vector3 *physicsw = physics_faces.ptrw();
@@ -476,6 +476,43 @@ void CSGShape3D::_update_collision_faces() {
 		}
 
 		root_collision_shape->set_faces(physics_faces);
+
+		if (_is_debug_collision_shape_visible()) {
+			_update_debug_collision_shape();
+		}
+	}
+}
+
+bool CSGShape3D::_is_debug_collision_shape_visible() {
+	return is_inside_tree() && (get_tree()->is_debugging_collisions_hint() || Engine::get_singleton()->is_editor_hint());
+}
+
+void CSGShape3D::_update_debug_collision_shape() {
+	// NOTE: This is called only for the root shape with collision, when root_collision_shape is valid.
+
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
+	if (root_collision_debug_instance.is_null()) {
+		root_collision_debug_instance = RS::get_singleton()->instance_create();
+	}
+
+	Ref<Mesh> debug_mesh = root_collision_shape->get_debug_mesh();
+	RS::get_singleton()->instance_set_scenario(root_collision_debug_instance, get_world_3d()->get_scenario());
+	RS::get_singleton()->instance_set_base(root_collision_debug_instance, debug_mesh->get_rid());
+	RS::get_singleton()->instance_set_transform(root_collision_debug_instance, get_global_transform());
+}
+
+void CSGShape3D::_clear_debug_collision_shape() {
+	if (root_collision_debug_instance.is_valid()) {
+		RS::get_singleton()->free(root_collision_debug_instance);
+		root_collision_debug_instance = RID();
+	}
+}
+
+void CSGShape3D::_on_transform_changed() {
+	if (root_collision_debug_instance.is_valid() && !debug_shape_old_transform.is_equal_approx(get_global_transform())) {
+		debug_shape_old_transform = get_global_transform();
+		RS::get_singleton()->instance_set_transform(root_collision_debug_instance, debug_shape_old_transform);
 	}
 }
 
@@ -558,6 +595,7 @@ void CSGShape3D::_notification(int p_what) {
 				set_collision_layer(collision_layer);
 				set_collision_mask(collision_mask);
 				set_collision_priority(collision_priority);
+				debug_shape_old_transform = get_global_transform();
 				_make_dirty();
 			}
 		} break;
@@ -567,6 +605,7 @@ void CSGShape3D::_notification(int p_what) {
 				PhysicsServer3D::get_singleton()->free(root_collision_instance);
 				root_collision_instance = RID();
 				root_collision_shape.unref();
+				_clear_debug_collision_shape();
 			}
 		} break;
 
@@ -574,6 +613,7 @@ void CSGShape3D::_notification(int p_what) {
 			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
 				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
 			}
+			_on_transform_changed();
 		} break;
 	}
 }
@@ -653,7 +693,7 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape3D::get_meshes);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001,suffix:m"), "set_snap", "get_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_RANGE, "0.000001,1,0.000001,suffix:m"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "calculate_tangents"), "set_calculate_tangents", "is_calculating_tangents");
 
 	ADD_GROUP("Collision", "collision_");
@@ -913,12 +953,12 @@ void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		return;
 	}
 	if (mesh.is_valid()) {
-		mesh->disconnect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
+		mesh->disconnect_changed(callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 	mesh = p_mesh;
 
 	if (mesh.is_valid()) {
-		mesh->connect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
+		mesh->connect_changed(callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 
 	_mesh_changed();
@@ -1787,7 +1827,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			}
 		}
 
-		if (!path || !path->is_inside_tree()) {
+		if (!path) {
 			return new_brush;
 		}
 
@@ -1893,7 +1933,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				case PATH_ROTATION_PATH:
 					break;
 				case PATH_ROTATION_PATH_FOLLOW:
-					current_up = curve->sample_baked_up_vector(0);
+					current_up = curve->sample_baked_up_vector(0, true);
 					break;
 			}
 
@@ -1980,7 +2020,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						case PATH_ROTATION_PATH:
 							break;
 						case PATH_ROTATION_PATH_FOLLOW:
-							current_up = curve->sample_baked_up_vector(current_offset);
+							current_up = curve->sample_baked_up_vector(current_offset, true);
 							break;
 					}
 

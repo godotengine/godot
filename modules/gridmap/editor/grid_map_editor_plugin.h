@@ -34,6 +34,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "../grid_map.h"
+
 #include "editor/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/item_list.h"
@@ -91,7 +92,7 @@ class GridMapEditor : public VBoxContainer {
 	List<SetItem> set_items;
 
 	GridMap *node = nullptr;
-	MeshLibrary *last_mesh_library = nullptr;
+	Ref<MeshLibrary> mesh_library = nullptr;
 
 	Transform3D grid_xform;
 	Transform3D edit_grid_xform;
@@ -190,6 +191,7 @@ class GridMapEditor : public VBoxContainer {
 	void _configure();
 	void _menu_option(int);
 	void update_palette();
+	void _update_mesh_library();
 	void _set_display_mode(int p_mode);
 	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
@@ -222,7 +224,6 @@ class GridMapEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
 public:

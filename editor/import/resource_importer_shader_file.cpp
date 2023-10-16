@@ -96,7 +96,7 @@ Error ResourceImporterShaderFile::import(const String &p_source_file, const Stri
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_source_file, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
-	ERR_FAIL_COND_V(!file.operator->(), ERR_CANT_OPEN);
+	ERR_FAIL_COND_V(!file.is_valid(), ERR_CANT_OPEN);
 
 	String file_txt = file->get_as_utf8_string();
 	Ref<RDShaderFile> shader_file;
@@ -106,7 +106,7 @@ Error ResourceImporterShaderFile::import(const String &p_source_file, const Stri
 
 	if (err != OK) {
 		if (!ShaderFileEditor::singleton->is_visible_in_tree()) {
-			EditorNode::get_singleton()->add_io_error(vformat(TTR("Error importing GLSL shader file: '%s'. Open the file in the filesystem dock in order to see the reason."), p_source_file));
+			callable_mp_static(&EditorNode::add_io_error).bind(vformat(TTR("Error importing GLSL shader file: '%s'. Open the file in the filesystem dock in order to see the reason."), p_source_file)).call_deferred();
 		}
 	}
 

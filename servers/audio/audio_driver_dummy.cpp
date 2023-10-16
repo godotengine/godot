@@ -41,7 +41,7 @@ Error AudioDriverDummy::init() {
 	samples_in = nullptr;
 
 	if (mix_rate == -1) {
-		mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+		mix_rate = _get_configured_mix_rate();
 	}
 
 	channels = get_channels();
@@ -136,7 +136,9 @@ void AudioDriverDummy::mix_audio(int p_frames, int32_t *p_buffer) {
 void AudioDriverDummy::finish() {
 	if (use_threads) {
 		exit_thread.set();
-		thread.wait_to_finish();
+		if (thread.is_started()) {
+			thread.wait_to_finish();
+		}
 	}
 
 	if (samples_in) {

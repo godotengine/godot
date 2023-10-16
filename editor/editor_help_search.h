@@ -122,7 +122,6 @@ class EditorHelpSearch::Runner : public RefCounted {
 	Vector<String> terms;
 	int search_flags;
 
-	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
 	HashMap<String, DocData::ClassDoc>::Iterator iterator_doc;

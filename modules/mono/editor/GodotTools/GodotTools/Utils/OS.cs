@@ -26,8 +26,6 @@ namespace GodotTools.Utils
             public const string FreeBSD = "FreeBSD";
             public const string NetBSD = "NetBSD";
             public const string BSD = "BSD";
-            public const string UWP = "UWP";
-            public const string Haiku = "Haiku";
             public const string Android = "Android";
             public const string iOS = "iOS";
             public const string Web = "Web";
@@ -41,8 +39,6 @@ namespace GodotTools.Utils
             public const string Windows = "windows";
             public const string MacOS = "macos";
             public const string LinuxBSD = "linuxbsd";
-            public const string UWP = "uwp";
-            public const string Haiku = "haiku";
             public const string Android = "android";
             public const string iOS = "ios";
             public const string Web = "web";
@@ -60,6 +56,7 @@ namespace GodotTools.Utils
             public const string Win10 = "win10";
             public const string Android = "android";
             public const string iOS = "ios";
+            public const string iOSSimulator = "iossimulator";
             public const string Browser = "browser";
         }
 
@@ -71,8 +68,6 @@ namespace GodotTools.Utils
             ["Windows"] = Platforms.Windows,
             ["macOS"] = Platforms.MacOS,
             ["Linux"] = Platforms.LinuxBSD,
-            ["UWP"] = Platforms.UWP,
-            ["Haiku"] = Platforms.Haiku,
             ["Android"] = Platforms.Android,
             ["iOS"] = Platforms.iOS,
             ["Web"] = Platforms.Web
@@ -86,8 +81,6 @@ namespace GodotTools.Utils
             [Names.FreeBSD] = Platforms.LinuxBSD,
             [Names.NetBSD] = Platforms.LinuxBSD,
             [Names.BSD] = Platforms.LinuxBSD,
-            [Names.UWP] = Platforms.UWP,
-            [Names.Haiku] = Platforms.Haiku,
             [Names.Android] = Platforms.Android,
             [Names.iOS] = Platforms.iOS,
             [Names.Web] = Platforms.Web
@@ -102,7 +95,6 @@ namespace GodotTools.Utils
             // instead of `linux` in the runtime identifier. This would be a problem as
             // Godot has a single export profile for both, named LinuxBSD.
             [Platforms.LinuxBSD] = DotNetOS.Linux,
-            [Platforms.UWP] = DotNetOS.Win10,
             [Platforms.Android] = DotNetOS.Android,
             [Platforms.iOS] = DotNetOS.iOS,
             [Platforms.Web] = DotNetOS.Browser
@@ -132,28 +124,22 @@ namespace GodotTools.Utils
             new[] { Names.Linux, Names.FreeBSD, Names.NetBSD, Names.BSD };
 
         private static readonly IEnumerable<string> UnixLikePlatforms =
-            new[] { Names.MacOS, Names.Haiku, Names.Android, Names.iOS }
+            new[] { Names.MacOS, Names.Android, Names.iOS }
                 .Concat(LinuxBSDPlatforms).ToArray();
 
         private static readonly Lazy<bool> _isWindows = new(() => IsOS(Names.Windows));
         private static readonly Lazy<bool> _isMacOS = new(() => IsOS(Names.MacOS));
         private static readonly Lazy<bool> _isLinuxBSD = new(() => IsAnyOS(LinuxBSDPlatforms));
-        private static readonly Lazy<bool> _isUWP = new(() => IsOS(Names.UWP));
-        private static readonly Lazy<bool> _isHaiku = new(() => IsOS(Names.Haiku));
         private static readonly Lazy<bool> _isAndroid = new(() => IsOS(Names.Android));
         private static readonly Lazy<bool> _isiOS = new(() => IsOS(Names.iOS));
         private static readonly Lazy<bool> _isWeb = new(() => IsOS(Names.Web));
         private static readonly Lazy<bool> _isUnixLike = new(() => IsAnyOS(UnixLikePlatforms));
 
-        [SupportedOSPlatformGuard("windows")] public static bool IsWindows => _isWindows.Value || IsUWP;
+        [SupportedOSPlatformGuard("windows")] public static bool IsWindows => _isWindows.Value;
 
         [SupportedOSPlatformGuard("osx")] public static bool IsMacOS => _isMacOS.Value;
 
         [SupportedOSPlatformGuard("linux")] public static bool IsLinuxBSD => _isLinuxBSD.Value;
-
-        [SupportedOSPlatformGuard("windows")] public static bool IsUWP => _isUWP.Value;
-
-        public static bool IsHaiku => _isHaiku.Value;
 
         [SupportedOSPlatformGuard("android")] public static bool IsAndroid => _isAndroid.Value;
 

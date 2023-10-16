@@ -109,6 +109,58 @@ TEST_CASE("[Resource] Saving and loading") {
 			loaded_child_resource_text->get_name() == "I'm a child resource",
 			"The loaded child resource name should be equal to the expected value.");
 }
+
+TEST_CASE("[Resource] Breaking circular references on save") {
+	Ref<Resource> resource_a = memnew(Resource);
+	resource_a->set_name("A");
+	Ref<Resource> resource_b = memnew(Resource);
+	resource_b->set_name("B");
+	Ref<Resource> resource_c = memnew(Resource);
+	resource_c->set_name("C");
+	resource_a->set_meta("next", resource_b);
+	resource_b->set_meta("next", resource_c);
+	resource_c->set_meta("next", resource_b);
+
+	const String save_path_binary = OS::get_singleton()->get_cache_path().path_join("resource.res");
+	const String save_path_text = OS::get_singleton()->get_cache_path().path_join("resource.tres");
+	ResourceSaver::save(resource_a, save_path_binary);
+	ResourceSaver::save(resource_a, save_path_text);
+
+	const Ref<Resource> &loaded_resource_a_binary = ResourceLoader::load(save_path_binary);
+	CHECK_MESSAGE(
+			loaded_resource_a_binary->get_name() == "A",
+			"The loaded resource name should be equal to the expected value.");
+	const Ref<Resource> &loaded_resource_b_binary = loaded_resource_a_binary->get_meta("next");
+	CHECK_MESSAGE(
+			loaded_resource_b_binary->get_name() == "B",
+			"The loaded child resource name should be equal to the expected value.");
+	const Ref<Resource> &loaded_resource_c_binary = loaded_resource_b_binary->get_meta("next");
+	CHECK_MESSAGE(
+			loaded_resource_c_binary->get_name() == "C",
+			"The loaded child resource name should be equal to the expected value.");
+	CHECK_MESSAGE(
+			!loaded_resource_c_binary->has_meta("next"),
+			"The loaded child resource circular reference should be NULL.");
+
+	const Ref<Resource> &loaded_resource_a_text = ResourceLoader::load(save_path_text);
+	CHECK_MESSAGE(
+			loaded_resource_a_text->get_name() == "A",
+			"The loaded resource name should be equal to the expected value.");
+	const Ref<Resource> &loaded_resource_b_text = loaded_resource_a_text->get_meta("next");
+	CHECK_MESSAGE(
+			loaded_resource_b_text->get_name() == "B",
+			"The loaded child resource name should be equal to the expected value.");
+	const Ref<Resource> &loaded_resource_c_text = loaded_resource_b_text->get_meta("next");
+	CHECK_MESSAGE(
+			loaded_resource_c_text->get_name() == "C",
+			"The loaded child resource name should be equal to the expected value.");
+	CHECK_MESSAGE(
+			!loaded_resource_c_text->has_meta("next"),
+			"The loaded child resource circular reference should be NULL.");
+
+	// Break circular reference to avoid memory leak
+	resource_c->remove_meta("next");
+}
 } // namespace TestResource
 
 #endif // TEST_RESOURCE_H

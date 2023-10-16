@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,11 +52,10 @@
 
 #include <cstring>
 #include <math.h>
-#include <clocale>
 #include <ctype.h>
 #include "tvgSvgLoaderCommon.h"
 #include "tvgSvgPath.h"
-#include "tvgSvgUtil.h"
+#include "tvgStr.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -75,7 +74,7 @@ static char* _skipComma(const char* content)
 static bool _parseNumber(char** content, float* number)
 {
     char* end = NULL;
-    *number = svgUtilStrtof(*content, &end);
+    *number = strToFloat(*content, &end);
     //If the start of string is not number
     if ((*content) == end) return false;
     //Skip comma if any
@@ -383,7 +382,7 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         case 's':
         case 'S': {
             Point p[3], ctrl;
-            if ((cmds->count > 1) && (cmds->data[cmds->count - 1] == PathCommand::CubicTo) &&
+            if ((cmds->count > 1) && (cmds->last() == PathCommand::CubicTo) &&
                 !(*isQuadratic)) {
                 ctrl.x = 2 * cur->x - curCtl->x;
                 ctrl.y = 2 * cur->y - curCtl->y;
@@ -424,7 +423,7 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         case 't':
         case 'T': {
             Point p[3], ctrl;
-            if ((cmds->count > 1) && (cmds->data[cmds->count - 1] == PathCommand::CubicTo) &&
+            if ((cmds->count > 1) && (cmds->last() == PathCommand::CubicTo) &&
                 *isQuadratic) {
                 ctrl.x = 2 * cur->x - curCtl->x;
                 ctrl.y = 2 * cur->y - curCtl->y;
@@ -545,20 +544,12 @@ bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point
     char cmd = 0;
     bool isQuadratic = false;
     char* path = (char*)svgPath;
-    char* curLocale;
-
-    curLocale = setlocale(LC_NUMERIC, NULL);
-    if (curLocale) curLocale = strdup(curLocale);
-    setlocale(LC_NUMERIC, "POSIX");
 
     while ((path[0] != '\0')) {
         path = _nextCommand(path, &cmd, numberArray, &numberCount);
         if (!path) break;
         if (!_processCommand(&cmds, &pts, cmd, numberArray, numberCount, &cur, &curCtl, &startPoint, &isQuadratic)) break;
     }
-
-    setlocale(LC_NUMERIC, curLocale);
-    if (curLocale) free(curLocale);
 
     return true;
 }

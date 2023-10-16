@@ -180,6 +180,9 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 				 hb_lazy_loader_t<Returned,Subclass,Data,WheresData,Stored>
 				>::value Funcs;
 
+  hb_lazy_loader_t () = default;
+  hb_lazy_loader_t (const hb_lazy_loader_t &other) = delete;
+
   void init0 () {} /* Init, when memory is already set to 0. No-op for us. */
   void init ()  { instance.set_relaxed (nullptr); }
   void fini ()  { do_destroy (instance.get_acquire ()); init (); }
@@ -278,7 +281,11 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 template <typename T, unsigned int WheresFace>
 struct hb_face_lazy_loader_t : hb_lazy_loader_t<T,
 						hb_face_lazy_loader_t<T, WheresFace>,
-						hb_face_t, WheresFace> {};
+						hb_face_t, WheresFace>
+{
+  // Hack; have them here for API parity with hb_table_lazy_loader_t
+  hb_blob_t *get_blob () { return this->get ()->get_blob (); }
+};
 
 template <typename T, unsigned int WheresFace, bool core=false>
 struct hb_table_lazy_loader_t : hb_lazy_loader_t<T,
@@ -288,7 +295,7 @@ struct hb_table_lazy_loader_t : hb_lazy_loader_t<T,
 {
   static hb_blob_t *create (hb_face_t *face)
   {
-    auto c = hb_sanitize_context_t ();
+    hb_sanitize_context_t c;
     if (core)
       c.set_num_glyphs (0); // So we don't recurse ad infinitum, or doesn't need num_glyphs
     return c.reference_table<T> (face);

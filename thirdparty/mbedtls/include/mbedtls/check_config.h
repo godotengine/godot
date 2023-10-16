@@ -28,6 +28,7 @@
 #ifndef MBEDTLS_CHECK_CONFIG_H
 #define MBEDTLS_CHECK_CONFIG_H
 
+/* *INDENT-OFF* */
 /*
  * We assume CHAR_BIT is 8 in many places. In practice, this is true on our
  * target platforms, so not an issue, but let's just be extra sure.
@@ -66,10 +67,6 @@
 
 #if defined(MBEDTLS_HAVE_TIME_DATE) && !defined(MBEDTLS_HAVE_TIME)
 #error "MBEDTLS_HAVE_TIME_DATE without MBEDTLS_HAVE_TIME does not make sense"
-#endif
-
-#if defined(MBEDTLS_AESNI_C) && !defined(MBEDTLS_HAVE_ASM)
-#error "MBEDTLS_AESNI_C defined, but not all prerequisites"
 #endif
 
 #if defined(MBEDTLS_CTR_DRBG_C) && !defined(MBEDTLS_AES_C)
@@ -141,6 +138,11 @@
 #if defined(MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED)           && \
     defined(MBEDTLS_ECDH_LEGACY_CONTEXT)
 #error "MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED defined, but MBEDTLS_ECDH_LEGACY_CONTEXT not disabled"
+#endif
+
+#if defined(MBEDTLS_ECP_RESTARTABLE)           && \
+    !defined(MBEDTLS_ECP_C)
+#error "MBEDTLS_ECP_RESTARTABLE defined, but not all prerequisites"
 #endif
 
 #if defined(MBEDTLS_ECDSA_DETERMINISTIC) && !defined(MBEDTLS_HMAC_DRBG_C)
@@ -955,4 +957,5 @@
  */
 typedef int mbedtls_iso_c_forbids_empty_translation_units;
 
+/* *INDENT-ON* */
 #endif /* MBEDTLS_CHECK_CONFIG_H */

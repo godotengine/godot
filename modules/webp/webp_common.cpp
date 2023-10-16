@@ -33,9 +33,10 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-#include <string.h>
 #include <webp/decode.h>
 #include <webp/encode.h>
+
+#include <string.h>
 
 namespace WebPCommon {
 Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
@@ -83,6 +84,7 @@ Vector<uint8_t> _webp_packer(const Ref<Image> &p_image, float p_quality, bool p_
 	}
 	config.method = compression_method;
 	config.quality = p_quality;
+	config.use_sharp_yuv = 1;
 	pic.use_argb = 1;
 	pic.width = s.width;
 	pic.height = s.height;

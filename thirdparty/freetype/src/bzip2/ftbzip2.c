@@ -8,7 +8,7 @@
  * parse compressed PCF fonts, as found with many X11 server
  * distributions.
  *
- * Copyright (C) 2010-2022 by
+ * Copyright (C) 2010-2023 by
  * Joel Klinghed.
  *
  * based on `src/gzip/ftgzip.c'
@@ -62,10 +62,12 @@
 
 
   static void*
-  ft_bzip2_alloc( FT_Memory  memory,
-                  int        items,
-                  int        size )
+  ft_bzip2_alloc( void*  memory_,  /* FT_Memory */
+                  int    items,
+                  int    size )
   {
+    FT_Memory  memory = (FT_Memory)memory_;
+
     FT_ULong    sz = (FT_ULong)size * (FT_ULong)items;
     FT_Error    error;
     FT_Pointer  p  = NULL;
@@ -77,9 +79,12 @@
 
 
   static void
-  ft_bzip2_free( FT_Memory  memory,
-                 void*      address )
+  ft_bzip2_free( void*  memory_,   /* FT_Memory */
+                 void*  address )
   {
+    FT_Memory  memory = (FT_Memory)memory_;
+
+
     FT_MEM_FREE( address );
   }
 
@@ -170,8 +175,8 @@
     }
 
     /* initialize bzlib */
-    bzstream->bzalloc = (alloc_func)ft_bzip2_alloc;
-    bzstream->bzfree  = (free_func) ft_bzip2_free;
+    bzstream->bzalloc = ft_bzip2_alloc;
+    bzstream->bzfree  = ft_bzip2_free;
     bzstream->opaque  = zip->memory;
 
     bzstream->avail_in = 0;
