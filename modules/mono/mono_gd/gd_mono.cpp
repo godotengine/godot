@@ -348,6 +348,15 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 
 } // namespace
 
+bool GDMono::should_initialize() {
+#ifdef TOOLS_ENABLED
+	// The editor always needs to initialize the .NET module for now.
+	return true;
+#else
+	return OS::get_singleton()->has_feature("dotnet");
+#endif
+}
+
 static bool _on_core_api_assembly_loaded() {
 	if (!GDMonoCache::godot_api_cache_updated) {
 		return false;
@@ -435,11 +444,15 @@ void GDMono::initialize() {
 
 	_on_core_api_assembly_loaded();
 
+#ifdef TOOLS_ENABLED
+	_try_load_project_assembly();
+#endif
+
 	initialized = true;
 }
 
 #ifdef TOOLS_ENABLED
-void GDMono::initialize_load_assemblies() {
+void GDMono::_try_load_project_assembly() {
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		return;
 	}
