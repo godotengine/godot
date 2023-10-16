@@ -98,6 +98,13 @@ private:
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
 
+	// Input can come in AFTER the user has had the opportunity to poll input for the
+	// frame or tick, and thus the input "clocks" are kept one ahead of the regular
+	// engine clocks, and syncing immediately prior to process() and physics_process()
+	// in order to minimize latency.
+	uint64_t input_curr_tick = 0;
+	uint64_t input_curr_process_frame = 0;
+
 	struct Action {
 		uint64_t pressed_physics_frame = UINT64_MAX;
 		uint64_t pressed_process_frame = UINT64_MAX;
@@ -346,6 +353,9 @@ public:
 	void release_pressed_events();
 
 	void set_event_dispatch_function(EventDispatchFunc p_function);
+
+	void set_curr_tick(uint64_t p_tick) { input_curr_tick = p_tick; }
+	void set_curr_process_frame(uint64_t p_frame) { input_curr_process_frame = p_frame; }
 
 	Input();
 	~Input();

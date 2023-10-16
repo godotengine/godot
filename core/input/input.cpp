@@ -712,8 +712,8 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 						action.pressed++;
 					}
 					if (action.pressed == 1 && (is_joypad_axis_valid_zone_enter || !is_joypad_axis)) {
-						action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
-						action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+						action.pressed_physics_frame = input_curr_tick;
+						action.pressed_process_frame = input_curr_process_frame;
 					}
 					is_pressed = true;
 				} else {
@@ -728,8 +728,8 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 					if (is_released) {
 						if (action.pressed == 1) {
-							action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
-							action.released_process_frame = Engine::get_singleton()->get_process_frames();
+							action.released_physics_frame = input_curr_tick;
+							action.released_process_frame = input_curr_process_frame;
 						}
 						action.pressed = MAX(action.pressed - 1, 0);
 					}
@@ -860,8 +860,16 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 
 	action.pressed++;
 	if (action.pressed == 1) {
-		action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
-		action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+		// Dev check we are correctly updating the input curr tick and frame.
+		// This should currently be done in the MainLoop.
+		// Things will go pretty wrong input wise, if this isn't done,
+		// so it makes sense to assert and catch this early.
+		// Probably most relevant to users overriding the MainLoop.
+		DEV_ASSERT((input_curr_tick - Engine::get_singleton()->get_physics_frames()) <= 1);
+		DEV_ASSERT((input_curr_process_frame - Engine::get_singleton()->get_process_frames()) <= 1);
+
+		action.pressed_physics_frame = input_curr_tick;
+		action.pressed_process_frame = input_curr_process_frame;
 	}
 	action.strength = p_strength;
 	action.raw_strength = p_strength;
@@ -874,8 +882,8 @@ void Input::action_release(const StringName &p_action) {
 
 	action.pressed--;
 	if (action.pressed == 0) {
-		action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
-		action.released_process_frame = Engine::get_singleton()->get_process_frames();
+		action.released_physics_frame = input_curr_tick;
+		action.released_process_frame = input_curr_process_frame;
 	}
 	action.strength = 0.0f;
 	action.raw_strength = 0.0f;

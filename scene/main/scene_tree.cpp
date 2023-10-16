@@ -456,6 +456,8 @@ bool SceneTree::physics_process(double p_time) {
 
 	flush_transform_notifications();
 
+	Input::get_singleton()->set_curr_tick(Engine::get_singleton()->get_physics_frames() + 1);
+
 	if (MainLoop::physics_process(p_time)) {
 		_quit = true;
 	}
@@ -485,6 +487,8 @@ bool SceneTree::physics_process(double p_time) {
 
 bool SceneTree::process(double p_time) {
 	root_lock++;
+
+	Input::get_singleton()->set_curr_process_frame(Engine::get_singleton()->get_process_frames() + 1);
 
 	if (MainLoop::process(p_time)) {
 		_quit = true;
