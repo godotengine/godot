@@ -1857,7 +1857,6 @@ Vector3 AnimationMixer::get_root_motion_scale_accumulator() const {
 	return root_motion_scale_accumulator;
 }
 
-#ifdef TOOLS_ENABLED
 void AnimationMixer::set_reset_on_save_enabled(bool p_enabled) {
 	reset_on_save = p_enabled;
 }
@@ -1866,6 +1865,7 @@ bool AnimationMixer::is_reset_on_save_enabled() const {
 	return reset_on_save;
 }
 
+#ifdef TOOLS_ENABLED
 bool AnimationMixer::can_apply_reset() const {
 	return has_animation(SceneStringNames::get_singleton()->RESET);
 }
@@ -2095,14 +2095,10 @@ void AnimationMixer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
 
-#ifdef TOOLS_ENABLED
-	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
-	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
 	ClassDB::bind_method(D_METHOD("set_reset_on_save_enabled", "enabled"), &AnimationMixer::set_reset_on_save_enabled);
 	ClassDB::bind_method(D_METHOD("is_reset_on_save_enabled"), &AnimationMixer::is_reset_on_save_enabled);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");
 	ADD_SIGNAL(MethodInfo("mixer_updated")); // For updating dummy player.
-#endif // TOOLS_ENABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root_node", "get_root_node");
 
