@@ -97,6 +97,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		} else {
 			Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
+			if (r_error.error != Callable::CallError::CALL_OK) {
+				*r_ret = vformat(RTR(R"(Cannot convert "%s" to "%s".)"), Variant::get_type_name(p_args[0]->get_type()), Variant::get_type_name(Variant::Type(type)));
+			}
 		}
 	}
 #endif // DISABLE_DEPRECATED
@@ -130,8 +133,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				Error err = arr.resize(count);
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 
@@ -155,8 +158,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				Error err = arr.resize(to - from);
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 				for (int i = from; i < to; i++) {
@@ -199,8 +202,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				Error err = arr.resize(count);
 
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 
@@ -370,7 +373,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = gdscr->_new(nullptr, -1 /*skip initializer*/, r_error);
 
 		if (r_error.error != Callable::CallError::CALL_OK) {
-			*r_ret = Variant();
+			*r_ret = RTR("Cannot instantiate GDScript class.");
 			return;
 		}
 

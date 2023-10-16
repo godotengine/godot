@@ -278,6 +278,7 @@ struct _GDScriptMemberSort {
 void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 	placeholders.erase(p_placeholder);
 }
+
 #endif
 
 void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const {
@@ -468,7 +469,7 @@ String GDScript::get_class_icon_path() const {
 }
 #endif
 
-bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update) {
+bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update, bool p_base_exports_changed) {
 #ifdef TOOLS_ENABLED
 
 	static Vector<GDScript *> base_caches;
@@ -477,7 +478,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 	}
 	base_caches.append(this);
 
-	bool changed = false;
+	bool changed = p_base_exports_changed;
 
 	if (source_changed_cache) {
 		source_changed_cache = false;
@@ -604,9 +605,15 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 void GDScript::update_exports() {
 #ifdef TOOLS_ENABLED
+	_update_exports_down(false);
+#endif
+}
 
+#ifdef TOOLS_ENABLED
+void GDScript::_update_exports_down(bool p_base_exports_changed) {
 	bool cyclic_error = false;
-	_update_exports(&cyclic_error);
+	bool changed = _update_exports(&cyclic_error, false, nullptr, p_base_exports_changed);
+
 	if (cyclic_error) {
 		return;
 	}
@@ -616,14 +623,14 @@ void GDScript::update_exports() {
 	for (const ObjectID &E : copy) {
 		Object *id = ObjectDB::get_instance(E);
 		GDScript *s = Object::cast_to<GDScript>(id);
+
 		if (!s) {
 			continue;
 		}
-		s->update_exports();
+		s->_update_exports_down(p_base_exports_changed || changed);
 	}
-
-#endif
 }
+#endif
 
 String GDScript::_get_debug_path() const {
 	if (is_built_in() && !get_name().is_empty()) {

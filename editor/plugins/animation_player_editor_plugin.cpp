@@ -1051,7 +1051,6 @@ void AnimationPlayerEditor::_ensure_dummy_player() {
 	}
 
 	// Make some options disabled.
-	tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(TOOL_EDIT_TRANSITIONS), dummy_exists);
 	onion_toggle->set_disabled(dummy_exists);
 	onion_skinning->set_disabled(dummy_exists);
 	int selected = animation->get_selected();
@@ -1365,9 +1364,6 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			_animation_rename();
 		} break;
 		case TOOL_EDIT_TRANSITIONS: {
-			if (is_dummy) {
-				break;
-			}
 			_animation_blend();
 		} break;
 		case TOOL_REMOVE_ANIM: {

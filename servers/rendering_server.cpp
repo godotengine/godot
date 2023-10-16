@@ -612,6 +612,12 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 							};
 
+							if (vector[0] == 0 && vector[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								vector[0] = 65535;
+							}
+
 							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
 					} else { // PACKED_FLOAT64_ARRAY
@@ -626,6 +632,12 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								(uint16_t)CLAMP(res.x * 65535, 0, 65535),
 								(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 							};
+
+							if (vector[0] == 0 && vector[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								vector[0] = 65535;
+							}
 
 							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
@@ -3363,8 +3375,8 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley", false);
 	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley.mobile", true);
 
-	GLOBAL_DEF("rendering/driver/depth_prepass/enable", true);
-	GLOBAL_DEF("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
+	GLOBAL_DEF_RST("rendering/driver/depth_prepass/enable", true);
+	GLOBAL_DEF_RST("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
 	GLOBAL_DEF_RST("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16× (Slow)")), 2);

@@ -901,7 +901,7 @@ void TileMapLayer::_navigation_update() {
 	NavigationServer2D *ns = NavigationServer2D::get_singleton();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
+	bool forced_cleanup = in_destructor || !enabled || !navigation_enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
 
 	// ----------- Layer level processing -----------
 	if (forced_cleanup) {
@@ -1070,6 +1070,11 @@ void TileMapLayer::_navigation_draw_cell_debug(const RID &p_canvas_item, const V
 			break;
 	}
 	if (!show_navigation) {
+		return;
+	}
+
+	// Check if the navigation is used.
+	if (r_cell_data.navigation_regions.is_empty()) {
 		return;
 	}
 
@@ -2419,6 +2424,20 @@ int TileMapLayer::get_z_index() const {
 	return z_index;
 }
 
+void TileMapLayer::set_navigation_enabled(bool p_enabled) {
+	if (navigation_enabled == p_enabled) {
+		return;
+	}
+	navigation_enabled = p_enabled;
+	dirty.flags[DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED] = true;
+	tile_map_node->queue_internal_update();
+	tile_map_node->emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+bool TileMapLayer::is_navigation_enabled() const {
+	return navigation_enabled;
+}
+
 void TileMapLayer::set_navigation_map(RID p_map) {
 	ERR_FAIL_COND_MSG(!tile_map_node->is_inside_tree(), "A TileMap navigation map can only be changed while inside the SceneTree.");
 	navigation_map = p_map;
@@ -3284,6 +3303,14 @@ int TileMap::get_layer_z_index(int p_layer) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, 0, get_z_index);
 }
 
+void TileMap::set_layer_navigation_enabled(int p_layer, bool p_enabled) {
+	TILEMAP_CALL_FOR_LAYER(p_layer, set_navigation_enabled, p_enabled);
+}
+
+bool TileMap::is_layer_navigation_enabled(int p_layer) const {
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, false, is_navigation_enabled);
+}
+
 void TileMap::set_layer_navigation_map(int p_layer, RID p_map) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_navigation_map, p_map);
 }
@@ -3602,6 +3629,9 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (components[1] == "z_index") {
 			set_layer_z_index(index, p_value);
 			return true;
+		} else if (components[1] == "navigation_enabled") {
+			set_layer_navigation_enabled(index, p_value);
+			return true;
 		} else if (components[1] == "tile_data") {
 			layers[index]->set_tile_data(format, p_value);
 			emit_signal(CoreStringNames::get_singleton()->changed);
@@ -3642,6 +3672,9 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "z_index") {
 			r_ret = get_layer_z_index(index);
 			return true;
+		} else if (components[1] == "navigation_enabled") {
+			r_ret = is_layer_navigation_enabled(index);
+			return true;
 		} else if (components[1] == "tile_data") {
 			r_ret = layers[index]->get_tile_data();
 			return true;
@@ -3662,6 +3695,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/y_sort_enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/y_sort_origin", i), PROPERTY_HINT_NONE, "suffix:px"));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/z_index", i), PROPERTY_HINT_NONE));
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/navigation_enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("layer_%d/tile_data", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 }
@@ -4589,6 +4623,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_y_sort_origin", "layer"), &TileMap::get_layer_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("set_layer_z_index", "layer", "z_index"), &TileMap::set_layer_z_index);
 	ClassDB::bind_method(D_METHOD("get_layer_z_index", "layer"), &TileMap::get_layer_z_index);
+	ClassDB::bind_method(D_METHOD("set_layer_navigation_enabled", "layer", "enabled"), &TileMap::set_layer_navigation_enabled);
+	ClassDB::bind_method(D_METHOD("is_layer_navigation_enabled", "layer"), &TileMap::is_layer_navigation_enabled);
 	ClassDB::bind_method(D_METHOD("set_layer_navigation_map", "layer", "map"), &TileMap::set_layer_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_layer_navigation_map", "layer"), &TileMap::get_layer_navigation_map);
 

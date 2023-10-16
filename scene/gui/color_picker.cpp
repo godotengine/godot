@@ -341,7 +341,11 @@ bool ColorPicker::is_editing_alpha() const {
 	return edit_alpha;
 }
 
-void ColorPicker::_value_changed(double) {
+void ColorPicker::_slider_drag_started() {
+	currently_dragging = true;
+}
+
+void ColorPicker::_slider_value_changed() {
 	if (updating) {
 		return;
 	}
@@ -357,7 +361,16 @@ void ColorPicker::_value_changed(double) {
 	}
 
 	_set_pick_color(color, false);
-	emit_signal(SNAME("color_changed"), color);
+	if (!deferred_mode_enabled || !currently_dragging) {
+		emit_signal(SNAME("color_changed"), color);
+	}
+}
+
+void ColorPicker::_slider_drag_ended() {
+	currently_dragging = false;
+	if (deferred_mode_enabled) {
+		emit_signal(SNAME("color_changed"), color);
+	}
 }
 
 void ColorPicker::add_mode(ColorMode *p_mode) {
@@ -388,7 +401,9 @@ void ColorPicker::create_slider(GridContainer *gc, int idx) {
 
 	slider->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	slider->connect("value_changed", callable_mp(this, &ColorPicker::_value_changed));
+	slider->connect("drag_started", callable_mp(this, &ColorPicker::_slider_drag_started));
+	slider->connect("value_changed", callable_mp(this, &ColorPicker::_slider_value_changed).unbind(1));
+	slider->connect("drag_ended", callable_mp(this, &ColorPicker::_slider_drag_ended).unbind(1));
 	slider->connect("draw", callable_mp(this, &ColorPicker::_slider_draw).bind(idx));
 	slider->connect("gui_input", callable_mp(this, &ColorPicker::_slider_or_spin_input));
 
@@ -1242,7 +1257,6 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 			_copy_hsv_to_color();
 			last_color = color;
 			set_pick_color(color);
-			_update_color();
 
 			if (!deferred_mode_enabled) {
 				emit_signal(SNAME("color_changed"), color);
@@ -1293,7 +1307,6 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
-		_update_color();
 
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
@@ -1321,7 +1334,6 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
-		_update_color();
 
 		if (!bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			add_recent_preset(color);
@@ -1347,7 +1359,6 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
-		_update_color();
 
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);

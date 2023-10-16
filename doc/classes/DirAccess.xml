@@ -209,7 +209,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns [code]true[/code] if the file system or directory use case sensitive file names.
-				[b]Note:[/b] This method is implemented on macOS and Windows. On other platforms, it always returns [code]true[/code].
+				[b]Note:[/b] This method is implemented on macOS, Linux (for EXT4 and F2FS filesystems only) and Windows. On other platforms, it always returns [code]true[/code].
 			</description>
 		</method>
 		<method name="list_dir_begin">

@@ -2067,11 +2067,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
 					String methodstr = function;
-					if (dst->get_type() == Variant::STRING) {
+					if (dst->get_type() == Variant::STRING && !dst->operator String().is_empty()) {
 						// Call provided error string.
-						err_text = "Error calling utility function '" + methodstr + "': " + String(*dst);
+						err_text = vformat(R"*(Error calling utility function "%s()": %s)*", methodstr, *dst);
 					} else {
-						err_text = _get_call_error(err, "utility function '" + methodstr + "'", (const Variant **)argptrs);
+						err_text = _get_call_error(err, vformat(R"*(utility function "%s()")*", methodstr), (const Variant **)argptrs);
 					}
 					OPCODE_BREAK;
 				}
@@ -2123,13 +2123,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
-					// TODO: Add this information in debug.
-					String methodstr = "<unknown function>";
-					if (dst->get_type() == Variant::STRING) {
+					String methodstr = gds_utilities_names[_code_ptr[ip + 2]];
+					if (dst->get_type() == Variant::STRING && !dst->operator String().is_empty()) {
 						// Call provided error string.
-						err_text = "Error calling GDScript utility function '" + methodstr + "': " + String(*dst);
+						err_text = vformat(R"*(Error calling GDScript utility function "%s()": %s)*", methodstr, *dst);
 					} else {
-						err_text = _get_call_error(err, "GDScript utility function '" + methodstr + "'", (const Variant **)argptrs);
+						err_text = _get_call_error(err, vformat(R"*(GDScript utility function "%s()")*", methodstr), (const Variant **)argptrs);
 					}
 					OPCODE_BREAK;
 				}

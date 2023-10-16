@@ -262,6 +262,13 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
+		<method name="is_layer_navigation_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns if a layer's built-in navigation regions generation is enabled.
+			</description>
+		</method>
 		<method name="is_layer_y_sort_enabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer" type="int" />
@@ -388,6 +395,14 @@
 			<description>
 				Sets a layer's name. This is mostly useful in the editor.
 				If [param layer] is negative, the layers are accessed from the last one.
+			</description>
+		</method>
+		<method name="set_layer_navigation_enabled">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Enables or disables a layer's built-in navigation regions generation. Disable this if you need to bake navigation regions from a TileMap using a [NavigationRegion2D] node.
 			</description>
 		</method>
 		<method name="set_layer_navigation_map">

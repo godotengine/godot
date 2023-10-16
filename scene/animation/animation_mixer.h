@@ -46,10 +46,11 @@ class AnimationMixer : public Node {
 	GDCLASS(AnimationMixer, Node);
 #ifdef TOOLS_ENABLED
 	friend AnimatedValuesBackup;
-	bool reset_on_save = true;
 	bool editing = false;
 	bool dummy = false;
 #endif // TOOLS_ENABLED
+
+	bool reset_on_save = true;
 
 public:
 	enum AnimationCallbackModeProcess {
@@ -346,6 +347,9 @@ public:
 	virtual void advance(double p_time);
 	virtual void clear_caches(); ///< must be called by hand if an animation was modified after added
 
+	void set_reset_on_save_enabled(bool p_enabled);
+	bool is_reset_on_save_enabled() const;
+
 #ifdef TOOLS_ENABLED
 	void set_editing(bool p_editing);
 	bool is_editing() const;
@@ -353,8 +357,6 @@ public:
 	void set_dummy(bool p_dummy);
 	bool is_dummy() const;
 
-	void set_reset_on_save_enabled(bool p_enabled);
-	bool is_reset_on_save_enabled() const;
 	bool can_apply_reset() const;
 	void _build_backup_track_cache();
 	Ref<AnimatedValuesBackup> make_backup();
