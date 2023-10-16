@@ -3445,6 +3445,7 @@ void TextEdit::set_line(int p_line, const String &p_new_text) {
 
 		if (has_selection(i) && p_line == get_selection_to_line(i) && get_selection_to_column(i) > text[p_line].length()) {
 			carets.write[i].selection.to_column = text[p_line].length();
+			carets.write[i].selection.selecting_column = CLAMP(carets[i].selection.selecting_column, 0, text[p_line].length());
 		}
 	}
 	end_complex_operation();
