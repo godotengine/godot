@@ -2500,6 +2500,14 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		case GDScriptParser::Node::WHILE:
 			ERR_FAIL_MSG("Reaching unreachable case");
 	}
+
+	if (p_expression->get_datatype().kind == GDScriptParser::DataType::UNRESOLVED) {
+		// Prevent `is_type_compatible()` errors for incomplete expressions.
+		// The error can still occur if `reduce_*()` is called directly.
+		GDScriptParser::DataType dummy;
+		dummy.kind = GDScriptParser::DataType::VARIANT;
+		p_expression->set_datatype(dummy);
+	}
 }
 
 void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
@@ -2802,9 +2810,6 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	}
 
 	if (!left_type.is_set() || !right_type.is_set()) {
-		GDScriptParser::DataType dummy;
-		dummy.kind = GDScriptParser::DataType::VARIANT;
-		p_binary_op->set_datatype(dummy);
 		return;
 	}
 
