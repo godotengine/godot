@@ -1,0 +1,13 @@
+diff --git a/thirdparty/thorvg/src/loaders/jpg/tvgJpgd.cpp b/thirdparty/thorvg/src/loaders/jpg/tvgJpgd.cpp
+index 88d359aaa3..61a5dc1c0f 100644
+--- a/thirdparty/thorvg/src/loaders/jpg/tvgJpgd.cpp
++++ b/thirdparty/thorvg/src/loaders/jpg/tvgJpgd.cpp
+@@ -431,7 +431,7 @@ struct Row<1>
+ {
+     static void idct(int* pTemp, const jpgd_block_t* pSrc)
+     {
+-        const int dcval = pSrc[0] * (pSrc[0] * (PASS1_BITS * 2));
++        const int dcval = pSrc[0] * PASS1_BITS * 2;
+ 
+         pTemp[0] = dcval;
+         pTemp[1] = dcval;

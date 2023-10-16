@@ -20,6 +20,19 @@ namespace GodotTools.Export
 
         private List<string> _tempFolders = new List<string>();
 
+        private static bool ProjectContainsDotNet()
+        {
+            return File.Exists(GodotSharpDirs.ProjectSlnPath);
+        }
+
+        public override string[] _GetExportFeatures(EditorExportPlatform platform, bool debug)
+        {
+            if (!ProjectContainsDotNet())
+                return Array.Empty<string>();
+
+            return new string[] { "dotnet" };
+        }
+
         public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetExportOptions(EditorExportPlatform platform)
         {
             return new Godot.Collections.Array<Godot.Collections.Dictionary>()
@@ -119,7 +132,7 @@ namespace GodotTools.Export
         {
             _ = flags; // Unused.
 
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
+            if (!ProjectContainsDotNet())
                 return;
 
             if (!DeterminePlatformFromFeatures(features, out string platform))

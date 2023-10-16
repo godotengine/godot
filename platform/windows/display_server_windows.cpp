@@ -346,11 +346,31 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 				}
 			}
 			if (!p_callback.is_null()) {
-				p_callback.call(true, file_names, index);
+				Variant v_result = true;
+				Variant v_files = file_names;
+				Variant v_index = index;
+				Variant ret;
+				Callable::CallError ce;
+				const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+				p_callback.callp(args, 3, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(p_callback, args, 3, ce)));
+				}
 			}
 		} else {
 			if (!p_callback.is_null()) {
-				p_callback.call(false, Vector<String>(), index);
+				Variant v_result = false;
+				Variant v_files = Vector<String>();
+				Variant v_index = index;
+				Variant ret;
+				Callable::CallError ce;
+				const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+				p_callback.callp(args, 3, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(p_callback, args, 3, ce)));
+				}
 			}
 		}
 		pfd->Release();

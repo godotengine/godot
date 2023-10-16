@@ -121,16 +121,16 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
 #endif
 
-	gdmono = memnew(GDMono);
-	gdmono->initialize();
-
 #ifdef TOOLS_ENABLED
-	if (gdmono->is_runtime_initialized()) {
-		gdmono->initialize_load_assemblies();
-	}
-
 	EditorNode::add_init_callback(&_editor_init_callback);
 #endif
+
+	gdmono = memnew(GDMono);
+
+	// Initialize only if the project uses C#.
+	if (gdmono->should_initialize()) {
+		gdmono->initialize();
+	}
 }
 
 void CSharpLanguage::finish() {

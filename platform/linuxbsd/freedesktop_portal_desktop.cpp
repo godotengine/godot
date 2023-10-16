@@ -427,6 +427,17 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	return OK;
 }
 
+void FreeDesktopPortalDesktop::_file_dialog_callback(const Callable &p_callable, const Variant &p_status, const Variant &p_list, const Variant &p_index) {
+	Variant ret;
+	Callable::CallError ce;
+	const Variant *args[3] = { &p_status, &p_list, &p_index };
+
+	p_callable.callp(args, 3, ret, ce);
+	if (ce.error != Callable::CallError::CALL_OK) {
+		ERR_PRINT(vformat(RTR("Failed to execute file dialogs callback: %s."), Variant::get_callable_error_text(p_callable, args, 3, ce)));
+	}
+}
+
 void FreeDesktopPortalDesktop::_thread_file_dialog_monitor(void *p_ud) {
 	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)p_ud;
 
@@ -451,11 +462,7 @@ void FreeDesktopPortalDesktop::_thread_file_dialog_monitor(void *p_ud) {
 									file_chooser_parse_response(&iter, fd.filter_names, cancel, uris, index);
 
 									if (fd.callback.is_valid()) {
-										Variant v_status = !cancel;
-										Variant v_files = uris;
-										Variant v_index = index;
-										Variant *v_args[3] = { &v_status, &v_files, &v_index };
-										fd.callback.call_deferredp((const Variant **)&v_args, 3);
+										callable_mp(portal, &FreeDesktopPortalDesktop::_file_dialog_callback).call_deferred(fd.callback, !cancel, uris, index);
 									}
 									if (fd.prev_focus != DisplayServer::INVALID_WINDOW_ID) {
 										callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.prev_focus);

@@ -55,6 +55,9 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/loaders/svg/tvgSvgUtil.cpp",
         "src/loaders/svg/tvgXmlParser.cpp",
         "src/loaders/raw/tvgRawLoader.cpp",
+        "src/loaders/external_png/tvgPngLoader.cpp",
+        "src/loaders/jpg/tvgJpgd.cpp",
+        "src/loaders/jpg/tvgJpgLoader.cpp",
         # renderer common
         "src/renderer/tvgAccessor.cpp",
         # "src/renderer/tvgAnimation.cpp",
@@ -88,10 +91,12 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         CPPPATH=[
             "../../../thirdparty/thorvg/inc",
             "../../../thirdparty/thorvg/src/common",
-            "../../../thirdparty/thorvg/src/loaders/svg",
-            "../../../thirdparty/thorvg/src/loaders/raw",
             "../../../thirdparty/thorvg/src/renderer",
             "../../../thirdparty/thorvg/src/renderer/sw_engine",
+            "../../../thirdparty/thorvg/src/loaders/svg",
+            "../../../thirdparty/thorvg/src/loaders/raw",
+            "../../../thirdparty/thorvg/src/loaders/external_png",
+            "../../../thirdparty/thorvg/src/loaders/jpg",
         ]
     )
 
