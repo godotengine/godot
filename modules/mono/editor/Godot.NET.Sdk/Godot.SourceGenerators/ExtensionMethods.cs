@@ -157,7 +157,7 @@ namespace Godot.SourceGenerators
 
         public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
         {
-            return symbol.IsGenericType ?
+            return symbol.TypeParameters.Length > 0 ?
                 string.Concat(symbol.Name, "<", string.Join(", ", symbol.TypeParameters), ">") :
                 symbol.Name;
         }
@@ -232,11 +232,29 @@ namespace Godot.SourceGenerators
         public static bool IsGodotExportAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportAttr;
 
+        public static bool HasGodotExportAttribute(this IFieldSymbol symbol)
+            => symbol.GetAttributes().Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false);
+
+        public static bool HasGodotExportAttribute(this IPropertySymbol symbol)
+            => symbol.GetAttributes().Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false);
+
         public static bool IsGodotSignalAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SignalAttr;
 
+        public static bool HasGodotSignalAttribute(this INamedTypeSymbol symbol)
+            => symbol.GetAttributes().Any(a => a.AttributeClass?.IsGodotSignalAttribute() ?? false);
+
         public static bool IsGodotMustBeVariantAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.MustBeVariantAttr;
+
+        public static bool IsVariantCompatible(this ITypeParameterSymbol symbol)
+        {
+            // The type parameter has the MustBeVariant attribute, or it is constrained to a GodotObject derived type
+            return symbol.GetAttributes()
+                       .Any(a => a.AttributeClass?.IsGodotMustBeVariantAttribute() ?? false) ||
+                   symbol.ConstraintTypes.OfType<INamedTypeSymbol>()
+                       .Any(t => t.InheritsFrom("GodotSharp", GodotClasses.GodotObject));
+        }
 
         public static bool IsGodotClassNameAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.GodotClassNameAttr;
@@ -336,5 +354,47 @@ namespace Godot.SourceGenerators
         public static int StartLine(this Location location)
             => location.SourceTree?.GetLineSpan(location.SourceSpan).StartLinePosition.Line
                ?? location.GetLineSpan().StartLinePosition.Line;
+
+        public static IEnumerable<AttributeSyntax> GetAllAttributes(this MemberDeclarationSyntax member)
+            => member.AttributeLists.SelectMany(al => al.Attributes);
+
+        public static INamedTypeSymbol GetTypeSymbol(this AttributeSyntax attribute, SemanticModel sm)
+            => (sm.GetSymbolInfo(attribute).Symbol as IMethodSymbol)!.ContainingType!;
+
+        public static void AppendPropertyInfo(this StringBuilder source, PropertyInfo propertyInfo, string nameFormat)
+        {
+            if (propertyInfo.VariantType.HasValue)
+            {
+                source.Append("new(type: (global::Godot.Variant.Type)")
+                    .Append((int)propertyInfo.VariantType)
+                    .Append(", ");
+            }
+            else
+            {
+                source.Append("global::Godot.Bridge.GenericUtils.PropertyInfoFromGenericType<")
+                    .Append(propertyInfo.PropertyType!.FullQualifiedNameIncludeGlobal())
+                    .Append(">(");
+            }
+
+            source.Append("name: ")
+                .Append(string.Format(nameFormat, propertyInfo.Name))
+                .Append(", hint: (global::Godot.PropertyHint)")
+                .Append((int)propertyInfo.Hint)
+                .Append(", hintString: \"")
+                .Append(propertyInfo.HintString)
+                .Append("\", usage: (global::Godot.PropertyUsageFlags)")
+                .Append((int)propertyInfo.Usage)
+                .Append(", exported: ")
+                .Append(propertyInfo.Exported ? "true" : "false");
+
+            if (propertyInfo.ClassName != null)
+            {
+                source.Append(", className: new global::Godot.StringName(\"")
+                    .Append(propertyInfo.ClassName)
+                    .Append("\")");
+            }
+
+            source.Append(")");
+        }
     }
 }

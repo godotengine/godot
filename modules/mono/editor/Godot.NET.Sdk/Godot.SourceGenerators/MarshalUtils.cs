@@ -181,6 +181,9 @@ namespace Godot.SourceGenerators
                         if (elementType.SimpleDerivesFrom(typeCache.GodotObjectType))
                             return MarshalType.GodotObjectOrDerivedArray;
 
+                        if (elementType is ITypeParameterSymbol typeParam && typeParam.IsVariantCompatible())
+                            return MarshalType.GenericSystemArrayType;
+
                         if (elementType.ContainingAssembly?.Name == "GodotSharp" &&
                             elementType.ContainingNamespace?.Name == "Godot")
                         {
@@ -208,6 +211,9 @@ namespace Godot.SourceGenerators
                         if (type.SimpleDerivesFrom(typeCache.GodotObjectType))
                             return MarshalType.GodotObjectOrDerived;
 
+                        if (type is ITypeParameterSymbol typeParam && typeParam.IsVariantCompatible())
+                            return MarshalType.GenericType;
+
                         if (type.ContainingAssembly?.Name == "GodotSharp")
                         {
                             switch (type.ContainingNamespace?.Name)
@@ -221,18 +227,24 @@ namespace Godot.SourceGenerators
                                     };
                                 case "Collections"
                                     when type.ContainingNamespace?.FullQualifiedNameOmitGlobal() == "Godot.Collections":
+                                {
+                                    INamedTypeSymbol namedType = (INamedTypeSymbol)type;
+                                    bool isGenericTypeGeneric = namedType.TypeArguments.Any(t => t is ITypeParameterSymbol);
                                     return type switch
                                     {
-                                        { Name: "Dictionary" } =>
-                                            type is INamedTypeSymbol { IsGenericType: false } ?
+                                        { Name: "Dictionary" } => !namedType.IsGenericType ?
                                                 MarshalType.GodotDictionary :
-                                                MarshalType.GodotGenericDictionary,
-                                        { Name: "Array" } =>
-                                            type is INamedTypeSymbol { IsGenericType: false } ?
+                                                !isGenericTypeGeneric ?
+                                                    MarshalType.GodotGenericDictionary :
+                                                    MarshalType.GenericType,
+                                        { Name: "Array" } => !namedType.IsGenericType ?
                                                 MarshalType.GodotArray :
-                                                MarshalType.GodotGenericArray,
+                                                !isGenericTypeGeneric ?
+                                                    MarshalType.GodotGenericArray :
+                                                    MarshalType.GenericType,
                                         _ => null
                                     };
+                                }
                             }
                         }
                     }

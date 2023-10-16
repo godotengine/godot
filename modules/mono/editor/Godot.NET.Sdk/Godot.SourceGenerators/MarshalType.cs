@@ -69,5 +69,9 @@ namespace Godot.SourceGenerators
         GodotArray,
         GodotGenericDictionary,
         GodotGenericArray,
+
+        // For things using generic type parameters
+        GenericType,
+        GenericSystemArrayType,
     }
 }

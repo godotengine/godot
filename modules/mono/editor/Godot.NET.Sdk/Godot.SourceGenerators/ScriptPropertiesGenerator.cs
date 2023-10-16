@@ -379,19 +379,9 @@ namespace Godot.SourceGenerators
 
         private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
-            source.Append("        properties.Add(new(type: (global::Godot.Variant.Type)")
-                .Append((int)propertyInfo.Type)
-                .Append(", name: PropertyName.")
-                .Append(propertyInfo.Name)
-                .Append(", hint: (global::Godot.PropertyHint)")
-                .Append((int)propertyInfo.Hint)
-                .Append(", hintString: \"")
-                .Append(propertyInfo.HintString)
-                .Append("\", usage: (global::Godot.PropertyUsageFlags)")
-                .Append((int)propertyInfo.Usage)
-                .Append(", exported: ")
-                .Append(propertyInfo.Exported ? "true" : "false")
-                .Append("));\n");
+            source.Append("        properties.Add(");
+            source.AppendPropertyInfo(propertyInfo, "PropertyName.{0}");
+            source.Append(");\n");
         }
 
         private static IEnumerable<PropertyInfo> DetermineGroupingPropertyInfo(ISymbol memberSymbol)
@@ -415,7 +405,7 @@ namespace Godot.SourceGenerators
                     if (propertyUsage != PropertyUsageFlags.Category && attr.ConstructorArguments.Length > 1)
                         hintString = attr.ConstructorArguments[1].Value?.ToString();
 
-                    yield return new PropertyInfo(VariantType.Nil, name, PropertyHint.None, hintString,
+                    yield return new PropertyInfo(VariantType.Nil, null, name, PropertyHint.None, hintString,
                         propertyUsage.Value, true);
                 }
             }
@@ -453,16 +443,24 @@ namespace Godot.SourceGenerators
 
             var memberType = propertySymbol?.Type ?? fieldSymbol!.Type;
 
-            var memberVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(marshalType)!.Value;
+            var memberVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(marshalType);
             string memberName = memberSymbol.Name;
 
             if (exportAttr == null)
             {
-                return new PropertyInfo(memberVariantType, memberName, PropertyHint.None,
+                return new PropertyInfo(memberVariantType, memberType, memberName, PropertyHint.None,
                     hintString: null, PropertyUsageFlags.ScriptVariable, exported: false);
             }
 
-            if (!TryGetMemberExportHint(typeCache, memberType, exportAttr, memberVariantType,
+            var propUsage = PropertyUsageFlags.Default | PropertyUsageFlags.ScriptVariable;
+
+            if (!memberVariantType.HasValue)
+            {
+                return new PropertyInfo(memberVariantType, memberType, memberName,
+                    PropertyHint.None, null, propUsage, exported: true);
+            }
+
+            if (!TryGetMemberExportHint(typeCache, memberType, exportAttr, memberVariantType!.Value,
                     isTypeArgument: false, out var hint, out var hintString))
             {
                 var constructorArguments = exportAttr.ConstructorArguments;
@@ -488,15 +486,15 @@ namespace Godot.SourceGenerators
                 }
             }
 
-            var propUsage = PropertyUsageFlags.Default | PropertyUsageFlags.ScriptVariable;
-
             if (memberVariantType == VariantType.Nil)
                 propUsage |= PropertyUsageFlags.NilIsVariant;
 
-            return new PropertyInfo(memberVariantType, memberName,
+            return new PropertyInfo(memberVariantType, memberType, memberName,
                 hint, hintString, propUsage, exported: true);
         }
 
+        // If you update anything in here, check if the same thing also
+        // needs to be updated in Godot.Bridge.GenericUtils.GetPropertyHintString
         private static bool TryGetMemberExportHint(
             MarshalUtils.TypeCache typeCache,
             ITypeSymbol type, AttributeData exportAttr,
