@@ -122,21 +122,26 @@ struct GDScriptUtilityFunctionsDefinitions {
 			} break;
 			case 1: {
 				VALIDATE_ARG_NUM(0);
-				int count = *p_args[0];
-				Array arr;
+				TypedArray<int64_t> arr;
+				int64_t count = *p_args[0];
 				if (count <= 0) {
 					*r_ret = arr;
 					return;
 				}
-				Error err = arr.resize(count);
+				if (count > (int64_t)std::numeric_limits<int>::max()) {
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+					*r_ret = RTR("The given range has too many elements!");
+					return;
+				}
+				Error err = arr.resize((int)count);
 				if (err != OK) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
+					*r_ret = RTR("Failed to resize the array!");
 					return;
 				}
 
-				for (int i = 0; i < count; i++) {
-					arr[i] = i;
+				for (int64_t i = 0; i < count; i++) {
+					arr[(int)i] = i;
 				}
 
 				*r_ret = arr;
@@ -145,22 +150,27 @@ struct GDScriptUtilityFunctionsDefinitions {
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
-				int from = *p_args[0];
-				int to = *p_args[1];
+				int64_t from = *p_args[0];
+				int64_t to = *p_args[1];
 
-				Array arr;
+				TypedArray<int64_t> arr;
 				if (from >= to) {
 					*r_ret = arr;
 					return;
 				}
-				Error err = arr.resize(to - from);
-				if (err != OK) {
+				if (to - from > (int64_t)std::numeric_limits<int>::max()) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
+					*r_ret = RTR("The given range has too many elements!");
 					return;
 				}
-				for (int i = from; i < to; i++) {
-					arr[i - from] = i;
+				Error err = arr.resize((int)(to - from));
+				if (err != OK) {
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+					*r_ret = RTR("Failed to resize the array!");
+					return;
+				}
+				for (int64_t i = from; i < to; i++) {
+					arr[int(i - from)] = i;
 				}
 				*r_ret = arr;
 			} break;
@@ -169,16 +179,16 @@ struct GDScriptUtilityFunctionsDefinitions {
 				VALIDATE_ARG_NUM(1);
 				VALIDATE_ARG_NUM(2);
 
-				int from = *p_args[0];
-				int to = *p_args[1];
-				int incr = *p_args[2];
+				int64_t from = *p_args[0];
+				int64_t to = *p_args[1];
+				int64_t incr = *p_args[2];
 				if (incr == 0) {
 					*r_ret = RTR("Step argument is zero!");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 					return;
 				}
 
-				Array arr;
+				TypedArray<int64_t> arr;
 				if (from >= to && incr > 0) {
 					*r_ret = arr;
 					return;
@@ -189,29 +199,33 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 
 				// Calculate how many.
-				int count = 0;
+				int64_t count = 0;
 				if (incr > 0) {
 					count = ((to - from - 1) / incr) + 1;
 				} else {
 					count = ((from - to - 1) / -incr) + 1;
 				}
+				if (count > (int64_t)std::numeric_limits<int>::max()) {
+					*r_ret = arr;
+					*r_ret = RTR("The given range has too many elements!");
+					return;
+				}
 
-				Error err = arr.resize(count);
-
+				Error err = arr.resize((int)count);
 				if (err != OK) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
+					*r_ret = RTR("Failed to resize the array!");
 					return;
 				}
 
 				if (incr > 0) {
 					int idx = 0;
-					for (int i = from; i < to; i += incr) {
+					for (int64_t i = from; i < to; i += incr) {
 						arr[idx++] = i;
 					}
 				} else {
 					int idx = 0;
-					for (int i = from; i > to; i += incr) {
+					for (int64_t i = from; i > to; i += incr) {
 						arr[idx++] = i;
 					}
 				}
@@ -626,58 +640,38 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 
 #define REGISTER_FUNC(m_func, m_is_const, m_return_type, ...)                                    \
 	{                                                                                            \
-		String name(#m_func);                                                                    \
-		if (name.begins_with("_")) {                                                             \
-			name = name.substr(1, name.length() - 1);                                            \
-		}                                                                                        \
-		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
-		info.return_val.type = m_return_type;                                                    \
+		String name = String(#m_func).trim_prefix("_");                                          \
+		MethodInfo info = MethodInfo(m_return_type, name, __VA_ARGS__);                          \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
 	}
 
 #define REGISTER_FUNC_NO_ARGS(m_func, m_is_const, m_return_type)                                 \
 	{                                                                                            \
-		String name(#m_func);                                                                    \
-		if (name.begins_with("_")) {                                                             \
-			name = name.substr(1, name.length() - 1);                                            \
-		}                                                                                        \
-		MethodInfo info = MethodInfo(name);                                                      \
-		info.return_val.type = m_return_type;                                                    \
+		String name = String(#m_func).trim_prefix("_");                                          \
+		MethodInfo info = MethodInfo(m_return_type, name);                                       \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
 	}
 
 #define REGISTER_VARARG_FUNC(m_func, m_is_const, m_return_type)                                  \
 	{                                                                                            \
-		String name(#m_func);                                                                    \
-		if (name.begins_with("_")) {                                                             \
-			name = name.substr(1, name.length() - 1);                                            \
-		}                                                                                        \
-		MethodInfo info = MethodInfo(name);                                                      \
-		info.return_val.type = m_return_type;                                                    \
+		String name = String(#m_func).trim_prefix("_");                                          \
+		MethodInfo info = MethodInfo(m_return_type, name);                                       \
 		info.flags |= METHOD_FLAG_VARARG;                                                        \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
 	}
 
 #define REGISTER_VARIANT_FUNC(m_func, m_is_const, ...)                                           \
 	{                                                                                            \
-		String name(#m_func);                                                                    \
-		if (name.begins_with("_")) {                                                             \
-			name = name.substr(1, name.length() - 1);                                            \
-		}                                                                                        \
-		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
-		info.return_val.type = Variant::NIL;                                                     \
+		String name = String(#m_func).trim_prefix("_");                                          \
+		MethodInfo info = MethodInfo(Variant::NIL, name, __VA_ARGS__);                           \
 		info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;                                  \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
 	}
 
 #define REGISTER_CLASS_FUNC(m_func, m_is_const, m_return_type, ...)                              \
 	{                                                                                            \
-		String name(#m_func);                                                                    \
-		if (name.begins_with("_")) {                                                             \
-			name = name.substr(1, name.length() - 1);                                            \
-		}                                                                                        \
-		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
-		info.return_val.type = Variant::OBJECT;                                                  \
+		String name = String(#m_func).trim_prefix("_");                                          \
+		MethodInfo info = MethodInfo(Variant::OBJECT, name, __VA_ARGS__);                        \
 		info.return_val.hint = PROPERTY_HINT_RESOURCE_TYPE;                                      \
 		info.return_val.class_name = m_return_type;                                              \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
@@ -685,12 +679,8 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 
 #define REGISTER_FUNC_DEF(m_func, m_is_const, m_default, m_return_type, ...)                     \
 	{                                                                                            \
-		String name(#m_func);                                                                    \
-		if (name.begins_with("_")) {                                                             \
-			name = name.substr(1, name.length() - 1);                                            \
-		}                                                                                        \
-		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
-		info.return_val.type = m_return_type;                                                    \
+		String name = String(#m_func).trim_prefix("_");                                          \
+		MethodInfo info = MethodInfo(m_return_type, name, __VA_ARGS__);                          \
 		info.default_arguments.push_back(m_default);                                             \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
 	}
@@ -707,14 +697,14 @@ void GDScriptUtilityFunctions::register_functions() {
 #endif // DISABLE_DEPRECATED
 	REGISTER_FUNC(type_exists, true, Variant::BOOL, ARG("type", Variant::STRING_NAME));
 	REGISTER_FUNC(_char, true, Variant::STRING, ARG("char", Variant::INT));
-	REGISTER_VARARG_FUNC(range, false, Variant::ARRAY);
+	REGISTER_VARARG_FUNC(range, false, GetTypeInfo<TypedArray<int64_t>>::get_class_info());
 	REGISTER_CLASS_FUNC(load, false, "Resource", ARG("path", Variant::STRING));
 	REGISTER_FUNC(inst_to_dict, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT));
 	REGISTER_FUNC(dict_to_inst, false, Variant::OBJECT, ARG("dictionary", Variant::DICTIONARY));
 	REGISTER_FUNC_DEF(Color8, true, 255, Variant::COLOR, ARG("r8", Variant::INT), ARG("g8", Variant::INT), ARG("b8", Variant::INT), ARG("a8", Variant::INT));
 	REGISTER_VARARG_FUNC(print_debug, false, Variant::NIL);
 	REGISTER_FUNC_NO_ARGS(print_stack, false, Variant::NIL);
-	REGISTER_FUNC_NO_ARGS(get_stack, false, Variant::ARRAY);
+	REGISTER_FUNC_NO_ARGS(get_stack, false, GetTypeInfo<TypedArray<Dictionary>>::get_class_info());
 	REGISTER_FUNC(len, true, Variant::INT, VARARG("var"));
 	REGISTER_FUNC(is_instance_of, true, Variant::BOOL, VARARG("value"), VARARG("type"));
 }
