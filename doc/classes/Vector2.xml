@@ -419,7 +419,9 @@
 			<return type="Vector2" />
 			<param index="0" name="right" type="Transform2D" />
 			<description>
-				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix.
+				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				[code]vector * transform[/code] is equivalent to [code]transform.inverse() * vector[/code]. See [method Transform2D.inverse].
+				For transforming by inverse of an affine transformation (e.g. with scaling) [code]transform.affine_inverse() * vector[/code] can be used instead. See [method Transform2D.affine_inverse].
 			</description>
 		</operator>
 		<operator name="operator *">
