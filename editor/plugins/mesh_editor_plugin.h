@@ -43,12 +43,13 @@
 class SubViewport;
 class Button;
 
-class MeshEditor : public SubViewportContainer {
-	GDCLASS(MeshEditor, SubViewportContainer);
+class MeshEditor : public Control {
+	GDCLASS(MeshEditor, Control);
 
 	float rot_x;
 	float rot_y;
 
+	SubViewportContainer *vc = nullptr;
 	SubViewport *viewport = nullptr;
 	MeshInstance3D *mesh_instance = nullptr;
 	Node3D *rotation = nullptr;
