@@ -72,6 +72,7 @@ class GDMono {
 
 #ifdef TOOLS_ENABLED
 	bool _load_project_assembly();
+	void _try_load_project_assembly();
 #endif
 
 	uint64_t api_core_hash = 0;
@@ -149,10 +150,9 @@ public:
 	Error reload_project_assemblies();
 #endif
 
+	bool should_initialize();
+
 	void initialize();
-#ifdef TOOLS_ENABLED
-	void initialize_load_assemblies();
-#endif
 
 	GDMono();
 	~GDMono();
