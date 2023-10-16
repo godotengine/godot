@@ -1262,9 +1262,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 
 	if (!p_timeline_only) {
 		if (player->is_valid() && !p_set) {
-			double delta = player->get_current_animation_position();
 			player->seek(pos, true, true);
-			player->seek(pos + delta, true, true);
 		} else {
 			player->stop();
 			player->seek(pos, true, true);
