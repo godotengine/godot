@@ -7,7 +7,7 @@
 	</description>
 	<tutorials>
 		<link title="Exporting for Android">$DOCS_URL/tutorials/export/exporting_for_android.html</link>
-		<link title="Custom builds for Android">$DOCS_URL/tutorials/export/android_custom_build.html</link>
+		<link title="Gradle builds for Android">$DOCS_URL/tutorials/export/android_gradle_build.html</link>
 		<link title="Android plugins documentation index">$DOCS_URL/tutorials/platform/index.html</link>
 	</tutorials>
 	<members>
