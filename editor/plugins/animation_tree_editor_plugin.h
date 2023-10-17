@@ -42,9 +42,25 @@ class ScrollContainer;
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
 
+protected:
+	enum {
+		MENU_LOAD_FILE = 1000,
+		MENU_PASTE = 1001,
+		MENU_LOAD_FILE_CONFIRM = 1002,
+		MENU_DUPLICATE = 1003,
+		MENU_CUT = 1004,
+		MENU_COPY = 1005,
+		MENU_DELETE = 1006,
+		MENU_USER_ID
+	};
+
+	void _add_standard_context_menu_items(PopupMenu *p_menu, bool p_can_copy, bool p_can_paste);
+
 public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
 	virtual void edit(const Ref<AnimationNode> &p_node) = 0;
+
+	AnimationTreeNodeEditorPlugin();
 };
 
 class AnimationTreeEditor : public VBoxContainer {

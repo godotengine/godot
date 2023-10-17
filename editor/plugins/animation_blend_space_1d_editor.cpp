@@ -101,11 +101,8 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				menu->set_item_metadata(idx, E);
 			}
 
-			Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (clipb.is_valid()) {
-				menu->add_separator();
-				menu->add_item(TTR("Paste"), MENU_PASTE);
-			}
+			_add_standard_context_menu_items(menu, selected_point >= 0, copy_node.is_valid());
+
 			menu->add_separator();
 			menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
@@ -113,13 +110,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 			menu->reset_size();
 			menu->popup();
 
-			add_point_pos = (mb->get_position() / blend_space_draw->get_size()).x;
-			add_point_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
-			add_point_pos += blend_space->get_min_space();
-
-			if (snap->is_pressed()) {
-				add_point_pos = Math::snapped(add_point_pos, blend_space->get_snap());
-			}
+			add_point_pos = _map_to_blend_space(mb->get_position().x);
 		}
 	}
 
@@ -138,6 +129,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
+				drag_copy = mb->is_command_or_control_pressed();
 				_update_tool_erase();
 				_update_edited_point_pos();
 				return;
@@ -156,18 +148,22 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 					point = Math::snapped(point, blend_space->get_snap());
 				}
 
-				updating = true;
-				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-				undo_redo->create_action(TTR("Move Node Point"));
-				undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, point);
-				undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
-				undo_redo->add_do_method(this, "_update_space");
-				undo_redo->add_undo_method(this, "_update_space");
-				undo_redo->add_do_method(this, "_update_edited_point_pos");
-				undo_redo->add_undo_method(this, "_update_edited_point_pos");
-				undo_redo->commit_action();
-				updating = false;
-				_update_edited_point_pos();
+				if (!drag_copy) {
+					updating = true;
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+					undo_redo->create_action(TTR("Move Node Point"));
+					undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, point);
+					undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
+					undo_redo->add_do_method(this, "_update_space");
+					undo_redo->add_undo_method(this, "_update_space");
+					undo_redo->add_do_method(this, "_update_edited_point_pos");
+					undo_redo->add_undo_method(this, "_update_edited_point_pos");
+					undo_redo->commit_action();
+					updating = false;
+					_update_edited_point_pos();
+				} else {
+					_duplicate_point(point);
+				}
 			}
 
 			dragging_selected_attempt = false;
@@ -401,6 +397,65 @@ void AnimationNodeBlendSpace1DEditor::_file_opened(const String &p_file) {
 	}
 }
 
+float AnimationNodeBlendSpace1DEditor::_map_to_blend_space(float p_mouse) {
+	float mapped = p_mouse / blend_space_draw->get_size().x;
+	mapped *= (blend_space->get_max_space() - blend_space->get_min_space());
+	mapped += blend_space->get_min_space();
+	if (snap->is_pressed()) {
+		mapped = Math::snapped(mapped, blend_space->get_snap());
+	}
+	return mapped;
+}
+
+Ref<AnimationRootNode> AnimationNodeBlendSpace1DEditor::_dup_copy_point() {
+	if (selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) {
+		return blend_space->get_blend_point_node(selected_point)->duplicate();
+	}
+	return nullptr;
+}
+
+void AnimationNodeBlendSpace1DEditor::_dup_paste_point(Ref<AnimationNode> node, float p_position) {
+	if (node.is_valid()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", node->duplicate(), p_position);
+		undo_redo->add_do_method(this, "_update_space");
+		undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
+		undo_redo->add_undo_method(this, "_update_space");
+	}
+}
+
+void AnimationNodeBlendSpace1DEditor::_duplicate_point(float p_position) {
+	Ref<AnimationRootNode> node = _dup_copy_point();
+	if (node.is_valid()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Duplicate 1D Blend Point"));
+		_dup_paste_point(node, p_position);
+		undo_redo->commit_action();
+	}
+}
+
+void AnimationNodeBlendSpace1DEditor::_copy_point(bool p_cut) {
+	copy_node = _dup_copy_point();
+	if (copy_node.is_valid() && p_cut) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Cut 1D Blend Point"));
+		undo_redo->add_do_method(blend_space.ptr(), "remove_blend_point", selected_point);
+		undo_redo->add_do_method(this, "_update_space");
+		undo_redo->add_undo_method(blend_space.ptr(), "add_blend_point", copy_node->duplicate(), blend_space->get_blend_point_position(selected_point));
+		undo_redo->add_undo_method(this, "_update_space");
+		undo_redo->commit_action();
+	}
+}
+
+void AnimationNodeBlendSpace1DEditor::_paste_point(float p_position) {
+	if (copy_node.is_valid()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Paste 1D Blend Point"));
+		_dup_paste_point(copy_node, p_position);
+		undo_redo->commit_action();
+	}
+}
+
 void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 	Ref<AnimationRootNode> node;
 	if (p_index == MENU_LOAD_FILE) {
@@ -415,8 +470,21 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 	} else if (p_index == MENU_LOAD_FILE_CONFIRM) {
 		node = file_loaded;
 		file_loaded.unref();
+	} else if (p_index == MENU_CUT) {
+		_copy_point(true);
+		return;
+	} else if (p_index == MENU_COPY) {
+		_copy_point(false);
+		return;
 	} else if (p_index == MENU_PASTE) {
-		node = EditorSettings::get_singleton()->get_resource_clipboard();
+		_paste_point(add_point_pos);
+		return;
+	} else if (p_index == MENU_DUPLICATE) {
+		_duplicate_point(add_point_pos);
+		return;
+	} else if (p_index == MENU_DELETE) {
+		_erase_selected();
+		return;
 	} else {
 		String type = menu->get_item_metadata(p_index);
 
@@ -647,6 +715,33 @@ void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
 	max_value->set_editable(!read_only);
 	sync->set_disabled(read_only);
 	interpolation->set_disabled(read_only);
+}
+
+void AnimationNodeBlendSpace1DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	if (!is_visible_in_tree()) {
+		return;
+	}
+
+	if (!is_focus_owner_in_shortcut_context()) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		if (ED_IS_SHORTCUT("blend_tree_editor/cut", p_event)) {
+			accept_event();
+			_copy_point(true);
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/copy", p_event)) {
+			accept_event();
+			_copy_point(false);
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/paste", p_event)) {
+			accept_event();
+			_paste_point(_map_to_blend_space(blend_space_draw->get_local_mouse_position().x));
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/duplicate", p_event)) {
+			accept_event();
+			_duplicate_point(_map_to_blend_space(blend_space_draw->get_local_mouse_position().x));
+		}
+	}
 }
 
 AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = nullptr;

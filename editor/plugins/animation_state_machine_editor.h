@@ -162,6 +162,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	bool dragging_selected = false;
 	Vector2 drag_from;
 	Vector2 drag_ofs;
+	bool drag_copy = false;
 	StringName snap_x;
 	StringName snap_y;
 
@@ -173,6 +174,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	void _add_menu_type(int p_index);
 	void _add_animation_type(int p_index);
+	void _add_node_and_transition(const String &p_base_name, Ref<AnimationNode> node);
 	void _connect_to(int p_index);
 
 	struct NodeRect {
@@ -281,11 +283,31 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 
-	enum {
-		MENU_LOAD_FILE = 1000,
-		MENU_PASTE = 1001,
-		MENU_LOAD_FILE_CONFIRM = 1002
+	Vector2 popup_menu_point;
+
+	struct CopyItem {
+		StringName name;
+		Vector2 position;
+		Ref<AnimationNode> node;
 	};
+
+	struct CopyTransition {
+		StringName from;
+		StringName to;
+		Ref<AnimationNodeStateMachineTransition> transition;
+	};
+
+	List<CopyItem> copy_items_buffer;
+	List<CopyTransition> copy_transitions_buffer;
+
+	void _dup_copy_nodes(List<CopyItem> &r_items, List<CopyTransition> &r_transitions);
+	void _dup_paste_nodes(const List<CopyItem> &r_items, const List<CopyTransition> &p_transitions, const Vector2 &p_position);
+	void _duplicate_nodes();
+	void _copy_nodes(bool p_cut);
+	void _paste_nodes(const Vector2 &p_position);
+	void _clear_copy_buffer();
+	String _deduplicate_node_name(const String &p_base_name);
+	Vector2 _map_to_state_machine(const Vector2 &p_position);
 
 protected:
 	void _notification(int p_what);
@@ -300,7 +322,11 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
 	AnimationNodeStateMachineEditor();
+
+private:
 };
 
 class EditorAnimationMultiTransitionEdit : public RefCounted {
