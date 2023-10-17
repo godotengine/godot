@@ -3243,6 +3243,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 
 			_discard_changes();
+
+			EditorNode::get_log()->add_message(vformat("--- Scene reloaded: %s ---", scene_filename), EditorLog::MSG_TYPE_EDITOR);
 		} break;
 
 		case EditorSceneTabs::SCENE_SHOW_IN_FILESYSTEM: {
