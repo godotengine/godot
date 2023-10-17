@@ -1496,6 +1496,9 @@ CanvasItem::~CanvasItem() {
 
 void CanvasTexture::set_diffuse_texture(const Ref<Texture2D> &p_diffuse) {
 	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_diffuse.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
+	if (diffuse_texture == p_diffuse) {
+		return;
+	}
 	diffuse_texture = p_diffuse;
 
 	RID tex_rid = diffuse_texture.is_valid() ? diffuse_texture->get_rid() : RID();
@@ -1508,9 +1511,13 @@ Ref<Texture2D> CanvasTexture::get_diffuse_texture() const {
 
 void CanvasTexture::set_normal_texture(const Ref<Texture2D> &p_normal) {
 	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_normal.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
+	if (normal_texture == p_normal) {
+		return;
+	}
 	normal_texture = p_normal;
 	RID tex_rid = normal_texture.is_valid() ? normal_texture->get_rid() : RID();
 	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_NORMAL, tex_rid);
+	emit_changed();
 }
 Ref<Texture2D> CanvasTexture::get_normal_texture() const {
 	return normal_texture;
@@ -1518,9 +1525,13 @@ Ref<Texture2D> CanvasTexture::get_normal_texture() const {
 
 void CanvasTexture::set_specular_texture(const Ref<Texture2D> &p_specular) {
 	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_specular.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
+	if (specular_texture == p_specular) {
+		return;
+	}
 	specular_texture = p_specular;
 	RID tex_rid = specular_texture.is_valid() ? specular_texture->get_rid() : RID();
 	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_SPECULAR, tex_rid);
+	emit_changed();
 }
 
 Ref<Texture2D> CanvasTexture::get_specular_texture() const {
@@ -1528,8 +1539,12 @@ Ref<Texture2D> CanvasTexture::get_specular_texture() const {
 }
 
 void CanvasTexture::set_specular_color(const Color &p_color) {
+	if (specular == p_color) {
+		return;
+	}
 	specular = p_color;
 	RS::get_singleton()->canvas_texture_set_shading_parameters(canvas_texture, specular, shininess);
+	emit_changed();
 }
 
 Color CanvasTexture::get_specular_color() const {
@@ -1537,8 +1552,12 @@ Color CanvasTexture::get_specular_color() const {
 }
 
 void CanvasTexture::set_specular_shininess(real_t p_shininess) {
+	if (shininess == p_shininess) {
+		return;
+	}
 	shininess = p_shininess;
 	RS::get_singleton()->canvas_texture_set_shading_parameters(canvas_texture, specular, shininess);
+	emit_changed();
 }
 
 real_t CanvasTexture::get_specular_shininess() const {
@@ -1546,16 +1565,24 @@ real_t CanvasTexture::get_specular_shininess() const {
 }
 
 void CanvasTexture::set_texture_filter(CanvasItem::TextureFilter p_filter) {
+	if (texture_filter == p_filter) {
+		return;
+	}
 	texture_filter = p_filter;
 	RS::get_singleton()->canvas_texture_set_texture_filter(canvas_texture, RS::CanvasItemTextureFilter(p_filter));
+	emit_changed();
 }
 CanvasItem::TextureFilter CanvasTexture::get_texture_filter() const {
 	return texture_filter;
 }
 
 void CanvasTexture::set_texture_repeat(CanvasItem::TextureRepeat p_repeat) {
+	if (texture_repeat == p_repeat) {
+		return;
+	}
 	texture_repeat = p_repeat;
 	RS::get_singleton()->canvas_texture_set_texture_repeat(canvas_texture, RS::CanvasItemTextureRepeat(p_repeat));
+	emit_changed();
 }
 CanvasItem::TextureRepeat CanvasTexture::get_texture_repeat() const {
 	return texture_repeat;
