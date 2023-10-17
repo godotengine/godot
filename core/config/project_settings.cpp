@@ -1308,6 +1308,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/project_settings_override", "");
 
 	GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
+	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY, "application/run/additional_packs"), "");
 	GLOBAL_DEF("application/config/auto_accept_quit", true);
 	GLOBAL_DEF("application/config/quit_on_go_back", true);
 

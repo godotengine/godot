@@ -241,6 +241,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		name->set_editable(false);
 		export_path->hide();
 		runnable->set_disabled(true);
+		pure->set_disabled(true);
 		parameters->edit(nullptr);
 		presets->deselect_all();
 		duplicate_preset->set_disabled(true);
@@ -276,6 +277,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->update_property();
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
+	pure->set_disabled(false);
+	pure->set_pressed(current->is_pure());
 	parameters->set_object_class(current->get_platform()->get_class_name());
 	parameters->edit(current.ptr());
 
@@ -461,6 +464,18 @@ void ProjectExportDialog::_runnable_pressed() {
 	} else {
 		current->set_runnable(false);
 	}
+
+	_update_presets();
+}
+
+void ProjectExportDialog::_pure_pressed() {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+	current->set_pure(pure->is_pressed());
 
 	_update_presets();
 }
@@ -1190,6 +1205,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	runnable->set_tooltip_text(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
 	runnable->connect("pressed", callable_mp(this, &ProjectExportDialog::_runnable_pressed));
 	settings_vb->add_child(runnable);
+	pure = memnew(CheckButton);
+	pure->set_text(TTR("Pure"));
+	pure->set_tooltip_text(TTR("If checked, it will not export forced files."));
+	pure->connect("pressed", callable_mp(this, &ProjectExportDialog::_pure_pressed));
+	settings_vb->add_child(pure);
 
 	export_path = memnew(EditorPropertyPath);
 	settings_vb->add_child(export_path);

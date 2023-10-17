@@ -1599,6 +1599,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
 #ifdef TOOLS_ENABLED
 		found_project = true;
+#else
+		PackedStringArray packs = GLOBAL_GET("application/run/additional_packs");
+		if (!packs.is_empty()) {
+			for (int i = 0; i < packs.size(); i++) {
+				if (PackedData::get_singleton()->add_pack(packs[i], true, 0) != OK) {
+					const String error_msg = "Error: Couldn't load additional pack at path \"" + project_path + "\". Is the .pck file missing?\n";
+					OS::get_singleton()->print("%s", error_msg.utf8().get_data());
+					OS::get_singleton()->alert(error_msg);
+
+					goto error;
+				}
+			}
+		}
 #endif
 	} else {
 #ifdef TOOLS_ENABLED

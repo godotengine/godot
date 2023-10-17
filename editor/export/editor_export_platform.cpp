@@ -1356,6 +1356,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	}
 
+	if (p_preset->is_pure()) {
+		return OK;
+	}
+
 	Vector<String> forced_export = get_forced_export_files();
 	for (int i = 0; i < forced_export.size(); i++) {
 		Vector<uint8_t> array = FileAccess::get_file_as_bytes(forced_export[i]);

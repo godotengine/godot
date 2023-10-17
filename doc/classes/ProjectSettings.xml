@@ -304,6 +304,9 @@
 		<member name="application/config/windows_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
 		</member>
+		<member name="application/run/additional_packs" type="PackedStringArray" setter="" getter="" default="">
+			Specifies the additional .pck or .zip to load. For example, if [code]graphics.pck[/code] was added, the engine will attempt to load [code]graphics.pck[/code] after the main pack has successfully loaded, then after also successfully loaded that, it will also attempt to load [code]audio.pck[/code] but if they can't find audio.pck because it's missing in executable directory, it will fail and show the error message.
+		</member>
 		<member name="application/run/delta_smoothing" type="bool" setter="" getter="" default="true">
 			Time samples for frame deltas are subject to random variation introduced by the platform, even when frames are displayed at regular intervals thanks to V-Sync. This can lead to jitter. Delta smoothing can often give a better result by filtering the input deltas to correct for minor fluctuations from the refresh rate.
 			[b]Note:[/b] Delta smoothing is only attempted when [member display/window/vsync/vsync_mode] is set to [code]enabled[/code], as it does not work well without V-Sync.
