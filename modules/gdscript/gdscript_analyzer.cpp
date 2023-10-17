@@ -3220,7 +3220,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 	GDScriptParser::DataType base_type;
 	call_type.kind = GDScriptParser::DataType::VARIANT;
-	bool is_self = false, is_global = false;
+	bool is_self = false;
+	bool is_global = false;
 
 	if (p_call->is_super) {
 		base_type = parser->current_class->base_type;
@@ -3259,8 +3260,11 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		GDScriptParser::IdentifierNode *base_id = nullptr;
 		if (subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
 			base_id = static_cast<GDScriptParser::IdentifierNode *>(subscript->base);
-			if (base_id->name == "Globals") {
-				is_global = true;
+			if (ProjectSettings::get_singleton()->has_autoload(base_id->name)) {
+				const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(base_id->name);
+				if (autoload.is_singleton) {
+					is_global = true;
+				}
 			}
 		}
 		if (base_id && GDScriptParser::get_builtin_type(base_id->name) < Variant::VARIANT_MAX) {
