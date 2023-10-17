@@ -157,7 +157,9 @@ static bool _start_success = false;
 
 // Drivers
 
+#if TABLET_ENABLED
 String tablet_driver = "";
+#endif
 String text_driver = "";
 String rendering_driver = "";
 String rendering_method = "";
@@ -448,7 +450,9 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --rendering-driver <driver>       Rendering driver (depends on display driver).\n");
 	OS::get_singleton()->print("  --gpu-index <device_index>        Use a specific GPU (run with --verbose to get available device list).\n");
 	OS::get_singleton()->print("  --text-driver <driver>            Text driver (Fonts, BiDi, shaping).\n");
+#if TABLET_ENABLED
 	OS::get_singleton()->print("  --tablet-driver <driver>          Pen tablet input driver.\n");
+#endif
 	OS::get_singleton()->print("  --headless                        Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
 	OS::get_singleton()->print("  --write-movie <file>              Writes a video to the specified path (usually with .avi or .png extension).\n");
 	OS::get_singleton()->print("                                    --fixed-fps is forced when enabled, but it can be used to change movie FPS.\n");
@@ -1054,6 +1058,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		} else if (I->get() == "--generate-spirv-debug-info") {
 			Engine::singleton->generate_spirv_debug_info = true;
+#if TABLET_ENABLED
 		} else if (I->get() == "--tablet-driver") {
 			if (I->next()) {
 				tablet_driver = I->next()->get();
@@ -1062,6 +1067,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
 				goto error;
 			}
+#endif
 		} else if (I->get() == "--delta-smoothing") {
 			if (I->next()) {
 				String string = I->next()->get();
@@ -2159,7 +2165,9 @@ error:
 	text_driver = "";
 	display_driver = "";
 	audio_driver = "";
+#if TABLET_ENABLED
 	tablet_driver = "";
+#endif
 	Engine::get_singleton()->set_write_movie_path(String());
 	project_path = "";
 
@@ -2392,6 +2400,7 @@ Error Main::setup2() {
 
 	/* Initialize Pen Tablet Driver */
 
+#ifdef TABLET_ENABLED
 	{
 		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver", "");
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"), "");
@@ -2416,6 +2425,7 @@ Error Main::setup2() {
 	}
 
 	print_verbose("Using \"" + tablet_driver + "\" pen tablet driver...");
+#endif
 
 	/* Initialize Rendering Server */
 

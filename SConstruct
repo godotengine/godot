@@ -186,6 +186,7 @@ opts.Add(BoolVariable("production", "Set defaults to build Godot for use in prod
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
 opts.Add(EnumVariable("precision", "Set the floating-point precision level", "single", ("single", "double")))
+opts.Add(BoolVariable("tablet", "Enable pen tablet support", True))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompresson and WOFF2 fonts support", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
@@ -913,6 +914,8 @@ if selected_platform in platform_list:
             Exit(255)
         else:
             env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+    if env["tablet"]:
+        env.Append(CPPDEFINES=["TABLET_ENABLED"])
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
     if env["brotli"]:

@@ -1116,10 +1116,12 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 #endif
 
+#ifdef TABLET_ENABLED
 	if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[p_window].wtctx) {
 		wintab_WTClose(windows[p_window].wtctx);
 		windows[p_window].wtctx = 0;
 	}
+#endif
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
 
@@ -3178,6 +3180,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			delete[] lpb;
 		} break;
+#ifdef TABLET_ENABLED
 		case WT_CSRCHANGE:
 		case WT_PROXIMITY: {
 			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
@@ -3275,14 +3278,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return 0;
 			}
 		} break;
+#endif
 		case WM_POINTERENTER: {
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
 				break;
 			}
 
+#ifdef TABLET_ENABLED
 			if ((tablet_get_current_driver() != "winink") || !winink_available) {
 				break;
 			}
+#endif
 
 			uint32_t pointer_id = LOWORD(wParam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
@@ -3306,9 +3312,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
+#ifdef TABLET_ENABLED
 			if ((tablet_get_current_driver() != "winink") || !winink_available) {
 				break;
 			}
+#endif
 
 			uint32_t pointer_id = LOWORD(wParam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
@@ -3482,6 +3490,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_shift_pressed((wParam & MK_SHIFT) != 0);
 			mm->set_alt_pressed(alt_mem);
 
+#ifdef TABLET_ENABLED
 			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not updated recently.
 				if (windows[window_id].last_pressure_update < 10) {
@@ -3492,10 +3501,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					windows[window_id].last_pen_inverted = false;
 				}
 			} else {
+#endif
 				windows[window_id].last_tilt = Vector2();
 				windows[window_id].last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
 				windows[window_id].last_pen_inverted = false;
+#ifdef TABLET_ENABLED
 			}
+#endif
 
 			mm->set_pressure(windows[window_id].last_pressure);
 			mm->set_tilt(windows[window_id].last_tilt);
@@ -4039,9 +4051,11 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM 
 		alt_mem = false;
 	}
 
+#ifdef TABLET_ENABLED
 	if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[p_window_id].wtctx) {
 		wintab_WTEnable(windows[p_window_id].wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
 	}
+#endif
 }
 
 void DisplayServerWindows::_process_key_events() {
@@ -4195,6 +4209,7 @@ void DisplayServerWindows::_process_key_events() {
 	key_event_pos = 0;
 }
 
+#ifdef TABLET_ENABLED
 void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const String &p_new_driver) {
 	for (KeyValue<WindowID, WindowData> &E : windows) {
 		WindowData &wd = E.value;
@@ -4233,6 +4248,7 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 		}
 	}
 }
+#endif
 
 DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	DWORD dwExStyle;
@@ -4361,6 +4377,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		RegisterTouchWindow(wd.hWnd, 0);
 		DragAcceptFiles(wd.hWnd, true);
 
+#ifdef TABLET_ENABLED
 		if ((tablet_get_current_driver() == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
 			wd.wtlc.lcOptions |= CXO_MESSAGES;
@@ -4387,8 +4404,11 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				print_verbose("WinTab context creation failed.");
 			}
 		} else {
+#endif
 			wd.wtctx = 0;
+#if TABLET_ENABLED
 		}
+#endif
 
 		if (p_mode == WINDOW_MODE_MAXIMIZED) {
 			wd.maximized = true;
@@ -4430,14 +4450,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	return id;
 }
 
-// WinTab API.
-bool DisplayServerWindows::wintab_available = false;
-WTOpenPtr DisplayServerWindows::wintab_WTOpen = nullptr;
-WTClosePtr DisplayServerWindows::wintab_WTClose = nullptr;
-WTInfoPtr DisplayServerWindows::wintab_WTInfo = nullptr;
-WTPacketPtr DisplayServerWindows::wintab_WTPacket = nullptr;
-WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
-
 // UXTheme API.
 bool DisplayServerWindows::dark_title_available = false;
 bool DisplayServerWindows::ux_theme_available = false;
@@ -4446,10 +4458,20 @@ GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromCo
 GetImmersiveColorTypeFromNamePtr DisplayServerWindows::GetImmersiveColorTypeFromName = nullptr;
 GetImmersiveUserColorSetPreferencePtr DisplayServerWindows::GetImmersiveUserColorSetPreference = nullptr;
 
+#ifdef TABLET_ENABLED
+// WinTab API.
+bool DisplayServerWindows::wintab_available = false;
+WTOpenPtr DisplayServerWindows::wintab_WTOpen = nullptr;
+WTClosePtr DisplayServerWindows::wintab_WTClose = nullptr;
+WTInfoPtr DisplayServerWindows::wintab_WTInfo = nullptr;
+WTPacketPtr DisplayServerWindows::wintab_WTPacket = nullptr;
+WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
+
 // Windows Ink API.
 bool DisplayServerWindows::winink_available = false;
 GetPointerTypePtr DisplayServerWindows::win8p_GetPointerType = nullptr;
 GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
+#endif
 LogicalToPhysicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_LogicalToPhysicalPointForPerMonitorDPI = nullptr;
 PhysicalToLogicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_PhysicalToLogicalPointForPerMonitorDPI = nullptr;
 
@@ -4477,22 +4499,35 @@ Color DisplayServerWindows::get_accent_color() const {
 }
 
 int DisplayServerWindows::tablet_get_driver_count() const {
+#ifdef TABLET_ENABLED
 	return tablet_drivers.size();
+#else
+	return 0;
+#endif
 }
 
 String DisplayServerWindows::tablet_get_driver_name(int p_driver) const {
+#ifdef TABLET_ENABLED
 	if (p_driver < 0 || p_driver >= tablet_drivers.size()) {
+#endif
 		return "";
+#ifdef TABLET_ENABLED
 	} else {
 		return tablet_drivers[p_driver];
 	}
+#endif
 }
 
 String DisplayServerWindows::tablet_get_current_driver() const {
+#ifdef TABLET_ENABLED
 	return tablet_driver;
+#else
+	return "";
+#endif
 }
 
 void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
+#ifdef TABLET_ENABLED
 	if (tablet_get_driver_count() == 0) {
 		return;
 	}
@@ -4508,6 +4543,9 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 	} else {
 		ERR_PRINT("Unknown tablet driver " + p_driver + ".");
 	}
+#else
+	ERR_PRINT("Cannot set tablet driver while tablet is disabled.");
+#endif
 }
 
 DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
@@ -4566,6 +4604,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
+#ifdef TABLET_ENABLED
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
 	if (wintab_lib) {
@@ -4581,22 +4620,29 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	if (wintab_available) {
 		tablet_drivers.push_back("wintab");
 	}
+#endif
 
 	// Note: Windows Ink API for pen input, available on Windows 8+ only.
 	// Note: DPI conversion API, available on Windows 8.1+ only.
 	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
 	if (user32_lib) {
+#ifdef TABLET_ENABLED
 		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
 		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
+#endif
 		win81p_LogicalToPhysicalPointForPerMonitorDPI = (LogicalToPhysicalPointForPerMonitorDPIPtr)GetProcAddress(user32_lib, "LogicalToPhysicalPointForPerMonitorDPI");
 		win81p_PhysicalToLogicalPointForPerMonitorDPI = (PhysicalToLogicalPointForPerMonitorDPIPtr)GetProcAddress(user32_lib, "PhysicalToLogicalPointForPerMonitorDPI");
 
+#ifdef TABLET_ENABLED
 		winink_available = win8p_GetPointerType && win8p_GetPointerPenInfo;
+#endif
 	}
 
+#ifdef TABLET_ENABLED
 	if (winink_available) {
 		tablet_drivers.push_back("winink");
 	}
+#endif
 
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");

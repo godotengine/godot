@@ -295,6 +295,7 @@ class DisplayServerWindows : public DisplayServer {
 	static GetImmersiveColorTypeFromNamePtr GetImmersiveColorTypeFromName;
 	static GetImmersiveUserColorSetPreferencePtr GetImmersiveUserColorSetPreference;
 
+#ifdef TABLET_ENABLED
 	// WinTab API
 	static bool wintab_available;
 	static WTOpenPtr wintab_WTOpen;
@@ -307,14 +308,17 @@ class DisplayServerWindows : public DisplayServer {
 	static bool winink_available;
 	static GetPointerTypePtr win8p_GetPointerType;
 	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
+#endif
 
 	// DPI conversion API
 	static LogicalToPhysicalPointForPerMonitorDPIPtr win81p_LogicalToPhysicalPointForPerMonitorDPI;
 	static PhysicalToLogicalPointForPerMonitorDPIPtr win81p_PhysicalToLogicalPointForPerMonitorDPI;
 
+#ifdef TABLET_ENABLED
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
 	String tablet_driver;
 	Vector<String> tablet_drivers;
+#endif
 
 	enum {
 		KEY_EVENT_BUFFER_SIZE = 512
