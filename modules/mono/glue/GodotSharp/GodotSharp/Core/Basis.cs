@@ -1037,10 +1037,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Vector3 transformed (multiplied) by the transposed basis matrix.
-        ///
-        /// Note: This results in a multiplication by the inverse of the
-        /// basis matrix only if it represents a rotation-reflection.
+        /// Returns a Vector3 transformed (multiplied) by the inverse basis matrix,
+        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not).
+        /// <c>vector * basis</c> is equivalent to <c>basis.Transposed() * vector</c>. See <see cref="Transposed"/>.
+        /// For transforming by inverse of a non-orthonormal basis (e.g. with scaling) <c>basis.Inverse() * vector</c> can be used instead. See <see cref="Inverse"/>.
         /// </summary>
         /// <param name="vector">A Vector3 to inversely transform.</param>
         /// <param name="basis">The basis matrix transformation to apply.</param>

@@ -235,14 +235,14 @@
 			<return type="Transform3D" />
 			<param index="0" name="right" type="float" />
 			<description>
-				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
+				This operator multiplies all components of the [Transform3D], including the [member origin] vector, which scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform3D" />
 			<param index="0" name="right" type="int" />
 			<description>
-				This operator multiplies all components of the [Transform3D], including the origin vector, which scales it uniformly.
+				This operator multiplies all components of the [Transform3D], including the [member origin] vector, which scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator ==">
