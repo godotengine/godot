@@ -3676,6 +3676,7 @@ bool Main::iteration() {
 	}
 
 	if ((quit_after > 0) && (Engine::get_singleton()->_process_frames >= quit_after)) {
+		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 		exit = true;
 	}
 
