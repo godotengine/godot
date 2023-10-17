@@ -68,7 +68,7 @@ int AudioStreamPlaybackWAV::get_loop_count() const {
 }
 
 double AudioStreamPlaybackWAV::get_playback_position() const {
-	return float(offset >> MIX_FRAC_BITS) / base->mix_rate;
+	return float(offset) / base->mix_rate;
 }
 
 void AudioStreamPlaybackWAV::seek(double p_time) {
@@ -83,23 +83,23 @@ void AudioStreamPlaybackWAV::seek(double p_time) {
 		p_time = max - 0.001;
 	}
 
-	offset = uint64_t(p_time * base->mix_rate) << MIX_FRAC_BITS;
+	offset = uint64_t(p_time * base->mix_rate);
 }
 
 template <class Depth, bool is_stereo, bool is_ima_adpcm>
-void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm) {
+void AudioStreamPlaybackWAV::do_mix(const Depth *p_src, AudioFrame *p_dst, int32_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm) {
 	// this function will be compiled branchless by any decent compiler
 
-	int32_t final, final_r, next, next_r;
+	int32_t final, final_r;
 	while (p_amount) {
 		p_amount--;
-		int64_t pos = p_offset >> MIX_FRAC_BITS;
+		int32_t pos = p_offset;
 		if (is_stereo && !is_ima_adpcm) {
 			pos <<= 1;
 		}
 
 		if (is_ima_adpcm) {
-			int64_t sample_pos = pos + p_ima_adpcm[0].window_ofs;
+			int32_t sample_pos = pos + p_ima_adpcm[0].window_ofs;
 
 			while (sample_pos > p_ima_adpcm[0].last_nibble) {
 				static const int16_t _ima_adpcm_step_table[89] = {
@@ -186,27 +186,6 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 					final_r <<= 8;
 				}
 			}
-
-			if (is_stereo) {
-				next = p_src[pos + 2];
-				next_r = p_src[pos + 3];
-			} else {
-				next = p_src[pos + 1];
-			}
-
-			if constexpr (sizeof(Depth) == 1) {
-				next <<= 8;
-				if (is_stereo) {
-					next_r <<= 8;
-				}
-			}
-
-			int32_t frac = int64_t(p_offset & MIX_FRAC_MASK);
-
-			final = final + ((next - final) * frac >> MIX_FRAC_BITS);
-			if (is_stereo) {
-				final_r = final_r + ((next_r - final_r) * frac >> MIX_FRAC_BITS);
-			}
 		}
 
 		if (!is_stereo) {
@@ -221,7 +200,7 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 	}
 }
 
-int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	if (!base->data || !active) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
@@ -246,13 +225,10 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		len /= 2;
 	}
 
-	/* some 64-bit fixed point precaches */
-
-	int64_t loop_begin_fp = ((int64_t)base->loop_begin << MIX_FRAC_BITS);
-	int64_t loop_end_fp = ((int64_t)base->loop_end << MIX_FRAC_BITS);
-	int64_t length_fp = ((int64_t)len << MIX_FRAC_BITS);
-	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin_fp : 0;
-	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end_fp : length_fp;
+	int64_t loop_begin = base->loop_begin;
+	int64_t loop_end = base->loop_end;
+	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin : 0;
+	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end : len;
 	bool is_stereo = base->stereo;
 
 	int32_t todo = p_frames;
@@ -260,14 +236,7 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 	if (base->loop_mode == AudioStreamWAV::LOOP_BACKWARD) {
 		sign = -1;
 	}
-
-	float base_rate = AudioServer::get_singleton()->get_mix_rate();
-	float srate = base->mix_rate;
-	srate *= p_rate_scale;
-	float playback_speed_scale = AudioServer::get_singleton()->get_playback_speed_scale();
-	float fincrement = (srate * playback_speed_scale) / base_rate;
-	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1));
-	increment *= sign;
+	int32_t increment = sign;
 
 	//looping
 
@@ -282,8 +251,8 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 
 	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		if (loop_format != AudioStreamWAV::LOOP_DISABLED) {
-			ima_adpcm[0].loop_pos = loop_begin_fp >> MIX_FRAC_BITS;
-			ima_adpcm[1].loop_pos = loop_begin_fp >> MIX_FRAC_BITS;
+			ima_adpcm[0].loop_pos = loop_begin;
+			ima_adpcm[1].loop_pos = loop_begin;
 			loop_format = AudioStreamWAV::LOOP_FORWARD;
 		}
 	}
@@ -297,16 +266,16 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		if (increment < 0) {
 			/* going backwards */
 
-			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset < loop_begin_fp) {
+			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset < loop_begin) {
 				/* loopstart reached */
 				if (loop_format == AudioStreamWAV::LOOP_PINGPONG) {
 					/* bounce ping pong */
-					offset = loop_begin_fp + (loop_begin_fp - offset);
+					offset = loop_begin + (loop_begin - offset);
 					increment = -increment;
 					sign *= -1;
 				} else {
 					/* go to loop-end */
-					offset = loop_end_fp - (loop_begin_fp - offset);
+					offset = loop_end - (loop_begin - offset);
 				}
 			} else {
 				/* check for sample not reaching beginning */
@@ -317,12 +286,12 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 			}
 		} else {
 			/* going forward */
-			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset >= loop_end_fp) {
+			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset >= loop_end) {
 				/* loopend reached */
 
 				if (loop_format == AudioStreamWAV::LOOP_PINGPONG) {
 					/* bounce ping pong */
-					offset = loop_end_fp - (offset - loop_end_fp);
+					offset = loop_end - (offset - loop_end);
 					increment = -increment;
 					sign *= -1;
 				} else {
@@ -332,16 +301,16 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 						for (int i = 0; i < 2; i++) {
 							ima_adpcm[i].step_index = ima_adpcm[i].loop_step_index;
 							ima_adpcm[i].predictor = ima_adpcm[i].loop_predictor;
-							ima_adpcm[i].last_nibble = loop_begin_fp >> MIX_FRAC_BITS;
+							ima_adpcm[i].last_nibble = loop_begin;
 						}
-						offset = loop_begin_fp;
+						offset = loop_begin;
 					} else {
-						offset = loop_begin_fp + (offset - loop_end_fp);
+						offset = loop_begin + (offset - loop_end);
 					}
 				}
 			} else {
 				/* no loop, check for end of sample */
-				if (offset >= length_fp) {
+				if (offset >= len) {
 					active = false;
 					break;
 				}
@@ -368,24 +337,24 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		switch (base->format) {
 			case AudioStreamWAV::FORMAT_8_BITS: {
 				if (is_stereo) {
-					do_resample<int8_t, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_mix<int8_t, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				} else {
-					do_resample<int8_t, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_mix<int8_t, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				}
 			} break;
 			case AudioStreamWAV::FORMAT_16_BITS: {
 				if (is_stereo) {
-					do_resample<int16_t, true, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_mix<int16_t, true, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				} else {
-					do_resample<int16_t, false, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_mix<int16_t, false, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				}
 
 			} break;
 			case AudioStreamWAV::FORMAT_IMA_ADPCM: {
 				if (is_stereo) {
-					do_resample<int8_t, true, true>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_mix<int8_t, true, true>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				} else {
-					do_resample<int8_t, false, true>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
+					do_mix<int8_t, false, true>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm);
 				}
 
 			} break;
@@ -404,6 +373,10 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		return mixed_frames;
 	}
 	return p_frames;
+}
+
+float AudioStreamPlaybackWAV::get_stream_sampling_rate() {
+	return base->mix_rate;
 }
 
 void AudioStreamPlaybackWAV::tag_used_streams() {
