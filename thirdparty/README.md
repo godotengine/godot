@@ -672,7 +672,7 @@ with the provided patch.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.28 (f5beb0131f1bea8701ace744d1b50df9049bf331, 2023)
+- Version: 1.0.30 (55224479ab13db8ebc8ab1e3d49197bce6201b0b, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -683,6 +683,7 @@ Files extracted from upstream source:
 - `src/*.{c,h}`
 - `src/external/jsoncpp/include/`
 - `src/external/jsoncpp/src/lib_json/`
+- `src/external/jsoncpp/{AUTHORS,LICENSE}`
 - `LICENSE` and `COPYING.adoc`
 
 Exclude:
