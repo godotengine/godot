@@ -280,7 +280,8 @@
 			<return type="Vector4" />
 			<param index="0" name="right" type="Projection" />
 			<description>
-				Inversely transforms (multiplies) the [Vector4] by the given [Projection] matrix.
+				Transforms (multiplies) the [Vector4] by the transpose of the given [Projection] matrix.
+				For transforming by inverse of a projection [code]projection.inverse() * vector[/code] can be used instead. See [method Projection.inverse].
 			</description>
 		</operator>
 		<operator name="operator *">

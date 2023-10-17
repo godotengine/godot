@@ -59,7 +59,7 @@
 		<method name="affine_inverse" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
+				Returns the inverse of the transform, under the assumption that the basis is invertible (must have non-zero determinant).
 			</description>
 		</method>
 		<method name="basis_xform" qualifiers="const">
@@ -74,8 +74,10 @@
 			<return type="Vector2" />
 			<param index="0" name="v" type="Vector2" />
 			<description>
-				Returns a vector transformed (multiplied) by the inverse basis matrix.
+				Returns a vector transformed (multiplied) by the inverse basis matrix, under the assumption that the basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
 				This method does not account for translation (the origin vector).
+				[code]transform.basis_xform_inv(vector)[/code] is equivalent to [code]transform.inverse().basis_xform(vector)[/code]. See [method inverse].
+				For non-orthonormal transforms (e.g. with scaling) use [code]transform.affine_inverse().basis_xform(vector)[/code] instead. See [method affine_inverse].
 			</description>
 		</method>
 		<method name="determinant" qualifiers="const">
@@ -120,7 +122,7 @@
 		<method name="inverse" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use [method affine_inverse] for transforms with scaling).
+				Returns the inverse of the transform, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not). Use [method affine_inverse] for non-orthonormal transforms (e.g. with scaling).
 			</description>
 		</method>
 		<method name="is_conformal" qualifiers="const">
