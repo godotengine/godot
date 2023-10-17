@@ -906,7 +906,7 @@ namespace Godot
 
         /// <summary>
         /// Returns a Vector4 transformed (multiplied) by the transpose of the projection.
-        /// For transforming by inverse of a projection [code]projection.Inverse() * vector[/code] can be used instead. See <see cref="Inverse"/>.
+        /// For transforming by inverse of a projection <c>projection.Inverse() * vector</c> can be used instead. See <see cref="Inverse"/>.
         /// </summary>
         /// <param name="proj">The projection to apply.</param>
         /// <param name="vector">A Vector4 to transform.</param>
