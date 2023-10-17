@@ -7340,7 +7340,7 @@ void TextEdit::_update_scrollbars() {
 	}
 
 	int visible_width = size.width - theme_cache.style_normal->get_minimum_size().width;
-	int total_width = (draw_placeholder ? placeholder_max_width : text.get_max_width()) + vmin.x + gutters_width + gutter_padding;
+	int total_width = (draw_placeholder ? placeholder_max_width : text.get_max_width()) + gutters_width + gutter_padding;
 
 	if (draw_minimap) {
 		total_width += minimap_width;
