@@ -2845,6 +2845,7 @@ ProjectManager::ProjectManager() {
 	}
 
 	EditorColorMap::create();
+	EditorTheme::initialize();
 	Ref<Theme> theme = create_custom_theme();
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
@@ -3297,6 +3298,9 @@ ProjectManager::~ProjectManager() {
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}
+
+	EditorColorMap::finish();
+	EditorTheme::finalize();
 }
 
 void ProjectTag::_notification(int p_what) {
