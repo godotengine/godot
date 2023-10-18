@@ -6951,6 +6951,7 @@ EditorNode::EditorNode() {
 
 	// Exporters might need the theme.
 	EditorColorMap::create();
+	EditorTheme::initialize();
 	theme = create_custom_theme();
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
@@ -8038,6 +8039,8 @@ EditorNode::~EditorNode() {
 	memdelete(progress_hb);
 
 	EditorSettings::destroy();
+	EditorColorMap::finish();
+	EditorTheme::finalize();
 
 	GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
 	GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;

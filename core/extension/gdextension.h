@@ -106,6 +106,8 @@ class GDExtension : public Resource {
 	void clear_instance_bindings();
 #endif
 
+	static HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
+
 protected:
 	static void _bind_methods();
 
@@ -153,6 +155,7 @@ public:
 	static void register_interface_function(StringName p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer);
 	static GDExtensionInterfaceFunctionPtr get_interface_function(StringName p_function_name);
 	static void initialize_gdextensions();
+	static void finalize_gdextensions();
 
 	GDExtension();
 	~GDExtension();
