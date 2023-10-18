@@ -39,10 +39,6 @@
 #include "wayland/dynwrappers/wayland-client-core-so_wrap.h"
 #include "wayland/dynwrappers/wayland-cursor-so_wrap.h"
 #include "wayland/dynwrappers/wayland-egl-core-so_wrap.h"
-
-#include "core/os/thread.h"
-#include "servers/display_server.h"
-
 #include "xkbcommon-so_wrap.h"
 #else
 #include <wayland-client-core.h>
@@ -76,6 +72,9 @@
 #include <libdecor-0/libdecor.h>
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
+
+#include "core/os/thread.h"
+#include "servers/display_server.h"
 
 class WaylandThread {
 public:
