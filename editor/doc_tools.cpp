@@ -1652,3 +1652,15 @@ Error DocTools::load_compressed(const uint8_t *p_data, int p_compressed_size, in
 
 	return OK;
 }
+
+Error DocTools::load_xml(const uint8_t *p_data, int p_size) {
+	Ref<XMLParser> parser = memnew(XMLParser);
+	Error err = parser->_open_buffer(p_data, p_size);
+	if (err) {
+		return err;
+	}
+
+	_load(parser);
+
+	return OK;
+}
