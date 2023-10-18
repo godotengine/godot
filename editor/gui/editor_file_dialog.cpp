@@ -1393,12 +1393,14 @@ void EditorFileDialog::_update_favorites() {
 	bool fav_changed = false;
 	int current_favorite = -1;
 	for (int i = 0; i < favorited.size(); i++) {
-		bool cres = favorited[i].begins_with("res://");
-		if (cres != res) {
+		String name = favorited[i];
+
+		bool cres = name.begins_with("res://");
+		if (cres != res || !name.ends_with("/")) {
 			continue;
 		}
 
-		if (!dir_access->dir_exists(favorited[i])) {
+		if (!dir_access->dir_exists(name)) {
 			// Remove invalid directory from the list of Favorited directories.
 			favorited.remove_at(i--);
 			fav_changed = true;
@@ -1406,7 +1408,6 @@ void EditorFileDialog::_update_favorites() {
 		}
 
 		// Compute favorite display text.
-		String name = favorited[i];
 		if (res && name == "res://") {
 			if (name == current) {
 				current_favorite = favorited_paths.size();
@@ -1414,7 +1415,7 @@ void EditorFileDialog::_update_favorites() {
 			name = "/";
 			favorited_paths.append(favorited[i]);
 			favorited_names.append(name);
-		} else if (name.ends_with("/")) {
+		} else {
 			if (name == current || name == current + "/") {
 				current_favorite = favorited_paths.size();
 			}
@@ -1422,8 +1423,6 @@ void EditorFileDialog::_update_favorites() {
 			name = name.get_file();
 			favorited_paths.append(favorited[i]);
 			favorited_names.append(name);
-		} else {
-			// Ignore favorited files.
 		}
 	}
 
