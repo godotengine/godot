@@ -2418,6 +2418,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	sources_bottom_actions->add_child(source_sort_button);
 
 	sources_list = memnew(ItemList);
+	sources_list->set_auto_translate(false);
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2457,6 +2458,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	// Scenes collection source.
 	scene_tiles_list = memnew(ItemList);
+	scene_tiles_list->set_auto_translate(false);
 	scene_tiles_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	scene_tiles_list->set_select_mode(ItemList::SELECT_MULTI);
@@ -2482,6 +2484,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	int thumbnail_size = 64;
 	patterns_item_list = memnew(ItemList);
+	patterns_item_list->set_auto_translate(false);
 	patterns_item_list->set_max_columns(0);
 	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
@@ -3555,6 +3558,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	tilemap_tab_terrains->add_child(terrains_tree);
 
 	terrains_tile_list = memnew(ItemList);
+	terrains_tile_list->set_auto_translate(false);
 	terrains_tile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	terrains_tile_list->set_max_columns(0);
 	terrains_tile_list->set_same_column_width(true);
