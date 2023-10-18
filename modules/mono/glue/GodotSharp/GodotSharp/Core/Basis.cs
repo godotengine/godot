@@ -239,7 +239,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the basis's rotation in the form of Euler angles.
-        /// The Euler order depends on the [param order] parameter,
+        /// The Euler order depends on the <paramref name="order"/> parameter,
         /// by default it uses the YXZ convention: when decomposing,
         /// first Z, then X, and Y last. The returned vector contains
         /// the rotation angles in the format (X angle, Y angle, Z angle).
