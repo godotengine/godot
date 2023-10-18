@@ -2508,6 +2508,11 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		dummy.kind = GDScriptParser::DataType::VARIANT;
 		p_expression->set_datatype(dummy);
 	}
+
+	if (p_expression->is_constant && p_expression->get_datatype().kind == GDScriptParser::DataType::VARIANT) {
+		// Use the type of the actual value since that is what the compiler relies on.
+		p_expression->set_datatype(type_from_variant(p_expression->reduced_value, p_expression));
+	}
 }
 
 void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {

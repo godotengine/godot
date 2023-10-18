@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Invalid operands "int" and "float" for "%" operator.
