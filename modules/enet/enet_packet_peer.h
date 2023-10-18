@@ -45,6 +45,7 @@ private:
 
 	static void _bind_methods();
 	Error _send(int p_channel, PackedByteArray p_packet, int p_flags);
+	PackedByteArray _get_packet();
 
 protected:
 	friend class ENetConnection;

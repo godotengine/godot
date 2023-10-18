@@ -43,6 +43,12 @@
 				Returns the requested [param statistic] for this peer. See [enum PeerStatistic].
 			</description>
 		</method>
+		<method name="get_packet">
+			<return type="PackedByteArray" />
+			<description>
+				Returns the last packet received by this peer. If no packet has been received at all, or since the last call to [method ENetPacketPeer.get_packet], an empty [PackedByteArray] is returned.
+			</description>
+		</method>
 		<method name="is_active" qualifiers="const">
 			<return type="bool" />
 			<description>

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "enet_packet_peer.h"
+#include <cstring>
 
 void ENetPacketPeer::peer_disconnect(int p_data) {
 	ERR_FAIL_NULL(peer);
@@ -100,6 +101,26 @@ Error ENetPacketPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	*r_buffer = (const uint8_t *)(last_packet->data);
 	r_buffer_size = last_packet->dataLength;
 	return OK;
+}
+
+PackedByteArray ENetPacketPeer::_get_packet() {
+	uint8_t *buffer;
+	int buffer_size = 0;
+	Error err = get_packet((const uint8_t **)&buffer, buffer_size);
+	ERR_FAIL_COND_V(err != OK, PackedByteArray{});
+
+	if (buffer_size < 1) {
+		return PackedByteArray{};
+	}
+
+	PackedByteArray byte_array;
+	byte_array.resize(buffer_size);
+
+	// Copying to avoid the PackedByteArray's contents to
+	// point to undefined space once enet_packet_destroy is called on
+	// its actual data
+	std::memcpy((void *)&byte_array[0], (void *)buffer, buffer_size);
+	return byte_array;
 }
 
 Error ENetPacketPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
@@ -204,6 +225,7 @@ void ENetPacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ping_interval", "ping_interval"), &ENetPacketPeer::ping_interval);
 	ClassDB::bind_method(D_METHOD("reset"), &ENetPacketPeer::reset);
 	ClassDB::bind_method(D_METHOD("send", "channel", "packet", "flags"), &ENetPacketPeer::_send);
+	ClassDB::bind_method(D_METHOD("get_packet"), &ENetPacketPeer::_get_packet);
 	ClassDB::bind_method(D_METHOD("throttle_configure", "interval", "acceleration", "deceleration"), &ENetPacketPeer::throttle_configure);
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout", "timeout_min", "timeout_max"), &ENetPacketPeer::set_timeout);
 	ClassDB::bind_method(D_METHOD("get_remote_address"), &ENetPacketPeer::get_remote_address);
