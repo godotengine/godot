@@ -357,8 +357,6 @@ private:
 
 	Timer *screenshot_timer = nullptr;
 
-	PluginConfigDialog *plugin_config_dialog = nullptr;
-
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
 
