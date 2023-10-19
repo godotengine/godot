@@ -1509,7 +1509,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	return OK;
 }
 
-Error VulkanContext::_create_device() {
+Error VulkanContext::_create_device(VkDevice &r_vk_device) {
 	VkResult err;
 	float queue_priorities[1] = { 0.0 };
 	VkDeviceQueueCreateInfo queues[2];
@@ -1624,11 +1624,11 @@ Error VulkanContext::_create_device() {
 	}
 
 	if (vulkan_hooks) {
-		if (!vulkan_hooks->create_vulkan_device(&sdevice, &device)) {
+		if (!vulkan_hooks->create_vulkan_device(&sdevice, &r_vk_device)) {
 			return ERR_CANT_CREATE;
 		}
 	} else {
-		err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
+		err = vkCreateDevice(gpu, &sdevice, nullptr, &r_vk_device);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
 
@@ -1681,7 +1681,7 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 	present_queue_family_index = presentQueueFamilyIndex;
 	separate_present_queue = (graphics_queue_family_index != present_queue_family_index);
 
-	_create_device();
+	_create_device(device);
 
 	static PFN_vkGetDeviceProcAddr g_gdpa = nullptr;
 #define GET_DEVICE_PROC_ADDR(dev, entrypoint)                                                     \
@@ -2722,36 +2722,7 @@ RID VulkanContext::local_device_create() {
 	LocalDevice ld;
 
 	{ // Create device.
-		VkResult err;
-		float queue_priorities[1] = { 0.0 };
-		VkDeviceQueueCreateInfo queues[2];
-		queues[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queues[0].pNext = nullptr;
-		queues[0].queueFamilyIndex = graphics_queue_family_index;
-		queues[0].queueCount = 1;
-		queues[0].pQueuePriorities = queue_priorities;
-		queues[0].flags = 0;
-
-		uint32_t enabled_extension_count = 0;
-		const char *enabled_extension_names[MAX_EXTENSIONS];
-		ERR_FAIL_COND_V(enabled_device_extension_names.size() > MAX_EXTENSIONS, RID());
-		for (const CharString &extension_name : enabled_device_extension_names) {
-			enabled_extension_names[enabled_extension_count++] = extension_name.ptr();
-		}
-
-		VkDeviceCreateInfo sdevice = {
-			/*sType =*/VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-			/*pNext */ nullptr,
-			/*flags */ 0,
-			/*queueCreateInfoCount */ 1,
-			/*pQueueCreateInfos */ queues,
-			/*enabledLayerCount */ 0,
-			/*ppEnabledLayerNames */ nullptr,
-			/*enabledExtensionCount */ enabled_extension_count,
-			/*ppEnabledExtensionNames */ (const char *const *)enabled_extension_names,
-			/*pEnabledFeatures */ &physical_device_features, // If specific features are required, pass them in here.
-		};
-		err = vkCreateDevice(gpu, &sdevice, nullptr, &ld.device);
+		Error err = _create_device(ld.device);
 		ERR_FAIL_COND_V(err, RID());
 	}
 

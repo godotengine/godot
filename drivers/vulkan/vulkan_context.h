@@ -250,7 +250,7 @@ private:
 
 	Error _initialize_queues(VkSurfaceKHR p_surface);
 
-	Error _create_device();
+	Error _create_device(VkDevice &r_vk_device);
 
 	Error _clean_up_swap_chain(Window *window);
 
