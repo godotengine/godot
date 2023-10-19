@@ -570,7 +570,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
 		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
-		code += "	parameters.color *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
+		code += "	params.color *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
 	}
 	code += "}\n";
 
