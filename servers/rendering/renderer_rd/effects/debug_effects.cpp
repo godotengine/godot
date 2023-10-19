@@ -108,7 +108,7 @@ void DebugEffects::_create_frustum_arrays() {
 
 		// Create our index_array
 		PackedByteArray data;
-		data.resize(6 * 2 * 3 * 4);
+		data.resize(6 * 2 * 3 * 2);
 		{
 			uint8_t *w = data.ptrw();
 			uint16_t *p16 = (uint16_t *)w;
@@ -142,7 +142,7 @@ void DebugEffects::_create_frustum_arrays() {
 
 		// Create our lines_array
 		PackedByteArray data;
-		data.resize(12 * 2 * 4);
+		data.resize(12 * 2 * 2);
 		{
 			uint8_t *w = data.ptrw();
 			uint16_t *p16 = (uint16_t *)w;
