@@ -789,7 +789,7 @@ void ScriptEditor::_show_error_dialog(String p_path) {
 	error_dialog->popup_centered();
 }
 
-void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
+void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_switch_if_current) {
 	int selected = p_idx;
 	if (selected < 0 || selected >= tab_container->get_tab_count()) {
 		return;
@@ -820,19 +820,13 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		}
 	}
 
-	// roll back to previous tab
-	if (p_history_back) {
-		_history_back();
-	}
-
 	//remove from history
-	history.resize(history_pos + 1);
-
-	for (int i = 0; i < history.size(); i++) {
+	for (int i = history.size() - 1; i >= 0; i--) {
 		if (history[i].control == tselected) {
 			history.remove_at(i);
-			i--;
-			history_pos--;
+			if (i <= history_pos) {
+				history_pos--;
+			}
 		}
 	}
 
@@ -846,15 +840,21 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		_save_editor_state(current);
 	}
 	memdelete(tselected);
-	if (idx >= tab_container->get_tab_count()) {
-		idx = tab_container->get_tab_count() - 1;
-	}
-	if (idx >= 0) {
+	if (p_switch_if_current && (idx == selected)) {
 		if (history_pos >= 0) {
-			idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
+			_history_back();
+		} else if (history.size() > 0) {
+			_history_forward();
+		} else {
+			if (idx >= tab_container->get_tab_count()) {
+				idx = tab_container->get_tab_count() - 1;
+			}
+			if (idx >= 0) {
+				_go_to_tab(idx);
+			}
 		}
-		_go_to_tab(idx);
-	} else {
+	}
+	if (tab_container->get_tab_count() == 0) {
 		_update_selected_editor_menu();
 	}
 
@@ -887,7 +887,7 @@ void ScriptEditor::_close_docs_tab() {
 		EditorHelp *se = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
 
 		if (se) {
-			_close_tab(i, true, false);
+			_close_tab(i);
 		}
 	}
 }
@@ -922,18 +922,18 @@ void ScriptEditor::_queue_close_tabs() {
 		int idx = script_close_queue.front()->get();
 		script_close_queue.pop_front();
 
-		tab_container->set_current_tab(idx);
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(idx));
 		if (se) {
 			// Maybe there are unsaved changes.
 			if (se->is_unsaved()) {
+				tab_container->set_current_tab(idx);
 				_ask_close_current_unsaved_tab(se);
-				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &ScriptEditor::_queue_close_tabs), CONNECT_ONE_SHOT);
+				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &ScriptEditor::_queue_close_tabs), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 				break;
 			}
 		}
 
-		_close_current_tab(false);
+		_close_tab(idx, false, false);
 	}
 	_update_find_replace_bar();
 }
@@ -2831,7 +2831,7 @@ void ScriptEditor::_file_removed(const String &p_removed_file) {
 		}
 		if (se->get_meta("_edit_res_path") == p_removed_file) {
 			// The script is deleted with no undo, so just close the tab.
-			_close_tab(i, false, false);
+			_close_tab(i, false);
 		}
 	}
 
@@ -3135,9 +3135,7 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 
 void ScriptEditor::_script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index) {
 	if (p_mouse_button_index == MouseButton::MIDDLE) {
-		script_list->select(p_item);
-		_script_selected(p_item);
-		_menu_option(FILE_CLOSE);
+		_close_tab(p_item);
 	}
 
 	if (p_mouse_button_index == MouseButton::RIGHT) {
