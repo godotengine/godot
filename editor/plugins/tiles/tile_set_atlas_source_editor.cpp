@@ -54,6 +54,8 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
+#include "servers/navigation_server_2d.h"
+
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::set_id(int p_id) {
 	ERR_FAIL_COND(p_id < 0);
 	if (source_id == p_id) {
@@ -2745,11 +2747,20 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 			Ref<NavigationPolygon> navigation_polygon;
 			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
 				navigation_polygon.instantiate();
-				for (int i = 0; i < generic_tile_polygon_editor->get_polygon_count(); i++) {
-					Vector<Vector2> polygon = generic_tile_polygon_editor->get_polygon(i);
-					navigation_polygon->add_outline(polygon);
+
+				if (generic_tile_polygon_editor->get_polygon_count() > 0) {
+					Ref<NavigationMeshSourceGeometryData2D> source_geometry_data;
+					source_geometry_data.instantiate();
+					for (int i = 0; i < generic_tile_polygon_editor->get_polygon_count(); i++) {
+						Vector<Vector2> polygon = generic_tile_polygon_editor->get_polygon(i);
+						navigation_polygon->add_outline(polygon);
+						source_geometry_data->add_traversable_outline(polygon);
+					}
+					navigation_polygon->set_agent_radius(0.0);
+					NavigationServer2D::get_singleton()->bake_from_source_geometry_data(navigation_polygon, source_geometry_data);
+				} else {
+					navigation_polygon->clear();
 				}
-				navigation_polygon->make_polygons_from_outlines();
 			}
 			emit_changed(get_edited_property(), navigation_polygon);
 		}

@@ -697,29 +697,28 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
 		if (InputMap::get_singleton()->event_is_action(p_event, E.key)) {
 			Action &action = action_state[E.key];
+			bool is_joypad_axis = jm.is_valid();
 			bool is_pressed = false;
-
 			if (!p_event->is_echo()) {
 				if (p_event->is_action_pressed(E.key)) {
-					if (jm.is_valid()) {
-						// If axis is already pressed, don't increase the pressed counter.
+					bool is_joypad_axis_valid_zone_enter = false;
+					if (is_joypad_axis) {
 						if (!action.axis_pressed) {
+							is_joypad_axis_valid_zone_enter = true;
 							action.pressed++;
 							action.axis_pressed = true;
 						}
 					} else {
 						action.pressed++;
 					}
-
-					is_pressed = true;
-					if (action.pressed == 1) {
+					if (action.pressed == 1 && (is_joypad_axis_valid_zone_enter || !is_joypad_axis)) {
 						action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
 						action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 					}
+					is_pressed = true;
 				} else {
 					bool is_released = true;
-					if (jm.is_valid()) {
-						// Same as above. Don't release axis when not pressed.
+					if (is_joypad_axis) {
 						if (action.axis_pressed) {
 							action.axis_pressed = false;
 						} else {

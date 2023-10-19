@@ -195,10 +195,7 @@ void DisplayServerIOS::send_window_event(DisplayServer::WindowEvent p_event) con
 
 void DisplayServerIOS::_window_callback(const Callable &p_callable, const Variant &p_arg) const {
 	if (!p_callable.is_null()) {
-		const Variant *argp = &p_arg;
-		Variant ret;
-		Callable::CallError ce;
-		p_callable.callp((const Variant **)&argp, 1, ret, ce);
+		p_callable.call(p_arg);
 	}
 }
 
@@ -320,37 +317,37 @@ String DisplayServerIOS::get_name() const {
 }
 
 bool DisplayServerIOS::tts_is_speaking() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isSpeaking];
 }
 
 bool DisplayServerIOS::tts_is_paused() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isPaused];
 }
 
 TypedArray<Dictionary> DisplayServerIOS::tts_get_voices() const {
-	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_V_MSG(tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts getVoices];
 }
 
 void DisplayServerIOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void DisplayServerIOS::tts_pause() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts pauseSpeaking];
 }
 
 void DisplayServerIOS::tts_resume() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts resumeSpeaking];
 }
 
 void DisplayServerIOS::tts_stop() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts stopSpeaking];
 }
 
@@ -371,19 +368,15 @@ bool DisplayServerIOS::is_dark_mode() const {
 }
 
 Rect2i DisplayServerIOS::get_display_safe_area() const {
-	if (@available(iOS 11, *)) {
-		UIEdgeInsets insets = UIEdgeInsetsZero;
-		UIView *view = AppDelegate.viewController.godotView;
-		if ([view respondsToSelector:@selector(safeAreaInsets)]) {
-			insets = [view safeAreaInsets];
-		}
-		float scale = screen_get_scale();
-		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
-		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
-		return Rect2i(screen_get_position() + insets_position, screen_get_size() - insets_size);
-	} else {
-		return Rect2i(screen_get_position(), screen_get_size());
+	UIEdgeInsets insets = UIEdgeInsetsZero;
+	UIView *view = AppDelegate.viewController.godotView;
+	if ([view respondsToSelector:@selector(safeAreaInsets)]) {
+		insets = [view safeAreaInsets];
 	}
+	float scale = screen_get_scale();
+	Size2i insets_position = Size2i(insets.left, insets.top) * scale;
+	Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
+	return Rect2i(screen_get_position() + insets_position, screen_get_size() - insets_size);
 }
 
 int DisplayServerIOS::get_screen_count() const {

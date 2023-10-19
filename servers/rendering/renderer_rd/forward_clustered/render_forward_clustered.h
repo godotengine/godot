@@ -298,6 +298,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 			uint32_t layer_mask;
 			float lightmap_uv_scale[4];
+			float compressed_aabb_position[4];
+			float compressed_aabb_size[4];
+			float uv_scale[4];
 		};
 
 		UBO ubo;
@@ -479,7 +482,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 		virtual void _mark_dirty() override;
 
-		virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabbb) override;
+		virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;
 		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
 		virtual void set_lightmap_capture(const Color *p_sh9) override;
 

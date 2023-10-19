@@ -356,16 +356,16 @@ void NavigationRegion3D::_region_enter_navigation_map() {
 		return;
 	}
 
-	if (enabled) {
-		if (map_override.is_valid()) {
-			NavigationServer3D::get_singleton()->region_set_map(region, map_override);
-		} else {
-			NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
-		}
+	if (map_override.is_valid()) {
+		NavigationServer3D::get_singleton()->region_set_map(region, map_override);
+	} else {
+		NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
 	}
 
 	current_global_transform = get_global_transform();
 	NavigationServer3D::get_singleton()->region_set_transform(region, current_global_transform);
+
+	NavigationServer3D::get_singleton()->region_set_enabled(region, enabled);
 
 #ifdef DEBUG_ENABLED
 	if (NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {

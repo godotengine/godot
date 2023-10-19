@@ -129,7 +129,7 @@ public:
 	void set_y_label(const String &p_label);
 	String get_y_label() const;
 
-	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
+	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 	virtual String get_caption() const override;
 
 	Vector2 get_closest_point(const Vector2 &p_point);

@@ -115,7 +115,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
-		if (n->is_class("AnimationPlayer")) {
+		if (n->is_class("AnimationMixer")) {
 			AnimationPlayerEditor::get_singleton()->unpin();
 			_update_tree();
 		}
@@ -465,8 +465,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			}
 
 			_update_visibility_color(p_node, item);
-		} else if (p_node->is_class("AnimationPlayer")) {
-			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_player() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
+		} else if (p_node->is_class("AnimationMixer")) {
+			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_editing_node() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
 
 			if (is_pinned) {
 				item->add_button(0, get_editor_theme_icon(SNAME("Pin")), BUTTON_PIN, false, TTR("AnimationPlayer is pinned.\nClick to unpin."));

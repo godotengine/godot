@@ -55,7 +55,7 @@ void EditorColorMap::add_conversion_color_pair(const String p_from_color, const 
 	color_conversion_map[Color::html(p_from_color)] = Color::html(p_to_color);
 }
 
-void EditorColorMap::add_conversion_exception(const StringName p_icon_name) {
+void EditorColorMap::add_conversion_exception(const StringName &p_icon_name) {
 	color_conversion_exceptions.insert(p_icon_name);
 }
 
@@ -63,7 +63,7 @@ void EditorColorMap::create() {
 	// Some of the colors below are listed for completeness sake.
 	// This can be a basis for proper palette validation later.
 
-	// Convert:    FROM       TO
+	// Convert:               FROM       TO
 	add_conversion_color_pair("#478cbf", "#478cbf"); // Godot Blue
 	add_conversion_color_pair("#414042", "#414042"); // Godot Gray
 
@@ -215,6 +215,11 @@ void EditorColorMap::create() {
 	add_conversion_exception("Breakpoint");
 }
 
+void EditorColorMap::finish() {
+	color_conversion_map.clear();
+	color_conversion_exceptions.clear();
+}
+
 Vector<StringName> EditorTheme::editor_theme_types;
 
 // TODO: Refactor these and corresponding Theme methods to use the bool get_xxx(r_value) pattern internally.
@@ -301,13 +306,15 @@ Ref<StyleBox> EditorTheme::get_stylebox(const StringName &p_name, const StringNa
 	}
 }
 
-EditorTheme::EditorTheme() {
-	if (editor_theme_types.is_empty()) {
-		editor_theme_types.append(EditorStringName(Editor));
-		editor_theme_types.append(EditorStringName(EditorFonts));
-		editor_theme_types.append(EditorStringName(EditorIcons));
-		editor_theme_types.append(EditorStringName(EditorStyles));
-	}
+void EditorTheme::initialize() {
+	editor_theme_types.append(EditorStringName(Editor));
+	editor_theme_types.append(EditorStringName(EditorFonts));
+	editor_theme_types.append(EditorStringName(EditorIcons));
+	editor_theme_types.append(EditorStringName(EditorStyles));
+}
+
+void EditorTheme::finalize() {
+	editor_theme_types.clear();
 }
 
 // Editor theme generatior.
@@ -1960,6 +1967,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// GraphEdit
 	theme->set_stylebox("panel", "GraphEdit", style_tree_bg);
+	Ref<StyleBoxFlat> graph_toolbar_style = make_flat_stylebox(dark_color_1 * Color(1, 1, 1, 0.6), 4, 2, 4, 2, 3);
+	theme->set_stylebox("menu_panel", "GraphEdit", graph_toolbar_style);
+
 	if (dark_theme) {
 		theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.1));
 		theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.05));
@@ -2212,7 +2222,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// adaptive script theme constants
 	// for comments and elements with lower relevance
-	const Color dim_color = Color(font_color.r, font_color.g, font_color.b, 0.5);
+	const Color dim_color = Color(font_color, 0.5);
 
 	const float mono_value = mono_color.r;
 	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
@@ -2226,6 +2236,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color engine_type_color = dark_theme ? Color(0.56, 1, 0.86) : Color(0.11, 0.55, 0.4);
 	const Color user_type_color = dark_theme ? Color(0.78, 1, 0.93) : Color(0.18, 0.45, 0.4);
 	const Color comment_color = dark_theme ? dim_color : Color(0.08, 0.08, 0.08, 0.5);
+	const Color doc_comment_color = dark_theme ? Color(0.6, 0.7, 0.8, 0.8) : Color(0.15, 0.15, 0.4, 0.7);
 	const Color string_color = dark_theme ? Color(1, 0.93, 0.63) : Color(0.6, 0.42, 0);
 
 	// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
@@ -2269,6 +2280,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/theme/highlighting/engine_type_color", engine_type_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/user_type_color", user_type_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/comment_color", comment_color, true);
+		setting->set_initial_value("text_editor/theme/highlighting/doc_comment_color", doc_comment_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/string_color", string_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/background_color", te_background_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/completion_background_color", completion_background_color, true);

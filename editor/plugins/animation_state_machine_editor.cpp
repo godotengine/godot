@@ -92,7 +92,7 @@ String AnimationNodeStateMachineEditor::_get_root_playback_path(String &r_node_d
 	if (edited_path.size()) {
 		while (!is_playable_anodesm_found) {
 			base_path = String("/").join(edited_path);
-			Ref<AnimationNodeStateMachine> anodesm = !edited_path.size() ? tree->get_tree_root() : tree->get_tree_root()->find_node_by_path(base_path);
+			Ref<AnimationNodeStateMachine> anodesm = !edited_path.size() ? Ref<AnimationNode>(tree->get_root_animation_node().ptr()) : tree->get_root_animation_node()->find_node_by_path(base_path);
 			if (!anodesm.is_valid()) {
 				break;
 			} else {
@@ -562,13 +562,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	animations_to_add.clear();
 
 	List<StringName> animation_names;
-	if (tree->has_node(tree->get_animation_player())) {
-		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
-		if (ap) {
-			ap->get_animation_list(&animation_names);
-		}
-	}
-
+	tree->get_animation_list(&animation_names);
 	menu->add_submenu_item(TTR("Add Animation"), "animations");
 	if (animation_names.is_empty()) {
 		menu->set_item_disabled(menu->get_item_idx_from_text(TTR("Add Animation")), true);

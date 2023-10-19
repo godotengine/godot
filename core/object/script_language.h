@@ -145,7 +145,10 @@ public:
 	virtual PropertyInfo get_class_category() const;
 #endif // TOOLS_ENABLED
 
+	// TODO: In the next compat breakage rename to `*_script_*` to disambiguate from `Object::has_method()`.
 	virtual bool has_method(const StringName &p_method) const = 0;
+	virtual bool has_static_method(const StringName &p_method) const { return false; }
+
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
@@ -236,6 +239,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
 	virtual bool is_control_flow_keyword(String p_string) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
+	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) { return Vector<ScriptTemplate>(); }

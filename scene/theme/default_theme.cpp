@@ -498,8 +498,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("executing_line", "CodeEdit", icons["arrow_right"]);
 	theme->set_icon("can_fold", "CodeEdit", icons["arrow_down"]);
 	theme->set_icon("folded", "CodeEdit", icons["arrow_right"]);
-	theme->set_icon("can_fold_code_region", "CodeEdit", icons["folder_down_arrow"]);
-	theme->set_icon("folded_code_region", "CodeEdit", icons["folder_right_arrow"]);
+	theme->set_icon("can_fold_code_region", "CodeEdit", icons["region_unfolded"]);
+	theme->set_icon("folded_code_region", "CodeEdit", icons["region_folded"]);
 	theme->set_icon("folded_eol_icon", "CodeEdit", icons["text_edit_ellipsis"]);
 
 	theme->set_font("font", "CodeEdit", Ref<Font>());
@@ -1147,6 +1147,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("layout", "GraphEdit", icons["grid_layout"]);
 
 	theme->set_stylebox("panel", "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+
+	Ref<StyleBoxFlat> graph_toolbar_style = make_flat_stylebox(Color(0.24, 0.24, 0.24, 0.6), 4, 2, 4, 2);
+	theme->set_stylebox("menu_panel", "GraphEdit", graph_toolbar_style);
 
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));

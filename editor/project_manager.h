@@ -440,6 +440,7 @@ class ProjectManager : public Control {
 	void _on_order_option_changed(int p_idx);
 	void _on_tab_changed(int p_tab);
 	void _on_search_term_changed(const String &p_term);
+	void _on_search_term_submitted(const String &p_text);
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
 	static Ref<Texture2D> _file_dialog_get_thumbnail(const String &p_path);

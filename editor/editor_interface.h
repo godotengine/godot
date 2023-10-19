@@ -49,6 +49,7 @@ class FileSystemDock;
 class Mesh;
 class Node;
 class ScriptEditor;
+class SubViewport;
 class Texture2D;
 class Theme;
 class VBoxContainer;
@@ -92,6 +93,8 @@ public:
 	Control *get_base_control() const;
 	VBoxContainer *get_editor_main_screen() const;
 	ScriptEditor *get_script_editor() const;
+	SubViewport *get_editor_viewport_2d() const;
+	SubViewport *get_editor_viewport_3d(int p_idx = 0) const;
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);

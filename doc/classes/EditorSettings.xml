@@ -500,6 +500,10 @@
 			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
 			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
 		</member>
+		<member name="filesystem/tools/oidn/oidn_denoise_path" type="String" setter="" getter="">
+			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
+			To enable this feature for your specific project, use [member ProjectSettings.rendering/lightmapping/denoising/denoiser].
+		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
 			- [b]Auto[/b] follows the platform convention: Cancel first on macOS and Linux, OK first on Windows.
@@ -952,6 +956,9 @@
 		</member>
 		<member name="text_editor/theme/highlighting/current_line_color" type="Color" setter="" getter="">
 			The script editor's background color for the line the caret is currently on. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/mark_color].
+		</member>
+		<member name="text_editor/theme/highlighting/doc_comment_color" type="Color" setter="" getter="">
+			The script editor's documentation comment color. In GDScript, this is used for comments starting with [code]##[/code]. In C#, this is used for comments starting with [code]///[/code] or [code]/**[/code].
 		</member>
 		<member name="text_editor/theme/highlighting/engine_type_color" type="Color" setter="" getter="">
 			The script editor's engine type color ([Vector2], [Vector3], [Color], ...).

@@ -617,7 +617,7 @@ void Object::get_method_list(List<MethodInfo> *p_list) const {
 Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Variant();
 	}
 
@@ -636,7 +636,7 @@ Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::Cal
 Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Variant();
 	}
 
@@ -666,8 +666,16 @@ bool Object::has_method(const StringName &p_method) const {
 	}
 
 	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
+	if (method != nullptr) {
+		return true;
+	}
 
-	return method != nullptr;
+	const Script *scr = Object::cast_to<Script>(this);
+	if (scr != nullptr) {
+		return scr->has_static_method(p_method);
+	}
+
+	return false;
 }
 
 Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
@@ -715,12 +723,11 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 //free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
 		if (p_argcount != 0) {
-			r_error.argument = 0;
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.expected = 0;
 			return Variant();
 		}
 		if (Object::cast_to<RefCounted>(this)) {
-			r_error.argument = 0;
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
 		}
@@ -1036,14 +1043,17 @@ struct _ObjectSignalDisconnectData {
 };
 
 Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+	if (unlikely(p_argcount < 1)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.expected = 1;
+		ERR_FAIL_V(Error::ERR_INVALID_PARAMETER);
+	}
 
-	ERR_FAIL_COND_V(p_argcount < 1, Error::ERR_INVALID_PARAMETER);
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (unlikely(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING)) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
-		ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING, Error::ERR_INVALID_PARAMETER);
+		ERR_FAIL_V(Error::ERR_INVALID_PARAMETER);
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -1099,8 +1109,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	Error err = OK;
 
 	for (const Connection &c : slot_conns) {
-		Object *target = c.callable.get_object();
-		if (!target) {
+		if (!c.callable.is_valid()) {
 			// Target might have been deleted during signal callback, this is expected and OK.
 			continue;
 		}
@@ -1123,7 +1132,8 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 					continue;
 				}
 #endif
-				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
+				Object *target = c.callable.get_object();
+				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINT("Error calling from signal '" + String(p_name) + "' to callable: " + Variant::get_callable_error_text(c.callable, args, argc, ce) + ".");
@@ -1303,8 +1313,14 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 Error Object::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is null.");
 
-	Object *target_object = p_callable.get_object();
-	ERR_FAIL_NULL_V_MSG(target_object, ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+	if (p_callable.is_standard()) {
+		// FIXME: This branch should probably removed in favor of the `is_valid()` branch, but there exist some classes
+		// that call `connect()` before they are fully registered with ClassDB. Until all such classes can be found
+		// and registered soon enough this branch is needed to allow `connect()` to succeed.
+		ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+	} else {
+		ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is not valid: " + p_callable);
+	}
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1342,6 +1358,8 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		}
 	}
 
+	Object *target_object = p_callable.get_object();
+
 	SignalData::Slot slot;
 
 	Connection conn;
@@ -1349,7 +1367,9 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	conn.signal = ::Signal(this, p_signal);
 	conn.flags = p_flags;
 	slot.conn = conn;
-	slot.cE = target_object->connections.push_back(conn);
+	if (target_object) {
+		slot.cE = target_object->connections.push_back(conn);
+	}
 	if (p_flags & CONNECT_REFERENCE_COUNTED) {
 		slot.reference_count = 1;
 	}
@@ -1388,9 +1408,6 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot disconnect from '" + p_signal + "': the provided callable is null.");
 
-	Object *target_object = p_callable.get_object();
-	ERR_FAIL_NULL_V_MSG(target_object, false, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
-
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
@@ -1410,7 +1427,13 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		}
 	}
 
-	target_object->connections.erase(slot->cE);
+	if (slot->cE) {
+		Object *target_object = p_callable.get_object();
+		if (target_object) {
+			target_object->connections.erase(slot->cE);
+		}
+	}
+
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
 	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
@@ -1861,7 +1884,6 @@ bool Object::has_instance_binding(void *p_token) {
 	return found;
 }
 
-#ifdef TOOLS_ENABLED
 void Object::free_instance_binding(void *p_token) {
 	bool found = false;
 	_instance_binding_mutex.lock();
@@ -1886,6 +1908,7 @@ void Object::free_instance_binding(void *p_token) {
 	_instance_binding_mutex.unlock();
 }
 
+#ifdef TOOLS_ENABLED
 void Object::clear_internal_extension() {
 	ERR_FAIL_NULL(_extension);
 

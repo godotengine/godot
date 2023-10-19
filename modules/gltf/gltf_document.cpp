@@ -66,8 +66,10 @@
 #endif // MODULE_GRIDMAP_ENABLED
 
 // FIXME: Hardcoded to avoid editor dependency.
+#define GLTF_IMPORT_GENERATE_TANGENT_ARRAYS 8
 #define GLTF_IMPORT_USE_NAMED_SKIN_BINDS 16
 #define GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS 32
+#define GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION 64
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2208,7 +2210,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 			}
 
 			Array array = import_mesh->get_surface_arrays(surface_i);
-			uint32_t format = import_mesh->get_surface_format(surface_i);
+			uint64_t format = import_mesh->get_surface_format(surface_i);
 			int32_t vertex_num = 0;
 			Dictionary attributes;
 			{
@@ -2568,7 +2570,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 		import_mesh->set_name(_gen_unique_name(p_state, vformat("%s_%s", p_state->scene_name, mesh_name)));
 
 		for (int j = 0; j < primitives.size(); j++) {
-			uint32_t flags = 0;
+			uint64_t flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			Dictionary p = primitives[j];
 
 			Array array;
@@ -2795,7 +2797,11 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				array[Mesh::ARRAY_INDEX] = indices;
 			}
 
-			bool generate_tangents = (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("TEXCOORD_0") && a.has("NORMAL"));
+			bool generate_tangents = p_state->force_generate_tangents && (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("TEXCOORD_0") && a.has("NORMAL"));
+
+			if (p_state->force_disable_compression || !a.has("POSITION") || !a.has("NORMAL") || !(a.has("TANGENT") || generate_tangents) || p.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
+				flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+			}
 
 			Ref<SurfaceTool> mesh_surface_tool;
 			mesh_surface_tool.instantiate();
@@ -2935,7 +2941,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 					// Enforce blend shape mask array format
 					for (int l = 0; l < Mesh::ARRAY_MAX; l++) {
-						if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1 << l))) {
+						if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1ULL << l))) {
 							array_copy[l] = Variant();
 						}
 					}
@@ -4334,7 +4340,7 @@ Error GLTFDocument::_expand_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin) {
 }
 
 Error GLTFDocument::_verify_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin) {
-	// This may seem duplicated from expand_skins, but this is really a sanity check! (so it kinda is)
+	// This may seem duplicated from expand_skins, but this is really a safety check! (so it kinda is)
 	// In case additional interpolating logic is added to the skins, this will help ensure that you
 	// do not cause it to self implode into a fiery blaze
 
@@ -7347,6 +7353,12 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 }
 
 Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
+	// Generate the skeletons and skins (if any).
+	Error err = _create_skeletons(p_state);
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "GLTF: Failed to create skeletons.");
+	err = _create_skins(p_state);
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "GLTF: Failed to create skins.");
+	// Generate the node tree.
 	Node *single_root;
 	if (p_state->extensions_used.has("GODOT_single_root")) {
 		_generate_scene_node(p_state, 0, nullptr, nullptr);
@@ -7409,6 +7421,8 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 	ERR_FAIL_COND_V(p_state.is_null(), FAILED);
 	p_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	p_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	p_state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
+	p_state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
 	if (!p_state->buffers.size()) {
 		p_state->buffers.push_back(Vector<uint8_t>());
 	}
@@ -7446,6 +7460,8 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	Error err = FAILED;
 	p_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	p_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	p_state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
+	p_state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
 
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
@@ -7539,14 +7555,6 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	err = _determine_skeletons(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* CREATE SKELETONS */
-	err = _create_skeletons(p_state);
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* CREATE SKINS */
-	err = _create_skins(p_state);
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
 	/* PARSE MESHES (we have enough info now) */
 	err = _parse_meshes(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
@@ -7577,6 +7585,9 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 	p_state->filename = p_path.get_file().get_basename();
 	p_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	p_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	p_state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
+	p_state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
+
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);

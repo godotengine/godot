@@ -435,7 +435,61 @@ VisualShaderNode::VisualShaderNode() {
 
 /////////////////////////////////////////////////////////
 
+void VisualShaderNodeCustom::update_property_default_values() {
+	int prop_count;
+	if (GDVIRTUAL_CALL(_get_property_count, prop_count)) {
+		for (int i = 0; i < prop_count; i++) {
+			int selected = 0;
+			if (GDVIRTUAL_CALL(_get_property_default_index, i, selected)) {
+				dp_selected_cache[i] = selected;
+			}
+		}
+	}
+}
+
+void VisualShaderNodeCustom::update_input_port_default_values() {
+	int input_port_count;
+	if (GDVIRTUAL_CALL(_get_input_port_count, input_port_count)) {
+		for (int i = 0; i < input_port_count; i++) {
+			Variant value;
+			if (GDVIRTUAL_CALL(_get_input_port_default_value, i, value)) {
+				default_input_values[i] = value;
+			}
+		}
+	}
+}
+
 void VisualShaderNodeCustom::update_ports() {
+	{
+		dp_props.clear();
+		int prop_count;
+		if (GDVIRTUAL_CALL(_get_property_count, prop_count)) {
+			for (int i = 0; i < prop_count; i++) {
+				DropDownListProperty prop;
+				if (!GDVIRTUAL_CALL(_get_property_name, i, prop.name)) {
+					prop.name = "prop";
+				}
+				if (!GDVIRTUAL_CALL(_get_property_options, i, prop.options)) {
+					prop.options.push_back("Default");
+				}
+				dp_props.push_back(prop);
+			}
+		}
+	}
+
+	{
+		Vector<String> vprops = properties.split(";", false);
+		for (int i = 0; i < vprops.size(); i++) {
+			Vector<String> arr = vprops[i].split(",", false);
+			ERR_FAIL_COND(arr.size() != 2);
+			ERR_FAIL_COND(!arr[0].is_valid_int());
+			ERR_FAIL_COND(!arr[1].is_valid_int());
+			int index = arr[0].to_int();
+			int selected = arr[1].to_int();
+			dp_selected_cache[index] = selected;
+		}
+	}
+
 	{
 		input_ports.clear();
 		int input_port_count;
@@ -475,6 +529,15 @@ void VisualShaderNodeCustom::update_ports() {
 
 				output_ports.push_back(port);
 			}
+		}
+	}
+}
+
+void VisualShaderNodeCustom::update_properties() {
+	properties = "";
+	for (const KeyValue<int, int> &p : dp_selected_cache) {
+		if (p.value != 0) {
+			properties += itos(p.key) + "," + itos(p.value) + ";";
 		}
 	}
 }
@@ -635,6 +698,14 @@ void VisualShaderNodeCustom::_set_initialized(bool p_enabled) {
 	is_initialized = p_enabled;
 }
 
+void VisualShaderNodeCustom::_set_properties(const String &p_properties) {
+	properties = p_properties;
+}
+
+String VisualShaderNodeCustom::_get_properties() const {
+	return properties;
+}
+
 String VisualShaderNodeCustom::_get_name() const {
 	String ret;
 	GDVIRTUAL_CALL(_get_name, ret);
@@ -665,6 +736,21 @@ bool VisualShaderNodeCustom::_is_highend() const {
 	return ret;
 }
 
+void VisualShaderNodeCustom::_set_option_index(int p_option, int p_value) {
+	dp_selected_cache[p_option] = p_value;
+	update_properties();
+	update_ports();
+	update_input_port_default_values();
+	emit_changed();
+}
+
+int VisualShaderNodeCustom::get_option_index(int p_option) const {
+	if (!dp_selected_cache.has(p_option)) {
+		return 0;
+	}
+	return dp_selected_cache[p_option];
+}
+
 void VisualShaderNodeCustom::_bind_methods() {
 	GDVIRTUAL_BIND(_get_name);
 	GDVIRTUAL_BIND(_get_description);
@@ -673,10 +759,15 @@ void VisualShaderNodeCustom::_bind_methods() {
 	GDVIRTUAL_BIND(_get_input_port_count);
 	GDVIRTUAL_BIND(_get_input_port_type, "port");
 	GDVIRTUAL_BIND(_get_input_port_name, "port");
+	GDVIRTUAL_BIND(_get_input_port_default_value, "port");
 	GDVIRTUAL_BIND(_get_default_input_port, "type");
 	GDVIRTUAL_BIND(_get_output_port_count);
 	GDVIRTUAL_BIND(_get_output_port_type, "port");
 	GDVIRTUAL_BIND(_get_output_port_name, "port");
+	GDVIRTUAL_BIND(_get_property_count);
+	GDVIRTUAL_BIND(_get_property_name, "index");
+	GDVIRTUAL_BIND(_get_property_default_index, "index");
+	GDVIRTUAL_BIND(_get_property_options, "index");
 	GDVIRTUAL_BIND(_get_code, "input_vars", "output_vars", "mode", "type");
 	GDVIRTUAL_BIND(_get_func_code, "mode", "type");
 	GDVIRTUAL_BIND(_get_global_code, "mode");
@@ -686,8 +777,14 @@ void VisualShaderNodeCustom::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_initialized", "enabled"), &VisualShaderNodeCustom::_set_initialized);
 	ClassDB::bind_method(D_METHOD("_is_initialized"), &VisualShaderNodeCustom::_is_initialized);
 	ClassDB::bind_method(D_METHOD("_set_input_port_default_value", "port", "value"), &VisualShaderNodeCustom::_set_input_port_default_value);
+	ClassDB::bind_method(D_METHOD("_set_option_index", "option", "value"), &VisualShaderNodeCustom::_set_option_index);
+	ClassDB::bind_method(D_METHOD("_set_properties", "properties"), &VisualShaderNodeCustom::_set_properties);
+	ClassDB::bind_method(D_METHOD("_get_properties"), &VisualShaderNodeCustom::_get_properties);
+
+	ClassDB::bind_method(D_METHOD("get_option_index", "option"), &VisualShaderNodeCustom::get_option_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "initialized", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_initialized", "_is_initialized");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_properties", "_get_properties");
 }
 
 VisualShaderNodeCustom::VisualShaderNodeCustom() {
@@ -2357,9 +2454,6 @@ void VisualShader::_update_shader() const {
 					global_code += "vec4 ";
 					break;
 				case VaryingType::VARYING_TYPE_BOOLEAN:
-					if (E.value.mode == VaryingMode::VARYING_MODE_VERTEX_TO_FRAG_LIGHT) {
-						global_code += "flat ";
-					}
 					global_code += "bool ";
 					break;
 				case VaryingType::VARYING_TYPE_TRANSFORM:
@@ -2477,7 +2571,7 @@ void VisualShader::_update_shader() const {
 
 		if (varying_setters.has(i)) {
 			for (int &E : varying_setters[i]) {
-				err = _write_node(Type(i), nullptr, nullptr, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
+				err = _write_node(Type(i), &global_code, nullptr, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
 				ERR_FAIL_COND(err != OK);
 			}
 		}

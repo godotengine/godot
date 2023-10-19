@@ -38,9 +38,13 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "scene/animation/animation_blend_tree.h"
+#include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 
 StringName AnimationNodeBlendSpace1DEditor::get_blend_position_path() const {
 	StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + "blend_position";
@@ -78,18 +82,12 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-			if (tree->has_node(tree->get_animation_player())) {
-				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
+			List<StringName> names;
+			tree->get_animation_list(&names);
 
-				if (ap) {
-					List<StringName> names;
-					ap->get_animation_list(&names);
-
-					for (const StringName &E : names) {
-						animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
-						animations_to_add.push_back(E);
-					}
-				}
+			for (const StringName &E : names) {
+				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
+				animations_to_add.push_back(E);
 			}
 
 			for (const StringName &E : classes) {

@@ -386,6 +386,7 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_DEVICE_PCM_SAMPLE_RATE_STATE_FB, 1000209002) \
     _(XR_TYPE_COMPOSITION_LAYER_DEPTH_TEST_FB, 1000212000) \
     _(XR_TYPE_LOCAL_DIMMING_FRAME_END_INFO_META, 1000216000) \
+    _(XR_TYPE_PASSTHROUGH_PREFERENCES_META, 1000217000) \
     _(XR_TYPE_SYSTEM_VIRTUAL_KEYBOARD_PROPERTIES_META, 1000219001) \
     _(XR_TYPE_VIRTUAL_KEYBOARD_CREATE_INFO_META, 1000219002) \
     _(XR_TYPE_VIRTUAL_KEYBOARD_SPACE_CREATE_INFO_META, 1000219003) \
@@ -1268,6 +1269,9 @@ XR_ENUM_STR(XrResult);
     _(XR_COMPOSITION_LAYER_SETTINGS_QUALITY_SUPER_SAMPLING_BIT_FB, 0x00000002) \
     _(XR_COMPOSITION_LAYER_SETTINGS_NORMAL_SHARPENING_BIT_FB, 0x00000004) \
     _(XR_COMPOSITION_LAYER_SETTINGS_QUALITY_SHARPENING_BIT_FB, 0x00000008) \
+
+#define XR_LIST_BITS_XrPassthroughPreferenceFlagsMETA(_) \
+    _(XR_PASSTHROUGH_PREFERENCE_DEFAULT_TO_ACTIVE_BIT_META, 0x00000001) \
 
 #define XR_LIST_BITS_XrVirtualKeyboardInputStateFlagsMETA(_) \
     _(XR_VIRTUAL_KEYBOARD_INPUT_STATE_PRESSED_BIT_META, 0x00000001) \
@@ -3588,6 +3592,12 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(localDimmingMode) \
 
+/// Calls your macro with the name of each member of XrPassthroughPreferencesMETA, in order.
+#define XR_LIST_STRUCT_XrPassthroughPreferencesMETA(_) \
+    _(type) \
+    _(next) \
+    _(flags) \
+
 /// Calls your macro with the name of each member of XrSystemVirtualKeyboardPropertiesMETA, in order.
 #define XR_LIST_STRUCT_XrSystemVirtualKeyboardPropertiesMETA(_) \
     _(type) \
@@ -4227,6 +4237,7 @@ XR_ENUM_STR(XrResult);
     _(XrDevicePcmSampleRateStateFB, XR_TYPE_DEVICE_PCM_SAMPLE_RATE_STATE_FB) \
     _(XrCompositionLayerDepthTestFB, XR_TYPE_COMPOSITION_LAYER_DEPTH_TEST_FB) \
     _(XrLocalDimmingFrameEndInfoMETA, XR_TYPE_LOCAL_DIMMING_FRAME_END_INFO_META) \
+    _(XrPassthroughPreferencesMETA, XR_TYPE_PASSTHROUGH_PREFERENCES_META) \
     _(XrSystemVirtualKeyboardPropertiesMETA, XR_TYPE_SYSTEM_VIRTUAL_KEYBOARD_PROPERTIES_META) \
     _(XrVirtualKeyboardCreateInfoMETA, XR_TYPE_VIRTUAL_KEYBOARD_CREATE_INFO_META) \
     _(XrVirtualKeyboardSpaceCreateInfoMETA, XR_TYPE_VIRTUAL_KEYBOARD_SPACE_CREATE_INFO_META) \
@@ -4556,6 +4567,7 @@ XR_ENUM_STR(XrResult);
     _(XR_FB_haptic_pcm, 210) \
     _(XR_FB_composition_layer_depth_test, 213) \
     _(XR_META_local_dimming, 217) \
+    _(XR_META_passthrough_preferences, 218) \
     _(XR_META_virtual_keyboard, 220) \
     _(XR_OCULUS_external_camera, 227) \
     _(XR_META_vulkan_swapchain_create_info, 228) \
@@ -4576,6 +4588,7 @@ XR_ENUM_STR(XrResult);
     _(XR_EXT_hand_tracking_data_source, 429) \
     _(XR_EXT_plane_detection, 430) \
     _(XR_OPPO_controller_interaction, 454) \
+    _(XR_YVR_controller_interaction, 498) \
 
 
 #endif

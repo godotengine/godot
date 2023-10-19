@@ -1152,6 +1152,11 @@ static void gdextension_object_set_instance_binding(GDExtensionObjectPtr p_objec
 	o->set_instance_binding(p_token, p_binding, p_callbacks);
 }
 
+static void gdextension_object_free_instance_binding(GDExtensionObjectPtr p_object, void *p_token) {
+	Object *o = (Object *)p_object;
+	o->free_instance_binding(p_token);
+}
+
 static void gdextension_object_set_instance(GDExtensionObjectPtr p_object, GDExtensionConstStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	Object *o = (Object *)p_object;
@@ -1491,6 +1496,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(global_get_singleton);
 	REGISTER_INTERFACE_FUNC(object_get_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance_binding);
+	REGISTER_INTERFACE_FUNC(object_free_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance);
 	REGISTER_INTERFACE_FUNC(object_get_class_name);
 	REGISTER_INTERFACE_FUNC(object_cast_to);

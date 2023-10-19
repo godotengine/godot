@@ -111,6 +111,7 @@ private:
 	bool initialized = false;
 
 	String title;
+	String tr_title;
 	mutable int current_screen = 0;
 	mutable Vector2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -131,6 +132,7 @@ private:
 	bool updating_embedded_window = false;
 	bool clamp_to_embedder = false;
 	bool unparent_when_invisible = false;
+	bool keep_title_visible = false;
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
@@ -163,11 +165,13 @@ private:
 
 	void _update_window_callbacks();
 
-	void _clear_transient();
-	void _make_transient();
 	Window *transient_parent = nullptr;
 	Window *exclusive_child = nullptr;
 	HashSet<Window *> transient_children;
+
+	void _clear_transient();
+	void _make_transient();
+	void _set_transient_exclusive_child(bool p_clear_invalid = false);
 
 	ThemeOwner *theme_owner = nullptr;
 	Ref<Theme> theme;
@@ -293,7 +297,7 @@ public:
 	void request_attention();
 	void move_to_foreground();
 
-	void set_visible(bool p_visible);
+	virtual void set_visible(bool p_visible);
 	bool is_visible() const;
 
 	void update_mouse_cursor_state() override;
@@ -333,6 +337,9 @@ public:
 
 	void set_content_scale_stretch(ContentScaleStretch p_stretch);
 	ContentScaleStretch get_content_scale_stretch() const;
+
+	void set_keep_title_visible(bool p_title_visible);
+	bool get_keep_title_visible() const;
 
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;

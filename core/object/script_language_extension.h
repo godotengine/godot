@@ -99,6 +99,7 @@ public:
 #endif // TOOLS_ENABLED
 
 	EXBIND1RC(bool, has_method, const StringName &)
+	EXBIND1RC(bool, has_static_method, const StringName &)
 
 	GDVIRTUAL1RC(Dictionary, _get_method_info, const StringName &)
 	virtual MethodInfo get_method_info(const StringName &p_method) const override {
@@ -235,6 +236,16 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_comment_delimiters, ret);
+		for (int i = 0; i < ret.size(); i++) {
+			p_words->push_back(ret[i]);
+		}
+	}
+
+	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
+
+	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
+		Vector<String> ret;
+		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
 		for (int i = 0; i < ret.size(); i++) {
 			p_words->push_back(ret[i]);
 		}
@@ -676,13 +687,11 @@ public:
 					if (native_info->get_class_category_func(instance, &gdext_class_category)) {
 						p_list->push_back(PropertyInfo(gdext_class_category));
 					}
-#ifndef DISABLE_DEPRECATED
 				} else {
 					Ref<Script> script = get_script();
 					if (script.is_valid()) {
 						p_list->push_back(script->get_class_category());
 					}
-#endif // DISABLE_DEPRECATED
 				}
 			}
 #endif // TOOLS_ENABLED

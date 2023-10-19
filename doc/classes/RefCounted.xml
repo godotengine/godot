@@ -37,7 +37,7 @@
 			<return type="bool" />
 			<description>
 				Decrements the internal reference counter. Use this only if you really know what you are doing.
-				Returns [code]true[/code] if the decrement was successful, [code]false[/code] otherwise.
+				Returns [code]true[/code] if the object should be freed after the decrement, [code]false[/code] otherwise.
 			</description>
 		</method>
 	</methods>

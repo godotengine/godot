@@ -355,7 +355,7 @@ void OS::set_cmdline(const char *p_execpath, const List<String> &p_args, const L
 }
 
 String OS::get_unique_id() const {
-	ERR_FAIL_V("");
+	return "";
 }
 
 int OS::get_processor_count() const {

@@ -147,6 +147,7 @@ private:
 	bool use_denoiser = true;
 	float denoiser_strength = 0.1f;
 	int bounces = 3;
+	float bounce_indirect_energy = 1.0;
 	float bias = 0.0005;
 	int max_texture_size = 16384;
 	bool interior = false;
@@ -155,6 +156,7 @@ private:
 	Color environment_custom_color = Color(1, 1, 1);
 	float environment_custom_energy = 1.0;
 	bool directional = false;
+	bool use_texture_for_bounces = true;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
 
@@ -246,6 +248,9 @@ public:
 	void set_directional(bool p_enable);
 	bool is_directional() const;
 
+	void set_use_texture_for_bounces(bool p_enable);
+	bool is_using_texture_for_bounces() const;
+
 	void set_interior(bool p_interior);
 	bool is_interior() const;
 
@@ -263,6 +268,9 @@ public:
 
 	void set_bounces(int p_bounces);
 	int get_bounces() const;
+
+	void set_bounce_indirect_energy(float p_indirect_energy);
+	float get_bounce_indirect_energy() const;
 
 	void set_bias(float p_bias);
 	float get_bias() const;

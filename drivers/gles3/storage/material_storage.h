@@ -316,7 +316,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_bones;
 	bool uses_weights;
 
-	uint32_t vertex_input_mask = 0;
+	uint64_t vertex_input_mask = 0;
 
 	uint64_t last_pass = 0;
 	uint32_t index = 0;

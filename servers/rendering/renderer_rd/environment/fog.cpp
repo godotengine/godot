@@ -228,7 +228,7 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_DISABLE;
-		actions.global_buffer_array_variable = "global_variables.data";
+		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 
 		volumetric_fog.compiler.initialize(actions);
 	}
@@ -543,7 +543,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		if (p_cam_projection.is_orthogonal()) {
 			fog_near_size = fog_far_size;
 		} else {
-			fog_near_size = Vector2();
+			fog_near_size = frustum_near_size.max(Vector2(0.001, 0.001));
 		}
 
 		params.fog_frustum_size_begin[0] = fog_near_size.x;
@@ -1002,7 +1002,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	if (p_cam_projection.is_orthogonal()) {
 		fog_near_size = fog_far_size;
 	} else {
-		fog_near_size = Vector2();
+		fog_near_size = frustum_near_size.max(Vector2(0.001, 0.001));
 	}
 
 	params.fog_frustum_size_begin[0] = fog_near_size.x;

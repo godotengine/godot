@@ -790,7 +790,7 @@ void EditorNode::_notification(int p_what) {
 }
 
 void EditorNode::_update_update_spinner() {
-	update_spinner->set_visible(EDITOR_GET("interface/editor/show_update_spinner"));
+	update_spinner->set_visible(!RenderingServer::get_singleton()->canvas_item_get_debug_redraw() && EDITOR_GET("interface/editor/show_update_spinner"));
 
 	const bool update_continuously = EDITOR_GET("interface/editor/update_continuously");
 	PopupMenu *update_popup = update_spinner->get_popup();
@@ -849,6 +849,10 @@ void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object) {
 		p_plugin->make_visible(false);
 		p_plugin->edit(nullptr);
 	}
+}
+
+void EditorNode::_plugin_over_self_own(EditorPlugin *p_plugin) {
+	active_plugins[p_plugin->get_instance_id()].insert(p_plugin);
 }
 
 void EditorNode::_resources_changed(const Vector<String> &p_resources) {
@@ -1701,16 +1705,19 @@ int EditorNode::_save_external_resources() {
 	return saved;
 }
 
-static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup>> *r_anim_backups) {
+static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> *r_anim_backups) {
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(p_node->get_child(i));
-		if (player && player->is_reset_on_save_enabled() && player->can_apply_reset()) {
-			Ref<AnimatedValuesBackup> old_values = player->apply_reset();
-			if (old_values.is_valid()) {
-				r_anim_backups->push_back(old_values);
+		AnimationMixer *mixer = Object::cast_to<AnimationMixer>(p_node->get_child(i));
+		if (mixer && mixer->is_reset_on_save_enabled() && mixer->can_apply_reset()) {
+			Ref<AnimatedValuesBackup> backup = mixer->apply_reset();
+			if (backup.is_valid()) {
+				Pair<AnimationMixer *, Ref<AnimatedValuesBackup>> pair;
+				pair.first = mixer;
+				pair.second = backup;
+				r_anim_backups->push_back(pair);
 			}
 		}
-		_reset_animation_players(p_node->get_child(i), r_anim_backups);
+		_reset_animation_mixers(p_node->get_child(i), r_anim_backups);
 	}
 }
 
@@ -1730,8 +1737,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
 
 	editor_data.apply_changes_in_editors();
-	List<Ref<AnimatedValuesBackup>> anim_backups;
-	_reset_animation_players(scene, &anim_backups);
+	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
+	_reset_animation_mixers(scene, &anim_backups);
 	save_default_environment();
 
 	_save_editor_states(p_file, idx);
@@ -1773,8 +1780,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	_save_external_resources();
 	editor_data.save_editor_external_data();
 
-	for (Ref<AnimatedValuesBackup> &E : anim_backups) {
-		E->restore();
+	for (Pair<AnimationMixer *, Ref<AnimatedValuesBackup>> &E : anim_backups) {
+		E.first->restore(E.second);
 	}
 
 	if (err == OK) {
@@ -2132,7 +2139,12 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	for (EditorPlugin *plugin : active_plugins[owner_id]) {
 		if (!available_plugins.has(plugin)) {
 			to_remove.push_back(plugin);
-			_plugin_over_edit(plugin, nullptr);
+			if (plugin->can_auto_hide()) {
+				_plugin_over_edit(plugin, nullptr);
+			} else {
+				// If plugin can't be hidden, make it own itself and become responsible for closing.
+				_plugin_over_self_own(plugin);
+			}
 		}
 	}
 
@@ -2144,6 +2156,12 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	for (EditorPlugin *plugin : available_plugins) {
 		if (active_plugins[owner_id].has(plugin)) {
 			// Plugin was already active, just change the object.
+			plugin->edit(p_object);
+			continue;
+		}
+
+		if (active_plugins.has(plugin->get_instance_id())) {
+			// Plugin is already active, but as self-owning, so it needs a separate check.
 			plugin->edit(p_object);
 			continue;
 		}
@@ -2211,7 +2229,11 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 	if (p_editing_owner) {
 		const ObjectID id = p_editing_owner->get_instance_id();
 		for (EditorPlugin *plugin : active_plugins[id]) {
-			_plugin_over_edit(plugin, nullptr);
+			if (plugin->can_auto_hide()) {
+				_plugin_over_edit(plugin, nullptr);
+			} else {
+				_plugin_over_self_own(plugin);
+			}
 		}
 		active_plugins.erase(id);
 	} else {
@@ -2219,10 +2241,23 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 		// This is to sweep properties that were removed from the inspector.
 		List<ObjectID> to_remove;
 		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
-			if (!ObjectDB::get_instance(kv.key)) {
+			const Object *context = ObjectDB::get_instance(kv.key);
+			if (context) {
+				// In case of self-owning plugins, they are disabled here if they can auto hide.
+				const EditorPlugin *self_owning = Object::cast_to<EditorPlugin>(context);
+				if (self_owning && self_owning->can_auto_hide()) {
+					context = nullptr;
+				}
+			}
+
+			if (!context) {
 				to_remove.push_back(kv.key);
 				for (EditorPlugin *plugin : kv.value) {
-					_plugin_over_edit(plugin, nullptr);
+					if (plugin->can_auto_hide()) {
+						_plugin_over_edit(plugin, nullptr);
+					} else {
+						_plugin_over_self_own(plugin);
+					}
 				}
 			}
 		}
@@ -3629,6 +3664,8 @@ void EditorNode::fix_dependencies(const String &p_for_file) {
 
 int EditorNode::new_scene() {
 	int idx = editor_data.add_edited_scene(-1);
+	_set_current_scene(idx); // Before trying to remove an empty scene, set the current tab index to the newly added tab index.
+
 	// Remove placeholder empty scene.
 	if (editor_data.get_edited_scene_count() > 1) {
 		for (int i = 0; i < editor_data.get_edited_scene_count() - 1; i++) {
@@ -3639,9 +3676,7 @@ int EditorNode::new_scene() {
 			}
 		}
 	}
-	idx = MAX(idx, 0);
 
-	_set_current_scene(idx);
 	editor_data.clear_editor_states();
 	scene_tabs->update_scene_tabs();
 	return idx;
@@ -3697,16 +3732,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	Error err;
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
-	if (!sdata.is_valid()) {
-		_dialog_display_load_error(lpath, err);
-		opening_prev = false;
-
-		if (prev != -1) {
-			_set_current_scene(prev);
-			editor_data.remove_scene(idx);
-		}
-		return ERR_FILE_NOT_FOUND;
-	}
 
 	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
 		current_menu_option = -1;
@@ -3722,6 +3747,17 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			editor_data.remove_scene(idx);
 		}
 		return ERR_FILE_MISSING_DEPENDENCIES;
+	}
+
+	if (!sdata.is_valid()) {
+		_dialog_display_load_error(lpath, err);
+		opening_prev = false;
+
+		if (prev != -1) {
+			_set_current_scene(prev);
+			editor_data.remove_scene(idx);
+		}
+		return ERR_FILE_NOT_FOUND;
 	}
 
 	dependency_errors.erase(lpath); // At least not self path.
@@ -3798,6 +3834,12 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	// If we are, we'll edit it after the restoration is done.
 	if (!restoring_scenes) {
 		push_item(new_scene);
+	} else {
+		// Initialize history for restored scenes.
+		ObjectID id = new_scene->get_instance_id();
+		if (id != editor_history.get_current()) {
+			editor_history.add_object(id);
+		}
 	}
 
 	// Load the selected nodes.
@@ -4470,7 +4512,7 @@ String EditorNode::_get_system_info() const {
 	}
 	if (driver_name == "vulkan") {
 		driver_name = "Vulkan";
-	} else if (driver_name == "opengl3") {
+	} else if (driver_name.begins_with("opengl3")) {
 		driver_name = "GLES3";
 	}
 
@@ -4660,6 +4702,7 @@ void EditorNode::_dock_make_float(Control *p_dock, int p_slot_index, bool p_show
 	wrapper->set_meta("dock_slot", p_slot_index);
 	wrapper->set_meta("dock_index", dock_index);
 	wrapper->set_meta("dock_name", p_dock->get_name().operator String());
+	p_dock->show();
 
 	wrapper->connect("window_close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request).bind(wrapper));
 
@@ -5163,14 +5206,16 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 					if (wrapper->get_meta("dock_name") == name) {
 						if (restore_window_on_load && floating_docks_dump.has(name)) {
 							_restore_floating_dock(floating_docks_dump[name], wrapper, i);
-							return;
 						} else {
-							_dock_floating_close_request(wrapper);
-							atidx = wrapper->get_meta("dock_index");
+							atidx = wrapper->get_meta("dock_slot");
+							node = wrapper->get_wrapped_control();
+							wrapper->set_window_enabled(false);
 						}
+						break;
 					}
 				}
-
+			}
+			if (!node) {
 				// Well, it's not anywhere.
 				continue;
 			}
@@ -5193,7 +5238,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			if (restore_window_on_load && floating_docks_dump.has(name)) {
 				_restore_floating_dock(floating_docks_dump[name], node, i);
 			} else if (wrapper) {
-				_dock_floating_close_request(wrapper);
+				wrapper->set_window_enabled(false);
 			}
 		}
 
@@ -6906,6 +6951,7 @@ EditorNode::EditorNode() {
 
 	// Exporters might need the theme.
 	EditorColorMap::create();
+	EditorTheme::initialize();
 	theme = create_custom_theme();
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
@@ -7993,6 +8039,8 @@ EditorNode::~EditorNode() {
 	memdelete(progress_hb);
 
 	EditorSettings::destroy();
+	EditorColorMap::finish();
+	EditorTheme::finalize();
 
 	GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
 	GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;

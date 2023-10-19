@@ -758,7 +758,7 @@ public:
 	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID()) = 0;
 	virtual RID shader_create_placeholder() = 0;
 
-	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
+	virtual uint64_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
 
 	/******************/
 	/**** UNIFORMS ****/
@@ -1371,7 +1371,7 @@ protected:
 
 	struct SpirvReflectionData {
 		BitField<ShaderStage> stages_mask;
-		uint32_t vertex_input_mask;
+		uint64_t vertex_input_mask;
 		uint32_t fragment_output_mask;
 		bool is_compute;
 		uint32_t compute_local_size[3];

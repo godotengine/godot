@@ -675,7 +675,7 @@ const Variant Node::get_node_rpc_config() const {
 Error Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 1;
+		r_error.expected = 1;
 		return ERR_INVALID_PARAMETER;
 	}
 
@@ -697,7 +697,7 @@ Error Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallErro
 Error Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 2;
+		r_error.expected = 2;
 		return ERR_INVALID_PARAMETER;
 	}
 
@@ -1855,7 +1855,7 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 }
 
 void Node::_release_unique_name_in_owner() {
-	ERR_FAIL_NULL(data.owner); // Sanity check.
+	ERR_FAIL_NULL(data.owner); // Safety check.
 	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which == nullptr || *which != this) {
@@ -1865,7 +1865,7 @@ void Node::_release_unique_name_in_owner() {
 }
 
 void Node::_acquire_unique_name_in_owner() {
-	ERR_FAIL_NULL(data.owner); // Sanity check.
+	ERR_FAIL_NULL(data.owner); // Safety check.
 	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
@@ -1938,7 +1938,7 @@ Node *Node::get_owner() const {
 }
 
 void Node::_clean_up_owner() {
-	ERR_FAIL_NULL(data.owner); // Sanity check.
+	ERR_FAIL_NULL(data.owner); // Safety check.
 
 	if (data.unique_name_in_owner) {
 		_release_unique_name_in_owner();
@@ -2165,30 +2165,40 @@ int Node::get_persistent_group_count() const {
 	return count;
 }
 
-void Node::_print_tree_pretty(const String &prefix, const bool last) {
-	String new_prefix = last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
-	print_line(prefix + new_prefix + String(get_name()));
-	_update_children_cache();
-	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
-		new_prefix = last ? String::utf8("   ") : String::utf8(" ┃ ");
-		data.children_cache[i]->_print_tree_pretty(prefix + new_prefix, i == data.children_cache.size() - 1);
-	}
-}
-
 void Node::print_tree_pretty() {
-	_print_tree_pretty("", true);
+	print_line(_get_tree_string_pretty("", true));
 }
 
 void Node::print_tree() {
-	_print_tree(this);
+	print_line(_get_tree_string(this));
 }
 
-void Node::_print_tree(const Node *p_node) {
-	print_line(String(p_node->get_path_to(this)));
+String Node::_get_tree_string_pretty(const String &p_prefix, bool p_last) {
+	String new_prefix = p_last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
 	_update_children_cache();
+	String return_tree = p_prefix + new_prefix + String(get_name()) + "\n";
 	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
-		data.children_cache[i]->_print_tree(p_node);
+		new_prefix = p_last ? String::utf8("   ") : String::utf8(" ┃ ");
+		return_tree += data.children_cache[i]->_get_tree_string_pretty(p_prefix + new_prefix, i == data.children_cache.size() - 1);
 	}
+	return return_tree;
+}
+
+String Node::get_tree_string_pretty() {
+	return _get_tree_string_pretty("", true);
+}
+
+String Node::_get_tree_string(const Node *p_node) {
+	_update_children_cache();
+	String return_tree = String(p_node->get_path_to(this)) + "\n";
+	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
+		return_tree += data.children_cache[i]->_get_tree_string(p_node);
+	}
+	return return_tree;
+}
+
+String Node::get_tree_string() {
+	return _get_tree_string(this);
 }
 
 void Node::_propagate_reverse_notification(int p_notification) {
@@ -3162,7 +3172,7 @@ void Node::unhandled_key_input(const Ref<InputEvent> &p_key_event) {
 Variant Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Variant();
 	}
 
@@ -3185,7 +3195,7 @@ Variant Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_arg
 Variant Node::_call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Variant();
 	}
 
@@ -3287,6 +3297,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_index", "include_internal"), &Node::get_index, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
+	ClassDB::bind_method(D_METHOD("get_tree_string"), &Node::get_tree_string);
+	ClassDB::bind_method(D_METHOD("get_tree_string_pretty"), &Node::get_tree_string_pretty);
 	ClassDB::bind_method(D_METHOD("set_scene_file_path", "scene_file_path"), &Node::set_scene_file_path);
 	ClassDB::bind_method(D_METHOD("get_scene_file_path"), &Node::get_scene_file_path);
 	ClassDB::bind_method(D_METHOD("propagate_notification", "what"), &Node::propagate_notification);

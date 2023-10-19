@@ -1211,8 +1211,7 @@ void Thread::_start_func(void *ud) {
 	Ref<Thread> t = *tud;
 	memdelete(tud);
 
-	Object *target_instance = t->target_callable.get_object();
-	if (!target_instance) {
+	if (!t->target_callable.is_valid()) {
 		t->running.clear();
 		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
 	}

@@ -397,9 +397,6 @@ bool TextParagraph::set_dropcap(const String &p_text, const Ref<Font> &p_font, i
 	TS->shaped_text_clear(dropcap_rid);
 	dropcap_margins = p_dropcap_margins;
 	bool res = TS->shaped_text_add_string(dropcap_rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);
-	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-		TS->shaped_text_set_spacing(dropcap_rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
-	}
 	lines_dirty = true;
 	return res;
 }
@@ -415,9 +412,6 @@ bool TextParagraph::add_string(const String &p_text, const Ref<Font> &p_font, in
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(p_font.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language, p_meta);
-	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-		TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
-	}
 	lines_dirty = true;
 	return res;
 }
@@ -1050,9 +1044,6 @@ TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_font, int 
 	rid = TS->create_shaped_text(p_direction, p_orientation);
 	if (p_font.is_valid()) {
 		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
-		}
 	}
 	width = p_width;
 }

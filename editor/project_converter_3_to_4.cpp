@@ -113,7 +113,7 @@ public:
 	// GDScript keywords.
 	RegEx keyword_gdscript_tool = RegEx("^tool");
 	RegEx keyword_gdscript_export_single = RegEx("^export");
-	RegEx keyword_gdscript_export_mutli = RegEx("([\t]+)export\\b");
+	RegEx keyword_gdscript_export_multi = RegEx("([\t]+)export\\b");
 	RegEx keyword_gdscript_onready = RegEx("^onready");
 	RegEx keyword_gdscript_remote = RegEx("^remote func");
 	RegEx keyword_gdscript_remotesync = RegEx("^remotesync func");
@@ -138,6 +138,9 @@ public:
 	// Colors.
 	LocalVector<RegEx *> color_regexes;
 	LocalVector<String> color_renamed;
+
+	RegEx color_hexadecimal_short_constructor = RegEx("Color\\(\"#?([a-fA-F0-9]{1})([a-fA-F0-9]{3})\\b");
+	RegEx color_hexadecimal_full_constructor = RegEx("Color\\(\"#?([a-fA-F0-9]{2})([a-fA-F0-9]{6})\\b");
 
 	// Classes.
 	LocalVector<RegEx *> class_tscn_regexes;
@@ -409,6 +412,8 @@ bool ProjectConverter3To4::convert() {
 				rename_common(RenamesMap3To4::theme_override_renames, reg_container.theme_override_regexes, source_lines);
 
 				custom_rename(source_lines, "\\.shader", ".gdshader");
+
+				convert_hexadecimal_colors(source_lines, reg_container);
 			} else if (file_name.ends_with(".tscn")) {
 				fix_pause_mode(source_lines, reg_container);
 
@@ -429,6 +434,8 @@ bool ProjectConverter3To4::convert() {
 				rename_common(RenamesMap3To4::theme_override_renames, reg_container.theme_override_regexes, source_lines);
 
 				custom_rename(source_lines, "\\.shader", ".gdshader");
+
+				convert_hexadecimal_colors(source_lines, reg_container);
 			} else if (file_name.ends_with(".cs")) { // TODO, C# should use different methods.
 				rename_classes(source_lines, reg_container); // Using only specialized function.
 				rename_common(RenamesMap3To4::csharp_function_renames, reg_container.csharp_function_regexes, source_lines);
@@ -438,6 +445,7 @@ bool ProjectConverter3To4::convert() {
 				rename_csharp_functions(source_lines, reg_container);
 				rename_csharp_attributes(source_lines, reg_container);
 				custom_rename(source_lines, "public class ", "public partial class ");
+				convert_hexadecimal_colors(source_lines, reg_container);
 			} else if (file_name.ends_with(".gdshader") || file_name.ends_with(".shader")) {
 				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, source_lines);
 			} else if (file_name.ends_with("tres")) {
@@ -1004,7 +1012,10 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_gdscript_builtin("button.pressed=1", "button.button_pressed=1", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("button.pressed SF", "button.pressed SF", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_with_regex("AAA Color.white AF", "AAA Color.WHITE AF", &ProjectConverter3To4::rename_colors, "custom rename", reg_container);
+	valid = valid && test_conversion_with_regex("Color(\"#f47d\")", "Color(\"#47df\")", &ProjectConverter3To4::convert_hexadecimal_colors, "color literals", reg_container);
+	valid = valid && test_conversion_with_regex("Color(\"#ff478cbf\")", "Color(\"#478cbfff\")", &ProjectConverter3To4::convert_hexadecimal_colors, "color literals", reg_container);
+	valid = valid && test_conversion_with_regex("Color(\"#de32bf\")", "Color(\"#de32bf\")", &ProjectConverter3To4::convert_hexadecimal_colors, "color literals", reg_container);
+	valid = valid && test_conversion_with_regex("AAA Color.white AF", "AAA Color.WHITE AF", &ProjectConverter3To4::rename_colors, "color constants", reg_container);
 
 	// Note: Do not change to *scancode*, it is applied before that conversion.
 	valid = valid && test_conversion_with_regex("\"device\":-1,\"scancode\":16777231,\"physical_scancode\":16777232", "\"device\":-1,\"scancode\":4194319,\"physical_scancode\":4194320", &ProjectConverter3To4::rename_input_map_scancode, "custom rename", reg_container);
@@ -1457,6 +1468,23 @@ void ProjectConverter3To4::rename_colors(Vector<SourceLine> &source_lines, const
 		}
 	}
 };
+
+// Convert hexadecimal colors from ARGB to RGBA
+void ProjectConverter3To4::convert_hexadecimal_colors(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+
+		String &line = source_line.line;
+		if (uint64_t(line.length()) <= maximum_line_length) {
+			if (line.contains("Color(\"")) {
+				line = reg_container.color_hexadecimal_short_constructor.sub(line, "Color(\"#$2$1", true);
+				line = reg_container.color_hexadecimal_full_constructor.sub(line, "Color(\"#$2$1", true);
+			}
+		}
+	}
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_colors(Vector<String> &lines, const RegExContainer &reg_container) {
 	Vector<String> found_renames;
@@ -2520,7 +2548,7 @@ void ProjectConverter3To4::rename_gdscript_keywords(Vector<SourceLine> &source_l
 				line = reg_container.keyword_gdscript_export_single.sub(line, "@export", true);
 			}
 			if (line.contains("export")) {
-				line = reg_container.keyword_gdscript_export_mutli.sub(line, "$1@export", true);
+				line = reg_container.keyword_gdscript_export_multi.sub(line, "$1@export", true);
 			}
 			if (line.contains("onready")) {
 				line = reg_container.keyword_gdscript_onready.sub(line, "@onready", true);
@@ -2579,7 +2607,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_keywords(Vector<S
 
 			if (line.contains("export")) {
 				old = line;
-				line = reg_container.keyword_gdscript_export_mutli.sub(line, "@export", true);
+				line = reg_container.keyword_gdscript_export_multi.sub(line, "@export", true);
 				if (old != line) {
 					found_renames.append(line_formatter(current_line, "export", "@export", line));
 				}

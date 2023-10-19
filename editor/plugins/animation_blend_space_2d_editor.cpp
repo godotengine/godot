@@ -43,12 +43,16 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/main/window.h"
 
 bool AnimationNodeBlendSpace2DEditor::can_edit(const Ref<AnimationNode> &p_node) {
@@ -123,16 +127,11 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
 			menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-			if (tree->has_node(tree->get_animation_player())) {
-				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
-				if (ap) {
-					List<StringName> names;
-					ap->get_animation_list(&names);
-					for (const StringName &E : names) {
-						animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
-						animations_to_add.push_back(E);
-					}
-				}
+			List<StringName> names;
+			tree->get_animation_list(&names);
+			for (const StringName &E : names) {
+				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
+				animations_to_add.push_back(E);
 			}
 
 			for (const StringName &E : classes) {

@@ -112,6 +112,7 @@ void EditorSceneFormatImporter::_bind_methods() {
 	BIND_CONSTANT(IMPORT_GENERATE_TANGENT_ARRAYS);
 	BIND_CONSTANT(IMPORT_USE_NAMED_SKIN_BINDS);
 	BIND_CONSTANT(IMPORT_DISCARD_MESHES_AND_MATERIALS);
+	BIND_CONSTANT(IMPORT_FORCE_DISABLE_MESH_COMPRESSION);
 }
 
 /////////////////////////////////
@@ -390,7 +391,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 		Dictionary lods;
 		String name;
 		Ref<Material> mat;
-		int fmt_compress_flags = 0;
+		uint64_t fmt_compress_flags = 0;
 	};
 
 	Vector<LocalSurfData> surf_data_by_mesh;
@@ -402,7 +403,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 
 	for (int surf_idx = 0; surf_idx < surf_count; surf_idx++) {
 		Mesh::PrimitiveType prim = p_mesh->get_surface_primitive_type(surf_idx);
-		const int fmt_compress_flags = p_mesh->get_surface_format(surf_idx);
+		const uint64_t fmt_compress_flags = p_mesh->get_surface_format(surf_idx);
 		Array arr = p_mesh->get_surface_arrays(surf_idx);
 		String name = p_mesh->get_surface_name(surf_idx);
 		Dictionary lods;
@@ -449,7 +450,7 @@ void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_s
 		const Array arr = surf_data_by_mesh[surf_idx].arr;
 		const Array bsarr = surf_data_by_mesh[surf_idx].bsarr;
 		const Dictionary lods = surf_data_by_mesh[surf_idx].lods;
-		const int fmt_compress_flags = surf_data_by_mesh[surf_idx].fmt_compress_flags;
+		const uint64_t fmt_compress_flags = surf_data_by_mesh[surf_idx].fmt_compress_flags;
 		const String name = surf_data_by_mesh[surf_idx].name;
 		const Ref<Material> mat = surf_data_by_mesh[surf_idx].mat;
 
@@ -595,7 +596,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		// Node paths in animation tracks are relative to the following path (this is used to fix node paths below).
-		Node *ap_root = ap->get_node(ap->get_root());
+		Node *ap_root = ap->get_node(ap->get_root_node());
 		NodePath path_prefix = p_root->get_path_to(ap_root);
 
 		bool nodes_were_renamed = r_node_renames.size() != 0;
@@ -1934,6 +1935,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI),Static Lightmaps (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI only)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/force_disable_compression"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 30));
@@ -2426,6 +2428,11 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	bool ensure_tangents = p_options["meshes/ensure_tangents"];
 	if (ensure_tangents) {
 		import_flags |= EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
+	}
+
+	bool force_disable_compression = p_options["meshes/force_disable_compression"];
+	if (force_disable_compression) {
+		import_flags |= EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
 	}
 
 	Error err = OK;

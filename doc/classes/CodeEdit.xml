@@ -125,7 +125,7 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" default="false" />
 			<description>
-				Inserts the selected entry into the text. If [param replace] is true, any existing text is replaced rather then merged.
+				Inserts the selected entry into the text. If [param replace] is true, any existing text is replaced rather than merged.
 			</description>
 		</method>
 		<method name="convert_indent">
@@ -544,7 +544,7 @@
 			Prefixes to trigger an automatic indent.
 		</member>
 		<member name="indent_size" type="int" setter="set_indent_size" getter="get_indent_size" default="4">
-			Size of tabs, if [code]indent_use_spaces[/code] is enabled the number of spaces to use.
+			Size of the tabulation indent (one [kbd]Tab[/kbd] press) in characters. If [member indent_use_spaces] is enabled the number of spaces to use.
 		</member>
 		<member name="indent_use_spaces" type="bool" setter="set_indent_using_spaces" getter="is_indent_using_spaces" default="false">
 			Use spaces instead of tabs for indentation.
@@ -676,7 +676,7 @@
 			Max number of options to display in the code completion popup at any one time.
 		</theme_item>
 		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
-			Max width of options in the code completion popup. Options longer then this will be cut off.
+			Max width of options in the code completion popup. Options longer than this will be cut off.
 		</theme_item>
 		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="6">
 			Width of the scrollbar in the code completion popup.

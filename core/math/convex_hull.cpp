@@ -2278,7 +2278,7 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 
 	uint32_t edges_copied = 0;
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
-		ERR_CONTINUE(edge_faces[i] == -1); // Sanity check
+		ERR_CONTINUE(edge_faces[i] == -1); // Safety check.
 
 		uint32_t a = (&ch.edges[i])->get_source_vertex();
 		uint32_t b = (&ch.edges[i])->get_target_vertex();

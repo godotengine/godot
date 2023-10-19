@@ -44,6 +44,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/primitive_meshes.h"
 #include "scene/scene_string_names.h"
 
 void MeshInstance3DEditor::_node_removed(Node *p_node) {
@@ -300,59 +301,67 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->commit_action();
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
-			Ref<ArrayMesh> mesh2 = node->get_mesh();
-			if (!mesh2.is_valid()) {
-				err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
-				err_dialog->popup_centered();
-				return;
-			}
-
-			String path = mesh2->get_path();
-			int srpos = path.find("::");
-			if (srpos != -1) {
-				String base = path.substr(0, srpos);
-				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
-					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
-						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it does not belong to the edited scene. Make it unique first."));
-						err_dialog->popup_centered();
-						return;
-					}
-				} else {
-					if (FileAccess::exists(path + ".import")) {
-						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it belongs to another resource which was imported from another file type. Make it unique first."));
-						err_dialog->popup_centered();
-						return;
-					}
-				}
+			Ref<PrimitiveMesh> primitive_mesh = Object::cast_to<PrimitiveMesh>(*node->get_mesh());
+			if (primitive_mesh.is_valid()) {
+				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+				ur->create_action(TTR("Unwrap UV2"));
+				ur->add_do_method(*primitive_mesh, "set_add_uv2", true);
+				ur->add_undo_method(*primitive_mesh, "set_add_uv2", primitive_mesh->get_add_uv2());
+				ur->commit_action();
 			} else {
-				if (FileAccess::exists(path + ".import")) {
-					err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it was imported from another file type. Make it unique first."));
+				Ref<ArrayMesh> mesh2 = node->get_mesh();
+				if (!mesh2.is_valid()) {
+					err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
 					err_dialog->popup_centered();
 					return;
 				}
+
+				String path = mesh2->get_path();
+				int srpos = path.find("::");
+				if (srpos != -1) {
+					String base = path.substr(0, srpos);
+					if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+							err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it does not belong to the edited scene. Make it unique first."));
+							err_dialog->popup_centered();
+							return;
+						}
+					} else {
+						if (FileAccess::exists(path + ".import")) {
+							err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it belongs to another resource which was imported from another file type. Make it unique first."));
+							err_dialog->popup_centered();
+							return;
+						}
+					}
+				} else {
+					if (FileAccess::exists(path + ".import")) {
+						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it was imported from another file type. Make it unique first."));
+						err_dialog->popup_centered();
+						return;
+					}
+				}
+
+				Ref<ArrayMesh> unwrapped_mesh = mesh2->duplicate(false);
+
+				Error err = unwrapped_mesh->lightmap_unwrap(node->get_global_transform());
+				if (err != OK) {
+					err_dialog->set_text(TTR("UV Unwrap failed, mesh may not be manifold?"));
+					err_dialog->popup_centered();
+					return;
+				}
+
+				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+				ur->create_action(TTR("Unwrap UV2"));
+
+				ur->add_do_method(node, "set_mesh", unwrapped_mesh);
+				ur->add_do_reference(node);
+				ur->add_do_reference(mesh2.ptr());
+
+				ur->add_undo_method(node, "set_mesh", mesh2);
+				ur->add_undo_reference(unwrapped_mesh.ptr());
+
+				ur->commit_action();
 			}
-
-			Ref<ArrayMesh> unwrapped_mesh = mesh2->duplicate(false);
-
-			Error err = unwrapped_mesh->lightmap_unwrap(node->get_global_transform());
-			if (err != OK) {
-				err_dialog->set_text(TTR("UV Unwrap failed, mesh may not be manifold?"));
-				err_dialog->popup_centered();
-				return;
-			}
-
-			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Unwrap UV2"));
-
-			ur->add_do_method(node, "set_mesh", unwrapped_mesh);
-			ur->add_do_reference(node);
-			ur->add_do_reference(mesh2.ptr());
-
-			ur->add_undo_method(node, "set_mesh", mesh2);
-			ur->add_undo_reference(unwrapped_mesh.ptr());
-
-			ur->commit_action();
-
 		} break;
 		case MENU_OPTION_DEBUG_UV1: {
 			Ref<Mesh> mesh2 = node->get_mesh();

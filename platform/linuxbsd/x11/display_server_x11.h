@@ -54,6 +54,7 @@
 
 #if defined(GLES3_ENABLED)
 #include "x11/gl_manager_x11.h"
+#include "x11/gl_manager_x11_egl.h"
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -138,6 +139,7 @@ class DisplayServerX11 : public DisplayServer {
 
 #if defined(GLES3_ENABLED)
 	GLManager_X11 *gl_manager = nullptr;
+	GLManagerEGL_X11 *gl_manager_egl = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
 	VulkanContextX11 *context_vulkan = nullptr;

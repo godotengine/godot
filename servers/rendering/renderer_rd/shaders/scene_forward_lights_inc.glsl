@@ -71,7 +71,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	mat4 inv_view_matrix = scene_data_block.data.inv_view_matrix;
 
 #ifdef USING_MOBILE_RENDERER
-	mat4 read_model_matrix = draw_call.transform;
+	mat4 read_model_matrix = instances.data[draw_call.instance_index].transform;
 #else
 	mat4 read_model_matrix = instances.data[instance_index_interp].transform;
 #endif

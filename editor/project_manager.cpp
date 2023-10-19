@@ -397,7 +397,7 @@ void ProjectDialog::_nonempty_confirmation_ok_pressed() {
 }
 
 void ProjectDialog::_renderer_selected() {
-	ERR_FAIL_COND(!renderer_button_group->get_pressed_button());
+	ERR_FAIL_NULL(renderer_button_group->get_pressed_button());
 
 	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
 
@@ -2731,6 +2731,14 @@ void ProjectManager::_on_search_term_changed(const String &p_term) {
 	_update_project_buttons();
 }
 
+void ProjectManager::_on_search_term_submitted(const String &p_text) {
+	if (tabs->get_current_tab() != 0) {
+		return;
+	}
+
+	_open_selected_projects_ask();
+}
+
 void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_update_project_buttons", &ProjectManager::_update_project_buttons);
 	ClassDB::bind_method("_version_button_pressed", &ProjectManager::_version_button_pressed);
@@ -2837,6 +2845,7 @@ ProjectManager::ProjectManager() {
 	}
 
 	EditorColorMap::create();
+	EditorTheme::initialize();
 	Ref<Theme> theme = create_custom_theme();
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
@@ -2899,6 +2908,7 @@ ProjectManager::ProjectManager() {
 		search_box->set_tooltip_text(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
 		search_box->set_clear_button_enabled(true);
 		search_box->connect("text_changed", callable_mp(this, &ProjectManager::_on_search_term_changed));
+		search_box->connect("text_submitted", callable_mp(this, &ProjectManager::_on_search_term_submitted));
 		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(search_box);
 
@@ -3288,6 +3298,9 @@ ProjectManager::~ProjectManager() {
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}
+
+	EditorColorMap::finish();
+	EditorTheme::finalize();
 }
 
 void ProjectTag::_notification(int p_what) {

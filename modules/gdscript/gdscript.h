@@ -94,12 +94,16 @@ class GDScript : public Script {
 	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
-	HashSet<StringName> members; //members are just indices to the instantiated script.
-	HashMap<StringName, Variant> constants;
+	// Members are just indices to the instantiated script.
+	HashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
+	HashSet<StringName> members; // Only members of the current class.
+
+	// Only static variables of the current class.
 	HashMap<StringName, MemberInfo> static_variables_indices;
-	Vector<Variant> static_variables;
+	Vector<Variant> static_variables; // Static variable values.
+
+	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
-	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
@@ -159,13 +163,14 @@ class GDScript : public Script {
 	HashSet<PlaceHolderScriptInstance *> placeholders;
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
+	void _update_exports_down(bool p_base_exports_changed);
 #endif
 
 #ifdef DEBUG_ENABLED
 	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
 #endif
 
-	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr, bool p_base_exports_changed = false);
 
 	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
 
@@ -262,6 +267,7 @@ public:
 
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
+	virtual bool has_static_method(const StringName &p_method) const override;
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
@@ -496,6 +502,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const override;
 	virtual bool is_control_flow_keyword(String p_keywords) const override;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const override;
+	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;

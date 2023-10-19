@@ -131,10 +131,9 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 }
 
 void Node3D::_notification(int p_what) {
-	ERR_THREAD_GUARD;
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_MAIN_THREAD_GUARD;
 			ERR_FAIL_NULL(get_tree());
 
 			Node *p = get_parent();
@@ -163,6 +162,8 @@ void Node3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			ERR_MAIN_THREAD_GUARD;
+
 			notification(NOTIFICATION_EXIT_WORLD, true);
 			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
@@ -176,6 +177,8 @@ void Node3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_WORLD: {
+			ERR_MAIN_THREAD_GUARD;
+
 			data.inside_world = true;
 			data.viewport = nullptr;
 			Node *parent = get_parent();
@@ -198,6 +201,8 @@ void Node3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
+			ERR_MAIN_THREAD_GUARD;
+
 #ifdef TOOLS_ENABLED
 			clear_gizmos();
 #endif
@@ -211,6 +216,8 @@ void Node3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
+			ERR_THREAD_GUARD;
+
 #ifdef TOOLS_ENABLED
 			for (int i = 0; i < data.gizmos.size(); i++) {
 				data.gizmos.write[i]->transform();

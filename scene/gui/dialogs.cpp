@@ -405,6 +405,7 @@ AcceptDialog::AcceptDialog() {
 	set_transient(true);
 	set_exclusive(true);
 	set_clamp_to_embedder(true);
+	set_keep_title_visible(true);
 
 	bg_panel = memnew(Panel);
 	add_child(bg_panel, false, INTERNAL_MODE_FRONT);

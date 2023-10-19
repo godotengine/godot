@@ -75,7 +75,7 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_t
 
 bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
 	if (is_only_update_transform_changes_enabled()) {
-		ERR_PRINT("Move functions do not work together with 'sync to physics' option. Please read the documentation.");
+		ERR_PRINT("Move functions do not work together with 'sync to physics' option. See the documentation for details.");
 	}
 
 	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_parameters, &r_result);
@@ -447,9 +447,12 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	lock_callback();
 
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
-	_sync_body_state(p_state);
 
-	GDVIRTUAL_CALL(_integrate_forces, p_state);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
+		_sync_body_state(p_state);
+
+		GDVIRTUAL_CALL(_integrate_forces, p_state);
+	}
 
 	_sync_body_state(p_state);
 	set_block_transform_notify(false); // want it back
@@ -1014,7 +1017,7 @@ void RigidBody2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp,suffix:kg"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-8,8,0.001,or_less,or_greater"), "set_gravity_scale", "get_gravity_scale");
 	ADD_GROUP("Mass Distribution", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_center_of_mass_mode", "get_center_of_mass_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_less,or_greater,suffix:px"), "set_center_of_mass", "get_center_of_mass");
