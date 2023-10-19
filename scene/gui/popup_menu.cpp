@@ -1108,10 +1108,12 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				// Set margin on the margin container
+				margin_container->begin_bulk_theme_override();
 				margin_container->add_theme_constant_override("margin_left", theme_cache.panel_style->get_margin(Side::SIDE_LEFT));
 				margin_container->add_theme_constant_override("margin_top", theme_cache.panel_style->get_margin(Side::SIDE_TOP));
 				margin_container->add_theme_constant_override("margin_right", theme_cache.panel_style->get_margin(Side::SIDE_RIGHT));
 				margin_container->add_theme_constant_override("margin_bottom", theme_cache.panel_style->get_margin(Side::SIDE_BOTTOM));
+				margin_container->end_bulk_theme_override();
 			}
 		} break;
 	}
