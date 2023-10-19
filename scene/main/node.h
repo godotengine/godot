@@ -150,6 +150,7 @@ private:
 
 		Node *parent = nullptr;
 		Node *owner = nullptr;
+		Node *default_child_parent = nullptr; // if this Node is instantiated as a scene, place its children under this node
 		HashMap<StringName, Node *> children;
 		mutable bool children_cache_dirty = true;
 		mutable LocalVector<Node *> children_cache;
@@ -445,6 +446,9 @@ public:
 
 	void set_unique_name_in_owner(bool p_enabled);
 	bool is_unique_name_in_owner() const;
+
+	void set_default_child_parent(Node *p_node);
+	Node *get_default_child_parent() const;
 
 	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
 		// p_include_internal = false doesn't make sense if the node is internal.

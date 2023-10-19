@@ -876,6 +876,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="default_child_parent" type="Node" setter="set_default_child_parent" getter="get_default_child_parent">
+			If this node is the root of a scene that has been instantiated into another scene, when the instantiating scene specifies that a node should be added as a child of this one it will instead add the node to the [member default_child_parent] if set.
+			If this node is not the root of an instantiated scene, this property has no effect.
+			The [member default_child_parent] of a node must be a descendant of that node.
+		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
 			Add a custom description to a node. It will be displayed in a tooltip when hovered in editor's scene tree.
 		</member>

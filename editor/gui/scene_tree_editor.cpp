@@ -175,6 +175,13 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->add_do_method(this, "_update_tree");
 		undo_redo->add_undo_method(this, "_update_tree");
 		undo_redo->commit_action();
+	} else if (p_id == BUTTON_DEFAULT_CHILD_PARENT) {
+		undo_redo->create_action(TTR("Clear Default Child Parent"));
+		Node *root = EditorNode::get_singleton()->get_edited_scene();
+		undo_redo->add_do_method(root, "set_default_child_parent", (Node *)nullptr);
+		undo_redo->add_undo_method(root, "set_default_child_parent", n);
+		undo_redo->commit_action();
+		update_tree();
 	}
 }
 
@@ -266,6 +273,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, Node *p_paren
 			item->set_text(0, node_name);
 			_set_item_custom_color(item, accent);
 		}
+	} else if (p_node == default_child_parent) {
+		_set_item_custom_color(item, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 	} else if (part_of_subscene) {
 		if (valid_types.size() == 0) {
 			_set_item_custom_color(item, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -323,6 +332,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, Node *p_paren
 
 		if (p_node->is_unique_name_in_owner()) {
 			item->add_button(0, get_editor_theme_icon(SNAME("SceneUniqueName")), BUTTON_UNIQUE, false, vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
+		}
+		if (p_node == default_child_parent) {
+			item->add_button(0, get_editor_theme_icon(SNAME("SetDefaultChildParent")), BUTTON_DEFAULT_CHILD_PARENT, false, vformat("%s\n%s", vformat(TTR("When the %s Scene is instantiated, its children will be added to this node."), get_scene_node()->get_name()), TTR("Click to disable this.")));
 		}
 
 		int num_connections = p_node->get_persistent_signal_connection_count();
@@ -401,6 +413,11 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, Node *p_paren
 		if (is_indirect_child) {
 			NodePath path;
 			tooltip += "\n" + vformat(TTR("Instantiated path: %s/%s"), p_parent_node->get_name(), p_parent_node->get_path_to(p_node).get_concatenated_names());
+		}
+
+		if (p_node == default_child_parent) {
+			tooltip += "\n" + vformat(TTR("When the %s Scene is instantiated, its children will be added to this node."), get_scene_node()->get_name());
+			tooltip += "\n" + TTR("Use the context menu to change this.");
 		}
 
 		item->set_tooltip_text(0, tooltip);
@@ -628,7 +645,9 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	updating_tree = true;
 	tree->clear();
+	default_child_parent = nullptr;
 	if (get_scene_node()) {
+		default_child_parent = get_scene_node()->get_default_child_parent();
 		_add_nodes(get_scene_node(), nullptr, nullptr);
 		last_hash = hash_djb2_one_64(0);
 		_compute_hash(get_scene_node(), last_hash);

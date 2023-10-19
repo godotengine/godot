@@ -161,6 +161,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
 
 	HashMap<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
+	HashMap<Node *, Node *> child_redirects;
 
 	LocalVector<DeferredNodePathProperties> deferred_node_paths;
 
@@ -180,7 +181,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				nparent = ret_nodes[0];
 			}
 #endif
-			parent = nparent;
+			parent = child_redirects.has(nparent) ? child_redirects.get(nparent) : nparent;
 		} else {
 			// i == 0 is root node.
 			ERR_FAIL_COND_V_MSG(n.parent != -1, nullptr, vformat("Invalid scene: root node %s cannot specify a parent node.", snames[n.name]));
@@ -220,6 +221,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
 				node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
 				ERR_FAIL_NULL_V(node, nullptr);
+			}
+
+			// check to see where children should get placed
+			Node *child_node = node->get_default_child_parent();
+			if (child_node) {
+				child_redirects.insert(node, child_node);
 			}
 
 		} else if (n.type == TYPE_INSTANTIATED) {
@@ -845,6 +852,20 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map);
 		if (err) {
 			return err;
+		}
+	}
+
+	// if this node is a non-editable instance, then we still might have virtual children.
+	if (!is_editable_instance && nd.type == TYPE_INSTANTIATED) {
+		Node *actual_parent = p_node->get_default_child_parent();
+		if (actual_parent) {
+			for (int i = 0; i < actual_parent->get_child_count(); i++) {
+				Node *c = actual_parent->get_child(i);
+				Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map);
+				if (err) {
+					return err;
+				}
+			}
 		}
 	}
 

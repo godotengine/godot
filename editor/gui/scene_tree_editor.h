@@ -54,10 +54,12 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUPS = 7,
 		BUTTON_PIN = 8,
 		BUTTON_UNIQUE = 9,
+		BUTTON_DEFAULT_CHILD_PARENT = 10,
 	};
 
 	Tree *tree = nullptr;
 	Node *selected = nullptr;
+	Node *default_child_parent = nullptr;
 	ObjectID instance_node;
 
 	String filter;

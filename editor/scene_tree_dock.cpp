@@ -150,6 +150,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
+	} else if (ED_IS_SHORTCUT("scene_tree/set_default_child_parent", p_event)) {
+		_tool_selected(TOOL_SET_DEFAULT_CHILD_PARENT);
 	} else {
 		return;
 	}
@@ -1197,6 +1199,28 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				undo_redo->commit_action();
 			}
 		} break;
+		case TOOL_SET_DEFAULT_CHILD_PARENT: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			List<Node *>::Element *e = selection.front();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
+					Node *root = EditorNode::get_singleton()->get_edited_scene();
+					Node *current_dcp = root->get_default_child_parent();
+					if (current_dcp == node) {
+						undo_redo->create_action(TTR("Clear Default Child Parent"));
+						node = nullptr;
+					} else {
+						undo_redo->create_action(TTR("Set Default Child Parent"));
+					}
+					undo_redo->add_do_method(root, "set_default_child_parent", node);
+					undo_redo->add_undo_method(root, "set_default_child_parent", current_dcp);
+					undo_redo->commit_action();
+					scene_tree->update_tree();
+				}
+			}
+		} break;
 		case TOOL_CREATE_2D_SCENE:
 		case TOOL_CREATE_3D_SCENE:
 		case TOOL_CREATE_USER_INTERFACE:
@@ -1934,6 +1958,8 @@ void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
 }
 
 void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform) {
+	_get_actual_child_parent(&p_new_parent, &p_position_in_parent);
+
 	Node *new_parent = p_new_parent;
 	ERR_FAIL_NULL(new_parent);
 
@@ -2108,6 +2134,41 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	perform_node_renames(nullptr, &path_renames);
 
 	undo_redo->commit_action();
+}
+
+void SceneTreeDock::_get_actual_child_parent(Node **r_nominal_parent, int *r_position_in_parent) const {
+	if (r_nominal_parent == nullptr || *r_nominal_parent == nullptr) {
+		// no need to do anything, let the caller deal with the null
+		return;
+	}
+	Node *nominal_parent = *r_nominal_parent;
+	int position_in_parent = r_position_in_parent == nullptr ? -1 : *r_position_in_parent;
+
+	// if we're asking to reparent or add to a scene root, we may need to redirect, UNLESS:
+	// 1. the scene is marked editable (and thus the children are visible), AND
+	// 2. the user dropped this node at a specific child position
+	Ref<SceneState> ss = nominal_parent->get_scene_instance_state();
+	if (ss.is_valid()) {
+		bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(nominal_parent);
+		Node *dcp = nominal_parent->get_default_child_parent();
+		if (editable && position_in_parent != -1) {
+			// the user is trying to explicitly reparent to the instantiated scene root. let them.
+			return;
+		} else if (dcp != nullptr) {
+			// place the new child under the DCP instead of the nominal parent.
+			*r_nominal_parent = dcp;
+			// if a specific position was requested, update it to come after any hidden nodes
+			if (position_in_parent >= 0) {
+				for (int i = 0; i < dcp->get_child_count(); i++) {
+					if (dcp->get_child(i)->get_owner() == nominal_parent) {
+						position_in_parent++;
+					}
+				}
+				*r_position_in_parent = position_in_parent;
+			}
+			return;
+		}
+	}
 }
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
@@ -2342,6 +2403,8 @@ void SceneTreeDock::_selection_changed() {
 }
 
 void SceneTreeDock::_do_create(Node *p_parent) {
+	_get_actual_child_parent(&p_parent, nullptr); // update parent based on DCP if necessary
+
 	Variant c = create_dialog->instantiate_selected();
 	Node *child = Object::cast_to<Node>(c);
 	ERR_FAIL_NULL(child);
@@ -3097,6 +3160,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ReparentToNewNode")), ED_GET_SHORTCUT("scene_tree/reparent_to_new_node"), TOOL_REPARENT_TO_NEW_NODE);
 			if (selection.size() == 1) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("NewRoot")), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("SetDefaultChildParent")), ED_GET_SHORTCUT("scene_tree/set_default_child_parent"), TOOL_SET_DEFAULT_CHILD_PARENT);
+				if (edited_scene->get_default_child_parent() == selection[0]) {
+					menu->set_item_text(menu->get_item_index(TOOL_SET_DEFAULT_CHILD_PARENT), TTR("Clear as Parent for Scene Children"));
+				}
 			}
 		}
 	}
@@ -3864,6 +3931,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/reparent", TTR("Reparent"));
 	ED_SHORTCUT("scene_tree/reparent_to_new_node", TTR("Reparent to New Node"));
 	ED_SHORTCUT("scene_tree/make_root", TTR("Make Scene Root"));
+	ED_SHORTCUT("scene_tree/set_default_child_parent", TTR("Set as Parent for Scene Children"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTR("Toggle Access as Unique Name"));

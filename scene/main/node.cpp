@@ -1900,6 +1900,37 @@ bool Node::is_unique_name_in_owner() const {
 	return data.unique_name_in_owner;
 }
 
+void Node::set_default_child_parent(Node *p_node) {
+	ERR_MAIN_THREAD_GUARD
+	if (p_node == this) {
+		// this is the default behavior
+		p_node = nullptr;
+	}
+
+	if (p_node != nullptr) {
+		// we only need to check the argument if it's non-null
+		Node *check = p_node->get_parent();
+		bool child_valid = false;
+		while (check) {
+			if (check == this) {
+				child_valid = true;
+				break;
+			}
+
+			check = check->data.parent;
+		}
+
+		ERR_FAIL_COND_MSG(!child_valid, "Invalid default parent. Node must be a descendant in the tree.");
+	}
+	data.default_child_parent = p_node;
+
+	update_configuration_warnings();
+}
+
+Node *Node::get_default_child_parent() const {
+	return data.default_child_parent;
+}
+
 void Node::set_owner(Node *p_owner) {
 	ERR_MAIN_THREAD_GUARD
 	if (data.owner) {
@@ -3380,6 +3411,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
 	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
 
+	ClassDB::bind_method(D_METHOD("set_default_child_parent", "node"), &Node::set_default_child_parent);
+	ClassDB::bind_method(D_METHOD("get_default_child_parent"), &Node::get_default_child_parent);
+
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
 #endif
@@ -3504,6 +3538,7 @@ void Node::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_child_parent", PROPERTY_HINT_NODE_TYPE, "", PROPERTY_USAGE_NO_EDITOR), "set_default_child_parent", "get_default_child_parent");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");

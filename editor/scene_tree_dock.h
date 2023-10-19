@@ -93,6 +93,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_CREATE_3D_SCENE,
 		TOOL_CREATE_USER_INTERFACE,
 		TOOL_CREATE_FAVORITE,
+		TOOL_SET_DEFAULT_CHILD_PARENT,
 
 	};
 
@@ -191,6 +192,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
+	void _get_actual_child_parent(Node **r_nominal_parent, int *r_position_in_parent) const;
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
 
