@@ -37,6 +37,7 @@
 #include "scene/main/node.h"
 #include "tests/test_macros.h"
 #include "tests/test_tools.h"
+#include "core/variant/struct_generator.h"
 
 // TODO: methods to structify:
 /*
@@ -228,15 +229,22 @@ TEST_CASE("[Struct] PropertyInfo") {
 	}
 }
 
-TEST_CASE("[Struct] Validation") {
-	struct NamedInt {
-		StringName name = StringName();
-		int value = 0;
+struct NamedInt {
+	StringName name = StringName();
+	int value = 0;
 
-		STRUCT_LAYOUT(NamedInt,
-				STRUCT_MEMBER(name, Variant::STRING_NAME, StringName()),
-				STRUCT_MEMBER(value, Variant::INT, 0));
+	enum STRUCT_ENUM {
+		NAME,
+		VALUE,
+		STRUCT_ENUM_INDEX_END,
 	};
+
+	STRUCT_LAYOUT(NamedInt,
+			STRUCT_MEMBER(name, STRUCT_ENUM::NAME, Variant::STRING_NAME, StringName()),
+			STRUCT_MEMBER(value, STRUCT_ENUM::VALUE, Variant::INT, 0));
+};
+
+TEST_CASE("[Struct] Validation") {
 
 	Struct<NamedInt> named_int;
 	named_int["name"] = "Godot";
@@ -286,32 +294,54 @@ TEST_CASE("[Struct] Validation") {
 	}
 }
 
+struct BasicStruct {
+	int int_val;
+	float float_val;
+
+	enum STRUCT_ENUM {
+		INT_VAL,
+		FLOAT_VAL,
+		STRUCT_ENUM_INDEX_END,
+	};
+
+	STRUCT_LAYOUT(BasicStruct,
+			STRUCT_MEMBER(int_val, StructMemberIndex::INT_VAL, Variant::INT, 4),
+			STRUCT_MEMBER(float_val, StructMemberIndex::FLOAT_VAL, Variant::FLOAT, 5.5));
+};
+struct BasicStructLookalike {
+	int int_val;
+	float float_val;
+
+	enum STRUCT_ENUM {
+		INT_VAL,
+		FLOAT_VAL,
+		STRUCT_ENUM_INDEX_END,
+	};
+
+	STRUCT_LAYOUT(BasicStructLookalike,
+			STRUCT_MEMBER(int_val, StructMemberIndex::INT_VAL, Variant::INT, 0),
+			STRUCT_MEMBER(float_val, StructMemberIndex::FLOAT_VAL, Variant::FLOAT, 0.0));
+};
+struct NestedStruct {
+	Node *node;
+	BasicStruct value;
+
+	enum STRUCT_ENUM {
+		NODE,
+		VALUE,
+		STRUCT_ENUM_INDEX_END,
+	};
+
+	STRUCT_LAYOUT(NestedStruct,
+			STRUCT_CLASS_MEMBER(node, StructMemberIndex::NODE, Node, Variant()),
+			STRUCT_STRUCT_MEMBER(value, StructMemberIndex::VALUE, BasicStruct, Struct<BasicStruct>()));
+};
+
 TEST_CASE("[Struct] Nesting") {
-	struct BasicStruct {
-		int int_val;
-		float float_val;
 
-		STRUCT_LAYOUT(BasicStruct,
-				STRUCT_MEMBER(int_val, Variant::INT, 4),
-				STRUCT_MEMBER(float_val, Variant::FLOAT, 5.5));
-	};
-	struct BasicStructLookalike {
-		int int_val;
-		float float_val;
-
-		STRUCT_LAYOUT(BasicStructLookalike,
-				STRUCT_MEMBER(int_val, Variant::INT, 0),
-				STRUCT_MEMBER(float_val, Variant::FLOAT, 0.0));
-	};
-	struct NestedStruct {
-		Node *node;
-		BasicStruct value;
-
-		STRUCT_LAYOUT(NestedStruct,
-				STRUCT_CLASS_MEMBER(node, Node, Variant()),
-				STRUCT_STRUCT_MEMBER(value, BasicStruct, Struct<BasicStruct>()));
-	};
-
+	REQUIRE_EQ(NestedStruct::get_struct_member_count(), 2);
+	CHECK_EQ(NestedStruct::get_struct_members()[0].sub_member_count, 0);
+	CHECK_EQ(NestedStruct::get_struct_members()[1].sub_member_count, 2);
 
 	Struct<BasicStruct> basic_struct;
 	Struct<BasicStructLookalike> basic_struct_lookalike;

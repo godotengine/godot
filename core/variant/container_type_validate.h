@@ -33,107 +33,103 @@
 
 #include "core/object/script_language.h"
 #include "core/variant/variant.h"
+#include "core/variant/struct_generator.h"
 
 struct ContainerTypeValidate {
 	Variant::Type type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
-	LocalVector<ContainerTypeValidate> struct_members;
+
+	const StructInfo2 *struct_info;
 	const char *where = "container";
 
+	ContainerTypeValidate(){};
+//	ContainerTypeValidate(const Variant::Type p_type, const StringName &p_class_name, const Ref<Script> &p_script = Ref<Script>(), const char *p_where = "container", const StructInfo2 *p_struct_info = nullptr) {
+//		type = p_type;
+//		class_name = p_class_name;
+//		script = p_script;
+//		struct_info = p_struct_info;
+//		where = p_where;
+//	}
+	ContainerTypeValidate(const Variant::Type p_type, const char *p_where = "container") {
+		type = p_type;
+		class_name = StringName();
+		script = Ref<Script>();
+		struct_info = nullptr;
+		where = p_where;
+	}
+	ContainerTypeValidate(const StringName &p_class_name, const Ref<Script> &p_script = Ref<Script>(), const char *p_where = "container") {
+		type = Variant::OBJECT;
+		class_name = p_class_name;
+		script = p_script;
+		struct_info = nullptr;
+		where = p_where;
+	}
+	ContainerTypeValidate(const StructInfo2 *p_struct_info) {
+		type = Variant::ARRAY;
+		class_name = StringName();
+		script = Ref<Script>();
+		struct_info = p_struct_info;
+		where = "Struct";
+	}
+//	ContainerTypeValidate(const Variant::Type p_type, const StringName &p_class_name, const uint32_t p_member_count, const StructMember *p_members, const uint32_t p_recursion_max = MAX_RECURSION, const uint32_t p_recursion_count = 0) {
+//		type = p_type;
+//		class_name = p_class_name;
+//		where = "Struct";
+//		struct_members.resize(p_member_count);
+//		struct_member_names.resize(p_member_count);
+//		if (!recursion_finished(p_recursion_max, p_recursion_count)) {
+//			for (uint32_t i = 0; i < p_member_count; i++) {
+//				StructMember member = p_members[i];
+//				struct_members[i] = ContainerTypeValidate(member.type, member.class_name, member.sub_member_count, member.sub_members, p_recursion_max, p_recursion_count + 1);
+//				struct_member_names[i] = member.name;
+//			}
+//		}
+//	}
+
 	_FORCE_INLINE_ bool is_struct() const {
-		return type == Variant::ARRAY && class_name != StringName();
+		return struct_info != nullptr;
 	}
 
-	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type, uint32_t r_recursion_count = 0) const {
-		bool can_ref = can_reference_base(p_type);
-		if (!can_ref) {
+	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
+		if (!can_reference_base(p_type)) {
 			return false;
 		}
 
-		const uint32_t size = struct_members.size();
-		if (size != p_type.struct_members.size()) {
-			return false;
-		}
-
-		if (r_recursion_count > MAX_RECURSION) {
-			ERR_PRINT("Max recursion reached");
+		if (recursion_finished(p_recursion_max, p_recursion_count)) {
 			return true;
 		}
-		r_recursion_count++;
-		for (uint32_t i = 0; i < size; i++) {
-			can_ref = struct_members[i].can_reference(p_type.struct_members[i], r_recursion_count);
-			if (!can_ref) {
+
+		for (uint32_t i = 0; i < struct_info->count; i++) {
+			if (!struct_members[i].can_reference(p_type.struct_members[i], p_recursion_max, p_recursion_count + 1)) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-private:
-	_FORCE_INLINE_ bool can_reference_base(const ContainerTypeValidate &p_type) const {
-		if (type != p_type.type) {
-			return false;
-		} else if (type != Variant::OBJECT) {
-			return true;
-		}
+//	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type, const uint32_t p_recursion_max = 1, const uint32_t p_recursion_count = 0) const {
+//		if (!can_reference_base(p_type)) {
+//			return false;
+//		}
+//
+//		if (recursion_finished(p_recursion_max, p_recursion_count)) {
+//			return true;
+//		}
+//
+//		for (uint32_t i = 0; i < struct_info->count; i++) {
+//			if (!struct_members[i].can_reference(p_type.struct_members[i], p_recursion_max, p_recursion_count + 1)) {
+//				return false;
+//			}
+//		}
+//		return true;
+//	}
 
-		if (class_name == StringName()) {
-			return true;
-		} else if (p_type.class_name == StringName()) {
-			return false;
-		} else if (class_name != p_type.class_name && !ClassDB::is_parent_class(p_type.class_name, class_name)) {
-			return false;
-		}
-
-		if (script.is_null()) {
-			return true;
-		} else if (p_type.script.is_null()) {
-			return false;
-		} else if (script != p_type.script && !p_type.script->inherits_script(script)) {
-			return false;
-		}
-		return true;
-	}
-
-public:
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
-		return equal_recursive(p_type, 0);
+		return equal_recursive(p_type);
 	}
-
-private:
-	_FORCE_INLINE_ bool equal_recursive(const ContainerTypeValidate &p_type, uint32_t r_recursion_count = 0) const {
-		bool equals = equal_base(p_type);
-		if (!equals) {
-			return false;
-		}
-
-		const uint32_t size = struct_members.size();
-		if (size != p_type.struct_members.size()) {
-			return false;
-		}
-
-		if (r_recursion_count > MAX_RECURSION) {
-			ERR_PRINT("Max recursion reached");
-			return true;
-		}
-		r_recursion_count++;
-		for (uint32_t i = 0; i < size; i++) {
-			equals = struct_members[i].equal_recursive(p_type.struct_members[i], r_recursion_count);
-			if (!equals) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	_FORCE_INLINE_ bool equal_base(const ContainerTypeValidate &p_type) const {
-		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
-	}
-
-public:
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return !equal_recursive(p_type, 0);
+		return !equal_recursive(p_type);
 	}
 
 	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
@@ -160,19 +156,16 @@ public:
 			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(inout_variant.get_type()) + "' into a " + where + " of type '" + Variant::get_type_name(type) + "'.");
 		}
 
-		if (is_struct()) {
-			return validate_struct(inout_variant);
+		if (type == Variant::ARRAY) {
+			const Array array = inout_variant;
+			if (is_struct()) {
+				return operator==(array.get_type_validator());
+			}
+			return class_name == array.get_typed_class_name(); // TypedArray of structs
 		} else if (type == Variant::OBJECT) {
 			return validate_object(inout_variant, p_operation);
 		}
 		return true;
-	}
-
-public:
-	_FORCE_INLINE_ bool validate_struct(const Variant &p_variant) const {
-		ERR_FAIL_COND_V(p_variant.get_type() != Variant::ARRAY, false);
-		const Array array = p_variant;
-		return class_name == array.get_typed_class_name();
 	}
 
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
@@ -211,6 +204,69 @@ public:
 		ERR_FAIL_COND_V_MSG(!other_script->inherits_script(script), false, "Attempted to " + String(p_operation) + " an object into a " + String(where) + ", that does not inherit from '" + String(script->get_class_name()) + "'.");
 
 		return true;
+	}
+
+private:
+	_FORCE_INLINE_ bool recursion_finished(const uint32_t p_recursion_max, const uint32_t p_recursion_count) const {
+		if (p_recursion_count >= p_recursion_max) {
+			return true;
+		}
+		if (p_recursion_count > MAX_RECURSION) {
+			ERR_PRINT("Max recursion reached");
+			return true;
+		}
+		return false;
+	}
+
+	_FORCE_INLINE_ bool can_reference_base(const ContainerTypeValidate &p_type) const {
+		if (type != p_type.type) {
+			return false;
+		} else if (is_struct()) {
+			return equal_base(p_type);
+		} else if (type != Variant::OBJECT) {
+			return true;
+		}
+
+		if (class_name == StringName()) {
+			return true;
+		} else if (p_type.class_name == StringName()) {
+			return false;
+		} else if (class_name != p_type.class_name && !ClassDB::is_parent_class(p_type.class_name, class_name)) {
+			return false;
+		}
+
+		if (script.is_null()) {
+			return true;
+		} else if (p_type.script.is_null()) {
+			return false;
+		} else if (script != p_type.script && !p_type.script->inherits_script(script)) {
+			return false;
+		}
+		return true;
+	}
+
+	_FORCE_INLINE_ bool equal_recursive(const ContainerTypeValidate &p_type, const uint32_t p_recursion_max = 1, const uint32_t p_recursion_count = 0) const {
+		if (!equal_base(p_type)) {
+			return false;
+		}
+
+		if (recursion_finished(p_recursion_max, p_recursion_count)) {
+			return true;
+		}
+
+		for (uint32_t i = 0; i < struct_members.size(); i++) {
+			if (struct_member_names[i] != p_type.struct_member_names[i]) {
+				return false;
+			}
+			if (!struct_members[i].equal_recursive(p_type.struct_members[i], p_recursion_max, p_recursion_count + 1)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	_FORCE_INLINE_ bool equal_base(const ContainerTypeValidate &p_type) const {
+		return type == p_type.type && class_name == p_type.class_name && script == p_type.script && struct_members.size() == p_type.struct_members.size();
 	}
 };
 

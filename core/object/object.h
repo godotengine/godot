@@ -149,44 +149,57 @@ enum PropertyUsageFlags {
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
 struct StructMember {
-	StringName name = StringName();
+	uint32_t index;
+	StringName name;
 	Variant::Type type = Variant::NIL;
 	StringName class_name = StringName();
+	Variant script = Variant(); // Should be Ref<Script> but Reference does not exist yet, store it in a Variant.
 	Variant default_value = Variant();
 	const StructMember *sub_members = nullptr;
 	uint32_t sub_member_count = 0;
-
-	StructMember(const StringName &p_name = StringName(), const Variant::Type p_type = Variant::NIL, const StringName &p_class_name = StringName(), const StructMember *p_sub_members = nullptr, const Variant &p_default_value = Variant()) {
+	StructMember(const StringName &p_name){};
+	StructMember(const uint32_t p_index, const StringName &p_name, const Variant::Type p_type = Variant::NIL, const StringName &p_class_name = StringName(), const Variant &p_script = Variant(), const uint32_t p_sub_member_count = 0, const StructMember *p_sub_members = nullptr, const Variant &p_default_value = Variant()) {
+		index = p_index;
 		name = p_name;
 		type = p_type;
 		class_name = p_class_name;
+		script = p_script;
 		default_value = p_default_value;
 		sub_members = p_sub_members;
-		sub_member_count = sizeof(p_sub_members) / sizeof(StructMember);
+		sub_member_count = p_sub_member_count;
 	}
 };
 
-#define STRUCT_MEMBER(m_name, m_type, m_default) StructMember(SNAME(#m_name), m_type, StringName(), nullptr, m_default)
-#define STRUCT_CLASS_MEMBER(m_name, m_class_name, m_default) StructMember(SNAME(#m_name), Variant::OBJECT, #m_class_name, nullptr, m_default)
-#define STRUCT_STRUCT_MEMBER(m_name, m_struct, m_default) StructMember(SNAME(#m_name), Variant::ARRAY, m_struct::get_struct_name(), m_struct::get_struct_members(), m_default)
+#define STRUCT_VALIDATE_ENUM_ORDER(m_index, m_enum_index) \
+	[](){ static_assert(m_index == m_enum_index, "bad Struct enum order."); return m_index; }()
+#define STRUCT_MEMBER(m_index, m_enum_index, m_name, m_type, m_default) \
+	StructMember(STRUCT_VALIDATE_ENUM_ORDER(m_index, m_enum_index), SNAME(#m_name), m_type, StringName(), Variant(), 0, nullptr, m_default)
+#define STRUCT_CLASS_MEMBER(m_name, m_index, m_class_name, m_default) \
+	StructMember(m_index, SNAME(#m_name), Variant::OBJECT, #m_class_name, Variant(), 0, nullptr, m_default)
+#define STRUCT_STRUCT_MEMBER(m_name, m_index, m_struct, m_default) \
+	StructMember(m_index, SNAME(#m_name), Variant::ARRAY, m_struct::get_struct_name(), m_struct::get_struct_script(), m_struct::get_struct_member_count(), m_struct::get_struct_members(), m_default)
+#define STRUCT_ENUM StructMemberIndex
+#define STRUCT_ENUM_INDEX_END STRUCT_MEMBER_COUNT
 
-#define STRUCT_LAYOUT(m_name, ...)                                                   \
-	_FORCE_INLINE_ static const StringName get_struct_name() {                       \
-		static const StringName struct_name = SNAME(#m_name);                        \
-		return struct_name;                                                          \
-	}                                                                                \
-	_FORCE_INLINE_ static const StructMember *get_struct_members() {                 \
-		static const StructMember members[] = { __VA_ARGS__ };                       \
-		return members;                                                              \
-	}                                                                                \
-	_FORCE_INLINE_ static const uint32_t get_struct_member_count() {                 \
-		const StructMember members[] = { __VA_ARGS__ };                              \
-		static const uint32_t member_count = sizeof(members) / sizeof(StructMember); \
-		return member_count;                                                         \
-	}                                                                                \
-	_FORCE_INLINE_ static const StructMember &get_struct_member(uint32_t p_index) {  \
-		CRASH_BAD_INDEX(p_index, get_struct_member_count());                         \
-		return get_struct_members()[p_index];                                        \
+#define STRUCT_LAYOUT(m_name, ...)                                                         \
+	static constexpr uint32_t struct_member_count = STRUCT_ENUM::STRUCT_ENUM_INDEX_END;    \
+	_FORCE_INLINE_ static const StringName get_struct_name() {                             \
+		static const StringName struct_name = SNAME(#m_name);                              \
+		return struct_name;                                                                \
+	}                                                                                      \
+	_FORCE_INLINE_ static const Variant get_struct_script() {                              \
+		return Variant();                                                                  \
+	}                                                                                      \
+	_FORCE_INLINE_ static const StructMember(&get_struct_members())[struct_member_count] { \
+		static const StructMember members[struct_member_count] = { __VA_ARGS__ };          \
+		return members;                                                                    \
+	}                                                                                      \
+	_FORCE_INLINE_ static constexpr uint32_t get_struct_member_count() {                   \
+		return struct_member_count;                                                        \
+	}                                                                                      \
+	_FORCE_INLINE_ static const StructMember &get_struct_member(uint32_t p_index) {        \
+		CRASH_BAD_INDEX(p_index, struct_member_count);                                     \
+		return get_struct_members()[p_index];                                              \
 	}
 
 struct PropertyInfo {
@@ -199,13 +212,23 @@ struct PropertyInfo {
 
 	// If you are thinking about adding another member to this class, ask the maintainer (Juan) first.
 
+	enum STRUCT_ENUM {
+		NAME,
+		CLASS_NAME,
+		TYPE,
+		HINT,
+		HINT_STRING,
+		USAGE,
+		STRUCT_ENUM_INDEX_END,
+	};
+
 	STRUCT_LAYOUT(PropertyInfo,
-			STRUCT_MEMBER(name, Variant::STRING, String()),
-			STRUCT_MEMBER(class_name, Variant::STRING_NAME, StringName()),
-			STRUCT_MEMBER(type, Variant::INT, Variant::NIL),
-			STRUCT_MEMBER(hint, Variant::INT, PROPERTY_HINT_NONE),
-			STRUCT_MEMBER(hint_string, Variant::STRING, String()),
-			STRUCT_MEMBER(usage, Variant::INT, PROPERTY_USAGE_DEFAULT))
+			STRUCT_MEMBER(0, NAME, name, Variant::STRING, String()),
+			STRUCT_MEMBER(1, CLASS_NAME, class_name, Variant::STRING_NAME, StringName()),
+			STRUCT_MEMBER(2, TYPE, type, Variant::INT, Variant::NIL),
+			STRUCT_MEMBER(3, HINT, hint, Variant::INT, PROPERTY_HINT_NONE),
+			STRUCT_MEMBER(4, HINT_STRING, hint_string, Variant::STRING, String()),
+			STRUCT_MEMBER(5, USAGE, usage, Variant::INT, PROPERTY_USAGE_DEFAULT))
 
 	_FORCE_INLINE_ PropertyInfo added_usage(uint32_t p_fl) const {
 		PropertyInfo pi = *this;
@@ -285,15 +308,27 @@ struct MethodInfo {
 	int return_val_metadata = 0;
 	Vector<int> arguments_metadata;
 
+	enum STRUCT_ENUM {
+		NAME,
+		RETURN_VAL,
+		FLAGS,
+		ID,
+		ARGUMENTS,
+		DEFAULT_ARGUMENTS,
+		RETURN_VAL_METADATA,
+		ARGUMENTS_METADATA,
+		STRUCT_ENUM_INDEX_END,
+	};
+
 	STRUCT_LAYOUT(MethodInfo,
-			STRUCT_MEMBER(name, Variant::STRING, String()),
-			STRUCT_MEMBER(return_val, Variant::INT, PROPERTY_USAGE_DEFAULT),
-			STRUCT_MEMBER(flags, Variant::INT, METHOD_FLAGS_DEFAULT),
-			STRUCT_MEMBER(id, Variant::INT, 0),
-			STRUCT_MEMBER(arguments, Variant::ARRAY, Array()),
-			STRUCT_MEMBER(default_arguments, Variant::ARRAY, Array()),
-			STRUCT_MEMBER(return_val_metadata, Variant::INT, 0),
-			STRUCT_MEMBER(arguments_metadata, Variant::ARRAY, PackedInt32Array()))
+			STRUCT_MEMBER(0, NAME, name, Variant::STRING, String()),
+			STRUCT_MEMBER(1, RETURN_VAL, return_val, Variant::INT, PROPERTY_USAGE_DEFAULT),
+			STRUCT_MEMBER(2, FLAGS, flags, Variant::INT, METHOD_FLAGS_DEFAULT),
+			STRUCT_MEMBER(3, ID, id, Variant::INT, 0),
+			STRUCT_MEMBER(4, ARGUMENTS, arguments, Variant::ARRAY, Array()),
+			STRUCT_MEMBER(5, DEFAULT_ARGUMENTS, default_arguments, Variant::ARRAY, Array()),
+			STRUCT_MEMBER(6, RETURN_VAL_METADATA, return_val_metadata, Variant::INT, 0),
+			STRUCT_MEMBER(7, ARGUMENTS_METADATA, arguments_metadata, Variant::ARRAY, PackedInt32Array()))
 
 	int get_argument_meta(int p_arg) const {
 		ERR_FAIL_COND_V(p_arg < -1 || p_arg > arguments.size(), 0);
@@ -660,10 +695,17 @@ public:
 		Callable callable;
 		uint32_t flags = 0;
 
+		enum STRUCT_ENUM {
+			SIGNAL,
+			CALLABLE,
+			FLAGS,
+			STRUCT_ENUM_INDEX_END,
+		};
+
 		STRUCT_LAYOUT(Connection,
-				STRUCT_MEMBER(signal, Variant::SIGNAL, Signal()),
-				STRUCT_MEMBER(callable, Variant::CALLABLE, Callable()),
-				STRUCT_MEMBER(flags, Variant::INT, 0))
+				STRUCT_MEMBER(0, SIGNAL, signal, Variant::SIGNAL, Signal()),
+				STRUCT_MEMBER(1, CALLABLE, callable, Variant::CALLABLE, Callable()),
+				STRUCT_MEMBER(2, FLAGS, flags, Variant::INT, 0))
 
 		bool operator<(const Connection &p_conn) const;
 

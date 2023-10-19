@@ -41,6 +41,7 @@
 #include "core/variant/dictionary.h"
 #include "core/variant/struct.h"
 #include "core/variant/variant.h"
+#include "struct_generator.h"
 
 class ArrayPrivate {
 public:
@@ -49,12 +50,10 @@ public:
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
 
-	StringName struct_name = StringName();
 	uint32_t member_count = 0;
-	LocalVector<StringName> member_names;
 
 	_FORCE_INLINE_ bool is_struct() const {
-		return member_count > 0;
+		return typed.is_struct();
 	}
 
 	_FORCE_INLINE_ bool is_struct_array() const {
@@ -233,7 +232,7 @@ void Array::assign(const Array &p_array) {
 		return;
 	}
 
-	if (typed.is_struct() && (typed != source_typed)) {
+	if (is_struct() && (typed != source_typed)) {
 		ERR_FAIL_MSG("A struct can only be assigned a struct of matching type.");
 	}
 
@@ -874,34 +873,22 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	Ref<Script> script = p_script;
 	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
 
-	_p->typed.type = Variant::Type(p_type);
-	_p->typed.class_name = p_class_name;
-	_p->typed.script = script;
-	_p->typed.where = "TypedArray";
+	_p->typed = ContainerTypeValidate(Variant::Type(p_type), p_class_name, script, "TypedArray");
 }
 
-void Array::set_struct(uint32_t p_size, const StringName &p_struct_name, const StructMember &(*p_get_member)(uint32_t)) {
+void Array::set_struct(const StructInfo2 &p_struct_info) {
 	if (validate_set_type() != OK) {
 		return;
 	}
-	_p->array.resize(p_size);
-	_p->typed.type = Variant::ARRAY;
-	_p->typed.where = "Struct"; // TODO: is this right?
+	const uint32_t size = p_struct_info.count;
+	_p->array.resize(size);
+	_p->member_names.resize(size);
+	_p->member_count = size;
 
-	_p->struct_name = p_struct_name;
-	_p->typed.class_name = p_struct_name;
-
-	_p->array.resize(p_size);
-	_p->member_count = p_size;
-	_p->member_names.resize(p_size);
-	_p->typed.struct_members.resize(p_size);
-
-	for (uint32_t i = 0; i < p_size; i++) {
-		StructMember member = p_get_member(i);
-		_p->typed.struct_members[i].type = member.type;
-		_p->typed.struct_members[i].class_name = member.class_name;
-		_p->member_names[i] = member.name;
+	for (uint32_t i = 0; i < size; i++) {
+		_p->member_names[i] = p_members[i].name;
 	}
+	_p->typed = ContainerTypeValidate(Variant::ARRAY, p_struct_name, p_size, p_members);
 }
 
 bool Array::is_typed() const {
@@ -928,6 +915,10 @@ Variant Array::get_typed_script() const {
 	return _p->typed.script;
 }
 
+ContainerTypeValidate Array::get_type_validator() const {
+	return _p->typed;
+}
+
 void Array::make_read_only() {
 	if (_p->read_only == nullptr) {
 		_p->read_only = memnew(Variant);
@@ -943,38 +934,30 @@ Array::Array(const Array &p_from) {
 	_ref(p_from);
 }
 
-Array::Array(const Array &p_from, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
+Array::Array(const Array &p_from, const StructInfo2 &p_struct_info) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init(); // TODO: should this be _ref(p_from)?
 
-	set_struct(p_from.size(), p_name, p_get_member);
+	set_struct(p_from.size(), p_struct_info.name, p_members);
 	assign(p_from);
 }
 
-//Array::Array(const Array &p_from, const StringName &p_name, const Vector<StringName> &p_member_names) {
-//	_p = memnew(ArrayPrivate);
-//	_p->refcount.init();
-//	const uint32_t size = p_from.size();
-//
-//	set_struct(size, p_name);
-//	for (uint32_t i = 0; i < size; i++) {
-//		StructMember member = p_get_member(i);
-//		_p->typed.set_struct_member(i, member.type, member.class_name);
-//		_p->member_names[i] = member.name;
-//		_p->array.write[i, member.default_value];
-//	}
-//
-//	assign(p_from);
-//}
+Array::Array(const Array &p_from, const StringName &p_name, const StructMember *p_members) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init(); // TODO: should this be _ref(p_from)?
 
-Array::Array(uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t)) {
+	set_struct(p_from.size(), p_name, p_members);
+	assign(p_from);
+}
+
+Array::Array(uint32_t p_size, const StringName &p_name, const StructMember *p_members) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
 
-	set_struct(p_size, p_name, p_get_member);
+	set_struct(p_size, p_name, p_members);
 	Variant *pw = _p->array.ptrw();
 	for (uint32_t i = 0; i < p_size; i++) {
-		pw[i] = p_get_member(i).default_value;
+		pw[i] = p_members[i].default_value;
 	}
 }
 

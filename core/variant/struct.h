@@ -48,14 +48,29 @@ public:
 	_FORCE_INLINE_ const Variant &operator[](const StringName &p_struct_member) const {
 		return get_named(p_struct_member);
 	}
+	template <typename StructMember>
+	_FORCE_INLINE_ int get_member_index() const {
+		return T::Layout::get_member_index<StructMember>();
+	}
+	template <typename StructMember>
+	_FORCE_INLINE_ Variant get_member_value() const {
+		return get(get_member_index<StructMember>());
+	}
+	template <typename StructMember>
+	_FORCE_INLINE_ void set_member_value(const StructMember::type &p_value) {
+		set(get_member_index<StructMember>(), p_value);
+	}
+	_FORCE_INLINE_ Struct(const T &p_struct) :
+		Struct(T::to_array(p_struct)) {
+	}
 	_FORCE_INLINE_ Struct(const Variant &p_variant) :
-			Array(Array(p_variant), T::get_struct_name(), T::get_struct_member) {
+			Array(Array(p_variant), T::Layout::get_struct_info()) {
 	}
 	_FORCE_INLINE_ Struct(const Array &p_array) :
-			Array(p_array, T::get_struct_name(), T::get_struct_member) {
+			Array(p_array, T::Layout::get_struct_info()) {
 	}
 	_FORCE_INLINE_ Struct() :
-			Array(T::get_struct_member_count(), T::get_struct_name(), T::get_struct_member) {
+			Array(T::Layout::get_struct_info()) {
 	}
 };
 
@@ -95,7 +110,7 @@ struct GetTypeInfo<Struct<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	_FORCE_INLINE_ static PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_struct_name());
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
 	}
 };
 
@@ -104,7 +119,7 @@ struct GetTypeInfo<const Struct<T> &> {
 	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	_FORCE_INLINE_ static PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_struct_name());
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
 	}
 };
 
