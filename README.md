@@ -19,14 +19,14 @@ Web-based platforms and [consoles](https://docs.godotengine.org/en/latest/tutori
 ## Free, open source and community-driven
 
 Godot is completely free and open source under the very permissive [MIT license](https://godotengine.org/license).
-No strings attached, no royalties, nothing. The users' games are theirs, down
+No strings attached, no royalties, nothing. The users games are theirs, down
 to the last line of engine code. Godot's development is fully independent and
 community-driven, empowering users to help shape their engine to match their
 expectations. It is supported by the [Godot Foundation](https://godot.foundation/)
 not-for-profit.
 
 Before being open sourced in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
-Godot had been developed by [Juan Linietsky](https://github.com/reduz) and
+Godot has been developed by [Juan Linietsky](https://github.com/reduz) and
 [Ariel Manzur](https://github.com/punto-) (both still maintaining the project)
 for several years as an in-house engine, used to publish several work-for-hire
 titles.
@@ -50,7 +50,7 @@ for compilation instructions for every supported platform.
 Godot is not only an engine but an ever-growing community of users and engine
 developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
 
-The best way to get in touch with the core engine developers is to join the
+The best way to get in touch with the core engine developers is by joining the
 [Godot Contributors Chat](https://chat.godotengine.org).
 
 To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
