@@ -55,7 +55,6 @@ public:
 private:
 	struct Tab {
 		String text;
-		String xl_text;
 
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
@@ -167,8 +166,13 @@ protected:
 	Variant get_drag_data(const Point2 &p_point) override;
 	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
+	void _move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
 public:
+	Variant _handle_get_drag_data(const String &p_type, const Point2 &p_point);
+	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
+	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
+
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
 	void set_tab_title(int p_tab, const String &p_title);
