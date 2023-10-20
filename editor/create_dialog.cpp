@@ -309,8 +309,10 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	}
 
-	bool is_deprecated = EditorHelp::get_doc_data()->class_list[p_type].is_deprecated;
-	bool is_experimental = EditorHelp::get_doc_data()->class_list[p_type].is_experimental;
+	HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(p_type);
+
+	bool is_deprecated = (class_doc && class_doc->value.is_deprecated);
+	bool is_experimental = (class_doc && class_doc->value.is_experimental);
 
 	if (is_deprecated) {
 		r_item->add_button(0, get_editor_theme_icon("StatusError"), 0, false, TTR("This class is marked as deprecated."));
@@ -330,7 +332,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_collapsed(should_collapse);
 	}
 
-	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
+	const String &description = DTR(class_doc ? class_doc->value.brief_description : "");
 	r_item->set_tooltip_text(0, description);
 
 	if (p_type_category == TypeCategory::OTHER_TYPE && !script_type) {

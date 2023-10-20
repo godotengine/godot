@@ -2360,36 +2360,38 @@ void EditorHelp::_add_text(const String &p_bbcode) {
 	_add_text_to_rt(p_bbcode, class_desc, this, edited_class);
 }
 
-Thread EditorHelp::thread;
+String EditorHelp::doc_version_hash;
+bool EditorHelp::doc_gen_first_attempt = true;
+bool EditorHelp::doc_gen_use_threads = true;
+Thread EditorHelp::gen_thread;
 
 void EditorHelp::_wait_for_thread() {
-	if (thread.is_started()) {
-		thread.wait_to_finish();
+	if (gen_thread.is_started()) {
+		gen_thread.wait_to_finish();
 	}
+}
+
+void EditorHelp::_compute_doc_version_hash() {
+	uint32_t version_hash = Engine::get_singleton()->get_version_info().hash();
+	doc_version_hash = vformat("%d/%d/%d/%s", version_hash, ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
 }
 
 String EditorHelp::get_cache_full_path() {
 	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor_doc_cache.res");
 }
 
-static bool first_attempt = true;
-
-static String _compute_doc_version_hash() {
-	uint32_t version_hash = Engine::get_singleton()->get_version_info().hash();
-	return vformat("%d/%d/%d/%s", version_hash, ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
-}
-
 void EditorHelp::_load_doc_thread(void *p_udata) {
-	DEV_ASSERT(first_attempt);
+	DEV_ASSERT(doc_gen_first_attempt);
+
 	Ref<Resource> cache_res = ResourceLoader::load(get_cache_full_path());
-	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == _compute_doc_version_hash()) {
+	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == doc_version_hash) {
 		Array classes = cache_res->get_meta("classes", Array());
 		for (int i = 0; i < classes.size(); i++) {
 			doc->add_doc(DocData::ClassDoc::from_dict(classes[i]));
 		}
 	} else {
 		// We have to go back to the main thread to start from scratch.
-		first_attempt = false;
+		doc_gen_first_attempt = false;
 		callable_mp_static(&EditorHelp::generate_doc).bind(true).call_deferred();
 	}
 }
@@ -2401,7 +2403,7 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 
 	Ref<Resource> cache_res;
 	cache_res.instantiate();
-	cache_res->set_meta("version_hash", _compute_doc_version_hash());
+	cache_res->set_meta("version_hash", doc_version_hash);
 	Array classes;
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		classes.push_back(DocData::ClassDoc::to_dict(E.value));
@@ -2413,8 +2415,6 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 	}
 }
 
-static bool doc_gen_use_threads = true;
-
 void EditorHelp::generate_doc(bool p_use_cache) {
 	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
 	if (doc_gen_use_threads) {
@@ -2422,15 +2422,19 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 		_wait_for_thread();
 	}
 
-	DEV_ASSERT(first_attempt == (doc == nullptr));
+	DEV_ASSERT(doc_gen_first_attempt == (doc == nullptr));
 
 	if (!doc) {
 		doc = memnew(DocTools);
 	}
 
-	if (p_use_cache && first_attempt && FileAccess::exists(get_cache_full_path())) {
+	if (doc_version_hash.is_empty()) {
+		_compute_doc_version_hash();
+	}
+
+	if (p_use_cache && doc_gen_first_attempt && FileAccess::exists(get_cache_full_path())) {
 		if (doc_gen_use_threads) {
-			thread.start(_load_doc_thread, nullptr);
+			gen_thread.start(_load_doc_thread, nullptr);
 		} else {
 			_load_doc_thread(nullptr);
 		}
@@ -2441,7 +2445,7 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 		doc->generate(true);
 
 		if (doc_gen_use_threads) {
-			thread.start(_gen_doc_thread, nullptr);
+			gen_thread.start(_gen_doc_thread, nullptr);
 		} else {
 			_gen_doc_thread(nullptr);
 		}
