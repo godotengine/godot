@@ -1914,15 +1914,12 @@ bool LineEdit::is_secret() const {
 }
 
 void LineEdit::set_secret_character(const String &p_string) {
-	// An empty string as the secret character would crash the engine.
-	// It also wouldn't make sense to use multiple characters as the secret character.
-	ERR_FAIL_COND_MSG(p_string.length() != 1, "Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given).");
-
 	if (secret_character == p_string) {
 		return;
 	}
 
 	secret_character = p_string;
+	update_configuration_warnings();
 	_shape();
 	queue_redraw();
 }
@@ -2266,6 +2263,13 @@ void LineEdit::_emit_text_change() {
 	emit_signal(SNAME("text_changed"), text);
 	text_changed_dirty = false;
 }
+PackedStringArray LineEdit::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
+	if (secret_character.length() > 1) {
+		warnings.push_back("Secret Character property supports only one character. Extra characters will be ignored.");
+	}
+	return warnings;
+}
 
 void LineEdit::_shape() {
 	const Ref<Font> &font = theme_cache.font;
@@ -2281,7 +2285,14 @@ void LineEdit::_shape() {
 	if (text.length() == 0 && ime_text.length() == 0) {
 		t = placeholder_translated;
 	} else if (pass) {
-		t = secret_character.repeat(text.length() + ime_text.length());
+		// TODO: Integrate with text server to add support for non-latin scripts.
+		// Allow secret_character as empty strings, act like if a space was used as a secret character.
+		String secret = " ";
+		// Allow values longer than 1 character in the property, but trim characters after the first one.
+		if (!secret_character.is_empty()) {
+			secret = secret_character.left(1);
+		}
+		t = secret.repeat(text.length() + ime_text.length());
 	} else {
 		if (ime_text.length() > 0) {
 			t = text.substr(0, caret_column) + ime_text + text.substr(caret_column, text.length());
