@@ -979,7 +979,14 @@ void EditorNode::_fs_changed() {
 						err = missing_templates ? ERR_FILE_NOT_FOUND : ERR_UNCONFIGURED;
 					} else {
 						platform->clear_messages();
+						uint32_t old_build_nr = ProjectSettings::get_singleton()->get_setting("application/config/build");
+						ProjectSettings::get_singleton()->set_setting("application/config/build", old_build_nr + 1); /// Increase build number.
 						err = platform->export_project(export_preset, export_defer.debug, export_path);
+						if (err == OK) {
+							ProjectSettings::get_singleton()->save();
+						} else {
+							ProjectSettings::get_singleton()->set_setting("application/config/build", old_build_nr); // Reset build number.
+						}
 					}
 				}
 				if (err != OK) {

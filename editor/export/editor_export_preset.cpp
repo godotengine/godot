@@ -344,10 +344,22 @@ _FORCE_INLINE_ bool _check_digits(const String &p_str) {
 	return true;
 }
 
+String EditorExportPreset::get_build_nr(const StringName &p_preset_string) const {
+	String result = get(p_preset_string);
+	if (result.is_empty()) {
+		result = GLOBAL_GET("application/config/build");
+		if (result.is_empty()) {
+			result = "1";
+		}
+	}
+	return result;
+}
+
 String EditorExportPreset::get_version(const StringName &p_preset_string, bool p_windows_version) const {
 	String result = get(p_preset_string);
 	if (result.is_empty()) {
 		result = GLOBAL_GET("application/config/version");
+		String build_nr = GLOBAL_GET("application/config/build");
 
 		// Split and validate version number components.
 		const PackedStringArray result_split = result.split(".", false);
@@ -363,11 +375,11 @@ String EditorExportPreset::get_version(const StringName &p_preset_string, bool p
 			if (p_windows_version) {
 				// Modify version number to match Windows constraints (version numbers must have 4 components).
 				if (result_split.size() == 1) {
-					result = result + ".0.0.0";
+					result = result + ".0.0." + build_nr;
 				} else if (result_split.size() == 2) {
-					result = result + ".0.0";
+					result = result + ".0." + build_nr;
 				} else if (result_split.size() == 3) {
-					result = result + ".0";
+					result = result + "." + build_nr;
 				} else {
 					result = vformat("%s.%s.%s.%s", result_split[0], result_split[1], result_split[2], result_split[3]);
 				}
@@ -379,7 +391,7 @@ String EditorExportPreset::get_version(const StringName &p_preset_string, bool p
 				WARN_PRINT(vformat("Invalid version number \"%s\". The version number can only contain numeric characters (0-9) and non-consecutive periods (.).", result));
 			}
 			if (p_windows_version) {
-				result = "1.0.0.0";
+				result = "1.0.0." + build_nr;
 			} else {
 				result = "1.0.0";
 			}
