@@ -5856,6 +5856,14 @@ void EditorNode::add_control_to_dock(DockSlot p_slot, Control *p_control) {
 }
 
 void EditorNode::remove_control_from_dock(Control *p_control) {
+	// If the dock is floating, close it first.
+	for (WindowWrapper *wrapper : floating_docks) {
+		if (p_control == wrapper->get_wrapped_control()) {
+			wrapper->set_window_enabled(false);
+			break;
+		}
+	}
+
 	Control *dock = nullptr;
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 		if (p_control->get_parent() == dock_slot[i]) {
