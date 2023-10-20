@@ -447,6 +447,11 @@ void AnimationNodeBlendTreeEditor::_connection_request(const String &p_from, int
 
 	AnimationNodeBlendTree::ConnectionError err = blend_tree->can_connect_node(p_to, p_to_index, p_from);
 
+	if (err == AnimationNodeBlendTree::CONNECTION_ERROR_CONNECTION_EXISTS) {
+		blend_tree->disconnect_node(p_to, p_to_index);
+		err = blend_tree->can_connect_node(p_to, p_to_index, p_from);
+	}
+
 	if (err != AnimationNodeBlendTree::CONNECTION_OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Unable to connect, port may be in use or connection may be invalid."));
 		return;

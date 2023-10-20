@@ -71,6 +71,7 @@ if env["builtin_openxr"]:
         # Build the engine using object files
         khrloader_obj = []
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/xr_generated_dispatch_table.c")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/xr_generated_dispatch_table_core.c")
 
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/common/filesystem_utils.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/common/object_info.cpp")

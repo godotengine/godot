@@ -3913,7 +3913,8 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_h_scroll() == 0);
 
 	text_edit->set_h_scroll(10000000);
-	CHECK(text_edit->get_h_scroll() == 314);
+	CHECK(text_edit->get_h_scroll() == 306);
+	CHECK(text_edit->get_h_scroll_bar()->get_combined_minimum_size().x == 8);
 
 	text_edit->set_h_scroll(-100);
 	CHECK(text_edit->get_h_scroll() == 0);

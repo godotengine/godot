@@ -13,7 +13,7 @@
 #include "loader_interfaces.h"
 #include "loader_logger.hpp"
 #include "loader_platform.hpp"
-#include "xr_generated_dispatch_table.h"
+#include "xr_generated_dispatch_table_core.h"
 
 #include <openxr/openxr.h>
 
@@ -29,6 +29,10 @@
 #include "android_utilities.h"
 #include <android/asset_manager_jni.h>
 #include <json/value.h>
+
+// Needed for the loader init struct
+#include <xr_dependencies.h>
+#include <openxr/openxr_platform.h>
 #endif  // XR_USE_PLATFORM_ANDROID
 
 #ifdef XR_KHR_LOADER_INIT_SUPPORT
@@ -105,33 +109,22 @@ XrResult LoaderInitData::initialize(const XrLoaderInitInfoBaseHeaderKHR* info) {
     if (cast_info->applicationContext == nullptr) {
         return XR_ERROR_VALIDATION_FAILURE;
     }
+
+    // Copy and store the JVM pointer and Android Context, ensuring the JVM is initialised.
     _data = *cast_info;
-    jni::init((jni::JavaVM*)_data.applicationVM);
     _data.next = nullptr;
-    JNIEnv* Env;
-    ((jni::JavaVM*)(cast_info->applicationVM))->AttachCurrentThread(&Env, nullptr);
-    const jclass contextClass = Env->GetObjectClass((jobject)_data.applicationContext);
+    jni::init(static_cast<jni::JavaVM*>(_data.applicationVM));
+    const jni::Object context = jni::Object{static_cast<jni::jobject>(_data.applicationContext)};
 
-    const jmethodID getAssetsMethod = Env->GetMethodID(contextClass, "getAssets", "()Landroid/content/res/AssetManager;");
-    const jobject AssetManagerObject = Env->CallObjectMethod((jobject)_data.applicationContext, getAssetsMethod);
-    _android_asset_manager = AAssetManager_fromJava(Env, AssetManagerObject);
+    // Retrieve a reference to the Android AssetManager.
+    const auto assetManager = context.call<jni::Object>("getAssets()Landroid/content/res/AssetManager;");
+    _android_asset_manager = AAssetManager_fromJava(jni::env(), assetManager.getHandle());
 
-    const jmethodID getApplicationContextMethod =
-        Env->GetMethodID(contextClass, "getApplicationContext", "()Landroid/content/Context;");
-    const jobject contextObject = Env->CallObjectMethod((jobject)_data.applicationContext, getApplicationContextMethod);
-    const jmethodID getApplicationInfoMethod =
-        Env->GetMethodID(contextClass, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
-    const jobject applicationInfoObject = Env->CallObjectMethod(contextObject, getApplicationInfoMethod);
-    const jfieldID nativeLibraryDirField =
-        Env->GetFieldID(Env->GetObjectClass(applicationInfoObject), "nativeLibraryDir", "Ljava/lang/String;");
-    const jobject nativeLibraryDirObject = Env->GetObjectField(applicationInfoObject, nativeLibraryDirField);
-    const jmethodID getBytesMethod =
-        Env->GetMethodID(Env->GetObjectClass(nativeLibraryDirObject), "getBytes", "(Ljava/lang/String;)[B");
-    const auto bytesObject =
-        static_cast<jbyteArray>(Env->CallObjectMethod(nativeLibraryDirObject, getBytesMethod, Env->NewStringUTF("UTF-8")));
-    const size_t length = Env->GetArrayLength(bytesObject);
-    const jbyte* const bytes = Env->GetByteArrayElements(bytesObject, nullptr);
-    _native_library_path = std::string(reinterpret_cast<const char*>(bytes), length);
+    // Retrieve the path to the native libraries.
+    const auto applicationContext = context.call<jni::Object>("getApplicationContext()Landroid/content/Context;");
+    const auto applicationInfo = context.call<jni::Object>("getApplicationInfo()Landroid/content/pm/ApplicationInfo;");
+    _native_library_path = applicationInfo.get<std::string>("nativeLibraryDir");
+
     _initialized = true;
     return XR_SUCCESS;
 }
