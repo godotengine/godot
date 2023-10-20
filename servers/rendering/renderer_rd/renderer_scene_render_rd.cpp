@@ -260,15 +260,29 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 
 	RD::get_singleton()->draw_command_begin_label("Copy screen texture");
 
-	rb->allocate_blur_textures();
-
+	StringName texture_name;
 	bool can_use_storage = _render_buffers_can_be_storage();
 	Size2i size = rb->get_internal_size();
 
+	// When upscaling, the blur texture needs to be at the target size for post-processing to work. We prefer to use a
+	// dedicated backbuffer copy texture instead if the blur texture is not an option so shader effects work correctly.
+	Size2i target_size = rb->get_target_size();
+	bool internal_size_matches = (size.width == target_size.width) && (size.height == target_size.height);
+	bool reuse_blur_texture = !rb->has_upscaled_texture() || internal_size_matches;
+	if (reuse_blur_texture) {
+		rb->allocate_blur_textures();
+		texture_name = RB_TEX_BLUR_0;
+	} else {
+		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		usage_bits |= can_use_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR, rb->get_base_data_format(), usage_bits);
+		texture_name = RB_TEX_BACK_COLOR;
+	}
+
 	for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 		RID texture = rb->get_internal_texture(v);
-		int mipmaps = int(rb->get_texture_format(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0).mipmaps);
-		RID dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, v, 0);
+		int mipmaps = int(rb->get_texture_format(RB_SCOPE_BUFFERS, texture_name).mipmaps);
+		RID dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, texture_name, v, 0);
 
 		if (can_use_storage) {
 			copy_effects->copy_to_rect(texture, dest, Rect2i(0, 0, size.x, size.y));
@@ -279,8 +293,8 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 
 		for (int i = 1; i < mipmaps; i++) {
 			RID source = dest;
-			dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, v, i);
-			Size2i msize = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i);
+			dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, texture_name, v, i);
+			Size2i msize = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, texture_name, i);
 
 			if (can_use_storage) {
 				copy_effects->make_mipmap(source, dest, msize);
