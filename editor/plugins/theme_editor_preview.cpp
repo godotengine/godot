@@ -266,11 +266,11 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_root->add_child(preview_bg);
 
 	preview_content = memnew(MarginContainer);
-	preview_root->add_child(preview_content);
 	preview_content->add_theme_constant_override("margin_right", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_top", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_left", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
+	preview_root->add_child(preview_content);
 
 	preview_overlay = memnew(MarginContainer);
 	preview_overlay->set_mouse_filter(MOUSE_FILTER_IGNORE);
