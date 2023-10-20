@@ -805,7 +805,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.11.1 (ca00e52125446a1a5cca20f9d8621b382cff5cb9, 2023)
+- Version: 0.11.2 (b01fe9bf4461146304d3520d6dc699cf580a3744, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -813,7 +813,6 @@ Files extracted from upstream source:
 See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
 number and run the script.
 
-Apply patches from the `patches` folder.
 
 ## vhacd
 
