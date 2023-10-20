@@ -558,9 +558,6 @@ void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properti
 	} else {
 		for (const PropertyInfo &E : properties) {
 			PropertyInfo pinfo = E;
-			if (!values.has(pinfo.name)) {
-				pinfo.usage |= PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE;
-			}
 			p_properties->push_back(E);
 		}
 	}
