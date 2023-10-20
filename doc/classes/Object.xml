@@ -219,6 +219,7 @@
 				        # Storing the value in the fake property.
 				        internal_data["fake_property"] = value
 				        return true
+				    return false
 
 				func _get_property_list():
 				    return [
@@ -228,7 +229,7 @@
 				[csharp]
 				private Godot.Collections.Dictionary _internalData = new Godot.Collections.Dictionary();
 
-				public override void _Set(StringName property, Variant value)
+				public override bool _Set(StringName property, Variant value)
 				{
 				    if (property == "FakeProperty")
 				    {
