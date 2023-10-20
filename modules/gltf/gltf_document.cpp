@@ -6224,7 +6224,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 				if (p_remove_immutable_tracks) {
 					Vector3 base_pos = p_state->nodes[track_i.key]->position;
 					for (int i = 0; i < track.position_track.times.size(); i++) {
-						Vector3 value = track.position_track.values[track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
+						int value_index = track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i;
+						ERR_FAIL_COND_MSG(value_index >= track.position_track.values.size(), "Animation sampler output accessor with 'CUBICSPLINE' interpolation doesn't have enough elements.");
+						Vector3 value = track.position_track.values[value_index];
 						if (!value.is_equal_approx(base_pos)) {
 							is_default = false;
 							break;
@@ -6244,7 +6246,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 				if (p_remove_immutable_tracks) {
 					Quaternion base_rot = p_state->nodes[track_i.key]->rotation.normalized();
 					for (int i = 0; i < track.rotation_track.times.size(); i++) {
-						Quaternion value = track.rotation_track.values[track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i].normalized();
+						int value_index = track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i;
+						ERR_FAIL_COND_MSG(value_index >= track.rotation_track.values.size(), "Animation sampler output accessor with 'CUBICSPLINE' interpolation doesn't have enough elements.");
+						Quaternion value = track.rotation_track.values[value_index].normalized();
 						if (!value.is_equal_approx(base_rot)) {
 							is_default = false;
 							break;
@@ -6264,7 +6268,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 				if (p_remove_immutable_tracks) {
 					Vector3 base_scale = p_state->nodes[track_i.key]->scale;
 					for (int i = 0; i < track.scale_track.times.size(); i++) {
-						Vector3 value = track.scale_track.values[track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
+						int value_index = track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i;
+						ERR_FAIL_COND_MSG(value_index >= track.scale_track.values.size(), "Animation sampler output accessor with 'CUBICSPLINE' interpolation doesn't have enough elements.");
+						Vector3 value = track.scale_track.values[value_index];
 						if (!value.is_equal_approx(base_scale)) {
 							is_default = false;
 							break;
