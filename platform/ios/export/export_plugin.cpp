@@ -178,7 +178,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
@@ -284,7 +284,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$bundle_identifier") != -1) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 		} else if (lines[i].find("$short_version") != -1) {
-			strnew += lines[i].replace("$short_version", p_preset->get("application/short_version")) + "\n";
+			strnew += lines[i].replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
 		} else if (lines[i].find("$version") != -1) {
 			strnew += lines[i].replace("$version", p_preset->get_version("application/version")) + "\n";
 		} else if (lines[i].find("$signature") != -1) {
