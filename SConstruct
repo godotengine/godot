@@ -722,9 +722,9 @@ if selected_platform in platform_list:
         if env.msvc:
             env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
         else:
-            env.Append(CCFLAGS=["-fno-exceptions"])
+            env.Append(CXXFLAGS=["-fno-exceptions"])
     elif env.msvc:
-        env.Append(CCFLAGS=["/EHsc"])
+        env.Append(CXXFLAGS=["/EHsc"])
 
     # Configure compiler warnings
     if env.msvc:  # MSVC
