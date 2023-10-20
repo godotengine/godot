@@ -6728,30 +6728,38 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 }
 
 EditorNode::EditorNode() {
-	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
-	add_child(epnp);
+	DEV_ASSERT(!singleton);
+	singleton = this;
 
-	PortableCompressedTexture2D::set_keep_all_compressed_buffers(true);
-	Input::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
-	RenderingServer::get_singleton()->set_debug_generate_wireframes(true);
+	{
+		PortableCompressedTexture2D::set_keep_all_compressed_buffers(true);
+		RenderingServer::get_singleton()->set_debug_generate_wireframes(true);
 
-	AudioServer::get_singleton()->set_enable_tagging_used_audio_streams(true);
+		AudioServer::get_singleton()->set_enable_tagging_used_audio_streams(true);
 
-	// No navigation server by default if in editor.
-	if (NavigationServer3D::get_singleton()->get_debug_enabled()) {
-		NavigationServer3D::get_singleton()->set_active(true);
-	} else {
-		NavigationServer3D::get_singleton()->set_active(false);
+		// No navigation by default if in editor.
+		if (NavigationServer3D::get_singleton()->get_debug_enabled()) {
+			NavigationServer3D::get_singleton()->set_active(true);
+		} else {
+			NavigationServer3D::get_singleton()->set_active(false);
+		}
+
+		// No physics by default if in editor.
+		PhysicsServer3D::get_singleton()->set_active(false);
+		PhysicsServer2D::get_singleton()->set_active(false);
+
+		// No scripting by default if in editor (except for tool).
+		ScriptServer::set_scripting_enabled(false);
+
+		Input::get_singleton()->set_use_accumulated_input(true);
+		if (!DisplayServer::get_singleton()->is_touchscreen_available()) {
+			// Only if no touchscreen ui hint, disable emulation just in case.
+			Input::get_singleton()->set_emulate_touch_from_mouse(false);
+		}
+		DisplayServer::get_singleton()->cursor_set_custom_image(Ref<Resource>());
 	}
-
-	// No physics by default if in editor.
-	PhysicsServer3D::get_singleton()->set_active(false);
-	PhysicsServer2D::get_singleton()->set_active(false);
-
-	// No scripting by default if in editor.
-	ScriptServer::set_scripting_enabled(false);
 
 	EditorHelp::generate_doc();
 	SceneState::set_disable_placeholders(true);
@@ -6759,18 +6767,8 @@ EditorNode::EditorNode() {
 	ResourceLoader::clear_path_remaps();
 	ResourceLoader::set_create_missing_resources_if_class_unavailable(true);
 
-	Input *id = Input::get_singleton();
-
-	if (id) {
-		if (!DisplayServer::get_singleton()->is_touchscreen_available() && Input::get_singleton()) {
-			// Only if no touchscreen ui hint, disable emulation just in case.
-			id->set_emulate_touch_from_mouse(false);
-		}
-		DisplayServer::get_singleton()->cursor_set_custom_image(Ref<Resource>());
-	}
-
-	DEV_ASSERT(!singleton);
-	singleton = this;
+	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+	add_child(epnp);
 
 	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
