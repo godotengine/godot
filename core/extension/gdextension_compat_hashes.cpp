@@ -840,4 +840,8 @@ void GDExtensionCompatHashes::initialize() {
 	// clang-format on
 }
 
+void GDExtensionCompatHashes::finalize() {
+	mappings.clear();
+}
+
 #endif // DISABLE_DEPRECATED

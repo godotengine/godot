@@ -664,7 +664,7 @@ void GDExtension::_get_library_path(GDExtensionClassLibraryPtr p_library, GDExte
 	memnew_placement(r_path, String(self->library_path));
 }
 
-HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
+HashMap<StringName, GDExtensionInterfaceFunctionPtr> GDExtension::gdextension_interface_functions;
 
 void GDExtension::register_interface_function(StringName p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
 	ERR_FAIL_COND_MSG(gdextension_interface_functions.has(p_function_name), "Attempt to register interface function '" + p_function_name + "', which appears to be already registered.");
@@ -834,6 +834,10 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_register_extension_class_signal", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_signal);
 	register_interface_function("classdb_unregister_extension_class", (GDExtensionInterfaceFunctionPtr)&GDExtension::_unregister_extension_class);
 	register_interface_function("get_library_path", (GDExtensionInterfaceFunctionPtr)&GDExtension::_get_library_path);
+}
+
+void GDExtension::finalize_gdextensions() {
+	gdextension_interface_functions.clear();
 }
 
 Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension) {

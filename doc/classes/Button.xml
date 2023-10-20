@@ -132,6 +132,7 @@
 			Font size of the [Button]'s text.
 		</theme_item>
 		<theme_item name="icon" data_type="icon" type="Texture2D">
+			Default icon for the [Button]. Appears only if [member icon] is not assigned.
 		</theme_item>
 		<theme_item name="disabled" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is disabled.

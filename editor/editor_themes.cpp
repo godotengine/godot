@@ -55,7 +55,7 @@ void EditorColorMap::add_conversion_color_pair(const String p_from_color, const 
 	color_conversion_map[Color::html(p_from_color)] = Color::html(p_to_color);
 }
 
-void EditorColorMap::add_conversion_exception(const StringName p_icon_name) {
+void EditorColorMap::add_conversion_exception(const StringName &p_icon_name) {
 	color_conversion_exceptions.insert(p_icon_name);
 }
 
@@ -63,7 +63,7 @@ void EditorColorMap::create() {
 	// Some of the colors below are listed for completeness sake.
 	// This can be a basis for proper palette validation later.
 
-	// Convert:    FROM       TO
+	// Convert:               FROM       TO
 	add_conversion_color_pair("#478cbf", "#478cbf"); // Godot Blue
 	add_conversion_color_pair("#414042", "#414042"); // Godot Gray
 
@@ -215,6 +215,11 @@ void EditorColorMap::create() {
 	add_conversion_exception("Breakpoint");
 }
 
+void EditorColorMap::finish() {
+	color_conversion_map.clear();
+	color_conversion_exceptions.clear();
+}
+
 Vector<StringName> EditorTheme::editor_theme_types;
 
 // TODO: Refactor these and corresponding Theme methods to use the bool get_xxx(r_value) pattern internally.
@@ -301,13 +306,15 @@ Ref<StyleBox> EditorTheme::get_stylebox(const StringName &p_name, const StringNa
 	}
 }
 
-EditorTheme::EditorTheme() {
-	if (editor_theme_types.is_empty()) {
-		editor_theme_types.append(EditorStringName(Editor));
-		editor_theme_types.append(EditorStringName(EditorFonts));
-		editor_theme_types.append(EditorStringName(EditorIcons));
-		editor_theme_types.append(EditorStringName(EditorStyles));
-	}
+void EditorTheme::initialize() {
+	editor_theme_types.append(EditorStringName(Editor));
+	editor_theme_types.append(EditorStringName(EditorFonts));
+	editor_theme_types.append(EditorStringName(EditorIcons));
+	editor_theme_types.append(EditorStringName(EditorStyles));
+}
+
+void EditorTheme::finalize() {
+	editor_theme_types.clear();
 }
 
 // Editor theme generatior.

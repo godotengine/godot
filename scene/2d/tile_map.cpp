@@ -407,6 +407,7 @@ void TileMapLayer::_rendering_update() {
 		// Updates on TileMap changes.
 		if (dirty.flags[DIRTY_FLAGS_TILE_MAP_LIGHT_MASK] ||
 				dirty.flags[DIRTY_FLAGS_TILE_MAP_USE_PARENT_MATERIAL] ||
+				dirty.flags[DIRTY_FLAGS_TILE_MAP_MATERIAL] ||
 				dirty.flags[DIRTY_FLAGS_TILE_MAP_TEXTURE_FILTER] ||
 				dirty.flags[DIRTY_FLAGS_TILE_MAP_TEXTURE_REPEAT]) {
 			for (KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
