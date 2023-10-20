@@ -100,11 +100,9 @@ void StringName::cleanup() {
 				lost_strings++;
 
 				if (OS::get_singleton()->is_stdout_verbose()) {
-					if (d->cname) {
-						print_line("Orphan StringName: " + String(d->cname));
-					} else {
-						print_line("Orphan StringName: " + String(d->name));
-					}
+					String dname = String(d->cname ? d->cname : d->name);
+
+					print_line(vformat("Orphan StringName: %s (static: %d, total: %d)", dname, d->static_count.get(), d->refcount.get()));
 				}
 			}
 
@@ -113,7 +111,7 @@ void StringName::cleanup() {
 		}
 	}
 	if (lost_strings) {
-		print_verbose("StringName: " + itos(lost_strings) + " unclaimed string names at exit.");
+		print_verbose(vformat("StringName: %d unclaimed string names at exit.", lost_strings));
 	}
 	configured = false;
 }
