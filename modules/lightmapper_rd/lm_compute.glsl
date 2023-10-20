@@ -119,6 +119,17 @@ const uint RAY_FRONT = 1;
 const uint RAY_BACK = 2;
 const uint RAY_ANY = 3;
 
+bool ray_box_test(vec3 p_from, vec3 p_inv_dir, vec3 p_box_min, vec3 p_box_max) {
+	vec3 t0 = (p_box_min - p_from) * p_inv_dir;
+	vec3 t1 = (p_box_max - p_from) * p_inv_dir;
+	vec3 tmin = min(t0, t1), tmax = max(t0, t1);
+	return max(tmin.x, max(tmin.y, tmin.z)) <= min(tmax.x, min(tmax.y, tmax.z));
+}
+
+#if CLUSTER_SIZE > 32
+#define CLUSTER_TRIANGLE_ITERATION
+#endif
+
 uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out vec3 r_normal, out uint r_triangle, out vec3 r_barycentric) {
 	// World coordinates.
 	vec3 rel = p_to - p_from;
@@ -142,60 +153,106 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 	uint iters = 0;
 	while (all(greaterThanEqual(icell, ivec3(0))) && all(lessThan(icell, ivec3(bake_params.grid_size))) && (iters < 1000)) {
 		uvec2 cell_data = texelFetch(usampler3D(grid, linear_sampler), icell, 0).xy;
-		if (cell_data.x > 0) { //triangles here
+		uint triangle_count = cell_data.x;
+		if (triangle_count > 0) {
 			uint hit = RAY_MISS;
 			float best_distance = 1e20;
-
-			for (uint i = 0; i < cell_data.x; i++) {
-				uint tidx = grid_indices.data[cell_data.y + i];
-
-				// Ray-Box test.
-				Triangle triangle = triangles.data[tidx];
-				vec3 t0 = (triangle.min_bounds - p_from) * inv_dir;
-				vec3 t1 = (triangle.max_bounds - p_from) * inv_dir;
-				vec3 tmin = min(t0, t1), tmax = max(t0, t1);
-
-				if (max(tmin.x, max(tmin.y, tmin.z)) > min(tmax.x, min(tmax.y, tmax.z))) {
-					continue; // Ray-Box test failed.
-				}
-
-				// Prepare triangle vertices.
-				vec3 vtx0 = vertices.data[triangle.indices.x].position;
-				vec3 vtx1 = vertices.data[triangle.indices.y].position;
-				vec3 vtx2 = vertices.data[triangle.indices.z].position;
-				vec3 normal = -normalize(cross((vtx0 - vtx1), (vtx0 - vtx2)));
-				bool backface = dot(normal, dir) >= 0.0;
-				float distance;
-				vec3 barycentric;
-				if (ray_hits_triangle(p_from, dir, rel_len, vtx0, vtx1, vtx2, distance, barycentric)) {
-					if (p_any_hit) {
-						// Return early if any hit was requested.
-						return RAY_ANY;
-					}
-
-					vec3 position = p_from + dir * distance;
-					vec3 hit_cell = (position - bake_params.to_cell_offset) * bake_params.to_cell_size;
-					if (icell != ivec3(hit_cell)) {
-						// It's possible for the ray to hit a triangle in a position outside the bounds of the cell
-						// if it's large enough to cover multiple ones. The hit must be ignored if this is the case.
-						continue;
-					}
-
-					if (!backface) {
-						// The case of meshes having both a front and back face in the same plane is more common than expected.
-						// If this is a front-face, bias it closer to the ray origin, so it always wins over the back-face.
-						distance = max(bake_params.bias, distance - bake_params.bias);
-					}
-
-					if (distance < best_distance) {
-						hit = backface ? RAY_BACK : RAY_FRONT;
-						best_distance = distance;
-						r_distance = distance;
-						r_normal = normal;
-						r_triangle = tidx;
-						r_barycentric = barycentric;
+			uint cluster_start = cluster_indices.data[cell_data.y * 2];
+			uint cell_triangle_start = cluster_indices.data[cell_data.y * 2 + 1];
+			uint cluster_count = (triangle_count + CLUSTER_SIZE - 1) / CLUSTER_SIZE;
+			uint cluster_base_index = 0;
+			while (cluster_base_index < cluster_count) {
+				// To minimize divergence, all Ray-AABB tests on the clusters contained in the cell are performed
+				// before checking against the triangles. We do this 32 clusters at a time and store the intersected
+				// clusters on each bit of the 32-bit integer.
+				uint cluster_test_count = min(32, cluster_count - cluster_base_index);
+				uint cluster_hits = 0;
+				for (uint i = 0; i < cluster_test_count; i++) {
+					uint cluster_index = cluster_start + cluster_base_index + i;
+					ClusterAABB cluster_aabb = cluster_aabbs.data[cluster_index];
+					if (ray_box_test(p_from, inv_dir, cluster_aabb.min_bounds, cluster_aabb.max_bounds)) {
+						cluster_hits |= (1 << i);
 					}
 				}
+
+				// Check the triangles in any of the clusters that were intersected by toggling off the bits in the
+				// 32-bit integer counter until no bits are left.
+				while (cluster_hits > 0) {
+					uint cluster_index = findLSB(cluster_hits);
+					cluster_hits &= ~(1 << cluster_index);
+					cluster_index += cluster_base_index;
+
+					// Do the same divergence execution trick with triangles as well.
+					uint triangle_base_index = 0;
+#ifdef CLUSTER_TRIANGLE_ITERATION
+					while (triangle_base_index < triangle_count)
+#endif
+					{
+						uint triangle_start_index = cell_triangle_start + cluster_index * CLUSTER_SIZE + triangle_base_index;
+						uint triangle_test_count = min(CLUSTER_SIZE, triangle_count - triangle_base_index);
+						uint triangle_hits = 0;
+						for (uint i = 0; i < triangle_test_count; i++) {
+							uint triangle_index = triangle_indices.data[triangle_start_index + i];
+							if (ray_box_test(p_from, inv_dir, triangles.data[triangle_index].min_bounds, triangles.data[triangle_index].max_bounds)) {
+								triangle_hits |= (1 << i);
+							}
+						}
+
+						while (triangle_hits > 0) {
+							uint cluster_triangle_index = findLSB(triangle_hits);
+							triangle_hits &= ~(1 << cluster_triangle_index);
+							cluster_triangle_index += triangle_start_index;
+
+							uint triangle_index = triangle_indices.data[cluster_triangle_index];
+							Triangle triangle = triangles.data[triangle_index];
+
+							// Gather the triangle vertex positions.
+							vec3 vtx0 = vertices.data[triangle.indices.x].position;
+							vec3 vtx1 = vertices.data[triangle.indices.y].position;
+							vec3 vtx2 = vertices.data[triangle.indices.z].position;
+							vec3 normal = -normalize(cross((vtx0 - vtx1), (vtx0 - vtx2)));
+							bool backface = dot(normal, dir) >= 0.0;
+							float distance;
+							vec3 barycentric;
+							if (ray_hits_triangle(p_from, dir, rel_len, vtx0, vtx1, vtx2, distance, barycentric)) {
+								if (p_any_hit) {
+									// Return early if any hit was requested.
+									return RAY_ANY;
+								}
+
+								vec3 position = p_from + dir * distance;
+								vec3 hit_cell = (position - bake_params.to_cell_offset) * bake_params.to_cell_size;
+								if (icell != ivec3(hit_cell)) {
+									// It's possible for the ray to hit a triangle in a position outside the bounds of the cell
+									// if it's large enough to cover multiple ones. The hit must be ignored if this is the case.
+									continue;
+								}
+
+								if (!backface) {
+									// The case of meshes having both a front and back face in the same plane is more common than
+									// expected, so if this is a front-face, bias it closer to the ray origin, so it always wins
+									// over the back-face.
+									distance = max(bake_params.bias, distance - bake_params.bias);
+								}
+
+								if (distance < best_distance) {
+									hit = backface ? RAY_BACK : RAY_FRONT;
+									best_distance = distance;
+									r_distance = distance;
+									r_normal = normal;
+									r_triangle = triangle_index;
+									r_barycentric = barycentric;
+								}
+							}
+						}
+
+#ifdef CLUSTER_TRIANGLE_ITERATION
+						triangle_base_index += CLUSTER_SIZE;
+#endif
+					}
+				}
+
+				cluster_base_index += 32;
 			}
 
 			if (hit != RAY_MISS) {
