@@ -29,8 +29,8 @@
 // Author: Mark Young <marky@lunarg.com>
 //
 
-#include <time.h>
 #include "xr_generated_dispatch_table.h"
+
 
 
 #ifdef __cplusplus
@@ -349,6 +349,10 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     (get_inst_proc_addr(instance, "xrUnpersistSpatialAnchorMSFT", (PFN_xrVoidFunction*)&table->UnpersistSpatialAnchorMSFT));
     (get_inst_proc_addr(instance, "xrClearSpatialAnchorStoreMSFT", (PFN_xrVoidFunction*)&table->ClearSpatialAnchorStoreMSFT));
 
+    // ---- XR_MSFT_scene_marker extension commands
+    (get_inst_proc_addr(instance, "xrGetSceneMarkerRawDataMSFT", (PFN_xrVoidFunction*)&table->GetSceneMarkerRawDataMSFT));
+    (get_inst_proc_addr(instance, "xrGetSceneMarkerDecodedStringMSFT", (PFN_xrVoidFunction*)&table->GetSceneMarkerDecodedStringMSFT));
+
     // ---- XR_FB_spatial_entity_query extension commands
     (get_inst_proc_addr(instance, "xrQuerySpacesFB", (PFN_xrVoidFunction*)&table->QuerySpacesFB));
     (get_inst_proc_addr(instance, "xrRetrieveSpaceQueryResultsFB", (PFN_xrVoidFunction*)&table->RetrieveSpaceQueryResultsFB));
@@ -461,6 +465,9 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     (get_inst_proc_addr(instance, "xrGetPlaneDetectionStateEXT", (PFN_xrVoidFunction*)&table->GetPlaneDetectionStateEXT));
     (get_inst_proc_addr(instance, "xrGetPlaneDetectionsEXT", (PFN_xrVoidFunction*)&table->GetPlaneDetectionsEXT));
     (get_inst_proc_addr(instance, "xrGetPlanePolygonBufferEXT", (PFN_xrVoidFunction*)&table->GetPlanePolygonBufferEXT));
+
+    // ---- XR_ML_user_calibration extension commands
+    (get_inst_proc_addr(instance, "xrEnableUserCalibrationEventsML", (PFN_xrVoidFunction*)&table->EnableUserCalibrationEventsML));
 }
 
 

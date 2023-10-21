@@ -355,6 +355,10 @@ struct XrGeneratedDispatchTable {
     PFN_xrUnpersistSpatialAnchorMSFT UnpersistSpatialAnchorMSFT;
     PFN_xrClearSpatialAnchorStoreMSFT ClearSpatialAnchorStoreMSFT;
 
+    // ---- XR_MSFT_scene_marker extension commands
+    PFN_xrGetSceneMarkerRawDataMSFT GetSceneMarkerRawDataMSFT;
+    PFN_xrGetSceneMarkerDecodedStringMSFT GetSceneMarkerDecodedStringMSFT;
+
     // ---- XR_FB_spatial_entity_query extension commands
     PFN_xrQuerySpacesFB QuerySpacesFB;
     PFN_xrRetrieveSpaceQueryResultsFB RetrieveSpaceQueryResultsFB;
@@ -467,6 +471,9 @@ struct XrGeneratedDispatchTable {
     PFN_xrGetPlaneDetectionStateEXT GetPlaneDetectionStateEXT;
     PFN_xrGetPlaneDetectionsEXT GetPlaneDetectionsEXT;
     PFN_xrGetPlanePolygonBufferEXT GetPlanePolygonBufferEXT;
+
+    // ---- XR_ML_user_calibration extension commands
+    PFN_xrEnableUserCalibrationEventsML EnableUserCalibrationEventsML;
 };
 
 
