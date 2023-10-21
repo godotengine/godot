@@ -333,6 +333,8 @@ private:
 	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
 
+	TextureRect *preview3d_rect = nullptr;
+
 	Label *project_title = nullptr;
 	Control *left_menu_spacer = nullptr;
 	Control *right_menu_spacer = nullptr;
@@ -689,6 +691,8 @@ private:
 
 	void _begin_first_scan();
 
+	void set_preview3d_texture(int p_index);
+
 protected:
 	friend class FileSystemDock;
 
@@ -931,6 +935,8 @@ public:
 	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin(const Ref<Resource> &p_for_resource);
 
 	bool ensure_main_scene(bool p_from_native);
+
+	void update_preview3d();
 };
 
 struct EditorProgress {

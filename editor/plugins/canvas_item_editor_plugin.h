@@ -253,6 +253,8 @@ private:
 	Point2 ruler_tool_origin;
 	Point2 node_create_position;
 
+	int preview3d_pressed_index = 0;
+
 	MenuOption last_option;
 
 	struct _SelectResult {
@@ -331,6 +333,7 @@ private:
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
 	PopupMenu *theme_menu = nullptr;
+	PopupMenu *preview3d_menu = nullptr;
 	HBoxContainer *animation_hb = nullptr;
 	MenuButton *animation_menu = nullptr;
 
@@ -422,6 +425,7 @@ public:
 private:
 	ThemePreviewMode theme_preview = THEME_PREVIEW_PROJECT;
 	void _switch_theme_preview(int p_mode);
+	void _switch_3d_preview(int p_index);
 
 	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true) const;
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);

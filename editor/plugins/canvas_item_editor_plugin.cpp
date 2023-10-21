@@ -43,6 +43,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/2d/polygon_2d.h"
@@ -1051,6 +1052,20 @@ void CanvasItemEditor::_switch_theme_preview(int p_mode) {
 	}
 
 	EditorNode::get_singleton()->update_preview_themes(theme_preview);
+}
+
+void CanvasItemEditor::_switch_3d_preview(int p_index) {
+	view_menu->get_popup()->hide();
+
+	if (preview3d_pressed_index != p_index) {
+		preview3d_pressed_index = p_index;
+	}
+
+	for (int i = 0; i < (int)Node3DEditor::get_singleton()->VIEWPORTS_COUNT + 1; i++) {
+		preview3d_menu->set_item_checked(i, i == p_index);
+	}
+
+	EditorNode::get_singleton()->update_preview3d();
 }
 
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
@@ -4765,6 +4780,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["snap_scale"] = snap_scale;
 	state["snap_relative"] = snap_relative;
 	state["snap_pixel"] = snap_pixel;
+	state["preview3d_pressed_index"] = preview3d_pressed_index;
 	return state;
 }
 
@@ -4941,6 +4957,10 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		_update_scrollbars();
 	}
 	viewport->queue_redraw();
+
+	if (state.has("preview3d_pressed_index")) {
+		_switch_3d_preview(state["preview3d_pressed_index"]);
+	}
 }
 
 void CanvasItemEditor::clear() {
@@ -5418,6 +5438,17 @@ CanvasItemEditor::CanvasItemEditor() {
 		theme_menu->set_item_checked(i, i == theme_preview);
 	}
 
+	preview3d_menu = memnew(PopupMenu);
+	preview3d_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_switch_3d_preview));
+	preview3d_menu->set_name(TTR("Preview3DMenu"));
+	preview3d_menu->add_radio_check_item(TTR("None"), 0);
+	for (int i = 0; i < (int)Node3DEditor::get_singleton()->VIEWPORTS_COUNT; i++) {
+		int text_i = i + 1;
+		preview3d_menu->add_radio_check_item(vformat(TTR("Viewport %d"), text_i), text_i);
+	}
+	p->add_child(preview3d_menu);
+	p->add_submenu_item(TTR("Preview 3D"), "Preview3DMenu");
+
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	// Contextual toolbars.
@@ -5566,6 +5597,7 @@ void CanvasItemEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("scene_changed", callable_mp((CanvasItem *)canvas_item_editor->get_viewport_control(), &CanvasItem::queue_redraw).unbind(1));
+			connect("scene_changed", callable_mp(EditorNode::get_singleton(), &EditorNode::update_preview3d).unbind(1));
 			connect("scene_closed", callable_mp((CanvasItem *)canvas_item_editor->get_viewport_control(), &CanvasItem::queue_redraw).unbind(1));
 		} break;
 	}
