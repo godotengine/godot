@@ -3477,9 +3477,17 @@ static void _print_orphan_nodes_routine(Object *p_obj) {
 		path = String(p->get_name()) + "/" + p->get_path_to(n);
 	}
 
+	String source;
+	Variant script = n->get_script();
+	if (!script.is_null()) {
+		Resource *obj = Object::cast_to<Resource>(script);
+		source = obj->get_path();
+	}
+
 	List<String> info_strings;
 	info_strings.push_back(path);
 	info_strings.push_back(n->get_class());
+	info_strings.push_back(source);
 
 	_print_orphan_nodes_map[p_obj->get_instance_id()] = info_strings;
 }
@@ -3494,12 +3502,30 @@ void Node::print_orphan_nodes() {
 	ObjectDB::debug_objects(_print_orphan_nodes_routine);
 
 	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
-		print_line(itos(E.key) + " - Stray Node: " + E.value.get(0) + " (Type: " + E.value.get(1) + ")");
+		print_line(itos(E.key) + " - Stray Node: " + E.value.get(0) + " (Type: " + E.value.get(1) + ") (Source:" + E.value.get(2) + ")");
 	}
 
 	// Flush it after use.
 	_print_orphan_nodes_map.clear();
 #endif
+}
+TypedArray<int> Node::get_orphan_node_ids() {
+	TypedArray<int> ret;
+#ifdef DEBUG_ENABLED
+	// Make sure it's empty.
+	_print_orphan_nodes_map.clear();
+
+	// Collect and return information about orphan nodes.
+	ObjectDB::debug_objects(_print_orphan_nodes_routine);
+
+	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
+		ret.push_back(E.key);
+	}
+
+	// Flush it after use.
+	_print_orphan_nodes_map.clear();
+#endif
+	return ret;
 }
 
 void Node::queue_free() {
@@ -3810,6 +3836,7 @@ void Node::_bind_methods() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case,kebab-case"), NAME_CASING_PASCAL_CASE);
 
 	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
+	ClassDB::bind_static_method("Node", D_METHOD("get_orphan_node_ids"), &Node::get_orphan_node_ids);
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
