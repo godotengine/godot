@@ -46,6 +46,7 @@ class CreateDialog;
 class EditorDirDialog;
 class ItemList;
 class LineEdit;
+class PanelContainer;
 class ProgressBar;
 class SceneCreateDialog;
 class ShaderCreateDialog;
@@ -144,7 +145,7 @@ private:
 
 	FileSortOption file_sort = FILE_SORT_NAME;
 
-	VBoxContainer *scanning_vb = nullptr;
+	PanelContainer *scanning_panel = nullptr;
 	ProgressBar *scanning_progress = nullptr;
 	SplitContainer *split_box = nullptr;
 	VBoxContainer *file_list_vb = nullptr;

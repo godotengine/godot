@@ -58,6 +58,8 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
@@ -595,6 +597,7 @@ void FileSystemDock::_notification(int p_what) {
 			}
 
 			overwrite_dialog_scroll->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
+			scanning_panel->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1248,8 +1251,8 @@ void FileSystemDock::_preview_invalidated(const String &p_path) {
 void FileSystemDock::_fs_changed() {
 	button_hist_prev->set_disabled(history_pos == 0);
 	button_hist_next->set_disabled(history_pos == history.size() - 1);
-	scanning_vb->hide();
-	split_box->show();
+	scanning_panel->hide();
+	split_box->set_process_mode(PROCESS_MODE_INHERIT);
 
 	if (tree->is_visible()) {
 		_update_tree(get_uncollapsed_paths());
@@ -1272,9 +1275,10 @@ void FileSystemDock::_fs_changed() {
 void FileSystemDock::_set_scanning_mode() {
 	button_hist_prev->set_disabled(true);
 	button_hist_next->set_disabled(true);
-	split_box->hide();
-	scanning_vb->show();
+	split_box->set_process_mode(PROCESS_MODE_DISABLED);
+	scanning_panel->show();
 	set_process(true);
+
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
 		scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100);
 	} else {
@@ -3843,11 +3847,15 @@ FileSystemDock::FileSystemDock() {
 
 	add_child(tree_popup);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(mc);
+
 	split_box = memnew(SplitContainer);
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	split_box->connect("dragged", callable_mp(this, &FileSystemDock::_split_dragged));
 	split_box_offset_h = 240 * EDSCALE;
-	add_child(split_box);
+	mc->add_child(split_box);
 
 	tree = memnew(FileSystemTree);
 
@@ -3902,9 +3910,12 @@ FileSystemDock::FileSystemDock() {
 	files->set_allow_rmb_select(true);
 	file_list_vb->add_child(files);
 
-	scanning_vb = memnew(VBoxContainer);
-	scanning_vb->hide();
-	add_child(scanning_vb);
+	scanning_panel = memnew(PanelContainer);
+	scanning_panel->hide();
+	mc->add_child(scanning_panel);
+
+	VBoxContainer *scanning_vb = memnew(VBoxContainer);
+	scanning_panel->add_child(scanning_vb);
 
 	Label *slabel = memnew(Label);
 	slabel->set_text(TTR("Scanning Files,\nPlease Wait..."));
