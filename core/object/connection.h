@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  struct.cpp                                                            */
+/*  connection.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/variant/struct.h"
-//#include "core/object/object.h"
+#ifndef CONNECTION_H
+#define CONNECTION_H
 
-//template <class T>
-//PropertyInfo GetTypeInfo<Struct<T>>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
+#include "core/templates/hash_map.h"
+#include "core/variant/struct_generator.h"
+#include "core/variant/variant.h"
+#include "core/object/method_info.h"
 
-//template <class T>
-//PropertyInfo GetTypeInfo<const Struct<T> &>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
+enum ConnectFlags {
+	CONNECT_DEFERRED = 1,
+	CONNECT_PERSIST = 2, // hint for scene to save this connection
+	CONNECT_ONE_SHOT = 4,
+	CONNECT_REFERENCE_COUNTED = 8,
+	CONNECT_INHERITED = 16, // Used in editor builds.
+};
+
+struct Connection {
+	STRUCT_MEMBER_PRIMITIVE(Connection, MemberSignal, ::Signal, Variant::SIGNAL, signal, ::Signal());
+	STRUCT_MEMBER_PRIMITIVE(Connection, MemberCallable, Callable, Variant::CALLABLE, callable, Callable());
+	STRUCT_MEMBER_PRIMITIVE(Connection, MemberFlags, uint32_t, Variant::INT, flags, 0);
+	STRUCT_LAYOUT(Connection, MemberSignal, MemberCallable, MemberFlags);
+
+	bool operator<(const Connection &p_conn) const;
+
+	operator Variant() const;
+
+	Connection() {}
+	Connection(const Variant &p_variant);
+};
+
+struct SignalData {
+	struct Slot {
+		int reference_count = 0;
+		Connection conn;
+		List<Connection>::Element *cE = nullptr;
+	};
+
+	MethodInfo user;
+	HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
+};
+
+#endif //CONNECTION_H

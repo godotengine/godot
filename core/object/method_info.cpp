@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  struct.cpp                                                            */
+/*  method_info.cpp                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "method_info.h"
 #include "core/variant/struct.h"
-//#include "core/object/object.h"
+#include "core/variant/typed_array.h"
 
-//template <class T>
-//PropertyInfo GetTypeInfo<Struct<T>>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
 
-//template <class T>
-//PropertyInfo GetTypeInfo<const Struct<T> &>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
+PropertyInfo MethodInfo::MemberReturnVal::from_variant(const Variant &p_variant) {
+	return PropertyInfo(Struct<PropertyInfo>(p_variant));
+}
+
+Variant MethodInfo::MemberReturnVal::to_variant(const PropertyInfo &p_value) {
+	return Struct<PropertyInfo>(p_value);
+}
+
+List<PropertyInfo> MethodInfo::MemberArguments::from_variant(const Variant &p_variant) {
+	return (List<PropertyInfo>)TypedArray<Struct<PropertyInfo>>(p_variant);
+}
+
+Variant MethodInfo::MemberArguments::to_variant(const List<PropertyInfo> &p_value) {
+	return TypedArray<Struct<PropertyInfo>>(&p_value);
+}

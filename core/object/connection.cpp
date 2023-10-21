@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  struct.cpp                                                            */
+/*  connection.cpp                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/variant/struct.h"
-//#include "core/object/object.h"
+#include "connection.h"
 
-//template <class T>
-//PropertyInfo GetTypeInfo<Struct<T>>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
+Connection::operator Variant() const {
+	Dictionary d;
+	d["signal"] = signal;
+	d["callable"] = callable;
+	d["flags"] = flags;
+	return d;
+}
 
-//template <class T>
-//PropertyInfo GetTypeInfo<const Struct<T> &>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
+Connection::Connection(const Variant &p_conn) {
+	Dictionary d = p_conn;
+	if (d.has("signal")) {
+		signal = d["signal"];
+	}
+	if (d.has("callable")) {
+		callable = d["callable"];
+	}
+	if (d.has("flags")) {
+		flags = d["flags"];
+	}
+}
+
+bool Connection::operator<(const Connection &p_conn) const {
+	if (signal == p_conn.signal) {
+		return callable < p_conn.callable;
+	} else {
+		return signal < p_conn.signal;
+	}
+}

@@ -185,22 +185,21 @@ namespace TestStruct {
 
 TEST_CASE("[Struct] PropertyInfo") {
 	Node *my_node = memnew(Node);
+
 	List<PropertyInfo> list;
 	my_node->get_property_list(&list);
 	PropertyInfo info = list[0];
-	CHECK_EQ((((Variant)(Struct<PropertyInfo>)info)).stringify(), "[name: \"Node\", class_name: &\"\", type: 0, hint: 0, hint_string: \"Node\", usage: 128]");
 
 	TypedArray<Struct<PropertyInfo>> property_list = my_node->call(SNAME("get_property_list"));
 	Struct<PropertyInfo> prop = property_list[0];
-	CHECK_EQ(((Variant)prop).stringify(), "[name: \"Node\", class_name: &\"\", type: 0, hint: 0, hint_string: \"Node\", usage: 128]");
 
 	SUBCASE("Equality") {
-		CHECK_EQ(info.name, String(prop[SNAME("name")]));
-		CHECK_EQ(info.class_name, StringName(prop[SNAME("class_name")]));
-		CHECK_EQ(info.type, (Variant::Type)(int)prop[SNAME("type")]);
-		CHECK_EQ(info.hint, (PropertyHint)(int)prop[SNAME("hint")]);
-		CHECK_EQ(info.hint_string, String(prop[SNAME("name")]));
-		CHECK_EQ(info.usage, (PropertyUsageFlags)(int)prop[SNAME("usage")]);
+		CHECK_EQ(info.name, prop.get_member<PropertyInfo::MemberName>());
+		CHECK_EQ(info.class_name, prop.get_member<PropertyInfo::MemberClassName>());
+		CHECK_EQ(info.type, prop.get_member<PropertyInfo::MemberType>());
+		CHECK_EQ(info.hint, prop.get_member<PropertyInfo::MemberHint>());
+		CHECK_EQ(info.hint_string, prop.get_member<PropertyInfo::MemberHintString>());
+		CHECK_EQ(info.usage, prop.get_member<PropertyInfo::MemberUsage>());
 	}
 
 	SUBCASE("Duplication") {
@@ -208,12 +207,12 @@ TEST_CASE("[Struct] PropertyInfo") {
 		CHECK_EQ(var.get_type(), Variant::ARRAY);
 		Variant var_dup = prop.duplicate();
 		CHECK_EQ(var_dup.get_type(), Variant::ARRAY);
+		CHECK_EQ(var, var_dup);
 	}
 
 	SUBCASE("Setget Named") {
 		Variant variant_prop = prop;
 		bool valid = false;
-		Variant changed = SNAME("Changed");
 		variant_prop.set_named(SNAME("name"), SNAME("Changed"), valid);
 		CHECK_EQ(valid, true);
 		Variant val = variant_prop.get_named(SNAME("name"), valid);
@@ -229,22 +228,13 @@ TEST_CASE("[Struct] PropertyInfo") {
 	}
 }
 
-struct NamedInt {
-	StringName name = StringName();
-	int value = 0;
-
-	enum STRUCT_ENUM {
-		NAME,
-		VALUE,
-		STRUCT_ENUM_INDEX_END,
-	};
-
-	STRUCT_LAYOUT(NamedInt,
-			STRUCT_MEMBER(name, STRUCT_ENUM::NAME, Variant::STRING_NAME, StringName()),
-			STRUCT_MEMBER(value, STRUCT_ENUM::VALUE, Variant::INT, 0));
-};
-
 TEST_CASE("[Struct] Validation") {
+
+	struct NamedInt {
+		STRUCT_MEMBER_PRIMITIVE(NamedInt, MemberName, StringName, Variant::STRING_NAME, name, StringName());
+		STRUCT_MEMBER_PRIMITIVE(NamedInt, MemberValue, int, Variant::INT, value, 0);
+		STRUCT_LAYOUT(NamedInt, MemberName, MemberValue);
+	};
 
 	Struct<NamedInt> named_int;
 	named_int["name"] = "Godot";
@@ -275,101 +265,78 @@ TEST_CASE("[Struct] Validation") {
 		CHECK_MESSAGE(named_int != not_a_match, "assigned an empty array to a struct");
 
 		not_a_match.resize(2);
-		named_int = not_a_match;
-		CHECK_MESSAGE(named_int != not_a_match, "assigned a non-struct to a struct");
+		named_int.assign(not_a_match);
+		CHECK_MESSAGE(named_int != not_a_match, "assigned an array with the wrong size");
 
 		not_a_match[0] = 4;
 		not_a_match[1] = "Godot";
-		named_int = not_a_match;
-		CHECK_MESSAGE(named_int != not_a_match, "assigned a non-struct to a struct");
-
-		not_a_match[0] = "Godooot";
-		not_a_match[1] = 5;
-		named_int = not_a_match;
-		CHECK_MESSAGE(named_int != not_a_match, "assigned a non-struct to a struct");
-
 		named_int.assign(not_a_match);
-		CHECK_MESSAGE(named_int != not_a_match, "assigned a non-struct to a struct");
+		CHECK_MESSAGE(named_int != not_a_match, "assigned an array with mismatched types");
+
+		Array also_a_match;
+		also_a_match.resize(2);
+		also_a_match[0] = "Godooot";
+		also_a_match[1] = 5;
+		named_int = not_a_match;
+		CHECK_MESSAGE(named_int != not_a_match, "assigned a non-struct to a struct using '=' operator");
 		ERR_PRINT_ON;
+
+		named_int.assign(also_a_match);
+		CHECK_MESSAGE(named_int == also_a_match, "failed to assign an array with correct types using 'assign' function");
 	}
 }
 
-struct BasicStruct {
-	int int_val;
-	float float_val;
-
-	enum STRUCT_ENUM {
-		INT_VAL,
-		FLOAT_VAL,
-		STRUCT_ENUM_INDEX_END,
-	};
-
-	STRUCT_LAYOUT(BasicStruct,
-			STRUCT_MEMBER(int_val, StructMemberIndex::INT_VAL, Variant::INT, 4),
-			STRUCT_MEMBER(float_val, StructMemberIndex::FLOAT_VAL, Variant::FLOAT, 5.5));
-};
-struct BasicStructLookalike {
-	int int_val;
-	float float_val;
-
-	enum STRUCT_ENUM {
-		INT_VAL,
-		FLOAT_VAL,
-		STRUCT_ENUM_INDEX_END,
-	};
-
-	STRUCT_LAYOUT(BasicStructLookalike,
-			STRUCT_MEMBER(int_val, StructMemberIndex::INT_VAL, Variant::INT, 0),
-			STRUCT_MEMBER(float_val, StructMemberIndex::FLOAT_VAL, Variant::FLOAT, 0.0));
-};
-struct NestedStruct {
-	Node *node;
-	BasicStruct value;
-
-	enum STRUCT_ENUM {
-		NODE,
-		VALUE,
-		STRUCT_ENUM_INDEX_END,
-	};
-
-	STRUCT_LAYOUT(NestedStruct,
-			STRUCT_CLASS_MEMBER(node, StructMemberIndex::NODE, Node, Variant()),
-			STRUCT_STRUCT_MEMBER(value, StructMemberIndex::VALUE, BasicStruct, Struct<BasicStruct>()));
-};
-
 TEST_CASE("[Struct] Nesting") {
 
-	REQUIRE_EQ(NestedStruct::get_struct_member_count(), 2);
-	CHECK_EQ(NestedStruct::get_struct_members()[0].sub_member_count, 0);
-	CHECK_EQ(NestedStruct::get_struct_members()[1].sub_member_count, 2);
+	struct BasicStruct {
+		STRUCT_MEMBER_PRIMITIVE(BasicStruct, MemberIntVal, int, Variant::INT, int_val, 4);
+		STRUCT_MEMBER_PRIMITIVE(BasicStruct, MemberFloatVal, float, Variant::FLOAT, float_val, 5.5f);
+		STRUCT_LAYOUT(BasicStruct, MemberIntVal, MemberFloatVal);
+		BasicStruct(){};
+	};
+	struct BasicStructLookalike {
+		STRUCT_MEMBER_PRIMITIVE(BasicStructLookalike, MemberIntVal, int, Variant::INT, int_val, 4);
+		STRUCT_MEMBER_PRIMITIVE(BasicStructLookalike, MemberFloatVal, float, Variant::FLOAT, float_val, 5.5f);
+		STRUCT_LAYOUT(BasicStructLookalike, MemberIntVal, MemberFloatVal);
+	};
+	struct NestedStruct {
+		STRUCT_MEMBER_CLASS_POINTER(NestedStruct, MemberNode, Node, Node, node, nullptr);
+		STRUCT_MEMBER_STRUCT(NestedStruct, MemberValue, BasicStruct, value, BasicStruct());
+		STRUCT_LAYOUT(NestedStruct, MemberNode, MemberValue);
+	};
+
+	REQUIRE_EQ(NestedStruct::Layout::struct_member_count, 2);
+	CHECK_EQ(NestedStruct::Layout::get_struct_info().struct_member_infos[0], nullptr);
+	CHECK_EQ(NestedStruct::Layout::get_struct_info().struct_member_infos[1]->count, 2);
 
 	Struct<BasicStruct> basic_struct;
 	Struct<BasicStructLookalike> basic_struct_lookalike;
 	Struct<NestedStruct> nested_struct;
 
 	SUBCASE("Defaults") {
-		CHECK_EQ((int)basic_struct["int_val"], 4);
-		CHECK_EQ((float)basic_struct["float_val"], 5.5);
+		CHECK_EQ(basic_struct.get_member<BasicStruct::MemberIntVal>(), 4);
+		CHECK_EQ(basic_struct.get_member<BasicStruct::MemberFloatVal>(), 5.5);
 
-		CHECK_EQ(nested_struct["node"], Variant());
-		CHECK_EQ(nested_struct["value"], basic_struct);
+		CHECK_EQ(nested_struct.get_member<NestedStruct::MemberNode>(), nullptr);
+		CHECK_EQ(Struct<BasicStruct>(nested_struct.get_member<NestedStruct::MemberValue>()), basic_struct);
 	}
 
 	SUBCASE("Assignment") {
-		basic_struct["int_val"] = 1;
-		basic_struct["float_val"] = 3.14;
+		basic_struct.set_member<BasicStruct::MemberIntVal>(1);
+		basic_struct.set_member<BasicStruct::MemberFloatVal>(3.14);
 
-		basic_struct_lookalike["int_val"] = 2;
-		basic_struct_lookalike["float_val"] = 2.7;
+		basic_struct_lookalike.set_member<BasicStructLookalike::MemberIntVal>(2);
+		basic_struct_lookalike.set_member<BasicStructLookalike::MemberFloatVal>(2.7);
 
 		Node *node = memnew(Node);
-		nested_struct.set_named("node", node);
-		nested_struct.set_named("value", basic_struct);
+		nested_struct.set_member<NestedStruct::MemberNode>(node);
+		nested_struct.set_member<NestedStruct::MemberValue>(basic_struct);
 
-		CHECK_EQ(nested_struct["node"], Variant(node));
-		CHECK_EQ(nested_struct["value"], basic_struct);
-		CHECK_EQ(((Struct<BasicStruct>)nested_struct["value"])["int_val"], basic_struct["int_val"]);
-		CHECK_EQ(((Struct<BasicStruct>)nested_struct["value"])["float_val"], basic_struct["float_val"]);
+		CHECK_EQ(nested_struct.get_member<NestedStruct::MemberNode>(), node);
+		Struct<BasicStruct> basic_struct_match = nested_struct.get_member<NestedStruct::MemberValue>();
+		CHECK_EQ(basic_struct_match, basic_struct);
+		CHECK_EQ(basic_struct_match.get_member<BasicStruct::MemberIntVal>(), basic_struct.get_member<BasicStruct::MemberIntVal>());
+		CHECK_EQ(basic_struct_match.get_member<BasicStruct::MemberFloatVal>(), basic_struct.get_member<BasicStruct::MemberFloatVal>());
 
 		ERR_PRINT_OFF;
 		nested_struct.set_named("value", basic_struct_lookalike);

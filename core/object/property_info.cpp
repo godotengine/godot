@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  struct.cpp                                                            */
+/*  property_info.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/variant/struct.h"
-//#include "core/object/object.h"
+#include "property_info.h"
+#include "core/variant/typed_array.h"
 
-//template <class T>
-//PropertyInfo GetTypeInfo<Struct<T>>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
+Variant::Type PropertyInfo::MemberType::from_variant(const Variant &p_variant) {
+	return (Variant::Type)(int)p_variant;
+}
 
-//template <class T>
-//PropertyInfo GetTypeInfo<const Struct<T> &>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
+PropertyHint PropertyInfo::MemberHint::from_variant(const Variant &p_variant) {
+	return (PropertyHint)(int)p_variant;
+}
+
+PropertyInfo::operator Dictionary() const {
+	Dictionary d;
+	d["name"] = name;
+	d["class_name"] = class_name;
+	d["type"] = type;
+	d["hint"] = hint;
+	d["hint_string"] = hint_string;
+	d["usage"] = usage;
+	return d;
+}
+
+PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
+	PropertyInfo pi;
+
+	if (p_dict.has("type")) {
+		pi.type = Variant::Type(int(p_dict["type"]));
+	}
+
+	if (p_dict.has("name")) {
+		pi.name = p_dict["name"];
+	}
+
+	if (p_dict.has("class_name")) {
+		pi.class_name = p_dict["class_name"];
+	}
+
+	if (p_dict.has("hint")) {
+		pi.hint = PropertyHint(int(p_dict["hint"]));
+	}
+
+	if (p_dict.has("hint_string")) {
+		pi.hint_string = p_dict["hint_string"];
+	}
+
+	if (p_dict.has("usage")) {
+		pi.usage = p_dict["usage"];
+	}
+
+	return pi;
+}
+
+TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
+	TypedArray<Dictionary> va;
+	for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
+		va.push_back(Dictionary(E->get()));
+	}
+
+	return va;
+}

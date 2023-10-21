@@ -78,18 +78,18 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 #endif
 
 // Moved this here so that I don't have to #include struct.h
-struct StructInfo {
-	StringName name = StringName();
-	uint32_t count = 0;
-
-	LocalVector<StringName> names;
-	LocalVector<Variant::Type> types;
-	LocalVector<StringName> class_names;
-	LocalVector<Variant> default_values;
-
-	StructInfo(const StringName &p_name, uint32_t p_count, const StructMember &(*p_get_member)(uint32_t));
-	StructInfo(){};
-};
+//struct StructInfo {
+//	StringName name = StringName();
+//	uint32_t count = 0;
+//
+//	LocalVector<StringName> names;
+//	LocalVector<Variant::Type> types;
+//	LocalVector<StringName> class_names;
+//	LocalVector<Variant> default_values;
+//
+//	StructInfo(const StringName &p_name, uint32_t p_count, const StructMember &(*p_get_member)(uint32_t));
+//	StructInfo(){};
+//};
 
 class ClassDB {
 public:
@@ -439,7 +439,7 @@ public:
 	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static bool is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
-	static void bind_struct(const StringName &p_class, const StringName &p_struct, uint32_t p_count, const StructMember &(*p_get_member)(uint32_t));
+	static void bind_struct(const StringName &p_class, const StructInfo &p_struct_info);
 	static void get_struct_list(const StringName &p_class, List<StructInfo> *r_structs, bool p_no_inheritance = false);
 	static StructInfo *get_struct_info(const StringName &p_class, const StringName &p_struct);
 	static bool has_struct(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance = false);
@@ -483,7 +483,7 @@ public:
 	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_STRUCT(m_struct) \
-	::ClassDB::bind_struct(get_class_static(), m_struct::get_struct_name(), m_struct::get_struct_member_count(), m_struct::get_struct_member);
+	::ClassDB::bind_struct(get_class_static(), m_struct::Layout::get_struct_info());
 
 #ifdef DEBUG_METHODS_ENABLED
 

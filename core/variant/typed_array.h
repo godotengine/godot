@@ -130,7 +130,7 @@ public:
 	_FORCE_INLINE_ operator List<T>() const {
 		List<T> list;
 		for (int i = 0; i < size(); i++) {
-			list.push_back(T::from_struct(get(i)));
+			list.push_back(T(Struct<T>(get(i))));
 		}
 		return list;
 	}

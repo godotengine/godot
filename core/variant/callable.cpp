@@ -495,11 +495,11 @@ Array Signal::get_connections() const {
 		return Array();
 	}
 
-	List<Object::Connection> connections;
+	List<Connection> connections;
 	obj->get_signal_connection_list(name, &connections);
 
 	Array arr;
-	for (const Object::Connection &E : connections) {
+	for (const Connection &E : connections) {
 		arr.push_back(E);
 	}
 	return arr;

@@ -31,6 +31,11 @@
 #ifndef STRUCT_H
 #define STRUCT_H
 
+#include "core/object/object.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/type_info.h"
 #include "core/variant/variant.h"
 
 class Array;
@@ -50,18 +55,26 @@ public:
 	}
 	template <typename StructMember>
 	_FORCE_INLINE_ int get_member_index() const {
-		return T::Layout::get_member_index<StructMember>();
+		return T::Layout::template get_member_index<StructMember>();
 	}
 	template <typename StructMember>
 	_FORCE_INLINE_ Variant get_member_value() const {
 		return get(get_member_index<StructMember>());
 	}
 	template <typename StructMember>
-	_FORCE_INLINE_ void set_member_value(const StructMember::type &p_value) {
+	_FORCE_INLINE_ void set_member_value(const typename StructMember::Type &p_value) {
 		set(get_member_index<StructMember>(), p_value);
 	}
+	template <typename StructMember>
+	_FORCE_INLINE_ typename StructMember::Type get_member() const {
+		return StructMember::from_variant(get(get_member_index<StructMember>()));
+	}
+	template <typename StructMember>
+	_FORCE_INLINE_ void set_member(const typename StructMember::Type &p_struct_member) {
+		set(get_member_index<StructMember>(), StructMember::to_variant(p_struct_member));
+	}
 	_FORCE_INLINE_ Struct(const T &p_struct) :
-		Struct(T::to_array(p_struct)) {
+			Array(T::Layout::to_array(p_struct), T::Layout::get_struct_info()) {
 	}
 	_FORCE_INLINE_ Struct(const Variant &p_variant) :
 			Array(Array(p_variant), T::Layout::get_struct_info()) {
@@ -109,7 +122,7 @@ template <class T>
 struct GetTypeInfo<Struct<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	_FORCE_INLINE_ static PropertyInfo get_class_info() {
+	static PropertyInfo get_class_info() {
 		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
 	}
 };
@@ -118,7 +131,7 @@ template <class T>
 struct GetTypeInfo<const Struct<T> &> {
 	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	_FORCE_INLINE_ static PropertyInfo get_class_info() {
+	static PropertyInfo get_class_info() {
 		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
 	}
 };

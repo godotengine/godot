@@ -1384,7 +1384,7 @@ bool ClassDB::class_has_signal(const StringName &p_class, const StringName &p_si
 Struct<MethodInfo> ClassDB::class_get_signal(const StringName &p_class, const StringName &p_signal) const {
 	MethodInfo signal;
 	if (::ClassDB::get_signal(p_class, p_signal, &signal)) {
-		return signal.operator Struct<MethodInfo>();
+		return Struct<MethodInfo>(signal);
 	} else {
 		return Struct<MethodInfo>();
 	}

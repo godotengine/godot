@@ -944,34 +944,18 @@ bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_na
 	return false;
 }
 
-StructInfo::StructInfo(const StringName &p_name, uint32_t p_count, const StructMember &(*p_get_member)(uint32_t)) {
-	name = p_name;
-	count = p_count;
-	names.resize(count);
-	types.resize(count);
-	class_names.resize(count);
-	default_values.resize(count);
-	for (uint32_t i = 0; i < p_count; i++) {
-		StructMember member = p_get_member(i);
-		names[i] = member.name;
-		types[i] = member.type;
-		class_names[i] = member.class_name;
-		default_values[i] = member.default_value;
-	}
-}
-
-void ClassDB::bind_struct(const StringName &p_class, const StringName &p_struct, uint32_t p_count, const StructMember &(*p_get_member)(uint32_t)) {
+void ClassDB::bind_struct(const StringName &p_class_name, const StructInfo &p_struct_info) {
 	OBJTYPE_WLOCK;
 
-	ClassInfo *type = classes.getptr(p_class);
+	ClassInfo *type = classes.getptr(p_class_name);
 
 	ERR_FAIL_NULL(type);
 
-	if (type->struct_map.has(p_struct)) {
+	if (type->struct_map.has(p_struct_info.name)) {
 		ERR_FAIL();
 	}
 
-	type->struct_map.insert(p_struct, StructInfo(p_struct, p_count, p_get_member));
+	type->struct_map.insert(p_struct_info.name, p_struct_info);
 }
 
 void ClassDB::get_struct_list(const StringName &p_class, List<StructInfo> *r_structs, bool p_no_inheritance) {

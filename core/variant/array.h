@@ -44,7 +44,7 @@ template<typename T>
 class Vector;
 struct StructMember;
 struct ContainerTypeValidate;
-struct StructInfo2;
+struct StructInfo;
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -133,24 +133,22 @@ public:
 
 	Error validate_set_type();
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
-	void set_struct(const StructInfo2 &p_struct_info);
+	void set_struct(const StructInfo &p_struct_info);
 	bool is_typed() const;
 	bool is_struct() const;
 	bool is_same_typed(const Array &p_other) const;
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
-	ContainerTypeValidate get_type_validator() const;
+	const StructInfo *get_struct_info() const;
 
 	void make_read_only();
 	bool is_read_only() const;
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
-	Array(const Array &p_from, const StructInfo2 &p_struct_info);
-	Array(const StructInfo2 &p_struct_info);
-	Array(const Array &p_from, const StringName &p_name, const StructMember *p_members);
-	Array(uint32_t p_size, const StringName &p_name, const StructMember *p_members);
+	Array(const Array &p_from, const StructInfo &p_struct_info);
+	Array(const StructInfo &p_struct_info);
 	Array(const Vector<Variant> &p_vec);
 	Array();
 	~Array();

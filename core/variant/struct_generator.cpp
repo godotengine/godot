@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  struct.cpp                                                            */
+/*  struct_generator.cpp                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "struct_generator.h"
 #include "core/variant/struct.h"
-//#include "core/object/object.h"
 
-//template <class T>
-//PropertyInfo GetTypeInfo<Struct<T>>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
-
-//template <class T>
-//PropertyInfo GetTypeInfo<const Struct<T> &>::get_class_info() {
-//	return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::Layout::get_struct_name());
-//}
+template <typename StructType, typename... StructMembers>
+void StructLayout<StructType, StructMembers...>::fill_struct_array(Struct<StructType> &p_array, const StructType &p_struct) {
+	int dummy[] = { 0, (p_array.template set_member_value<StructMembers>(StructMembers::get_variant(p_struct)), 0)... };
+	(void)dummy; // Suppress unused variable warning
+}
