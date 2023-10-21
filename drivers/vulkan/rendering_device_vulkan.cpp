@@ -5995,7 +5995,7 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	// No barrier should be needed here.
 	// _buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, true);
 
-	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, p_post_barrier);
+	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, true);
 	if (err) {
 		return err;
 	}
