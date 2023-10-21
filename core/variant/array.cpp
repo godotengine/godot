@@ -257,7 +257,7 @@ void Array::assign(const Array &p_array) {
 	array.resize(size);
 	Variant *data = array.ptrw();
 
-	if(is_struct()) {
+	if (is_struct()) {
 		if (source_typed.type != Variant::NIL) {
 			ERR_FAIL_COND_MSG(typed != source_typed, "Attempted to assign an array to a struct with incompatible types.");
 			_p->array = p_array._p->array;
@@ -887,7 +887,7 @@ void Array::set_struct(const StructInfo &p_struct_info) {
 	const uint32_t size = p_struct_info.count;
 	_p->array.resize(size);
 	_p->member_count = size;
-	_p->typed = ContainerTypeValidate(&p_struct_info);
+	_p->typed = ContainerTypeValidate(p_struct_info);
 }
 
 bool Array::is_typed() const {

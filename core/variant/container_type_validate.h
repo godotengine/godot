@@ -40,7 +40,7 @@ struct ValidatedVariant {
 	bool valid;
 
 	ValidatedVariant(const Variant &p_value, const bool p_valid) {
-		value  = p_value;
+		value = p_value;
 		valid = p_valid;
 	}
 };
@@ -60,11 +60,11 @@ struct ContainerTypeValidate {
 		struct_info = nullptr;
 		where = p_where;
 	}
-	ContainerTypeValidate(const StructInfo *p_struct_info) {
+	ContainerTypeValidate(const StructInfo &p_struct_info) {
 		type = Variant::ARRAY;
-		class_name = StringName();
+		class_name = p_struct_info.name;
 		script = Ref<Script>();
-		struct_info = p_struct_info;
+		struct_info = &p_struct_info;
 		where = "Struct";
 	}
 
@@ -133,28 +133,47 @@ struct ContainerTypeValidate {
 		ERR_FAIL_V_MSG(ValidatedVariant(p_variant, false), "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(p_variant.get_type()) + "' into a " + p_where + " of type '" + Variant::get_type_name(p_type) + "'.");
 	}
 
-//	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use", const int p_struct_index = -1) const {
-//		// Coerces String and StringName into each other and int into float when needed.
-//		if (struct_info) {
-//			// TODO: what if count > INT_MAX?
-//			CRASH_BAD_INDEX_MSG(p_struct_index, (int)struct_info->count, "Struct tried validation for a non-existent member");
-//		}
-//		const Variant::Type variant_type = struct_info ? struct_info->types[p_struct_index] : type;
-//		if (!ContainerTypeValidate::validate_variant_type(variant_type, inout_variant, where, p_operation)) {
-//			return false;
-//		}
-//
-//		if (variant_type == Variant::ARRAY) {
-//			const Array array = inout_variant;
-//			if (!StructInfo::is_compatible(struct_info, array.get_struct_info())) {
-//				return false;
-//			}
-//			return class_name == array.get_typed_class_name(); // TypedArray of structs
-//		} else if (variant_type == Variant::OBJECT) {
-//			return validate_object(inout_variant, p_operation);
-//		}
-//		return true;
-//	}
+	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
+		return validate_object(class_name, script, p_variant, where, p_operation);
+	}
+
+	_FORCE_INLINE_ static bool validate_object(const StringName &p_class_name, const Ref<Script> &p_script, const Variant &p_variant, const char *p_where, const char *p_operation = "use") {
+		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
+
+#ifdef DEBUG_ENABLED
+		ObjectID object_id = p_variant;
+		if (object_id == ObjectID()) {
+			return true; // This is fine, it's null.
+		}
+		Object *object = ObjectDB::get_instance(object_id);
+		ERR_FAIL_NULL_V_MSG(object, false, "Attempted to " + String(p_operation) + " an invalid (previously freed?) object instance into a '" + String(p_where) + ".");
+#else
+		Object *object = p_variant;
+		if (object == nullptr) {
+			return true; //fine
+		}
+#endif
+		if (p_class_name == StringName()) {
+			return true; // All good, no class type requested.
+		}
+
+		StringName obj_class = object->get_class_name();
+		if (obj_class != p_class_name) {
+			ERR_FAIL_COND_V_MSG(!ClassDB::is_parent_class(object->get_class_name(), p_class_name), false, "Attempted to " + String(p_operation) + " an object of type '" + object->get_class() + "' into a " + p_where + ", which does not inherit from '" + String(p_class_name) + "'.");
+		}
+
+		if (p_script.is_null()) {
+			return true; // All good, no script requested.
+		}
+
+		Ref<Script> other_script = object->get_script();
+
+		// Check base script..
+		ERR_FAIL_COND_V_MSG(other_script.is_null(), false, "Attempted to " + String(p_operation) + " an object into a " + String(p_where) + ", that does not inherit from '" + String(p_script->get_class_name()) + "'.");
+		ERR_FAIL_COND_V_MSG(!other_script->inherits_script(p_script), false, "Attempted to " + String(p_operation) + " an object into a " + String(p_where) + ", that does not inherit from '" + String(p_script->get_class_name()) + "'.");
+
+		return true;
+	}
 
 	_FORCE_INLINE_ ValidatedVariant validate(const Variant &p_variant, const char *p_operation = "use", const int p_struct_index = -1) const {
 		// Coerces String and StringName into each other and int into float when needed.
@@ -168,58 +187,18 @@ struct ContainerTypeValidate {
 			return ret;
 		}
 
+		// Variant types match
 		if (variant_type == Variant::ARRAY) {
 			const Array array = p_variant;
 			if (struct_info) {
-				if (!StructInfo::is_compatible(struct_info->struct_member_infos[p_struct_index], array.get_struct_info())) {
-					return ValidatedVariant(p_variant, false);
-				}
+				return ValidatedVariant(p_variant, StructInfo::is_compatible(struct_info->struct_member_infos[p_struct_index], array.get_struct_info()));
 			}
-			if (class_name == array.get_typed_class_name()) { // TypedArray of structs
-				return ValidatedVariant(p_variant, true);
-			}
+			return ValidatedVariant(p_variant, class_name == array.get_typed_class_name()); // TypedArray of structs
 		} else if (variant_type == Variant::OBJECT) {
-			return ValidatedVariant(p_variant, validate_object(p_variant, p_operation));
+			const bool valid = struct_info ? validate_object(struct_info->class_names[p_struct_index], Ref<Script>(), p_variant, where, p_operation) : validate_object(p_variant, p_operation);
+			return ValidatedVariant(p_variant, valid);
 		}
 		return ValidatedVariant(p_variant, true);
-	}
-
-	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
-		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
-
-#ifdef DEBUG_ENABLED
-		ObjectID object_id = p_variant;
-		if (object_id == ObjectID()) {
-			return true; // This is fine, it's null.
-		}
-		Object *object = ObjectDB::get_instance(object_id);
-		ERR_FAIL_NULL_V_MSG(object, false, "Attempted to " + String(p_operation) + " an invalid (previously freed?) object instance into a '" + String(where) + ".");
-#else
-		Object *object = p_variant;
-		if (object == nullptr) {
-			return true; //fine
-		}
-#endif
-		if (class_name == StringName()) {
-			return true; // All good, no class type requested.
-		}
-
-		StringName obj_class = object->get_class_name();
-		if (obj_class != class_name) {
-			ERR_FAIL_COND_V_MSG(!ClassDB::is_parent_class(object->get_class_name(), class_name), false, "Attempted to " + String(p_operation) + " an object of type '" + object->get_class() + "' into a " + where + ", which does not inherit from '" + String(class_name) + "'.");
-		}
-
-		if (script.is_null()) {
-			return true; // All good, no script requested.
-		}
-
-		Ref<Script> other_script = object->get_script();
-
-		// Check base script..
-		ERR_FAIL_COND_V_MSG(other_script.is_null(), false, "Attempted to " + String(p_operation) + " an object into a " + String(where) + ", that does not inherit from '" + String(script->get_class_name()) + "'.");
-		ERR_FAIL_COND_V_MSG(!other_script->inherits_script(script), false, "Attempted to " + String(p_operation) + " an object into a " + String(where) + ", that does not inherit from '" + String(script->get_class_name()) + "'.");
-
-		return true;
 	}
 };
 

@@ -85,6 +85,13 @@ public:
 	_FORCE_INLINE_ Struct() :
 			Array(T::Layout::get_struct_info()) {
 	}
+	_FORCE_INLINE_ operator Dictionary() {
+		Dictionary dict;
+		for (int i = 0; i < size(); i++) {
+			dict[get_member_name(i)] = get(i);
+		}
+		return dict;
+	}
 };
 
 template <class T>

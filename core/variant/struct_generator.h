@@ -49,14 +49,14 @@ class Struct;
 	_FORCE_INLINE_ static void set(m_struct_name &p_struct, const m_type &p_value) { p_struct.m_member_name = p_value; }                            \
 	using Type = m_type
 
-#define STRUCT_MEMBER_TYPEDEF_POINTER(m_struct_name, m_struct_member, m_type, m_variant_type, m_member_name, m_default)                                     \
+#define STRUCT_MEMBER_TYPEDEF_POINTER(m_struct_name, m_struct_member, m_type, m_variant_type, m_member_name, m_default)                             \
 	_FORCE_INLINE_ static const StringName get_name() { return SNAME(#m_member_name); }                                                             \
 	_FORCE_INLINE_ static Variant get_variant(const m_struct_name &p_struct) { return to_variant(p_struct.m_member_name); }                         \
 	_FORCE_INLINE_ static const Variant get_default_value_variant() { return to_variant(m_default); }                                               \
-	_FORCE_INLINE_ static m_type *get(const m_struct_name &p_struct) { return p_struct.m_member_name; }                                              \
-	_FORCE_INLINE_ static const m_type *get_default_value() { return m_default; }                                                                    \
+	_FORCE_INLINE_ static m_type *get(const m_struct_name &p_struct) { return p_struct.m_member_name; }                                             \
+	_FORCE_INLINE_ static const m_type *get_default_value() { return m_default; }                                                                   \
 	_FORCE_INLINE_ static void set_variant(m_struct_name &p_struct, const Variant &p_variant) { p_struct.m_member_name = from_variant(p_variant); } \
-	_FORCE_INLINE_ static void set(m_struct_name &p_struct, m_type *p_value) { p_struct.m_member_name = p_value; }                            \
+	_FORCE_INLINE_ static void set(m_struct_name &p_struct, m_type *p_value) { p_struct.m_member_name = p_value; }                                  \
 	using Type = m_type *
 
 #define STRUCT_MEMBER_PRIMITIVE(m_struct_name, m_struct_member, m_type, m_variant_type, m_member_name, m_default) \
@@ -92,26 +92,26 @@ class Struct;
 		static const StructInfo *get_struct_member_info() { return nullptr; }                                             \
 	}
 
-#define STRUCT_MEMBER_CLASS_POINTER(m_struct_name, m_struct_member, m_type, m_class_name, m_member_name, m_default)      \
-	m_type *m_member_name = m_default;                                                                            \
-	struct m_struct_member {                                                                                     \
-		_FORCE_INLINE_ static m_type *from_variant(const Variant &p_variant) { return &(m_type &)p_variant; }                \
-		_FORCE_INLINE_ static Variant to_variant(m_type *p_value) { return p_value; }                      \
-		STRUCT_MEMBER_TYPEDEF_POINTER(m_struct_name, m_struct_member, m_type, m_variant_type, m_member_name, m_default); \
-		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return Variant::OBJECT; }                 \
-		_FORCE_INLINE_ static const StringName get_class_name() { return SNAME(#m_class_name); }                 \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                                    \
+#define STRUCT_MEMBER_CLASS_POINTER(m_struct_name, m_struct_member, m_type, m_class_name, m_member_name, m_default)       \
+	m_type *m_member_name = m_default;                                                                                    \
+	struct m_struct_member {                                                                                              \
+		_FORCE_INLINE_ static m_type *from_variant(const Variant &p_variant) { return Object::cast_to<Node>(p_variant); } \
+		_FORCE_INLINE_ static Variant to_variant(m_type *p_value) { return p_value; }                                     \
+		STRUCT_MEMBER_TYPEDEF_POINTER(m_struct_name, m_struct_member, m_type, m_variant_type, m_member_name, m_default);  \
+		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return Variant::OBJECT; }                          \
+		_FORCE_INLINE_ static const StringName get_class_name() { return SNAME(#m_class_name); }                          \
+		static const StructInfo *get_struct_member_info() { return nullptr; }                                             \
 	}
 
-#define STRUCT_MEMBER_CLASS_VALUE(m_struct_name, m_struct_member, m_type, m_class_name, m_member_name, m_default)      \
-	m_type m_member_name = m_default;                                                                            \
-	struct m_struct_member {                                                                                     \
-		_FORCE_INLINE_ static m_type from_variant(const Variant &p_variant) { return p_variant; }                \
-		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }                      \
-		STRUCT_MEMBER_TYPEDEF(m_struct_name, m_struct_member, m_type, m_variant_type, m_member_name, m_default); \
-		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return Variant::OBJECT; }                 \
-		_FORCE_INLINE_ static const StringName get_class_name() { return SNAME(#m_class_name); }                 \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                                    \
+#define STRUCT_MEMBER_CLASS_VALUE(m_struct_name, m_struct_member, m_type, m_class_name, m_member_name, m_default) \
+	m_type m_member_name = m_default;                                                                             \
+	struct m_struct_member {                                                                                      \
+		_FORCE_INLINE_ static m_type from_variant(const Variant &p_variant) { return p_variant; }                 \
+		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }                       \
+		STRUCT_MEMBER_TYPEDEF(m_struct_name, m_struct_member, m_type, m_variant_type, m_member_name, m_default);  \
+		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return Variant::OBJECT; }                  \
+		_FORCE_INLINE_ static const StringName get_class_name() { return SNAME(#m_class_name); }                  \
+		static const StructInfo *get_struct_member_info() { return nullptr; }                                     \
 	}
 
 #define STRUCT_MEMBER_STRUCT(m_struct_name, m_struct_member, m_type, m_member_name, m_default)                          \
@@ -143,6 +143,9 @@ class Struct;
 		return SNAME(#m_struct);                        \
 	}                                                   \
 	using Layout = StructLayout<m_struct, __VA_ARGS__>; \
+	m_struct(const Dictionary &p_dict) {                \
+		Layout::fill_struct(p_dict, *this);             \
+	}                                                   \
 	m_struct(const Array &p_array) {                    \
 		Layout::fill_struct(p_array, *this);            \
 	}
@@ -218,10 +221,24 @@ struct StructLayout {
 	}
 	static void fill_struct(const Array &p_array, StructType &p_struct) {
 		uint32_t i = 0;
-		int dummy[] = { 0, (StructMembers::set_variant(p_struct, p_array.get(i)), i++, 0)... };
-		(void)dummy; // Suppress unused variable warning
+		int temp[] = { 0, (StructMembers::set_variant(p_struct, p_array.get(i)), i++, 0)... };
+		(void)temp; // Suppress unused variable warning
 	}
 	static void fill_struct_array(Struct<StructType> &p_array, const StructType &p_struct);
+
+	static Dictionary to_dict(const StructType &p_struct) {
+		Dictionary dict;
+		fill_dict(dict, p_struct);
+		return dict;
+	}
+	static void fill_dict(Dictionary &p_dict, const StructType &p_struct) {
+		int temp[] = { 0, (p_dict[StructMembers::get_name()] = StructMembers::get_variant(p_struct), 0)... };
+		(void)temp; // Suppress unused variable warning
+	}
+	static void fill_struct(const Dictionary &p_dict, StructType &p_struct) {
+		int temp[] = { 0, (StructMembers::set_variant(p_struct, p_dict[StructMembers::get_name()]), 0)... };
+		(void)temp; // Suppress unused variable warning
+	}
 
 	template <typename T>
 	_FORCE_INLINE_ static constexpr int get_member_index() {

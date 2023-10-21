@@ -33,11 +33,11 @@
 
 #include "core/variant/array.h"
 #include "core/variant/struct.h"
+#include "core/variant/struct_generator.h"
 #include "core/variant/variant.h"
 #include "scene/main/node.h"
 #include "tests/test_macros.h"
 #include "tests/test_tools.h"
-#include "core/variant/struct_generator.h"
 
 // TODO: methods to structify:
 /*
@@ -229,7 +229,6 @@ TEST_CASE("[Struct] PropertyInfo") {
 }
 
 TEST_CASE("[Struct] Validation") {
-
 	struct NamedInt {
 		STRUCT_MEMBER_PRIMITIVE(NamedInt, MemberName, StringName, Variant::STRING_NAME, name, StringName());
 		STRUCT_MEMBER_PRIMITIVE(NamedInt, MemberValue, int, Variant::INT, value, 0);
@@ -287,7 +286,6 @@ TEST_CASE("[Struct] Validation") {
 }
 
 TEST_CASE("[Struct] Nesting") {
-
 	struct BasicStruct {
 		STRUCT_MEMBER_PRIMITIVE(BasicStruct, MemberIntVal, int, Variant::INT, int_val, 4);
 		STRUCT_MEMBER_PRIMITIVE(BasicStruct, MemberFloatVal, float, Variant::FLOAT, float_val, 5.5f);
