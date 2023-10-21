@@ -62,7 +62,7 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Default text [Color] of the [LinkButton].
 		</theme_item>
-		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Text [Color] used when the [LinkButton] is disabled.
 		</theme_item>
 		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
