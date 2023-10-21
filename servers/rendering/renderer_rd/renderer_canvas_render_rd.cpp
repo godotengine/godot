@@ -2759,7 +2759,7 @@ bool RendererCanvasRenderRD::free(RID p_rid) {
 }
 
 void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
-	p_size = nearest_power_of_2_templated(p_size);
+	p_size = MAX(1, nearest_power_of_2_templated(p_size));
 	if (p_size == state.shadow_texture_size) {
 		return;
 	}
