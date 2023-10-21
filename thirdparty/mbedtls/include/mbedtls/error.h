@@ -171,9 +171,9 @@ static inline int mbedtls_error_add(int high, int low,
 }
 
 /**
- * \brief Translate a mbed TLS error code into a string representation,
- *        Result is truncated if necessary and always includes a terminating
- *        null byte.
+ * \brief Translate an Mbed TLS error code into a string representation.
+ *        The result is truncated if necessary and always includes a
+ *        terminating null byte.
  *
  * \param errnum    error code
  * \param buffer    buffer to place representation in

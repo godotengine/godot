@@ -44,6 +44,7 @@
 
 #include "mbedtls/platform.h"
 
+
 #if defined(MBEDTLS_ASN1_PARSE_C)
 static int pkcs5_parse_pbkdf2_params(const mbedtls_asn1_buf *params,
                                      mbedtls_asn1_buf *salt, int *iterations,
@@ -109,10 +110,34 @@ static int pkcs5_parse_pbkdf2_params(const mbedtls_asn1_buf *params,
     return 0;
 }
 
+#if !defined(MBEDTLS_CIPHER_PADDING_PKCS7)
+int mbedtls_pkcs5_pbes2_ext(const mbedtls_asn1_buf *pbe_params, int mode,
+                            const unsigned char *pwd,  size_t pwdlen,
+                            const unsigned char *data, size_t datalen,
+                            unsigned char *output, size_t output_size,
+                            size_t *output_len);
+#endif
+
 int mbedtls_pkcs5_pbes2(const mbedtls_asn1_buf *pbe_params, int mode,
                         const unsigned char *pwd,  size_t pwdlen,
                         const unsigned char *data, size_t datalen,
                         unsigned char *output)
+{
+    size_t output_len = 0;
+
+    /* We assume caller of the function is providing a big enough output buffer
+     * so we pass output_size as SIZE_MAX to pass checks, However, no guarantees
+     * for the output size actually being correct.
+     */
+    return mbedtls_pkcs5_pbes2_ext(pbe_params, mode, pwd, pwdlen, data,
+                                   datalen, output, SIZE_MAX, &output_len);
+}
+
+int mbedtls_pkcs5_pbes2_ext(const mbedtls_asn1_buf *pbe_params, int mode,
+                            const unsigned char *pwd,  size_t pwdlen,
+                            const unsigned char *data, size_t datalen,
+                            unsigned char *output, size_t output_size,
+                            size_t *output_len)
 {
     int ret, iterations = 0, keylen = 0;
     unsigned char *p, *end;
@@ -120,12 +145,12 @@ int mbedtls_pkcs5_pbes2(const mbedtls_asn1_buf *pbe_params, int mode,
     mbedtls_asn1_buf salt;
     mbedtls_md_type_t md_type = MBEDTLS_MD_SHA1;
     unsigned char key[32], iv[32];
-    size_t olen = 0;
     const mbedtls_md_info_t *md_info;
     const mbedtls_cipher_info_t *cipher_info;
     mbedtls_md_context_t md_ctx;
     mbedtls_cipher_type_t cipher_alg;
     mbedtls_cipher_context_t cipher_ctx;
+    unsigned int padlen = 0;
 
     p = pbe_params->p;
     end = p + pbe_params->len;
@@ -188,7 +213,21 @@ int mbedtls_pkcs5_pbes2(const mbedtls_asn1_buf *pbe_params, int mode,
         return MBEDTLS_ERR_PKCS5_INVALID_FORMAT;
     }
 
+    if (mode == MBEDTLS_PKCS5_DECRYPT) {
+        if (output_size < datalen) {
+            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        }
+    }
+
+    if (mode == MBEDTLS_PKCS5_ENCRYPT) {
+        padlen = cipher_info->block_size - (datalen % cipher_info->block_size);
+        if (output_size < (datalen + padlen)) {
+            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        }
+    }
+
     mbedtls_md_init(&md_ctx);
+
     mbedtls_cipher_init(&cipher_ctx);
 
     memcpy(iv, enc_scheme_params.p, enc_scheme_params.len);
@@ -211,8 +250,28 @@ int mbedtls_pkcs5_pbes2(const mbedtls_asn1_buf *pbe_params, int mode,
         goto exit;
     }
 
+#if defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
+    /* PKCS5 uses CBC with PKCS7 padding (which is the same as
+     * "PKCS5 padding" except that it's typically only called PKCS5
+     * with 64-bit-block ciphers).
+     */
+    mbedtls_cipher_padding_t padding = MBEDTLS_PADDING_PKCS7;
+#if !defined(MBEDTLS_CIPHER_PADDING_PKCS7)
+    /* For historical reasons, when decrypting, this function works when
+     * decrypting even when support for PKCS7 padding is disabled. In this
+     * case, it ignores the padding, and so will never report a
+     * password mismatch.
+     */
+    if (mode == MBEDTLS_DECRYPT) {
+        padding = MBEDTLS_PADDING_NONE;
+    }
+#endif
+    if ((ret = mbedtls_cipher_set_padding_mode(&cipher_ctx, padding)) != 0) {
+        goto exit;
+    }
+#endif /* MBEDTLS_CIPHER_MODE_WITH_PADDING */
     if ((ret = mbedtls_cipher_crypt(&cipher_ctx, iv, enc_scheme_params.len,
-                                    data, datalen, output, &olen)) != 0) {
+                                    data, datalen, output, output_len)) != 0) {
         ret = MBEDTLS_ERR_PKCS5_PASSWORD_MISMATCH;
     }
 
