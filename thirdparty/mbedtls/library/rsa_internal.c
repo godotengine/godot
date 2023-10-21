@@ -126,7 +126,7 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
     }
 
     for (; attempt < num_primes; ++attempt) {
-        mbedtls_mpi_lset(&K, primes[attempt]);
+        MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&K, primes[attempt]));
 
         /* Check if gcd(K,N) = 1 */
         MBEDTLS_MPI_CHK(mbedtls_mpi_gcd(P, &K, N));
