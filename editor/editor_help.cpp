@@ -251,6 +251,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		if (table->has(link)) {
 			// Found in the current page.
 			if (class_desc->is_ready()) {
+				emit_signal(SNAME("navigated_in_page"));
 				class_desc->scroll_to_paragraph((*table)[link]);
 			} else {
 				scroll_to = (*table)[link];
@@ -2559,6 +2560,7 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_help_callback", &EditorHelp::_help_callback);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
+	ADD_SIGNAL(MethodInfo("navigated_in_page"));
 }
 
 EditorHelp::EditorHelp() {
