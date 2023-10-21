@@ -274,11 +274,13 @@ float sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, ve
 	}
 
 	mat2 disk_rotation;
-	{
+	if (sc_shadow_dither) {
 		float r = quick_hash(gl_FragCoord.xy) * 2.0 * M_PI;
 		float sr = sin(r);
 		float cr = cos(r);
 		disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
+	} else {
+		disk_rotation = mat2(1.0);
 	}
 
 	float avg = 0.0;
@@ -300,11 +302,13 @@ float sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord) {
 	}
 
 	mat2 disk_rotation;
-	{
+	if (sc_shadow_dither) {
 		float r = quick_hash(gl_FragCoord.xy) * 2.0 * M_PI;
 		float sr = sin(r);
 		float cr = cos(r);
 		disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
+	} else {
+		disk_rotation = mat2(1.0);
 	}
 
 	float avg = 0.0;
@@ -325,11 +329,13 @@ float sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec
 	}
 
 	mat2 disk_rotation;
-	{
+	if (sc_shadow_dither) {
 		float r = quick_hash(gl_FragCoord.xy) * 2.0 * M_PI;
 		float sr = sin(r);
 		float cr = cos(r);
 		disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
+	} else {
+		disk_rotation = mat2(1.0);
 	}
 
 	float avg = 0.0;
@@ -365,11 +371,13 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 	float blocker_average = 0.0;
 
 	mat2 disk_rotation;
-	{
+	if (sc_shadow_dither) {
 		float r = quick_hash(gl_FragCoord.xy) * 2.0 * M_PI;
 		float sr = sin(r);
 		float cr = cos(r);
 		disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
+	} else {
+		disk_rotation = mat2(1.0);
 	}
 
 	for (uint i = 0; i < sc_directional_penumbra_shadow_samples; i++) {
@@ -443,11 +451,13 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			float blocker_average = 0.0;
 
 			mat2 disk_rotation;
-			{
+			if (sc_shadow_dither) {
 				float r = quick_hash(gl_FragCoord.xy) * 2.0 * M_PI;
 				float sr = sin(r);
 				float cr = cos(r);
 				disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
+			} else {
+				disk_rotation = mat2(1.0);
 			}
 
 			vec3 basis_normal = shadow_dir;
@@ -722,11 +732,13 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 			float blocker_average = 0.0;
 
 			mat2 disk_rotation;
-			{
+			if (sc_shadow_dither) {
 				float r = quick_hash(gl_FragCoord.xy) * 2.0 * M_PI;
 				float sr = sin(r);
 				float cr = cos(r);
 				disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
+			} else {
+				disk_rotation = mat2(1.0);
 			}
 
 			float uv_size = spot_lights.data[idx].soft_shadow_size * z_norm * spot_lights.data[idx].soft_shadow_scale;

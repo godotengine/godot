@@ -1154,6 +1154,9 @@ void RasterizerSceneGLES3::directional_soft_shadow_filter_set_quality(RS::Shadow
 	scene_state.directional_shadow_quality = p_quality;
 }
 
+void RasterizerSceneGLES3::soft_shadow_set_use_dithering(bool p_dither) {
+}
+
 RID RasterizerSceneGLES3::fog_volume_instance_create(RID p_fog_volume) {
 	return RID();
 }
