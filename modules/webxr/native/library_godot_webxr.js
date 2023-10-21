@@ -287,8 +287,9 @@ const GodotWebXR = {
 			// Store onsimpleevent so we can use it later.
 			GodotWebXR.onsimpleevent = onsimpleevent;
 
-			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
-			const gl = GL.getContext(gl_context_handle).GLctx;
+			//const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+			//const gl = GL.getContext(gl_context_handle).GLctx;
+			const gl = GL.currentContext.GLctx;
 			GodotWebXR.gl = gl;
 
 			gl.makeXRCompatible().then(function () {
@@ -312,7 +313,7 @@ const GodotWebXR = {
 					// Now that both GodotWebXR.session and GodotWebXR.space are
 					// set, we need to pause and resume the main loop for the XR
 					// main loop to kick in.
-					GodotWebXR.pauseResumeMainLoop();
+					//GodotWebXR.pauseResumeMainLoop();
 
 					// Call in setTimeout() so that errors in the onstarted()
 					// callback don't bubble up here and cause Godot to try the
@@ -377,7 +378,7 @@ const GodotWebXR = {
 		// Disable the monkey-patched window.requestAnimationFrame() and
 		// pause/restart the main loop to activate it on all platforms.
 		GodotWebXR.monkeyPatchRequestAnimationFrame(false);
-		GodotWebXR.pauseResumeMainLoop();
+		//GodotWebXR.pauseResumeMainLoop();
 	},
 
 	godot_webxr_get_view_count__proxy: 'sync',

@@ -127,6 +127,10 @@ public:
 
 	virtual void process() override;
 
+	// These have to be public, but don't call them.
+	void _emit_session_supported(const String &p_session_mode, bool p_supported);
+	void _emit_session_failed(const String &p_message);
+	void _emit_simple_signal(const StringName &p_signal);
 	void _on_input_event(int p_event_type, int p_input_source_id);
 
 	WebXRInterfaceJS();

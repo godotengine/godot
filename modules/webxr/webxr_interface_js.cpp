@@ -49,68 +49,69 @@ void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
+	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	String session_mode = String(p_session_mode);
-	interface->emit_signal(SNAME("session_supported"), session_mode, p_supported ? true : false);
+
+	callable_mp(interface.ptr(), &WebXRInterfaceJS::_emit_session_supported).call_deferred(session_mode, p_supported ? true : false);
 }
 
 void _emwebxr_on_session_started(char *p_reference_space_type) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
+	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	String reference_space_type = String(p_reference_space_type);
-	static_cast<WebXRInterfaceJS *>(interface.ptr())->_set_reference_space_type(reference_space_type);
-	interface->emit_signal(SNAME("session_started"));
+	interface->_set_reference_space_type(reference_space_type);
+	callable_mp(interface.ptr(), &WebXRInterfaceJS::_emit_simple_signal).call_deferred(SNAME("session_started"));
 }
 
 void _emwebxr_on_session_ended() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
+	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	interface->uninitialize();
-	interface->emit_signal(SNAME("session_ended"));
+	callable_mp(interface.ptr(), &WebXRInterfaceJS::_emit_simple_signal).call_deferred(SNAME("session_ended"));
 }
 
 void _emwebxr_on_session_failed(char *p_message) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
+	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	interface->uninitialize();
 
 	String message = String(p_message);
-	interface->emit_signal(SNAME("session_failed"), message);
+	callable_mp(interface.ptr(), &WebXRInterfaceJS::_emit_session_failed).call_deferred(message);
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_input_event(int p_event_type, int p_input_source_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
+	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
-	((WebXRInterfaceJS *)interface.ptr())->_on_input_event(p_event_type, p_input_source_id);
+	callable_mp(interface.ptr(), &WebXRInterfaceJS::_on_input_event).call_deferred(p_event_type, p_input_source_id);
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_simple_event(char *p_signal_name) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
+	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	StringName signal_name = StringName(p_signal_name);
-	interface->emit_signal(signal_name);
+	callable_mp(interface.ptr(), &WebXRInterfaceJS::_emit_simple_signal).call_deferred(signal_name);
 }
 
 void WebXRInterfaceJS::is_session_supported(const String &p_session_mode) {
@@ -574,6 +575,8 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
+	// @todo Apparently, there's a limit of how many arguments can be proxied :-/
+#if 0
 	InputSource &input_source = input_sources[p_input_source_id];
 
 	float target_pose[16];
@@ -696,6 +699,19 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 			touches[touch_index].position = position;
 		}
 	}
+#endif
+}
+
+void WebXRInterfaceJS::_emit_session_supported(const String &p_session_mode, bool p_supported) {
+	emit_signal(SNAME("session_supported"), p_session_mode, p_supported);
+}
+
+void WebXRInterfaceJS::_emit_session_failed(const String &p_message) {
+	emit_signal(SNAME("session_failed"), p_message);
+}
+
+void WebXRInterfaceJS::_emit_simple_signal(const StringName &p_signal) {
+	emit_signal(p_signal);
 }
 
 void WebXRInterfaceJS::_on_input_event(int p_event_type, int p_input_source_id) {
