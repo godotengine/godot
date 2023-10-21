@@ -166,6 +166,8 @@ void NavigationObstacle3D::_notification(int p_what) {
 NavigationObstacle3D::NavigationObstacle3D() {
 	obstacle = NavigationServer3D::get_singleton()->obstacle_create();
 
+	NavigationServer3D::get_singleton()->obstacle_set_height(obstacle, height);
+
 	set_radius(radius);
 	set_height(height);
 	set_vertices(vertices);
