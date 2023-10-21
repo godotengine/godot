@@ -145,16 +145,6 @@ exit:
 #endif /* !defined(MBEDTLS_CMAC_ALT) || defined(MBEDTLS_SELF_TEST) */
 
 #if !defined(MBEDTLS_CMAC_ALT)
-static void cmac_xor_block(unsigned char *output, const unsigned char *input1,
-                           const unsigned char *input2,
-                           const size_t block_size)
-{
-    size_t idx;
-
-    for (idx = 0; idx < block_size; idx++) {
-        output[idx] = input1[idx] ^ input2[idx];
-    }
-}
 
 /*
  * Create padded last block from (partial) last block.
@@ -247,7 +237,7 @@ int mbedtls_cipher_cmac_update(mbedtls_cipher_context_t *ctx,
                input,
                block_size - cmac_ctx->unprocessed_len);
 
-        cmac_xor_block(state, cmac_ctx->unprocessed_block, state, block_size);
+        mbedtls_xor(state, cmac_ctx->unprocessed_block, state, block_size);
 
         if ((ret = mbedtls_cipher_update(ctx, state, block_size, state,
                                          &olen)) != 0) {
@@ -265,7 +255,7 @@ int mbedtls_cipher_cmac_update(mbedtls_cipher_context_t *ctx,
     /* Iterate across the input data in block sized chunks, excluding any
      * final partial or complete block */
     for (j = 1; j < n; j++) {
-        cmac_xor_block(state, input, state, block_size);
+        mbedtls_xor(state, input, state, block_size);
 
         if ((ret = mbedtls_cipher_update(ctx, state, block_size, state,
                                          &olen)) != 0) {
@@ -317,14 +307,14 @@ int mbedtls_cipher_cmac_finish(mbedtls_cipher_context_t *ctx,
     /* Calculate last block */
     if (cmac_ctx->unprocessed_len < block_size) {
         cmac_pad(M_last, block_size, last_block, cmac_ctx->unprocessed_len);
-        cmac_xor_block(M_last, M_last, K2, block_size);
+        mbedtls_xor(M_last, M_last, K2, block_size);
     } else {
         /* Last block is complete block */
-        cmac_xor_block(M_last, last_block, K1, block_size);
+        mbedtls_xor(M_last, last_block, K1, block_size);
     }
 
 
-    cmac_xor_block(state, M_last, state, block_size);
+    mbedtls_xor(state, M_last, state, block_size);
     if ((ret = mbedtls_cipher_update(ctx, state, block_size, state,
                                      &olen)) != 0) {
         goto exit;

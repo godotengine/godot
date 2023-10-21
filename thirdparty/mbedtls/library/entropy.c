@@ -21,18 +21,10 @@
 
 #if defined(MBEDTLS_ENTROPY_C)
 
-#if defined(MBEDTLS_TEST_NULL_ENTROPY)
-#warning "**** WARNING!  MBEDTLS_TEST_NULL_ENTROPY defined! "
-#warning "**** THIS BUILD HAS NO DEFINED ENTROPY SOURCES "
-#warning "**** THIS BUILD IS *NOT* SUITABLE FOR PRODUCTION USE "
-#endif
-
 #include "mbedtls/entropy.h"
-#include "mbedtls/entropy_poll.h"
+#include "entropy_poll.h"
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
-#include "mbedtls/sha256.h"
-#include "mbedtls/sha512.h"
 
 #include <string.h>
 
@@ -44,9 +36,6 @@
 
 #include "mbedtls/platform.h"
 
-#if defined(MBEDTLS_HAVEGE_C)
-#include "mbedtls/havege.h"
-#endif
 
 #define ENTROPY_MAX_LOOP    256     /**< Maximum amount to loop before error */
 
@@ -65,32 +54,14 @@ void mbedtls_entropy_init(mbedtls_entropy_context *ctx)
 #else
     mbedtls_sha256_init(&ctx->accumulator);
 #endif
-#if defined(MBEDTLS_HAVEGE_C)
-    mbedtls_havege_init(&ctx->havege_data);
-#endif
 
     /* Reminder: Update ENTROPY_HAVE_STRONG in the test files
      *           when adding more strong entropy sources here. */
-
-#if defined(MBEDTLS_TEST_NULL_ENTROPY)
-    mbedtls_entropy_add_source(ctx, mbedtls_null_entropy_poll, NULL,
-                               1, MBEDTLS_ENTROPY_SOURCE_STRONG);
-#endif
 
 #if !defined(MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES)
 #if !defined(MBEDTLS_NO_PLATFORM_ENTROPY)
     mbedtls_entropy_add_source(ctx, mbedtls_platform_entropy_poll, NULL,
                                MBEDTLS_ENTROPY_MIN_PLATFORM,
-                               MBEDTLS_ENTROPY_SOURCE_STRONG);
-#endif
-#if defined(MBEDTLS_TIMING_C)
-    mbedtls_entropy_add_source(ctx, mbedtls_hardclock_poll, NULL,
-                               MBEDTLS_ENTROPY_MIN_HARDCLOCK,
-                               MBEDTLS_ENTROPY_SOURCE_WEAK);
-#endif
-#if defined(MBEDTLS_HAVEGE_C)
-    mbedtls_entropy_add_source(ctx, mbedtls_havege_poll, &ctx->havege_data,
-                               MBEDTLS_ENTROPY_MIN_HAVEGE,
                                MBEDTLS_ENTROPY_SOURCE_STRONG);
 #endif
 #if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
@@ -115,9 +86,6 @@ void mbedtls_entropy_free(mbedtls_entropy_context *ctx)
         return;
     }
 
-#if defined(MBEDTLS_HAVEGE_C)
-    mbedtls_havege_free(&ctx->havege_data);
-#endif
 #if defined(MBEDTLS_THREADING_C)
     mbedtls_mutex_free(&ctx->mutex);
 #endif
@@ -183,11 +151,11 @@ static int entropy_update(mbedtls_entropy_context *ctx, unsigned char source_id,
 
     if (use_len > MBEDTLS_ENTROPY_BLOCK_SIZE) {
 #if defined(MBEDTLS_ENTROPY_SHA512_ACCUMULATOR)
-        if ((ret = mbedtls_sha512_ret(data, len, tmp, 0)) != 0) {
+        if ((ret = mbedtls_sha512(data, len, tmp, 0)) != 0) {
             goto cleanup;
         }
 #else
-        if ((ret = mbedtls_sha256_ret(data, len, tmp, 0)) != 0) {
+        if ((ret = mbedtls_sha256(data, len, tmp, 0)) != 0) {
             goto cleanup;
         }
 #endif
@@ -205,26 +173,26 @@ static int entropy_update(mbedtls_entropy_context *ctx, unsigned char source_id,
      */
 #if defined(MBEDTLS_ENTROPY_SHA512_ACCUMULATOR)
     if (ctx->accumulator_started == 0 &&
-        (ret = mbedtls_sha512_starts_ret(&ctx->accumulator, 0)) != 0) {
+        (ret = mbedtls_sha512_starts(&ctx->accumulator, 0)) != 0) {
         goto cleanup;
     } else {
         ctx->accumulator_started = 1;
     }
-    if ((ret = mbedtls_sha512_update_ret(&ctx->accumulator, header, 2)) != 0) {
+    if ((ret = mbedtls_sha512_update(&ctx->accumulator, header, 2)) != 0) {
         goto cleanup;
     }
-    ret = mbedtls_sha512_update_ret(&ctx->accumulator, p, use_len);
+    ret = mbedtls_sha512_update(&ctx->accumulator, p, use_len);
 #else
     if (ctx->accumulator_started == 0 &&
-        (ret = mbedtls_sha256_starts_ret(&ctx->accumulator, 0)) != 0) {
+        (ret = mbedtls_sha256_starts(&ctx->accumulator, 0)) != 0) {
         goto cleanup;
     } else {
         ctx->accumulator_started = 1;
     }
-    if ((ret = mbedtls_sha256_update_ret(&ctx->accumulator, header, 2)) != 0) {
+    if ((ret = mbedtls_sha256_update(&ctx->accumulator, header, 2)) != 0) {
         goto cleanup;
     }
-    ret = mbedtls_sha256_update_ret(&ctx->accumulator, p, use_len);
+    ret = mbedtls_sha256_update(&ctx->accumulator, p, use_len);
 #endif
 
 cleanup:
@@ -392,7 +360,7 @@ int mbedtls_entropy_func(void *data, unsigned char *output, size_t len)
      * in a previous call to entropy_update(). If this is not guaranteed, the
      * code below will fail.
      */
-    if ((ret = mbedtls_sha512_finish_ret(&ctx->accumulator, buf)) != 0) {
+    if ((ret = mbedtls_sha512_finish(&ctx->accumulator, buf)) != 0) {
         goto exit;
     }
 
@@ -401,23 +369,23 @@ int mbedtls_entropy_func(void *data, unsigned char *output, size_t len)
      */
     mbedtls_sha512_free(&ctx->accumulator);
     mbedtls_sha512_init(&ctx->accumulator);
-    if ((ret = mbedtls_sha512_starts_ret(&ctx->accumulator, 0)) != 0) {
+    if ((ret = mbedtls_sha512_starts(&ctx->accumulator, 0)) != 0) {
         goto exit;
     }
-    if ((ret = mbedtls_sha512_update_ret(&ctx->accumulator, buf,
-                                         MBEDTLS_ENTROPY_BLOCK_SIZE)) != 0) {
+    if ((ret = mbedtls_sha512_update(&ctx->accumulator, buf,
+                                     MBEDTLS_ENTROPY_BLOCK_SIZE)) != 0) {
         goto exit;
     }
 
     /*
      * Perform second SHA-512 on entropy
      */
-    if ((ret = mbedtls_sha512_ret(buf, MBEDTLS_ENTROPY_BLOCK_SIZE,
-                                  buf, 0)) != 0) {
+    if ((ret = mbedtls_sha512(buf, MBEDTLS_ENTROPY_BLOCK_SIZE,
+                              buf, 0)) != 0) {
         goto exit;
     }
 #else /* MBEDTLS_ENTROPY_SHA512_ACCUMULATOR */
-    if ((ret = mbedtls_sha256_finish_ret(&ctx->accumulator, buf)) != 0) {
+    if ((ret = mbedtls_sha256_finish(&ctx->accumulator, buf)) != 0) {
         goto exit;
     }
 
@@ -426,19 +394,19 @@ int mbedtls_entropy_func(void *data, unsigned char *output, size_t len)
      */
     mbedtls_sha256_free(&ctx->accumulator);
     mbedtls_sha256_init(&ctx->accumulator);
-    if ((ret = mbedtls_sha256_starts_ret(&ctx->accumulator, 0)) != 0) {
+    if ((ret = mbedtls_sha256_starts(&ctx->accumulator, 0)) != 0) {
         goto exit;
     }
-    if ((ret = mbedtls_sha256_update_ret(&ctx->accumulator, buf,
-                                         MBEDTLS_ENTROPY_BLOCK_SIZE)) != 0) {
+    if ((ret = mbedtls_sha256_update(&ctx->accumulator, buf,
+                                     MBEDTLS_ENTROPY_BLOCK_SIZE)) != 0) {
         goto exit;
     }
 
     /*
      * Perform second SHA-256 on entropy
      */
-    if ((ret = mbedtls_sha256_ret(buf, MBEDTLS_ENTROPY_BLOCK_SIZE,
-                                  buf, 0)) != 0) {
+    if ((ret = mbedtls_sha256(buf, MBEDTLS_ENTROPY_BLOCK_SIZE,
+                              buf, 0)) != 0) {
         goto exit;
     }
 #endif /* MBEDTLS_ENTROPY_SHA512_ACCUMULATOR */
@@ -503,6 +471,9 @@ int mbedtls_entropy_write_seed_file(mbedtls_entropy_context *ctx, const char *pa
         goto exit;
     }
 
+    /* Ensure no stdio buffering of secrets, as such buffers cannot be wiped. */
+    mbedtls_setbuf(f, NULL);
+
     if (fwrite(buf, 1, MBEDTLS_ENTROPY_BLOCK_SIZE, f) != MBEDTLS_ENTROPY_BLOCK_SIZE) {
         ret = MBEDTLS_ERR_ENTROPY_FILE_IO_ERROR;
         goto exit;
@@ -531,6 +502,9 @@ int mbedtls_entropy_update_seed_file(mbedtls_entropy_context *ctx, const char *p
         return MBEDTLS_ERR_ENTROPY_FILE_IO_ERROR;
     }
 
+    /* Ensure no stdio buffering of secrets, as such buffers cannot be wiped. */
+    mbedtls_setbuf(f, NULL);
+
     fseek(f, 0, SEEK_END);
     n = (size_t) ftell(f);
     fseek(f, 0, SEEK_SET);
@@ -558,7 +532,6 @@ int mbedtls_entropy_update_seed_file(mbedtls_entropy_context *ctx, const char *p
 #endif /* MBEDTLS_FS_IO */
 
 #if defined(MBEDTLS_SELF_TEST)
-#if !defined(MBEDTLS_TEST_NULL_ENTROPY)
 /*
  * Dummy source function
  */
@@ -572,7 +545,6 @@ static int entropy_dummy_source(void *data, unsigned char *output,
 
     return 0;
 }
-#endif /* !MBEDTLS_TEST_NULL_ENTROPY */
 
 #if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
 
@@ -683,18 +655,15 @@ cleanup:
 int mbedtls_entropy_self_test(int verbose)
 {
     int ret = 1;
-#if !defined(MBEDTLS_TEST_NULL_ENTROPY)
     mbedtls_entropy_context ctx;
     unsigned char buf[MBEDTLS_ENTROPY_BLOCK_SIZE] = { 0 };
     unsigned char acc[MBEDTLS_ENTROPY_BLOCK_SIZE] = { 0 };
     size_t i, j;
-#endif /* !MBEDTLS_TEST_NULL_ENTROPY */
 
     if (verbose != 0) {
         mbedtls_printf("  ENTROPY test: ");
     }
 
-#if !defined(MBEDTLS_TEST_NULL_ENTROPY)
     mbedtls_entropy_init(&ctx);
 
     /* First do a gather to make sure we have default sources */
@@ -745,7 +714,6 @@ int mbedtls_entropy_self_test(int verbose)
 
 cleanup:
     mbedtls_entropy_free(&ctx);
-#endif /* !MBEDTLS_TEST_NULL_ENTROPY */
 
     if (verbose != 0) {
         if (ret != 0) {

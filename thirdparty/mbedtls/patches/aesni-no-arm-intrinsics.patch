@@ -1,9 +1,9 @@
-diff --git a/thirdparty/mbedtls/include/mbedtls/aesni.h b/thirdparty/mbedtls/include/mbedtls/aesni.h
+diff --git a/thirdparty/mbedtls/library/aesni.h b/thirdparty/mbedtls/library/aesni.h
 index 6741dead05..6c545bd4a3 100644
---- a/thirdparty/mbedtls/include/mbedtls/aesni.h
-+++ b/thirdparty/mbedtls/include/mbedtls/aesni.h
-@@ -54,9 +54,10 @@
-  *       macros that may change in future releases.
+--- a/thirdparty/mbedtls/library/aesni.h
++++ b/thirdparty/mbedtls/library/aesni.h
+@@ -47,9 +47,10 @@
+  * (Only implemented with certain compilers, only for certain targets.)
   */
  #undef MBEDTLS_AESNI_HAVE_INTRINSICS
 -#if defined(_MSC_VER)

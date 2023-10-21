@@ -35,13 +35,19 @@
 
 #include <string.h>
 
-#if defined(MBEDTLS_ARC4_C)
-#include "mbedtls/arc4.h"
+#if !defined(MBEDTLS_MD_C)
+#include "mbedtls/psa_util.h"
+#define PSA_TO_MBEDTLS_ERR(status) PSA_TO_MBEDTLS_ERR_LIST(status,   \
+                                                           psa_to_md_errors,              \
+                                                           psa_generic_status_to_mbedtls)
 #endif
 
 #if defined(MBEDTLS_DES_C)
 #include "mbedtls/des.h"
 #endif
+
+#include "hash_info.h"
+#include "mbedtls/psa_util.h"
 
 #if defined(MBEDTLS_ASN1_PARSE_C)
 
@@ -130,47 +136,6 @@ static int pkcs12_pbe_derive_key_iv(mbedtls_asn1_buf *pbe_params, mbedtls_md_typ
 }
 
 #undef PKCS12_MAX_PWDLEN
-
-int mbedtls_pkcs12_pbe_sha1_rc4_128(mbedtls_asn1_buf *pbe_params, int mode,
-                                    const unsigned char *pwd,  size_t pwdlen,
-                                    const unsigned char *data, size_t len,
-                                    unsigned char *output)
-{
-#if !defined(MBEDTLS_ARC4_C)
-    ((void) pbe_params);
-    ((void) mode);
-    ((void) pwd);
-    ((void) pwdlen);
-    ((void) data);
-    ((void) len);
-    ((void) output);
-    return MBEDTLS_ERR_PKCS12_FEATURE_UNAVAILABLE;
-#else
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    unsigned char key[16];
-    mbedtls_arc4_context ctx;
-    ((void) mode);
-
-    mbedtls_arc4_init(&ctx);
-
-    if ((ret = pkcs12_pbe_derive_key_iv(pbe_params, MBEDTLS_MD_SHA1,
-                                        pwd, pwdlen,
-                                        key, 16, NULL, 0)) != 0) {
-        return ret;
-    }
-
-    mbedtls_arc4_setup(&ctx, key, 16);
-    if ((ret = mbedtls_arc4_crypt(&ctx, len, data, output)) != 0) {
-        goto exit;
-    }
-
-exit:
-    mbedtls_platform_zeroize(key, sizeof(key));
-    mbedtls_arc4_free(&ctx);
-
-    return ret;
-#endif /* MBEDTLS_ARC4_C */
-}
 
 int mbedtls_pkcs12_pbe(mbedtls_asn1_buf *pbe_params, int mode,
                        mbedtls_cipher_type_t cipher_type, mbedtls_md_type_t md_type,
@@ -263,6 +228,118 @@ static void pkcs12_fill_buffer(unsigned char *data, size_t data_len,
     }
 }
 
+
+static int calculate_hashes(mbedtls_md_type_t md_type, int iterations,
+                            unsigned char *diversifier, unsigned char *salt_block,
+                            unsigned char *pwd_block, unsigned char *hash_output, int use_salt,
+                            int use_password, size_t hlen, size_t v)
+{
+#if defined(MBEDTLS_MD_C)
+    int ret = -1;
+    size_t i;
+    const mbedtls_md_info_t *md_info;
+    mbedtls_md_context_t md_ctx;
+    md_info = mbedtls_md_info_from_type(md_type);
+    if (md_info == NULL) {
+        return MBEDTLS_ERR_PKCS12_FEATURE_UNAVAILABLE;
+    }
+
+    mbedtls_md_init(&md_ctx);
+
+    if ((ret = mbedtls_md_setup(&md_ctx, md_info, 0)) != 0) {
+        return ret;
+    }
+    // Calculate hash( diversifier || salt_block || pwd_block )
+    if ((ret = mbedtls_md_starts(&md_ctx)) != 0) {
+        goto exit;
+    }
+
+    if ((ret = mbedtls_md_update(&md_ctx, diversifier, v)) != 0) {
+        goto exit;
+    }
+
+    if (use_salt != 0) {
+        if ((ret = mbedtls_md_update(&md_ctx, salt_block, v)) != 0) {
+            goto exit;
+        }
+    }
+
+    if (use_password != 0) {
+        if ((ret = mbedtls_md_update(&md_ctx, pwd_block, v)) != 0) {
+            goto exit;
+        }
+    }
+
+    if ((ret = mbedtls_md_finish(&md_ctx, hash_output)) != 0) {
+        goto exit;
+    }
+
+    // Perform remaining ( iterations - 1 ) recursive hash calculations
+    for (i = 1; i < (size_t) iterations; i++) {
+        if ((ret = mbedtls_md(md_info, hash_output, hlen, hash_output))
+            != 0) {
+            goto exit;
+        }
+    }
+
+exit:
+    mbedtls_md_free(&md_ctx);
+    return ret;
+#else
+    psa_hash_operation_t op = PSA_HASH_OPERATION_INIT;
+    psa_algorithm_t alg = mbedtls_psa_translate_md(md_type);
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_status_t status_abort = PSA_ERROR_CORRUPTION_DETECTED;
+    size_t i, out_len, out_size = PSA_HASH_LENGTH(alg);
+
+    if (alg == PSA_ALG_NONE) {
+        return MBEDTLS_ERR_PKCS12_FEATURE_UNAVAILABLE;
+    }
+
+    if ((status = psa_hash_setup(&op, alg)) != PSA_SUCCESS) {
+        goto exit;
+    }
+
+    // Calculate hash( diversifier || salt_block || pwd_block )
+    if ((status = psa_hash_update(&op, diversifier, v)) != PSA_SUCCESS) {
+        goto exit;
+    }
+
+    if (use_salt != 0) {
+        if ((status = psa_hash_update(&op, salt_block, v)) != PSA_SUCCESS) {
+            goto exit;
+        }
+    }
+
+    if (use_password != 0) {
+        if ((status = psa_hash_update(&op, pwd_block, v)) != PSA_SUCCESS) {
+            goto exit;
+        }
+    }
+
+    if ((status = psa_hash_finish(&op, hash_output, out_size, &out_len))
+        != PSA_SUCCESS) {
+        goto exit;
+    }
+
+    // Perform remaining ( iterations - 1 ) recursive hash calculations
+    for (i = 1; i < (size_t) iterations; i++) {
+        if ((status = psa_hash_compute(alg, hash_output, hlen, hash_output,
+                                       out_size, &out_len)) != PSA_SUCCESS) {
+            goto exit;
+        }
+    }
+
+exit:
+    status_abort = psa_hash_abort(&op);
+    if (status == PSA_SUCCESS) {
+        status = status_abort;
+    }
+    return PSA_TO_MBEDTLS_ERR(status);
+#endif /* !MBEDTLS_MD_C */
+}
+
+
 int mbedtls_pkcs12_derivation(unsigned char *data, size_t datalen,
                               const unsigned char *pwd, size_t pwdlen,
                               const unsigned char *salt, size_t saltlen,
@@ -272,17 +349,14 @@ int mbedtls_pkcs12_derivation(unsigned char *data, size_t datalen,
     unsigned int j;
 
     unsigned char diversifier[128];
-    unsigned char salt_block[128], pwd_block[128], hash_block[128];
-    unsigned char hash_output[MBEDTLS_MD_MAX_SIZE];
+    unsigned char salt_block[128], pwd_block[128], hash_block[128] = { 0 };
+    unsigned char hash_output[MBEDTLS_HASH_MAX_SIZE];
     unsigned char *p;
     unsigned char c;
     int           use_password = 0;
     int           use_salt = 0;
 
     size_t hlen, use_len, v, i;
-
-    const mbedtls_md_info_t *md_info;
-    mbedtls_md_context_t md_ctx;
 
     // This version only allows max of 64 bytes of password or salt
     if (datalen > 128 || pwdlen > 64 || saltlen > 64) {
@@ -300,17 +374,7 @@ int mbedtls_pkcs12_derivation(unsigned char *data, size_t datalen,
     use_password = (pwd && pwdlen != 0);
     use_salt = (salt && saltlen != 0);
 
-    md_info = mbedtls_md_info_from_type(md_type);
-    if (md_info == NULL) {
-        return MBEDTLS_ERR_PKCS12_FEATURE_UNAVAILABLE;
-    }
-
-    mbedtls_md_init(&md_ctx);
-
-    if ((ret = mbedtls_md_setup(&md_ctx, md_info, 0)) != 0) {
-        return ret;
-    }
-    hlen = mbedtls_md_get_size(md_info);
+    hlen = mbedtls_hash_info_get_size(md_type);
 
     if (hlen <= 32) {
         v = 64;
@@ -330,36 +394,10 @@ int mbedtls_pkcs12_derivation(unsigned char *data, size_t datalen,
 
     p = data;
     while (datalen > 0) {
-        // Calculate hash( diversifier || salt_block || pwd_block )
-        if ((ret = mbedtls_md_starts(&md_ctx)) != 0) {
+        if (calculate_hashes(md_type, iterations, diversifier, salt_block,
+                             pwd_block, hash_output, use_salt, use_password, hlen,
+                             v) != 0) {
             goto exit;
-        }
-
-        if ((ret = mbedtls_md_update(&md_ctx, diversifier, v)) != 0) {
-            goto exit;
-        }
-
-        if (use_salt != 0) {
-            if ((ret = mbedtls_md_update(&md_ctx, salt_block, v)) != 0) {
-                goto exit;
-            }
-        }
-
-        if (use_password != 0) {
-            if ((ret = mbedtls_md_update(&md_ctx, pwd_block, v)) != 0) {
-                goto exit;
-            }
-        }
-
-        if ((ret = mbedtls_md_finish(&md_ctx, hash_output)) != 0) {
-            goto exit;
-        }
-
-        // Perform remaining ( iterations - 1 ) recursive hash calculations
-        for (i = 1; i < (size_t) iterations; i++) {
-            if ((ret = mbedtls_md(md_info, hash_output, hlen, hash_output)) != 0) {
-                goto exit;
-            }
         }
 
         use_len = (datalen > hlen) ? hlen : datalen;
@@ -409,8 +447,6 @@ exit:
     mbedtls_platform_zeroize(pwd_block, sizeof(pwd_block));
     mbedtls_platform_zeroize(hash_block, sizeof(hash_block));
     mbedtls_platform_zeroize(hash_output, sizeof(hash_output));
-
-    mbedtls_md_free(&md_ctx);
 
     return ret;
 }

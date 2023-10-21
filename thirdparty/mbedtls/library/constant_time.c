@@ -30,10 +30,11 @@
 
 #if defined(MBEDTLS_BIGNUM_C)
 #include "mbedtls/bignum.h"
+#include "bignum_core.h"
 #endif
 
 #if defined(MBEDTLS_SSL_TLS_C)
-#include "mbedtls/ssl_internal.h"
+#include "ssl_misc.h"
 #endif
 
 #if defined(MBEDTLS_RSA_C)
@@ -45,17 +46,69 @@
 #endif
 
 #include <string.h>
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+#define PSA_TO_MBEDTLS_ERR(status) PSA_TO_MBEDTLS_ERR_LIST(status,    \
+                                                           psa_to_ssl_errors,              \
+                                                           psa_generic_status_to_mbedtls)
+#endif
+
+/*
+ * Define MBEDTLS_EFFICIENT_UNALIGNED_VOLATILE_ACCESS where assembly is present to
+ * perform fast unaligned access to volatile data.
+ *
+ * This is needed because mbedtls_get_unaligned_uintXX etc don't support volatile
+ * memory accesses.
+ *
+ * Some of these definitions could be moved into alignment.h but for now they are
+ * only used here.
+ */
+#if defined(MBEDTLS_EFFICIENT_UNALIGNED_ACCESS) && defined(MBEDTLS_HAVE_ASM)
+#if defined(__arm__) || defined(__thumb__) || defined(__thumb2__) || defined(__aarch64__)
+#define MBEDTLS_EFFICIENT_UNALIGNED_VOLATILE_ACCESS
+#endif
+#endif
+
+#if defined(MBEDTLS_EFFICIENT_UNALIGNED_VOLATILE_ACCESS)
+static inline uint32_t mbedtls_get_unaligned_volatile_uint32(volatile const unsigned char *p)
+{
+    /* This is UB, even where it's safe:
+     *    return *((volatile uint32_t*)p);
+     * so instead the same thing is expressed in assembly below.
+     */
+    uint32_t r;
+#if defined(__arm__) || defined(__thumb__) || defined(__thumb2__)
+    asm volatile ("ldr %0, [%1]" : "=r" (r) : "r" (p) :);
+#elif defined(__aarch64__)
+    asm volatile ("ldr %w0, [%1]" : "=r" (r) : "r" (p) :);
+#endif
+    return r;
+}
+#endif /* MBEDTLS_EFFICIENT_UNALIGNED_VOLATILE_ACCESS */
 
 int mbedtls_ct_memcmp(const void *a,
                       const void *b,
                       size_t n)
 {
-    size_t i;
+    size_t i = 0;
+    /*
+     * `A` and `B` are cast to volatile to ensure that the compiler
+     * generates code that always fully reads both buffers.
+     * Otherwise it could generate a test to exit early if `diff` has all
+     * bits set early in the loop.
+     */
     volatile const unsigned char *A = (volatile const unsigned char *) a;
     volatile const unsigned char *B = (volatile const unsigned char *) b;
-    volatile unsigned char diff = 0;
+    uint32_t diff = 0;
 
-    for (i = 0; i < n; i++) {
+#if defined(MBEDTLS_EFFICIENT_UNALIGNED_VOLATILE_ACCESS)
+    for (; (i + 4) <= n; i += 4) {
+        uint32_t x = mbedtls_get_unaligned_volatile_uint32(A + i);
+        uint32_t y = mbedtls_get_unaligned_volatile_uint32(B + i);
+        diff |= x ^ y;
+    }
+#endif
+
+    for (; i < n; i++) {
         /* Read volatile data in order before computing diff.
          * This avoids IAR compiler warning:
          * 'the order of volatile accesses is undefined ..' */
@@ -80,7 +133,7 @@ unsigned mbedtls_ct_uint_mask(unsigned value)
 #endif
 }
 
-#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
+#if defined(MBEDTLS_SSL_SOME_SUITES_USE_MAC)
 
 size_t mbedtls_ct_size_mask(size_t value)
 {
@@ -96,7 +149,7 @@ size_t mbedtls_ct_size_mask(size_t value)
 #endif
 }
 
-#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
+#endif /* MBEDTLS_SSL_SOME_SUITES_USE_MAC */
 
 #if defined(MBEDTLS_BIGNUM_C)
 
@@ -263,6 +316,40 @@ unsigned mbedtls_ct_uint_if(unsigned condition,
 
 #if defined(MBEDTLS_BIGNUM_C)
 
+/** Select between two sign values without branches.
+ *
+ * This is functionally equivalent to `condition ? if1 : if0` but uses only bit
+ * operations in order to avoid branches.
+ *
+ * \note if1 and if0 must be either 1 or -1, otherwise the result
+ *       is undefined.
+ *
+ * \param condition     Condition to test; must be either 0 or 1.
+ * \param if1           The first sign; must be either +1 or -1.
+ * \param if0           The second sign; must be either +1 or -1.
+ *
+ * \return  \c if1 if \p condition is nonzero, otherwise \c if0.
+ * */
+static int mbedtls_ct_cond_select_sign(unsigned char condition,
+                                       int if1,
+                                       int if0)
+{
+    /* In order to avoid questions about what we can reasonably assume about
+     * the representations of signed integers, move everything to unsigned
+     * by taking advantage of the fact that if1 and if0 are either +1 or -1. */
+    unsigned uif1 = if1 + 1;
+    unsigned uif0 = if0 + 1;
+
+    /* condition was 0 or 1, mask is 0 or 2 as are uif1 and uif0 */
+    const unsigned mask = condition << 1;
+
+    /* select uif1 or uif0 */
+    unsigned ur = (uif0 & ~mask) | (uif1 & mask);
+
+    /* ur is now 0 or 2, convert back to -1 or +1 */
+    return (int) ur - 1;
+}
+
 void mbedtls_ct_mpi_uint_cond_assign(size_t n,
                                      mbedtls_mpi_uint *dest,
                                      const mbedtls_mpi_uint *src,
@@ -369,7 +456,8 @@ static void mbedtls_ct_mem_move_to_left(void *start,
 
 #endif /* MBEDTLS_PKCS1_V15 && MBEDTLS_RSA_C && ! MBEDTLS_RSA_ALT */
 
-#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
+#if defined(MBEDTLS_SSL_SOME_SUITES_USE_MAC)
+
 void mbedtls_ct_memcpy_if_eq(unsigned char *dest,
                              const unsigned char *src,
                              size_t len,
@@ -378,10 +466,22 @@ void mbedtls_ct_memcpy_if_eq(unsigned char *dest,
 {
     /* mask = c1 == c2 ? 0xff : 0x00 */
     const size_t equal = mbedtls_ct_size_bool_eq(c1, c2);
-    const unsigned char mask = (unsigned char) mbedtls_ct_size_mask(equal);
 
     /* dest[i] = c1 == c2 ? src[i] : dest[i] */
-    for (size_t i = 0; i < len; i++) {
+    size_t i = 0;
+#if defined(MBEDTLS_EFFICIENT_UNALIGNED_ACCESS)
+    const uint32_t mask32 = (uint32_t) mbedtls_ct_size_mask(equal);
+    const unsigned char mask = (unsigned char) mask32 & 0xff;
+
+    for (; (i + 4) <= len; i += 4) {
+        uint32_t a = mbedtls_get_unaligned_uint32(src  + i) &  mask32;
+        uint32_t b = mbedtls_get_unaligned_uint32(dest + i) & ~mask32;
+        mbedtls_put_unaligned_uint32(dest + i, a | b);
+    }
+#else
+    const unsigned char mask = (unsigned char) mbedtls_ct_size_mask(equal);
+#endif /* MBEDTLS_EFFICIENT_UNALIGNED_ACCESS */
+    for (; i < len; i++) {
         dest[i] = (src[i] & mask) | (dest[i] & ~mask);
     }
 }
@@ -401,6 +501,136 @@ void mbedtls_ct_memcpy_offset(unsigned char *dest,
     }
 }
 
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+
+#if defined(PSA_WANT_ALG_SHA_384)
+#define MAX_HASH_BLOCK_LENGTH PSA_HASH_BLOCK_LENGTH(PSA_ALG_SHA_384)
+#elif defined(PSA_WANT_ALG_SHA_256)
+#define MAX_HASH_BLOCK_LENGTH PSA_HASH_BLOCK_LENGTH(PSA_ALG_SHA_256)
+#else /* See check_config.h */
+#define MAX_HASH_BLOCK_LENGTH PSA_HASH_BLOCK_LENGTH(PSA_ALG_SHA_1)
+#endif
+
+int mbedtls_ct_hmac(mbedtls_svc_key_id_t key,
+                    psa_algorithm_t mac_alg,
+                    const unsigned char *add_data,
+                    size_t add_data_len,
+                    const unsigned char *data,
+                    size_t data_len_secret,
+                    size_t min_data_len,
+                    size_t max_data_len,
+                    unsigned char *output)
+{
+    /*
+     * This function breaks the HMAC abstraction and uses psa_hash_clone()
+     * extension in order to get constant-flow behaviour.
+     *
+     * HMAC(msg) is defined as HASH(okey + HASH(ikey + msg)) where + means
+     * concatenation, and okey/ikey are the XOR of the key with some fixed bit
+     * patterns (see RFC 2104, sec. 2).
+     *
+     * We'll first compute ikey/okey, then inner_hash = HASH(ikey + msg) by
+     * hashing up to minlen, then cloning the context, and for each byte up
+     * to maxlen finishing up the hash computation, keeping only the
+     * correct result.
+     *
+     * Then we only need to compute HASH(okey + inner_hash) and we're done.
+     */
+    psa_algorithm_t hash_alg = PSA_ALG_HMAC_GET_HASH(mac_alg);
+    const size_t block_size = PSA_HASH_BLOCK_LENGTH(hash_alg);
+    unsigned char key_buf[MAX_HASH_BLOCK_LENGTH];
+    const size_t hash_size = PSA_HASH_LENGTH(hash_alg);
+    psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
+    size_t hash_length;
+
+    unsigned char aux_out[PSA_HASH_MAX_SIZE];
+    psa_hash_operation_t aux_operation = PSA_HASH_OPERATION_INIT;
+    size_t offset;
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+
+    size_t mac_key_length;
+    size_t i;
+
+#define PSA_CHK(func_call)        \
+    do {                            \
+        status = (func_call);       \
+        if (status != PSA_SUCCESS) \
+        goto cleanup;           \
+    } while (0)
+
+    /* Export MAC key
+     * We assume key length is always exactly the output size
+     * which is never more than the block size, thus we use block_size
+     * as the key buffer size.
+     */
+    PSA_CHK(psa_export_key(key, key_buf, block_size, &mac_key_length));
+
+    /* Calculate ikey */
+    for (i = 0; i < mac_key_length; i++) {
+        key_buf[i] = (unsigned char) (key_buf[i] ^ 0x36);
+    }
+    for (; i < block_size; ++i) {
+        key_buf[i] = 0x36;
+    }
+
+    PSA_CHK(psa_hash_setup(&operation, hash_alg));
+
+    /* Now compute inner_hash = HASH(ikey + msg) */
+    PSA_CHK(psa_hash_update(&operation, key_buf, block_size));
+    PSA_CHK(psa_hash_update(&operation, add_data, add_data_len));
+    PSA_CHK(psa_hash_update(&operation, data, min_data_len));
+
+    /* Fill the hash buffer in advance with something that is
+     * not a valid hash (barring an attack on the hash and
+     * deliberately-crafted input), in case the caller doesn't
+     * check the return status properly. */
+    memset(output, '!', hash_size);
+
+    /* For each possible length, compute the hash up to that point */
+    for (offset = min_data_len; offset <= max_data_len; offset++) {
+        PSA_CHK(psa_hash_clone(&operation, &aux_operation));
+        PSA_CHK(psa_hash_finish(&aux_operation, aux_out,
+                                PSA_HASH_MAX_SIZE, &hash_length));
+        /* Keep only the correct inner_hash in the output buffer */
+        mbedtls_ct_memcpy_if_eq(output, aux_out, hash_size,
+                                offset, data_len_secret);
+
+        if (offset < max_data_len) {
+            PSA_CHK(psa_hash_update(&operation, data + offset, 1));
+        }
+    }
+
+    /* Abort current operation to prepare for final operation */
+    PSA_CHK(psa_hash_abort(&operation));
+
+    /* Calculate okey */
+    for (i = 0; i < mac_key_length; i++) {
+        key_buf[i] = (unsigned char) ((key_buf[i] ^ 0x36) ^ 0x5C);
+    }
+    for (; i < block_size; ++i) {
+        key_buf[i] = 0x5C;
+    }
+
+    /* Now compute HASH(okey + inner_hash) */
+    PSA_CHK(psa_hash_setup(&operation, hash_alg));
+    PSA_CHK(psa_hash_update(&operation, key_buf, block_size));
+    PSA_CHK(psa_hash_update(&operation, output, hash_size));
+    PSA_CHK(psa_hash_finish(&operation, output, hash_size, &hash_length));
+
+#undef PSA_CHK
+
+cleanup:
+    mbedtls_platform_zeroize(key_buf, MAX_HASH_BLOCK_LENGTH);
+    mbedtls_platform_zeroize(aux_out, PSA_HASH_MAX_SIZE);
+
+    psa_hash_abort(&operation);
+    psa_hash_abort(&aux_operation);
+    return PSA_TO_MBEDTLS_ERR(status);
+}
+
+#undef MAX_HASH_BLOCK_LENGTH
+
+#else
 int mbedtls_ct_hmac(mbedtls_md_context_t *ctx,
                     const unsigned char *add_data,
                     size_t add_data_len,
@@ -425,7 +655,7 @@ int mbedtls_ct_hmac(mbedtls_md_context_t *ctx,
      * Then we only need to compute HASH(okey + inner_hash) and we're done.
      */
     const mbedtls_md_type_t md_alg = mbedtls_md_get_type(ctx->md_info);
-    /* TLS 1.0-1.2 only support SHA-384, SHA-256, SHA-1, MD-5,
+    /* TLS 1.2 only supports SHA-384, SHA-256, SHA-1, MD-5,
      * all of which have the same block size except SHA-384. */
     const size_t block_size = md_alg == MBEDTLS_MD_SHA384 ? 128 : 64;
     const unsigned char * const ikey = ctx->hmac_ctx;
@@ -490,8 +720,9 @@ cleanup:
     mbedtls_md_free(&aux);
     return ret;
 }
+#endif /* MBEDTLS_USE_PSA_CRYPTO */
 
-#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
+#endif /* MBEDTLS_SSL_SOME_SUITES_USE_MAC */
 
 #if defined(MBEDTLS_BIGNUM_C)
 
@@ -515,21 +746,19 @@ int mbedtls_mpi_safe_cond_assign(mbedtls_mpi *X,
                                  unsigned char assign)
 {
     int ret = 0;
-    size_t i;
-    mbedtls_mpi_uint limb_mask;
     MPI_VALIDATE_RET(X != NULL);
     MPI_VALIDATE_RET(Y != NULL);
 
     /* all-bits 1 if assign is 1, all-bits 0 if assign is 0 */
-    limb_mask = mbedtls_ct_mpi_uint_mask(assign);;
+    mbedtls_mpi_uint limb_mask = mbedtls_ct_mpi_uint_mask(assign);
 
     MBEDTLS_MPI_CHK(mbedtls_mpi_grow(X, Y->n));
 
-    X->s = (int) mbedtls_ct_uint_if(assign, Y->s, X->s);
+    X->s = mbedtls_ct_cond_select_sign(assign, Y->s, X->s);
 
-    mbedtls_ct_mpi_uint_cond_assign(Y->n, X->p, Y->p, assign);
+    mbedtls_mpi_core_cond_assign(X->p, Y->p, Y->n, assign);
 
-    for (i = Y->n; i < X->n; i++) {
+    for (size_t i = Y->n; i < X->n; i++) {
         X->p[i] &= ~limb_mask;
     }
 
@@ -547,10 +776,8 @@ int mbedtls_mpi_safe_cond_swap(mbedtls_mpi *X,
                                mbedtls_mpi *Y,
                                unsigned char swap)
 {
-    int ret, s;
-    size_t i;
-    mbedtls_mpi_uint limb_mask;
-    mbedtls_mpi_uint tmp;
+    int ret = 0;
+    int s;
     MPI_VALIDATE_RET(X != NULL);
     MPI_VALIDATE_RET(Y != NULL);
 
@@ -558,24 +785,59 @@ int mbedtls_mpi_safe_cond_swap(mbedtls_mpi *X,
         return 0;
     }
 
-    /* all-bits 1 if swap is 1, all-bits 0 if swap is 0 */
-    limb_mask = mbedtls_ct_mpi_uint_mask(swap);
-
     MBEDTLS_MPI_CHK(mbedtls_mpi_grow(X, Y->n));
     MBEDTLS_MPI_CHK(mbedtls_mpi_grow(Y, X->n));
 
     s = X->s;
-    X->s = (int) mbedtls_ct_uint_if(swap, Y->s, X->s);
-    Y->s = (int) mbedtls_ct_uint_if(swap, s, Y->s);
+    X->s = mbedtls_ct_cond_select_sign(swap, Y->s, X->s);
+    Y->s = mbedtls_ct_cond_select_sign(swap, s, Y->s);
 
-
-    for (i = 0; i < X->n; i++) {
-        tmp = X->p[i];
-        X->p[i] = (X->p[i] & ~limb_mask) | (Y->p[i] & limb_mask);
-        Y->p[i] = (Y->p[i] & ~limb_mask) | (tmp & limb_mask);
-    }
+    mbedtls_mpi_core_cond_swap(X->p, Y->p, X->n, swap);
 
 cleanup:
+    return ret;
+}
+
+/*
+ * Compare unsigned values in constant time
+ */
+unsigned mbedtls_mpi_core_lt_ct(const mbedtls_mpi_uint *A,
+                                const mbedtls_mpi_uint *B,
+                                size_t limbs)
+{
+    unsigned ret, cond, done;
+
+    /* The value of any of these variables is either 0 or 1 for the rest of
+     * their scope. */
+    ret = cond = done = 0;
+
+    for (size_t i = limbs; i > 0; i--) {
+        /*
+         * If B[i - 1] < A[i - 1] then A < B is false and the result must
+         * remain 0.
+         *
+         * Again even if we can make a decision, we just mark the result and
+         * the fact that we are done and continue looping.
+         */
+        cond = mbedtls_ct_mpi_uint_lt(B[i - 1], A[i - 1]);
+        done |= cond;
+
+        /*
+         * If A[i - 1] < B[i - 1] then A < B is true.
+         *
+         * Again even if we can make a decision, we just mark the result and
+         * the fact that we are done and continue looping.
+         */
+        cond = mbedtls_ct_mpi_uint_lt(A[i - 1], B[i - 1]);
+        ret |= cond & (1 - done);
+        done |= cond;
+    }
+
+    /*
+     * If all the limbs were equal, then the numbers are equal, A < B is false
+     * and leaving the result 0 is correct.
+     */
+
     return ret;
 }
 
@@ -650,8 +912,7 @@ int mbedtls_mpi_lt_mpi_ct(const mbedtls_mpi *X,
 
 #if defined(MBEDTLS_PKCS1_V15) && defined(MBEDTLS_RSA_C) && !defined(MBEDTLS_RSA_ALT)
 
-int mbedtls_ct_rsaes_pkcs1_v15_unpadding(int mode,
-                                         unsigned char *input,
+int mbedtls_ct_rsaes_pkcs1_v15_unpadding(unsigned char *input,
                                          size_t ilen,
                                          unsigned char *output,
                                          size_t output_max_len,
@@ -683,31 +944,18 @@ int mbedtls_ct_rsaes_pkcs1_v15_unpadding(int mode,
      * memory trace. The first byte must be 0. */
     bad |= input[0];
 
-    if (mode == MBEDTLS_RSA_PRIVATE) {
-        /* Decode EME-PKCS1-v1_5 padding: 0x00 || 0x02 || PS || 0x00
-         * where PS must be at least 8 nonzero bytes. */
-        bad |= input[1] ^ MBEDTLS_RSA_CRYPT;
 
-        /* Read the whole buffer. Set pad_done to nonzero if we find
-         * the 0x00 byte and remember the padding length in pad_count. */
-        for (i = 2; i < ilen; i++) {
-            pad_done  |= ((input[i] | (unsigned char) -input[i]) >> 7) ^ 1;
-            pad_count += ((pad_done | (unsigned char) -pad_done) >> 7) ^ 1;
-        }
-    } else {
-        /* Decode EMSA-PKCS1-v1_5 padding: 0x00 || 0x01 || PS || 0x00
-         * where PS must be at least 8 bytes with the value 0xFF. */
-        bad |= input[1] ^ MBEDTLS_RSA_SIGN;
+    /* Decode EME-PKCS1-v1_5 padding: 0x00 || 0x02 || PS || 0x00
+     * where PS must be at least 8 nonzero bytes. */
+    bad |= input[1] ^ MBEDTLS_RSA_CRYPT;
 
-        /* Read the whole buffer. Set pad_done to nonzero if we find
-         * the 0x00 byte and remember the padding length in pad_count.
-         * If there's a non-0xff byte in the padding, the padding is bad. */
-        for (i = 2; i < ilen; i++) {
-            pad_done |= mbedtls_ct_uint_if(input[i], 0, 1);
-            pad_count += mbedtls_ct_uint_if(pad_done, 0, 1);
-            bad |= mbedtls_ct_uint_if(pad_done, 0, input[i] ^ 0xFF);
-        }
+    /* Read the whole buffer. Set pad_done to nonzero if we find
+     * the 0x00 byte and remember the padding length in pad_count. */
+    for (i = 2; i < ilen; i++) {
+        pad_done  |= ((input[i] | (unsigned char) -input[i]) >> 7) ^ 1;
+        pad_count += ((pad_done | (unsigned char) -pad_done) >> 7) ^ 1;
     }
+
 
     /* If pad_done is still zero, there's no data, only unfinished padding. */
     bad |= mbedtls_ct_uint_if(pad_done, 0, 1);

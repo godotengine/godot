@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <string.h>
 
-/* DEBUG_BUF_SIZE must be at least 2 */
 #define DEBUG_BUF_SIZE      512
 
 static int debug_threshold = 0;
@@ -70,8 +69,6 @@ void mbedtls_debug_print_msg(const mbedtls_ssl_context *ssl, int level,
     char str[DEBUG_BUF_SIZE];
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    MBEDTLS_STATIC_ASSERT(DEBUG_BUF_SIZE >= 2, "DEBUG_BUF_SIZE too small");
-
     if (NULL == ssl              ||
         NULL == ssl->conf        ||
         NULL == ssl->conf->f_dbg ||
@@ -83,15 +80,10 @@ void mbedtls_debug_print_msg(const mbedtls_ssl_context *ssl, int level,
     ret = mbedtls_vsnprintf(str, DEBUG_BUF_SIZE, format, argp);
     va_end(argp);
 
-    if (ret < 0) {
-        ret = 0;
-    } else {
-        if (ret >= DEBUG_BUF_SIZE - 1) {
-            ret = DEBUG_BUF_SIZE - 2;
-        }
+    if (ret >= 0 && ret < DEBUG_BUF_SIZE - 1) {
+        str[ret]     = '\n';
+        str[ret + 1] = '\0';
     }
-    str[ret]     = '\n';
-    str[ret + 1] = '\0';
 
     debug_send_line(ssl, level, file, line, str);
 }
@@ -112,7 +104,7 @@ void mbedtls_debug_print_ret(const mbedtls_ssl_context *ssl, int level,
     /*
      * With non-blocking I/O and examples that just retry immediately,
      * the logs would be quickly flooded with WANT_READ, so ignore that.
-     * Don't ignore WANT_WRITE however, since is is usually rare.
+     * Don't ignore WANT_WRITE however, since it is usually rare.
      */
     if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
         return;
@@ -253,7 +245,7 @@ void mbedtls_debug_print_mpi(const mbedtls_ssl_context *ssl, int level,
 }
 #endif /* MBEDTLS_BIGNUM_C */
 
-#if defined(MBEDTLS_X509_CRT_PARSE_C)
+#if defined(MBEDTLS_X509_CRT_PARSE_C) && !defined(MBEDTLS_X509_REMOVE_INFO)
 static void debug_print_pk(const mbedtls_ssl_context *ssl, int level,
                            const char *file, int line,
                            const char *text, const mbedtls_pk_context *pk)
@@ -344,7 +336,7 @@ void mbedtls_debug_print_crt(const mbedtls_ssl_context *ssl, int level,
         crt = crt->next;
     }
 }
-#endif /* MBEDTLS_X509_CRT_PARSE_C */
+#endif /* MBEDTLS_X509_CRT_PARSE_C && MBEDTLS_X509_REMOVE_INFO */
 
 #if defined(MBEDTLS_ECDH_C)
 static void mbedtls_debug_printf_ecdh_internal(const mbedtls_ssl_context *ssl,

@@ -27,10 +27,11 @@
 #endif
 
 #if defined(MBEDTLS_SSL_TLS_C)
-#include "mbedtls/ssl_internal.h"
+#include "ssl_misc.h"
 #endif
 
 #include <stddef.h>
+
 
 /** Turn a value into a mask:
  * - if \p value == 0, return the all-bits 0 mask, aka 0
@@ -45,7 +46,7 @@
  */
 unsigned mbedtls_ct_uint_mask(unsigned value);
 
-#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
+#if defined(MBEDTLS_SSL_SOME_SUITES_USE_MAC)
 
 /** Turn a value into a mask:
  * - if \p value == 0, return the all-bits 0 mask, aka 0
@@ -60,7 +61,7 @@ unsigned mbedtls_ct_uint_mask(unsigned value);
  */
 size_t mbedtls_ct_size_mask(size_t value);
 
-#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
+#endif /* MBEDTLS_SSL_SOME_SUITES_USE_MAC */
 
 #if defined(MBEDTLS_BIGNUM_C)
 
@@ -128,6 +129,24 @@ unsigned mbedtls_ct_size_bool_eq(size_t x,
 unsigned mbedtls_ct_mpi_uint_lt(const mbedtls_mpi_uint x,
                                 const mbedtls_mpi_uint y);
 
+/**
+ * \brief          Check if one unsigned MPI is less than another in constant
+ *                 time.
+ *
+ * \param A        The left-hand MPI. This must point to an array of limbs
+ *                 with the same allocated length as \p B.
+ * \param B        The right-hand MPI. This must point to an array of limbs
+ *                 with the same allocated length as \p A.
+ * \param limbs    The number of limbs in \p A and \p B.
+ *                 This must not be 0.
+ *
+ * \return         The result of the comparison:
+ *                 \c 1 if \p A is less than \p B.
+ *                 \c 0 if \p A is greater than or equal to \p B.
+ */
+unsigned mbedtls_mpi_core_lt_ct(const mbedtls_mpi_uint *A,
+                                const mbedtls_mpi_uint *B,
+                                size_t limbs);
 #endif /* MBEDTLS_BIGNUM_C */
 
 /** Choose between two integer values without branches.
@@ -195,7 +214,7 @@ signed char mbedtls_ct_base64_dec_value(unsigned char c);
 
 #endif /* MBEDTLS_BASE64_C */
 
-#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
+#if defined(MBEDTLS_SSL_SOME_SUITES_USE_MAC)
 
 /** Conditional memcpy without branches.
  *
@@ -282,6 +301,17 @@ void mbedtls_ct_memcpy_offset(unsigned char *dest,
  * \retval #MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED
  *         The hardware accelerator failed.
  */
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+int mbedtls_ct_hmac(mbedtls_svc_key_id_t key,
+                    psa_algorithm_t alg,
+                    const unsigned char *add_data,
+                    size_t add_data_len,
+                    const unsigned char *data,
+                    size_t data_len_secret,
+                    size_t min_data_len,
+                    size_t max_data_len,
+                    unsigned char *output);
+#else
 int mbedtls_ct_hmac(mbedtls_md_context_t *ctx,
                     const unsigned char *add_data,
                     size_t add_data_len,
@@ -290,8 +320,9 @@ int mbedtls_ct_hmac(mbedtls_md_context_t *ctx,
                     size_t min_data_len,
                     size_t max_data_len,
                     unsigned char *output);
+#endif /* MBEDTLS_USE_PSA_CRYPTO */
 
-#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
+#endif /* MBEDTLS_SSL_SOME_SUITES_USE_MAC */
 
 #if defined(MBEDTLS_PKCS1_V15) && defined(MBEDTLS_RSA_C) && !defined(MBEDTLS_RSA_ALT)
 
@@ -304,8 +335,6 @@ int mbedtls_ct_hmac(mbedtls_md_context_t *ctx,
  *       is often a situation that an attacker can provoke and leaking which
  *       one is the result is precisely the information the attacker wants.
  *
- * \param mode           The mode of operation. This must be either
- *                       #MBEDTLS_RSA_PRIVATE or #MBEDTLS_RSA_PUBLIC (deprecated).
  * \param input          The input buffer which is the payload inside PKCS#1v1.5
  *                       encryption padding, called the "encoded message EM"
  *                       by the terminology.
@@ -323,8 +352,7 @@ int mbedtls_ct_hmac(mbedtls_md_context_t *ctx,
  * \return      #MBEDTLS_ERR_RSA_INVALID_PADDING
  *              The input doesn't contain properly formatted padding.
  */
-int mbedtls_ct_rsaes_pkcs1_v15_unpadding(int mode,
-                                         unsigned char *input,
+int mbedtls_ct_rsaes_pkcs1_v15_unpadding(unsigned char *input,
                                          size_t ilen,
                                          unsigned char *output,
                                          size_t output_max_len,

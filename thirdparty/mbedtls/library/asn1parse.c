@@ -332,7 +332,6 @@ void mbedtls_asn1_sequence_free(mbedtls_asn1_sequence *seq)
 {
     while (seq != NULL) {
         mbedtls_asn1_sequence *next = seq->next;
-        mbedtls_platform_zeroize(seq, sizeof(*seq));
         mbedtls_free(seq);
         seq = next;
     }
@@ -455,6 +454,7 @@ int mbedtls_asn1_get_alg_null(unsigned char **p,
     return 0;
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
 void mbedtls_asn1_free_named_data(mbedtls_asn1_named_data *cur)
 {
     if (cur == NULL) {
@@ -466,6 +466,7 @@ void mbedtls_asn1_free_named_data(mbedtls_asn1_named_data *cur)
 
     mbedtls_platform_zeroize(cur, sizeof(mbedtls_asn1_named_data));
 }
+#endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 void mbedtls_asn1_free_named_data_list(mbedtls_asn1_named_data **head)
 {
@@ -473,13 +474,22 @@ void mbedtls_asn1_free_named_data_list(mbedtls_asn1_named_data **head)
 
     while ((cur = *head) != NULL) {
         *head = cur->next;
-        mbedtls_asn1_free_named_data(cur);
+        mbedtls_free(cur->oid.p);
+        mbedtls_free(cur->val.p);
         mbedtls_free(cur);
     }
 }
 
-mbedtls_asn1_named_data *mbedtls_asn1_find_named_data(mbedtls_asn1_named_data *list,
-                                                      const char *oid, size_t len)
+void mbedtls_asn1_free_named_data_list_shallow(mbedtls_asn1_named_data *name)
+{
+    for (mbedtls_asn1_named_data *next; name != NULL; name = next) {
+        next = name->next;
+        mbedtls_free(name);
+    }
+}
+
+const mbedtls_asn1_named_data *mbedtls_asn1_find_named_data(const mbedtls_asn1_named_data *list,
+                                                            const char *oid, size_t len)
 {
     while (list != NULL) {
         if (list->oid.len == len &&

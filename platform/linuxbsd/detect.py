@@ -265,6 +265,11 @@ def configure(env: "Environment"):
     if not env["builtin_libwebp"]:
         env.ParseConfig("pkg-config libwebp --cflags --libs")
 
+    if not env["builtin_libdatachannel"]:
+        # libdatachannel does not provide a pkgconfig config yet.
+        # Goes directly into /usr/lib64 based on example RPM file in Fedora 39.
+        env.Append(LIBS=["datachannel"])
+
     if not env["builtin_mbedtls"]:
         # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
         env.Append(LIBS=["mbedtls", "mbedcrypto", "mbedx509"])

@@ -18,7 +18,7 @@
  */
 
 /* Enable definition of getaddrinfo() even when compiling with -std=c99. Must
- * be set before config.h, which pulls in glibc's features.h indirectly.
+ * be set before mbedtls_config.h, which pulls in glibc's features.h indirectly.
  * Harmless on other platforms. */
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
@@ -34,7 +34,7 @@
 #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
     !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
     !defined(__HAIKU__) && !defined(__midipix__)
-#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
+#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in mbedtls_config.h"
 #endif
 
 #include "mbedtls/platform.h"
@@ -90,7 +90,6 @@ static int wsa_init_done = 0;
 #include <errno.h>
 
 #define IS_EINTR(ret) ((ret) == EINTR)
-#define SOCKET int
 
 #endif /* ( _WIN32 || _WIN32_WCE ) && !EFIX64 && !EFI32 */
 
@@ -495,13 +494,13 @@ int mbedtls_net_poll(mbedtls_net_context *ctx, uint32_t rw, uint32_t timeout)
     FD_ZERO(&read_fds);
     if (rw & MBEDTLS_NET_POLL_READ) {
         rw &= ~MBEDTLS_NET_POLL_READ;
-        FD_SET((SOCKET) fd, &read_fds);
+        FD_SET(fd, &read_fds);
     }
 
     FD_ZERO(&write_fds);
     if (rw & MBEDTLS_NET_POLL_WRITE) {
         rw &= ~MBEDTLS_NET_POLL_WRITE;
-        FD_SET((SOCKET) fd, &write_fds);
+        FD_SET(fd, &write_fds);
     }
 
     if (rw != 0) {
@@ -609,7 +608,7 @@ int mbedtls_net_recv_timeout(void *ctx, unsigned char *buf,
     }
 
     FD_ZERO(&read_fds);
-    FD_SET((SOCKET) fd, &read_fds);
+    FD_SET(fd, &read_fds);
 
     tv.tv_sec  = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;

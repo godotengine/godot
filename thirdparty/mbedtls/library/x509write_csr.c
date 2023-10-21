@@ -26,6 +26,7 @@
 
 #if defined(MBEDTLS_X509_CSR_WRITE_C)
 
+#include "mbedtls/x509.h"
 #include "mbedtls/x509_csr.h"
 #include "mbedtls/asn1write.h"
 #include "mbedtls/error.h"
@@ -35,7 +36,8 @@
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
 #include "psa/crypto.h"
 #include "mbedtls/psa_util.h"
-#endif
+#endif /* MBEDTLS_USE_PSA_CRYPTO */
+#include "hash_info.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -77,10 +79,110 @@ int mbedtls_x509write_csr_set_subject_name(mbedtls_x509write_csr *ctx,
 
 int mbedtls_x509write_csr_set_extension(mbedtls_x509write_csr *ctx,
                                         const char *oid, size_t oid_len,
+                                        int critical,
                                         const unsigned char *val, size_t val_len)
 {
     return mbedtls_x509_set_extension(&ctx->extensions, oid, oid_len,
-                                      0, val, val_len);
+                                      critical, val, val_len);
+}
+
+int mbedtls_x509write_csr_set_subject_alternative_name(mbedtls_x509write_csr *ctx,
+                                                       const mbedtls_x509_san_list *san_list)
+{
+    int ret = 0;
+    const mbedtls_x509_san_list *cur;
+    unsigned char *buf;
+    unsigned char *p;
+    size_t len;
+    size_t buflen = 0;
+
+    /* Determine the maximum size of the SubjectAltName list */
+    for (cur = san_list; cur != NULL; cur = cur->next) {
+        /* Calculate size of the required buffer */
+        switch (cur->node.type) {
+            case MBEDTLS_X509_SAN_DNS_NAME:
+            case MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER:
+            case MBEDTLS_X509_SAN_IP_ADDRESS:
+                /* length of value for each name entry,
+                 * maximum 4 bytes for the length field,
+                 * 1 byte for the tag/type.
+                 */
+                buflen += cur->node.san.unstructured_name.len + 4 + 1;
+                break;
+
+            default:
+                /* Not supported - skip. */
+                break;
+        }
+    }
+
+    /* Add the extra length field and tag */
+    buflen += 4 + 1;
+
+    /* Allocate buffer */
+    buf = mbedtls_calloc(1, buflen);
+    if (buf == NULL) {
+        return MBEDTLS_ERR_ASN1_ALLOC_FAILED;
+    }
+
+    mbedtls_platform_zeroize(buf, buflen);
+    p = buf + buflen;
+
+    /* Write ASN.1-based structure */
+    cur = san_list;
+    len = 0;
+    while (cur != NULL) {
+        switch (cur->node.type) {
+            case MBEDTLS_X509_SAN_DNS_NAME:
+            case MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER:
+            case MBEDTLS_X509_SAN_IP_ADDRESS:
+            {
+                const unsigned char *unstructured_name =
+                    (const unsigned char *) cur->node.san.unstructured_name.p;
+                size_t unstructured_name_len = cur->node.san.unstructured_name.len;
+
+                MBEDTLS_ASN1_CHK_CLEANUP_ADD(len,
+                                             mbedtls_asn1_write_raw_buffer(
+                                                 &p, buf,
+                                                 unstructured_name, unstructured_name_len));
+                MBEDTLS_ASN1_CHK_CLEANUP_ADD(len, mbedtls_asn1_write_len(
+                                                 &p, buf, unstructured_name_len));
+                MBEDTLS_ASN1_CHK_CLEANUP_ADD(len,
+                                             mbedtls_asn1_write_tag(
+                                                 &p, buf,
+                                                 MBEDTLS_ASN1_CONTEXT_SPECIFIC | cur->node.type));
+            }
+            break;
+            default:
+                /* Skip unsupported names. */
+                break;
+        }
+        cur = cur->next;
+    }
+
+    MBEDTLS_ASN1_CHK_CLEANUP_ADD(len, mbedtls_asn1_write_len(&p, buf, len));
+    MBEDTLS_ASN1_CHK_CLEANUP_ADD(len,
+                                 mbedtls_asn1_write_tag(&p, buf,
+                                                        MBEDTLS_ASN1_CONSTRUCTED |
+                                                        MBEDTLS_ASN1_SEQUENCE));
+
+    ret = mbedtls_x509write_csr_set_extension(
+        ctx,
+        MBEDTLS_OID_SUBJECT_ALT_NAME,
+        MBEDTLS_OID_SIZE(MBEDTLS_OID_SUBJECT_ALT_NAME),
+        0,
+        buf + buflen - len,
+        len);
+
+    /* If we exceeded the allocated buffer it means that maximum size of the SubjectAltName list
+     * was incorrectly calculated and memory is corrupted. */
+    if (p < buf) {
+        ret = MBEDTLS_ERR_ASN1_LENGTH_MISMATCH;
+    }
+
+cleanup:
+    mbedtls_free(buf);
+    return ret;
 }
 
 int mbedtls_x509write_csr_set_key_usage(mbedtls_x509write_csr *ctx, unsigned char key_usage)
@@ -98,7 +200,7 @@ int mbedtls_x509write_csr_set_key_usage(mbedtls_x509write_csr *ctx, unsigned cha
 
     ret = mbedtls_x509write_csr_set_extension(ctx, MBEDTLS_OID_KEY_USAGE,
                                               MBEDTLS_OID_SIZE(MBEDTLS_OID_KEY_USAGE),
-                                              c, (size_t) ret);
+                                              0, c, (size_t) ret);
     if (ret != 0) {
         return ret;
     }
@@ -122,7 +224,7 @@ int mbedtls_x509write_csr_set_ns_cert_type(mbedtls_x509write_csr *ctx,
 
     ret = mbedtls_x509write_csr_set_extension(ctx, MBEDTLS_OID_NS_CERT_TYPE,
                                               MBEDTLS_OID_SIZE(MBEDTLS_OID_NS_CERT_TYPE),
-                                              c, (size_t) ret);
+                                              0, c, (size_t) ret);
     if (ret != 0) {
         return ret;
     }
@@ -133,7 +235,7 @@ int mbedtls_x509write_csr_set_ns_cert_type(mbedtls_x509write_csr *ctx,
 static int x509write_csr_der_internal(mbedtls_x509write_csr *ctx,
                                       unsigned char *buf,
                                       size_t size,
-                                      unsigned char *sig,
+                                      unsigned char *sig, size_t sig_size,
                                       int (*f_rng)(void *, unsigned char *, size_t),
                                       void *p_rng)
 {
@@ -141,14 +243,13 @@ static int x509write_csr_der_internal(mbedtls_x509write_csr *ctx,
     const char *sig_oid;
     size_t sig_oid_len = 0;
     unsigned char *c, *c2;
-    unsigned char hash[64];
+    unsigned char hash[MBEDTLS_HASH_MAX_SIZE];
     size_t pub_len = 0, sig_and_oid_len = 0, sig_len;
     size_t len = 0;
     mbedtls_pk_type_t pk_alg;
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
-    psa_hash_operation_t hash_operation = PSA_HASH_OPERATION_INIT;
     size_t hash_len;
-    psa_algorithm_t hash_alg = mbedtls_psa_translate_md(ctx->md_alg);
+    psa_algorithm_t hash_alg = mbedtls_hash_info_psa_from_md(ctx->md_alg);
 #endif /* MBEDTLS_USE_PSA_CRYPTO */
 
     /* Write the CSR backwards starting from the end of buf */
@@ -215,17 +316,13 @@ static int x509write_csr_der_internal(mbedtls_x509write_csr *ctx,
      * Note: hash errors can happen only after an internal error
      */
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
-    if (psa_hash_setup(&hash_operation, hash_alg) != PSA_SUCCESS) {
-        return MBEDTLS_ERR_X509_FATAL_ERROR;
-    }
-
-    if (psa_hash_update(&hash_operation, c, len) != PSA_SUCCESS) {
-        return MBEDTLS_ERR_X509_FATAL_ERROR;
-    }
-
-    if (psa_hash_finish(&hash_operation, hash, sizeof(hash), &hash_len)
-        != PSA_SUCCESS) {
-        return MBEDTLS_ERR_X509_FATAL_ERROR;
+    if (psa_hash_compute(hash_alg,
+                         c,
+                         len,
+                         hash,
+                         sizeof(hash),
+                         &hash_len) != PSA_SUCCESS) {
+        return MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED;
     }
 #else /* MBEDTLS_USE_PSA_CRYPTO */
     ret = mbedtls_md(mbedtls_md_info_from_type(ctx->md_alg), c, len, hash);
@@ -233,7 +330,8 @@ static int x509write_csr_der_internal(mbedtls_x509write_csr *ctx,
         return ret;
     }
 #endif
-    if ((ret = mbedtls_pk_sign(ctx->key, ctx->md_alg, hash, 0, sig, &sig_len,
+    if ((ret = mbedtls_pk_sign(ctx->key, ctx->md_alg, hash, 0,
+                               sig, sig_size, &sig_len,
                                f_rng, p_rng)) != 0) {
         return ret;
     }
@@ -300,7 +398,9 @@ int mbedtls_x509write_csr_der(mbedtls_x509write_csr *ctx, unsigned char *buf,
         return MBEDTLS_ERR_X509_ALLOC_FAILED;
     }
 
-    ret = x509write_csr_der_internal(ctx, buf, size, sig, f_rng, p_rng);
+    ret = x509write_csr_der_internal(ctx, buf, size,
+                                     sig, MBEDTLS_PK_SIGNATURE_MAX_SIZE,
+                                     f_rng, p_rng);
 
     mbedtls_free(sig);
 

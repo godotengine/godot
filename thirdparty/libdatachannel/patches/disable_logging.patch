@@ -1,0 +1,163 @@
+diff --git a/thirdparty/libdatachannel/deps/libjuice/src/log.c b/thirdparty/libdatachannel/deps/libjuice/src/log.c
+index d19e767292..05282de78e 100644
+--- a/thirdparty/libdatachannel/deps/libjuice/src/log.c
++++ b/thirdparty/libdatachannel/deps/libjuice/src/log.c
+@@ -6,6 +6,8 @@
+  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+  */
+ 
++#if !defined(GODOT_JUICE_DISABLE_LOG)
++
+ #include "log.h"
+ #include "thread.h" // for mutexes and atomics
+ 
+@@ -129,3 +131,13 @@ void juice_log_write(juice_log_level_t level, const char *file, int line, const
+ __exit:
+ 	mutex_unlock(&log_mutex);
+ }
++
++#else // !defined(GODOT_JUICE_DISABLE_LOG)
++
++#include "juice.h"
++
++JUICE_EXPORT void juice_set_log_level(juice_log_level_t level) { }
++
++JUICE_EXPORT void juice_set_log_handler(juice_log_cb_t cb) { }
++
++#endif // defined(GODOT_JUICE_DISABLE_LOG)
+diff --git a/thirdparty/libdatachannel/deps/libjuice/src/log.h b/thirdparty/libdatachannel/deps/libjuice/src/log.h
+index 4ac34a6896..eb65a8ae8c 100644
+--- a/thirdparty/libdatachannel/deps/libjuice/src/log.h
++++ b/thirdparty/libdatachannel/deps/libjuice/src/log.h
+@@ -13,9 +13,18 @@
+ 
+ #include <stdarg.h>
+ 
++#if !defined(GODOT_JUICE_DISABLE_LOG)
++
+ bool juice_log_is_enabled(juice_log_level_t level);
+ void juice_log_write(juice_log_level_t level, const char *file, int line, const char *fmt, ...);
+ 
++#else // !defined(GODOT_JUICE_DISABLE_LOG)
++
++inline bool juice_log_is_enabled(juice_log_level_t level) { return false; }
++inline void juice_log_write(juice_log_level_t level, const char *file, int line, const char *fmt, ...) { }
++
++#endif // defined(GODOT_JUICE_DEBUG_LOG)
++
+ #define JLOG_VERBOSE(...) juice_log_write(JUICE_LOG_LEVEL_VERBOSE, __FILE__, __LINE__, __VA_ARGS__)
+ #define JLOG_DEBUG(...) juice_log_write(JUICE_LOG_LEVEL_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
+ #define JLOG_INFO(...) juice_log_write(JUICE_LOG_LEVEL_INFO, __FILE__, __LINE__, __VA_ARGS__)
+diff --git a/thirdparty/libdatachannel/deps/plog/include/plog/Log.h b/thirdparty/libdatachannel/deps/plog/include/plog/Log.h
+index 138d92f5fe..13d0da70a3 100644
+--- a/thirdparty/libdatachannel/deps/plog/include/plog/Log.h
++++ b/thirdparty/libdatachannel/deps/plog/include/plog/Log.h
+@@ -4,6 +4,44 @@
+ //  License: MIT, https://choosealicense.com/licenses/mit
+ 
+ #pragma once
++
++#if defined(GODOT_PLOG_DISABLE_LOG)
++
++#include <iostream>
++#include <sstream>
++#include <plog/Severity.h>
++
++#define PLOG_GET_FUNC() ""
++#define PLOG_GET_THIS() reinterpret_cast<void*>(0)
++#define PLOG_GET_FILE() ""
++
++class NullLog {
++public:
++	template <class T> NullLog &operator<<(const T&) { return *this; }
++};
++
++namespace plog {
++	class Logger_ {
++	public:
++		Severity getMaxSeverity() const { return none; }
++	};
++	inline Logger_ *get() { return nullptr; }
++}
++
++#define PLOG_DEFAULT_INSTANCE_ID 0
++
++#define PLOG_(inst, sev) NullLog()
++#define PLOG(sev) NullLog()
++
++#ifdef _MSC_VER
++#    define IF_PLOG_(instanceId, severity)  __pragma(warning(push)) __pragma(warning(disable:4127)) if (true) {;} else __pragma(warning(pop)) // conditional expression is constant
++#else
++#    define IF_PLOG_(instanceId, severity)   if (true) {;} else
++#endif
++#define IF_PLOG(severity)                IF_PLOG_(PLOG_DEFAULT_INSTANCE_ID, severity)
++
++#else // defined(GODOT_PLOG_DISABLE_LOG)
++
+ #include <plog/Logger.h>
+ 
+ //////////////////////////////////////////////////////////////////////////
+@@ -50,6 +88,8 @@
+ #define PLOG_(instanceId, severity)      IF_PLOG_(instanceId, severity) (*plog::get<instanceId>()) += plog::Record(severity, PLOG_GET_FUNC(), __LINE__, PLOG_GET_FILE(), PLOG_GET_THIS(), instanceId).ref()
+ #define PLOG(severity)                   PLOG_(PLOG_DEFAULT_INSTANCE_ID, severity)
+ 
++#endif // !defined(GODOT_PLOG_DISABLE_LOG)
++
+ #define PLOG_VERBOSE                     PLOG(plog::verbose)
+ #define PLOG_DEBUG                       PLOG(plog::debug)
+ #define PLOG_INFO                        PLOG(plog::info)
+diff --git a/thirdparty/libdatachannel/src/global.cpp b/thirdparty/libdatachannel/src/global.cpp
+index e7a5896d28..747dd217a2 100644
+--- a/thirdparty/libdatachannel/src/global.cpp
++++ b/thirdparty/libdatachannel/src/global.cpp
+@@ -6,6 +6,7 @@
+  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+  */
+ 
++#if !defined(GODOT_PLOG_DISABLE_LOG)
+ #include "plog/Appenders/ColorConsoleAppender.h"
+ #include "plog/Converters/UTF8Converter.h"
+ #include "plog/Formatters/FuncMessageFormatter.h"
+@@ -13,6 +14,7 @@
+ #include "plog/Init.h"
+ #include "plog/Log.h"
+ #include "plog/Logger.h"
++#endif // !defined(GODOT_PLOG_DISABLE_LOG)
+ //
+ #include "global.hpp"
+ 
+@@ -22,6 +24,7 @@
+ 
+ namespace {
+ 
++#if !defined(GODOT_PLOG_DISABLE_LOG)
+ void plogInit(plog::Severity severity, plog::IAppender *appender) {
+ 	using Logger = plog::Logger<PLOG_DEFAULT_INSTANCE_ID>;
+ 	static Logger *logger = nullptr;
+@@ -41,11 +44,13 @@ void plogInit(plog::Severity severity, plog::IAppender *appender) {
+ 			logger->addAppender(appender);
+ 	}
+ }
++#endif // !defined(GODOT_PLOG_DISABLE_LOG)
+ 
+ } // namespace
+ 
+ namespace rtc {
+ 
++#if !defined(GODOT_PLOG_DISABLE_LOG)
+ struct LogAppender : public plog::IAppender {
+ 	synchronized_callback<LogLevel, string> callback;
+ 
+@@ -82,6 +87,12 @@ void InitLogger(LogLevel level, LogCallback callback) {
+ void InitLogger(plog::Severity severity, plog::IAppender *appender) {
+ 	plogInit(severity, appender);
+ }
++#else // !defined(GODOT_PLOG_DISABLE_LOG)
++
++void InitLogger(LogLevel level, LogCallback callback) {
++}
++
++#endif // defined(GODOT_PLOG_DISABLE_LOG)
+ 
+ void Preload() { impl::Init::Instance().preload(); }
+ std::shared_future<void> Cleanup() { return impl::Init::Instance().cleanup(); }
