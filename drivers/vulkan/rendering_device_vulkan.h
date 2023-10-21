@@ -1015,8 +1015,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
 		VkCommandPool command_pool = VK_NULL_HANDLE;
-		VkCommandBuffer setup_command_buffer = VK_NULL_HANDLE; // Used at the beginning of every frame for set-up.
-		VkCommandBuffer draw_command_buffer = VK_NULL_HANDLE; // Used at the beginning of every frame for set-up.
+		// Used for filling up newly created buffers with data provided on creation.
+		// Primarily intended to be accessed by worker threads.
+		// Ideally this cmd buffer should use an async transfer queue.
+		VkCommandBuffer setup_command_buffer = VK_NULL_HANDLE;
+		// The main cmd buffer for drawing and compute.
+		// Primarily intended to be used by the main thread to do most stuff.
+		VkCommandBuffer draw_command_buffer = VK_NULL_HANDLE;
 
 		struct Timestamp {
 			String description;
