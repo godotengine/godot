@@ -32,6 +32,7 @@
 #define BINDER_COMMON_H
 
 #include "core/input/input_enums.h"
+#include "core/object/connection.h"
 #include "core/object/object.h"
 #include "core/os/keyboard.h"
 #include "core/templates/list.h"
@@ -140,7 +141,7 @@ struct VariantCaster<const T &> {
 	};
 
 // Object enum casts must go here
-VARIANT_ENUM_CAST(Object::ConnectFlags);
+VARIANT_ENUM_CAST(ConnectFlags);
 
 VARIANT_ENUM_CAST(Vector2::Axis);
 VARIANT_ENUM_CAST(Vector2i::Axis);

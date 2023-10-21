@@ -31,6 +31,7 @@
 #ifndef TYPE_INFO_H
 #define TYPE_INFO_H
 
+#include "core/object/property_info.h"
 #include "core/typedefs.h"
 
 template <bool C, typename T = void>

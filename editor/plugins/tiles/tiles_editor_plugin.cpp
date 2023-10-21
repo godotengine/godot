@@ -133,7 +133,7 @@ void TilesEditorUtils::_thread() {
 
 				MessageQueue::get_singleton()->flush();
 
-				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorUtils *>(this), &TilesEditorUtils::_preview_frame_started), Object::CONNECT_ONE_SHOT);
+				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorUtils *>(this), &TilesEditorUtils::_preview_frame_started), CONNECT_ONE_SHOT);
 
 				pattern_preview_done.wait();
 

@@ -335,7 +335,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			NodePath to = next_tag.fields["to"];
 			StringName method = next_tag.fields["method"];
 			StringName signal = next_tag.fields["signal"];
-			int flags = Object::CONNECT_PERSIST;
+			int flags = CONNECT_PERSIST;
 			int unbinds = 0;
 			Array binds;
 
@@ -2301,7 +2301,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			connstr += " to=\"" + String(state->get_connection_target(i).simplified()).c_escape() + "\"";
 			connstr += " method=\"" + String(state->get_connection_method(i)).c_escape() + "\"";
 			int flags = state->get_connection_flags(i);
-			if (flags != Object::CONNECT_PERSIST) {
+			if (flags != CONNECT_PERSIST) {
 				connstr += " flags=" + itos(flags);
 			}
 

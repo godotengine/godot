@@ -1565,10 +1565,10 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 }
 
 void SceneTreeDock::_node_strip_signal_inheritance(Node *p_node) {
-	List<Object::Connection> conns;
+	List<Connection> conns;
 	p_node->get_all_signal_connections(&conns);
 
-	for (Object::Connection conn : conns) {
+	for (Connection conn : conns) {
 		conn.signal.disconnect(conn.callable);
 		conn.signal.connect(conn.callable, conn.flags & ~CONNECT_INHERITED);
 	}
@@ -2828,14 +2828,14 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 
 	n->get_signal_list(&sl);
 	for (const MethodInfo &E : sl) {
-		List<Object::Connection> cl;
+		List<Connection> cl;
 		n->get_signal_connection_list(E.name, &cl);
 
-		for (const Object::Connection &c : cl) {
-			if (!(c.flags & Object::CONNECT_PERSIST)) {
+		for (const Connection &c : cl) {
+			if (!(c.flags & CONNECT_PERSIST)) {
 				continue;
 			}
-			newnode->connect(c.signal.get_name(), c.callable, Object::CONNECT_PERSIST);
+			newnode->connect(c.signal.get_name(), c.callable, CONNECT_PERSIST);
 		}
 	}
 
