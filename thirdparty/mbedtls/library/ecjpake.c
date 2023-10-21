@@ -1060,7 +1060,7 @@ int mbedtls_ecjpake_self_test(int verbose)
 #if !defined(MBEDTLS_ECJPAKE_ALT)
     /* 'reference handshake' tests can only be run against implementations
      * for which we have 100% control over how the random ephemeral keys
-     * are generated. This is only the case for the internal mbed TLS
+     * are generated. This is only the case for the internal Mbed TLS
      * implementation, so these tests are skipped in case the internal
      * implementation is swapped out for an alternative one. */
     if (verbose != 0) {

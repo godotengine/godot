@@ -240,6 +240,19 @@ cleanup:
 }
 #endif /* ECDSA_DETERMINISTIC || !ECDSA_SIGN_ALT || !ECDSA_VERIFY_ALT */
 
+int mbedtls_ecdsa_can_do(mbedtls_ecp_group_id gid)
+{
+    switch (gid) {
+#ifdef MBEDTLS_ECP_DP_CURVE25519_ENABLED
+        case MBEDTLS_ECP_DP_CURVE25519: return 0;
+#endif
+#ifdef MBEDTLS_ECP_DP_CURVE448_ENABLED
+        case MBEDTLS_ECP_DP_CURVE448: return 0;
+#endif
+        default: return 1;
+    }
+}
+
 #if !defined(MBEDTLS_ECDSA_SIGN_ALT)
 /*
  * Compute ECDSA signature of a hashed message (SEC1 4.1.3)
@@ -366,7 +379,7 @@ modn:
 
 #if defined(MBEDTLS_ECP_RESTARTABLE)
     if (rs_ctx != NULL && rs_ctx->sig != NULL) {
-        mbedtls_mpi_copy(r, pr);
+        MBEDTLS_MPI_CHK(mbedtls_mpi_copy(r, pr));
     }
 #endif
 
@@ -377,19 +390,6 @@ cleanup:
     ECDSA_RS_LEAVE(sig);
 
     return ret;
-}
-
-int mbedtls_ecdsa_can_do(mbedtls_ecp_group_id gid)
-{
-    switch (gid) {
-#ifdef MBEDTLS_ECP_DP_CURVE25519_ENABLED
-        case MBEDTLS_ECP_DP_CURVE25519: return 0;
-#endif
-#ifdef MBEDTLS_ECP_DP_CURVE448_ENABLED
-        case MBEDTLS_ECP_DP_CURVE448: return 0;
-#endif
-        default: return 1;
-    }
 }
 
 /*
@@ -457,7 +457,7 @@ static int ecdsa_sign_det_restartable(mbedtls_ecp_group *grp,
     MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(d, data, grp_len));
     MBEDTLS_MPI_CHK(derive_mpi(grp, &h, buf, blen));
     MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&h, data + grp_len, grp_len));
-    mbedtls_hmac_drbg_seed_buf(p_rng, md_info, data, 2 * grp_len);
+    MBEDTLS_MPI_CHK(mbedtls_hmac_drbg_seed_buf(p_rng, md_info, data, 2 * grp_len));
 
 #if defined(MBEDTLS_ECP_RESTARTABLE)
     if (rs_ctx != NULL && rs_ctx->det != NULL) {

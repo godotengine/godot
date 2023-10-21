@@ -63,9 +63,9 @@ typedef struct mbedtls_threading_mutex_t {
  * \brief           Set your alternate threading implementation function
  *                  pointers and initialize global mutexes. If used, this
  *                  function must be called once in the main thread before any
- *                  other mbed TLS function is called, and
+ *                  other Mbed TLS function is called, and
  *                  mbedtls_threading_free_alt() must be called once in the main
- *                  thread after all other mbed TLS functions.
+ *                  thread after all other Mbed TLS functions.
  *
  * \note            mutex_init() and mutex_free() don't return a status code.
  *                  If mutex_init() fails, it should leave its argument (the

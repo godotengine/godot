@@ -914,7 +914,7 @@ int mbedtls_x509write_crt_set_validity(mbedtls_x509write_cert *ctx, const char *
  * \brief           Set the issuer name for a Certificate
  *                  Issuer names should contain a comma-separated list
  *                  of OID types and values:
- *                  e.g. "C=UK,O=ARM,CN=mbed TLS CA"
+ *                  e.g. "C=UK,O=ARM,CN=Mbed TLS CA"
  *
  * \param ctx           CRT context to use
  * \param issuer_name   issuer name to set
@@ -929,7 +929,7 @@ int mbedtls_x509write_crt_set_issuer_name(mbedtls_x509write_cert *ctx,
  * \brief           Set the subject name for a Certificate
  *                  Subject names should contain a comma-separated list
  *                  of OID types and values:
- *                  e.g. "C=UK,O=ARM,CN=mbed TLS Server 1"
+ *                  e.g. "C=UK,O=ARM,CN=Mbed TLS Server 1"
  *
  * \param ctx           CRT context to use
  * \param subject_name  subject name to set

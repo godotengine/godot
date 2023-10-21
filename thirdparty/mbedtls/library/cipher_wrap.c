@@ -1,7 +1,7 @@
 /**
  * \file cipher_wrap.c
  *
- * \brief Generic cipher wrapper for mbed TLS
+ * \brief Generic cipher wrapper for Mbed TLS
  *
  * \author Adriaan de Jong <dejong@fox-it.com>
  *

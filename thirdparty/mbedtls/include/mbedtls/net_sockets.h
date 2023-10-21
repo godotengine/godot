@@ -283,6 +283,10 @@ int mbedtls_net_recv_timeout(void *ctx, unsigned char *buf, size_t len,
  * \brief          Closes down the connection and free associated data
  *
  * \param ctx      The context to close
+ *
+ * \note           This function frees and clears data associated with the
+ *                 context but does not free the memory pointed to by \p ctx.
+ *                 This memory is the responsibility of the caller.
  */
 void mbedtls_net_close(mbedtls_net_context *ctx);
 
@@ -290,6 +294,10 @@ void mbedtls_net_close(mbedtls_net_context *ctx);
  * \brief          Gracefully shutdown the connection and free associated data
  *
  * \param ctx      The context to free
+ *
+ * \note           This function frees and clears data associated with the
+ *                 context but does not free the memory pointed to by \p ctx.
+ *                 This memory is the responsibility of the caller.
  */
 void mbedtls_net_free(mbedtls_net_context *ctx);
 

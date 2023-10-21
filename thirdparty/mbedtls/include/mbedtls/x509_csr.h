@@ -171,7 +171,7 @@ void mbedtls_x509write_csr_init(mbedtls_x509write_csr *ctx);
  * \brief           Set the subject name for a CSR
  *                  Subject names should contain a comma-separated list
  *                  of OID types and values:
- *                  e.g. "C=UK,O=ARM,CN=mbed TLS Server 1"
+ *                  e.g. "C=UK,O=ARM,CN=Mbed TLS Server 1"
  *
  * \param ctx           CSR context to use
  * \param subject_name  subject name to set

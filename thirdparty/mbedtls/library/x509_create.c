@@ -285,9 +285,11 @@ int mbedtls_x509_write_names(unsigned char **p, unsigned char *start,
 
 int mbedtls_x509_write_sig(unsigned char **p, unsigned char *start,
                            const char *oid, size_t oid_len,
-                           unsigned char *sig, size_t size)
+                           unsigned char *sig, size_t size,
+                           mbedtls_pk_type_t pk_alg)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    int write_null_par;
     size_t len = 0;
 
     if (*p < start || (size_t) (*p - start) < size) {
@@ -310,8 +312,19 @@ int mbedtls_x509_write_sig(unsigned char **p, unsigned char *start,
 
     // Write OID
     //
-    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_algorithm_identifier(p, start, oid,
-                                                                      oid_len, 0));
+    if (pk_alg == MBEDTLS_PK_ECDSA) {
+        /*
+         * The AlgorithmIdentifier's parameters field must be absent for DSA/ECDSA signature
+         * algorithms, see https://www.rfc-editor.org/rfc/rfc5480#page-17 and
+         * https://www.rfc-editor.org/rfc/rfc5758#section-3.
+         */
+        write_null_par = 0;
+    } else {
+        write_null_par = 1;
+    }
+    MBEDTLS_ASN1_CHK_ADD(len,
+                         mbedtls_asn1_write_algorithm_identifier_ext(p, start, oid, oid_len,
+                                                                     0, write_null_par));
 
     return (int) len;
 }

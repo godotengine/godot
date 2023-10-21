@@ -1,7 +1,7 @@
 /**
  * \file platform_time.h
  *
- * \brief mbed TLS Platform time abstraction
+ * \brief Mbed TLS Platform time abstraction
  */
 /*
  *  Copyright The Mbed TLS Contributors

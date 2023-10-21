@@ -1,7 +1,7 @@
 /**
  * \file ssl_ciphersuites.c
  *
- * \brief SSL ciphersuites for mbed TLS
+ * \brief SSL ciphersuites for Mbed TLS
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0

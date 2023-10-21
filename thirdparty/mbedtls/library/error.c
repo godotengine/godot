@@ -518,6 +518,8 @@ const char *mbedtls_high_level_strerr(int error_code)
             return( "SSL - A cryptographic operation is in progress. Try again later" );
         case -(MBEDTLS_ERR_SSL_BAD_CONFIG):
             return( "SSL - Invalid value in SSL config" );
+        case -(MBEDTLS_ERR_SSL_CACHE_ENTRY_NOT_FOUND):
+            return( "SSL - Cache entry not found" );
 #endif /* MBEDTLS_SSL_TLS_C */
 
 #if defined(MBEDTLS_X509_USE_C) || defined(MBEDTLS_X509_CREATE_C)

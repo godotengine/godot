@@ -26,6 +26,7 @@
 #if defined(MBEDTLS_SSL_CACHE_C)
 
 #include "mbedtls/platform.h"
+#include "mbedtls/error.h"
 
 #include "mbedtls/ssl_cache.h"
 #include "mbedtls/ssl_internal.h"
@@ -46,7 +47,7 @@ void mbedtls_ssl_cache_init(mbedtls_ssl_cache_context *cache)
 
 int mbedtls_ssl_cache_get(void *data, mbedtls_ssl_session *session)
 {
-    int ret = 1;
+    int ret = MBEDTLS_ERR_SSL_CACHE_ENTRY_NOT_FOUND;
 #if defined(MBEDTLS_HAVE_TIME)
     mbedtls_time_t t = mbedtls_time(NULL);
 #endif
@@ -54,8 +55,8 @@ int mbedtls_ssl_cache_get(void *data, mbedtls_ssl_session *session)
     mbedtls_ssl_cache_entry *cur, *entry;
 
 #if defined(MBEDTLS_THREADING_C)
-    if (mbedtls_mutex_lock(&cache->mutex) != 0) {
-        return 1;
+    if ((ret = mbedtls_mutex_lock(&cache->mutex)) != 0) {
+        return ret;
     }
 #endif
 
@@ -81,7 +82,6 @@ int mbedtls_ssl_cache_get(void *data, mbedtls_ssl_session *session)
 
         ret = mbedtls_ssl_session_copy(session, &entry->session);
         if (ret != 0) {
-            ret = 1;
             goto exit;
         }
 
@@ -97,16 +97,15 @@ int mbedtls_ssl_cache_get(void *data, mbedtls_ssl_session *session)
 
             if ((session->peer_cert = mbedtls_calloc(1,
                                                      sizeof(mbedtls_x509_crt))) == NULL) {
-                ret = 1;
+                ret = MBEDTLS_ERR_SSL_ALLOC_FAILED;
                 goto exit;
             }
 
             mbedtls_x509_crt_init(session->peer_cert);
-            if (mbedtls_x509_crt_parse(session->peer_cert, entry->peer_cert.p,
-                                       entry->peer_cert.len) != 0) {
+            if ((ret = mbedtls_x509_crt_parse(session->peer_cert, entry->peer_cert.p,
+                                              entry->peer_cert.len)) != 0) {
                 mbedtls_free(session->peer_cert);
                 session->peer_cert = NULL;
-                ret = 1;
                 goto exit;
             }
         }
@@ -119,7 +118,7 @@ int mbedtls_ssl_cache_get(void *data, mbedtls_ssl_session *session)
 exit:
 #if defined(MBEDTLS_THREADING_C)
     if (mbedtls_mutex_unlock(&cache->mutex) != 0) {
-        ret = 1;
+        ret = MBEDTLS_ERR_THREADING_MUTEX_ERROR;
     }
 #endif
 
@@ -128,7 +127,7 @@ exit:
 
 int mbedtls_ssl_cache_set(void *data, const mbedtls_ssl_session *session)
 {
-    int ret = 1;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 #if defined(MBEDTLS_HAVE_TIME)
     mbedtls_time_t t = mbedtls_time(NULL), oldest = 0;
     mbedtls_ssl_cache_entry *old = NULL;
@@ -179,7 +178,9 @@ int mbedtls_ssl_cache_set(void *data, const mbedtls_ssl_session *session)
          */
         if (count >= cache->max_entries) {
             if (old == NULL) {
-                ret = 1;
+                /* This should only happen on an ill-configured cache
+                 * with max_entries == 0. */
+                ret = MBEDTLS_ERR_SSL_INTERNAL_ERROR;
                 goto exit;
             }
 
@@ -192,7 +193,7 @@ int mbedtls_ssl_cache_set(void *data, const mbedtls_ssl_session *session)
          */
         if (count >= cache->max_entries) {
             if (cache->chain == NULL) {
-                ret = 1;
+                ret = MBEDTLS_ERR_SSL_INTERNAL_ERROR;
                 goto exit;
             }
 
@@ -208,7 +209,7 @@ int mbedtls_ssl_cache_set(void *data, const mbedtls_ssl_session *session)
              */
             cur = mbedtls_calloc(1, sizeof(mbedtls_ssl_cache_entry));
             if (cur == NULL) {
-                ret = 1;
+                ret = MBEDTLS_ERR_SSL_ALLOC_FAILED;
                 goto exit;
             }
 
@@ -242,7 +243,6 @@ int mbedtls_ssl_cache_set(void *data, const mbedtls_ssl_session *session)
      * field anymore in the first place, and we're done after this call. */
     ret = mbedtls_ssl_session_copy(&cur->session, session);
     if (ret != 0) {
-        ret = 1;
         goto exit;
     }
 
@@ -253,7 +253,7 @@ int mbedtls_ssl_cache_set(void *data, const mbedtls_ssl_session *session)
         cur->peer_cert.p =
             mbedtls_calloc(1, cur->session.peer_cert->raw.len);
         if (cur->peer_cert.p == NULL) {
-            ret = 1;
+            ret = MBEDTLS_ERR_SSL_ALLOC_FAILED;
             goto exit;
         }
 
@@ -273,7 +273,7 @@ int mbedtls_ssl_cache_set(void *data, const mbedtls_ssl_session *session)
 exit:
 #if defined(MBEDTLS_THREADING_C)
     if (mbedtls_mutex_unlock(&cache->mutex) != 0) {
-        ret = 1;
+        ret = MBEDTLS_ERR_THREADING_MUTEX_ERROR;
     }
 #endif
 
