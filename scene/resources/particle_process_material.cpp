@@ -984,12 +984,16 @@ void ParticleProcessMaterial::_update_shader() {
 		}
 		code += "		\n";
 		code += "		vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz);\n";
-		code += "		if (!COLLIDED) {\n";
-		code += "			\n";
-		code += "			float vel_mag = length(final_velocity);\n";
-		code += "			float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0,1.0);\n";
-		code += "			final_velocity = mix(final_velocity, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
-		code += "		}\n";
+		// The following snippet causes massive performance hit. We don't need it as long as collision is disabled.
+		// Refer to GH-83744 for more info.
+		if (collision_mode != COLLISION_DISABLED) {
+			code += "		if (!COLLIDED) {\n";
+			code += "			\n";
+			code += "			float vel_mag = length(final_velocity);\n";
+			code += "			float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0,1.0);\n";
+			code += "			final_velocity = mix(final_velocity, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
+			code += "		}\n";
+		}
 	}
 	code += "	\n";
 	code += "	// limit velocity\n";
