@@ -818,6 +818,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	}
 
 	glEnable(GL_RASTERIZER_DISCARD);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	_particles_update_instance_buffer(particles, axis, p_up_axis);
 	glDisable(GL_RASTERIZER_DISCARD);
 }
@@ -1001,6 +1002,7 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 
 void ParticlesStorage::update_particles() {
 	glEnable(GL_RASTERIZER_DISCARD);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
 
