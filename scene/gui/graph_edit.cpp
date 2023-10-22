@@ -542,40 +542,9 @@ void GraphEdit::_notification(int p_what) {
 
 			// Draw background grid.
 			if (show_grid) {
-				Vector2 offset = get_scroll_offset() / zoom;
-				Size2 size = get_size() / zoom;
-
-				Point2i from_pos = (offset / float(snapping_distance)).floor();
-				Point2i len = (size / float(snapping_distance)).floor() + Vector2(1, 1);
-
-				for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
-					Color color;
-
-					if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
-						color = theme_cache.grid_major;
-					} else {
-						color = theme_cache.grid_minor;
-					}
-
-					float base_offset = i * snapping_distance * zoom - offset.x * zoom;
-					draw_line(Vector2(base_offset, 0), Vector2(base_offset, get_size().height), color);
-				}
-
-				for (int i = from_pos.y; i < from_pos.y + len.y; i++) {
-					Color color;
-
-					if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
-						color = theme_cache.grid_major;
-					} else {
-						color = theme_cache.grid_minor;
-					}
-
-					float base_offset = i * snapping_distance * zoom - offset.y * zoom;
-					draw_line(Vector2(0, base_offset), Vector2(get_size().width, base_offset), color);
-				}
+				_draw_grid();
 			}
 		} break;
-
 		case NOTIFICATION_RESIZED: {
 			_update_scroll();
 			top_layer->queue_redraw();
@@ -1128,6 +1097,67 @@ void GraphEdit::_minimap_draw() {
 	minimap->draw_texture(resizer, Point2(), resizer_color);
 }
 
+void GraphEdit::_draw_grid() {
+	Vector2 offset = get_scroll_offset() / zoom;
+	Size2 size = get_size() / zoom;
+
+	Point2i from_pos = (offset / float(snapping_distance)).floor();
+	Point2i len = (size / float(snapping_distance)).floor() + Vector2(1, 1);
+
+	switch (grid_pattern) {
+		case GRID_PATTERN_LINES: {
+			for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
+				Color color;
+
+				if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+					color = theme_cache.grid_major;
+				} else {
+					color = theme_cache.grid_minor;
+				}
+
+				float base_offset = i * snapping_distance * zoom - offset.x * zoom;
+				draw_line(Vector2(base_offset, 0), Vector2(base_offset, get_size().height), color);
+			}
+
+			for (int i = from_pos.y; i < from_pos.y + len.y; i++) {
+				Color color;
+
+				if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+					color = theme_cache.grid_major;
+				} else {
+					color = theme_cache.grid_minor;
+				}
+
+				float base_offset = i * snapping_distance * zoom - offset.y * zoom;
+				draw_line(Vector2(0, base_offset), Vector2(get_size().width, base_offset), color);
+			}
+		} break;
+		case GRID_PATTERN_DOTS: {
+			Color transparent_grid_minor = theme_cache.grid_minor;
+			transparent_grid_minor.a *= CLAMP(2 * (zoom - 0.4), 0, 1);
+
+			for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
+				for (int j = from_pos.y; j < from_pos.y + len.y; j++) {
+					Color color = transparent_grid_minor;
+
+					if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0 && ABS(j) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+						color = theme_cache.grid_major;
+					}
+
+					if (color.a == 0) {
+						continue;
+					}
+
+					float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
+					float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
+
+					draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), color);
+				}
+			}
+		} break;
+	}
+}
+
 void GraphEdit::set_selected(Node *p_child) {
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
@@ -1647,6 +1677,19 @@ bool GraphEdit::is_showing_grid() const {
 	return show_grid;
 }
 
+void GraphEdit::set_grid_pattern(GridPattern p_pattern) {
+	if (grid_pattern == p_pattern) {
+		return;
+	}
+
+	grid_pattern = p_pattern;
+	queue_redraw();
+}
+
+GraphEdit::GridPattern GraphEdit::get_grid_pattern() const {
+	return grid_pattern;
+}
+
 void GraphEdit::_snapping_toggled() {
 	snapping_enabled = toggle_snapping_button->is_pressed();
 }
@@ -1859,6 +1902,9 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_show_grid", "enable"), &GraphEdit::set_show_grid);
 	ClassDB::bind_method(D_METHOD("is_showing_grid"), &GraphEdit::is_showing_grid);
 
+	ClassDB::bind_method(D_METHOD("set_grid_pattern", "pattern"), &GraphEdit::set_grid_pattern);
+	ClassDB::bind_method(D_METHOD("get_grid_pattern"), &GraphEdit::get_grid_pattern);
+
 	ClassDB::bind_method(D_METHOD("set_snapping_enabled", "enable"), &GraphEdit::set_snapping_enabled);
 	ClassDB::bind_method(D_METHOD("is_snapping_enabled"), &GraphEdit::is_snapping_enabled);
 
@@ -1917,6 +1963,7 @@ void GraphEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_scroll_offset", "get_scroll_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_grid"), "set_show_grid", "is_showing_grid");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "grid_pattern", PROPERTY_HINT_ENUM, "Lines,Dots"), "set_grid_pattern", "get_grid_pattern");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snapping_enabled"), "set_snapping_enabled", "is_snapping_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "snapping_distance", PROPERTY_HINT_NONE, "suffix:px"), "set_snapping_distance", "get_snapping_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
@@ -1969,6 +2016,9 @@ void GraphEdit::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);
 	BIND_ENUM_CONSTANT(SCROLL_PANS);
+
+	BIND_ENUM_CONSTANT(GRID_PATTERN_LINES);
+	BIND_ENUM_CONSTANT(GRID_PATTERN_DOTS);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphEdit, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, grid_major);

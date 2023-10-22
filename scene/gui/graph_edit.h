@@ -126,6 +126,11 @@ public:
 		SCROLL_PANS,
 	};
 
+	enum GridPattern {
+		GRID_PATTERN_LINES,
+		GRID_PATTERN_DOTS
+	};
+
 private:
 	struct ConnectionType {
 		union {
@@ -176,6 +181,7 @@ private:
 	bool snapping_enabled = true;
 	int snapping_distance = 20;
 	bool show_grid = true;
+	GridPattern grid_pattern = GRID_PATTERN_LINES;
 
 	bool connecting = false;
 	String connecting_from;
@@ -288,6 +294,8 @@ private:
 	void _top_layer_draw();
 	void _connections_layer_draw();
 	void _minimap_draw();
+
+	void _draw_grid();
 
 	TypedArray<Dictionary> _get_connection_list() const;
 
@@ -412,6 +420,9 @@ public:
 	void set_show_grid(bool p_enable);
 	bool is_showing_grid() const;
 
+	void set_grid_pattern(GridPattern p_pattern);
+	GridPattern get_grid_pattern() const;
+
 	void set_connection_lines_curvature(float p_curvature);
 	float get_connection_lines_curvature() const;
 
@@ -431,5 +442,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
+VARIANT_ENUM_CAST(GraphEdit::GridPattern);
 
 #endif // GRAPH_EDIT_H

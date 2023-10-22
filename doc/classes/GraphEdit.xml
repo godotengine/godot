@@ -237,6 +237,9 @@
 			The thickness of the lines between the nodes.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="grid_pattern" type="int" setter="set_grid_pattern" getter="get_grid_pattern" enum="GraphEdit.GridPattern" default="0">
+			The pattern used for drawing the grid.
+		</member>
 		<member name="minimap_enabled" type="bool" setter="set_minimap_enabled" getter="is_minimap_enabled" default="true">
 			If [code]true[/code], the minimap is visible.
 		</member>
@@ -405,16 +408,22 @@
 		<constant name="SCROLL_PANS" value="1" enum="PanningScheme">
 			[kbd]Mouse Wheel[/kbd] will move the view, [kbd]Ctrl + Mouse Wheel[/kbd] will zoom.
 		</constant>
+		<constant name="GRID_PATTERN_LINES" value="0" enum="GridPattern">
+			Draw the grid using solid lines.
+		</constant>
+		<constant name="GRID_PATTERN_DOTS" value="1" enum="GridPattern">
+			Draw the grid using dots.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Color of the connection's activity (see [method set_connection_activity]).
 		</theme_item>
 		<theme_item name="grid_major" data_type="color" type="Color" default="Color(1, 1, 1, 0.2)">
-			Color of major grid lines.
+			Color of major grid lines/dots.
 		</theme_item>
 		<theme_item name="grid_minor" data_type="color" type="Color" default="Color(1, 1, 1, 0.05)">
-			Color of minor grid lines.
+			Color of minor grid lines/dots.
 		</theme_item>
 		<theme_item name="selection_fill" data_type="color" type="Color" default="Color(1, 1, 1, 0.3)">
 			The fill color of the selection rectangle.
