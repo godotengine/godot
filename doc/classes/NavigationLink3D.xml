@@ -29,6 +29,12 @@
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this link on the [NavigationServer3D].
+			</description>
+		</method>
 		<method name="set_global_end_position">
 			<return type="void" />
 			<param index="0" name="position" type="Vector3" />
