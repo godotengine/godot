@@ -1528,6 +1528,8 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			}
 		}
 	} else {
+		da->make_dir(new_path);
+
 		// Recursively duplicate all files inside the folder.
 		Ref<DirAccess> old_dir = DirAccess::open(old_path);
 		ERR_FAIL_COND(old_dir.is_null());
@@ -1894,22 +1896,15 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		if (p_overwrite == OVERWRITE_RENAME) {
 			new_paths.write[i] = _get_unique_name(to_move[i], p_to_path);
 		} else {
-			new_paths.write[i] = p_to_path.path_join(to_move[i].path.get_file());
+			new_paths.write[i] = p_to_path.path_join(to_move[i].path.trim_suffix("/").get_file());
 		}
 	}
 
 	if (p_copy) {
 		bool is_copied = false;
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_duplicate_item(to_move[i], new_path);
+			if (to_move[i].path != new_paths[i]) {
+				_try_duplicate_item(to_move[i], new_paths[i]);
 				is_copied = true;
 			}
 		}
@@ -1934,15 +1929,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		HashMap<String, String> folder_renames;
 
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_move_item(to_move[i], new_path, file_renames, folder_renames);
+			if (to_move[i].path != new_paths[i]) {
+				_try_move_item(to_move[i], new_paths[i], file_renames, folder_renames);
 				is_moved = true;
 			}
 		}
