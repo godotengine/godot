@@ -1053,8 +1053,9 @@ void ResourceLoader::clear_thread_load_tasks() {
 		thread_load_mutex.lock();
 	}
 
-	for (KeyValue<String, LoadToken *> &E : user_load_tokens) {
-		memdelete(E.value);
+	while (user_load_tokens.begin()) {
+		// User load tokens remove themselves from the map on destruction.
+		memdelete(user_load_tokens.begin()->value);
 	}
 	user_load_tokens.clear();
 
