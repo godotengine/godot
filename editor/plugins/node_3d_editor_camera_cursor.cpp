@@ -112,7 +112,7 @@ void Node3DEditorCameraCursor::move_freelook(const Vector3& p_direction, real_t 
 	}
 	Transform3D camera_transform = values_to_camera_transform(current_values);
 
-	const FreelookNavigationScheme navigation_scheme = (FreelookNavigationScheme)EDITOR_GET("editors/3d/freelook/freelook_navigation_scheme").operator int();
+	const FreelookNavigationScheme navigation_scheme = (FreelookNavigationScheme)editor_settings->get_setting("editors/3d/freelook/freelook_navigation_scheme").operator int();
 
 	Vector3 forward;
 	if (navigation_scheme == FREELOOK_FULLY_AXIS_LOCKED) {
@@ -166,13 +166,13 @@ bool Node3DEditorCameraCursor::update_interpolation(float p_interp_delta) {
 	if (freelook_mode) {
 		// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
 		// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
-		const real_t inertia = EDITOR_GET("editors/3d/freelook/freelook_inertia");
+		const real_t inertia = editor_settings->get_setting("editors/3d/freelook/freelook_inertia");
 		real_t factor = (1.0 / inertia) * p_interp_delta;
 
 		// We interpolate a different point here, because in freelook mode the focus point (cursor.pos) orbits around eye_pos
 		current_values.eye_position = old_values.eye_position.lerp(target_values.eye_position, CLAMP(factor, 0, 1));
 
-		const real_t orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
+		const real_t orbit_inertia = editor_settings->get_setting("editors/3d/navigation_feel/orbit_inertia");
 		current_values.x_rot = Math::lerp(old_values.x_rot, target_values.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 		current_values.y_rot = Math::lerp(old_values.y_rot, target_values.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 
@@ -187,9 +187,9 @@ bool Node3DEditorCameraCursor::update_interpolation(float p_interp_delta) {
 		recalculate_position(current_values);
 	}
 	else {
-		const real_t orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
-		const real_t translation_inertia = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
-		const real_t zoom_inertia = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
+		const real_t orbit_inertia = editor_settings->get_setting("editors/3d/navigation_feel/orbit_inertia");
+		const real_t translation_inertia = editor_settings->get_setting("editors/3d/navigation_feel/translation_inertia");
+		const real_t zoom_inertia = editor_settings->get_setting("editors/3d/navigation_feel/zoom_inertia");
 
 		current_values.x_rot = Math::lerp(old_values.x_rot, target_values.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 		current_values.y_rot = Math::lerp(old_values.y_rot, target_values.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
@@ -228,18 +228,11 @@ void Node3DEditorCameraCursor::set_orthogonal(float p_z_near, float p_z_far) {
 	orthogonal = true;
 	z_near = p_z_near;
 	z_far = p_z_far;
-	recalculate_eye_position(current_values);
-	recalculate_eye_position(target_values);
 	stop_interpolation(true);
 }
 
-void Node3DEditorCameraCursor::set_perspective(float p_fov, float p_z_near, float p_z_far) {
+void Node3DEditorCameraCursor::set_perspective() {
 	orthogonal = false;
-	perspective_fov = p_fov;
-	z_near = p_z_near;
-	z_far = p_z_far;
-	recalculate_eye_position(current_values);
-	recalculate_eye_position(target_values);
 	stop_interpolation(true);
 }
 
@@ -255,7 +248,12 @@ void Node3DEditorCameraCursor::set_camera_transform(const Transform3D& p_transfo
 	target_values = Values();
 	Transform3D transform = p_transform;
 	Transform3D eye_transform = p_transform;
-	transform.translate_local(0, 0, -target_values.distance);
+	if (orthogonal) {
+		transform.translate_local(0, 0, -((z_far - z_near) / 2.0));
+	}
+	else {
+		transform.translate_local(0, 0, -target_values.distance);
+	}
 	target_values.position = transform.origin;
 	Vector3 euler = transform.basis.get_euler();
 	target_values.x_rot = -euler.x;
@@ -287,12 +285,15 @@ void Node3DEditorCameraCursor::recalculate_position(Values& p_values) {
 	p_values.position = p_values.eye_position + forward * p_values.distance;
 }
 
+void Node3DEditorCameraCursor::set_editor_settings(EditorSettings* p_editor_settings) {
+	editor_settings = p_editor_settings;
+}
+
 Node3DEditorCameraCursor::Node3DEditorCameraCursor() {
 	freelook_mode = false;
 	orthogonal = false;
 	z_near = 0.0;
 	z_far = 0.0;
-	perspective_fov = 0.0;
 	recalculate_eye_position(current_values);
 	recalculate_eye_position(target_values);
 }

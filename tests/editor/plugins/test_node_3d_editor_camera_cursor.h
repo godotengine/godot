@@ -287,17 +287,20 @@ TEST_CASE("[Node3DEditorCameraCursor] Move distance to") {
 		cursor.move_distance_to(-1.0);
 		CHECK_MESSAGE(
 			cursor.get_target_values().eye_position.is_equal_approx(Vector3(0.0, 0.0, 0.0)),
-			"Eye position ", cursor.get_target_values().eye_position, " sould be zero because it should clamp the distance to never be smaller than 0.");
+			"Eye position ", cursor.get_target_values().eye_position, " should be zero because it should clamp the distance to never be smaller than 0.");
 	}
 }
 
-TEST_CASE("[Node3DEditorCameraCursor] Move freelook to") {
+TEST_CASE("[Node3DEditorCameraCursor] Move freelook") {
 	Node3DEditorCameraCursor cursor;
 	cursor.set_freelook_mode(true);
 	cursor.orbit_to(0.0, Math::deg_to_rad(90.0));
 	cursor.move_to(Vector3(100.0, 200.0, 300.0));
 	cursor.move_distance_to(2.0);
 	cursor.stop_interpolation(true);
+	EditorSettings* editor_settings = memnew(EditorSettings);
+	editor_settings->set("editors/3d/freelook/freelook_navigation_scheme", Node3DEditorCameraCursor::FreelookNavigationScheme::FREELOOK_DEFAULT);
+	cursor.set_editor_settings(editor_settings);
 
 	SUBCASE("Move in freelook mode") {
 		cursor.move_freelook(Vector3(10.0, 5.0, -1.0), 2.0, 3.0);
@@ -345,31 +348,80 @@ TEST_CASE("[Node3DEditorCameraCursor] Get camera transform") {
 			current_camera_transform.origin.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
 			"Unexpected current transform origin ", current_camera_transform.origin);
 	}
+
+	SUBCASE("Transform in orthogonal mode") {
+		cursor.set_orthogonal(10.0, 50.0);
+		Transform3D current_camera_transform = cursor.get_current_camera_transform();
+		CHECK_MESSAGE(
+			current_camera_transform.origin.is_equal_approx(Vector3(80.0, 0.0, 200.0)),
+			"Unexpected current transform origin ", current_camera_transform.origin);
+	}
 }
 
 TEST_CASE("[Node3DEditorCameraCursor] Set camera transform") {
+	Node3DEditorCameraCursor cursor;
+	cursor.move_distance(10.0);
 	Transform3D transform;
 	transform.origin = Vector3(100.0, 0.0, 200.0);
 	transform.basis.set_euler(Vector3(0.0, Math::deg_to_rad(90.0), 0.0));
-	Node3DEditorCameraCursor cursor;
-	cursor.move_distance(10.0);
-	cursor.set_camera_transform(transform);
 
-	CHECK_MESSAGE(
-		cursor.get_target_values().position.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
-		"Unexpected position ", cursor.get_target_values().position);
-	CHECK_MESSAGE(
-		cursor.get_target_values().eye_position.is_equal_approx(Vector3(100.0, 0.0, 200.0)),
-		"Unexpected eye_position ", cursor.get_target_values().eye_position);
-	CHECK_MESSAGE(
-		Math::is_equal_approx(cursor.get_target_values().x_rot, (real_t) 0.0),
-		"Unexpected x_rot ", cursor.get_target_values().x_rot);
-	CHECK_MESSAGE(
-		Math::is_equal_approx(cursor.get_target_values().y_rot, -Math::deg_to_rad((real_t)90.0)),
-		"Unexpected y_rot ", cursor.get_target_values().y_rot);
-	CHECK_MESSAGE(
-		cursor.get_target_values().distance == 4.0,
-		"Should restore default distance.");
+	SUBCASE("Transform in perspective mode") {
+		cursor.set_perspective();
+		cursor.set_camera_transform(transform);
+
+		CHECK_MESSAGE(
+			cursor.get_target_values().position.is_equal_approx(Vector3(96.0, 0.0, 200.0)),
+			"Unexpected position ", cursor.get_target_values().position);
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position.is_equal_approx(Vector3(100.0, 0.0, 200.0)),
+			"Unexpected eye_position ", cursor.get_target_values().eye_position);
+		CHECK_MESSAGE(
+			Math::is_equal_approx(cursor.get_target_values().x_rot, (real_t)0.0),
+			"Unexpected x_rot ", cursor.get_target_values().x_rot);
+		CHECK_MESSAGE(
+			Math::is_equal_approx(cursor.get_target_values().y_rot, -Math::deg_to_rad((real_t)90.0)),
+			"Unexpected y_rot ", cursor.get_target_values().y_rot);
+		CHECK_MESSAGE(
+			cursor.get_target_values().distance == 4.0,
+			"Should restore default distance.");
+	}
+
+	SUBCASE("Transform in orthogonal mode") {
+		cursor.set_orthogonal(10.0, 50.0);
+		cursor.set_camera_transform(transform);
+
+		CHECK_MESSAGE(
+			cursor.get_target_values().position.is_equal_approx(Vector3(80.0, 0.0, 200.0)),
+			"Unexpected position ", cursor.get_target_values().position);
+		CHECK_MESSAGE(
+			cursor.get_target_values().eye_position.is_equal_approx(Vector3(84.0, 0.0, 200.0)),
+			"Unexpected eye_position ", cursor.get_target_values().eye_position);
+		CHECK_MESSAGE(
+			Math::is_equal_approx(cursor.get_target_values().x_rot, (real_t)0.0),
+			"Unexpected x_rot ", cursor.get_target_values().x_rot);
+		CHECK_MESSAGE(
+			Math::is_equal_approx(cursor.get_target_values().y_rot, -Math::deg_to_rad((real_t)90.0)),
+			"Unexpected y_rot ", cursor.get_target_values().y_rot);
+		CHECK_MESSAGE(
+			cursor.get_target_values().distance == 4.0,
+			"Should restore default distance.");
+	}
+}
+
+TEST_CASE("[Node3DEditorCameraCursor] Toggle perspective / orthogonal") {
+	Node3DEditorCameraCursor cursor;
+	cursor.move_to(Vector3(100.0, 0.0, 200.0));
+	cursor.orbit_to(0.0, Math::deg_to_rad(90.0));
+
+	SUBCASE("Toggle to orthogonal should stop interpolation") {
+		cursor.set_orthogonal(10.0, 50.0);
+		CHECK(cursor.get_current_values() == cursor.get_target_values());
+	}
+
+	SUBCASE("Toggle to perspective should stop interpolation") {
+		cursor.set_perspective();
+		CHECK(cursor.get_current_values() == cursor.get_target_values());
+	}
 }
 
 TEST_CASE("[Node3DEditorCameraCursor] Stop interpolation") {
@@ -404,10 +456,12 @@ TEST_CASE("[Node3DEditorCameraCursor] Stop interpolation") {
 TEST_CASE("[Node3DEditorCameraCursor] Update interpolation") {
 	Node3DEditorCameraCursor cursor;
 	Node3DEditorCameraCursor::Values previous_current_values = cursor.get_current_values();
-	EditorSettings::get_singleton()->set_setting("editors/3d/freelook/freelook_inertia", 0.1);
-	EditorSettings::get_singleton()->set_setting("editors/3d/navigation_feel/orbit_inertia", 0.1);
-	EditorSettings::get_singleton()->set_setting("editors/3d/navigation_feel/translation_inertia", 0.1);
-	EditorSettings::get_singleton()->set_setting("editors/3d/navigation_feel/zoom_inertia", 0.1);
+	EditorSettings* editor_settings = memnew(EditorSettings);
+	editor_settings->set("editors/3d/freelook/freelook_inertia", 0.1);
+	editor_settings->set("editors/3d/navigation_feel/orbit_inertia", 0.1);
+	editor_settings->set("editors/3d/navigation_feel/translation_inertia", 0.1);
+	editor_settings->set("editors/3d/navigation_feel/zoom_inertia", 0.1);
+	cursor.set_editor_settings(editor_settings);
 
 	SUBCASE("Should change nothing if there aren't updates in target values") {
 		CHECK(!cursor.update_interpolation(0.01));

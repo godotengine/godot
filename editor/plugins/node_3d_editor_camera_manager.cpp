@@ -213,6 +213,12 @@ bool Node3DEditorCameraManager::is_in_cinematic_preview_mode() const {
 
 void Node3DEditorCameraManager::set_orthogonal(bool p_orthogonal) {
 	orthogonal = p_orthogonal;
+	if (orthogonal) {
+		cursor.set_orthogonal(z_near, z_far);
+	}
+	else {
+		cursor.set_perspective();
+	}
 	update_camera(0.0);
 	if (node_being_piloted) {
 		Camera3D* camera_being_piloted = Object::cast_to<Camera3D>(node_being_piloted);
@@ -487,6 +493,7 @@ Node3DEditorCameraManager::Node3DEditorCameraManager() {
 }
 
 Node3DEditorCameraManager::~Node3DEditorCameraManager() {
+	cursor.set_editor_settings(EditorSettings::get_singleton());
 }
 
 //////

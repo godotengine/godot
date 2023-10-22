@@ -33,6 +33,8 @@
 
 #include "scene/main/node.h"
 
+class EditorSettings;
+
 /**
 * The invisible cursor 3D that the camera follows and rotates around in the viewport. Contains interpolation
 * for a smooth movement.
@@ -67,6 +69,12 @@ public:
 		friend class EditorNode3DCameraCursor;
 	};
 
+	enum FreelookNavigationScheme {
+		FREELOOK_DEFAULT,
+		FREELOOK_PARTIALLY_AXIS_LOCKED,
+		FREELOOK_FULLY_AXIS_LOCKED,
+	};
+
 private:
 	Values current_values;
 	Values target_values;
@@ -74,13 +82,7 @@ private:
 	bool orthogonal = false;
 	float z_near = 0.0;
 	float z_far = 0.0;
-	float perspective_fov = 0.0;
-
-	enum FreelookNavigationScheme {
-		FREELOOK_DEFAULT,
-		FREELOOK_PARTIALLY_AXIS_LOCKED,
-		FREELOOK_FULLY_AXIS_LOCKED,
-	};
+	EditorSettings* editor_settings = nullptr;
 
 public:
 	/** Returns the current values being interpolated. */
@@ -129,11 +131,11 @@ public:
 	/** Calculates and updates the current values of the interpolation. Returns true if any value changed. */
 	bool update_interpolation(float p_interp_delta);
 
-	/** Sets the cursor to orthogonal view mode. */
+	/** Sets the cursor to orthogonal view mode. Z near and far values are needed for camera transform calculations in this case. */
 	void set_orthogonal(float p_z_near, float p_z_far);
 
 	/** Sets the cursor to perspective view mode. */
-	void set_perspective(float p_fov, float p_z_near, float p_z_far);
+	void set_perspective();
 
 	/** Get the camera's transform given the current values of the cursor. */
 	Transform3D get_current_camera_transform() const;
@@ -150,6 +152,7 @@ private:
 	void recalculate_position(Values& p_values);
 
 public:
+	void set_editor_settings(EditorSettings* p_editor_settings);
 	Node3DEditorCameraCursor();
 };
 

@@ -405,6 +405,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				// We don't create the full blown EditorSettings (+ config file) with `create()`,
 				// instead we just make a local instance to get default values.
 				Ref<EditorSettings> edset = memnew(EditorSettings);
+				edset->load_defaults();
 				edset->get_property_list(&properties);
 				own_properties = properties;
 			} else if (name == "ProjectSettings") {

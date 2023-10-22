@@ -102,7 +102,7 @@ private:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
-	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
+	
 	void _load_godot2_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
 	bool _is_default_text_editor_theme(String p_theme_name);
@@ -118,6 +118,7 @@ public:
 	static EditorSettings *get_singleton();
 
 	static void create();
+	void load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
 	void setup_language();
 	void setup_network();
 	static void save();
