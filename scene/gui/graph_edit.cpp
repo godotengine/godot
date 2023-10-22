@@ -32,6 +32,7 @@
 #include "graph_edit.compat.inc"
 
 #include "core/input/input.h"
+#include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
@@ -52,7 +53,6 @@ constexpr int MAX_CONNECTION_LINE_CURVE_TESSELATION_STAGES = 5;
 constexpr int GRID_MINOR_STEPS_PER_MAJOR_LINE = 10;
 constexpr int GRID_MIN_SNAPPING_DISTANCE = 2;
 constexpr int GRID_MAX_SNAPPING_DISTANCE = 100;
-constexpr float CONNECTING_TARGET_LINE_COLOR_BRIGHTENING = 0.4;
 
 bool GraphEditFilter::has_point(const Point2 &p_point) const {
 	return ge->_filter_input(p_point);
@@ -232,13 +232,17 @@ Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const S
 	if (is_node_connected(p_from, p_from_port, p_to, p_to_port)) {
 		return OK;
 	}
-	Connection c;
-	c.from_node = p_from;
-	c.from_port = p_from_port;
-	c.to_node = p_to;
-	c.to_port = p_to_port;
-	c.activity = 0;
+	Ref<Connection> c;
+	c.instantiate();
+	c->from_node = p_from;
+	c->from_port = p_from_port;
+	c->to_node = p_to;
+	c->to_port = p_to_port;
+	c->activity = 0;
 	connections.push_back(c);
+	connection_map[p_from].push_back(c);
+	connection_map[p_to].push_back(c);
+
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
@@ -248,8 +252,8 @@ Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const S
 }
 
 bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
-	for (const Connection &E : connections) {
-		if (E.from_node == p_from && E.from_port == p_from_port && E.to_node == p_to && E.to_port == p_to_port) {
+	for (const Ref<Connection> &conn : connection_map[p_from]) {
+		if (conn->from_node == p_from && conn->from_port == p_from_port && conn->to_node == p_to && conn->to_port == p_to_port) {
 			return true;
 		}
 	}
@@ -258,9 +262,12 @@ bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, con
 }
 
 void GraphEdit::disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
-	for (const List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		if (E->get().from_node == p_from && E->get().from_port == p_from_port && E->get().to_node == p_to && E->get().to_port == p_to_port) {
+	for (const List<Ref<Connection>>::Element *E = connections.front(); E; E = E->next()) {
+		if (E->get()->from_node == p_from && E->get()->from_port == p_from_port && E->get()->to_node == p_to && E->get()->to_port == p_to_port) {
+			connection_map[p_from].erase(E->get());
+			connection_map[p_to].erase(E->get());
 			connections.erase(E);
+
 			top_layer->queue_redraw();
 			minimap->queue_redraw();
 			queue_redraw();
@@ -270,8 +277,8 @@ void GraphEdit::disconnect_node(const StringName &p_from, int p_from_port, const
 	}
 }
 
-void GraphEdit::get_connection_list(List<Connection> *r_connections) const {
-	*r_connections = connections;
+const List<Ref<GraphEdit::Connection>> &GraphEdit::get_connection_list() const {
+	return connections;
 }
 
 void GraphEdit::set_scroll_offset(const Vector2 &p_offset) {
@@ -431,6 +438,13 @@ void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_node) {
 	connections_layer->queue_redraw();
 }
 
+void GraphEdit::_graph_node_rect_changed(GraphNode *p_node) {
+	for (Ref<Connection> &E : connection_map[p_node->get_name()]) {
+		E->_cache.dirty = true;
+	}
+	connections_layer->queue_redraw();
+}
+
 void GraphEdit::add_child_notify(Node *p_child) {
 	Control::add_child_notify(p_child);
 
@@ -445,12 +459,12 @@ void GraphEdit::add_child_notify(Node *p_child) {
 
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
-			graph_element->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(graph_element));
+			graph_node->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(graph_element));
+			graph_node->connect("item_rect_changed", callable_mp(this, &GraphEdit::_graph_node_rect_changed).bind(graph_node));
 		}
 
 		graph_element->connect("raise_request", callable_mp(this, &GraphEdit::_graph_element_moved_to_front).bind(graph_element));
 		graph_element->connect("resize_request", callable_mp(this, &GraphEdit::_graph_element_resized).bind(graph_element));
-		graph_element->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
 		graph_element->connect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
 
 		graph_element->set_scale(Vector2(zoom, zoom));
@@ -482,16 +496,14 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
-			graph_element->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
+			graph_node->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
+			graph_node->disconnect("item_rect_changed", callable_mp(this, &GraphEdit::_graph_node_rect_changed));
 		}
 
 		graph_element->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_element_moved_to_front));
 		graph_element->disconnect("resize_request", callable_mp(this, &GraphEdit::_graph_element_resized));
 
 		// In case of the whole GraphEdit being destroyed these references can already be freed.
-		if (connections_layer != nullptr && connections_layer->is_inside_tree()) {
-			graph_element->disconnect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
-		}
 		if (minimap != nullptr && minimap->is_inside_tree()) {
 			graph_element->disconnect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
 		}
@@ -638,7 +650,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			Ref<Texture2D> port_icon = graph_node->theme_cache.port;
 
 			for (int j = 0; j < graph_node->get_output_port_count(); j++) {
-				Vector2 pos = graph_node->get_output_port_position(j) * zoom + graph_node->get_position();
+				Vector2 pos = graph_node->get_output_port_position(j) + graph_node->get_position() / zoom;
 				Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
 
 				// Determine slot height.
@@ -649,22 +661,22 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				if (is_in_output_hotzone(graph_node, j, click_pos, port_size)) {
 					if (valid_left_disconnect_types.has(graph_node->get_output_port_type(j))) {
 						// Check disconnect.
-						for (const Connection &E : connections) {
-							if (E.from_node == graph_node->get_name() && E.from_port == j) {
-								Node *to = get_node(NodePath(E.to_node));
+						for (const Ref<Connection> &conn : connection_map[graph_node->get_name()]) {
+							if (conn->from_node == graph_node->get_name() && conn->from_port == j) {
+								Node *to = get_node(NodePath(conn->to_node));
 								if (Object::cast_to<GraphNode>(to)) {
-									connecting_from = E.to_node;
-									connecting_index = E.to_port;
+									connecting_from = conn->to_node;
+									connecting_index = conn->to_port;
 									connecting_out = false;
-									connecting_type = Object::cast_to<GraphNode>(to)->get_input_port_type(E.to_port);
-									connecting_color = Object::cast_to<GraphNode>(to)->get_input_port_color(E.to_port);
+									connecting_type = Object::cast_to<GraphNode>(to)->get_input_port_type(conn->to_port);
+									connecting_color = Object::cast_to<GraphNode>(to)->get_input_port_color(conn->to_port);
 									connecting_target = false;
 									connecting_to = pos;
 
 									if (connecting_type >= 0) {
 										just_disconnected = true;
 
-										emit_signal(SNAME("disconnection_request"), E.from_node, E.from_port, E.to_node, E.to_port);
+										emit_signal(SNAME("disconnection_request"), conn->from_node, conn->from_port, conn->to_node, conn->to_port);
 										to = get_node(NodePath(connecting_from)); // Maybe it was erased.
 										if (Object::cast_to<GraphNode>(to)) {
 											connecting = true;
@@ -694,7 +706,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			for (int j = 0; j < graph_node->get_input_port_count(); j++) {
-				Vector2 pos = graph_node->get_input_port_position(j) * zoom + graph_node->get_position();
+				Vector2 pos = graph_node->get_input_port_position(j) + graph_node->get_position() / zoom;
 
 				Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
 
@@ -706,21 +718,21 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				if (is_in_input_hotzone(graph_node, j, click_pos, port_size)) {
 					if (right_disconnects || valid_right_disconnect_types.has(graph_node->get_input_port_type(j))) {
 						// Check disconnect.
-						for (const Connection &E : connections) {
-							if (E.to_node == graph_node->get_name() && E.to_port == j) {
-								Node *fr = get_node(NodePath(E.from_node));
+						for (const Ref<Connection> &conn : connection_map[graph_node->get_name()]) {
+							if (conn->to_node == graph_node->get_name() && conn->to_port == j) {
+								Node *fr = get_node(NodePath(conn->from_node));
 								if (Object::cast_to<GraphNode>(fr)) {
-									connecting_from = E.from_node;
-									connecting_index = E.from_port;
+									connecting_from = conn->from_node;
+									connecting_index = conn->from_port;
 									connecting_out = true;
-									connecting_type = Object::cast_to<GraphNode>(fr)->get_output_port_type(E.from_port);
-									connecting_color = Object::cast_to<GraphNode>(fr)->get_output_port_color(E.from_port);
+									connecting_type = Object::cast_to<GraphNode>(fr)->get_output_port_type(conn->from_port);
+									connecting_color = Object::cast_to<GraphNode>(fr)->get_output_port_color(conn->from_port);
 									connecting_target = false;
 									connecting_to = pos;
 									just_disconnected = true;
 
 									if (connecting_type >= 0) {
-										emit_signal(SNAME("disconnection_request"), E.from_node, E.from_port, E.to_node, E.to_port);
+										emit_signal(SNAME("disconnection_request"), conn->from_node, conn->from_port, conn->to_node, conn->to_port);
 										fr = get_node(NodePath(connecting_from));
 										if (Object::cast_to<GraphNode>(fr)) {
 											connecting = true;
@@ -753,12 +765,12 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMouseMotion> mm = p_ev;
 	if (mm.is_valid() && connecting) {
-		connecting_to = mm->get_position();
+		connecting_to = mm->get_position() / zoom;
 		connecting_target = false;
 		top_layer->queue_redraw();
 		minimap->queue_redraw();
 
-		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to / zoom) > MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION;
+		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to) > MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION;
 
 		if (connecting_valid) {
 			Vector2 mpos = mm->get_position() / zoom;
@@ -772,7 +784,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 				if (!connecting_out) {
 					for (int j = 0; j < graph_node->get_output_port_count(); j++) {
-						Vector2 pos = graph_node->get_output_port_position(j) * zoom + graph_node->get_position();
+						Vector2 pos = graph_node->get_output_port_position(j) + graph_node->get_position() / zoom;
 						Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
 
 						// Determine slot height.
@@ -796,7 +808,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					}
 				} else {
 					for (int j = 0; j < graph_node->get_input_port_count(); j++) {
-						Vector2 pos = graph_node->get_input_port_position(j) * zoom + graph_node->get_position();
+						Vector2 pos = graph_node->get_input_port_position(j) + graph_node->get_position() / zoom;
 						Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
 
 						// Determine slot height.
@@ -961,57 +973,166 @@ PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const V
 	}
 }
 
-void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom) {
-	Vector<Vector2> points = get_connection_line(p_from / p_zoom, p_to / p_zoom);
-	Vector<Vector2> scaled_points;
+Ref<GraphEdit::Connection> GraphEdit::get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance) {
+	Vector2 transformed_point = p_point + get_scroll_offset();
+
+	Ref<GraphEdit::Connection> closest_connection;
+	float closest_distance = p_max_distance;
+	for (Ref<Connection> &c : connections) {
+		if (c->_cache.aabb.distance_to(transformed_point) > p_max_distance) {
+			continue;
+		}
+
+		Vector<Vector2> points = get_connection_line(c->_cache.from_pos * zoom, c->_cache.to_pos * zoom);
+		for (int i = 0; i < points.size() - 1; i++) {
+			float distance = Geometry2D::get_distance_to_segment(transformed_point, &points[i]);
+			if (distance <= lines_thickness * 0.5 + p_max_distance && distance < closest_distance) {
+				closest_connection = c;
+				closest_distance = distance;
+			}
+		}
+	}
+
+	return closest_connection;
+}
+
+Dictionary GraphEdit::_get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance) {
+	Dictionary ret;
+	Ref<Connection> c = get_closest_connection_at_point(p_point, p_max_distance);
+	if (c.is_valid()) {
+		ret["from_node"] = c->from_node;
+		ret["from_port"] = c->from_port;
+		ret["to_node"] = c->to_node;
+		ret["to_port"] = c->to_port;
+	}
+	return ret;
+}
+
+List<Ref<GraphEdit::Connection>> GraphEdit::get_connections_intersecting_with_rect(const Rect2 &p_rect) {
+	Rect2 transformed_rect = p_rect;
+	transformed_rect.position += get_scroll_offset();
+
+	List<Ref<Connection>> intersecting_connections;
+	for (Ref<Connection> &c : connections) {
+		if (!c->_cache.aabb.intersects(transformed_rect)) {
+			continue;
+		}
+
+		Vector<Vector2> points = get_connection_line(c->_cache.from_pos * zoom, c->_cache.to_pos * zoom);
+		for (int i = 0; i < points.size() - 1; i++) {
+			if (Geometry2D::segment_intersects_rect(points[i], points[i + 1], transformed_rect)) {
+				intersecting_connections.push_back(c);
+				break;
+			}
+		}
+	}
+	return intersecting_connections;
+}
+
+TypedArray<Dictionary> GraphEdit::_get_connections_intersecting_with_rect(const Rect2 &p_rect) {
+	List<Ref<Connection>> intersecting_connections = get_connections_intersecting_with_rect(p_rect);
+
+	TypedArray<Dictionary> arr;
+	for (const Ref<Connection> &conn : intersecting_connections) {
+		Dictionary d;
+		d["from_node"] = conn->from_node;
+		d["from_port"] = conn->from_port;
+		d["to_node"] = conn->to_node;
+		d["to_port"] = conn->to_port;
+		arr.push_back(d);
+	}
+	return arr;
+}
+
+void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_from_color, const Color &p_to_color, float p_width, const Ref<Connection> &p_connection) {
+	Vector<Vector2> points;
+	if (p_connection.is_valid()) {
+		points = p_connection->_cache.line;
+	} else {
+		points = get_connection_line(p_from, p_to);
+	}
+
 	Vector<Color> colors;
-	float length = (p_from / p_zoom).distance_to(p_to / p_zoom);
+	float length = (p_from).distance_to(p_to);
 	for (int i = 0; i < points.size(); i++) {
-		float d = (p_from / p_zoom).distance_to(points[i]) / length;
-		colors.push_back(p_color.lerp(p_to_color, d));
-		scaled_points.push_back(points[i] * p_zoom);
+		float d = (p_from).distance_to(points[i]) / length;
+		colors.push_back(p_from_color.lerp(p_to_color, d));
 	}
 
 	// Thickness below 0.5 doesn't look good on the graph or its minimap.
-	p_where->draw_polyline_colors(scaled_points, colors, MAX(0.5, Math::floor(p_width * theme_cache.base_scale)), lines_antialiased);
+	p_where->draw_polyline_colors(points, colors, MAX(0.5, Math::floor(p_width * theme_cache.base_scale)), lines_antialiased);
 }
 
 void GraphEdit::_connections_layer_draw() {
+	// Collect all dead connections and remove them.
+	List<List<Ref<Connection>>::Element *> dead_connections;
+
 	// Draw connections.
-	List<List<Connection>::Element *> to_erase;
-	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		const Connection &c = E->get();
+	for (List<Ref<Connection>>::Element *E = connections.front(); E; E = E->next()) {
+		Ref<Connection> &c = E->get();
 
-		Node *from = get_node(NodePath(c.from_node));
-		GraphNode *gnode_from = Object::cast_to<GraphNode>(from);
+		if (c->_cache.dirty) {
+			Node *from = get_node(NodePath(c->from_node));
+			GraphNode *gnode_from = Object::cast_to<GraphNode>(from);
+			if (!gnode_from) {
+				dead_connections.push_back(E);
+				continue;
+			}
+			Node *to = get_node(NodePath(c->to_node));
+			GraphNode *gnode_to = Object::cast_to<GraphNode>(to);
 
-		if (!gnode_from) {
-			to_erase.push_back(E);
+			if (!gnode_to) {
+				dead_connections.push_back(E);
+				continue;
+			}
+
+			Vector2 from_pos = gnode_from->get_output_port_position(c->from_port) + gnode_from->get_position_offset();
+			Vector2 to_pos = gnode_to->get_input_port_position(c->to_port) + gnode_to->get_position_offset();
+
+			Color from_color = gnode_from->get_output_port_color(c->from_port);
+			Color to_color = gnode_to->get_input_port_color(c->to_port);
+
+			c->_cache.from_pos = from_pos;
+			c->_cache.to_pos = to_pos;
+			c->_cache.from_color = from_color;
+			c->_cache.to_color = to_color;
+			c->_cache.line = get_connection_line(from_pos * zoom, to_pos * zoom);
+			c->_cache.aabb = Rect2(c->_cache.line[0], Vector2());
+			for (int i = 0; i < c->_cache.line.size(); i++) {
+				c->_cache.aabb.expand_to(c->_cache.line[i]);
+			}
+			c->_cache.aabb.grow_by(lines_thickness * 0.5);
+			c->_cache.dirty = false;
+		}
+
+		Rect2 viewport_rect = get_viewport_rect();
+		viewport_rect.position += get_scroll_offset();
+		if (!c->_cache.aabb.intersects(viewport_rect)) {
 			continue;
 		}
 
-		Node *to = get_node(NodePath(c.to_node));
-		GraphNode *gnode_to = Object::cast_to<GraphNode>(to);
+		Color from_color = c->_cache.from_color;
+		Color to_color = c->_cache.to_color;
 
-		if (!gnode_to) {
-			to_erase.push_back(E);
-			continue;
+		if (c->activity > 0) {
+			from_color = from_color.lerp(theme_cache.activity_color, c->activity);
+			to_color = to_color.lerp(theme_cache.activity_color, c->activity);
 		}
 
-		Vector2 frompos = gnode_from->get_output_port_position(c.from_port) * zoom + gnode_from->get_position_offset() * zoom;
-		Color color = gnode_from->get_output_port_color(c.from_port);
-		Vector2 topos = gnode_to->get_input_port_position(c.to_port) * zoom + gnode_to->get_position_offset() * zoom;
-		Color tocolor = gnode_to->get_input_port_color(c.to_port);
-
-		if (c.activity > 0) {
-			color = color.lerp(theme_cache.activity_color, c.activity);
-			tocolor = tocolor.lerp(theme_cache.activity_color, c.activity);
+		if (c == hovered_connection) {
+			from_color = from_color.blend(theme_cache.connection_hover_tint_color);
+			to_color = to_color.blend(theme_cache.connection_hover_tint_color);
 		}
-		_draw_connection_line(connections_layer, frompos, topos, color, tocolor, lines_thickness, zoom);
+
+		_draw_connection_line(connections_layer, c->_cache.from_pos * zoom, c->_cache.to_pos * zoom, from_color, to_color, lines_thickness, c);
 	}
 
-	for (List<Connection>::Element *&E : to_erase) {
-		connections.erase(E);
+	for (const List<Ref<Connection>>::Element *E : dead_connections) {
+		List<Ref<Connection>> &connections_from = connection_map[E->get()->from_node];
+		List<Ref<Connection>> &connections_to = connection_map[E->get()->to_node];
+		connections_from.erase(E);
+		connections_to.erase(E->get());
+		connections.erase(E->get());
 	}
 }
 
@@ -1023,28 +1144,26 @@ void GraphEdit::_top_layer_draw() {
 		ERR_FAIL_NULL(node_from);
 		GraphNode *graph_node_from = Object::cast_to<GraphNode>(node_from);
 		ERR_FAIL_NULL(graph_node_from);
-		Vector2 pos;
+		Vector2 from_pos;
 		if (connecting_out) {
-			pos = graph_node_from->get_output_port_position(connecting_index) * zoom;
+			from_pos = graph_node_from->get_output_port_position(connecting_index);
 		} else {
-			pos = graph_node_from->get_input_port_position(connecting_index) * zoom;
+			from_pos = graph_node_from->get_input_port_position(connecting_index);
 		}
-		pos += graph_node_from->get_position();
+		from_pos += graph_node_from->get_position() / zoom;
 
 		Vector2 to_pos = connecting_to;
 		Color line_color = connecting_color;
 
-		// Draw the line to the mouse cursor brighter when it's over a valid target port.
+		// Highlight the line to the mouse cursor when it's over a valid target port.
 		if (connecting_target) {
-			line_color.r += CONNECTING_TARGET_LINE_COLOR_BRIGHTENING;
-			line_color.g += CONNECTING_TARGET_LINE_COLOR_BRIGHTENING;
-			line_color.b += CONNECTING_TARGET_LINE_COLOR_BRIGHTENING;
+			line_color = line_color.blend(theme_cache.connection_valid_target_tint_color);
 		}
 
 		if (!connecting_out) {
-			SWAP(pos, to_pos);
+			SWAP(from_pos, to_pos);
 		}
-		_draw_connection_line(top_layer, pos, to_pos, line_color, line_color, lines_thickness, zoom);
+		_draw_connection_line(top_layer, from_pos * zoom, to_pos * zoom, line_color, line_color, lines_thickness, nullptr);
 	}
 
 	if (box_selecting) {
@@ -1091,31 +1210,17 @@ void GraphEdit::_minimap_draw() {
 	}
 
 	// Draw node connections.
-	for (const Connection &E : connections) {
-		Node *from = get_node(NodePath(E.from_node));
-		GraphNode *graph_node_from = Object::cast_to<GraphNode>(from);
-		if (!graph_node_from) {
-			continue;
-		}
+	for (const Ref<Connection> &c : connections) {
+		Vector2 from_position = minimap->_convert_from_graph_position(c->_cache.from_pos * zoom - graph_offset) + minimap_offset;
+		Vector2 to_position = minimap->_convert_from_graph_position(c->_cache.to_pos * zoom - graph_offset) + minimap_offset;
+		Color from_color = c->_cache.from_color;
+		Color to_color = c->_cache.to_color;
 
-		Node *node_to = get_node(NodePath(E.to_node));
-		GraphNode *graph_node_to = Object::cast_to<GraphNode>(node_to);
-		if (!graph_node_to) {
-			continue;
+		if (c->activity > 0) {
+			from_color = from_color.lerp(theme_cache.activity_color, c->activity);
+			to_color = to_color.lerp(theme_cache.activity_color, c->activity);
 		}
-
-		Vector2 from_port_position = graph_node_from->get_position_offset() * zoom + graph_node_from->get_output_port_position(E.from_port) * zoom;
-		Vector2 from_position = minimap->_convert_from_graph_position(from_port_position - graph_offset) + minimap_offset;
-		Color from_color = graph_node_from->get_output_port_color(E.from_port);
-		Vector2 to_port_position = graph_node_to->get_position_offset() * zoom + graph_node_to->get_input_port_position(E.to_port) * zoom;
-		Vector2 to_position = minimap->_convert_from_graph_position(to_port_position - graph_offset) + minimap_offset;
-		Color to_color = graph_node_to->get_input_port_color(E.to_port);
-
-		if (E.activity > 0) {
-			from_color = from_color.lerp(theme_cache.activity_color, E.activity);
-			to_color = to_color.lerp(theme_cache.activity_color, E.activity);
-		}
-		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.5, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
+		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.5, nullptr);
 	}
 
 	// Draw the "camera" viewport.
@@ -1146,6 +1251,13 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_ev;
+	if (mm.is_valid()) {
+		Ref<Connection> new_highlighted_connection = get_closest_connection_at_point(mm->get_position());
+		if (new_highlighted_connection != hovered_connection) {
+			connections_layer->queue_redraw();
+		}
+		hovered_connection = new_highlighted_connection;
+	}
 
 	if (mm.is_valid() && dragging) {
 		if (!moving_selection) {
@@ -1407,22 +1519,37 @@ void GraphEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputE
 }
 
 void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity) {
-	for (Connection &E : connections) {
-		if (E.from_node == p_from && E.from_port == p_from_port && E.to_node == p_to && E.to_port == p_to_port) {
-			if (!Math::is_equal_approx(E.activity, p_activity)) {
+	for (Ref<Connection> &E : connection_map[p_from]) {
+		if (E->from_node == p_from && E->from_port == p_from_port && E->to_node == p_to && E->to_port == p_to_port) {
+			if (!Math::is_equal_approx(E->activity, p_activity)) {
 				// Update only if changed.
 				top_layer->queue_redraw();
 				minimap->queue_redraw();
 				connections_layer->queue_redraw();
 			}
-			E.activity = p_activity;
+			E->activity = p_activity;
 			return;
 		}
 	}
 }
 
+void GraphEdit::reset_all_connection_activity() {
+	bool changed = false;
+	for (Ref<Connection> &conn : connections) {
+		if (conn->activity > 0) {
+			changed = true;
+		}
+		conn->activity = 0;
+	}
+	if (changed) {
+		connections_layer->queue_redraw();
+	}
+}
+
 void GraphEdit::clear_connections() {
 	connections.clear();
+	connection_map.clear();
+
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();
@@ -1560,15 +1687,15 @@ void GraphEdit::remove_valid_left_disconnect_type(int p_type) {
 }
 
 TypedArray<Dictionary> GraphEdit::_get_connection_list() const {
-	List<Connection> conns;
-	get_connection_list(&conns);
+	List<Ref<Connection>> conns = get_connection_list();
+
 	TypedArray<Dictionary> arr;
-	for (const Connection &E : conns) {
+	for (const Ref<Connection> &conn : conns) {
 		Dictionary d;
-		d["from_node"] = E.from_node;
-		d["from_port"] = E.from_port;
-		d["to_node"] = E.to_node;
-		d["to_port"] = E.to_port;
+		d["from_node"] = conn->from_node;
+		d["from_port"] = conn->from_port;
+		d["to_node"] = conn->to_node;
+		d["to_port"] = conn->to_port;
 		arr.push_back(d);
 	}
 	return arr;
@@ -1827,6 +1954,8 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_node", "from_node", "from_port", "to_node", "to_port"), &GraphEdit::disconnect_node);
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "from_node", "from_port", "to_node", "to_port", "amount"), &GraphEdit::set_connection_activity);
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
+	ClassDB::bind_method(D_METHOD("get_closest_connection_at_point", "point", "max_distance"), &GraphEdit::_get_closest_connection_at_point, DEFVAL(4.0));
+	ClassDB::bind_method(D_METHOD("get_connections_intersecting_with_rect", "rect"), &GraphEdit::_get_connections_intersecting_with_rect);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
 	ClassDB::bind_method(D_METHOD("force_connection_drag_end"), &GraphEdit::force_connection_drag_end);
 	ClassDB::bind_method(D_METHOD("get_scroll_offset"), &GraphEdit::get_scroll_offset);
@@ -1975,6 +2104,8 @@ void GraphEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, grid_minor);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, GraphEdit, activity_color, "activity");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, connection_hover_tint_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, connection_valid_target_tint_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, selection_fill);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, selection_stroke);
 

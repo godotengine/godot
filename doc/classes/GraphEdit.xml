@@ -143,6 +143,21 @@
 				[b]Note:[/b] This method suppresses any other connection request signals apart from [signal connection_drag_ended].
 			</description>
 		</method>
+		<method name="get_closest_connection_at_point">
+			<return type="Dictionary" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="max_distance" type="float" default="4.0" />
+			<description>
+				Returns the closest connection to the given point in screen space. If no connection is found within [param max_distance] pixels, an empty [Dictionary] is returned.
+				A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
+				For example, getting a connection at a given mouse position can be achieved like this:
+				[codeblocks]
+				[gdscript]
+				var connection = get_closest_connection_at_point(mouse_event.get_position())
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_connection_line">
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_node" type="Vector2" />
@@ -154,7 +169,14 @@
 		<method name="get_connection_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>
-				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
+				Returns an [Array] containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
+			</description>
+		</method>
+		<method name="get_connections_intersecting_with_rect">
+			<return type="Dictionary[]" />
+			<param index="0" name="rect" type="Rect2" />
+			<description>
+				Returns an [Array] containing the list of connections that intersect with the given [Rect2]. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
 			</description>
 		</method>
 		<method name="get_menu_hbox">
@@ -408,7 +430,13 @@
 	</constants>
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			Color of the connection's activity (see [method set_connection_activity]).
+			Color the connection line is interpolated to based on the activity value of a connection (see [method set_connection_activity]).
+		</theme_item>
+		<theme_item name="connection_hover_tint_color" data_type="color" type="Color" default="Color(0, 0, 0, 0.3)">
+			Color which is blended with the connection line when the mouse is hovering over it.
+		</theme_item>
+		<theme_item name="connection_valid_target_tint_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.4)">
+			Color which is blended with the connection line when the currently dragged connection is hovering over a valid target port.
 		</theme_item>
 		<theme_item name="grid_major" data_type="color" type="Color" default="Color(1, 1, 1, 0.2)">
 			Color of major grid lines.

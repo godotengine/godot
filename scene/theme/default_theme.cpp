@@ -1156,6 +1156,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("selection_fill", "GraphEdit", Color(1, 1, 1, 0.3));
 	theme->set_color("selection_stroke", "GraphEdit", Color(1, 1, 1, 0.8));
 	theme->set_color("activity", "GraphEdit", Color(1, 1, 1));
+	theme->set_color("connection_hover_tint_color", "GraphEdit", Color(0, 0, 0, 0.3));
+	theme->set_color("connection_valid_target_tint_color", "GraphEdit", Color(1, 1, 1, 0.4));
 
 	// Visual Node Ports
 

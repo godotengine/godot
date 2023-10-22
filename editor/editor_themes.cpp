@@ -1981,7 +1981,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("selection_fill", "GraphEdit", theme->get_color(SNAME("box_selection_fill_color"), EditorStringName(Editor)));
 	theme->set_color("selection_stroke", "GraphEdit", theme->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor)));
 	theme->set_color("activity", "GraphEdit", accent_color);
-
+	theme->set_color("connection_hover_tint_color", "GraphEdit", dark_theme ? Color(0, 0, 0, 0.3) : Color(1, 1, 1, 0.3));
+	theme->set_color("connection_valid_target_tint_color", "GraphEdit", dark_theme ? Color(1, 1, 1, 0.4) : Color(0, 0, 0, 0.4));
 	theme->set_icon("zoom_out", "GraphEdit", theme->get_icon(SNAME("ZoomLess"), EditorStringName(EditorIcons)));
 	theme->set_icon("zoom_in", "GraphEdit", theme->get_icon(SNAME("ZoomMore"), EditorStringName(EditorIcons)));
 	theme->set_icon("zoom_reset", "GraphEdit", theme->get_icon(SNAME("ZoomReset"), EditorStringName(EditorIcons)));

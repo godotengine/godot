@@ -112,12 +112,25 @@ class GraphEdit : public Control {
 	GDCLASS(GraphEdit, Control);
 
 public:
-	struct Connection {
+	struct Connection : RefCounted {
 		StringName from_node;
 		StringName to_node;
 		int from_port = 0;
 		int to_port = 0;
 		float activity = 0.0;
+
+	private:
+		struct Cache {
+			bool dirty = true;
+			Vector2 from_pos; // In graph space.
+			Vector2 to_pos; // In graph space.
+			Color from_color;
+			Color to_color;
+			Rect2 aabb; // In local screen space (premultiplied with zoom).
+			PackedVector2Array line; // In local screen space (premultiplied with zoom).
+		} _cache;
+
+		friend class GraphEdit;
 	};
 
 	// Should be in sync with ControlScheme in ViewPanner.
@@ -216,7 +229,10 @@ private:
 	bool right_disconnects = false;
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
-	List<Connection> connections;
+
+	List<Ref<Connection>> connections;
+	HashMap<StringName, List<Ref<Connection>>> connection_map;
+	Ref<Connection> hovered_connection;
 
 	float lines_thickness = 2.0f;
 	float lines_curvature = 0.5f;
@@ -242,6 +258,8 @@ private:
 		Color grid_minor;
 
 		Color activity_color;
+		Color connection_hover_tint_color;
+		Color connection_valid_target_tint_color;
 		Color selection_fill;
 		Color selection_stroke;
 
@@ -268,7 +286,7 @@ private:
 	void _zoom_plus();
 	void _update_zoom_label();
 
-	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom);
+	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, const Ref<Connection> &p_connection);
 
 	void _graph_element_selected(Node *p_node);
 	void _graph_element_deselected(Node *p_node);
@@ -276,6 +294,7 @@ private:
 	void _graph_element_resized(Vector2 p_new_minsize, Node *p_node);
 	void _graph_element_moved(Node *p_node);
 	void _graph_node_slot_updated(int p_index, Node *p_node);
+	void _graph_node_rect_changed(GraphNode *p_node);
 
 	void _update_scroll();
 	void _update_scroll_offset();
@@ -336,12 +355,20 @@ public:
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
+
+	const List<Ref<Connection>> &get_connection_list() const;
 	void force_connection_drag_end();
 
 	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
+	Ref<Connection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0);
+	Dictionary _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0);
+	List<Ref<Connection>> get_connections_intersecting_with_rect(const Rect2 &p_rect);
+	TypedArray<Dictionary> _get_connections_intersecting_with_rect(const Rect2 &p_rect);
+
 	virtual bool is_node_hover_valid(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 
 	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
+	void reset_all_connection_activity();
 
 	void add_valid_connection_type(int p_type, int p_with_type);
 	void remove_valid_connection_type(int p_type, int p_with_type);
@@ -386,8 +413,6 @@ public:
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	GraphEditMinimap *get_minimap() const { return minimap; }
-
-	void get_connection_list(List<Connection> *r_connections) const;
 
 	void set_right_disconnects(bool p_enable);
 	bool is_right_disconnects_enabled() const;
