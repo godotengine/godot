@@ -33,18 +33,32 @@
 
 #include "editor/plugins/node_3d_editor_camera_manager.h"
 
-#include "editor/editor_settings.h"
+#include "scene/3d/camera_3d.h"
 #include "tests/test_macros.h"
 
 namespace TestNode3DEditorCameraManager {
 
 TEST_CASE("[TestNode3DEditorCameraManager] Camera settings") {
+	const Ref<Node3DEditorCameraManager> camera_manager = memnew(Node3DEditorCameraManager);
+	const Ref<Camera3D> camera = memnew(Camera3D);
+	camera_manager->setup(*camera, nullptr);
+	camera_manager->set_camera_settings(0.5, 1.0, 100.0);
+	CHECK(camera->get_fov() == 0.5);
+	CHECK(camera->get_near() == 1.0);
+	CHECK(camera->get_far() == 100.0);
 }
 
 TEST_CASE("[TestNode3DEditorCameraManager] Reset") {
 }
 
 TEST_CASE("[TestNode3DEditorCameraManager] Set cursor state") {
+	const Ref<Node3DEditorCameraManager> camera_manager = memnew(Node3DEditorCameraManager);
+	camera_manager->set_cursor_state(Vector3(1.0, 2.0, 3.0), 0.5, 0.6, 10.0);
+	CHECK(camera_manager->get_cursor().get_target_values().position == Vector3(1.0, 2.0, 3.0));
+	CHECK(camera_manager->get_cursor().get_target_values().x_rot == 0.5);
+	CHECK(camera_manager->get_cursor().get_target_values().y_rot == 0.6);
+	CHECK(camera_manager->get_cursor().get_target_values().distance == 10.0);
+	CHECK(camera_manager->get_cursor().get_target_values() == camera_manager->get_cursor().get_current_values());
 }
 
 TEST_CASE("[TestNode3DEditorCameraManager] Get current camera") {

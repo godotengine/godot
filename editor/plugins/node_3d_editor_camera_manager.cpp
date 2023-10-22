@@ -64,6 +64,7 @@ void Node3DEditorCameraManager::set_cursor_state(const Vector3& position, real_t
 	cursor.orbit_to(x_rot, y_rot);
 	cursor.move_to(position);
 	cursor.move_distance_to(distance);
+	cursor.stop_interpolation(true);
 }
 
 Camera3D* Node3DEditorCameraManager::get_current_camera() const {
